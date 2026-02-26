@@ -1,11 +1,11 @@
 import { FORCE_NAMES, type ForceVector, type ForceName } from '../types';
 
 export const FORCE_COLORS: Record<ForceName, { primary: string; secondary: string; accent: string }> = {
-  aether:   { primary: '#6B5CE7', secondary: '#A8D8EA', accent: '#E8E0FF' },
-  verdance: { primary: '#2D8F4E', secondary: '#7BC950', accent: '#D4F5D4' },
-  ignis:    { primary: '#E84830', secondary: '#FF9F43', accent: '#FFE0D0' },
-  umbra:    { primary: '#4A2080', secondary: '#1A1A2E', accent: '#C8A0E8' },
-  terra:    { primary: '#C8A850', secondary: '#8B6914', accent: '#F0E8C8' },
+  aether:   { primary: '#8B7EC8', secondary: '#B8CCE0', accent: '#E8E0FF' },
+  verdance: { primary: '#5A7A3B', secondary: '#8BAF5A', accent: '#D4E8C4' },
+  ignis:    { primary: '#C45A3C', secondary: '#D4956A', accent: '#F0D8C8' },
+  umbra:    { primary: '#6B4A7A', secondary: '#3A2A4A', accent: '#C8A0D0' },
+  terra:    { primary: '#B8963A', secondary: '#8B6914', accent: '#E8D8B0' },
 };
 
 export interface RGB { r: number; g: number; b: number }

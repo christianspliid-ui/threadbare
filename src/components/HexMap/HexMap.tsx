@@ -23,8 +23,8 @@ export function HexMap({
   onHexClick, onHexHover,
 }: HexMapProps) {
   const { width, height } = useMemo(() => {
-    const w = cols * hexSize * 1.5 + hexSize * 0.5;
-    const h = rows * Math.sqrt(3) * hexSize + Math.sqrt(3) * hexSize * 0.5;
+    const w = cols * Math.sqrt(3) * hexSize + Math.sqrt(3) * hexSize * 0.5;
+    const h = rows * hexSize * 1.5 + hexSize * 0.5;
     return { width: w + hexSize, height: h + hexSize };
   }, [cols, rows, hexSize]);
 
@@ -34,7 +34,7 @@ export function HexMap({
     <svg
       viewBox={`0 0 ${width + padding * 2} ${height + padding * 2}`}
       className="w-full h-full"
-      style={{ background: '#0a0a1a' }}
+      style={{ background: '#f4e8c1' }}
     >
       <g transform={`translate(${padding + hexSize}, ${padding + hexSize * 0.8})`}>
         {tiles.map((tile) => {

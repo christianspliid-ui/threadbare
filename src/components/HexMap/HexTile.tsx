@@ -1,6 +1,25 @@
-import type { HexTile } from '../../types';
-import { blendForceColors, darkenColor } from '../../engine/color';
+import type { HexTile, TerrainType } from '../../types';
+import { blendForceColors } from '../../engine/color';
 import { hexPolygonPoints } from '../../lib/hexMath';
+
+const TERRAIN_ICONS: Record<TerrainType, string> = {
+  crystal_wastes: '✦',
+  enchanted_grove: '◆',
+  runed_mountains: '◉',
+  deep_forest: '🌲',
+  haunted_wood: '🌲',
+  volcanic_jungle: '🌴',
+  scorched_plains: '🔥',
+  lightning_fields: '⚡',
+  forge_mountains: '⛰',
+  shadow_marsh: '〰',
+  fungal_forest: '🍄',
+  void_rift: '◎',
+  stone_highlands: '▲',
+  obsidian_peaks: '▲',
+  buried_ruins: '⌂',
+  contested_ground: '⚔',
+};
 
 interface HexTileProps {
   tile: HexTile;
@@ -19,8 +38,9 @@ export function HexTileComponent({
   onClick, onMouseEnter, onMouseLeave,
 }: HexTileProps) {
   const fillColor = blendForceColors(tile.forces);
-  const strokeColor = darkenColor(fillColor, 0.7);
+  const strokeColor = 'rgba(139, 105, 60, 0.3)';
   const points = hexPolygonPoints(cx, cy, size);
+  const icon = TERRAIN_ICONS[tile.terrain] || '·';
 
   return (
     <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
@@ -28,18 +48,29 @@ export function HexTileComponent({
         points={points}
         fill={fillColor}
         stroke={strokeColor}
-        strokeWidth={isSelected ? 2.5 : isHovered ? 1.5 : 0.8}
+        strokeWidth={isSelected ? 2 : isHovered ? 1.2 : 0.6}
         opacity={isHovered ? 0.9 : 1}
       />
       {isSelected && (
         <polygon
           points={hexPolygonPoints(cx, cy, size - 3)}
           fill="none"
-          stroke="#ffffff"
+          stroke="#5A3A1A"
           strokeWidth={1.5}
           strokeDasharray="4,2"
         />
       )}
+      <text
+        x={cx}
+        y={cy + 1}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={size * 0.45}
+        opacity={0.7}
+        style={{ pointerEvents: 'none', userSelect: 'none' }}
+      >
+        {icon}
+      </text>
     </g>
   );
 }

@@ -1,5 +1,5 @@
 import { createNoise2D } from 'simplex-noise';
-import { FORCE_NAMES, type CosmologyProfile, type ForceVector, type HexCoord, type ForceName } from '../types';
+import { FORCE_NAMES, type CosmologyProfile, type ForceVector, type HexCoord } from '../types';
 import { FORCE_ALLIES, FORCE_OPPOSITES } from './cosmology';
 
 function mulberry32(seed: number) {
