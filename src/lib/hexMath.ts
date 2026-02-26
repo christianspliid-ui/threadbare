@@ -1,8 +1,8 @@
 import type { HexCoord, CubeCoord } from '../types';
 
 export function offsetToCube(hex: HexCoord): CubeCoord {
-  const q = hex.col;
-  const r = hex.row - (hex.col + (hex.col & 1)) / 2;
+  const q = hex.col - (hex.row - (hex.row & 1)) / 2;
+  const r = hex.row;
   let s = -q - r;
   s = Math.round(s * 1e10) / 1e10;
   // Ensure we never return -0
@@ -11,23 +11,23 @@ export function offsetToCube(hex: HexCoord): CubeCoord {
 }
 
 export function cubeToOffset(cube: CubeCoord): HexCoord {
-  const col = cube.q;
-  const row = cube.r + (cube.q + (cube.q & 1)) / 2;
+  const col = cube.q + (cube.r - (cube.r & 1)) / 2;
+  const row = cube.r;
   return { col, row };
 }
 
 export function hexNeighbors(hex: HexCoord): HexCoord[] {
-  const isEvenCol = hex.col % 2 === 0;
-  const directions = isEvenCol
+  const isOddRow = hex.row % 2 === 1;
+  const directions = isOddRow
     ? [
-        { col: +1, row: +1 }, { col: -1, row:  0 },
-        { col: +1, row:  0 }, { col: -1, row: +1 },
-        { col:  0, row: +1 }, { col:  0, row: -1 },
+        { col:  1, row: -1 }, { col:  1, row:  0 },
+        { col:  1, row:  1 }, { col:  0, row:  1 },
+        { col: -1, row:  0 }, { col:  0, row: -1 },
       ]
     : [
-        { col: +1, row:  0 }, { col: -1, row: -1 },
-        { col: +1, row: -1 }, { col: -1, row:  0 },
-        { col:  0, row: +1 }, { col:  0, row: -1 },
+        { col:  0, row: -1 }, { col:  1, row:  0 },
+        { col:  0, row:  1 }, { col: -1, row:  1 },
+        { col: -1, row:  0 }, { col: -1, row: -1 },
       ];
   return directions.map(d => ({ col: hex.col + d.col, row: hex.row + d.row }));
 }
@@ -39,10 +39,10 @@ export function hexDistance(a: HexCoord, b: HexCoord): number {
 }
 
 export function hexToPixel(hex: HexCoord, size: number): { x: number; y: number } {
-  const w = size * 2;
-  const h = Math.sqrt(3) * size;
-  const x = hex.col * (w * 3 / 4);
-  const y = hex.row * h + (hex.col % 2 === 1 ? h / 2 : 0);
+  const w = Math.sqrt(3) * size;
+  const h = size * 2;
+  const x = hex.col * w + (hex.row % 2 === 1 ? w / 2 : 0);
+  const y = hex.row * (h * 3 / 4);
   return { x, y };
 }
 
@@ -59,7 +59,7 @@ export function generateHexGrid(cols: number, rows: number): HexCoord[] {
 export function hexPolygonPoints(cx: number, cy: number, size: number): string {
   const points: string[] = [];
   for (let i = 0; i < 6; i++) {
-    const angle = (Math.PI / 180) * (60 * i);
+    const angle = (Math.PI / 180) * (60 * i - 30);
     const px = cx + size * Math.cos(angle);
     const py = cy + size * Math.sin(angle);
     points.push(`${px},${py}`);

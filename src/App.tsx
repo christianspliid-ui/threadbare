@@ -38,26 +38,26 @@ function App() {
   }, [tiles, selectedHex]);
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100 flex">
-      <div className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-gray-800">
-        <h1 className="text-xl font-bold tracking-wide text-center">✧ Fantasy World Simulator ✧</h1>
+    <div className="min-h-screen bg-amber-50 text-amber-950 flex">
+      <div className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-200 bg-stone-800">
+        <h1 className="text-xl font-bold tracking-wide text-center text-amber-100">✧ Fantasy World Simulator ✧</h1>
         <CosmologyPanel
           cosmology={cosmology} seed={seed}
           onCosmologyChange={setCosmology} onSeedChange={setSeed} onGenerate={handleGenerate}
         />
-        <div className="bg-gray-900 border border-gray-700 rounded-xl p-4 space-y-3">
-          <h3 className="text-sm font-medium text-gray-300">Force Overlay</h3>
+        <div className="bg-stone-700 border border-amber-700 rounded-xl p-4 space-y-3">
+          <h3 className="text-sm font-medium text-amber-100">✧ Divine Lens</h3>
           <div className="flex gap-2 flex-wrap">
             <button onClick={() => setOverlayMode('none')}
               className={`px-3 py-1 text-xs rounded-full border transition-colors ${
-                overlayMode === 'none' ? 'bg-gray-600 text-white border-gray-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'
+                overlayMode === 'none' ? 'bg-amber-700 text-amber-50 border-amber-600' : 'bg-stone-600 text-amber-200 border-stone-500 hover:bg-stone-500'
               }`}>Off</button>
             {FORCE_NAMES.map(force => (
               <button key={force}
                 onClick={() => { setOverlayMode('single'); setSelectedForce(force); }}
                 className={`px-3 py-1 text-xs rounded-full border capitalize transition-colors ${
                   overlayMode === 'single' && selectedForce === force
-                    ? 'bg-gray-600 text-white border-gray-500' : 'bg-gray-800 text-gray-400 border-gray-700 hover:bg-gray-700'
+                    ? 'bg-amber-700 text-amber-50 border-amber-600' : 'bg-stone-600 text-amber-200 border-stone-500 hover:bg-stone-500'
                 }`}>{force}</button>
             ))}
           </div>
