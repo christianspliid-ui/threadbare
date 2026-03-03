@@ -1,5 +1,5 @@
 import { createNoise2D } from 'simplex-noise';
-import { SPHERE_NAMES, type CosmologyProfile, type GeoParams, type HexCoord } from '../types';
+import { type CosmologyProfile, type GeoParams } from '../types';
 
 function mulberry32(seed: number) {
   return () => {

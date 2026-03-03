@@ -1,52 +1,65 @@
 import { describe, it, expect } from 'vitest';
-import { generateForceField } from '../forceField';
+import { generateGeoField } from '../forceField';
 import { createBalancedCosmology } from '../cosmology';
-import { FORCE_NAMES } from '../../types';
 
-describe('generateForceField', () => {
-  const cosmology = createBalancedCosmology();
-  const coords = [
-    { col: 0, row: 0 },
-    { col: 1, row: 0 },
-    { col: 0, row: 1 },
-    { col: 5, row: 5 },
-  ];
+describe('generateGeoField', () => {
+  const cols = 10;
+  const rows = 10;
 
-  it('returns a ForceVector for each input coordinate', () => {
-    const field = generateForceField(coords, cosmology, 42);
-    expect(field).toHaveLength(coords.length);
+  it('returns a Map with entries for each coordinate', () => {
+    const field = generateGeoField(cols, rows, 42);
+    expect(field.size).toBe(cols * rows);
   });
 
-  it('each ForceVector sums to approximately 1.0', () => {
-    const field = generateForceField(coords, cosmology, 42);
-    for (const fv of field) {
-      const sum = FORCE_NAMES.reduce((s, f) => s + fv[f], 0);
-      expect(sum).toBeCloseTo(1.0, 1);
-    }
-  });
-
-  it('all force values are between 0 and 1', () => {
-    const field = generateForceField(coords, cosmology, 42);
-    for (const fv of field) {
-      for (const f of FORCE_NAMES) {
-        expect(fv[f]).toBeGreaterThanOrEqual(0);
-        expect(fv[f]).toBeLessThanOrEqual(1);
-      }
+  it('each GeoParams has elevation, temperature, moisture in [0, 1]', () => {
+    const field = generateGeoField(cols, rows, 42);
+    for (const params of field.values()) {
+      expect(params.elevation).toBeGreaterThanOrEqual(0);
+      expect(params.elevation).toBeLessThanOrEqual(1);
+      expect(params.temperature).toBeGreaterThanOrEqual(0);
+      expect(params.temperature).toBeLessThanOrEqual(1);
+      expect(params.moisture).toBeGreaterThanOrEqual(0);
+      expect(params.moisture).toBeLessThanOrEqual(1);
     }
   });
 
   it('is deterministic with same seed', () => {
-    const a = generateForceField(coords, cosmology, 42);
-    const b = generateForceField(coords, cosmology, 42);
+    const a = generateGeoField(cols, rows, 42);
+    const b = generateGeoField(cols, rows, 42);
     expect(a).toEqual(b);
   });
 
   it('varies with different seeds', () => {
-    const a = generateForceField(coords, cosmology, 42);
-    const b = generateForceField(coords, cosmology, 99);
-    const same = a.every((fv, i) =>
-      FORCE_NAMES.every(f => Math.abs(fv[f] - b[i][f]) < 0.001)
-    );
-    expect(same).toBe(false);
+    const a = generateGeoField(cols, rows, 42);
+    const b = generateGeoField(cols, rows, 99);
+    let different = false;
+    for (const [key, paramsA] of a) {
+      const paramsB = b.get(key);
+      if (
+        paramsB &&
+        (Math.abs(paramsA.elevation - paramsB.elevation) > 0.001 ||
+          Math.abs(paramsA.temperature - paramsB.temperature) > 0.001 ||
+          Math.abs(paramsA.moisture - paramsB.moisture) > 0.001)
+      ) {
+        different = true;
+        break;
+      }
+    }
+    expect(different).toBe(true);
+  });
+
+  it('applies cosmology bias (energy -> higher temperature)', () => {
+    const baseField = generateGeoField(cols, rows, 42);
+    const highEnergyCosmology = { ...createBalancedCosmology(), energy: 0.5 };
+    const biasedField = generateGeoField(cols, rows, 42, highEnergyCosmology);
+
+    let tempHigher = 0;
+    for (const [key, baseParams] of baseField) {
+      const biasedParams = biasedField.get(key);
+      if (biasedParams && biasedParams.temperature > baseParams.temperature) {
+        tempHigher++;
+      }
+    }
+    expect(tempHigher).toBeGreaterThan(cols * rows * 0.3);
   });
 });
