@@ -1,0 +1,59 @@
+[
+  {
+    "id": "foundation.chaos",
+    "name": "Chaos",
+    "category": "foundation-sphere",
+    "description": "The primordial underpinning of all existence—raw potential, formless and boundless. Chaos is not evil or destructive, but rather the infinite wellspring from which all order, structure, and being emerge. It is the silence before creation, the void pregnant with possibility, the ground upon which the binary of Darkness and Light first manifests.",
+    "properties": {
+      "color": "#1a0033",
+      "symbolicAnimal": "Serpent Ouroboros",
+      "element": "Aether",
+      "alignedSpheres": ["foundation.darkness", "foundation.light"],
+      "cosmicPrinciple": "Potentiality",
+      "influence": "foundational"
+    }
+  },
+  {
+    "id": "foundation.darkness",
+    "name": "Darkness",
+    "category": "foundation-sphere",
+    "description": "The principle of absence, void, and mystery. Darkness is not malevolence but rather the unknown, the hidden, the unexplored. It represents concealment, privacy, rest, and the unconscious depths. Where Darkness reigns, mysteries abound and secrets are kept. It is the complement to Light, neither superior nor inferior.",
+    "properties": {
+      "color": "#2a2a4a",
+      "symbolicAnimal": "Owl",
+      "element": "Shadow",
+      "associations": ["Night", "Moon", "Mystery", "Unconscious", "Rest", "Secrets"],
+      "cosmicPrinciple": "Concealment",
+      "influence": "universal"
+    }
+  },
+  {
+    "id": "foundation.light",
+    "name": "Light",
+    "category": "foundation-sphere",
+    "description": "The principle of presence, clarity, and revelation. Light illuminates what was hidden, makes manifest the true nature of things, and brings awareness to consciousness. It represents understanding, truth, revelation, and the revealed world. Light is the complement to Darkness, neither superior nor inferior, but necessary to create meaning through contrast.",
+    "properties": {
+      "color": "#ffeb99",
+      "symbolicAnimal": "Eagle",
+      "element": "Radiance",
+      "associations": ["Day", "Sun", "Truth", "Conscious", "Awakening", "Revelation"],
+      "cosmicPrinciple": "Revelation",
+      "influence": "universal"
+    }
+  },
+  {
+    "id": "foundation.shadow",
+    "name": "Shadow",
+    "category": "foundation-sphere",
+    "description": "The emergent sphere born from the interplay of Darkness and Light—neither pure darkness nor pure light, but the zone of twilight, ambiguity, and transformation. Shadow is the trickster principle: deception and truth entwined, the half-revealed, the liminal space. Shadows shift with the angle of light, representing adaptability, cunning, and the wisdom found in paradox. Shadow is not a third equal sphere like Darkness and Light, but rather the dynamic interaction between them.",
+    "properties": {
+      "color": "#6a5acd",
+      "symbolicAnimal": "Raven",
+      "element": "Dusk",
+      "associations": ["Twilight", "Dusk", "Trickery", "Ambiguity", "Transformation", "Paradox", "Cunning"],
+      "cosmicPrinciple": "Interplay",
+      "influence": "emergent",
+      "dependsOn": ["foundation.darkness", "foundation.light"]
+    }
+  }
+]

@@ -1,0 +1,118 @@
+[
+  {
+    "id": "creation.force",
+    "name": "Force",
+    "category": "creation-sphere",
+    "description": "The sphere of physics, motion, kinetic energy, and motive power. Force governs gravity, pressure, momentum, magnetism, and the push-pull of physical interaction. It is the sphere of winds, the collision of matter, the tension in a drawn bow, and the irresistible drive of change.",
+    "properties": {
+      "color": "#ff6b6b",
+      "physicalPhenomena": ["Wind", "Gravity", "Magnetism", "Momentum", "Pressure", "Acceleration"],
+      "associatedColors": ["Red", "Violet"],
+      "dominantTemperature": "neutral",
+      "dominantMoisture": "neutral",
+      "dominantElevation": "neutral"
+    }
+  },
+  {
+    "id": "creation.matter",
+    "name": "Matter",
+    "category": "creation-sphere",
+    "description": "The sphere of substance, solidity, and material form. Matter is the physical stuff of the world—stone, metal, crystal, soil, bone, and all tangible substances. It represents structure, weight, persistence, and the solid foundations upon which all things rest.",
+    "properties": {
+      "color": "#8b7355",
+      "physicalPhenomena": ["Stone", "Metal", "Crystal", "Soil", "Density", "Rigidity"],
+      "associatedColors": ["Brown", "Grey", "Tan"],
+      "dominantTemperature": "cool",
+      "dominantMoisture": "low",
+      "dominantElevation": "high",
+      "terrainBias": 0.15
+    }
+  },
+  {
+    "id": "creation.energy",
+    "name": "Energy",
+    "category": "creation-sphere",
+    "description": "The sphere of heat, light, electricity, radiation, and dynamic power. Energy is the flow of warmth, the brilliance of flame, the spark of lightning, the radiance of stars. It represents vitality, transformation, intensity, and the active principle that animates and transforms matter.",
+    "properties": {
+      "color": "#ffd700",
+      "physicalPhenomena": ["Fire", "Lightning", "Heat", "Light", "Radiation", "Plasma"],
+      "associatedColors": ["Gold", "Orange", "Yellow", "White"],
+      "dominantTemperature": "hot",
+      "dominantMoisture": "low",
+      "dominantElevation": "neutral",
+      "temperatureBias": 0.1
+    }
+  },
+  {
+    "id": "creation.life",
+    "name": "Life",
+    "category": "creation-sphere",
+    "description": "The sphere of biology, growth, healing, reproduction, and fertility. Life is the organizing principle that animates flesh, drives the flourishing of plants and animals, enables regeneration, and perpetuates itself across generations. It also encompasses disease, decay, and the dark side of biological processes.",
+    "properties": {
+      "color": "#2ecc71",
+      "physicalPhenomena": ["Growth", "Regeneration", "Metabolism", "Reproduction", "Healing", "Disease"],
+      "associatedColors": ["Green", "Blue-green", "Vibrant"],
+      "dominantTemperature": "warm",
+      "dominantMoisture": "high",
+      "dominantElevation": "low",
+      "moistureBias": 0.12
+    }
+  },
+  {
+    "id": "creation.mind",
+    "name": "Mind",
+    "category": "creation-sphere",
+    "description": "The sphere of thought, perception, memory, consciousness, and intellect. Mind is the seat of awareness, reasoning, imagination, and dream. It governs psychology, perception of reality, illusion, telepathy, and the formation of belief. Mind shapes how the world is perceived as much as it perceives the world.",
+    "properties": {
+      "color": "#3498db",
+      "physicalPhenomena": ["Thought", "Perception", "Memory", "Dreams", "Illusion", "Consciousness"],
+      "associatedColors": ["Blue", "Indigo", "Silver"],
+      "dominantTemperature": "neutral",
+      "dominantMoisture": "neutral",
+      "dominantElevation": "neutral"
+    }
+  },
+  {
+    "id": "creation.spirit",
+    "name": "Spirit",
+    "category": "creation-sphere",
+    "description": "The sphere of soul, afterlife, divine connection, and the essence of being beyond matter. Spirit is the animating force in living things, the spiritual realm where ancestors dwell, the source of holy and unholy power, and the connection between the physical and transcendent.",
+    "properties": {
+      "color": "#9b59b6",
+      "physicalPhenomena": ["Soul", "Ghosts", "Divinity", "Holiness", "Ancestors", "Transcendence"],
+      "associatedColors": ["Purple", "Silver", "Violet"],
+      "dominantTemperature": "cool",
+      "dominantMoisture": "neutral",
+      "dominantElevation": "neutral"
+    }
+  },
+  {
+    "id": "creation.time",
+    "name": "Time",
+    "category": "creation-sphere",
+    "description": "The sphere of temporal flow, aging, duration, and causality. Time is the arrow of change, the flow from past through present to future. It governs growth and decay, prophecy and prophecy, acceleration and stasis. Time is both the measure of duration and the force that carries all things forward.",
+    "properties": {
+      "color": "#e74c3c",
+      "physicalPhenomena": ["Temporal Flow", "Aging", "Causality", "Prophecy", "Stasis", "Duration"],
+      "associatedColors": ["Red", "Bronze", "Silver"],
+      "dominantTemperature": "neutral",
+      "dominantMoisture": "neutral",
+      "dominantElevation": "neutral"
+    }
+  },
+  {
+    "id": "creation.entropy",
+    "name": "Entropy",
+    "category": "creation-sphere",
+    "description": "The sphere of decay, dissolution, randomness, and chaos. Entropy is the tendency of order to break down, of all things to tend toward disorder. It governs decay and rot, the randomness of chance, probability and luck, and the chaotic magic that defies prediction. Entropy is not evil but rather the natural tendency of the universe toward greater freedom and disorder.",
+    "properties": {
+      "color": "#34495e",
+      "physicalPhenomena": ["Decay", "Disorder", "Randomness", "Probability", "Dissolution", "Chaos"],
+      "associatedColors": ["Black", "Grey", "Deep Blue"],
+      "dominantTemperature": "volatile",
+      "dominantMoisture": "variable",
+      "dominantElevation": "variable",
+      "variationBias": 0.15
+    }
+  }
+]

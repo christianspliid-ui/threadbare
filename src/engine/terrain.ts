@@ -1,64 +1,88 @@
-import { FORCE_NAMES, type ForceVector, type ForceName, type TerrainType } from '../types';
+import type { GeoParams, TerrainType } from '../types';
 
-const DOMINANCE_THRESHOLD = 0.25;
-const SECONDARY_THRESHOLD = 0.20;
+/**
+ * Classify a biome based on geographic parameters using Whittaker-style lookup.
+ * All inputs are normalized 0.0–1.0.
+ */
+export function classifyBiome(
+  elevation: number,
+  temperature: number,
+  moisture: number
+): TerrainType {
+  // Water types: elevation < 0.25
+  if (elevation < 0.15) return 'ocean';
+  if (elevation < 0.25) return 'coastal_shallows';
 
-const BASE_TERRAIN: Record<ForceName, TerrainType> = {
-  aether: 'crystal_wastes',
-  verdance: 'deep_forest',
-  ignis: 'scorched_plains',
-  umbra: 'shadow_marsh',
-  terra: 'stone_highlands',
-};
+  // Check for inland lakes (low elevation, isolated regions)
+  if (elevation < 0.28 && moisture > 0.7) return 'lake';
 
-const MODIFIED_TERRAIN: Record<ForceName, Partial<Record<ForceName, TerrainType>>> = {
-  aether: { verdance: 'enchanted_grove', terra: 'runed_mountains' },
-  verdance: { umbra: 'haunted_wood', ignis: 'volcanic_jungle' },
-  ignis: { aether: 'lightning_fields', terra: 'forge_mountains' },
-  umbra: { verdance: 'fungal_forest', aether: 'void_rift' },
-  terra: { ignis: 'obsidian_peaks', umbra: 'buried_ruins' },
-};
-
-function getDominant(fv: ForceVector): { force: ForceName; value: number } {
-  let best: ForceName = 'aether';
-  let bestVal = -1;
-  for (const f of FORCE_NAMES) {
-    if (fv[f] > bestVal) { bestVal = fv[f]; best = f; }
+  // Lowland biomes: 0.25–0.4 elevation
+  if (elevation < 0.40) {
+    // Very wet lowlands
+    if (moisture > 0.8) {
+      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'swamp' : 'bog';
+    }
+    if (moisture > 0.65) {
+      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'dense_forest' : 'bog';
+    }
+    // Moderate moisture lowlands
+    if (moisture > 0.45) {
+      if (temperature > 0.7) return 'savanna';
+      if (temperature > 0.5) return 'grassland';
+      if (temperature > 0.3) return 'deciduous_forest';
+      return 'taiga';
+    }
+    // Dry lowlands
+    if (moisture > 0.25) {
+      if (temperature > 0.7) return 'savanna';
+      if (temperature > 0.5) return 'steppe';
+      return 'grassland';
+    }
+    // Very dry lowlands
+    if (temperature > 0.7) return 'desert';
+    if (temperature > 0.5) return 'badlands';
+    return 'steppe';
   }
-  return { force: best, value: bestVal };
+
+  // Mid-elevation biomes: 0.4–0.6 elevation
+  if (elevation < 0.60) {
+    // Wet mid-elevation
+    if (moisture > 0.7) {
+      if (temperature > 0.6) return 'jungle';
+      if (temperature > 0.3) return 'deciduous_forest';
+      return 'taiga';
+    }
+    // Moderate mid-elevation
+    if (moisture > 0.45) {
+      if (temperature > 0.6) return 'deciduous_forest';
+      if (temperature > 0.3) return 'deciduous_forest';
+      return 'taiga';
+    }
+    // Drier mid-elevation → hills
+    if (temperature > 0.65) return 'badlands';
+    return 'hills';
+  }
+
+  // Highlands: 0.6–0.8 elevation
+  if (elevation < 0.80) {
+    if (moisture > 0.6) {
+      return temperature > 0.3 ? 'hills' : 'taiga';
+    }
+    if (temperature > 0.65) return 'plateau';
+    if (temperature < 0.15) return 'glacier';
+    return 'hills';
+  }
+
+  // High mountains and extremes: > 0.8 elevation
+  if (temperature < 0.15) return 'glacier';
+  if (temperature > 0.7 && Math.random() < 0.05) return 'volcanic'; // Rare volcanic peaks
+  return 'mountains';
 }
 
-function getSecondary(fv: ForceVector, dominant: ForceName): { force: ForceName; value: number } {
-  let best: ForceName = FORCE_NAMES.find(f => f !== dominant)!;
-  let bestVal = -1;
-  for (const f of FORCE_NAMES) {
-    if (f !== dominant && fv[f] > bestVal) { bestVal = fv[f]; best = f; }
-  }
-  return { force: best, value: bestVal };
-}
-
-export function classifyTerrain(fv: ForceVector): TerrainType {
-  const dom = getDominant(fv);
-  if (dom.value < DOMINANCE_THRESHOLD) return 'contested_ground';
-  const sec = getSecondary(fv, dom.force);
-  if (sec.value >= SECONDARY_THRESHOLD) {
-    const modified = MODIFIED_TERRAIN[dom.force]?.[sec.force];
-    if (modified) return modified;
-  }
-  return BASE_TERRAIN[dom.force];
-}
-
-export function deriveTileProperties(fv: ForceVector): {
-  elevation: number; moisture: number; magicDensity: number;
-} {
-  const elevation = Math.min(1, Math.max(0,
-    fv.terra * 0.7 + fv.ignis * 0.2 + fv.aether * 0.1 - fv.umbra * 0.1 - fv.verdance * 0.05
-  ));
-  const moisture = Math.min(1, Math.max(0,
-    fv.verdance * 0.5 + fv.umbra * 0.3 - fv.ignis * 0.3 + fv.aether * 0.1 + fv.terra * 0.05
-  ));
-  const magicDensity = Math.min(1, Math.max(0,
-    fv.aether * 0.5 + fv.umbra * 0.3 + fv.ignis * 0.1 + fv.verdance * 0.05 + fv.terra * 0.05
-  ));
-  return { elevation, moisture, magicDensity };
+/**
+ * Compute secondary properties from geographic parameters.
+ * Returns additional descriptive data (currently just passes through geoParams).
+ */
+export function deriveProperties(params: GeoParams) {
+  return params;
 }

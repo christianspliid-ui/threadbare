@@ -1,6 +1,5 @@
 import { createNoise2D } from 'simplex-noise';
-import { FORCE_NAMES, type CosmologyProfile, type ForceVector, type HexCoord } from '../types';
-import { FORCE_ALLIES, FORCE_OPPOSITES } from './cosmology';
+import { SPHERE_NAMES, type CosmologyProfile, type GeoParams, type HexCoord } from '../types';
 
 function mulberry32(seed: number) {
   return () => {
@@ -11,77 +10,128 @@ function mulberry32(seed: number) {
   };
 }
 
-const NOISE_SCALE = 0.08;
-const NOISE_OCTAVES = 3;
-const NOISE_PERSISTENCE = 0.5;
-const NOISE_LACUNARITY = 2.0;
-const NOISE_AMPLITUDE = 0.3;
-const ALLY_BOOST = 0.05;
-const OPPOSE_PENALTY = 0.03;
+const ELEVATION_SCALE = 0.06;
+const ELEVATION_OCTAVES = 4;
+const ELEVATION_PERSISTENCE = 0.5;
+const ELEVATION_LACUNARITY = 2.0;
+
+const TEMP_NOISE_SCALE = 0.04;
+const TEMP_OCTAVES = 2;
+const TEMP_PERSISTENCE = 0.5;
+const TEMP_LACUNARITY = 2.0;
+
+const MOISTURE_NOISE_SCALE = 0.05;
+const MOISTURE_OCTAVES = 3;
+const MOISTURE_PERSISTENCE = 0.5;
+const MOISTURE_LACUNARITY = 2.0;
 
 function fractalNoise(
   noise2D: (x: number, y: number) => number,
   x: number,
   y: number,
+  scale: number,
+  octaves: number,
+  persistence: number,
+  lacunarity: number
 ): number {
   let value = 0;
   let amplitude = 1;
   let frequency = 1;
   let maxAmplitude = 0;
 
-  for (let o = 0; o < NOISE_OCTAVES; o++) {
-    value += noise2D(x * frequency * NOISE_SCALE, y * frequency * NOISE_SCALE) * amplitude;
+  for (let o = 0; o < octaves; o++) {
+    value += noise2D(x * frequency * scale, y * frequency * scale) * amplitude;
     maxAmplitude += amplitude;
-    amplitude *= NOISE_PERSISTENCE;
-    frequency *= NOISE_LACUNARITY;
+    amplitude *= persistence;
+    frequency *= lacunarity;
   }
 
   return value / maxAmplitude;
 }
 
-export function generateForceField(
-  coords: HexCoord[],
-  cosmology: CosmologyProfile,
+/**
+ * Generate geographic parameter field for the world.
+ * Returns a Map keyed by "col,row" with GeoParams values.
+ */
+export function generateGeoField(
+  cols: number,
+  rows: number,
   seed: number,
-): ForceVector[] {
+  cosmologyBias?: CosmologyProfile
+): Map<string, GeoParams> {
   const rng = mulberry32(seed);
-  const noisePerForce: Record<string, (x: number, y: number) => number> = {};
-  for (const f of FORCE_NAMES) {
-    const forceSeed = Math.floor(rng() * 2147483647);
-    const forceRng = mulberry32(forceSeed);
-    noisePerForce[f] = createNoise2D(() => forceRng());
+  const elevationSeed = Math.floor(rng() * 2147483647);
+  const temperatureSeed = Math.floor(rng() * 2147483647);
+  const moistureSeed = Math.floor(rng() * 2147483647);
+
+  const elevationNoise = createNoise2D(() => mulberry32(elevationSeed)());
+  const temperatureNoise = createNoise2D(() => mulberry32(temperatureSeed)());
+  const moistureNoise = createNoise2D(() => mulberry32(moistureSeed)());
+
+  const result = new Map<string, GeoParams>();
+
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; rows && row < rows; row++) {
+      // Elevation: multi-octave simplex noise
+      const elevationNoise1 = fractalNoise(
+        elevationNoise, col, row,
+        ELEVATION_SCALE, ELEVATION_OCTAVES, ELEVATION_PERSISTENCE, ELEVATION_LACUNARITY
+      );
+      let elevation = (elevationNoise1 + 1) / 2; // Normalize to [0, 1]
+      elevation = Math.max(0, Math.min(1, elevation));
+
+      // Temperature: latitude gradient + altitude penalty + noise
+      // Latitude gradient: hotter at center (row 0), colder at edges
+      const centerRow = rows / 2;
+      const latitudeGradient = 1 - Math.abs(row - centerRow) / (centerRow + 1);
+      const tempNoise = fractalNoise(
+        temperatureNoise, col, row,
+        TEMP_NOISE_SCALE, TEMP_OCTAVES, TEMP_PERSISTENCE, TEMP_LACUNARITY
+      );
+      const tempNoiseNorm = (tempNoise + 1) / 2;
+      let temperature = latitudeGradient * 0.7 + tempNoiseNorm * 0.3;
+
+      // Altitude penalty: high elevation reduces temperature
+      const altitudePenalty = Math.max(0, elevation - 0.5) * 0.4;
+      temperature = Math.max(0, Math.min(1, temperature - altitudePenalty));
+
+      // Cosmology bias: Energy → warmer
+      if (cosmologyBias && cosmologyBias.energy) {
+        temperature += cosmologyBias.energy * 0.08;
+      }
+
+      // Moisture: distance-from-ocean + rain shadow + noise
+      // Base moisture higher near low elevations (oceans/lakes)
+      const oceanDistance = Math.min(col, cols - col, row, rows - row) / Math.max(cols, rows);
+      let moisture = Math.max(0.2, 1 - elevation) * 0.5;
+      moisture += oceanDistance * 0.2;
+
+      // Noise contribution
+      const moistureNoise1 = fractalNoise(
+        moistureNoise, col, row,
+        MOISTURE_NOISE_SCALE, MOISTURE_OCTAVES, MOISTURE_PERSISTENCE, MOISTURE_LACUNARITY
+      );
+      const moistureNoiseNorm = (moistureNoise1 + 1) / 2;
+      moisture += moistureNoiseNorm * 0.3;
+
+      // Rain shadow: high elevation reduces moisture
+      if (elevation > 0.5) {
+        moisture -= (elevation - 0.5) * 0.3;
+      }
+
+      // Cosmology bias: Life → wetter, Entropy → more variation
+      if (cosmologyBias && cosmologyBias.life) {
+        moisture += cosmologyBias.life * 0.08;
+      }
+      if (cosmologyBias && cosmologyBias.entropy) {
+        moisture += (Math.random() - 0.5) * cosmologyBias.entropy * 0.1;
+      }
+
+      moisture = Math.max(0, Math.min(1, moisture));
+
+      result.set(`${col},${row}`, { elevation, temperature, moisture });
+    }
   }
 
-  return coords.map(coord => {
-    const raw: Partial<ForceVector> = {};
-
-    for (const f of FORCE_NAMES) {
-      const base = cosmology[f];
-      const noise = fractalNoise(noisePerForce[f], coord.col, coord.row) * NOISE_AMPLITUDE;
-      raw[f] = base + noise;
-    }
-
-    for (const f of FORCE_NAMES) {
-      const ally = FORCE_ALLIES[f];
-      const opposite = FORCE_OPPOSITES[f];
-      if (ally && raw[ally] !== undefined) {
-        raw[f]! += raw[ally]! * ALLY_BOOST;
-      }
-      if (opposite && raw[opposite] !== undefined) {
-        raw[f]! -= raw[opposite]! * OPPOSE_PENALTY;
-      }
-    }
-
-    const clamped: Partial<ForceVector> = {};
-    for (const f of FORCE_NAMES) {
-      clamped[f] = Math.max(0, raw[f]!);
-    }
-    const sum = FORCE_NAMES.reduce((s, f) => s + clamped[f]!, 0);
-    const normalized: Partial<ForceVector> = {};
-    for (const f of FORCE_NAMES) {
-      normalized[f] = sum > 0 ? clamped[f]! / sum : 1 / FORCE_NAMES.length;
-    }
-
-    return normalized as ForceVector;
-  });
+  return result;
 }
