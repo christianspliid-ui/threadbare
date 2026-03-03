@@ -1,6 +1,6 @@
-import { FORCE_NAMES, type CosmologyProfile, type ForceName } from '../../types';
-import { COSMOLOGY_PRESETS, adjustForce } from '../../engine/cosmology';
-import { ForceSlider } from './ForceSlider';
+import { SPHERE_NAMES, type CosmologyProfile, type SphereName } from '../../types';
+import { COSMOLOGY_PRESETS, adjustSphere } from '../../engine/cosmology';
+import { SphereSlider } from './SphereSlider';
 
 interface CosmologyPanelProps {
   cosmology: CosmologyProfile;
@@ -11,18 +11,18 @@ interface CosmologyPanelProps {
 }
 
 export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChange, onGenerate }: CosmologyPanelProps) {
-  const handleForceChange = (force: ForceName, value: number) => {
-    onCosmologyChange(adjustForce(cosmology, force, value));
+  const handleSphereChange = (sphere: SphereName, value: number) => {
+    onCosmologyChange(adjustSphere(cosmology, sphere, value));
   };
   const handlePreset = (presetName: string) => { onCosmologyChange(COSMOLOGY_PRESETS[presetName]); };
   const handleRandomSeed = () => { onSeedChange(Math.floor(Math.random() * 999999)); };
 
   return (
     <div className="bg-stone-700 border border-amber-700 rounded-xl p-5 space-y-5">
-      <h2 className="text-lg font-bold text-amber-100 tracking-wide">✧ Cosmology</h2>
+      <h2 className="text-lg font-bold text-amber-100 tracking-wide">✧ Creation Spheres</h2>
       <div className="space-y-1">
-        {FORCE_NAMES.map(force => (
-          <ForceSlider key={force} force={force} value={cosmology[force]} onChange={handleForceChange} />
+        {SPHERE_NAMES.map(sphere => (
+          <SphereSlider key={sphere} sphere={sphere} value={cosmology[sphere]} onChange={handleSphereChange} />
         ))}
       </div>
       <div>
@@ -31,7 +31,7 @@ export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChang
           {Object.keys(COSMOLOGY_PRESETS).map(name => (
             <button key={name} onClick={() => handlePreset(name)}
               className="px-3 py-1 text-xs rounded-full bg-stone-600 text-amber-200 hover:bg-stone-500 hover:text-amber-100 transition-colors border border-stone-500">
-              {name.replace('_', ' ')}
+              {name.replace(/_/g, ' ')}
             </button>
           ))}
         </div>

@@ -4,38 +4,56 @@ import {
   normalizeCosmology,
   COSMOLOGY_PRESETS,
 } from '../cosmology';
-import { FORCE_NAMES, type CosmologyProfile } from '../../types';
+import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 
 describe('createBalancedCosmology', () => {
   it('returns equal weights summing to 1.0', () => {
     const c = createBalancedCosmology();
-    const sum = FORCE_NAMES.reduce((s, f) => s + c[f], 0);
+    const sum = SPHERE_NAMES.reduce((s, sp) => s + c[sp], 0);
     expect(sum).toBeCloseTo(1.0);
-    expect(c.aether).toBeCloseTo(0.2);
-    expect(c.verdance).toBeCloseTo(0.2);
+    expect(c.force).toBeCloseTo(1 / 8);
+    expect(c.matter).toBeCloseTo(1 / 8);
   });
 });
 
 describe('normalizeCosmology', () => {
   it('normalizes weights to sum to 1.0', () => {
-    const raw: CosmologyProfile = { aether: 2, verdance: 3, ignis: 1, umbra: 2, terra: 2 };
+    const raw: CosmologyProfile = {
+      force: 2,
+      matter: 3,
+      energy: 1,
+      life: 2,
+      mind: 2,
+      spirit: 1,
+      time: 1,
+      entropy: 1,
+    };
     const n = normalizeCosmology(raw);
-    const sum = FORCE_NAMES.reduce((s, f) => s + n[f], 0);
+    const sum = SPHERE_NAMES.reduce((s, sp) => s + n[sp], 0);
     expect(sum).toBeCloseTo(1.0);
-    expect(n.verdance).toBeCloseTo(0.3);
+    expect(n.matter).toBeCloseTo(3 / 13);
   });
 
   it('handles all-zero input by returning balanced', () => {
-    const raw: CosmologyProfile = { aether: 0, verdance: 0, ignis: 0, umbra: 0, terra: 0 };
+    const raw: CosmologyProfile = {
+      force: 0,
+      matter: 0,
+      energy: 0,
+      life: 0,
+      mind: 0,
+      spirit: 0,
+      time: 0,
+      entropy: 0,
+    };
     const n = normalizeCosmology(raw);
-    expect(n.aether).toBeCloseTo(0.2);
+    expect(n.force).toBeCloseTo(1 / 8);
   });
 });
 
 describe('COSMOLOGY_PRESETS', () => {
   it('all presets sum to 1.0', () => {
     for (const [name, preset] of Object.entries(COSMOLOGY_PRESETS)) {
-      const sum = FORCE_NAMES.reduce((s, f) => s + preset[f], 0);
+      const sum = SPHERE_NAMES.reduce((s, sp) => s + preset[sp], 0);
       expect(sum, `Preset "${name}" doesn't sum to 1.0`).toBeCloseTo(1.0);
     }
   });

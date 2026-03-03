@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { blendForceColors, FORCE_COLORS, hexToRgb, rgbToHex } from '../color';
-import type { ForceVector } from '../../types';
+import { BIOME_COLORS, hexToRgb, rgbToHex } from '../color';
 
 describe('hexToRgb / rgbToHex', () => {
   it('round-trips correctly', () => {
@@ -8,16 +7,26 @@ describe('hexToRgb / rgbToHex', () => {
   });
 });
 
-describe('blendForceColors', () => {
-  it('returns pure force color when one force dominates completely', () => {
-    const fv: ForceVector = { aether: 1, verdance: 0, ignis: 0, umbra: 0, terra: 0 };
-    const color = blendForceColors(fv);
-    expect(color).toBe(FORCE_COLORS.aether.primary.toLowerCase());
+describe('BIOME_COLORS', () => {
+  it('all terrain types have valid hex color codes', () => {
+    Object.entries(BIOME_COLORS).forEach(([, color]) => {
+      expect(color).toMatch(/^#[0-9a-f]{6}$/i);
+    });
   });
 
-  it('returns a valid hex color string', () => {
-    const fv: ForceVector = { aether: 0.2, verdance: 0.2, ignis: 0.2, umbra: 0.2, terra: 0.2 };
-    const color = blendForceColors(fv);
-    expect(color).toMatch(/^#[0-9a-f]{6}$/);
+  it('has colors for all 22 biome types', () => {
+    expect(Object.keys(BIOME_COLORS).length).toBe(22);
+  });
+
+  it('ocean has a blue color', () => {
+    expect(BIOME_COLORS.ocean).toBe('#4477aa');
+  });
+
+  it('grassland has a green-yellow color', () => {
+    expect(BIOME_COLORS.grassland).toBe('#c8d87a');
+  });
+
+  it('mountains has a grey-brown color', () => {
+    expect(BIOME_COLORS.mountains).toBe('#8a7a6a');
   });
 });

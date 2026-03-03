@@ -1,44 +1,49 @@
 import { describe, it, expect } from 'vitest';
-import { classifyTerrain, deriveTileProperties } from '../terrain';
-import type { ForceVector } from '../../types';
+import { classifyBiome } from '../terrain';
 
-describe('classifyTerrain', () => {
-  it('returns crystal_wastes for aether-dominant', () => {
-    const fv: ForceVector = { aether: 0.6, verdance: 0.1, ignis: 0.1, umbra: 0.1, terra: 0.1 };
-    expect(classifyTerrain(fv)).toBe('crystal_wastes');
+describe('classifyBiome', () => {
+  it('returns ocean for very low elevation', () => {
+    const biome = classifyBiome(0.1, 0.5, 0.5);
+    expect(biome).toBe('ocean');
   });
 
-  it('returns enchanted_grove for aether + verdance secondary', () => {
-    const fv: ForceVector = { aether: 0.4, verdance: 0.25, ignis: 0.1, umbra: 0.1, terra: 0.15 };
-    expect(classifyTerrain(fv)).toBe('enchanted_grove');
+  it('returns coastal_shallows for low elevation', () => {
+    const biome = classifyBiome(0.2, 0.5, 0.5);
+    expect(biome).toBe('coastal_shallows');
   });
 
-  it('returns contested_ground when no force dominates', () => {
-    const fv: ForceVector = { aether: 0.20, verdance: 0.20, ignis: 0.20, umbra: 0.20, terra: 0.20 };
-    expect(classifyTerrain(fv)).toBe('contested_ground');
+  it('returns grassland for moderate elevation, moderate moisture, cool-warm temp', () => {
+    const biome = classifyBiome(0.35, 0.55, 0.55);
+    expect(biome).toBe('grassland');
   });
 
-  it('returns deep_forest for verdance-dominant', () => {
-    const fv: ForceVector = { aether: 0.05, verdance: 0.7, ignis: 0.05, umbra: 0.1, terra: 0.1 };
-    expect(classifyTerrain(fv)).toBe('deep_forest');
-  });
-});
-
-describe('deriveTileProperties', () => {
-  it('returns elevation, moisture, and magicDensity in [0,1]', () => {
-    const fv: ForceVector = { aether: 0.3, verdance: 0.2, ignis: 0.1, umbra: 0.1, terra: 0.3 };
-    const props = deriveTileProperties(fv);
-    expect(props.elevation).toBeGreaterThanOrEqual(0);
-    expect(props.elevation).toBeLessThanOrEqual(1);
-    expect(props.moisture).toBeGreaterThanOrEqual(0);
-    expect(props.moisture).toBeLessThanOrEqual(1);
-    expect(props.magicDensity).toBeGreaterThanOrEqual(0);
-    expect(props.magicDensity).toBeLessThanOrEqual(1);
+  it('returns jungle for low elevation, high moisture, hot temperature', () => {
+    const biome = classifyBiome(0.3, 0.8, 0.85);
+    expect(biome).toBe('jungle');
   });
 
-  it('terra-heavy hex has high elevation', () => {
-    const fv: ForceVector = { aether: 0.05, verdance: 0.05, ignis: 0.05, umbra: 0.05, terra: 0.8 };
-    const props = deriveTileProperties(fv);
-    expect(props.elevation).toBeGreaterThan(0.5);
+  it('returns desert for moderate elevation, very low moisture, hot temperature', () => {
+    const biome = classifyBiome(0.35, 0.8, 0.1);
+    expect(biome).toBe('desert');
+  });
+
+  it('returns mountains for high elevation', () => {
+    const biome = classifyBiome(0.85, 0.5, 0.5);
+    expect(biome).toBe('mountains');
+  });
+
+  it('returns glacier for high elevation with cold temperature', () => {
+    const biome = classifyBiome(0.85, 0.1, 0.5);
+    expect(biome).toBe('glacier');
+  });
+
+  it('returns deciduous_forest for moderate elevation, moderate moisture, temperate temp', () => {
+    const biome = classifyBiome(0.45, 0.45, 0.65);
+    expect(biome).toBe('deciduous_forest');
+  });
+
+  it('returns tundra for any elevation with frozen temperature', () => {
+    const biome = classifyBiome(0.3, 0.1, 0.4);
+    expect(biome).toBe('tundra');
   });
 });
