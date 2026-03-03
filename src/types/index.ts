@@ -1,12 +1,18 @@
-/** The five governing forces of the world */
-export const FORCE_NAMES = ['aether', 'verdance', 'ignis', 'umbra', 'terra'] as const;
-export type ForceName = typeof FORCE_NAMES[number];
+/** The 8 Creation Spheres of the world */
+export const SPHERE_NAMES = [
+  'force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'
+] as const;
+export type SphereName = typeof SPHERE_NAMES[number];
 
-/** A vector of force saturations — one value per force */
-export type ForceVector = Record<ForceName, number>;
+/** Geographic parameters normalized 0.0–1.0 */
+export interface GeoParams {
+  elevation: number;
+  temperature: number;
+  moisture: number;
+}
 
-/** The player's cosmology configuration — force weights summing to 1.0 */
-export type CosmologyProfile = ForceVector;
+/** The player's cosmology configuration — sphere weights summing to 1.0 */
+export type CosmologyProfile = Record<SphereName, number>;
 
 /** Offset hex coordinates */
 export interface HexCoord {
@@ -21,27 +27,30 @@ export interface CubeCoord {
   s: number;
 }
 
-/** Terrain types derived from dominant force + secondary modifier */
+/** Naturalistic biome types (22 types) */
 export type TerrainType =
-  | 'crystal_wastes' | 'enchanted_grove' | 'runed_mountains'
-  | 'deep_forest' | 'haunted_wood' | 'volcanic_jungle'
-  | 'scorched_plains' | 'lightning_fields' | 'forge_mountains'
-  | 'shadow_marsh' | 'fungal_forest' | 'void_rift'
-  | 'stone_highlands' | 'obsidian_peaks' | 'buried_ruins'
-  | 'contested_ground';
+  // Water
+  | 'ocean' | 'coastal_shallows' | 'lake' | 'river'
+  // Lowlands
+  | 'grassland' | 'farmland' | 'savanna' | 'steppe'
+  // Forest
+  | 'deciduous_forest' | 'dense_forest' | 'taiga' | 'jungle'
+  // Wet
+  | 'swamp' | 'bog'
+  // Elevated
+  | 'hills' | 'mountains' | 'plateau' | 'badlands'
+  // Extreme
+  | 'desert' | 'tundra' | 'glacier' | 'volcanic';
 
 /** A single hex tile with all computed properties */
 export interface HexTile {
   coord: HexCoord;
-  forces: ForceVector;
+  geoParams: GeoParams;
   terrain: TerrainType;
-  elevation: number;
-  moisture: number;
-  magicDensity: number;
 }
 
 /** Force overlay display modes */
-export type OverlayMode = 'none' | 'single' | 'all';
+export type OverlayMode = 'none';
 
 /** Grid dimensions */
 export interface GridSize {

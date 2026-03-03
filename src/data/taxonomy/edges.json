@@ -1,0 +1,1040 @@
+[
+  {
+    "source": "foundation.chaos",
+    "target": "foundation.darkness",
+    "type": "rel.underpins",
+    "weight": 1.0
+  },
+  {
+    "source": "foundation.chaos",
+    "target": "foundation.light",
+    "type": "rel.underpins",
+    "weight": 1.0
+  },
+  {
+    "source": "foundation.darkness",
+    "target": "foundation.light",
+    "type": "rel.opposes",
+    "weight": 1.0
+  },
+  {
+    "source": "foundation.darkness",
+    "target": "foundation.shadow",
+    "type": "rel.emerges-from",
+    "weight": 0.5
+  },
+  {
+    "source": "foundation.light",
+    "target": "foundation.shadow",
+    "type": "rel.emerges-from",
+    "weight": 0.5
+  },
+  {
+    "source": "foundation.chaos",
+    "target": "creation.entropy",
+    "type": "rel.underpins",
+    "weight": 0.8
+  },
+  {
+    "source": "foundation.darkness",
+    "target": "creation.spirit",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "foundation.light",
+    "target": "creation.energy",
+    "type": "rel.biome-affinity",
+    "weight": 0.7
+  },
+  {
+    "source": "foundation.shadow",
+    "target": "creation.mind",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.air",
+    "type": "rel.generates",
+    "weight": 1.0
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.earth",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.lightning",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.weather",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.teleportation",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.force",
+    "target": "magic.warding",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.earth",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.ice",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.plant",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.transmutation",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.enchantment",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.binding",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.matter",
+    "target": "magic.rune",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.fire",
+    "type": "rel.generates",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.lightning",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.ice",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.water",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.holy",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.illusion",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.transmutation",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.energy",
+    "target": "magic.enchantment",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.plant",
+    "type": "rel.generates",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.animal",
+    "type": "rel.generates",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.healing",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.druidism",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.poison",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.weather",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.shamanism",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.transmutation",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.blood",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.life",
+    "target": "magic.restoration",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.psionics",
+    "type": "rel.generates",
+    "weight": 0.95
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.illusion",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.dreamcraft",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.divination",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.animal",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.enchantment",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.demonology",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.rune",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.mind",
+    "target": "magic.ascension",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.shamanism",
+    "type": "rel.generates",
+    "weight": 0.85
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.necromancy",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.holy",
+    "type": "rel.generates",
+    "weight": 0.85
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.healing",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.dreamcraft",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.demonology",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.warding",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.summoning",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.blood",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.corruption",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.restoration",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.spirit",
+    "target": "magic.ascension",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.time",
+    "target": "magic.chronomancy",
+    "type": "rel.generates",
+    "weight": 1.0
+  },
+  {
+    "source": "creation.time",
+    "target": "magic.divination",
+    "type": "rel.generates",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.time",
+    "target": "magic.teleportation",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.time",
+    "target": "magic.dreamcraft",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.time",
+    "target": "magic.ascension",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.entropy",
+    "target": "magic.luck",
+    "type": "rel.generates",
+    "weight": 1.0
+  },
+  {
+    "source": "creation.entropy",
+    "target": "magic.necromancy",
+    "type": "rel.generates",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.entropy",
+    "target": "magic.chaos",
+    "type": "rel.generates",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.entropy",
+    "target": "magic.poison",
+    "type": "rel.generates",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.entropy",
+    "target": "magic.corruption",
+    "type": "rel.generates",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.fire",
+    "target": "magic.chaos",
+    "type": "rel.amplifies",
+    "weight": 0.6
+  },
+  {
+    "source": "magic.ice",
+    "target": "magic.fire",
+    "type": "rel.opposes",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.fire",
+    "target": "magic.plant",
+    "type": "rel.suppresses",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.water",
+    "target": "magic.fire",
+    "type": "rel.suppresses",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.air",
+    "target": "magic.lightning",
+    "type": "rel.amplifies",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.healing",
+    "target": "magic.necromancy",
+    "type": "rel.opposes",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.holy",
+    "target": "magic.necromancy",
+    "type": "rel.opposes",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.holy",
+    "target": "magic.demonology",
+    "type": "rel.opposes",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.demonology",
+    "target": "magic.corruption",
+    "type": "rel.amplifies",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.restoration",
+    "target": "magic.corruption",
+    "type": "rel.opposes",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.shamanism",
+    "target": "magic.druidism",
+    "type": "rel.amplifies",
+    "weight": 0.6
+  },
+  {
+    "source": "magic.enchantment",
+    "target": "magic.warding",
+    "type": "rel.amplifies",
+    "weight": 0.5
+  },
+  {
+    "source": "magic.rune",
+    "target": "magic.warding",
+    "type": "rel.amplifies",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.transmutation",
+    "target": "magic.enchantment",
+    "type": "rel.amplifies",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.force",
+    "target": "terrain.grassland",
+    "type": "rel.biome-affinity",
+    "weight": 0.3
+  },
+  {
+    "source": "creation.matter",
+    "target": "terrain.mountains",
+    "type": "rel.biome-affinity",
+    "weight": 0.85
+  },
+  {
+    "source": "creation.matter",
+    "target": "terrain.hills",
+    "type": "rel.biome-affinity",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.matter",
+    "target": "terrain.plateau",
+    "type": "rel.biome-affinity",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.matter",
+    "target": "terrain.badlands",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.matter",
+    "target": "terrain.volcanic",
+    "type": "rel.biome-affinity",
+    "weight": 0.75
+  },
+  {
+    "source": "creation.energy",
+    "target": "terrain.desert",
+    "type": "rel.biome-affinity",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.energy",
+    "target": "terrain.volcanic",
+    "type": "rel.biome-affinity",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.energy",
+    "target": "terrain.badlands",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.deciduous_forest",
+    "type": "rel.biome-affinity",
+    "weight": 0.85
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.dense_forest",
+    "type": "rel.biome-affinity",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.jungle",
+    "type": "rel.biome-affinity",
+    "weight": 0.95
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.swamp",
+    "type": "rel.biome-affinity",
+    "weight": 0.8
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.grassland",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.savanna",
+    "type": "rel.biome-affinity",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.life",
+    "target": "terrain.farmland",
+    "type": "rel.biome-affinity",
+    "weight": 0.7
+  },
+  {
+    "source": "creation.mind",
+    "target": "terrain.dense_forest",
+    "type": "rel.biome-affinity",
+    "weight": 0.4
+  },
+  {
+    "source": "creation.spirit",
+    "target": "terrain.bog",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.spirit",
+    "target": "terrain.mountains",
+    "type": "rel.biome-affinity",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.time",
+    "target": "terrain.glacier",
+    "type": "rel.biome-affinity",
+    "weight": 0.4
+  },
+  {
+    "source": "creation.entropy",
+    "target": "terrain.desert",
+    "type": "rel.biome-affinity",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.entropy",
+    "target": "terrain.badlands",
+    "type": "rel.biome-affinity",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.entropy",
+    "target": "terrain.volcanic",
+    "type": "rel.biome-affinity",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.grassland",
+    "target": "terrain.hills",
+    "type": "rel.adjacent",
+    "weight": 1.0
+  },
+  {
+    "source": "terrain.grassland",
+    "target": "terrain.deciduous_forest",
+    "type": "rel.adjacent",
+    "weight": 1.0
+  },
+  {
+    "source": "terrain.grassland",
+    "target": "terrain.farmland",
+    "type": "rel.adjacent",
+    "weight": 0.9
+  },
+  {
+    "source": "terrain.grassland",
+    "target": "terrain.savanna",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.grassland",
+    "target": "terrain.steppe",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.deciduous_forest",
+    "target": "terrain.dense_forest",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.deciduous_forest",
+    "target": "terrain.taiga",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.deciduous_forest",
+    "target": "terrain.hills",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.dense_forest",
+    "target": "terrain.jungle",
+    "type": "rel.adjacent",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.dense_forest",
+    "target": "terrain.swamp",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.taiga",
+    "target": "terrain.tundra",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.jungle",
+    "target": "terrain.swamp",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.swamp",
+    "target": "terrain.bog",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.swamp",
+    "target": "terrain.lake",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.hills",
+    "target": "terrain.mountains",
+    "type": "rel.adjacent",
+    "weight": 0.9
+  },
+  {
+    "source": "terrain.hills",
+    "target": "terrain.plateau",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.mountains",
+    "target": "terrain.plateau",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.mountains",
+    "target": "terrain.taiga",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.mountains",
+    "target": "terrain.glacier",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.plateau",
+    "target": "terrain.badlands",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.badlands",
+    "target": "terrain.desert",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.badlands",
+    "target": "terrain.steppe",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.desert",
+    "target": "terrain.steppe",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.desert",
+    "target": "terrain.savanna",
+    "type": "rel.adjacent",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.tundra",
+    "target": "terrain.glacier",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.tundra",
+    "target": "terrain.taiga",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.glacier",
+    "target": "terrain.mountains",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.volcanic",
+    "target": "terrain.badlands",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.volcanic",
+    "target": "terrain.desert",
+    "type": "rel.adjacent",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.volcanic",
+    "target": "terrain.mountains",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.ocean",
+    "target": "terrain.coastal_shallows",
+    "type": "rel.adjacent",
+    "weight": 1.0
+  },
+  {
+    "source": "terrain.coastal_shallows",
+    "target": "terrain.grassland",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.coastal_shallows",
+    "target": "terrain.savanna",
+    "type": "rel.adjacent",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.coastal_shallows",
+    "target": "terrain.jungle",
+    "type": "rel.adjacent",
+    "weight": 0.6
+  },
+  {
+    "source": "terrain.lake",
+    "target": "terrain.river",
+    "type": "rel.contains",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.river",
+    "target": "terrain.grassland",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.river",
+    "target": "terrain.deciduous_forest",
+    "type": "rel.adjacent",
+    "weight": 0.7
+  },
+  {
+    "source": "terrain.river",
+    "target": "terrain.swamp",
+    "type": "rel.adjacent",
+    "weight": 0.8
+  },
+  {
+    "source": "terrain.savanna",
+    "target": "terrain.steppe",
+    "type": "rel.adjacent",
+    "weight": 0.5
+  },
+  {
+    "source": "terrain.farmland",
+    "target": "terrain.grassland",
+    "type": "rel.adjacent",
+    "weight": 0.9
+  },
+  {
+    "source": "creation.force",
+    "target": "creation.matter",
+    "type": "rel.amplifies",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.force",
+    "target": "creation.entropy",
+    "type": "rel.amplifies",
+    "weight": 0.6
+  },
+  {
+    "source": "creation.energy",
+    "target": "creation.matter",
+    "type": "rel.amplifies",
+    "weight": 0.4
+  },
+  {
+    "source": "creation.life",
+    "target": "creation.matter",
+    "type": "rel.amplifies",
+    "weight": 0.5
+  },
+  {
+    "source": "creation.entropy",
+    "target": "creation.life",
+    "type": "rel.suppresses",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.fire",
+    "target": "magic.holy",
+    "type": "rel.amplifies",
+    "weight": 0.5
+  },
+  {
+    "source": "magic.lightning",
+    "target": "magic.fire",
+    "type": "rel.amplifies",
+    "weight": 0.4
+  },
+  {
+    "source": "magic.water",
+    "target": "magic.healing",
+    "type": "rel.amplifies",
+    "weight": 0.6
+  },
+  {
+    "source": "magic.plant",
+    "target": "magic.healing",
+    "type": "rel.amplifies",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.plant",
+    "target": "magic.druidism",
+    "type": "rel.amplifies",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.earth",
+    "target": "magic.warding",
+    "type": "rel.amplifies",
+    "weight": 0.6
+  },
+  {
+    "source": "magic.psionics",
+    "target": "magic.illusion",
+    "type": "rel.amplifies",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.earth",
+    "target": "terrain.mountains",
+    "type": "rel.draws-from",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.water",
+    "target": "terrain.ocean",
+    "type": "rel.draws-from",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.water",
+    "target": "terrain.lake",
+    "type": "rel.draws-from",
+    "weight": 0.8
+  },
+  {
+    "source": "magic.water",
+    "target": "terrain.river",
+    "type": "rel.draws-from",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.plant",
+    "target": "terrain.jungle",
+    "type": "rel.draws-from",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.plant",
+    "target": "terrain.dense_forest",
+    "type": "rel.draws-from",
+    "weight": 0.85
+  },
+  {
+    "source": "magic.fire",
+    "target": "terrain.volcanic",
+    "type": "rel.draws-from",
+    "weight": 0.9
+  },
+  {
+    "source": "magic.ice",
+    "target": "terrain.glacier",
+    "type": "rel.draws-from",
+    "weight": 0.95
+  },
+  {
+    "source": "magic.ice",
+    "target": "terrain.tundra",
+    "type": "rel.draws-from",
+    "weight": 0.85
+  },
+  {
+    "source": "magic.shamanism",
+    "target": "terrain.jungle",
+    "type": "rel.draws-from",
+    "weight": 0.6
+  },
+  {
+    "source": "magic.shamanism",
+    "target": "terrain.grassland",
+    "type": "rel.draws-from",
+    "weight": 0.5
+  },
+  {
+    "source": "magic.necromancy",
+    "target": "terrain.bog",
+    "type": "rel.draws-from",
+    "weight": 0.7
+  },
+  {
+    "source": "magic.necromancy",
+    "target": "terrain.swamp",
+    "type": "rel.draws-from",
+    "weight": 0.6
+  }
+]

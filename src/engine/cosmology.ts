@@ -1,62 +1,123 @@
-import { FORCE_NAMES, type CosmologyProfile, type ForceName } from '../types';
+import { SPHERE_NAMES, type CosmologyProfile, type SphereName } from '../types';
 
 export function createBalancedCosmology(): CosmologyProfile {
-  const weight = 1.0 / FORCE_NAMES.length;
-  return Object.fromEntries(FORCE_NAMES.map(f => [f, weight])) as CosmologyProfile;
+  const weight = 1.0 / SPHERE_NAMES.length;
+  return Object.fromEntries(SPHERE_NAMES.map(s => [s, weight])) as CosmologyProfile;
 }
 
 export function normalizeCosmology(profile: CosmologyProfile): CosmologyProfile {
-  const sum = FORCE_NAMES.reduce((s, f) => s + profile[f], 0);
+  const sum = SPHERE_NAMES.reduce((s, sp) => s + profile[sp], 0);
   if (sum === 0) return createBalancedCosmology();
   return Object.fromEntries(
-    FORCE_NAMES.map(f => [f, profile[f] / sum])
+    SPHERE_NAMES.map(sp => [sp, profile[sp] / sum])
   ) as CosmologyProfile;
 }
 
-export function adjustForce(
+export function adjustSphere(
   profile: CosmologyProfile,
-  force: ForceName,
+  sphere: SphereName,
   newValue: number
 ): CosmologyProfile {
   const clamped = Math.max(0, Math.min(1, newValue));
   const remaining = 1.0 - clamped;
-  const othersSum = FORCE_NAMES
-    .filter(f => f !== force)
-    .reduce((s, f) => s + profile[f], 0);
+  const othersSum = SPHERE_NAMES
+    .filter(s => s !== sphere)
+    .reduce((s, sp) => s + profile[sp], 0);
 
-  const result = { ...profile, [force]: clamped };
+  const result = { ...profile, [sphere]: clamped };
   if (othersSum === 0) {
-    const share = remaining / (FORCE_NAMES.length - 1);
-    FORCE_NAMES.filter(f => f !== force).forEach(f => { result[f] = share; });
+    const share = remaining / (SPHERE_NAMES.length - 1);
+    SPHERE_NAMES.filter(s => s !== sphere).forEach(s => { result[s] = share; });
   } else {
-    FORCE_NAMES.filter(f => f !== force).forEach(f => {
-      result[f] = (profile[f] / othersSum) * remaining;
+    SPHERE_NAMES.filter(s => s !== sphere).forEach(s => {
+      result[s] = (profile[s] / othersSum) * remaining;
     });
   }
   return result;
 }
 
-export const FORCE_ALLIES: Record<ForceName, ForceName | null> = {
-  aether: 'umbra',
-  umbra: 'aether',
-  verdance: 'terra',
-  terra: 'verdance',
-  ignis: null,
+// Cosmology sphere allies and opposites (for future magic system)
+export const SPHERE_ALLIES: Record<SphereName, SphereName | null> = {
+  force: 'matter',
+  matter: 'force',
+  energy: 'life',
+  life: 'energy',
+  mind: 'spirit',
+  spirit: 'mind',
+  time: 'entropy',
+  entropy: 'time',
 };
 
-export const FORCE_OPPOSITES: Record<ForceName, ForceName | null> = {
-  aether: 'terra',
-  terra: 'aether',
-  verdance: 'umbra',
-  umbra: 'verdance',
-  ignis: null,
+export const SPHERE_OPPOSITES: Record<SphereName, SphereName | null> = {
+  force: 'energy',
+  matter: 'spirit',
+  energy: 'force',
+  life: 'entropy',
+  mind: 'time',
+  spirit: 'matter',
+  time: 'mind',
+  entropy: 'life',
 };
 
 export const COSMOLOGY_PRESETS: Record<string, CosmologyProfile> = {
-  balanced:          { aether: 0.20, verdance: 0.20, ignis: 0.20, umbra: 0.20, terra: 0.20 },
-  arcane_dominance:  { aether: 0.40, verdance: 0.10, ignis: 0.15, umbra: 0.25, terra: 0.10 },
-  wild_growth:       { aether: 0.10, verdance: 0.40, ignis: 0.10, umbra: 0.10, terra: 0.30 },
-  scorched:          { aether: 0.10, verdance: 0.05, ignis: 0.45, umbra: 0.15, terra: 0.25 },
-  shadowed:          { aether: 0.20, verdance: 0.10, ignis: 0.10, umbra: 0.45, terra: 0.15 },
-  fortress_world:    { aether: 0.10, verdance: 0.15, ignis: 0.15, umbra: 0.10, terra: 0.50 },
+  balanced: {
+    force: 0.125,
+    matter: 0.125,
+    energy: 0.125,
+    life: 0.125,
+    mind: 0.125,
+    spirit: 0.125,
+    time: 0.125,
+    entropy: 0.125,
+  },
+  elemental_dominance: {
+    force: 0.20,
+    matter: 0.20,
+    energy: 0.25,
+    life: 0.10,
+    mind: 0.08,
+    spirit: 0.08,
+    time: 0.04,
+    entropy: 0.05,
+  },
+  living_world: {
+    force: 0.10,
+    matter: 0.12,
+    energy: 0.10,
+    life: 0.30,
+    mind: 0.12,
+    spirit: 0.15,
+    time: 0.08,
+    entropy: 0.03,
+  },
+  mystic_realm: {
+    force: 0.08,
+    matter: 0.05,
+    energy: 0.12,
+    life: 0.10,
+    mind: 0.25,
+    spirit: 0.28,
+    time: 0.10,
+    entropy: 0.02,
+  },
+  entropic: {
+    force: 0.12,
+    matter: 0.08,
+    energy: 0.15,
+    life: 0.05,
+    mind: 0.08,
+    spirit: 0.08,
+    time: 0.12,
+    entropy: 0.32,
+  },
+  material: {
+    force: 0.22,
+    matter: 0.35,
+    energy: 0.12,
+    life: 0.08,
+    mind: 0.08,
+    spirit: 0.08,
+    time: 0.04,
+    entropy: 0.03,
+  },
 };

@@ -1,7 +1,7 @@
 import type { CosmologyProfile, HexTile } from '../types';
 import { generateHexGrid } from '../lib/hexMath';
-import { generateForceField } from './forceField';
-import { classifyTerrain, deriveTileProperties } from './terrain';
+import { generateGeoField } from './forceField';
+import { classifyBiome } from './terrain';
 
 export function generateWorld(
   cosmology: CosmologyProfile,
@@ -10,12 +10,20 @@ export function generateWorld(
   seed: number,
 ): HexTile[] {
   const coords = generateHexGrid(cols, rows);
-  const forceField = generateForceField(coords, cosmology, seed);
+  const geoField = generateGeoField(cols, rows, seed, cosmology);
 
-  return coords.map((coord, i) => {
-    const forces = forceField[i];
-    const terrain = classifyTerrain(forces);
-    const { elevation, moisture, magicDensity } = deriveTileProperties(forces);
-    return { coord, forces, terrain, elevation, moisture, magicDensity };
+  return coords.map(coord => {
+    const geoParams = geoField.get(`${coord.col},${coord.row}`);
+    if (!geoParams) {
+      throw new Error(`Missing geo params for coord ${coord.col},${coord.row}`);
+    }
+
+    const terrain = classifyBiome(
+      geoParams.elevation,
+      geoParams.temperature,
+      geoParams.moisture
+    );
+
+    return { coord, geoParams, terrain };
   });
 }

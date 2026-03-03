@@ -1,24 +1,30 @@
 import type { HexTile, TerrainType } from '../../types';
-import { blendForceColors } from '../../engine/color';
+import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints } from '../../lib/hexMath';
 
 const TERRAIN_ICONS: Record<TerrainType, string> = {
-  crystal_wastes: '✦',
-  enchanted_grove: '◆',
-  runed_mountains: '◉',
-  deep_forest: '🌲',
-  haunted_wood: '🌲',
-  volcanic_jungle: '🌴',
-  scorched_plains: '🔥',
-  lightning_fields: '⚡',
-  forge_mountains: '⛰',
-  shadow_marsh: '〰',
-  fungal_forest: '🍄',
-  void_rift: '◎',
-  stone_highlands: '▲',
-  obsidian_peaks: '▲',
-  buried_ruins: '⌂',
-  contested_ground: '⚔',
+  ocean: '🌊',
+  coastal_shallows: '🐚',
+  grassland: '🌾',
+  farmland: '🌾',
+  deciduous_forest: '🌲',
+  dense_forest: '🌳',
+  taiga: '🌲',
+  jungle: '🌴',
+  swamp: '🪷',
+  bog: '🪨',
+  hills: '⛰️',
+  mountains: '🏔️',
+  desert: '🏜️',
+  tundra: '❄️',
+  glacier: '🧊',
+  savanna: '🦁',
+  steppe: '🐎',
+  volcanic: '🌋',
+  plateau: '🪨',
+  badlands: '🏜️',
+  lake: '💧',
+  river: '🏞️',
 };
 
 interface HexTileProps {
@@ -37,7 +43,7 @@ export function HexTileComponent({
   tile, cx, cy, size, isHovered = false, isSelected = false,
   onClick, onMouseEnter, onMouseLeave,
 }: HexTileProps) {
-  const fillColor = blendForceColors(tile.forces);
+  const fillColor = BIOME_COLORS[tile.terrain];
   const strokeColor = 'rgba(139, 105, 60, 0.3)';
   const points = hexPolygonPoints(cx, cy, size);
   const icon = TERRAIN_ICONS[tile.terrain] || '·';

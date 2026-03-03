@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
-import type { HexTile, HexCoord, ForceName, OverlayMode } from '../../types';
-import { hexToPixel, hexPolygonPoints } from '../../lib/hexMath';
+import type { HexTile, HexCoord, OverlayMode } from '../../types';
+import { hexToPixel } from '../../lib/hexMath';
 import { HexTileComponent } from './HexTile';
-import { forceOverlayColor } from '../../engine/color';
 
 interface HexMapProps {
   tiles: HexTile[];
@@ -12,14 +11,13 @@ interface HexMapProps {
   hoveredHex: HexCoord | null;
   selectedHex: HexCoord | null;
   overlayMode: OverlayMode;
-  selectedForce: ForceName | null;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
 }
 
 export function HexMap({
   tiles, cols, rows, hexSize = 30,
-  hoveredHex, selectedHex, overlayMode, selectedForce,
+  hoveredHex, selectedHex, overlayMode,
   onHexClick, onHexHover,
 }: HexMapProps) {
   const { width, height } = useMemo(() => {
@@ -49,18 +47,6 @@ export function HexMap({
               onClick={() => onHexClick(tile.coord)}
               onMouseEnter={() => onHexHover(tile.coord)}
               onMouseLeave={() => onHexHover(null)}
-            />
-          );
-        })}
-        {overlayMode === 'single' && selectedForce && tiles.map((tile) => {
-          const { x, y } = hexToPixel(tile.coord, hexSize);
-          const intensity = tile.forces[selectedForce];
-          return (
-            <polygon
-              key={`overlay-${tile.coord.col}-${tile.coord.row}`}
-              points={hexPolygonPoints(x, y, hexSize)}
-              fill={forceOverlayColor(selectedForce, intensity)}
-              pointerEvents="none"
             />
           );
         })}
