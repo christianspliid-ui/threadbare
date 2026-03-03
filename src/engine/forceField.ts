@@ -124,7 +124,7 @@ export function generateGeoField(
         moisture += cosmologyBias.life * 0.08;
       }
       if (cosmologyBias && cosmologyBias.entropy) {
-        moisture += (Math.random() - 0.5) * cosmologyBias.entropy * 0.1;
+        moisture += (rng() - 0.5) * cosmologyBias.entropy * 0.1;
       }
 
       moisture = Math.max(0, Math.min(1, moisture));

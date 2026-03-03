@@ -9,6 +9,11 @@ export function classifyBiome(
   temperature: number,
   moisture: number
 ): TerrainType {
+  // Frozen terrain override: tundra and glacier for very cold temperatures
+  if (temperature < 0.15) {
+    return elevation > 0.8 ? 'glacier' : 'tundra';
+  }
+
   // Water types: elevation < 0.25
   if (elevation < 0.15) return 'ocean';
   if (elevation < 0.25) return 'coastal_shallows';
