@@ -12,8 +12,8 @@ import {
   checkTierPromotion,
   dropAgent,
 } from '../influence';
-import type { SphereAlignment, EssencePool } from '../../types/influence';
-import { TIER_MAINTENANCE, TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
+import type { SphereAlignment } from '../../types/influence';
+import { TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
 
 describe('Essence Pool', () => {

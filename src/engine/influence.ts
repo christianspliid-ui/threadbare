@@ -7,7 +7,7 @@
 
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
-import type { EssencePool, EssenceGeneration, SphereAlignment, InfluenceTier, InfluenceRelationshipProperties } from '../types/influence';
+import type { EssencePool, EssenceGeneration, SphereAlignment, InfluenceTier } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
   ESSENCE_PER_WORSHIPPER,
