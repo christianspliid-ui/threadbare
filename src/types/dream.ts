@@ -1,5 +1,5 @@
 import type { SphereName } from './index';
-import type { ValuePair, ActionCandidate } from './agent';
+import type { ActionCandidate } from './agent';
 import type { InfluenceTier } from './influence';
 import type { ActorType } from './graph';
 

@@ -3,11 +3,6 @@ import type {
   DreamManipulation,
   ManipulationType,
   InterventionType,
-  InterventionDefinition,
-  AlignmentFactor,
-  TierModifier,
-  InterventionCost,
-  InterventionResult,
   DivineInfluence,
 } from '../../types/dream';
 import {
