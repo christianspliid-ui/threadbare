@@ -11,6 +11,7 @@ import {
   runTick,
   resetEventCounter,
 } from '../orchestrator';
+import { startTwilight, runTwilightTick, computeHarvest, transitionToNewCycle } from '../cycleEnd';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
 import { generateRivals, createRivalState } from '../rival';
@@ -236,5 +237,57 @@ describe('Orchestrator', () => {
       state = runTick(state);
     }
     expect(state.phase).toBe('twilight');
+  });
+});
+
+describe('Full game loop integration', () => {
+  it('runs a complete cycle: play → doom expires → twilight → harvest → transition → new cycle', () => {
+    resetEventCounter();
+
+    // Start with a short doom clock
+    let state = createTestGameState();
+    state.doomClock = { ...state.doomClock, totalTicks: 30 };
+
+    // ── Playing phase ──
+    let ticksPlayed = 0;
+    while (state.phase === 'playing' && ticksPlayed < 50) {
+      state = runTick(state);
+      ticksPlayed++;
+    }
+
+    // Should have transitioned to twilight
+    expect(state.phase).toBe('twilight');
+    expect(ticksPlayed).toBeLessThanOrEqual(35); // doom should expire around tick 30
+
+    // Verify some events were generated during play
+    expect(state.recentEvents.length).toBeGreaterThan(0);
+
+    // ── Twilight phase ──
+    state = startTwilight(state);
+    let twilightComplete = false;
+    while (!twilightComplete) {
+      const result = runTwilightTick(state);
+      state = result.state;
+      twilightComplete = result.complete;
+    }
+    expect(state.phase).toBe('harvest');
+
+    // ── Harvest ──
+    const harvest = computeHarvest(state);
+    expect(harvest.cosmicEchoCandidates.length).toBeGreaterThan(0);
+    expect(harvest.harvestType).toBeDefined();
+
+    // ── Transition ──
+    const cosmicEchoes = harvest.cosmicEchoCandidates.map(c => c.echoDefinition);
+    state = transitionToNewCycle(state, cosmicEchoes, [], harvest.chronicleSummary);
+
+    expect(state.cycle).toBe(2);
+    expect(state.tick).toBe(0);
+    expect(state.echoDefinitions.length).toBeGreaterThan(0);
+    expect(state.chronicle.volumes.length).toBe(1);
+
+    // ── New cycle: verify echoes persist ──
+    expect(state.echoStates.length).toBeGreaterThan(0);
+    expect(state.chronicleEntries).toHaveLength(0); // reset for new cycle
   });
 });
