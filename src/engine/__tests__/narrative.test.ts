@@ -12,6 +12,12 @@ import {
   SPHERE_VOCABULARY,
   NARRATIVE_TIERS,
 } from '../../types/narrative';
+import {
+  generateRoutineProse,
+  pickSphereWord,
+  generateNotableProse,
+  buildChronicleEntry,
+} from '../narrative';
 
 describe('narrative type definitions', () => {
   it('exports all 3 narrative tiers', () => {
@@ -52,5 +58,123 @@ describe('narrative type definitions', () => {
       tick: 100,
     };
     expect(entry.tier).toBe('chronicle');
+  });
+});
+
+describe('routine prose generation (tier 1)', () => {
+  it('generates prose for action_resolved events', () => {
+    const context: ProseContext = {
+      actorName: 'Thane Volkar',
+      targetName: 'the Border Fortress',
+      sphere: 'force',
+    };
+    const prose = generateRoutineProse('action_resolved', context, 42);
+    expect(prose.text.length).toBeGreaterThan(10);
+    expect(prose.text).toContain('Volkar');
+    expect(prose.tier).toBe('routine');
+    expect(prose.voice).toBe('third_person_omniscient');
+  });
+
+  it('generates prose for trait_acquired events', () => {
+    const context: ProseContext = {
+      actorName: 'Kira the Scout',
+      sphere: 'mind',
+    };
+    const prose = generateRoutineProse('trait_acquired', context, 42);
+    expect(prose.text.length).toBeGreaterThan(10);
+    expect(prose.tier).toBe('routine');
+  });
+
+  it('generates prose for divine_intervention events with second person', () => {
+    const context: ProseContext = {
+      actorName: 'a sleeping warrior',
+      sphere: 'spirit',
+    };
+    const prose = generateRoutineProse('divine_intervention', context, 42);
+    expect(prose.text.length).toBeGreaterThan(10);
+    expect(prose.voice).toBe('second_person');
+  });
+
+  it('pickSphereWord returns a word from the sphere vocabulary', () => {
+    const adj = pickSphereWord('force', 'adjectives', 42);
+    expect(typeof adj).toBe('string');
+    expect(adj.length).toBeGreaterThan(0);
+  });
+
+  it('generates deterministically for same seed', () => {
+    const context: ProseContext = { actorName: 'Volkar', sphere: 'force' };
+    const a = generateRoutineProse('action_resolved', context, 99);
+    const b = generateRoutineProse('action_resolved', context, 99);
+    expect(a.text).toBe(b.text);
+  });
+});
+
+describe('notable prose generation (tier 2)', () => {
+  it('generates longer prose than routine', () => {
+    const context: ProseContext = {
+      actorName: 'Champion Arven',
+      targetName: 'the Crystal Spire',
+      sphere: 'energy',
+      dominantValues: ['courage_prudence', 'devotion_independence'],
+    };
+    const prose = generateNotableProse('action_critical', context, 42);
+    expect(prose.text.length).toBeGreaterThan(50);
+    expect(prose.tier).toBe('notable');
+  });
+
+  it('includes personality flavoring when values provided', () => {
+    const context: ProseContext = {
+      actorName: 'The Cunning Fox',
+      sphere: 'mind',
+      dominantValues: ['cunning_honesty'],
+    };
+    const prose = generateNotableProse('trait_acquired', context, 42);
+    expect(prose.text.length).toBeGreaterThan(30);
+  });
+
+  it('uses dramatic present for doom events', () => {
+    const context: ProseContext = {
+      locationName: 'the Northern Reach',
+      sphere: 'entropy',
+    };
+    const prose = generateNotableProse('doom_escalation', context, 42);
+    expect(prose.voice).toBe('dramatic_present');
+  });
+});
+
+describe('chronicle prompt builder (tier 3)', () => {
+  it('builds a chronicle entry with structured prompt context', () => {
+    const entry = buildChronicleEntry({
+      id: 'chron_1',
+      title: 'The Fall of Iron Gate',
+      actors: ['Thane Volkar', 'The Iron Judge'],
+      location: 'Iron Gate Fortress',
+      sphere: 'force',
+      mood: 'tragic',
+      tick: 100,
+      previousEvents: ['The siege began', 'Defenders rallied'],
+    });
+
+    expect(entry.tier).toBe('chronicle');
+    expect(entry.title).toBe('The Fall of Iron Gate');
+    expect(entry.promptContext.actors).toEqual(['Thane Volkar', 'The Iron Judge']);
+    expect(entry.promptContext.sphere).toBe('force');
+    expect(entry.promptContext.mood).toBe('tragic');
+    expect(entry.prose).toBe('');
+  });
+
+  it('includes previous events for narrative continuity', () => {
+    const entry = buildChronicleEntry({
+      id: 'chron_2',
+      title: 'The Ascension',
+      actors: ['Kira'],
+      location: 'The Crystal Spire',
+      sphere: 'spirit',
+      mood: 'triumphant',
+      tick: 200,
+      previousEvents: ['The trial of faith', 'The burning vision'],
+    });
+
+    expect(entry.promptContext.previousEvents).toHaveLength(2);
   });
 });
