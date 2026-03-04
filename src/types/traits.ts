@@ -42,3 +42,16 @@ export interface TraitAssignmentProperties {
   source: string;                // what caused acquisition
   visibility: TraitVisibility;
 }
+
+/** 10-tier narrative lexicon per domain */
+export const NARRATIVE_LEXICON: Record<ReachDomain, string[]> = {
+  iron:   ['Frail', 'Soft', 'Sturdy', 'Trained', 'Steeled', 'Tempered', 'Fearsome', 'Dread', 'Ruinous', 'Cataclysmic'],
+  gold:   ['Destitute', 'Poor', 'Thrifty', 'Comfortable', 'Prosperous', 'Wealthy', 'Affluent', 'Magnate', 'Sovereign', 'Imperial'],
+  shadow: ['Exposed', 'Clumsy', 'Cautious', 'Sly', 'Veiled', 'Shadowed', 'Masked', 'Spectral', 'Invisible', 'Void'],
+  veil:   ['Mundane', 'Dull', 'Touched', 'Sensitive', 'Gifted', 'Adept', 'Arcane', 'Eldritch', 'Transcendent', 'Mythic'],
+  heart:  ['Hollow', 'Cold', 'Warm', 'Kind', 'Devoted', 'Inspiring', 'Radiant', 'Luminous', 'Incandescent', 'Absolute'],
+  eye:    ['Blind', 'Dim', 'Keen', 'Alert', 'Perceptive', 'Watchful', 'Prescient', 'Oracular', 'Omniscient', 'All-Seeing'],
+  stone:  ['Rootless', 'Loose', 'Grounded', 'Settled', 'Rooted', 'Entrenched', 'Enduring', 'Immovable', 'Eternal', 'Primordial'],
+  star:   ['Godless', 'Doubting', 'Pious', 'Faithful', 'Devoted', 'Blessed', 'Anointed', 'Exalted', 'Sacred', 'Divine'],
+  flesh:  ['Frail', 'Weak', 'Hardy', 'Tough', 'Vigorous', 'Robust', 'Mighty', 'Titanic', 'Undying', 'Deathless'],
+};
