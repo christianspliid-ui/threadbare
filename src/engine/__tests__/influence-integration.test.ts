@@ -56,6 +56,11 @@ describe('Ascendant Lifecycle Integration', () => {
     let totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
     expect(totalEssence).toBeCloseTo(10.0, 1);
 
+    // Persist accumulated pool back to graph (pool is mutated in-place by generateEssence)
+    graph.updateNode(ascendantId, {
+      properties: { ...ascNode.properties, essencePool: pool },
+    });
+
     // Ensure primary sphere has enough for recruitment
     const alignment = (ascNode.properties as AscendantProperties).sphereAlignment;
     if (pool[alignment.primary] < RECRUIT_COST) {
@@ -93,7 +98,11 @@ describe('Ascendant Lifecycle Integration', () => {
 
     // ── Process maintenance for 30 ticks (enough to promote to tier 2) ──
     for (let tick = 11; tick <= 40; tick++) {
-      // Generate essence first (multiple times to ensure enough for maintenance)
+      // Generate essence multiple times per tick to ensure the primary sphere
+      // accumulates enough for tier-1 maintenance (0.5/tick). With 1 worshipper,
+      // total generation is 1.1/tick, but the primary sphere only gets 35% = 0.385,
+      // which is below the 0.5 maintenance cost. In a real game, places of power
+      // or more worshippers would cover this gap.
       for (let i = 0; i < 5; i++) {
         const gen = computeEssenceGeneration(graph, ascendantId);
         generateEssence(pool, gen, computeMaxEssence(graph, ascendantId));
