@@ -335,3 +335,151 @@ describe('Echo degradation & injection', () => {
     expect(injections[0].strength).toBeCloseTo(0.7);
   });
 });
+
+import {
+  createGreatChronicle,
+  createVolume,
+  addChapter,
+  addInterlude,
+  closeVolume,
+  addEchoThreadAppearance,
+} from '../chronicle';
+
+describe('Echo + Chronicle integration: multi-cycle lifecycle', () => {
+  it('simulates 3 cycles of echo creation, degradation, injection, and chronicle assembly', () => {
+    // ── Setup ────────────────────────────────────────────────
+    let echoDefinitions: EchoDefinition[] = [];
+    let echoStates: EchoState[] = [];
+    let chronicle: GreatChronicle = createGreatChronicle();
+
+    // ── Cycle 1: Create echoes, start chronicle ─────────────
+    chronicle = createVolume(chronicle, 1, 'breach');
+    chronicle = addChapter(chronicle, {
+      id: 'ch_001', title: 'The Fall of Ardenmor', prose: 'Darkness consumed...',
+      tick: 30, significance: 0.9, spheres: ['entropy'], actorIds: ['actor_hero'],
+    });
+    chronicle = addInterlude(chronicle, {
+      id: 'int_001', summary: 'Peace reigned briefly.', tickRange: { start: 1, end: 29 }, eventCount: 15,
+    });
+    chronicle = closeVolume(chronicle, 'The breach was sealed, but at great cost.');
+
+    // Create 3 echoes from cycle 1
+    const echoDef1 = buildEchoDefinition(
+      'echo_001',
+      { id: 'actor_hero', type: 'actor', name: 'Kael the Unbroken', properties: {} },
+      'cosmic', 1, 0.92, ['force', 'life']
+    );
+    const echoDef2 = buildEchoDefinition(
+      'echo_002',
+      { id: 'loc_fortress', type: 'location', name: 'Ardenmor Keep', properties: {} },
+      'cosmic', 1, 0.78, ['matter']
+    );
+    const echoDef3 = buildEchoDefinition(
+      'echo_003',
+      { id: 'artifact_shield', type: 'artifact', name: 'The Aegis of Dawn', properties: {} },
+      'divine', 1, 0.85, ['spirit', 'force']
+    );
+
+    echoDefinitions.push(echoDef1, echoDef2, echoDef3);
+    echoStates.push(
+      createEchoState('echo_001'),
+      createEchoState('echo_002'),
+      createEchoState('echo_003')
+    );
+
+    // Record echo threads
+    chronicle = addEchoThreadAppearance(chronicle, 'echo_001', 1, 'vol_001', 'Kael defended the breach.');
+    chronicle = addEchoThreadAppearance(chronicle, 'echo_003', 1, 'vol_001', 'The Aegis was raised against the darkness.');
+
+    expect(echoStates.every(s => s.degradation === 0)).toBe(true);
+
+    // ── Cycle 2: Degrade, collect injections, add new echoes ──
+    echoStates = degradeAllEchoes(echoStates);
+    expect(echoStates[0].degradation).toBeCloseTo(0.15);
+    expect(echoStates[0].faded).toBe(false);
+
+    // Collect active injections
+    let injections = collectInjections(echoDefinitions, echoStates);
+    expect(injections).toHaveLength(3); // all still active
+
+    // Verify injection strength reflects degradation
+    expect(injections[0].strength).toBeCloseTo(0.85);
+
+    // Chronicle cycle 2
+    chronicle = createVolume(chronicle, 2, 'convergence');
+    chronicle = addChapter(chronicle, {
+      id: 'ch_002', title: 'The Gathering', prose: 'Forces aligned...',
+      tick: 45, significance: 0.85, spheres: ['mind', 'spirit'], actorIds: ['actor_sage'],
+    });
+    chronicle = closeVolume(chronicle, 'All paths converged at the nexus.');
+
+    // Echo thread continues
+    chronicle = addEchoThreadAppearance(chronicle, 'echo_001', 2, 'vol_002',
+      'Myths of Kael inspired a new order of defenders.');
+
+    // Add new echo from cycle 2
+    const echoDef4 = buildEchoDefinition(
+      'echo_004',
+      { id: 'actor_sage', type: 'actor', name: 'Mirael the Seer', properties: {} },
+      'cosmic', 2, 0.88, ['mind', 'time']
+    );
+    echoDefinitions.push(echoDef4);
+    echoStates.push(createEchoState('echo_004'));
+
+    // ── Cycle 3: More degradation ───────────────────────────
+    echoStates = degradeAllEchoes(echoStates);
+    expect(echoStates[0].degradation).toBeCloseTo(0.30); // echo_001: 2 cycles
+    expect(echoStates[3].degradation).toBeCloseTo(0.15); // echo_004: 1 cycle
+
+    injections = collectInjections(echoDefinitions, echoStates);
+    expect(injections).toHaveLength(4); // all still active at 0.30 max
+
+    // Chronicle cycle 3
+    chronicle = createVolume(chronicle, 3, 'failing');
+    chronicle = closeVolume(chronicle, 'The world dimmed quietly.');
+
+    // ── Cycle 4-7: Fast-forward degradation ─────────────────
+    for (let cycle = 4; cycle <= 7; cycle++) {
+      echoStates = degradeAllEchoes(echoStates);
+    }
+    // echo_001: degradation = 0.15 * 6 = 0.90 → faded!
+    expect(echoStates[0].degradation).toBeCloseTo(0.90);
+    expect(echoStates[0].faded).toBe(true);
+
+    // echo_002: same age → also faded
+    expect(echoStates[1].faded).toBe(true);
+
+    // echo_003: same age → also faded
+    expect(echoStates[2].faded).toBe(true);
+
+    // echo_004: degradation = 0.15 * 5 = 0.75 → still active
+    expect(echoStates[3].faded).toBe(false);
+
+    // Prune faded echoes
+    echoStates = pruneEchoes(echoStates);
+    expect(echoStates).toHaveLength(1);
+    expect(echoStates[0].id).toBe('echo_004');
+
+    // Only echo_004 produces injections now
+    injections = collectInjections(echoDefinitions, echoStates);
+    expect(injections).toHaveLength(1);
+    expect(injections[0].echoId).toBe('echo_004');
+    expect(injections[0].strength).toBeCloseTo(0.25);
+
+    // ── Verify chronicle structure ──────────────────────────
+    expect(chronicle.volumes).toHaveLength(3);
+    expect(chronicle.volumes[0].title).toBe('Volume I: The Age of the Breach');
+    expect(chronicle.volumes[1].title).toBe('Volume II: The Age of the Convergence');
+    expect(chronicle.volumes[2].title).toBe('Volume III: The Age of the Failing');
+
+    expect(chronicle.echoThreads).toHaveLength(2); // echo_001 and echo_003
+    const kaelThread = chronicle.echoThreads.find(t => t.echoId === 'echo_001');
+    expect(kaelThread).toBeDefined();
+    expect(kaelThread!.appearances).toHaveLength(2); // cycles 1 and 2
+
+    // Verify chapters and interludes
+    expect(chronicle.volumes[0].chapters).toHaveLength(1);
+    expect(chronicle.volumes[0].interludes).toHaveLength(1);
+    expect(chronicle.volumes[0].harvestSummary).toBe('The breach was sealed, but at great cost.');
+  });
+});
