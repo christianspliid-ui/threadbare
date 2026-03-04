@@ -67,10 +67,12 @@ import {
   computeInterventionCost,
   applyDreamManipulations,
   validateManipulation,
+  executeIntervention,
+  computeDetection,
 } from '../dream';
 import type { AxiologicalProfile, ActionCandidate } from '../../types/agent';
 import type { EssencePool } from '../../types/influence';
-import type { DreamManipulation, ManipulationType } from '../../types/dream';
+import type { DreamManipulation, ManipulationType, InterventionType } from '../../types/dream';
 import type { InfluenceTier } from '../../types/influence';
 import { createEmptyEssencePool } from '../influence';
 
@@ -273,5 +275,77 @@ describe('applyDreamManipulations', () => {
     expect(result[0].templateId).toBe('march_negotiate');
     const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
     expect(total).toBeCloseTo(1.0, 2);
+  });
+});
+
+describe('computeDetection', () => {
+  it('returns detected=false when roll exceeds detection risk', () => {
+    const result = computeDetection('dream', 0, 0.5);
+    expect(result.detected).toBe(false);
+    expect(result.detectedBy).toBe('none');
+  });
+
+  it('returns mortal detection when roll is below base risk', () => {
+    const result = computeDetection('coincidence', 0, 0.1);
+    expect(result.detected).toBe(true);
+    expect(result.detectedBy).toBe('mortal');
+  });
+
+  it('increases detection risk with frequency bonus', () => {
+    const result = computeDetection('dream', 5, 0.3);
+    expect(result.detected).toBe(true);
+  });
+
+  it('caps detection probability at 0.95', () => {
+    const result = computeDetection('dream', 100, 0.96);
+    expect(result.detected).toBe(false);
+  });
+});
+
+describe('executeIntervention', () => {
+  it('spends essence and returns success when affordable', () => {
+    const pool = { ...createEmptyEssencePool(), mind: 20 };
+    const result = executeIntervention({
+      interventionType: 'dream',
+      sphere: 'mind',
+      baseCost: 1,
+      alignmentFactor: 1.0,
+      actorType: 'individual',
+      pool,
+      detectionRoll: 0.99,
+    });
+    expect(result.success).toBe(true);
+    expect(result.essenceSpent.mind).toBeCloseTo(1.0);
+    expect(result.detected).toBe(false);
+  });
+
+  it('fails without spending essence when unaffordable', () => {
+    const pool = { ...createEmptyEssencePool(), force: 0.5 };
+    const result = executeIntervention({
+      interventionType: 'intimidate',
+      sphere: 'force',
+      baseCost: 2,
+      alignmentFactor: 2.0,
+      actorType: 'faction',
+      pool,
+      detectionRoll: 0.5,
+    });
+    expect(result.success).toBe(false);
+    expect(result.essenceSpent.force).toBe(0);
+  });
+
+  it('generates narrativeHook matching intervention type', () => {
+    const pool = { ...createEmptyEssencePool(), spirit: 50 };
+    const result = executeIntervention({
+      interventionType: 'omen',
+      sphere: 'spirit',
+      baseCost: 2,
+      alignmentFactor: 1.0,
+      actorType: 'individual',
+      pool,
+      detectionRoll: 0.99,
+    });
+    expect(result.success).toBe(true);
+    expect(result.narrativeHook).toContain('omen');
   });
 });
