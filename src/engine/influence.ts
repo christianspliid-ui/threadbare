@@ -7,15 +7,18 @@
 
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
-import type { EssencePool, EssenceGeneration, SphereAlignment } from '../types/influence';
+import type { EssencePool, EssenceGeneration, SphereAlignment, InfluenceTier, InfluenceRelationshipProperties } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
   ESSENCE_PER_WORSHIPPER,
   ESSENCE_PER_PLACE_OF_POWER,
   BASE_MAX_ESSENCE,
   MAX_ESSENCE_PER_WORSHIPPER,
+  TIER_MAINTENANCE,
+  TIER_PROMOTION_THRESHOLDS,
 } from '../types/influence';
 import type { WorldGraph } from './graph';
+import { assignTrait } from './traits';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
@@ -123,4 +126,184 @@ export function computeEssenceGeneration(
 export function computeMaxEssence(graph: WorldGraph, ascendantId: string): number {
   const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
   return BASE_MAX_ESSENCE + worshipEdges.length * MAX_ESSENCE_PER_WORSHIPPER;
+}
+
+// ─── Tier Queries ────────────────────────────────────────────────────
+
+/** Get the current influence tier of an actor relative to an ascendant. Returns 0 if no relationship. */
+export function getInfluenceTier(
+  graph: WorldGraph,
+  ascendantId: string,
+  actorId: string
+): InfluenceTier {
+  const edges = graph.getOutgoingEdges(actorId, 'worships');
+  const worshipEdge = edges.find((e) => e.target === ascendantId);
+  if (!worshipEdge) return 0;
+  return (worshipEdge.properties.tier as InfluenceTier) ?? 0;
+}
+
+// ─── Maintenance ─────────────────────────────────────────────────────
+
+export interface MaintenanceResult {
+  maintenancePaid: string[];
+  maintenanceFailed: string[];
+  totalEssenceSpent: number;
+}
+
+/**
+ * Process maintenance for all of an ascendant's influenced actors.
+ * Deducts essence from the ascendant's primary sphere for each agent.
+ * Mutates graph edge properties and ascendant's essencePool.
+ */
+export function processInfluenceMaintenance(
+  graph: WorldGraph,
+  ascendantId: string,
+  _currentTick: number
+): MaintenanceResult {
+  const ascendant = graph.getNode(ascendantId);
+  if (!ascendant) throw new Error(`Ascendant not found: ${ascendantId}`);
+
+  const pool = ascendant.properties.essencePool as EssencePool;
+  const alignment = ascendant.properties.sphereAlignment as SphereAlignment;
+  const primarySphere = alignment.primary;
+
+  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
+  const result: MaintenanceResult = {
+    maintenancePaid: [],
+    maintenanceFailed: [],
+    totalEssenceSpent: 0,
+  };
+
+  for (const edge of worshipEdges) {
+    const tier = edge.properties.tier as InfluenceTier;
+    const cost = TIER_MAINTENANCE[tier];
+
+    if (cost === 0 || canAfford(pool, primarySphere, cost)) {
+      if (cost > 0) {
+        spendEssence(pool, primarySphere, cost);
+        result.totalEssenceSpent += cost;
+      }
+
+      graph.updateEdge(edge.id, {
+        properties: {
+          ...edge.properties,
+          ticksAtCurrentTier: (edge.properties.ticksAtCurrentTier as number) + 1,
+          totalEssenceSpent: (edge.properties.totalEssenceSpent as number) + cost,
+          maintenanceCurrent: true,
+        },
+      });
+      result.maintenancePaid.push(edge.source);
+    } else {
+      graph.updateEdge(edge.id, {
+        properties: {
+          ...edge.properties,
+          maintenanceCurrent: false,
+        },
+      });
+      result.maintenanceFailed.push(edge.source);
+    }
+  }
+
+  // Write updated pool back
+  graph.updateNode(ascendantId, {
+    properties: { ...ascendant.properties, essencePool: pool },
+  });
+
+  return result;
+}
+
+// ─── Tier Promotion ──────────────────────────────────────────────────
+
+/**
+ * Check all influenced actors for tier promotion.
+ * Promotes actors whose ticksAtCurrentTier meets the threshold for the next tier.
+ * Returns list of promoted actor IDs.
+ */
+export function checkTierPromotion(graph: WorldGraph, ascendantId: string): string[] {
+  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
+  const promoted: string[] = [];
+
+  for (const edge of worshipEdges) {
+    const tier = edge.properties.tier as InfluenceTier;
+    const ticks = edge.properties.ticksAtCurrentTier as number;
+    const maintenanceCurrent = edge.properties.maintenanceCurrent as boolean;
+
+    if (tier >= 4) continue; // can't promote past 4
+    if (!maintenanceCurrent) continue; // must be current on maintenance
+
+    const nextTier = (tier + 1) as InfluenceTier;
+    const threshold = TIER_PROMOTION_THRESHOLDS[nextTier];
+
+    if (ticks >= threshold) {
+      graph.updateEdge(edge.id, {
+        properties: {
+          ...edge.properties,
+          tier: nextTier,
+          ticksAtCurrentTier: 0, // reset counter
+        },
+      });
+      promoted.push(edge.source);
+    }
+  }
+
+  return promoted;
+}
+
+// ─── Drop Agent ──────────────────────────────────────────────────────
+
+export interface DropResult {
+  agentId: string;
+  tierWhenDropped: InfluenceTier;
+  narrativeConsequence: 'minimal' | 'crisis_of_faith' | 'wild_card' | 'catastrophic_severance';
+  scarTraitAssigned: boolean;
+}
+
+const DROP_CONSEQUENCES: Record<InfluenceTier, DropResult['narrativeConsequence']> = {
+  0: 'minimal',
+  1: 'minimal',
+  2: 'crisis_of_faith',
+  3: 'wild_card',
+  4: 'catastrophic_severance',
+};
+
+/**
+ * Drop an agent — remove the worships edge and apply consequences.
+ * Higher-tier drops produce more dramatic narrative consequences.
+ */
+export function dropAgent(
+  graph: WorldGraph,
+  ascendantId: string,
+  agentId: string,
+  currentTick: number
+): DropResult {
+  const edges = graph.getIncomingEdges(ascendantId, 'worships');
+  const worshipEdge = edges.find((e) => e.source === agentId);
+
+  if (!worshipEdge) {
+    return { agentId, tierWhenDropped: 0, narrativeConsequence: 'minimal', scarTraitAssigned: false };
+  }
+
+  const tier = worshipEdge.properties.tier as InfluenceTier;
+  const consequence = DROP_CONSEQUENCES[tier];
+
+  // Remove the relationship
+  graph.removeEdge(worshipEdge.id);
+
+  // Assign scar trait for tier 2+
+  let scarAssigned = false;
+  if (tier >= 2) {
+    const scarTraitId = 'trait.abandoned_by_divine';
+    const scarNode = graph.getNode(scarTraitId);
+    if (scarNode) {
+      assignTrait(graph, agentId, scarTraitId, { tick: currentTick, source: ascendantId });
+      scarAssigned = true;
+    }
+  }
+
+  return {
+    agentId,
+    tierWhenDropped: tier,
+    narrativeConsequence: consequence,
+    scarTraitAssigned: scarAssigned,
+  };
 }
