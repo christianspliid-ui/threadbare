@@ -140,6 +140,10 @@ export class WorldGraph {
     return result;
   }
 
+  getAllEdges(): GraphEdge[] {
+    return Array.from(this.edges.values());
+  }
+
   getNeighborIds(nodeId: string): string[] {
     const neighbors = new Set<string>();
     for (const edge of this.getOutgoingEdges(nodeId)) {
