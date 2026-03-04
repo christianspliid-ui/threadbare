@@ -43,6 +43,19 @@ describe('Essence Pool', () => {
     expect(result).toBe(false);
     expect(pool.force).toBe(2);
   });
+
+  it('canAfford rejects negative costs', () => {
+    const pool = createEmptyEssencePool();
+    pool.force = 5;
+    expect(() => canAfford(pool, 'force', -3)).toThrow('non-negative');
+  });
+
+  it('spendEssence rejects negative costs', () => {
+    const pool = createEmptyEssencePool();
+    pool.force = 5;
+    expect(() => spendEssence(pool, 'force', -3)).toThrow('non-negative');
+    expect(pool.force).toBe(5);
+  });
 });
 
 describe('Essence Generation', () => {
