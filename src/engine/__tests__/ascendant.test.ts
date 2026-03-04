@@ -4,7 +4,7 @@ import {
   generateArchetypes,
   createAscendant,
 } from '../ascendant';
-import type { AscendantArchetype, AscendantCreationConfig, AvatarConfig, AscendantProperties } from '../../types/influence';
+import type { AscendantArchetype, AscendantCreationConfig, AscendantProperties } from '../../types/influence';
 import { SPHERE_NAMES } from '../../types/index';
 
 describe('Ascendant Archetype Generation', () => {

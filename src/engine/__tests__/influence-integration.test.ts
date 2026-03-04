@@ -44,7 +44,7 @@ describe('Ascendant Lifecycle Integration', () => {
 
     // ── Generate essence over 10 ticks ──
     const ascNode = graph.getNode(ascendantId)!;
-    let pool = (ascNode.properties as AscendantProperties).essencePool;
+    const pool = (ascNode.properties as AscendantProperties).essencePool;
     const maxEssence = computeMaxEssence(graph, ascendantId);
 
     for (let tick = 0; tick < 10; tick++) {
@@ -53,7 +53,7 @@ describe('Ascendant Lifecycle Integration', () => {
     }
 
     // Should have ~10 total essence (1.0 per tick × 10 ticks)
-    let totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
+    const totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
     expect(totalEssence).toBeCloseTo(10.0, 1);
 
     // Persist accumulated pool back to graph (pool is mutated in-place by generateEssence)
