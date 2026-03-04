@@ -62,11 +62,11 @@ describe('Dream Interface + Agent Selection integration', () => {
       },
     });
 
-    return { graph, profile };
+    return { profile };
   }
 
   it('full flow: validate → cost → manipulate → select', () => {
-    const { graph, profile } = buildScenario();
+    const { profile } = buildScenario();
 
     const candidates: ActionCandidate[] = [
       { templateId: 'march_fortress', targetId: 'loc_1', domain: 'iron', score: 10,
