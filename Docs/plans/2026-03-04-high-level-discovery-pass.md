@@ -367,6 +367,82 @@ Player Layer
 
 ---
 
+## Content Pipeline Architecture
+
+**Philosophy:** Generated within constraints as the basis, with player iteration control and a feedback loop for quality improvement.
+
+### Generation Model
+
+All content surfaces (traits, artifacts, locations, prose, names, cultures, doom clock events, mandate instances) use **constraint-based generation** rather than hand-authoring at scale.
+
+**Four constraint layers (outermost → innermost):**
+
+1. **Schema constraints** — Structural validity. A trait must have a domain, magnitude, and tier. A sub-location must have an encounter type and difficulty range. The generator cannot produce structurally invalid content.
+
+2. **Tonal constraints** — Vocabulary banks per domain and sphere. Iron domain pulls from martial/industrial word pools. Heart domain pulls from emotional/relational pools. Foundation sphere tints register: Chaos = wilder synonyms, Order = formal/structured, Light = clarity/radiance, Darkness = concealment/depth.
+
+3. **Balance constraints** — Magnitude ranges, cost curves, rarity distributions, power budgets. A generator cannot produce a trait that gives +0.8 to all domains. These are the game design guardrails that keep generated content mechanically fair.
+
+4. **Coherence constraints** — Relational rules that check context. A necromantic culture cannot generate "fears the undead." A desert hex cannot generate a "dense forest" sub-location. A Chaos-aligned rival cannot use Order-flavored intervention descriptions.
+
+**Authored seeds** establish the quality bar. The 30 starter traits, 9 origin species, 7 doom clock archetypes, and 10-tier narrative lexicon are all seeds. Generators learn the *pattern* from seeds and produce variants within constraints.
+
+### Player Iteration Control
+
+Players can refine generated content through four mechanisms:
+
+| Mechanism | Description | Applies To |
+|-----------|-------------|-----------|
+| **Regenerate** | "Give me another" within same constraints | Names, descriptions, flavor text, archetypes |
+| **Lock + Regenerate** | Lock one field, regenerate the rest | Partial content (keep name, change effect description) |
+| **Edit** | Direct text editing of cosmetic fields | Names, descriptions, flavor text only |
+| **Parameter Nudge** | Bias generators via sliders/toggles ("more martial," "darker tone") | Culture generation, region flavor, Chronicle rewrites |
+
+**Iteration boundaries:** Players can modify names, descriptions, flavor text, and tonal parameters. Players **cannot** modify mechanical values (trait magnitudes, resolution probabilities, doom clock timing), graph structure (node connections), or victory mandate requirements. This preserves game integrity while giving full cosmetic agency.
+
+**Key iteration surfaces:**
+- Ascendant creation: archetype generation → pick and tweak
+- World generation: region/culture names, location descriptions, NPC archetypes
+- Chronicle entries: LLM prose → request rewrite with different emphasis
+- Artifact/relic naming and lore
+- Doom clock escalation flavor text
+
+### Content Feedback System
+
+A live quality feedback loop built into the game UI.
+
+**Player-facing — flag button on any generated content, three flag types:**
+- **Tone miss** — "This doesn't fit" (wrong mood, breaks immersion, feels generic)
+- **Coherence break** — "This contradicts something" (desert culture referencing forests, pacifist with military trait)
+- **Quality issue** — "This is bad" (awkward phrasing, repetitive, nonsensical)
+
+**Backend triage pipeline:**
+1. **Capture** — Content ID + flag type + context snapshot (screen state, constraint set that produced it, surrounding content)
+2. **Auto-classify** (agent) — Four categories:
+   - *Constraint gap* — Rules allowed something they shouldn't → propose new constraint rule
+   - *Generator weakness* — Rules fine, output quality low → log for prompt tuning / vocabulary expansion
+   - *Subjective preference* — Content is valid, player didn't like it → feed into per-player preference profile
+   - *Actual bug* — System error → file bug report
+3. **Constraint refinement** — Constraint gaps produce candidate rules for review. Generator weaknesses produce vocabulary/template expansion tasks. Subjective preferences tune per-player tone profiles (optional).
+4. **Aggregation** — Cross-player patterns surface systematic issues. "70% flag Iron Chronicle entries as repetitive" → Iron vocabulary bank needs expansion.
+
+**Timing:** The agent triages for the next generation cycle, not in real-time. The player's **regenerate** button gives immediate relief. The feedback loop improves the *system* over time.
+
+### Content Source Tagging
+
+Every piece of content carries a `source` field:
+
+| Tag | Meaning |
+|-----|---------|
+| `seed` | Hand-authored exemplar (designer-created) |
+| `generated` | Produced by constraint-based generator |
+| `player-edited` | Modified by player (original preserved for diff) |
+| `regenerated` | Player requested new version (previous version logged) |
+
+This enables analytics: which content types need better generators vs. better seeds, which constraint layers catch the most issues, and where player editing is most frequent (indicating generator weakness in that area).
+
+---
+
 ## Next Steps
 
 All discovery items are resolved at the high level. The next phase is **implementation planning** — breaking each system into implementable units with dependencies, creating per-system detailed design documents, and sequencing the build order.
