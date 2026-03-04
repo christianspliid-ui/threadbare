@@ -506,3 +506,147 @@ describe('Unmaking engine', () => {
     expect(transition.nextWorldSoul.resonance).toBeDefined();
   });
 });
+
+describe('World-Soul integration: full cycle lifecycle', () => {
+  function mulberry32(seed: number): () => number {
+    let s = seed | 0;
+    return () => {
+      s = (s + 0x6D2B79F5) | 0;
+      let t = Math.imul(s ^ (s >>> 15), 1 | s);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  it('simulates a 3-cycle game with Fundament drift, memory accumulation, and degradation', () => {
+    const rng = mulberry32(7777);
+
+    let worldSoul: WorldSoulState = {
+      fundament: createDefaultFundament(),
+      resonance: createResonanceState(),
+    };
+    expect(worldSoul.fundament.cycleCount).toBe(0);
+    expect(worldSoul.resonance.memories).toHaveLength(0);
+
+    // ── Cycle 1: mandate_complete ──
+    let cycleFundament = { ...worldSoul.fundament };
+    const cycle1Shifts: FundamentShift[] = [
+      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: 0.1 },
+      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: 0.1 },
+      { source: 'resolved_action', foundationAxis: 'light_darkness', foundationDelta: -0.05 },
+      { source: 'resolved_action', sphereDeltas: { life: 0.03, entropy: -0.02 } },
+      { source: 'doom_escalation', foundationAxis: 'chaos_order', foundationDelta: -0.05 },
+      { source: 'doom_escalation', sphereDeltas: { entropy: 0.04 } },
+    ];
+    cycleFundament = applyBatchShifts(cycleFundament, cycle1Shifts);
+    expect(cycleFundament.foundations.chaos_order).toBeCloseTo(0.15);
+    expect(cycleFundament.foundations.light_darkness).toBeCloseTo(-0.05);
+
+    const twilight1 = initiateTwilight('mandate_complete', rng);
+    expect(twilight1.active).toBe(true);
+    expect(twilight1.successPenalty).toBe(0.2);
+
+    let tw = twilight1;
+    while (!isTwilightComplete(tw)) {
+      tw = tickTwilight(tw);
+    }
+    expect(tw.active).toBe(false);
+
+    const cycle1Memory: ResonanceMemory = {
+      id: 'memory_cycle1_a',
+      cycleOrigin: 1,
+      memoryType: 'mandate_triumph',
+      spheres: ['life', 'spirit'],
+      summary: 'The garden-priests of Velanthos achieved cosmic harmony.',
+      significance: 0.85,
+      degradation: 0,
+    };
+
+    const transition1 = executeCycleTransition(
+      worldSoul, cycleFundament, 'mandate_complete', 'convergence',
+      cycle1Shifts, [cycle1Memory],
+      ['actor_hero', 'loc_temple', 'artifact_crown', 'actor_sage', 'loc_forest', 'actor_villain'],
+      0.5, 0.15, rng
+    );
+
+    expect(transition1.cycleNumber).toBe(1);
+    expect(transition1.harvest.harvestType).toBe('triumphant');
+    expect(transition1.harvest.cosmicEchoIds).toHaveLength(5);
+    worldSoul = transition1.nextWorldSoul;
+    expect(worldSoul.fundament.cycleCount).toBe(1);
+    expect(worldSoul.fundament.foundations.chaos_order).toBeGreaterThan(0);
+    expect(worldSoul.fundament.foundations.chaos_order).toBeLessThan(0.15);
+    expect(worldSoul.resonance.memories).toHaveLength(1);
+    expect(worldSoul.resonance.memories[0].id).toBe('memory_cycle1_a');
+
+    // ── Cycle 2: doom_expired ──
+    cycleFundament = { ...worldSoul.fundament };
+    const cycle2Shifts: FundamentShift[] = [
+      { source: 'resolved_action', foundationAxis: 'light_darkness', foundationDelta: 0.3 },
+      { source: 'doom_escalation', sphereDeltas: { entropy: 0.1, force: 0.05 } },
+    ];
+    cycleFundament = applyBatchShifts(cycleFundament, cycle2Shifts);
+
+    const cycle2Memory: ResonanceMemory = {
+      id: 'memory_cycle2_a',
+      cycleOrigin: 2,
+      memoryType: 'doom_scar',
+      spheres: ['entropy', 'force'],
+      summary: 'The breach consumed the eastern reaches.',
+      significance: 0.92,
+      degradation: 0,
+    };
+
+    const transition2 = executeCycleTransition(
+      worldSoul, cycleFundament, 'doom_expired', 'breach',
+      cycle2Shifts, [cycle2Memory],
+      ['actor_a', 'actor_b', 'loc_c', 'artifact_d'],
+      0.3, 0.15, rng
+    );
+
+    expect(transition2.harvest.harvestType).toBe('somber');
+    expect(transition2.harvest.cosmicEchoIds).toHaveLength(3);
+    worldSoul = transition2.nextWorldSoul;
+    expect(worldSoul.fundament.cycleCount).toBe(2);
+
+    const cycle1Mem = worldSoul.resonance.memories.find(m => m.id === 'memory_cycle1_a');
+    expect(cycle1Mem).toBeDefined();
+    expect(cycle1Mem!.degradation).toBeCloseTo(0.15);
+    expect(worldSoul.resonance.memories.find(m => m.id === 'memory_cycle2_a')).toBeDefined();
+
+    // ── Cycle 3: player_concession ──
+    cycleFundament = { ...worldSoul.fundament };
+    const cycle3Shifts: FundamentShift[] = [
+      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: -0.2 },
+    ];
+    cycleFundament = applyBatchShifts(cycleFundament, cycle3Shifts);
+
+    const transition3 = executeCycleTransition(
+      worldSoul, cycleFundament, 'player_concession', 'failing',
+      cycle3Shifts, [],
+      ['actor_x', 'actor_y', 'loc_z', 'artifact_w', 'actor_v'],
+      0.4, 0.15, rng
+    );
+
+    expect(transition3.harvest.harvestType).toBe('bittersweet');
+    expect(transition3.harvest.cosmicEchoIds).toHaveLength(4);
+    worldSoul = transition3.nextWorldSoul;
+    expect(worldSoul.fundament.cycleCount).toBe(3);
+
+    const c1Mem = worldSoul.resonance.memories.find(m => m.id === 'memory_cycle1_a');
+    expect(c1Mem).toBeDefined();
+    expect(c1Mem!.degradation).toBeCloseTo(0.30);
+
+    const c2Mem = worldSoul.resonance.memories.find(m => m.id === 'memory_cycle2_a');
+    expect(c2Mem).toBeDefined();
+    expect(c2Mem!.degradation).toBeCloseTo(0.15);
+
+    const weightSum = Object.values(worldSoul.fundament.sphereWeights).reduce((a, b) => a + b, 0);
+    expect(weightSum).toBeCloseTo(1.0);
+
+    expect(worldSoul.fundament.foundations.chaos_order).toBeGreaterThanOrEqual(-1);
+    expect(worldSoul.fundament.foundations.chaos_order).toBeLessThanOrEqual(1);
+    expect(worldSoul.fundament.foundations.light_darkness).toBeGreaterThanOrEqual(-1);
+    expect(worldSoul.fundament.foundations.light_darkness).toBeLessThanOrEqual(1);
+  });
+});
