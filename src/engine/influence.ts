@@ -30,6 +30,7 @@ export function createEmptyEssencePool(): EssencePool {
 
 /** Check if a pool can afford a given cost in a specific sphere. */
 export function canAfford(pool: EssencePool, sphere: SphereName, cost: number): boolean {
+  if (cost < 0) throw new Error(`Essence cost must be non-negative: ${cost}`);
   return pool[sphere] >= cost;
 }
 
@@ -38,6 +39,7 @@ export function canAfford(pool: EssencePool, sphere: SphereName, cost: number): 
  * Mutates pool in place.
  */
 export function spendEssence(pool: EssencePool, sphere: SphereName, cost: number): boolean {
+  if (cost < 0) throw new Error(`Essence cost must be non-negative: ${cost}`);
   if (pool[sphere] < cost) return false;
   pool[sphere] -= cost;
   return true;
