@@ -1,12 +1,12 @@
 /**
  * Dream Interface & Divine Toolkit — cost calculation and probability manipulation.
  */
-import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import type { AxiologicalProfile, ValuePair, ActionCandidate } from '../types/agent';
 import type { ActorType } from '../types/graph';
 import type { SphereName } from '../types/index';
-import type { EssencePool } from '../types/influence';
-import type { AlignmentFactor, InterventionCost } from '../types/dream';
-import { TIER_MODIFIERS } from '../types/dream';
+import type { EssencePool, InfluenceTier } from '../types/influence';
+import type { AlignmentFactor, InterventionCost, ManipulationType, DreamManipulation } from '../types/dream';
+import { TIER_MODIFIERS, MANIPULATION_DEFINITIONS } from '../types/dream';
 
 // ─── Alignment Cost Calculator ───────────────────────────────────
 
@@ -69,4 +69,121 @@ export function computeInterventionCost(params: {
     sphere: params.sphere,
     affordable: params.pool[params.sphere] >= finalCost,
   };
+}
+
+// ─── Manipulation Validation ─────────────────────────────────────
+
+export function validateManipulation(
+  type: ManipulationType,
+  actorTier: InfluenceTier,
+): { valid: boolean; reason?: string } {
+  const def = MANIPULATION_DEFINITIONS[type];
+  if (actorTier < def.minTier) {
+    return {
+      valid: false,
+      reason: `${type} requires influence tier ${def.minTier}, actor is at tier ${actorTier}`,
+    };
+  }
+  return { valid: true };
+}
+
+// ─── Probability Manipulation ────────────────────────────────────
+
+/**
+ * Apply dream manipulations to a set of candidates with assigned probabilities.
+ * Returns a new array with adjusted probabilities that sum to 1.0.
+ *
+ * Manipulation effects:
+ * - whisper: +0.12 to target (midpoint of 0.10-0.15)
+ * - inspire: +0.275 to target (midpoint of 0.25-0.30)
+ * - suppress: -0.20 from target
+ * - reshape: replace target candidate with variant, keep probability
+ * - implant: inject new candidate at 0.30, compress others
+ * - command: set target to 1.0, zero others
+ */
+export function applyDreamManipulations(
+  candidates: ActionCandidate[],
+  manipulations: DreamManipulation[],
+): ActionCandidate[] {
+  let result = candidates.map(c => ({ ...c }));
+
+  for (const manip of manipulations) {
+    switch (manip.type) {
+      case 'whisper': {
+        const boost = 0.12;
+        result = applyBoost(result, manip.targetCandidateIndex, boost);
+        break;
+      }
+      case 'inspire': {
+        const boost = 0.275;
+        result = applyBoost(result, manip.targetCandidateIndex, boost);
+        break;
+      }
+      case 'suppress': {
+        const reduction = -0.20;
+        result = applyBoost(result, manip.targetCandidateIndex, reduction);
+        break;
+      }
+      case 'reshape': {
+        if (manip.reshapeTo && manip.targetCandidateIndex >= 0 && manip.targetCandidateIndex < result.length) {
+          const oldProb = result[manip.targetCandidateIndex].probability ?? 0;
+          result[manip.targetCandidateIndex] = { ...manip.reshapeTo, probability: oldProb };
+        }
+        break;
+      }
+      case 'implant': {
+        if (manip.implantCandidate) {
+          const injectedProb = 0.30;
+          const compressionFactor = 1.0 - injectedProb;
+          result = result.map(c => ({
+            ...c,
+            probability: (c.probability ?? 0) * compressionFactor,
+          }));
+          result.push({ ...manip.implantCandidate, probability: injectedProb });
+        }
+        break;
+      }
+      case 'command': {
+        result = result.map((c, i) => ({
+          ...c,
+          probability: i === manip.targetCandidateIndex ? 1.0 : 0.0,
+        }));
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Apply a probability boost/reduction to a specific candidate
+ * and renormalize so all probabilities sum to 1.0.
+ */
+function applyBoost(
+  candidates: ActionCandidate[],
+  targetIndex: number,
+  delta: number,
+): ActionCandidate[] {
+  if (targetIndex < 0 || targetIndex >= candidates.length) return candidates;
+
+  const result = candidates.map((c, i) => {
+    if (i === targetIndex) {
+      const newProb = Math.max(0, (c.probability ?? 0) + delta);
+      return { ...c, probability: newProb };
+    }
+    return { ...c };
+  });
+
+  // Renormalize
+  const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+  if (total === 0) {
+    const equal = 1.0 / result.length;
+    return result.map(c => ({ ...c, probability: equal }));
+  }
+
+  return result.map(c => ({
+    ...c,
+    probability: (c.probability ?? 0) / total,
+  }));
 }

@@ -65,9 +65,13 @@ describe('Dream & Toolkit type definitions', () => {
 import {
   computeAlignmentFactor,
   computeInterventionCost,
+  applyDreamManipulations,
+  validateManipulation,
 } from '../dream';
-import type { AxiologicalProfile } from '../../types/agent';
+import type { AxiologicalProfile, ActionCandidate } from '../../types/agent';
 import type { EssencePool } from '../../types/influence';
+import type { DreamManipulation, ManipulationType } from '../../types/dream';
+import type { InfluenceTier } from '../../types/influence';
 import { createEmptyEssencePool } from '../influence';
 
 describe('computeAlignmentFactor', () => {
@@ -144,5 +148,130 @@ describe('computeInterventionCost', () => {
     });
     expect(cost.finalCost).toBeCloseTo(6.0);
     expect(cost.affordable).toBe(false);
+  });
+});
+
+describe('validateManipulation', () => {
+  it('rejects manipulation when actor tier is below minimum', () => {
+    const result = validateManipulation('inspire', 1 as InfluenceTier);
+    expect(result.valid).toBe(false);
+    expect(result.reason).toContain('tier');
+  });
+
+  it('accepts manipulation when actor tier meets minimum', () => {
+    const result = validateManipulation('inspire', 2 as InfluenceTier);
+    expect(result.valid).toBe(true);
+  });
+
+  it('accepts whisper at tier 1', () => {
+    const result = validateManipulation('whisper', 1 as InfluenceTier);
+    expect(result.valid).toBe(true);
+  });
+
+  it('requires tier 4 for command', () => {
+    expect(validateManipulation('command', 3 as InfluenceTier).valid).toBe(false);
+    expect(validateManipulation('command', 4 as InfluenceTier).valid).toBe(true);
+  });
+});
+
+describe('applyDreamManipulations', () => {
+  function makeCandidates(): ActionCandidate[] {
+    return [
+      { templateId: 'march', targetId: 'loc_1', domain: 'iron', score: 10, motivations: ['ambition_contentment', 'courage_prudence'], probability: 0.60 },
+      { templateId: 'ally', targetId: 'actor_2', domain: 'heart', score: 5, motivations: ['loyalty_treachery'], probability: 0.25 },
+      { templateId: 'train', targetId: 'loc_1', domain: 'iron', score: 3, motivations: ['tradition_innovation'], probability: 0.15 },
+    ];
+  }
+
+  it('whisper boosts target probability by 0.10-0.15 and renormalizes', () => {
+    const candidates = makeCandidates();
+    const manipulation: DreamManipulation = {
+      type: 'whisper',
+      targetCandidateIndex: 1,
+      sphereCost: 'spirit',
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+    expect(total).toBeCloseTo(1.0, 2);
+    expect(result[1].probability!).toBeGreaterThan(0.25);
+  });
+
+  it('suppress reduces target probability by 0.20 and renormalizes', () => {
+    const candidates = makeCandidates();
+    const manipulation: DreamManipulation = {
+      type: 'suppress',
+      targetCandidateIndex: 0,
+      sphereCost: 'force',
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+    expect(total).toBeCloseTo(1.0, 2);
+    expect(result[0].probability!).toBeLessThan(0.60);
+  });
+
+  it('inspire boosts target probability by 0.25-0.30 and renormalizes', () => {
+    const candidates = makeCandidates();
+    const manipulation: DreamManipulation = {
+      type: 'inspire',
+      targetCandidateIndex: 2,
+      sphereCost: 'force',
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+    expect(total).toBeCloseTo(1.0, 2);
+    expect(result[2].probability!).toBeGreaterThan(0.15);
+  });
+
+  it('command overrides target to 1.0 and zeros others', () => {
+    const candidates = makeCandidates();
+    const manipulation: DreamManipulation = {
+      type: 'command',
+      targetCandidateIndex: 1,
+      sphereCost: 'spirit',
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    expect(result[1].probability).toBeCloseTo(1.0, 2);
+    expect(result[0].probability).toBeCloseTo(0.0, 2);
+    expect(result[2].probability).toBeCloseTo(0.0, 2);
+  });
+
+  it('implant injects a new candidate and renormalizes', () => {
+    const candidates = makeCandidates();
+    const newCandidate: ActionCandidate = {
+      templateId: 'pray', targetId: 'loc_1', domain: 'veil',
+      score: 0, motivations: ['devotion_independence'], probability: 0,
+    };
+    const manipulation: DreamManipulation = {
+      type: 'implant',
+      targetCandidateIndex: -1,
+      sphereCost: 'spirit',
+      implantCandidate: newCandidate,
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    expect(result.length).toBe(4);
+    const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+    expect(total).toBeCloseTo(1.0, 2);
+    const implanted = result.find(c => c.templateId === 'pray');
+    expect(implanted).toBeDefined();
+    expect(implanted!.probability!).toBeGreaterThan(0);
+  });
+
+  it('reshape replaces the target candidate with a variant', () => {
+    const candidates = makeCandidates();
+    const variant: ActionCandidate = {
+      templateId: 'march_negotiate', targetId: 'loc_1', domain: 'heart',
+      score: 10, motivations: ['ambition_contentment', 'cunning_honesty'], probability: 0,
+    };
+    const manipulation: DreamManipulation = {
+      type: 'reshape',
+      targetCandidateIndex: 0,
+      sphereCost: 'mind',
+      reshapeTo: variant,
+    };
+    const result = applyDreamManipulations(candidates, [manipulation]);
+    expect(result.length).toBe(3);
+    expect(result[0].templateId).toBe('march_negotiate');
+    const total = result.reduce((s, c) => s + (c.probability ?? 0), 0);
+    expect(total).toBeCloseTo(1.0, 2);
   });
 });
