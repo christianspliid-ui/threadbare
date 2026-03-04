@@ -13,7 +13,8 @@ import {
   dropAgent,
 } from '../influence';
 import type { SphereAlignment, EssencePool } from '../../types/influence';
-import { SPHERE_NAMES, TIER_MAINTENANCE, TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
+import { TIER_MAINTENANCE, TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
+import { SPHERE_NAMES } from '../../types/index';
 
 describe('Essence Pool', () => {
   it('createEmptyEssencePool returns all zeros', () => {
