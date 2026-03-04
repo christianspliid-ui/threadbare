@@ -5,8 +5,8 @@ import type { AxiologicalProfile, ValuePair, ActionCandidate } from '../types/ag
 import type { ActorType } from '../types/graph';
 import type { SphereName } from '../types/index';
 import type { EssencePool, InfluenceTier } from '../types/influence';
-import type { AlignmentFactor, InterventionCost, ManipulationType, DreamManipulation } from '../types/dream';
-import { TIER_MODIFIERS, MANIPULATION_DEFINITIONS } from '../types/dream';
+import type { AlignmentFactor, InterventionCost, ManipulationType, DreamManipulation, InterventionType, InterventionResult } from '../types/dream';
+import { TIER_MODIFIERS, MANIPULATION_DEFINITIONS, INTERVENTION_DEFINITIONS } from '../types/dream';
 
 // ─── Alignment Cost Calculator ───────────────────────────────────
 
@@ -186,4 +186,85 @@ function applyBoost(
     ...c,
     probability: (c.probability ?? 0) / total,
   }));
+}
+
+// ─── Detection System ────────────────────────────────────────────
+
+/**
+ * Compute whether an intervention was detected.
+ *
+ * detectionRisk = min(0.95, baseRisk + frequencyBonus)
+ * frequencyBonus = priorInterventionsInRegion * 0.05
+ */
+export function computeDetection(
+  interventionType: InterventionType,
+  priorInterventions: number,
+  roll: number,
+): { detected: boolean; detectedBy: 'mortal' | 'rival' | 'both' | 'none' } {
+  const def = INTERVENTION_DEFINITIONS[interventionType];
+  const frequencyBonus = priorInterventions * 0.05;
+  const adjustedRisk = Math.min(0.95, def.detectionRisk + frequencyBonus);
+
+  if (roll >= adjustedRisk) {
+    return { detected: false, detectedBy: 'none' };
+  }
+
+  return { detected: true, detectedBy: 'mortal' };
+}
+
+// ─── Intervention Execution ──────────────────────────────────────
+
+/**
+ * Execute a divine intervention: compute cost, spend essence, check detection.
+ */
+export function executeIntervention(params: {
+  interventionType: InterventionType;
+  sphere: SphereName;
+  baseCost: number;
+  alignmentFactor: number;
+  actorType: Exclude<ActorType, 'ascendant'>;
+  pool: EssencePool;
+  priorInterventions?: number;
+  detectionRoll?: number;
+}): InterventionResult {
+  const cost = computeInterventionCost({
+    baseCost: params.baseCost,
+    sphere: params.sphere,
+    alignmentFactor: params.alignmentFactor,
+    actorType: params.actorType,
+    pool: params.pool,
+  });
+
+  const essenceSpent: Record<SphereName, number> = {
+    force: 0, matter: 0, energy: 0, life: 0,
+    mind: 0, spirit: 0, time: 0, entropy: 0,
+  };
+
+  if (!cost.affordable) {
+    return {
+      success: false,
+      essenceSpent,
+      detected: false,
+      detectedBy: 'none',
+    };
+  }
+
+  essenceSpent[params.sphere] = cost.finalCost;
+
+  const roll = params.detectionRoll ?? Math.random();
+  const detection = computeDetection(
+    params.interventionType,
+    params.priorInterventions ?? 0,
+    roll,
+  );
+
+  const narrativeHook = `intervention_${params.interventionType}_${params.sphere}`;
+
+  return {
+    success: true,
+    essenceSpent,
+    detected: detection.detected,
+    detectedBy: detection.detectedBy,
+    narrativeHook,
+  };
 }
