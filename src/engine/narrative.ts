@@ -7,6 +7,7 @@
  */
 import type { SphereName } from '../types/index';
 import type {
+  NarrativeEvent,
   NarrativeEventType,
   NarrativeTier,
   ProseFragment,
@@ -229,4 +230,60 @@ export function buildChronicleEntry(params: {
     },
     tick: params.tick,
   };
+}
+
+// ─── Content Pipeline ────────────────────────────────────────────
+
+/** Event type → default tier classification */
+const EVENT_TIER_MAP: Record<NarrativeEventType, NarrativeTier> = {
+  action_resolved: 'routine',
+  action_failed: 'routine',
+  action_critical: 'notable',
+  trait_acquired: 'notable',
+  trait_lost: 'routine',
+  tier_transition: 'notable',
+  doom_escalation: 'chronicle',
+  mandate_stage: 'chronicle',
+  divine_intervention: 'routine',
+  actor_death: 'notable',
+  contested_action: 'notable',
+};
+
+/**
+ * Classify an event's narrative tier based on its type and tags.
+ */
+export function classifyEvent(
+  eventType: NarrativeEventType,
+  tags: string[],
+): NarrativeTier {
+  if (tags.includes('legendary') || tags.includes('world_shaking')) return 'chronicle';
+  return EVENT_TIER_MAP[eventType] ?? 'routine';
+}
+
+/**
+ * Route a narrative event through the appropriate prose generator.
+ */
+export function routeEvent(
+  event: NarrativeEvent,
+  context: ProseContext,
+  seed: number,
+): ProseFragment {
+  const tier = event.tier;
+
+  switch (tier) {
+    case 'routine':
+      return generateRoutineProse(event.eventType, context, seed);
+    case 'notable':
+      return generateNotableProse(event.eventType, context, seed);
+    case 'chronicle':
+      return {
+        text: `[Chronicle: ${event.description}]`,
+        voice: 'dramatic_present',
+        tier: 'chronicle',
+        eventId: event.id,
+        sphereColoring: event.sphere,
+      };
+    default:
+      return generateRoutineProse(event.eventType, context, seed);
+  }
 }

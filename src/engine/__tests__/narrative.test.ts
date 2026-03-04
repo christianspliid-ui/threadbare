@@ -17,6 +17,8 @@ import {
   pickSphereWord,
   generateNotableProse,
   buildChronicleEntry,
+  classifyEvent,
+  routeEvent,
 } from '../narrative';
 
 describe('narrative type definitions', () => {
@@ -176,5 +178,47 @@ describe('chronicle prompt builder (tier 3)', () => {
     });
 
     expect(entry.promptContext.previousEvents).toHaveLength(2);
+  });
+});
+
+describe('content pipeline router', () => {
+  it('classifies ordinary action_resolved as routine', () => {
+    expect(classifyEvent('action_resolved', [])).toBe('routine');
+  });
+
+  it('classifies action_critical as notable', () => {
+    expect(classifyEvent('action_critical', [])).toBe('notable');
+  });
+
+  it('classifies doom_escalation as chronicle', () => {
+    expect(classifyEvent('doom_escalation', [])).toBe('chronicle');
+  });
+
+  it('classifies tier_transition as notable', () => {
+    expect(classifyEvent('tier_transition', [])).toBe('notable');
+  });
+
+  it('classifies contested_action as notable', () => {
+    expect(classifyEvent('contested_action', [])).toBe('notable');
+  });
+
+  it('routeEvent produces prose for routine events', () => {
+    const event: NarrativeEvent = {
+      id: 'evt_1', tier: 'routine', eventType: 'action_resolved',
+      actorId: 'actor_1', description: 'marched', tick: 10, sphere: 'force',
+    };
+    const result = routeEvent(event, { actorName: 'Volkar', sphere: 'force' }, 42);
+    expect(result.tier).toBe('routine');
+    expect(result.text.length).toBeGreaterThan(0);
+  });
+
+  it('routeEvent produces prose for notable events', () => {
+    const event: NarrativeEvent = {
+      id: 'evt_2', tier: 'notable', eventType: 'action_critical',
+      actorId: 'actor_1', description: 'critical hit', tick: 20, sphere: 'energy',
+    };
+    const result = routeEvent(event, { actorName: 'Arven', sphere: 'energy' }, 42);
+    expect(result.tier).toBe('notable');
+    expect(result.text.length).toBeGreaterThan(50);
   });
 });
