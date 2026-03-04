@@ -7,9 +7,13 @@ import {
   spendEssence,
   computeMaxEssence,
   canAfford,
+  getInfluenceTier,
+  processInfluenceMaintenance,
+  checkTierPromotion,
+  dropAgent,
 } from '../influence';
 import type { SphereAlignment, EssencePool } from '../../types/influence';
-import { SPHERE_NAMES } from '../../types/index';
+import { SPHERE_NAMES, TIER_MAINTENANCE, TIER_PROMOTION_THRESHOLDS } from '../../types/influence';
 
 describe('Essence Pool', () => {
   it('createEmptyEssencePool returns all zeros', () => {
@@ -180,5 +184,236 @@ describe('Essence Generation', () => {
 
     const boosted = computeMaxEssence(graph, ascendantId);
     expect(boosted).toBe(55); // 50 + 5 per worshipper
+  });
+});
+
+describe('Influence Tier Management', () => {
+  let graph: WorldGraph;
+  const ascendantId = 'asc.player';
+  const agentId = 'actor.agent1';
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+
+    graph.addNode({
+      id: ascendantId,
+      type: 'actor',
+      name: 'The Verdant One',
+      properties: {
+        actorType: 'ascendant',
+        sphereAlignment: { primary: 'life', secondary: 'spirit' } as SphereAlignment,
+        essencePool: createEmptyEssencePool(),
+      },
+    });
+
+    graph.addNode({
+      id: agentId,
+      type: 'actor',
+      name: 'Faithful Agent',
+      properties: { actorType: 'individual' },
+    });
+  });
+
+  it('getInfluenceTier returns 0 for unrelated actor', () => {
+    expect(getInfluenceTier(graph, ascendantId, agentId)).toBe(0);
+  });
+
+  it('getInfluenceTier returns current tier from worships edge', () => {
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 2,
+        ticksAtCurrentTier: 15,
+        establishedTick: 0,
+        totalEssenceSpent: 20,
+        maintenanceCurrent: true,
+      },
+    });
+    expect(getInfluenceTier(graph, ascendantId, agentId)).toBe(2);
+  });
+
+  it('processInfluenceMaintenance deducts essence and increments ticks', () => {
+    const pool = createEmptyEssencePool();
+    pool.life = 10;
+    graph.updateNode(ascendantId, { properties: { ...graph.getNode(ascendantId)!.properties, essencePool: pool } });
+
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 1,
+        ticksAtCurrentTier: 0,
+        establishedTick: 0,
+        totalEssenceSpent: 5,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const result = processInfluenceMaintenance(graph, ascendantId, 1);
+
+    expect(result.maintenancePaid).toContain(agentId);
+    expect(result.maintenanceFailed).toHaveLength(0);
+
+    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    expect(edge.properties.ticksAtCurrentTier).toBe(1);
+    expect(edge.properties.maintenanceCurrent).toBe(true);
+  });
+
+  it('processInfluenceMaintenance marks failed when insufficient essence', () => {
+    const pool = createEmptyEssencePool();
+    graph.updateNode(ascendantId, { properties: { ...graph.getNode(ascendantId)!.properties, essencePool: pool } });
+
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 1,
+        ticksAtCurrentTier: 10,
+        establishedTick: 0,
+        totalEssenceSpent: 5,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const result = processInfluenceMaintenance(graph, ascendantId, 11);
+    expect(result.maintenanceFailed).toContain(agentId);
+
+    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    expect(edge.properties.maintenanceCurrent).toBe(false);
+  });
+
+  it('checkTierPromotion promotes when threshold met', () => {
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 1,
+        ticksAtCurrentTier: TIER_PROMOTION_THRESHOLDS[2],
+        establishedTick: 0,
+        totalEssenceSpent: 20,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const promoted = checkTierPromotion(graph, ascendantId);
+    expect(promoted).toContain(agentId);
+
+    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    expect(edge.properties.tier).toBe(2);
+    expect(edge.properties.ticksAtCurrentTier).toBe(0);
+  });
+
+  it('checkTierPromotion does not promote when maintenance failed', () => {
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 1,
+        ticksAtCurrentTier: 999,
+        establishedTick: 0,
+        totalEssenceSpent: 20,
+        maintenanceCurrent: false,
+      },
+    });
+
+    const promoted = checkTierPromotion(graph, ascendantId);
+    expect(promoted).toHaveLength(0);
+  });
+
+  it('checkTierPromotion does not promote past tier 4', () => {
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 4,
+        ticksAtCurrentTier: 999,
+        establishedTick: 0,
+        totalEssenceSpent: 100,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const promoted = checkTierPromotion(graph, ascendantId);
+    expect(promoted).toHaveLength(0);
+  });
+
+  it('dropAgent removes worships edge and returns drop result', () => {
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 2,
+        ticksAtCurrentTier: 50,
+        establishedTick: 0,
+        totalEssenceSpent: 60,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const result = dropAgent(graph, ascendantId, agentId, 100);
+
+    expect(result.agentId).toBe(agentId);
+    expect(result.tierWhenDropped).toBe(2);
+    expect(result.narrativeConsequence).toBe('crisis_of_faith');
+
+    const edges = graph.getIncomingEdges(ascendantId, 'worships');
+    expect(edges).toHaveLength(0);
+  });
+
+  it('dropAgent assigns scar trait for tier 2+', () => {
+    graph.addNode({
+      id: 'trait.abandoned_by_divine',
+      type: 'trait',
+      name: 'Abandoned by the Divine',
+      properties: {
+        subcategory: 'scar',
+        description: 'Once touched by divine purpose, now cast adrift.',
+        importance: 0.7,
+        maxLevel: 1,
+        visibility: 'public',
+        domainContributions: { heart: -0.5, star: -0.3 },
+        tags: ['divine', 'abandonment'],
+        flavorText: 'The silence where a god once whispered.',
+      },
+    });
+
+    graph.addEdge({
+      id: 'edge.worship1',
+      source: agentId,
+      target: ascendantId,
+      type: 'worships',
+      properties: {
+        tier: 3,
+        ticksAtCurrentTier: 90,
+        establishedTick: 0,
+        totalEssenceSpent: 200,
+        maintenanceCurrent: true,
+      },
+    });
+
+    const result = dropAgent(graph, ascendantId, agentId, 100);
+
+    expect(result.tierWhenDropped).toBe(3);
+    expect(result.narrativeConsequence).toBe('wild_card');
+    expect(result.scarTraitAssigned).toBe(true);
+
+    const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
+    const scarEdge = traitEdges.find((e) => e.target === 'trait.abandoned_by_divine');
+    expect(scarEdge).toBeDefined();
   });
 });
