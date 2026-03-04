@@ -55,7 +55,7 @@ describe('Trait System', () => {
       const traits = getTraitsForNode(graph, 'actor.thorin');
       expect(traits).toHaveLength(1);
       expect(traits[0].target).toBe('trait.battle_hardened');
-      const props = traits[0].properties as TraitAssignmentProperties;
+      const props = traits[0].properties as unknown as TraitAssignmentProperties;
       expect(props.level).toBe(1);
       expect(props.acquiredTick).toBe(10);
     });
@@ -73,7 +73,7 @@ describe('Trait System', () => {
       assignTrait(graph, 'actor.thorin', 'trait.battle_hardened', { tick: 10, source: 'combat' });
       reinforceTrait(graph, 'actor.thorin', 'trait.battle_hardened', 50);
       const traits = getTraitsForNode(graph, 'actor.thorin');
-      expect((traits[0].properties as TraitAssignmentProperties).level).toBe(2);
+      expect((traits[0].properties as unknown as TraitAssignmentProperties).level).toBe(2);
     });
 
     it('does not exceed maxLevel', () => {
@@ -82,7 +82,7 @@ describe('Trait System', () => {
       reinforceTrait(graph, 'actor.thorin', 'trait.battle_hardened', 60);
       reinforceTrait(graph, 'actor.thorin', 'trait.battle_hardened', 70); // should not exceed 3
       const traits = getTraitsForNode(graph, 'actor.thorin');
-      expect((traits[0].properties as TraitAssignmentProperties).level).toBe(3);
+      expect((traits[0].properties as unknown as TraitAssignmentProperties).level).toBe(3);
     });
   });
 
@@ -93,7 +93,7 @@ describe('Trait System', () => {
       // Decay at tick 110 (100 ticks later, decayPeriod = 90)
       processTraitDecay(graph, 'actor.thorin', 110);
       const traits = getTraitsForNode(graph, 'actor.thorin');
-      expect((traits[0].properties as TraitAssignmentProperties).level).toBe(1);
+      expect((traits[0].properties as unknown as TraitAssignmentProperties).level).toBe(1);
     });
 
     it('removes trait when level decays to 0', () => {
