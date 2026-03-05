@@ -19,6 +19,17 @@ Three documentation layers, each with a distinct purpose. Do not duplicate conte
 - Notion backlog: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
 - Consolidated discovery design: `Docs/plans/2026-03-04-high-level-discovery-pass.md`
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
+- Visual style guide (source of truth): `STYLE.md`
+- Visual style tile (HTML reference): `Design/style-tile.html`
+
+## Visual Style
+
+The game's visual identity is called **Threadbare** — dark world, hidden magic, threads that break through. All visual direction lives in two coupled files:
+
+- **`STYLE.md`** — the authoritative source of truth for all visual style decisions: colors, sphere form language, art direction, lighting rules, prompt construction, exclusions.
+- **`Design/style-tile.html`** — an HTML visualization of STYLE.md, used as a quick visual reference for colors, swatches, gradients, and UI chrome.
+
+**The style tile must always reflect STYLE.md.** Whenever STYLE.md is modified — colors changed, spheres renamed, sections added or removed — the style tile must be updated in the same session to stay in sync. Never leave them diverged.
 
 ## Cosmology Quick Reference
 

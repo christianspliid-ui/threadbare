@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import type { CosmologyProfile, HexTile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import type { GameState } from '../../types/gameState';
-import { WorldGraph } from '../../engine/graph';
 import { generateWorld } from '../../engine/hexGrid';
 import { createAscendant } from '../../engine/ascendant';
 import { seedWorld } from '../../engine/worldSeed';
@@ -28,6 +27,19 @@ import { DoomBar } from './DoomBar';
 import { NarrativeFeed } from './NarrativeFeed';
 import { RivalPanel } from './RivalPanel';
 import { HarvestScreen } from './HarvestScreen';
+import { RetinuePanel } from './RetinuePanel';
+import { AgentWheel } from './AgentWheel';
+import { StrandView } from './StrandView';
+import { getRetinueAgents } from '../../engine/retinue';
+import { getAgentWheelSlots } from '../../engine/wheel';
+import {
+  getPresenceStrand,
+  getDesiresStrand,
+  getBondsStrand,
+  getAmbitionsStrand,
+  getBeliefsStrand,
+  getFearsStrand,
+} from '../../engine/strands';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -125,6 +137,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [wheelVisible, setWheelVisible] = useState(false);
+  const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -188,6 +203,46 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const year = Math.floor(gameState.tick / 120) + 1;
   const maxEssence = computeMaxEssence(gameState.graph, gameState.ascendantId);
 
+  const retinueAgents = useMemo(
+    () => getRetinueAgents(gameState.graph, gameState.ascendantId),
+    [gameState.graph, gameState.ascendantId, gameState.tick]
+  );
+
+  const wheelSlots = useMemo(() => {
+    if (!selectedAgentId || !wheelVisible) return null;
+    const agent = retinueAgents.find(a => a.id === selectedAgentId);
+    if (!agent) return null;
+    return getAgentWheelSlots({
+      tier: agent.tier,
+      pool: gameState.essencePool,
+      primarySphere: archetype.sphereAlignment.primary,
+    });
+  }, [selectedAgentId, wheelVisible, gameState.essencePool, retinueAgents, archetype]);
+
+  // Handlers
+  const handleAgentSelect = useCallback((agentId: string) => {
+    setSelectedAgentId(agentId);
+    setWheelVisible(true);
+    setStrandViewAgent(null);
+  }, []);
+
+  const handleWheelSlotClick = useCallback((slotId: string) => {
+    if (slotId === 'scry' && selectedAgentId) {
+      setStrandViewAgent(selectedAgentId);
+      setWheelVisible(false);
+    }
+    // Other interventions will be handled in Layer 2
+  }, [selectedAgentId]);
+
+  const handleWheelDismiss = useCallback(() => {
+    setWheelVisible(false);
+  }, []);
+
+  const handleStrandClose = useCallback(() => {
+    setStrandViewAgent(null);
+    setWheelVisible(true);
+  }, []);
+
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
       {/* Doom bar at top */}
@@ -234,9 +289,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         </div>
 
         {/* Main content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden relative">
           {/* Hex map */}
-          <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+          <div className="flex-1 p-4 flex items-center justify-center overflow-hidden relative">
             <HexMap
               tiles={tiles}
               cols={COLS}
@@ -247,6 +302,24 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
               onHexClick={setSelectedHex}
               onHexHover={setHoveredHex}
             />
+
+            {/* Agent Wheel overlay */}
+            {wheelSlots && wheelVisible && selectedAgentId && (
+              <svg
+                className="absolute inset-0"
+                style={{ pointerEvents: 'auto' }}
+              >
+                <AgentWheel
+                  slots={wheelSlots}
+                  agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
+                  agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+                  cx={300}
+                  cy={200}
+                  onSlotClick={handleWheelSlotClick}
+                  onDismiss={handleWheelDismiss}
+                />
+              </svg>
+            )}
           </div>
 
           {/* Narrative feed at bottom */}
@@ -254,7 +327,32 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             <NarrativeFeed events={gameState.recentEvents} />
           </div>
         </div>
+
+        {/* Right sidebar - Retinue Panel */}
+        <div className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto p-4">
+          <RetinuePanel
+            agents={retinueAgents}
+            selectedAgentId={selectedAgentId}
+            onAgentSelect={handleAgentSelect}
+          />
+        </div>
       </div>
+
+      {/* StrandView overlay */}
+      {strandViewAgent && (
+        <StrandView
+          agentName={gameState.graph.getNode(strandViewAgent)?.name ?? 'Unknown'}
+          strands={{
+            presence: getPresenceStrand(gameState.graph, strandViewAgent),
+            desires: getDesiresStrand(gameState.graph, strandViewAgent),
+            bonds: getBondsStrand(gameState.graph, strandViewAgent),
+            ambitions: getAmbitionsStrand(gameState.graph, strandViewAgent),
+            beliefs: getBeliefsStrand(gameState.graph, strandViewAgent),
+            fears: getFearsStrand(gameState.graph, strandViewAgent),
+          }}
+          onClose={handleStrandClose}
+        />
+      )}
 
       {/* Harvest overlay */}
       {harvestResult && (

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbare — Visual Style Tile</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0d0d14;
+    --bg-dark: #1a1a2e;
+    --bg-mid: #16213e;
+    --text-light: #e8e0d4;
+    --text-muted: #a09888;
+    --gold: #d4af37;
+    --gold-bright: #e8c860;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.4rem;
+    text-align: center;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.3rem;
+  }
+
+  h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+  }
+
+  h3 {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 0.6rem;
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 3rem;
+  }
+
+  .core-principle {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    text-align: center;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .core-description {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    text-align: center;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto 3rem;
+    line-height: 1.7;
+  }
+
+  .section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(212, 175, 55, 0.12);
+    border-radius: 4px;
+    padding: 1.8rem;
+    margin-bottom: 2rem;
+  }
+
+  .palette-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+  }
+
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 80px;
+  }
+
+  .swatch-color {
+    width: 72px;
+    height: 72px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+
+  .swatch-color:hover {
+    transform: scale(1.08);
+    border-color: rgba(212, 175, 55, 0.4);
+  }
+
+  .swatch-color.large {
+    width: 100px;
+    height: 100px;
+  }
+
+  .swatch-name {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-align: center;
+    max-width: 100px;
+  }
+
+  .swatch-hex {
+    font-size: 0.6rem;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    color: rgba(160, 152, 136, 0.6);
+  }
+
+  .swatch-form {
+    font-size: 0.55rem;
+    color: rgba(160, 152, 136, 0.45);
+    text-align: center;
+    max-width: 100px;
+    line-height: 1.3;
+    font-style: italic;
+  }
+
+  .gradient-bar {
+    height: 24px;
+    border-radius: 4px;
+    margin-bottom: 0.3rem;
+  }
+
+  .gradient-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .note {
+    font-size: 0.75rem;
+    color: rgba(160, 152, 136, 0.5);
+    font-style: italic;
+    margin-top: 0.5rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid rgba(212, 175, 55, 0.1);
+    margin: 1.5rem 0;
+  }
+
+  .type-specimen {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    margin-bottom: 1rem;
+  }
+
+  .type-cinzel {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+
+  .type-cormorant {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-style: italic;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .type-inter {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  .world-strip {
+    display: flex;
+    height: 40px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+
+  .world-strip div {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+    transition: flex 0.3s;
+  }
+
+  .world-strip div:hover {
+    flex: 2;
+  }
+
+  .world-strip div:hover::after {
+    content: attr(data-name);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .magic-behavior {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .behavior-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    border-radius: 4px;
+    padding: 0.8rem;
+    text-align: center;
+  }
+
+  .behavior-card .emoji {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .behavior-card .label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    color: var(--gold);
+    margin-bottom: 0.2rem;
+  }
+
+  .behavior-card .desc {
+    font-size: 0.6rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .reach-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .reach-swatch {
+    width: 32px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .reach-name {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    color: var(--text-light);
+    width: 60px;
+  }
+
+  .reach-domain {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+    width: 70px;
+  }
+
+  .reach-feel {
+    font-size: 0.6rem;
+    color: rgba(160, 152, 136, 0.5);
+    font-style: italic;
+  }
+
+  .subject-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(212, 175, 55, 0.1);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .subject-card h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    color: var(--gold);
+    margin-bottom: 0.4rem;
+  }
+
+  .subject-card p {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+
+  .exclusion-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.3rem 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+
+  .exclusion-list span::before {
+    content: '✕ ';
+    color: #c45c5c;
+    font-size: 0.65rem;
+  }
+
+  .reference-list {
+    counter-reset: ref;
+    list-style: none;
+    padding: 0;
+  }
+
+  .reference-list li {
+    counter-increment: ref;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 0.4rem;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .reference-list li::before {
+    content: counter(ref) ".";
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+    font-size: 0.7rem;
+  }
+
+  .reference-list li strong {
+    color: var(--text-light);
+  }
+
+  .ui-mockup {
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    height: 300px;
+    border: 1px solid rgba(212, 175, 55, 0.12);
+  }
+
+  .ui-sidebar {
+    width: 240px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ui-main {
+    flex: 1;
+    padding: 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-content: flex-start;
+  }
+
+  .hex-mock {
+    width: 44px;
+    height: 38px;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    transition: filter 0.2s;
+  }
+
+  .hex-mock:hover {
+    filter: brightness(1.3);
+  }
+
+  .ui-element {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 3px;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .aspect-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+  }
+
+  .aspect-card {
+    text-align: center;
+  }
+
+  .aspect-box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(212, 175, 55, 0.12);
+    border-radius: 3px;
+    margin-bottom: 0.3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    color: var(--text-muted);
+  }
+
+  .aspect-label {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+
+  .aspect-ratio-label {
+    font-size: 0.6rem;
+    color: rgba(160, 152, 136, 0.5);
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>Threadbare</h1>
+  <div class="core-principle">Dark world. Hidden magic. Threads that break through.</div>
+  <div class="core-description">
+    The world is dark, weathered, and ancient. Behind everything runs a vast invisible web of magic — but it is hidden, behind the veil. You only see magic where it breaks through: at concentrated nodes, fracture points, and moments of power. It appears as thin luminous threads, bright points, and networked filaments — never as diffuse ambient glow.
+  </div>
+
+  <!-- ======== THE WORLD (DARK PALETTE) ======== -->
+  <div class="section">
+    <h2>The World — Dark, Desaturated</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+      Value range: 10–40% brightness. Nothing in the environment is bright. Overcast, twilight, or torchlit — never midday sun.
+    </p>
+
+    <h3>Stone &amp; Ruins</h3>
+    <div class="world-strip">
+      <div style="background: #2a2a2e;" data-name="#2a2a2e"></div>
+      <div style="background: #333335;" data-name="#333335"></div>
+      <div style="background: #3c3a38;" data-name="#3c3a38"></div>
+      <div style="background: #4a4540;" data-name="#4a4540"></div>
+    </div>
+    <p class="note">Charcoal, cold, ancient</p>
+
+    <h3>Terrain &amp; Soil</h3>
+    <div class="world-strip">
+      <div style="background: #3d3025;" data-name="#3d3025"></div>
+      <div style="background: #463828;" data-name="#463828"></div>
+      <div style="background: #504130;" data-name="#504130"></div>
+      <div style="background: #5a4a38;" data-name="#5a4a38"></div>
+    </div>
+    <p class="note">Burnt umber, dark earth</p>
+
+    <h3>Vegetation</h3>
+    <div class="world-strip">
+      <div style="background: #1a2a1a;" data-name="#1a2a1a"></div>
+      <div style="background: #243424;" data-name="#243424"></div>
+      <div style="background: #2e3e2a;" data-name="#2e3e2a"></div>
+      <div style="background: #3a4a30;" data-name="#3a4a30"></div>
+    </div>
+    <p class="note">Deep olive, near-black forest</p>
+
+    <h3>Sky</h3>
+    <div class="world-strip">
+      <div style="background: #0d0d1a;" data-name="#0d0d1a"></div>
+      <div style="background: #161628;" data-name="#161628"></div>
+      <div style="background: #202038;" data-name="#202038"></div>
+      <div style="background: #2a2a4a;" data-name="#2a2a4a"></div>
+    </div>
+    <p class="note">Twilight, pre-storm, deep blue</p>
+
+    <h3>Water</h3>
+    <div class="world-strip">
+      <div style="background: #1a2535;" data-name="#1a2535"></div>
+      <div style="background: #202e40;" data-name="#202e40"></div>
+      <div style="background: #253548;" data-name="#253548"></div>
+      <div style="background: #2a3a50;" data-name="#2a3a50"></div>
+    </div>
+    <p class="note">Dark, reflective, cold</p>
+
+    <h3>Architecture</h3>
+    <div class="world-strip">
+      <div style="background: #3a3535;" data-name="#3a3535"></div>
+      <div style="background: #444040;" data-name="#444040"></div>
+      <div style="background: #4e4a48;" data-name="#4e4a48"></div>
+      <div style="background: #5a5550;" data-name="#5a5550"></div>
+    </div>
+    <p class="note">Weathered dark stone, aged</p>
+  </div>
+
+  <!-- ======== MAGIC COLORS ======== -->
+  <div class="section">
+    <h2>Magic Colors — Concentrated, Threadlike, Networked</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+      Magic is the ONLY source of strong color. It occupies 5–15% of image area. 70–100% brightness but concentrated into thin threads and bright points. Narrow glow on immediately adjacent surfaces only.
+    </p>
+
+    <h3>Foundation Spheres (Cosmic Forces)</h3>
+    <div class="palette-row">
+      <div class="swatch">
+        <div class="swatch-color large" style="background: #8a2be2;"></div>
+        <div class="swatch-name">Chaos</div>
+        <div class="swatch-hex">#8a2be2</div>
+        <div class="swatch-form">Fractals, turbulent swirls</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: #d4af37;"></div>
+        <div class="swatch-name">Order</div>
+        <div class="swatch-hex">#d4af37</div>
+        <div class="swatch-form">Geometric grids, tessellations</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: #ffeb99;"></div>
+        <div class="swatch-name">Light</div>
+        <div class="swatch-hex">#ffeb99</div>
+        <div class="swatch-form">Expanding aureoles, radiant beams</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: #4a3a8a;"></div>
+        <div class="swatch-name">Darkness</div>
+        <div class="swatch-hex">#4a3a8a</div>
+        <div class="swatch-form">Absorbing voids, rim-glow</div>
+      </div>
+    </div>
+
+    <h3>Creation Spheres (Domains of Existence)</h3>
+    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.8rem;">Each sphere has a base color AND a bright variant. Both shown below.</p>
+    <div class="palette-row">
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #ff4444 50%, #ff6b6b 50%);"></div>
+        <div class="swatch-name">Force</div>
+        <div class="swatch-hex">#ff4444 / #ff6b6b</div>
+        <div class="swatch-form">Sharp streaks, impact radiants</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #c4956a 50%, #dab088 50%);"></div>
+        <div class="swatch-name">Matter</div>
+        <div class="swatch-hex">#c4956a / #dab088</div>
+        <div class="swatch-form">Crystalline lattices, hex facets</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #ffd700 50%, #ffe44d 50%);"></div>
+        <div class="swatch-name">Energy</div>
+        <div class="swatch-hex">#ffd700 / #ffe44d</div>
+        <div class="swatch-form">Radiating spikes, star-bursts</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #00cc55 50%, #33ff77 50%);"></div>
+        <div class="swatch-name">Life</div>
+        <div class="swatch-hex">#00cc55 / #33ff77</div>
+        <div class="swatch-form">Organic branching, mycelium</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #2288ff 50%, #44aaff 50%);"></div>
+        <div class="swatch-name">Mind</div>
+        <div class="swatch-hex">#2288ff / #44aaff</div>
+        <div class="swatch-form">Neural dendrites, concentric rings</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #aa44dd 50%, #cc66ff 50%);"></div>
+        <div class="swatch-name">Spirit</div>
+        <div class="swatch-hex">#aa44dd / #cc66ff</div>
+        <div class="swatch-form">Ascending wisps, ethereal ribbons</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #ff3333 50%, #ff5555 50%);"></div>
+        <div class="swatch-name">Time</div>
+        <div class="swatch-hex">#ff3333 / #ff5555</div>
+        <div class="swatch-form">Concentric ripples, echoes</div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #5a7a8a 50%, #7a9aaa 50%);"></div>
+        <div class="swatch-name">Entropy</div>
+        <div class="swatch-hex">#5a7a8a / #7a9aaa</div>
+        <div class="swatch-form">Fracturing, scattering particles</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <h3>Magic Behavior — Organic, Never Static</h3>
+    <div class="magic-behavior">
+      <div class="behavior-card">
+        <div class="emoji">✨</div>
+        <div class="label">Luminous Dust</div>
+        <div class="desc">Particles drifting along invisible currents, swirling</div>
+      </div>
+      <div class="behavior-card">
+        <div class="emoji">🌊</div>
+        <div class="label">Ink in Water</div>
+        <div class="desc">Tendrils spreading, curling, alive</div>
+      </div>
+      <div class="behavior-card">
+        <div class="emoji">🔥</div>
+        <div class="label">Flickering Flame</div>
+        <div class="desc">Pulsing, brightening, dimming, restless</div>
+      </div>
+      <div class="behavior-card">
+        <div class="emoji">💨</div>
+        <div class="label">Glowing Clouds</div>
+        <div class="desc">Wisps and eddies of colored light in wind</div>
+      </div>
+    </div>
+    <p class="note">Threads are alive and moving, but their shapes are sphere-specific — identifiable by silhouette alone, even without color.</p>
+
+    <hr class="divider">
+
+    <h3>Sphere Influence Gradients — Dormant to Dominant</h3>
+    <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ff4444);"></div>
+      <div class="gradient-label"><span>Force — dormant</span><span>Force — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #c4956a);"></div>
+      <div class="gradient-label"><span>Matter — dormant</span><span>Matter — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ffd700);"></div>
+      <div class="gradient-label"><span>Energy — dormant</span><span>Energy — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #00cc55);"></div>
+      <div class="gradient-label"><span>Life — dormant</span><span>Life — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #2288ff);"></div>
+      <div class="gradient-label"><span>Mind — dormant</span><span>Mind — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #aa44dd);"></div>
+      <div class="gradient-label"><span>Spirit — dormant</span><span>Spirit — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ff3333);"></div>
+      <div class="gradient-label"><span>Time — dormant</span><span>Time — dominant</span></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #5a7a8a);"></div>
+      <div class="gradient-label"><span>Entropy — dormant</span><span>Entropy — dominant</span></div>
+    </div>
+  </div>
+
+  <!-- ======== NINE REACHES ======== -->
+  <div class="section">
+    <h2>Nine Reaches — Domain Tint Colors</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+      When a scene is set in a specific Reach, its domain color subtly tints the magic in that scene.
+    </p>
+
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #c45c5c;"></div>
+      <div class="reach-name">Iron</div>
+      <div class="reach-domain">Warfare</div>
+      <div class="reach-feel">Crimson-tinged battlefields, burning dark</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #c4a535;"></div>
+      <div class="reach-name">Gold</div>
+      <div class="reach-domain">Trade</div>
+      <div class="reach-feel">Amber marketplaces, warm lamplight</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #7b5ea7;"></div>
+      <div class="reach-name">Shadow</div>
+      <div class="reach-domain">Stealth</div>
+      <div class="reach-feel">Purple-tinged darkness, barely visible</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #4a9b8e;"></div>
+      <div class="reach-name">Veil</div>
+      <div class="reach-domain">Magic</div>
+      <div class="reach-feel">Teal arcane glow, ritual spaces</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #c47a7a;"></div>
+      <div class="reach-name">Heart</div>
+      <div class="reach-domain">Social</div>
+      <div class="reach-feel">Warm rose-tinged gatherings, hearthlight</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #6a8fb5;"></div>
+      <div class="reach-name">Eye</div>
+      <div class="reach-domain">Knowledge</div>
+      <div class="reach-feel">Cool blue libraries, observation towers</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #8b7d6b;"></div>
+      <div class="reach-name">Stone</div>
+      <div class="reach-domain">Construction</div>
+      <div class="reach-feel">Amber-lit forges, monumental dark stone</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #b8a04a;"></div>
+      <div class="reach-name">Star</div>
+      <div class="reach-domain">Fate</div>
+      <div class="reach-feel">Golden celestial light, night skies</div>
+    </div>
+    <div class="reach-row">
+      <div class="reach-swatch" style="background: #b07850;"></div>
+      <div class="reach-name">Flesh</div>
+      <div class="reach-domain">Biology</div>
+      <div class="reach-feel">Warm organic amber, living spaces</div>
+    </div>
+  </div>
+
+  <!-- ======== TYPOGRAPHY ======== -->
+  <div class="section">
+    <h2>Typography</h2>
+    <div class="type-specimen">
+      <div class="type-cinzel">The Weaver of Fate Descends</div>
+      <div class="type-cormorant">"In the silence between heartbeats, gods plant their whispers."</div>
+      <div class="type-inter">Influence Essence: 12 Spirit, 8 Mind, 3 Entropy — Detection Risk: 14% — The champion stirs in her sleep, a forgotten name on her lips. By morning she will march north, believing it was always her destiny.</div>
+    </div>
+    <div class="two-col">
+      <div>
+        <h3>Headings — Cinzel</h3>
+        <p style="font-family: 'Cinzel', serif; font-size: 1.4rem; color: var(--gold);">Abcdefghijklm</p>
+        <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted);">High-fantasy authority, inscriptive weight. Titles, section headers, sphere names.</p>
+      </div>
+      <div>
+        <h3>Narrative — Cormorant Garamond</h3>
+        <p style="font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-style: italic; color: var(--text-light);">Abcdefghijklm</p>
+        <p style="font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--text-muted);">Elegant serif for narrative prose, thought clouds, event descriptions.</p>
+      </div>
+    </div>
+    <div style="margin-top: 1rem;">
+      <h3>UI Body — Inter</h3>
+      <p style="font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--text-muted); line-height: 1.7;">The clarity of clean sans-serif for stats, labels, and mechanical information. Weights 300–600.</p>
+    </div>
+
+    <hr class="divider">
+
+    <h3>Text Rules</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.7;">
+      The ONLY text ever allowed in art is the game title <strong style="color: var(--gold);">"Threadbare"</strong> — warm gold serif, glowing, matching the thread aesthetic.<br>
+      Most images should have NO text at all. Never labels, captions, UI text, or descriptive text.
+    </p>
+  </div>
+
+  <!-- ======== ART STYLE ======== -->
+  <div class="section">
+    <h2>Art Style</h2>
+
+    <div class="two-col">
+      <div>
+        <h3>Medium &amp; Technique</h3>
+        <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.8; list-style: none; padding: 0;">
+          <li style="margin-bottom: 0.3rem;"><strong style="color: var(--text-light);">Painterly oil painting</strong> — visible brushstrokes, textural, not smooth digital</li>
+          <li style="margin-bottom: 0.3rem;"><strong style="color: var(--text-light);">Dark chiaroscuro</strong> — magic IS the light source</li>
+          <li style="margin-bottom: 0.3rem;"><strong style="color: var(--text-light);">Atmospheric depth</strong> — figures emerge from shadow and haze</li>
+          <li><strong style="color: var(--text-light);">NOT photorealistic</strong> — stylized, evocative, dreamlike-dark</li>
+        </ul>
+
+        <h3 style="margin-top: 1.2rem;">Perspective</h3>
+        <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.8; list-style: none; padding: 0;">
+          <li style="margin-bottom: 0.3rem;"><strong style="color: var(--text-light);">God's-eye view</strong> — world/landscape scenes (this is a god-game)</li>
+          <li style="margin-bottom: 0.3rem;"><strong style="color: var(--text-light);">Epic wide shot</strong> — cosmic/divine scenes (scale matters)</li>
+          <li><strong style="color: var(--text-light);">Mid-distance</strong> — character/faction scenes (environment context)</li>
+        </ul>
+      </div>
+      <div>
+        <h3>References (priority order)</h3>
+        <ol class="reference-list">
+          <li><strong>Diablo 3 / Path of Exile</strong> — radiant spell effects against dungeon darkness</li>
+          <li><strong>Elden Ring / Dark Souls</strong> — dark ancient landscapes, golden divine light</li>
+          <li><strong>Malazan covers (Simonetti)</strong> — epic oil-painted dark fantasy, atmospheric depth</li>
+          <li><strong>Endless Legend concept art</strong> — painterly, warm/cool contrast, strategic scale</li>
+          <li><strong>WoW raid environments</strong> — neon magic against dark caverns, theatrical lighting</li>
+        </ol>
+
+        <h3 style="margin-top: 1.2rem;">Lighting Rules</h3>
+        <ul style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.8; list-style: none; padding: 0;">
+          <li style="margin-bottom: 0.3rem;">Primary light = <strong style="color: var(--text-light);">magic threads and nodes</strong></li>
+          <li style="margin-bottom: 0.3rem;">Magic light is narrow — immediately adjacent surfaces only</li>
+          <li style="margin-bottom: 0.3rem;">Secondary = fire, torches, celestial bodies</li>
+          <li style="margin-bottom: 0.3rem;">Ambient = very low, deep twilight or underground gloom</li>
+          <li><strong style="color: #c45c5c;">No bright daylight scenes</strong> — even daytime is overcast</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== THEMATIC SUBJECTS ======== -->
+  <div class="section">
+    <h2>Thematic Subjects</h2>
+
+    <div class="two-col">
+      <div>
+        <div class="subject-card">
+          <h4>The Unmaking</h4>
+          <p>Terrain fractures into void-black chasms. Magic threads — all Creation Sphere colors — tear free from the dying world, rising like luminous nerves pulled from dark flesh. Ghostly silhouettes ascend. The sky splits.</p>
+        </div>
+        <div class="subject-card">
+          <h4>The World-Soul</h4>
+          <p>A luminous cosmic sphere pulsing with interwoven threads of all eight Creation Sphere colors. Orbits in darkness. Surrounded by faint echoes of past worlds. The brightest object in any scene.</p>
+        </div>
+        <div class="subject-card">
+          <h4>The Ascendant</h4>
+          <p>A divine figure forming from converging magic threads. Not fully solid — partially translucent, luminous, woven from light. Sphere colors reflect the player's choices. Always emerging from or standing above the dark world.</p>
+        </div>
+      </div>
+      <div>
+        <div class="subject-card">
+          <h4>Echoes</h4>
+          <p>Ghostly remnants of previous worlds. Faded, semi-transparent, rendered in desaturated versions of their original sphere colors. Monuments, heroes, relics drifting like afterimages. Less vivid than active magic.</p>
+        </div>
+        <div class="subject-card">
+          <h4>Rival Gods</h4>
+          <p>Dark divine figures with their own sphere-colored emanations. More imposing, alien, threatening. Their magic is as vivid as the player's but with different color combinations. Often in opposition or looming over territory.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== ASPECT RATIOS ======== -->
+  <div class="section">
+    <h2>Aspect Ratios</h2>
+    <div class="aspect-grid">
+      <div class="aspect-card">
+        <div class="aspect-box" style="width: 100%; aspect-ratio: 16/9;">16:9</div>
+        <div class="aspect-label">Title Screen</div>
+      </div>
+      <div class="aspect-card">
+        <div class="aspect-box" style="width: 100%; aspect-ratio: 16/9;">16:9</div>
+        <div class="aspect-label">Loading</div>
+      </div>
+      <div class="aspect-card">
+        <div class="aspect-box" style="width: 100%; aspect-ratio: 16/9;">16:9</div>
+        <div class="aspect-label">Creation</div>
+      </div>
+      <div class="aspect-card">
+        <div class="aspect-box" style="width: 80%; aspect-ratio: 1/1; margin: 0 auto;">1:1</div>
+        <div class="aspect-label">UI Icons</div>
+      </div>
+      <div class="aspect-card">
+        <div class="aspect-box" style="width: 75%; aspect-ratio: 3/4; margin: 0 auto;">3:4</div>
+        <div class="aspect-label">Portraits</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== UI CHROME ======== -->
+  <div class="section">
+    <h2>UI Chrome — Divine Layer</h2>
+
+    <div class="two-col" style="margin-bottom: 1.5rem;">
+      <div>
+        <h3>Panel Colors</h3>
+        <div class="palette-row">
+          <div class="swatch">
+            <div class="swatch-color" style="background: #0d0d14;"></div>
+            <div class="swatch-name">Deep BG</div>
+            <div class="swatch-hex">#0d0d14</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #1a1a2e;"></div>
+            <div class="swatch-name">Panel</div>
+            <div class="swatch-hex">#1a1a2e</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #d4af37;"></div>
+            <div class="swatch-name">Gold</div>
+            <div class="swatch-hex">#d4af37</div>
+          </div>
+          <div class="swatch">
+            <div class="swatch-color" style="background: #e8e0d4;"></div>
+            <div class="swatch-name">Text</div>
+            <div class="swatch-hex">#e8e0d4</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <h3>Divine Intervention Gradient</h3>
+        <div class="gradient-bar" style="background: linear-gradient(to right, #1a1a2e, #2a2050, #4a2080, #8040a0, #c860c0, #ffd700);"></div>
+        <div class="gradient-label">
+          <span>Whisper (0–5%)</span>
+          <span>Nudge (5–15%)</span>
+          <span>Intervention (15–35%)</span>
+          <span>Manipulation (35–60%)</span>
+          <span>Domination (60%+)</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <h3>UI Mockup — Dark Threadbare Theme</h3>
+    <div class="ui-mockup" style="background: #0d0d14;">
+      <div class="ui-sidebar" style="background: #1a1a2e; border-right: 1px solid rgba(212, 175, 55, 0.15);">
+        <div style="font-family: 'Cinzel', serif; color: #d4af37; font-size: 0.8rem; text-align: center;">Threadbare</div>
+        <div class="ui-element" style="background: rgba(255, 68, 68, 0.08); color: #ff6b6b; border: 1px solid rgba(255, 68, 68, 0.15);">Force ████ 0.32</div>
+        <div class="ui-element" style="background: rgba(0, 204, 85, 0.08); color: #33ff77; border: 1px solid rgba(0, 204, 85, 0.15);">Life ████ 0.71</div>
+        <div class="ui-element" style="background: rgba(170, 68, 221, 0.08); color: #cc66ff; border: 1px solid rgba(170, 68, 221, 0.15);">Spirit ██ 0.18</div>
+        <div style="flex: 1;"></div>
+        <div style="font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--text-light); font-size: 0.75rem; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 3px;">"The forest remembers what the mountain has forgotten."</div>
+      </div>
+      <div class="ui-main" style="background: #0d0d14;">
+        <!-- Dark world hex map -->
+        <div class="hex-mock" style="background: #1a2a1a;"></div>
+        <div class="hex-mock" style="background: #243424;"></div>
+        <div class="hex-mock" style="background: #2e3e2a;"></div>
+        <div class="hex-mock" style="background: #3a4a30;"></div>
+        <div class="hex-mock" style="background: #3a3535;"></div>
+        <div class="hex-mock" style="background: #4a4540;"></div>
+        <div class="hex-mock" style="background: #1a2a1a;"></div>
+        <div class="hex-mock" style="background: #1a2535;"></div>
+        <div class="hex-mock" style="background: #2e3e2a;"></div>
+        <div class="hex-mock" style="background: #3d3025;"></div>
+        <div class="hex-mock" style="background: #3a4a30;"></div>
+        <div class="hex-mock" style="background: #5a4a38;"></div>
+        <div class="hex-mock" style="background: #1a2535;"></div>
+        <div class="hex-mock" style="background: #202e40;"></div>
+        <div class="hex-mock" style="background: #2e3e2a;"></div>
+        <div class="hex-mock" style="background: #243424;"></div>
+        <div class="hex-mock" style="background: #3a3535;"></div>
+        <div class="hex-mock" style="background: #5a4a38;"></div>
+        <div class="hex-mock" style="background: #253548;"></div>
+        <div class="hex-mock" style="background: #1a2535;"></div>
+        <div class="hex-mock" style="background: #3a4a30;"></div>
+        <div class="hex-mock" style="background: #3d3025;"></div>
+        <div class="hex-mock" style="background: #4a4540;"></div>
+        <div class="hex-mock" style="background: #2a2a2e;"></div>
+      </div>
+    </div>
+    <p class="note">Dark world, dark UI. Magic threads (not shown here) provide the only vivid color in the actual game view.</p>
+
+    <hr class="divider">
+
+    <!-- Sphere-tinted borders -->
+    <h3>Sphere-Tinted Borders — Influence on UI</h3>
+    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">When a panel is under sphere influence, borders shift to the sphere's color at low opacity.</p>
+    <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 68, 68, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ff4444;">Force</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(196, 149, 106, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #c4956a;">Matter</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ffd700;">Energy</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(0, 204, 85, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #00cc55;">Life</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(34, 136, 255, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #2288ff;">Mind</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(170, 68, 221, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aa44dd;">Spirit</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 51, 51, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ff3333;">Time</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(90, 122, 138, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #5a7a8a;">Entropy</div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Borders & depth -->
+    <h3>Border Weight Hierarchy</h3>
+    <div style="display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 180px; height: 48px; border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 3px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted);">Subtle divider</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);"><strong style="color: var(--text-light);">1px</strong> — internal dividers, list separators</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 180px; height: 48px; border: 2px solid rgba(212, 175, 55, 0.2); border-radius: 3px; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted);">Panel edge</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);"><strong style="color: var(--text-light);">2px</strong> — panel borders, sidebar edge, selected hover</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div style="width: 180px; height: 48px; border-bottom: 3px solid var(--gold); border-radius: 0; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: var(--text-muted);">Section header</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted);"><strong style="color: var(--text-light);">3px</strong> — section headers, major boundaries, active tab</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <h3>Shadow &amp; Depth</h3>
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+      <div style="text-align: center;">
+        <div style="width: 120px; height: 70px; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.12); border-radius: 3px; margin-bottom: 0.4rem;"></div>
+        <div style="font-size: 0.6rem; color: var(--text-muted);">Flat (default)</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 120px; height: 70px; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.12); border-radius: 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); margin-bottom: 0.4rem;"></div>
+        <div style="font-size: 0.6rem; color: var(--text-muted);">Subtle lift (hover)</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 120px; height: 70px; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.12); border-radius: 3px; box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 0.4rem;"></div>
+        <div style="font-size: 0.6rem; color: var(--text-muted);">Elevated (popover)</div>
+      </div>
+      <div style="text-align: center;">
+        <div style="width: 120px; height: 70px; background: rgba(255,255,255,0.04); border: 1px solid rgba(212,175,55,0.2); border-radius: 3px; box-shadow: 0 0 12px rgba(212,175,55,0.15); margin-bottom: 0.4rem;"></div>
+        <div style="font-size: 0.6rem; color: var(--text-muted);">Divine glow (intervention)</div>
+      </div>
+    </div>
+    <p class="note">Shadows minimal by default — depth from border opacity, not drop shadows. Divine glow reserved for active player intervention.</p>
+  </div>
+
+  <!-- ======== EXCLUSIONS ======== -->
+  <div class="section">
+    <h2>Exclusions — Always Apply</h2>
+    <div class="exclusion-list">
+      <span>No UI elements or HUD overlays</span>
+      <span>No modern elements</span>
+      <span>No cartoon or anime style</span>
+      <span>No photorealistic rendering</span>
+      <span>No bright daylight or sunny scenes</span>
+      <span>No pastel colors anywhere</span>
+      <span>No text labels or captions (only "Threadbare")</span>
+      <span>No excessive detail that flattens painterly quality</span>
+      <span>No ambient magic glow or diffuse color wash</span>
+      <span>No static geometric lines for magic (must be organic)</span>
+    </div>
+  </div>
+
+  <!-- ======== PROMPT PATTERN ======== -->
+  <div class="section">
+    <h2>Prompt Construction Pattern</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Six layers, always included:</p>
+
+    <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.4rem 1rem; font-size: 0.8rem; margin-bottom: 1.5rem;">
+      <strong style="color: var(--gold);">1. Subject</strong>
+      <span style="color: var(--text-muted);">What the scene depicts</span>
+      <strong style="color: var(--gold);">2. World tone</strong>
+      <span style="color: var(--text-muted);">"dark fantasy oil painting, charcoal and deep shadow, ancient weathered world"</span>
+      <strong style="color: var(--gold);">3. Magic spec</strong>
+      <span style="color: var(--text-muted);">Name the specific sphere colors as glowing/radiant threads</span>
+      <strong style="color: var(--gold);">4. Lighting</strong>
+      <span style="color: var(--text-muted);">"magic provides primary illumination, deep chiaroscuro, no bright daylight"</span>
+      <strong style="color: var(--gold);">5. Style anchors</strong>
+      <span style="color: var(--text-muted);">"painterly brushstrokes, atmospheric depth, Diablo-like magic, Elden Ring grandeur"</span>
+      <strong style="color: var(--gold);">6. Exclusions</strong>
+      <span style="color: var(--text-muted);">"no UI, no modern, no cartoon, no photorealistic, no daylight, no pastel, no text"</span>
+    </div>
+
+    <h3>Example Prompt</h3>
+    <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(212, 175, 55, 0.1); border-radius: 4px; padding: 1rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.7rem; color: var(--text-muted); line-height: 1.6;">
+      [Subject description]. Dark fantasy oil painting style.<br>
+      Ancient weathered world in deep shadow and charcoal tones, 85-95% of the image is dark.<br>
+      Thin luminous [sphere color] magic threads break through the darkness<br>
+      at concentrated points — organic, alive, swirling like luminous dust,<br>
+      curling like ink in dark water, flickering like flame along thin veins and nodes.<br>
+      The threads are not rigid — they pulse, drift, and breathe.<br>
+      Narrow colored glow only on immediately adjacent dark surfaces.<br>
+      Painterly brushstrokes, atmospheric depth, dramatic chiaroscuro.<br>
+      No ambient magic glow, no diffuse color wash — magic is always concentrated<br>
+      into thin organic threads, bright nodes, and swirling particles.<br>
+      No UI elements, no text, no modern elements, no cartoon style,<br>
+      no photorealistic, no bright daylight, no pastel colors, no static geometric lines.
+    </div>
+  </div>
+
+  <!-- ======== REFERENCES ======== -->
+  <div class="section">
+    <h2>References</h2>
+    <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 2;">
+      <strong style="color: var(--text-light);">Games:</strong>
+      Diablo 3 (Blizzard) · Path of Exile (GGG) · Elden Ring (FromSoftware) · Dark Souls (FromSoftware) · Endless Legend (Amplitude) · World of Warcraft (Blizzard)<br>
+      <strong style="color: var(--text-light);">Artists:</strong>
+      Marc Simonetti (Malazan) · Endless Legend concept team · FromSoftware concept art<br>
+      <strong style="color: var(--text-light);">Analogies:</strong>
+      Bioluminescent mycelium through dark soil · Dark circuit board with glowing solder points · Erdtree roots threading through dark ruins
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

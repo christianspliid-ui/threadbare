@@ -54,11 +54,10 @@ export interface AgentWheelProps {
 
 // ─── Component ────────────────────────────────────────────────────────────
 
-export function AgentWheel(props: AgentWheelProps): JSX.Element {
+export function AgentWheel(props: AgentWheelProps) {
   const { slots, agentName, agentTitle, cx, cy, onSlotClick, onDismiss } = props;
 
   // Separate center slot from action slots
-  const centerSlot = slots.find((s) => s.id === 'center');
   const actionSlots = slots.filter((s) => s.id !== 'center');
 
   return (
