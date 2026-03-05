@@ -1,0 +1,5010 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "generated": "2026-03-05T13:22:04.732Z",
+    "nodeCount": 198,
+    "edgeCount": 290,
+    "categories": [
+      "action-template",
+      "actor-type",
+      "creation-sphere",
+      "culture",
+      "foundation-sphere",
+      "location-type",
+      "magic-tradition",
+      "reach",
+      "region-type",
+      "relationship-type",
+      "sublocation-type",
+      "terrain",
+      "trait-condition",
+      "trait-destiny",
+      "trait-innate",
+      "trait-mastery",
+      "trait-reputation",
+      "trait-scar"
+    ]
+  },
+  "nodes": [
+    {
+      "id": "rel.underpins",
+      "name": "Underpins",
+      "category": "relationship-type",
+      "description": "Foundational dependency — the source is a metaphysical prerequisite for the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#666",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.opposes",
+      "name": "Opposes",
+      "category": "relationship-type",
+      "description": "Binary opposition — the source and target are metaphysical contrasts",
+      "properties": {
+        "pattern": "symmetric",
+        "visualStyle": {
+          "color": "#c41e3a",
+          "arrowHead": false,
+          "dashArray": "5,5"
+        }
+      }
+    },
+    {
+      "id": "rel.emerges-from",
+      "name": "Emerges From",
+      "category": "relationship-type",
+      "description": "Derivative emergence — the source arises from the interaction or synthesis of multiple predecessors",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#9467bd",
+          "arrowHead": true,
+          "dashArray": "2,2"
+        }
+      }
+    },
+    {
+      "id": "rel.generates",
+      "name": "Generates",
+      "category": "relationship-type",
+      "description": "Creative hierarchy — the source generates or produces the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#ffd700",
+          "arrowHead": true
+        }
+      }
+    },
+    {
+      "id": "rel.draws-from",
+      "name": "Draws From",
+      "category": "relationship-type",
+      "description": "Energy source — the target draws power or essence from the source",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#1f77b4",
+          "arrowHead": true,
+          "dashArray": "3,3"
+        }
+      }
+    },
+    {
+      "id": "rel.biome-affinity",
+      "name": "Biome Affinity",
+      "category": "relationship-type",
+      "description": "Terrain alignment — the source has weighted affinity or influence over the target terrain biome",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#2ca02c",
+          "arrowHead": true,
+          "dashArray": "4,2"
+        }
+      }
+    },
+    {
+      "id": "rel.contains",
+      "name": "Contains",
+      "category": "relationship-type",
+      "description": "Hierarchical containment — the source is a parent or category of the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#8c564b",
+          "arrowHead": true
+        }
+      }
+    },
+    {
+      "id": "rel.adjacent",
+      "name": "Adjacent",
+      "category": "relationship-type",
+      "description": "Spatial transition — the source and target terrains naturally border or transition into each other",
+      "properties": {
+        "pattern": "symmetric",
+        "visualStyle": {
+          "color": "#7f7f7f",
+          "arrowHead": false
+        }
+      }
+    },
+    {
+      "id": "rel.amplifies",
+      "name": "Amplifies",
+      "category": "relationship-type",
+      "description": "Strengthening synergy — the source enhances or intensifies the effects of the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#ff7f0e",
+          "arrowHead": true
+        }
+      }
+    },
+    {
+      "id": "rel.suppresses",
+      "name": "Suppresses",
+      "category": "relationship-type",
+      "description": "Weakening opposition — the source inhibits or dampens the effects of the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#d62728",
+          "arrowHead": true,
+          "dashArray": "1,2"
+        }
+      }
+    },
+    {
+      "id": "rel.corrupts",
+      "name": "Corrupts",
+      "category": "relationship-type",
+      "description": "Degradation — the source taints, perverts, or corrupts the nature of the target",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#4a0e4e",
+          "arrowHead": true,
+          "dashArray": "6,2"
+        }
+      }
+    },
+    {
+      "id": "rel.transforms-into",
+      "name": "Transforms Into",
+      "category": "relationship-type",
+      "description": "State change — the source transitions or metamorphoses into the target under certain conditions",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#17becf",
+          "arrowHead": true,
+          "dashArray": "4,1"
+        }
+      }
+    },
+    {
+      "id": "rel.seasonal-cycle",
+      "name": "Seasonal Cycle",
+      "category": "relationship-type",
+      "description": "Cyclical rhythm — the source and target alternate in influence or manifestation through time",
+      "properties": {
+        "pattern": "symmetric",
+        "visualStyle": {
+          "color": "#bcbd22",
+          "arrowHead": false,
+          "dashArray": "8,3"
+        }
+      }
+    },
+    {
+      "id": "foundation.chaos",
+      "name": "Chaos",
+      "category": "foundation-sphere",
+      "description": "The primordial underpinning of all existence—raw potential, formless and boundless. Chaos is not evil or destructive, but rather the infinite wellspring from which all order, structure, and being emerge. It is the silence before creation, the void pregnant with possibility, the ground upon which the binary of Darkness and Light first manifests.",
+      "properties": {
+        "color": "#1a0033",
+        "symbolicAnimal": "Serpent Ouroboros",
+        "element": "Void",
+        "alignedSpheres": [
+          "foundation.darkness",
+          "foundation.light"
+        ],
+        "cosmicPrinciple": "Potentiality",
+        "influence": "foundational"
+      }
+    },
+    {
+      "id": "foundation.darkness",
+      "name": "Darkness",
+      "category": "foundation-sphere",
+      "description": "The principle of absence, void, and mystery. Darkness is not malevolence but rather the unknown, the hidden, the unexplored. It represents concealment, privacy, rest, and the unconscious depths. Where Darkness reigns, mysteries abound and secrets are kept. It is the complement to Light, neither superior nor inferior.",
+      "properties": {
+        "color": "#2a2a4a",
+        "symbolicAnimal": "Owl",
+        "element": "Shadow",
+        "associations": [
+          "Night",
+          "Moon",
+          "Mystery",
+          "Unconscious",
+          "Rest",
+          "Secrets"
+        ],
+        "cosmicPrinciple": "Concealment",
+        "influence": "universal"
+      }
+    },
+    {
+      "id": "foundation.light",
+      "name": "Light",
+      "category": "foundation-sphere",
+      "description": "The principle of presence, clarity, and revelation. Light illuminates what was hidden, makes manifest the true nature of things, and brings awareness to consciousness. It represents understanding, truth, revelation, and the revealed world. Light is the complement to Darkness, neither superior nor inferior, but necessary to create meaning through contrast.",
+      "properties": {
+        "color": "#ffeb99",
+        "symbolicAnimal": "Eagle",
+        "element": "Radiance",
+        "associations": [
+          "Day",
+          "Sun",
+          "Truth",
+          "Conscious",
+          "Awakening",
+          "Revelation"
+        ],
+        "cosmicPrinciple": "Revelation",
+        "influence": "universal"
+      }
+    },
+    {
+      "id": "foundation.shadow",
+      "name": "Shadow",
+      "category": "foundation-sphere",
+      "description": "The emergent sphere born from the interplay of Darkness and Light—neither pure darkness nor pure light, but the zone of twilight, ambiguity, and transformation. Shadow is the trickster principle: deception and truth entwined, the half-revealed, the liminal space. Shadows shift with the angle of light, representing adaptability, cunning, and the wisdom found in paradox. Shadow is not a third equal sphere like Darkness and Light, but rather the dynamic interaction between them.",
+      "properties": {
+        "color": "#6a5acd",
+        "symbolicAnimal": "Raven",
+        "element": "Dusk",
+        "associations": [
+          "Twilight",
+          "Dusk",
+          "Trickery",
+          "Ambiguity",
+          "Transformation",
+          "Paradox",
+          "Cunning"
+        ],
+        "cosmicPrinciple": "Interplay",
+        "influence": "emergent",
+        "dependsOn": [
+          "foundation.darkness",
+          "foundation.light"
+        ]
+      }
+    },
+    {
+      "id": "creation.force",
+      "name": "Force",
+      "category": "creation-sphere",
+      "description": "The sphere of physics, motion, kinetic energy, and motive power. Force governs gravity, pressure, momentum, magnetism, and the push-pull of physical interaction. It is the sphere of winds, the collision of matter, the tension in a drawn bow, and the irresistible drive of change.",
+      "properties": {
+        "color": "#ff6b6b",
+        "physicalPhenomena": [
+          "Wind",
+          "Gravity",
+          "Magnetism",
+          "Momentum",
+          "Pressure",
+          "Acceleration"
+        ],
+        "associatedColors": [
+          "Red",
+          "Violet"
+        ],
+        "dominantTemperature": "neutral",
+        "dominantMoisture": "neutral",
+        "dominantElevation": "neutral"
+      }
+    },
+    {
+      "id": "creation.matter",
+      "name": "Matter",
+      "category": "creation-sphere",
+      "description": "The sphere of substance, solidity, and material form. Matter is the physical stuff of the world—stone, metal, crystal, soil, bone, and all tangible substances. It represents structure, weight, persistence, and the solid foundations upon which all things rest.",
+      "properties": {
+        "color": "#8b7355",
+        "physicalPhenomena": [
+          "Stone",
+          "Metal",
+          "Crystal",
+          "Soil",
+          "Density",
+          "Rigidity"
+        ],
+        "associatedColors": [
+          "Brown",
+          "Grey",
+          "Tan"
+        ],
+        "dominantTemperature": "cool",
+        "dominantMoisture": "low",
+        "dominantElevation": "high",
+        "terrainBias": 0.15
+      }
+    },
+    {
+      "id": "creation.energy",
+      "name": "Energy",
+      "category": "creation-sphere",
+      "description": "The sphere of heat, light, electricity, radiation, and dynamic power. Energy is the flow of warmth, the brilliance of flame, the spark of lightning, the radiance of stars. It represents vitality, transformation, intensity, and the active principle that animates and transforms matter.",
+      "properties": {
+        "color": "#ffd700",
+        "physicalPhenomena": [
+          "Fire",
+          "Lightning",
+          "Heat",
+          "Light",
+          "Radiation",
+          "Plasma"
+        ],
+        "associatedColors": [
+          "Gold",
+          "Orange",
+          "Yellow",
+          "White"
+        ],
+        "dominantTemperature": "hot",
+        "dominantMoisture": "low",
+        "dominantElevation": "neutral",
+        "temperatureBias": 0.1
+      }
+    },
+    {
+      "id": "creation.life",
+      "name": "Life",
+      "category": "creation-sphere",
+      "description": "The sphere of biology, growth, healing, reproduction, and fertility. Life is the organizing principle that animates flesh, drives the flourishing of plants and animals, enables regeneration, and perpetuates itself across generations. It also encompasses disease, decay, and the dark side of biological processes.",
+      "properties": {
+        "color": "#2ecc71",
+        "physicalPhenomena": [
+          "Growth",
+          "Regeneration",
+          "Metabolism",
+          "Reproduction",
+          "Healing",
+          "Disease"
+        ],
+        "associatedColors": [
+          "Green",
+          "Blue-green",
+          "Vibrant"
+        ],
+        "dominantTemperature": "warm",
+        "dominantMoisture": "high",
+        "dominantElevation": "low",
+        "moistureBias": 0.12
+      }
+    },
+    {
+      "id": "creation.mind",
+      "name": "Mind",
+      "category": "creation-sphere",
+      "description": "The sphere of thought, perception, memory, consciousness, and intellect. Mind is the seat of awareness, reasoning, imagination, and dream. It governs psychology, perception of reality, illusion, telepathy, and the formation of belief. Mind shapes how the world is perceived as much as it perceives the world.",
+      "properties": {
+        "color": "#3498db",
+        "physicalPhenomena": [
+          "Thought",
+          "Perception",
+          "Memory",
+          "Dreams",
+          "Illusion",
+          "Consciousness"
+        ],
+        "associatedColors": [
+          "Blue",
+          "Indigo",
+          "Silver"
+        ],
+        "dominantTemperature": "neutral",
+        "dominantMoisture": "neutral",
+        "dominantElevation": "neutral"
+      }
+    },
+    {
+      "id": "creation.spirit",
+      "name": "Spirit",
+      "category": "creation-sphere",
+      "description": "The sphere of soul, afterlife, divine connection, and the essence of being beyond matter. Spirit is the animating force in living things, the spiritual realm where ancestors dwell, the source of holy and unholy power, and the connection between the physical and transcendent.",
+      "properties": {
+        "color": "#9b59b6",
+        "physicalPhenomena": [
+          "Soul",
+          "Ghosts",
+          "Divinity",
+          "Holiness",
+          "Ancestors",
+          "Transcendence"
+        ],
+        "associatedColors": [
+          "Purple",
+          "Silver",
+          "Violet"
+        ],
+        "dominantTemperature": "cool",
+        "dominantMoisture": "neutral",
+        "dominantElevation": "neutral"
+      }
+    },
+    {
+      "id": "creation.time",
+      "name": "Time",
+      "category": "creation-sphere",
+      "description": "The sphere of temporal flow, aging, duration, and causality. Time is the arrow of change, the flow from past through present to future. It governs growth and decay, prophecy and prophecy, acceleration and stasis. Time is both the measure of duration and the force that carries all things forward.",
+      "properties": {
+        "color": "#e74c3c",
+        "physicalPhenomena": [
+          "Temporal Flow",
+          "Aging",
+          "Causality",
+          "Prophecy",
+          "Stasis",
+          "Duration"
+        ],
+        "associatedColors": [
+          "Red",
+          "Bronze",
+          "Silver"
+        ],
+        "dominantTemperature": "neutral",
+        "dominantMoisture": "neutral",
+        "dominantElevation": "neutral"
+      }
+    },
+    {
+      "id": "creation.entropy",
+      "name": "Entropy",
+      "category": "creation-sphere",
+      "description": "The sphere of decay, dissolution, randomness, and chaos. Entropy is the tendency of order to break down, of all things to tend toward disorder. It governs decay and rot, the randomness of chance, probability and luck, and the chaotic magic that defies prediction. Entropy is not evil but rather the natural tendency of the universe toward greater freedom and disorder.",
+      "properties": {
+        "color": "#34495e",
+        "physicalPhenomena": [
+          "Decay",
+          "Disorder",
+          "Randomness",
+          "Probability",
+          "Dissolution",
+          "Chaos"
+        ],
+        "associatedColors": [
+          "Black",
+          "Grey",
+          "Deep Blue"
+        ],
+        "dominantTemperature": "volatile",
+        "dominantMoisture": "variable",
+        "dominantElevation": "variable",
+        "variationBias": 0.15
+      }
+    },
+    {
+      "id": "magic.fire",
+      "name": "Fire Magic",
+      "category": "magic-tradition",
+      "description": "The control and manipulation of flame, heat, and combustion. Fire mages wield infernos, kindle sacred flames, or snuff out fires at will. They often embody passion, rage, or purification.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.energy",
+          "creation.force"
+        ],
+        "sphereWeights": {
+          "creation.energy": 0.7,
+          "creation.force": 0.3
+        },
+        "color": "#ff4500"
+      }
+    },
+    {
+      "id": "magic.ice",
+      "name": "Ice Magic",
+      "category": "magic-tradition",
+      "description": "The subtractive control of thermal energy, freezing moisture and slowing molecular motion. Ice mages create frozen shields, glaciers, and flash-freeze their foes.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.energy",
+          "creation.matter"
+        ],
+        "sphereWeights": {
+          "creation.energy": 0.5,
+          "creation.matter": 0.5
+        },
+        "color": "#00bfff"
+      }
+    },
+    {
+      "id": "magic.earth",
+      "name": "Earth Magic",
+      "category": "magic-tradition",
+      "description": "The command of stone, soil, and mineral matter. Earth mages raise stone walls, shake the ground, or transmute soil into fertile loam.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.matter",
+          "creation.force"
+        ],
+        "sphereWeights": {
+          "creation.matter": 0.6,
+          "creation.force": 0.4
+        },
+        "color": "#8b4513"
+      }
+    },
+    {
+      "id": "magic.air",
+      "name": "Air Magic",
+      "category": "magic-tradition",
+      "description": "The manipulation of wind, breath, and atmospheric pressure. Air mages summon gales, breathe underwater, or speak across vast distances through the wind.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.force"
+        ],
+        "sphereWeights": {
+          "creation.force": 1
+        },
+        "color": "#87ceeb"
+      }
+    },
+    {
+      "id": "magic.water",
+      "name": "Water Magic",
+      "category": "magic-tradition",
+      "description": "The domination of liquid water in all its forms. Water mages part seas, create whirlpools, heal with purifying water, or drown enemies in torrents.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.matter",
+          "creation.energy"
+        ],
+        "sphereWeights": {
+          "creation.matter": 0.5,
+          "creation.energy": 0.5
+        },
+        "color": "#1e90ff"
+      }
+    },
+    {
+      "id": "magic.lightning",
+      "name": "Lightning Magic",
+      "category": "magic-tradition",
+      "description": "The channeling of electrical energy and atmospheric discharge. Lightning mages call down storms, ride bolts through the air, or burn foes with raw electricity.",
+      "properties": {
+        "school": "Elemental",
+        "primarySpheres": [
+          "creation.energy",
+          "creation.force"
+        ],
+        "sphereWeights": {
+          "creation.energy": 0.6,
+          "creation.force": 0.4
+        },
+        "color": "#ffff00"
+      }
+    },
+    {
+      "id": "magic.plant",
+      "name": "Plant Magic",
+      "category": "magic-tradition",
+      "description": "The fostering and command of flora. Plant mages accelerate growth, manipulate vines and roots, or infuse plants with magical properties.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.life",
+          "creation.matter"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.7,
+          "creation.matter": 0.3
+        },
+        "color": "#228b22"
+      }
+    },
+    {
+      "id": "magic.animal",
+      "name": "Animal Magic",
+      "category": "magic-tradition",
+      "description": "The communion with and control of beasts. Animal mages call creatures to aid them, command animal swarms, or understand animal thoughts.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.life",
+          "creation.mind"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.6,
+          "creation.mind": 0.4
+        },
+        "color": "#8b4513"
+      }
+    },
+    {
+      "id": "magic.healing",
+      "name": "Healing Magic",
+      "category": "magic-tradition",
+      "description": "The mending of wounds, curing of disease, and restoration of vitality. Healers channel life force to knit flesh, purge toxins, and restore wholeness.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.life",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.7,
+          "creation.spirit": 0.3
+        },
+        "color": "#ff69b4"
+      }
+    },
+    {
+      "id": "magic.druidism",
+      "name": "Druidism & Shapeshifting",
+      "category": "magic-tradition",
+      "description": "The transformation of the body and harmony with nature's forms. Druids shapeshift into animals, merge their essence with nature, and walk between civilized and wild worlds.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.life",
+          "creation.force",
+          "creation.matter"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.5,
+          "creation.force": 0.3,
+          "creation.matter": 0.2
+        },
+        "color": "#2f4f2f"
+      }
+    },
+    {
+      "id": "magic.poison",
+      "name": "Poison & Toxin Magic",
+      "category": "magic-tradition",
+      "description": "The crafting and deployment of toxins, venom, and harmful biological agents. Poison mages create deadly concoctions, accelerate rot, or infect with magical disease.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.life",
+          "creation.entropy"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.6,
+          "creation.entropy": 0.4
+        },
+        "color": "#9932cc"
+      }
+    },
+    {
+      "id": "magic.weather",
+      "name": "Weather Magic",
+      "category": "magic-tradition",
+      "description": "The manipulation of storms, precipitation, and atmospheric phenomena. Weather mages summon rain or drought, call lightning, or create localized tempests.",
+      "properties": {
+        "school": "Nature",
+        "primarySpheres": [
+          "creation.force",
+          "creation.energy",
+          "creation.life"
+        ],
+        "sphereWeights": {
+          "creation.force": 0.4,
+          "creation.energy": 0.3,
+          "creation.life": 0.3
+        },
+        "color": "#708090"
+      }
+    },
+    {
+      "id": "magic.shamanism",
+      "name": "Shamanism & Soul Magic",
+      "category": "magic-tradition",
+      "description": "The communion with spirits, ancestors, and the spiritual realm. Shamans journey between worlds, commune with spirit guides, and channel ancestral wisdom.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.life"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.6,
+          "creation.life": 0.4
+        },
+        "color": "#daa520"
+      }
+    },
+    {
+      "id": "magic.necromancy",
+      "name": "Necromancy",
+      "category": "magic-tradition",
+      "description": "The binding and command of the dead. Necromancers raise undead servants, commune with departed spirits, and tap the power of death itself.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.entropy"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.6,
+          "creation.entropy": 0.4
+        },
+        "color": "#2f4f4f"
+      }
+    },
+    {
+      "id": "magic.holy",
+      "name": "Holy & Divine Magic",
+      "category": "magic-tradition",
+      "description": "The channeling of divine light, sacred power, and celestial authority. Holy mages smite the wicked, grant blessings, and wield the power of the gods.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.energy"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.6,
+          "creation.energy": 0.4
+        },
+        "color": "#fffacd"
+      }
+    },
+    {
+      "id": "magic.psionics",
+      "name": "Psionics & Mind Control",
+      "category": "magic-tradition",
+      "description": "The direct manipulation of consciousness and thought. Psions read minds, implant suggestions, control bodies, or shatter sanity with psychic force.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.mind"
+        ],
+        "sphereWeights": {
+          "creation.mind": 1
+        },
+        "color": "#8b008b"
+      }
+    },
+    {
+      "id": "magic.illusion",
+      "name": "Illusion Magic",
+      "category": "magic-tradition",
+      "description": "The crafting of false sensory experiences. Illusionists deceive the eye and mind, create convincing phantasms, and twist perception of reality.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.mind",
+          "creation.energy"
+        ],
+        "sphereWeights": {
+          "creation.mind": 0.7,
+          "creation.energy": 0.3
+        },
+        "color": "#ff1493"
+      }
+    },
+    {
+      "id": "magic.dreamcraft",
+      "name": "Dream Magic",
+      "category": "magic-tradition",
+      "description": "The navigation and manipulation of dreams and the dreamscape. Dream mages enter sleep, reshape dreams, or pull objects from dream into waking.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.mind",
+          "creation.spirit",
+          "creation.time"
+        ],
+        "sphereWeights": {
+          "creation.mind": 0.4,
+          "creation.spirit": 0.4,
+          "creation.time": 0.2
+        },
+        "color": "#4169e1"
+      }
+    },
+    {
+      "id": "magic.demonology",
+      "name": "Demonology & Infernal Pacts",
+      "category": "magic-tradition",
+      "description": "The summoning, binding, and negotiation with demonic entities. Demonologists gain power through pacts, command infernal servants, and traffic in forbidden knowledge.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.mind"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.6,
+          "creation.mind": 0.4
+        },
+        "color": "#dc143c"
+      }
+    },
+    {
+      "id": "magic.teleportation",
+      "name": "Teleportation & Spatial Magic",
+      "category": "magic-tradition",
+      "description": "The manipulation of space itself, enabling instant travel or warping of distance. Teleporters blink across battlefields, create portals, or fold space itself.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.force",
+          "creation.time"
+        ],
+        "sphereWeights": {
+          "creation.force": 0.6,
+          "creation.time": 0.4
+        },
+        "color": "#00ced1"
+      }
+    },
+    {
+      "id": "magic.chronomancy",
+      "name": "Chronomancy & Time Magic",
+      "category": "magic-tradition",
+      "description": "The direct manipulation of temporal flow. Chronomancers slow or accelerate time, glimpse alternate timelines, or create localized time distortions.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.time"
+        ],
+        "sphereWeights": {
+          "creation.time": 1
+        },
+        "color": "#ff8c00"
+      }
+    },
+    {
+      "id": "magic.divination",
+      "name": "Divination & Prophecy",
+      "category": "magic-tradition",
+      "description": "The seeking of hidden knowledge and glimpses of the future. Diviners read signs, scry through crystals, or receive visions of what is to come.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.time",
+          "creation.mind"
+        ],
+        "sphereWeights": {
+          "creation.time": 0.6,
+          "creation.mind": 0.4
+        },
+        "color": "#9370db"
+      }
+    },
+    {
+      "id": "magic.luck",
+      "name": "Luck & Probability Magic",
+      "category": "magic-tradition",
+      "description": "The bending of chance and probability. Luck mages tilt fortune in their favor, manipulate odds, or invoke the randomness of chaos itself.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.entropy"
+        ],
+        "sphereWeights": {
+          "creation.entropy": 1
+        },
+        "color": "#00ff00"
+      }
+    },
+    {
+      "id": "magic.transmutation",
+      "name": "Transmutation & Alchemy",
+      "category": "magic-tradition",
+      "description": "The transformation of one substance into another. Alchemists turn lead to gold, poison to medicine, or rearrange matter at the molecular level.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.matter",
+          "creation.energy",
+          "creation.life"
+        ],
+        "sphereWeights": {
+          "creation.matter": 0.4,
+          "creation.energy": 0.3,
+          "creation.life": 0.3
+        },
+        "color": "#daa520"
+      }
+    },
+    {
+      "id": "magic.enchantment",
+      "name": "Enchantment & Artificing",
+      "category": "magic-tradition",
+      "description": "The infusion of objects with magical properties. Enchanters imbue weapons with power, create magical artifacts, or bind spirits into items.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.matter",
+          "creation.mind",
+          "creation.energy"
+        ],
+        "sphereWeights": {
+          "creation.matter": 0.4,
+          "creation.mind": 0.4,
+          "creation.energy": 0.2
+        },
+        "color": "#20b2aa"
+      }
+    },
+    {
+      "id": "magic.warding",
+      "name": "Warding & Abjuration",
+      "category": "magic-tradition",
+      "description": "The creation of protective barriers and the banishment of hostile forces. Warders shield allies, banish monsters, or create sanctified ground.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.force",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.force": 0.5,
+          "creation.spirit": 0.5
+        },
+        "color": "#add8e6"
+      }
+    },
+    {
+      "id": "magic.summoning",
+      "name": "Summoning & Conjuration",
+      "category": "magic-tradition",
+      "description": "The calling forth of creatures and entities from afar or from other realms. Summoners conjure elementals, call distant allies, or pull beings from the void.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.force",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.force": 0.5,
+          "creation.spirit": 0.5
+        },
+        "color": "#ba55d3"
+      }
+    },
+    {
+      "id": "magic.binding",
+      "name": "Binding & Restriction Magic",
+      "category": "magic-tradition",
+      "description": "The confinement and restriction of movement, action, or will. Binders paralyze foes, trap spirits, or lock doors with unbreakable seals.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.force",
+          "creation.matter"
+        ],
+        "sphereWeights": {
+          "creation.force": 0.5,
+          "creation.matter": 0.5
+        },
+        "color": "#696969"
+      }
+    },
+    {
+      "id": "magic.blood",
+      "name": "Blood Magic",
+      "category": "magic-tradition",
+      "description": "The use of blood and vital essence as a magical focus. Blood mages use vitality as a reagent, create binding pacts, or empower spells with life force.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.life",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.life": 0.6,
+          "creation.spirit": 0.4
+        },
+        "color": "#8b0000"
+      }
+    },
+    {
+      "id": "magic.rune",
+      "name": "Rune Magic & Symbology",
+      "category": "magic-tradition",
+      "description": "The inscription and activation of runes for magical effects. Rune mages inscribe symbols, bind power into writing, or activate pre-prepared enchantments.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.matter",
+          "creation.mind",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.matter": 0.3,
+          "creation.mind": 0.4,
+          "creation.spirit": 0.3
+        },
+        "color": "#dcdcdc"
+      }
+    },
+    {
+      "id": "magic.chaos",
+      "name": "Chaos Magic & Wild Sorcery",
+      "category": "magic-tradition",
+      "description": "The channeling of pure, unpredictable power without structure. Chaos mages embrace randomness, cast spells with unpredictable effects, or tap into the void itself.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.entropy"
+        ],
+        "sphereWeights": {
+          "creation.entropy": 0.8,
+          "creation.force": 0.2
+        },
+        "color": "#ff69b4"
+      }
+    },
+    {
+      "id": "magic.corruption",
+      "name": "Corruption & Dark Binding",
+      "category": "magic-tradition",
+      "description": "The tainting and degradation of matter, flesh, or will. Corruptors spread blight, twist creatures, or bind victims to their will through dark pacts.",
+      "properties": {
+        "school": "Abstract",
+        "primarySpheres": [
+          "creation.entropy",
+          "creation.spirit"
+        ],
+        "sphereWeights": {
+          "creation.entropy": 0.6,
+          "creation.spirit": 0.4
+        },
+        "color": "#4b0082"
+      }
+    },
+    {
+      "id": "magic.restoration",
+      "name": "Restoration & Redemption",
+      "category": "magic-tradition",
+      "description": "The reversal of corruption, healing of ancient wounds, and restoration of wholeness. Restorers mend curses, purge corruption, and restore balance.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.life"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.5,
+          "creation.life": 0.5
+        },
+        "color": "#ffd700"
+      }
+    },
+    {
+      "id": "magic.ascension",
+      "name": "Ascension & Transcendence Magic",
+      "category": "magic-tradition",
+      "description": "The elevation of consciousness and the pursuit of higher forms of being. Ascetics use magic to transcend limitation, achieve enlightenment, or touch divinity.",
+      "properties": {
+        "school": "Spiritual",
+        "primarySpheres": [
+          "creation.spirit",
+          "creation.mind",
+          "creation.time"
+        ],
+        "sphereWeights": {
+          "creation.spirit": 0.4,
+          "creation.mind": 0.4,
+          "creation.time": 0.2
+        },
+        "color": "#ffff00"
+      }
+    },
+    {
+      "id": "terrain.ocean",
+      "name": "Ocean",
+      "category": "terrain",
+      "description": "The vast open sea—deep, mysterious, and dangerous. Crashing waves, salt spray, and the infinite horizon characterize this biome. Home to maritime trade routes, leviathans, and the unknowable depths.",
+      "properties": {
+        "color": "#4477aa",
+        "icon": "🌊",
+        "elevation_range": [
+          -1,
+          -0.3
+        ],
+        "temperature_range": [
+          0,
+          30
+        ],
+        "moisture_range": [
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.coastal_shallows",
+      "name": "Coastal Shallows",
+      "category": "terrain",
+      "description": "Where the ocean meets the land—shallow waters, sandbars, and rocky outcrops. Seagulls cry overhead, and the sound of waves breaking on shore is ever-present.",
+      "properties": {
+        "color": "#88bbdd",
+        "icon": "🏖️",
+        "elevation_range": [
+          -0.3,
+          -0.1
+        ],
+        "temperature_range": [
+          5,
+          28
+        ],
+        "moisture_range": [
+          90,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.lake",
+      "name": "Lake",
+      "category": "terrain",
+      "description": "A body of freshwater surrounded by land. Lakes provide sustenance, beauty, and mystery. Some are serene and clear; others are murky and deep, harboring secrets.",
+      "properties": {
+        "color": "#5599dd",
+        "icon": "💧",
+        "elevation_range": [
+          -0.2,
+          0.1
+        ],
+        "temperature_range": [
+          2,
+          25
+        ],
+        "moisture_range": [
+          100,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.river",
+      "name": "River",
+      "category": "terrain",
+      "description": "Flowing freshwater that carves through the land. Rivers are highways of commerce, sources of life, and often form natural barriers or meeting places.",
+      "properties": {
+        "color": "#5577cc",
+        "icon": "🌊",
+        "elevation_range": [
+          -0.1,
+          0.3
+        ],
+        "temperature_range": [
+          5,
+          25
+        ],
+        "moisture_range": [
+          90,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.grassland",
+      "name": "Grassland & Plains",
+      "category": "terrain",
+      "description": "Rolling or flat expanses of grass and low vegetation. The horizon stretches endlessly, wind whispers through the grasses, and the sky dominates the landscape. Perfect for cavalry and nomadic peoples.",
+      "properties": {
+        "color": "#c8d87a",
+        "icon": "🌾",
+        "elevation_range": [
+          -0.1,
+          0.2
+        ],
+        "temperature_range": [
+          10,
+          25
+        ],
+        "moisture_range": [
+          30,
+          60
+        ]
+      }
+    },
+    {
+      "id": "terrain.farmland",
+      "name": "Farmland",
+      "category": "terrain",
+      "description": "Cultivated land bearing crops and domesticated life. Plowed fields, irrigation channels, and scattered farmsteads mark human presence. A place of order imposed upon nature.",
+      "properties": {
+        "color": "#ddc855",
+        "icon": "🚜",
+        "elevation_range": [
+          -0.05,
+          0.15
+        ],
+        "temperature_range": [
+          12,
+          26
+        ],
+        "moisture_range": [
+          40,
+          65
+        ]
+      }
+    },
+    {
+      "id": "terrain.savanna",
+      "name": "Savanna",
+      "category": "terrain",
+      "description": "Grassland with scattered trees, often in warm regions. The dry season browns the grasses; the wet season brings explosive growth. Large herds of grazing animals roam here.",
+      "properties": {
+        "color": "#d8c870",
+        "icon": "🌳",
+        "elevation_range": [
+          0,
+          0.25
+        ],
+        "temperature_range": [
+          18,
+          32
+        ],
+        "moisture_range": [
+          25,
+          50
+        ]
+      }
+    },
+    {
+      "id": "terrain.steppe",
+      "name": "Steppe",
+      "category": "terrain",
+      "description": "Semi-arid grassland with extreme temperature swings. Sparse vegetation, strong winds, and vast horizons define this hardy biome. Home to nomadic herders and tough peoples.",
+      "properties": {
+        "color": "#c0a868",
+        "icon": "🌾",
+        "elevation_range": [
+          0.1,
+          0.35
+        ],
+        "temperature_range": [
+          -15,
+          28
+        ],
+        "moisture_range": [
+          15,
+          35
+        ]
+      }
+    },
+    {
+      "id": "terrain.deciduous_forest",
+      "name": "Deciduous Forest",
+      "category": "terrain",
+      "description": "A forest of broad-leafed trees that lose their leaves seasonally. Rich undergrowth, dappled light, and the songs of countless birds characterize this temperate biome.",
+      "properties": {
+        "color": "#6aaa5a",
+        "icon": "🌲",
+        "elevation_range": [
+          0.1,
+          0.4
+        ],
+        "temperature_range": [
+          5,
+          22
+        ],
+        "moisture_range": [
+          50,
+          80
+        ]
+      }
+    },
+    {
+      "id": "terrain.dense_forest",
+      "name": "Dense Forest",
+      "category": "terrain",
+      "description": "A thick, primordial forest with towering trees and dense canopy. Sunlight barely penetrates the gloom; the air is thick with moisture and life. Home to ancient creatures and hidden peoples.",
+      "properties": {
+        "color": "#3d7a3d",
+        "icon": "🌲",
+        "elevation_range": [
+          -0.05,
+          0.3
+        ],
+        "temperature_range": [
+          8,
+          24
+        ],
+        "moisture_range": [
+          70,
+          95
+        ]
+      }
+    },
+    {
+      "id": "terrain.taiga",
+      "name": "Taiga & Boreal Forest",
+      "category": "terrain",
+      "description": "The northernmost forest, dominated by coniferous trees like spruce and pine. Long, harsh winters and brief summers define this biome. Solitude and resilience are its hallmarks.",
+      "properties": {
+        "color": "#7a9a6a",
+        "icon": "🌲",
+        "elevation_range": [
+          0.2,
+          0.45
+        ],
+        "temperature_range": [
+          -30,
+          15
+        ],
+        "moisture_range": [
+          30,
+          60
+        ]
+      }
+    },
+    {
+      "id": "terrain.jungle",
+      "name": "Jungle & Tropical Forest",
+      "category": "terrain",
+      "description": "A riotous explosion of life in hot, wet lands. Towering canopy, violent competition, and year-round growth create a green chaos. Danger and wonder lurk behind every frond.",
+      "properties": {
+        "color": "#2d8a3d",
+        "icon": "🌴",
+        "elevation_range": [
+          -0.1,
+          0.25
+        ],
+        "temperature_range": [
+          22,
+          35
+        ],
+        "moisture_range": [
+          75,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.swamp",
+      "name": "Swamp & Marsh",
+      "category": "terrain",
+      "description": "Waterlogged terrain where water and land blur together. Cattails, lily pads, and murky channels characterize this biome. Insects swarm; the air reeks of decay and life.",
+      "properties": {
+        "color": "#6a8a5a",
+        "icon": "🌿",
+        "elevation_range": [
+          -0.2,
+          0.05
+        ],
+        "temperature_range": [
+          10,
+          28
+        ],
+        "moisture_range": [
+          85,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.bog",
+      "name": "Bog & Fen",
+      "category": "terrain",
+      "description": "A cold, waterlogged biome where sphagnum moss dominates. Sparse vegetation, dark water, and a sense of desolation pervade. Strange lights dance over the water at night.",
+      "properties": {
+        "color": "#5a6a4a",
+        "icon": "🌿",
+        "elevation_range": [
+          -0.1,
+          0.1
+        ],
+        "temperature_range": [
+          -10,
+          12
+        ],
+        "moisture_range": [
+          80,
+          100
+        ]
+      }
+    },
+    {
+      "id": "terrain.hills",
+      "name": "Hills",
+      "category": "terrain",
+      "description": "Gently rolling terrain with moderate elevation changes. Valleys nestle between slopes; forests cling to hillsides. A biome of transition and layered views.",
+      "properties": {
+        "color": "#b8a870",
+        "icon": "⛰️",
+        "elevation_range": [
+          0.3,
+          0.6
+        ],
+        "temperature_range": [
+          0,
+          22
+        ],
+        "moisture_range": [
+          25,
+          65
+        ]
+      }
+    },
+    {
+      "id": "terrain.mountains",
+      "name": "Mountains",
+      "category": "terrain",
+      "description": "Towering peaks that pierce the sky. Snow caps summits, thin air makes breathing difficult, and views stretch for a hundred miles. Home to hermits, dwarves, and ancient dragons.",
+      "properties": {
+        "color": "#8a7a6a",
+        "icon": "🏔️",
+        "elevation_range": [
+          0.6,
+          1
+        ],
+        "temperature_range": [
+          -20,
+          10
+        ],
+        "moisture_range": [
+          20,
+          60
+        ]
+      }
+    },
+    {
+      "id": "terrain.plateau",
+      "name": "Plateau",
+      "category": "terrain",
+      "description": "Elevated terrain with relatively flat expanses at high elevation. Dramatic cliffs drop away; the wind is relentless. A place of stark beauty and exposed geology.",
+      "properties": {
+        "color": "#b89858",
+        "icon": "📍",
+        "elevation_range": [
+          0.5,
+          0.8
+        ],
+        "temperature_range": [
+          -10,
+          15
+        ],
+        "moisture_range": [
+          10,
+          40
+        ]
+      }
+    },
+    {
+      "id": "terrain.badlands",
+      "name": "Badlands",
+      "category": "terrain",
+      "description": "A landscape of eroded ridges, gullies, and colorful stratified rock. Little vegetation survives here; heat shimmers off the stone. An alien, austere beauty pervades.",
+      "properties": {
+        "color": "#a87050",
+        "icon": "🏜️",
+        "elevation_range": [
+          0.3,
+          0.6
+        ],
+        "temperature_range": [
+          15,
+          35
+        ],
+        "moisture_range": [
+          5,
+          20
+        ]
+      }
+    },
+    {
+      "id": "terrain.desert",
+      "name": "Desert",
+      "category": "terrain",
+      "description": "Vast, arid expanses of sand or stone where water is precious. Extreme heat by day, freezing cold by night. Oases are treasured; trade routes cut across the dunes.",
+      "properties": {
+        "color": "#ddc890",
+        "icon": "🏜️",
+        "elevation_range": [
+          0,
+          0.4
+        ],
+        "temperature_range": [
+          0,
+          40
+        ],
+        "moisture_range": [
+          0,
+          15
+        ]
+      }
+    },
+    {
+      "id": "terrain.tundra",
+      "name": "Tundra",
+      "category": "terrain",
+      "description": "Frozen wasteland where permafrost underlies sparse, hardy vegetation. Brutal cold defines this biome. Few humans survive here; those who do are tough beyond measure.",
+      "properties": {
+        "color": "#c8c8b8",
+        "icon": "❄️",
+        "elevation_range": [
+          0.1,
+          0.5
+        ],
+        "temperature_range": [
+          -40,
+          -5
+        ],
+        "moisture_range": [
+          10,
+          30
+        ]
+      }
+    },
+    {
+      "id": "terrain.glacier",
+      "name": "Glacier & Ice",
+      "category": "terrain",
+      "description": "Vast sheets of ancient ice covering land and sea. Crevasses hide deadly falls; the ice creaks and groans as it moves. A place of stark beauty and existential cold.",
+      "properties": {
+        "color": "#d8e8f0",
+        "icon": "🧊",
+        "elevation_range": [
+          0.5,
+          1
+        ],
+        "temperature_range": [
+          -50,
+          -10
+        ],
+        "moisture_range": [
+          20,
+          40
+        ]
+      }
+    },
+    {
+      "id": "terrain.volcanic",
+      "name": "Volcanic",
+      "category": "terrain",
+      "description": "Landscapes shaped by volcanic activity. Lava flows, ash fields, and hot springs dot the terrain. The earth rumbles with primal power; danger and opportunity intertwine.",
+      "properties": {
+        "color": "#6a3a2a",
+        "icon": "🌋",
+        "elevation_range": [
+          0.2,
+          0.8
+        ],
+        "temperature_range": [
+          15,
+          45
+        ],
+        "moisture_range": [
+          0,
+          30
+        ]
+      }
+    },
+    {
+      "id": "rel.boosts",
+      "name": "Boosts",
+      "category": "relationship-type",
+      "description": "Trait provides bonus to this reach",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#ff6b6b",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.valid-for",
+      "name": "Valid For",
+      "category": "relationship-type",
+      "description": "Trait can be applied to this actor type",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#4ecdc4",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.belongs-to",
+      "name": "Belongs To",
+      "category": "relationship-type",
+      "description": "Action is part of this reach's CRUD set",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#95e1d3",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.aligned-with",
+      "name": "Aligned With",
+      "category": "relationship-type",
+      "description": "Reach's primary sphere alignment",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#f9ca24",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.terrain-valid",
+      "name": "Terrain Valid",
+      "category": "relationship-type",
+      "description": "Location can exist on this terrain",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#6c5ce7",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.contains-type",
+      "name": "Contains Type",
+      "category": "relationship-type",
+      "description": "Type hierarchy containment",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#a29bfe",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.hosts",
+      "name": "Hosts",
+      "category": "relationship-type",
+      "description": "Sub-location enables this action",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#fd79a8",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.upgrades-to",
+      "name": "Upgrades To",
+      "category": "relationship-type",
+      "description": "Growth path",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#e17055",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.practices",
+      "name": "Practices",
+      "category": "relationship-type",
+      "description": "Culture uses this magic tradition",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#74b9ff",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.favors",
+      "name": "Favors",
+      "category": "relationship-type",
+      "description": "Culture excels in this reach",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#00b894",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.venerates",
+      "name": "Venerates",
+      "category": "relationship-type",
+      "description": "Culture's religious alignment",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#fdcb6e",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "rel.inhabits",
+      "name": "Inhabits",
+      "category": "relationship-type",
+      "description": "Culture's homeland terrain",
+      "properties": {
+        "pattern": "asymmetric",
+        "visualStyle": {
+          "color": "#6c5ce7",
+          "arrowHead": true,
+          "dashArray": null
+        }
+      }
+    },
+    {
+      "id": "reach.iron",
+      "name": "Iron",
+      "category": "reach",
+      "description": "Warfare, force, martial prowess, military might, conquest, and direct conflict",
+      "properties": {
+        "sphereAlignment": "creation.force",
+        "theme": "Warfare, force, martial prowess, military might, conquest, and direct conflict"
+      }
+    },
+    {
+      "id": "reach.gold",
+      "name": "Gold",
+      "category": "reach",
+      "description": "Trade, wealth, commerce, resources, contracts, and economic power",
+      "properties": {
+        "sphereAlignment": "creation.matter",
+        "theme": "Trade, wealth, commerce, resources, contracts, and economic power"
+      }
+    },
+    {
+      "id": "reach.shadow",
+      "name": "Shadow",
+      "category": "reach",
+      "description": "Stealth, espionage, assassination, deception, secrets, and hidden influence",
+      "properties": {
+        "sphereAlignment": "creation.mind",
+        "theme": "Stealth, espionage, assassination, deception, secrets, and hidden influence"
+      }
+    },
+    {
+      "id": "reach.veil",
+      "name": "Veil",
+      "category": "reach",
+      "description": "Magic, enchantment, arcane forces, spell-casting, and supernatural phenomena",
+      "properties": {
+        "sphereAlignment": "creation.energy",
+        "theme": "Magic, enchantment, arcane forces, spell-casting, and supernatural phenomena"
+      }
+    },
+    {
+      "id": "reach.heart",
+      "name": "Heart",
+      "category": "reach",
+      "description": "Social bonds, loyalty, love, betrayal, alliances, and emotional influence",
+      "properties": {
+        "sphereAlignment": "creation.spirit",
+        "theme": "Social bonds, loyalty, love, betrayal, alliances, and emotional influence"
+      }
+    },
+    {
+      "id": "reach.eye",
+      "name": "Eye",
+      "category": "reach",
+      "description": "Knowledge, discovery, research, investigation, truth-seeking, and revelation",
+      "properties": {
+        "sphereAlignment": "creation.mind",
+        "theme": "Knowledge, discovery, research, investigation, truth-seeking, and revelation"
+      }
+    },
+    {
+      "id": "reach.stone",
+      "name": "Stone",
+      "category": "reach",
+      "description": "Construction, building, fortification, infrastructure, and permanent works",
+      "properties": {
+        "sphereAlignment": "creation.matter",
+        "theme": "Construction, building, fortification, infrastructure, and permanent works"
+      }
+    },
+    {
+      "id": "reach.star",
+      "name": "Star",
+      "category": "reach",
+      "description": "Faith, divinity, fate, destiny, religion, and spiritual connection",
+      "properties": {
+        "sphereAlignment": "creation.spirit",
+        "theme": "Faith, divinity, fate, destiny, religion, and spiritual connection"
+      }
+    },
+    {
+      "id": "reach.flesh",
+      "name": "Flesh",
+      "category": "reach",
+      "description": "Biology, healing, disease, life, death, and bodily transformation",
+      "properties": {
+        "sphereAlignment": "creation.life",
+        "theme": "Biology, healing, disease, life, death, and bodily transformation"
+      }
+    },
+    {
+      "id": "actor.individual",
+      "name": "Individual",
+      "category": "actor-type",
+      "description": "A single person with agency, skills, and ambitions",
+      "properties": {
+        "tier": "individual",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "actor.group",
+      "name": "Group",
+      "category": "actor-type",
+      "description": "An organized collective bound by shared purpose or origin",
+      "properties": {
+        "tier": "group",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "actor.faction",
+      "name": "Faction",
+      "category": "actor-type",
+      "description": "A power bloc pursuing coordinated goals across a region",
+      "properties": {
+        "tier": "faction",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "actor.culture",
+      "name": "Culture",
+      "category": "actor-type",
+      "description": "A civilization with shared values, traditions, and worldview",
+      "properties": {
+        "tier": "culture",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "actor.god",
+      "name": "God",
+      "category": "actor-type",
+      "description": "A divine entity with cosmic power and sphere influence",
+      "properties": {
+        "tier": "cosmic",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "actor.ascendant",
+      "name": "Ascendant",
+      "category": "actor-type",
+      "description": "A transcended being straddling mortal and divine planes",
+      "properties": {
+        "tier": "divine",
+        "maslowLayers": [
+          "survival",
+          "safety",
+          "belonging",
+          "esteem",
+          "self-actualization",
+          "transcendence"
+        ]
+      }
+    },
+    {
+      "id": "trait.innate.dragonborn",
+      "name": "Dragonborn",
+      "category": "trait-innate",
+      "description": "Descended from or infused with draconic essence",
+      "properties": {
+        "traitCategory": "innate",
+        "validNodes": [
+          "actor.individual",
+          "actor.god",
+          "actor.ascendant"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.15,
+            "reach.veil": 0.1
+          },
+          "statModifiers": [
+            "resilience"
+          ]
+        },
+        "acquisition": {
+          "method": "inherited",
+          "requires": "divine/draconic parent edge"
+        }
+      }
+    },
+    {
+      "id": "trait.innate.noble-blooded",
+      "name": "Noble-Blooded",
+      "category": "trait-innate",
+      "description": "Born into a house of nobility and authority",
+      "properties": {
+        "traitCategory": "innate",
+        "validNodes": [
+          "actor.individual"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.heart": 0.15
+          },
+          "axioDrift": [
+            "authority",
+            "tradition"
+          ]
+        },
+        "acquisition": {
+          "method": "inherited",
+          "requires": "faction with noble_house tag"
+        }
+      }
+    },
+    {
+      "id": "trait.innate.earthbound",
+      "name": "Earthbound",
+      "category": "trait-innate",
+      "description": "Deeply rooted to a specific land",
+      "properties": {
+        "traitCategory": "innate",
+        "validNodes": [
+          "actor.culture",
+          "actor.faction"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.stone": 0.1
+          }
+        },
+        "acquisition": {
+          "method": "assigned",
+          "requires": "origin terrain"
+        }
+      }
+    },
+    {
+      "id": "trait.innate.seafaring",
+      "name": "Seafaring",
+      "category": "trait-innate",
+      "description": "Master of ocean navigation and maritime life",
+      "properties": {
+        "traitCategory": "innate",
+        "validNodes": [
+          "actor.culture",
+          "actor.group",
+          "actor.faction"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.gold": 0.1,
+            "reach.iron": 0.1
+          }
+        },
+        "acquisition": {
+          "method": "threshold",
+          "requires": "coastal territory >40%"
+        }
+      }
+    },
+    {
+      "id": "trait.innate.fey-touched",
+      "name": "Fey-Touched",
+      "category": "trait-innate",
+      "description": "Marked by encounters with fey or spirit-realm",
+      "properties": {
+        "traitCategory": "innate",
+        "validNodes": [
+          "actor.individual",
+          "actor.group"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.veil": 0.15,
+            "reach.star": 0.1
+          },
+          "axioDrift": [
+            "chaos",
+            "freedom"
+          ]
+        },
+        "acquisition": {
+          "method": "inherited",
+          "requires": "spirit-layer edge OR fey encounter"
+        }
+      }
+    },
+    {
+      "id": "trait.mastery.master-of-intrigue",
+      "name": "Master of Intrigue",
+      "category": "trait-mastery",
+      "description": "Expert at manipulation, espionage, and political maneuvering",
+      "properties": {
+        "traitCategory": "mastery",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction"
+        ],
+        "maxLevel": 3,
+        "visibility": "discoverable",
+        "effects": {
+          "actionModifiers": {
+            "reach.shadow": 0.2
+          }
+        },
+        "acquisition": {
+          "method": "pattern",
+          "requires": "5+ political/espionage actions within 4 seasons"
+        }
+      }
+    },
+    {
+      "id": "trait.mastery.battle-hardened",
+      "name": "Battle-Hardened",
+      "category": "trait-mastery",
+      "description": "Veteran of numerous military campaigns and conflicts",
+      "properties": {
+        "traitCategory": "mastery",
+        "validNodes": [
+          "actor.individual",
+          "actor.group"
+        ],
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.15,
+            "reach.flesh": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "pattern",
+          "requires": "3+ military engagements survived"
+        }
+      }
+    },
+    {
+      "id": "trait.mastery.lorekeeper",
+      "name": "Lorekeeper",
+      "category": "trait-mastery",
+      "description": "Repository of historical knowledge and hidden truths",
+      "properties": {
+        "traitCategory": "mastery",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction"
+        ],
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.eye": 0.15,
+            "reach.veil": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "pattern",
+          "requires": "4+ knowledge/discovery actions"
+        }
+      }
+    },
+    {
+      "id": "trait.mastery.trade-baron",
+      "name": "Trade Baron",
+      "category": "trait-mastery",
+      "description": "Dominates commercial networks and resource acquisition",
+      "properties": {
+        "traitCategory": "mastery",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction",
+          "actor.culture"
+        ],
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.gold": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "pattern",
+          "requires": "3+ trade routes + wealth threshold"
+        }
+      }
+    },
+    {
+      "id": "trait.mastery.arcane-adept",
+      "name": "Arcane Adept",
+      "category": "trait-mastery",
+      "description": "Master of magical arts across multiple domains",
+      "properties": {
+        "traitCategory": "mastery",
+        "validNodes": [
+          "actor.individual",
+          "actor.ascendant"
+        ],
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.veil": 0.2
+          }
+        },
+        "acquisition": {
+          "method": "pattern",
+          "requires": "5+ magical actions across 2+ domains"
+        }
+      }
+    },
+    {
+      "id": "trait.reputation.feared",
+      "name": "Feared",
+      "category": "trait-reputation",
+      "description": "Known for destructive or violent tendencies",
+      "properties": {
+        "traitCategory": "reputation",
+        "validNodes": "any",
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.15
+          },
+          "negativeModifiers": {
+            "reach.heart": -0.1
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "destructive actions"
+        }
+      }
+    },
+    {
+      "id": "trait.reputation.beloved",
+      "name": "Beloved",
+      "category": "trait-reputation",
+      "description": "Adored by many for generosity and protection",
+      "properties": {
+        "traitCategory": "reputation",
+        "validNodes": "any",
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.heart": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "generous/protective actions"
+        }
+      }
+    },
+    {
+      "id": "trait.reputation.trustworthy",
+      "name": "Trustworthy",
+      "category": "trait-reputation",
+      "description": "Known for honoring agreements and keeping secrets",
+      "properties": {
+        "traitCategory": "reputation",
+        "validNodes": "any",
+        "maxLevel": 3,
+        "visibility": "discoverable",
+        "effects": {
+          "actionModifiers": {
+            "reach.gold": 0.15,
+            "reach.heart": 0.1
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "honored agreements"
+        }
+      }
+    },
+    {
+      "id": "trait.reputation.mysterious",
+      "name": "Mysterious",
+      "category": "trait-reputation",
+      "description": "Shrouded in secrets and hidden agendas",
+      "properties": {
+        "traitCategory": "reputation",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction"
+        ],
+        "maxLevel": 3,
+        "visibility": "discoverable",
+        "effects": {
+          "actionModifiers": {
+            "reach.eye": 0.1,
+            "reach.star": 0.1
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "hidden actions"
+        }
+      }
+    },
+    {
+      "id": "trait.reputation.infamous",
+      "name": "Infamous",
+      "category": "trait-reputation",
+      "description": "Notorious for criminal or destructive deeds",
+      "properties": {
+        "traitCategory": "reputation",
+        "validNodes": "any",
+        "maxLevel": 3,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.1
+          },
+          "negativeModifiers": {
+            "reach.heart": -0.15
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "criminal/destructive actions"
+        }
+      }
+    },
+    {
+      "id": "trait.scar.dragon-slayer",
+      "name": "Dragon-Slayer",
+      "category": "trait-scar",
+      "description": "Slew a mighty dragon and bears the mark of that victory",
+      "properties": {
+        "traitCategory": "scar",
+        "validNodes": [
+          "actor.individual",
+          "actor.group"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.2,
+            "reach.star": 0.1
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "successful DELETE on dragon-type node"
+        }
+      }
+    },
+    {
+      "id": "trait.scar.oathbreaker",
+      "name": "Oathbreaker",
+      "category": "trait-scar",
+      "description": "Violated a sacred sworn oath, marked by dishonor",
+      "properties": {
+        "traitCategory": "scar",
+        "validNodes": "any",
+        "maxLevel": 1,
+        "visibility": "discoverable",
+        "effects": {
+          "negativeModifiers": {
+            "reach.heart": -0.2,
+            "reach.gold": -0.15
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "breaking a sworn edge"
+        }
+      }
+    },
+    {
+      "id": "trait.scar.kingmaker",
+      "name": "Kingmaker",
+      "category": "trait-scar",
+      "description": "Installed a ruler and shaped a nation's course",
+      "properties": {
+        "traitCategory": "scar",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.heart": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "successful CREATE of ruler edge"
+        }
+      }
+    },
+    {
+      "id": "trait.scar.godtouched",
+      "name": "Godtouched",
+      "category": "trait-scar",
+      "description": "Marked by direct divine intervention",
+      "properties": {
+        "traitCategory": "scar",
+        "validNodes": [
+          "actor.individual"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "actionModifiers": {
+            "reach.star": 0.15,
+            "reach.veil": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "direct interaction with God-type node"
+        }
+      }
+    },
+    {
+      "id": "trait.scar.ruined",
+      "name": "Ruined",
+      "category": "trait-scar",
+      "description": "Lost nearly everything in a catastrophic failure",
+      "properties": {
+        "traitCategory": "scar",
+        "validNodes": [
+          "actor.faction",
+          "actor.culture",
+          "actor.group"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.eye": 0.1
+          },
+          "negativeModifiers": {
+            "all": -0.2
+          }
+        },
+        "acquisition": {
+          "method": "event",
+          "requires": "losing >60% territory in single action"
+        }
+      }
+    },
+    {
+      "id": "trait.condition.cursed",
+      "name": "Cursed",
+      "category": "trait-condition",
+      "description": "Afflicted by magical curse with unpredictable effects",
+      "properties": {
+        "traitCategory": "condition",
+        "validNodes": "any",
+        "maxLevel": 1,
+        "visibility": "discoverable",
+        "effects": {
+          "actionModifiers": {
+            "variable": -0.15
+          }
+        },
+        "acquisition": {
+          "method": "spiritual",
+          "requires": "curse edge"
+        },
+        "duration": "until_removed"
+      }
+    },
+    {
+      "id": "trait.condition.blessed",
+      "name": "Blessed",
+      "category": "trait-condition",
+      "description": "Granted favor and protection by divine forces",
+      "properties": {
+        "traitCategory": "condition",
+        "validNodes": "any",
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "variable": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "spiritual",
+          "requires": "blessing action"
+        },
+        "duration": "1-4_seasons"
+      }
+    },
+    {
+      "id": "trait.condition.at-war",
+      "name": "At War",
+      "category": "trait-condition",
+      "description": "Engaged in open military conflict",
+      "properties": {
+        "traitCategory": "condition",
+        "validNodes": [
+          "actor.faction",
+          "actor.culture",
+          "actor.group"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.2
+          },
+          "negativeModifiers": {
+            "reach.gold": -0.15
+          }
+        },
+        "acquisition": {
+          "method": "declaration"
+        },
+        "duration": "until_peace"
+      }
+    },
+    {
+      "id": "trait.condition.plague-stricken",
+      "name": "Plague-Stricken",
+      "category": "trait-condition",
+      "description": "Suffering from widespread disease",
+      "properties": {
+        "traitCategory": "condition",
+        "validNodes": "any_with_population",
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "negativeModifiers": {
+            "all": -0.15
+          }
+        },
+        "acquisition": {
+          "method": "event"
+        },
+        "duration": "2-4_seasons"
+      }
+    },
+    {
+      "id": "trait.condition.siege",
+      "name": "Siege",
+      "category": "trait-condition",
+      "description": "Under military siege, resources cut off",
+      "properties": {
+        "traitCategory": "condition",
+        "validNodes": [
+          "actor.faction",
+          "actor.group"
+        ],
+        "maxLevel": 1,
+        "visibility": "public",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.1
+          },
+          "negativeModifiers": {
+            "reach.gold": -0.2
+          }
+        },
+        "acquisition": {
+          "method": "military"
+        },
+        "duration": "until_broken"
+      }
+    },
+    {
+      "id": "trait.destiny.prophesied-king",
+      "name": "Prophesied King",
+      "category": "trait-destiny",
+      "description": "Foretold to rule by ancient prophecy",
+      "properties": {
+        "traitCategory": "destiny",
+        "validNodes": [
+          "actor.individual"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "actionModifiers": {
+            "reach.heart": 0.2
+          }
+        },
+        "acquisition": {
+          "method": "divine_assignment"
+        }
+      }
+    },
+    {
+      "id": "trait.destiny.doombringer",
+      "name": "Doombringer",
+      "category": "trait-destiny",
+      "description": "Harbinger of catastrophe and ending",
+      "properties": {
+        "traitCategory": "destiny",
+        "validNodes": [
+          "actor.individual",
+          "actor.faction"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "actionModifiers": {
+            "reach.iron": 0.2
+          }
+        },
+        "acquisition": {
+          "method": "spiritual_event"
+        }
+      }
+    },
+    {
+      "id": "trait.destiny.the-seeker",
+      "name": "The Seeker",
+      "category": "trait-destiny",
+      "description": "Driven to uncover hidden truths and forbidden knowledge",
+      "properties": {
+        "traitCategory": "destiny",
+        "validNodes": [
+          "actor.individual"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "actionModifiers": {
+            "reach.eye": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "inherited_quest"
+        }
+      }
+    },
+    {
+      "id": "trait.destiny.chosen-of-sphere",
+      "name": "Chosen of Sphere",
+      "category": "trait-destiny",
+      "description": "Selected by cosmic forces to serve a specific sphere",
+      "properties": {
+        "traitCategory": "destiny",
+        "validNodes": [
+          "actor.individual",
+          "actor.ascendant"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "actionModifiers": {
+            "aligned": 0.15
+          }
+        },
+        "acquisition": {
+          "method": "world_soul_pattern"
+        }
+      }
+    },
+    {
+      "id": "trait.destiny.the-betrayer",
+      "name": "The Betrayer",
+      "category": "trait-destiny",
+      "description": "Destined to break bonds and cause division",
+      "properties": {
+        "traitCategory": "destiny",
+        "validNodes": [
+          "actor.individual"
+        ],
+        "maxLevel": 1,
+        "visibility": "divine_only",
+        "effects": {
+          "negativeModifiers": {
+            "reach.heart": -0.1
+          }
+        },
+        "acquisition": {
+          "method": "divine_assignment"
+        }
+      }
+    },
+    {
+      "id": "action.iron.raise-force",
+      "name": "Raise Force",
+      "category": "action-template",
+      "description": "Assemble military units",
+      "properties": {
+        "reach": "reach.iron",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.iron.assess-threat",
+      "name": "Assess Threat",
+      "category": "action-template",
+      "description": "Evaluate military capabilities",
+      "properties": {
+        "reach": "reach.iron",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.iron.fortify",
+      "name": "Fortify",
+      "category": "action-template",
+      "description": "Strengthen defenses",
+      "properties": {
+        "reach": "reach.iron",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.iron.conquer",
+      "name": "Conquer",
+      "category": "action-template",
+      "description": "Seize territory by force",
+      "properties": {
+        "reach": "reach.iron",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.gold.establish-trade",
+      "name": "Establish Trade",
+      "category": "action-template",
+      "description": "Open new trade routes",
+      "properties": {
+        "reach": "reach.gold",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.gold.survey-resources",
+      "name": "Survey Resources",
+      "category": "action-template",
+      "description": "Assess available wealth",
+      "properties": {
+        "reach": "reach.gold",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.gold.trade",
+      "name": "Trade",
+      "category": "action-template",
+      "description": "Exchange goods and services",
+      "properties": {
+        "reach": "reach.gold",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.gold.disrupt-trade",
+      "name": "Disrupt Trade",
+      "category": "action-template",
+      "description": "Sabotage commerce",
+      "properties": {
+        "reach": "reach.gold",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.shadow.establish-network",
+      "name": "Establish Network",
+      "category": "action-template",
+      "description": "Create espionage apparatus",
+      "properties": {
+        "reach": "reach.shadow",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.shadow.spy",
+      "name": "Spy",
+      "category": "action-template",
+      "description": "Gather intelligence",
+      "properties": {
+        "reach": "reach.shadow",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.shadow.recruit-agent",
+      "name": "Recruit Agent",
+      "category": "action-template",
+      "description": "Turn an operative",
+      "properties": {
+        "reach": "reach.shadow",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.shadow.assassinate",
+      "name": "Assassinate",
+      "category": "action-template",
+      "description": "Eliminate a target",
+      "properties": {
+        "reach": "reach.shadow",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.veil.cast-spell",
+      "name": "Cast Spell",
+      "category": "action-template",
+      "description": "Manifest arcane power",
+      "properties": {
+        "reach": "reach.veil",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.veil.detect-magic",
+      "name": "Detect Magic",
+      "category": "action-template",
+      "description": "Sense magical presence",
+      "properties": {
+        "reach": "reach.veil",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.veil.modify-enchantment",
+      "name": "Modify Enchantment",
+      "category": "action-template",
+      "description": "Alter magical effects",
+      "properties": {
+        "reach": "reach.veil",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.veil.dispel",
+      "name": "Dispel",
+      "category": "action-template",
+      "description": "Unravel magic",
+      "properties": {
+        "reach": "reach.veil",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.heart.forge-alliance",
+      "name": "Forge Alliance",
+      "category": "action-template",
+      "description": "Create diplomatic bonds",
+      "properties": {
+        "reach": "reach.heart",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.heart.assess-loyalty",
+      "name": "Assess Loyalty",
+      "category": "action-template",
+      "description": "Gauge allegiance",
+      "properties": {
+        "reach": "reach.heart",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.heart.inspire",
+      "name": "Inspire",
+      "category": "action-template",
+      "description": "Rally supporters",
+      "properties": {
+        "reach": "reach.heart",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.heart.betray",
+      "name": "Betray",
+      "category": "action-template",
+      "description": "Break faith",
+      "properties": {
+        "reach": "reach.heart",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.eye.research",
+      "name": "Research",
+      "category": "action-template",
+      "description": "Conduct investigation",
+      "properties": {
+        "reach": "reach.eye",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.eye.investigate",
+      "name": "Investigate",
+      "category": "action-template",
+      "description": "Uncover secrets",
+      "properties": {
+        "reach": "reach.eye",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.eye.refine-knowledge",
+      "name": "Refine Knowledge",
+      "category": "action-template",
+      "description": "Deepen understanding",
+      "properties": {
+        "reach": "reach.eye",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.eye.suppress-knowledge",
+      "name": "Suppress Knowledge",
+      "category": "action-template",
+      "description": "Hide truth",
+      "properties": {
+        "reach": "reach.eye",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.stone.build",
+      "name": "Build",
+      "category": "action-template",
+      "description": "Construct structures",
+      "properties": {
+        "reach": "reach.stone",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.stone.assess-structure",
+      "name": "Assess Structure",
+      "category": "action-template",
+      "description": "Evaluate integrity",
+      "properties": {
+        "reach": "reach.stone",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.stone.repair",
+      "name": "Repair",
+      "category": "action-template",
+      "description": "Restore buildings",
+      "properties": {
+        "reach": "reach.stone",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.stone.demolish",
+      "name": "Demolish",
+      "category": "action-template",
+      "description": "Destroy infrastructure",
+      "properties": {
+        "reach": "reach.stone",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.star.consecrate",
+      "name": "Consecrate",
+      "category": "action-template",
+      "description": "Sanctify sacred ground",
+      "properties": {
+        "reach": "reach.star",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.star.divine",
+      "name": "Divine",
+      "category": "action-template",
+      "description": "Seek spiritual guidance",
+      "properties": {
+        "reach": "reach.star",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.star.deepen-faith",
+      "name": "Deepen Faith",
+      "category": "action-template",
+      "description": "Strengthen belief",
+      "properties": {
+        "reach": "reach.star",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.star.desecrate",
+      "name": "Desecrate",
+      "category": "action-template",
+      "description": "Profane sacred site",
+      "properties": {
+        "reach": "reach.star",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "action.flesh.heal",
+      "name": "Heal",
+      "category": "action-template",
+      "description": "Cure ailments",
+      "properties": {
+        "reach": "reach.flesh",
+        "crudType": "CREATE"
+      }
+    },
+    {
+      "id": "action.flesh.diagnose",
+      "name": "Diagnose",
+      "category": "action-template",
+      "description": "Identify illness",
+      "properties": {
+        "reach": "reach.flesh",
+        "crudType": "READ"
+      }
+    },
+    {
+      "id": "action.flesh.cultivate",
+      "name": "Cultivate",
+      "category": "action-template",
+      "description": "Enhance vitality",
+      "properties": {
+        "reach": "reach.flesh",
+        "crudType": "UPDATE"
+      }
+    },
+    {
+      "id": "action.flesh.plague",
+      "name": "Plague",
+      "category": "action-template",
+      "description": "Spread disease",
+      "properties": {
+        "reach": "reach.flesh",
+        "crudType": "DELETE"
+      }
+    },
+    {
+      "id": "region.kingdom",
+      "name": "Kingdom",
+      "category": "region-type",
+      "description": "A nation ruled by a monarch",
+      "properties": {}
+    },
+    {
+      "id": "region.empire",
+      "name": "Empire",
+      "category": "region-type",
+      "description": "Multiple territories under singular dominion",
+      "properties": {}
+    },
+    {
+      "id": "region.tribal-lands",
+      "name": "Tribal Lands",
+      "category": "region-type",
+      "description": "Territories of nomadic or tribal peoples",
+      "properties": {}
+    },
+    {
+      "id": "region.city-state",
+      "name": "City-State",
+      "category": "region-type",
+      "description": "An independent city and surrounding area",
+      "properties": {}
+    },
+    {
+      "id": "region.wilderness",
+      "name": "Wilderness",
+      "category": "region-type",
+      "description": "Untamed natural landscape",
+      "properties": {}
+    },
+    {
+      "id": "location.settlement",
+      "name": "Settlement",
+      "category": "location-type",
+      "description": "A village or town",
+      "properties": {}
+    },
+    {
+      "id": "location.fortress",
+      "name": "Fortress",
+      "category": "location-type",
+      "description": "A fortified military stronghold",
+      "properties": {}
+    },
+    {
+      "id": "location.temple",
+      "name": "Temple",
+      "category": "location-type",
+      "description": "A place of worship",
+      "properties": {}
+    },
+    {
+      "id": "location.port",
+      "name": "Port",
+      "category": "location-type",
+      "description": "A coastal hub for maritime trade",
+      "properties": {}
+    },
+    {
+      "id": "location.mine",
+      "name": "Mine",
+      "category": "location-type",
+      "description": "An extraction site for resources",
+      "properties": {}
+    },
+    {
+      "id": "location.academy",
+      "name": "Academy",
+      "category": "location-type",
+      "description": "A place of learning and study",
+      "properties": {}
+    },
+    {
+      "id": "location.market-town",
+      "name": "Market Town",
+      "category": "location-type",
+      "description": "A commercial hub",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.market-district",
+      "name": "Market District",
+      "category": "sublocation-type",
+      "description": "Commercial hub within a location",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.temple-quarter",
+      "name": "Temple Quarter",
+      "category": "sublocation-type",
+      "description": "Religious center of a location",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.barracks",
+      "name": "Barracks",
+      "category": "sublocation-type",
+      "description": "Military quarters",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.library",
+      "name": "Library",
+      "category": "sublocation-type",
+      "description": "Repository of knowledge",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.throne-room",
+      "name": "Throne Room",
+      "category": "sublocation-type",
+      "description": "Seat of power",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.harbor",
+      "name": "Harbor",
+      "category": "sublocation-type",
+      "description": "Docking area for ships",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.dungeon",
+      "name": "Dungeon",
+      "category": "sublocation-type",
+      "description": "Underground prison or stronghold",
+      "properties": {}
+    },
+    {
+      "id": "culture.dwarven-holds",
+      "name": "Dwarven Holds",
+      "category": "culture",
+      "description": "Civilizations of mountain-dwelling craftspeople with deep material heritage",
+      "properties": {
+        "dominantBeliefs": [
+          "creation.matter"
+        ],
+        "knowledgeTraditions": [
+          "reach.gold",
+          "reach.stone"
+        ],
+        "values": {
+          "craftsmanship": 0.9,
+          "tradition": 0.8,
+          "community": 0.85
+        }
+      }
+    },
+    {
+      "id": "culture.nomad-clans",
+      "name": "Nomad Clans",
+      "category": "culture",
+      "description": "Mobile societies valuing freedom and martial prowess",
+      "properties": {
+        "dominantBeliefs": [
+          "creation.force"
+        ],
+        "knowledgeTraditions": [
+          "reach.iron",
+          "reach.gold"
+        ],
+        "values": {
+          "freedom": 0.9,
+          "strength": 0.8,
+          "kinship": 0.75
+        }
+      }
+    },
+    {
+      "id": "culture.tidal-elves",
+      "name": "Tidal Elves",
+      "category": "culture",
+      "description": "Coastal and aquatic peoples with mystical time-awareness",
+      "properties": {
+        "dominantBeliefs": [
+          "creation.time",
+          "creation.spirit"
+        ],
+        "knowledgeTraditions": [
+          "reach.star",
+          "reach.eye"
+        ],
+        "values": {
+          "wisdom": 0.85,
+          "spirituality": 0.9,
+          "harmony": 0.8
+        }
+      }
+    },
+    {
+      "id": "culture.ember-kingdoms",
+      "name": "Ember Kingdoms",
+      "category": "culture",
+      "description": "Fire-oriented militaristic empire with arcane traditions",
+      "properties": {
+        "dominantBeliefs": [
+          "creation.energy"
+        ],
+        "knowledgeTraditions": [
+          "reach.iron",
+          "reach.veil"
+        ],
+        "values": {
+          "power": 0.85,
+          "discipline": 0.8,
+          "ambition": 0.9
+        }
+      }
+    },
+    {
+      "id": "terrain.coastal",
+      "name": "Coastal",
+      "category": "terrain",
+      "description": "Shorelines, beaches, and seaside regions",
+      "properties": {}
+    }
+  ],
+  "edges": [
+    {
+      "source": "foundation.chaos",
+      "target": "foundation.darkness",
+      "type": "rel.underpins",
+      "weight": 1
+    },
+    {
+      "source": "foundation.chaos",
+      "target": "foundation.light",
+      "type": "rel.underpins",
+      "weight": 1
+    },
+    {
+      "source": "foundation.darkness",
+      "target": "foundation.light",
+      "type": "rel.opposes",
+      "weight": 1
+    },
+    {
+      "source": "foundation.darkness",
+      "target": "foundation.shadow",
+      "type": "rel.emerges-from",
+      "weight": 0.5
+    },
+    {
+      "source": "foundation.light",
+      "target": "foundation.shadow",
+      "type": "rel.emerges-from",
+      "weight": 0.5
+    },
+    {
+      "source": "foundation.chaos",
+      "target": "creation.entropy",
+      "type": "rel.underpins",
+      "weight": 0.8
+    },
+    {
+      "source": "foundation.darkness",
+      "target": "creation.spirit",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "foundation.light",
+      "target": "creation.energy",
+      "type": "rel.biome-affinity",
+      "weight": 0.7
+    },
+    {
+      "source": "foundation.shadow",
+      "target": "creation.mind",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.air",
+      "type": "rel.generates",
+      "weight": 1
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.earth",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.lightning",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.weather",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.teleportation",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.force",
+      "target": "magic.warding",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.earth",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.ice",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.plant",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.transmutation",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.enchantment",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.binding",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.matter",
+      "target": "magic.rune",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.fire",
+      "type": "rel.generates",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.lightning",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.ice",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.water",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.holy",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.illusion",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.transmutation",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.energy",
+      "target": "magic.enchantment",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.plant",
+      "type": "rel.generates",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.animal",
+      "type": "rel.generates",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.healing",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.druidism",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.poison",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.weather",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.shamanism",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.transmutation",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.blood",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.life",
+      "target": "magic.restoration",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.psionics",
+      "type": "rel.generates",
+      "weight": 0.95
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.illusion",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.dreamcraft",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.divination",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.animal",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.enchantment",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.demonology",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.rune",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.mind",
+      "target": "magic.ascension",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.shamanism",
+      "type": "rel.generates",
+      "weight": 0.85
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.necromancy",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.holy",
+      "type": "rel.generates",
+      "weight": 0.85
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.healing",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.dreamcraft",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.demonology",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.warding",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.summoning",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.blood",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.corruption",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.restoration",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.spirit",
+      "target": "magic.ascension",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.time",
+      "target": "magic.chronomancy",
+      "type": "rel.generates",
+      "weight": 1
+    },
+    {
+      "source": "creation.time",
+      "target": "magic.divination",
+      "type": "rel.generates",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.time",
+      "target": "magic.teleportation",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.time",
+      "target": "magic.dreamcraft",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.time",
+      "target": "magic.ascension",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.entropy",
+      "target": "magic.luck",
+      "type": "rel.generates",
+      "weight": 1
+    },
+    {
+      "source": "creation.entropy",
+      "target": "magic.necromancy",
+      "type": "rel.generates",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.entropy",
+      "target": "magic.chaos",
+      "type": "rel.generates",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.entropy",
+      "target": "magic.poison",
+      "type": "rel.generates",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.entropy",
+      "target": "magic.corruption",
+      "type": "rel.generates",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.fire",
+      "target": "magic.chaos",
+      "type": "rel.amplifies",
+      "weight": 0.6
+    },
+    {
+      "source": "magic.ice",
+      "target": "magic.fire",
+      "type": "rel.opposes",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.fire",
+      "target": "magic.plant",
+      "type": "rel.suppresses",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.water",
+      "target": "magic.fire",
+      "type": "rel.suppresses",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.air",
+      "target": "magic.lightning",
+      "type": "rel.amplifies",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.healing",
+      "target": "magic.necromancy",
+      "type": "rel.opposes",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.holy",
+      "target": "magic.necromancy",
+      "type": "rel.opposes",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.holy",
+      "target": "magic.demonology",
+      "type": "rel.opposes",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.demonology",
+      "target": "magic.corruption",
+      "type": "rel.amplifies",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.restoration",
+      "target": "magic.corruption",
+      "type": "rel.opposes",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.shamanism",
+      "target": "magic.druidism",
+      "type": "rel.amplifies",
+      "weight": 0.6
+    },
+    {
+      "source": "magic.enchantment",
+      "target": "magic.warding",
+      "type": "rel.amplifies",
+      "weight": 0.5
+    },
+    {
+      "source": "magic.rune",
+      "target": "magic.warding",
+      "type": "rel.amplifies",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.transmutation",
+      "target": "magic.enchantment",
+      "type": "rel.amplifies",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.force",
+      "target": "terrain.grassland",
+      "type": "rel.biome-affinity",
+      "weight": 0.3
+    },
+    {
+      "source": "creation.matter",
+      "target": "terrain.mountains",
+      "type": "rel.biome-affinity",
+      "weight": 0.85
+    },
+    {
+      "source": "creation.matter",
+      "target": "terrain.hills",
+      "type": "rel.biome-affinity",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.matter",
+      "target": "terrain.plateau",
+      "type": "rel.biome-affinity",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.matter",
+      "target": "terrain.badlands",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.matter",
+      "target": "terrain.volcanic",
+      "type": "rel.biome-affinity",
+      "weight": 0.75
+    },
+    {
+      "source": "creation.energy",
+      "target": "terrain.desert",
+      "type": "rel.biome-affinity",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.energy",
+      "target": "terrain.volcanic",
+      "type": "rel.biome-affinity",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.energy",
+      "target": "terrain.badlands",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.deciduous_forest",
+      "type": "rel.biome-affinity",
+      "weight": 0.85
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.dense_forest",
+      "type": "rel.biome-affinity",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.jungle",
+      "type": "rel.biome-affinity",
+      "weight": 0.95
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.swamp",
+      "type": "rel.biome-affinity",
+      "weight": 0.8
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.grassland",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.savanna",
+      "type": "rel.biome-affinity",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.life",
+      "target": "terrain.farmland",
+      "type": "rel.biome-affinity",
+      "weight": 0.7
+    },
+    {
+      "source": "creation.mind",
+      "target": "terrain.dense_forest",
+      "type": "rel.biome-affinity",
+      "weight": 0.4
+    },
+    {
+      "source": "creation.spirit",
+      "target": "terrain.bog",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.spirit",
+      "target": "terrain.mountains",
+      "type": "rel.biome-affinity",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.time",
+      "target": "terrain.glacier",
+      "type": "rel.biome-affinity",
+      "weight": 0.4
+    },
+    {
+      "source": "creation.entropy",
+      "target": "terrain.desert",
+      "type": "rel.biome-affinity",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.entropy",
+      "target": "terrain.badlands",
+      "type": "rel.biome-affinity",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.entropy",
+      "target": "terrain.volcanic",
+      "type": "rel.biome-affinity",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.hills",
+      "type": "rel.adjacent",
+      "weight": 1
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.deciduous_forest",
+      "type": "rel.adjacent",
+      "weight": 1
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.farmland",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.savanna",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.steppe",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.deciduous_forest",
+      "target": "terrain.dense_forest",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.deciduous_forest",
+      "target": "terrain.taiga",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.deciduous_forest",
+      "target": "terrain.hills",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.dense_forest",
+      "target": "terrain.jungle",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.dense_forest",
+      "target": "terrain.swamp",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.taiga",
+      "target": "terrain.tundra",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.jungle",
+      "target": "terrain.swamp",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.swamp",
+      "target": "terrain.bog",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.swamp",
+      "target": "terrain.lake",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.hills",
+      "target": "terrain.mountains",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.hills",
+      "target": "terrain.plateau",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.mountains",
+      "target": "terrain.plateau",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.mountains",
+      "target": "terrain.taiga",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.mountains",
+      "target": "terrain.glacier",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.plateau",
+      "target": "terrain.badlands",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.badlands",
+      "target": "terrain.desert",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.badlands",
+      "target": "terrain.steppe",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.desert",
+      "target": "terrain.steppe",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.desert",
+      "target": "terrain.savanna",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.tundra",
+      "target": "terrain.glacier",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.tundra",
+      "target": "terrain.taiga",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.glacier",
+      "target": "terrain.mountains",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.volcanic",
+      "target": "terrain.badlands",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.volcanic",
+      "target": "terrain.desert",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.volcanic",
+      "target": "terrain.mountains",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.ocean",
+      "target": "terrain.coastal_shallows",
+      "type": "rel.adjacent",
+      "weight": 1
+    },
+    {
+      "source": "terrain.coastal_shallows",
+      "target": "terrain.grassland",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.coastal_shallows",
+      "target": "terrain.savanna",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.coastal_shallows",
+      "target": "terrain.jungle",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.lake",
+      "target": "terrain.river",
+      "type": "rel.contains",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.river",
+      "target": "terrain.grassland",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.river",
+      "target": "terrain.deciduous_forest",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.river",
+      "target": "terrain.swamp",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.savanna",
+      "target": "terrain.steppe",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.farmland",
+      "target": "terrain.grassland",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "creation.force",
+      "target": "creation.matter",
+      "type": "rel.amplifies",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.force",
+      "target": "creation.entropy",
+      "type": "rel.amplifies",
+      "weight": 0.6
+    },
+    {
+      "source": "creation.energy",
+      "target": "creation.matter",
+      "type": "rel.amplifies",
+      "weight": 0.4
+    },
+    {
+      "source": "creation.life",
+      "target": "creation.matter",
+      "type": "rel.amplifies",
+      "weight": 0.5
+    },
+    {
+      "source": "creation.entropy",
+      "target": "creation.life",
+      "type": "rel.suppresses",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.fire",
+      "target": "magic.holy",
+      "type": "rel.amplifies",
+      "weight": 0.5
+    },
+    {
+      "source": "magic.lightning",
+      "target": "magic.fire",
+      "type": "rel.amplifies",
+      "weight": 0.4
+    },
+    {
+      "source": "magic.water",
+      "target": "magic.healing",
+      "type": "rel.amplifies",
+      "weight": 0.6
+    },
+    {
+      "source": "magic.plant",
+      "target": "magic.healing",
+      "type": "rel.amplifies",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.plant",
+      "target": "magic.druidism",
+      "type": "rel.amplifies",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.earth",
+      "target": "magic.warding",
+      "type": "rel.amplifies",
+      "weight": 0.6
+    },
+    {
+      "source": "magic.psionics",
+      "target": "magic.illusion",
+      "type": "rel.amplifies",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.earth",
+      "target": "terrain.mountains",
+      "type": "rel.draws-from",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.water",
+      "target": "terrain.ocean",
+      "type": "rel.draws-from",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.water",
+      "target": "terrain.lake",
+      "type": "rel.draws-from",
+      "weight": 0.8
+    },
+    {
+      "source": "magic.water",
+      "target": "terrain.river",
+      "type": "rel.draws-from",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.plant",
+      "target": "terrain.jungle",
+      "type": "rel.draws-from",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.plant",
+      "target": "terrain.dense_forest",
+      "type": "rel.draws-from",
+      "weight": 0.85
+    },
+    {
+      "source": "magic.fire",
+      "target": "terrain.volcanic",
+      "type": "rel.draws-from",
+      "weight": 0.9
+    },
+    {
+      "source": "magic.ice",
+      "target": "terrain.glacier",
+      "type": "rel.draws-from",
+      "weight": 0.95
+    },
+    {
+      "source": "magic.ice",
+      "target": "terrain.tundra",
+      "type": "rel.draws-from",
+      "weight": 0.85
+    },
+    {
+      "source": "magic.shamanism",
+      "target": "terrain.jungle",
+      "type": "rel.draws-from",
+      "weight": 0.6
+    },
+    {
+      "source": "magic.shamanism",
+      "target": "terrain.grassland",
+      "type": "rel.draws-from",
+      "weight": 0.5
+    },
+    {
+      "source": "magic.necromancy",
+      "target": "terrain.bog",
+      "type": "rel.draws-from",
+      "weight": 0.7
+    },
+    {
+      "source": "magic.necromancy",
+      "target": "terrain.swamp",
+      "type": "rel.draws-from",
+      "weight": 0.6
+    },
+    {
+      "source": "reach.iron",
+      "target": "creation.force",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.gold",
+      "target": "creation.matter",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.shadow",
+      "target": "creation.mind",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.veil",
+      "target": "creation.energy",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.veil",
+      "target": "creation.mind",
+      "type": "rel.aligned-with",
+      "weight": 0.7
+    },
+    {
+      "source": "reach.heart",
+      "target": "creation.spirit",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.heart",
+      "target": "creation.life",
+      "type": "rel.aligned-with",
+      "weight": 0.7
+    },
+    {
+      "source": "reach.eye",
+      "target": "creation.mind",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.eye",
+      "target": "creation.time",
+      "type": "rel.aligned-with",
+      "weight": 0.7
+    },
+    {
+      "source": "reach.stone",
+      "target": "creation.matter",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.stone",
+      "target": "creation.force",
+      "type": "rel.aligned-with",
+      "weight": 0.7
+    },
+    {
+      "source": "reach.star",
+      "target": "creation.spirit",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "reach.star",
+      "target": "creation.entropy",
+      "type": "rel.aligned-with",
+      "weight": 0.7
+    },
+    {
+      "source": "reach.flesh",
+      "target": "creation.life",
+      "type": "rel.aligned-with",
+      "weight": 1
+    },
+    {
+      "source": "action.iron.raise-force",
+      "target": "reach.iron",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.iron.assess-threat",
+      "target": "reach.iron",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.iron.fortify",
+      "target": "reach.iron",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.iron.conquer",
+      "target": "reach.iron",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.gold.establish-trade",
+      "target": "reach.gold",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.gold.survey-resources",
+      "target": "reach.gold",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.gold.trade",
+      "target": "reach.gold",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.gold.disrupt-trade",
+      "target": "reach.gold",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.shadow.establish-network",
+      "target": "reach.shadow",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.shadow.spy",
+      "target": "reach.shadow",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.shadow.recruit-agent",
+      "target": "reach.shadow",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.shadow.assassinate",
+      "target": "reach.shadow",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.veil.cast-spell",
+      "target": "reach.veil",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.veil.detect-magic",
+      "target": "reach.veil",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.veil.modify-enchantment",
+      "target": "reach.veil",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.veil.dispel",
+      "target": "reach.veil",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.heart.forge-alliance",
+      "target": "reach.heart",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.heart.assess-loyalty",
+      "target": "reach.heart",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.heart.inspire",
+      "target": "reach.heart",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.heart.betray",
+      "target": "reach.heart",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.eye.research",
+      "target": "reach.eye",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.eye.investigate",
+      "target": "reach.eye",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.eye.refine-knowledge",
+      "target": "reach.eye",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.eye.suppress-knowledge",
+      "target": "reach.eye",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.stone.build",
+      "target": "reach.stone",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.stone.assess-structure",
+      "target": "reach.stone",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.stone.repair",
+      "target": "reach.stone",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.stone.demolish",
+      "target": "reach.stone",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.star.consecrate",
+      "target": "reach.star",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.star.divine",
+      "target": "reach.star",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.star.deepen-faith",
+      "target": "reach.star",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.star.desecrate",
+      "target": "reach.star",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.flesh.heal",
+      "target": "reach.flesh",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.flesh.diagnose",
+      "target": "reach.flesh",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.flesh.cultivate",
+      "target": "reach.flesh",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "action.flesh.plague",
+      "target": "reach.flesh",
+      "type": "rel.belongs-to",
+      "weight": 1
+    },
+    {
+      "source": "trait.innate.dragonborn",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.innate.dragonborn",
+      "target": "reach.veil",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.innate.noble-blooded",
+      "target": "reach.heart",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.innate.earthbound",
+      "target": "reach.stone",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.innate.seafaring",
+      "target": "reach.gold",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.innate.seafaring",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.innate.fey-touched",
+      "target": "reach.veil",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.innate.fey-touched",
+      "target": "reach.star",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.mastery.master-of-intrigue",
+      "target": "reach.shadow",
+      "type": "rel.boosts",
+      "weight": 0.2
+    },
+    {
+      "source": "trait.mastery.battle-hardened",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.mastery.battle-hardened",
+      "target": "reach.flesh",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.mastery.lorekeeper",
+      "target": "reach.eye",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.mastery.lorekeeper",
+      "target": "reach.veil",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.mastery.trade-baron",
+      "target": "reach.gold",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.mastery.arcane-adept",
+      "target": "reach.veil",
+      "type": "rel.boosts",
+      "weight": 0.2
+    },
+    {
+      "source": "trait.reputation.feared",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.reputation.beloved",
+      "target": "reach.heart",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.reputation.trustworthy",
+      "target": "reach.gold",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.reputation.trustworthy",
+      "target": "reach.heart",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.reputation.mysterious",
+      "target": "reach.eye",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.reputation.mysterious",
+      "target": "reach.star",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.reputation.infamous",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.scar.dragon-slayer",
+      "target": "reach.iron",
+      "type": "rel.boosts",
+      "weight": 0.2
+    },
+    {
+      "source": "trait.scar.dragon-slayer",
+      "target": "reach.star",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "trait.scar.kingmaker",
+      "target": "reach.heart",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.scar.godtouched",
+      "target": "reach.star",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.scar.godtouched",
+      "target": "reach.veil",
+      "type": "rel.boosts",
+      "weight": 0.15
+    },
+    {
+      "source": "trait.scar.ruined",
+      "target": "reach.eye",
+      "type": "rel.boosts",
+      "weight": 0.1
+    },
+    {
+      "source": "location.settlement",
+      "target": "terrain.grassland",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.settlement",
+      "target": "terrain.farmland",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.settlement",
+      "target": "terrain.coastal",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.fortress",
+      "target": "terrain.mountains",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.fortress",
+      "target": "terrain.hills",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.temple",
+      "target": "terrain.grassland",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.temple",
+      "target": "terrain.mountains",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.port",
+      "target": "terrain.coastal",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.mine",
+      "target": "terrain.mountains",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.market-town",
+      "target": "terrain.grassland",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "location.market-town",
+      "target": "terrain.coastal",
+      "type": "rel.terrain-valid",
+      "weight": 1
+    },
+    {
+      "source": "culture.dwarven-holds",
+      "target": "reach.gold",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.dwarven-holds",
+      "target": "reach.stone",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.dwarven-holds",
+      "target": "creation.matter",
+      "type": "rel.venerates",
+      "weight": 1
+    },
+    {
+      "source": "culture.nomad-clans",
+      "target": "reach.iron",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.nomad-clans",
+      "target": "creation.force",
+      "type": "rel.venerates",
+      "weight": 1
+    },
+    {
+      "source": "culture.tidal-elves",
+      "target": "reach.star",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.tidal-elves",
+      "target": "reach.eye",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.tidal-elves",
+      "target": "creation.time",
+      "type": "rel.venerates",
+      "weight": 1
+    },
+    {
+      "source": "culture.tidal-elves",
+      "target": "creation.spirit",
+      "type": "rel.venerates",
+      "weight": 1
+    },
+    {
+      "source": "culture.ember-kingdoms",
+      "target": "reach.iron",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.ember-kingdoms",
+      "target": "reach.veil",
+      "type": "rel.favors",
+      "weight": 1
+    },
+    {
+      "source": "culture.ember-kingdoms",
+      "target": "creation.energy",
+      "type": "rel.venerates",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.market-district",
+      "target": "action.gold.trade",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.temple-quarter",
+      "target": "action.star.consecrate",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.barracks",
+      "target": "action.iron.raise-force",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.library",
+      "target": "action.eye.research",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.harbor",
+      "target": "action.gold.establish-trade",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "sublocation.dungeon",
+      "target": "action.shadow.spy",
+      "type": "rel.hosts",
+      "weight": 1
+    },
+    {
+      "source": "region.kingdom",
+      "target": "location.settlement",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "region.kingdom",
+      "target": "location.fortress",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.settlement",
+      "target": "sublocation.market-district",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.settlement",
+      "target": "sublocation.temple-quarter",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.settlement",
+      "target": "sublocation.barracks",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.fortress",
+      "target": "sublocation.barracks",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.fortress",
+      "target": "sublocation.dungeon",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.fortress",
+      "target": "sublocation.throne-room",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.port",
+      "target": "sublocation.harbor",
+      "type": "rel.contains-type",
+      "weight": 1
+    },
+    {
+      "source": "location.port",
+      "target": "sublocation.market-district",
+      "type": "rel.contains-type",
+      "weight": 1
+    }
+  ]
+}
