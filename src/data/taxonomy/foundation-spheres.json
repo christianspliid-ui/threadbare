@@ -7,7 +7,7 @@
     "properties": {
       "color": "#1a0033",
       "symbolicAnimal": "Serpent Ouroboros",
-      "element": "Aether",
+      "element": "Void",
       "alignedSpheres": ["foundation.darkness", "foundation.light"],
       "cosmicPrinciple": "Potentiality",
       "influence": "foundational"
