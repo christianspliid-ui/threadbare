@@ -72,6 +72,29 @@ These are settled and must not be revisited:
 - ❌ Pure template-based prose — replaced by hybrid layered engine (template → enhanced → LLM)
 - ❌ Pure LLM-generated content — replaced by generated-within-constraints with player iteration
 
+## Change Audit Trail
+
+Whenever you modify Notion pages or Obsidian vault notes, leave a lightweight audit trail:
+
+- **In the changed document itself:** Add a dated inline note near the changed content (e.g., "*(updated 2026-03-05 — changed Time sphere color from red to orange to avoid collision with Force)*"). Keep it brief — date, what changed, why.
+- **In this file (below):** Append a one-line entry to the changelog at the bottom of this section so there's a single place to scan for recent changes across all docs.
+
+The goal is traceability without overhead. If you changed it, note when and why.
+
+### Recent Changes
+
+| Date | Where | What changed | Why |
+|------|-------|-------------|-----|
+| 2026-03-05 | Notion: Visual Style Tile | Updated color palette, core visual principle, color behavior sections | Synced with STYLE.md rewrite — dark world direction, Time→orange, form language system |
+| 2026-03-05 | STYLE.md | Full rewrite — dark world direction, sphere form language, Time `#ff9933` | Previous style too bright/diffuse; needed concentrated threadlike magic and unique sphere silhouettes |
+| 2026-03-05 | Repo: src/engine/ | Added retinue.ts, wheel.ts, strands.ts — 3 new engine modules | Layer 1 Core Interaction: data helpers for retinue queries, wheel slot generation, 6 psyche strand extractors |
+| 2026-03-05 | Repo: src/components/Game/ | Added RetinuePanel, AgentWheel, StrandView — 3 new UI components | Layer 1 Core Interaction: right sidebar, radial action menu, agent deep-dive overlay |
+| 2026-03-05 | Repo: GameView.tsx | Wired Layer 1 components — 3-column layout, selection state, wheel/strand overlays | Connects retinue→wheel→scry→strands interaction flow |
+| 2026-03-05 | CLAUDE.md | Updated session workflow, project status, engine stats | Layer 1 complete; made doc-updates-after-implementation mandatory |
+| 2026-03-05 | Obsidian: Index.md | Added 3 new links: Retinue Panel, Agent Wheel, Psyche Strands | Layer 1 systems now in vault |
+| 2026-03-05 | Obsidian: Systems/ | Created Retinue Panel.md, Agent Wheel.md, Psyche Strands.md | New system notes for Layer 1 interaction components |
+| 2026-03-05 | Notion: Backlog | Split Phase 6 into 6A-6D, marked 6A complete, added reference docs | Layer 1 done; Layer 2-4 tasks visible in backlog |
+
 ## Session Workflow
 
 When starting implementation work:
@@ -80,7 +103,13 @@ When starting implementation work:
 2. Read Obsidian `Index.md` via MCP, then follow links to the relevant system notes
 3. Check the Notion backlog for current phase and next tasks
 4. Read the relevant design doc in `Docs/plans/` before writing code
-5. After completing work, update both the Notion backlog progress and any affected Obsidian notes
+5. After completing work, **always do these documentation updates before moving on**:
+   - Update the Notion backlog (mark tasks done, add new tasks discovered)
+   - Update affected Obsidian vault notes (add new system notes, update existing ones with new concepts)
+   - Append entries to the changelog below
+   - Update the Project Status section in this file (phase status, engine stats)
+
+**This is non-negotiable.** Documentation updates happen immediately after integration and testing, in the same session, not "later."
 
 ## Project Status
 
@@ -95,6 +124,7 @@ When starting implementation work:
 - Phase 4B (Echoes & Chronicle): ✅ Complete — echo system, great chronicle assembly
 - Phase 5A (Game Loop Engine): ✅ Complete — GameState type, world seeding, tick orchestrator, cycle-end flow
 - Phase 5B (UI Components): ✅ Complete — DoomBar, NarrativeFeed, RivalPanel, HarvestScreen, GameView rewrite
-- Current phase: **Design** — vertical slice is functional, deciding next priorities (Divine Toolkit UI, Mandate tracker, agent detail, polish)
-- Engine stats: ~30 modules, ~4,400 lines, ~460 tests across 33 test files
+- Phase 6A (Layer 1 — Core Interaction): ✅ Complete — retinue panel, agent wheel, psyche strands, GameView wiring
+- Current phase: **Layer 2 planning** — Divine Toolkit UI (intervention confirmations, essence costs, detection feedback)
+- Engine stats: ~36 modules, ~4,850 lines, ~550 tests across 40 test files
 
