@@ -82,6 +82,8 @@ When starting implementation work:
 - Phase 3B (Narrative & Content): ✅ Complete — narrative prose engine, content pipeline
 - Phase 4A (World-Soul & Unmaking): ✅ Complete — fundament, resonance, twilight phase, harvest, cycle transitions
 - Phase 4B (Echoes & Chronicle): ✅ Complete — echo system, great chronicle assembly
-- Current phase: **Vertical slice** — wiring all engine modules into a playable game loop with functional prototype UI
-- Engine stats: 25 modules, ~4,000 lines, ~395 tests across 29 test files
+- Phase 5A (Game Loop Engine): ✅ Complete — GameState type, world seeding, tick orchestrator, cycle-end flow
+- Phase 5B (UI Components): ✅ Complete — DoomBar, NarrativeFeed, RivalPanel, HarvestScreen, GameView rewrite
+- Current phase: **Design** — vertical slice is functional, deciding next priorities (Divine Toolkit UI, Mandate tracker, agent detail, polish)
+- Engine stats: ~30 modules, ~4,400 lines, ~460 tests across 33 test files
 
