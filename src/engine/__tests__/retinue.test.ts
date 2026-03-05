@@ -434,14 +434,14 @@ function createTestProfile(): AxiologicalProfile {
 
 function createTestDomainCapabilities(): Record<ReachDomain, number> {
   return {
-    Iron: 5,
-    Gold: 7,
-    Shadow: 3,
-    Veil: 8,
-    Heart: 6,
-    Eye: 9,
-    Stone: 4,
-    Star: 7,
-    Flesh: 6,
+    iron: 5,
+    gold: 7,
+    shadow: 3,
+    veil: 8,
+    heart: 6,
+    eye: 9,
+    stone: 4,
+    star: 7,
+    flesh: 6,
   };
 }
