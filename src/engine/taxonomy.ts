@@ -2,15 +2,11 @@
  * Taxonomy Engine
  *
  * Provides utilities for loading and querying the cosmological taxonomy graph.
- * The taxonomy is loaded from JSON files in src/data/taxonomy/ and provides
- * query functions for navigating the graph structure.
+ * The taxonomy is loaded from the consolidated world-model.json file
+ * and provides query functions for navigating the graph structure.
  */
 
-import relationshipTypes from "../data/taxonomy/relationship-types.json";
-import foundationSpheres from "../data/taxonomy/foundation-spheres.json";
-import creationSpheres from "../data/taxonomy/creation-spheres.json";
-import magicTraditions from "../data/taxonomy/magic-traditions.json";
-import edges from "../data/taxonomy/edges.json";
+import worldModel from "../data/world-model.json";
 
 import {
   TaxonomyNode,
@@ -19,21 +15,14 @@ import {
 } from "../types/taxonomy";
 
 /**
- * Load the complete taxonomy graph from all JSON data files.
- * Assembles nodes from all source files and includes all edges.
+ * Load the complete taxonomy graph from the consolidated world-model.json file.
+ * This unified file contains all nodes (relationship types, foundation spheres,
+ * creation spheres, magic traditions, and terrain biomes) and all edges.
  */
 export async function loadTaxonomy(): Promise<TaxonomyGraph> {
-  // Combine all nodes from different source files
-  const allNodes: TaxonomyNode[] = [
-    ...relationshipTypes,
-    ...foundationSpheres,
-    ...creationSpheres,
-    ...magicTraditions,
-  ];
-
   return {
-    nodes: allNodes,
-    edges: edges as TaxonomyEdge[],
+    nodes: worldModel.nodes as TaxonomyNode[],
+    edges: worldModel.edges as TaxonomyEdge[],
   };
 }
 
