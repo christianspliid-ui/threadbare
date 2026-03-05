@@ -27,7 +27,7 @@ describe('AgentWheel', () => {
     lockedReason: 'Requires tier 3',
     essenceCost: 50,
     detectionRisk: 0.8,
-    sphere: 'Force',
+    sphere: 'force',
     interventionType: 'coincidence',
   };
 
@@ -40,7 +40,7 @@ describe('AgentWheel', () => {
     lockedReason: null,
     essenceCost: 20,
     detectionRisk: 0.3,
-    sphere: 'Mind',
+    sphere: 'mind',
     interventionType: 'dream',
   };
 
