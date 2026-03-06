@@ -28,6 +28,8 @@ import { NarrativeFeed } from './NarrativeFeed';
 import { RivalPanel } from './RivalPanel';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
+import { AgentDetailPanel } from './AgentDetailPanel';
+import { getAgentDetail } from '../../engine/agentDetail';
 import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
@@ -249,6 +251,11 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     () => getRetinueAgents(gameState.graph, gameState.ascendantId),
     [gameState.graph, gameState.ascendantId, gameState.tick]
   );
+
+  const agentDetail = useMemo(() => {
+    if (!selectedAgentId) return null;
+    return getAgentDetail(gameState.graph, selectedAgentId, gameState.ascendantId);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId]);
 
   const wheelSlots = useMemo(() => {
     if (!selectedAgentId || !wheelVisible) return null;
@@ -597,13 +604,25 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           </div>
         </div>
 
-        {/* Right sidebar - Retinue Panel */}
-        <div className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto p-4">
-          <RetinuePanel
-            agents={retinueAgents}
-            selectedAgentId={selectedAgentId}
-            onAgentSelect={handleAgentSelect}
-          />
+        {/* Right sidebar - Agent Detail or Retinue */}
+        <div className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto">
+          {agentDetail ? (
+            <AgentDetailPanel
+              detail={agentDetail}
+              onBack={() => setSelectedAgentId(null)}
+              onViewPsyche={() => setStrandViewAgent(selectedAgentId)}
+              onIntervene={() => setWheelVisible(true)}
+              onLocationClick={() => setSelectedAgentId(null)}
+            />
+          ) : (
+            <div className="p-4">
+              <RetinuePanel
+                agents={retinueAgents}
+                selectedAgentId={selectedAgentId}
+                onAgentSelect={handleAgentSelect}
+              />
+            </div>
+          )}
         </div>
       </div>
 
