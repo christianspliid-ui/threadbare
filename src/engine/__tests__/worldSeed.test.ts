@@ -108,4 +108,15 @@ describe('seedWorld', () => {
     const avg = profiles.reduce((a, b) => a + b, 0) / profiles.length;
     expect(typeof avg).toBe('number');
   });
+
+  it('assigns a narrative archetype to each individual agent', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    expect(result.individualIds.length).toBeGreaterThan(0);
+    for (const id of result.individualIds) {
+      const node = result.graph.getNode(id)!;
+      const props = node.properties as Record<string, unknown>;
+      expect(props.narrativeArchetype).toBeTruthy();
+      expect(typeof props.narrativeArchetype).toBe('string');
+    }
+  });
 });
