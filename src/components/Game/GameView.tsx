@@ -46,6 +46,8 @@ import {
 import type { LocalEncounterMode, InterventionType } from '../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 
+export type ViewLevel = 'world' | 'hex-zoom' | 'location';
+
 interface GameViewProps {
   archetype: AscendantArchetype;
   avatarName: string;
@@ -149,6 +151,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     slotId: string;
     interventionType: InterventionType;
   } | null>(null);
+  const [viewLevel, setViewLevel] = useState<ViewLevel>('world');
+  const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
+  const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -316,6 +321,28 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setWheelVisible(true);
   }, []);
 
+  const handleHexClick = useCallback((coord: { col: number; row: number }) => {
+    setSelectedHex(coord);
+    setViewLevel('hex-zoom');
+    setFocusedHex(coord);
+  }, []);
+
+  const handleLocationDoubleClick = useCallback((locationId: string) => {
+    setViewLevel('location');
+    setFocusedLocationId(locationId);
+  }, []);
+
+  const handleBackToWorld = useCallback(() => {
+    setViewLevel('world');
+    setFocusedHex(null);
+    setFocusedLocationId(null);
+  }, []);
+
+  const handleBackToHex = useCallback(() => {
+    setViewLevel('hex-zoom');
+    setFocusedLocationId(null);
+  }, []);
+
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
       {/* Doom bar at top */}
@@ -363,57 +390,81 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          {/* Hex map */}
           <div className="flex-1 p-4 flex items-center justify-center overflow-hidden relative">
-            <HexMap
-              tiles={tiles}
-              cols={COLS}
-              rows={ROWS}
-              hoveredHex={hoveredHex}
-              selectedHex={selectedHex}
-              overlayMode="none"
-              onHexClick={setSelectedHex}
-              onHexHover={setHoveredHex}
-            />
-
-            {/* Agent Wheel overlay */}
-            {wheelSlots && wheelVisible && selectedAgentId && (
-              <svg
-                className="absolute inset-0"
-                style={{ pointerEvents: 'auto' }}
-              >
-                <AgentWheel
-                  slots={wheelSlots}
-                  agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
-                  agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
-                  cx={300}
-                  cy={200}
-                  onSlotClick={handleWheelSlotClick}
-                  onDismiss={handleWheelDismiss}
+            {viewLevel === 'world' && (
+              <>
+                <HexMap
+                  tiles={tiles}
+                  cols={COLS}
+                  rows={ROWS}
+                  hoveredHex={hoveredHex}
+                  selectedHex={selectedHex}
+                  overlayMode="none"
+                  onHexClick={handleHexClick}
+                  onHexHover={setHoveredHex}
                 />
-              </svg>
+
+                {/* Agent Wheel overlay */}
+                {wheelSlots && wheelVisible && selectedAgentId && (
+                  <svg className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+                    <AgentWheel
+                      slots={wheelSlots}
+                      agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
+                      agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+                      cx={300}
+                      cy={200}
+                      onSlotClick={handleWheelSlotClick}
+                      onDismiss={handleWheelDismiss}
+                    />
+                  </svg>
+                )}
+
+                {/* Intervention confirmation popover */}
+                {pendingIntervention && wheelSlots && (() => {
+                  const slot = wheelSlots.find(s => s.id === pendingIntervention.slotId);
+                  if (!slot) return null;
+                  return (
+                    <InterventionConfirm
+                      interventionType={pendingIntervention.interventionType}
+                      label={slot.label}
+                      deliveryMode={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].deliveryMode}
+                      essenceCost={slot.essenceCost}
+                      sphere={slot.sphere ?? 'mind'}
+                      detectionRisk={slot.detectionRisk}
+                      rangeStatus={slot.rangeStatus}
+                      hexDistance={slot.hexDistance}
+                      description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}
+                      onConfirm={handleInterventionConfirm}
+                      onCancel={handleInterventionCancel}
+                    />
+                  );
+                })()}
+              </>
             )}
 
-            {/* Intervention confirmation popover */}
-            {pendingIntervention && wheelSlots && (() => {
-              const slot = wheelSlots.find(s => s.id === pendingIntervention.slotId);
-              if (!slot) return null;
-              return (
-                <InterventionConfirm
-                  interventionType={pendingIntervention.interventionType}
-                  label={slot.label}
-                  deliveryMode={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].deliveryMode}
-                  essenceCost={slot.essenceCost}
-                  sphere={slot.sphere ?? 'mind'}
-                  detectionRisk={slot.detectionRisk}
-                  rangeStatus={slot.rangeStatus}
-                  hexDistance={slot.hexDistance}
-                  description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}
-                  onConfirm={handleInterventionConfirm}
-                  onCancel={handleInterventionCancel}
-                />
-              );
-            })()}
+            {viewLevel === 'hex-zoom' && focusedHex && (
+              <div className="text-amber-200 text-center">
+                <p className="text-lg">Hex Zoom: ({focusedHex.col}, {focusedHex.row})</p>
+                <button
+                  onClick={handleBackToWorld}
+                  className="mt-4 px-4 py-2 bg-amber-900/50 text-amber-200 rounded hover:bg-amber-800/50"
+                >
+                  ← Back to World
+                </button>
+              </div>
+            )}
+
+            {viewLevel === 'location' && focusedLocationId && (
+              <div className="text-amber-200 text-center">
+                <p className="text-lg">Location: {focusedLocationId}</p>
+                <button
+                  onClick={handleBackToHex}
+                  className="mt-4 px-4 py-2 bg-amber-900/50 text-amber-200 rounded hover:bg-amber-800/50"
+                >
+                  ← Back to Hex
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Narrative feed at bottom */}
