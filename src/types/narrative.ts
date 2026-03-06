@@ -86,45 +86,5 @@ export interface SphereVocabulary {
   nouns: string[];
 }
 
-export const SPHERE_VOCABULARY: Record<SphereName, SphereVocabulary> = {
-  force: {
-    adjectives: ['mighty', 'thunderous', 'relentless', 'crushing', 'unyielding'],
-    verbs: ['shattered', 'struck', 'overwhelmed', 'battered', 'surged'],
-    nouns: ['might', 'fury', 'impact', 'avalanche', 'storm'],
-  },
-  matter: {
-    adjectives: ['solid', 'enduring', 'immovable', 'crystalline', 'dense'],
-    verbs: ['forged', 'shaped', 'hardened', 'anchored', 'crystallized'],
-    nouns: ['stone', 'iron', 'foundation', 'bulwark', 'bedrock'],
-  },
-  energy: {
-    adjectives: ['crackling', 'luminous', 'volatile', 'radiant', 'searing'],
-    verbs: ['blazed', 'surged', 'erupted', 'ignited', 'cascaded'],
-    nouns: ['flame', 'lightning', 'pulse', 'arc', 'inferno'],
-  },
-  life: {
-    adjectives: ['verdant', 'flourishing', 'vital', 'blooming', 'fecund'],
-    verbs: ['bloomed', 'healed', 'nurtured', 'grew', 'restored'],
-    nouns: ['growth', 'renewal', 'bloom', 'vitality', 'spring'],
-  },
-  mind: {
-    adjectives: ['keen', 'piercing', 'calculating', 'lucid', 'insightful'],
-    verbs: ['discerned', 'analyzed', 'perceived', 'understood', 'unraveled'],
-    nouns: ['thought', 'insight', 'clarity', 'revelation', 'logic'],
-  },
-  spirit: {
-    adjectives: ['ethereal', 'transcendent', 'luminous', 'spectral', 'sacred'],
-    verbs: ['resonated', 'sanctified', 'communed', 'invoked', 'channeled'],
-    nouns: ['soul', 'essence', 'prayer', 'vision', 'aura'],
-  },
-  time: {
-    adjectives: ['ancient', 'inexorable', 'cyclic', 'fading', 'eternal'],
-    verbs: ['aged', 'unwound', 'echoed', 'rippled', 'decayed'],
-    nouns: ['epoch', 'moment', 'tide', 'cycle', 'memory'],
-  },
-  entropy: {
-    adjectives: ['decaying', 'consuming', 'inevitable', 'dissolving', 'chaotic'],
-    verbs: ['crumbled', 'consumed', 'unraveled', 'corroded', 'scattered'],
-    nouns: ['ash', 'ruin', 'void', 'decay', 'dissolution'],
-  },
-};
+// Re-export SPHERE_VOCABULARY from content package for backward compatibility
+export { SPHERE_VOCABULARY } from '../data/narrative-content';

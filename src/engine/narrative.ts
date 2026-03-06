@@ -16,7 +16,7 @@ import type {
   SphereVocabulary,
   ChronicleEntry,
 } from '../types/narrative';
-import { SPHERE_VOCABULARY } from '../types/narrative';
+import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, VALUE_FLAVORS } from '../data/narrative-content';
 import type { ValuePair } from '../types/agent';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -53,48 +53,6 @@ function getVoice(eventType: NarrativeEventType): VoiceMode {
 
 // ─── Tier 1: Routine Template Stitching ──────────────────────────
 
-const ROUTINE_TEMPLATES: Record<string, string[]> = {
-  action_resolved: [
-    '{actor} {verb} toward {target}, a {adj} display of {noun}.',
-    'With {adj} resolve, {actor} moved against {target}. The air hummed with {noun}.',
-    '{actor} acted with {adj} purpose, their {noun} reshaping the fate of {target}.',
-  ],
-  action_failed: [
-    '{actor} reached for {target}, but the effort dissolved into {noun}.',
-    'The {adj} attempt by {actor} faltered, leaving only {noun} in its wake.',
-  ],
-  action_critical: [
-    '{actor} {verb} with {adj} force, and {target} was forever changed by the {noun}.',
-    'A {adj} moment — {actor} {verb} beyond all expectation, and {noun} reshaped the world.',
-  ],
-  trait_acquired: [
-    'Something shifted within {actor}. A new {noun} took root — {adj} and undeniable.',
-    '{actor} emerged changed, bearing the mark of {adj} {noun}.',
-  ],
-  tier_transition: [
-    'The bond between {actor} and the divine deepened, {adj} {noun} flowing through them.',
-  ],
-  divine_intervention: [
-    'You reached into the dream of {actor}, a {adj} whisper carrying {noun}.',
-    'You stirred the {noun} within {actor}, a {adj} touch upon their sleeping mind.',
-  ],
-  contested_action: [
-    'Two forces clashed over {target} — {adj} {noun} against {adj} resolve.',
-  ],
-  actor_death: [
-    '{actor} fell, their last breath a {adj} exhalation of {noun}.',
-  ],
-  doom_escalation: [
-    'The world {verb}. {adj} {noun} spreads across the land.',
-  ],
-  mandate_stage: [
-    'A threshold is crossed. The {adj} {noun} of destiny draws nearer.',
-  ],
-  trait_lost: [
-    'Something faded within {actor}. The {adj} {noun} dimmed and was gone.',
-  ],
-};
-
 export function generateRoutineProse(
   eventType: NarrativeEventType,
   context: ProseContext,
@@ -127,19 +85,6 @@ export function generateRoutineProse(
 
 // ─── Personality Flavoring ───────────────────────────────────────
 
-const VALUE_FLAVORS: Partial<Record<ValuePair, string[]>> = {
-  ambition_contentment: ['driven by ambition', 'fueled by relentless desire'],
-  courage_prudence: ['with fearless resolve', 'bold beyond measure'],
-  cruelty_compassion: ['tempered by compassion', 'with a gentle hand'],
-  cunning_honesty: ['with cunning precision', 'through shrewd calculation'],
-  devotion_independence: ['bound by devotion', 'answering a higher call'],
-  loyalty_treachery: ['loyal to the last', 'with unwavering fidelity'],
-  tradition_innovation: ['embracing new paths', 'breaking with the old ways'],
-  dominance_humility: ['commanding all before them', 'asserting dominion'],
-  wrath_patience: ['with patient deliberation', 'measured and calm'],
-  greed_generosity: ['with open-handed generosity', 'sharing freely'],
-};
-
 function getPersonalityClause(values?: ValuePair[], seed?: number): string {
   if (!values || values.length === 0) return '';
   const rng = mulberry32(seed ?? 0);
@@ -150,27 +95,6 @@ function getPersonalityClause(values?: ValuePair[], seed?: number): string {
 }
 
 // ─── Tier 2: Notable Enhanced Templates ──────────────────────────
-
-const NOTABLE_TEMPLATES: Record<string, string[]> = {
-  action_critical: [
-    'In a moment that would echo through memory, {actor} {verb} against {target}{personality}. The very air trembled with {adj} {noun}, and those who witnessed it knew the world had shifted.',
-    '{actor}{personality} stood at the threshold of legend. With {adj} determination, they {verb} — and {target} was forever transformed by the {noun} unleashed.',
-  ],
-  trait_acquired: [
-    'Something profound awakened within {actor}{personality}. Like {adj} {noun} breaking through winter soil, a new aspect of their being emerged — one that would define the chapters yet to come.',
-    '{actor} was changed{personality}. The {adj} mark of {noun} settled upon them, indelible as starlight, shaping all that would follow.',
-  ],
-  doom_escalation: [
-    'The world shudders. Across {target}, {adj} {noun} seeps through the cracks of reality{personality}. Those with eyes to see recognize the signs — the {noun} draws closer.',
-    'A tremor passes through the fabric of existence. In {target}, {adj} portents multiply — {noun} gathering like stormclouds on the horizon.',
-  ],
-  tier_transition: [
-    'The divine bond between {actor} and the unseen deepens{personality}. {adj} {noun} courses through their veins now, marking them as something more than mortal.',
-  ],
-  divine_intervention: [
-    'You reach deeper than before into the consciousness of {actor}{personality}. This time the {adj} {noun} of your will leaves a lasting impression — their dreams will never be quite the same.',
-  ],
-};
 
 export function generateNotableProse(
   eventType: NarrativeEventType,
