@@ -173,6 +173,17 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-narrative-context-pipeline.md | Narrative context pipeline: harvest-rank-select-feed, opposition tension scoring, narrative spawning |
 | 2026-03-06 | Obsidian: Systems/ | Created Content Strategy.md, Narrative Archetypes.md, Narrative Context Pipeline.md, Content Packages.md | 4 new system notes for content strategy and architecture |
 | 2026-03-06 | Notion: Backlog | Added Content Strategy & Architecture section with 3 completed design items + 5 pending implementation items | Content strategy design phase complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-extraction-design.md | Design doc: 5 new packages, boundary decisions, pattern rules, sequencing roadmap |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-extraction-implementation.md | 7-task TDD implementation plan for content package extraction |
+| 2026-03-06 | Repo: src/data/ | Created narrative-content.ts (171 lines) | Sphere vocabulary, routine/notable templates, value flavors — extracted from types/narrative.ts + engine/narrative.ts |
+| 2026-03-06 | Repo: src/data/ | Created dream-content.ts (204 lines) | Manipulation/intervention definitions, tier modifiers, delivery/encounter constants — extracted from types/dream.ts |
+| 2026-03-06 | Repo: src/data/ | Created doom-content.ts | Stage names, default thresholds — extracted from engine/doomClock.ts |
+| 2026-03-06 | Repo: src/data/ | Created rival-content.ts (104 lines) | Name fragments, behavior weights, action types — extracted from types/rival.ts + engine/rival.ts |
+| 2026-03-06 | Repo: src/data/ | Created influence-content.ts (66 lines) | Tier names, economy constants, action costs — extracted from types/influence.ts |
+| 2026-03-06 | Repo: src/types/ | Moved RivalAction interface from engine/rival.ts to types/rival.ts | Prevented circular import between rival-content.ts and engine/rival.ts |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — all 8 packages marked complete | Content extraction status reflected in vault |
+| 2026-03-06 | Notion: Backlog | Marked Content Package Migration complete | 5 new packages, 28 tests, ~350 lines extracted |
+| 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Content extraction complete |
 
 ## Session Workflow
 
@@ -211,7 +222,8 @@ When starting implementation work:
 - Phase 6D (Ascendant Scry): ✅ Complete — scry types, content data, scry engine, ScryOverlay component, GameView wiring, integration tests
 - Phase 6D (Mandate Tracker): ✅ Complete — 9 mandate templates, sphere-weighted generator, real condition evaluation, MandateTracker component, GameView wiring, 63 mandate tests
 - Phase 6E (Agent Detail Panel): ✅ Complete — 19 narrative archetypes, agent detail aggregator, AgentDetailPanel character sheet, GameView sidebar wiring, 36 new tests
-- Current phase: **Phase 6E complete** — agent detail panel replaces right sidebar with full character sheet
-- Engine stats: ~56 modules, ~9,000 lines, ~905 tests across 67 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes
+- Content Package Extraction: ✅ Complete — 5 new content packages (narrative, dream, doom, rival, influence), 28 new content tests, ~350 lines extracted from engine/type files
+- Current phase: **Content extraction complete** — 8 content packages total, content writer data containers ready
+- Engine stats: ~61 modules, ~9,200 lines, ~933 tests across 73 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages
 
