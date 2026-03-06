@@ -16,6 +16,7 @@ import type { WorldSoulState } from './worldSoul';
 import type { EchoDefinition, EchoState } from './echo';
 import type { GreatChronicle } from './chronicle';
 import type { WorldGraph } from '../engine/graph';
+import type { VisibilityMap } from './visibility';
 
 // ─── Game Phase ─────────────────────────────────────────────────
 
@@ -72,6 +73,9 @@ export interface GameState {
 
   // Stealth (simplified for vertical slice)
   stealthExposure: number;           // 0.0 (hidden) to 1.0 (fully detected)
+
+  // Fog of War
+  visibilityMap: VisibilityMap;      // hexCol,hexRow -> visibility state and snapshot
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

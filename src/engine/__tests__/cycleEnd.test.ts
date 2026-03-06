@@ -12,6 +12,7 @@ import { generateRivals, createRivalState } from '../rival';
 import { generateDoomClock, createDoomClockState } from '../doomClock';
 import { createGreatChronicle } from '../chronicle';
 import { createDefaultFundament, createResonanceState } from '../worldSoul';
+import { recalcVisibility, collectLOSSources } from '../visibility';
 import type { GameState } from '../../types/gameState';
 import type { CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
@@ -88,6 +89,10 @@ function createTestGameState(): GameState {
   const doomDef = generateDoomClock('breach', 360, seed);
   const doomState = createDoomClockState('breach', 360);
 
+  // Initialize visibility map
+  const losSources = collectLOSSources(graph, ascendantId, []);
+  const visibilityMap = recalcVisibility(new Map(), losSources, graph, 100, 5, 5);
+
   return {
     cycle: 1,
     tick: 100,
@@ -109,6 +114,7 @@ function createTestGameState(): GameState {
     recentEvents: [],
     chronicleEntries: [],
     stealthExposure: 0,
+    visibilityMap,
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
