@@ -11,6 +11,8 @@ import type { EssencePool, InfluenceTier } from '../types/influence';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
 import { canAfford } from './influence';
+import type { HexPosition } from './delivery';
+import { isInRange, getDeliveryInfo, hexDistance } from './delivery';
 
 // ─── Wheel Slot Interface ─────────────────────────────────────────────────
 
@@ -39,6 +41,10 @@ export interface WheelSlot {
   sphere: SphereName | null;
   /** Intervention type (dream, persuade, etc.), or null for non-interventions */
   interventionType: InterventionType | null;
+  /** Range status: in_range, out_of_range, unlimited, or unknown (no position data) */
+  rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown';
+  /** Hex distance from avatar to target (null if no position data) */
+  hexDistance: number | null;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────
@@ -148,16 +154,20 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
  * 4. Sphere selection: use primarySphere if in intervention's sphereAffinities,
  *    otherwise use first affinity
  * 5. BaseCost and detectionRisk come from INTERVENTION_DEFINITIONS
+ * 6. Range status computed from avatarPos and targetPos if provided
  *
- * @param params - { tier, pool, primarySphere }
+ * @param params - { tier, pool, primarySphere, avatarPos?, targetPos? }
  * @returns Array of 10 WheelSlot objects (9 actions + 1 center)
  */
 export function getAgentWheelSlots(params: {
   tier: InfluenceTier;
   pool: EssencePool;
   primarySphere: SphereName;
+  avatarPos?: HexPosition;
+  targetPos?: HexPosition;
 }): WheelSlot[] {
-  const { tier, pool, primarySphere } = params;
+  const { tier, pool, primarySphere, avatarPos, targetPos } = params;
+  const hasPositions = avatarPos != null && targetPos != null;
 
   return WHEEL_LAYOUT.map((slotDef) => {
     // Center is always available
@@ -173,6 +183,8 @@ export function getAgentWheelSlots(params: {
         detectionRisk: 0,
         sphere: null,
         interventionType: null,
+        rangeStatus: 'unknown',
+        hexDistance: null,
       };
     }
 
@@ -190,12 +202,29 @@ export function getAgentWheelSlots(params: {
         detectionRisk: 0,
         sphere: null,
         interventionType: null,
+        rangeStatus: 'unknown',
+        hexDistance: null,
       };
     }
 
     // For interventions, check tier and essence
     const interventionType = slotDef.interventionType!;
     const interventionDef = INTERVENTION_DEFINITIONS[interventionType];
+
+    // Compute range status
+    let rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown' = 'unknown';
+    let hexDist: number | null = null;
+
+    if (hasPositions) {
+      const deliveryInfo = getDeliveryInfo(interventionType);
+      if (deliveryInfo.mode === 'astral' || deliveryInfo.mode === 'remote') {
+        rangeStatus = 'unlimited';
+      } else {
+        const inRange = isInRange(avatarPos!, targetPos!, interventionType);
+        hexDist = hexDistance(avatarPos!, targetPos!);
+        rangeStatus = inRange ? 'in_range' : 'out_of_range';
+      }
+    }
 
     // Check if tier is high enough
     if (tier < interventionDef.minTier) {
@@ -210,6 +239,8 @@ export function getAgentWheelSlots(params: {
         detectionRisk: interventionDef.detectionRisk,
         sphere: selectSphere(primarySphere, interventionDef.sphereAffinities),
         interventionType,
+        rangeStatus,
+        hexDistance: hexDist,
       };
     }
 
@@ -219,7 +250,7 @@ export function getAgentWheelSlots(params: {
     // Check if we can afford this intervention
     const canAffordIntervention = canAfford(pool, chosenSphere, interventionDef.baseCost);
 
-    return {
+    let slot: WheelSlot = {
       id: slotDef.id,
       label: slotDef.label,
       type: slotDef.type,
@@ -230,7 +261,17 @@ export function getAgentWheelSlots(params: {
       detectionRisk: interventionDef.detectionRisk,
       sphere: chosenSphere,
       interventionType,
+      rangeStatus,
+      hexDistance: hexDist,
     };
+
+    // Apply range gating
+    if (rangeStatus === 'out_of_range' && slot.available) {
+      slot.available = false;
+      slot.lockedReason = `Target out of range (${hexDist} hexes)`;
+    }
+
+    return slot;
   });
 }
 
