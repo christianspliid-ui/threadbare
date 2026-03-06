@@ -70,6 +70,11 @@ import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { generateMandate } from '../../engine/mandateGenerator';
 import { createMandateState } from '../../engine/mandate';
+import { AvatarHUD } from './AvatarHUD';
+import type { HexMapHandle } from '../HexMap/HexMap';
+import { getAvatarHexPosition } from '../../engine/visibility';
+import { moveAvatarToHex } from '../../engine/avatarMove';
+import { hexToPixel } from '../../lib/hexMath';
 
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
@@ -190,8 +195,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
   const [scryState, setScryState] = useState<ScryState>(createScryState());
   const [scryVisible, setScryVisible] = useState(false);
+  const [moveMode, setMoveMode] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hexMapRef = useRef<HexMapHandle>(null);
 
   // ── Tick ──
   const doTick = useCallback(() => {
@@ -315,6 +322,31 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     if (!focusedLocationId) return [];
     return getAgentsAtLocation(gameState.graph, focusedLocationId);
   }, [gameState.graph, focusedLocationId, gameState.tick]);
+
+  // Avatar position and sphere color
+  const avatarPos = useMemo(
+    () => getAvatarHexPosition(gameState.graph, gameState.ascendantId),
+    [gameState.graph, gameState.ascendantId]
+  );
+
+  const sphereColor = useMemo(() => {
+    // Simple mapping from primary foundation sphere to color
+    const primarySphere = archetype.sphereAlignment.primary;
+    const sphereColorMap: Record<string, string> = {
+      chaos: '#ff6633',
+      order: '#3366ff',
+      light: '#ffdd44',
+      darkness: '#9933cc',
+    };
+    return sphereColorMap[primarySphere] ?? '#ff6633';
+  }, [archetype.sphereAlignment.primary]);
+
+  // Avatar pixel position for initial zoom
+  const avatarPixelPos = useMemo(() => {
+    if (!avatarPos) return null;
+    const HEX_SIZE = 30; // matches HexMap default
+    return hexToPixel(avatarPos, HEX_SIZE);
+  }, [avatarPos]);
 
   // Handlers
   const handleAgentSelect = useCallback((agentId: string) => {
@@ -456,6 +488,51 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     // Future: show info tooltip
   }, []);
 
+  const handleCenterOnAvatar = useCallback(() => {
+    if (avatarPixelPos && hexMapRef.current) {
+      hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 3.0);
+    }
+  }, [avatarPixelPos]);
+
+  const handleAvatarMoveClick = useCallback(() => {
+    setMoveMode(true);
+  }, []);
+
+  const handleAvatarWheelClick = useCallback(() => {
+    if (selectedAgentId) {
+      setWheelVisible(true);
+    } else {
+      // If no agent selected, select the first retinue agent
+      if (retinueAgents.length > 0) {
+        handleAgentSelect(retinueAgents[0].id);
+      }
+    }
+  }, [selectedAgentId, retinueAgents, handleAgentSelect]);
+
+  const handleAvatarScryClick = useCallback(() => {
+    handleOpenScry();
+  }, [handleOpenScry]);
+
+  // Handle hex click in move mode
+  const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
+    if (moveMode) {
+      // Move avatar to target hex
+      moveAvatarToHex(gameState.graph, gameState.ascendantId, coord);
+      // Recalculate visibility
+      const losSources = collectLOSSources(gameState.graph, gameState.ascendantId, []);
+      const newVisibilityMap = recalcVisibility(gameState.visibilityMap, losSources, gameState.graph, gameState.tick, COLS, ROWS);
+      setGameState(prev => ({
+        ...prev,
+        visibilityMap: newVisibilityMap,
+      }));
+      // Exit move mode
+      setMoveMode(false);
+    } else {
+      // Normal hex click behavior
+      handleHexClick(coord);
+    }
+  }, [moveMode, gameState, handleHexClick]);
+
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
       {/* Doom + Mandate bar at top */}
@@ -518,14 +595,30 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             {viewLevel === 'world' && (
               <>
                 <HexMap
+                  ref={hexMapRef}
                   tiles={tiles}
                   cols={COLS}
                   rows={ROWS}
                   hoveredHex={hoveredHex}
                   selectedHex={selectedHex}
                   overlayMode="none"
-                  onHexClick={handleHexClick}
+                  visibilityMap={gameState.visibilityMap}
+                  avatarHex={avatarPos ?? undefined}
+                  sphereColor={sphereColor}
+                  initialCenter={avatarPixelPos ?? undefined}
+                  initialScale={3.0}
+                  onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
+                />
+
+                <AvatarHUD
+                  avatarName={avatarName}
+                  sphereColor={sphereColor}
+                  onCenterOnAvatar={handleCenterOnAvatar}
+                  onMoveClick={handleAvatarMoveClick}
+                  onWheelClick={handleAvatarWheelClick}
+                  onScryClick={handleAvatarScryClick}
+                  moveMode={moveMode}
                 />
 
                 {/* Agent Wheel overlay */}
