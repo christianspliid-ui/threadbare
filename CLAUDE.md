@@ -139,6 +139,14 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Obsidian: Systems/ | Created Hex Zoom View.md, Location View.md; updated View Levels.md | Phase 6C documentation: new system notes + implementation status |
 | 2026-03-06 | Notion: Backlog | Added Phase 6C as complete, renumbered 6D/6E, added reference docs | Phase 6C backlog update |
 | 2026-03-06 | CLAUDE.md | Updated project status (Phase 6C complete), engine stats, changelog | Phase 6C documentation |
+| 2026-03-06 | Repo: src/types/ | Created scry.ts — ScryState, Position, Title, TitleEffect, CourtStructureDefinition + constants | Phase 6D Task 1: scry type system |
+| 2026-03-06 | Repo: src/data/ | Created scry-content.ts — 4 court structures, archetypes, title fragments/templates, bonus rules, weakness pool | Phase 6D Task 2: scry content package |
+| 2026-03-06 | Repo: src/engine/ | Created scry.ts — createScryState, initializeCourt, generateTitleProposals, assignAgentToPosition, demoteAgent | Phase 6D Tasks 3-5: scry engine (531 lines, 37 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created ScryOverlay.tsx — full-screen court overlay with position slots, agent picker, title proposals | Phase 6D Task 6: ScryOverlay component (566 lines, 20 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — scry state, handlers, wheel scry slot → ScryOverlay, overlay rendering | Phase 6D Task 7: GameView wiring |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created scry-integration.test.ts — full court flow: init → assign → demote → escalation, 4 structures | Phase 6D Task 8: integration test |
+| 2026-03-06 | Obsidian: Systems/ | Created Ascendant Scry.md; updated Index.md with Ascendant Scry link | Phase 6D vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Scry complete), engine stats, changelog | Phase 6D documentation |
 
 ## Session Workflow
 
@@ -174,7 +182,8 @@ When starting implementation work:
 - Phase 6B (Layer 2 — Divine Toolkit UI): ✅ Complete — delivery types, range checking, wheel range gating, InterventionConfirm popover, GameView intervention flow
 - Phase 6C (Hex Zoom Level): ✅ Complete — polygon layout, hex zoom engine queries, view state machine, HexBreadcrumb, HexZoomView, LocationView, GameView wiring, integration test
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
-- Current phase: **Phase 6D planning** — Ascendant Scry, Divine Titles, Mandate Tracker UI
-- Engine stats: ~44 modules, ~6,400 lines, ~747 tests across 54 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 201 generated Obsidian vault notes
+- Phase 6D (Ascendant Scry): ✅ Complete — scry types, content data, scry engine, ScryOverlay component, GameView wiring, integration tests
+- Current phase: **Phase 6D remaining** — Mandate Tracker UI
+- Engine stats: ~50 modules, ~7,500 lines, ~806 tests across 57 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 202 generated Obsidian vault notes
 
