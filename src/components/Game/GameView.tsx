@@ -31,7 +31,17 @@ import { RetinuePanel } from './RetinuePanel';
 import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
+import { HexZoomView } from './HexZoomView';
+import { LocationView } from './LocationView';
+import { HexBreadcrumb } from './HexBreadcrumb';
 import { getRetinueAgents } from '../../engine/retinue';
+import {
+  getLocationsInHex,
+  getAgentsAtLocation,
+  getHexSphereInfluence,
+  getLineOfSight,
+  getLocationConnections,
+} from '../../engine/hexZoom';
 import { getAgentWheelSlots } from '../../engine/wheel';
 import { getDeliveryInfo } from '../../engine/delivery';
 import { executeIntervention } from '../../engine/dream';
@@ -233,6 +243,48 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     });
   }, [selectedAgentId, wheelVisible, gameState.essencePool, retinueAgents, archetype]);
 
+  // Hex zoom derived data
+  const hexLocations = useMemo(() => {
+    if (!focusedHex) return [];
+    return getLocationsInHex(gameState.graph, focusedHex.col, focusedHex.row);
+  }, [gameState.graph, focusedHex, gameState.tick]);
+
+  const hexAgentsByLocation = useMemo(() => {
+    const map: Record<string, ReturnType<typeof getAgentsAtLocation>> = {};
+    for (const loc of hexLocations) {
+      map[loc.id] = getAgentsAtLocation(gameState.graph, loc.id);
+    }
+    return map;
+  }, [gameState.graph, hexLocations, gameState.tick]);
+
+  const hexConnections = useMemo(() => {
+    return getLocationConnections(gameState.graph, hexLocations.map(l => l.id));
+  }, [gameState.graph, hexLocations]);
+
+  const hexSphereInfluence = useMemo(() => {
+    if (!focusedHex) return null;
+    return getHexSphereInfluence(gameState.graph, focusedHex.col, focusedHex.row);
+  }, [gameState.graph, focusedHex, gameState.tick]);
+
+  const hexLineOfSight = useMemo(() => {
+    if (!focusedHex) return 'none' as const;
+    return getLineOfSight(gameState.graph, gameState.ascendantId, focusedHex);
+  }, [gameState.graph, gameState.ascendantId, focusedHex, gameState.tick]);
+
+  const hexTotalAgents = useMemo(() => {
+    return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
+  }, [hexAgentsByLocation]);
+
+  const focusedLocation = useMemo(() => {
+    if (!focusedLocationId) return null;
+    return gameState.graph.getNode(focusedLocationId) ?? null;
+  }, [gameState.graph, focusedLocationId]);
+
+  const focusedLocationAgents = useMemo(() => {
+    if (!focusedLocationId) return [];
+    return getAgentsAtLocation(gameState.graph, focusedLocationId);
+  }, [gameState.graph, focusedLocationId, gameState.tick]);
+
   // Handlers
   const handleAgentSelect = useCallback((agentId: string) => {
     setSelectedAgentId(agentId);
@@ -343,6 +395,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setFocusedLocationId(null);
   }, []);
 
+  const handleLocationClick = useCallback((_locationId: string) => {
+    // Future: show info tooltip
+  }, []);
+
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
       {/* Doom bar at top */}
@@ -442,28 +498,41 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
               </>
             )}
 
-            {viewLevel === 'hex-zoom' && focusedHex && (
-              <div className="text-amber-200 text-center">
-                <p className="text-lg">Hex Zoom: ({focusedHex.col}, {focusedHex.row})</p>
-                <button
-                  onClick={handleBackToWorld}
-                  className="mt-4 px-4 py-2 bg-amber-900/50 text-amber-200 rounded hover:bg-amber-800/50"
-                >
-                  ← Back to World
-                </button>
+            {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (
+              <div className="flex flex-col h-full">
+                <HexBreadcrumb
+                  hexCol={focusedHex.col}
+                  hexRow={focusedHex.row}
+                  terrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
+                  locationCount={hexLocations.length}
+                  agentCount={hexTotalAgents}
+                  lineOfSight={hexLineOfSight}
+                  sphereInfluence={hexSphereInfluence}
+                  onBack={handleBackToWorld}
+                />
+                <div className="flex-1 flex items-center justify-center">
+                  <HexZoomView
+                    locations={hexLocations}
+                    agentsByLocation={hexAgentsByLocation}
+                    connections={hexConnections}
+                    lineOfSight={hexLineOfSight}
+                    onLocationClick={handleLocationClick}
+                    onLocationDoubleClick={handleLocationDoubleClick}
+                  />
+                </div>
               </div>
             )}
 
-            {viewLevel === 'location' && focusedLocationId && (
-              <div className="text-amber-200 text-center">
-                <p className="text-lg">Location: {focusedLocationId}</p>
-                <button
-                  onClick={handleBackToHex}
-                  className="mt-4 px-4 py-2 bg-amber-900/50 text-amber-200 rounded hover:bg-amber-800/50"
-                >
-                  ← Back to Hex
-                </button>
-              </div>
+            {viewLevel === 'location' && focusedLocation && focusedHex && (
+              <LocationView
+                location={focusedLocation}
+                agents={focusedLocationAgents}
+                hexTerrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
+                hexCol={focusedHex.col}
+                hexRow={focusedHex.row}
+                onAgentClick={handleAgentSelect}
+                onBack={handleBackToHex}
+              />
             )}
           </div>
 

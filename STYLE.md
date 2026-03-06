@@ -171,19 +171,21 @@ Semi-transparent compositable image showing active sphere magic. One per sphere 
 
 This is the single source of truth for hex terrain prompts. The same template is used by `scripts/generate-hex-tile.py` and the `image-generation` skill. Do not deviate from this structure when generating hex tiles.
 
+**Key insight:** The prompt asks for a **circular** composition, not hexagonal. The hexagonal shape is applied programmatically by the pipeline's alpha mask. If the prompt says "hexagonal," the AI draws hex-shaped terrain patterns, creating a "hex within hex" artifact after masking.
+
 ```
-A single hexagonal tile of [biome] terrain, painted in dark fantasy oil painting style.
+A circular island of [biome] terrain in the center of the image, painted in dark fantasy oil painting style.
 [2-3 sentences: terrain features with visible depth and texture, clustered in center].
-The terrain forms a dense cluster in the center of the composition.
-The surrounding background is flat, featureless ground in the biome's base color ([hex color]).
-The terrain features fill the center but fade to bare ground before reaching the edges.
+The terrain forms a dense round cluster in the center of the composition, roughly circular in shape.
+The surrounding area is flat, featureless ground in the biome's base color ([hex color]), filling the rest of the image.
+The terrain features are concentrated in the center and fade to bare ground well before reaching the image edges.
 
 Slightly elevated three-quarter view, painterly depth with visible tree trunks and terrain texture.
 Rich dimensional brushwork, thick impasto oil paint.
 Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
 
 No magic, no glowing elements, no luminous effects.
-No text, no UI, no labels, no drawn hex borders or outlines, no modern elements.
+No text, no UI, no labels, no hexagonal shapes or hex borders, no modern elements.
 No rivers, no streams, no water features that would need to connect across tile boundaries.
 No paths or roads that lead to edges.
 ```
