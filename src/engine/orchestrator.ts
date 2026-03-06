@@ -16,6 +16,7 @@ import {
   generateEssence,
   computeMaxEssence,
 } from './influence';
+import { evaluateMandate, advanceMandateStage } from './mandate';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -206,14 +207,48 @@ export function phaseEssence(state: GameState): Partial<GameState> {
 // ─── Phase 7: Mandate Check ───────────────────────────────────────
 
 export function phaseMandate(state: GameState): Partial<GameState> {
-  if (!state.mandateState || state.mandateState.completed || state.mandateState.failed) {
+  if (!state.mandateState || !state.mandateDefinition || state.mandateState.completed || state.mandateState.failed) {
     return {};
   }
-  const newState = {
-    ...state.mandateState,
-    progress: Math.min(1.0, state.mandateState.progress + 0.002),
+
+  const evaluated = evaluateMandate(
+    state.graph,
+    state.mandateDefinition as any,
+    state.mandateState,
+    state.ascendantId,
+    state.tick,
+  );
+
+  const advanced = evaluated.progress >= 1.0
+    ? advanceMandateStage(evaluated, state.tick)
+    : evaluated;
+
+  const events: TickEvent[] = [];
+
+  if (advanced.currentStage !== state.mandateState.currentStage) {
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'mandate_progress',
+      message: `Mandate "${state.mandateDefinition.name}" advances to ${advanced.currentStage}`,
+      significance: 0.8,
+    });
+  }
+
+  if (advanced.completed && !state.mandateState.completed) {
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'mandate_progress',
+      message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
+      significance: 1.0,
+    });
+  }
+
+  return {
+    mandateState: advanced,
+    tickEvents: [...state.tickEvents, ...events],
   };
-  return { mandateState: newState };
 }
 
 // ─── Phase 8: Doom Expiry Check ───────────────────────────────────

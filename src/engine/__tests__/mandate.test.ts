@@ -175,4 +175,88 @@ describe('mandate evaluation engine', () => {
     expect(state.completed).toBe(true);
     expect(state.stageCompletedTicks?.culmination).toBe(50);
   });
+
+  it('actor_tier counts agents at or above min tier', () => {
+    const graph = buildTestGraph();
+    const condition: MandateCondition = {
+      type: 'actor_tier',
+      description: 'Have 2+ tier-2 worshippers',
+      params: {
+        minTier: 2,
+        minCount: 2,
+      },
+    };
+    const result = evaluateCondition(graph, condition, 'actor_asc');
+    expect(result).toBe(true);
+  });
+
+  it('actor_tier fails when not enough high-tier agents', () => {
+    const graph = buildTestGraph();
+    const condition: MandateCondition = {
+      type: 'actor_tier',
+      description: 'Have 1+ tier-4 worshippers',
+      params: {
+        minTier: 4,
+        minCount: 1,
+      },
+    };
+    const result = evaluateCondition(graph, condition, 'actor_asc');
+    expect(result).toBe(false);
+  });
+
+  it('sphere_weight checks region sphere influence', () => {
+    const graph = buildTestGraph();
+
+    // Add a sphere node
+    graph.addNode({ id: 'sphere_chaos', type: 'sphere', name: 'Chaos', properties: {} });
+
+    // Add sphere_influence edge from first location to the sphere with weight 0.8
+    graph.addEdge({
+      id: 'edge_sphere_inf_1',
+      source: 'loc_region_1',
+      target: 'sphere_chaos',
+      type: 'sphere_influence',
+      properties: { weight: 0.8 },
+    });
+
+    const condition: MandateCondition = {
+      type: 'sphere_weight',
+      description: 'Chaos influences 1+ region',
+      params: {
+        sphere: 'chaos',
+        minWeight: 0.7,
+        minRegions: 1,
+      },
+    };
+    const result = evaluateCondition(graph, condition, 'actor_asc');
+    expect(result).toBe(true);
+  });
+
+  it('sphere_weight fails when insufficient regions', () => {
+    const graph = buildTestGraph();
+
+    // Add a sphere node
+    graph.addNode({ id: 'sphere_order', type: 'sphere', name: 'Order', properties: {} });
+
+    // Add sphere_influence edge from first location only
+    graph.addEdge({
+      id: 'edge_sphere_inf_order',
+      source: 'loc_region_1',
+      target: 'sphere_order',
+      type: 'sphere_influence',
+      properties: { weight: 0.9 },
+    });
+
+    const condition: MandateCondition = {
+      type: 'sphere_weight',
+      description: 'Order influences 3+ regions',
+      params: {
+        sphere: 'order',
+        minWeight: 0.8,
+        minRegions: 3,
+      },
+    };
+    const result = evaluateCondition(graph, condition, 'actor_asc');
+    expect(result).toBe(false);
+  });
 });

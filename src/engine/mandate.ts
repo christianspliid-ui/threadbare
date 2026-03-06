@@ -76,10 +76,36 @@ export function evaluateCondition(
       return allEdges.length >= minCount;
     }
 
-    case 'sphere_weight':
-    case 'actor_tier':
-      // Future implementation — Phase 3+ when sphere dominance tracking exists
-      return false;
+    case 'actor_tier': {
+      const { minTier, minCount } = condition.params as {
+        minTier: number;
+        minCount: number;
+      };
+      const worshipEdges = graph.getIncomingEdges(ascendantId)
+        .filter(e => e.type === 'worships' && (e.properties.tier as number) >= minTier);
+      return worshipEdges.length >= minCount;
+    }
+
+    case 'sphere_weight': {
+      const { sphere, minWeight, minRegions } = condition.params as {
+        sphere: string;
+        minWeight: number;
+        minRegions: number;
+      };
+      const locations = graph.getNodesByType('location');
+      let qualifyingRegions = 0;
+      for (const loc of locations) {
+        const sphereEdges = graph.getOutgoingEdges(loc.id, 'sphere_influence');
+        const match = sphereEdges.find(e => {
+          const targetNode = graph.getNode(e.target);
+          return targetNode && targetNode.name.toLowerCase() === sphere;
+        });
+        if (match && (match.properties.weight as number) >= minWeight) {
+          qualifyingRegions++;
+        }
+      }
+      return qualifyingRegions >= minRegions;
+    }
 
     case 'custom':
       // Narrative mandates require event-driven evaluation, not graph queries

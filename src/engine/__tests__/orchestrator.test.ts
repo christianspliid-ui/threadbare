@@ -204,6 +204,69 @@ describe('Orchestrator', () => {
     expect(updates.phase).toBeUndefined();
   });
 
+  it('phaseMandate does not produce fake progress when conditions not met', () => {
+    const state = createTestGameState();
+
+    // Create a mandate that requires 5 worshippers, but none exist yet
+    const mandate = {
+      id: 'mandate_test',
+      type: 'graph_state' as const,
+      name: 'Test Mandate',
+      description: 'Require 5 high-tier worshippers',
+      stages: [
+        {
+          stage: 'setup' as const,
+          description: 'Establish base',
+          conditions: [{
+            type: 'node_count' as const,
+            description: 'Have 5+ tier-2 worshippers',
+            params: {
+              nodeType: 'actor',
+              edgeType: 'worships',
+              edgeTarget: state.ascendantId,
+              minTier: 2,
+              minCount: 5,
+            },
+          }],
+        },
+        {
+          stage: 'escalation' as const,
+          description: 'Escalate',
+          conditions: [],
+        },
+        {
+          stage: 'culmination' as const,
+          description: 'Culminate',
+          conditions: [],
+        },
+      ],
+    };
+
+    state.mandateDefinition = mandate;
+    state.mandateState = {
+      mandateId: 'mandate_test',
+      currentStage: 'setup',
+      progress: 0,
+      completed: false,
+      failed: false,
+    };
+
+    const updates = phaseMandate(state);
+
+    // Progress should be 0 (no conditions met), not fake +0.002
+    expect(updates.mandateState?.progress).toBe(0);
+    expect(updates.mandateState?.completed).toBe(false);
+  });
+
+  it('phaseMandate returns empty object when no mandate is active', () => {
+    const state = createTestGameState();
+    state.mandateDefinition = null;
+    state.mandateState = null;
+
+    const updates = phaseMandate(state);
+    expect(updates).toEqual({});
+  });
+
   it('runTick advances tick counter', () => {
     const state = createTestGameState();
     const next = runTick(state);
