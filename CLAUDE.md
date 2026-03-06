@@ -158,6 +158,16 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: src/engine/__tests__/ | Created mandate-integration.test.ts — full lifecycle, actor_tier cycle, all templates evaluable | Phase 6D Mandate: integration tests (3 tests) |
 | 2026-03-06 | Obsidian: Systems/ | Created Mandate Tracker.md; updated Index.md with Mandate Tracker link | Phase 6D Mandate vault documentation |
 | 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Mandate complete), engine stats, changelog | Phase 6D Mandate documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-agent-detail-panel-design.md | Design doc: 6 decisions (sidebar replacement, full character sheet, archetype integration, data sources, section layout, single aggregator) |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-agent-detail-panel-implementation.md | 8-task implementation plan for agent detail panel |
+| 2026-03-06 | Repo: src/data/ | Created archetype-content.ts — 19 narrative archetypes with story shape, prose tone, reach affinities | Phase 6E Task 1: archetype content package (6 tests) |
+| 2026-03-06 | Repo: src/engine/ | Created agentDetail.ts — getAgentDetail aggregator: tier, archetype, top values, top bonds, location, faction | Phase 6E Task 2: agent detail aggregator (6 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created AgentDetailPanel.tsx — full character sheet: header, archetype banner, 3×3 domain grid, values compass, bonds list | Phase 6E Task 3: detail panel component (12 tests) |
+| 2026-03-06 | Repo: src/engine/ | Modified worldSeed.ts — assigns random narrativeArchetype to each individual agent | Phase 6E Task 4: archetype assignment in world seeding (1 test) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — conditional right sidebar: AgentDetailPanel when agent selected, RetinuePanel otherwise | Phase 6E Task 5: GameView wiring |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created agentDetail-integration.test.ts — full flow + all 19 archetypes resolvable | Phase 6E Task 6: integration tests (2 tests) |
+| 2026-03-06 | Obsidian: Systems/ | Created Agent Detail Panel.md; updated Index.md with Agent Detail Panel link | Phase 6E vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6E complete), engine stats, changelog | Phase 6E documentation |
 | 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-package-architecture.md | 7-task plan to extract ~350 lines of content from engine/type files into 5 new `*-content.ts` packages |
 | 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-strategy.md | Content strategy: 3 prose modes, 19 archetypes, cultural palettes, thematic rules, exclusions |
 | 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-narrative-context-pipeline.md | Narrative context pipeline: harvest-rank-select-feed, opposition tension scoring, narrative spawning |
@@ -200,7 +210,8 @@ When starting implementation work:
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
 - Phase 6D (Ascendant Scry): ✅ Complete — scry types, content data, scry engine, ScryOverlay component, GameView wiring, integration tests
 - Phase 6D (Mandate Tracker): ✅ Complete — 9 mandate templates, sphere-weighted generator, real condition evaluation, MandateTracker component, GameView wiring, 63 mandate tests
-- Current phase: **Phase 6D complete** — all Phase 6 work done
-- Engine stats: ~53 modules, ~8,200 lines, ~869 tests across 62 test files
+- Phase 6E (Agent Detail Panel): ✅ Complete — 19 narrative archetypes, agent detail aggregator, AgentDetailPanel character sheet, GameView sidebar wiring, 36 new tests
+- Current phase: **Phase 6E complete** — agent detail panel replaces right sidebar with full character sheet
+- Engine stats: ~56 modules, ~9,000 lines, ~905 tests across 67 test files
 - Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes
 
