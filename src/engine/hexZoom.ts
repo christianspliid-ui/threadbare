@@ -57,7 +57,7 @@ export function getHexSphereInfluence(graph: WorldGraph, col: number, row: numbe
     const biases = (loc.properties as Record<string, unknown>).sphereBiases as Record<string, number> | undefined;
     if (biases) {
       for (const s of SPHERE_NAMES) {
-        if (biases[s]) influence[s] += biases[s];
+        influence[s] += biases[s] ?? 0;
       }
     }
   }
