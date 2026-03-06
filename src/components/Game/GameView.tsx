@@ -19,6 +19,7 @@ import {
 import type { HarvestResult } from '../../engine/cycleEnd';
 import { computeMaxEssence } from '../../engine/influence';
 import { SPHERE_NAMES } from '../../types';
+import { recalcVisibility, collectLOSSources } from '../../engine/visibility';
 
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
@@ -123,6 +124,10 @@ function initializeGameState(
   const mandateDef = generateMandate(cosmology, archetype.sphereAlignment, seed);
   const mandateStateInit = createMandateState(mandateDef.id, 0);
 
+  // Initialize visibility map
+  const losSources = collectLOSSources(graph, ascendantId, []);
+  const visibilityMap = recalcVisibility(new Map(), losSources, graph, 0, COLS, ROWS);
+
   const state: GameState = {
     cycle: 1,
     tick: 0,
@@ -144,6 +149,7 @@ function initializeGameState(
     recentEvents: [],
     chronicleEntries: [],
     stealthExposure: 0,
+    visibilityMap,
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

@@ -17,6 +17,7 @@ import {
   computeMaxEssence,
 } from './influence';
 import { evaluateMandate, advanceMandateStage } from './mandate';
+import { recalcVisibility, collectLOSSources } from './visibility';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -289,6 +290,15 @@ export function runTick(state: GameState): GameState {
   s = { ...s, ...phaseEssence(s) };
   s = { ...s, ...phaseMandate(s) };
   s = { ...s, ...phaseDoomExpiry(s) };
+
+  // Recalculate visibility
+  const losSources = collectLOSSources(s.graph, s.ascendantId, []);
+  const gridSize = {
+    cols: Math.max(...s.tiles.map(t => t.coord.col)) + 1,
+    rows: Math.max(...s.tiles.map(t => t.coord.row)) + 1,
+  };
+  const visibilityMap = recalcVisibility(s.visibilityMap, losSources, s.graph, s.tick, gridSize.cols, gridSize.rows);
+  s = { ...s, visibilityMap };
 
   // Merge tick events into recent events (ring buffer)
   const MAX = 100;
