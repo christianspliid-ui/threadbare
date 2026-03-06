@@ -40,15 +40,11 @@ export interface RivalState {
 /** Rival archetype generation templates */
 export type RivalArchetype = RivalBehavior;
 
-/** Name fragments for procedural rival naming */
-export const RIVAL_NAME_PREFIXES = [
-  'The Iron', 'The Silent', 'The Burning', 'The Hollow',
-  'The Crimson', 'The Pale', 'The Storm', 'The Bone',
-  'The Veiled', 'The Shattered', 'The Crowned', 'The Blighted',
-] as const;
+// Name fragments for procedural rival naming (moved to data/rival-content.ts)
+export { RIVAL_NAME_PREFIXES, RIVAL_NAME_SUFFIXES } from '../data/rival-content';
 
-export const RIVAL_NAME_SUFFIXES = [
-  'Judge', 'Weaver', 'Tyrant', 'Prophet',
-  'Shepherd', 'Warden', 'Harvester', 'Architect',
-  'Wanderer', 'Oracle', 'Sentinel', 'Sovereign',
-] as const;
+/** A rival god's chosen action for a tick */
+export interface RivalAction {
+  type: 'recruit' | 'intervene' | 'expand' | 'attack' | 'wait';
+  target?: string;
+}
