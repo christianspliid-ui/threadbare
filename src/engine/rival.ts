@@ -7,8 +7,15 @@ import type {
   RivalDefinition,
   RivalState,
   RivalBehavior,
+  RivalAction,
 } from '../types/rival';
-import { RIVAL_NAME_PREFIXES, RIVAL_NAME_SUFFIXES } from '../types/rival';
+import {
+  RIVAL_NAME_PREFIXES,
+  RIVAL_NAME_SUFFIXES,
+  BEHAVIORS,
+  BEHAVIOR_WEIGHTS,
+  ACTION_TYPES,
+} from '../data/rival-content';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -21,8 +28,6 @@ function mulberry32(seed: number): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-const BEHAVIORS: RivalBehavior[] = ['aggressive', 'subtle', 'territorial', 'expansionist'];
 
 export function generateRivals(
   playerAlignment: CosmologyProfile,
@@ -119,22 +124,6 @@ export function createRivalState(rivalId: string): RivalState {
 }
 
 // ─── Rival AI Decision Loop ──────────────────────────────────────
-
-/** A rival god's chosen action for a tick */
-export interface RivalAction {
-  type: 'recruit' | 'intervene' | 'expand' | 'attack' | 'wait';
-  target?: string;
-}
-
-/** Behavior-based action probability weights */
-const BEHAVIOR_WEIGHTS: Record<RivalBehavior, Record<RivalAction['type'], number>> = {
-  aggressive:    { recruit: 0.10, intervene: 0.25, expand: 0.10, attack: 0.45, wait: 0.10 },
-  subtle:        { recruit: 0.20, intervene: 0.35, expand: 0.15, attack: 0.10, wait: 0.20 },
-  territorial:   { recruit: 0.15, intervene: 0.20, expand: 0.30, attack: 0.20, wait: 0.15 },
-  expansionist:  { recruit: 0.30, intervene: 0.15, expand: 0.35, attack: 0.10, wait: 0.10 },
-};
-
-const ACTION_TYPES: RivalAction['type'][] = ['recruit', 'intervene', 'expand', 'attack', 'wait'];
 
 export function selectRivalAction(
   rival: RivalDefinition,
