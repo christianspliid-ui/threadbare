@@ -23,7 +23,7 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   const stageName = currentStageDef?.name ?? 'Unknown';
 
   return (
-    <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30">
+    <div className="flex-1 min-w-0">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <span
