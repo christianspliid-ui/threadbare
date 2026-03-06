@@ -1,102 +1,97 @@
+/**
+ * Ascendant Scry — Type definitions for the divine court system.
+ *
+ * The Scry is a metaphysical overlay showing the player's divine court:
+ * agent positions with titles, sacred site slots, and artifact slots.
+ */
+
 import type { SphereName } from './index';
 import type { ReachDomain } from './traits';
 
-// ─── Position Ranks ──────────────────────────────────────────────────
+// ─── Position Ranks ─────────────────────────────────────────────
 
-/** Court position rank hierarchy */
 export type PositionRank = 'apex' | 'inner' | 'outer';
 
-/** Position rank ordering (highest to lowest authority) */
 export const POSITION_RANK_ORDER: PositionRank[] = ['apex', 'inner', 'outer'];
 
-/** Minimum tier required to hold a position rank */
+/** Minimum influence tier required to fill a position of this rank */
 export const RANK_MIN_TIER: Record<PositionRank, number> = {
-  apex: 3,
-  inner: 2,
-  outer: 1,
+  apex: 3,   // Devoted+
+  inner: 2,  // Aligned+
+  outer: 1,  // Touched+
 };
 
-/** Essence cost to reassign an agent within a rank */
+/** Base essence cost to reassign a position of this rank */
 export const RANK_REASSIGNMENT_COST: Record<PositionRank, number> = {
-  apex: 15,
-  inner: 10,
+  apex: 30,
+  inner: 15,
   outer: 5,
 };
 
-/** Essence cost to demote an agent one rank down */
+/** Demotion costs half of reassignment */
 export const RANK_DEMOTION_COST: Record<PositionRank, number> = {
-  apex: 20,
-  inner: 15,
-  outer: 10,
+  apex: 15,
+  inner: 8,
+  outer: 3,
 };
 
-/** Multiplier applied to reassignment cost per previous reassignment in same position */
+/** Each subsequent reassignment increases cost by this factor */
 export const REASSIGNMENT_ESCALATION = 1.25;
 
 /** Essence cost to restructure the entire court */
 export const RESTRUCTURE_COST = 50;
 
-// ─── Court Structure Types ──────────────────────────────────────────
+// ─── Court Structures ───────────────────────────────────────────
 
-/** Divine court structure archetype */
 export type CourtStructureType = 'high_house' | 'circle' | 'web' | 'abyss';
 
-/** Foundation sphere alignment for a court structure */
 export type FoundationAffinity = 'order' | 'light' | 'chaos' | 'darkness';
 
-// ─── Structure Bonuses ───────────────────────────────────────────────
-
-/** A mechanical bonus conferred by a court structure type */
 export interface StructureBonus {
-  type: string;
+  type: 'tier_cost' | 'sphere_influence' | 'domain_bonus' | 'weakness_reduction';
   description: string;
-  appliesTo: 'all_positions' | 'apex_only' | 'inner_outer' | 'specific_reach';
+  /** Which positions this bonus applies to ('all' or specific ranks) */
+  appliesTo: 'all' | PositionRank;
   value: number;
 }
 
-/** Complete definition of a court structure archetype */
 export interface CourtStructureDefinition {
-  id: CourtStructureType;
+  id: string;
   structureType: CourtStructureType;
   foundationAffinity: FoundationAffinity;
   name: string;
   description: string;
   flavorText: string;
-  positionCounts: {
-    apex: number;
-    inner: number;
-    outer: number;
-  };
+  positionCounts: Record<PositionRank, number>;
   sacredSiteSlots: number;
   artifactSlots: number;
   structureBonus: StructureBonus;
 }
 
-// ─── Positions ───────────────────────────────────────────────────────
+// ─── Positions ──────────────────────────────────────────────────
 
-/** A slot in the court structure with optional agent assignment */
 export interface Position {
   id: string;
   rank: PositionRank;
   slotIndex: number;
+  /** Position archetype — thematic label guiding title generation */
   archetype: string;
   assignedAgentId: string | null;
-  activeTitle: string | null;
+  activeTitle: Title | null;
+  /** Expansion hook: sealed positions can be unlocked later */
   locked: boolean;
 }
 
-// ─── Titles ──────────────────────────────────────────────────────────
+// ─── Titles ─────────────────────────────────────────────────────
 
-/** Types of mechanical effects a title can have */
 export type TitleEffectType =
-  | 'essence_production'
-  | 'influence_multiplier'
-  | 'reach_domain_bonus'
-  | 'trait_synergy'
-  | 'detection_penalty'
-  | 'narrative_override';
+  | 'domain_bonus'
+  | 'tier_cost'
+  | 'detection_risk'
+  | 'essence_gen'
+  | 'sphere_influence'
+  | 'custom';
 
-/** A single mechanical effect on a title */
 export interface TitleEffect {
   type: TitleEffectType;
   target: string;
@@ -104,7 +99,6 @@ export interface TitleEffect {
   description: string;
 }
 
-/** A divine title that can be assigned to a position */
 export interface Title {
   id: string;
   name: string;
@@ -114,49 +108,47 @@ export interface Title {
   bonuses: TitleEffect[];
   weaknesses: TitleEffect[];
   flavorText: string;
-  generationSeed: number;
+  /** Params used to generate this title (for reproducibility) */
+  generationSeed: Record<string, unknown>;
 }
 
-/** A title proposed for assignment to a position */
+/** A title option presented to the player during assignment */
 export interface TitleProposal {
   title: Title;
+  /** Why this title fits the agent (for UI tooltip) */
   rationale: string;
 }
 
-// ─── Sacred Sites ────────────────────────────────────────────────────
+// ─── Holdings: Sacred Sites ─────────────────────────────────────
 
-/** A consecrated location that enhances court power */
 export interface SacredSite {
   slotIndex: number;
-  locationId: string;
-  locationName: string;
+  locationId: string | null;
+  locationName: string | null;
   consecrationCost: number;
-  radiusSphereInfluence: SphereName;
+  radiusSphereInfluence: SphereName | null;
   influenceStrength: number;
   bonusEssencePerTick: number;
 }
 
-// ─── Divine Artifacts ────────────────────────────────────────────────
+// ─── Holdings: Divine Artifacts ─────────────────────────────────
 
-/** A legendary artifact held by an agent in the court */
 export interface DivineArtifact {
   slotIndex: number;
-  artifactId: string;
-  name: string;
+  artifactId: string | null;
+  name: string | null;
   bearerId: string | null;
   bearerName: string | null;
-  sphereAffinity: SphereName;
+  sphereAffinity: SphereName | null;
   effects: TitleEffect[];
-  lossConsequence: string;
+  lossConsequence: string | null;
   creationCost: number;
 }
 
-// ─── Title Assignment Actions ────────────────────────────────────────
+// ─── Scry State ─────────────────────────────────────────────────
 
-/** Action type for court position changes */
 export type TitleAction = 'assign' | 'reassign' | 'demote' | 'restructure';
 
-/** Record of a title assignment event */
 export interface TitleAssignment {
   tick: number;
   positionId: string;
@@ -166,15 +158,19 @@ export interface TitleAssignment {
   essenceCost: number;
 }
 
-// ─── Scry State ──────────────────────────────────────────────────────
-
-/** Complete state of the Divine Court (Scry) system */
 export interface ScryState {
+  /** Which court structure the player chose */
   courtStructureType: CourtStructureType;
+  /** Instantiated positions with assignments */
   positions: Position[];
+  /** Sacred site holdings */
   sacredSites: SacredSite[];
+  /** Artifact holdings */
   artifacts: DivineArtifact[];
+  /** Audit trail of all title changes */
   titleHistory: TitleAssignment[];
+  /** Running count of reassignments (for cost escalation) */
   totalReassignmentCount: number;
+  /** Whether the scry has been initialized (player has chosen a structure) */
   initialized: boolean;
 }
