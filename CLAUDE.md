@@ -184,6 +184,14 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — all 8 packages marked complete | Content extraction status reflected in vault |
 | 2026-03-06 | Notion: Backlog | Marked Content Package Migration complete | 5 new packages, 28 tests, ~350 lines extracted |
 | 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Content extraction complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-archetype-enrichment-design.md | Design doc: enrich-in-place approach, enriched interface, beat pattern coverage, lookup functions |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-archetype-enrichment-implementation.md | 8-task TDD implementation plan for archetype enrichment |
+| 2026-03-06 | Repo: src/data/ | Enriched archetype-content.ts (894 lines) — 19 archetypes with toneKeywords, beatPatterns, vignetteSeeds, narrativeRequirements + 3 lookup functions | All 4 content layers from content strategy populated |
+| 2026-03-06 | Repo: src/data/__tests__/ | Rewrote archetype-content.test.ts (357 lines, 53 tests) — structural, content quality, lookup functions, per-archetype validation | Full test coverage for enriched archetypes |
+| 2026-03-06 | Obsidian: Systems/ | Updated Narrative Archetypes.md — implementation status, lookup functions, beat pattern structure | Enrichment complete, vault reflects current state |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — archetype-content.ts marked as enriched (894 lines, 53 tests) | Content package status updated |
+| 2026-03-06 | Notion: Backlog | Marked Archetype Content Data implementation complete | 894 lines, 53 tests, design + plan docs linked |
+| 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Archetype enrichment complete |
 
 ## Session Workflow
 
@@ -223,7 +231,8 @@ When starting implementation work:
 - Phase 6D (Mandate Tracker): ✅ Complete — 9 mandate templates, sphere-weighted generator, real condition evaluation, MandateTracker component, GameView wiring, 63 mandate tests
 - Phase 6E (Agent Detail Panel): ✅ Complete — 19 narrative archetypes, agent detail aggregator, AgentDetailPanel character sheet, GameView sidebar wiring, 36 new tests
 - Content Package Extraction: ✅ Complete — 5 new content packages (narrative, dream, doom, rival, influence), 28 new content tests, ~350 lines extracted from engine/type files
-- Current phase: **Content extraction complete** — 8 content packages total, content writer data containers ready
-- Engine stats: ~61 modules, ~9,200 lines, ~933 tests across 73 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages
+- Archetype Content Enrichment: ✅ Complete — 19 archetypes enriched with tone keywords, beat patterns, vignette seeds, narrative requirements (894 lines, 53 tests)
+- Current phase: **Archetype enrichment complete** — all 19 archetypes have 4 content layers; next up: culture content data or narrative context builder
+- Engine stats: ~61 modules, ~9,700 lines, ~986 tests across 73 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages (archetype-content.ts fully enriched)
 
