@@ -31,10 +31,19 @@ import { RetinuePanel } from './RetinuePanel';
 import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
+import { ScryOverlay } from './ScryOverlay';
 import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
 import { getRetinueAgents } from '../../engine/retinue';
+import {
+  createScryState,
+  initializeCourt,
+  assignAgentToPosition,
+  demoteAgent,
+} from '../../engine/scry';
+import type { ScryState } from '../../types/scry';
+import type { Title } from '../../types/scry';
 import {
   getLocationsInHex,
   getAgentsAtLocation,
@@ -164,6 +173,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [viewLevel, setViewLevel] = useState<ViewLevel>('world');
   const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
   const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
+  const [scryState, setScryState] = useState<ScryState>(createScryState());
+  const [scryVisible, setScryVisible] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -293,9 +304,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   }, []);
 
   const handleWheelSlotClick = useCallback((slotId: string) => {
-    if (slotId === 'scry' && selectedAgentId) {
-      setStrandViewAgent(selectedAgentId);
-      setWheelVisible(false);
+    if (slotId === 'scry') {
+      handleOpenScry();
       return;
     }
 
@@ -372,6 +382,33 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setStrandViewAgent(null);
     setWheelVisible(true);
   }, []);
+
+  const handleOpenScry = useCallback(() => {
+    // Auto-initialize with high_house if not initialized
+    if (!scryState.initialized) {
+      setScryState(prev => initializeCourt(prev, 'high_house'));
+    }
+    setScryVisible(true);
+    setWheelVisible(false);
+  }, [scryState.initialized]);
+
+  const handleScryAssign = useCallback((positionId: string, agentId: string, title: Title, cost: number) => {
+    // Spend essence from primary sphere
+    const primarySphere = archetype.sphereAlignment.primary;
+    setGameState(prev => {
+      const newPool = { ...prev.essencePool };
+      if (newPool[primarySphere] >= cost) {
+        newPool[primarySphere] -= cost;
+      }
+      return { ...prev, essencePool: newPool };
+    });
+
+    setScryState(prev => assignAgentToPosition(prev, positionId, agentId, title, cost, gameState.tick));
+  }, [archetype, gameState.tick]);
+
+  const handleScryDemote = useCallback((positionId: string) => {
+    setScryState(prev => demoteAgent(prev, positionId, gameState.tick));
+  }, [gameState.tick]);
 
   const handleHexClick = useCallback((coord: { col: number; row: number }) => {
     setSelectedHex(coord);
@@ -565,6 +602,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             fears: getFearsStrand(gameState.graph, strandViewAgent),
           }}
           onClose={handleStrandClose}
+        />
+      )}
+
+      {/* Scry overlay */}
+      {scryVisible && (
+        <ScryOverlay
+          scryState={scryState}
+          retinueAgents={retinueAgents}
+          essencePool={gameState.essencePool}
+          primarySphere={archetype.sphereAlignment.primary}
+          tick={gameState.tick}
+          seed={gameState.seed + gameState.tick}
+          onAssign={handleScryAssign}
+          onDemote={handleScryDemote}
+          onClose={() => setScryVisible(false)}
         />
       )}
 
