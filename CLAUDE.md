@@ -20,7 +20,7 @@ Then open `http://localhost:5173` in your browser. The game should load immediat
 |---------|-------------|
 | `npm run dev` | Start Vite dev server with hot reload |
 | `npm run build` | Type-check + production build (outputs to `dist/`) |
-| `npm test` | Run all ~986 tests (vitest) |
+| `npm test` | Run all ~1,027 tests (vitest) |
 | `npm run test:watch` | Run tests in watch mode |
 | `npm run validate-model` | Validate world-model.json integrity (7 checks) |
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
@@ -229,6 +229,16 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Notion: Backlog | Added Culture Bounded Context design as complete, added to reference documents | Culture design phase tracked in backlog |
 | 2026-03-06 | CLAUDE.md | Updated project status (culture design complete), content stats, changelog | Culture bounded context documentation |
 | 2026-03-06 | CLAUDE.md | Added "Running the Prototype" section with commands, prerequisites, Cowork networking note | User confirmed prototype runs; documenting how to launch it |
+| 2026-03-06 | Repo: src/types/ | Created visibility.ts — HexVisibility, StaleSnapshot, VisibilityMap, LOSSource types + 5 constants | Phase 6F Task 1: fog of war type foundation |
+| 2026-03-06 | Repo: src/engine/ | Created visibility.ts — getAvatarHexPosition, collectLOSSources, recalcVisibility (232 lines, 10 tests) | Phase 6F Task 2: fog of war engine |
+| 2026-03-06 | Repo: src/types/ + src/engine/ | Added visibilityMap to GameState, wired into orchestrator tick loop + GameView init | Phase 6F Task 3: visibility state integration |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexTile.tsx — three-state fog rendering (unexplored=black, remembered=dimmed, visible=normal) | Phase 6F Task 4: fog rendering |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexTile.tsx + HexMap.tsx — sphere-colored pulsing avatar hex overlay with CSS breathe animation | Phase 6F Task 5: avatar hex overlay |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexMap.tsx — d3-zoom (scroll-wheel + drag-pan), forwardRef with centerOn(), scale 1.0-4.0 | Phase 6F Task 6: zoom/pan |
+| 2026-03-06 | Repo: src/components/Game/ | Created AvatarHUD.tsx — top-left panel with name, Move/Wheel/Scry buttons, sphere accent (9 tests) | Phase 6F Task 7: avatar HUD |
+| 2026-03-06 | Repo: src/engine/ | Created avatarMove.ts — moveAvatarToHex with transient location creation (3 tests) | Phase 6F Task 8: avatar movement |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — wired visibility, zoom, AvatarHUD, move mode, initial camera centering | Phase 6F Task 9: full integration |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6F complete), engine stats, changelog | Phase 6F documentation |
 
 ## Session Workflow
 
@@ -270,7 +280,8 @@ When starting implementation work:
 - Content Package Extraction: ✅ Complete — 5 new content packages (narrative, dream, doom, rival, influence), 28 new content tests, ~350 lines extracted from engine/type files
 - Archetype Content Enrichment: ✅ Complete — 19 archetypes enriched with tone keywords, beat patterns, vignette seeds, narrative requirements (894 lines, 53 tests)
 - Culture Bounded Context Design: ✅ Complete — 9-section design doc covering budget model, cultural traits, locations, artifacts, narrative beats, composite modifiers (~32 sets), content production manifest, narrative engine integration, cultural drift mechanics
-- Current phase: **Culture bounded context designed** — design doc approved; next up: culture content data implementation (`culture-content.ts`) or narrative context builder
-- Engine stats: ~61 modules, ~9,700 lines, ~986 tests across 73 test files
+- Phase 6F (Playable Map): ✅ Complete — three-state fog of war, avatar overlay + movement, d3-zoom/pan, AvatarHUD, GameView wiring
+- Current phase: **Playable map complete** — fog of war, avatar movement, zoom/pan all working; next up: culture content data implementation (`culture-content.ts`) or narrative context builder
+- Engine stats: ~67 modules, ~10,500 lines, ~1,027 tests across 79 test files
 - Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages (archetype-content.ts fully enriched), culture-content.ts scoped at 800-1200 lines
 
