@@ -8,6 +8,7 @@ import { CosmologyPanel } from './components/Cosmology/CosmologyPanel';
 import { InfoPanel } from './components/UI/InfoPanel';
 import { AscendantSelection } from './components/Ascendant/AscendantSelection';
 import { GameView } from './components/Game/GameView';
+import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
 
 type GamePhase =
   | { phase: 'worldgen' }
@@ -18,6 +19,10 @@ const DEFAULT_COLS = 20;
 const DEFAULT_ROWS = 15;
 
 function App() {
+  // Dev views via URL param: ?view=glow
+  const viewParam = new URLSearchParams(window.location.search).get('view');
+  if (viewParam === 'glow') return <MagicGlowTiles />;
+
   const [gamePhase, setGamePhase] = useState<GamePhase>({ phase: 'worldgen' });
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   const [seed, setSeed] = useState(42);

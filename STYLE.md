@@ -54,7 +54,7 @@ Magic occupies maybe 5–15% of the image area. The rest is dark world. The thre
 
 | Sphere | Hex | Form Language | Visual Description |
 |--------|-----|---------------|-------------------|
-| **Chaos** | `#8a2be2` | **Fractals and turbulent swirls** | Violet-purple energy that branches unpredictably — every tendril goes a different direction, no repeating pattern, like fractal lightning or turbulent fluid |
+| **Chaos** | `#8a8a8e` | **Fractals and turbulent swirls** | Neutral grey energy that branches unpredictably — every tendril goes a different direction, no repeating pattern, like fractal lightning or turbulent fluid |
 | **Order** | `#d4af37` | **Geometric grids and tessellations** | Golden light in clean straight lines, repeating symmetrical patterns, sacred geometry, crystalline lattice structures |
 | **Light** | `#ffeb99` | **Expanding aureoles and radiant beams** | Warm radiance spreading outward from bright center points in concentric circles of illumination, dawn-like reveal |
 | **Darkness** | `#4a3a8a` | **Absorbing voids with rim-glow** | Inverse of Light — deep indigo holes that *pull* light in, void-like depths edged with faint luminous rims, darkness that consumes |
@@ -66,13 +66,13 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 | Sphere | Hex | Bright Hex | Form Language | Thread Description |
 |--------|-----|------------|---------------|-------------------|
 | **Force** | `#ff4444` | `#ff6b6b` | **Sharp directional streaks, impact radiants** | Crimson threads that look like they're *going somewhere fast* — lightning-bolt angles, shockwave arcs, arrow-like directional lines, explosive radiants from impact points |
-| **Matter** | `#c4956a` | `#dab088` | **Crystalline lattices, hexagonal facets** | Amber-bronze threads that grow into mineral-like structures — faceted, hard-edged, tessellating crystal formations, angular geometric nodes |
+| **Matter** | `#8b6b4a` | `#a8886a` | **Crystalline lattices, hexagonal facets** | Deep umber-brown threads that grow into mineral-like structures — faceted, hard-edged, tessellating crystal formations, angular geometric nodes |
 | **Energy** | `#ffd700` | `#ffe44d` | **Radiating spikes, star-burst coronas** | Brilliant gold threads that pulse outward from bright centers like tiny suns — flickering flame tongues, electric arcs, solar flare shapes, corona spikes |
 | **Life** | `#00cc55` | `#33ff77` | **Organic branching — veins, roots, mycelium** | Vivid emerald threads that branch like living things — Fibonacci spirals, tendril curls, capillary networks, cell-like nodes, the most natural-looking of all spheres |
 | **Mind** | `#2288ff` | `#44aaff` | **Neural dendrites, concentric rings** | Electric blue threads that branch like neurons — dendrite networks, eye-like nodes, mandala patterns at intersections, clean and precise but complexly branching |
 | **Spirit** | `#aa44dd` | `#cc66ff` | **Ascending wisps, ethereal ribbons** | Violet threads that always drift *upward* — smoke-like trails rising, ghostly flame shapes, dissolving transparent edges, ethereal ribbons that partially fade into nothing |
 | **Time** | `#ff9933` | `#ffb355` | **Concentric ripples, overlapping echoes** | Radiant orange threads that show temporal distortion — clock-arc shapes, time-wave rings expanding from nodes, overlapping afterimages of the same thread visible in multiple moments at once |
-| **Entropy** | `#5a7a8a` | `#7a9aaa` | **Fracturing patterns, scattering particles** | Steel-blue threads that are visibly *breaking apart* — cracking and fragmenting at their edges, dissolving into scattered motes, erosion lines, the inverse of Matter's crystalline order |
+| **Entropy** | `#5a8a7a` | `#7aaa9a` | **Fracturing patterns, scattering particles** | Ghostly sea-green threads that are visibly *breaking apart* — cracking and fragmenting at their edges, dissolving into scattered motes, erosion lines, the inverse of Matter's crystalline order |
 
 **Key principle:** Magic colors operate at 70–100% brightness but are concentrated into thin threads and bright points. They cast a narrow glow on immediately adjacent surfaces only — never broad ambient light. The total area of visible magic in any image should be small (5–15%) but intensely bright against the dominant darkness (85–95%). **Always specify both color AND form language** when describing sphere magic in prompts.
 
@@ -125,8 +125,75 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 | Title screen | 16:9 |
 | Loading screens | 16:9 |
 | Character/creation screens | 16:9 |
-| UI icons | 1:1 |
+| UI icons (non-hex) | 1:1 |
+| Hex terrain tiles | 1:1 |
+| Hex magic overlays | 1:1 |
 | Portraits | 3:4 |
+
+---
+
+## Hex Tile System
+
+Hex map tiles use a **three-component compositable system**. Magic is never baked into terrain tiles — it is a separate overlay layer.
+
+### Pipeline
+
+Generated images are 1:1 squares with features centered. A Python pipeline (`scripts/generate-hex-tile.py`) applies a flat-top hexagonal alpha mask with feathered edges, then saves the result as a transparent PNG ready for the hex grid renderer.
+
+`npm run generate-hex -- --biome "dense forest" --color "#2a3a20"`
+
+### Component A — Terrain Tile (Base)
+A painterly landscape miniature from a slightly elevated angle. **No magic.** Background color carries biome identity. Naturalistic terrain features cluster in the center of the image, growing sparser outward. The terrain fades to flat, featureless biome-colored ground before reaching the edges. **Nothing touches the edges** — the hex mask clips the final shape, but keeping features centered ensures clean tiling with no artifacts at hex boundaries.
+
+**Rules:**
+- Background color = biome identity (dark olive for forest, burnt umber for desert, blue-black for glacier)
+- Terrain features cluster in the center — tree clusters with visible trunks, ridgelines, scattered outcrops
+- Features grow sparser toward edges; bare ground surrounds all features
+- Slightly elevated three-quarter view — painterly depth with visible terrain texture
+- **No rivers, streams, paths, or roads** — nothing that implies continuity across hex boundaries
+- Dark moody atmosphere, dim overcast lighting
+- **No magic threads, no sphere colors, no luminous effects**
+- Rich dimensional brushwork, thick impasto oil paint, muted desaturated palette
+
+### Component B — Terrain Variant Tile (Transformed)
+Same format as Component A, but depicts terrain physically transformed by decades of sphere saturation. Has its own name (e.g. "Blightweald"), color palette, and features. Transformation persists even if magic leaves. Same centering rules apply.
+
+### Component C — Magic Overlay (Effect Layer)
+Semi-transparent compositable image showing active sphere magic. One per sphere (12 total). Composites on top of any terrain tile.
+
+- Semi-transparent PNG, 1:1 aspect ratio
+- Sphere form language as concentrated thread patterns
+- 10-20% coverage; rest transparent
+- Any overlay can go on any terrain — sphere-generic
+- Hex-masked by the same pipeline as terrain tiles
+
+### Hex Prompt Template (Canonical)
+
+This is the single source of truth for hex terrain prompts. The same template is used by `scripts/generate-hex-tile.py` and the `image-generation` skill. Do not deviate from this structure when generating hex tiles.
+
+```
+A single hexagonal tile of [biome] terrain, painted in dark fantasy oil painting style.
+[2-3 sentences: terrain features with visible depth and texture, clustered in center].
+The terrain forms a dense cluster in the center of the composition.
+The surrounding background is flat, featureless ground in the biome's base color ([hex color]).
+The terrain features fill the center but fade to bare ground before reaching the edges.
+
+Slightly elevated three-quarter view, painterly depth with visible tree trunks and terrain texture.
+Rich dimensional brushwork, thick impasto oil paint.
+Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
+
+No magic, no glowing elements, no luminous effects.
+No text, no UI, no labels, no drawn hex borders or outlines, no modern elements.
+No rivers, no streams, no water features that would need to connect across tile boundaries.
+No paths or roads that lead to edges.
+```
+
+### Magic Overlay Prompt Template
+```
+Semi-transparent [sphere] magic on black/transparent background.
+[Color hex] threads in [form language]. 10-20% coverage.
+Intensely bright, concentrated. No terrain, no scenery.
+```
 
 ---
 
@@ -166,30 +233,210 @@ When a scene is set in a specific Reach, its domain color should subtly tint the
 
 ## Prompt Construction Guide
 
-When composing image generation prompts, always include these layers:
+Build prompts as narrative descriptions, not keyword lists. Nano Banana 2 understands natural language — write as if describing a scene to an artist. Order elements by importance (earlier details have more influence on output).
 
-1. **Subject** — what the scene depicts
-2. **World tone** — "dark fantasy oil painting, charcoal and deep shadow, ancient weathered world"
-3. **Magic specification** — name the specific sphere colors as glowing/radiant/luminous threads or emanations
-4. **Lighting** — "magic provides the primary illumination, deep chiaroscuro, no bright daylight"
-5. **Style anchors** — "painterly brushstrokes, atmospheric depth, Diablo-like magic glow, Elden Ring dark grandeur"
-6. **Exclusions** — "no UI elements, no modern elements, no cartoon style, no photorealistic, no bright daylight, no pastel colors, no text labels"
+### Prompt Structure (in order)
 
-### Example Prompt Pattern
+1. **Subject** — 2-3 narrative sentences describing what we see, weaving in material textures from the asset package's vocabulary tags (e.g., "rough basalt," "cold iron," "cracked mortar")
+2. **Camera & composition** — shot type, angle, lens equivalent, depth of field (see Content-Type Art Direction for defaults)
+3. **Lighting** — name an established pattern (Rembrandt, rim, three-point), specify direction, color temperature, and shadow behavior
+4. **Magic** — sphere color, form language, behavior, coverage percentage. Only include if this content type allows baked magic (see Magic Spectrum below)
+5. **Style & medium** — "dark fantasy oil painting in the style of [artist references]," visible brushstrokes, atmospheric depth. Use content-type-specific artist references
+6. **World tone** — describe the desired atmosphere positively: "The world exists in perpetual deep twilight; all environmental colors sit in the 10-40% brightness range. Only magic breaks above 70% brightness."
+7. **Critical exclusions** — 2-3 only, for known failure modes: "No text, no UI, no modern elements"
+
+### Magic Spectrum by Content Type
+
+Not all content types include magic in their base images. This spectrum defines how much magic is baked into each type's primary art asset:
+
+| Content Type | Magic Level | What This Means |
+|-------------|-------------|----------------|
+| Hex terrain tiles | **None** | Pure landscape. Magic is a separate overlay layer (Component C) |
+| Locations (establishing) | **None** | Pure architecture/environment. Magic applied as overlay in-engine |
+| Factions (heraldry) | **None** | Stylized coat of arms / battle banner. No magic in base design |
+| Actors (game asset) | **Signature thread** | One subtle sphere-colored thread woven into clothing/gear/skin — a hint, not a display |
+| Artifacts (game asset) | **Primary sphere baked** | The artifact's primary sphere magic is part of the object's resting state (e.g., a sword with Force threads in the blade). Additional spheres applied as overlays |
+| Events (general) | **None** | Base scene without magic. Sphere effects applied as overlays for flexibility |
+| Events (doom) | **Full** | All magic baked in. These are fixed dramatic splash art — no need for compositing |
+
+### Improved Prompt Pattern
+
 ```
-[Subject description]. Dark fantasy oil painting style.
-Ancient weathered world in deep shadow and charcoal tones, 85-95% of the image is dark.
-Thin luminous [specific sphere color] magic threads break through the darkness
-at concentrated points — organic, alive, swirling like luminous dust,
-curling like ink in dark water, flickering like flame along thin veins and nodes.
-The threads are not rigid — they pulse, drift, and breathe.
-Narrow colored glow only on immediately adjacent dark surfaces.
-Painterly brushstrokes, atmospheric depth, dramatic chiaroscuro.
-No ambient magic glow, no diffuse color wash — magic is always concentrated
-into thin organic threads, bright nodes, and swirling particles.
-No UI elements, no text, no modern elements, no cartoon style,
-no photorealistic, no bright daylight, no pastel colors, no static geometric lines.
+[Subject — 2-3 narrative sentences. Weave in material textures from the
+asset package's vocabulary. Describe what we see as if telling a story
+to a painter].
+
+[Camera — shot type, angle, lens equivalent, depth of field.
+See Content-Type Art Direction defaults].
+
+[Lighting — named pattern, direction, color temperature, shadow behavior.
+e.g., "Rembrandt lighting from upper-left, warm amber key light through
+a cloud break, deep blue-grey shadow fill on the eastern face"].
+
+[Magic — only if this content type allows baked magic.
+Sphere color (hex), form language, thread behavior, coverage %].
+
+Dark fantasy oil painting in the style of [content-type-specific artist
+references] — visible brushstrokes, textural impasto, atmospheric depth.
+The world exists in perpetual deep twilight; environmental colors sit at
+10-40% brightness. Only magic breaks above 70% brightness.
+
+No text, no UI, no modern elements.
 ```
+
+### Example: Location — Ardenmor Keep (Establishing Shot)
+
+```
+A scarred fortress of rough basalt and cold iron broods on a barren
+hilltop, its twelve-foot walls cracked and rebuilt across centuries of
+siege. Multiple curtain walls descend the slope in concentric rings,
+their crenellations broken and patched. A squat central tower rises
+above, its arrow slits dark. Cracked mortar lines run between weathered
+grey blocks — pure architecture against a stormy twilight sky.
+
+Mid-distance establishing shot, 35mm wide angle equivalent. The fortress
+fills the center frame with storm clouds massing behind. Shallow depth
+of field softens the foreground terrain.
+
+Rembrandt lighting from upper-left — a single break in the cloud cover
+casts warm amber across the western wall while the eastern face falls
+into deep blue-grey shadow. Torchlight flickers in two arrow slits,
+casting narrow warm pools on stone.
+
+Dark fantasy oil painting in the style of Marc Simonetti and Craig
+Mullins — visible brushstrokes, textural impasto on stonework,
+atmospheric depth through haze and distance. Environmental colors sit
+at 10-40% brightness. No magic, no glowing elements.
+
+No text, no UI, no modern elements.
+```
+
+### Example: Actor — Warlord (Game Asset)
+
+```
+A weathered commander in scarred plate armor stands at rest, one gauntlet
+resting on the pommel of a heavy bastard sword. Deep lines cross a face
+that has seen decades of campaign — cropped iron-grey hair, a jaw set in
+permanent resolve. The armor is functional, dented, repaired — dark steel
+with leather straps and iron rivets. A single thin crimson thread of
+Force magic pulses faintly along the sword's fuller, barely visible.
+
+Waist-up portrait, 85mm lens equivalent, f/2.8. Subject fills the frame
+against a dark neutral background. Slight low angle conveys authority.
+
+Cool rim light from behind silhouettes the figure. Warm fill from
+below-left catches the armor's texture and the face. Deep shadows
+under the brow and jaw.
+
+Dark fantasy oil painting in the style of Adrian Smith and Brom —
+visible brushstrokes, textural impasto on the armor surfaces. The
+background is near-black with subtle smoky atmosphere.
+
+No text, no UI, no modern elements.
+```
+
+### Example: Faction — Iron Covenant (Heraldry)
+
+```
+A battle-worn cloth banner bearing the heraldic device of a militant
+order — a clenched iron gauntlet over crossed swords, rendered in dark
+steel grey and deep crimson on a field of black. The banner cloth is
+aged, frayed at the edges, stained with campaign dust. The heraldic
+design is stylized and bold, meant to be recognized at battlefield
+distance. No magic, no glowing elements — this is a physical object,
+cloth and dye.
+
+Flat orthographic view, straight-on, no perspective distortion. The
+banner fills the frame.
+
+Even soft lighting as if displayed in a dim hall. Subtle shadow gives
+the cloth gentle folds and texture. Aged parchment warmth.
+
+Dark fantasy oil painting — visible brushstrokes, textural impasto on
+the cloth folds. The style recalls medieval heraldry crossed with Dark
+Souls covenant iconography.
+
+No text, no UI, no modern elements.
+```
+
+### Example: Event/Doom — The Breach (Splash Art)
+
+```
+The sky tears open above a dying world. A jagged wound of blinding
+crimson Force magic rips across the heavens, sharp directional streaks
+and impact radiants radiating from the fracture point. Below, the land
+buckles and splits — dark stone shatters upward, towers crumble in
+silhouette against the red glow. Pale grey Chaos fractals spiral from
+the wound's edges, branching unpredictably. Ghostly sea-green Entropy
+threads fragment and scatter from everything they touch, dissolving
+structures into drifting motes. The magic is overwhelming, violent,
+beautiful — this is the end of a world.
+
+Ultra-wide panoramic view, 16mm equivalent, cosmic scale. The tear
+dominates the upper frame; the crumbling world fills the lower third.
+Deep depth of field — everything in sharp focus.
+
+The magic IS the light source — crimson Force radiance from above,
+casting everything below in deep red shadow. Extreme contrast between
+the blinding tear and the dark world beneath.
+
+Dark fantasy oil painting in the style of Wayne Barlowe and Zdzisław
+Beksiński — apocalyptic grandeur, textural impasto, atmospheric depth.
+Every sphere color at full intensity. This is the most visually
+dramatic content type in the game.
+
+No text, no UI.
+```
+
+---
+
+## Content-Type Art Direction
+
+Default camera, lighting, and artist references for each content type. These are starting points — adjust based on specific asset needs.
+
+### Dual-Image Content Types
+
+Actors and artifacts each produce TWO images:
+
+| Variant | Purpose | Background | Compositing |
+|---------|---------|------------|-------------|
+| **Game asset** | In-game display, UI, status panels | Dark neutral (near-black, no environment) | Must composite cleanly over any game UI |
+| **Lore art** | Codex entries, loading screens, story moments | Evocative scene (environment, context, atmosphere) | Standalone illustration, not composited |
+
+### Camera & Lighting Defaults
+
+| Content Type | Camera | Lighting | Artist References |
+|-------------|--------|----------|-------------------|
+| **Hex terrain** | Directly above, satellite aerial, flat perspective, no DoF | Dim overcast, flat even lighting, subtle shadow | Atlas cartography, satellite imagery |
+| **Location** | 35mm wide, mid-distance, slight low angle | Rembrandt or dramatic side-light, torchlight accents, deep shadow | Marc Simonetti, Craig Mullins |
+| **Actor (game)** | 85mm portrait, f/2.8, isolated subject, waist-up | Rim light from behind, warm fill from below-left, dark background | Frank Frazetta, Brom, Adrian Smith |
+| **Actor (lore)** | 50mm medium shot, environmental portrait | Scene-dependent chiaroscuro, magic as key light if sphere-aligned | Malazan covers, Simonetti figures |
+| **Artifact (game)** | Macro close-up, slight overhead angle, isolated | Single directional light, soft shadow, dark background | Diablo 3 item art, D&D sourcebook objects |
+| **Artifact (lore)** | 35mm medium, object in environment | Atmospheric, object as focal point with environmental context | Greg Rutkowski, Donato Giancola |
+| **Faction (heraldry)** | Flat orthographic, straight-on, no perspective distortion | Even soft lighting, aged cloth/parchment texture | Medieval heraldry, Dark Souls covenant icons |
+| **Event (general)** | 28mm dramatic wide, dynamic angle | Scene-dependent, dramatic, high contrast | MTG card art, Diablo cinematics |
+| **Event (doom)** | Ultra-wide panoramic (16mm), cosmic scale | Apocalyptic — magic IS the light source, extreme contrast | Wayne Barlowe, Beksiński, MTG Eldrazi art |
+
+### Location Art: Terrain-Neutral Framing
+
+Location concept art shows the structure against a dark atmospheric background with NO terrain visible. This is because locations can appear on any hex terrain type — the hex map already communicates terrain context. When a player clicks a hex and sees the location list, they already know they're in mountains/forest/desert.
+
+Frame locations as: the structure + stormy twilight sky + atmospheric haze. No ground-level terrain, no trees, no specific biome indicators.
+
+### Aspect Ratios by Content Type
+
+| Content Type | Ratio | Reasoning |
+|-------------|-------|-----------|
+| Hex terrain tiles | 1:1 | Square for hex compositing |
+| Hex magic overlays | 1:1 | Square, semi-transparent |
+| Location (establishing) | 16:9 | Wide establishing shot |
+| Actor (game asset) | 3:4 | Portrait orientation |
+| Actor (lore art) | 16:9 | Landscape scene |
+| Artifact (game asset) | 1:1 | Square for UI display |
+| Artifact (lore art) | 16:9 | Landscape scene |
+| Faction (heraldry) | 3:4 | Tall banner format |
+| Event (general) | 16:9 | Wide dramatic scene |
+| Event (doom) | 21:9 | Ultra-wide panoramic |
 
 ---
 
@@ -203,3 +450,11 @@ no photorealistic, no bright daylight, no pastel colors, no static geometric lin
 - No pastel colors anywhere — world is dark, magic is vivid
 - No text labels, captions, or descriptive text (only "Threadbare" title when requested)
 - No excessive detail that flattens the painterly quality
+
+---
+
+## Changelog
+
+*(updated 2026-03-05 — Entropy color #5a7a8a→#5a8a7a ghostly sea-green; Chaos color #8a2be2→#8a8a8e neutral grey; Matter color #c4956a→#8b6b4a deep umber-brown; added Hex Tile System section with three-component compositable rules)*
+
+*(updated 2026-03-06 — Rewrote Prompt Construction Guide: narrative-first prompts, NB2-optimized element ordering, magic spectrum by content type, camera/lens/DoF defaults, specific lighting patterns, positive atmosphere descriptions replacing keyword exclusions. Added Content-Type Art Direction section: dual-image variants, camera & lighting defaults table, terrain-neutral location framing, aspect ratios by content type. Added four new prompt examples: location, actor, faction heraldry, doom splash art.)*
