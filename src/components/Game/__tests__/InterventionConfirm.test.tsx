@@ -1,0 +1,91 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { InterventionConfirm } from '../InterventionConfirm';
+
+const baseProps = {
+  interventionType: 'deceive' as const,
+  label: 'Deceive',
+  deliveryMode: 'regional' as const,
+  essenceCost: 2,
+  sphere: 'mind' as const,
+  detectionRisk: 0.30,
+  rangeStatus: 'in_range' as const,
+  hexDistance: 2,
+  description: 'Inject false information into world-model',
+  onConfirm: vi.fn(),
+  onCancel: vi.fn(),
+};
+
+describe('InterventionConfirm', () => {
+  it('renders intervention name and description', () => {
+    render(<InterventionConfirm {...baseProps} />);
+    expect(screen.getByText('Deceive')).toBeTruthy();
+    expect(screen.getByText(/false information/)).toBeTruthy();
+  });
+
+  it('shows essence cost and detection risk', () => {
+    render(<InterventionConfirm {...baseProps} />);
+    expect(screen.getByText(/2 mind/i)).toBeTruthy();
+    expect(screen.getByText(/30%/)).toBeTruthy();
+  });
+
+  it('calls onConfirm when confirm button clicked', () => {
+    const onConfirm = vi.fn();
+    render(<InterventionConfirm {...baseProps} onConfirm={onConfirm} />);
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+    expect(onConfirm).toHaveBeenCalledOnce();
+  });
+
+  it('calls onCancel when cancel button clicked', () => {
+    const onCancel = vi.fn();
+    render(<InterventionConfirm {...baseProps} onCancel={onCancel} />);
+    fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
+    expect(onCancel).toHaveBeenCalledOnce();
+  });
+
+  it('shows local encounter choice for local delivery mode', () => {
+    render(
+      <InterventionConfirm
+        {...baseProps}
+        interventionType="persuade"
+        label="Persuade"
+        deliveryMode="local"
+        rangeStatus="in_range"
+        hexDistance={0}
+      />
+    );
+    expect(screen.getByText(/go to them/i)).toBeTruthy();
+    expect(screen.getByText(/summon/i)).toBeTruthy();
+  });
+
+  it('calls onConfirm with encounter mode for local interventions', () => {
+    const onConfirm = vi.fn();
+    render(
+      <InterventionConfirm
+        {...baseProps}
+        interventionType="persuade"
+        label="Persuade"
+        deliveryMode="local"
+        rangeStatus="in_range"
+        hexDistance={0}
+        onConfirm={onConfirm}
+      />
+    );
+    fireEvent.click(screen.getByText(/summon/i));
+    expect(onConfirm).toHaveBeenCalledWith('summon');
+  });
+
+  it('shows out-of-range message when out of range', () => {
+    render(
+      <InterventionConfirm
+        {...baseProps}
+        rangeStatus="out_of_range"
+        hexDistance={7}
+      />
+    );
+    expect(screen.getByText(/out of range — move avatar closer/i)).toBeTruthy();
+    // Confirm button should be disabled or hidden
+    expect(screen.queryByRole('button', { name: /confirm/i })).toBeNull();
+  });
+});
