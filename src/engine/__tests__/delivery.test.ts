@@ -2,12 +2,18 @@ import { describe, it, expect } from 'vitest';
 import type {
   DeliveryMode,
   LocalEncounterMode,
+  InterventionType,
 } from '../../types/dream';
 import {
   DELIVERY_RANGE,
   LOCAL_ENCOUNTER,
   INTERVENTION_DEFINITIONS,
 } from '../../types/dream';
+import {
+  hexDistance,
+  isInRange,
+  getDeliveryInfo,
+} from '../delivery';
 
 describe('Delivery type definitions', () => {
   it('exports DELIVERY_RANGE with correct hex values', () => {
@@ -49,5 +55,76 @@ describe('Delivery type definitions', () => {
         expect((DELIVERY_RANGE as any)[rangeKey]).toBeGreaterThan(0);
       }
     }
+  });
+});
+
+describe('hexDistance', () => {
+  it('returns 0 for same hex', () => {
+    expect(hexDistance({ col: 3, row: 4 }, { col: 3, row: 4 })).toBe(0);
+  });
+
+  it('returns 1 for adjacent hexes', () => {
+    expect(hexDistance({ col: 3, row: 4 }, { col: 4, row: 4 })).toBe(1);
+  });
+
+  it('computes correct distance for offset hex grid', () => {
+    expect(hexDistance({ col: 0, row: 0 }, { col: 3, row: 0 })).toBe(3);
+  });
+});
+
+describe('isInRange', () => {
+  const avatarPos = { col: 5, row: 5 };
+
+  it('astral interventions are always in range', () => {
+    expect(isInRange(avatarPos, { col: 99, row: 99 }, 'dream')).toBe(true);
+  });
+
+  it('remote interventions are always in range', () => {
+    expect(isInRange(avatarPos, { col: 99, row: 99 }, 'coincidence')).toBe(true);
+    expect(isInRange(avatarPos, { col: 99, row: 99 }, 'omen')).toBe(true);
+  });
+
+  it('local interventions require same hex', () => {
+    expect(isInRange(avatarPos, { col: 5, row: 5 }, 'persuade')).toBe(true);
+    expect(isInRange(avatarPos, { col: 6, row: 5 }, 'persuade')).toBe(false);
+    expect(isInRange(avatarPos, { col: 5, row: 5 }, 'afflict_bless')).toBe(true);
+    expect(isInRange(avatarPos, { col: 4, row: 5 }, 'afflict_bless')).toBe(false);
+  });
+
+  it('regional interventions check hex distance against DELIVERY_RANGE', () => {
+    expect(isInRange(avatarPos, { col: 7, row: 5 }, 'deceive')).toBe(true);
+    expect(isInRange(avatarPos, { col: 8, row: 5 }, 'deceive')).toBe(true);
+    expect(isInRange(avatarPos, { col: 9, row: 5 }, 'deceive')).toBe(false);
+  });
+
+  it('inspire has longer range (5) than intimidate (3)', () => {
+    expect(isInRange(avatarPos, { col: 9, row: 5 }, 'inspire_intervention')).toBe(true);
+    expect(isInRange(avatarPos, { col: 9, row: 5 }, 'intimidate')).toBe(false);
+  });
+});
+
+describe('getDeliveryInfo', () => {
+  it('returns delivery mode and range for any intervention type', () => {
+    const info = getDeliveryInfo('dream');
+    expect(info.mode).toBe('astral');
+    expect(info.range).toBeNull();
+  });
+
+  it('returns hex range for regional interventions', () => {
+    const info = getDeliveryInfo('deceive');
+    expect(info.mode).toBe('regional');
+    expect(info.range).toBe(3);
+  });
+
+  it('returns range 0 for local interventions', () => {
+    const info = getDeliveryInfo('persuade');
+    expect(info.mode).toBe('local');
+    expect(info.range).toBe(0);
+  });
+
+  it('returns null range for remote interventions', () => {
+    const info = getDeliveryInfo('coincidence');
+    expect(info.mode).toBe('remote');
+    expect(info.range).toBeNull();
   });
 });
