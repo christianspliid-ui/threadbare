@@ -13,6 +13,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { EchoDefinition } from '../types/echo';
 import type { ActiveInjection } from './echo';
+import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -236,6 +237,7 @@ export function seedWorld(
         axiologicalProfile: profile,
         domainCapabilities: generateDomainCapabilities(rng),
         locationId,
+        narrativeArchetype: NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)].id,
       },
     });
     individualIds.push(id);
