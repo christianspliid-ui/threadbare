@@ -64,6 +64,9 @@ import {
 } from '../../engine/strands';
 import type { LocalEncounterMode, InterventionType } from '../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
+import { MandateTracker } from './MandateTracker';
+import { generateMandate } from '../../engine/mandateGenerator';
+import { createMandateState } from '../../engine/mandate';
 
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
@@ -114,6 +117,10 @@ function initializeGameState(
   const emptyPool = {} as Record<string, number>;
   for (const s of SPHERE_NAMES) emptyPool[s] = 0;
 
+  // Generate victory mandate based on sphere alignment
+  const mandateDef = generateMandate(cosmology, archetype.sphereAlignment, seed);
+  const mandateStateInit = createMandateState(mandateDef.id, 0);
+
   const state: GameState = {
     cycle: 1,
     tick: 0,
@@ -125,8 +132,8 @@ function initializeGameState(
     clock: { currentTick: 0, ticksPerSeason: 90, season: 0, year: 0 },
     ascendantId,
     essencePool: emptyPool as any,
-    mandateDefinition: null,
-    mandateState: null,
+    mandateDefinition: mandateDef,
+    mandateState: mandateStateInit,
     rivalDefinitions: rivalDefs,
     rivalStates,
     doomDefinition: doomDef,
@@ -438,8 +445,19 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
-      {/* Doom bar at top */}
-      <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+      {/* Doom + Mandate bar at top */}
+      <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 flex gap-4 relative">
+        <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+        {gameState.mandateDefinition && gameState.mandateState && (
+          <>
+            <div className="w-px bg-amber-900/30 self-stretch" />
+            <MandateTracker
+              definition={gameState.mandateDefinition}
+              state={gameState.mandateState}
+            />
+          </>
+        )}
+      </div>
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
