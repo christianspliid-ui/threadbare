@@ -147,6 +147,17 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: src/engine/__tests__/ | Created scry-integration.test.ts — full court flow: init → assign → demote → escalation, 4 structures | Phase 6D Task 8: integration test |
 | 2026-03-06 | Obsidian: Systems/ | Created Ascendant Scry.md; updated Index.md with Ascendant Scry link | Phase 6D vault documentation |
 | 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Scry complete), engine stats, changelog | Phase 6D documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-mandate-tracker-design.md | Design doc: 5 decisions (curated pool, graph-verifiable, minimal tracker, sphere-weighted, real evaluation) |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-mandate-tracker-implementation.md | 9-task implementation plan for mandate tracker system |
+| 2026-03-06 | Repo: src/data/ | Created mandate-content.ts — 9 curated mandate templates with sphere affinities | Phase 6D Mandate: content data (30 tests) |
+| 2026-03-06 | Repo: src/engine/ | Created mandateGenerator.ts — sphere-weighted PRNG selection | Phase 6D Mandate: generator (8 tests) |
+| 2026-03-06 | Repo: src/engine/ | Modified mandate.ts — real sphere_weight + actor_tier evaluation; orchestrator.ts — real evaluateMandate | Phase 6D Mandate: condition evaluation + orchestrator wiring (12+15 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created MandateTracker.tsx — compact bar + expanded popover with type colors | Phase 6D Mandate: tracker component (10 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — mandate generation in init, shared DoomBar+MandateTracker container | Phase 6D Mandate: GameView wiring |
+| 2026-03-06 | Repo: src/components/Game/ | Modified DoomBar.tsx — moved chrome to shared parent container (flex-1 min-w-0) | Phase 6D Mandate: DoomBar refactor for shared layout |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created mandate-integration.test.ts — full lifecycle, actor_tier cycle, all templates evaluable | Phase 6D Mandate: integration tests (3 tests) |
+| 2026-03-06 | Obsidian: Systems/ | Created Mandate Tracker.md; updated Index.md with Mandate Tracker link | Phase 6D Mandate vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Mandate complete), engine stats, changelog | Phase 6D Mandate documentation |
 
 ## Session Workflow
 
@@ -183,7 +194,8 @@ When starting implementation work:
 - Phase 6C (Hex Zoom Level): ✅ Complete — polygon layout, hex zoom engine queries, view state machine, HexBreadcrumb, HexZoomView, LocationView, GameView wiring, integration test
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
 - Phase 6D (Ascendant Scry): ✅ Complete — scry types, content data, scry engine, ScryOverlay component, GameView wiring, integration tests
-- Current phase: **Phase 6D remaining** — Mandate Tracker UI
-- Engine stats: ~50 modules, ~7,500 lines, ~806 tests across 57 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 202 generated Obsidian vault notes
+- Phase 6D (Mandate Tracker): ✅ Complete — 9 mandate templates, sphere-weighted generator, real condition evaluation, MandateTracker component, GameView wiring, 63 mandate tests
+- Current phase: **Phase 6D complete** — all Phase 6 work done
+- Engine stats: ~53 modules, ~8,200 lines, ~869 tests across 62 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes
 
