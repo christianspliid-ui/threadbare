@@ -1,5 +1,33 @@
 This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
 
+## Running the Prototype
+
+**Prerequisites:** Node.js 22+ and npm 10+.
+
+```bash
+# First time (or after pulling new dependencies)
+npm install
+
+# Start the dev server
+npm run dev
+```
+
+Then open `http://localhost:5173` in your browser. The game should load immediately.
+
+**Other useful commands:**
+
+| Command | What it does |
+|---------|-------------|
+| `npm run dev` | Start Vite dev server with hot reload |
+| `npm run build` | Type-check + production build (outputs to `dist/`) |
+| `npm test` | Run all ~986 tests (vitest) |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run validate-model` | Validate world-model.json integrity (7 checks) |
+| `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
+| `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
+
+**Note for Cowork/Claude sessions:** The sandbox VM has isolated networking, so `npm run dev` inside the VM won't be visible in the host browser. To verify the app in a Claude session, use `npx tsc --noEmit` (type-check), `npx vite build` (production build), and `npm test` (run tests) instead. The user must run `npm run dev` on their own machine to see the prototype.
+
 ## Documentation Strategy (decided 2026-03-04)
 
 Three documentation layers, each with a distinct purpose. Do not duplicate content across them.
@@ -200,6 +228,7 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Obsidian: Index.md | Added Culture Bounded Context link to Content Strategy & Architecture section | New system discoverable from vault hub |
 | 2026-03-06 | Notion: Backlog | Added Culture Bounded Context design as complete, added to reference documents | Culture design phase tracked in backlog |
 | 2026-03-06 | CLAUDE.md | Updated project status (culture design complete), content stats, changelog | Culture bounded context documentation |
+| 2026-03-06 | CLAUDE.md | Added "Running the Prototype" section with commands, prerequisites, Cowork networking note | User confirmed prototype runs; documenting how to launch it |
 
 ## Session Workflow
 
