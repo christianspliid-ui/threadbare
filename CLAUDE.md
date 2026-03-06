@@ -192,6 +192,14 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — archetype-content.ts marked as enriched (894 lines, 53 tests) | Content package status updated |
 | 2026-03-06 | Notion: Backlog | Marked Archetype Content Data implementation complete | 894 lines, 53 tests, design + plan docs linked |
 | 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Archetype enrichment complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-culture-bounded-context-design.md | 9-section design doc: budget model, traits, locations, artifacts, beats, composite modifiers, content manifest, narrative integration, cultural drift |
+| 2026-03-06 | Repo: Docs/plans/ | Updated 2026-03-06-content-strategy.md — added §4a Content Production Manifest, updated §4 palette generation, updated §7 culture-content.ts scope, added 3 decisions | Culture system content production requirements integrated into content strategy |
+| 2026-03-06 | Obsidian: Systems/ | Created Culture Bounded Context.md | New system note for culture system with connections to World-Soul, Trait System, Narrative Engine, Content Pipeline |
+| 2026-03-06 | Obsidian: Actors/ | Updated Culture.md — appended Culture Bounded Context section | Actor note now links to full system design |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Strategy.md, Content Packages.md — culture palette generation, content scope | Culture design references added to existing system notes |
+| 2026-03-06 | Obsidian: Index.md | Added Culture Bounded Context link to Content Strategy & Architecture section | New system discoverable from vault hub |
+| 2026-03-06 | Notion: Backlog | Added Culture Bounded Context design as complete, added to reference documents | Culture design phase tracked in backlog |
+| 2026-03-06 | CLAUDE.md | Updated project status (culture design complete), content stats, changelog | Culture bounded context documentation |
 
 ## Session Workflow
 
@@ -232,7 +240,8 @@ When starting implementation work:
 - Phase 6E (Agent Detail Panel): ✅ Complete — 19 narrative archetypes, agent detail aggregator, AgentDetailPanel character sheet, GameView sidebar wiring, 36 new tests
 - Content Package Extraction: ✅ Complete — 5 new content packages (narrative, dream, doom, rival, influence), 28 new content tests, ~350 lines extracted from engine/type files
 - Archetype Content Enrichment: ✅ Complete — 19 archetypes enriched with tone keywords, beat patterns, vignette seeds, narrative requirements (894 lines, 53 tests)
-- Current phase: **Archetype enrichment complete** — all 19 archetypes have 4 content layers; next up: culture content data or narrative context builder
+- Culture Bounded Context Design: ✅ Complete — 9-section design doc covering budget model, cultural traits, locations, artifacts, narrative beats, composite modifiers (~32 sets), content production manifest, narrative engine integration, cultural drift mechanics
+- Current phase: **Culture bounded context designed** — design doc approved; next up: culture content data implementation (`culture-content.ts`) or narrative context builder
 - Engine stats: ~61 modules, ~9,700 lines, ~986 tests across 73 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages (archetype-content.ts fully enriched)
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages (archetype-content.ts fully enriched), culture-content.ts scoped at 800-1200 lines
 
