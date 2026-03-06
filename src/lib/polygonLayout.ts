@@ -5,7 +5,7 @@
  * Special cases:
  * - count 0 → empty array
  * - count 1 → center point
- * - count 2 → horizontal line through center
+ * - count 2 → vertical line through center (first point at top)
  *
  * Used by HexZoomView to position location circles at regular polygon
  * vertices inscribed within a hex outline. For example:
