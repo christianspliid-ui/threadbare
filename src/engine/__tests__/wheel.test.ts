@@ -341,4 +341,76 @@ describe('AgentWheel', () => {
       expect(dreamSlot!.essenceCost).toBe(1);
     });
   });
+
+  // Helper for range tests
+  function fullPool(amount: number): EssencePool {
+    return { force: amount, matter: amount, energy: amount, life: amount, mind: amount, spirit: amount, time: amount, entropy: amount };
+  }
+
+  describe('getAgentWheelSlots with range', () => {
+    it('adds rangeStatus "in_range" for regional slot within range', () => {
+      const slots = getAgentWheelSlots({
+        tier: 2,
+        pool: fullPool(10),
+        primarySphere: 'mind',
+        avatarPos: { col: 5, row: 5 },
+        targetPos: { col: 7, row: 5 }, // 2 hexes away, deceive range = 3
+      });
+      const deceive = slots.find(s => s.id === 'deceive')!;
+      expect(deceive.rangeStatus).toBe('in_range');
+      expect(deceive.available).toBe(true);
+    });
+
+    it('adds rangeStatus "out_of_range" for regional slot outside range', () => {
+      const slots = getAgentWheelSlots({
+        tier: 2,
+        pool: fullPool(10),
+        primarySphere: 'mind',
+        avatarPos: { col: 0, row: 0 },
+        targetPos: { col: 10, row: 10 }, // far away
+      });
+      const deceive = slots.find(s => s.id === 'deceive')!;
+      expect(deceive.rangeStatus).toBe('out_of_range');
+      expect(deceive.available).toBe(false);
+      expect(deceive.lockedReason).toContain('out of range');
+    });
+
+    it('local slots are out_of_range when not same hex', () => {
+      const slots = getAgentWheelSlots({
+        tier: 1,
+        pool: fullPool(10),
+        primarySphere: 'spirit',
+        avatarPos: { col: 5, row: 5 },
+        targetPos: { col: 6, row: 5 },
+      });
+      const persuade = slots.find(s => s.id === 'persuade')!;
+      expect(persuade.rangeStatus).toBe('out_of_range');
+      expect(persuade.available).toBe(false);
+    });
+
+    it('astral and remote slots always show unlimited range', () => {
+      const slots = getAgentWheelSlots({
+        tier: 3,
+        pool: fullPool(10),
+        primarySphere: 'mind',
+        avatarPos: { col: 0, row: 0 },
+        targetPos: { col: 99, row: 99 },
+      });
+      const dream = slots.find(s => s.id === 'dream')!;
+      expect(dream.rangeStatus).toBe('unlimited');
+      const coincidence = slots.find(s => s.id === 'coincidence')!;
+      expect(coincidence.rangeStatus).toBe('unlimited');
+    });
+
+    it('falls back to no range check when positions not provided', () => {
+      const slots = getAgentWheelSlots({
+        tier: 2,
+        pool: fullPool(10),
+        primarySphere: 'mind',
+      });
+      const deceive = slots.find(s => s.id === 'deceive')!;
+      expect(deceive.rangeStatus).toBe('unknown');
+      expect(deceive.available).toBe(true); // available if tier + essence OK
+    });
+  });
 });
