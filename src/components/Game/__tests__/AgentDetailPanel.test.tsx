@@ -42,7 +42,9 @@ describe('AgentDetailPanel', () => {
   it('renders agent name and tier', () => {
     render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
     expect(screen.getByText('Kael the Scorned')).toBeTruthy();
-    expect(screen.getByText('Devoted')).toBeTruthy();
+    // Tier name appears in header (check for it being displayed)
+    const devotedElements = screen.getAllByText('Devoted');
+    expect(devotedElements.length).toBeGreaterThan(0);
   });
 
   it('renders archetype banner', () => {
