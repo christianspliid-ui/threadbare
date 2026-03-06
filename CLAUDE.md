@@ -94,6 +94,18 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-05 | Obsidian: Index.md | Added 3 new links: Retinue Panel, Agent Wheel, Psyche Strands | Layer 1 systems now in vault |
 | 2026-03-05 | Obsidian: Systems/ | Created Retinue Panel.md, Agent Wheel.md, Psyche Strands.md | New system notes for Layer 1 interaction components |
 | 2026-03-05 | Notion: Backlog | Split Phase 6 into 6A-6D, marked 6A complete, added reference docs | Layer 1 done; Layer 2-4 tasks visible in backlog |
+| 2026-03-05 | Repo: Docs/plans/ | Created 2026-03-05-intervention-delivery-mechanics.md | Design doc for spatial delivery modes (Astral/Regional/Remote/Local), local encounter sub-modes, range constants |
+| 2026-03-05 | Obsidian: Systems/ | Created Intervention Delivery.md | System note for delivery modes with wikilinks to connected systems |
+| 2026-03-05 | Obsidian: Index.md | Added Intervention Delivery link to Player Systems | New system now discoverable from vault hub |
+| 2026-03-05 | Repo: src/data/ | Created world-model.json — 198 nodes, 290 edges, 18 categories | Unified graph: single source of truth replacing 6 separate taxonomy JSONs |
+| 2026-03-05 | Repo: src/engine/ | Refactored taxonomy.ts to import from world-model.json | Old per-file imports replaced with single consolidated import |
+| 2026-03-05 | Repo: scripts/ | Created validate-world-model.ts, generate-vault.ts, consolidate-taxonomy.ts | Content pipeline tooling: validation (7 checks), vault generation (199 notes), migration helper |
+| 2026-03-05 | Repo: tests | Added worldModel.test.ts (51), validate.test.ts (10), generateVault.test.ts (37) — 98 tests | Full coverage for graph integrity, validation rules, and vault generation |
+| 2026-03-05 | Repo: package.json | Added generate-vault, generate-vault:dry, validate-model npm scripts | CLI convenience for vault regeneration via esbuild bundling |
+| 2026-03-05 | Obsidian vault | Generated 199 notes across 11 folders (Actions, Actors, Cosmology, Cultures, Domains, Locations, Magic, Relationships, Terrain, Traits + Index) | Vault now generated from JSON — wikilinks, YAML frontmatter, connection sections |
+| 2026-03-05 | Repo: src/data/taxonomy/ | Deleted 6 old taxonomy JSON files + README | Replaced by unified world-model.json; taxonomy.ts no longer imports them |
+| 2026-03-05 | Repo: Docs/plans/ | Created 2026-03-05-content-pipeline-design.md, 2026-03-05-content-pipeline-implementation.md | Design rationale + 9-task implementation plan for content pipeline |
+| 2026-03-05 | CLAUDE.md | Updated project status, engine stats, content stats, changelog | Content pipeline complete |
 
 ## Session Workflow
 
@@ -125,6 +137,8 @@ When starting implementation work:
 - Phase 5A (Game Loop Engine): ✅ Complete — GameState type, world seeding, tick orchestrator, cycle-end flow
 - Phase 5B (UI Components): ✅ Complete — DoomBar, NarrativeFeed, RivalPanel, HarvestScreen, GameView rewrite
 - Phase 6A (Layer 1 — Core Interaction): ✅ Complete — retinue panel, agent wheel, psyche strands, GameView wiring
+- Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
 - Current phase: **Layer 2 planning** — Divine Toolkit UI (intervention confirmations, essence costs, detection feedback)
-- Engine stats: ~36 modules, ~4,850 lines, ~550 tests across 40 test files
+- Engine stats: ~39 modules, ~5,500 lines, ~650 tests across 43 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 199 generated Obsidian vault notes
 
