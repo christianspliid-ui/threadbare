@@ -128,6 +128,17 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: scripts/ | Created generate-hex-tile.py — full pipeline: Imagen API → hex mask → save PNG. 9 built-in biome presets | Automated hex tile generation with hexagonal alpha masking |
 | 2026-03-06 | Repo: package.json | Added `generate-hex` npm script | CLI convenience for hex tile pipeline |
 | 2026-03-06 | image-generation.skill | Updated skill v2 — hex pipeline integration, centered-feature tiling rules, pipeline exception for direct API | Skill now covers automated hex masking workflow |
+| 2026-03-06 | Repo: src/lib/ | Created polygonLayout.ts — regular polygon vertex computation | Phase 6C Task 1: hex zoom location positioning |
+| 2026-03-06 | Repo: src/engine/ | Created hexZoom.ts — 5 pure query functions for hex zoom data | Phase 6C Task 2: locations, agents, sphere influence, line of sight, connections |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — ViewLevel type, state machine, 4 navigation handlers | Phase 6C Task 3: view state machine for world/hex-zoom/location |
+| 2026-03-06 | Repo: src/components/Game/ | Created HexBreadcrumb.tsx — header bar with terrain, sphere dots, line of sight | Phase 6C Task 4: navigation breadcrumb for hex zoom |
+| 2026-03-06 | Repo: src/components/Game/ | Created HexZoomView.tsx — SVG polygon layout with locations, agents, travel lines | Phase 6C Task 5: main hex zoom visualization |
+| 2026-03-06 | Repo: src/components/Game/ | Created LocationView.tsx — detail view with agents list, establishing shot placeholder | Phase 6C Task 6: location detail panel |
+| 2026-03-06 | Repo: src/components/Game/ | Wired HexZoomView, LocationView, HexBreadcrumb into GameView with 8 derived data blocks | Phase 6C Task 7: replaced placeholders with real components |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created hexZoom-integration.test.ts — full data flow verification | Phase 6C Task 8: integration test |
+| 2026-03-06 | Obsidian: Systems/ | Created Hex Zoom View.md, Location View.md; updated View Levels.md | Phase 6C documentation: new system notes + implementation status |
+| 2026-03-06 | Notion: Backlog | Added Phase 6C as complete, renumbered 6D/6E, added reference docs | Phase 6C backlog update |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6C complete), engine stats, changelog | Phase 6C documentation |
 
 ## Session Workflow
 
@@ -161,8 +172,9 @@ When starting implementation work:
 - Phase 6A (Layer 1 — Core Interaction): ✅ Complete — retinue panel, agent wheel, psyche strands, GameView wiring
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
 - Phase 6B (Layer 2 — Divine Toolkit UI): ✅ Complete — delivery types, range checking, wheel range gating, InterventionConfirm popover, GameView intervention flow
+- Phase 6C (Hex Zoom Level): ✅ Complete — polygon layout, hex zoom engine queries, view state machine, HexBreadcrumb, HexZoomView, LocationView, GameView wiring, integration test
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
-- Current phase: **Layer 3 planning** — Dream Interface, detection feedback, essence animations
-- Engine stats: ~41 modules, ~5,800 lines, ~704 tests across 47 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 199 generated Obsidian vault notes
+- Current phase: **Phase 6D planning** — Ascendant Scry, Divine Titles, Mandate Tracker UI
+- Engine stats: ~44 modules, ~6,400 lines, ~747 tests across 54 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 201 generated Obsidian vault notes
 
