@@ -30,8 +30,11 @@ import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
+import { InterventionConfirm } from './InterventionConfirm';
 import { getRetinueAgents } from '../../engine/retinue';
 import { getAgentWheelSlots } from '../../engine/wheel';
+import { getDeliveryInfo } from '../../engine/delivery';
+import { executeIntervention } from '../../engine/dream';
 import {
   getPresenceStrand,
   getDesiresStrand,
@@ -40,6 +43,8 @@ import {
   getBeliefsStrand,
   getFearsStrand,
 } from '../../engine/strands';
+import type { LocalEncounterMode, InterventionType } from '../../types/dream';
+import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -140,6 +145,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [wheelVisible, setWheelVisible] = useState(false);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
+  const [pendingIntervention, setPendingIntervention] = useState<{
+    slotId: string;
+    interventionType: InterventionType;
+  } | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -230,9 +239,73 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     if (slotId === 'scry' && selectedAgentId) {
       setStrandViewAgent(selectedAgentId);
       setWheelVisible(false);
+      return;
     }
-    // Other interventions will be handled in Layer 2
-  }, [selectedAgentId]);
+
+    // Find the slot to get the intervention type
+    const slot = wheelSlots?.find(s => s.id === slotId);
+    if (!slot?.interventionType || !slot.available) return;
+
+    // For dream: placeholder for Layer 3 DreamInterface
+    if (slot.interventionType === 'dream') {
+      // TODO: Layer 3 will open DreamInterface here
+      return;
+    }
+
+    // For all other interventions: show confirmation popover
+    setPendingIntervention({
+      slotId,
+      interventionType: slot.interventionType,
+    });
+  }, [selectedAgentId, wheelSlots]);
+
+  const handleInterventionConfirm = useCallback((encounterMode?: LocalEncounterMode) => {
+    if (!pendingIntervention || !selectedAgentId) return;
+
+    const def = INTERVENTION_DEFINITIONS[pendingIntervention.interventionType];
+    const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId);
+    if (!slot?.sphere) return;
+
+    // Execute intervention
+    const result = executeIntervention({
+      interventionType: pendingIntervention.interventionType,
+      sphere: slot.sphere,
+      baseCost: slot.essenceCost,
+      alignmentFactor: 1.0, // Simplified for now; full alignment from actor profile in Layer 3
+      actorType: 'individual',
+      pool: gameState.essencePool,
+    });
+
+    if (result.success) {
+      // Spend essence and add narrative event
+      setGameState(prev => {
+        const newPool = { ...prev.essencePool };
+        newPool[slot.sphere!] = Math.max(0, newPool[slot.sphere!] - result.essenceSpent[slot.sphere!]);
+        return {
+          ...prev,
+          essencePool: newPool,
+          recentEvents: [
+            ...prev.recentEvents.slice(-99),
+            {
+              id: `evt_intervention_${prev.tick}_${Date.now()}`,
+              tick: prev.tick,
+              type: 'narrative' as const,
+              message: `${def.description} (${result.detected ? 'detected!' : 'undetected'})`,
+              significance: result.detected ? 0.8 : 0.5,
+              sphere: slot.sphere!,
+            },
+          ],
+        };
+      });
+    }
+
+    setPendingIntervention(null);
+    setWheelVisible(false);
+  }, [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool]);
+
+  const handleInterventionCancel = useCallback(() => {
+    setPendingIntervention(null);
+  }, []);
 
   const handleWheelDismiss = useCallback(() => {
     setWheelVisible(false);
@@ -320,6 +393,27 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 />
               </svg>
             )}
+
+            {/* Intervention confirmation popover */}
+            {pendingIntervention && wheelSlots && (() => {
+              const slot = wheelSlots.find(s => s.id === pendingIntervention.slotId);
+              if (!slot) return null;
+              return (
+                <InterventionConfirm
+                  interventionType={pendingIntervention.interventionType}
+                  label={slot.label}
+                  deliveryMode={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].deliveryMode}
+                  essenceCost={slot.essenceCost}
+                  sphere={slot.sphere ?? 'mind'}
+                  detectionRisk={slot.detectionRisk}
+                  rangeStatus={slot.rangeStatus}
+                  hexDistance={slot.hexDistance}
+                  description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}
+                  onConfirm={handleInterventionConfirm}
+                  onCancel={handleInterventionCancel}
+                />
+              );
+            })()}
           </div>
 
           {/* Narrative feed at bottom */}
