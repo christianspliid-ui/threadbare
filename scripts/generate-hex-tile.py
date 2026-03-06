@@ -4,8 +4,13 @@ Hex Tile Generator Pipeline
 Generates terrain art via Imagen API → applies hexagonal mask → saves to game assets.
 
 Usage:
-  python scripts/generate-hex-tile.py --biome "dense forest" --color "#2a3a20" --output Assets/biomes/dense-forest.png
-  python scripts/generate-hex-tile.py --biome "volcanic waste" --color "#3a2020" --features "cracked obsidian, lava-crusted ridges, ash dunes"
+  # Single biome:
+  python scripts/generate-hex-tile.py --biome "dense forest" --color "#2a3a20"
+
+  # All built-in biomes at once:
+  python scripts/generate-hex-tile.py --batch
+
+  # Custom prompt:
   python scripts/generate-hex-tile.py --prompt "custom prompt here" --output Assets/biomes/custom.png
 """
 
@@ -15,6 +20,7 @@ import io
 import math
 import os
 import sys
+import time
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFilter
@@ -36,6 +42,22 @@ FEATHER_PX = 6
 # API config
 MODEL = "gemini-3.1-flash-image-preview"
 API_KEY_ENV = "NANOBANANANA_API_KEY"
+
+# ---------------------------------------------------------------------------
+# Biome registry — single source of truth for batch mode
+# ---------------------------------------------------------------------------
+
+BIOME_REGISTRY = {
+    "dense forest":   {"color": "#2a3a20", "features": "Ancient broadleaf and conifer trees with visible trunks and rich canopy, rocky outcrops peeking through gaps between the trees."},
+    "open grassland": {"color": "#4a4a2a", "features": "A low rocky rise with scattered dark boulders and clumps of dry scrub brush on bare golden-brown earth. Tufts of tall grass grow between the rocks. No trees."},
+    "mountain":       {"color": "#3a3a3a", "features": "Jagged grey-brown rock ridges and dark ravines. Patches of scree and shadow-filled crevices. Snow dusts the highest points."},
+    "desert":         {"color": "#5a4a2a", "features": "Rolling sand dunes in burnt umber and dark amber. Wind-carved ripple patterns. Scattered dark rocky outcrops break through the sand."},
+    "tundra":         {"color": "#3a4a5a", "features": "Frozen ground with dark lichen patches and frost-heaved stones. Muted grey-blue tones. Low scrub bushes in dark clusters."},
+    "swamp":          {"color": "#2a3a1a", "features": "Dark waterlogged terrain with twisted dead trees and murky pools. Moss-covered hummocks. Deep olive-brown palette throughout."},
+    "volcanic":       {"color": "#3a2020", "features": "Cracked obsidian plains with dark ash dunes. Hardened lava flows create dark ridged patterns. Faint orange-red glow in deep cracks."},
+    "glacier":        {"color": "#2a3a4a", "features": "Blue-white ice sheets with dark crevasses cutting through. Pressure ridges create shadow patterns. Scattered dark rocks frozen into the surface."},
+    "coast":          {"color": "#3a3a2a", "features": "Dark sandy shore meeting deep grey-blue water. Scattered dark rocks and tidal pools. Kelp beds visible as dark patches in shallow water."},
+}
 
 # ---------------------------------------------------------------------------
 # Hex mask generation
@@ -86,27 +108,15 @@ def apply_hex_mask(img: Image.Image, mask: Image.Image) -> Image.Image:
 # Prompt construction
 # ---------------------------------------------------------------------------
 
-DEFAULT_FEATURES = {
-    "dense forest": "Ancient broadleaf and conifer trees with visible trunks and rich canopy, rocky outcrops peeking through gaps between the trees.",
-    "open grassland": "Windswept grass plains with subtle ridge lines and scattered dark boulders. Faint animal trails curve through tall grass. Dry golden-brown tones.",
-    "mountain": "Jagged grey-brown rock ridges and dark ravines. Patches of scree and shadow-filled crevices. Snow dusts the highest points.",
-    "desert": "Rolling sand dunes in burnt umber and dark amber. Wind-carved ripple patterns. Scattered dark rocky outcrops break through the sand.",
-    "tundra": "Frozen ground with dark lichen patches and frost-heaved stones. Muted grey-blue tones. Low scrub bushes in dark clusters.",
-    "swamp": "Dark waterlogged terrain with twisted dead trees and murky pools. Moss-covered hummocks. Deep olive-brown palette throughout.",
-    "volcanic": "Cracked obsidian plains with dark ash dunes. Hardened lava flows create dark ridged patterns. Faint orange-red glow in deep cracks.",
-    "glacier": "Blue-white ice sheets with dark crevasses cutting through. Pressure ridges create shadow patterns. Scattered dark rocks frozen into the surface.",
-    "coast": "Dark sandy shore meeting deep grey-blue water. Scattered dark rocks and tidal pools. Kelp beds visible as dark patches in shallow water.",
-}
-
 def build_prompt(biome: str, bg_color: str, features: str | None = None) -> str:
-    """Build the hex terrain prompt using hexagonal composition with painterly depth."""
-    feat = features or DEFAULT_FEATURES.get(biome.lower(), f"Naturalistic {biome} terrain features.")
+    """Build the hex terrain prompt using circular composition with painterly depth."""
+    feat = features or BIOME_REGISTRY.get(biome.lower(), {}).get("features", f"Naturalistic {biome} terrain features.")
 
-    return f"""A single hexagonal tile of {biome} terrain, painted in dark fantasy oil painting style. {feat} The terrain forms a dense hexagonal cluster in the center of the composition. The surrounding background is flat, featureless ground in the biome's base color ({bg_color}). The terrain features fill the center but fade to bare ground before reaching the edges.
+    return f"""A circular island of {biome} terrain in the center of the image, painted in dark fantasy oil painting style. {feat} The terrain forms a dense round cluster in the center of the composition, roughly circular in shape. The surrounding area is flat, featureless ground in the biome's base color ({bg_color}), filling the rest of the image. The terrain features are concentrated in the center and fade to bare ground well before reaching the image edges.
 
 Slightly elevated three-quarter view, painterly depth with visible tree trunks and terrain texture. Rich dimensional brushwork, thick impasto oil paint. Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
 
-No magic, no glowing elements, no luminous effects. No text, no UI, no labels, no drawn hex borders or outlines, no modern elements. No rivers, no streams, no water features that would need to connect across tile boundaries. No paths or roads that lead to edges."""
+No magic, no glowing elements, no luminous effects. No text, no UI, no labels, no hexagonal shapes or hex borders, no modern elements. No rivers, no streams, no water features that would need to connect across tile boundaries. No paths or roads that lead to edges."""
 
 
 # ---------------------------------------------------------------------------
@@ -138,57 +148,30 @@ def generate_image(prompt: str, api_key: str) -> Image.Image:
 
 
 # ---------------------------------------------------------------------------
-# Main pipeline
+# Single tile pipeline
 # ---------------------------------------------------------------------------
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate hex-masked terrain tiles")
-    parser.add_argument("--biome", type=str, help="Biome name (e.g. 'dense forest')")
-    parser.add_argument("--color", type=str, default="#2a3a20", help="Background hex color")
-    parser.add_argument("--features", type=str, help="Custom terrain feature description")
-    parser.add_argument("--prompt", type=str, help="Full custom prompt (overrides biome/features)")
-    parser.add_argument("--output", type=str, help="Output path (default: Assets/biomes/<biome>.png)")
-    parser.add_argument("--size", type=int, default=TILE_SIZE, help="Output image size in px")
-    parser.add_argument("--no-mask", action="store_true", help="Skip hex masking (save square)")
-    parser.add_argument("--raw-also", action="store_true", help="Also save the raw unmasked image")
-
-    args = parser.parse_args()
-
-    # Validate
-    if not args.biome and not args.prompt:
-        parser.error("Provide either --biome or --prompt")
-
-    # API key
-    api_key = os.environ.get(API_KEY_ENV)
-    if not api_key:
-        # Try loading from .env
-        env_path = Path(__file__).parent.parent / ".env"
-        if env_path.exists():
-            for line in env_path.read_text().splitlines():
-                if line.startswith(API_KEY_ENV):
-                    api_key = line.split("=", 1)[1].strip()
-                    break
-    if not api_key:
-        print(f"Error: {API_KEY_ENV} not found in environment or .env", file=sys.stderr)
-        sys.exit(1)
+def generate_tile(biome: str, color: str, features: str | None, prompt_override: str | None,
+                  output: Path | None, size: int, no_mask: bool, raw_also: bool, api_key: str) -> str:
+    """Generate a single hex tile. Returns output path."""
 
     # Build prompt
-    if args.prompt:
-        prompt = args.prompt
+    if prompt_override:
+        prompt = prompt_override
         biome_slug = "custom"
     else:
-        prompt = build_prompt(args.biome, args.color, args.features)
-        biome_slug = args.biome.lower().replace(" ", "-")
+        prompt = build_prompt(biome, color, features)
+        biome_slug = biome.lower().replace(" ", "-")
 
     # Output path
-    if args.output:
-        out_path = Path(args.output)
+    if output:
+        out_path = Path(output)
     else:
         out_path = Path(__file__).parent.parent / "Assets" / "biomes" / f"{biome_slug}.png"
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Generating: {args.biome or 'custom'}")
+    print(f"Generating: {biome or 'custom'}")
     print(f"Prompt ({len(prompt)} chars):")
     print(f"  {prompt[:120]}...")
     print()
@@ -206,19 +189,19 @@ def main():
         top = (h - side) // 2
         raw_img = raw_img.crop((left, top, left + side, top + side))
         print(f"  Cropped to {side}x{side} (center)")
-    if raw_img.size != (args.size, args.size):
-        raw_img = raw_img.resize((args.size, args.size), Image.LANCZOS)
+    if raw_img.size != (size, size):
+        raw_img = raw_img.resize((size, size), Image.LANCZOS)
 
     # Save raw if requested
-    if args.raw_also:
+    if raw_also:
         raw_path = out_path.with_stem(out_path.stem + "-raw")
         raw_img.save(raw_path, "PNG")
         print(f"  Raw saved: {raw_path}")
 
     # Apply hex mask
-    if not args.no_mask:
+    if not no_mask:
         print("Applying hex mask...")
-        mask = make_hex_mask(args.size)
+        mask = make_hex_mask(size)
         result = apply_hex_mask(raw_img, mask)
     else:
         result = raw_img
@@ -227,8 +210,110 @@ def main():
     result.save(out_path, "PNG")
     print(f"  Saved: {out_path}")
     print("Done!")
+    print()
 
     return str(out_path)
+
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate hex-masked terrain tiles")
+    parser.add_argument("--biome", type=str, help="Biome name (e.g. 'dense forest')")
+    parser.add_argument("--color", type=str, default=None, help="Background hex color (default: from registry)")
+    parser.add_argument("--features", type=str, help="Custom terrain feature description")
+    parser.add_argument("--prompt", type=str, help="Full custom prompt (overrides biome/features)")
+    parser.add_argument("--output", type=str, help="Output path (default: Assets/biomes/<biome>.png)")
+    parser.add_argument("--size", type=int, default=TILE_SIZE, help="Output image size in px")
+    parser.add_argument("--no-mask", action="store_true", help="Skip hex masking (save square)")
+    parser.add_argument("--raw-also", action="store_true", help="Also save the raw unmasked image")
+    parser.add_argument("--batch", action="store_true", help="Generate all built-in biomes")
+    parser.add_argument("--batch-delay", type=float, default=5.0, help="Seconds between API calls in batch mode (default: 5)")
+
+    args = parser.parse_args()
+
+    # Validate
+    if not args.batch and not args.biome and not args.prompt:
+        parser.error("Provide --biome, --prompt, or --batch")
+
+    # API key
+    api_key = os.environ.get(API_KEY_ENV)
+    if not api_key:
+        # Try loading from .env
+        env_path = Path(__file__).parent.parent / ".env"
+        if env_path.exists():
+            for line in env_path.read_text().splitlines():
+                if line.startswith(API_KEY_ENV):
+                    api_key = line.split("=", 1)[1].strip()
+                    break
+    if not api_key:
+        print(f"Error: {API_KEY_ENV} not found in environment or .env", file=sys.stderr)
+        sys.exit(1)
+
+    if args.batch:
+        # Batch mode — generate all biomes
+        biomes = list(BIOME_REGISTRY.keys())
+        total = len(biomes)
+        print(f"=== BATCH MODE: generating {total} biomes ===")
+        print(f"Delay between API calls: {args.batch_delay}s")
+        print()
+
+        results = []
+        failures = []
+
+        for i, biome in enumerate(biomes, 1):
+            info = BIOME_REGISTRY[biome]
+            print(f"--- [{i}/{total}] {biome} ---")
+
+            try:
+                path = generate_tile(
+                    biome=biome,
+                    color=info["color"],
+                    features=info["features"],
+                    prompt_override=None,
+                    output=None,
+                    size=args.size,
+                    no_mask=args.no_mask,
+                    raw_also=args.raw_also,
+                    api_key=api_key,
+                )
+                results.append((biome, path))
+            except Exception as e:
+                print(f"  ERROR: {e}")
+                failures.append((biome, str(e)))
+
+            # Delay between calls to avoid rate limits
+            if i < total:
+                print(f"  Waiting {args.batch_delay}s before next biome...")
+                time.sleep(args.batch_delay)
+
+        # Summary
+        print()
+        print(f"=== BATCH COMPLETE ===")
+        print(f"  Success: {len(results)}/{total}")
+        for biome, path in results:
+            print(f"    ✓ {biome} → {path}")
+        if failures:
+            print(f"  Failed: {len(failures)}/{total}")
+            for biome, err in failures:
+                print(f"    ✗ {biome}: {err}")
+
+    else:
+        # Single mode
+        color = args.color or BIOME_REGISTRY.get(args.biome, {}).get("color", "#2a3a20")
+        generate_tile(
+            biome=args.biome,
+            color=color,
+            features=args.features,
+            prompt_override=args.prompt,
+            output=args.output,
+            size=args.size,
+            no_mask=args.no_mask,
+            raw_also=args.raw_also,
+            api_key=api_key,
+        )
 
 
 if __name__ == "__main__":

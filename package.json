@@ -13,7 +13,8 @@
     "generate-vault": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs",
     "generate-vault:dry": "esbuild scripts/generate-vault.ts --bundle --platform=node --format=esm --outfile=/tmp/generate-vault.mjs --external:fs --external:path && node /tmp/generate-vault.mjs --dry-run",
     "validate-model": "esbuild scripts/validate-world-model.ts --bundle --platform=node --format=esm --outfile=/tmp/validate-world-model.mjs --external:fs --external:path && node /tmp/validate-world-model.mjs",
-    "generate-hex": "python scripts/generate-hex-tile.py"
+    "generate-hex": "python scripts/generate-hex-tile.py",
+    "generate-hex:batch": "python scripts/generate-hex-tile.py --batch --raw-also"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",
