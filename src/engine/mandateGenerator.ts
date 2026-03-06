@@ -1,0 +1,115 @@
+/**
+ * Mandate Generator — Sphere-weighted PRNG mandate selection.
+ *
+ * Uses seeded PRNG (mulberry32) to deterministically select a mandate template
+ * based on weighted probabilities derived from ascendant sphere alignment.
+ *
+ * Weights:
+ * - PRIMARY_WEIGHT = 3: template includes alignment.primary
+ * - SECONDARY_WEIGHT = 2: template includes alignment.secondary
+ * - BASE_WEIGHT = 1: no match (all templates are eligible)
+ *
+ * Selection uses weighted random based on these scores.
+ */
+
+import type { CosmologyProfile, SphereName } from '../types/index';
+import type { SphereAlignment } from '../types/influence';
+import type { MandateTemplate } from '../data/mandate-content';
+import { MANDATE_TEMPLATES } from '../data/mandate-content';
+
+// ─── Constants ───────────────────────────────────────────────────────────
+
+const PRIMARY_WEIGHT = 3;
+const SECONDARY_WEIGHT = 2;
+const BASE_WEIGHT = 1;
+
+// ─── Seeded PRNG (same as orchestrator.ts) ────────────────────────────────
+
+/**
+ * Mulberry32 PRNG factory.
+ * Same implementation as orchestrator.ts to ensure consistency.
+ */
+function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ─── Mandate Generator ─────────────────────────────────────────────────────
+
+/**
+ * Score a single mandate template based on sphere alignment.
+ *
+ * Returns the highest weight matched:
+ * - PRIMARY_WEIGHT (3) if template includes alignment.primary
+ * - SECONDARY_WEIGHT (2) if template includes alignment.secondary
+ * - BASE_WEIGHT (1) otherwise
+ */
+function scoreTemplate(
+  template: MandateTemplate,
+  alignment: SphereAlignment,
+): number {
+  const { primary, secondary } = alignment;
+  const { sphereAffinities } = template;
+
+  // Check primary sphere (weight 3)
+  if (sphereAffinities.includes(primary)) {
+    return PRIMARY_WEIGHT;
+  }
+
+  // Check secondary sphere (weight 2)
+  if (sphereAffinities.includes(secondary)) {
+    return SECONDARY_WEIGHT;
+  }
+
+  // Default weight for any mandate (weight 1)
+  return BASE_WEIGHT;
+}
+
+/**
+ * Generate a mandate template selection using seeded PRNG with sphere weighting.
+ *
+ * Deterministic: same (seed, alignment) → same mandate
+ * Weighted by sphere affinity: life-primary ascendants favor life mandates
+ *
+ * @param cosmology Player's sphere profile (unused in current implementation, reserved for future)
+ * @param alignment Primary and secondary sphere alignment
+ * @param seed Seed for PRNG (e.g., worldSeed + activeTick)
+ * @returns Selected MandateTemplate
+ */
+export function generateMandate(
+  cosmology: CosmologyProfile,
+  alignment: SphereAlignment,
+  seed: number,
+): MandateTemplate {
+  // Compute scores for all templates
+  const scores = MANDATE_TEMPLATES.map((template) =>
+    scoreTemplate(template, alignment),
+  );
+
+  // Compute cumulative weights for weighted selection
+  const cumulativeWeights: number[] = [];
+  let totalWeight = 0;
+  for (let i = 0; i < scores.length; i++) {
+    totalWeight += scores[i];
+    cumulativeWeights.push(totalWeight);
+  }
+
+  // Generate random value [0, totalWeight)
+  const rng = mulberry32(seed);
+  const randomValue = rng() * totalWeight;
+
+  // Find the selected template by cumulative weight
+  for (let i = 0; i < cumulativeWeights.length; i++) {
+    if (randomValue < cumulativeWeights[i]) {
+      return MANDATE_TEMPLATES[i];
+    }
+  }
+
+  // Fallback (should never reach, but safety net)
+  return MANDATE_TEMPLATES[0];
+}
