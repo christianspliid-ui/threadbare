@@ -179,6 +179,66 @@ Each culture defines:
 
 Cultural palettes are stored in a content package and referenced by culture ID. They feed into prose generation at the template-filling stage — sphere vocabulary provides the cosmic color, the cultural palette provides the worldly texture.
 
+### Palette Generation from Composite Modifiers
+
+*(Updated 2026-03-06 — palettes are now generated from modifier seeds, not hand-authored per culture)*
+
+Cultural narrative palettes are **generated, not hand-written**. Each culture's palette is composed from three modifier sources at culture-creation time:
+
+1. **Foundation sphere modifiers** (4 sets) — broad tonal shaping from the World-Soul's foundation balance (Chaos/Order/Light/Darkness). Determines social structure tendency, accountability mode, and metaphor seeds.
+2. **Creation sphere modifiers** (8 sets) — behavioral coloring and material vocabulary from the culture's venerated creation spheres. Each sphere contributes 4–6 material terms and 3–5 behavioral keywords.
+3. **Biome modifiers** (~20 sets) — survival traits, material culture, and metaphor palette from the landscape where the culture originated.
+
+The generator composes these layers additively. Conflicts between layers create cultural distinctiveness: a Mind-venerating desert culture values knowledge but carries it orally (paper crumbles in sand). A Force-venerating tundra culture settles disputes by endurance contest, not single combat.
+
+This means the content pipeline needs **~32 modifier definition sets** (seeds), not hundreds of hand-authored palettes. See `2026-03-06-culture-bounded-context-design.md` §6 for the full modifier tables and §7 for content production requirements.
+
+### Cultural Voice Intensity
+
+The narrative engine scales cultural voice by the actor's cultural strength:
+
+- **0.8–1.0 (fanatical):** Prose saturated with cultural metaphor and vocabulary
+- **0.5–0.79 (strong):** Clear cultural coloring — metaphors appear, material vocabulary used
+- **0.3–0.49 (fading):** Faint coloring — occasional cultural reference
+- **Below 0.3 (silent):** Culture absent from prose entirely
+
+---
+
+## 4a. Culture Content Production Manifest
+
+*(Added 2026-03-06 — enumerates all content authoring required for the culture system)*
+
+### Modifier Definition Sets (~32 Total)
+
+| Category | Count | Per Set Contents |
+|---|---|---|
+| Foundation sphere modifiers | 4 | 3–5 behavioral keywords, social structure tendency, accountability mode, 3–4 metaphor seeds |
+| Creation sphere modifiers | 8 | 4–6 behavioral keywords, 4–6 material vocabulary terms, 1–2 formative trait seeds, 1–2 behavioral trait seeds |
+| Biome modifiers | ~20 | 3–5 survival trait keywords, 4–6 material culture terms, 3–4 metaphor templates |
+
+### Cultural Trait Definitions
+
+| Type | Count | Per Trait |
+|---|---|---|
+| Formative traits (innate, permanent) | ~30–40 | Name, description, domain contributions, tags, source conditions |
+| Behavioral traits (cultural, strength-gated) | ~40–50 | Name, description, domain contributions, strength threshold table, tags |
+
+Traits are drawn from modifier seeds, not hand-authored per culture. The generator combines seeds: Force+Desert → "Sand Warrior" (formative) + "Trial by Thirst" (behavioral).
+
+### Culture-Gated Beat Definitions
+
+~20–30 insider narrative beats. Each needs: event type trigger, minimum cultural strength, required trait/sphere, prose template seeds, archetype affinity.
+
+### Art & Location Content
+
+~15–20 sub-location templates with cultural variant descriptors. ~5–6 artifact lore sentence patterns. Tag vocabulary for prompt construction per culture+building type combination.
+
+### Estimated Total Scope
+
+`culture-content.ts` estimated at 800–1200 lines — comparable to enriched `archetype-content.ts` (894 lines, 53 tests).
+
+Full design rationale: `2026-03-06-culture-bounded-context-design.md`
+
 ---
 
 ## 5. History in Narrative
@@ -289,7 +349,7 @@ All narrative content lives in `src/data/*-content.ts` files:
 |---------|----------|
 | `narrative-content.ts` | Sphere vocabulary, routine/notable templates, value flavors, chronicle prompts |
 | `archetype-content.ts` | 19 archetype definitions: tone keywords, beat patterns, vignette seeds, narrative requirements |
-| `culture-content.ts` | Cultural narrative palettes: metaphors, honor/shame, oaths, death language, material vocabulary |
+| `culture-content.ts` | ~32 composite modifier sets (foundation+creation+biome), ~70–90 cultural trait seeds, ~20–30 culture-gated beat definitions, sub-location templates, artifact lore patterns. See §4a manifest. |
 | `dream-content.ts` | Manipulation/intervention definitions, delivery constants |
 | `doom-content.ts` | Archetype stage names, thresholds, escalation narrative beats |
 | `rival-content.ts` | Rival names, behaviors, weights |
@@ -316,3 +376,6 @@ All narrative content lives in `src/data/*-content.ts` files:
 | Thematic scope | Full grimdark minus real human depravity | Mythic-dark only, heroic undertone, no limits | "Stories that inspire us to be better and remind us how deep we can fall." Dark enough to matter, not so dark it wallows. |
 | Culture in narrative | Narrative palettes blended with archetype + sphere | Culture as flavor text only, culture overrides archetype | Blending preserves archetype consistency while adding worldly texture |
 | History in narrative | Injected at Notable/Chronicle tier via graph lookup | Always present, never present, player-toggled | History adds depth to important moments without cluttering routine events |
+| Cultural palette source | Generated from composite modifiers (foundation+creation+biome) | Hand-authored per culture, derived from sphere only | Composite modifiers scale to any number of cultures from ~32 seed sets while ensuring every culture takes color from World-Soul and landscape |
+| Cultural trait model | Two types: formative (innate, permanent) + behavioral (new `cultural` category, strength-gated) | Single trait type, extend existing categories | Youth-acquired skills are permanent; customs/values scale with identity strength. Distinct mechanics need distinct categories. |
+| Culture budget | ≤1.0 total across 0–2 cultures | Unbounded stacking, fixed 50/50 split | Budget forces meaningful identity choices and natural narrative tension without combinatorial explosion |
