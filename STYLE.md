@@ -171,23 +171,29 @@ Semi-transparent compositable image showing active sphere magic. One per sphere 
 
 This is the single source of truth for hex terrain prompts. The same template is used by `scripts/generate-hex-tile.py` and the `image-generation` skill. Do not deviate from this structure when generating hex tiles.
 
-**Key insight:** The prompt asks for a **circular** composition, not hexagonal. The hexagonal shape is applied programmatically by the pipeline's alpha mask. If the prompt says "hexagonal," the AI draws hex-shaped terrain patterns, creating a "hex within hex" artifact after masking.
+**Key rules:**
+- **No "hexagonal" in the prompt.** The hex shape is applied programmatically by the pipeline's alpha mask. Saying "hexagonal" makes the AI draw hex-shaped patterns → "hex within hex" artifact.
+- **No sky, no horizon.** The hex represents ground seen from above. Sky creates awkward crops.
+- **Terrain fills the entire image edge to edge.** No bare ground borders, no circular islands. The hex mask cuts through the terrain wherever it falls.
+- **Steep overhead angle (~80°).** Camera is very far above, looking almost straight down. Individual elements (trees, rocks, dunes) appear small.
+- **Variants** can add extra flourishes at the end of the prompt, but the angle, edges, and scale must stay the same.
 
 ```
-A circular island of [biome] terrain in the center of the image, painted in dark fantasy oil painting style.
-[2-3 sentences: terrain features with visible depth and texture, clustered in center].
-The terrain forms a dense round cluster in the center of the composition, roughly circular in shape.
-The surrounding area is flat, featureless ground in the biome's base color ([hex color]), filling the rest of the image.
-The terrain features are concentrated in the center and fade to bare ground well before reaching the image edges.
+Aerial view looking almost straight down at [biome description] that fills the entire image.
+[2-3 sentences: biome-specific detail — what you see from far above, textures, features.
+Must end with: "The [terrain] extends to all edges of the image — no bare ground, no clearings,
+just continuous [terrain type] from edge to edge."]
 
-Slightly elevated three-quarter view, painterly depth with visible tree trunks and terrain texture.
-Rich dimensional brushwork, thick impasto oil paint.
+Camera very far above, nearly directly overhead, about 80 degrees from horizontal.
+Wide shot — individual [elements] are small.
+Dark fantasy oil painting style. Rich impasto brushwork.
 Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
 
-No magic, no glowing elements, no luminous effects.
-No text, no UI, no labels, no hexagonal shapes or hex borders, no modern elements.
-No rivers, no streams, no water features that would need to connect across tile boundaries.
-No paths or roads that lead to edges.
+No sky. No horizon. No bare ground.
+No magic, no glowing elements.
+No text, no UI, no hexagonal shapes.
+No rivers, no streams. No paths.
+[Optional: extra variant flourishes here]
 ```
 
 ### Magic Overlay Prompt Template

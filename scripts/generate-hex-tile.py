@@ -48,15 +48,136 @@ API_KEY_ENV = "NANOBANANANA_API_KEY"
 # ---------------------------------------------------------------------------
 
 BIOME_REGISTRY = {
-    "dense forest":   {"color": "#2a3a20", "features": "Ancient broadleaf and conifer trees with visible trunks and rich canopy, rocky outcrops peeking through gaps between the trees."},
-    "open grassland": {"color": "#4a4a2a", "features": "A low rocky rise with scattered dark boulders and clumps of dry scrub brush on bare golden-brown earth. Tufts of tall grass grow between the rocks. No trees."},
-    "mountain":       {"color": "#3a3a3a", "features": "Jagged grey-brown rock ridges and dark ravines. Patches of scree and shadow-filled crevices. Snow dusts the highest points."},
-    "desert":         {"color": "#5a4a2a", "features": "Rolling sand dunes in burnt umber and dark amber. Wind-carved ripple patterns. Scattered dark rocky outcrops break through the sand."},
-    "tundra":         {"color": "#3a4a5a", "features": "Frozen ground with dark lichen patches and frost-heaved stones. Muted grey-blue tones. Low scrub bushes in dark clusters."},
-    "swamp":          {"color": "#2a3a1a", "features": "Dark waterlogged terrain with twisted dead trees and murky pools. Moss-covered hummocks. Deep olive-brown palette throughout."},
-    "volcanic":       {"color": "#3a2020", "features": "Cracked obsidian plains with dark ash dunes. Hardened lava flows create dark ridged patterns. Faint orange-red glow in deep cracks."},
-    "glacier":        {"color": "#2a3a4a", "features": "Blue-white ice sheets with dark crevasses cutting through. Pressure ridges create shadow patterns. Scattered dark rocks frozen into the surface."},
-    "coast":          {"color": "#3a3a2a", "features": "Dark sandy shore meeting deep grey-blue water. Scattered dark rocks and tidal pools. Kelp beds visible as dark patches in shallow water."},
+    "dense forest": {
+        "color": "#2a3a20",
+        "desc": "a dense ancient forest",
+        "detail": "Gnarled oaks and twisted pines seen from far above, their canopy tops forming a continuous dark mass with shadows between them. Moss-covered boulders dot the forest floor between the trees. The forest extends to all edges of the image — no bare ground, no clearings, just continuous dense forest canopy from edge to edge.",
+        "elements": "trees",
+    },
+    "open grassland": {
+        "color": "#4a4a2a",
+        "desc": "a vast open grassland stretching to the horizon",
+        "detail": "Enormous rolling hills of dry golden-brown grass seen from very far above, with broad dark patches of scrub and scattered boulder fields breaking the golden expanse. Shallow valleys and low ridgelines create subtle texture across the landscape. The grassland extends to all edges of the image — no bare earth, no clearings, just continuous rolling grass plains from edge to edge.",
+        "elements": "hills and scrub patches",
+    },
+    "mountain": {
+        "color": "#3a3a3a",
+        "desc": "a jagged mountain range",
+        "detail": "Grey-brown rock ridges and dark ravines seen from far above, patches of scree and shadow-filled crevices between sharp peaks. Snow dusts the highest points. The mountains extend to all edges of the image — no flat ground, no clearings, just continuous jagged rock and ridges from edge to edge.",
+        "elements": "peaks and ridges",
+    },
+    "desert": {
+        "color": "#5a4a2a",
+        "desc": "a rolling sand desert",
+        "detail": "Burnt umber and dark amber dunes seen from far above, wind-carved ripple patterns across the sand. Scattered dark rocky outcrops break through the dunes. The desert extends to all edges of the image — no bare flat ground, no clearings, just continuous dunes and sand from edge to edge.",
+        "elements": "dunes",
+    },
+    "tundra": {
+        "color": "#3a4a5a",
+        "desc": "a vast frozen tundra wasteland stretching endlessly",
+        "detail": "Broad expanses of frozen permafrost seen from very far above, with wide dark lichen fields and large frost-heaved rock formations creating a patchwork across the landscape. Clusters of stunted dead trees dot the terrain like tiny dark specks. Muted grey-blue tones throughout. The tundra extends to all edges of the image — no bare ground, no clearings, just continuous frozen terrain from edge to edge.",
+        "elements": "lichen fields and rock formations",
+    },
+    "swamp": {
+        "color": "#2a3a1a",
+        "desc": "a dark waterlogged swamp",
+        "detail": "Twisted dead trees and murky pools seen from far above, moss-covered hummocks rising between dark water. Deep olive-brown palette throughout. The swamp extends to all edges of the image — no dry ground, no clearings, just continuous swamp from edge to edge.",
+        "elements": "trees and hummocks",
+    },
+    "volcanic": {
+        "color": "#3a2020",
+        "desc": "a cracked volcanic wasteland",
+        "detail": "Obsidian plains and dark ash dunes seen from far above, hardened lava flows creating dark ridged patterns. Faint orange-red glow in deep cracks. The volcanic terrain extends to all edges of the image — no normal ground, no clearings, just continuous cracked rock and ash from edge to edge.",
+        "elements": "lava ridges and cracks",
+    },
+    "glacier": {
+        "color": "#2a3a4a",
+        "desc": "a vast blue-white glacier",
+        "detail": "Ice sheets with dark crevasses cutting through seen from far above, pressure ridges creating shadow patterns. Scattered dark rocks frozen into the surface. The glacier extends to all edges of the image — no bare ground, no clearings, just continuous ice from edge to edge.",
+        "elements": "crevasses and ridges",
+    },
+    "coast": {
+        "color": "#3a3a2a",
+        "desc": "a vast rocky coastline seen from great height",
+        "detail": "A sweeping shoreline seen from very far above, where dark land meets deep grey-blue ocean in a long ragged line. Wide beaches of dark sand, large cliff formations, and broad rocky headlands alternate along the coast. Waves appear as thin white lines against dark water. The coastline extends to all edges of the image — no empty space, just continuous land-meeting-sea from edge to edge.",
+        "elements": "headlands and beaches",
+    },
+    "deciduous forest": {
+        "color": "#3a4a2a",
+        "desc": "a vast deciduous forest in late autumn",
+        "detail": "Dense broad-leafed trees seen from very far above, oaks and elms with wide dark crowns in shades of burnt amber, deep rust, and dark olive. The canopy rolls over gentle hills, thick impasto brushstrokes suggesting each tree crown. Patches where leaves have fallen reveal dark twisted branches beneath. The forest extends to all edges of the image — no bare ground, no clearings, just continuous autumn canopy from edge to edge.",
+        "elements": "tree crowns",
+    },
+    "taiga": {
+        "color": "#1a2a1a",
+        "desc": "a vast dark boreal taiga stretching endlessly",
+        "detail": "Dense ranks of tall dark conifers seen from very far above, spruce and pine forming a near-black carpet of pointed treetops. Patches of snow cling between the trees in long pale streaks. The taiga extends to all edges of the image — no bare ground, no clearings, just continuous dark conifer forest from edge to edge.",
+        "elements": "conifer tops",
+    },
+    "jungle": {
+        "color": "#1a3a1a",
+        "desc": "a vast steaming tropical rainforest seen from very far above",
+        "detail": "Thick tropical canopy seen from very far above, dozens of tall palm trees rising above the broad-leafed canopy like spears, their fronds splayed wide. Huge woody vines snake across the treetops connecting the crowns. Flocks of bright parrots — scarlet, emerald, gold — wheel above the canopy in vivid clusters. Wisps of humid mist hang in the valleys between the hills. The jungle extends to all edges of the image — no bare ground, no clearings, just continuous steaming tropical rainforest from edge to edge.",
+        "elements": "palm trees and canopy crowns",
+    },
+    "hills": {
+        "color": "#4a4a3a",
+        "desc": "a vast rolling highland of grassy hills",
+        "detail": "Broad rounded hills seen from very far above, their slopes covered in dark grass and heather with exposed rock on the ridgelines. Deep shadow pools in the valleys between. The hills extend to all edges of the image — no flat ground, no clearings, just continuous rolling terrain from edge to edge.",
+        "elements": "hilltops and valleys",
+    },
+    "plateau": {
+        "color": "#5a4a3a",
+        "desc": "a vast flat-topped plateau with sheer edges",
+        "detail": "Wide flat highland terrain seen from very far above, dry sparse scrub on weathered brown rock. Deep canyons and sheer cliff edges cut through the plateau in dark jagged lines. The plateau extends to all edges of the image — no lowlands, no clearings, just continuous flat highland and canyon edges from edge to edge.",
+        "elements": "mesa tops and canyon edges",
+    },
+    "badlands": {
+        "color": "#5a3a2a",
+        "desc": "a vast eroded badlands of canyons and mesas",
+        "detail": "Deeply eroded terrain seen from very far above, layered red-brown and dark grey rock formations carved into sharp ridges, narrow canyons, and flat-topped mesas. Wind-sculpted pillars and hoodoos cast long shadows. The badlands extend to all edges of the image — no flat ground, no vegetation, just continuous eroded rock formations from edge to edge.",
+        "elements": "mesas and canyons",
+    },
+    "savanna": {
+        "color": "#5a4a2a",
+        "desc": "a vast dry savanna with scattered trees",
+        "detail": "Wide expanses of dry golden grass seen from very far above, dotted with scattered flat-topped acacia-like trees casting long shadows. Termite mounds appear as tiny dark dots. Broad dry streambeds wind through the landscape. The savanna extends to all edges of the image — no bare earth, no clearings, just continuous dry grassland and scattered trees from edge to edge.",
+        "elements": "trees and grass expanses",
+    },
+    "steppe": {
+        "color": "#4a4a3a",
+        "desc": "a vast windswept steppe stretching to infinity",
+        "detail": "Enormous flat plain seen from very far above, like the savanna but treeless and cold. Broad bands of grey-green and pale gold grass stretch for miles, bent by wind into sweeping wave patterns. Scattered dark boulders and weathered standing stones dot the plain like tiny specks. A few clusters of tiny yurt-like tents huddle near shallow depressions. Herds of wild horses appear as dark dots moving across the grass. The steppe extends to all edges of the image — no bare ground, no features, just continuous flat windswept grassland from edge to edge.",
+        "elements": "grass waves and scattered boulders",
+    },
+    "farmland": {
+        "color": "#4a4a2a",
+        "desc": "a vast wild medieval countryside with rare scattered farms",
+        "detail": "Wide landscape seen from very far above, dominated by dark copses of broadleaf trees, wild flower meadows, and overgrown scrubland. Only one or two tiny irregular fields of grain visible among the wildness. A few thatched cottages cluster near a muddy crossroad. Sheep and cattle graze as tiny pale specks in the meadows. Small dark ponds sit in hollows between the copses. The land is barely tamed — wild growth covers most of it. The countryside extends to all edges of the image — no empty space, just continuous wild rural landscape from edge to edge.",
+        "elements": "copses, meadows, and wild scrub",
+    },
+    "bog": {
+        "color": "#2a3a2a",
+        "desc": "a vast treeless bog stretching endlessly",
+        "detail": "Waterlogged peatland seen from very far above, dark brown and olive-green moss carpets broken by black standing pools of still water. No trees — only low sedge and sphagnum in broad hummock patterns. The bog extends to all edges of the image — no dry ground, no clearings, just continuous waterlogged peatland from edge to edge.",
+        "elements": "pools and moss hummocks",
+    },
+    # --- Water biomes ---
+    "ocean": {
+        "color": "#1a2a3a",
+        "desc": "a vast dark stormy ocean seen from very far above",
+        "detail": "Deep open ocean seen from very far above, dark grey-blue water stretching endlessly. Broad rolling swells form long parallel lines across the surface, their crests catching dim light as pale streaks. Occasional whitecaps scatter across the darker troughs. A pod of dark whales surfaces in the distance as tiny shapes trailing pale wakes. The ocean extends to all edges of the image — no land, no shore, just continuous dark churning sea from edge to edge.",
+        "elements": "wave crests and swells",
+    },
+    "tropical ocean": {
+        "color": "#1a4a5a",
+        "desc": "a vast warm tropical ocean seen from very far above",
+        "detail": "Deep tropical ocean seen from very far above, rich azure and deep turquoise water stretching endlessly. Long gentle swells roll lazily across the surface, their crests catching warm light as bright pale lines. The water shifts between deep cobalt in the troughs and vivid blue-green on the crests. A few dark shapes of sea turtles or manta rays drift below the surface as faint shadows. The ocean extends to all edges of the image — no land, no shore, just continuous warm tropical sea from edge to edge.",
+        "elements": "gentle swells and color shifts",
+    },
+    # NOTE: coastal shallows, lake, and river are NOT full-hex tiles.
+    # They will be handled as render-time overlays on land tiles (Option D).
+    # See future hex map renderer for implementation.
 }
 
 # ---------------------------------------------------------------------------
@@ -108,15 +229,19 @@ def apply_hex_mask(img: Image.Image, mask: Image.Image) -> Image.Image:
 # Prompt construction
 # ---------------------------------------------------------------------------
 
-def build_prompt(biome: str, bg_color: str, features: str | None = None) -> str:
-    """Build the hex terrain prompt using circular composition with painterly depth."""
-    feat = features or BIOME_REGISTRY.get(biome.lower(), {}).get("features", f"Naturalistic {biome} terrain features.")
+def build_prompt(biome: str, bg_color: str, features: str | None = None, extra: str | None = None) -> str:
+    """Build the hex terrain prompt using steep overhead angle, terrain fills entire frame."""
+    reg = BIOME_REGISTRY.get(biome.lower(), {})
+    desc = reg.get("desc", biome)
+    detail = features or reg.get("detail", f"{biome} terrain extending to all edges of the image.")
+    elements = reg.get("elements", "features")
+    suffix = f" {extra}" if extra else ""
 
-    return f"""A circular island of {biome} terrain in the center of the image, painted in dark fantasy oil painting style. {feat} The terrain forms a dense round cluster in the center of the composition, roughly circular in shape. The surrounding area is flat, featureless ground in the biome's base color ({bg_color}), filling the rest of the image. The terrain features are concentrated in the center and fade to bare ground well before reaching the image edges.
+    return f"""Aerial view looking almost straight down at {desc} that fills the entire image. {detail}
 
-Slightly elevated three-quarter view, painterly depth with visible tree trunks and terrain texture. Rich dimensional brushwork, thick impasto oil paint. Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
+Camera very far above, nearly directly overhead, about 80 degrees from horizontal. Wide shot — individual {elements} are small. Dark fantasy oil painting style. Rich impasto brushwork. Dark moody atmosphere, dim overcast lighting. Muted desaturated palette.
 
-No magic, no glowing elements, no luminous effects. No text, no UI, no labels, no hexagonal shapes or hex borders, no modern elements. No rivers, no streams, no water features that would need to connect across tile boundaries. No paths or roads that lead to edges."""
+No sky. No horizon. No bare ground. No magic, no glowing elements. No text, no UI, no hexagonal shapes. No rivers, no streams. No paths.{suffix}"""
 
 
 # ---------------------------------------------------------------------------
@@ -271,7 +396,7 @@ def main():
                 path = generate_tile(
                     biome=biome,
                     color=info["color"],
-                    features=info["features"],
+                    features=info.get("detail"),
                     prompt_override=None,
                     output=None,
                     size=args.size,
@@ -294,11 +419,11 @@ def main():
         print(f"=== BATCH COMPLETE ===")
         print(f"  Success: {len(results)}/{total}")
         for biome, path in results:
-            print(f"    ✓ {biome} → {path}")
+            print(f"    OK {biome} -> {path}")
         if failures:
             print(f"  Failed: {len(failures)}/{total}")
             for biome, err in failures:
-                print(f"    ✗ {biome}: {err}")
+                print(f"    FAIL {biome}: {err}")
 
     else:
         # Single mode
