@@ -158,6 +158,11 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: src/engine/__tests__/ | Created mandate-integration.test.ts — full lifecycle, actor_tier cycle, all templates evaluable | Phase 6D Mandate: integration tests (3 tests) |
 | 2026-03-06 | Obsidian: Systems/ | Created Mandate Tracker.md; updated Index.md with Mandate Tracker link | Phase 6D Mandate vault documentation |
 | 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Mandate complete), engine stats, changelog | Phase 6D Mandate documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-package-architecture.md | 7-task plan to extract ~350 lines of content from engine/type files into 5 new `*-content.ts` packages |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-strategy.md | Content strategy: 3 prose modes, 19 archetypes, cultural palettes, thematic rules, exclusions |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-narrative-context-pipeline.md | Narrative context pipeline: harvest-rank-select-feed, opposition tension scoring, narrative spawning |
+| 2026-03-06 | Obsidian: Systems/ | Created Content Strategy.md, Narrative Archetypes.md, Narrative Context Pipeline.md, Content Packages.md | 4 new system notes for content strategy and architecture |
+| 2026-03-06 | Notion: Backlog | Added Content Strategy & Architecture section with 3 completed design items + 5 pending implementation items | Content strategy design phase complete |
 
 ## Session Workflow
 
