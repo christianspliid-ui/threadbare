@@ -527,9 +527,9 @@
     <h3>Foundation Spheres (Cosmic Forces)</h3>
     <div class="palette-row">
       <div class="swatch">
-        <div class="swatch-color large" style="background: #8a8a8e;"></div>
+        <div class="swatch-color large" style="background: #8a2be2;"></div>
         <div class="swatch-name">Chaos</div>
-        <div class="swatch-hex">#8a8a8e</div>
+        <div class="swatch-hex">#8a2be2</div>
         <div class="swatch-form">Fractals, turbulent swirls</div>
       </div>
       <div class="swatch">
@@ -562,9 +562,9 @@
         <div class="swatch-form">Sharp streaks, impact radiants</div>
       </div>
       <div class="swatch">
-        <div class="swatch-color large" style="background: linear-gradient(135deg, #8b6b4a 50%, #a8886a 50%);"></div>
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #c4956a 50%, #dab088 50%);"></div>
         <div class="swatch-name">Matter</div>
-        <div class="swatch-hex">#8b6b4a / #a8886a</div>
+        <div class="swatch-hex">#c4956a / #dab088</div>
         <div class="swatch-form">Crystalline lattices, hex facets</div>
       </div>
       <div class="swatch">
@@ -598,9 +598,9 @@
         <div class="swatch-form">Concentric ripples, echoes</div>
       </div>
       <div class="swatch">
-        <div class="swatch-color large" style="background: linear-gradient(135deg, #5a8a7a 50%, #7aaa9a 50%);"></div>
+        <div class="swatch-color large" style="background: linear-gradient(135deg, #5a7a8a 50%, #7a9aaa 50%);"></div>
         <div class="swatch-name">Entropy</div>
-        <div class="swatch-hex">#5a8a7a / #7aaa9a</div>
+        <div class="swatch-hex">#5a7a8a / #7a9aaa</div>
         <div class="swatch-form">Fracturing, scattering particles</div>
       </div>
     </div>
@@ -638,7 +638,7 @@
     <div style="display: flex; flex-direction: column; gap: 0.3rem;">
       <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ff4444);"></div>
       <div class="gradient-label"><span>Force — dormant</span><span>Force — dominant</span></div>
-      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #8b6b4a);"></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #c4956a);"></div>
       <div class="gradient-label"><span>Matter — dormant</span><span>Matter — dominant</span></div>
       <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ffd700);"></div>
       <div class="gradient-label"><span>Energy — dormant</span><span>Energy — dominant</span></div>
@@ -650,7 +650,7 @@
       <div class="gradient-label"><span>Spirit — dormant</span><span>Spirit — dominant</span></div>
       <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #ff9933);"></div>
       <div class="gradient-label"><span>Time — dormant</span><span>Time — dominant</span></div>
-      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #5a8a7a);"></div>
+      <div class="gradient-bar" style="background: linear-gradient(to right, #3a3a3a, #5a7a8a);"></div>
       <div class="gradient-label"><span>Entropy — dormant</span><span>Entropy — dominant</span></div>
     </div>
   </div>
@@ -769,25 +769,25 @@
     <div class="glow-palette">
       <div class="glow-group-label">Foundation Spheres</div>
 
-      <!-- Chaos: core=#8a8a8e mid=#aaaab0 accent=#ff2299 deep=#2a0845 -->
+      <!-- Chaos: core=#8a2be2 mid=#c44dff accent=#ff2299 deep=#2a0845 -->
       <div class="glow-tile">
         <div class="glow-orb-wrap">
-          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #8a8a8e30 0%, transparent 70%);"></div>
+          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #8a2be230 0%, transparent 70%);"></div>
           <div class="glow-bloom-accent" style="background: radial-gradient(circle at 70% 65%, #ff229925 0%, transparent 60%);"></div>
           <div class="glow-orb" style="
-            background: radial-gradient(circle at 35% 35%, #aaaab0 0%, transparent 45%),
+            background: radial-gradient(circle at 35% 35%, #c44dff 0%, transparent 45%),
                          radial-gradient(circle at 68% 65%, #ff2299aa 0%, transparent 45%),
-                         radial-gradient(circle at 55% 55%, #8a8a8e 0%, transparent 55%),
-                         radial-gradient(circle at 50% 50%, #8a8a8ecc 0%, #2a0845 75%, #000 100%);
-            box-shadow: inset 0 0 15px #8a8a8e80, inset 8px 8px 20px #aaaab060, inset -6px -4px 18px #ff229940,
-                        0 0 8px 2px #8a8a8e90, 0 0 25px 5px #8a8a8e50, 4px 3px 20px 4px #ff229930, 0 0 60px 15px #8a8a8e25;
-            border: 1px solid #8a8a8e40;">
-            <div class="glow-hotspot" style="background: radial-gradient(circle, #aaaab0cc 0%, transparent 70%);"></div>
+                         radial-gradient(circle at 55% 55%, #8a2be2 0%, transparent 55%),
+                         radial-gradient(circle at 50% 50%, #8a2be2cc 0%, #2a0845 75%, #000 100%);
+            box-shadow: inset 0 0 15px #8a2be280, inset 8px 8px 20px #c44dff60, inset -6px -4px 18px #ff229940,
+                        0 0 8px 2px #8a2be290, 0 0 25px 5px #8a2be250, 4px 3px 20px 4px #ff229930, 0 0 60px 15px #8a2be225;
+            border: 1px solid #8a2be240;">
+            <div class="glow-hotspot" style="background: radial-gradient(circle, #c44dffcc 0%, transparent 70%);"></div>
             <div class="glow-accent-dot" style="background: radial-gradient(circle, #ff229988 0%, transparent 70%);"></div>
           </div>
         </div>
-        <span class="glow-name" style="color: #8a8a8e;">Chaos</span>
-        <span class="glow-hex">#8a8a8e</span>
+        <span class="glow-name" style="color: #8a2be2;">Chaos</span>
+        <span class="glow-hex">#8a2be2</span>
         <span class="glow-form">Fractals & turbulent swirls</span>
       </div>
 
@@ -881,25 +881,25 @@
         <span class="glow-form">Sharp directional streaks</span>
       </div>
 
-      <!-- Matter: core=#8b6b4a mid=#a8886a accent=#7788aa deep=#3a2510 -->
+      <!-- Matter: core=#c4956a mid=#dab088 accent=#7788aa deep=#3a2510 -->
       <div class="glow-tile">
         <div class="glow-orb-wrap">
-          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #8b6b4a30 0%, transparent 70%);"></div>
+          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #c4956a30 0%, transparent 70%);"></div>
           <div class="glow-bloom-accent" style="background: radial-gradient(circle at 70% 65%, #7788aa25 0%, transparent 60%);"></div>
           <div class="glow-orb" style="
-            background: radial-gradient(circle at 35% 35%, #a8886a 0%, transparent 45%),
+            background: radial-gradient(circle at 35% 35%, #dab088 0%, transparent 45%),
                          radial-gradient(circle at 68% 65%, #7788aaaa 0%, transparent 45%),
-                         radial-gradient(circle at 55% 55%, #8b6b4a 0%, transparent 55%),
-                         radial-gradient(circle at 50% 50%, #8b6b4acc 0%, #3a2510 75%, #000 100%);
-            box-shadow: inset 0 0 15px #8b6b4a80, inset 8px 8px 20px #a8886a60, inset -6px -4px 18px #7788aa40,
-                        0 0 8px 2px #8b6b4a90, 0 0 25px 5px #8b6b4a50, 4px 3px 20px 4px #7788aa30, 0 0 60px 15px #8b6b4a25;
-            border: 1px solid #8b6b4a40;">
-            <div class="glow-hotspot" style="background: radial-gradient(circle, #a8886acc 0%, transparent 70%);"></div>
+                         radial-gradient(circle at 55% 55%, #c4956a 0%, transparent 55%),
+                         radial-gradient(circle at 50% 50%, #c4956acc 0%, #3a2510 75%, #000 100%);
+            box-shadow: inset 0 0 15px #c4956a80, inset 8px 8px 20px #dab08860, inset -6px -4px 18px #7788aa40,
+                        0 0 8px 2px #c4956a90, 0 0 25px 5px #c4956a50, 4px 3px 20px 4px #7788aa30, 0 0 60px 15px #c4956a25;
+            border: 1px solid #c4956a40;">
+            <div class="glow-hotspot" style="background: radial-gradient(circle, #dab088cc 0%, transparent 70%);"></div>
             <div class="glow-accent-dot" style="background: radial-gradient(circle, #7788aa88 0%, transparent 70%);"></div>
           </div>
         </div>
-        <span class="glow-name" style="color: #8b6b4a;">Matter</span>
-        <span class="glow-hex">#8b6b4a</span>
+        <span class="glow-name" style="color: #c4956a;">Matter</span>
+        <span class="glow-hex">#c4956a</span>
         <span class="glow-form">Crystalline lattices, hex facets</span>
       </div>
 
@@ -1013,25 +1013,25 @@
         <span class="glow-form">Concentric ripples, echoes</span>
       </div>
 
-      <!-- Entropy: core=#5a8a7a mid=#7aaa9a accent=#6655aa deep=#1a2a35 -->
+      <!-- Entropy: core=#5a7a8a mid=#7a9aaa accent=#6655aa deep=#1a2a35 -->
       <div class="glow-tile">
         <div class="glow-orb-wrap">
-          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #5a8a7a30 0%, transparent 70%);"></div>
+          <div class="glow-bloom-primary" style="background: radial-gradient(circle, #5a7a8a30 0%, transparent 70%);"></div>
           <div class="glow-bloom-accent" style="background: radial-gradient(circle at 70% 65%, #6655aa25 0%, transparent 60%);"></div>
           <div class="glow-orb" style="
-            background: radial-gradient(circle at 35% 35%, #7aaa9a 0%, transparent 45%),
+            background: radial-gradient(circle at 35% 35%, #7a9aaa 0%, transparent 45%),
                          radial-gradient(circle at 68% 65%, #6655aaaa 0%, transparent 45%),
-                         radial-gradient(circle at 55% 55%, #5a8a7a 0%, transparent 55%),
-                         radial-gradient(circle at 50% 50%, #5a8a7acc 0%, #1a2a35 75%, #000 100%);
-            box-shadow: inset 0 0 15px #5a8a7a80, inset 8px 8px 20px #7aaa9a60, inset -6px -4px 18px #6655aa40,
-                        0 0 8px 2px #5a8a7a90, 0 0 25px 5px #5a8a7a50, 4px 3px 20px 4px #6655aa30, 0 0 60px 15px #5a8a7a25;
-            border: 1px solid #5a8a7a40;">
-            <div class="glow-hotspot" style="background: radial-gradient(circle, #7aaa9acc 0%, transparent 70%);"></div>
+                         radial-gradient(circle at 55% 55%, #5a7a8a 0%, transparent 55%),
+                         radial-gradient(circle at 50% 50%, #5a7a8acc 0%, #1a2a35 75%, #000 100%);
+            box-shadow: inset 0 0 15px #5a7a8a80, inset 8px 8px 20px #7a9aaa60, inset -6px -4px 18px #6655aa40,
+                        0 0 8px 2px #5a7a8a90, 0 0 25px 5px #5a7a8a50, 4px 3px 20px 4px #6655aa30, 0 0 60px 15px #5a7a8a25;
+            border: 1px solid #5a7a8a40;">
+            <div class="glow-hotspot" style="background: radial-gradient(circle, #7a9aaacc 0%, transparent 70%);"></div>
             <div class="glow-accent-dot" style="background: radial-gradient(circle, #6655aa88 0%, transparent 70%);"></div>
           </div>
         </div>
-        <span class="glow-name" style="color: #5a8a7a;">Entropy</span>
-        <span class="glow-hex">#5a8a7a</span>
+        <span class="glow-name" style="color: #5a7a8a;">Entropy</span>
+        <span class="glow-hex">#5a7a8a</span>
         <span class="glow-form">Fracturing, scattering particles</span>
       </div>
     </div>
@@ -1328,13 +1328,13 @@
     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem;">When a panel is under sphere influence, borders shift to the sphere's color at low opacity.</p>
     <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem;">
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 68, 68, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ff4444;">Force</div>
-      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(139, 107, 74, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #8b6b4a;">Matter</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(196, 149, 106, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #c4956a;">Matter</div>
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 215, 0, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ffd700;">Energy</div>
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(0, 204, 85, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #00cc55;">Life</div>
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(34, 136, 255, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #2288ff;">Mind</div>
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(170, 68, 221, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #aa44dd;">Spirit</div>
       <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(255, 153, 51, 0.3); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #ff9933;">Time</div>
-      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(90, 138, 122, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #5a8a7a;">Entropy</div>
+      <div style="width: 100px; height: 60px; background: rgba(255,255,255,0.03); border: 2px solid rgba(90, 122, 138, 0.4); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #5a7a8a;">Entropy</div>
     </div>
 
     <hr class="divider">

@@ -106,6 +106,28 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-05 | Repo: src/data/taxonomy/ | Deleted 6 old taxonomy JSON files + README | Replaced by unified world-model.json; taxonomy.ts no longer imports them |
 | 2026-03-05 | Repo: Docs/plans/ | Created 2026-03-05-content-pipeline-design.md, 2026-03-05-content-pipeline-implementation.md | Design rationale + 9-task implementation plan for content pipeline |
 | 2026-03-05 | CLAUDE.md | Updated project status, engine stats, content stats, changelog | Content pipeline complete |
+| 2026-03-06 | Repo: src/types/dream.ts | Added DeliveryMode, LocalEncounterMode types, deliveryMode field, DELIVERY_RANGE + LOCAL_ENCOUNTER constants | Layer 2 Task 1: spatial delivery type system |
+| 2026-03-06 | Repo: src/engine/delivery.ts | Created delivery.ts — hexDistance, isInRange, getDeliveryInfo | Layer 2 Task 2: range-checking engine for hex grid |
+| 2026-03-06 | Repo: src/engine/wheel.ts | Added rangeStatus + hexDistance to WheelSlot, optional avatarPos/targetPos params | Layer 2 Task 3: wheel slots gate by delivery range |
+| 2026-03-06 | Repo: src/components/Game/ | Created InterventionConfirm.tsx — popover with cost, risk, range, local encounter choice | Layer 2 Task 4: confirmation UI before intervention execution |
+| 2026-03-06 | Repo: src/components/Game/GameView.tsx | Wired intervention flow: wheel click → confirm → execute → spend essence → narrative event | Layer 2 Task 5: end-to-end intervention interaction |
+| 2026-03-06 | Repo: tests | Added delivery.test.ts (17), delivery-integration.test.ts (3), InterventionConfirm.test.tsx (7), extended wheel.test.ts (+5) — 54 new tests | Layer 2 test coverage across all new modules |
+| 2026-03-06 | Obsidian: Systems/ | Updated Agent Wheel.md (range gating, confirmation flow), Intervention Delivery.md (implementation details) | Layer 2 systems documented in vault |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6B complete), engine stats, changelog | Layer 2 Divine Toolkit UI complete |
+| 2026-03-06 | STYLE.md | Rewrote Prompt Construction Guide — narrative-first, NB2-optimized ordering, magic spectrum, camera/lighting defaults, 4 new examples | Research-driven prompt improvement; content-type art direction |
+| 2026-03-06 | STYLE.md | Added Content-Type Art Direction section — dual-image variants, camera & lighting defaults table, terrain-neutral framing, aspect ratios | Unified art direction across all content types |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-nano-banana-prompt-research.md | NB2 prompting research: 8 findings, before/after examples, camera/lighting defaults |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-art-prompt-model-design.md | Design rationale: 7 decisions (magic spectrum, 3-layer separation, terrain-neutral, single-hex zoom, dual images, heraldry, doom-as-event) |
+| 2026-03-06 | Obsidian: Systems/ | Rewrote View Levels.md — Region Level → Hex Zoom Level (single-hex, not multi-hex groups) | Design change: click one hex to see all locations inside it; simplifies art, interaction, and region management |
+| 2026-03-06 | STYLE.md | Rewrote Prompt Construction Guide — narrative-first, NB2-optimized ordering, magic spectrum, camera/lighting defaults, 4 new examples | Research-driven prompt improvement; content-type art direction |
+| 2026-03-06 | STYLE.md | Added Content-Type Art Direction section — dual-image variants, camera & lighting defaults table, terrain-neutral framing, aspect ratios | Unified art direction across all content types |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-nano-banana-prompt-research.md | NB2 prompting research: 8 findings, before/after examples, camera/lighting defaults |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-art-prompt-model-design.md | Design rationale: 7 decisions (magic spectrum, 3-layer separation, terrain-neutral, single-hex zoom, dual images, heraldry, doom-as-event) |
+| 2026-03-06 | image-generation.skill | Updated skill — content-type identification, narrative prompting, magic spectrum, camera/lighting, iterative refinement workflow | Skill now matches NB2 best practices and content-type art direction |
+| 2026-03-06 | STYLE.md | Rewrote Hex Tile System section — centered features, no rivers/paths, outer 20% clear, pipeline reference, updated prompt template | Hex tiling fix: features must not touch edges for clean hex masking |
+| 2026-03-06 | Repo: scripts/ | Created generate-hex-tile.py — full pipeline: Imagen API → hex mask → save PNG. 9 built-in biome presets | Automated hex tile generation with hexagonal alpha masking |
+| 2026-03-06 | Repo: package.json | Added `generate-hex` npm script | CLI convenience for hex tile pipeline |
+| 2026-03-06 | image-generation.skill | Updated skill v2 — hex pipeline integration, centered-feature tiling rules, pipeline exception for direct API | Skill now covers automated hex masking workflow |
 
 ## Session Workflow
 
@@ -138,7 +160,9 @@ When starting implementation work:
 - Phase 5B (UI Components): ✅ Complete — DoomBar, NarrativeFeed, RivalPanel, HarvestScreen, GameView rewrite
 - Phase 6A (Layer 1 — Core Interaction): ✅ Complete — retinue panel, agent wheel, psyche strands, GameView wiring
 - Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
-- Current phase: **Layer 2 planning** — Divine Toolkit UI (intervention confirmations, essence costs, detection feedback)
-- Engine stats: ~39 modules, ~5,500 lines, ~650 tests across 43 test files
+- Phase 6B (Layer 2 — Divine Toolkit UI): ✅ Complete — delivery types, range checking, wheel range gating, InterventionConfirm popover, GameView intervention flow
+- Content Pipeline: ✅ Complete — unified world-model.json (198 nodes, 290 edges, 18 categories), vault generator, validation script, 98 content pipeline tests
+- Current phase: **Layer 3 planning** — Dream Interface, detection feedback, essence animations
+- Engine stats: ~41 modules, ~5,800 lines, ~704 tests across 47 test files
 - Content stats: 198 graph nodes, 290 typed edges, 18 categories, 199 generated Obsidian vault notes
 
