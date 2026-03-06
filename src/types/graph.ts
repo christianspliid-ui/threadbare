@@ -63,7 +63,8 @@ export type EdgeType =
   // Action
   | 'performing'       // actor → action_template (in-progress action)
   // Cosmology
-  | 'aligned_with';    // actor/location → sphere alignment
+  | 'aligned_with'     // actor/location → sphere alignment
+  | 'sphere_influence';// location/actor → sphere influence (weight/dominance tracking)
 
 /** Result type for graph mutations */
 export interface GraphMutation {
