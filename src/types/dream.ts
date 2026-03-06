@@ -53,6 +53,12 @@ export type InterventionType =
   | 'omen'
   | 'afflict_bless';
 
+/** How an intervention reaches its target */
+export type DeliveryMode = 'astral' | 'regional' | 'remote' | 'local';
+
+/** How a local encounter is initiated */
+export type LocalEncounterMode = 'visit' | 'summon';
+
 export interface InterventionDefinition {
   type: InterventionType;
   sphereAffinities: SphereName[];
@@ -61,6 +67,7 @@ export interface InterventionDefinition {
   minTier: InfluenceTier;
   description: string;
   pipelineStep: 'scoring' | 'personality' | 'topN' | 'probability' | 'environment' | 'condition';
+  deliveryMode: DeliveryMode;
 }
 
 // ─── Cost Calculation Types ──────────────────────────────────────
@@ -162,6 +169,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 1,
     description: 'Manipulate selection probabilities during sleep',
     pipelineStep: 'probability',
+    deliveryMode: 'astral',
   },
   persuade: {
     type: 'persuade',
@@ -171,6 +179,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 1,
     description: 'Add temporary goal alignment toward desired action',
     pipelineStep: 'scoring',
+    deliveryMode: 'local',
   },
   deceive: {
     type: 'deceive',
@@ -180,6 +189,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 2,
     description: 'Inject false information into world-model',
     pipelineStep: 'scoring',
+    deliveryMode: 'regional',
   },
   intimidate: {
     type: 'intimidate',
@@ -189,6 +199,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 2,
     description: 'Amplify survival instinct toward/away from action',
     pipelineStep: 'topN',
+    deliveryMode: 'regional',
   },
   inspire_intervention: {
     type: 'inspire_intervention',
@@ -198,6 +209,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 1,
     description: 'Boost personality weight for specific trait expressions',
     pipelineStep: 'personality',
+    deliveryMode: 'regional',
   },
   coincidence: {
     type: 'coincidence',
@@ -207,6 +219,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 3,
     description: 'Alter environmental prerequisites',
     pipelineStep: 'environment',
+    deliveryMode: 'remote',
   },
   omen: {
     type: 'omen',
@@ -216,6 +229,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 2,
     description: 'Plant symbolic event biasing actor interpretation',
     pipelineStep: 'personality',
+    deliveryMode: 'remote',
   },
   afflict_bless: {
     type: 'afflict_bless',
@@ -225,6 +239,7 @@ export const INTERVENTION_DEFINITIONS: Record<InterventionType, InterventionDefi
     minTier: 2,
     description: 'Apply temporary condition trait',
     pipelineStep: 'condition',
+    deliveryMode: 'local',
   },
 };
 
@@ -235,3 +250,18 @@ export const TIER_MODIFIERS: TierModifier = {
   culture: 3.0,
   god: 10.0,
 };
+
+/** Intervention delivery range constants (in hexes from avatar position) */
+export const DELIVERY_RANGE = {
+  deceive: 3,
+  intimidate: 3,
+  inspire: 5,
+} as const;
+
+/** Local encounter modifiers */
+export const LOCAL_ENCOUNTER = {
+  visitImpactBonus: 1.15,
+  summonEssenceCost: 1,
+  summonDetectionPenalty: 0.10,
+  summonImpactBonus: 1.05,
+} as const;
