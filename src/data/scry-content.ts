@@ -1,35 +1,33 @@
 /**
- * Scry System Content Package
+ * Scry Content Package — All data-driven content for the divine court system.
  *
- * Single source of truth for all content-managed data in the Divine Court (Scry) system.
- * Content managers should ONLY edit this file to adjust court structures, titles, bonuses,
- * and other game-facing definitions.
+ * ═══════════════════════════════════════════════════════════════════
+ * CONTENT MANAGER: This is the file you edit to change court structures,
+ * title generation, sacred site rules, and artifact templates.
+ * ═══════════════════════════════════════════════════════════════════
  *
- * Organized into 8 sections:
- * 1. Court Structures — the 4 archetypal court organization types
- * 2. Position Archetypes — thematic position labels per structure and rank
- * 3. Title Fragments — sphere-specific epithets and roles for title generation
- * 4. Title Templates — rank-specific generation patterns
- * 5. Bonus Rules — mechanical bonuses granted by positions
- * 6. Weakness Pool — drawbacks that can attach to titles
- * 7. Sacred Site Defaults — base costs and mechanics for consecration
- * 8. Artifact Defaults — base costs for divine artifact creation
- *
- * Also exports: DOMAIN_DISPLAY_NAMES for UI rendering.
+ * Sections:
+ * 1. COURT_STRUCTURES — the 4 geometry definitions (High House, Circle, Web, Abyss)
+ * 2. POSITION_ARCHETYPES — thematic labels per structure that guide title generation
+ * 3. TITLE_FRAGMENTS — sphere-keyed name parts (prefixes, suffixes, epithets)
+ * 4. TITLE_TEMPLATES — rank-keyed name patterns
+ * 5. BONUS_RULES — what bonuses each rank can grant
+ * 6. WEAKNESS_POOL — possible negative effects
+ * 7. SACRED_SITE_RULES — consecration costs, radius, decay (placeholder)
+ * 8. ARTIFACT_TEMPLATES — name fragments, costs, loss consequences (placeholder)
  */
 
 import type {
   CourtStructureDefinition,
-  StructureBonus,
   PositionRank,
   TitleEffectType,
 } from '../types/scry';
 import type { SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 1: COURT STRUCTURES
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 1. COURT STRUCTURES
+// ═══════════════════════════════════════════════════════════════════
 
 /**
  * Complete definitions of the 4 divine court archetypes.
@@ -37,566 +35,309 @@ import type { ReachDomain } from '../types/traits';
  * Each structure defines:
  * - foundationAffinity: which Foundation sphere (Order, Light, Chaos, Darkness)
  * - positionCounts: slots per rank (always 1 apex, 3 inner, 6 outer)
- * - sacredSiteSlots: number of consecration slots
- * - artifactSlots: number of divine artifact slots
+ * - sacredSiteSlots / artifactSlots: holding slot counts
  * - structureBonus: the unique mechanical advantage
  */
 export const COURT_STRUCTURES: CourtStructureDefinition[] = [
   {
-    id: 'high_house',
+    id: 'court.high_house',
     structureType: 'high_house',
     foundationAffinity: 'order',
     name: 'The High House',
-    description:
-      'A pyramid hierarchy of undisputed ranks, where authority flows downward from apex to foundation.',
-    flavorText:
-      'Every lord bows to the throne. Every throne stands upon pillars. Every pillar rests upon stone.',
-    positionCounts: {
-      apex: 1,
-      inner: 3,
-      outer: 6,
-    },
+    description: 'A rigid pyramid of divine hierarchy. Those at the top command absolute authority.',
+    flavorText: 'Stone upon stone, tier upon tier — the cosmos demands structure.',
+    positionCounts: { apex: 1, inner: 3, outer: 6 },
     sacredSiteSlots: 2,
     artifactSlots: 3,
     structureBonus: {
       type: 'tier_cost',
-      description: 'Apex position requires 1 less tier',
-      appliesTo: 'apex_only',
+      description: 'Top 3 positions cost 1 less essence for tier maintenance',
+      appliesTo: 'apex',
       value: -1,
     },
   },
   {
-    id: 'circle',
+    id: 'court.circle',
     structureType: 'circle',
     foundationAffinity: 'light',
     name: 'The Circle',
-    description:
-      'A mandala of equal voices where consensus and radiance bind together, no voice above another.',
-    flavorText:
-      'In the circle all are heard. In the light all are seen. In the center, the brightest burns.',
-    positionCounts: {
-      apex: 1,
-      inner: 3,
-      outer: 6,
-    },
+    description: 'A radiant mandala where all positions resonate with shared divine energy.',
+    flavorText: 'Light finds its center, and the center holds.',
+    positionCounts: { apex: 1, inner: 3, outer: 6 },
     sacredSiteSlots: 3,
     artifactSlots: 2,
     structureBonus: {
       type: 'sphere_influence',
-      description: 'All positions radiate +0.1 sphere influence',
-      appliesTo: 'all_positions',
+      description: 'All positions share +0.1 sphere influence bonus',
+      appliesTo: 'all',
       value: 0.1,
     },
   },
   {
-    id: 'web',
+    id: 'court.web',
     structureType: 'web',
     foundationAffinity: 'chaos',
     name: 'The Web',
-    description:
-      'A networked lattice of interconnected nodes where power flows through hidden threads and unexpected paths.',
-    flavorText:
-      'In the web, all are connected. In the web, all are hunters. In the web, none stand alone.',
-    positionCounts: {
-      apex: 1,
-      inner: 3,
-      outer: 6,
-    },
+    description: 'A shifting network where connections matter more than rank.',
+    flavorText: 'Every strand vibrates with possibility. Pull one, and the pattern changes.',
+    positionCounts: { apex: 1, inner: 3, outer: 6 },
     sacredSiteSlots: 2,
     artifactSlots: 4,
     structureBonus: {
       type: 'domain_bonus',
-      description: 'Outer positions grant +1 to domain capability in their reach',
-      appliesTo: 'inner_outer',
+      description: 'Outer positions gain +1 to a random domain each tick',
+      appliesTo: 'outer',
       value: 1,
     },
   },
   {
-    id: 'abyss',
+    id: 'court.abyss',
     structureType: 'abyss',
     foundationAffinity: 'darkness',
     name: 'The Abyss',
-    description:
-      'An inverse mirror where strength hides in shadow, and weakness becomes a form of power.',
-    flavorText:
-      'In the abyss, sight fails. In the abyss, reaching is falling. In the abyss, emptiness is fullness.',
-    positionCounts: {
-      apex: 1,
-      inner: 3,
-      outer: 6,
-    },
+    description: 'An inverted pyramid where power flows downward into the deep.',
+    flavorText: 'What rises must descend. The deepest truths lie at the bottom.',
+    positionCounts: { apex: 1, inner: 3, outer: 6 },
     sacredSiteSlots: 2,
     artifactSlots: 3,
     structureBonus: {
-      type: 'detection_penalty',
-      description: 'All positions reduce incoming detection by 30%',
-      appliesTo: 'all_positions',
+      type: 'weakness_reduction',
+      description: 'Title weaknesses are reduced by 30%',
+      appliesTo: 'all',
       value: 0.7,
     },
   },
 ];
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 2: POSITION ARCHETYPES
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 2. POSITION ARCHETYPES — thematic labels per structure + rank
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * Thematic position labels per court structure and rank.
- *
- * When a position is created, one of these archetypes is randomly selected
- * as the position's title context. Archetypes shape the flavor of generated
- * titles and influence narrative presentation.
- *
- * Structure: { [structureType]: { [rank]: [archetype labels...] } }
- */
-export const POSITION_ARCHETYPES: Record<
-  string,
-  Record<PositionRank, string[]>
-> = {
+/** Each structure has named archetypes for each slot. These guide title generation. */
+export const POSITION_ARCHETYPES: Record<string, Record<PositionRank, string[]>> = {
   high_house: {
     apex: ['The Sovereign'],
     inner: ['The Shield', 'The Voice', 'The Eye'],
-    outer: [
-      'The Blade',
-      'The Coin',
-      'The Shadow',
-      'The Flame',
-      'The Root',
-      'The Tide',
-    ],
+    outer: ['The Blade', 'The Coin', 'The Shadow', 'The Flame', 'The Root', 'The Tide'],
   },
   circle: {
-    apex: ['The Radiant'],
-    inner: ['The Beacon', 'The Mirror', 'The Prism'],
-    outer: [
-      'The Dawn',
-      'The Dusk',
-      'The Zenith',
-      'The Nadir',
-      'The East',
-      'The West',
-    ],
+    apex: ['The Center'],
+    inner: ['The First Light', 'The Harmony', 'The Radiance'],
+    outer: ['The Spark', 'The Echo', 'The Thread', 'The Bloom', 'The Mirror', 'The Wind'],
   },
   web: {
-    apex: ['The Spindle'],
-    inner: ['The Strand', 'The Knot', 'The Junction'],
-    outer: [
-      'The Thread',
-      'The Snare',
-      'The Gossamer',
-      'The Anchor',
-      'The Weaver',
-      'The Spider',
-    ],
+    apex: ['The Nexus'],
+    inner: ['The Spinner', 'The Anchor', 'The Lurker'],
+    outer: ['The Strand', 'The Knot', 'The Fly', 'The Signal', 'The Weave', 'The Trap'],
   },
   abyss: {
-    apex: ['The Void'],
-    inner: ['The Chasm', 'The Depth', 'The Scar'],
-    outer: [
-      'The Whisper',
-      'The Echo',
-      'The Shadow',
-      'The Hunger',
-      'The Silence',
-      'The Fall',
-    ],
+    apex: ['The Depth'],
+    inner: ['The Descent', 'The Hunger', 'The Silence'],
+    outer: ['The Crack', 'The Whisper', 'The Fossil', 'The Pressure', 'The Drift', 'The Void'],
   },
 };
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 3: TITLE FRAGMENTS
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 3. TITLE FRAGMENTS — sphere-keyed name parts
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * Title fragment definitions for each Creation Sphere.
- *
- * Epithets: adjectives describing the sphere's essence
- * Roles: positions or functions that express the sphere's nature
- *
- * Generated titles combine: {role} {epithet} of {domain} or similar patterns.
- * Each sphere gets 5 epithets and 5 roles to ensure varied title generation.
- */
-
-interface TitleFragments {
-  epithets: string[];
-  roles: string[];
+export interface TitleFragments {
+  epithets: string[];   // adjective-like: "Storm", "Silent", "Burning"
+  roles: string[];      // noun-like: "Marshal", "Keeper", "Herald"
 }
 
 export const TITLE_FRAGMENTS: Record<SphereName, TitleFragments> = {
   force: {
-    epithets: [
-      'Unbending',
-      'Relentless',
-      'Striking',
-      'Shattering',
-      'Unstoppable',
-    ],
-    roles: [
-      'Hammer',
-      'Warlord',
-      'Breaker',
-      'Striker',
-      'Conqueror',
-    ],
+    epithets: ['Storm', 'Iron', 'War', 'Thunder', 'Crimson'],
+    roles: ['Marshal', 'Warden', 'Champion', 'Destroyer', 'Sentinel'],
   },
   matter: {
-    epithets: [
-      'Steadfast',
-      'Unyielding',
-      'Grounded',
-      'Weighty',
-      'Enduring',
-    ],
-    roles: [
-      'Keeper',
-      'Guardian',
-      'Anchor',
-      'Bastion',
-      'Foundation',
-    ],
+    epithets: ['Stone', 'Earthen', 'Granite', 'Deep', 'Unbroken'],
+    roles: ['Architect', 'Shaper', 'Foundation', 'Bulwark', 'Mason'],
   },
   energy: {
-    epithets: [
-      'Brilliant',
-      'Radiant',
-      'Burning',
-      'Luminous',
-      'Consuming',
-    ],
-    roles: [
-      'Flame',
-      'Star',
-      'Furnace',
-      'Beacon',
-      'Inferno',
-    ],
+    epithets: ['Burning', 'Radiant', 'Lightning', 'Blazing', 'Bright'],
+    roles: ['Herald', 'Conduit', 'Beacon', 'Igniter', 'Torch'],
   },
   life: {
-    epithets: [
-      'Verdant',
-      'Vital',
-      'Flourishing',
-      'Fertile',
-      'Teeming',
-    ],
-    roles: [
-      'Bloom',
-      'Nurture',
-      'Harvest',
-      'Growth',
-      'Abundance',
-    ],
+    epithets: ['Verdant', 'Blooming', 'Evergreen', 'Vital', 'Fertile'],
+    roles: ['Shepherd', 'Tender', 'Gardener', 'Lifebringer', 'Healer'],
   },
   mind: {
-    epithets: [
-      'Keen',
-      'Luminous',
-      'Sharp',
-      'Knowing',
-      'Insightful',
-    ],
-    roles: [
-      'Oracle',
-      'Sage',
-      'Scholar',
-      'Seer',
-      'Archivist',
-    ],
+    epithets: ['Silent', 'Dreaming', 'Lucid', 'Keen', 'Piercing'],
+    roles: ['Oracle', 'Seer', 'Weaver', 'Scholar', 'Whisperer'],
   },
   spirit: {
-    epithets: [
-      'Transcendent',
-      'Ethereal',
-      'Sacred',
-      'Sublime',
-      'Divine',
-    ],
-    roles: [
-      'Pilgrim',
-      'Devotee',
-      'Sanctifier',
-      'Witness',
-      'Herald',
-    ],
+    epithets: ['Ethereal', 'Spectral', 'Veiled', 'Ghostly', 'Hollow'],
+    roles: ['Walker', 'Guide', 'Medium', 'Watcher', 'Binder'],
   },
   time: {
-    epithets: [
-      'Eternal',
-      'Fleeting',
-      'Ancient',
-      'Timeless',
-      'Cyclical',
-    ],
-    roles: [
-      'Keeper of Hours',
-      'Chronicler',
-      'Sentinel',
-      'Warden',
-      'Echo',
-    ],
+    epithets: ['Ancient', 'Timeless', 'Fleeting', 'Cyclic', 'Enduring'],
+    roles: ['Chronicler', 'Keeper', 'Turner', 'Witness', 'Tide'],
   },
   entropy: {
-    epithets: [
-      'Dissolving',
-      'Fading',
-      'Crumbling',
-      'Inevitable',
-      'Final',
-    ],
-    roles: [
-      'Rust',
-      'Decay',
-      'Entropy',
-      'Unmaking',
-      'Twilight',
-    ],
+    epithets: ['Ashen', 'Withering', 'Hollow', 'Fading', 'Dark'],
+    roles: ['Unraveler', 'Harbinger', 'Ender', 'Reaper', 'Void'],
   },
 };
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 4: TITLE TEMPLATES
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 4. TITLE TEMPLATES — rank-keyed patterns
+// ═══════════════════════════════════════════════════════════════════
 
 /**
- * Generation patterns for title names per position rank.
- *
- * Placeholders:
- *   {epithet}  — from sphere's epithets
- *   {role}     — from sphere's roles
- *   {archetype} — from position's archetype
- *   {domain}   — from title's domain affinity
- *
- * Three templates per rank provide variety in generated titles.
+ * {epithet} = from TITLE_FRAGMENTS[sphere].epithets
+ * {role} = from TITLE_FRAGMENTS[sphere].roles
+ * {archetype} = from POSITION_ARCHETYPES[structure][rank][slotIndex]
+ * {domain} = ReachDomain display name
  */
 export const TITLE_TEMPLATES: Record<PositionRank, string[]> = {
   apex: [
-    '{archetype} of the {role}',
-    'The {epithet} {archetype}',
-    '{archetype}, {role} of {domain}',
+    'The {epithet} {role}',
+    '{epithet} Sovereign of the {domain}',
+    'The {epithet} One',
   ],
   inner: [
-    '{role} of {domain}',
+    '{epithet} {role}',
+    '{role} of the {domain}',
     'The {epithet} {archetype}',
-    '{archetype} of {epithet} Counsel',
   ],
   outer: [
-    'The {epithet} {role}',
-    '{archetype} of {domain}',
-    '{role} in {epithet} Service',
+    '{epithet} of the {domain}',
+    'The {role}',
+    '{archetype} {role}',
   ],
 };
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 5: BONUS RULES
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 5. BONUS RULES — stat ranges per rank
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * A mechanical bonus rule that can be granted by a position.
- *
- * Fields:
- *   type: the mechanical effect category
- *   min, max: range of the bonus value
- *   weight: probability weight relative to other bonuses in same rank
- *           (higher = more likely to be selected)
- */
-interface BonusRule {
+export interface BonusRule {
   type: TitleEffectType;
-  min: number;
-  max: number;
+  target: 'primary_domain' | 'secondary_domain' | 'sphere' | 'tier' | 'detection';
+  minValue: number;
+  maxValue: number;
+  /** Probability weight relative to other bonuses (higher = more likely) */
   weight: number;
 }
 
-/**
- * Possible bonuses per position rank.
- *
- * Apex positions grant the most powerful and varied bonuses.
- * Inner positions grant moderate bonuses across domains and influence.
- * Outer positions grant small, focused bonuses.
- */
 export const BONUS_RULES: Record<PositionRank, BonusRule[]> = {
   apex: [
-    {
-      type: 'reach_domain_bonus',
-      min: 2,
-      max: 4,
-      weight: 3,
-    },
-    {
-      type: 'essence_production',
-      min: 0.3,
-      max: 0.8,
-      weight: 3,
-    },
-    {
-      type: 'influence_multiplier',
-      min: -2,
-      max: -1,
-      weight: 2,
-    },
+    { type: 'domain_bonus', target: 'primary_domain', minValue: 2, maxValue: 4, weight: 3 },
+    { type: 'essence_gen', target: 'sphere', minValue: 0.3, maxValue: 0.8, weight: 2 },
+    { type: 'tier_cost', target: 'tier', minValue: -2, maxValue: -1, weight: 1 },
   ],
   inner: [
-    {
-      type: 'reach_domain_bonus',
-      min: 1,
-      max: 3,
-      weight: 3,
-    },
-    {
-      type: 'essence_production',
-      min: 0.1,
-      max: 0.4,
-      weight: 3,
-    },
-    {
-      type: 'influence_multiplier',
-      min: 0.1,
-      max: 0.3,
-      weight: 2,
-    },
+    { type: 'domain_bonus', target: 'primary_domain', minValue: 1, maxValue: 3, weight: 3 },
+    { type: 'essence_gen', target: 'sphere', minValue: 0.1, maxValue: 0.4, weight: 2 },
+    { type: 'sphere_influence', target: 'sphere', minValue: 0.1, maxValue: 0.3, weight: 1 },
   ],
   outer: [
-    {
-      type: 'reach_domain_bonus',
-      min: 1,
-      max: 2,
-      weight: 3,
-    },
-    {
-      type: 'influence_multiplier',
-      min: 0.05,
-      max: 0.15,
-      weight: 2,
-    },
+    { type: 'domain_bonus', target: 'primary_domain', minValue: 1, maxValue: 2, weight: 3 },
+    { type: 'sphere_influence', target: 'sphere', minValue: 0.05, maxValue: 0.15, weight: 2 },
   ],
 };
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 6: WEAKNESS POOL
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 6. WEAKNESS POOL — possible negative effects
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * A mechanical weakness or drawback that can attach to a title.
- *
- * Weaknesses provide narrative texture and mechanical tension.
- * Some titles might be mechanically strong but come with drawbacks.
- *
- * Fields:
- *   type: the mechanical effect being weakened
- *   target: what aspect is weakened (e.g., 'shadow_domain', 'all_agents')
- *   min, max: range of the weakness penalty (usually negative)
- *   description: flavor text explaining the weakness
- *   sphereAssociations: which spheres are thematically connected
- */
-interface WeaknessTemplate {
+export interface WeaknessTemplate {
   type: TitleEffectType;
   target: string;
-  min: number;
-  max: number;
+  minValue: number;
+  maxValue: number;
   description: string;
+  /** Which spheres tend to produce this weakness */
   sphereAssociations: SphereName[];
 }
 
 export const WEAKNESS_POOL: WeaknessTemplate[] = [
   {
-    type: 'reach_domain_bonus',
+    type: 'domain_bonus',
+    target: 'heart',
+    minValue: -2,
+    maxValue: -1,
+    description: 'Diminished social grace',
+    sphereAssociations: ['force', 'entropy', 'matter'],
+  },
+  {
+    type: 'domain_bonus',
     target: 'shadow',
-    min: -2,
-    max: -1,
-    description: 'Weakness in shadow work; stealth operations suffer',
-    sphereAssociations: ['entropy', 'mind'],
+    minValue: -2,
+    maxValue: -1,
+    description: 'Conspicuous presence',
+    sphereAssociations: ['energy', 'life', 'force'],
   },
   {
-    type: 'reach_domain_bonus',
+    type: 'detection_risk',
+    target: 'detection',
+    minValue: 0.05,
+    maxValue: 0.20,
+    description: 'Increased divine visibility',
+    sphereAssociations: ['energy', 'spirit', 'mind'],
+  },
+  {
+    type: 'domain_bonus',
     target: 'iron',
-    min: -3,
-    max: -1,
-    description: 'Fragile in conflict; martial efforts falter',
-    sphereAssociations: ['entropy', 'energy'],
+    minValue: -2,
+    maxValue: -1,
+    description: 'Weakened martial prowess',
+    sphereAssociations: ['mind', 'spirit', 'time'],
   },
   {
-    type: 'influence_multiplier',
-    target: 'all_agents',
-    min: -0.2,
-    max: -0.1,
-    description: 'Agents chafe under this title; morale penalty',
-    sphereAssociations: ['entropy', 'darkness'],
+    type: 'domain_bonus',
+    target: 'eye',
+    minValue: -2,
+    maxValue: -1,
+    description: 'Clouded perception',
+    sphereAssociations: ['entropy', 'matter', 'force'],
   },
   {
-    type: 'essence_production',
-    target: 'all_sources',
-    min: -0.3,
-    max: -0.1,
-    description: 'Drains essence from court operations',
-    sphereAssociations: ['entropy', 'chaos'],
+    type: 'essence_gen',
+    target: 'sphere',
+    minValue: -0.3,
+    maxValue: -0.1,
+    description: 'Essence drain',
+    sphereAssociations: ['entropy', 'time', 'spirit'],
   },
   {
-    type: 'trait_synergy',
-    target: 'light_spheres',
-    min: -1,
-    max: -0.5,
-    description: 'Resists light magic and healing',
-    sphereAssociations: ['darkness', 'entropy'],
-  },
-  {
-    type: 'detection_penalty',
-    target: 'all_detection',
-    min: 1.5,
-    max: 2.0,
-    description: 'Leaves obvious traces; detection multiplier increases',
-    sphereAssociations: ['light', 'mind'],
-  },
-  {
-    type: 'narrative_override',
-    target: 'story_role',
-    min: 0,
-    max: 0,
-    description:
-      'Agent becomes a focal point for disaster; narrative inevitability',
-    sphereAssociations: ['entropy', 'time'],
+    type: 'tier_cost',
+    target: 'tier',
+    minValue: 0.5,
+    maxValue: 1.5,
+    description: 'Increased maintenance burden',
+    sphereAssociations: ['life', 'energy', 'mind'],
   },
 ];
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 7: SACRED SITE DEFAULTS
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 7. SACRED SITE RULES (placeholder — not mechanically active yet)
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * Base costs and mechanics for sacred site consecration.
- *
- * baseCost: essence required to consecrate a location as a sacred site
- * baseInfluenceStrength: how strongly the site radiates sphere influence
- * baseBonusEssence: essence per tick that the site generates
- */
 export const SACRED_SITE_DEFAULTS = {
+  /** Base consecration cost in primary sphere essence */
   baseCost: 20,
+  /** Influence strength of a freshly consecrated site */
   baseInfluenceStrength: 0.3,
+  /** Bonus essence per tick from a sacred site */
   baseBonusEssence: 0.2,
 };
 
-// ────────────────────────────────────────────────────────────────────────────
-// SECTION 8: ARTIFACT DEFAULTS
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+// 8. ARTIFACT TEMPLATES (placeholder — not mechanically active yet)
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * Base costs for divine artifact creation.
- *
- * baseCost: essence required to forge a divine artifact
- *
- * Artifacts are persistent magical items that can be held by court members.
- * They provide mechanical bonuses and narrative weight.
- */
 export const ARTIFACT_DEFAULTS = {
+  /** Base creation cost in primary sphere essence */
   baseCost: 35,
 };
 
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 // DOMAIN DISPLAY NAMES
-// ────────────────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
 
-/**
- * Human-readable names for the Nine Reaches.
- * Used in UI for domain affinity display and title generation.
- */
 export const DOMAIN_DISPLAY_NAMES: Record<ReachDomain, string> = {
   iron: 'Iron',
   gold: 'Gold',
