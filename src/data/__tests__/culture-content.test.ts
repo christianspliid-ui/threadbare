@@ -3,14 +3,19 @@ import {
   FOUNDATION_MODIFIERS,
   CREATION_SPHERE_MODIFIERS,
   BIOME_MODIFIERS,
+  FORMATIVE_TRAIT_SEEDS,
+  BEHAVIORAL_TRAIT_SEEDS,
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
   type FoundationModifier,
   type CreationSphereModifier,
   type BiomeModifier,
+  type FormativeTraitSeed,
+  type BehavioralTraitSeed,
 } from '../culture-content';
 import { SPHERE_NAMES } from '../../types/index';
+import { REACH_DOMAINS } from '../../types/traits';
 
 const ALL_TERRAIN_TYPES = [
   'ocean', 'coastal_shallows', 'lake', 'river',
@@ -216,6 +221,167 @@ describe('culture-content', () => {
         for (const metaphor of mod.metaphorPalette) {
           expect(typeof metaphor).toBe('string');
           expect(metaphor.length).toBeGreaterThan(0);
+        }
+      }
+    });
+  });
+
+  // ─── Formative Trait Seeds Tests ───────────────────────────────────
+
+  describe('FORMATIVE_TRAIT_SEEDS', () => {
+    it('exports at least 30 formative trait seeds', () => {
+      expect(FORMATIVE_TRAIT_SEEDS.length).toBeGreaterThanOrEqual(30);
+    });
+
+    it('each seed has required fields', () => {
+      for (const seed of FORMATIVE_TRAIT_SEEDS) {
+        expect(seed.id).toBeTruthy();
+        expect(typeof seed.id).toBe('string');
+        expect(seed.name).toBeTruthy();
+        expect(typeof seed.name).toBe('string');
+        expect(seed.description).toBeTruthy();
+        expect(typeof seed.description).toBe('string');
+        expect(Array.isArray(seed.sourceTags)).toBe(true);
+        expect(seed.sourceTags.length).toBeGreaterThanOrEqual(1);
+        expect(typeof seed.domainContributions).toBe('object');
+        expect(Object.keys(seed.domainContributions).length).toBeGreaterThanOrEqual(1);
+        for (const domain of Object.keys(seed.domainContributions)) {
+          expect((REACH_DOMAINS as string[]).includes(domain)).toBe(true);
+          expect(typeof seed.domainContributions[domain as any]).toBe('number');
+        }
+        expect(Array.isArray(seed.tags)).toBe(true);
+      }
+    });
+
+    it('all seed ids are unique', () => {
+      const ids = FORMATIVE_TRAIT_SEEDS.map(s => s.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('every creation sphere modifier formative seed is represented', () => {
+      const seedIds = new Set(FORMATIVE_TRAIT_SEEDS.map(s => s.id));
+      for (const mod of CREATION_SPHERE_MODIFIERS) {
+        for (const seedRef of mod.formativeTraitSeeds) {
+          expect(seedIds.has(seedRef)).toBe(true);
+        }
+      }
+    });
+
+    it('sourceTags are non-empty strings', () => {
+      for (const seed of FORMATIVE_TRAIT_SEEDS) {
+        for (const tag of seed.sourceTags) {
+          expect(typeof tag).toBe('string');
+          expect(tag.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('tags are non-empty strings', () => {
+      for (const seed of FORMATIVE_TRAIT_SEEDS) {
+        for (const tag of seed.tags) {
+          expect(typeof tag).toBe('string');
+          expect(tag.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('domain contributions are numeric and reasonable', () => {
+      for (const seed of FORMATIVE_TRAIT_SEEDS) {
+        for (const [_domain, value] of Object.entries(seed.domainContributions)) {
+          expect(typeof value).toBe('number');
+          expect(value).toBeGreaterThanOrEqual(-2);
+          expect(value).toBeLessThanOrEqual(3);
+        }
+      }
+    });
+  });
+
+  // ─── Behavioral Trait Seeds Tests ──────────────────────────────────
+
+  describe('BEHAVIORAL_TRAIT_SEEDS', () => {
+    it('exports at least 40 behavioral trait seeds', () => {
+      expect(BEHAVIORAL_TRAIT_SEEDS.length).toBeGreaterThanOrEqual(40);
+    });
+
+    it('each seed has required fields', () => {
+      const VALID_STRENGTH_RANGES = ['fanatical', 'strong', 'fading', 'silent'];
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        expect(seed.id).toBeTruthy();
+        expect(typeof seed.id).toBe('string');
+        expect(seed.name).toBeTruthy();
+        expect(typeof seed.name).toBe('string');
+        expect(seed.description).toBeTruthy();
+        expect(typeof seed.description).toBe('string');
+        expect(Array.isArray(seed.sourceTags)).toBe(true);
+        expect(seed.sourceTags.length).toBeGreaterThanOrEqual(1);
+        expect(typeof seed.strengthThresholds).toBe('object');
+        expect(Object.keys(seed.strengthThresholds).length).toBeGreaterThanOrEqual(2);
+        for (const range of Object.keys(seed.strengthThresholds)) {
+          expect(VALID_STRENGTH_RANGES).toContain(range);
+          const value = seed.strengthThresholds[range as any];
+          expect(typeof value).toBe('string');
+          expect(value.length).toBeGreaterThan(0);
+        }
+        expect(typeof seed.domainContributions).toBe('object');
+        expect(Array.isArray(seed.tags)).toBe(true);
+      }
+    });
+
+    it('all seed ids are unique', () => {
+      const ids = BEHAVIORAL_TRAIT_SEEDS.map(s => s.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('every creation sphere modifier behavioral seed is represented', () => {
+      const seedIds = new Set(BEHAVIORAL_TRAIT_SEEDS.map(s => s.id));
+      for (const mod of CREATION_SPHERE_MODIFIERS) {
+        for (const seedRef of mod.behavioralTraitSeeds) {
+          expect(seedIds.has(seedRef)).toBe(true);
+        }
+      }
+    });
+
+    it('fanatical threshold always differs from strong (when both present)', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        if (seed.strengthThresholds.fanatical && seed.strengthThresholds.strong) {
+          expect(seed.strengthThresholds.fanatical).not.toBe(seed.strengthThresholds.strong);
+        }
+      }
+    });
+
+    it('strength threshold descriptions are non-empty strings', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        for (const [_range, desc] of Object.entries(seed.strengthThresholds)) {
+          expect(typeof desc).toBe('string');
+          expect(desc.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('sourceTags are non-empty strings', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        for (const tag of seed.sourceTags) {
+          expect(typeof tag).toBe('string');
+          expect(tag.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('tags are non-empty strings', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        for (const tag of seed.tags) {
+          expect(typeof tag).toBe('string');
+          expect(tag.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('domain contributions are numeric and reasonable', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        for (const [_domain, value] of Object.entries(seed.domainContributions)) {
+          expect(typeof value).toBe('number');
+          expect(value).toBeGreaterThanOrEqual(-2);
+          expect(value).toBeLessThanOrEqual(3);
         }
       }
     });

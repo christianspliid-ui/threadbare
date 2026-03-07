@@ -15,7 +15,7 @@
  * Source: Docs/plans/2026-03-06-culture-bounded-context-design.md
  */
 
-import type { SphereName, TerrainType } from '../types/index';
+import type { SphereName, TerrainType, ReachDomain } from '../types/index';
 
 // ─── Foundation Modifier Interface ────────────────────────────────
 
@@ -325,3 +325,921 @@ export function getCreationSphereModifier(sphere: SphereName): CreationSphereMod
 export function getBiomeModifier(terrain: TerrainType): BiomeModifier | undefined {
   return BIOME_MODIFIERS.find(m => m.terrain === terrain);
 }
+
+// ─── Trait Seed Interfaces ────────────────────────────────────────
+
+/**
+ * Formative traits are permanent innate cultural skills granted by sphere/biome combinations.
+ * They represent foundational competencies that define cultural identity.
+ */
+export interface FormativeTraitSeed {
+  id: string;
+  name: string;
+  description: string;
+  sourceTags: string[];  // Which spheres/biomes grant this trait
+  domainContributions: Partial<Record<ReachDomain, number>>;
+  tags: string[];
+}
+
+/**
+ * Cultural strength range for behavioral traits.
+ * Fanatical > Strong > Fading > Silent (strongest to weakest expression)
+ */
+export type CulturalStrengthRange = 'fanatical' | 'strong' | 'fading' | 'silent';
+
+/**
+ * Behavioral traits scale with cultural strength. Same trait expresses differently
+ * depending on how strongly the culture embodies that sphere/foundation.
+ */
+export interface BehavioralTraitSeed {
+  id: string;
+  name: string;
+  description: string;
+  sourceTags: string[];
+  strengthThresholds: Partial<Record<CulturalStrengthRange, string>>;
+  domainContributions: Partial<Record<ReachDomain, number>>;
+  tags: string[];
+}
+
+// ─── Formative Trait Seeds (35 entries) ────────────────────────────
+
+export const FORMATIVE_TRAIT_SEEDS: FormativeTraitSeed[] = [
+  // Sphere-based (16)
+  {
+    id: 'weapon_mastery',
+    name: 'Weapon Mastery',
+    description: 'Innate understanding of arms and their use',
+    sourceTags: ['force'],
+    domainContributions: { iron: 2, flesh: 1 },
+    tags: ['combat', 'martial'],
+  },
+  {
+    id: 'battle_tactics',
+    name: 'Battle Tactics',
+    description: 'Instinctive grasp of battlefield formations and strategy',
+    sourceTags: ['force'],
+    domainContributions: { iron: 2, eye: 1 },
+    tags: ['combat', 'strategy'],
+  },
+  {
+    id: 'craft_expertise',
+    name: 'Craft Expertise',
+    description: 'Deep skill in shaping raw materials into finished works',
+    sourceTags: ['matter'],
+    domainContributions: { stone: 2, gold: 1 },
+    tags: ['craft', 'production'],
+  },
+  {
+    id: 'material_lore',
+    name: 'Material Lore',
+    description: 'Knowledge of stones, metals, and their hidden properties',
+    sourceTags: ['matter'],
+    domainContributions: { eye: 2, stone: 1 },
+    tags: ['knowledge', 'craft'],
+  },
+  {
+    id: 'endurance_training',
+    name: 'Endurance Training',
+    description: 'Bodies hardened through relentless physical culture',
+    sourceTags: ['energy'],
+    domainContributions: { flesh: 2, iron: 1 },
+    tags: ['physical', 'endurance'],
+  },
+  {
+    id: 'energy_channeling',
+    name: 'Energy Channeling',
+    description: 'Intuitive ability to direct and focus vital energy',
+    sourceTags: ['energy'],
+    domainContributions: { veil: 2, flesh: 1 },
+    tags: ['magical', 'physical'],
+  },
+  {
+    id: 'herbalism',
+    name: 'Herbalism',
+    description: 'Knowledge of plants and their healing properties',
+    sourceTags: ['life'],
+    domainContributions: { flesh: 2, eye: 1 },
+    tags: ['healing', 'nature'],
+  },
+  {
+    id: 'midwifery',
+    name: 'Midwifery',
+    description: 'Sacred knowledge of birth and the arrival of new life',
+    sourceTags: ['life'],
+    domainContributions: { heart: 2, flesh: 1 },
+    tags: ['healing', 'social'],
+  },
+  {
+    id: 'literacy',
+    name: 'Literacy',
+    description: 'Widespread ability to read and record knowledge',
+    sourceTags: ['mind'],
+    domainContributions: { eye: 2, heart: 1 },
+    tags: ['knowledge', 'communication'],
+  },
+  {
+    id: 'analytical_thinking',
+    name: 'Analytical Thinking',
+    description: 'Trained capacity for logical deduction and reasoning',
+    sourceTags: ['mind'],
+    domainContributions: { eye: 2, veil: 1 },
+    tags: ['knowledge', 'strategy'],
+  },
+  {
+    id: 'meditation',
+    name: 'Meditation',
+    description: 'Practiced stillness and inner focus in spiritual work',
+    sourceTags: ['spirit'],
+    domainContributions: { veil: 2, heart: 1 },
+    tags: ['spiritual', 'mental'],
+  },
+  {
+    id: 'spirit_sight',
+    name: 'Spirit Sight',
+    description: 'Sensitivity to the unseen world and its currents',
+    sourceTags: ['spirit'],
+    domainContributions: { veil: 2, eye: 1 },
+    tags: ['spiritual', 'perception'],
+  },
+  {
+    id: 'calendar_mastery',
+    name: 'Calendar Mastery',
+    description: 'Deep understanding of celestial cycles and their meanings',
+    sourceTags: ['time'],
+    domainContributions: { star: 2, eye: 1 },
+    tags: ['knowledge', 'temporal'],
+  },
+  {
+    id: 'prophecy_reading',
+    name: 'Prophecy Reading',
+    description: 'Ability to interpret omens, signs, and portents',
+    sourceTags: ['time'],
+    domainContributions: { star: 2, veil: 1 },
+    tags: ['spiritual', 'temporal'],
+  },
+  {
+    id: 'decay_reading',
+    name: 'Decay Reading',
+    description: 'Reading the age and history of things by their deterioration',
+    sourceTags: ['entropy'],
+    domainContributions: { eye: 2, veil: 1 },
+    tags: ['knowledge', 'entropy'],
+  },
+  {
+    id: 'corpse_preparation',
+    name: 'Corpse Preparation',
+    description: 'Sacred rituals for honoring and preserving the dead',
+    sourceTags: ['entropy'],
+    domainContributions: { heart: 1, veil: 2 },
+    tags: ['spiritual', 'death'],
+  },
+
+  // Biome-based (19)
+  {
+    id: 'seafaring',
+    name: 'Seafaring',
+    description: 'Born to the open water; ship-craft and wave-reading',
+    sourceTags: ['ocean'],
+    domainContributions: { star: 2, iron: 1 },
+    tags: ['navigation', 'maritime'],
+  },
+  {
+    id: 'tidal_reading',
+    name: 'Tidal Reading',
+    description: 'Intuitive sense of water patterns and moon-pull',
+    sourceTags: ['coastal_shallows', 'lake'],
+    domainContributions: { star: 1, eye: 1 },
+    tags: ['navigation', 'temporal'],
+  },
+  {
+    id: 'net_craft',
+    name: 'Net Craft',
+    description: 'Skill in weaving and deploying fishing and hunting nets',
+    sourceTags: ['coastal_shallows', 'river'],
+    domainContributions: { gold: 1, stone: 1 },
+    tags: ['craft', 'production'],
+  },
+  {
+    id: 'mounted_riding',
+    name: 'Mounted Riding',
+    description: 'One with the horse; intuitive horsemanship',
+    sourceTags: ['grassland', 'steppe'],
+    domainContributions: { iron: 1, star: 1 },
+    tags: ['combat', 'travel'],
+  },
+  {
+    id: 'crop_wisdom',
+    name: 'Crop Wisdom',
+    description: 'Generational knowledge of soil, seed, and season',
+    sourceTags: ['farmland'],
+    domainContributions: { eye: 1, stone: 1 },
+    tags: ['knowledge', 'production'],
+  },
+  {
+    id: 'fire_management',
+    name: 'Fire Management',
+    description: 'Controlled use of wildfire for land management',
+    sourceTags: ['savanna'],
+    domainContributions: { iron: 1, eye: 1 },
+    tags: ['survival', 'craft'],
+  },
+  {
+    id: 'foraging',
+    name: 'Foraging',
+    description: 'Finding sustenance in wild places; plant and fungi lore',
+    sourceTags: ['deciduous_forest', 'jungle'],
+    domainContributions: { eye: 1, flesh: 1 },
+    tags: ['survival', 'knowledge'],
+  },
+  {
+    id: 'shadow_stalking',
+    name: 'Shadow Stalking',
+    description: 'Moving unseen through dense growth and darkness',
+    sourceTags: ['dense_forest'],
+    domainContributions: { shadow: 2, iron: 1 },
+    tags: ['stealth', 'survival'],
+  },
+  {
+    id: 'cold_endurance',
+    name: 'Cold Endurance',
+    description: 'Natural resistance to bitter cold and icy conditions',
+    sourceTags: ['taiga', 'tundra', 'glacier'],
+    domainContributions: { flesh: 2, iron: 1 },
+    tags: ['physical', 'survival'],
+  },
+  {
+    id: 'poison_lore',
+    name: 'Poison Lore',
+    description: 'Knowledge of venoms, toxins, and their antidotes',
+    sourceTags: ['jungle', 'swamp'],
+    domainContributions: { eye: 2, shadow: 1 },
+    tags: ['knowledge', 'survival'],
+  },
+  {
+    id: 'mud_navigation',
+    name: 'Mud Navigation',
+    description: 'Moving safely through treacherous wetlands and mire',
+    sourceTags: ['swamp', 'bog'],
+    domainContributions: { star: 1, flesh: 1 },
+    tags: ['navigation', 'survival'],
+  },
+  {
+    id: 'terracing',
+    name: 'Terracing',
+    description: 'Engineering hillside agriculture and water management',
+    sourceTags: ['hills'],
+    domainContributions: { stone: 2, eye: 1 },
+    tags: ['craft', 'production'],
+  },
+  {
+    id: 'cliff_dwelling',
+    name: 'Cliff Dwelling',
+    description: 'Building secure homes in vertical rock faces',
+    sourceTags: ['mountains'],
+    domainContributions: { stone: 2, star: 1 },
+    tags: ['craft', 'survival'],
+  },
+  {
+    id: 'wind_reading',
+    name: 'Wind Reading',
+    description: 'Predicting weather and conditions from wind patterns',
+    sourceTags: ['plateau', 'steppe'],
+    domainContributions: { star: 1, eye: 1 },
+    tags: ['knowledge', 'navigation'],
+  },
+  {
+    id: 'canyon_navigation',
+    name: 'Canyon Navigation',
+    description: 'Pathfinding through labyrinthine ravines and canyons',
+    sourceTags: ['badlands'],
+    domainContributions: { star: 2, eye: 1 },
+    tags: ['navigation', 'survival'],
+  },
+  {
+    id: 'water_finding',
+    name: 'Water Finding',
+    description: 'Divining water sources in arid and hostile lands',
+    sourceTags: ['desert'],
+    domainContributions: { star: 2, eye: 1 },
+    tags: ['survival', 'knowledge'],
+  },
+  {
+    id: 'ice_craft',
+    name: 'Ice Craft',
+    description: 'Building and carving with frozen water and glacial ice',
+    sourceTags: ['glacier', 'tundra'],
+    domainContributions: { stone: 2, gold: 1 },
+    tags: ['craft', 'survival'],
+  },
+  {
+    id: 'lava_reading',
+    name: 'Lava Reading',
+    description: 'Predicting eruptions and finding safe volcanic paths',
+    sourceTags: ['volcanic'],
+    domainContributions: { eye: 2, star: 1 },
+    tags: ['knowledge', 'survival'],
+  },
+  {
+    id: 'desert_navigation',
+    name: 'Desert Navigation',
+    description: 'Finding paths across featureless sand and dunes',
+    sourceTags: ['desert'],
+    domainContributions: { star: 2, eye: 1 },
+    tags: ['navigation', 'survival'],
+  },
+];
+
+// ─── Behavioral Trait Seeds (45 entries) ───────────────────────────
+
+export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
+  // Sphere-based (16)
+  {
+    id: 'challenge_compulsion',
+    name: 'Challenge Compulsion',
+    description: 'Compulsion to meet disputes with physical challenge',
+    sourceTags: ['force'],
+    strengthThresholds: {
+      fanatical: 'Compelled to duel to the death for any insult or slight',
+      strong: 'Issues formal challenges to resolve disputes and disagreements',
+      fading: 'Occasional urge to respond physically to insults',
+    },
+    domainContributions: { iron: 1, heart: -1 },
+    tags: ['combat', 'honor'],
+  },
+  {
+    id: 'glory_seeking',
+    name: 'Glory Seeking',
+    description: 'Pursuit of legendary deeds and lasting renown',
+    sourceTags: ['force'],
+    strengthThresholds: {
+      fanatical: 'Suicidal bravery in pursuit of legendary deeds; certain death for immortal fame',
+      strong: 'Actively seeks dangerous quests and challenges for personal renown',
+      fading: 'Tells exaggerated stories of past exploits and adventures',
+    },
+    domainContributions: { iron: 1, heart: 1 },
+    tags: ['honor', 'social'],
+  },
+  {
+    id: 'material_obsession',
+    name: 'Material Obsession',
+    description: 'Obsession with the quality and perfection of crafted goods',
+    sourceTags: ['matter'],
+    strengthThresholds: {
+      fanatical: 'Cannot rest while imperfect or flawed works exist; destroys inferior creations',
+      strong: 'Judges all things by their craftsmanship quality; refuses inferior work',
+      fading: 'Appreciates fine workmanship and well-made items',
+    },
+    domainContributions: { stone: 1, gold: 1 },
+    tags: ['craft', 'perfectionism'],
+  },
+  {
+    id: 'craft_pride',
+    name: 'Craft Pride',
+    description: 'Deep pride in the maker\'s art and personal mastery',
+    sourceTags: ['matter'],
+    strengthThresholds: {
+      fanatical: 'Destroys inferior work rather than let it exist; rage at failed creation',
+      strong: 'Refuses to use or display poorly made goods; demands excellence',
+      fading: 'Slight preference for handcrafted items over mass production',
+    },
+    domainContributions: { stone: 1, heart: 1 },
+    tags: ['craft', 'honor'],
+  },
+  {
+    id: 'restlessness',
+    name: 'Restlessness',
+    description: 'Deep inability to remain still or in one place',
+    sourceTags: ['energy'],
+    strengthThresholds: {
+      fanatical: 'Cannot remain in one place for more than a day; physical anguish at stillness',
+      strong: 'Constant need for physical activity, motion, and change of scenery',
+      fading: 'Fidgets during long meetings; prefers walking meetings',
+    },
+    domainContributions: { flesh: 1, iron: 1 },
+    tags: ['physical', 'mental'],
+  },
+  {
+    id: 'thrill_seeking',
+    name: 'Thrill Seeking',
+    description: 'Addiction to danger, risk, and the rush of survival',
+    sourceTags: ['energy'],
+    strengthThresholds: {
+      fanatical: 'Seeks mortal danger purely for the rush; cannot feel alive without risk',
+      strong: 'Volunteers for dangerous missions with enthusiasm and recklessness',
+      fading: 'Enjoys competitive games and mild risks over safe alternatives',
+    },
+    domainContributions: { iron: 1, flesh: 1 },
+    tags: ['risk', 'survival'],
+  },
+  {
+    id: 'birth_death_reverence',
+    name: 'Birth-Death Reverence',
+    description: 'Sacred reverence for the thresholds of life and death',
+    sourceTags: ['life'],
+    strengthThresholds: {
+      fanatical: 'Every birth and death is a sacred ceremony lasting days; life stops for ritual',
+      strong: 'Formal rituals mark all major life transitions and passages',
+      fading: 'Quiet prayers and respects observed for births and deaths',
+    },
+    domainContributions: { heart: 2, veil: 1 },
+    tags: ['spiritual', 'social'],
+  },
+  {
+    id: 'nature_communion',
+    name: 'Nature Communion',
+    description: 'Deep spiritual connection and kinship with the natural world',
+    sourceTags: ['life'],
+    strengthThresholds: {
+      fanatical: 'Refuses to harm any living thing, even for food; starvation before killing',
+      strong: 'Deep spiritual connection to local ecosystem; fasts rather than hunt',
+      fading: 'General respect and care for the natural world',
+    },
+    domainContributions: { heart: 1, veil: 1 },
+    tags: ['spiritual', 'nature'],
+  },
+  {
+    id: 'knowledge_hoarding',
+    name: 'Knowledge Hoarding',
+    description: 'Obsessive collection and guarding of rare knowledge',
+    sourceTags: ['mind'],
+    strengthThresholds: {
+      fanatical: 'Will kill, betray, or steal to protect secrets and rare texts from others',
+      strong: 'Maintains extensive personal libraries and guards them jealously from access',
+      fading: 'Keeps detailed notes and records of interesting facts and discoveries',
+    },
+    domainContributions: { eye: 1, shadow: 1 },
+    tags: ['knowledge', 'control'],
+  },
+  {
+    id: 'debate_obsession',
+    name: 'Debate Obsession',
+    description: 'Compulsion to resolve all matters through intellectual argument',
+    sourceTags: ['mind'],
+    strengthThresholds: {
+      fanatical: 'Every conversation becomes an argument to win; ignores social cost',
+      strong: 'Formal debate is the primary and only acceptable social activity',
+      fading: 'Enjoys intellectual discussions and friendly competitive debate',
+    },
+    domainContributions: { eye: 1, heart: 1 },
+    tags: ['intellectual', 'social'],
+  },
+  {
+    id: 'spirit_sensitivity',
+    name: 'Spirit Sensitivity',
+    description: 'Heightened sensitivity to spiritual presences and currents',
+    sourceTags: ['spirit'],
+    strengthThresholds: {
+      fanatical: 'Constantly communes with spirits, often lost in trance states; barely present',
+      strong: 'Regular spiritual practices; sensitivity to omens and spirit messages',
+      fading: 'Occasional sense of spiritual presences or guidance',
+    },
+    domainContributions: { veil: 2, heart: 1 },
+    tags: ['spiritual', 'perception'],
+  },
+  {
+    id: 'ritual_devotion',
+    name: 'Ritual Devotion',
+    description: 'Life structured around sacred rituals and observances',
+    sourceTags: ['spirit'],
+    strengthThresholds: {
+      fanatical: 'Life is entirely structured around rituals; cannot function without them',
+      strong: 'Daily rituals observed without fail; disruption causes distress',
+      fading: 'Participates in major religious ceremonies and seasonal rituals',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'discipline'],
+  },
+  {
+    id: 'patience_fatalism',
+    name: 'Patience-Fatalism',
+    description: 'Belief that action cannot change fate; preference for waiting',
+    sourceTags: ['time'],
+    strengthThresholds: {
+      fanatical: 'Refuses to act hastily even in emergencies; "what will be, will be" absolutist',
+      strong: 'Plans everything in multi-generational timeframes; very patient strategists',
+      fading: 'Tends to wait and observe before taking action',
+    },
+    domainContributions: { star: 1, eye: 1 },
+    tags: ['temporal', 'philosophy'],
+  },
+  {
+    id: 'ancestor_reverence',
+    name: 'Ancestor Reverence',
+    description: 'Deep reverence for lineage and ancestral guidance',
+    sourceTags: ['time'],
+    strengthThresholds: {
+      fanatical: 'Consults ancestors before every decision; lives more for past than present',
+      strong: 'Maintains ancestor shrines; follows their guidance as law',
+      fading: 'Respects family history; follows major ancestral traditions',
+    },
+    domainContributions: { heart: 1, veil: 1 },
+    tags: ['spiritual', 'social'],
+  },
+  {
+    id: 'death_acceptance',
+    name: 'Death Acceptance',
+    description: 'Philosophical or spiritual acceptance of death and endings',
+    sourceTags: ['entropy'],
+    strengthThresholds: {
+      fanatical: 'Embraces decay as sacred beauty; finds life repulsive and death liberating',
+      strong: 'Comfortable with death and decay; no fear of endings',
+      fading: 'Philosophical acceptance of mortality and natural decline',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'philosophy'],
+  },
+  {
+    id: 'dissolution_fascination',
+    name: 'Dissolution Fascination',
+    description: 'Fascination with decay, ruin, and transformation through breaking down',
+    sourceTags: ['entropy'],
+    strengthThresholds: {
+      fanatical: 'Actively speeds decay and dissolution as religious duty; desecrates intact things',
+      strong: 'Studies decay patterns; creates art from ruins and broken objects',
+      fading: 'Finds beauty in abandoned places and slowly decaying structures',
+    },
+    domainContributions: { eye: 1, veil: 1 },
+    tags: ['spiritual', 'artistic'],
+  },
+
+  // Foundation-based (10)
+  {
+    id: 'tribal_loyalty',
+    name: 'Tribal Loyalty',
+    description: 'Fierce personal bonds and loyalty to inner circle',
+    sourceTags: ['chaos'],
+    strengthThresholds: {
+      fanatical: 'Will betray law, honor, and allies for tribe members; tribe above all else',
+      strong: 'Strong preference for tribal members in all dealings',
+      fading: 'Loyalty to family and close companions',
+    },
+    domainContributions: { heart: 1 },
+    tags: ['social', 'loyalty'],
+  },
+  {
+    id: 'rule_following',
+    name: 'Rule Following',
+    description: 'Adherence to codified law and established rules',
+    sourceTags: ['order'],
+    strengthThresholds: {
+      fanatical: 'Cannot violate rules even if just outcome requires it; law above morality',
+      strong: 'Rules and laws are binding; deviations are punished severely',
+      fading: 'Generally follows rules and respects authority',
+    },
+    domainContributions: { stone: 1 },
+    tags: ['discipline', 'social'],
+  },
+  {
+    id: 'communal_shame',
+    name: 'Communal Shame',
+    description: 'Group accountability where all share the shame of any member\'s transgression',
+    sourceTags: ['light'],
+    strengthThresholds: {
+      fanatical: 'Personal shame at any community member\'s actions; self-punishment for others\' sins',
+      strong: 'Strong community accountability; public shaming for transgressions',
+      fading: 'General social pressure for conformity and good behavior',
+    },
+    domainContributions: { heart: 1 },
+    tags: ['social', 'accountability'],
+  },
+  {
+    id: 'secret_keeping',
+    name: 'Secret Keeping',
+    description: 'Inner circle loyalty where secrets are sacred trusts',
+    sourceTags: ['darkness'],
+    strengthThresholds: {
+      fanatical: 'Will die before revealing secrets; betrayal is death sentence',
+      strong: 'Secrets are sacred; breaking silence is the ultimate crime',
+      fading: 'Respects private knowledge; reluctant to share secrets',
+    },
+    domainContributions: { shadow: 1 },
+    tags: ['loyalty', 'control'],
+  },
+  {
+    id: 'hospitality_code',
+    name: 'Hospitality Code',
+    description: 'Guest rights are sacred; violent breach of hospitality is unforgivable',
+    sourceTags: ['chaos', 'light'],
+    strengthThresholds: {
+      fanatical: 'Will defend guest with own life; guest\'s crimes become host\'s responsibility',
+      strong: 'Guests are sacred; attacking them is ultimate violation',
+      fading: 'Treats guests with respect and courtesy',
+    },
+    domainContributions: { heart: 1 },
+    tags: ['social', 'honor'],
+  },
+  {
+    id: 'rigid_etiquette',
+    name: 'Rigid Etiquette',
+    description: 'Elaborate and unforgiving social protocols and formality',
+    sourceTags: ['order'],
+    strengthThresholds: {
+      fanatical: 'Elaborate multi-hour rituals required for any interaction; impatient with shortcut',
+      strong: 'Strict protocols govern all social interaction; violations are grave insults',
+      fading: 'Follows established social conventions and courtesies',
+    },
+    domainContributions: { stone: 1, gold: 1 },
+    tags: ['social', 'discipline'],
+  },
+  {
+    id: 'public_confession',
+    name: 'Public Confession',
+    description: 'Sins and transgressions are aired openly before community',
+    sourceTags: ['light'],
+    strengthThresholds: {
+      fanatical: 'Regular mandatory public confessions of all private thoughts and failings',
+      strong: 'Transgressions must be publicly confessed; hiding sins is worse than crime',
+      fading: 'Prefers honest admission of mistakes over hiding them',
+    },
+    domainContributions: { heart: 1 },
+    tags: ['social', 'accountability'],
+  },
+  {
+    id: 'conspiracy_thinking',
+    name: 'Conspiracy Thinking',
+    description: 'Seeing hidden plots and enemies everywhere',
+    sourceTags: ['darkness'],
+    strengthThresholds: {
+      fanatical: 'Paranoid; all events are orchestrated by hidden enemies',
+      strong: 'Sees patterns and hidden meanings in ordinary events',
+      fading: 'Suspicious of motives; cautious of official narratives',
+    },
+    domainContributions: { shadow: 1 },
+    tags: ['philosophy', 'caution'],
+  },
+  {
+    id: 'hierarchy_respect',
+    name: 'Hierarchy Respect',
+    description: 'Absolute deference to rank and established authority',
+    sourceTags: ['order'],
+    strengthThresholds: {
+      fanatical: 'Cannot question superiors; disobedience is unthinkable',
+      strong: 'Strict deference to rank; challenges to authority are insulting',
+      fading: 'Respects chain of command and established authority',
+    },
+    domainContributions: { stone: 1, iron: 1 },
+    tags: ['discipline', 'social'],
+  },
+  {
+    id: 'oath_binding',
+    name: 'Oath Binding',
+    description: 'Sworn words are unbreakable; oath violations are death-worthy',
+    sourceTags: ['darkness', 'chaos'],
+    strengthThresholds: {
+      fanatical: 'Oaths are absolute; breaking oath deserves execution',
+      strong: 'Sworn words are binding law; violations carry severe penalties',
+      fading: 'Takes promises seriously; oath-breaking is shameful',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['honor', 'loyalty'],
+  },
+
+  // Biome-based (19)
+  {
+    id: 'water_discipline',
+    name: 'Water Discipline',
+    description: 'Careful rationing and reverence for fresh water',
+    sourceTags: ['desert', 'steppe'],
+    strengthThresholds: {
+      fanatical: 'Water waste is death-penalty crime; bathing is forbidden',
+      strong: 'Strict water rationing; communal sources are sacred',
+      fading: 'Aware of water scarcity; uses it carefully',
+    },
+    domainContributions: { star: 1 },
+    tags: ['survival', 'discipline'],
+  },
+  {
+    id: 'communal_warmth',
+    name: 'Communal Warmth',
+    description: 'Sharing body heat and shelter as survival necessity turned social norm',
+    sourceTags: ['tundra', 'glacier', 'taiga'],
+    strengthThresholds: {
+      fanatical: 'Sleeping alone is abandonment; forced physical intimacy is norm',
+      strong: 'Sleeping close in groups is expected; personal space is unknown',
+      fading: 'Comfortable with close physical proximity; minimal personal space',
+    },
+    domainContributions: { heart: 1, flesh: 1 },
+    tags: ['social', 'survival'],
+  },
+  {
+    id: 'seasonal_migration',
+    name: 'Seasonal Migration',
+    description: 'Nomadic following of herds, seasons, and resources',
+    sourceTags: ['grassland', 'steppe', 'savanna'],
+    strengthThresholds: {
+      fanatical: 'Cannot settle; constant movement is psychological need',
+      strong: 'Regular seasonal migrations are fundamental to identity',
+      fading: 'Comfortable with periodic relocation and wandering',
+    },
+    domainContributions: { star: 1 },
+    tags: ['travel', 'survival'],
+  },
+  {
+    id: 'flood_preparedness',
+    name: 'Flood Preparedness',
+    description: 'Always ready for rising waters; elevating structures as second nature',
+    sourceTags: ['river', 'swamp'],
+    strengthThresholds: {
+      fanatical: 'All buildings on stilts; flood-readiness is obsession',
+      strong: 'Constant preparation for floods; all goods kept high',
+      fading: 'Familiar with seasonal flooding; takes precautions',
+    },
+    domainContributions: { star: 1, stone: 1 },
+    tags: ['survival', 'preparation'],
+  },
+  {
+    id: 'canopy_reverence',
+    name: 'Canopy Reverence',
+    description: 'Trees are sacred; the canopy is divine shelter',
+    sourceTags: ['deciduous_forest', 'dense_forest', 'jungle'],
+    strengthThresholds: {
+      fanatical: 'Cannot harm trees without ritual; lives in canopy not ground',
+      strong: 'Trees are sacred; their use is restricted to necessary harvest',
+      fading: 'Deep respect for forests and forestry practices',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'nature'],
+  },
+  {
+    id: 'stone_worship',
+    name: 'Stone Worship',
+    description: 'Mountains and rock formations are divine',
+    sourceTags: ['mountains', 'hills'],
+    strengthThresholds: {
+      fanatical: 'Mountains are gods; mining is blasphemy; pilgrimages to peaks',
+      strong: 'Mountains are sacred; quarrying requires ritual and apology',
+      fading: 'Respectful of mountain peaks; views them as sacred places',
+    },
+    domainContributions: { veil: 1, star: 1 },
+    tags: ['spiritual', 'nature'],
+  },
+  {
+    id: 'horizon_yearning',
+    name: 'Horizon Yearning',
+    description: 'Drawn to distant horizons and the lands beyond',
+    sourceTags: ['ocean', 'grassland', 'plateau'],
+    strengthThresholds: {
+      fanatical: 'Cannot be satisfied with current lands; constant wanderlust',
+      strong: 'Always planning the next journey; restless in one place',
+      fading: 'Dream of travel; attracted to exploration and distant places',
+    },
+    domainContributions: { star: 1 },
+    tags: ['travel', 'psychology'],
+  },
+  {
+    id: 'volcanic_sacrifice',
+    name: 'Volcanic Sacrifice',
+    description: 'Ritualistic appeasement of volcanic powers',
+    sourceTags: ['volcanic'],
+    strengthThresholds: {
+      fanatical: 'Regular human sacrifices required to appease the mountain',
+      strong: 'Ritual sacrifices and offerings to prevent volcanic wrath',
+      fading: 'Offerings and prayers to volcanic spirits',
+    },
+    domainContributions: { veil: 1, iron: 1 },
+    tags: ['spiritual', 'ritual'],
+  },
+  {
+    id: 'bog_memory',
+    name: 'Bog Memory',
+    description: 'Belief that the swamp remembers and judges all actions',
+    sourceTags: ['bog', 'swamp'],
+    strengthThresholds: {
+      fanatical: 'The bog judges souls; cannot lie or hide in wetlands',
+      strong: 'Bog is sentient; secrets confessed to bog cannot be kept',
+      fading: 'Respectful of wetlands; wary of angering them',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'nature'],
+  },
+  {
+    id: 'ice_patience',
+    name: 'Ice Patience',
+    description: 'Glacial pace of decision-making; changes measured in generations',
+    sourceTags: ['glacier', 'tundra'],
+    strengthThresholds: {
+      fanatical: 'Cannot make decisions faster than glaciers move; glacial time-sense',
+      strong: 'Decisions take years; ancient precedent must be examined',
+      fading: 'Patient and deliberate in decision-making',
+    },
+    domainContributions: { star: 1 },
+    tags: ['temporal', 'philosophy'],
+  },
+  {
+    id: 'fire_dance',
+    name: 'Fire Dance',
+    description: 'Fire as celebration and spiritual expression',
+    sourceTags: ['savanna', 'volcanic'],
+    strengthThresholds: {
+      fanatical: 'Compelled to dance in fire; pain is pleasure',
+      strong: 'Major festivals center on fire rituals and communal dances',
+      fading: 'Fire celebrations are important cultural events',
+    },
+    domainContributions: { iron: 1, heart: 1 },
+    tags: ['spiritual', 'social'],
+  },
+  {
+    id: 'salt_rituals',
+    name: 'Salt Rituals',
+    description: 'Salt as purifier and sacred cleansing substance',
+    sourceTags: ['ocean', 'coastal_shallows'],
+    strengthThresholds: {
+      fanatical: 'Salt purifies all; excessive salt rituals dominate daily life',
+      strong: 'Regular salt purification rituals for cleansing and protection',
+      fading: 'Uses salt in cleansing rituals and protective charms',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'ritual'],
+  },
+  {
+    id: 'root_binding',
+    name: 'Root Binding',
+    description: 'Community is rooted like trees; deep and permanent bonds',
+    sourceTags: ['dense_forest', 'jungle'],
+    strengthThresholds: {
+      fanatical: 'Cannot leave community; leaving is death to soul',
+      strong: 'Community bonds are unbreakable; migration impossible',
+      fading: 'Strong attachments to home and community',
+    },
+    domainContributions: { heart: 2 },
+    tags: ['social', 'nature'],
+  },
+  {
+    id: 'wind_worship',
+    name: 'Wind Worship',
+    description: 'Wind is divine messenger and force',
+    sourceTags: ['plateau', 'steppe'],
+    strengthThresholds: {
+      fanatical: 'Cannot defy wind; act only when wind is favorable',
+      strong: 'Wind patterns are divine guidance; directions follow wind',
+      fading: 'Respectful of wind; listens to what wind carries',
+    },
+    domainContributions: { veil: 1, star: 1 },
+    tags: ['spiritual', 'nature'],
+  },
+  {
+    id: 'cave_dwelling_reverence',
+    name: 'Cave Dwelling Reverence',
+    description: 'Underground chambers are sacred; caves are doorways to divine',
+    sourceTags: ['mountains', 'badlands'],
+    strengthThresholds: {
+      fanatical: 'Cannot live above ground; caves are the only true homes',
+      strong: 'Sacred caves are temple-cities; underground is natural state',
+      fading: 'Drawn to caves; feel safe and at home in underground',
+    },
+    domainContributions: { star: 1, veil: 1 },
+    tags: ['spiritual', 'survival'],
+  },
+  {
+    id: 'harvest_gratitude',
+    name: 'Harvest Gratitude',
+    description: 'First fruits are sacred offerings to spirits and community',
+    sourceTags: ['farmland'],
+    strengthThresholds: {
+      fanatical: 'First harvest must be burned as offering; only secondary harvest eaten',
+      strong: 'First fruits offerings are required; lavish seasonal rituals',
+      fading: 'Grateful for harvest; offerings made at season\'s start',
+    },
+    domainContributions: { heart: 1, veil: 1 },
+    tags: ['spiritual', 'ritual'],
+  },
+  {
+    id: 'tidal_timing',
+    name: 'Tidal Timing',
+    description: 'All decisions follow water patterns and tidal movements',
+    sourceTags: ['coastal_shallows', 'river'],
+    strengthThresholds: {
+      fanatical: 'Cannot act against tides; life completely ordered by water cycles',
+      strong: 'Major decisions only during favorable tides',
+      fading: 'Prefer to act in harmony with tidal and river patterns',
+    },
+    domainContributions: { star: 1 },
+    tags: ['temporal', 'nature'],
+  },
+  {
+    id: 'permafrost_burial',
+    name: 'Permafrost Burial',
+    description: 'The frozen dead are preserved forever; ice is sacred tomb',
+    sourceTags: ['tundra', 'glacier'],
+    strengthThresholds: {
+      fanatical: 'Cannot allow dead to thaw; eternal preservation in ice is highest honor',
+      strong: 'Dead are preserved in ice; thawing is desecration',
+      fading: 'Respectful of ice-preserved ancestors',
+    },
+    domainContributions: { veil: 1, star: 1 },
+    tags: ['spiritual', 'death'],
+  },
+  {
+    id: 'sulfur_purification',
+    name: 'Sulfur Purification',
+    description: 'Volcanic minerals are cleansing and protective',
+    sourceTags: ['volcanic'],
+    strengthThresholds: {
+      fanatical: 'Sulfur baths are constant; burning sulfur as protective barrier around homes',
+      strong: 'Sulfur is used in all protective rituals and cleansing ceremonies',
+      fading: 'Sulfur used in cleansing rituals and healing',
+    },
+    domainContributions: { veil: 1, heart: 1 },
+    tags: ['spiritual', 'ritual'],
+  },
+];
