@@ -32,6 +32,7 @@ import {
 } from '../types/disposition';
 import { buildNarrativeContext } from './contextBuilder';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
+import { emitTrace } from './traceBuffer';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -469,17 +470,63 @@ export function runTick(state: GameState): GameState {
   const newYear = Math.floor(s.tick / 360);
   s = { ...s, clock: { ...s.clock, currentTick: s.tick, season: newSeason, year: newYear } };
 
-  // Run phases in order
+  // Track events per phase for trace
+  const phaseEventCounts: Record<string, number> = {};
+  let agentsProcessed = 0;
+
+  // Track initial event count
+  let prevEventCount = s.tickEvents.length;
+
+  // Phase 1: Doom
   s = { ...s, ...phaseDoom(s) };
+  phaseEventCounts['doom'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2: Agent Actions
   s = { ...s, ...phaseAgentActions(s) };
+  const agentActionsEvents = s.tickEvents.length - prevEventCount;
+  phaseEventCounts['agent_actions'] = agentActionsEvents;
+  agentsProcessed += agentActionsEvents; // Approximate: one event per agent action
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.5: Dilemma Detection
   s = { ...s, ...phaseDilemmaDetection(s) };
+  phaseEventCounts['dilemma_detection'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 3: Rival Actions
   s = { ...s, ...phaseRivalActions(s) };
+  phaseEventCounts['rival_actions'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 4: Stealth
   s = { ...s, ...phaseStealth(s) };
+  phaseEventCounts['stealth'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 5: Narrative
   s = { ...s, ...phaseNarrative(s) };
+  phaseEventCounts['narrative'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6: Essence
   s = { ...s, ...phaseEssence(s) };
+  phaseEventCounts['essence'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
+  phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 7: Mandate
   s = { ...s, ...phaseMandate(s) };
+  phaseEventCounts['mandate'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 8: Doom Expiry
   s = { ...s, ...phaseDoomExpiry(s) };
+  phaseEventCounts['doom_expiry'] = s.tickEvents.length - prevEventCount;
 
   // Recalculate visibility
   const losSources = collectLOSSources(s.graph, s.ascendantId, []);
@@ -494,6 +541,21 @@ export function runTick(state: GameState): GameState {
   const MAX = 100;
   const combined = [...s.recentEvents, ...s.tickEvents];
   s = { ...s, recentEvents: combined.slice(-MAX) };
+
+  // Emit tick summary trace
+  const essenceTotal = Object.values(s.essencePool).reduce((sum, val) => sum + val, 0);
+  const mandateProgress = s.mandateState?.progress ?? 0;
+
+  emitTrace({
+    tick: s.tick,
+    category: 'tick_summary',
+    summary: `Tick ${s.tick}: ${s.tickEvents.length} events, ${agentsProcessed} agents processed, doom stage ${s.doomClock.currentStage}`,
+    phaseEventCounts,
+    agentsProcessed,
+    doomStage: s.doomClock.currentStage,
+    essenceTotal,
+    mandateProgress,
+  });
 
   return s;
 }
