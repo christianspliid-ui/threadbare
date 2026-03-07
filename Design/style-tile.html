@@ -1397,6 +1397,454 @@
     </div>
   </div>
 
+  <!-- ======== HEX ASSET LEGEND (MASTER LIST) ======== -->
+  <div class="section">
+    <h2>Hex Asset Legend — Master List</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.6rem;">
+      <strong style="color: var(--gold);">This is the authoritative registry of all hex tile assets used in the game.</strong>
+      Every terrain tile and overlay icon is listed here with its filename and in-game mapping.
+      If an asset is not in this legend, it is not in the game. Update this section whenever assets are added or changed.
+    </p>
+    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+      All assets live in <code style="color: var(--gold-bright); font-size: 0.7rem;">public/hex-tiles/</code>.
+      Terrain tiles are 512px flat-top hexagons with feathered alpha edges. Overlay icons are black-on-transparent silhouettes composited on top of terrain.
+      Code mapping: <code style="color: var(--gold-bright); font-size: 0.7rem;">src/data/hex-tile-assets.ts</code>
+    </p>
+
+    <style>
+      .hex-legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+      }
+      .hex-legend-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .hex-legend-thumb {
+        width: 80px;
+        height: 80px;
+        clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+        object-fit: cover;
+        margin-bottom: 0.3rem;
+        transition: transform 0.2s;
+        background: #1e1b2e;
+      }
+      .hex-legend-thumb:hover {
+        transform: scale(1.2);
+      }
+      .hex-legend-name {
+        font-size: 0.6rem;
+        color: var(--text-light);
+        font-weight: 500;
+        line-height: 1.2;
+      }
+      .hex-legend-file {
+        font-size: 0.5rem;
+        color: var(--text-muted);
+        font-family: 'SF Mono', 'Fira Code', monospace;
+        word-break: break-all;
+      }
+      .overlay-legend-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 0.6rem;
+        margin-bottom: 1.5rem;
+      }
+      .overlay-legend-thumb {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        margin-bottom: 0.3rem;
+        transition: transform 0.2s;
+        filter: invert(1);
+      }
+      .overlay-legend-thumb:hover {
+        transform: scale(1.3);
+      }
+      .overlay-legend-badge {
+        font-size: 0.45rem;
+        padding: 0.1rem 0.3rem;
+        border-radius: 2px;
+        margin-top: 0.15rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .badge-full { background: rgba(0,204,85,0.15); color: #33ff77; }
+      .badge-half { background: rgba(138,138,142,0.15); color: #aaa; }
+    </style>
+
+    <!-- Terrain Tiles -->
+    <h3>Terrain Tiles (27 biomes)</h3>
+    <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+      512px flat-top hex, 0.98 inset, 3px Gaussian feather. Mapped via <code style="color: var(--gold-bright); font-size: 0.65rem;">TERRAIN_TILE_MAP</code> in hex-tile-assets.ts.
+    </p>
+    <div class="hex-legend-grid">
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/ocean.png" alt="Ocean">
+        <span class="hex-legend-name">Ocean</span>
+        <span class="hex-legend-file">ocean.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/coastal-shallows.png" alt="Coastal Shallows">
+        <span class="hex-legend-name">Coastal Shallows</span>
+        <span class="hex-legend-file">coastal-shallows.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/lake.png" alt="Lake">
+        <span class="hex-legend-name">Lake</span>
+        <span class="hex-legend-file">lake.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/river.png" alt="River">
+        <span class="hex-legend-name">River</span>
+        <span class="hex-legend-file">river.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/open-grassland.png" alt="Grassland">
+        <span class="hex-legend-name">Grassland</span>
+        <span class="hex-legend-file">open-grassland.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/farmland.png" alt="Farmland">
+        <span class="hex-legend-name">Farmland</span>
+        <span class="hex-legend-file">farmland.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/savanna.png" alt="Savanna">
+        <span class="hex-legend-name">Savanna</span>
+        <span class="hex-legend-file">savanna.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/steppe.png" alt="Steppe">
+        <span class="hex-legend-name">Steppe</span>
+        <span class="hex-legend-file">steppe.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/deciduous-forest.png" alt="Deciduous Forest">
+        <span class="hex-legend-name">Deciduous Forest</span>
+        <span class="hex-legend-file">deciduous-forest.png <em style="color:#33ff77;font-size:0.45rem;">v5a</em></span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/dense-forest.png" alt="Dense Forest">
+        <span class="hex-legend-name">Dense Forest</span>
+        <span class="hex-legend-file">dense-forest.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/taiga.png" alt="Taiga">
+        <span class="hex-legend-name">Taiga</span>
+        <span class="hex-legend-file">taiga.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/jungle.png" alt="Jungle">
+        <span class="hex-legend-name">Jungle</span>
+        <span class="hex-legend-file">jungle.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/swamp.png" alt="Swamp">
+        <span class="hex-legend-name">Swamp</span>
+        <span class="hex-legend-file">swamp.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/bog.png" alt="Bog">
+        <span class="hex-legend-name">Bog</span>
+        <span class="hex-legend-file">bog.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/hills.png" alt="Hills">
+        <span class="hex-legend-name">Hills</span>
+        <span class="hex-legend-file">hills.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/mountain.png" alt="Mountains">
+        <span class="hex-legend-name">Mountains</span>
+        <span class="hex-legend-file">mountain.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/plateau.png" alt="Plateau">
+        <span class="hex-legend-name">Plateau</span>
+        <span class="hex-legend-file">plateau.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/badlands.png" alt="Badlands">
+        <span class="hex-legend-name">Badlands</span>
+        <span class="hex-legend-file">badlands.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/desert.png" alt="Desert">
+        <span class="hex-legend-name">Desert</span>
+        <span class="hex-legend-file">desert.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/tundra.png" alt="Tundra">
+        <span class="hex-legend-name">Tundra</span>
+        <span class="hex-legend-file">tundra.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/glacier.png" alt="Glacier">
+        <span class="hex-legend-name">Glacier</span>
+        <span class="hex-legend-file">glacier.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/volcanic.png" alt="Volcanic">
+        <span class="hex-legend-name">Volcanic</span>
+        <span class="hex-legend-file">volcanic.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/forested-hills-evergreen.png" alt="Forested Hills (Evergreen)">
+        <span class="hex-legend-name">Forested Hills (Evergreen)</span>
+        <span class="hex-legend-file">forested-hills-evergreen.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/forested-hills-deciduous.png" alt="Forested Hills (Deciduous)">
+        <span class="hex-legend-name">Forested Hills (Deciduous)</span>
+        <span class="hex-legend-file">forested-hills-deciduous.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/forested-hills-jungle.png" alt="Forested Hills (Jungle)">
+        <span class="hex-legend-name">Forested Hills (Jungle)</span>
+        <span class="hex-legend-file">forested-hills-jungle.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/great-home-trees.png" alt="Great Home Trees">
+        <span class="hex-legend-name">Great Home Trees</span>
+        <span class="hex-legend-file">great-home-trees.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/broken-lands.png" alt="Broken Lands">
+        <span class="hex-legend-name">Broken Lands</span>
+        <span class="hex-legend-file">broken-lands.png</span>
+      </div>
+    </div>
+
+    <!-- Clear Hexes -->
+    <h3>Clear Hex Fills (7 biome-tinted)</h3>
+    <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+      Flat-color fallback hexes for biome families. Used as loading placeholders or for fog-of-war remembered state.
+    </p>
+    <div class="hex-legend-grid">
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-grassland.png" alt="Clear Grassland">
+        <span class="hex-legend-name">Clear Grassland</span>
+        <span class="hex-legend-file">clear-grassland.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-forest.png" alt="Clear Forest">
+        <span class="hex-legend-name">Clear Forest</span>
+        <span class="hex-legend-file">clear-forest.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-desert.png" alt="Clear Desert">
+        <span class="hex-legend-name">Clear Desert</span>
+        <span class="hex-legend-file">clear-desert.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-hills.png" alt="Clear Hills">
+        <span class="hex-legend-name">Clear Hills</span>
+        <span class="hex-legend-file">clear-hills.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-mountains.png" alt="Clear Mountains">
+        <span class="hex-legend-name">Clear Mountains</span>
+        <span class="hex-legend-file">clear-mountains.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-snow.png" alt="Clear Snow">
+        <span class="hex-legend-name">Clear Snow</span>
+        <span class="hex-legend-file">clear-snow.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/clear-volcanic.png" alt="Clear Volcanic">
+        <span class="hex-legend-name">Clear Volcanic</span>
+        <span class="hex-legend-file">clear-volcanic.png</span>
+      </div>
+    </div>
+
+    <!-- Unused / Reserve Terrain -->
+    <h3>Reserve Terrain (on disk, not mapped to biome)</h3>
+    <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+      Available for future biome expansion. Not currently referenced in <code style="color: var(--gold-bright); font-size: 0.65rem;">TERRAIN_TILE_MAP</code>.
+    </p>
+    <div class="hex-legend-grid">
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/coast.png" alt="Coast">
+        <span class="hex-legend-name">Coast</span>
+        <span class="hex-legend-file">coast.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/evergreen-forest.png" alt="Evergreen Forest">
+        <span class="hex-legend-name">Evergreen Forest</span>
+        <span class="hex-legend-file">evergreen-forest.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/light-forest.png" alt="Light Forest">
+        <span class="hex-legend-name">Light Forest</span>
+        <span class="hex-legend-file">light-forest.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/marsh.png" alt="Marsh">
+        <span class="hex-legend-name">Marsh</span>
+        <span class="hex-legend-file">marsh.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/snow-fields.png" alt="Snow Fields">
+        <span class="hex-legend-name">Snow Fields</span>
+        <span class="hex-legend-file">snow-fields.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/tropical-ocean.png" alt="Tropical Ocean">
+        <span class="hex-legend-name">Tropical Ocean</span>
+        <span class="hex-legend-file">tropical-ocean.png</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="hex-legend-thumb" src="../public/hex-tiles/volcano.png" alt="Volcano">
+        <span class="hex-legend-name">Volcano</span>
+        <span class="hex-legend-file">volcano.png</span>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- Overlay Icons -->
+    <h3>Location Overlay Icons (19 types)</h3>
+    <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.8rem;">
+      Black-on-transparent silhouettes composited over terrain tiles. Two size tiers:
+      <strong style="color: #33ff77;">Full-size</strong> (0.85× hex) for settlement areas,
+      <strong style="color: #aaa;">Half-size</strong> (0.45× hex) for structures/markers.
+      Mapped via <code style="color: var(--gold-bright); font-size: 0.65rem;">OVERLAY_ICON_MAP</code> in hex-tile-assets.ts.
+    </p>
+
+    <h3 style="margin-top:1rem;">Full-Size Overlays (settlement areas)</h3>
+    <div class="overlay-legend-grid">
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-hamlet.png" alt="Hamlet">
+        <span class="hex-legend-name">Hamlet</span>
+        <span class="hex-legend-file">overlay-hamlet.png</span>
+        <span class="overlay-legend-badge badge-full">full 0.85×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-town.png" alt="Town">
+        <span class="hex-legend-name">Town</span>
+        <span class="hex-legend-file">overlay-town.png</span>
+        <span class="overlay-legend-badge badge-full">full 0.85×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-city.png" alt="City">
+        <span class="hex-legend-name">City</span>
+        <span class="hex-legend-file">overlay-city.png</span>
+        <span class="overlay-legend-badge badge-full">full 0.85×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-capital.png" alt="Capital">
+        <span class="hex-legend-name">Capital</span>
+        <span class="hex-legend-file">overlay-capital.png</span>
+        <span class="overlay-legend-badge badge-full">full 0.85×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-farmland.png" alt="Farmland">
+        <span class="hex-legend-name">Farmland</span>
+        <span class="hex-legend-file">overlay-farmland.png</span>
+        <span class="overlay-legend-badge badge-full">full 0.85×</span>
+      </div>
+    </div>
+
+    <h3>Half-Size Overlays (structures &amp; markers)</h3>
+    <div class="overlay-legend-grid">
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-camp.png" alt="Camp">
+        <span class="hex-legend-name">Camp</span>
+        <span class="hex-legend-file">overlay-camp.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-castle.png" alt="Castle">
+        <span class="hex-legend-name">Castle</span>
+        <span class="hex-legend-file">overlay-castle.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-fort.png" alt="Fort">
+        <span class="hex-legend-name">Fort</span>
+        <span class="hex-legend-file">overlay-fort.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-tower.png" alt="Tower">
+        <span class="hex-legend-name">Tower</span>
+        <span class="hex-legend-file">overlay-tower.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-shrine.png" alt="Shrine">
+        <span class="hex-legend-name">Shrine</span>
+        <span class="hex-legend-file">overlay-shrine.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-temple.png" alt="Temple">
+        <span class="hex-legend-name">Temple</span>
+        <span class="hex-legend-file">overlay-temple.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-mining.png" alt="Mining">
+        <span class="hex-legend-name">Mining</span>
+        <span class="hex-legend-file">overlay-mining.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-ruins.png" alt="Ruins">
+        <span class="hex-legend-name">Ruins</span>
+        <span class="hex-legend-file">overlay-ruins.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-ruined-tower.png" alt="Ruined Tower">
+        <span class="hex-legend-name">Ruined Tower</span>
+        <span class="hex-legend-file">overlay-ruined-tower.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-ruined-city.png" alt="Ruined City">
+        <span class="hex-legend-name">Ruined City</span>
+        <span class="hex-legend-file">overlay-ruined-city.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-ruined-village.png" alt="Ruined Village">
+        <span class="hex-legend-name">Ruined Village</span>
+        <span class="hex-legend-file">overlay-ruined-village.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-battleground.png" alt="Battleground">
+        <span class="hex-legend-name">Battleground</span>
+        <span class="hex-legend-file">overlay-battleground.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-oasis.png" alt="Oasis">
+        <span class="hex-legend-name">Oasis</span>
+        <span class="hex-legend-file">overlay-oasis.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+      <div class="hex-legend-item">
+        <img class="overlay-legend-thumb" src="../public/hex-tiles/overlay-unexplored-poi.png" alt="Unexplored POI">
+        <span class="hex-legend-name">Unexplored POI</span>
+        <span class="hex-legend-file">overlay-unexplored-poi.png</span>
+        <span class="overlay-legend-badge badge-half">half 0.45×</span>
+      </div>
+    </div>
+
+    <p style="font-size: 0.65rem; color: var(--text-muted); font-style: italic;">
+      Note: <code style="font-size: 0.6rem;">wilderness</code> is a valid LocationSubtype but has no overlay icon — it renders as bare terrain.
+      <br>Updated 2026-03-07. Deciduous Forest confirmed as v5a. Farmland overlay at full size (0.85×).
+    </p>
+  </div>
+
   <!-- ======== PROMPT PATTERN ======== -->
   <div class="section">
     <h2>Prompt Construction Pattern</h2>

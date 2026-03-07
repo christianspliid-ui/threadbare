@@ -55,7 +55,7 @@ Three documentation layers, each with a distinct purpose. Do not duplicate conte
 The game's visual identity is called **Threadbare** — dark world, hidden magic, threads that break through. All visual direction lives in two coupled files:
 
 - **`STYLE.md`** — the authoritative source of truth for all visual style decisions: colors, sphere form language, art direction, lighting rules, prompt construction, exclusions.
-- **`Design/style-tile.html`** — an HTML visualization of STYLE.md, used as a quick visual reference for colors, swatches, gradients, and UI chrome.
+- **`Design/style-tile.html`** — an HTML visualization of STYLE.md, used as a quick visual reference for colors, swatches, gradients, and UI chrome. **Also the master registry of all hex tile assets** — terrain tiles, clear fills, overlay icons, size tiers, and active/reserve status. If an asset isn't in the style tile's "Hex Asset Legend" section, it's not in the game.
 
 **The style tile must always reflect STYLE.md.** Whenever STYLE.md is modified — colors changed, spheres renamed, sections added or removed — the style tile must be updated in the same session to stay in sync. Never leave them diverged.
 

@@ -136,6 +136,8 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 
 Hex map tiles use a **three-component compositable system**. Magic is never baked into terrain tiles — it is a separate overlay layer.
 
+> **Master Asset Registry:** The style tile (`Design/style-tile.html`) contains the authoritative visual legend of every hex terrain tile, clear hex fill, and location overlay icon in the game — including filenames, size tiers, and active/reserve status. If you need to know what hex assets exist or which version is in use, check the style tile's "Hex Asset Legend" section. Code mapping lives in `src/data/hex-tile-assets.ts`.
+
 ### Pipeline
 
 Generated images are 1:1 squares with features centered. A Python pipeline (`scripts/generate-hex-tile.py`) applies a flat-top hexagonal alpha mask with feathered edges, then saves the result as a transparent PNG ready for the hex grid renderer.

@@ -8,7 +8,15 @@ import {
   DUAL_CULTURE_PROBABILITY,
   CULTURELESS_PROBABILITY,
 } from '../../types/culture';
-import { composeCultureIdentity, generateCultureName } from '../cultureGenerator';
+import type { CosmologyProfile, TerrainType } from '../../types/index';
+import {
+  composeCultureIdentity,
+  generateCultureName,
+  generateCultures,
+  assignCultureToActor,
+  assignCultureToLocation,
+  assignCulturesToActors,
+} from '../cultureGenerator';
 
 describe('culture graph edges', () => {
   it('supports belongs_to edge type for culture assignment', () => {
@@ -130,5 +138,219 @@ describe('generateCultureName', () => {
     const identity = composeCultureIdentity('chaos', ['force'], 'ocean' as any);
     const name = generateCultureName(identity, rng);
     expect(name.length).toBeGreaterThan(0);
+  });
+});
+
+// ─── Helper for tests ──────────────────────────────────────────────
+
+function balancedCosmology(): CosmologyProfile {
+  return {
+    force: 0.125,
+    matter: 0.125,
+    energy: 0.125,
+    life: 0.125,
+    mind: 0.125,
+    spirit: 0.125,
+    time: 0.125,
+    entropy: 0.125,
+  };
+}
+
+function mockLocationNodes(graph: WorldGraph, terrains: TerrainType[]): string[] {
+  const ids: string[] = [];
+  for (let i = 0; i < terrains.length; i++) {
+    const id = `loc_${i}`;
+    graph.addNode({
+      id,
+      type: 'location',
+      name: `Location ${i}`,
+      properties: { terrain: terrains[i] },
+    });
+    ids.push(id);
+  }
+  return ids;
+}
+
+// ─── Test Suites for New Functions ──────────────────────────────────
+
+describe('generateCultures', () => {
+  it('creates between CULTURE_COUNT.min and CULTURE_COUNT.max culture nodes', () => {
+    const graph = new WorldGraph();
+    const locIds = mockLocationNodes(graph, ['desert', 'mountains', 'jungle', 'grassland']);
+    const rng = (() => {
+      let i = 0;
+      return () => (i++ * 0.1) % 1;
+    })();
+    const cultureIds = generateCultures(graph, balancedCosmology(), locIds, rng);
+    expect(cultureIds.length).toBeGreaterThanOrEqual(CULTURE_COUNT.min);
+    expect(cultureIds.length).toBeLessThanOrEqual(CULTURE_COUNT.max);
+  });
+
+  it('creates culture nodes with type actor and actorType culture', () => {
+    const graph = new WorldGraph();
+    const locIds = mockLocationNodes(graph, ['desert', 'mountains', 'jungle']);
+    const rng = (() => {
+      let i = 0;
+      return () => (i++ * 0.17) % 1;
+    })();
+    const cultureIds = generateCultures(graph, balancedCosmology(), locIds, rng);
+    for (const id of cultureIds) {
+      const node = graph.getNode(id);
+      expect(node).toBeDefined();
+      expect(node!.type).toBe('actor');
+      expect(node!.properties.actorType).toBe('culture');
+      expect(node!.properties.cultureIdentity).toBeDefined();
+    }
+  });
+
+  it('assigns location culture edges (historical + current)', () => {
+    const graph = new WorldGraph();
+    const locIds = mockLocationNodes(graph, ['desert', 'mountains', 'jungle', 'grassland']);
+    const rng = (() => {
+      let i = 0;
+      return () => (i++ * 0.13) % 1;
+    })();
+    generateCultures(graph, balancedCosmology(), locIds, rng);
+    for (const locId of locIds) {
+      const edges = graph.getAllEdgesForNode(locId).filter(e => e.type === 'belongs_to');
+      expect(edges.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('is deterministic with same rng', () => {
+    const makeGraph = () => {
+      const g = new WorldGraph();
+      mockLocationNodes(g, ['desert', 'mountains', 'jungle']);
+      return g;
+    };
+    const locIds = ['loc_0', 'loc_1', 'loc_2'];
+    const rng1 = (() => {
+      let i = 0;
+      return () => (i++ * 0.13) % 1;
+    })();
+    const rng2 = (() => {
+      let i = 0;
+      return () => (i++ * 0.13) % 1;
+    })();
+    const g1 = makeGraph();
+    const g2 = makeGraph();
+    const ids1 = generateCultures(g1, balancedCosmology(), locIds, rng1);
+    const ids2 = generateCultures(g2, balancedCosmology(), locIds, rng2);
+    expect(ids1).toEqual(ids2);
+  });
+});
+
+describe('assignCultureToActor', () => {
+  it('creates a belongs_to edge with culturalStrength', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'ind_0',
+      type: 'actor',
+      name: 'Kael',
+      properties: { actorType: 'individual' },
+    });
+    graph.addNode({
+      id: 'culture_0',
+      type: 'actor',
+      name: 'Culture',
+      properties: { actorType: 'culture' },
+    });
+    assignCultureToActor(graph, 'ind_0', 'culture_0', 0.7);
+    const edges = graph.getEdgesByType('belongs_to');
+    expect(edges).toHaveLength(1);
+    expect(edges[0].source).toBe('ind_0');
+    expect(edges[0].target).toBe('culture_0');
+    expect(edges[0].properties.culturalStrength).toBe(0.7);
+  });
+});
+
+describe('assignCultureToLocation', () => {
+  it('creates a belongs_to edge with cultureLayer', () => {
+    const graph = new WorldGraph();
+    graph.addNode({
+      id: 'loc_0',
+      type: 'location',
+      name: 'Place',
+      properties: {},
+    });
+    graph.addNode({
+      id: 'culture_0',
+      type: 'actor',
+      name: 'Culture',
+      properties: { actorType: 'culture' },
+    });
+    assignCultureToLocation(graph, 'loc_0', 'culture_0', 'historical');
+    const edges = graph.getEdgesByType('belongs_to');
+    expect(edges).toHaveLength(1);
+    expect(edges[0].properties.cultureLayer).toBe('historical');
+  });
+});
+
+describe('assignCulturesToActors', () => {
+  it('assigns cultures to individuals following budget model', () => {
+    const graph = new WorldGraph();
+    const cultureIds = ['culture_0', 'culture_1'];
+    for (const id of cultureIds) {
+      graph.addNode({
+        id,
+        type: 'actor',
+        name: id,
+        properties: { actorType: 'culture' },
+      });
+    }
+    const indIds: string[] = [];
+    for (let i = 0; i < 20; i++) {
+      const id = `ind_${i}`;
+      graph.addNode({
+        id,
+        type: 'actor',
+        name: id,
+        properties: { actorType: 'individual' },
+      });
+      indIds.push(id);
+    }
+    graph.addNode({
+      id: 'fac_0',
+      type: 'actor',
+      name: 'Faction',
+      properties: { actorType: 'faction' },
+    });
+
+    const rng = (() => {
+      let i = 0;
+      return () => (i++ * 0.07) % 1;
+    })();
+    assignCulturesToActors(graph, indIds, ['fac_0'], cultureIds, rng);
+
+    // All factions should have exactly 1 culture
+    const facEdges = graph.getAllEdgesForNode('fac_0').filter(e => e.type === 'belongs_to');
+    expect(facEdges).toHaveLength(1);
+    expect(facEdges[0].properties.culturalStrength).toBeGreaterThanOrEqual(
+      CULTURE_STRENGTH_FACTION.min
+    );
+    expect(facEdges[0].properties.culturalStrength).toBeLessThanOrEqual(
+      CULTURE_STRENGTH_FACTION.max
+    );
+
+    let singleCulture = 0;
+    let dualCulture = 0;
+    let cultureless = 0;
+    for (const id of indIds) {
+      const edges = graph.getAllEdgesForNode(id).filter(e => e.type === 'belongs_to');
+      if (edges.length === 0) cultureless++;
+      else if (edges.length === 1) singleCulture++;
+      else dualCulture++;
+    }
+    expect(singleCulture + dualCulture + cultureless).toBe(20);
+
+    for (const id of indIds) {
+      const edges = graph.getAllEdgesForNode(id).filter(e => e.type === 'belongs_to');
+      for (const e of edges) {
+        // Strengths should be positive
+        expect(e.properties.culturalStrength).toBeGreaterThan(0);
+        // Strengths should not exceed max (dual culture gets reduced to 0.6*max)
+        expect(e.properties.culturalStrength).toBeLessThanOrEqual(CULTURE_STRENGTH_INDIVIDUAL.max);
+      }
+    }
   });
 });
