@@ -15,12 +15,14 @@ describe('AvatarHUD', () => {
 
   it('displays avatar name', () => {
     render(<AvatarHUD {...defaultProps} />);
-    expect(screen.getByText('Kael the Wanderer')).toBeTruthy();
+    // Avatar button now just shows "Avatar" (name is in sidebar)
+    expect(screen.getByRole('button', { name: /^avatar$/i })).toBeTruthy();
   });
 
   it('calls onCenterOnAvatar when name is clicked', () => {
     render(<AvatarHUD {...defaultProps} />);
-    fireEvent.click(screen.getByText('Kael the Wanderer'));
+    // Click the Avatar center button (replaces the name button)
+    fireEvent.click(screen.getByRole('button', { name: /^avatar$/i }));
     expect(defaultProps.onCenterOnAvatar).toHaveBeenCalled();
   });
 

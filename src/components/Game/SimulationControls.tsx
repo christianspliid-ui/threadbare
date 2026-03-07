@@ -20,12 +20,12 @@ export function SimulationControls({
   return (
     <div className="bg-stone-700/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h3
+        <h2
           className="text-sm font-bold text-amber-100 uppercase tracking-widest"
           style={{ fontFamily: 'Cinzel, serif' }}
         >
           Time
-        </h3>
+        </h2>
         <span className="text-xs text-amber-400/60 font-mono">
           Tick {tick}
         </span>

@@ -5,8 +5,11 @@ import {
   logInteraction,
   updateReputation,
   decayReputation,
+  computeStakes,
+  resolveDilemma,
+  applyDilemmaEffects,
 } from '../disposition';
-import type { CooperationStrategy, InteractionRecord } from '../../types/disposition';
+import type { CooperationStrategy, InteractionRecord, DilemmaOutcome } from '../../types/disposition';
 import {
   DISPOSITION_COOPERATE_BONUS,
   DISPOSITION_DEFECT_BONUS,
@@ -16,6 +19,15 @@ import {
   INTERACTION_LOG_CAP,
   DILEMMA_STAKES_THRESHOLD,
   DEFAULT_REPUTATION,
+  STAKES_DOMAIN_GOLD,
+  STAKES_DOMAIN_IRON,
+  STAKES_EXTREME_SENTIMENT,
+  STAKES_FACTION_LEADER,
+  STAKES_TERRITORY_CONTROL,
+  DILEMMA_MUTUAL_TRUST_SENTIMENT,
+  DILEMMA_MUTUAL_TRUST_STRENGTH,
+  DILEMMA_BETRAYAL_SENTIMENT,
+  DILEMMA_MUTUAL_DISTRUST_SENTIMENT,
 } from '../../types/disposition';
 import type { ActionCandidate } from '../../types/agent';
 
@@ -585,5 +597,232 @@ describe('decayReputation', () => {
     const low = 0.49;
     const resultLow = decayReputation(low);
     expect(resultLow).toBeLessThanOrEqual(DEFAULT_REPUTATION);
+  });
+});
+
+// ============ GROUP 4: computeStakes Tests ============
+
+describe('computeStakes', () => {
+  it('returns 0.3 for gold domain alone', () => {
+    const stakes = computeStakes('gold', 0, false, false);
+    expect(stakes).toBe(STAKES_DOMAIN_GOLD);
+  });
+
+  it('returns 0.4 for iron domain alone', () => {
+    const stakes = computeStakes('iron', 0, false, false);
+    expect(stakes).toBe(STAKES_DOMAIN_IRON);
+  });
+
+  it('returns 0 for non-special domain', () => {
+    const stakes = computeStakes('shadow', 0, false, false);
+    expect(stakes).toBe(0);
+  });
+
+  it('adds 0.2 for extreme positive sentiment', () => {
+    const stakes = computeStakes('gold', 0.8, false, false);
+    expect(stakes).toBe(STAKES_DOMAIN_GOLD + STAKES_EXTREME_SENTIMENT);
+  });
+
+  it('adds 0.2 for extreme negative sentiment', () => {
+    const stakes = computeStakes('iron', -0.8, false, false);
+    expect(stakes).toBe(STAKES_DOMAIN_IRON + STAKES_EXTREME_SENTIMENT);
+  });
+
+  it('does not add extreme sentiment bonus for sentiment near 0.7 boundary', () => {
+    const stakes = computeStakes('gold', 0.7, false, false);
+    expect(stakes).toBe(STAKES_DOMAIN_GOLD);
+  });
+
+  it('adds 0.3 for faction leader', () => {
+    const stakes = computeStakes('gold', 0, true, false);
+    expect(stakes).toBe(STAKES_DOMAIN_GOLD + STAKES_FACTION_LEADER);
+  });
+
+  it('adds 0.3 for territory control', () => {
+    const stakes = computeStakes('iron', 0, false, true);
+    expect(stakes).toBe(STAKES_DOMAIN_IRON + STAKES_TERRITORY_CONTROL);
+  });
+
+  it('stacks all bonuses and clamps at 1.0', () => {
+    // gold (0.3) + extreme sentiment (0.2) + faction leader (0.3) + territory (0.3) = 1.2 → clamps to 1.0
+    const stakes = computeStakes('gold', 0.75, true, true);
+    expect(stakes).toBe(1.0);
+  });
+
+  it('clamps negative stakes to 0', () => {
+    const stakes = computeStakes('shadow', 0, false, false);
+    expect(stakes).toBeGreaterThanOrEqual(0);
+  });
+});
+
+// ============ GROUP 5: resolveDilemma Tests ============
+
+describe('resolveDilemma', () => {
+  it('returns mutual_trust when both cooperate', () => {
+    const emptyHistory: InteractionRecord[] = [];
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-cooperate',
+      'always-cooperate',
+      emptyHistory,
+      emptyHistory,
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.outcome).toBe('mutual_trust');
+    expect(event.actorMove).toBe('cooperate');
+    expect(event.targetMove).toBe('cooperate');
+    expect(event.tick).toBe(10);
+    expect(event.stakes).toBe(0.5);
+  });
+
+  it('returns betrayed when actor cooperates and target defects', () => {
+    const emptyHistory: InteractionRecord[] = [];
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-cooperate',
+      'always-defect',
+      emptyHistory,
+      emptyHistory,
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.outcome).toBe('betrayed');
+    expect(event.actorMove).toBe('cooperate');
+    expect(event.targetMove).toBe('defect');
+  });
+
+  it('returns exploitation when actor defects and target cooperates', () => {
+    const emptyHistory: InteractionRecord[] = [];
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-defect',
+      'always-cooperate',
+      emptyHistory,
+      emptyHistory,
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.outcome).toBe('exploitation');
+    expect(event.actorMove).toBe('defect');
+    expect(event.targetMove).toBe('cooperate');
+  });
+
+  it('returns mutual_distrust when both defect', () => {
+    const emptyHistory: InteractionRecord[] = [];
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-defect',
+      'always-defect',
+      emptyHistory,
+      emptyHistory,
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.outcome).toBe('mutual_distrust');
+    expect(event.actorMove).toBe('defect');
+    expect(event.targetMove).toBe('defect');
+  });
+
+  it('evaluates strategies based on history', () => {
+    const actorHistory: InteractionRecord[] = [
+      {
+        tick: 5,
+        actorMove: 'cooperate',
+        targetMove: 'cooperate',
+        context: 'trade',
+        stakes: 'low',
+      },
+    ];
+    const targetHistory: InteractionRecord[] = [];
+    // tit-for-tat with cooperative history should cooperate
+    // always-cooperate should cooperate
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'tit-for-tat',
+      'always-cooperate',
+      actorHistory,
+      targetHistory,
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.outcome).toBe('mutual_trust');
+  });
+
+  it('includes actorId and targetId in event', () => {
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-cooperate',
+      'always-cooperate',
+      [],
+      [],
+      10,
+      'trade',
+      0.5,
+    );
+    expect(event.actorId).toBe('actor.1');
+    expect(event.targetId).toBe('actor.2');
+  });
+
+  it('includes context in event', () => {
+    const event = resolveDilemma(
+      'actor.1',
+      'actor.2',
+      'always-cooperate',
+      'always-cooperate',
+      [],
+      [],
+      10,
+      'raid',
+      0.5,
+    );
+    expect(event.context).toBe('raid');
+  });
+});
+
+// ============ GROUP 6: applyDilemmaEffects Tests ============
+
+describe('applyDilemmaEffects', () => {
+  it('mutual_trust: +0.15 sentiment, +0.1 strength, both rep +0.05', () => {
+    const effects = applyDilemmaEffects('mutual_trust');
+    expect(effects.sentimentDelta).toBe(DILEMMA_MUTUAL_TRUST_SENTIMENT);
+    expect(effects.strengthDelta).toBe(DILEMMA_MUTUAL_TRUST_STRENGTH);
+    expect(effects.actorRepDelta).toBe(REPUTATION_UPDATE_COOPERATE);
+    expect(effects.targetRepDelta).toBe(REPUTATION_UPDATE_COOPERATE);
+  });
+
+  it('betrayed: -0.4 sentiment, actor rep +0.025, target rep -0.08', () => {
+    const effects = applyDilemmaEffects('betrayed');
+    expect(effects.sentimentDelta).toBe(DILEMMA_BETRAYAL_SENTIMENT);
+    expect(effects.strengthDelta).toBe(0);
+    expect(effects.actorRepDelta).toBe(REPUTATION_UPDATE_COOPERATE * 0.5);
+    expect(effects.targetRepDelta).toBe(REPUTATION_UPDATE_DEFECT);
+  });
+
+  it('exploitation: -0.4 sentiment, actor rep -0.08, target rep +0.025', () => {
+    const effects = applyDilemmaEffects('exploitation');
+    expect(effects.sentimentDelta).toBe(DILEMMA_BETRAYAL_SENTIMENT);
+    expect(effects.strengthDelta).toBe(0);
+    expect(effects.actorRepDelta).toBe(REPUTATION_UPDATE_DEFECT);
+    expect(effects.targetRepDelta).toBe(REPUTATION_UPDATE_COOPERATE * 0.5);
+  });
+
+  it('mutual_distrust: -0.1 sentiment, both rep -0.04', () => {
+    const effects = applyDilemmaEffects('mutual_distrust');
+    expect(effects.sentimentDelta).toBe(DILEMMA_MUTUAL_DISTRUST_SENTIMENT);
+    expect(effects.strengthDelta).toBe(0);
+    expect(effects.actorRepDelta).toBe(REPUTATION_UPDATE_DEFECT * 0.5);
+    expect(effects.targetRepDelta).toBe(REPUTATION_UPDATE_DEFECT * 0.5);
   });
 });

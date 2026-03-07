@@ -101,3 +101,43 @@ export const ACTION_TYPES: RivalAction['type'][] = [
   'attack',
   'wait',
 ];
+
+/** Rival action message templates — multiple variants per action type for prose variety.
+ *
+ * Each action type has 3-4 template variants. During narrative generation, the engine
+ * uses a seeded RNG to pick one, ensuring determinism while avoiding repetitive log entries.
+ *
+ * Templates are formatted with {rival} placeholder for the rival's name.
+ */
+export const RIVAL_ACTION_TEMPLATES: Record<RivalAction['type'], string[]> = {
+  recruit: [
+    '{rival} gathers new followers to their cause',
+    '{rival} whispers promises to potential converts',
+    '{rival} expands their base of devoted servants',
+    '{rival} sows seeds of loyalty among your people',
+  ],
+  intervene: [
+    '{rival} meddles in the affairs of mortals',
+    '{rival} casts their will upon the world',
+    '{rival} reaches out to shape distant events',
+    '{rival} whispers guidance to those who listen',
+  ],
+  expand: [
+    '{rival} extends their reach into new territory',
+    '{rival} claims dominion over fresh lands',
+    '{rival} spreads their influence across new realms',
+    '{rival} marks new domains as their own',
+  ],
+  attack: [
+    '{rival} strikes at the foundations of your work',
+    '{rival} assails your influence with dark intent',
+    '{rival} lashes out against your presence',
+    '{rival} wages war upon your dominion',
+  ],
+  wait: [
+    '{rival} bides their time in watchful silence',
+    '{rival} gathers strength beyond the veil',
+    '{rival} plots in the shadows',
+    '{rival} holds counsel with ancient powers',
+  ],
+};

@@ -14,6 +14,8 @@ import type { ReachDomain } from '../types/traits';
 import type { EchoDefinition } from '../types/echo';
 import type { ActiveInjection } from './echo';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
+import { assignCooperationStrategy } from './disposition';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -228,6 +230,9 @@ export function seedWorld(
 
     const locationId = pickRandom(rng, locationIds);
 
+    const narrativeArchetypeId = NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)].id;
+    const cooperationStrategy = assignCooperationStrategy(narrativeArchetypeId, profile, rng);
+
     graph.addNode({
       id,
       type: 'actor',
@@ -237,7 +242,9 @@ export function seedWorld(
         axiologicalProfile: profile,
         domainCapabilities: generateDomainCapabilities(rng),
         locationId,
-        narrativeArchetype: NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)].id,
+        narrativeArchetype: narrativeArchetypeId,
+        cooperationStrategy,
+        reputationScore: DEFAULT_REPUTATION,
       },
     });
     individualIds.push(id);

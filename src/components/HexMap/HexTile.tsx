@@ -4,6 +4,9 @@ import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints } from '../../lib/hexMath';
 import { getHexTileUrl } from '../../data/hex-tile-assets';
 
+// Hex tile display constants
+const UNEXPLORED_HEX_COLOR = '#1e1b2e'; // Dark world surface, ~12% brightness matching HEX_MAP_BACKGROUND
+
 interface HexTileProps {
   tile: HexTile;
   cx: number;
@@ -32,13 +35,13 @@ export function HexTileComponent({
   const tileUrl = getHexTileUrl(tile.terrain);
   const imgSize = size * 2;
 
-  // Unexplored: only render black fill, no content
+  // Unexplored: only render dark fill, no content
   if (visibility === 'unexplored') {
     return (
       <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
         <polygon
           points={points}
-          fill="#0a0a0e"
+          fill={UNEXPLORED_HEX_COLOR}
           stroke={strokeColor}
           strokeWidth={0.6}
         />

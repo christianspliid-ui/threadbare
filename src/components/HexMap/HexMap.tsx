@@ -7,9 +7,11 @@ import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
 import { HexDefs } from './HexDefs';
 
+// Hex map display constants
 const DEFAULT_ZOOM_SCALE = 3.0;
 const MIN_ZOOM_SCALE = 1.0;
 const MAX_ZOOM_SCALE = 4.0;
+const HEX_MAP_BACKGROUND = '#1e1b2e'; // Dark world surface, ~12% brightness with cool purple cast matching Threadbare aesthetic
 
 interface HexMapProps {
   tiles: HexTile[];
@@ -42,8 +44,9 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   onHexClick, onHexHover,
 }, ref) => {
   const { width, height } = useMemo(() => {
-    const w = cols * Math.sqrt(3) * hexSize + Math.sqrt(3) * hexSize * 0.5;
-    const h = rows * hexSize * 1.5 + hexSize * 0.5;
+    // Flat-top hex layout: horizontal spacing = 1.5 * size, vertical spacing = √3 * size
+    const w = cols * hexSize * 1.5 + hexSize * 0.5;
+    const h = rows * Math.sqrt(3) * hexSize + Math.sqrt(3) * hexSize * 0.5;
     return { width: w + hexSize, height: h + hexSize };
   }, [cols, rows, hexSize]);
 
@@ -118,7 +121,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         ref={svgRef}
         viewBox={`0 0 ${width + padding * 2} ${height + padding * 2}`}
         className="w-full h-full"
-        style={{ background: '#0a0a0e' }}
+        style={{ background: HEX_MAP_BACKGROUND }}
       >
         <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group" transform={tileBaseTransform}>

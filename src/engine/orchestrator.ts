@@ -18,6 +18,7 @@ import {
 } from './influence';
 import { evaluateMandate, advanceMandateStage } from './mandate';
 import { recalcVisibility, collectLOSSources } from './visibility';
+import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -119,13 +120,22 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         interventionCount: rivalState.interventionCount + 1,
       };
 
-      const actionDesc = rival.behavior === 'aggressive'
-        ? `${rival.name} strikes against your influence`
-        : rival.behavior === 'subtle'
-        ? `${rival.name} whispers doubt among your followers`
-        : rival.behavior === 'territorial'
-        ? `${rival.name} fortifies their domain`
-        : `${rival.name} extends their reach into new territory`;
+      // Map behavior to action type, then pick a template variant
+      let actionType: 'recruit' | 'intervene' | 'expand' | 'attack' | 'wait';
+      if (rival.behavior === 'aggressive') {
+        actionType = 'attack';
+      } else if (rival.behavior === 'subtle') {
+        actionType = 'intervene';
+      } else if (rival.behavior === 'territorial') {
+        actionType = 'expand';
+      } else {
+        actionType = 'expand';
+      }
+
+      const templates = RIVAL_ACTION_TEMPLATES[actionType] ?? ['{rival} acts against you'];
+      const templateIdx = Math.floor(rng() * templates.length);
+      const template = templates[templateIdx];
+      const actionDesc = template.replace(/{rival}/g, rival.name);
 
       events.push({
         id: nextEventId(),

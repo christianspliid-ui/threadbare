@@ -80,7 +80,7 @@ export function AvatarHUD({
         </button>
       </div>
 
-      {/* Avatar Name */}
+      {/* Avatar Center Button */}
       <div
         style={{
           display: 'flex',
@@ -99,7 +99,7 @@ export function AvatarHUD({
             boxShadow: `0 0 8px ${sphereColor}60`,
           }}
         />
-        {/* Name */}
+        {/* Center Button */}
         <button
           onClick={onCenterOnAvatar}
           style={{
@@ -125,7 +125,7 @@ export function AvatarHUD({
             (e.target as HTMLButtonElement).style.color = '#fef3c7';
           }}
         >
-          {avatarName}
+          Avatar
         </button>
       </div>
     </div>
