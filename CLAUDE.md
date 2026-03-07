@@ -239,6 +239,9 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-06 | Repo: src/engine/ | Created avatarMove.ts — moveAvatarToHex with transient location creation (3 tests) | Phase 6F Task 8: avatar movement |
 | 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — wired visibility, zoom, AvatarHUD, move mode, initial camera centering | Phase 6F Task 9: full integration |
 | 2026-03-06 | CLAUDE.md | Updated project status (Phase 6F complete), engine stats, changelog | Phase 6F documentation |
+| 2026-03-07 | skills/qa-orchestrator/ | Created QA orchestrator skill — 4 specialist agents (visual, info-arch, interaction, react-code), finding schema, 14-step orchestrator checklist, Notion integration | Repeatable QA flow for UI/UX/frontend |
+| 2026-03-07 | Docs/plans/ | Created 2026-03-07-qa-orchestrator-design.md, 2026-03-07-qa-orchestrator-implementation.md | Design rationale (7 decisions) + 12-task TDD implementation plan |
+| 2026-03-07 | Docs/qa/ | Created skill test results (RED-GREEN comparison) | Baseline vs with-skill: structured JSON output, per-finding effort/severity, Notion-ready |
 
 ## Session Workflow
 
@@ -255,6 +258,24 @@ When starting implementation work:
    - Update the Project Status section in this file (phase status, engine stats)
 
 **This is non-negotiable.** Documentation updates happen immediately after integration and testing, in the same session, not "later."
+
+**Use the `gamedocumenter` skill** (in `skills/gamedocumenter/SKILL.md`) for Step 5. It encodes the exact tool calls, API workarounds, and templates for all three documentation layers. Do not improvise the documentation workflow — the skill exists because the Obsidian and Notion APIs have specific quirks that waste time if you don't know about them.
+
+## Continuous Improvement & Skill Creation
+
+Repetitive workflows are a signal to invest in a reusable skill. If you notice yourself (or the user) doing the same multi-step process across sessions — documentation updates, content generation pipelines, testing patterns, art prompt construction — propose creating or refining a skill for it. The upfront cost of skill creation pays for itself quickly in consistency and speed.
+
+**When to propose a skill:**
+- You've done the same workflow 2+ times and it has non-obvious steps or workarounds
+- API quirks or tool-specific patterns need to be remembered across sessions
+- The workflow has a checklist-like structure that benefits from rigid enforcement
+
+**Existing project skills:**
+- `gamedocumenter` — post-implementation documentation across CLAUDE.md, Obsidian, Notion
+- `image-generation` — art prompt construction for Nano Banana / Imagen with hex pipeline
+- `qa-orchestrator` — dispatches 4 specialist sub-agents for systematic UI/UX/frontend QA sweeps
+
+**How to create:** Use the `skill-creator` skill, which includes a TDD-like eval framework for measuring skill quality against baselines.
 
 ## Project Status
 
