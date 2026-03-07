@@ -8,8 +8,8 @@
  *
  * Sections:
  * 1. SPHERE_VOCABULARY — adjectives, verbs, nouns for each of 8 Creation Spheres
- * 2. ROUTINE_TEMPLATES — 11 event-type templates for Tier 1 prose
- * 3. NOTABLE_TEMPLATES — 5 event-type templates for Tier 2 prose with personality
+ * 2. ROUTINE_TEMPLATES — 15 event-type templates for Tier 1 prose
+ * 3. NOTABLE_TEMPLATES — 9 event-type templates for Tier 2 prose with personality
  * 4. VALUE_FLAVORS — personality modifiers for 10 value pairs
  */
 
@@ -117,6 +117,26 @@ export const ROUTINE_TEMPLATES: Record<string, string[]> = {
   trait_lost: [
     'Something faded within {actor}. The {adj} {noun} dimmed and was gone.',
   ],
+  dilemma_mutual_trust: [
+    '{actor} and {target} moved together, each honoring the other with {adj} {noun}.',
+    'A bond forged in {adj} trust — {actor} and {target} emerged from their test transformed.',
+    '{actor} chose belief, and {target} answered with {adj} {noun}. The world {verb} in recognition.',
+  ],
+  dilemma_betrayed: [
+    '{actor} reached out to {target} with {adj} purpose, only to find {noun} instead of faith.',
+    'A wound that would not heal — {actor} {verb} with trust, but {target} offered only {noun}.',
+    'The {adj} sting of betrayal settled upon {actor}. {target} had chosen {noun} over the bond.',
+  ],
+  dilemma_exploitation: [
+    '{actor} {verb} against {target}\'s trust, wielding {adj} {noun} without remorse.',
+    'Where {target} offered {adj} faith, {actor} carved out only {noun} and ruin.',
+    '{actor} took what {target} freely gave, leaving nothing but {adj} {noun} in return.',
+  ],
+  dilemma_mutual_distrust: [
+    '{actor} and {target} circled each other warily, each seeing only {adj} {noun} where trust might have bloomed.',
+    'Two souls locked in {noun} — {actor} and {target} {verb} as one, neither willing to yield first.',
+    'Where connection might have grown, there bloomed only {adj} {noun} and suspicion between {actor} and {target}.',
+  ],
 };
 
 // ═══════════════════════════════════════════════════════════════════
@@ -146,6 +166,22 @@ export const NOTABLE_TEMPLATES: Record<string, string[]> = {
   ],
   divine_intervention: [
     'You reach deeper than before into the consciousness of {actor}{personality}. This time the {adj} {noun} of your will leaves a lasting impression — their dreams will never be quite the same.',
+  ],
+  dilemma_mutual_trust: [
+    'In a rare and precious moment, {actor} and {target} stood as mirrors{personality}. Each saw something {adj} and {noun} in the other — a trust that felt eternal, a {noun} worth preserving.',
+    '{actor}{personality} chose belief when doubt would have been safer, and {target} answered with equal {adj} honor. Their bond, though forged in {noun}, would echo through ages yet unborn.',
+  ],
+  dilemma_betrayed: [
+    '{actor}{personality} opened their heart to {target}, offering {adj} {noun} and faith — only to have it turned to ash. The wound runs deep{personality}, and trust, once broken, becomes the sharpest {noun} of all.',
+    'A tragedy in miniature: {actor}, with all their {adj} hope{personality}, believed in {target}. They were met not with honor but with {noun} — and now {actor} knows a {adj} loneliness the world cannot comfort.',
+  ],
+  dilemma_exploitation: [
+    '{actor}{personality} saw an opening and struck without mercy. {target}\'s {adj} faith became a weapon in {actor}\'s hands, transformed into {noun} and dominion. It was calculated, efficient, and utterly {adj}.',
+    'What {actor} did to {target}{personality} cannot be undone. They took what was offered freely and left behind only {adj} {noun} and hollow regret — or perhaps, in {actor}\'s case, none at all.',
+  ],
+  dilemma_mutual_distrust: [
+    '{actor} and {target} were locked in a dance of {adj} caution{personality}. Neither could offer the first {noun} of belief, and so both spiraled inward, each adding another layer of {adj} defense.',
+    'Two souls reaching toward connection but recoiling at the last moment — {actor} and {target}{personality} built walls of {noun} where bridges might have stood. The {adj} cost of that choice echoes still.',
   ],
 };
 
