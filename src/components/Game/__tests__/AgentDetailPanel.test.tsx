@@ -36,6 +36,12 @@ const mockDetail: AgentDetail = {
     { targetId: 'agent.2', targetName: 'Lyra', sentiment: 0.7, strength: 0.8, basis: 'friendship' },
     { targetId: 'agent.3', targetName: 'Mordach', sentiment: -0.5, strength: 0.6, basis: 'rivalry' },
   ],
+  cooperationStrategy: 'tit-for-tat',
+  reputationScore: 0.65,
+  recentInteractions: [
+    { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },
+    { tick: 7, actorMove: 'cooperate', targetMove: 'defect', context: 'war', stakes: 'high' },
+  ],
 };
 
 describe('AgentDetailPanel', () => {
@@ -114,5 +120,25 @@ describe('AgentDetailPanel', () => {
     const noBondsDetail = { ...mockDetail, topBonds: [] };
     render(<AgentDetailPanel detail={noBondsDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
     expect(screen.getByText(/no known bonds/i)).toBeTruthy();
+  });
+
+  it('renders strategy section with strategy name and reputation', () => {
+    render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText('Disposition')).toBeTruthy();
+    expect(screen.getByText('Tit for Tat')).toBeTruthy();
+    expect(screen.getByText('0.65')).toBeTruthy();
+  });
+
+  it('shows "No known strategy" when cooperationStrategy is null', () => {
+    const noStrategyDetail = { ...mockDetail, cooperationStrategy: null as any };
+    render(<AgentDetailPanel detail={noStrategyDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText(/no known strategy/i)).toBeTruthy();
+  });
+
+  it('renders recent interaction history icons', () => {
+    render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    // Should show tick numbers for the 2 interactions
+    expect(screen.getByText('t10')).toBeTruthy();
+    expect(screen.getByText('t7')).toBeTruthy();
   });
 });
