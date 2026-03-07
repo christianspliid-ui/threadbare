@@ -18,6 +18,13 @@ import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { FoundationBalances } from '../types/worldSoul';
 import { generateCultures, assignCulturesToActors } from './cultureGenerator';
+import {
+  instantiateFormativeTraits,
+  instantiateBehavioralTraits,
+  grantFormativeTraits,
+  grantBehavioralTraits,
+} from './culturalTraits';
+import type { CultureIdentity } from '../types/culture';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -330,6 +337,31 @@ export function seedWorld(
 
   // ── Culture assignment to actors ──────────────────────────
   assignCulturesToActors(graph, individualIds, factionIds, cultureIds, rng);
+
+  // ── Cultural trait instantiation + granting ──────────────────
+  for (const cultureId of cultureIds) {
+    const cultureNode = graph.getNode(cultureId);
+    if (!cultureNode) continue;
+    const identity = cultureNode.properties.cultureIdentity as CultureIdentity | undefined;
+    if (!identity) continue;
+
+    const formativeIds = instantiateFormativeTraits(graph, identity.formativeTraitSeedIds);
+    const behavioralIds = instantiateBehavioralTraits(graph, identity.behavioralTraitSeedIds);
+
+    // Find all actors belonging to this culture
+    const belongEdges = graph.getEdgesByType('belongs_to')
+      .filter(e => e.target === cultureId);
+
+    for (const edge of belongEdges) {
+      const actorNode = graph.getNode(edge.source);
+      if (!actorNode || actorNode.type !== 'actor') continue;
+      const actorType = actorNode.properties.actorType as string;
+      if (actorType !== 'individual' && actorType !== 'faction') continue;
+
+      grantFormativeTraits(graph, edge.source, formativeIds, 0);
+      grantBehavioralTraits(graph, edge.source, behavioralIds, 0);
+    }
+  }
 
   // ── Artifacts ────────────────────────────────────────────
   const artCount = randomInRange(rng, ARTIFACT_COUNT.min, ARTIFACT_COUNT.max);

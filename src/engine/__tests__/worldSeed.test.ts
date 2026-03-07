@@ -182,4 +182,36 @@ describe('seedWorld culture integration', () => {
         .toBe(b.graph.getNode(b.cultureIds[i])!.name);
     }
   });
+
+  describe('seedWorld cultural traits', () => {
+    it('creates formative trait definition nodes in the graph', () => {
+      const { graph } = seedWorld(balancedCosmology(), mockTiles(), 42);
+      const traitNodes = graph.getNodesByType('trait');
+      const formative = traitNodes.filter(n =>
+        (n.properties as any).subcategory === 'innate'
+        && n.id.startsWith('trait_formative_'));
+      expect(formative.length).toBeGreaterThan(0);
+    });
+
+    it('creates behavioral trait definition nodes in the graph', () => {
+      const { graph } = seedWorld(balancedCosmology(), mockTiles(), 42);
+      const traitNodes = graph.getNodesByType('trait');
+      const behavioral = traitNodes.filter(n =>
+        (n.properties as any).subcategory === 'cultural'
+        && n.id.startsWith('trait_behavioral_'));
+      expect(behavioral.length).toBeGreaterThan(0);
+    });
+
+    it('grants cultural traits to individual actors with culture', () => {
+      const { graph, individualIds } = seedWorld(balancedCosmology(), mockTiles(), 42);
+      const withCulture = individualIds.filter(id =>
+        graph.getOutgoingEdges(id, 'belongs_to').length > 0
+      );
+      expect(withCulture.length).toBeGreaterThan(0);
+      const withTraits = withCulture.filter(id =>
+        graph.getOutgoingEdges(id, 'has_trait').length > 0
+      );
+      expect(withTraits.length).toBeGreaterThan(0);
+    });
+  });
 });
