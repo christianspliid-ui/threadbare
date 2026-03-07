@@ -12,6 +12,8 @@ import type {
   SelectionConfig,
   SelectionResult,
 } from '../types/agent';
+import { applyDispositionModifier } from './disposition';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -111,10 +113,11 @@ export function probabilisticSelect(
 /**
  * Run the full selection pipeline:
  * 1. Score by axiological alignment
- * 2. Apply personality weights (extension point)
- * 3. Select top-N
- * 4. Normalize to probabilities
- * 5. Probabilistic select
+ * 2. Apply disposition modifier (game theory)
+ * 3. Apply personality weights (extension point)
+ * 4. Select top-N
+ * 5. Normalize to probabilities
+ * 6. Probabilistic select
  */
 export function runSelectionPipeline(
   graph: WorldGraph,
@@ -131,16 +134,62 @@ export function runSelectionPipeline(
   // Step 1: Score by goal alignment
   let scored = scoreByGoalAlignment(candidates, profile);
 
-  // Step 2: Apply personality weights (extension point)
+  // Step 2: Apply disposition modifier (game theory)
+  // Group candidates by target and apply modifier per target
+  const cooperationStrategy = actorNode.properties.cooperationStrategy;
+  if (cooperationStrategy && scored.length > 0) {
+    // Get unique targets from candidates
+    const uniqueTargets = [...new Set(scored.map((c) => c.targetId))];
+
+    // For each target, apply disposition modifier to its candidates
+    for (const targetId of uniqueTargets) {
+      const targetCandidates = scored.filter((c) => c.targetId === targetId);
+      if (targetCandidates.length === 0) continue;
+
+      const targetNode = graph.getNode(targetId);
+      if (!targetNode) continue;
+
+      // Find relationship between actor and target (check both directions)
+      let relationship = graph
+        .getOutgoingEdges(actorId, 'relates_to')
+        .find((e) => e.target === targetId);
+
+      if (!relationship) {
+        relationship = graph
+          .getIncomingEdges(actorId, 'relates_to')
+          .find((e) => e.source === targetId);
+      }
+
+      const history = relationship?.properties?.interactionLog ?? [];
+      const targetReputation =
+        (targetNode.properties?.reputationScore as number) ?? DEFAULT_REPUTATION;
+
+      // Apply modifier to these candidates
+      const modified = applyDispositionModifier(
+        targetCandidates,
+        cooperationStrategy,
+        history,
+        targetReputation
+      );
+
+      // Replace the candidates in the scored list with modified versions
+      scored = scored.map((c) => {
+        const modifiedCandidate = modified.find((m) => m.templateId === c.templateId);
+        return modifiedCandidate ?? c;
+      });
+    }
+  }
+
+  // Step 3: Apply personality weights (extension point)
   scored = applyPersonalityWeights(scored);
 
-  // Step 3: Select top-N
+  // Step 4: Select top-N
   const topN = selectTopN(scored, config.topN);
 
-  // Step 4: Assign probabilities
+  // Step 5: Assign probabilities
   const withProbabilities = assignProbabilities(topN);
 
-  // Step 5: Probabilistic select
+  // Step 6: Probabilistic select
   const selected = probabilisticSelect(withProbabilities);
 
   return {
