@@ -37,9 +37,25 @@ describe('classifyBiome', () => {
     expect(biome).toBe('glacier');
   });
 
-  it('returns deciduous_forest for moderate elevation, moderate moisture, temperate temp', () => {
-    const biome = classifyBiome(0.45, 0.45, 0.65);
+  it('returns deciduous_forest for lowland elevation, moderate moisture, temperate temp', () => {
+    // Lowland (0.35) avoids mid-elevation forested hills zone
+    const biome = classifyBiome(0.35, 0.35, 0.55);
     expect(biome).toBe('deciduous_forest');
+  });
+
+  it('returns forested_hills_evergreen for mid-elevation, moderate moisture, cool temp', () => {
+    const biome = classifyBiome(0.45, 0.35, 0.60);
+    expect(biome).toBe('forested_hills_evergreen');
+  });
+
+  it('returns forested_hills_jungle for mid-elevation, high moisture, hot temp', () => {
+    const biome = classifyBiome(0.50, 0.65, 0.75);
+    expect(biome).toBe('forested_hills_jungle');
+  });
+
+  it('returns broken_lands for dry lowland with moderate-hot temp', () => {
+    const biome = classifyBiome(0.35, 0.55, 0.15);
+    expect(biome).toBe('broken_lands');
   });
 
   it('returns tundra for any elevation with frozen temperature', () => {

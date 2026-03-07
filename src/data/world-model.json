@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-03-05T13:22:04.732Z",
-    "nodeCount": 198,
+    "nodeCount": 203,
     "edgeCount": 290,
     "categories": [
       "action-template",
@@ -3263,6 +3263,71 @@
       "category": "terrain",
       "description": "Shorelines, beaches, and seaside regions",
       "properties": {}
+    },
+    {
+      "id": "terrain.forested_hills_evergreen",
+      "name": "Forested Hills (Evergreen)",
+      "category": "terrain",
+      "description": "Rolling hills covered in dense evergreen forest. Pine and spruce cling to steep slopes, creating a dark canopy that filters light into green-gold shafts. The air smells of resin and earth.",
+      "properties": {
+        "color": "#2a3520",
+        "icon": "🌲",
+        "elevation_range": [0.4, 0.8],
+        "temperature_range": [0.15, 0.6],
+        "moisture_range": [0.55, 1.0]
+      }
+    },
+    {
+      "id": "terrain.forested_hills_deciduous",
+      "name": "Forested Hills (Deciduous)",
+      "category": "terrain",
+      "description": "Gentle hills draped in deciduous woodland. In autumn the slopes blaze with color; in winter, bare branches sketch against grey skies. Rich soil supports diverse undergrowth.",
+      "properties": {
+        "color": "#2a3520",
+        "icon": "🌳",
+        "elevation_range": [0.4, 0.8],
+        "temperature_range": [0.3, 0.7],
+        "moisture_range": [0.55, 1.0]
+      }
+    },
+    {
+      "id": "terrain.forested_hills_jungle",
+      "name": "Forested Hills (Jungle)",
+      "category": "terrain",
+      "description": "Tropical hills smothered in jungle growth. Vines hang from ancient trees, exotic birds call through the humid air, and hidden waterfalls cascade down mossy rock faces.",
+      "properties": {
+        "color": "#2a3520",
+        "icon": "🌴",
+        "elevation_range": [0.4, 0.8],
+        "temperature_range": [0.6, 1.0],
+        "moisture_range": [0.7, 1.0]
+      }
+    },
+    {
+      "id": "terrain.great_home_trees",
+      "name": "Great Home Trees",
+      "category": "terrain",
+      "description": "Impossibly vast trees whose canopies form a world above the world. Each trunk is wide enough to house a village. Ancient, sentient, and sacred—these are the dwelling-places of elder races.",
+      "properties": {
+        "color": "#1a2a10",
+        "icon": "🌳",
+        "elevation_range": [0.3, 0.6],
+        "temperature_range": [0.3, 0.7],
+        "moisture_range": [0.6, 1.0]
+      }
+    },
+    {
+      "id": "terrain.broken_lands",
+      "name": "Broken Lands",
+      "category": "terrain",
+      "description": "Shattered terrain of cracked earth, collapsed sinkholes, and jagged rock formations. Some ancient cataclysm tore this land apart, and it has never healed. Dust devils spin between the scars.",
+      "properties": {
+        "color": "#3a3530",
+        "icon": "💀",
+        "elevation_range": [0.25, 0.5],
+        "temperature_range": [0.5, 0.7],
+        "moisture_range": [0.0, 0.25]
+      }
     }
   ],
   "edges": [

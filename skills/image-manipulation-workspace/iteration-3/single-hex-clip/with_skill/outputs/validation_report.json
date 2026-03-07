@@ -1,0 +1,65 @@
+{
+  "task": "Hex Tile Clipping Evaluation",
+  "source_image": "Design/hex-crops-v2/ocean.png",
+  "output_image": "ocean_clipped.png",
+  "output_size": "120x104",
+  "status": "PASS",
+  "summary": "Successfully clipped flat-top hexagonal tile to shape with transparency outside the hex. Black border excluded. Antialiased edges.",
+  "image_properties": {
+    "dimensions": [
+      120,
+      104
+    ],
+    "mode": "RGBA",
+    "file_size_bytes": 14336,
+    "has_alpha_channel": true
+  },
+  "clipping_parameters": {
+    "hex_orientation": "flat-top",
+    "rotation_degrees": 0,
+    "inset_pixels": 3,
+    "antialiasing_supersampling": 2,
+    "note": "Inset=3 excludes ~3px black border while preserving hex content"
+  },
+  "validation_results": {
+    "corners_fully_transparent": true,
+    "corner_values": {
+      "top_left": 0,
+      "top_right": 0,
+      "bottom_left": 0,
+      "bottom_right": 0
+    },
+    "center_pixel_opaque": true,
+    "pixel_distribution": {
+      "fully_transparent": 3373,
+      "fully_opaque": 7911,
+      "semi_transparent_antialiased": 1196,
+      "total_pixels": 12480,
+      "transparency_percent": 27.0,
+      "opaque_percent": 63.4,
+      "antialiased_percent": 9.6
+    },
+    "edge_artifacts": {
+      "pure_white_pixels_in_border": 0,
+      "has_border_remnants": false
+    },
+    "geometric_accuracy": {
+      "note": "Transparency 27% matches expected flat-top hex geometry (25.1% theoretical)",
+      "matches_expected": true
+    }
+  },
+  "verification_checks": [
+    "\u2713 RGBA mode with alpha channel",
+    "\u2713 All four corners fully transparent",
+    "\u2713 Center pixel opaque",
+    "\u2713 Smooth antialiased edges (9.6% semi-transparent pixels)",
+    "\u2713 No pure white edge artifacts",
+    "\u2713 Transparency ratio matches hex geometry",
+    "\u2713 Black border successfully excluded"
+  ],
+  "output_files": {
+    "ocean_clipped.png": "Main clipped hexagon (14 KB)",
+    "ocean_comparison.png": "Side-by-side comparison on checkerboard (23 KB)",
+    "validation.json": "Validation details"
+  }
+}

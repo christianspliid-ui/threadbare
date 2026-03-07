@@ -65,6 +65,7 @@ import {
   getBeliefsStrand,
   getFearsStrand,
 } from '../../engine/strands';
+import type { LocationSubtype } from '../../types';
 import type { LocalEncounterMode, InterventionType } from '../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
@@ -87,6 +88,17 @@ interface GameViewProps {
 
 const COLS = 20;
 const ROWS = 15;
+
+/** Settlement priority for overlay conflicts — larger settlements win */
+const SETTLEMENT_PRIORITY: Partial<Record<LocationSubtype, number>> = {
+  capital: 10, city: 8, town: 6, hamlet: 4,
+  fort: 3, castle: 3, temple: 3, tower: 2, shrine: 2,
+  mining: 2, camp: 1, farmland: 1, ruins: 1,
+  battleground: 1, oasis: 1, unexplored_poi: 0,
+};
+function settlementPriority(subtype: LocationSubtype): number {
+  return SETTLEMENT_PRIORITY[subtype] ?? 0;
+}
 
 /** Build the initial GameState from creation params */
 function initializeGameState(
@@ -341,6 +353,24 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     };
     return sphereColorMap[primarySphere] ?? '#ff6633';
   }, [archetype.sphereAlignment.primary]);
+
+  // Build location overlay map: hex coord key → LocationSubtype for hex map rendering
+  const locationOverlays = useMemo(() => {
+    const overlayMap = new Map<string, LocationSubtype>();
+    const nodes = gameState.graph.getNodesByType('location');
+    for (const node of nodes) {
+      const props = node.properties;
+      if (props.hexCol !== undefined && props.hexRow !== undefined && props.locationSubtype) {
+        const key = `${props.hexCol},${props.hexRow}`;
+        // If multiple locations share a hex, prefer the "largest" settlement
+        const existing = overlayMap.get(key);
+        if (!existing || settlementPriority(props.locationSubtype as LocationSubtype) > settlementPriority(existing)) {
+          overlayMap.set(key, props.locationSubtype as LocationSubtype);
+        }
+      }
+    }
+    return overlayMap;
+  }, [gameState.graph]);
 
   // Avatar pixel position for initial zoom
   const avatarPixelPos = useMemo(() => {
@@ -629,6 +659,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   selectedHex={selectedHex}
                   overlayMode="none"
                   visibilityMap={gameState.visibilityMap}
+                  locationOverlays={locationOverlays}
                   avatarHex={avatarPos ?? undefined}
                   sphereColor={sphereColor}
                   initialCenter={avatarPixelPos ?? undefined}

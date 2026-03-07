@@ -1,0 +1,133 @@
+{
+  "metadata": {
+    "skill_name": "image-manipulation",
+    "skill_path": "skills/image-manipulation",
+    "executor_model": "claude-opus-4-6",
+    "analyzer_model": "claude-opus-4-6",
+    "timestamp": "2026-03-07T18:30:30Z",
+    "evals_run": ["batch-hex-clip", "single-hex-clip", "layer-composite"],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_name": "batch-hex-clip",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 7,
+      "total": 7,
+      "tokens": 106488,
+      "time_seconds": 80.9,
+      "assertions": [
+        {"text": "Output files exist for all 51 source PNGs", "passed": true},
+        {"text": "All output files have RGBA mode", "passed": true},
+        {"text": "All corners transparent", "passed": true},
+        {"text": "All centers opaque", "passed": true},
+        {"text": "Transparency ratio 35-50%", "passed": true},
+        {"text": "No white edge artifacts", "passed": true},
+        {"text": "Anti-aliased edges", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "batch-hex-clip",
+      "configuration": "without_skill",
+      "pass_rate": 0.714,
+      "passed": 5,
+      "total": 7,
+      "tokens": 90883,
+      "time_seconds": 40.0,
+      "assertions": [
+        {"text": "Output files exist for all 51 source PNGs", "passed": true},
+        {"text": "All output files have RGBA mode", "passed": true},
+        {"text": "All corners transparent", "passed": true},
+        {"text": "All centers opaque", "passed": true},
+        {"text": "Transparency ratio 35-50%", "passed": false},
+        {"text": "No white edge artifacts", "passed": true},
+        {"text": "Anti-aliased edges", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "single-hex-clip",
+      "configuration": "with_skill",
+      "pass_rate": 0.714,
+      "passed": 5,
+      "total": 7,
+      "tokens": 104102,
+      "time_seconds": 93.5,
+      "assertions": [
+        {"text": "Output file exists", "passed": true},
+        {"text": "RGBA mode", "passed": true},
+        {"text": "Corners transparent", "passed": true},
+        {"text": "Center opaque", "passed": true},
+        {"text": "No border remnants", "passed": false},
+        {"text": "Transparency ratio 35-50%", "passed": false},
+        {"text": "Validation report provided", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "single-hex-clip",
+      "configuration": "without_skill",
+      "pass_rate": 0.571,
+      "passed": 4,
+      "total": 7,
+      "tokens": 89236,
+      "time_seconds": 36.0,
+      "assertions": [
+        {"text": "Output file exists", "passed": true},
+        {"text": "RGBA mode", "passed": true},
+        {"text": "Corners transparent", "passed": true},
+        {"text": "Center opaque", "passed": true},
+        {"text": "No border remnants", "passed": false},
+        {"text": "Transparency ratio 35-50%", "passed": false},
+        {"text": "Validation report provided", "passed": false}
+      ]
+    },
+    {
+      "eval_name": "layer-composite",
+      "configuration": "with_skill",
+      "pass_rate": 1.0,
+      "passed": 5,
+      "total": 5,
+      "tokens": 94424,
+      "time_seconds": 38.2,
+      "assertions": [
+        {"text": "200x200 output", "passed": true},
+        {"text": "Corners green", "passed": true},
+        {"text": "Center has content", "passed": true},
+        {"text": "Clean hex edges", "passed": true},
+        {"text": "No white artifacts", "passed": true}
+      ]
+    },
+    {
+      "eval_name": "layer-composite",
+      "configuration": "without_skill",
+      "pass_rate": 0.8,
+      "passed": 4,
+      "total": 5,
+      "tokens": 86715,
+      "time_seconds": 14.3,
+      "assertions": [
+        {"text": "200x200 output", "passed": true},
+        {"text": "Corners green", "passed": true},
+        {"text": "Center has content", "passed": true},
+        {"text": "Clean hex edges", "passed": true},
+        {"text": "No white artifacts", "passed": false}
+      ]
+    }
+  ],
+  "run_summary": {
+    "with_skill": {"mean_pass_rate": 0.905, "mean_tokens": 101671, "mean_time": 70.9},
+    "without_skill": {"mean_pass_rate": 0.695, "mean_tokens": 88945, "mean_time": 30.1},
+    "delta": {
+      "pass_rate": "+0.21",
+      "time_seconds": "+40.8",
+      "tokens": "+12726"
+    }
+  },
+  "notes": [
+    "With-skill runs score ~21pp higher on assertion pass rate (90.5% vs 69.5%)",
+    "Batch eval is the strongest differentiator: with-skill 100% vs baseline 71%. Baseline fails on anti-aliasing and transparency ratio.",
+    "Layer composite: baseline leaves 1120 white pixels from un-clipped source; with-skill cleanly clips first.",
+    "Single-hex-clip: both struggle with inset tuning. The with-skill version used inset=2 instead of recommended 4, leaving some border remnants.",
+    "Token cost ~14% higher for with-skill (reading skill file). Duration ~2x due to validation output generation."
+  ]
+}

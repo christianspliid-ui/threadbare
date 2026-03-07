@@ -51,6 +51,7 @@ export type EdgeType =
   // Social
   | 'relates_to'       // inter-actor relationship (sentiment, strength, basis)
   | 'member_of'        // individual is member of group/faction
+  | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'worships'         // actor worships god/ascendant
   // Enchantment
   | 'enchanted'        // caster → target enchantment

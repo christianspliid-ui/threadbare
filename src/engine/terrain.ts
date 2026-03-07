@@ -45,16 +45,22 @@ export function classifyBiome(
     }
     // Very dry lowlands
     if (temperature > 0.7) return 'desert';
-    if (temperature > 0.5) return 'badlands';
+    if (temperature > 0.5) return 'broken_lands';
     return 'steppe';
   }
 
   // Mid-elevation biomes: 0.4–0.6 elevation
   if (elevation < 0.60) {
-    // Wet mid-elevation
+    // Very wet mid-elevation → forested hills
     if (moisture > 0.7) {
-      if (temperature > 0.6) return 'jungle';
-      if (temperature > 0.3) return 'deciduous_forest';
+      if (temperature > 0.6) return 'forested_hills_jungle';
+      if (temperature > 0.3) return 'forested_hills_deciduous';
+      return 'taiga';
+    }
+    // Moderate wet mid-elevation → forested hills or deciduous
+    if (moisture > 0.55) {
+      if (temperature > 0.6) return 'forested_hills_deciduous';
+      if (temperature > 0.3) return 'forested_hills_evergreen';
       return 'taiga';
     }
     // Moderate mid-elevation
@@ -63,14 +69,20 @@ export function classifyBiome(
       if (temperature > 0.3) return 'deciduous_forest';
       return 'taiga';
     }
-    // Drier mid-elevation → hills
+    // Drier mid-elevation → hills or badlands
     if (temperature > 0.65) return 'badlands';
     return 'hills';
   }
 
   // Highlands: 0.6–0.8 elevation
   if (elevation < 0.80) {
-    if (moisture > 0.6) {
+    // Wet highlands — forested hills
+    if (moisture > 0.65) {
+      if (temperature > 0.5) return 'forested_hills_deciduous';
+      if (temperature > 0.3) return 'forested_hills_evergreen';
+      return 'taiga';
+    }
+    if (moisture > 0.5) {
       return temperature > 0.3 ? 'hills' : 'taiga';
     }
     if (temperature > 0.65) return 'plateau';
