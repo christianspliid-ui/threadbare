@@ -242,6 +242,27 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-07 | skills/qa-orchestrator/ | Created QA orchestrator skill — 4 specialist agents (visual, info-arch, interaction, react-code), finding schema, 14-step orchestrator checklist, Notion integration | Repeatable QA flow for UI/UX/frontend |
 | 2026-03-07 | Docs/plans/ | Created 2026-03-07-qa-orchestrator-design.md, 2026-03-07-qa-orchestrator-implementation.md | Design rationale (7 decisions) + 12-task TDD implementation plan |
 | 2026-03-07 | Docs/qa/ | Created skill test results (RED-GREEN comparison) | Baseline vs with-skill: structured JSON output, per-finding effort/severity, Notion-ready |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-game-theory-disposition-design.md, 2026-03-07-game-theory-disposition-implementation.md | Design doc (9 sections) + 16-task TDD implementation plan (1,063 lines) |
+| 2026-03-07 | Repo: src/types/ | Created disposition.ts (112 lines) — CooperationStrategy, InteractionRecord, DilemmaEvent, DilemmaOutcome, StakesLevel + 12 tunable constants | Game theory type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created disposition.ts (400+ lines) — evaluateStrategy, applyDispositionModifier, logInteraction, updateReputation, decayReputation, computeStakes, resolveDilemma, applyDilemmaEffects | Core disposition engine with 5 strategies and dilemma resolution |
+| 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — assigns random cooperationStrategy + default reputation to seeded agents | Disposition data seeded into world graph |
+| 2026-03-07 | Repo: src/engine/ | Modified agentActions.ts — applyDispositionModifier as stage 2 in action selection pipeline | Disposition modifier wired into agent behavior |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — added phaseDilemmaDetection + phaseReputationDecay tick phases | Dilemma detection and reputation decay in tick loop |
+| 2026-03-07 | Repo: src/engine/ | Modified narrative.ts — added 4 dilemma beat templates (mutual_trust, betrayed, exploitation, mutual_distrust) | Narrative beats for all dilemma outcomes |
+| 2026-03-07 | Repo: src/engine/ | Modified agentDetail.ts — added cooperationStrategy, reputationScore, recentInteractions to AgentDetail | Agent detail aggregator surfaces disposition data |
+| 2026-03-07 | Repo: src/components/Game/ | Modified AgentDetailPanel.tsx — added Disposition section with strategy name, reputation bar, interaction history | UI surfaces agent cooperation strategy and history |
+| 2026-03-07 | Repo: tests | Created 6 test files: disposition.test.ts (61), disposition-integration.test.ts (6), disposition-dilemma-integration.test.ts (4), extended agentDetail.test.ts (+5), AgentDetailPanel.test.tsx (+3) — 98 new tests | Full test coverage for disposition system |
+| 2026-03-07 | CLAUDE.md | Updated project status (disposition system complete), engine stats (~70 modules, ~11,500 lines, ~1,106 tests), changelog | Game theory disposition system documentation |
+| 2026-03-07 | Repo: src/components/HexMap/ | Modified HexMap.tsx + HexTile.tsx — `HEX_MAP_BACKGROUND` and `UNEXPLORED_HEX_COLOR` constants (#1e1b2e) | QA fix VS-001: hex map background too bright for Threadbare aesthetic |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — wheelFeedback state, agent null-check before wheel; StrandView.tsx + ScryOverlay.tsx — pointerEvents: 'auto' | QA fixes IX-001/002/004: wheel interaction feedback and overlay pointer events |
+| 2026-03-07 | Repo: src/components/Game/ | Modified RivalPanel, EssencePanel, SimulationControls — h2 headings; AvatarHUD — "Avatar" button text; MandateTracker — Escape key handler | QA fixes IA-001/003/005, IX-003: heading hierarchy, accessible labels, keyboard interaction |
+| 2026-03-07 | Repo: src/components/Game/ | Added React.memo to RetinuePanel, RivalPanel, AgentDetailPanel; extracted WHEEL_CONFIG (9 constants) in AgentWheel, LAYOUT_CONFIG (7 constants) in HexZoomView | QA fixes RC-001/002: unnecessary re-renders and magic numbers |
+| 2026-03-07 | Repo: src/components/Game/ | Modified NarrativeFeed.tsx — useMemo log aggregation grouping consecutive identical messages with ×N badge | QA fix IA-004: repetitive log entries |
+| 2026-03-07 | Repo: src/data/ + src/engine/ | Added RIVAL_ACTION_TEMPLATES to rival-content.ts (3-4 variants per action type); orchestrator.ts uses seeded PRNG template selection | QA fix IA-008: repetitive rival action text |
+| 2026-03-07 | Repo: src/components/Game/ | Modified MandateTracker.tsx — z-50 on compact bar for toggle-close, "NEW" display for 0% progress | QA fixes IX-005/IA-010: mandate toggle and empty progress display |
+| 2026-03-07 | Repo: src/components/Game/ | Modified AvatarHUD.tsx — module-level BUTTON_BASE_STYLE/CONTAINER_STYLE constants, useMemo for dynamic styles, useCallback for handlers | QA fix RC-003: inline object creation on every render |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — 5 useCallback handlers (handleToggleRunning, handleBackFromAgentDetail, etc.), removed gameState.tick from 6 useMemo deps | QA fixes RC-007/017: inline event handlers and over-broad memo deps |
+| 2026-03-07 | CLAUDE.md | Updated project status (QA sweep complete), engine stats (~106 modules, ~17,949 lines), changelog | QA fix sprint documentation |
 
 ## Session Workflow
 
@@ -302,7 +323,9 @@ Repetitive workflows are a signal to invest in a reusable skill. If you notice y
 - Archetype Content Enrichment: ✅ Complete — 19 archetypes enriched with tone keywords, beat patterns, vignette seeds, narrative requirements (894 lines, 53 tests)
 - Culture Bounded Context Design: ✅ Complete — 9-section design doc covering budget model, cultural traits, locations, artifacts, narrative beats, composite modifiers (~32 sets), content production manifest, narrative engine integration, cultural drift mechanics
 - Phase 6F (Playable Map): ✅ Complete — three-state fog of war, avatar overlay + movement, d3-zoom/pan, AvatarHUD, GameView wiring
-- Current phase: **Playable map complete** — fog of war, avatar movement, zoom/pan all working; next up: culture content data implementation (`culture-content.ts`) or narrative context builder
-- Engine stats: ~67 modules, ~10,500 lines, ~1,027 tests across 79 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 8 content packages (archetype-content.ts fully enriched), culture-content.ts scoped at 800-1200 lines
+- Game Theory Disposition System: ✅ Complete — 5 cooperation strategies, disposition modifier in action pipeline, dilemma detection/resolution (2×2 matrix), reputation system with decay, narrative beat integration, agent detail panel strategy section, 98 disposition tests across 6 test files
+- QA Sweep: ✅ Complete — 19 findings fixed across ~20 files (VS-001, IX-001/002/003/004/005, IA-001/003/004/005/008/010, RC-001/002/003/007/017): Threadbare hex colors, React.memo wrappers, magic number extraction, useCallback/useMemo optimization, log aggregation, rival text variation, mandate UX improvements
+- Current phase: **QA sweep complete** — next up: culture content data implementation (`culture-content.ts`) or narrative context builder
+- Engine stats: ~106 modules, ~17,949 lines, ~1,106 tests across 89 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 9 content packages (archetype-content.ts fully enriched, disposition-content in types/disposition.ts), culture-content.ts scoped at 800-1200 lines
 
