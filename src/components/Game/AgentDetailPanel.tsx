@@ -1,6 +1,7 @@
 import React from 'react';
 import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
+import type { CooperationStrategy } from '../../types/disposition';
 
 interface AgentDetailPanelProps {
   detail: AgentDetail;
@@ -29,6 +30,15 @@ const DOMAIN_NAMES: Record<ReachDomain, string> = {
   stone: 'Stone',
   star: 'Star',
   flesh: 'Flesh',
+};
+
+// Strategy display names
+const STRATEGY_DISPLAY: Record<CooperationStrategy, string> = {
+  'tit-for-tat': 'Tit for Tat',
+  'grudger': 'Grudger',
+  'pavlov': 'Pavlov',
+  'always-cooperate': 'Always Cooperate',
+  'always-defect': 'Always Defect',
 };
 
 // Grid layout order: 3x3
@@ -242,6 +252,84 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Strategy Section */}
+        <div>
+          <h3
+            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
+            style={{ fontFamily: 'Cinzel, serif' }}
+          >
+            Disposition
+          </h3>
+
+          {detail.cooperationStrategy == null ? (
+            <p className="text-amber-400/30 text-xs italic">No known strategy</p>
+          ) : (
+            <div className="space-y-2.5">
+              {/* Strategy name */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-amber-400/50">Strategy:</span>
+                <span className="text-xs text-amber-100">
+                  {STRATEGY_DISPLAY[detail.cooperationStrategy]}
+                </span>
+              </div>
+
+              {/* Reputation bar */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs text-amber-400/50">Reputation</span>
+                  <span className="text-[10px] text-amber-400/40">
+                    {detail.reputationScore.toFixed(2)}
+                  </span>
+                </div>
+                <div className="w-full bg-stone-700 rounded h-1.5 overflow-hidden relative">
+                  {/* Center marker at 0.5 */}
+                  <div
+                    className="absolute top-0 bottom-0 w-px bg-amber-400/30"
+                    style={{ left: '50%' }}
+                  />
+                  <div
+                    className="h-full transition-all duration-200 rounded"
+                    style={{
+                      width: `${detail.reputationScore * 100}%`,
+                      backgroundColor: detail.reputationScore >= 0.5 ? '#22c55e' : '#ef4444',
+                      opacity: 0.7,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Recent interactions */}
+              {detail.recentInteractions.length > 0 && (
+                <div className="space-y-1">
+                  <span className="text-[10px] text-amber-400/40 uppercase tracking-wider">
+                    Recent
+                  </span>
+                  {detail.recentInteractions.map((ir, idx) => (
+                    <div
+                      key={`${ir.tick}-${idx}`}
+                      className="flex items-center gap-2 text-[11px]"
+                    >
+                      <span className="text-amber-400/30 w-8 text-right flex-shrink-0">
+                        t{ir.tick}
+                      </span>
+                      <span title={`Actor: ${ir.actorMove}`}>
+                        {ir.actorMove === 'cooperate' ? '✓' : '✗'}
+                      </span>
+                      <span className="text-amber-400/20">vs</span>
+                      <span title={`Target: ${ir.targetMove}`}>
+                        {ir.targetMove === 'cooperate' ? '✓' : '✗'}
+                      </span>
+                      <span className="text-amber-400/30 flex-1 truncate">
+                        {ir.stakes === 'high' ? '⚡' : ''} {ir.context}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
