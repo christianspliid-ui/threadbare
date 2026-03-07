@@ -63,6 +63,43 @@ export interface ProseContext {
   sphere?: SphereName;
   dominantValues?: ValuePair[];
   foundationBias?: 'chaos' | 'order' | 'light' | 'darkness' | 'balanced';
+  contextObjects?: ContextObject[];
+  historicalFragments?: string[];
+  oppositionSummary?: OppositionSummary;
+}
+
+// ─── Context Builder Types ──────────────────────────────────────
+
+export type ContextCategory = 'artifact' | 'faction' | 'character' | 'location' | 'event';
+
+export interface ContextObject {
+  nodeId: string;
+  name: string;
+  category: ContextCategory;
+  relevanceScore: number;
+  tensionType?: string;
+  briefDescription: string;
+}
+
+export interface OpposingPair {
+  sourceId: string;
+  targetId: string;
+  tensionType: string;
+  score: number;
+}
+
+export interface OppositionSummary {
+  dominantTension?: string;
+  tensionScore: number;
+  opposingPairs: OpposingPair[];
+}
+
+export interface NarrativeContext {
+  event: NarrativeEvent;
+  archetype?: string;
+  contextObjects: ContextObject[];
+  historicalFragments: string[];
+  oppositionSummary: OppositionSummary;
 }
 
 // ─── Chronicle ───────────────────────────────────────────────────
