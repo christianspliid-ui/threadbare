@@ -27,7 +27,11 @@ export type NarrativeEventType =
   | 'mandate_stage'
   | 'divine_intervention'
   | 'actor_death'
-  | 'contested_action';
+  | 'contested_action'
+  | 'dilemma_mutual_trust'
+  | 'dilemma_betrayed'
+  | 'dilemma_exploitation'
+  | 'dilemma_mutual_distrust';
 
 export interface NarrativeEvent {
   id: string;
