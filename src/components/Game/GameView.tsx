@@ -263,7 +263,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
   const retinueAgents = useMemo(
     () => getRetinueAgents(gameState.graph, gameState.ascendantId),
-    [gameState.graph, gameState.ascendantId, gameState.tick]
+    [gameState.graph, gameState.ascendantId]
   );
 
   const agentDetail = useMemo(() => {
@@ -286,7 +286,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const hexLocations = useMemo(() => {
     if (!focusedHex) return [];
     return getLocationsInHex(gameState.graph, focusedHex.col, focusedHex.row);
-  }, [gameState.graph, focusedHex, gameState.tick]);
+  }, [gameState.graph, focusedHex]);
 
   const hexAgentsByLocation = useMemo(() => {
     const map: Record<string, ReturnType<typeof getAgentsAtLocation>> = {};
@@ -294,7 +294,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       map[loc.id] = getAgentsAtLocation(gameState.graph, loc.id);
     }
     return map;
-  }, [gameState.graph, hexLocations, gameState.tick]);
+  }, [gameState.graph, hexLocations]);
 
   const hexConnections = useMemo(() => {
     return getLocationConnections(gameState.graph, hexLocations.map(l => l.id));
@@ -303,12 +303,12 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const hexSphereInfluence = useMemo(() => {
     if (!focusedHex) return null;
     return getHexSphereInfluence(gameState.graph, focusedHex.col, focusedHex.row);
-  }, [gameState.graph, focusedHex, gameState.tick]);
+  }, [gameState.graph, focusedHex]);
 
   const hexLineOfSight = useMemo(() => {
     if (!focusedHex) return 'none' as const;
     return getLineOfSight(gameState.graph, gameState.ascendantId, focusedHex);
-  }, [gameState.graph, gameState.ascendantId, focusedHex, gameState.tick]);
+  }, [gameState.graph, gameState.ascendantId, focusedHex]);
 
   const hexTotalAgents = useMemo(() => {
     return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
@@ -322,7 +322,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const focusedLocationAgents = useMemo(() => {
     if (!focusedLocationId) return [];
     return getAgentsAtLocation(gameState.graph, focusedLocationId);
-  }, [gameState.graph, focusedLocationId, gameState.tick]);
+  }, [gameState.graph, focusedLocationId]);
 
   // Avatar position and sphere color
   const avatarPos = useMemo(
@@ -489,6 +489,26 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     // Future: show info tooltip
   }, []);
 
+  const handleToggleRunning = useCallback(() => {
+    setRunning(r => !r);
+  }, []);
+
+  const handleBackFromAgentDetail = useCallback(() => {
+    setSelectedAgentId(null);
+  }, []);
+
+  const handleViewPsyche = useCallback(() => {
+    setStrandViewAgent(selectedAgentId);
+  }, [selectedAgentId]);
+
+  const handleOpenWheel = useCallback(() => {
+    setWheelVisible(true);
+  }, []);
+
+  const handleCloseScry = useCallback(() => {
+    setScryVisible(false);
+  }, []);
+
   const handleCenterOnAvatar = useCallback(() => {
     if (avatarPixelPos && hexMapRef.current) {
       hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 3.0);
@@ -577,7 +597,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             year={year}
             running={running}
             speed={speed}
-            onToggle={() => setRunning(r => !r)}
+            onToggle={handleToggleRunning}
             onStep={doTick}
             onSpeedChange={setSpeed}
           />
@@ -686,6 +706,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   lineOfSight={hexLineOfSight}
                   sphereInfluence={hexSphereInfluence}
                   onBack={handleBackToWorld}
+                  data-testid="hex-breadcrumb"
                 />
                 <div className="flex-1 flex items-center justify-center">
                   <HexZoomView
@@ -695,6 +716,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                     lineOfSight={hexLineOfSight}
                     onLocationClick={handleLocationClick}
                     onLocationDoubleClick={handleLocationDoubleClick}
+                    data-testid="hex-zoom-view"
                   />
                 </div>
               </div>
@@ -709,6 +731,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 hexRow={focusedHex.row}
                 onAgentClick={handleAgentSelect}
                 onBack={handleBackToHex}
+                data-testid="location-view"
               />
             )}
           </div>
@@ -724,10 +747,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           {agentDetail ? (
             <AgentDetailPanel
               detail={agentDetail}
-              onBack={() => setSelectedAgentId(null)}
-              onViewPsyche={() => setStrandViewAgent(selectedAgentId)}
-              onIntervene={() => setWheelVisible(true)}
-              onLocationClick={() => setSelectedAgentId(null)}
+              onBack={handleBackFromAgentDetail}
+              onViewPsyche={handleViewPsyche}
+              onIntervene={handleOpenWheel}
+              onLocationClick={handleBackFromAgentDetail}
             />
           ) : (
             <div className="p-4">
@@ -768,7 +791,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           seed={gameState.seed + gameState.tick}
           onAssign={handleScryAssign}
           onDemote={handleScryDemote}
-          onClose={() => setScryVisible(false)}
+          onClose={handleCloseScry}
         />
       )}
 

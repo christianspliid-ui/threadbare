@@ -19,6 +19,17 @@ import {
 import { evaluateMandate, advanceMandateStage } from './mandate';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
+import {
+  computeStakes,
+  resolveDilemma,
+  applyDilemmaEffects,
+  logInteraction,
+  decayReputation,
+} from './disposition';
+import {
+  DILEMMA_STAKES_THRESHOLD,
+  DEFAULT_REPUTATION,
+} from '../types/disposition';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -93,6 +104,122 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
         significance,
       });
     }
+  }
+
+  return { tickEvents: [...state.tickEvents, ...events] };
+}
+
+// ─── Phase 2.5: Dilemma Detection ──────────────────────────────────────
+
+export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
+  const events: TickEvent[] = [];
+  const graph = state.graph;
+
+  // Scan tick events for agent_action_resolved events
+  const resolvedEvents = state.tickEvents.filter(e => e.type === 'agent_action_resolved');
+
+  for (const event of resolvedEvents) {
+    // Get all individual actors from the graph
+    const allActors = graph.getNodesByType('actor')
+      .filter(node => node.properties?.actorType === 'individual');
+
+    if (allActors.length < 2) continue;
+
+    // Pick a random second actor as the target (simplified vertical slice)
+    const rng = mulberry32(state.seed + state.tick * 41 + Math.random());
+    const targetIdx = Math.floor(rng() * allActors.length);
+    const targetActor = allActors[targetIdx];
+
+    // Find an actor from the resolved event (use first actor in list as primary)
+    const actor = allActors[0];
+
+    if (actor.id === targetActor.id) continue;
+
+    // Get cooperation strategies
+    const actorStrategy = (actor.properties?.cooperationStrategy ?? 'tit-for-tat') as any;
+    const targetStrategy = (targetActor.properties?.cooperationStrategy ?? 'tit-for-tat') as any;
+
+    // Look up relationship edge
+    let relationshipEdge = graph.getOutgoingEdges(actor.id, 'relates_to')
+      .find(e => e.targetId === targetActor.id);
+
+    if (!relationshipEdge) {
+      relationshipEdge = graph.getIncomingEdges(actor.id, 'relates_to')
+        .find(e => e.sourceId === targetActor.id);
+    }
+
+    // Get interaction history from edge
+    const actorHistory = relationshipEdge?.properties?.interactionLog ?? [];
+    const targetHistory = relationshipEdge?.properties?.interactionLog ?? [];
+
+    // Compute stakes using event sphere as domain context
+    const domain = (event.sphere ?? 'iron') as any;
+    const sentiment = relationshipEdge?.properties?.sentiment ?? 0;
+    const isFactionLeader = actor.properties?.isFactionLeader === true || targetActor.properties?.isFactionLeader === true;
+    const isTerritory = false; // Simplified
+
+    const stakes = computeStakes(domain, sentiment, isFactionLeader, isTerritory);
+
+    // Only resolve as dilemma if stakes >= threshold
+    if (stakes < DILEMMA_STAKES_THRESHOLD) continue;
+
+    // Resolve the dilemma
+    const dilemma = resolveDilemma(
+      actor.id,
+      targetActor.id,
+      actorStrategy,
+      targetStrategy,
+      actorHistory,
+      targetHistory,
+      state.tick,
+      event.sphere ?? 'iron',
+      stakes,
+    );
+
+    // Apply effects to graph
+    const effects = applyDilemmaEffects(dilemma.outcome);
+
+    // Update relationship edge (sentiment and strength)
+    if (relationshipEdge) {
+      const newSentiment = Math.max(-1, Math.min(1, (relationshipEdge.properties?.sentiment ?? 0) + effects.sentimentDelta));
+      const newStrength = Math.max(0, (relationshipEdge.properties?.strength ?? 0.5) + effects.strengthDelta);
+      relationshipEdge.properties.sentiment = newSentiment;
+      relationshipEdge.properties.strength = newStrength;
+
+      // Log the interaction
+      const newLog = logInteraction(
+        relationshipEdge.properties?.interactionLog ?? [],
+        state.tick,
+        dilemma.actorMove,
+        dilemma.targetMove,
+        dilemma.context,
+        stakes,
+      );
+      relationshipEdge.properties.interactionLog = newLog;
+    }
+
+    // Update actor reputations
+    const actorNode = graph.getNode(actor.id);
+    if (actorNode) {
+      const newRep = Math.max(0, Math.min(1, (actorNode.properties?.reputationScore ?? DEFAULT_REPUTATION) + effects.actorRepDelta));
+      actorNode.properties.reputationScore = newRep;
+    }
+
+    const targetNode = graph.getNode(targetActor.id);
+    if (targetNode) {
+      const newRep = Math.max(0, Math.min(1, (targetNode.properties?.reputationScore ?? DEFAULT_REPUTATION) + effects.targetRepDelta));
+      targetNode.properties.reputationScore = newRep;
+    }
+
+    // Emit dilemma_resolved event
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'dilemma_resolved',
+      message: `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`,
+      sphere: event.sphere,
+      significance: Math.max(0.3, stakes),
+    });
   }
 
   return { tickEvents: [...state.tickEvents, ...events] };
@@ -215,6 +342,24 @@ export function phaseEssence(state: GameState): Partial<GameState> {
   };
 }
 
+// ─── Phase 6.5: Reputation Decay ──────────────────────────────────────
+
+export function phaseReputationDecay(state: GameState): Partial<GameState> {
+  const graph = state.graph;
+
+  // Iterate all individual actors
+  const actors = graph.getNodesByType('actor')
+    .filter(node => node.properties?.actorType === 'individual');
+
+  for (const actor of actors) {
+    const currentRep = actor.properties?.reputationScore ?? DEFAULT_REPUTATION;
+    const decayedRep = decayReputation(currentRep);
+    actor.properties.reputationScore = decayedRep;
+  }
+
+  return {};
+}
+
 // ─── Phase 7: Mandate Check ───────────────────────────────────────
 
 export function phaseMandate(state: GameState): Partial<GameState> {
@@ -294,10 +439,12 @@ export function runTick(state: GameState): GameState {
   // Run phases in order
   s = { ...s, ...phaseDoom(s) };
   s = { ...s, ...phaseAgentActions(s) };
+  s = { ...s, ...phaseDilemmaDetection(s) };
   s = { ...s, ...phaseRivalActions(s) };
   s = { ...s, ...phaseStealth(s) };
   s = { ...s, ...phaseNarrative(s) };
   s = { ...s, ...phaseEssence(s) };
+  s = { ...s, ...phaseReputationDecay(s) };
   s = { ...s, ...phaseMandate(s) };
   s = { ...s, ...phaseDoomExpiry(s) };
 

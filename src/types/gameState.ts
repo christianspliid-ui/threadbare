@@ -29,7 +29,7 @@ export interface TickEvent {
   id: string;
   tick: number;
   type: 'agent_action' | 'agent_action_resolved' | 'doom_escalation' | 'rival_action'
-    | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert';
+    | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert' | 'dilemma_resolved';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
