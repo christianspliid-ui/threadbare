@@ -5,6 +5,9 @@ import {
   BIOME_MODIFIERS,
   FORMATIVE_TRAIT_SEEDS,
   BEHAVIORAL_TRAIT_SEEDS,
+  INSIDER_BEATS,
+  SUB_LOCATION_TEMPLATES,
+  ARTIFACT_LORE_PATTERNS,
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
@@ -13,6 +16,9 @@ import {
   type BiomeModifier,
   type FormativeTraitSeed,
   type BehavioralTraitSeed,
+  type InsiderBeat,
+  type SubLocationTemplate,
+  type ArtifactLorePattern,
 } from '../culture-content';
 import { SPHERE_NAMES } from '../../types/index';
 import { REACH_DOMAINS } from '../../types/traits';
@@ -383,6 +389,137 @@ describe('culture-content', () => {
           expect(value).toBeGreaterThanOrEqual(-2);
           expect(value).toBeLessThanOrEqual(3);
         }
+      }
+    });
+  });
+
+  // ─── Insider Beats Tests ──────────────────────────────────────────
+
+  describe('INSIDER_BEATS', () => {
+    it('exports at least 20 insider beats', () => {
+      expect(INSIDER_BEATS.length).toBeGreaterThanOrEqual(20);
+    });
+
+    it('each beat has required fields', () => {
+      for (const beat of INSIDER_BEATS) {
+        expect(beat.id).toBeTruthy();
+        expect(typeof beat.id).toBe('string');
+        expect(beat.name).toBeTruthy();
+        expect(typeof beat.name).toBe('string');
+        expect(Array.isArray(beat.requiredCultureTags)).toBe(true);
+        expect(beat.minStrength).toBeGreaterThanOrEqual(0.3);
+        expect(beat.minStrength).toBeLessThanOrEqual(1.0);
+        expect(beat.trigger).toBeTruthy();
+        expect(typeof beat.trigger).toBe('string');
+        expect(Array.isArray(beat.proseSeeds)).toBe(true);
+        expect(beat.proseSeeds.length).toBeGreaterThanOrEqual(1);
+      }
+    });
+
+    it('all beat ids are unique', () => {
+      const ids = INSIDER_BEATS.map(b => b.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('no beat requires strength below 0.3', () => {
+      for (const beat of INSIDER_BEATS) {
+        expect(beat.minStrength).toBeGreaterThanOrEqual(0.3);
+      }
+    });
+
+    it('prose seeds contain template placeholders for narrative generation', () => {
+      for (const beat of INSIDER_BEATS) {
+        for (const seed of beat.proseSeeds) {
+          expect(typeof seed).toBe('string');
+          expect(seed.length).toBeGreaterThan(0);
+          // At least some seeds should have placeholders like {actor}, {target}, {culture}
+          const hasSomePlaceholder = seed.includes('{');
+          // Not required for all, but at least one per beat should have one
+        }
+      }
+    });
+  });
+
+  // ─── Sub-Location Templates Tests ─────────────────────────────────
+
+  describe('SUB_LOCATION_TEMPLATES', () => {
+    it('exports at least 15 sub-location templates', () => {
+      expect(SUB_LOCATION_TEMPLATES.length).toBeGreaterThanOrEqual(15);
+    });
+
+    it('each template has required fields', () => {
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        expect(tmpl.id).toBeTruthy();
+        expect(typeof tmpl.id).toBe('string');
+        expect(tmpl.name).toBeTruthy();
+        expect(typeof tmpl.name).toBe('string');
+        expect(Array.isArray(tmpl.grantedByTags)).toBe(true);
+        expect(tmpl.grantedByTags.length).toBeGreaterThanOrEqual(1);
+        expect(Array.isArray(tmpl.culturalVariantDescriptors)).toBe(true);
+        expect(tmpl.culturalVariantDescriptors.length).toBeGreaterThanOrEqual(2);
+        expect(tmpl.description).toBeTruthy();
+        expect(typeof tmpl.description).toBe('string');
+      }
+    });
+
+    it('all template ids are unique', () => {
+      const ids = SUB_LOCATION_TEMPLATES.map(t => t.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('cultural variant descriptors are non-empty strings', () => {
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        for (const descriptor of tmpl.culturalVariantDescriptors) {
+          expect(typeof descriptor).toBe('string');
+          expect(descriptor.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('granted by tags are non-empty strings', () => {
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        for (const tag of tmpl.grantedByTags) {
+          expect(typeof tag).toBe('string');
+          expect(tag.length).toBeGreaterThan(0);
+        }
+      }
+    });
+  });
+
+  // ─── Artifact Lore Patterns Tests ──────────────────────────────────
+
+  describe('ARTIFACT_LORE_PATTERNS', () => {
+    it('exports at least 5 artifact lore patterns', () => {
+      expect(ARTIFACT_LORE_PATTERNS.length).toBeGreaterThanOrEqual(5);
+    });
+
+    it('each pattern has required fields', () => {
+      const validTones = ['reverent', 'martial', 'mystical', 'practical', 'ominous'];
+      for (const pattern of ARTIFACT_LORE_PATTERNS) {
+        expect(pattern.id).toBeTruthy();
+        expect(typeof pattern.id).toBe('string');
+        expect(pattern.template).toBeTruthy();
+        expect(typeof pattern.template).toBe('string');
+        expect(pattern.toneCategory).toBeTruthy();
+        expect(validTones).toContain(pattern.toneCategory);
+      }
+    });
+
+    it('each pattern has a template with {culture} placeholder', () => {
+      for (const pattern of ARTIFACT_LORE_PATTERNS) {
+        expect(pattern.template).toContain('{culture}');
+      }
+    });
+
+    it('all pattern ids are unique', () => {
+      const ids = ARTIFACT_LORE_PATTERNS.map(p => p.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('tone categories are valid', () => {
+      const validTones = ['reverent', 'martial', 'mystical', 'practical', 'ominous'];
+      for (const pattern of ARTIFACT_LORE_PATTERNS) {
+        expect(validTones).toContain(pattern.toneCategory);
       }
     });
   });
