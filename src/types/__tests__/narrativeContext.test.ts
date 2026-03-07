@@ -18,10 +18,12 @@ describe('NarrativeContext types', () => {
       historicalFragments: [],
       oppositionSummary: { tensionScore: 0, opposingPairs: [] },
       culturalStrength: 0,
+      availableInsiderBeats: [],
     };
     expect(ctx.event.id).toBe('evt-1');
     expect(ctx.archetype).toBeUndefined();
     expect(ctx.culturalTension).toBeUndefined();
+    expect(ctx.availableInsiderBeats).toEqual([]);
   });
 
   it('ContextObject has required fields', () => {
