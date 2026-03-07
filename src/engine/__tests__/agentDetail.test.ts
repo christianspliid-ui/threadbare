@@ -4,6 +4,7 @@ import { getAgentDetail } from '../agentDetail';
 import type { AgentDetail } from '../agentDetail';
 import type { AxiologicalProfile } from '../../types/agent';
 import type { ReachDomain } from '../../types/traits';
+import type { InteractionRecord } from '../../types/disposition';
 
 const ALL_DOMAINS: ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
 
@@ -116,5 +117,96 @@ describe('getAgentDetail', () => {
     graph.addEdge({ id: 'm.1', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: { role: 'member' } });
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.factionName).toBe('Iron Brotherhood');
+  });
+
+  it('includes cooperation strategy and reputation score', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile(),
+        domainCapabilities: makeDomainCaps(),
+        locationId: 'loc.1',
+        cooperationStrategy: 'tit-for-tat',
+        reputationScore: 0.72,
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
+    expect(detail.cooperationStrategy).toBe('tit-for-tat');
+    expect(detail.reputationScore).toBe(0.72);
+  });
+
+  it('defaults reputation to 0.5 when not set', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
+    expect(detail.cooperationStrategy).toBeNull();
+    expect(detail.reputationScore).toBe(0.5);
+  });
+
+  it('gathers recent interactions from relates_to edges (both directions)', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile(),
+        domainCapabilities: makeDomainCaps(),
+        locationId: 'loc.1',
+        cooperationStrategy: 'grudger',
+        reputationScore: 0.3,
+      },
+    });
+    graph.addNode({ id: 'agent.2', type: 'actor', name: 'Mara', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'agent.3', type: 'actor', name: 'Zorn', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 2 } });
+
+    const log1: InteractionRecord[] = [
+      { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },
+      { tick: 5, actorMove: 'defect', targetMove: 'cooperate', context: 'war', stakes: 'high' },
+    ];
+    const log2: InteractionRecord[] = [
+      { tick: 8, actorMove: 'cooperate', targetMove: 'defect', context: 'diplomacy', stakes: 'high' },
+      { tick: 3, actorMove: 'defect', targetMove: 'defect', context: 'siege', stakes: 'high' },
+    ];
+
+    // Outgoing edge from agent.1
+    graph.addEdge({ id: 'rt.1', source: 'agent.1', target: 'agent.2', type: 'relates_to', properties: { interactionLog: log1 } });
+    // Incoming edge to agent.1
+    graph.addEdge({ id: 'rt.2', source: 'agent.3', target: 'agent.1', type: 'relates_to', properties: { interactionLog: log2 } });
+
+    const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
+    expect(detail.recentInteractions).toHaveLength(3); // top 3 by tick
+    expect(detail.recentInteractions[0].tick).toBe(10);
+    expect(detail.recentInteractions[1].tick).toBe(8);
+    expect(detail.recentInteractions[2].tick).toBe(5);
+  });
+
+  it('returns empty interactions when no relates_to edges exist', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Loner',
+      properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
+    expect(detail.recentInteractions).toHaveLength(0);
   });
 });

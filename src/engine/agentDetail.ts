@@ -9,6 +9,8 @@ import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
 import { getArchetype, type NarrativeArchetype } from '../data/archetype-content';
+import type { CooperationStrategy, InteractionRecord } from '../types/disposition';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 
 const VALUE_LABELS: Record<ValuePair, [string, string]> = {
   ambition_contentment: ['Ambitious', 'Content'],
@@ -50,6 +52,9 @@ export interface AgentDetail {
   domainCapabilities: Record<ReachDomain, number>;
   topValues: TopValue[];
   topBonds: BondSummary[];
+  cooperationStrategy: CooperationStrategy | null;
+  reputationScore: number;
+  recentInteractions: InteractionRecord[];
 }
 
 function intensityPrefix(absVal: number): string {
@@ -124,6 +129,27 @@ export function getAgentDetail(
     .sort((a, b) => b.strength - a.strength)
     .slice(0, 5);
 
+  // ─── Disposition data ───────────────────────────────────────────
+  const cooperationStrategy = (props.cooperationStrategy as CooperationStrategy) ?? null;
+  const reputationScore = (props.reputationScore as number) ?? DEFAULT_REPUTATION;
+
+  // Gather interaction logs from all relates_to edges (both directions)
+  const allInteractions: InteractionRecord[] = [];
+  const outRelates = graph.getOutgoingEdges(agentId, 'relates_to');
+  const inRelates = graph.getIncomingEdges(agentId, 'relates_to');
+
+  for (const edge of [...outRelates, ...inRelates]) {
+    const edgeProps = edge.properties as Record<string, unknown>;
+    const log = edgeProps.interactionLog as InteractionRecord[] | undefined;
+    if (log && Array.isArray(log)) {
+      allInteractions.push(...log);
+    }
+  }
+
+  // Sort by tick descending, take last 3
+  allInteractions.sort((a, b) => b.tick - a.tick);
+  const recentInteractions = allInteractions.slice(0, 3);
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -137,5 +163,8 @@ export function getAgentDetail(
     domainCapabilities,
     topValues,
     topBonds: bonds,
+    cooperationStrategy,
+    reputationScore,
+    recentInteractions,
   };
 }
