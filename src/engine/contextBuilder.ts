@@ -22,6 +22,8 @@ import {
   getArchetypeFriction,
 } from '../data/opposition-content.ts';
 import { emitTrace } from './traceBuffer';
+import { computeCulturalTensionScore } from './culturalTension';
+import { getActorCulturalStrength } from './culturalTraits';
 
 // ─── Internal Types ─────────────────────────────────────────────────────
 
@@ -381,6 +383,7 @@ export function buildNarrativeContext(
         tensionScore: 0,
         opposingPairs: [],
       },
+      culturalStrength: 0,
     };
   }
 
@@ -430,7 +433,22 @@ export function buildNarrativeContext(
     .filter(obj => obj.category === 'event')
     .map(obj => obj.briefDescription);
 
-  const context = {
+  // ─── Cultural Context ──────────────────────────────────────────────
+
+  const culturalStrength = event.actorId
+    ? getActorCulturalStrength(graph, event.actorId)
+    : 0;
+
+  const { tensions: culturalTensions } = event.actorId
+    ? computeCulturalTensionScore(graph, event.actorId)
+    : { tensions: [] };
+
+  // Pick the highest-severity cultural tension (if any)
+  const topCulturalTension = culturalTensions.length > 0
+    ? culturalTensions.reduce((prev, curr) => curr.severity > prev.severity ? curr : prev)
+    : undefined;
+
+  const context: NarrativeContext = {
     event,
     archetype,
     contextObjects: selected,
@@ -440,6 +458,8 @@ export function buildNarrativeContext(
       tensionScore: totalTension,
       opposingPairs,
     },
+    culturalStrength,
+    culturalTension: topCulturalTension,
   };
 
   // ─── Trace instrumentation ──────────────────────────────────────────
