@@ -14,6 +14,7 @@ import type {
 } from '../types/agent';
 import { applyDispositionModifier } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
+import { emitTrace } from './traceBuffer';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -124,6 +125,8 @@ export function runSelectionPipeline(
   actorId: string,
   candidates: ActionCandidate[],
   config: SelectionConfig,
+  tick: number = 0,
+  deterministicRoll?: number,
 ): SelectionResult {
   const actorNode = graph.getNode(actorId);
   if (!actorNode) throw new Error(`Actor not found: ${actorId}`);
@@ -131,8 +134,16 @@ export function runSelectionPipeline(
   const profile = actorNode.properties.axiologicalProfile as AxiologicalProfile;
   if (!profile) throw new Error(`Actor ${actorId} has no axiological profile`);
 
+  // Track stages for tracing
+  const stages = [];
+
   // Step 1: Score by goal alignment
   let scored = scoreByGoalAlignment(candidates, profile);
+  stages.push({
+    stageName: 'goal_alignment',
+    candidateIds: scored.map((c) => c.templateId),
+    scores: scored.map((c) => c.score),
+  });
 
   // Step 2: Apply disposition modifier (game theory)
   // Group candidates by target and apply modifier per target
@@ -180,17 +191,67 @@ export function runSelectionPipeline(
     }
   }
 
+  stages.push({
+    stageName: 'disposition_modifier',
+    candidateIds: scored.map((c) => c.templateId),
+    scores: scored.map((c) => c.score),
+    notes: cooperationStrategy ? `applied ${cooperationStrategy}` : 'no cooperation strategy',
+  });
+
   // Step 3: Apply personality weights (extension point)
   scored = applyPersonalityWeights(scored);
+
+  stages.push({
+    stageName: 'personality_weights',
+    candidateIds: scored.map((c) => c.templateId),
+    scores: scored.map((c) => c.score),
+  });
 
   // Step 4: Select top-N
   const topN = selectTopN(scored, config.topN);
 
+  stages.push({
+    stageName: 'top_n_selection',
+    candidateIds: topN.map((c) => c.templateId),
+    scores: topN.map((c) => c.score),
+    notes: `kept top ${Math.min(config.topN, topN.length)} of ${scored.length}`,
+  });
+
   // Step 5: Assign probabilities
   const withProbabilities = assignProbabilities(topN);
 
+  stages.push({
+    stageName: 'probability_assignment',
+    candidateIds: withProbabilities.map((c) => c.templateId),
+    scores: withProbabilities.map((c) => c.probability ?? 0),
+  });
+
   // Step 6: Probabilistic select
-  const selected = probabilisticSelect(withProbabilities);
+  const roll = deterministicRoll ?? Math.random();
+  const selected = probabilisticSelect(withProbabilities, roll);
+
+  // Get actor and target names for human-readable summary
+  const actorName = (actorNode.name || actorNode.id).split('.').pop() || actorNode.id;
+  const targetNode = graph.getNode(selected.targetId);
+  const targetName = (targetNode?.name || selected.targetId).split('.').pop() || selected.targetId;
+
+  // Emit trace
+  emitTrace({
+    tick,
+    category: 'action_selection',
+    agentId: actorId,
+    summary: `${actorName} chose ${selected.templateId} targeting ${targetName} (score: ${selected.score.toFixed(2)}, prob: ${((selected.probability ?? 0) * 100).toFixed(0)}%)`,
+    stages,
+    finalPick: {
+      actionId: selected.templateId,
+      actionName: selected.templateId,
+      targetId: selected.targetId,
+      targetName,
+      score: selected.score,
+      probability: selected.probability ?? 0,
+      roll,
+    },
+  });
 
   return {
     selected,
