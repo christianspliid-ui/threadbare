@@ -30,6 +30,8 @@ import {
   DILEMMA_STAKES_THRESHOLD,
   DEFAULT_REPUTATION,
 } from '../types/disposition';
+import { buildNarrativeContext } from './contextBuilder';
+import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -294,16 +296,33 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
 
   for (const event of state.tickEvents) {
     if (event.significance >= 0.8) {
+      // Build narrative context for notable/chronicle events
+      const narrativeEvent: NarrativeEvent = {
+        id: event.id,
+        tier: event.significance >= 0.9 ? 'chronicle' : 'notable',
+        eventType: tickEventTypeToNarrativeType(event.type),
+        description: event.message,
+        tick: event.tick,
+        sphere: event.sphere,
+        // TODO: extract actorId from event once TickEvent carries it
+      };
+
+      const context = buildNarrativeContext(narrativeEvent, state.graph);
+
       newChronicleEntries.push({
         id: event.id,
         tier: 'chronicle',
         title: event.message.slice(0, 50),
         prose: event.message,
         promptContext: {
-          actors: [],
-          location: '',
+          actors: context.contextObjects
+            .filter(co => co.category === 'character')
+            .map(co => co.name),
+          location: context.contextObjects
+            .find(co => co.category === 'location')?.name ?? '',
           sphere: event.sphere ?? 'force',
-          mood: 'dramatic',
+          mood: context.oppositionSummary.dominantTension ?? 'dramatic',
+          previousEvents: context.historicalFragments,
         },
         tick: event.tick,
       });
@@ -311,6 +330,20 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
   }
 
   return { chronicleEntries: newChronicleEntries };
+}
+
+/** Map TickEvent.type to NarrativeEventType */
+function tickEventTypeToNarrativeType(type: string): NarrativeEventType {
+  const mapping: Record<string, NarrativeEventType> = {
+    agent_action: 'action_resolved',
+    agent_action_resolved: 'action_resolved',
+    doom_escalation: 'doom_escalation',
+    rival_action: 'contested_action',
+    mandate_progress: 'mandate_stage',
+    narrative: 'action_resolved',
+    dilemma_resolved: 'contested_action',
+  };
+  return mapping[type] ?? 'action_resolved';
 }
 
 // ─── Phase 6: Essence Generation ──────────────────────────────────
