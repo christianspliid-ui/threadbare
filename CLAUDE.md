@@ -273,6 +273,13 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — phaseNarrative now converts TickEvent→NarrativeEvent, calls buildNarrativeContext, populates promptContext with real actors/location/mood/previousEvents | Chronicle entries now world-aware with ranked context objects |
 | 2026-03-07 | Repo: tests | Created contextBuilder.test.ts (540 lines, 20 tests), orchestrator-narrative.test.ts (246 lines, 10 tests), contextBuilder-integration.test.ts (110 lines, 4 tests), opposition-content.test.ts (22 tests), narrativeContext.test.ts (4 tests) — 60 new tests | Full test coverage for narrative context builder |
 | 2026-03-07 | CLAUDE.md | Updated project status (narrative context builder Pass 1 complete), engine stats (~110 modules, ~21,077 lines, ~1,743 tests), changelog | Narrative context builder documentation |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-culture-generator-design.md, 2026-03-07-culture-generator-implementation.md | Design doc + 11-task TDD implementation plan for culture generator Pass 1 |
+| 2026-03-07 | Repo: src/types/ | Created culture.ts — CultureIdentity, CultureEdgeProperties, 5 tunable constants; modified graph.ts — added belongs_to EdgeType | Culture generator type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created cultureGenerator.ts (314 lines) — composeCultureIdentity, generateCultureName, generateCultures, assignCultureToActor, assignCultureToLocation, assignCulturesToActors | Culture generator engine with foundation × sphere × biome composition |
+| 2026-03-07 | Repo: src/data/ | Extended culture-content.ts — added CULTURE_NAME_FRAGMENTS (foundation/sphere/biome fragments + 6 pattern templates) | Culture name generation data |
+| 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — optional FoundationBalances param, cultureIds in SeedResult, culture generation + assignment phases | Culture generator wired into world seeding pipeline |
+| 2026-03-07 | Repo: tests | Created cultureGenerator.test.ts (19 tests), culture-integration.test.ts (4 tests), extended worldSeed.test.ts (+6 tests), culture-content.test.ts (+4 tests) — 33 new culture tests | Full culture generator test coverage |
+| 2026-03-07 | CLAUDE.md | Updated project status (culture generator Pass 1 complete), engine stats (~111 modules, ~20,971 lines), changelog | Culture generator documentation |
 
 ## Session Workflow
 
@@ -337,7 +344,8 @@ Repetitive workflows are a signal to invest in a reusable skill. If you notice y
 - QA Sweep: ✅ Complete — 19 findings fixed across ~20 files (VS-001, IX-001/002/003/004/005, IA-001/003/004/005/008/010, RC-001/002/003/007/017): Threadbare hex colors, React.memo wrappers, magic number extraction, useCallback/useMemo optimization, log aggregation, rival text variation, mandate UX improvements
 - Culture Content Data: ✅ Complete — 1,789-line content package with 163 entries (4 foundation + 8 creation sphere + 22 biome modifiers, 35 formative + 45 behavioral trait seeds, 25 insider beats, 18 sub-location templates, 6 artifact lore patterns), 9 lookup functions, 577 tests
 - Narrative Context Builder (Pass 1): ✅ Complete — harvest→rank→select→build pipeline with opposition tension scoring, wired into phaseNarrative, chronicle entries now world-aware with ranked context objects. 4 new files (contextBuilder.ts 443 lines, opposition-content.ts 112 lines, 3 test files), 60 new tests across 5 test files
-- Current phase: **Narrative context builder Pass 1 complete** — next up: culture engine integration or Pass 2 (spawning, beat promotion, chronicler vignettes)
-- Engine stats: ~110 modules, ~21,077 lines, ~1,743 tests across 95 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 11 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789 lines / 577 tests, opposition-content.ts = 112 lines / 22 tests)
+- Culture Generator (Pass 1): ✅ Complete — belongs_to edge type, CultureIdentity types + 5 constants, composeCultureIdentity (foundation × sphere × biome merger), generateCultureName (pattern-based), generateCultures (2-4 per world), assignCulturesToActors (70/20/10 budget model), wired into seedWorld with optional FoundationBalances param. 3 new files (culture.ts types, cultureGenerator.ts 314 lines, culture-integration.test.ts), name fragments added to culture-content.ts, 29 new culture tests + 6 seedWorld integration tests + 4 culture integration tests
+- Current phase: **Culture generator Pass 1 complete** — next up: Pass 2 (spawning, beat promotion, chronicler vignettes) or culture drift mechanics
+- Engine stats: ~111 modules, ~20,971 lines, ~1,491+ engine/data tests across 97 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 11 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789+ lines / 581+ tests, opposition-content.ts = 112 lines / 22 tests)
 
