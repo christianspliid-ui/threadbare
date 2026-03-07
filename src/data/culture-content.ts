@@ -802,6 +802,74 @@ export function getBiomeModifier(terrain: TerrainType): BiomeModifier | undefine
   return BIOME_MODIFIERS.find(m => m.terrain === terrain);
 }
 
+/**
+ * Retrieve a formative trait seed by ID.
+ * @param id The trait seed ID
+ * @returns The formative trait seed, or undefined if not found
+ */
+export function getFormativeTraitSeed(id: string): FormativeTraitSeed | undefined {
+  return FORMATIVE_TRAIT_SEEDS.find(s => s.id === id);
+}
+
+/**
+ * Retrieve a behavioral trait seed by ID.
+ * @param id The trait seed ID
+ * @returns The behavioral trait seed, or undefined if not found
+ */
+export function getBehavioralTraitSeed(id: string): BehavioralTraitSeed | undefined {
+  return BEHAVIORAL_TRAIT_SEEDS.find(s => s.id === id);
+}
+
+/**
+ * Retrieve an insider beat by ID.
+ * @param id The beat ID
+ * @returns The insider beat, or undefined if not found
+ */
+export function getInsiderBeat(id: string): InsiderBeat | undefined {
+  return INSIDER_BEATS.find(b => b.id === id);
+}
+
+/**
+ * Retrieve a sub-location template by ID.
+ * @param id The template ID
+ * @returns The sub-location template, or undefined if not found
+ */
+export function getSubLocationTemplate(id: string): SubLocationTemplate | undefined {
+  return SUB_LOCATION_TEMPLATES.find(t => t.id === id);
+}
+
+/**
+ * Filter insider beats by required culture tags.
+ * Returns all beats that match at least one of the provided tags.
+ * @param tags Culture tag identifiers
+ * @returns Array of matching insider beats
+ */
+export function getBeatsForCultureTags(tags: string[]): InsiderBeat[] {
+  return INSIDER_BEATS.filter(b =>
+    b.requiredCultureTags.some(t => tags.includes(t))
+  );
+}
+
+/**
+ * Filter trait seeds by source tags.
+ * Returns both formative and behavioral trait seeds that match at least one of the provided tags.
+ * @param tags Source tag identifiers
+ * @returns Object containing arrays of formative and behavioral trait seeds
+ */
+export function getTraitSeedsForTags(tags: string[]): {
+  formative: FormativeTraitSeed[];
+  behavioral: BehavioralTraitSeed[];
+} {
+  return {
+    formative: FORMATIVE_TRAIT_SEEDS.filter(s =>
+      s.sourceTags.some(t => tags.includes(t))
+    ),
+    behavioral: BEHAVIORAL_TRAIT_SEEDS.filter(s =>
+      s.sourceTags.some(t => tags.includes(t))
+    ),
+  };
+}
+
 // ─── Trait Seed Interfaces ────────────────────────────────────────
 
 /**
