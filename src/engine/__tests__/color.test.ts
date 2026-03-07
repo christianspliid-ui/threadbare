@@ -18,15 +18,15 @@ describe('BIOME_COLORS', () => {
     expect(Object.keys(BIOME_COLORS).length).toBe(22);
   });
 
-  it('ocean has a blue color', () => {
-    expect(BIOME_COLORS.ocean).toBe('#4477aa');
+  it('ocean has a dark blue color', () => {
+    expect(BIOME_COLORS.ocean).toBe('#1a2a3a');
   });
 
-  it('grassland has a green-yellow color', () => {
-    expect(BIOME_COLORS.grassland).toBe('#c8d87a');
+  it('grassland has a dark muted color', () => {
+    expect(BIOME_COLORS.grassland).toBe('#3a3a20');
   });
 
-  it('mountains has a grey-brown color', () => {
-    expect(BIOME_COLORS.mountains).toBe('#8a7a6a');
+  it('mountains has a dark grey color', () => {
+    expect(BIOME_COLORS.mountains).toBe('#2a2a2a');
   });
 });
