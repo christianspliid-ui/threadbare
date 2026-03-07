@@ -35,9 +35,9 @@ export function getHexTileUrl(terrain: TerrainType): string {
   return `/hex-tiles/${TERRAIN_TILE_MAP[terrain]}`;
 }
 
-/** Full-size overlay icons (settlement areas — fill the hex) */
+/** Full-size overlay icons (settlement areas and terrain-covering features — fill the hex) */
 const FULL_SIZE_OVERLAYS: Set<LocationSubtype> = new Set([
-  'hamlet', 'town', 'city', 'capital',
+  'hamlet', 'town', 'city', 'capital', 'farmland',
 ]);
 
 /** Overlay icon filenames for location subtypes */
