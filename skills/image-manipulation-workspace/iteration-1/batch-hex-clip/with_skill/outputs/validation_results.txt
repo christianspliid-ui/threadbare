@@ -1,0 +1,59 @@
+Hex Tile Clipping Validation Results
+=====================================
+
+Settings: center=(60, 52), radius=52, rotation=30 (flat-top), inset=3, aa_scale=2
+Total files processed: 51
+Passed: 51
+Failed: 0
+
+PASS badlands_hex.png
+PASS broken_barren_land_hex.png
+PASS choice_grazing_land_hex.png
+PASS clear_farmland_hex.png
+PASS coast_hex.png
+PASS coastal_reef_hex.png
+PASS coastal_waters_lake_hex.png
+PASS dead_forest_hex.png
+PASS deep_sea_hex.png
+PASS extinct_volcano_hex.png
+PASS fen_hex.png
+PASS forested_hill_caves_hex.png
+PASS forested_hills_deciduous_hex.png
+PASS forested_hills_evergreen_hex.png
+PASS frozen_tundra_hex.png
+PASS glaciers_hex.png
+PASS grassland_steppes_savanna_hex.png
+PASS hardened_clay_desert_hex.png
+PASS heavy_cactus_scrub_hex.png
+PASS heavy_forest_deciduous_hex.png
+PASS heavy_forest_evergreen_hex.png
+PASS hill_caves_hex.png
+PASS hills_hex.png
+PASS hills_with_jungle_hex.png
+PASS inactive_volcano_hex.png
+PASS jungle_hex.png
+PASS light_cactus_scrub_hex.png
+PASS light_forest_deciduous_hex.png
+PASS light_forest_evergreen_hex.png
+PASS maelstrom2_hex.png
+PASS marsh_hex.png
+PASS moor_or_bog_hex.png
+PASS mountain_caves_hex.png
+PASS mountain_ridge_hex.png
+PASS mountains_hex.png
+PASS mud_flats_hex.png
+PASS oasis_hex.png
+PASS ocean_hex.png
+PASS plateau_city_flood_hex.png
+PASS rocky_desert_hex.png
+PASS sand_bank_island_hex.png
+PASS sandy_desert_beach_hex.png
+PASS sea_reef_hex.png
+PASS shoal_hex.png
+PASS snow_fields_hex.png
+PASS swamp_hex.png
+PASS volcanic_formation_hex.png
+PASS volcano_hex.png
+PASS volcanoes_hex.png
+PASS whaling_spot_hex.png
+PASS whirlpool_hex.png

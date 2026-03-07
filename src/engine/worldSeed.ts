@@ -7,7 +7,7 @@
  * cosmology profile + seed + echo injections.
  */
 import { WorldGraph } from './graph';
-import type { CosmologyProfile, SphereName, HexTile } from '../types/index';
+import type { CosmologyProfile, SphereName, HexTile, TerrainType, LocationSubtype } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
@@ -113,6 +113,53 @@ export interface SeedResult {
   artifactIds: string[];
 }
 
+// ─── Location Subtype Selection ──────────────────────────────────────
+
+/** Terrain → eligible settlement subtypes (weighted) */
+const TERRAIN_SETTLEMENT_WEIGHTS: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
+  desert:     [['oasis', 3], ['camp', 4], ['ruins', 2], ['hamlet', 1]],
+  mountains:  [['mining', 3], ['fort', 2], ['shrine', 2], ['tower', 1], ['ruins', 1]],
+  hills:      [['hamlet', 3], ['town', 2], ['mining', 2], ['fort', 1], ['ruins', 1]],
+  volcanic:   [['mining', 2], ['ruins', 3], ['camp', 2], ['shrine', 1]],
+  broken_lands: [['ruins', 4], ['camp', 2], ['battleground', 2]],
+  jungle:     [['ruins', 3], ['shrine', 2], ['camp', 2], ['hamlet', 1]],
+  swamp:      [['ruins', 2], ['camp', 2], ['shrine', 1], ['hamlet', 1]],
+  bog:        [['ruins', 2], ['camp', 2], ['shrine', 1]],
+  glacier:    [['ruins', 1], ['shrine', 1]],
+  tundra:     [['camp', 3], ['hamlet', 1], ['ruins', 1]],
+};
+
+/** Default weights for most terrain types */
+const DEFAULT_SETTLEMENT_WEIGHTS: Array<[LocationSubtype, number]> = [
+  ['hamlet', 5], ['town', 3], ['city', 1],
+  ['camp', 2], ['fort', 1], ['tower', 1],
+  ['shrine', 1], ['temple', 1], ['farmland', 2],
+  ['ruins', 1],
+];
+
+function pickLocationSubtype(
+  rng: () => number,
+  terrain: TerrainType,
+  locationIndex: number,
+  totalLocations: number,
+): LocationSubtype {
+  // First location is always a capital (player's starting area)
+  if (locationIndex === 0) return 'capital';
+
+  // Some locations are unexplored POIs (~5%)
+  if (rng() < 0.05) return 'unexplored_poi';
+
+  // Pick from terrain-weighted distribution
+  const weights = TERRAIN_SETTLEMENT_WEIGHTS[terrain] ?? DEFAULT_SETTLEMENT_WEIGHTS;
+  const totalWeight = weights.reduce((sum, [, w]) => sum + w, 0);
+  let roll = rng() * totalWeight;
+  for (const [subtype, weight] of weights) {
+    roll -= weight;
+    if (roll <= 0) return subtype;
+  }
+  return 'wilderness';
+}
+
 export function seedWorld(
   cosmology: CosmologyProfile,
   tiles: HexTile[],
@@ -148,12 +195,15 @@ export function seedWorld(
     const locInjection = injections?.find(inj => inj.injection.injectionType === 'location_feature');
     const sphereBiases = locInjection ? { ...locInjection.injection.sphereBiases } : {};
 
+    const locationSubtype = pickLocationSubtype(rng, tile.terrain, i, locCount);
+
     graph.addNode({
       id,
       type: 'location',
       name: LOCATION_NAMES[nameIdx],
       properties: {
         locationType: 'location',
+        locationSubtype,
         hexCol: tile.coord.col,
         hexRow: tile.coord.row,
         terrain: tile.terrain,

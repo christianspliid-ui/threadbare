@@ -1,11 +1,15 @@
-import type { HexTile } from '../../types';
+import type { HexTile, LocationSubtype } from '../../types';
 import type { HexVisibilityState } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints } from '../../lib/hexMath';
-import { getHexTileUrl } from '../../data/hex-tile-assets';
+import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
 
 // Hex tile display constants
 const UNEXPLORED_HEX_COLOR = '#1e1b2e'; // Dark world surface, ~12% brightness matching HEX_MAP_BACKGROUND
+
+// Overlay sizing: full-size settlements fill the hex, structures render at half size
+const OVERLAY_FULL_SCALE = 0.85;  // Settlement overlays (hamlet, town, city, capital) — nearly fill hex
+const OVERLAY_HALF_SCALE = 0.45;  // Structure/marker overlays (shrine, fort, ruins, etc.) — half hex size
 
 interface HexTileProps {
   tile: HexTile;
@@ -18,6 +22,7 @@ interface HexTileProps {
   visibility?: HexVisibilityState;
   isAvatarHex?: boolean;
   sphereColor?: string;
+  locationSubtype?: LocationSubtype;
   onClick?: () => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
@@ -27,6 +32,7 @@ export function HexTileComponent({
   tile, cx, cy, size, hexClipId,
   isHovered = false, isSelected = false,
   visibility = 'visible', isAvatarHex = false, sphereColor,
+  locationSubtype,
   onClick, onMouseEnter, onMouseLeave,
 }: HexTileProps) {
   const fillColor = BIOME_COLORS[tile.terrain];
@@ -71,6 +77,26 @@ export function HexTileComponent({
           preserveAspectRatio="xMidYMid slice"
         />
       </g>
+      {/* Location overlay icon (settlement/structure) */}
+      {locationSubtype && (() => {
+        const overlayUrl = getOverlayIconUrl(locationSubtype);
+        if (!overlayUrl) return null;
+        const scale = isFullSizeOverlay(locationSubtype) ? OVERLAY_FULL_SCALE : OVERLAY_HALF_SCALE;
+        const overlaySize = size * 2 * scale;
+        return (
+          <g clipPath={`url(#${hexClipId})`} transform={`translate(${cx}, ${cy})`}>
+            <image
+              href={overlayUrl}
+              x={-overlaySize / 2}
+              y={-overlaySize / 2}
+              width={overlaySize}
+              height={overlaySize}
+              preserveAspectRatio="xMidYMid meet"
+              opacity={0.85}
+            />
+          </g>
+        );
+      })()}
       {/* Selection ring */}
       {isSelected && (
         <polygon

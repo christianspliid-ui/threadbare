@@ -27,7 +27,7 @@ export interface CubeCoord {
   s: number;
 }
 
-/** Naturalistic biome types (22 types) */
+/** Naturalistic biome types (27 types) */
 export type TerrainType =
   // Water
   | 'ocean' | 'coastal_shallows' | 'lake' | 'river'
@@ -39,8 +39,21 @@ export type TerrainType =
   | 'swamp' | 'bog'
   // Elevated
   | 'hills' | 'mountains' | 'plateau' | 'badlands'
+  // Elevated + forested
+  | 'forested_hills_evergreen' | 'forested_hills_deciduous' | 'forested_hills_jungle'
+  // Special
+  | 'great_home_trees' | 'broken_lands'
   // Extreme
   | 'desert' | 'tundra' | 'glacier' | 'volcanic';
+
+/** Settlement/structure types for location overlays */
+export type LocationSubtype =
+  | 'hamlet' | 'town' | 'city' | 'capital'
+  | 'camp' | 'farmland'
+  | 'castle' | 'fort' | 'tower' | 'shrine' | 'temple'
+  | 'mining' | 'ruins' | 'ruined_tower' | 'ruined_city' | 'ruined_village'
+  | 'battleground' | 'oasis' | 'unexplored_poi'
+  | 'wilderness';  // default — no overlay icon
 
 /** A single hex tile with all computed properties */
 export interface HexTile {

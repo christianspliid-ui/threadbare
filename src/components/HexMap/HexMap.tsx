@@ -1,6 +1,6 @@
 import { useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import * as d3 from 'd3';
-import type { HexTile, HexCoord, OverlayMode } from '../../types';
+import type { HexTile, HexCoord, OverlayMode, LocationSubtype } from '../../types';
 import type { VisibilityMap } from '../../types/visibility';
 import { hexToPixel } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
@@ -22,6 +22,7 @@ interface HexMapProps {
   selectedHex: HexCoord | null;
   overlayMode: OverlayMode;
   visibilityMap?: VisibilityMap;
+  locationOverlays?: Map<string, LocationSubtype>;
   avatarHex?: HexCoord;
   sphereColor?: string;
   initialCenter?: { x: number; y: number };
@@ -38,7 +39,7 @@ export interface HexMapHandle {
 const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   tiles, cols, rows, hexSize = 30,
   hoveredHex, selectedHex, overlayMode,
-  visibilityMap, avatarHex, sphereColor,
+  visibilityMap, locationOverlays, avatarHex, sphereColor,
   initialCenter, initialScale,
   onZoomChange,
   onHexClick, onHexHover,
@@ -131,6 +132,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
             const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
             const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
             const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+            const coordKey = `${tile.coord.col},${tile.coord.row}`;
+            const locSubtype = locationOverlays?.get(coordKey);
             return (
               <HexTileComponent
                 key={`${tile.coord.col}-${tile.coord.row}`}
@@ -139,6 +142,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 visibility={visibility}
                 isAvatarHex={isAvatar}
                 sphereColor={sphereColor}
+                locationSubtype={locSubtype}
                 onClick={() => onHexClick(tile.coord)}
                 onMouseEnter={() => onHexHover(tile.coord)}
                 onMouseLeave={() => onHexHover(null)}

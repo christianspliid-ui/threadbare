@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hex SVG Vectorization — All 51 Tiles Comparison</title>
+<style>
+  body { background: #1a1a2e; color: #e0e0e0; font-family: system-ui, sans-serif; margin: 2rem; }
+  h1 { color: #ff9933; margin-bottom: 0.25rem; }
+  .subtitle { color: #888; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  .stats { color: #78c8f5; margin-bottom: 2rem; font-size: 0.85rem; }
+
+  .controls { margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+  .controls label { color: #aaa; font-size: 0.8rem; }
+  .controls select, .controls input { background: #16213e; color: #e0e0e0; border: 1px solid #333; border-radius: 4px; padding: 0.3rem 0.6rem; }
+  .controls button { background: #ff9933; color: #1a1a2e; border: none; border-radius: 4px; padding: 0.4rem 1rem; cursor: pointer; font-weight: 600; }
+  .controls button:hover { background: #ffad5c; }
+
+  .legend { display: flex; gap: 1.5rem; margin-bottom: 1.5rem; font-size: 0.8rem; }
+  .legend span { display: flex; align-items: center; gap: 0.4rem; }
+  .swatch { width: 16px; height: 16px; border-radius: 3px; border: 1px solid #555; }
+  .checker-swatch {
+    background-image: linear-gradient(45deg, #2a2a4a 25%, transparent 25%), linear-gradient(-45deg, #2a2a4a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2a4a 75%), linear-gradient(-45deg, transparent 75%, #2a2a4a 75%);
+    background-size: 8px 8px; background-position: 0 0, 0 4px, 4px -4px, -4px 0px; background-color: #1e1e3a;
+  }
+
+  .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+  .tile { border: 1px solid #333; border-radius: 8px; padding: 1rem; background: #16213e; }
+  .tile .name { color: #78c8f5; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.5rem; text-transform: capitalize; }
+  .tile .row { display: flex; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+  .tile .card { text-align: center; }
+  .tile .card .label { font-size: 0.65rem; color: #aaa; margin-bottom: 0.25rem; }
+  .tile .card .size { font-size: 0.6rem; color: #666; margin-top: 0.15rem; }
+
+  .bg-checker {
+    background-image: linear-gradient(45deg, #2a2a4a 25%, transparent 25%), linear-gradient(-45deg, #2a2a4a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2a2a4a 75%), linear-gradient(-45deg, transparent 75%, #2a2a4a 75%);
+    background-size: 12px 12px; background-position: 0 0, 0 6px, 6px -6px, -6px 0px; background-color: #1e1e3a;
+    border-radius: 6px; padding: 4px; display: inline-block;
+  }
+  .bg-dark { background: #0d1117; border-radius: 6px; padding: 4px; display: inline-block; }
+  .bg-green { background: #2d5a1e; border-radius: 6px; padding: 4px; display: inline-block; }
+  .bg-light { background: #f0f0f0; border-radius: 6px; padding: 4px; display: inline-block; }
+  .bg-checker img, .bg-checker object, .bg-dark img, .bg-dark object, .bg-green img, .bg-green object, .bg-light img, .bg-light object {
+    width: 90px; height: 78px; display: block;
+  }
+
+  .size-large .bg-checker img, .size-large .bg-checker object, .size-large .bg-dark img, .size-large .bg-dark object,
+  .size-large .bg-green img, .size-large .bg-green object, .size-large .bg-light img, .size-large .bg-light object {
+    width: 120px; height: 104px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Hex SVG Vectorization — Complete Results</h1>
+<p class="subtitle">51 hex tiles: source PNG → cleaned PNG (transparent bg, no border) → vectorized SVG (test mode, watermarked)</p>
+<div class="stats" id="stats"></div>
+
+<div class="controls">
+  <label>Background:
+    <select id="bgSelect">
+      <option value="bg-checker">Checkerboard</option>
+      <option value="bg-dark" selected>Dark</option>
+      <option value="bg-green">Green (game bg)</option>
+      <option value="bg-light">Light</option>
+    </select>
+  </label>
+  <label>Show:
+    <select id="showSelect">
+      <option value="all">PNG + Cleaned + SVG</option>
+      <option value="svg-only">SVG only</option>
+      <option value="compare">PNG vs SVG</option>
+    </select>
+  </label>
+  <label>Size:
+    <select id="sizeSelect">
+      <option value="">Normal (90px)</option>
+      <option value="size-large">Large (120px)</option>
+    </select>
+  </label>
+  <label>Filter:
+    <input type="text" id="filterInput" placeholder="type to filter..." />
+  </label>
+</div>
+
+<div class="legend">
+  <span><div class="swatch checker-swatch"></div> Transparency</span>
+  <span><div class="swatch" style="background:#0d1117;"></div> Dark bg</span>
+  <span><div class="swatch" style="background:#2d5a1e;"></div> Green bg</span>
+  <span><div class="swatch" style="background:#f0f0f0;"></div> Light bg</span>
+</div>
+
+<div class="gallery" id="gallery"></div>
+
+<script>
+const hexNames = [
+  'badlands','broken_barren_land','choice_grazing_land','clear_farmland','coast',
+  'coastal_reef','coastal_waters_lake','dead_forest','deep_sea','extinct_volcano',
+  'fen','forested_hill_caves','forested_hills_deciduous','forested_hills_evergreen',
+  'frozen_tundra','glaciers','grassland_steppes_savanna','hardened_clay_desert',
+  'heavy_cactus_scrub','heavy_forest_deciduous','heavy_forest_evergreen','hill_caves',
+  'hills','hills_with_jungle','inactive_volcano','jungle','light_cactus_scrub',
+  'light_forest_deciduous','light_forest_evergreen','maelstrom2','marsh','moor_or_bog',
+  'mountain_caves','mountain_ridge','mountains','mud_flats','oasis','ocean',
+  'plateau_city_flood','rocky_desert','sand_bank_island','sandy_desert_beach','sea_reef',
+  'shoal','snow_fields','swamp','volcanic_formation','volcano','volcanoes',
+  'whaling_spot','whirlpool'
+];
+
+const gallery = document.getElementById('gallery');
+const bgSelect = document.getElementById('bgSelect');
+const showSelect = document.getElementById('showSelect');
+const sizeSelect = document.getElementById('sizeSelect');
+const filterInput = document.getElementById('filterInput');
+const stats = document.getElementById('stats');
+
+stats.textContent = `${hexNames.length} hex tiles vectorized`;
+
+function render() {
+  const bg = bgSelect.value;
+  const show = showSelect.value;
+  const sz = sizeSelect.value;
+  const filter = filterInput.value.toLowerCase();
+
+  gallery.className = `gallery ${sz}`;
+  gallery.innerHTML = '';
+
+  hexNames.forEach(name => {
+    const display = name.replace(/_/g, ' ');
+    if (filter && !display.includes(filter) && !name.includes(filter)) return;
+
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+
+    let cards = '';
+
+    if (show === 'all' || show === 'compare') {
+      cards += `<div class="card"><div class="label">Source PNG</div><div class="${bg}"><img src="../${name}.png"></div></div>`;
+    }
+    if (show === 'all') {
+      cards += `<div class="card"><div class="label">Cleaned PNG</div><div class="${bg}"><img src="${name}_clean.png"></div></div>`;
+    }
+    cards += `<div class="card"><div class="label">SVG</div><div class="${bg}"><object data="${name}_clean.svg" type="image/svg+xml"></object></div></div>`;
+
+    tile.innerHTML = `<div class="name">${display}</div><div class="row">${cards}</div>`;
+    gallery.appendChild(tile);
+  });
+}
+
+bgSelect.addEventListener('change', render);
+showSelect.addEventListener('change', render);
+sizeSelect.addEventListener('change', render);
+filterInput.addEventListener('input', render);
+
+render();
+</script>
+
+</body>
+</html>
