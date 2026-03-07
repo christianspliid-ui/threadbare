@@ -6,7 +6,11 @@
  */
 import sharp from 'sharp';
 import { readdirSync, mkdirSync, existsSync, statSync } from 'fs';
-import { join, basename } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const SOURCE_DIR = join(__dirname, '..', 'Assets', 'biomes');
 const OUTPUT_DIR = join(__dirname, '..', 'public', 'hex-tiles');
