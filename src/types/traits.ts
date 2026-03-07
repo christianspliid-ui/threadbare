@@ -5,7 +5,9 @@
  * assignments are 'has_trait' edges with level/decay/visibility properties.
  */
 
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny';
+import type { CulturalStrengthRange } from '../data/culture-content';
+
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural';
 
 export type TraitVisibility = 'public' | 'discoverable' | 'divine_only';
 
@@ -32,6 +34,7 @@ export interface TraitDefinitionProperties {
   decayPeriod?: number;          // ticks between decay checks (mastery only)
   tags: string[];
   flavorText: string;
+  strengthThresholds?: Partial<Record<CulturalStrengthRange, string>>; // cultural trait strength expressions
 }
 
 /** Properties stored on a has_trait edge (edge.properties) */
