@@ -18,6 +18,7 @@ import type {
 } from '../types/narrative';
 import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, VALUE_FLAVORS } from '../data/narrative-content';
 import type { ValuePair } from '../types/agent';
+import { emitTrace } from './traceBuffer';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -74,6 +75,15 @@ export function generateRoutineProse(
     .replace(/\{verb\}/g, verb)
     .replace(/\{noun\}/g, noun);
 
+  emitTrace({
+    tick: 0,
+    category: 'narrative_generation',
+    summary: `Routine prose: "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}"`,
+    tier: 'routine',
+    sphereWords: [adj, verb, noun].filter(Boolean),
+    finalProse: text,
+  });
+
   return {
     text,
     voice: getVoice(eventType),
@@ -118,6 +128,16 @@ export function generateNotableProse(
     .replace(/\{verb\}/g, verb)
     .replace(/\{noun\}/g, noun)
     .replace(/\{personality\}/g, personality);
+
+  emitTrace({
+    tick: 0,
+    category: 'narrative_generation',
+    summary: `Notable prose: "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}"`,
+    tier: 'notable',
+    sphereWords: [adj, verb, noun].filter(Boolean),
+    personalityClause: personality || undefined,
+    finalProse: text,
+  });
 
   return {
     text,
