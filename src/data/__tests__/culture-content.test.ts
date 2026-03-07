@@ -8,6 +8,7 @@ import {
   INSIDER_BEATS,
   SUB_LOCATION_TEMPLATES,
   ARTIFACT_LORE_PATTERNS,
+  CULTURE_NAME_FRAGMENTS,
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
@@ -488,6 +489,46 @@ describe('culture-content', () => {
           expect(typeof tag).toBe('string');
           expect(tag.length).toBeGreaterThan(0);
         }
+      }
+    });
+  });
+
+  // ─── Culture Name Fragments Tests ────────────────────────────────
+
+  describe('CULTURE_NAME_FRAGMENTS', () => {
+    it('has foundation fragments for all 4 foundations', () => {
+      expect(Object.keys(CULTURE_NAME_FRAGMENTS.foundation)).toEqual(
+        expect.arrayContaining(['chaos', 'order', 'light', 'darkness'])
+      );
+      for (const frags of Object.values(CULTURE_NAME_FRAGMENTS.foundation)) {
+        expect(frags.length).toBeGreaterThanOrEqual(3);
+        for (const f of frags) {
+          expect(typeof f).toBe('string');
+          expect(f.length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('has sphere fragments for all 8 creation spheres', () => {
+      const spheres = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
+      for (const sphere of spheres) {
+        expect(CULTURE_NAME_FRAGMENTS.sphere[sphere]).toBeDefined();
+        expect(CULTURE_NAME_FRAGMENTS.sphere[sphere].length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('has biome fragments for common terrain types', () => {
+      const terrains = ['desert', 'mountains', 'grassland', 'jungle', 'tundra', 'swamp'];
+      for (const t of terrains) {
+        expect(CULTURE_NAME_FRAGMENTS.biome[t]).toBeDefined();
+        expect(CULTURE_NAME_FRAGMENTS.biome[t].length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('has at least 3 name patterns', () => {
+      expect(CULTURE_NAME_FRAGMENTS.patterns.length).toBeGreaterThanOrEqual(3);
+      for (const p of CULTURE_NAME_FRAGMENTS.patterns) {
+        expect(p).toContain('{');
       }
     });
   });

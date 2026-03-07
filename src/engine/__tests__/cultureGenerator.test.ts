@@ -8,6 +8,7 @@ import {
   DUAL_CULTURE_PROBABILITY,
   CULTURELESS_PROBABILITY,
 } from '../../types/culture';
+import { composeCultureIdentity, generateCultureName } from '../cultureGenerator';
 
 describe('culture graph edges', () => {
   it('supports belongs_to edge type for culture assignment', () => {
@@ -65,5 +66,69 @@ describe('culture types', () => {
     expect(DUAL_CULTURE_PROBABILITY).toBeLessThan(1);
     expect(CULTURELESS_PROBABILITY).toBeGreaterThan(0);
     expect(CULTURELESS_PROBABILITY).toBeLessThan(1);
+  });
+});
+
+describe('composeCultureIdentity', () => {
+  it('merges foundation + sphere + biome into a CultureIdentity', () => {
+    const identity = composeCultureIdentity('chaos', ['force'], 'desert');
+    expect(identity.foundationBias).toBe('chaos');
+    expect(identity.veneratedSpheres).toEqual(['force']);
+    expect(identity.primaryBiome).toBe('desert');
+    expect(identity.socialStructure).toBeTruthy();
+    expect(identity.accountability).toBeTruthy();
+    expect(identity.behavioralKeywords.length).toBeGreaterThan(0);
+    expect(identity.materialVocabulary.length).toBeGreaterThan(0);
+    expect(identity.metaphorPalette.length).toBeGreaterThan(0);
+    expect(identity.formativeTraitSeedIds.length).toBeGreaterThan(0);
+    expect(identity.behavioralTraitSeedIds.length).toBeGreaterThan(0);
+  });
+
+  it('merges keywords from all three layers without duplicates', () => {
+    const identity = composeCultureIdentity('order', ['matter', 'mind'], 'mountains');
+    const uniqueKeywords = new Set(identity.behavioralKeywords);
+    expect(uniqueKeywords.size).toBe(identity.behavioralKeywords.length);
+  });
+
+  it('supports 2 venerated spheres', () => {
+    const identity = composeCultureIdentity('light', ['life', 'spirit'], 'jungle');
+    expect(identity.veneratedSpheres).toEqual(['life', 'spirit']);
+    expect(identity.formativeTraitSeedIds.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('falls back gracefully for unknown foundation', () => {
+    const identity = composeCultureIdentity('unknown_foundation', ['force'], 'desert');
+    expect(identity.veneratedSpheres).toEqual(['force']);
+    expect(identity.primaryBiome).toBe('desert');
+    expect(identity.socialStructure).toBeTruthy();
+  });
+
+  it('falls back gracefully for unknown biome', () => {
+    const identity = composeCultureIdentity('chaos', ['force'], 'ocean' as any);
+    expect(identity.foundationBias).toBe('chaos');
+    expect(identity.materialVocabulary.length).toBeGreaterThan(0);
+  });
+});
+
+describe('generateCultureName', () => {
+  it('generates a non-empty string', () => {
+    const rng = (() => { let i = 0; return () => (i++ % 10) / 10; })();
+    const identity = composeCultureIdentity('chaos', ['force'], 'desert');
+    const name = generateCultureName(identity, rng);
+    expect(name.length).toBeGreaterThan(0);
+  });
+
+  it('is deterministic with same rng sequence', () => {
+    const rng1 = (() => { let i = 0; return () => (i++ % 10) / 10; })();
+    const rng2 = (() => { let i = 0; return () => (i++ % 10) / 10; })();
+    const identity = composeCultureIdentity('order', ['matter'], 'mountains');
+    expect(generateCultureName(identity, rng1)).toBe(generateCultureName(identity, rng2));
+  });
+
+  it('handles unknown biome gracefully', () => {
+    const rng = (() => { let i = 0; return () => (i++ % 10) / 10; })();
+    const identity = composeCultureIdentity('chaos', ['force'], 'ocean' as any);
+    const name = generateCultureName(identity, rng);
+    expect(name.length).toBeGreaterThan(0);
   });
 });

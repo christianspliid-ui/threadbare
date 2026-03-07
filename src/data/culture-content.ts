@@ -773,6 +773,64 @@ export const ARTIFACT_LORE_PATTERNS: ArtifactLorePattern[] = [
   },
 ];
 
+// ─── Culture Name Fragments ─────────────────────────────────────
+
+export const CULTURE_NAME_FRAGMENTS: {
+  foundation: Record<string, string[]>;
+  sphere: Record<string, string[]>;
+  biome: Record<string, string[]>;
+  patterns: string[];
+} = {
+  foundation: {
+    chaos: ['Storm-Born', 'Untamed', 'Wild', 'Shifting', 'Unchained'],
+    order: ['Stone-Set', 'Codex', 'Lawbound', 'Pillar', 'Measured'],
+    light: ['Sun-Sworn', 'Open', 'Radiant', 'Witness', 'Bright'],
+    darkness: ['Veiled', 'Shadow-Kept', 'Hidden', 'Inner', 'Masked'],
+  },
+  sphere: {
+    force: ['Iron', 'War', 'Blade', 'Hammer', 'Shield'],
+    matter: ['Stone', 'Craft', 'Forge', 'Earth', 'Anvil'],
+    energy: ['Spark', 'Storm', 'Lightning', 'Flame', 'Current'],
+    life: ['Root', 'Bloom', 'Seed', 'Grove', 'Green'],
+    mind: ['Thought', 'Lore', 'Cipher', 'Ink', 'Scroll'],
+    spirit: ['Ghost', 'Dream', 'Whisper', 'Veil', 'Prayer'],
+    time: ['Hour', 'Tide', 'Dust', 'Ruin', 'Memory'],
+    entropy: ['Ash', 'Hollow', 'Fade', 'Bone', 'Rust'],
+  },
+  biome: {
+    desert: ['Sands', 'Dunes', 'Wastes', 'Oasis'],
+    mountains: ['Peaks', 'Heights', 'Crags', 'Summit'],
+    hills: ['Ridges', 'Slopes', 'Hollows', 'Downs'],
+    grassland: ['Plains', 'Meadows', 'Fields', 'Steppe'],
+    savanna: ['Savanna', 'Dry Fields', 'Sun-Lands', 'Flatlands'],
+    steppe: ['Steppe', 'Windlands', 'Dry Reaches', 'Barrens'],
+    deciduous_forest: ['Groves', 'Canopy', 'Glades', 'Timberlands'],
+    dense_forest: ['Deepwood', 'Thickets', 'Dark Timber', 'Old Growth'],
+    taiga: ['Pinelands', 'Frost-Wood', 'Northern Trees', 'Cold Forest'],
+    jungle: ['Tangles', 'Green Depths', 'Rain Canopy', 'Overgrowth'],
+    swamp: ['Mires', 'Bog-Lands', 'Still Waters', 'Fenlands'],
+    bog: ['Marshes', 'Peatlands', 'Dark Pools', 'Fen'],
+    tundra: ['Frost', 'Ice Fields', 'Cold Reach', 'Permafrost'],
+    glacier: ['Glacier', 'Ice Wall', 'Frozen Reach', 'Rime'],
+    volcanic: ['Cinder', 'Ember Fields', 'Ash Slopes', 'Crater'],
+    broken_lands: ['Shatter', 'Ruin-Fields', 'Scarlands', 'Breach'],
+    plateau: ['Mesa', 'High Table', 'Flatrock', 'Skyfield'],
+    badlands: ['Badlands', 'Gulch', 'Dry Canyons', 'Cracked Earth'],
+    farmland: ['Furrows', 'Tilth', 'Harvest-Lands', 'Homesteads'],
+    forested_hills_evergreen: ['Pine Ridges', 'Green Heights', 'Evergreen Slopes', 'Needle Hills'],
+    forested_hills_deciduous: ['Leaf Hollows', 'Autumn Ridges', 'Rustling Heights', 'Dappled Hills'],
+    forested_hills_jungle: ['Vine Ridges', 'Green Crests', 'Canopy Hills', 'Humid Heights'],
+  },
+  patterns: [
+    'The {foundation} {sphere} of the {biome}',
+    'The {sphere} {biome}',
+    'Children of the {foundation} {biome}',
+    '{foundation} {sphere}',
+    'The {foundation} {biome}',
+    'Keepers of the {sphere} {biome}',
+  ],
+};
+
 // ─── Lookup Functions ─────────────────────────────────────────────
 
 /**
