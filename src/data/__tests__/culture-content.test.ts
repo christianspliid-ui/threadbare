@@ -11,6 +11,12 @@ import {
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
+  getFormativeTraitSeed,
+  getBehavioralTraitSeed,
+  getInsiderBeat,
+  getSubLocationTemplate,
+  getBeatsForCultureTags,
+  getTraitSeedsForTags,
   type FoundationModifier,
   type CreationSphereModifier,
   type BiomeModifier,
@@ -520,6 +526,296 @@ describe('culture-content', () => {
       const validTones = ['reverent', 'martial', 'mystical', 'practical', 'ominous'];
       for (const pattern of ARTIFACT_LORE_PATTERNS) {
         expect(validTones).toContain(pattern.toneCategory);
+      }
+    });
+  });
+
+  // ─── Lookup Functions Tests ───────────────────────────────────────
+
+  describe('culture-content — lookup functions', () => {
+    it('getFoundationModifier returns correct modifier', () => {
+      const chaos = getFoundationModifier('chaos');
+      expect(chaos).toBeDefined();
+      expect(chaos!.id).toBe('chaos');
+    });
+
+    it('getFoundationModifier returns undefined for invalid id', () => {
+      expect(getFoundationModifier('invalid')).toBeUndefined();
+    });
+
+    it('getCreationSphereModifier returns correct modifier', () => {
+      const force = getCreationSphereModifier('force');
+      expect(force).toBeDefined();
+      expect(force!.sphere).toBe('force');
+    });
+
+    it('getCreationSphereModifier returns undefined for invalid sphere', () => {
+      expect(getCreationSphereModifier('invalid' as any)).toBeUndefined();
+    });
+
+    it('getBiomeModifier returns correct modifier', () => {
+      const desert = getBiomeModifier('desert');
+      expect(desert).toBeDefined();
+      expect(desert!.terrain).toBe('desert');
+    });
+
+    it('getBiomeModifier returns undefined for invalid terrain', () => {
+      expect(getBiomeModifier('invalid' as any)).toBeUndefined();
+    });
+
+    it('getFormativeTraitSeed returns correct seed', () => {
+      const wm = getFormativeTraitSeed('weapon_mastery');
+      expect(wm).toBeDefined();
+      expect(wm!.name).toBe('Weapon Mastery');
+    });
+
+    it('getFormativeTraitSeed returns undefined for invalid id', () => {
+      expect(getFormativeTraitSeed('invalid')).toBeUndefined();
+    });
+
+    it('getBehavioralTraitSeed returns correct seed', () => {
+      const cc = getBehavioralTraitSeed('challenge_compulsion');
+      expect(cc).toBeDefined();
+      expect(cc!.name).toBe('Challenge Compulsion');
+    });
+
+    it('getBehavioralTraitSeed returns undefined for invalid id', () => {
+      expect(getBehavioralTraitSeed('invalid')).toBeUndefined();
+    });
+
+    it('getInsiderBeat returns correct beat', () => {
+      const blood = getInsiderBeat('blood_oath_challenge');
+      expect(blood).toBeDefined();
+      expect(blood!.name).toBe('Blood Oath Challenge');
+    });
+
+    it('getInsiderBeat returns undefined for invalid id', () => {
+      expect(getInsiderBeat('invalid')).toBeUndefined();
+    });
+
+    it('getSubLocationTemplate returns correct template', () => {
+      const forge = getSubLocationTemplate('forge');
+      expect(forge).toBeDefined();
+      expect(forge!.name).toBe('Forge');
+    });
+
+    it('getSubLocationTemplate returns undefined for invalid id', () => {
+      expect(getSubLocationTemplate('invalid')).toBeUndefined();
+    });
+
+    it('getBeatsForCultureTags filters by tag', () => {
+      const forceBeats = getBeatsForCultureTags(['force']);
+      expect(forceBeats.length).toBeGreaterThanOrEqual(1);
+      for (const beat of forceBeats) {
+        expect(beat.requiredCultureTags.some(t => t === 'force')).toBe(true);
+      }
+    });
+
+    it('getBeatsForCultureTags returns empty array for non-matching tags', () => {
+      const beats = getBeatsForCultureTags(['nonexistent_tag']);
+      expect(beats).toEqual([]);
+    });
+
+    it('getBeatsForCultureTags returns all matching beats for multiple tags', () => {
+      const forceBeats = getBeatsForCultureTags(['force']);
+      const matterBeats = getBeatsForCultureTags(['matter']);
+      const bothTags = getBeatsForCultureTags(['force', 'matter']);
+      // Should return union of both
+      expect(bothTags.length).toBeGreaterThanOrEqual(Math.max(forceBeats.length, matterBeats.length));
+    });
+
+    it('getTraitSeedsForTags returns formative and behavioral seeds', () => {
+      const result = getTraitSeedsForTags(['force']);
+      expect(result.formative).toBeDefined();
+      expect(result.behavioral).toBeDefined();
+      expect(result.formative.length).toBeGreaterThanOrEqual(1);
+      expect(result.behavioral.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('getTraitSeedsForTags formative seeds have matching sourceTags', () => {
+      const result = getTraitSeedsForTags(['force']);
+      for (const seed of result.formative) {
+        expect(seed.sourceTags.some(t => t === 'force')).toBe(true);
+      }
+    });
+
+    it('getTraitSeedsForTags behavioral seeds have matching sourceTags', () => {
+      const result = getTraitSeedsForTags(['force']);
+      for (const seed of result.behavioral) {
+        expect(seed.sourceTags.some(t => t === 'force')).toBe(true);
+      }
+    });
+
+    it('getTraitSeedsForTags returns empty arrays for non-matching tags', () => {
+      const result = getTraitSeedsForTags(['nonexistent_tag']);
+      expect(result.formative).toEqual([]);
+      expect(result.behavioral).toEqual([]);
+    });
+
+    it('getTraitSeedsForTags works with multiple tags', () => {
+      const result = getTraitSeedsForTags(['force', 'matter']);
+      expect(result.formative.length).toBeGreaterThanOrEqual(1);
+      expect(result.behavioral.length).toBeGreaterThanOrEqual(1);
+      // All results should match at least one tag
+      for (const seed of [...result.formative, ...result.behavioral]) {
+        expect(seed.sourceTags.some(t => ['force', 'matter'].includes(t))).toBe(true);
+      }
+    });
+  });
+
+  // ─── Per-Entry Quality Validation Tests ───────────────────────────
+
+  describe('culture-content — per-entry quality validation', () => {
+    describe('formative trait seeds', () => {
+      for (const seed of FORMATIVE_TRAIT_SEEDS) {
+        it(`"${seed.name}" has valid domain contributions`, () => {
+          const values = Object.values(seed.domainContributions);
+          expect(values.length).toBeGreaterThanOrEqual(1);
+          for (const v of values) {
+            expect(typeof v).toBe('number');
+            expect(Math.abs(v)).toBeLessThanOrEqual(5);
+          }
+        });
+
+        it(`"${seed.name}" has valid sourceTags array`, () => {
+          expect(Array.isArray(seed.sourceTags)).toBe(true);
+          expect(seed.sourceTags.length).toBeGreaterThanOrEqual(1);
+          for (const tag of seed.sourceTags) {
+            expect(typeof tag).toBe('string');
+            expect(tag.length).toBeGreaterThanOrEqual(1);
+          }
+        });
+
+        it(`"${seed.name}" has unique id`, () => {
+          const count = FORMATIVE_TRAIT_SEEDS.filter(s => s.id === seed.id).length;
+          expect(count).toBe(1);
+        });
+      }
+    });
+
+    describe('behavioral trait seeds', () => {
+      for (const seed of BEHAVIORAL_TRAIT_SEEDS) {
+        it(`"${seed.name}" has at least 2 strength threshold descriptions`, () => {
+          const entries = Object.entries(seed.strengthThresholds);
+          expect(entries.length).toBeGreaterThanOrEqual(2);
+          for (const [, desc] of entries) {
+            expect(typeof desc).toBe('string');
+            expect(desc.length).toBeGreaterThanOrEqual(10);
+          }
+        });
+
+        it(`"${seed.name}" has valid domain contributions`, () => {
+          const values = Object.values(seed.domainContributions);
+          expect(values.length).toBeGreaterThanOrEqual(1);
+          for (const v of values) {
+            expect(typeof v).toBe('number');
+            expect(Math.abs(v)).toBeLessThanOrEqual(5);
+          }
+        });
+
+        it(`"${seed.name}" has valid sourceTags array`, () => {
+          expect(Array.isArray(seed.sourceTags)).toBe(true);
+          expect(seed.sourceTags.length).toBeGreaterThanOrEqual(1);
+          for (const tag of seed.sourceTags) {
+            expect(typeof tag).toBe('string');
+            expect(tag.length).toBeGreaterThanOrEqual(1);
+          }
+        });
+
+        it(`"${seed.name}" has unique id`, () => {
+          const count = BEHAVIORAL_TRAIT_SEEDS.filter(s => s.id === seed.id).length;
+          expect(count).toBe(1);
+        });
+      }
+    });
+
+    describe('insider beats', () => {
+      for (const beat of INSIDER_BEATS) {
+        it(`"${beat.name}" has at least 1 prose seed of reasonable length`, () => {
+          expect(Array.isArray(beat.proseSeeds)).toBe(true);
+          expect(beat.proseSeeds.length).toBeGreaterThanOrEqual(1);
+          for (const seed of beat.proseSeeds) {
+            expect(typeof seed).toBe('string');
+            expect(seed.length).toBeGreaterThanOrEqual(15);
+          }
+        });
+
+        it(`"${beat.name}" has valid requiredCultureTags`, () => {
+          expect(Array.isArray(beat.requiredCultureTags)).toBe(true);
+          // Culture tags may be empty for beats that apply broadly
+          for (const tag of beat.requiredCultureTags) {
+            expect(typeof tag).toBe('string');
+            expect(tag.length).toBeGreaterThanOrEqual(1);
+          }
+        });
+
+        it(`"${beat.name}" has valid trigger description`, () => {
+          expect(typeof beat.trigger).toBe('string');
+          expect(beat.trigger.length).toBeGreaterThanOrEqual(5);
+        });
+
+        it(`"${beat.name}" has valid minStrength`, () => {
+          expect(typeof beat.minStrength).toBe('number');
+          expect(beat.minStrength).toBeGreaterThanOrEqual(0.3);
+          expect(beat.minStrength).toBeLessThanOrEqual(1.0);
+        });
+
+        it(`"${beat.name}" has unique id`, () => {
+          const count = INSIDER_BEATS.filter(b => b.id === beat.id).length;
+          expect(count).toBe(1);
+        });
+      }
+    });
+
+    describe('sub-location templates', () => {
+      for (const template of SUB_LOCATION_TEMPLATES) {
+        it(`"${template.name}" has valid description length`, () => {
+          expect(typeof template.description).toBe('string');
+          expect(template.description.length).toBeGreaterThanOrEqual(15);
+        });
+
+        it(`"${template.name}" has valid grantedByTags`, () => {
+          expect(Array.isArray(template.grantedByTags)).toBe(true);
+          expect(template.grantedByTags.length).toBeGreaterThanOrEqual(1);
+          for (const tag of template.grantedByTags) {
+            expect(typeof tag).toBe('string');
+            expect(tag.length).toBeGreaterThanOrEqual(1);
+          }
+        });
+
+        it(`"${template.name}" has valid culturalVariantDescriptors`, () => {
+          expect(Array.isArray(template.culturalVariantDescriptors)).toBe(true);
+          expect(template.culturalVariantDescriptors.length).toBeGreaterThanOrEqual(1);
+          for (const desc of template.culturalVariantDescriptors) {
+            expect(typeof desc).toBe('string');
+            expect(desc.length).toBeGreaterThanOrEqual(10);
+          }
+        });
+
+        it(`"${template.name}" has unique id`, () => {
+          const count = SUB_LOCATION_TEMPLATES.filter(t => t.id === template.id).length;
+          expect(count).toBe(1);
+        });
+      }
+    });
+
+    describe('artifact lore patterns', () => {
+      for (const pattern of ARTIFACT_LORE_PATTERNS) {
+        it(`"${pattern.id}" has valid template with placeholder`, () => {
+          expect(typeof pattern.template).toBe('string');
+          expect(pattern.template.length).toBeGreaterThanOrEqual(20);
+          expect(pattern.template).toContain('{culture}');
+        });
+
+        it(`"${pattern.id}" has valid toneCategory`, () => {
+          const validTones = ['reverent', 'martial', 'mystical', 'practical', 'ominous'];
+          expect(validTones).toContain(pattern.toneCategory);
+        });
+
+        it(`"${pattern.id}" has unique id`, () => {
+          const count = ARTIFACT_LORE_PATTERNS.filter(p => p.id === pattern.id).length;
+          expect(count).toBe(1);
+        });
       }
     });
   });
