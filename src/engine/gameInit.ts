@@ -17,8 +17,8 @@ import { generateRivals, createRivalState } from './rival';
 import { generateDoomClock, createDoomClockState } from './doomClock';
 import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
-import { computeMaxEssence } from './influence';
-import { SPHERE_NAMES } from '../types';
+import { createEmptyEssencePool } from './influence';
+import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateMandate } from './mandateGenerator';
 import { createMandateState } from './mandate';
@@ -27,6 +27,7 @@ import { createMandateState } from './mandate';
 
 export const DEFAULT_COLS = 20;
 export const DEFAULT_ROWS = 15;
+export const DEFAULT_TICKS_PER_SEASON = 90;
 
 // ─── Game Initialization ──────────────────────────────────────────
 
@@ -90,12 +91,11 @@ export function initializeGameState(
   const rivalStates = rivalDefs.map(r => createRivalState(r.id));
 
   // Generate doom clock
-  const doomDef = generateDoomClock('breach', 360, seed);
-  const doomState = createDoomClockState('breach', 360);
+  const doomDef = generateDoomClock('breach', DEFAULT_DOOM_TICKS, seed);
+  const doomState = createDoomClockState('breach', DEFAULT_DOOM_TICKS);
 
   // Initialize empty essence pool
-  const emptyPool = {} as Record<string, number>;
-  for (const s of SPHERE_NAMES) emptyPool[s] = 0;
+  const emptyPool = createEmptyEssencePool();
 
   // Generate victory mandate
   const mandateDef = generateMandate(cosmology, archetype.sphereAlignment, seed);
@@ -114,9 +114,9 @@ export function initializeGameState(
     graph,
     cosmology,
     tiles,
-    clock: { currentTick: 0, ticksPerSeason: 90, season: 0, year: 0 },
+    clock: { currentTick: 0, ticksPerSeason: DEFAULT_TICKS_PER_SEASON, season: 0, year: 0 },
     ascendantId,
-    essencePool: emptyPool as any,
+    essencePool: emptyPool,
     mandateDefinition: mandateDef,
     mandateState: mandateStateInit,
     rivalDefinitions: rivalDefs,
