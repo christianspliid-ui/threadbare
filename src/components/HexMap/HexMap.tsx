@@ -118,7 +118,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         ref={svgRef}
         viewBox={`0 0 ${width + padding * 2} ${height + padding * 2}`}
         className="w-full h-full"
-        style={{ background: '#f4e8c1' }}
+        style={{ background: '#0a0a0e' }}
       >
         <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group" transform={tileBaseTransform}>
