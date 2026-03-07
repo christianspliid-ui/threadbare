@@ -9,9 +9,17 @@ import type { WheelSlot } from '../../engine/wheel';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
-const WHEEL_RADIUS = 80;
-const SLOT_RADIUS = 14;
-const BACKDROP_RADIUS = 120;
+const WHEEL_CONFIG = {
+  RADIUS: 80,
+  SLOT_RADIUS: 14,
+  BACKDROP_RADIUS: 120,
+  GLYPH_FONT_SIZE: 20,
+  LABEL_FONT_SIZE: 12,
+  LABEL_OFFSET: 20,
+  CENTER_NAME_FONT_SIZE: 14,
+  CENTER_TITLE_FONT_SIZE: 11,
+  CENTER_TITLE_Y_OFFSET: 12,
+} as const;
 
 const SLOT_GLYPHS: Record<string, string> = {
   scry: '👁',
@@ -66,7 +74,7 @@ export function AgentWheel(props: AgentWheelProps) {
       <circle
         cx={cx}
         cy={cy}
-        r={BACKDROP_RADIUS}
+        r={WHEEL_CONFIG.BACKDROP_RADIUS}
         fill="#000000"
         opacity={0.3}
         style={{ cursor: 'pointer' }}
@@ -78,7 +86,7 @@ export function AgentWheel(props: AgentWheelProps) {
       <circle
         cx={cx}
         cy={cy}
-        r={WHEEL_RADIUS}
+        r={WHEEL_CONFIG.RADIUS}
         fill="none"
         stroke="#d4a574"
         strokeWidth={2}
@@ -91,7 +99,7 @@ export function AgentWheel(props: AgentWheelProps) {
         const { x: slotX, y: slotY } = polarToCartesian(
           cx,
           cy,
-          WHEEL_RADIUS,
+          WHEEL_CONFIG.RADIUS,
           slot.angleDeg
         );
 
@@ -116,7 +124,7 @@ export function AgentWheel(props: AgentWheelProps) {
             <circle
               cx={slotX}
               cy={slotY}
-              r={SLOT_RADIUS}
+              r={WHEEL_CONFIG.SLOT_RADIUS}
               fill="none"
               stroke={slotColor}
               strokeWidth={2}
@@ -128,7 +136,7 @@ export function AgentWheel(props: AgentWheelProps) {
               y={slotY}
               textAnchor="middle"
               dy="0.3em"
-              fontSize="20"
+              fontSize={WHEEL_CONFIG.GLYPH_FONT_SIZE}
               fill={slotColor}
               pointerEvents="none"
             >
@@ -138,9 +146,9 @@ export function AgentWheel(props: AgentWheelProps) {
             {/* Slot label below the circle */}
             <text
               x={slotX}
-              y={slotY + SLOT_RADIUS + 20}
+              y={slotY + WHEEL_CONFIG.SLOT_RADIUS + WHEEL_CONFIG.LABEL_OFFSET}
               textAnchor="middle"
-              fontSize="12"
+              fontSize={WHEEL_CONFIG.LABEL_FONT_SIZE}
               fill="#e8dcc4"
               fontFamily="Cinzel, serif"
               pointerEvents="none"
@@ -156,7 +164,7 @@ export function AgentWheel(props: AgentWheelProps) {
         x={cx}
         y={cy - 8}
         textAnchor="middle"
-        fontSize="14"
+        fontSize={WHEEL_CONFIG.CENTER_NAME_FONT_SIZE}
         fontWeight="bold"
         fill="#e8dcc4"
         fontFamily="Cinzel, serif"
@@ -168,9 +176,9 @@ export function AgentWheel(props: AgentWheelProps) {
       {agentTitle && (
         <text
           x={cx}
-          y={cy + 12}
+          y={cy + WHEEL_CONFIG.CENTER_TITLE_Y_OFFSET}
           textAnchor="middle"
-          fontSize="11"
+          fontSize={WHEEL_CONFIG.CENTER_TITLE_FONT_SIZE}
           fill="#a89968"
           fontFamily="Cinzel, serif"
           fontStyle="italic"

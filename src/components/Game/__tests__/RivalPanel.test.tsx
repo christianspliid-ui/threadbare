@@ -122,8 +122,12 @@ describe('RivalPanel', () => {
 
   it('displays hostility meter for each rival', () => {
     const { container } = render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    const hostilityLabel = screen.getAllByText('Hostility');
-    expect(hostilityLabel).toHaveLength(3);
+    // Hostility label now appears once as header instead of per-rival
+    const hostilityLabel = screen.getByText('Hostility');
+    expect(hostilityLabel).toBeInTheDocument();
+    // Verify all three rivals have hostility bars (check for the bars with different widths)
+    const hostilityBars = container.querySelectorAll('[class*="rounded-full"][style*="background"]');
+    expect(hostilityBars.length).toBeGreaterThanOrEqual(3); // At least 3 bars for hostility + essence spheres
   });
 
   it('renders empty state when no rivals defined', () => {

@@ -1,10 +1,11 @@
 /**
  * Core Disposition Engine — game-theoretic cooperation modeling.
  *
- * Implements three groups of functions:
- * 1. evaluateStrategy — converts a CooperationStrategy + history into a disposition (+1/-1)
- * 2. applyDispositionModifier — adjusts action candidate scores based on disposition + reputation
- * 3. logInteraction, updateReputation, decayReputation — social memory and relationship evolution
+ * Implements four groups of functions:
+ * 1. assignCooperationStrategy — select a cooperation strategy based on archetype and profile
+ * 2. evaluateStrategy — converts a CooperationStrategy + history into a disposition (+1/-1)
+ * 3. applyDispositionModifier — adjusts action candidate scores based on disposition + reputation
+ * 4. logInteraction, updateReputation, decayReputation — social memory and relationship evolution
  *
  * All functions are pure and deterministic for testability and replay.
  */
@@ -12,7 +13,8 @@
 import type {
   CooperationStrategy,
   InteractionRecord,
-  SocialOrientation,
+  DilemmaOutcome,
+  DilemmaEvent,
 } from '../types/disposition';
 import {
   DISPOSITION_COOPERATE_BONUS,
@@ -23,10 +25,91 @@ import {
   INTERACTION_LOG_CAP,
   DILEMMA_STAKES_THRESHOLD,
   DEFAULT_REPUTATION,
+  COOPERATION_STRATEGIES,
+  STAKES_DOMAIN_GOLD,
+  STAKES_DOMAIN_IRON,
+  STAKES_EXTREME_SENTIMENT,
+  STAKES_FACTION_LEADER,
+  STAKES_TERRITORY_CONTROL,
+  DILEMMA_MUTUAL_TRUST_SENTIMENT,
+  DILEMMA_MUTUAL_TRUST_STRENGTH,
+  DILEMMA_BETRAYAL_SENTIMENT,
+  DILEMMA_MUTUAL_DISTRUST_SENTIMENT,
 } from '../types/disposition';
-import type { ActionCandidate } from '../types/agent';
+import type { ActionCandidate, AxiologicalProfile } from '../types/agent';
+import type { ReachDomain } from '../types/traits';
+import { getStrategyWeights } from '../data/game-theory-content';
 
-// ─── GROUP 1: evaluateStrategy ────────────────────────────────────────────
+// ─── GROUP 1: assignCooperationStrategy ───────────────────────────────────
+
+/**
+ * Assign a cooperation strategy to an agent based on archetype and axiological profile.
+ *
+ * Process:
+ * 1. Get base strategy weights from archetype
+ * 2. Apply axiological nudges:
+ *    - loyalty_treachery < -0.3: always-defect ×1.5, always-cooperate ×0.5
+ *    - cruelty_compassion < -0.3: grudger ×1.3
+ *    - cunning_honesty < -0.3: tit-for-tat ×0.7, always-defect ×1.2
+ * 3. Normalize weights to sum to 1.0
+ * 4. Weighted random selection using seeded RNG
+ *
+ * @param archetypeId - Narrative archetype (e.g. 'tragic_hero')
+ * @param profile - Axiological profile (values from -1 to 1)
+ * @param rng - Seeded random number generator
+ * @returns A cooperation strategy for this agent
+ */
+export function assignCooperationStrategy(
+  archetypeId: string,
+  profile: AxiologicalProfile,
+  rng: () => number,
+): CooperationStrategy {
+  // Get base weights from archetype
+  const baseWeights = getStrategyWeights(archetypeId);
+  const weights = { ...baseWeights };
+
+  // Apply axiological nudges
+  if (profile.loyalty_treachery < -0.3) {
+    weights['always-defect'] *= 1.5;
+    weights['always-cooperate'] *= 0.5;
+  }
+
+  if (profile.cruelty_compassion < -0.3) {
+    weights.grudger *= 1.3;
+  }
+
+  if (profile.cunning_honesty < -0.3) {
+    weights['tit-for-tat'] *= 0.7;
+    weights['always-defect'] *= 1.2;
+  }
+
+  // Normalize weights to sum to 1.0
+  const total = Object.values(weights).reduce((sum, w) => sum + w, 0);
+  if (total === 0) {
+    // Fallback: uniform distribution (shouldn't happen)
+    return COOPERATION_STRATEGIES[Math.floor(rng() * COOPERATION_STRATEGIES.length)];
+  }
+
+  const normalized = Object.fromEntries(
+    Object.entries(weights).map(([k, v]) => [k, v / total])
+  ) as Record<CooperationStrategy, number>;
+
+  // Weighted random selection
+  let rand = rng();
+  let cumulative = 0;
+
+  for (const strategy of COOPERATION_STRATEGIES) {
+    cumulative += normalized[strategy];
+    if (rand <= cumulative) {
+      return strategy;
+    }
+  }
+
+  // Fallback (shouldn't happen)
+  return COOPERATION_STRATEGIES[COOPERATION_STRATEGIES.length - 1];
+}
+
+// ─── GROUP 2: evaluateStrategy ────────────────────────────────────────────
 
 /**
  * Evaluate the next move based on a cooperation strategy and interaction history.
@@ -83,7 +166,7 @@ function initialMove(strategy: CooperationStrategy): number {
   return strategy === 'always-defect' ? -1 : 1;
 }
 
-// ─── GROUP 2: applyDispositionModifier ────────────────────────────────────
+// ─── GROUP 3: applyDispositionModifier ────────────────────────────────────
 
 /**
  * Modify action candidate scores based on disposition and target reputation.
@@ -144,7 +227,7 @@ export function applyDispositionModifier(
   });
 }
 
-// ─── GROUP 3: Interaction Logging & Reputation ────────────────────────────
+// ─── GROUP 4: Interaction Logging & Reputation ────────────────────────────
 
 /**
  * Log a new interaction in an agent's social memory.
@@ -219,4 +302,149 @@ export function decayReputation(current: number): number {
 
   // At default, no change
   return current;
+}
+
+// ─── GROUP 5: Dilemma Engine ──────────────────────────────────────────────
+
+/**
+ * Compute the stakes of an interaction (0.0–1.0 scale).
+ *
+ * Stakes are accumulated from:
+ * - Domain: gold (+0.3) or iron (+0.4)
+ * - Extreme sentiment: |sentiment| > 0.7 (+0.2)
+ * - Faction leadership (+0.3)
+ * - Territory control (+0.3)
+ *
+ * Result is clamped to [0, 1].
+ */
+export function computeStakes(
+  domain: ReachDomain,
+  sentiment: number,
+  isFactionLeader: boolean,
+  isTerritory: boolean,
+): number {
+  let stakes = 0;
+
+  if (domain === 'gold') stakes += STAKES_DOMAIN_GOLD;
+  if (domain === 'iron') stakes += STAKES_DOMAIN_IRON;
+  if (Math.abs(sentiment) > 0.7) stakes += STAKES_EXTREME_SENTIMENT;
+  if (isFactionLeader) stakes += STAKES_FACTION_LEADER;
+  if (isTerritory) stakes += STAKES_TERRITORY_CONTROL;
+
+  return Math.max(0, Math.min(1, stakes));
+}
+
+/**
+ * Resolve a dilemma between two actors by evaluating their strategies.
+ *
+ * Process:
+ * 1. Evaluate each actor's strategy based on their interaction history
+ * 2. Determine each actor's move (cooperate if disposition > 0, defect otherwise)
+ * 3. Classify the outcome into one of four outcomes:
+ *    - mutual_trust: both cooperate
+ *    - betrayed: actor cooperates, target defects
+ *    - exploitation: actor defects, target cooperates
+ *    - mutual_distrust: both defect
+ *
+ * @returns A DilemmaEvent with outcome classification and context
+ */
+export function resolveDilemma(
+  actorId: string,
+  targetId: string,
+  actorStrategy: CooperationStrategy,
+  targetStrategy: CooperationStrategy,
+  actorHistory: InteractionRecord[],
+  targetHistory: InteractionRecord[],
+  tick: number,
+  context: string,
+  stakes: number,
+): DilemmaEvent {
+  // Evaluate strategies to get disposition values
+  const actorDisposition = evaluateStrategy(actorStrategy, actorHistory);
+  const targetDisposition = evaluateStrategy(targetStrategy, targetHistory);
+
+  // Convert dispositions to moves
+  const actorMove = actorDisposition > 0 ? 'cooperate' : 'defect';
+  const targetMove = targetDisposition > 0 ? 'cooperate' : 'defect';
+
+  // Classify outcome
+  let outcome: DilemmaOutcome;
+  if (actorMove === 'cooperate' && targetMove === 'cooperate') {
+    outcome = 'mutual_trust';
+  } else if (actorMove === 'cooperate' && targetMove === 'defect') {
+    outcome = 'betrayed';
+  } else if (actorMove === 'defect' && targetMove === 'cooperate') {
+    outcome = 'exploitation';
+  } else {
+    outcome = 'mutual_distrust';
+  }
+
+  return {
+    tick,
+    actorId,
+    targetId,
+    actorMove,
+    targetMove,
+    outcome,
+    stakes,
+    context,
+  };
+}
+
+/**
+ * Effects of a dilemma outcome.
+ * Applied to sentiment, bond strength, and reputation values.
+ */
+export interface DilemmaEffects {
+  sentimentDelta: number;
+  strengthDelta: number;
+  actorRepDelta: number;
+  targetRepDelta: number;
+}
+
+/**
+ * Apply a dilemma outcome to get sentiment, strength, and reputation deltas.
+ *
+ * Outcomes vary symmetrically:
+ * - mutual_trust: both gain trust (+0.15 sentiment, +0.1 strength, +0.05 rep each)
+ * - betrayed: actor loses ground (+0.025 rep), target gains (+DEFECT rep)
+ * - exploitation: actor gains (+DEFECT rep), target loses (+0.025 rep)
+ * - mutual_distrust: both penalized (-0.1 sentiment, -0.04 rep each)
+ */
+export function applyDilemmaEffects(outcome: DilemmaOutcome): DilemmaEffects {
+  switch (outcome) {
+    case 'mutual_trust':
+      return {
+        sentimentDelta: DILEMMA_MUTUAL_TRUST_SENTIMENT,
+        strengthDelta: DILEMMA_MUTUAL_TRUST_STRENGTH,
+        actorRepDelta: REPUTATION_UPDATE_COOPERATE,
+        targetRepDelta: REPUTATION_UPDATE_COOPERATE,
+      };
+
+    case 'betrayed':
+      // Actor cooperated, target defected
+      return {
+        sentimentDelta: DILEMMA_BETRAYAL_SENTIMENT,
+        strengthDelta: 0,
+        actorRepDelta: REPUTATION_UPDATE_COOPERATE * 0.5,
+        targetRepDelta: REPUTATION_UPDATE_DEFECT,
+      };
+
+    case 'exploitation':
+      // Actor defected, target cooperated
+      return {
+        sentimentDelta: DILEMMA_BETRAYAL_SENTIMENT,
+        strengthDelta: 0,
+        actorRepDelta: REPUTATION_UPDATE_DEFECT,
+        targetRepDelta: REPUTATION_UPDATE_COOPERATE * 0.5,
+      };
+
+    case 'mutual_distrust':
+      return {
+        sentimentDelta: DILEMMA_MUTUAL_DISTRUST_SENTIMENT,
+        strengthDelta: 0,
+        actorRepDelta: REPUTATION_UPDATE_DEFECT * 0.5,
+        targetRepDelta: REPUTATION_UPDATE_DEFECT * 0.5,
+      };
+  }
 }

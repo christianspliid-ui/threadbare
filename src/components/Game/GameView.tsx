@@ -196,6 +196,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [scryState, setScryState] = useState<ScryState>(createScryState());
   const [scryVisible, setScryVisible] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
+  const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hexMapRef = useRef<HexMapHandle>(null);
@@ -499,13 +500,18 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   }, []);
 
   const handleAvatarWheelClick = useCallback(() => {
+    if (retinueAgents.length === 0) {
+      // No agents under influence yet
+      setWheelFeedback('You have no agents under your influence yet. Use interventions to recruit agents.');
+      setTimeout(() => setWheelFeedback(null), 4000);
+      return;
+    }
+
     if (selectedAgentId) {
       setWheelVisible(true);
     } else {
       // If no agent selected, select the first retinue agent
-      if (retinueAgents.length > 0) {
-        handleAgentSelect(retinueAgents[0].id);
-      }
+      handleAgentSelect(retinueAgents[0].id);
     }
   }, [selectedAgentId, retinueAgents, handleAgentSelect]);
 
@@ -623,7 +629,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
                 {/* Agent Wheel overlay */}
                 {wheelSlots && wheelVisible && selectedAgentId && (
-                  <svg className="absolute inset-0" style={{ pointerEvents: 'auto' }}>
+                  <svg className="absolute inset-0" style={{ pointerEvents: 'auto' }} data-testid="wheel-svg">
                     <AgentWheel
                       slots={wheelSlots}
                       agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
@@ -634,6 +640,16 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                       onDismiss={handleWheelDismiss}
                     />
                   </svg>
+                )}
+
+                {/* Wheel feedback message (when no agents available) */}
+                {wheelFeedback && (
+                  <div
+                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-900/80 border border-red-700 rounded-lg px-6 py-4 text-amber-100 text-center max-w-xs shadow-lg z-30"
+                    data-testid="wheel-feedback"
+                  >
+                    {wheelFeedback}
+                  </div>
                 )}
 
                 {/* Intervention confirmation popover */}

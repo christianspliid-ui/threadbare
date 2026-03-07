@@ -290,6 +290,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
       className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"
       onClick={onClose}
       data-testid="backdrop"
+      style={{ pointerEvents: 'auto' }}
     >
       <div
         className="w-[70%] max-w-4xl h-[70%] bg-stone-900/95 rounded-lg border border-amber-900/40 flex flex-col"

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 
 interface RivalPanelProps {
@@ -19,7 +20,7 @@ const BEHAVIOR_COLORS: Record<string, string> = {
   expansionist: '#059669',
 };
 
-export function RivalPanel({ definitions, states }: RivalPanelProps) {
+export const RivalPanel = React.memo(function RivalPanel({ definitions, states }: RivalPanelProps) {
   if (definitions.length === 0) {
     return (
       <div className="text-amber-200/30 text-xs italic text-center py-2">
@@ -30,12 +31,17 @@ export function RivalPanel({ definitions, states }: RivalPanelProps) {
 
   return (
     <div className="space-y-2">
-      <h3
-        className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
-        style={{ fontFamily: 'Cinzel, serif' }}
-      >
-        Rival Gods
-      </h3>
+      <div>
+        <h2
+          className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
+          style={{ fontFamily: 'Cinzel, serif' }}
+        >
+          Rival Gods
+        </h2>
+        <div className="mt-2 flex items-center gap-1.5">
+          <span className="text-[10px] text-amber-200/40 uppercase tracking-wider font-semibold">Hostility</span>
+        </div>
+      </div>
       {definitions.map((def) => {
         const rivalState = states.find(s => s.rivalId === def.id);
         const hostility = rivalState?.hostilityToPlayer ?? 0;
@@ -55,21 +61,18 @@ export function RivalPanel({ definitions, states }: RivalPanelProps) {
                 {def.behavior}
               </span>
             </div>
-            <div className="mt-1 flex items-center gap-1.5">
-              <span className="text-[10px] text-amber-200/40">Hostility</span>
-              <div className="flex-1 h-1 bg-stone-600/50 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-300"
-                  style={{
-                    width: `${hostility * 100}%`,
-                    backgroundColor: `rgb(${Math.round(hostility * 220)}, ${Math.round((1 - hostility) * 120)}, 50)`,
-                  }}
-                />
-              </div>
+            <div className="mt-1 flex-1 h-1 bg-stone-600/50 rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${hostility * 100}%`,
+                  backgroundColor: `rgb(${Math.round(hostility * 220)}, ${Math.round((1 - hostility) * 120)}, 50)`,
+                }}
+              />
             </div>
           </div>
         );
       })}
     </div>
   );
-}
+});

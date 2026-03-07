@@ -1,3 +1,4 @@
+import React from 'react';
 import type { RetinueAgent } from '../../engine/retinue';
 
 interface RetinuePanelProps {
@@ -14,7 +15,7 @@ const TIER_COLORS: Record<number, string> = {
   4: '#ef4444', // red
 };
 
-export function RetinuePanel({ agents, selectedAgentId, onAgentSelect }: RetinuePanelProps) {
+export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect }: RetinuePanelProps) {
   if (agents.length === 0) {
     return (
       <div className="text-amber-200/30 text-xs italic text-center py-2">
@@ -82,4 +83,4 @@ export function RetinuePanel({ agents, selectedAgentId, onAgentSelect }: Retinue
       </div>
     </div>
   );
-}
+});

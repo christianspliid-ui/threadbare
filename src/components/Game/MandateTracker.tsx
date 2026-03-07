@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 
 interface MandateTrackerProps {
@@ -51,19 +51,33 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const color = TYPE_COLORS[definition.type] ?? '#d4a574';
   const pct = Math.round(state.progress * 100);
-  const displayText = state.completed ? 'FULFILLED' : `${pct}%`;
+  const displayText = state.completed ? 'FULFILLED' : pct === 0 ? 'NEW' : `${pct}%`;
   const currentStageDef = definition.stages.find(s => s.stage === state.currentStage);
 
   const handleToggle = () => {
     setIsExpanded(!isExpanded);
   };
 
+  // Close popover with Escape key
+  useEffect(() => {
+    if (!isExpanded) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsExpanded(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isExpanded]);
+
   return (
     <div className="flex-1 min-w-0 relative">
       {/* Compact Bar */}
       <div
         onClick={handleToggle}
-        className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors"
+        className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
       >
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 min-w-0">

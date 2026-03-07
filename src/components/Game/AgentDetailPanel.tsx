@@ -1,3 +1,4 @@
+import React from 'react';
 import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 
@@ -37,7 +38,7 @@ const DOMAINS_GRID: ReachDomain[][] = [
   ['stone', 'star', 'flesh'],
 ];
 
-export function AgentDetailPanel({
+export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   detail,
   onBack,
   onViewPsyche,
@@ -274,4 +275,4 @@ export function AgentDetailPanel({
       </div>
     </div>
   );
-}
+});

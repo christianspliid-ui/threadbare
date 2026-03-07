@@ -393,6 +393,7 @@ export function ScryOverlay({
       style={{
         backgroundColor: 'rgba(10, 8, 6, 0.95)',
         backdropFilter: 'blur(4px)',
+        pointerEvents: 'auto',
       }}
     >
       <div className="w-full max-w-4xl mx-4 py-8">

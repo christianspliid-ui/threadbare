@@ -14,19 +14,34 @@ interface HexZoomViewProps {
 }
 
 // Layout constants
-const HEX_RADIUS = 260;
-const LOCATION_RADIUS = 40;
-const AGENT_SIZE = 28;
-const POLYGON_FRACTION = 0.65; // inscribed polygon radius as fraction of hex radius
-const VIEW_SIZE = 600; // SVG viewBox size
-const CENTER = VIEW_SIZE / 2;
+const LAYOUT_CONFIG = {
+  HEX_RADIUS: 260,
+  LOCATION_RADIUS: 40,
+  AGENT_SIZE: 28,
+  POLYGON_FRACTION: 0.65, // inscribed polygon radius as fraction of hex radius
+  VIEW_SIZE: 600, // SVG viewBox size
+  AGENT_ANGLE_OFFSET: 35, // degrees per agent in arc positioning
+  AGENT_DISTANCE_MULTIPLIER: 0.8, // distance from location circle to agent
+} as const;
+
+const CENTER = LAYOUT_CONFIG.VIEW_SIZE / 2;
 
 // Agent colors by initial (simple hash for variety)
+const AGENT_COLOR_PALETTE = [
+  '#cc3333',
+  '#33cc66',
+  '#6699ff',
+  '#cc99ff',
+  '#ff9933',
+  '#ffcc00',
+  '#8b7355',
+  '#666666',
+] as const;
+
 function agentColor(name: string): string {
-  const colors = ['#cc3333', '#33cc66', '#6699ff', '#cc99ff', '#ff9933', '#ffcc00', '#8b7355', '#666666'];
   let hash = 0;
   for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
-  return colors[Math.abs(hash) % colors.length];
+  return AGENT_COLOR_PALETTE[Math.abs(hash) % AGENT_COLOR_PALETTE.length];
 }
 
 export function HexZoomView({
@@ -37,7 +52,7 @@ export function HexZoomView({
   onLocationClick,
   onLocationDoubleClick,
 }: HexZoomViewProps) {
-  const polygonRadius = HEX_RADIUS * POLYGON_FRACTION;
+  const polygonRadius = LAYOUT_CONFIG.HEX_RADIUS * LAYOUT_CONFIG.POLYGON_FRACTION;
   const vertices = useMemo(
     () => getPolygonVertices(locations.length, CENTER, CENTER, polygonRadius),
     [locations.length, polygonRadius],
@@ -54,13 +69,13 @@ export function HexZoomView({
     return map;
   }, [locations, vertices]);
 
-  const hexPoints = hexPolygonPoints(CENTER, CENTER, HEX_RADIUS);
+  const hexPoints = hexPolygonPoints(CENTER, CENTER, LAYOUT_CONFIG.HEX_RADIUS);
   const isHidden = lineOfSight === 'none';
   const isDimmed = lineOfSight === 'partial';
 
   return (
     <svg
-      viewBox={`0 0 ${VIEW_SIZE} ${VIEW_SIZE}`}
+      viewBox={`0 0 ${LAYOUT_CONFIG.VIEW_SIZE} ${LAYOUT_CONFIG.VIEW_SIZE}`}
       className="w-full h-full max-w-[600px] max-h-[600px]"
     >
       {/* Glow filter for travel lines */}
@@ -115,7 +130,7 @@ export function HexZoomView({
             <circle
               cx={pos.x}
               cy={pos.y}
-              r={LOCATION_RADIUS}
+              r={LAYOUT_CONFIG.LOCATION_RADIUS}
               fill={isHidden ? '#1a1a1e' : '#3a3a3e'}
               stroke="#d4af37"
               strokeWidth="1.5"
@@ -129,7 +144,7 @@ export function HexZoomView({
             {/* Location name */}
             <text
               x={pos.x}
-              y={pos.y + LOCATION_RADIUS + 16}
+              y={pos.y + LAYOUT_CONFIG.LOCATION_RADIUS + 16}
               textAnchor="middle"
               fill={isHidden ? '#666' : '#d4af37'}
               fontSize="12"
@@ -144,18 +159,18 @@ export function HexZoomView({
             {/* Agent squares */}
             {!isHidden && agents.map((agent, ai) => {
               // Position agents in a small arc above the location circle
-              const angleOffset = ((ai - (agents.length - 1) / 2) * 35) * (Math.PI / 180);
-              const agentDist = LOCATION_RADIUS + AGENT_SIZE * 0.8;
+              const angleOffset = ((ai - (agents.length - 1) / 2) * LAYOUT_CONFIG.AGENT_ANGLE_OFFSET) * (Math.PI / 180);
+              const agentDist = LAYOUT_CONFIG.LOCATION_RADIUS + LAYOUT_CONFIG.AGENT_SIZE * LAYOUT_CONFIG.AGENT_DISTANCE_MULTIPLIER;
               const ax = pos.x + agentDist * Math.sin(angleOffset);
               const ay = pos.y - agentDist * Math.cos(angleOffset);
 
               return (
                 <g key={agent.id}>
                   <rect
-                    x={ax - AGENT_SIZE / 2}
-                    y={ay - AGENT_SIZE / 2}
-                    width={AGENT_SIZE}
-                    height={AGENT_SIZE}
+                    x={ax - LAYOUT_CONFIG.AGENT_SIZE / 2}
+                    y={ay - LAYOUT_CONFIG.AGENT_SIZE / 2}
+                    width={LAYOUT_CONFIG.AGENT_SIZE}
+                    height={LAYOUT_CONFIG.AGENT_SIZE}
                     rx="3"
                     fill={agentColor(agent.name)}
                     opacity={isDimmed ? 0.4 : 0.85}

@@ -39,10 +39,10 @@ describe('HexTile fog rendering', () => {
     expect(polygons[0].getAttribute('fill')).not.toBe('#0a0a0e');
   });
 
-  it('renders black when visibility is unexplored', () => {
+  it('renders dark when visibility is unexplored', () => {
     const { container } = renderTile({ visibility: 'unexplored' });
     const polygons = container.querySelectorAll('polygon');
-    expect(polygons[0].getAttribute('fill')).toBe('#0a0a0e');
+    expect(polygons[0].getAttribute('fill')).toBe('#1e1b2e');
     // No terrain icon text when unexplored
     const texts = container.querySelectorAll('text');
     expect(texts.length).toBe(0);
