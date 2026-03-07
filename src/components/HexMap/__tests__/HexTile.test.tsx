@@ -18,6 +18,7 @@ const renderTile = (props: Partial<React.ComponentProps<typeof HexTileComponent>
     cx: 100,
     cy: 100,
     size: 30,
+    hexClipId: 'hex-clip-30',
     isHovered: false,
     isSelected: false,
   };
@@ -76,5 +77,57 @@ describe('avatar hex overlay', () => {
     const { container } = renderTile({ isAvatarHex: true, sphereColor: '#aa00ff' });
     const avatarOverlay = container.querySelector('.avatar-pulse');
     expect(avatarOverlay?.getAttribute('stroke')).toBe('#aa00ff');
+  });
+});
+
+describe('hex tile image rendering', () => {
+  it('renders an <image> element for visible tiles', () => {
+    const { container } = renderTile({ visibility: 'visible' });
+    const image = container.querySelector('image');
+    expect(image).toBeTruthy();
+  });
+
+  it('image href points to correct terrain tile', () => {
+    const tile: HexTile = {
+      coord: { col: 0, row: 0 },
+      geoParams: { elevation: 0.5, temperature: 0.5, moisture: 0.5 },
+      terrain: 'dense_forest',
+    };
+    const { container } = renderTile({ tile });
+    const image = container.querySelector('image');
+    expect(image?.getAttribute('href')).toBe('/hex-tiles/dense-forest.png');
+  });
+
+  it('still renders biome-colored polygon as fallback behind image', () => {
+    const { container } = renderTile({ visibility: 'visible' });
+    const polygons = container.querySelectorAll('polygon');
+    expect(polygons[0].getAttribute('fill')).not.toBe('none');
+    expect(polygons[0].getAttribute('fill')).not.toBe('#0a0a0e');
+  });
+
+  it('does not render emoji text anymore', () => {
+    const { container } = renderTile({ visibility: 'visible' });
+    const texts = container.querySelectorAll('text');
+    expect(texts.length).toBe(0);
+  });
+
+  it('renders image with clipPath for hex clipping', () => {
+    const { container } = renderTile({ visibility: 'visible' });
+    const g = container.querySelector('g[clip-path]') || container.querySelector('[clip-path]');
+    expect(g).toBeTruthy();
+  });
+
+  it('remembered tiles render dimmed image', () => {
+    const { container } = renderTile({ visibility: 'remembered' });
+    const image = container.querySelector('image');
+    expect(image).toBeTruthy();
+    const dimmingGroup = container.querySelector('g[opacity="0.4"]');
+    expect(dimmingGroup).toBeTruthy();
+  });
+
+  it('unexplored tiles do not render an image', () => {
+    const { container } = renderTile({ visibility: 'unexplored' });
+    const image = container.querySelector('image');
+    expect(image).toBeNull();
   });
 });

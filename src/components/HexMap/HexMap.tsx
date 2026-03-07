@@ -5,6 +5,7 @@ import type { VisibilityMap } from '../../types/visibility';
 import { hexToPixel } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
+import { HexDefs } from './HexDefs';
 
 const DEFAULT_ZOOM_SCALE = 3.0;
 const MIN_ZOOM_SCALE = 1.0;
@@ -100,6 +101,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   }), []);
 
   const tileBaseTransform = `translate(${padding + hexSize}, ${padding + hexSize * 0.8})`;
+  const hexClipId = `hex-clip-${hexSize}`;
 
   return (
     <>
@@ -118,6 +120,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         className="w-full h-full"
         style={{ background: '#f4e8c1' }}
       >
+        <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group" transform={tileBaseTransform}>
           {tiles.map((tile) => {
             const { x, y } = hexToPixel(tile.coord, hexSize);
@@ -128,7 +131,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
             return (
               <HexTileComponent
                 key={`${tile.coord.col}-${tile.coord.row}`}
-                tile={tile} cx={x} cy={y} size={hexSize}
+                tile={tile} cx={x} cy={y} size={hexSize} hexClipId={hexClipId}
                 isHovered={isHovered} isSelected={isSelected}
                 visibility={visibility}
                 isAvatarHex={isAvatar}
