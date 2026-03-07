@@ -126,7 +126,7 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
     if (allActors.length < 2) continue;
 
     // Pick a random second actor as the target (simplified vertical slice)
-    const rng = mulberry32(state.seed + state.tick * 41 + Math.random());
+    const rng = mulberry32(state.seed + state.tick * 41 + resolvedEvents.indexOf(event));
     const targetIdx = Math.floor(rng() * allActors.length);
     const targetActor = allActors[targetIdx];
 
@@ -141,11 +141,11 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
 
     // Look up relationship edge
     let relationshipEdge = graph.getOutgoingEdges(actor.id, 'relates_to')
-      .find(e => e.targetId === targetActor.id);
+      .find(e => e.target === targetActor.id);
 
     if (!relationshipEdge) {
       relationshipEdge = graph.getIncomingEdges(actor.id, 'relates_to')
-        .find(e => e.sourceId === targetActor.id);
+        .find(e => e.source === targetActor.id);
     }
 
     // Get interaction history from edge
