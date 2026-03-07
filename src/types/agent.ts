@@ -1,4 +1,5 @@
 import type { ReachDomain } from './traits';
+import type { SocialOrientation } from './disposition';
 
 /** Axiological value pairs (from the Axiological Motivation Engine design) */
 export type ValuePair =
@@ -24,6 +25,7 @@ export interface ActionCandidate {
   score: number;               // computed alignment score
   motivations: ValuePair[];    // which values drive this choice
   probability?: number;        // normalized probability (post top-N)
+  socialOrientation?: SocialOrientation;  // cooperative/defective/neutral bias
 }
 
 /** Configuration for the selection pipeline */
