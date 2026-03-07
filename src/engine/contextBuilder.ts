@@ -9,7 +9,7 @@
  */
 
 import type { WorldGraph } from './graph';
-import type { NarrativeEvent, ContextObject, OpposingPair, NarrativeContext, ContextCategory } from '../types/narrative';
+import type { NarrativeEvent, ContextObject, OpposingPair, NarrativeContext, ContextCategory, InsiderBeatSummary } from '../types/narrative';
 import type { GraphNode } from '../types/graph';
 import {
   HARVEST_LIMITS,
@@ -24,6 +24,7 @@ import {
 import { emitTrace } from './traceBuffer';
 import { computeCulturalTensionScore } from './culturalTension';
 import { getActorCulturalStrength } from './culturalTraits';
+import { getAvailableInsiderBeats } from './insiderBeatDetection';
 
 // ─── Internal Types ─────────────────────────────────────────────────────
 
@@ -384,6 +385,7 @@ export function buildNarrativeContext(
         opposingPairs: [],
       },
       culturalStrength: 0,
+      availableInsiderBeats: [],
     };
   }
 
@@ -448,6 +450,16 @@ export function buildNarrativeContext(
     ? culturalTensions.reduce((prev, curr) => curr.severity > prev.severity ? curr : prev)
     : undefined;
 
+  // ─── Insider Beats ────────────────────────────────────────────
+
+  const availableInsiderBeats: InsiderBeatSummary[] = event.actorId
+    ? getAvailableInsiderBeats(graph, event.actorId).map(beat => ({
+        beatId: beat.id,
+        name: beat.name,
+        minStrength: beat.minStrength,
+      }))
+    : [];
+
   const context: NarrativeContext = {
     event,
     archetype,
@@ -460,6 +472,7 @@ export function buildNarrativeContext(
     },
     culturalStrength,
     culturalTension: topCulturalTension,
+    availableInsiderBeats,
   };
 
   // ─── Trace instrumentation ──────────────────────────────────────────

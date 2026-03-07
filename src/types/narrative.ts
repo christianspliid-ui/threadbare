@@ -68,6 +68,14 @@ export interface ProseContext {
   oppositionSummary?: OppositionSummary;
 }
 
+// ─── Insider Beat Summary ───────────────────────────────────────
+
+export interface InsiderBeatSummary {
+  beatId: string;
+  name: string;
+  minStrength: number;
+}
+
 // ─── Context Builder Types ──────────────────────────────────────
 
 export type ContextCategory = 'artifact' | 'faction' | 'character' | 'location' | 'event';
@@ -106,6 +114,7 @@ export interface NarrativeContext {
     cultureIds: string[];
     severity: number;
   };
+  availableInsiderBeats: InsiderBeatSummary[];
 }
 
 // ─── Chronicle ───────────────────────────────────────────────────
