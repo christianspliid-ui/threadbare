@@ -100,6 +100,12 @@ export interface NarrativeContext {
   contextObjects: ContextObject[];
   historicalFragments: string[];
   oppositionSummary: OppositionSummary;
+  culturalStrength: number;           // 0-1, how strongly to apply cultural voice
+  culturalTension?: {
+    type: 'mismatch' | 'conquest' | 'dual' | 'fanaticism';
+    cultureIds: string[];
+    severity: number;
+  };
 }
 
 // ─── Chronicle ───────────────────────────────────────────────────
