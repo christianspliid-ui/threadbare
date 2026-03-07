@@ -266,6 +266,13 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-07 | Repo: src/data/ | Created culture-content.ts (1,789 lines) — 4 foundation modifiers, 8 creation sphere modifiers, 22 biome modifiers, 35 formative trait seeds, 45 behavioral trait seeds, 25 insider beats, 18 sub-location templates, 6 artifact lore patterns, 9 lookup functions | Culture content data implementation |
 | 2026-03-07 | Repo: src/data/__tests__/ | Created culture-content.test.ts (822 lines, 577 tests) — structural validation, uniqueness, cross-references, lookup functions, per-entry quality validation | Culture content test coverage |
 | 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-culture-content-implementation.md | 10-task TDD implementation plan for culture content data package |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-narrative-context-builder-design.md, 2026-03-07-narrative-context-builder-implementation.md | Pass 1 design doc (146 lines) + 9-task TDD implementation plan (1,697 lines) |
+| 2026-03-07 | Repo: src/data/ | Created opposition-content.ts (112 lines) — foundation sphere opposition matrix, creation sphere tensions, archetype friction pairs, PROXIMITY/INVOLVEMENT/HARVEST/SELECTION scoring constants, 3 lookup functions | Opposition tension scoring content package |
+| 2026-03-07 | Repo: src/types/ | Modified narrative.ts — added ContextCategory, ContextObject, OpposingPair, OppositionSummary, NarrativeContext types; extended ProseContext with contextObjects, historicalFragments, oppositionSummary | Context builder type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created contextBuilder.ts (443 lines) — harvestContext (BFS graph traversal), rankObjects (proximity+involvement+opposition scoring), selectObjects (greedy with category cap), buildNarrativeContext (full pipeline) | Narrative context builder harvest→rank→select→build pipeline |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — phaseNarrative now converts TickEvent→NarrativeEvent, calls buildNarrativeContext, populates promptContext with real actors/location/mood/previousEvents | Chronicle entries now world-aware with ranked context objects |
+| 2026-03-07 | Repo: tests | Created contextBuilder.test.ts (540 lines, 20 tests), orchestrator-narrative.test.ts (246 lines, 10 tests), contextBuilder-integration.test.ts (110 lines, 4 tests), opposition-content.test.ts (22 tests), narrativeContext.test.ts (4 tests) — 60 new tests | Full test coverage for narrative context builder |
+| 2026-03-07 | CLAUDE.md | Updated project status (narrative context builder Pass 1 complete), engine stats (~110 modules, ~21,077 lines, ~1,743 tests), changelog | Narrative context builder documentation |
 
 ## Session Workflow
 
@@ -329,7 +336,8 @@ Repetitive workflows are a signal to invest in a reusable skill. If you notice y
 - Game Theory Disposition System: ✅ Complete — 5 cooperation strategies, disposition modifier in action pipeline, dilemma detection/resolution (2×2 matrix), reputation system with decay, narrative beat integration, agent detail panel strategy section, 98 disposition tests across 6 test files
 - QA Sweep: ✅ Complete — 19 findings fixed across ~20 files (VS-001, IX-001/002/003/004/005, IA-001/003/004/005/008/010, RC-001/002/003/007/017): Threadbare hex colors, React.memo wrappers, magic number extraction, useCallback/useMemo optimization, log aggregation, rival text variation, mandate UX improvements
 - Culture Content Data: ✅ Complete — 1,789-line content package with 163 entries (4 foundation + 8 creation sphere + 22 biome modifiers, 35 formative + 45 behavioral trait seeds, 25 insider beats, 18 sub-location templates, 6 artifact lore patterns), 9 lookup functions, 577 tests
-- Current phase: **Culture content data complete** — next up: narrative context builder or culture engine integration
-- Engine stats: ~107 modules, ~19,738 lines, ~1,683 tests across 90 test files
-- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 10 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789 lines / 577 tests)
+- Narrative Context Builder (Pass 1): ✅ Complete — harvest→rank→select→build pipeline with opposition tension scoring, wired into phaseNarrative, chronicle entries now world-aware with ranked context objects. 4 new files (contextBuilder.ts 443 lines, opposition-content.ts 112 lines, 3 test files), 60 new tests across 5 test files
+- Current phase: **Narrative context builder Pass 1 complete** — next up: culture engine integration or Pass 2 (spawning, beat promotion, chronicler vignettes)
+- Engine stats: ~110 modules, ~21,077 lines, ~1,743 tests across 95 test files
+- Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 11 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789 lines / 577 tests, opposition-content.ts = 112 lines / 22 tests)
 
