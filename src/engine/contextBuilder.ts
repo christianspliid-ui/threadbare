@@ -21,6 +21,7 @@ import {
   getCreationSphereTension,
   getArchetypeFriction,
 } from '../data/opposition-content.ts';
+import { emitTrace } from './traceBuffer';
 
 // ─── Internal Types ─────────────────────────────────────────────────────
 
@@ -429,7 +430,7 @@ export function buildNarrativeContext(
     .filter(obj => obj.category === 'event')
     .map(obj => obj.briefDescription);
 
-  return {
+  const context = {
     event,
     archetype,
     contextObjects: selected,
@@ -440,4 +441,19 @@ export function buildNarrativeContext(
       opposingPairs,
     },
   };
+
+  // ─── Trace instrumentation ──────────────────────────────────────────
+
+  emitTrace({
+    tick: event.tick ?? 0,
+    category: 'context_harvest',
+    agentId: event.actorId,
+    summary: `Context: ${harvested.length} harvested → ${selected.length} selected, tension ${totalTension.toFixed(2)}`,
+    harvestedCount: harvested.length,
+    rankedTop: ranked.slice(0, 5).map(o => ({ nodeId: o.nodeId, name: o.name, score: o.relevanceScore })),
+    selectedIds: selected.map(o => o.nodeId),
+    oppositionTension: totalTension,
+  });
+
+  return context;
 }

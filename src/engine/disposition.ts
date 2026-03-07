@@ -39,6 +39,7 @@ import {
 import type { ActionCandidate, AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import { getStrategyWeights } from '../data/game-theory-content';
+import { emitTrace } from './traceBuffer';
 
 // ─── GROUP 1: assignCooperationStrategy ───────────────────────────────────
 
@@ -379,7 +380,7 @@ export function resolveDilemma(
     outcome = 'mutual_distrust';
   }
 
-  return {
+  const dilemmaEvent: DilemmaEvent = {
     tick,
     actorId,
     targetId,
@@ -389,6 +390,31 @@ export function resolveDilemma(
     stakes,
     context,
   };
+
+  // ─── Trace instrumentation ──────────────────────────────────────────
+
+  const effects = applyDilemmaEffects(outcome);
+
+  emitTrace({
+    tick,
+    category: 'dilemma_resolution',
+    agentId: actorId,
+    targetId,
+    summary: `Dilemma: ${actorId} (${actorStrategy}) vs ${targetId} (${targetStrategy}) → ${outcome}`,
+    actorStrategy,
+    targetStrategy,
+    actorMove,
+    targetMove,
+    outcome,
+    stakes,
+    sentimentDelta: effects.sentimentDelta,
+    reputationDeltas: {
+      actor: effects.actorRepDelta,
+      target: effects.targetRepDelta,
+    },
+  });
+
+  return dilemmaEvent;
 }
 
 /**
