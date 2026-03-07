@@ -1,42 +1,44 @@
 import type { TerrainType } from '../types';
 
 /**
- * Naturalistic biome color palette inspired by cartography and Atlas of Mystara
+ * Threadbare dark palette for fallback biome colors.
+ * Used as fallback behind terrain art images and during loading.
+ * Kept dark to avoid bright flash as images load.
  */
 export const BIOME_COLORS: Record<TerrainType, string> = {
-  // Water
-  ocean: '#4477aa',
-  coastal_shallows: '#88bbdd',
-  lake: '#6699bb',
-  river: '#5588aa',
+  // Water — deep dark blues
+  ocean: '#1a2a3a',
+  coastal_shallows: '#2a3a4a',
+  lake: '#1e3040',
+  river: '#253545',
 
-  // Lowlands
-  grassland: '#c8d87a',
-  farmland: '#ddc855',
-  savanna: '#d8c870',
-  steppe: '#c0a868',
+  // Lowlands — muted dark greens/browns
+  grassland: '#3a3a20',
+  farmland: '#3a3520',
+  savanna: '#3a3520',
+  steppe: '#35351e',
 
-  // Forest
-  deciduous_forest: '#6aaa5a',
-  dense_forest: '#3d7a3d',
-  taiga: '#7a9a6a',
-  jungle: '#2d8a3d',
+  // Forest — deep dark greens
+  deciduous_forest: '#2a3a1a',
+  dense_forest: '#1a2a10',
+  taiga: '#1a2a1a',
+  jungle: '#1a3a1a',
 
-  // Wet
-  swamp: '#6a8a5a',
-  bog: '#5a6a4a',
+  // Wet — dark olive
+  swamp: '#2a3a1a',
+  bog: '#2a3020',
 
-  // Elevated
-  hills: '#b8a870',
-  mountains: '#8a7a6a',
-  plateau: '#b89858',
-  badlands: '#a87050',
+  // Elevated — dark browns/greys
+  hills: '#3a3520',
+  mountains: '#2a2a2a',
+  plateau: '#3a3020',
+  badlands: '#3a2520',
 
-  // Extreme
-  desert: '#ddc890',
-  tundra: '#c8c8b8',
-  glacier: '#d8e8f0',
-  volcanic: '#6a3a2a',
+  // Extreme — dark themed
+  desert: '#3a3020',
+  tundra: '#2a3035',
+  glacier: '#2a3a4a',
+  volcanic: '#2a1515',
 };
 
 export interface RGB {
