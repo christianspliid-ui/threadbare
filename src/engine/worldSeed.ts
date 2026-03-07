@@ -16,6 +16,8 @@ import type { ActiveInjection } from './echo';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
+import type { FoundationBalances } from '../types/worldSoul';
+import { generateCultures, assignCulturesToActors } from './cultureGenerator';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -111,6 +113,7 @@ export interface SeedResult {
   factionIds: string[];
   locationIds: string[];
   artifactIds: string[];
+  cultureIds: string[];
 }
 
 // ─── Location Subtype Selection ──────────────────────────────────────
@@ -165,6 +168,7 @@ export function seedWorld(
   tiles: HexTile[],
   seed: number,
   injections?: ActiveInjection[],
+  foundations?: FoundationBalances,
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
@@ -173,6 +177,7 @@ export function seedWorld(
   const factionIds: string[] = [];
   const locationIds: string[] = [];
   const artifactIds: string[] = [];
+  const cultureIds: string[] = [];
 
   // ── Locations ────────────────────────────────────────────
   const locCount = randomInRange(rng, LOCATION_COUNT.min, LOCATION_COUNT.max);
@@ -223,6 +228,10 @@ export function seedWorld(
       properties: {},
     });
   }
+
+  // ── Cultures ──────────────────────────────────────────────
+  const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, foundations);
+  cultureIds.push(...generatedCultureIds);
 
   // ── Factions ─────────────────────────────────────────────
   const facCount = randomInRange(rng, FACTION_COUNT.min, FACTION_COUNT.max);
@@ -319,6 +328,9 @@ export function seedWorld(
     });
   }
 
+  // ── Culture assignment to actors ──────────────────────────
+  assignCulturesToActors(graph, individualIds, factionIds, cultureIds, rng);
+
   // ── Artifacts ────────────────────────────────────────────
   const artCount = randomInRange(rng, ARTIFACT_COUNT.min, ARTIFACT_COUNT.max);
   const usedArtNames = new Set<number>();
@@ -369,5 +381,5 @@ export function seedWorld(
     }
   }
 
-  return { graph, individualIds, factionIds, locationIds, artifactIds };
+  return { graph, individualIds, factionIds, locationIds, artifactIds, cultureIds };
 }
