@@ -9,6 +9,7 @@ import {
 import type { CosmologyProfile, HexTile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
 import type { ActiveInjection } from '../echo';
+import { CULTURE_COUNT } from '../../types/culture';
 
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -117,6 +118,68 @@ describe('seedWorld', () => {
       const props = node.properties as Record<string, unknown>;
       expect(props.narrativeArchetype).toBeTruthy();
       expect(typeof props.narrativeArchetype).toBe('string');
+    }
+  });
+});
+
+describe('seedWorld culture integration', () => {
+  it('SeedResult includes cultureIds', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    expect(result.cultureIds).toBeDefined();
+    expect(result.cultureIds.length).toBeGreaterThanOrEqual(CULTURE_COUNT.min);
+    expect(result.cultureIds.length).toBeLessThanOrEqual(CULTURE_COUNT.max);
+  });
+
+  it('creates culture nodes in the graph', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    for (const id of result.cultureIds) {
+      const node = result.graph.getNode(id);
+      expect(node).toBeDefined();
+      expect(node!.type).toBe('actor');
+      expect(node!.properties.actorType).toBe('culture');
+      expect(node!.properties.cultureIdentity).toBeDefined();
+    }
+  });
+
+  it('assigns cultures to locations with historical and current layers', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    for (const locId of result.locationIds) {
+      const edges = result.graph.getAllEdgesForNode(locId)
+        .filter(e => e.type === 'belongs_to');
+      expect(edges.length).toBeGreaterThanOrEqual(1);
+      const layers = edges.map(e => e.properties.cultureLayer);
+      expect(layers).toContain('historical');
+      expect(layers).toContain('current');
+    }
+  });
+
+  it('assigns cultures to individual actors', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    let withCulture = 0;
+    for (const id of result.individualIds) {
+      const edges = result.graph.getAllEdgesForNode(id)
+        .filter(e => e.type === 'belongs_to');
+      if (edges.length > 0) withCulture++;
+    }
+    expect(withCulture).toBeGreaterThan(result.individualIds.length * 0.5);
+  });
+
+  it('assigns cultures to factions', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    for (const facId of result.factionIds) {
+      const edges = result.graph.getAllEdgesForNode(facId)
+        .filter(e => e.type === 'belongs_to');
+      expect(edges).toHaveLength(1);
+    }
+  });
+
+  it('culture generation is deterministic', () => {
+    const a = seedWorld(balancedCosmology(), mockTiles(), 42);
+    const b = seedWorld(balancedCosmology(), mockTiles(), 42);
+    expect(a.cultureIds).toEqual(b.cultureIds);
+    for (let i = 0; i < a.cultureIds.length; i++) {
+      expect(a.graph.getNode(a.cultureIds[i])!.name)
+        .toBe(b.graph.getNode(b.cultureIds[i])!.name);
     }
   });
 });
