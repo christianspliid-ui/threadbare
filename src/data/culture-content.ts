@@ -297,6 +297,482 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
   },
 ];
 
+// ─── Insider Beat Interface ───────────────────────────────────────
+
+export interface InsiderBeat {
+  id: string;
+  name: string;
+  requiredCultureTags: string[];  // sphere/biome tags that must be in the culture
+  minStrength: number;            // 0.3–1.0 — minimum cultural strength to trigger
+  trigger: string;                // human-readable trigger condition
+  proseSeeds: string[];           // template sentences for narrative generation
+  archetypeAffinity?: string[];   // archetype ids that amplify this beat
+}
+
+// ─── Insider Beats (~25 entries) ──────────────────────────────────
+
+export const INSIDER_BEATS: InsiderBeat[] = [
+  {
+    id: 'blood_oath_challenge',
+    name: 'Blood Oath Challenge',
+    requiredCultureTags: ['force'],
+    minStrength: 0.5,
+    trigger: 'Two warriors with a grudge meet',
+    proseSeeds: [
+      'Steel sang as {actor} drew blade against {target}, invoking the ancient rite of blood oath.',
+      'The challenge echoed across the settlement — no force culture refuses a blood oath.',
+    ],
+  },
+  {
+    id: 'trial_by_element',
+    name: 'Trial by Element',
+    requiredCultureTags: ['energy'],
+    minStrength: 0.6,
+    trigger: 'An accused must prove innocence',
+    proseSeeds: [
+      'The flames would judge — {actor} stepped into the trial circle as the culture demanded.',
+      '{actor} faced the elemental ordeal, flames licking at their resolve.',
+    ],
+  },
+  {
+    id: 'ancestor_communion',
+    name: 'Ancestor Communion',
+    requiredCultureTags: ['spirit'],
+    minStrength: 0.5,
+    trigger: 'A major decision faces the community',
+    proseSeeds: [
+      'In the sacred grove, {actor} knelt to hear the whispers of those who came before.',
+      'The ancestor spirits stirred as {actor} sought their counsel on the matter.',
+    ],
+  },
+  {
+    id: 'name_day_tournament',
+    name: 'Name-Day Tournament',
+    requiredCultureTags: ['force', 'order'],
+    minStrength: 0.4,
+    trigger: 'A young warrior comes of age',
+    proseSeeds: [
+      'The arena filled for {actor}\'s name-day — in this culture, adulthood is earned in combat.',
+      'Weapons were blessed and the crowd gathered for {actor}\'s proving.',
+    ],
+  },
+  {
+    id: 'shadow_market',
+    name: 'Shadow Market',
+    requiredCultureTags: ['darkness'],
+    minStrength: 0.6,
+    trigger: 'Trade of forbidden goods',
+    proseSeeds: [
+      'In the veiled bazaar, {actor} traded in things that light-sworn cultures would burn.',
+      'The shadow market opened its doors — here, secrets are the truest currency.',
+    ],
+  },
+  {
+    id: 'dream_walk',
+    name: 'Dream Walk',
+    requiredCultureTags: ['spirit', 'mind'],
+    minStrength: 0.8,
+    trigger: 'A spiritual crisis demands deep communion',
+    proseSeeds: [
+      'The dream-walkers carried {actor} beyond the veil, into the realm of pure thought.',
+      '{actor} drank the vision-brew and fell into the deep dream the culture reveres.',
+    ],
+  },
+  {
+    id: 'cultural_reclamation',
+    name: 'Cultural Reclamation',
+    requiredCultureTags: [],
+    minStrength: 0.4,
+    trigger: 'A conquered people resist assimilation',
+    proseSeeds: [
+      'Whispered in the old tongue, the {culture} ways stirred again in {actor}.',
+      'The old songs rose unbidden — {actor} remembered what the conquerors tried to erase.',
+    ],
+  },
+  {
+    id: 'harvest_blessing',
+    name: 'Harvest Blessing',
+    requiredCultureTags: ['life'],
+    minStrength: 0.4,
+    trigger: 'The growing season begins or ends',
+    proseSeeds: [
+      'The life-singers of the {culture} raised their voices as the first seeds touched earth.',
+      '{actor} led the harvest blessing, green light dancing on the offerings.',
+    ],
+  },
+  {
+    id: 'forge_dedication',
+    name: 'Forge Dedication',
+    requiredCultureTags: ['matter', 'force'],
+    minStrength: 0.5,
+    trigger: 'A new weapon or tool of significance is created',
+    proseSeeds: [
+      'The forge-master spoke the old words as {actor}\'s blade took shape in the sacred fire.',
+      'In this culture, a weapon\'s birth is attended like a child\'s.',
+    ],
+  },
+  {
+    id: 'truth_duel',
+    name: 'Truth Duel',
+    requiredCultureTags: ['light', 'order'],
+    minStrength: 0.6,
+    trigger: 'Two conflicting accounts must be resolved',
+    proseSeeds: [
+      'Under the open sky, {actor} and {target} spoke their truths — the witnesses would judge.',
+      'The truth duel began: in this culture, lies cannot survive the sun\'s gaze.',
+    ],
+  },
+  {
+    id: 'mercy_plea',
+    name: 'Mercy Plea',
+    requiredCultureTags: ['life', 'heart'],
+    minStrength: 0.5,
+    trigger: 'A condemned person appeals for life',
+    proseSeeds: [
+      '{actor} knelt before the council, invoking the life-bond that their culture holds sacred.',
+      'The mercy plea silenced the crowd — in this culture, to refuse it carries heavy shame.',
+    ],
+  },
+  {
+    id: 'craft_competition',
+    name: 'Craft Competition',
+    requiredCultureTags: ['matter'],
+    minStrength: 0.4,
+    trigger: 'Artisans vie for prestige',
+    proseSeeds: [
+      'Hammers rang and chisels sang as {actor} entered the craft trials of the {culture}.',
+      'Only the finest work survives the judges\' eye — craft is worship here.',
+    ],
+  },
+  {
+    id: 'storytelling_circle',
+    name: 'Storytelling Circle',
+    requiredCultureTags: ['time', 'spirit'],
+    minStrength: 0.4,
+    trigger: 'Community gathers to share and preserve knowledge',
+    proseSeeds: [
+      'The fire burned low as {actor} took the storyteller\'s seat, voice carrying ancient patterns.',
+      'In the circle, every word is sacred — the {culture} remembers through its speakers.',
+    ],
+  },
+  {
+    id: 'initiation_ordeal',
+    name: 'Initiation Ordeal',
+    requiredCultureTags: ['darkness', 'force'],
+    minStrength: 0.7,
+    trigger: 'An outsider seeks acceptance into the culture',
+    proseSeeds: [
+      '{actor} entered the darkened chamber, knowing only those transformed emerge as true {culture}.',
+      'The initiation stripped away the old self — what emerged bore the {culture}\'s mark.',
+    ],
+  },
+  {
+    id: 'star_reading',
+    name: 'Star Reading',
+    requiredCultureTags: ['time', 'star'],
+    minStrength: 0.5,
+    trigger: 'A celestial event demands interpretation',
+    proseSeeds: [
+      'The astrologers gathered as the stars aligned — {actor} read the heavens for the {culture}\'s fate.',
+      'In this culture, the stars write destiny. {actor} was charged with reading.',
+    ],
+  },
+  {
+    id: 'death_celebration',
+    name: 'Death Celebration',
+    requiredCultureTags: ['entropy'],
+    minStrength: 0.5,
+    trigger: 'Someone significant dies',
+    proseSeeds: [
+      'The {culture} did not mourn — they celebrated the beautiful return to nothing.',
+      '{actor} led the dissolution rites, finding beauty in the ending.',
+    ],
+  },
+  {
+    id: 'territorial_marking',
+    name: 'Territorial Marking',
+    requiredCultureTags: ['force', 'matter'],
+    minStrength: 0.5,
+    trigger: 'A new area is claimed',
+    proseSeeds: [
+      '{actor} planted the {culture}\'s banner with ancient words of claiming.',
+      'The boundary stones were set with craft and ceremony — this land speaks {culture} now.',
+    ],
+  },
+  {
+    id: 'spirit_cleansing',
+    name: 'Spirit Cleansing',
+    requiredCultureTags: ['spirit', 'life'],
+    minStrength: 0.6,
+    trigger: 'A place or person is tainted',
+    proseSeeds: [
+      'The purification began at dawn — {actor} wielded sacred herbs against the corruption.',
+      'The {culture}\'s healers worked in concert, driving impurity from the afflicted.',
+    ],
+  },
+  {
+    id: 'oath_of_silence',
+    name: 'Oath of Silence',
+    requiredCultureTags: ['darkness', 'mind'],
+    minStrength: 0.7,
+    trigger: 'Secret knowledge must be protected',
+    proseSeeds: [
+      '{actor} swore upon the inner circle\'s seal — what is known shall not be spoken.',
+      'The oath bound tongue and thought alike — the {culture} guards its mysteries with silence.',
+    ],
+  },
+  {
+    id: 'water_blessing',
+    name: 'Water Blessing',
+    requiredCultureTags: ['life'],
+    minStrength: 0.4,
+    trigger: 'Water source is honored or a journey begins',
+    proseSeeds: [
+      'Sacred water touched {actor}\'s brow — the {culture} begins all ventures at the water\'s edge.',
+      'The blessing of the deep was spoken, and the waters accepted {actor}\'s offering.',
+    ],
+  },
+  {
+    id: 'flame_dance',
+    name: 'Flame Dance',
+    requiredCultureTags: ['energy'],
+    minStrength: 0.5,
+    trigger: 'Celebration of fire and passion',
+    proseSeeds: [
+      'The dancers whirled through the flames, untouched — the {culture}\'s fire answered its own.',
+      '{actor} joined the flame dance, moving with the {culture}\'s fierce joy.',
+    ],
+  },
+  {
+    id: 'bone_reading',
+    name: 'Bone Reading',
+    requiredCultureTags: ['entropy', 'time'],
+    minStrength: 0.6,
+    trigger: 'Divination through remains',
+    proseSeeds: [
+      'The bone-caster scattered ancient fragments and read the patterns of decay.',
+      '{actor} studied the fallen bones — in this {culture}, the dead still speak through their remains.',
+    ],
+  },
+  {
+    id: 'mountain_pilgrimage',
+    name: 'Mountain Pilgrimage',
+    requiredCultureTags: ['spirit'],
+    minStrength: 0.5,
+    trigger: 'A spiritual journey to high places',
+    proseSeeds: [
+      '{actor} began the ascent the {culture} considers sacred — the mountain tests all pilgrims.',
+      'Higher and higher, until the world fell away and only spirit remained.',
+    ],
+  },
+  {
+    id: 'song_of_binding',
+    name: 'Song of Binding',
+    requiredCultureTags: ['mind', 'heart'],
+    minStrength: 0.5,
+    trigger: 'Two people are joined in partnership',
+    proseSeeds: [
+      'The binding song wove {actor} and {target} together in the {culture}\'s oldest melody.',
+      'Voices joined in harmony — the {culture} seals bonds with music that echoes in the soul.',
+    ],
+  },
+  {
+    id: 'ritual_exile',
+    name: 'Ritual of Exile',
+    requiredCultureTags: ['order', 'darkness'],
+    minStrength: 0.7,
+    trigger: 'Someone is cast out from the community',
+    proseSeeds: [
+      'The exile words were spoken and {actor}\'s name was struck from the {culture}\'s memory.',
+      'Cast out beyond the boundary stones, {actor} ceased to exist in the eyes of the {culture}.',
+    ],
+  },
+];
+
+// ─── Sub-Location Template Interface ──────────────────────────────
+
+export interface SubLocationTemplate {
+  id: string;
+  name: string;
+  grantedByTags: string[];
+  culturalVariantDescriptors: string[];
+  description: string;
+}
+
+// ─── Sub-Location Templates (18 entries) ─────────────────────────
+
+export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
+  {
+    id: 'bazaar',
+    name: 'Bazaar',
+    grantedByTags: ['gold', 'trade'],
+    culturalVariantDescriptors: ['silk-draped stalls', 'spice-heavy arcade', 'copper-lamp market'],
+    description: 'A bustling marketplace reflecting cultural trade traditions',
+  },
+  {
+    id: 'shrine',
+    name: 'Shrine',
+    grantedByTags: ['spirit', 'veil'],
+    culturalVariantDescriptors: ['incense-clouded altar', 'crystal-adorned sanctuary', 'spirit-carved grotto'],
+    description: 'A sacred space for spiritual observance',
+  },
+  {
+    id: 'arena',
+    name: 'Arena',
+    grantedByTags: ['force', 'iron'],
+    culturalVariantDescriptors: ['blood-stained pit', 'honor ring', 'bone-flagged coliseum'],
+    description: 'A place of combat and proving',
+  },
+  {
+    id: 'library',
+    name: 'Library',
+    grantedByTags: ['mind', 'eye'],
+    culturalVariantDescriptors: ['scroll-tower archive', 'crystal-indexed repository', 'ink-stained scriptorium'],
+    description: 'A repository of recorded knowledge',
+  },
+  {
+    id: 'forge',
+    name: 'Forge',
+    grantedByTags: ['matter', 'stone'],
+    culturalVariantDescriptors: ['rune-marked smithy', 'crystal furnace', 'ancestral anvil hall'],
+    description: 'A workshop for shaping materials',
+  },
+  {
+    id: 'temple',
+    name: 'Temple',
+    grantedByTags: ['spirit', 'heart'],
+    culturalVariantDescriptors: ['star-domed cathedral', 'root-woven sanctuary', 'bone-arch cathedral'],
+    description: 'A major place of worship',
+  },
+  {
+    id: 'guild_hall',
+    name: 'Guild Hall',
+    grantedByTags: ['matter', 'gold'],
+    culturalVariantDescriptors: ['craft-bannered lodge', 'copper-sealed chamber', 'master\'s gallery'],
+    description: 'A gathering place for skilled artisans',
+  },
+  {
+    id: 'watchtower',
+    name: 'Watchtower',
+    grantedByTags: ['force', 'star'],
+    culturalVariantDescriptors: ['eagle-perch spire', 'flame-signal tower', 'far-sight pinnacle'],
+    description: 'A defensive observation post',
+  },
+  {
+    id: 'garden',
+    name: 'Garden',
+    grantedByTags: ['life', 'heart'],
+    culturalVariantDescriptors: ['moon-bloom terrace', 'herb-spiral sanctuary', 'living-wall courtyard'],
+    description: 'A cultivated space of growth',
+  },
+  {
+    id: 'tomb',
+    name: 'Tomb',
+    grantedByTags: ['entropy', 'veil'],
+    culturalVariantDescriptors: ['echo-carved crypt', 'bone-lattice mausoleum', 'silence-sealed barrow'],
+    description: 'A resting place for the honored dead',
+  },
+  {
+    id: 'observatory',
+    name: 'Observatory',
+    grantedByTags: ['time', 'star'],
+    culturalVariantDescriptors: ['star-map dome', 'celestial wheel chamber', 'moon-dial platform'],
+    description: 'A place for reading the heavens',
+  },
+  {
+    id: 'barracks',
+    name: 'Barracks',
+    grantedByTags: ['force', 'iron'],
+    culturalVariantDescriptors: ['trophy-hung dormitory', 'war-drum hall', 'weapon-rack longhouse'],
+    description: 'Housing and training grounds for warriors',
+  },
+  {
+    id: 'market_square',
+    name: 'Market Square',
+    grantedByTags: ['gold', 'heart'],
+    culturalVariantDescriptors: ['festival-ready plaza', 'barter-stone courtyard', 'lamp-lit commons'],
+    description: 'An open gathering space for trade and socializing',
+  },
+  {
+    id: 'council_chamber',
+    name: 'Council Chamber',
+    grantedByTags: ['mind', 'order'],
+    culturalVariantDescriptors: ['truth-stone hall', 'ancestor-carved rotunda', 'judgment seat chamber'],
+    description: 'A place where decisions are made',
+  },
+  {
+    id: 'ritual_ground',
+    name: 'Ritual Ground',
+    grantedByTags: ['spirit', 'entropy'],
+    culturalVariantDescriptors: ['blood-circle clearing', 'spirit-door meadow', 'bone-dust amphitheater'],
+    description: 'Open space for major cultural ceremonies',
+  },
+  {
+    id: 'archive',
+    name: 'Archive',
+    grantedByTags: ['mind', 'time'],
+    culturalVariantDescriptors: ['memory-crystal vault', 'clay-tablet labyrinth', 'moth-proof sanctum'],
+    description: 'Deep storage of cultural records and artifacts',
+  },
+  {
+    id: 'harbor',
+    name: 'Harbor',
+    grantedByTags: ['ocean'],
+    culturalVariantDescriptors: ['tide-gate wharf', 'shell-crusted dock', 'storm-sheltered anchorage'],
+    description: 'A waterfront for maritime activities',
+  },
+  {
+    id: 'underground_passage',
+    name: 'Underground Passage',
+    grantedByTags: ['darkness', 'shadow'],
+    culturalVariantDescriptors: ['whisper-tunnel network', 'shadow-mapped labyrinth', 'secret-sealed undercroft'],
+    description: 'Hidden routes beneath the settlement',
+  },
+];
+
+// ─── Artifact Lore Pattern Interface ───────────────────────────────
+
+export interface ArtifactLorePattern {
+  id: string;
+  template: string;  // must contain {culture} placeholder
+  toneCategory: 'reverent' | 'martial' | 'mystical' | 'practical' | 'ominous';
+}
+
+// ─── Artifact Lore Patterns (6 entries) ───────────────────────────
+
+export const ARTIFACT_LORE_PATTERNS: ArtifactLorePattern[] = [
+  {
+    id: 'reverent_origin',
+    template: 'Crafted by the first artisans of the {culture}, blessed by hands that knew the old ways',
+    toneCategory: 'reverent',
+  },
+  {
+    id: 'martial_conquest',
+    template: 'Won in battle when the {culture} stood against the tide and refused to break',
+    toneCategory: 'martial',
+  },
+  {
+    id: 'mystical_creation',
+    template: 'Born in the dreaming hours when the {culture}\'s seers walked between worlds',
+    toneCategory: 'mystical',
+  },
+  {
+    id: 'practical_innovation',
+    template: 'Devised by {culture} necessity, when survival demanded invention over tradition',
+    toneCategory: 'practical',
+  },
+  {
+    id: 'ominous_inheritance',
+    template: 'Passed down through {culture} generations, each holder marked by its dark purpose',
+    toneCategory: 'ominous',
+  },
+  {
+    id: 'sacred_sacrifice',
+    template: 'Forged from the sacrifice of a {culture} hero who gave everything for their people',
+    toneCategory: 'reverent',
+  },
+];
+
 // ─── Lookup Functions ─────────────────────────────────────────────
 
 /**
