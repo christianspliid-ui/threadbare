@@ -147,29 +147,48 @@ The meat of the note. Tables, mechanics, rules — whatever describes THIS syste
 
 **What:** Mark completed work in the Notion backlog and add reference docs.
 
+**CRITICAL: Notion API Command Changes (as of 2026-03-08)**
+
+The Notion MCP `notion-update-page` tool accepts ONLY these commands:
+- `update_properties` — update page properties
+- `replace_content` — replace content (full page or targeted via `selection_with_ellipsis`)
+- `apply_template` — apply a template
+- `update_verification` — verify/unverify a page
+
+The old commands `replace_content_range` and `insert_content_after` NO LONGER WORK. They will return an `invalid_enum_value` error. Do not use them.
+
 **CRITICAL PATTERNS:**
 - **Always fetch before editing.** Use `notion-fetch` with the backlog page ID (`3182b241dfb081b9af78c279eef405cf`) to see current content before making changes.
-- **Use `selection_with_ellipsis` carefully.** Provide ~10 chars from start + ellipsis + ~10 chars from end. The selection must be UNIQUE in the page.
-- **Two operations per phase completion:**
-  1. `replace_content_range` — Change the phase header to add ✅ and update task checkboxes from `- [ ]` to `- [x]`
-  2. `insert_content_after` — Add reference doc links at the end of the Reference Documents section
+- **Use `replace_content` with `selection_with_ellipsis` + `new_str` for targeted edits.** This replaces the matched text with new text. Provide ~10 chars from start + ellipsis + ~10 chars from end. The selection must be UNIQUE in the page.
+- **To insert new content before an existing section,** include the existing section header in your `selection_with_ellipsis` match and put it back at the end of your `new_str`. This effectively "inserts before" by replacing the header with new-content + header.
+
+**Inserting a new completed section (the most common operation):**
+
+To add a new completed section above `### Priority 4: Performance Benchmarking`, use:
+```
+command: "replace_content"
+selection_with_ellipsis: "### Priority 4:...Benchmarking 🔴"
+new_str: "<your new section content>\n### Priority 4: Performance Benchmarking 🔴"
+```
+
+This replaces the Priority 4 header with your new section + the header put back, effectively inserting above it.
 
 **Phase completion pattern:**
 ```
-### Phase 6X: Name  ✅ Complete (YYYY-MM-DD)
-*Design doc: **`Docs/plans/...`**. Implementation plan: **`Docs/plans/...`**. N new tests across M test files, P new files + Q modified.*
-- [x] Task description — what was built (`src/path/to/file.ts`)
-- [x] Another task — what was built (`src/path/to/file.ts`)
-```
-
-**Reference doc links pattern (append to Reference Documents section):**
-```
-- `Docs/plans/YYYY-MM-DD-feature-design.md` — Feature design document (brief description)
-- `Docs/plans/YYYY-MM-DD-feature-implementation.md` — Feature N-task implementation plan (brief task list summary)
+### Phase 6X: Name ✅ Complete (YYYY-MM-DD)
+Summary of what was built. N-task TDD implementation.
+- [x] Task description — what was built
+- [x] Another task — what was built
+N new tests across M test files. P commits.
+**Reference docs:**
+- `Docs/plans/YYYY-MM-DD-feature-design.md` — Design doc
+- `Docs/plans/YYYY-MM-DD-feature-implementation.md` — N-task TDD plan
 ```
 
 **Common Notion errors:**
-- If `replace_content_range` fails with "could not find content", your `selection_with_ellipsis` wasn't unique enough. Add more characters from start/end.
+- `invalid_enum_value` — You used an old command name. Only `update_properties`, `replace_content`, `apply_template`, `update_verification` are valid.
+- "could not find content" — Your `selection_with_ellipsis` wasn't unique enough or doesn't match current page content. Fetch the page again and use more characters from start/end.
+- `content_updates parameter required` — You accidentally used the `update_content` command (which doesn't exist in the tool schema). Use `replace_content` instead.
 - If you need to update task checkboxes, replace the ENTIRE phase section (header through last task), not individual lines.
 
 ### Step 6: Commit Documentation Changes
@@ -197,7 +216,7 @@ Only CLAUDE.md and files in `Docs/plans/` should be committed. Obsidian and Noti
 | `obsidian_patch_content` | Edit existing note content | UNRELIABLE — use with caution, simple targets only |
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
 | `notion-fetch` | Read Notion page before editing | ALWAYS do this first |
-| `notion-update-page` | Edit Notion content | Use `replace_content_range` or `insert_content_after` |
+| `notion-update-page` | Edit Notion content | Use `replace_content` with `selection_with_ellipsis` + `new_str`. Old commands `replace_content_range`/`insert_content_after` no longer work |
 | `git commit` | Commit CLAUDE.md changes | Only repo files |
 
 ## Common Mistakes
