@@ -1,5 +1,6 @@
 import React from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
+import { RivalIcon } from '../shared/RivalIcon';
 
 interface RivalPanelProps {
   definitions: RivalDefinition[];
@@ -7,10 +8,10 @@ interface RivalPanelProps {
 }
 
 const BEHAVIOR_ICONS: Record<string, string> = {
-  aggressive: '⚔️',
-  subtle: '👁️',
-  territorial: '🏰',
-  expansionist: '🌊',
+  aggressive: '⚔', // Crossed swords for combat/aggression
+  subtle: '◇', // Diamond for stealth/subtlety
+  territorial: '▪', // Square for land/domain control
+  expansionist: '⬆', // Up arrow for growth/expansion
 };
 
 const BEHAVIOR_COLORS: Record<string, string> = {
@@ -45,14 +46,23 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
       {definitions.map((def) => {
         const rivalState = states.find(s => s.rivalId === def.id);
         const hostility = rivalState?.hostilityToPlayer ?? 0;
-        const icon = BEHAVIOR_ICONS[def.behavior] ?? '❓';
+        const icon = BEHAVIOR_ICONS[def.behavior] ?? '●';
         const color = BEHAVIOR_COLORS[def.behavior] ?? '#78716c';
+
+        // Collect primary and secondary spheres for RivalIcon
+        const spheres = [];
+        if (def.primarySphere) spheres.push(def.primarySphere);
+        if (def.secondarySphere) spheres.push(def.secondarySphere);
 
         return (
           <div key={def.id} className="bg-stone-700/50 rounded px-2 py-1.5 border border-stone-600/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
-                <span className="text-sm">{icon}</span>
+                {spheres.length > 0 ? (
+                  <RivalIcon spheres={spheres} size="1.2rem" title={`${def.name}'s sphere affinities`} />
+                ) : (
+                  <span className="text-sm" style={{ color }}>{icon}</span>
+                )}
                 <span className="text-xs text-amber-100/80 font-medium truncate max-w-[140px]">
                   {def.name}
                 </span>

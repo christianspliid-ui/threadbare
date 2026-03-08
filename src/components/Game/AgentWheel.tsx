@@ -6,6 +6,7 @@
  */
 
 import type { WheelSlot } from '../../engine/wheel';
+import { getWheelSlotGlyph } from '../../data/sphereIcons';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -20,18 +21,6 @@ const WHEEL_CONFIG = {
   CENTER_TITLE_FONT_SIZE: 11,
   CENTER_TITLE_Y_OFFSET: 12,
 } as const;
-
-const SLOT_GLYPHS: Record<string, string> = {
-  scry: '👁',
-  dream: '💭',
-  persuade: '🗣',
-  deceive: '🎭',
-  intimidate: '💀',
-  inspire: '✨',
-  coincidence: '🎲',
-  omen: '🌑',
-  afflict_bless: '⚡',
-};
 
 // ─── Polar to Cartesian Helper ─────────────────────────────────────────────
 
@@ -106,7 +95,7 @@ export function AgentWheel(props: AgentWheelProps) {
         const isAvailable = slot.available;
         const slotColor = isAvailable ? '#d4a574' : '#57534e';
         const opacity = isAvailable ? 1 : 0.3;
-        const glyph = SLOT_GLYPHS[slot.id] || '⚪';
+        const glyph = getWheelSlotGlyph(slot.id);
 
         return (
           <g

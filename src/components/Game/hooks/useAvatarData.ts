@@ -1,10 +1,11 @@
-import { useMemo, useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { WorldGraph } from '../../../types/graph';
 import type { LocationSubtype } from '../../../types';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { hexToPixel } from '../../../lib/hexMath';
 import { enableTracing, disableTracing } from '../../../engine/traceBuffer';
+import { getSphereColor } from '../../../data/sphereIcons';
 
 interface UseAvatarDataParams {
   graph: WorldGraph;
@@ -38,26 +39,19 @@ export function useAvatarData({
   ascendantId,
   archetype,
 }: UseAvatarDataParams): UseAvatarDataReturn {
-  // Avatar position
-  const avatarPos = useMemo(
-    () => getAvatarHexPosition(graph, ascendantId),
-    [graph, ascendantId]
+  // Avatar position — no useMemo because the graph is mutable (same reference after
+  // moveAvatarToHex); recalculating on every render is trivially cheap (2 edge hops).
+  const avatarPos = getAvatarHexPosition(graph, ascendantId);
+
+  // Sphere color based on primary creation sphere
+  const sphereColor = useMemo(
+    () => getSphereColor(archetype.sphereAlignment.primary),
+    [archetype.sphereAlignment.primary]
   );
 
-  // Sphere color based on primary foundation sphere
-  const sphereColor = useMemo(() => {
-    const primarySphere = archetype.sphereAlignment.primary;
-    const sphereColorMap: Record<string, string> = {
-      chaos: '#ff6633',
-      order: '#3366ff',
-      light: '#ffdd44',
-      darkness: '#9933cc',
-    };
-    return sphereColorMap[primarySphere] ?? '#ff6633';
-  }, [archetype.sphereAlignment.primary]);
-
   // Build location overlay map: hex coord key → LocationSubtype for hex map rendering
-  const locationOverlays = useMemo(() => {
+  // No useMemo — graph is mutable, and moveAvatarToHex may create transient locations
+  const locationOverlays = (() => {
     const overlayMap = new Map<string, LocationSubtype>();
     const nodes = graph.getNodesByType('location');
     for (const node of nodes) {
@@ -72,7 +66,7 @@ export function useAvatarData({
       }
     }
     return overlayMap;
-  }, [graph]);
+  })();
 
   // Avatar pixel position for initial zoom
   const avatarPixelPos = useMemo(() => {

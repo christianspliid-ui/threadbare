@@ -7,6 +7,11 @@ import type { HexCoord, CubeCoord } from '../types';
 // Offset: odd columns shift down by half a hex height
 // Reference: https://www.redblobgames.com/grids/hexagons/
 
+// Hex sizing constants (Non-Functional Priority #1: Tunability)
+export const HEX_SCALE_X = 1.5; // Horizontal spacing multiplier
+export const HEX_SCALE_Y = Math.sqrt(3); // Vertical spacing multiplier
+export const HEX_IMG_SCALE = 2; // Image size multiplier
+
 export function offsetToCube(hex: HexCoord): CubeCoord {
   // Flat-top odd-q: col maps to q, row adjusts by column parity
   const q = hex.col;

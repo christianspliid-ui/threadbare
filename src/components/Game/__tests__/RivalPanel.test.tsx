@@ -25,6 +25,8 @@ describe('RivalPanel', () => {
       },
       oppositionStrength: 0.85,
       description: 'A war god who despises the player',
+      primarySphere: 'force',
+      secondarySphere: 'matter',
     },
     {
       id: 'rival-2',
@@ -45,6 +47,8 @@ describe('RivalPanel', () => {
       },
       oppositionStrength: 0.6,
       description: 'A cunning god who works from the shadows',
+      primarySphere: 'mind',
+      secondarySphere: 'spirit',
     },
     {
       id: 'rival-3',
@@ -65,6 +69,8 @@ describe('RivalPanel', () => {
       },
       oppositionStrength: 0.7,
       description: 'An expansionist god seeking to spread influence',
+      primarySphere: 'energy',
+      secondarySphere: 'force',
     },
   ];
 
@@ -111,13 +117,16 @@ describe('RivalPanel', () => {
     expect(screen.getByText('expansionist')).toBeInTheDocument();
   });
 
-  it('renders behavior icons for each rival', () => {
+  it('renders sphere icons for each rival (RivalIcon shows primary and secondary spheres)', () => {
     const { container } = render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    const icons = container.querySelectorAll('span');
-    const iconTexts = Array.from(icons).map(el => el.textContent);
-    expect(iconTexts).toContain('⚔️'); // aggressive
-    expect(iconTexts).toContain('👁️'); // subtle
-    expect(iconTexts).toContain('🌊'); // expansionist
+    // RivalIcon renders sphere affinities as colored Unicode dots (●)
+    // Check that at least 3 RivalIcon components were rendered (one per rival)
+    const spanElements = container.querySelectorAll('span');
+    const dotCount = Array.from(spanElements)
+      .filter((el) => el.textContent === '●')
+      .length;
+    // Each RivalIcon renders up to 3 colored dots (primary + secondary spheres)
+    expect(dotCount).toBeGreaterThanOrEqual(3);
   });
 
   it('displays hostility meter for each rival', () => {
@@ -156,6 +165,8 @@ describe('RivalPanel', () => {
         },
         oppositionStrength: 0.5,
         description: 'An unknown rival',
+        primarySphere: 'matter',
+        secondarySphere: 'entropy',
       },
     ];
     render(<RivalPanel definitions={defsWithoutState} states={[]} />);

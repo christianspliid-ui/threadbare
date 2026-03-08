@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace } from '../../types/trace';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
+import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -21,14 +22,6 @@ const PANEL_STYLES = {
   width: 480,
   zIndex: 45,
 } as const;
-
-const CATEGORY_BADGE_COLORS: Record<string, string> = {
-  action_selection: '#d4a574',
-  narrative_generation: '#aa44dd',
-  context_harvest: '#2288ff',
-  dilemma_resolution: '#ff4444',
-  tick_summary: '#ca8a04',
-};
 
 const CONTAINER_STYLE: React.CSSProperties = {
   position: 'fixed',
@@ -72,7 +65,7 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
 
 const getTabButtonStyle = (isActive: boolean): React.CSSProperties => ({
   ...TAB_BUTTON_BASE,
-  borderBottom: isActive ? `2px solid ${CATEGORY_BADGE_COLORS.action_selection}` : 'none',
+  borderBottom: isActive ? `2px solid ${TRACE_CATEGORY_COLORS.action_selection}` : 'none',
   color: isActive ? '#f0f0f0' : PANEL_STYLES.textColor,
   opacity: isActive ? 1 : 0.6,
 });
@@ -145,7 +138,7 @@ const BADGE_BASE_STYLE: React.CSSProperties = {
 
 const getBadgeStyle = (category: string): React.CSSProperties => ({
   ...BADGE_BASE_STYLE,
-  background: CATEGORY_BADGE_COLORS[category] || '#666',
+  background: TRACE_CATEGORY_COLORS[category] || '#666',
   color: '#000',
 });
 
@@ -171,7 +164,7 @@ const DETAIL_ROW_STYLE: React.CSSProperties = {
 };
 
 const DETAIL_LABEL_STYLE: React.CSSProperties = {
-  color: CATEGORY_BADGE_COLORS.narrative_generation,
+  color: TRACE_CATEGORY_COLORS.narrative_generation,
   minWidth: '120px',
   fontWeight: 500,
 };
@@ -329,6 +322,9 @@ const ContextHarvestDetail = React.memo(function ContextHarvestDetail({ trace }:
 });
 
 const DilemmaResolutionDetail = React.memo(function DilemmaResolutionDetail({ trace }: { trace: DilemmaResolutionTrace }) {
+  const cooperateColor = TRACE_CATEGORY_COLORS.narrative_generation;
+  const defectColor = TRACE_CATEGORY_COLORS.dilemma_resolution;
+
   return (
     <div style={DETAIL_AREA_STYLE}>
       <div style={DETAIL_ROW_STYLE}>
@@ -349,19 +345,19 @@ const DilemmaResolutionDetail = React.memo(function DilemmaResolutionDetail({ tr
           </tr>
           <tr style={{ borderBottom: `1px solid ${PANEL_STYLES.borderColor}` }}>
             <td style={{ padding: '4px', color: PANEL_STYLES.tickColor }}>Target Cooperate</td>
-            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'cooperate' && trace.targetMove === 'cooperate' ? 'rgba(170, 68, 221, 0.2)' : 'transparent', color: trace.actorMove === 'cooperate' && trace.targetMove === 'cooperate' ? '#aa44dd' : PANEL_STYLES.textColor }}>
+            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'cooperate' && trace.targetMove === 'cooperate' ? `${cooperateColor}33` : 'transparent', color: trace.actorMove === 'cooperate' && trace.targetMove === 'cooperate' ? cooperateColor : PANEL_STYLES.textColor }}>
               (3, 3)
             </td>
-            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'defect' && trace.targetMove === 'cooperate' ? 'rgba(255, 68, 68, 0.2)' : 'transparent', color: trace.actorMove === 'defect' && trace.targetMove === 'cooperate' ? '#ff4444' : PANEL_STYLES.textColor }}>
+            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'defect' && trace.targetMove === 'cooperate' ? `${defectColor}33` : 'transparent', color: trace.actorMove === 'defect' && trace.targetMove === 'cooperate' ? defectColor : PANEL_STYLES.textColor }}>
               (5, 0)
             </td>
           </tr>
           <tr>
             <td style={{ padding: '4px', color: PANEL_STYLES.tickColor }}>Target Defect</td>
-            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'cooperate' && trace.targetMove === 'defect' ? 'rgba(255, 68, 68, 0.2)' : 'transparent', color: trace.actorMove === 'cooperate' && trace.targetMove === 'defect' ? '#ff4444' : PANEL_STYLES.textColor }}>
+            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'cooperate' && trace.targetMove === 'defect' ? `${defectColor}33` : 'transparent', color: trace.actorMove === 'cooperate' && trace.targetMove === 'defect' ? defectColor : PANEL_STYLES.textColor }}>
               (0, 5)
             </td>
-            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'defect' && trace.targetMove === 'defect' ? 'rgba(170, 68, 221, 0.2)' : 'transparent', color: trace.actorMove === 'defect' && trace.targetMove === 'defect' ? '#aa44dd' : PANEL_STYLES.textColor }}>
+            <td style={{ padding: '4px', textAlign: 'center', background: trace.actorMove === 'defect' && trace.targetMove === 'defect' ? `${cooperateColor}33` : 'transparent', color: trace.actorMove === 'defect' && trace.targetMove === 'defect' ? cooperateColor : PANEL_STYLES.textColor }}>
               (1, 1)
             </td>
           </tr>
@@ -524,6 +520,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
           {onClose && (
             <button
               onClick={onClose}
+              aria-label="Close Debug Panel"
+              title="Close (Esc)"
               style={{
                 background: 'transparent',
                 border: 'none',
@@ -553,8 +551,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
 
       {/* Agent Follow Header */}
       {viewMode === 'agent-follow' && followAgentId && (
-        <div style={{ ...HEADER_STYLE, background: 'rgba(170, 68, 221, 0.1)' }}>
-          Following: <span style={{ color: '#aa44dd', fontWeight: 600 }}>{followAgentId}</span>
+        <div style={{ ...HEADER_STYLE, background: `${TRACE_CATEGORY_COLORS.narrative_generation}1a` }}>
+          Following: <span style={{ color: TRACE_CATEGORY_COLORS.narrative_generation, fontWeight: 600 }}>{followAgentId}</span>
         </div>
       )}
 
@@ -627,7 +625,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             left: '50%',
             transform: 'translateX(-50%)',
             padding: '6px 12px',
-            background: CATEGORY_BADGE_COLORS.action_selection,
+            background: TRACE_CATEGORY_COLORS.action_selection,
             border: 'none',
             borderRadius: '12px',
             color: '#000',

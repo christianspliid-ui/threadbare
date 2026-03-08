@@ -73,6 +73,18 @@ export function HexZoomView({
   const isHidden = lineOfSight === 'none';
   const isDimmed = lineOfSight === 'partial';
 
+  // Handle keyboard interaction for SVG location elements
+  const handleLocationKeyDown = (e: React.KeyboardEvent, locationId: string, isDoubleClick: boolean) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (isDoubleClick) {
+        onLocationDoubleClick(locationId);
+      } else {
+        onLocationClick(locationId);
+      }
+    }
+  };
+
   return (
     <svg
       viewBox={`0 0 ${LAYOUT_CONFIG.VIEW_SIZE} ${LAYOUT_CONFIG.VIEW_SIZE}`}
@@ -125,7 +137,14 @@ export function HexZoomView({
         const agents = agentsByLocation[loc.id] ?? [];
 
         return (
-          <g key={loc.id}>
+          <g
+            key={loc.id}
+            role="button"
+            aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}`}
+            tabIndex={0}
+            onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id, false)}
+            style={{ cursor: 'pointer', outline: 'none' }}
+          >
             {/* Location circle */}
             <circle
               cx={pos.x}
@@ -136,7 +155,7 @@ export function HexZoomView({
               strokeWidth="1.5"
               strokeOpacity={isHidden ? 0.2 : 0.6}
               opacity={isDimmed ? 0.6 : 1}
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               onClick={() => onLocationClick(loc.id)}
               onDoubleClick={() => onLocationDoubleClick(loc.id)}
             />
@@ -149,7 +168,7 @@ export function HexZoomView({
               fill={isHidden ? '#666' : '#d4af37'}
               fontSize="12"
               fontFamily="Cinzel, serif"
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
               onClick={() => onLocationClick(loc.id)}
               onDoubleClick={() => onLocationDoubleClick(loc.id)}
             >

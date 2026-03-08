@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ScryOverlay } from '../ScryOverlay';
+import { ScryProvider } from '../contexts/ScryContext';
 import { createScryState, initializeCourt } from '../../../engine/scry';
 import type { RetinueAgent } from '../../../engine/retinue';
 import { SPHERE_NAMES } from '../../../types/index';
@@ -79,7 +80,7 @@ describe('ScryOverlay', () => {
     SPHERE_NAMES.map(s => [s, 20])
   ) as EssencePool;
 
-  const baseProps = {
+  const baseContextValue = {
     scryState: initializeCourt(createScryState(), 'high_house'),
     retinueAgents: mockAgents,
     essencePool: mockEssencePool,
@@ -91,61 +92,70 @@ describe('ScryOverlay', () => {
     onClose: vi.fn(),
   };
 
+  const renderWithContext = (contextValue = baseContextValue) => {
+    return render(
+      <ScryProvider value={contextValue}>
+        <ScryOverlay />
+      </ScryProvider>
+    );
+  };
+
   it('renders court name "The High House"', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText('The High House')).toBeInTheDocument();
   });
 
   it('renders close button with aria-label', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const closeBtn = screen.getByLabelText('close');
     expect(closeBtn).toBeInTheDocument();
   });
 
   it('calls onClose when close button clicked', () => {
     const onClose = vi.fn();
-    render(<ScryOverlay {...baseProps} onClose={onClose} />);
+    const context = { ...baseContextValue, onClose };
+    renderWithContext(context);
     const closeBtn = screen.getByLabelText('close');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalled();
   });
 
   it('renders 10 position slots', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     // All 10 positions should be empty initially
     expect(emptySlots.length).toBeGreaterThanOrEqual(10);
   });
 
   it('renders apex position with "The Sovereign" archetype', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText('The Sovereign')).toBeInTheDocument();
   });
 
   it('renders inner position with "The Shield" archetype', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText('The Shield')).toBeInTheDocument();
   });
 
   it('renders "Sacred Sites" section heading', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText(/Sacred Sites/i)).toBeInTheDocument();
   });
 
   it('renders "Divine Artifacts" section heading', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText(/Divine Artifacts/i)).toBeInTheDocument();
   });
 
   it('clicking empty position opens agent picker', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]);
     expect(screen.getByText('Choose Agent')).toBeInTheDocument();
   });
 
   it('agent picker shows retinue agent names', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Apex requires tier 3
     // Kalam is tier 3, Tattersail is tier 2 - only Kalam should appear
@@ -155,17 +165,16 @@ describe('ScryOverlay', () => {
   it('agent picker filters agents by minimum tier', () => {
     // Create state with outer position (tier 1 minimum)
     const state = initializeCourt(createScryState(), 'high_house');
+    const context = {
+      ...baseContextValue,
+      scryState: state,
+      retinueAgents: [
+        { ...mockAgents[0], tier: 1 }, // Tier 1, should be eligible for outer
+        { ...mockAgents[1], tier: 1 },
+      ],
+    };
 
-    render(
-      <ScryOverlay
-        {...baseProps}
-        scryState={state}
-        retinueAgents={[
-          { ...mockAgents[0], tier: 1 }, // Tier 1, should be eligible for outer
-          { ...mockAgents[1], tier: 1 },
-        ]}
-      />
-    );
+    renderWithContext(context);
 
     // Click an outer position (requires tier 1)
     const emptySlots = screen.getAllByText(/Empty/i);
@@ -176,7 +185,7 @@ describe('ScryOverlay', () => {
   });
 
   it('clicking agent in picker opens title picker', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Click apex position
 
@@ -189,7 +198,7 @@ describe('ScryOverlay', () => {
   });
 
   it('title picker displays title proposals', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Apex position
 
@@ -202,12 +211,8 @@ describe('ScryOverlay', () => {
 
   it('clicking title proposal calls onAssign', () => {
     const onAssign = vi.fn();
-    render(
-      <ScryOverlay
-        {...baseProps}
-        onAssign={onAssign}
-      />
-    );
+    const context = { ...baseContextValue, onAssign };
+    renderWithContext(context);
 
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Apex
@@ -236,7 +241,7 @@ describe('ScryOverlay', () => {
   });
 
   it('closing agent picker resets picker mode', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]);
 
@@ -249,17 +254,17 @@ describe('ScryOverlay', () => {
   });
 
   it('renders flavor text for court structure', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText(/Stone upon stone/i)).toBeInTheDocument();
   });
 
   it('displays structure bonus description', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     expect(screen.getByText(/Structure Bonus:/i)).toBeInTheDocument();
   });
 
   it('displays section headers for ranks', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     // Use queryAllByText and check length to find the headers
     const apexHeaders = screen.getAllByText('Apex');
     const innerHeaders = screen.getAllByText('Inner Circle');
@@ -270,7 +275,7 @@ describe('ScryOverlay', () => {
   });
 
   it('shows essence cost in title picker', () => {
-    render(<ScryOverlay {...baseProps} />);
+    renderWithContext();
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Apex
 
@@ -286,12 +291,12 @@ describe('ScryOverlay', () => {
       SPHERE_NAMES.map(s => [s, 1])
     ) as EssencePool;
 
-    render(
-      <ScryOverlay
-        {...baseProps}
-        essencePool={lowEssencePool}
-      />
-    );
+    const context = {
+      ...baseContextValue,
+      essencePool: lowEssencePool,
+    };
+
+    renderWithContext(context);
 
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]); // Apex (costs 30 essence)

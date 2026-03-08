@@ -6,11 +6,10 @@
  * picker (position → agent → title), title proposal viewing, and position demotion.
  */
 
-import { useState, useCallback } from 'react';
-import type { ScryState, Title, TitleProposal } from '../../types/scry';
+import { useState, useCallback, memo } from 'react';
+import type { Title, TitleProposal, Position } from '../../types/scry';
 import { RANK_MIN_TIER } from '../../types/scry';
 import type { SphereName } from '../../types';
-import type { EssencePool } from '../../types/influence';
 import type { RetinueAgent } from '../../engine/retinue';
 import {
   getCourtStructureDefinition,
@@ -18,18 +17,7 @@ import {
   getReassignmentCost,
 } from '../../engine/scry';
 import type { TitleGenerationParams } from '../../engine/scry';
-
-interface ScryOverlayProps {
-  scryState: ScryState;
-  retinueAgents: RetinueAgent[];
-  essencePool: EssencePool;
-  primarySphere: SphereName;
-  tick: number;
-  seed: number;
-  onAssign: (positionId: string, agentId: string, title: Title, cost: number) => void;
-  onDemote: (positionId: string) => void;
-  onClose: () => void;
-}
+import { useScryContext } from './contexts/ScryContext';
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
@@ -44,13 +32,12 @@ const SPHERE_COLORS: Record<SphereName, string> = {
   entropy: '#b71c1c',
 };
 
-function PositionSlot({
-  position,
-  onSelect,
-}: {
-  position: any;
+interface PositionSlotProps {
+  position: Position;
   onSelect: () => void;
-}) {
+}
+
+const PositionSlot = memo(function PositionSlot({ position, onSelect }: PositionSlotProps) {
   const rankLabel = position.rank.charAt(0).toUpperCase() + position.rank.slice(1);
 
   if (!position.activeTitle) {
@@ -99,15 +86,17 @@ function PositionSlot({
   }
 
   return null;
-}
+});
 
-function ContextMenu({
-  onDemote,
-  onClose,
-}: {
+interface ContextMenuProps {
   onDemote: () => void;
   onClose: () => void;
-}) {
+}
+
+const ContextMenu = memo(function ContextMenu({
+  onDemote,
+  onClose,
+}: ContextMenuProps) {
   return (
     <div
       className="absolute bg-stone-800 border rounded-lg shadow-lg z-40"
@@ -124,6 +113,14 @@ function ContextMenu({
       </button>
     </div>
   );
+});
+
+interface AgentPickerPanelProps {
+  position: Position;
+  agents: RetinueAgent[];
+  minTier: number;
+  onSelectAgent: (agent: RetinueAgent) => void;
+  onClose: () => void;
 }
 
 function AgentPickerPanel({
@@ -132,13 +129,7 @@ function AgentPickerPanel({
   minTier,
   onSelectAgent,
   onClose,
-}: {
-  position: any;
-  agents: RetinueAgent[];
-  minTier: number;
-  onSelectAgent: (agent: RetinueAgent) => void;
-  onClose: () => void;
-}) {
+}: AgentPickerPanelProps) {
   const eligible = agents.filter(a => a.tier >= minTier);
 
   return (
@@ -151,7 +142,8 @@ function AgentPickerPanel({
           <h3 className="text-lg font-bold text-amber-100">Choose Agent</h3>
           <button
             onClick={onClose}
-            aria-label="close picker"
+            aria-label="Close Agent Picker"
+            title="Close (Esc)"
             className="text-amber-200/50 hover:text-amber-200 text-xl"
           >
             ✕
@@ -195,23 +187,47 @@ function AgentPickerPanel({
   );
 }
 
+interface PositionSlotWithMenuProps {
+  position: Position;
+  contextMenuOpen: boolean;
+  onSelect: () => void;
+  onDemote: () => void;
+  onCloseMenu: () => void;
+}
+
+const PositionSlotWithMenu = memo(function PositionSlotWithMenu({
+  position,
+  contextMenuOpen,
+  onSelect,
+  onDemote,
+  onCloseMenu,
+}: PositionSlotWithMenuProps) {
+  return (
+    <div>
+      <PositionSlot position={position} onSelect={onSelect} />
+      {contextMenuOpen && (
+        <ContextMenu onDemote={onDemote} onClose={onCloseMenu} />
+      )}
+    </div>
+  );
+});
+
+interface TitlePickerPanelProps {
+  agent: RetinueAgent;
+  proposals: TitleProposal[];
+  reassignmentCost: number;
+  onSelectTitle: (title: Title) => void;
+  onBack: () => void;
+}
+
 function TitlePickerPanel({
   agent,
   proposals,
-  essencePool,
   reassignmentCost,
-  primarySphere,
   onSelectTitle,
   onBack,
-}: {
-  agent: RetinueAgent;
-  proposals: TitleProposal[];
-  essencePool: EssencePool;
-  reassignmentCost: number;
-  primarySphere: SphereName;
-  onSelectTitle: (title: Title) => void;
-  onBack: () => void;
-}) {
+}: TitlePickerPanelProps) {
+  const { essencePool, primarySphere } = useScryContext();
   const canAfford = essencePool[primarySphere] >= reassignmentCost;
 
   return (
@@ -224,7 +240,8 @@ function TitlePickerPanel({
           <h3 className="text-lg font-bold text-amber-100">Select Title for {agent.name}</h3>
           <button
             onClick={onBack}
-            aria-label="back to agent picker"
+            aria-label="Back to Agent Picker"
+            title="Back"
             className="text-amber-200/50 hover:text-amber-200 text-xl"
           >
             ←
@@ -287,16 +304,18 @@ function TitlePickerPanel({
   );
 }
 
-export function ScryOverlay({
-  scryState,
-  retinueAgents,
-  essencePool,
-  primarySphere,
-  seed,
-  onAssign,
-  onDemote,
-  onClose,
-}: ScryOverlayProps) {
+export function ScryOverlay() {
+  const {
+    scryState,
+    retinueAgents,
+    essencePool,
+    primarySphere,
+    seed,
+    onAssign,
+    onDemote,
+    onClose,
+  } = useScryContext();
+
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [pickerMode, setPickerMode] = useState<PickerMode>('closed');
   const [selectedAgentForAssignment, setSelectedAgentForAssignment] = useState<RetinueAgent | null>(
@@ -409,7 +428,8 @@ export function ScryOverlay({
           </div>
           <button
             onClick={onClose}
-            aria-label="close"
+            aria-label="Close Ascendant Scry"
+            title="Close (Esc)"
             className="text-amber-200/50 hover:text-amber-200 transition text-2xl"
           >
             ✕
@@ -431,16 +451,13 @@ export function ScryOverlay({
             <div className="flex gap-4 justify-center">
               {apexPositions.map(pos => (
                 <div key={pos.id} className="w-32">
-                  <PositionSlot
+                  <PositionSlotWithMenu
                     position={pos}
+                    contextMenuOpen={contextMenuPositionId === pos.id}
                     onSelect={() => handlePositionClick(pos.id)}
+                    onDemote={handleDemote}
+                    onCloseMenu={() => setContextMenuPositionId(null)}
                   />
-                  {contextMenuPositionId === pos.id && (
-                    <ContextMenu
-                      onDemote={handleDemote}
-                      onClose={() => setContextMenuPositionId(null)}
-                    />
-                  )}
                 </div>
               ))}
             </div>
@@ -454,16 +471,13 @@ export function ScryOverlay({
             <div className="grid grid-cols-3 gap-4">
               {innerPositions.map(pos => (
                 <div key={pos.id}>
-                  <PositionSlot
+                  <PositionSlotWithMenu
                     position={pos}
+                    contextMenuOpen={contextMenuPositionId === pos.id}
                     onSelect={() => handlePositionClick(pos.id)}
+                    onDemote={handleDemote}
+                    onCloseMenu={() => setContextMenuPositionId(null)}
                   />
-                  {contextMenuPositionId === pos.id && (
-                    <ContextMenu
-                      onDemote={handleDemote}
-                      onClose={() => setContextMenuPositionId(null)}
-                    />
-                  )}
                 </div>
               ))}
             </div>
@@ -477,16 +491,13 @@ export function ScryOverlay({
             <div className="grid grid-cols-6 gap-2">
               {outerPositions.map(pos => (
                 <div key={pos.id}>
-                  <PositionSlot
+                  <PositionSlotWithMenu
                     position={pos}
+                    contextMenuOpen={contextMenuPositionId === pos.id}
                     onSelect={() => handlePositionClick(pos.id)}
+                    onDemote={handleDemote}
+                    onCloseMenu={() => setContextMenuPositionId(null)}
                   />
-                  {contextMenuPositionId === pos.id && (
-                    <ContextMenu
-                      onDemote={handleDemote}
-                      onClose={() => setContextMenuPositionId(null)}
-                    />
-                  )}
                 </div>
               ))}
             </div>
@@ -569,12 +580,10 @@ export function ScryOverlay({
         <TitlePickerPanel
           agent={selectedAgentForAssignment}
           proposals={titleProposals}
-          essencePool={essencePool}
           reassignmentCost={getReassignmentCost(
             scryState.positions.find(p => p.id === selectedPositionId)?.rank || 'outer',
             scryState.totalReassignmentCount
           )}
-          primarySphere={primarySphere}
           onSelectTitle={handleSelectTitle}
           onBack={() => {
             setPickerMode('agent');

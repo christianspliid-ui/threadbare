@@ -1,15 +1,7 @@
 import { SPHERE_NAMES, type SphereName } from '../../types';
 import type { EssencePool } from '../../types/influence';
-
-const SPHERE_ICONS: Record<SphereName, string> = {
-  force: '⚡', matter: '🪨', energy: '🔥', life: '🌿',
-  mind: '🧠', spirit: '👻', time: '⏳', entropy: '🌀',
-};
-
-const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#d4a574', matter: '#9d7b5a', energy: '#e87534', life: '#7cb342',
-  mind: '#9c27b0', spirit: '#5c6bc0', time: '#00bcd4', entropy: '#b71c1c',
-};
+import { SphereIcon } from '../shared/SphereIcon';
+import { getSphereColor } from '../../data/sphereIcons';
 
 interface EssencePanelProps {
   pool: EssencePool;
@@ -50,11 +42,11 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
           const pct = Math.min((value / maxEssence) * 100, 100);
           const isPrimary = sphere === primarySphere;
           const isSecondary = sphere === secondarySphere;
-          const color = SPHERE_COLORS[sphere];
+          const color = getSphereColor(sphere);
 
           return (
             <div key={sphere} className="flex items-center gap-2">
-              <span className="text-sm w-5 text-center">{SPHERE_ICONS[sphere]}</span>
+              <SphereIcon sphereName={sphere} size="1rem" className="w-5 text-center" />
               <div className="flex-1 h-3 rounded-full bg-stone-800/80 overflow-hidden relative">
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"

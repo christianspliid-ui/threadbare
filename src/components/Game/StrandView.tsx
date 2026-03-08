@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type {
   PresenceStrandData,
   DesiresStrandData,
@@ -8,6 +8,7 @@ import type {
   FearsStrandData,
   ValueInsight,
 } from '../../engine/strands';
+import { STRAND_COLORS, SENTIMENT_POSITIVE, SENTIMENT_NEGATIVE, SENTIMENT_NEUTRAL } from '../../data/uiColorPalette';
 
 type StrandName = 'Presence' | 'Desires' | 'Bonds' | 'Ambitions' | 'Beliefs' | 'Fears';
 
@@ -31,15 +32,6 @@ const STRAND_ICONS: Record<StrandName, string> = {
   Ambitions: '⭐',
   Beliefs: '📜',
   Fears: '🌑',
-};
-
-const STRAND_COLORS: Record<StrandName, string> = {
-  Presence: '#d4a574',
-  Desires: '#e87534',
-  Bonds: '#5c6bc0',
-  Ambitions: '#eab308',
-  Beliefs: '#7cb342',
-  Fears: '#b71c1c',
 };
 
 interface InsightListProps {
@@ -96,8 +88,8 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
   const strandNames: StrandName[] = ['Presence', 'Desires', 'Bonds', 'Ambitions', 'Beliefs', 'Fears'];
   const activeColor = STRAND_COLORS[activeStrand];
 
-  // Render content based on active strand
-  function renderContent() {
+  // Memoize renderContent to avoid re-evaluating all 6 branches on every render
+  const renderedContent = useMemo(() => {
     switch (activeStrand) {
       case 'Presence': {
         const data = strands.presence;
@@ -203,7 +195,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
                 <div className="space-y-2">
                   {data.relationships.map((rel) => {
                     const sentimentColor =
-                      rel.sentiment > 0.3 ? '#10b981' : rel.sentiment < -0.3 ? '#dc2626' : '#a89968';
+                      rel.sentiment > 0.3 ? SENTIMENT_POSITIVE : rel.sentiment < -0.3 ? SENTIMENT_NEGATIVE : SENTIMENT_NEUTRAL;
 
                     return (
                       <div key={rel.targetId} className="space-y-1">
@@ -283,7 +275,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
       default:
         return null;
     }
-  }
+  }, [activeStrand, strands, activeColor]);
 
   return (
     <div
@@ -311,8 +303,9 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
           </div>
           <button
             onClick={onClose}
+            aria-label="Close Psyche Strands"
+            title="Close (Esc)"
             className="text-xl text-amber-200/60 hover:text-amber-100 transition-colors"
-            aria-label="✕"
           >
             ✕
           </button>
@@ -348,7 +341,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto px-6 py-4 text-amber-100/90">
-          {renderContent()}
+          {renderedContent}
         </div>
       </div>
     </div>
