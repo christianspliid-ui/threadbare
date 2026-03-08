@@ -6,7 +6,27 @@
  */
 
 import type { TickEvent, ChronicleEntry } from '../src/types/gameState';
-import type { TraceEntry } from '../src/types/trace';
+import type {
+  TraceEntry,
+  ActionSelectionTrace,
+  NarrativeGenerationTrace,
+  ContextHarvestTrace,
+  DilemmaResolutionTrace,
+  TickSummaryTrace,
+} from '../src/types/trace';
+
+// ─── Constants ────────────────────────────────────────────────────
+
+export const DEFAULT_GROUP_SIZE = 10;
+export const DEFAULT_MIN_SIGNIFICANCE = 0.3;
+export const PROSE_PREVIEW_LENGTH = 200;
+const CATEGORY_ORDER = [
+  'action_selection',
+  'narrative_generation',
+  'context_harvest',
+  'dilemma_resolution',
+  'tick_summary',
+] as const;
 
 // ─── Types ────────────────────────────────────────────────────
 
@@ -65,7 +85,8 @@ export function formatDashboard(
 
   // Table rows
   for (const snap of snapshots) {
-    const repStr = `${snap.reputationStats.min.toFixed(1)}/${snap.reputationStats.median.toFixed(1)}/${snap.reputationStats.max.toFixed(1)}`;
+    const rep = snap.reputationStats ?? { min: 0, median: 0, max: 0 };
+    const repStr = `${(rep.min ?? 0).toFixed(1)}/${(rep.median ?? 0).toFixed(1)}/${(rep.max ?? 0).toFixed(1)}`;
     lines.push(
       `| ${snap.tick} | ${snap.doomStage} | ${snap.agentCount} | ${snap.essenceTotal.toFixed(1)} | ${snap.mandateProgress.toFixed(1)} | ${repStr} | ${snap.cultureCount} |`
     );
@@ -180,15 +201,7 @@ export function formatTraceDeepDive(traces: TraceEntry[]): string {
   }
 
   // Process each category in defined order
-  const categoryOrder = [
-    'action_selection',
-    'narrative_generation',
-    'context_harvest',
-    'dilemma_resolution',
-    'tick_summary',
-  ];
-
-  for (const category of categoryOrder) {
+  for (const category of CATEGORY_ORDER) {
     if (!groups[category] || groups[category].length === 0) continue;
 
     lines.push(`### ${formatCategoryName(category)}`);
@@ -197,7 +210,7 @@ export function formatTraceDeepDive(traces: TraceEntry[]): string {
     for (const trace of groups[category]) {
       switch (trace.category) {
         case 'action_selection': {
-          const t = trace as any; // ActionSelectionTrace
+          const t = trace as ActionSelectionTrace;
           const agentLabel = t.agentId ? ` (Agent: ${t.agentId})` : '';
           lines.push(`**Tick ${t.tick}${agentLabel}**`);
           lines.push(`- Final Pick: ${t.finalPick.actionName}`);
@@ -209,16 +222,16 @@ export function formatTraceDeepDive(traces: TraceEntry[]): string {
         }
 
         case 'narrative_generation': {
-          const t = trace as any; // NarrativeGenerationTrace
+          const t = trace as NarrativeGenerationTrace;
           const agentLabel = t.agentId ? ` (Agent: ${t.agentId})` : '';
           lines.push(`**Tick ${t.tick}${agentLabel}** (${t.tier})`);
-          const prosePreview = t.finalProse.substring(0, 200).replace(/\n/g, ' ');
-          lines.push(`- ${prosePreview}${t.finalProse.length > 200 ? '...' : ''}`);
+          const prosePreview = t.finalProse.substring(0, PROSE_PREVIEW_LENGTH).replace(/\n/g, ' ');
+          lines.push(`- ${prosePreview}${t.finalProse.length > PROSE_PREVIEW_LENGTH ? '...' : ''}`);
           break;
         }
 
         case 'context_harvest': {
-          const t = trace as any; // ContextHarvestTrace
+          const t = trace as ContextHarvestTrace;
           const agentLabel = t.agentId ? ` (Agent: ${t.agentId})` : '';
           lines.push(`**Tick ${t.tick}${agentLabel}**`);
           lines.push(`- Harvested: ${t.harvestedCount} objects | Opposition Tension: ${t.oppositionTension.toFixed(2)}`);
@@ -232,7 +245,7 @@ export function formatTraceDeepDive(traces: TraceEntry[]): string {
         }
 
         case 'dilemma_resolution': {
-          const t = trace as any; // DilemmaResolutionTrace
+          const t = trace as DilemmaResolutionTrace;
           lines.push(`**Tick ${t.tick}** (Agent vs ${t.targetId})`);
           lines.push(`- Actor: ${t.actorMove} | Target: ${t.targetMove}`);
           lines.push(`- Outcome: ${t.outcome}`);
@@ -241,7 +254,7 @@ export function formatTraceDeepDive(traces: TraceEntry[]): string {
         }
 
         case 'tick_summary': {
-          const t = trace as any; // TickSummaryTrace
+          const t = trace as TickSummaryTrace;
           lines.push(`**Tick ${t.tick}**`);
           lines.push(`- Agents Processed: ${t.agentsProcessed} | Doom Stage: ${t.doomStage}`);
           lines.push(`- Essence: ${t.essenceTotal.toFixed(1)} | Mandate: ${t.mandateProgress.toFixed(1)}`);
@@ -282,7 +295,7 @@ export function formatFullReport(data: PlaytestReportData): string {
 
   // Narrative Log
   lines.push(
-    formatNarrativeLog(data.allEvents, 10, 0.3, data.chronicleEntries)
+    formatNarrativeLog(data.allEvents, DEFAULT_GROUP_SIZE, DEFAULT_MIN_SIGNIFICANCE, data.chronicleEntries)
   );
   lines.push('');
 
