@@ -12,13 +12,13 @@ import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
-import { NarrativeFeed } from './NarrativeFeed';
+import { ActionDrawer } from './ActionDrawer';
+import { NarrativeLog } from './NarrativeLog';
 import { RivalPanel } from './RivalPanel';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { AgentProfileModal } from './AgentProfileModal';
-import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ScryOverlay } from './ScryOverlay';
@@ -83,8 +83,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   // ── Agent interaction hook ──
   const {
     selectedAgentId,
-    wheelVisible,
-    wheelFeedback,
+    drawerOpen,
     pendingIntervention,
     profileModalAgentId,
     retinueAgents,
@@ -97,12 +96,12 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
-    handleWheelDismiss,
+    handleDrawerClose,
     handleStrandClose,
     handleBackFromAgentDetail,
     handleViewPsyche,
-    handleOpenWheel,
-    handleAvatarWheelClick,
+    handleOpenDrawer,
+    handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
   } = useAgentInteraction({
@@ -130,7 +129,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   });
 
   return (
-    <div className="min-h-screen bg-stone-900 flex flex-col">
+    <div className="h-screen bg-stone-900 flex flex-col overflow-hidden">
       {/* Doom + Mandate bar at top */}
       <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 flex gap-4 relative">
         <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
@@ -199,6 +198,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 p-4 flex items-center justify-center overflow-hidden relative">
+            {/* NarrativeLog overlay */}
+            <NarrativeLog events={gameState.recentEvents} />
             {viewLevel === 'world' && (
               <>
                 <HexMap
@@ -224,53 +225,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   sphereColor={sphereColor}
                   onCenterOnAvatar={handleCenterOnAvatar}
                   onMoveClick={handleAvatarMoveClick}
-                  onWheelClick={handleAvatarWheelClick}
+                  onWheelClick={handleAvatarActionClick}
                   onScryClick={handleAvatarScryClick}
                   moveMode={moveMode}
                 />
-
-                {/* Agent Wheel overlay — centered modal like ScryOverlay */}
-                {wheelSlots && wheelVisible && selectedAgentId && (
-                  <div
-                    className="fixed inset-0 z-50 flex items-center justify-center"
-                    style={{ pointerEvents: 'auto' }}
-                    data-testid="wheel-overlay"
-                  >
-                    {/* Backdrop click to dismiss */}
-                    <div
-                      className="absolute inset-0 bg-black/40"
-                      onClick={handleWheelDismiss}
-                      data-testid="wheel-backdrop"
-                    />
-                    <svg
-                      width="320"
-                      height="320"
-                      viewBox="0 0 320 320"
-                      className="relative z-10"
-                      data-testid="wheel-svg"
-                    >
-                      <AgentWheel
-                        slots={wheelSlots}
-                        agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
-                        agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
-                        cx={160}
-                        cy={160}
-                        onSlotClick={handleWheelSlotClick}
-                        onDismiss={handleWheelDismiss}
-                      />
-                    </svg>
-                  </div>
-                )}
-
-                {/* Wheel feedback message (when no agents available) */}
-                {wheelFeedback && (
-                  <div
-                    className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-red-900/80 border border-red-700 rounded-lg px-6 py-4 text-amber-100 text-center max-w-xs shadow-lg z-30"
-                    data-testid="wheel-feedback"
-                  >
-                    {wheelFeedback}
-                  </div>
-                )}
 
                 {/* Intervention confirmation popover */}
                 {pendingIntervention && wheelSlots && (() => {
@@ -336,10 +294,17 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             )}
           </div>
 
-          {/* Narrative feed at bottom */}
-          <div className="border-t border-amber-900/30 bg-stone-800/80 p-3">
-            <NarrativeFeed events={gameState.recentEvents} />
-          </div>
+          {/* ActionDrawer overlay */}
+          {wheelSlots && drawerOpen && selectedAgentId && (
+            <ActionDrawer
+              open={drawerOpen}
+              slots={wheelSlots}
+              agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
+              agentTier={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+              onSlotClick={handleWheelSlotClick}
+              onClose={handleDrawerClose}
+            />
+          )}
         </div>
 
         {/* Right sidebar - Debug Panel OR Agent Info Card/Retinue */}

@@ -16,6 +16,7 @@ describe('AgentWheel', () => {
     detectionRisk: 0,
     sphere: null,
     interventionType: null,
+    description: 'Observe agent psyche and situation',
   };
 
   const mockUnavailableSlot: WheelSlot = {
@@ -29,6 +30,7 @@ describe('AgentWheel', () => {
     detectionRisk: 0.8,
     sphere: 'force',
     interventionType: 'coincidence',
+    description: 'Alter environmental prerequisites',
   };
 
   const mockDreamSlot: WheelSlot = {
@@ -42,6 +44,7 @@ describe('AgentWheel', () => {
     detectionRisk: 0.3,
     sphere: 'mind',
     interventionType: 'dream',
+    description: 'Manipulate selection probabilities during sleep',
   };
 
   const mockCenterSlot: WheelSlot = {
@@ -55,6 +58,7 @@ describe('AgentWheel', () => {
     detectionRisk: 0,
     sphere: null,
     interventionType: null,
+    description: '',
   };
 
   it('renders slot labels', () => {
