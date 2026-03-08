@@ -107,7 +107,7 @@ describe('ScryOverlay', () => {
 
   it('renders close button with aria-label', () => {
     renderWithContext();
-    const closeBtn = screen.getByLabelText('close');
+    const closeBtn = screen.getByLabelText('Close Ascendant Scry');
     expect(closeBtn).toBeInTheDocument();
   });
 
@@ -115,7 +115,7 @@ describe('ScryOverlay', () => {
     const onClose = vi.fn();
     const context = { ...baseContextValue, onClose };
     renderWithContext(context);
-    const closeBtn = screen.getByLabelText('close');
+    const closeBtn = screen.getByLabelText('Close Ascendant Scry');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalled();
   });
@@ -247,7 +247,7 @@ describe('ScryOverlay', () => {
 
     expect(screen.getByText('Choose Agent')).toBeInTheDocument();
 
-    const closeBtn = screen.getByLabelText('close picker');
+    const closeBtn = screen.getByLabelText('Close Agent Picker');
     fireEvent.click(closeBtn);
 
     expect(screen.queryByText('Choose Agent')).not.toBeInTheDocument();
