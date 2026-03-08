@@ -10,6 +10,7 @@ import {
   ARTIFACT_LORE_PATTERNS,
   CULTURE_NAME_FRAGMENTS,
   CULTURAL_PROSE_PALETTES,
+  CULTURAL_TENSION_TEMPLATES,
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
@@ -908,6 +909,47 @@ describe('culture-content', () => {
       expect(ids).toContain('spirit');
       expect(ids).toContain('time');
       expect(ids).toContain('entropy');
+    });
+  });
+
+  // ─── Cultural Tension Templates Tests ────────────────────────────
+
+  describe('CULTURAL_TENSION_TEMPLATES', () => {
+    it('should have 4 tension type keys', () => {
+      expect(Object.keys(CULTURAL_TENSION_TEMPLATES)).toHaveLength(4);
+    });
+
+    it('should have 12 total templates (4 types × 3 variants)', () => {
+      expect(Object.values(CULTURAL_TENSION_TEMPLATES).flat()).toHaveLength(12);
+    });
+
+    it('each variant should be a non-empty string with minimum length', () => {
+      for (const [type, variants] of Object.entries(CULTURAL_TENSION_TEMPLATES)) {
+        expect(Array.isArray(variants), `${type} variants is an array`).toBe(true);
+        expect(variants.length, `${type} has 3 variants`).toBe(3);
+        for (const v of variants) {
+          expect(typeof v, `${type} variant is a string`).toBe('string');
+          expect(v.length, `${type} variant has minimum length`).toBeGreaterThan(10);
+        }
+      }
+    });
+
+    it('should have mismatch, conquest, dual, and fanaticism tension types', () => {
+      expect(CULTURAL_TENSION_TEMPLATES).toHaveProperty('mismatch');
+      expect(CULTURAL_TENSION_TEMPLATES).toHaveProperty('conquest');
+      expect(CULTURAL_TENSION_TEMPLATES).toHaveProperty('dual');
+      expect(CULTURAL_TENSION_TEMPLATES).toHaveProperty('fanaticism');
+    });
+
+    it('each template should have Threadbare literary tone', () => {
+      const allVariants = Object.values(CULTURAL_TENSION_TEMPLATES).flat();
+      const darkWords = ['shadow', 'dark', 'thread', 'break', 'fracture', 'strain', 'ache', 'worn', 'crack', 'weave', 'bitter', 'cold'];
+
+      // At least 8 of 12 variants should contain at least one dark/Threadbare tone word
+      const threadbareCount = allVariants.filter(v =>
+        darkWords.some(word => v.toLowerCase().includes(word))
+      ).length;
+      expect(threadbareCount).toBeGreaterThanOrEqual(8);
     });
   });
 });

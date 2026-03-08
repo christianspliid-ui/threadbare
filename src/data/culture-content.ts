@@ -1957,3 +1957,40 @@ export const CULTURAL_PROSE_PALETTES: Record<string, CulturalProsePalette> = {
     oaths: ['By the final dissolution', 'Let all striving cease when the time comes'],
   },
 };
+
+// ─── Cultural Tension Event Templates ────────────────────────────
+
+/**
+ * Narrative templates for cultural tension events (4 types × 3 variants).
+ * Used by narrative context builder to generate prose when cultural tension is detected.
+ *
+ * Placeholders: {actor}, {culture}, {location}, {adj}
+ * Tone: dark, literary, Threadbare aesthetic — tension feels like slow-building pressure,
+ * not sudden explosion. Threads breaking, fractures in the cultural fabric.
+ */
+export const CULTURAL_TENSION_TEMPLATES: Record<string, string[]> = {
+  mismatch: [
+    '{actor} carries the threads of {culture} in their heart, yet {location} wears different colors now. The fracture deepens with each breath.',
+    'The shadow of belonging weighs heavy on {actor} — they are {adj} with a culture that {location} has turned from. The threads strain.',
+    '{actor} remembers the old ways of {culture}, but {location} has broken those threads. They wear their displacement like cold stone.',
+  ],
+
+  conquest: [
+    '{location} bears the scars of conquest — {culture} once flourished here, but new masters have woven their own threads over the bones of what was.',
+    'The ancient roots of {culture} run deep beneath {location}, but fresh threads of domination wind through the soil. The old names are fading.',
+    'A {adj} silence falls when {culture} is spoken in {location}. The conquest is complete, yet the threads of the conquered will not fully dissolve.',
+  ],
+
+  dual: [
+    '{actor} is caught between two threads — {culture} pulls at them with equal strength, and the fracture runs through their every choice.',
+    'Two cultures war quietly within {actor}. Neither yields to the other, and the tension threads tighter with each passing season.',
+    '{actor} speaks in the voices of two {adj} peoples, and the strain of holding both is written in the lines of their face. The threads will not weave.',
+  ],
+
+  fanaticism: [
+    '{actor} clings to {culture} with a grip that turns white-knuckled. Their fervor is a thread pulled so tight it begins to break. {location} watches with wary eyes.',
+    'The devotion of {actor} to {culture} burns with an intensity that {adj} threatens everyone near it. They see heresy in every shadow.',
+    '{actor} sees {culture} as the only truth worth clinging to, and their zealotry carves deep grooves through {location}. The threads are about to snap.',
+  ],
+};
+
