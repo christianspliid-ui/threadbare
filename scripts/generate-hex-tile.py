@@ -11,7 +11,7 @@ Usage:
   python scripts/generate-hex-tile.py --batch
 
   # Custom prompt:
-  python scripts/generate-hex-tile.py --prompt "custom prompt here" --output Assets/biomes/custom.png
+  python scripts/generate-hex-tile.py --prompt "custom prompt here" --output public/hex-tiles/custom.png
 """
 
 import argparse
@@ -407,7 +407,7 @@ def generate_tile(biome: str, color: str, features: str | None, prompt_override:
     if output:
         out_path = Path(output)
     else:
-        out_path = Path(__file__).parent.parent / "Assets" / "biomes" / f"{biome_slug}.png"
+        out_path = Path(__file__).parent.parent / "public" / "hex-tiles" / f"{biome_slug}.png"
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
 

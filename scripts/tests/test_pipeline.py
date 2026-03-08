@@ -209,3 +209,15 @@ def test_cli_help_shows_category():
     assert "--category" in result.stdout
     assert "--sphere" in result.stdout
     assert "--audit" in result.stdout
+
+
+def test_terrain_default_output_is_public_hex_tiles():
+    """Default terrain output should be public/hex-tiles/, not Assets/biomes/."""
+    source = Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text()
+    # Find the generate_tile function body and check its default output path
+    # The old path was Assets/biomes, should now be public/hex-tiles
+    assert 'Assets' not in source or '"Assets"' not in source or "'Assets'" not in source, \
+        "generate-hex-tile.py should not reference Assets/ as output"
+    # The default output in generate_tile should reference public/hex-tiles
+    assert '"public" / "hex-tiles"' in source or "'public' / 'hex-tiles'" in source, \
+        "generate_tile default output should reference public/hex-tiles/"
