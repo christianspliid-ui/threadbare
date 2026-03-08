@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getHexTileUrl, TERRAIN_TILE_MAP } from '../hex-tile-assets';
+import { getHexTileUrl, TERRAIN_TILE_MAP, getMagicOverlayUrl, MAGIC_OVERLAY_MAP } from '../hex-tile-assets';
 import type { TerrainType } from '../../types';
 
 const ALL_TERRAIN_TYPES: TerrainType[] = [
@@ -35,5 +35,41 @@ describe('hex-tile-assets', () => {
     for (const terrain of ALL_TERRAIN_TYPES) {
       expect(getHexTileUrl(terrain)).toMatch(/\.png$/);
     }
+  });
+});
+
+describe('MAGIC_OVERLAY_MAP', () => {
+  it('has entries for all 8 creation spheres', () => {
+    const creationSpheres = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
+    for (const sphere of creationSpheres) {
+      expect(MAGIC_OVERLAY_MAP[sphere as keyof typeof MAGIC_OVERLAY_MAP]).toBeDefined();
+    }
+  });
+
+  it('has entries for all 4 foundation spheres', () => {
+    const foundationSpheres = ['chaos', 'order', 'light', 'darkness'];
+    for (const sphere of foundationSpheres) {
+      expect(MAGIC_OVERLAY_MAP[sphere as keyof typeof MAGIC_OVERLAY_MAP]).toBeDefined();
+    }
+  });
+
+  it('has exactly 12 entries', () => {
+    expect(Object.keys(MAGIC_OVERLAY_MAP)).toHaveLength(12);
+  });
+
+  it('all filenames follow magic-{sphere}.png pattern', () => {
+    for (const [sphere, filename] of Object.entries(MAGIC_OVERLAY_MAP)) {
+      expect(filename).toBe(`magic-${sphere}.png`);
+    }
+  });
+});
+
+describe('getMagicOverlayUrl', () => {
+  it('returns correct URL for a creation sphere', () => {
+    expect(getMagicOverlayUrl('force')).toBe('/hex-tiles/magic-force.png');
+  });
+
+  it('returns correct URL for a foundation sphere', () => {
+    expect(getMagicOverlayUrl('order')).toBe('/hex-tiles/magic-order.png');
   });
 });
