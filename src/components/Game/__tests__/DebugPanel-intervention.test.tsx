@@ -164,7 +164,8 @@ describe('DebugPanel — intervention_effect renderer', () => {
       sphere: 'shadow',
       effects: ["greed_generosity -0.08 for 5 ticks (D'Vorth's burden)"],
       consequenceMessage: "The god's whisper echoes: 'Release thy grip.'",
-      ticksRemaining: 5,
+      initialStrength: 0.50,
+      maxDuration: 20,
     });
 
     render(<DebugPanel currentTick={12} onClose={() => {}} />);
