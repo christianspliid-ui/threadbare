@@ -21,6 +21,8 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SphereName } from '../types';
 import type { AgendaTemplate } from '../data/agenda-content';
 import { DIVINE_INFLUENCE_CONSTANTS, getConsequenceMessage } from '../data/intervention-feedback-content';
+import { getAgendaConsequenceMessage, type AgendaConsequenceCategory } from '../data/agenda-consequence-templates';
+import { SPHERE_VOCABULARY } from '../data/narrative-content';
 import { DECAY_CONSTANTS, getCurrentStrength } from './decayCurve';
 
 // ─── Type Definitions ────────────────────────────────────────────
@@ -181,6 +183,76 @@ function getDomainLabel(seed: number): string {
   const domains = ['might', 'wisdom', 'skill', 'cunning', 'grace'];
   const idx = Math.abs(seed) % domains.length;
   return domains[idx];
+}
+
+/**
+ * Map a value pair to its agenda category (left pole name).
+ * Used for agenda consequence messages.
+ */
+function getAgendaCategory(pair: ValuePair): AgendaConsequenceCategory {
+  const polesMap: Record<ValuePair, AgendaConsequenceCategory> = {
+    ambition_contentment: 'ambition',
+    courage_prudence: 'courage',
+    cruelty_compassion: 'compassion',
+    cunning_honesty: 'cunning',
+    devotion_independence: 'devotion',
+    loyalty_treachery: 'loyalty',
+    tradition_innovation: 'tradition',
+    dominance_humility: 'dominance',
+    wrath_patience: 'wrath',
+    greed_generosity: 'greed',
+  };
+  return polesMap[pair];
+}
+
+/**
+ * Get a sphere adjective from SPHERE_VOCABULARY.
+ * Uses seeded selection from the adjectives array.
+ */
+function getSphereAdjective(sphere: SphereName, seed: number): string {
+  const vocab = SPHERE_VOCABULARY[sphere];
+  if (!vocab?.adjectives?.length) {
+    return 'mysterious';
+  }
+  const idx = Math.abs(seed) % vocab.adjectives.length;
+  return vocab.adjectives[idx];
+}
+
+/**
+ * Generate a consequence message, using agenda-specific version if agenda is present.
+ */
+function generateConsequenceMessage(
+  interventionType: InterventionType,
+  graph: WorldGraph,
+  actorId: string,
+  actorName: string,
+  sphere: SphereName,
+  seed: number,
+  valueDirections: string[],
+  agenda?: AgendaTemplate,
+): string {
+  if (agenda) {
+    const actorNode = graph.getNode(actorId);
+    const archetype = (actorNode?.properties?.narrativeArchetype as string) ?? 'warrior';
+    const category = getAgendaCategory(agenda.valuePair);
+    return getAgendaConsequenceMessage(
+      interventionType,
+      category,
+      {
+        agentName: actorName,
+        archetype,
+        sphereAdj: getSphereAdjective(sphere, seed),
+        agendaHook: agenda.narrativeHook,
+      },
+      seed,
+    );
+  } else {
+    return getConsequenceMessage(
+      interventionType as any,
+      { agentName: actorName, valueDirection: valueDirections[0] ?? 'a new path' },
+      seed,
+    );
+  }
 }
 
 // ─── Main Intervention Effects Engine ────────────────────────────
@@ -365,10 +437,15 @@ function handleDream(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'dream',
-    { agentName: actorName, valueDirection: directions[0] ?? 'a new path' },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    directions,
+    agenda,
   );
 
   emitTrace({
@@ -438,10 +515,15 @@ function handlePersuade(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'persuade',
-    { agentName: actorName, valueDirection: directions[0] ?? 'a new path' },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    directions,
+    agenda,
   );
 
   emitTrace({
@@ -515,10 +597,15 @@ function handleDeceive(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'deceive',
-    { agentName: actorName, valueDirection: directions[0] ?? 'a false path' },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    directions,
+    agenda,
   );
 
   emitTrace({
@@ -579,10 +666,15 @@ function handleIntimidate(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'intimidate',
-    { agentName: actorName },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    [],
+    agenda,
   );
 
   emitTrace({
@@ -638,10 +730,15 @@ function handleInspire(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'inspire_intervention',
-    { agentName: actorName, domain },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    [],
+    agenda,
   );
 
   emitTrace({
@@ -702,11 +799,15 @@ function handleCoincidence(
   };
   addDivineInfluence(graph, actorId, influence);
 
-  const locName = locNode?.name ?? 'this place';
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'coincidence',
-    { agentName: actorName, sphere, location: locName },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    [],
+    agenda,
   );
 
   emitTrace({
@@ -762,10 +863,15 @@ function handleOmen(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'omen',
-    { agentName: actorName },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    [],
+    agenda,
   );
 
   emitTrace({
@@ -823,15 +929,15 @@ function handleAfflictBless(
 
   addDivineInfluence(graph, actorId, influence);
 
-  const msg = getConsequenceMessage(
+  const msg = generateConsequenceMessage(
     'afflict_bless',
-    {
-      agentName: actorName,
-      effectType,
-      effectDirection,
-      domain,
-    },
+    graph,
+    actorId,
+    actorName,
+    sphere,
     seed,
+    [],
+    agenda,
   );
 
   emitTrace({
