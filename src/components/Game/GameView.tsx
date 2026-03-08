@@ -88,6 +88,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     pendingIntervention,
     profileModalAgentId,
     playingCardId,
+    selectedAgenda,
     retinueAgents,
     agentDetail,
     agentInfoCard,
@@ -163,7 +164,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
-        <nav aria-label="Game status" className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-900/30 bg-stone-800/90">
+        <nav aria-label="Game status" className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-900/30 bg-stone-900/95">
           {/* Ascendant info */}
           <div className="text-center py-2">
             <h1
@@ -251,6 +252,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                       rangeStatus={slot.rangeStatus}
                       hexDistance={slot.hexDistance}
                       description={INTERVENTION_DEFINITIONS[pendingIntervention.interventionType].description}
+                      agendaName={selectedAgenda?.name}
+                      agendaNarrativeHook={selectedAgenda?.narrativeHook}
                       onConfirm={handleInterventionConfirm}
                       onCancel={handleInterventionCancel}
                     />
@@ -322,7 +325,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             onClose={handleToggleDebug}
           />
         ) : (
-          <div data-testid="right-sidebar" className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto">
+          <div data-testid="right-sidebar" className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-900/95 overflow-y-auto">
             {agentInfoCard ? (
               <AgentInfoCard
                 card={agentInfoCard}
