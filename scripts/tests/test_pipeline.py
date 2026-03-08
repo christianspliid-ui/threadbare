@@ -1,4 +1,5 @@
 """Tests for generate-hex-tile.py pipeline functions."""
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -139,3 +140,72 @@ def test_generate_magic_tile_pipeline():
 
         loaded = Image.open(out_path)
         assert loaded.mode == "RGBA"
+
+
+def test_audit_detects_missing_terrain():
+    """Audit should report terrain tiles missing from target directory."""
+    ns = {}
+    exec(
+        Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text(),
+        ns,
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        target = Path(tmpdir)
+        (target / "ocean.png").write_bytes(b"fake png")
+
+        report = ns["audit_assets"](target)
+
+        assert report["missing_terrain"]
+        assert "dense-forest.png" in [Path(p).name for p in report["missing_terrain"]]
+        assert "ocean.png" not in [Path(p).name for p in report["missing_terrain"]]
+
+
+def test_audit_detects_missing_magic():
+    """Audit should report magic overlays missing from target directory."""
+    ns = {}
+    exec(
+        Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text(),
+        ns,
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        target = Path(tmpdir)
+        report = ns["audit_assets"](target)
+        assert len(report["missing_magic"]) == 12
+        assert "magic-force.png" in [Path(p).name for p in report["missing_magic"]]
+
+
+def test_audit_detects_orphaned_files():
+    """Audit should report files not in any registry."""
+    ns = {}
+    exec(
+        Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text(),
+        ns,
+    )
+    with tempfile.TemporaryDirectory() as tmpdir:
+        target = Path(tmpdir)
+        (target / "mystery-tile.png").write_bytes(b"fake")
+
+        report = ns["audit_assets"](target)
+        assert "mystery-tile.png" in report["orphaned"]
+
+
+def test_cli_audit_flag_runs():
+    """--audit flag should run without error and produce output."""
+    result = subprocess.run(
+        ["python", str(Path(__file__).parent.parent / "generate-hex-tile.py"), "--audit"],
+        capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == 0
+    assert "ASSET AUDIT" in result.stdout
+
+
+def test_cli_help_shows_category():
+    """--help should mention --category flag."""
+    result = subprocess.run(
+        ["python", str(Path(__file__).parent.parent / "generate-hex-tile.py"), "--help"],
+        capture_output=True, text=True, timeout=10,
+    )
+    assert result.returncode == 0
+    assert "--category" in result.stdout
+    assert "--sphere" in result.stdout
+    assert "--audit" in result.stdout

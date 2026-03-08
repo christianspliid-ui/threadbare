@@ -511,32 +511,145 @@ def generate_magic_tile(sphere: str, output: Path | None, size: int,
 
 
 # ---------------------------------------------------------------------------
+# Asset audit
+# ---------------------------------------------------------------------------
+
+def audit_assets(target_dir: Path | None = None) -> dict:
+    """Compare registries against files in target directory.
+
+    Returns dict with keys: missing_terrain, missing_magic, orphaned, size_mismatches.
+    """
+    if target_dir is None:
+        target_dir = Path(__file__).parent.parent / "public" / "hex-tiles"
+
+    # Build expected file sets
+    expected_terrain = set()
+    for biome, info in BIOME_REGISTRY.items():
+        filename = biome.lower().replace(" ", "-") + ".png"
+        expected_terrain.add(filename)
+
+    expected_magic = set()
+    for sphere in MAGIC_REGISTRY:
+        expected_magic.add(f"magic-{sphere}.png")
+
+    all_expected = expected_terrain | expected_magic
+
+    # Scan actual files
+    actual_files = {f.name for f in target_dir.glob("*.png")} if target_dir.exists() else set()
+
+    # Missing
+    missing_terrain = sorted(expected_terrain - actual_files)
+    missing_magic = sorted(expected_magic - actual_files)
+
+    # Orphaned (in directory but not in any registry)
+    # Exclude overlay-* and clear-* files (managed separately)
+    known_prefixes = ("overlay-", "clear-")
+    orphaned = sorted(
+        f for f in actual_files - all_expected
+        if not any(f.startswith(p) for p in known_prefixes)
+    )
+
+    # Size mismatches
+    size_mismatches = []
+    for filename in actual_files & all_expected:
+        filepath = target_dir / filename
+        try:
+            img = Image.open(filepath)
+            if img.size != (TILE_SIZE, TILE_SIZE):
+                size_mismatches.append((filename, img.size))
+        except Exception:
+            size_mismatches.append((filename, "unreadable"))
+
+    return {
+        "missing_terrain": missing_terrain,
+        "missing_magic": missing_magic,
+        "orphaned": orphaned,
+        "size_mismatches": size_mismatches,
+    }
+
+
+def print_audit(target_dir: Path | None = None):
+    """Print a human-readable asset audit report."""
+    report = audit_assets(target_dir)
+
+    print("=== ASSET AUDIT ===")
+    print()
+
+    if report["missing_terrain"]:
+        print(f"Missing terrain tiles ({len(report['missing_terrain'])}):")
+        for f in report["missing_terrain"]:
+            print(f"  ✗ {f}")
+    else:
+        print(f"Terrain tiles: all {len(BIOME_REGISTRY)} present ✓")
+
+    print()
+
+    if report["missing_magic"]:
+        print(f"Missing magic overlays ({len(report['missing_magic'])}):")
+        for f in report["missing_magic"]:
+            print(f"  ✗ {f}")
+    else:
+        print(f"Magic overlays: all {len(MAGIC_REGISTRY)} present ✓")
+
+    print()
+
+    if report["orphaned"]:
+        print(f"Orphaned files ({len(report['orphaned'])}):")
+        for f in report["orphaned"]:
+            print(f"  ? {f}")
+    else:
+        print("No orphaned files ✓")
+
+    if report["size_mismatches"]:
+        print()
+        print(f"Size mismatches ({len(report['size_mismatches'])}):")
+        for f, sz in report["size_mismatches"]:
+            print(f"  ! {f}: {sz} (expected {TILE_SIZE}x{TILE_SIZE})")
+
+    print()
+    total_missing = len(report["missing_terrain"]) + len(report["missing_magic"])
+    if total_missing == 0:
+        print("All assets present ✓")
+    else:
+        print(f"Total missing: {total_missing}")
+
+
+# ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Generate hex-masked terrain tiles")
+    parser = argparse.ArgumentParser(description="Generate hex-masked terrain and magic overlay tiles")
     parser.add_argument("--biome", type=str, help="Biome name (e.g. 'dense forest')")
     parser.add_argument("--color", type=str, default=None, help="Background hex color (default: from registry)")
     parser.add_argument("--features", type=str, help="Custom terrain feature description")
     parser.add_argument("--prompt", type=str, help="Full custom prompt (overrides biome/features)")
-    parser.add_argument("--output", type=str, help="Output path (default: Assets/biomes/<biome>.png)")
+    parser.add_argument("--output", type=str, help="Output path (default: public/hex-tiles/<name>.png)")
     parser.add_argument("--size", type=int, default=TILE_SIZE, help="Output image size in px")
     parser.add_argument("--no-mask", action="store_true", help="Skip hex masking (save square)")
     parser.add_argument("--raw-also", action="store_true", help="Also save the raw unmasked image")
-    parser.add_argument("--batch", action="store_true", help="Generate all built-in biomes")
-    parser.add_argument("--batch-delay", type=float, default=5.0, help="Seconds between API calls in batch mode (default: 5)")
+    parser.add_argument("--batch", action="store_true", help="Generate all items in chosen category")
+    parser.add_argument("--batch-delay", type=float, default=5.0, help="Seconds between API calls in batch mode")
+    parser.add_argument("--category", type=str, choices=["terrain", "magic"], default="terrain",
+                        help="Asset category: terrain (biome tiles) or magic (sphere overlays)")
+    parser.add_argument("--sphere", type=str, help="Sphere name for single magic overlay (e.g. 'force')")
+    parser.add_argument("--audit", action="store_true", help="Audit assets: report missing/orphaned files")
+    parser.add_argument("--batch-all", action="store_true", help="Generate ALL missing assets (terrain + magic)")
 
     args = parser.parse_args()
 
+    # Audit mode — no API key needed
+    if args.audit:
+        print_audit()
+        return
+
     # Validate
-    if not args.batch and not args.biome and not args.prompt:
-        parser.error("Provide --biome, --prompt, or --batch")
+    if not args.batch and not args.batch_all and not args.biome and not args.prompt and not args.sphere:
+        parser.error("Provide --biome, --prompt, --sphere, --batch, --batch-all, or --audit")
 
     # API key
     api_key = os.environ.get(API_KEY_ENV)
     if not api_key:
-        # Try loading from .env
         env_path = Path(__file__).parent.parent / ".env"
         if env_path.exists():
             for line in env_path.read_text().splitlines():
@@ -547,68 +660,132 @@ def main():
         print(f"Error: {API_KEY_ENV} not found in environment or .env", file=sys.stderr)
         sys.exit(1)
 
-    if args.batch:
-        # Batch mode — generate all biomes
-        biomes = list(BIOME_REGISTRY.keys())
-        total = len(biomes)
-        print(f"=== BATCH MODE: generating {total} biomes ===")
+    # Single sphere mode
+    if args.sphere:
+        sphere = args.sphere.lower()
+        if sphere not in MAGIC_REGISTRY:
+            parser.error(f"Unknown sphere '{sphere}'. Valid: {', '.join(sorted(MAGIC_REGISTRY.keys()))}")
+        generate_magic_tile(
+            sphere=sphere, output=Path(args.output) if args.output else None,
+            size=args.size, no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+        )
+        return
+
+    # Batch-all mode: generate everything missing
+    if args.batch_all:
+        report = audit_assets()
+        to_generate = []
+
+        for filename in report["missing_terrain"]:
+            biome_slug = filename.replace(".png", "")
+            for biome, info in BIOME_REGISTRY.items():
+                if biome.lower().replace(" ", "-") == biome_slug:
+                    to_generate.append(("terrain", biome))
+                    break
+
+        for filename in report["missing_magic"]:
+            sphere = filename.replace("magic-", "").replace(".png", "")
+            if sphere in MAGIC_REGISTRY:
+                to_generate.append(("magic", sphere))
+
+        if not to_generate:
+            print("All assets present — nothing to generate!")
+            return
+
+        total = len(to_generate)
+        print(f"=== BATCH-ALL: generating {total} missing assets ===")
         print(f"Delay between API calls: {args.batch_delay}s")
         print()
 
-        results = []
-        failures = []
-
-        for i, biome in enumerate(biomes, 1):
-            info = BIOME_REGISTRY[biome]
-            print(f"--- [{i}/{total}] {biome} ---")
-
+        results, failures = [], []
+        for i, (category, name) in enumerate(to_generate, 1):
+            print(f"--- [{i}/{total}] {category}: {name} ---")
             try:
-                path = generate_tile(
-                    biome=biome,
-                    color=info["color"],
-                    features=info.get("detail"),
-                    prompt_override=None,
-                    output=None,
-                    size=args.size,
-                    no_mask=args.no_mask,
-                    raw_also=args.raw_also,
-                    api_key=api_key,
-                )
-                results.append((biome, path))
+                if category == "terrain":
+                    info = BIOME_REGISTRY[name]
+                    generate_tile(
+                        biome=name, color=info["color"], features=info.get("detail"),
+                        prompt_override=None, output=None, size=args.size,
+                        no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+                    )
+                else:
+                    generate_magic_tile(
+                        sphere=name, output=None, size=args.size,
+                        no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+                    )
+                results.append((category, name))
             except Exception as e:
                 print(f"  ERROR: {e}")
-                failures.append((biome, str(e)))
-
-            # Delay between calls to avoid rate limits
+                failures.append((category, name, str(e)))
             if i < total:
-                print(f"  Waiting {args.batch_delay}s before next biome...")
+                print(f"  Waiting {args.batch_delay}s...")
                 time.sleep(args.batch_delay)
 
-        # Summary
-        print()
-        print(f"=== BATCH COMPLETE ===")
-        print(f"  Success: {len(results)}/{total}")
-        for biome, path in results:
-            print(f"    OK {biome} -> {path}")
+        print(f"\n=== BATCH-ALL COMPLETE: {len(results)}/{total} succeeded ===")
         if failures:
-            print(f"  Failed: {len(failures)}/{total}")
-            for biome, err in failures:
-                print(f"    FAIL {biome}: {err}")
+            for cat, name, err in failures:
+                print(f"  FAIL {cat}:{name}: {err}")
+        return
 
-    else:
-        # Single mode
-        color = args.color or BIOME_REGISTRY.get(args.biome, {}).get("color", "#2a3a20")
-        generate_tile(
-            biome=args.biome,
-            color=color,
-            features=args.features,
-            prompt_override=args.prompt,
-            output=args.output,
-            size=args.size,
-            no_mask=args.no_mask,
-            raw_also=args.raw_also,
-            api_key=api_key,
-        )
+    # Batch mode for a specific category
+    if args.batch:
+        if args.category == "magic":
+            spheres = list(MAGIC_REGISTRY.keys())
+            total = len(spheres)
+            print(f"=== BATCH MAGIC: generating {total} sphere overlays ===")
+            results, failures = [], []
+            for i, sphere in enumerate(spheres, 1):
+                print(f"--- [{i}/{total}] {sphere} ---")
+                try:
+                    generate_magic_tile(
+                        sphere=sphere, output=None, size=args.size,
+                        no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+                    )
+                    results.append(sphere)
+                except Exception as e:
+                    print(f"  ERROR: {e}")
+                    failures.append((sphere, str(e)))
+                if i < total:
+                    print(f"  Waiting {args.batch_delay}s...")
+                    time.sleep(args.batch_delay)
+            print(f"\n=== BATCH MAGIC COMPLETE: {len(results)}/{total} ===")
+            if failures:
+                for s, err in failures:
+                    print(f"  FAIL {s}: {err}")
+        else:
+            biomes = list(BIOME_REGISTRY.keys())
+            total = len(biomes)
+            print(f"=== BATCH TERRAIN: generating {total} biomes ===")
+            results, failures = [], []
+            for i, biome in enumerate(biomes, 1):
+                info = BIOME_REGISTRY[biome]
+                print(f"--- [{i}/{total}] {biome} ---")
+                try:
+                    generate_tile(
+                        biome=biome, color=info["color"], features=info.get("detail"),
+                        prompt_override=None, output=None, size=args.size,
+                        no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+                    )
+                    results.append(biome)
+                except Exception as e:
+                    print(f"  ERROR: {e}")
+                    failures.append((biome, str(e)))
+                if i < total:
+                    print(f"  Waiting {args.batch_delay}s...")
+                    time.sleep(args.batch_delay)
+            print(f"\n=== BATCH TERRAIN COMPLETE: {len(results)}/{total} ===")
+            if failures:
+                for b, err in failures:
+                    print(f"  FAIL {b}: {err}")
+        return
+
+    # Single biome mode (existing behavior)
+    color = args.color or BIOME_REGISTRY.get(args.biome, {}).get("color", "#2a3a20")
+    generate_tile(
+        biome=args.biome, color=color, features=args.features,
+        prompt_override=args.prompt, output=Path(args.output) if args.output else None,
+        size=args.size, no_mask=args.no_mask, raw_also=args.raw_also, api_key=api_key,
+    )
 
 
 if __name__ == "__main__":
