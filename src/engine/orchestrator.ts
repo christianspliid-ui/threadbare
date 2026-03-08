@@ -32,6 +32,8 @@ import {
 } from '../types/disposition';
 import { buildNarrativeContext } from './contextBuilder';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
+import { generateRoutineProse, generateNotableProse } from './narrative';
+import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
@@ -82,6 +84,9 @@ export function phaseDoom(state: GameState): Partial<GameState> {
 
 // ─── Phase 2: Agent Actions (simplified for vertical slice) ───────
 
+/** Notable action interval — every N ticks, force one high-significance event */
+const NOTABLE_ACTION_INTERVAL = 5;
+
 export function phaseAgentActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 31);
   const events: TickEvent[] = [];
@@ -91,28 +96,80 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
     n => n.properties.actorType === 'individual'
   );
 
-  // Each actor has a chance to do something notable per tick
+  // Each actor has a chance to do something per tick
   for (const actor of actors) {
-    if (rng() < 0.15) { // 15% chance per tick of a notable action
+    if (rng() < 0.15) { // 15% chance per tick of an action
       const spheres: SphereName[] = [...SPHERE_NAMES];
       const sphere = spheres[Math.floor(rng() * spheres.length)];
-      const significance = 0.3 + rng() * 0.5;
+      // Widened range: 0.3–0.9 (was 0.3–0.8) — ~17% chance of ≥ 0.8 (notable)
+      const significance = 0.3 + rng() * 0.6;
+
+      // Use narrative prose engine instead of static message
+      const prose = generateRoutineProse('action_resolved', {
+        actorName: actor.name,
+        sphere,
+        locationName: 'the realm',
+      }, state.seed + state.tick * 100 + actors.indexOf(actor));
 
       events.push({
         id: nextEventId(),
         tick: state.tick,
         type: 'agent_action_resolved',
-        message: `${actor.name} acted in the realm of ${sphere}.`,
+        message: prose.text,
         sphere,
         significance,
       });
+
+      // Increment sphere influence at agent's location (drives mandate progress)
+      const locationId = actor.properties.locationId as string | undefined;
+      if (locationId) {
+        const locNode = state.graph.getNode(locationId);
+        if (locNode?.properties?.sphereInfluence) {
+          const inf = locNode.properties.sphereInfluence as Record<string, number>;
+          inf[sphere] = (inf[sphere] ?? 0) + 0.02;
+        }
+      }
     }
+  }
+
+  // Periodic notable action — every NOTABLE_ACTION_INTERVAL ticks, generate one high-significance event
+  if (actors.length > 0 && state.tick % NOTABLE_ACTION_INTERVAL === 0) {
+    const notableActor = actors[Math.floor(rng() * actors.length)];
+    const spheres: SphereName[] = [...SPHERE_NAMES];
+    const sphere = spheres[Math.floor(rng() * spheres.length)];
+
+    const prose = generateNotableProse('action_critical', {
+      actorName: notableActor.name,
+      sphere,
+      locationName: 'the realm',
+    }, state.seed + state.tick * 200);
+
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'agent_action_resolved',
+      message: prose.text,
+      sphere,
+      significance: 0.85,
+    });
   }
 
   return { tickEvents: [...state.tickEvents, ...events] };
 }
 
 // ─── Phase 2.5: Dilemma Detection ──────────────────────────────────────
+
+/** Map Creation Sphere to Reach Domain for dilemma stakes computation */
+const SPHERE_TO_DOMAIN = {
+  force: 'iron',
+  matter: 'gold',
+  energy: 'veil',
+  life: 'flesh',
+  mind: 'shadow',
+  spirit: 'heart',
+  time: 'star',
+  entropy: 'shadow',
+} as const;
 
 export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
@@ -128,15 +185,14 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
 
     if (allActors.length < 2) continue;
 
-    // Pick a random second actor as the target (simplified vertical slice)
+    // Find the actor whose name matches the event message
     const rng = mulberry32(state.seed + state.tick * 41 + resolvedEvents.indexOf(event));
-    const targetIdx = Math.floor(rng() * allActors.length);
-    const targetActor = allActors[targetIdx];
+    const actor = allActors.find(a => event.message.includes(a.name)) ?? allActors[Math.floor(rng() * allActors.length)];
 
-    // Find an actor from the resolved event (use first actor in list as primary)
-    const actor = allActors[0];
-
-    if (actor.id === targetActor.id) continue;
+    // Pick a different actor as target
+    const otherActors = allActors.filter(a => a.id !== actor.id);
+    if (otherActors.length === 0) continue;
+    const targetActor = otherActors[Math.floor(rng() * otherActors.length)];
 
     // Get cooperation strategies
     const actorStrategy = (actor.properties?.cooperationStrategy ?? 'tit-for-tat') as any;
@@ -155,8 +211,9 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
     const actorHistory = relationshipEdge?.properties?.interactionLog ?? [];
     const targetHistory = relationshipEdge?.properties?.interactionLog ?? [];
 
-    // Compute stakes using event sphere as domain context
-    const domain = (event.sphere ?? 'iron') as any;
+    // Map sphere to reach domain for stakes computation
+    const sphere = event.sphere ?? 'force';
+    const domain = SPHERE_TO_DOMAIN[sphere as keyof typeof SPHERE_TO_DOMAIN] ?? 'stone';
     const sentiment = relationshipEdge?.properties?.sentiment ?? 0;
     const isFactionLeader = actor.properties?.isFactionLeader === true || targetActor.properties?.isFactionLeader === true;
     const isTerritory = false; // Simplified
@@ -517,6 +574,11 @@ export function runTick(state: GameState): GameState {
   // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
   phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.75: Agent Lifecycle (death, birth, migration)
+  s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
+  phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 7: Mandate

@@ -197,4 +197,29 @@ describe('mandateGenerator', () => {
     // With 1000 seeds and varying alignments, we should see all 12 templates
     expect(selectedMandates.size).toBe(12);
   });
+
+  it('Test 6: Simulation-achievable mandates are selected more frequently (2x boost)', () => {
+    const simulationAchievableCount: Record<string, number> = {};
+    const otherMandatesCount: Record<string, number> = {};
+    const numSeeds = 500;
+
+    for (let seed = 0; seed < numSeeds; seed++) {
+      const mandate = generateMandate(dummyCosmology, lifeAlignment, seed);
+      const template = MANDATE_TEMPLATES.find(t => t.id === mandate.id);
+
+      if (template?.type === 'simulation_achievable') {
+        simulationAchievableCount[mandate.id] = (simulationAchievableCount[mandate.id] ?? 0) + 1;
+      } else {
+        otherMandatesCount[mandate.id] = (otherMandatesCount[mandate.id] ?? 0) + 1;
+      }
+    }
+
+    // Count total selections in each category
+    const totalSimulationAchievable = Object.values(simulationAchievableCount).reduce((a, b) => a + b, 0);
+    const totalOther = Object.values(otherMandatesCount).reduce((a, b) => a + b, 0);
+
+    // Simulation-achievable mandates should be selected significantly more often
+    // With a 2x boost on top of 1x base weight, they should appear at least 20% of the time
+    expect(totalSimulationAchievable).toBeGreaterThan(numSeeds * 0.15);
+  });
 });

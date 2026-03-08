@@ -24,6 +24,7 @@ import {
   STAKES_EXTREME_SENTIMENT,
   STAKES_FACTION_LEADER,
   STAKES_TERRITORY_CONTROL,
+  STAKES_BASE,
   DILEMMA_MUTUAL_TRUST_SENTIMENT,
   DILEMMA_MUTUAL_TRUST_STRENGTH,
   DILEMMA_BETRAYAL_SENTIMENT,
@@ -481,7 +482,7 @@ describe('applyDispositionModifier', () => {
 describe('logInteraction', () => {
   it('appends new interaction to empty log', () => {
     const log: InteractionRecord[] = [];
-    const result = logInteraction(log, 1, 'cooperate', 'cooperate', 'trade', 0.3);
+    const result = logInteraction(log, 1, 'cooperate', 'cooperate', 'trade', 0.2);
     expect(result).toHaveLength(1);
     expect(result[0].tick).toBe(1);
     expect(result[0].actorMove).toBe('cooperate');
@@ -498,14 +499,14 @@ describe('logInteraction', () => {
 
   it('marks low stakes when stakes are below threshold', () => {
     const log: InteractionRecord[] = [];
-    const result = logInteraction(log, 1, 'defect', 'cooperate', 'trade', 0.4);
+    const result = logInteraction(log, 1, 'defect', 'cooperate', 'trade', 0.2);
     expect(result[0].stakes).toBe('low');
   });
 
   it('caps log at INTERACTION_LOG_CAP', () => {
     let log: InteractionRecord[] = [];
     for (let i = 0; i < INTERACTION_LOG_CAP + 5; i++) {
-      log = logInteraction(log, i, 'cooperate', 'cooperate', 'trade', 0.3);
+      log = logInteraction(log, i, 'cooperate', 'cooperate', 'trade', 0.2);
     }
     expect(log).toHaveLength(INTERACTION_LOG_CAP);
     // Oldest entries should be removed
@@ -603,48 +604,48 @@ describe('decayReputation', () => {
 // ============ GROUP 4: computeStakes Tests ============
 
 describe('computeStakes', () => {
-  it('returns 0.3 for gold domain alone', () => {
+  it('returns base + gold for gold domain alone', () => {
     const stakes = computeStakes('gold', 0, false, false);
-    expect(stakes).toBe(STAKES_DOMAIN_GOLD);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_GOLD);
   });
 
-  it('returns 0.4 for iron domain alone', () => {
+  it('returns base + iron for iron domain alone', () => {
     const stakes = computeStakes('iron', 0, false, false);
-    expect(stakes).toBe(STAKES_DOMAIN_IRON);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_IRON);
   });
 
-  it('returns 0 for non-special domain', () => {
+  it('returns STAKES_BASE for non-special domain', () => {
     const stakes = computeStakes('shadow', 0, false, false);
-    expect(stakes).toBe(0);
+    expect(stakes).toBe(STAKES_BASE);
   });
 
   it('adds 0.2 for extreme positive sentiment', () => {
     const stakes = computeStakes('gold', 0.8, false, false);
-    expect(stakes).toBe(STAKES_DOMAIN_GOLD + STAKES_EXTREME_SENTIMENT);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_GOLD + STAKES_EXTREME_SENTIMENT);
   });
 
   it('adds 0.2 for extreme negative sentiment', () => {
     const stakes = computeStakes('iron', -0.8, false, false);
-    expect(stakes).toBe(STAKES_DOMAIN_IRON + STAKES_EXTREME_SENTIMENT);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_IRON + STAKES_EXTREME_SENTIMENT);
   });
 
   it('does not add extreme sentiment bonus for sentiment near 0.7 boundary', () => {
     const stakes = computeStakes('gold', 0.7, false, false);
-    expect(stakes).toBe(STAKES_DOMAIN_GOLD);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_GOLD);
   });
 
   it('adds 0.3 for faction leader', () => {
     const stakes = computeStakes('gold', 0, true, false);
-    expect(stakes).toBe(STAKES_DOMAIN_GOLD + STAKES_FACTION_LEADER);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_GOLD + STAKES_FACTION_LEADER);
   });
 
   it('adds 0.3 for territory control', () => {
     const stakes = computeStakes('iron', 0, false, true);
-    expect(stakes).toBe(STAKES_DOMAIN_IRON + STAKES_TERRITORY_CONTROL);
+    expect(stakes).toBe(STAKES_BASE + STAKES_DOMAIN_IRON + STAKES_TERRITORY_CONTROL);
   });
 
   it('stacks all bonuses and clamps at 1.0', () => {
-    // gold (0.3) + extreme sentiment (0.2) + faction leader (0.3) + territory (0.3) = 1.2 → clamps to 1.0
+    // base (0.15) + gold (0.3) + extreme sentiment (0.2) + faction leader (0.3) + territory (0.3) = 1.25 → clamps to 1.0
     const stakes = computeStakes('gold', 0.75, true, true);
     expect(stakes).toBe(1.0);
   });
