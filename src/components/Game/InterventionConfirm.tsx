@@ -11,6 +11,12 @@ export interface InterventionConfirmProps {
   rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown';
   hexDistance: number | null;
   description: string;
+  /** Available essence in the relevant sphere — used to disable confirm when can't afford */
+  availableEssence?: number;
+  /** Name of the selected agenda, if any */
+  agendaName?: string;
+  /** Narrative hook text from the selected agenda */
+  agendaNarrativeHook?: string;
   onConfirm: (encounterMode?: LocalEncounterMode) => void;
   onCancel: () => void;
 }
@@ -32,6 +38,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
   const isOutOfRange = rangeStatus === 'out_of_range';
   const isLocal = deliveryMode === 'local';
   const riskPercent = Math.round(detectionRisk * 100);
+  const canAfford = props.availableEssence == null || props.availableEssence >= essenceCost;
 
   // Range display text
   const rangeText = (() => {
@@ -66,6 +73,16 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
         </h3>
         <p className="text-amber-400/70 text-xs mb-3">{description}</p>
 
+        {/* Agenda display */}
+        {props.agendaName && (
+          <div className="mb-3 p-2 bg-stone-700/40 border border-amber-900/30 rounded">
+            <div className="text-amber-100 text-sm font-semibold">{props.agendaName}</div>
+            {props.agendaNarrativeHook && (
+              <p className="text-amber-300/60 text-xs mt-1 italic">"{props.agendaNarrativeHook}"</p>
+            )}
+          </div>
+        )}
+
         {/* Stats */}
         <div className="space-y-1 mb-3 text-sm">
           <div className="flex justify-between text-amber-200/80">
@@ -91,6 +108,13 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           </div>
         )}
 
+        {/* Insufficient essence message */}
+        {!isOutOfRange && !canAfford && (
+          <div className="mb-3 p-2 bg-red-900/30 border border-red-700/40 rounded text-red-300 text-xs text-center">
+            Insufficient {sphere} essence (need {essenceCost}, have {Math.floor(props.availableEssence ?? 0)})
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex gap-2">
           {isOutOfRange ? (
@@ -104,14 +128,16 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           ) : isLocal ? (
             <>
               <button
-                className="flex-1 px-3 py-1.5 bg-amber-800/60 text-amber-100 rounded text-sm hover:bg-amber-700/60"
-                onClick={() => onConfirm('visit')}
+                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-amber-800/60 text-amber-100 hover:bg-amber-700/60' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                onClick={() => canAfford && onConfirm('visit')}
+                disabled={!canAfford}
               >
                 Go to Them (+15%)
               </button>
               <button
-                className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200 rounded text-sm hover:bg-stone-700"
-                onClick={() => onConfirm('summon')}
+                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-stone-800 text-amber-200 hover:bg-stone-700' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                onClick={() => canAfford && onConfirm('summon')}
+                disabled={!canAfford}
               >
                 Summon (+1 ess)
               </button>
@@ -119,8 +145,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           ) : (
             <>
               <button
-                className="flex-1 px-3 py-1.5 bg-amber-800/60 text-amber-100 rounded text-sm hover:bg-amber-700/60"
-                onClick={() => onConfirm()}
+                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-amber-800/60 text-amber-100 hover:bg-amber-700/60' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                onClick={() => canAfford && onConfirm()}
+                disabled={!canAfford}
                 aria-label="Confirm"
               >
                 Confirm

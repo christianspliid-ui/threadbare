@@ -76,6 +76,21 @@ describe('InterventionConfirm', () => {
     expect(onConfirm).toHaveBeenCalledWith('summon');
   });
 
+  it('displays selected agenda name and hook', () => {
+    render(<InterventionConfirm
+      {...baseProps}
+      agendaName="Whisper Ambition"
+      agendaNarrativeHook="golden visions of conquest"
+    />);
+    expect(screen.getByText('Whisper Ambition')).toBeTruthy();
+    expect(screen.getByText(/golden visions/)).toBeTruthy();
+  });
+
+  it('does not render agenda section when no agenda provided', () => {
+    render(<InterventionConfirm {...baseProps} />);
+    expect(screen.queryByText(/golden visions/)).toBeNull();
+  });
+
   it('shows out-of-range message when out of range', () => {
     render(
       <InterventionConfirm
