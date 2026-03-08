@@ -1,0 +1,13 @@
+{
+  "eval_id": 2,
+  "eval_name": "folk-hero-enrichment",
+  "prompt": "Enrich the folk_hero archetype - design beat patterns, vignette seeds, and tone keywords for Robin Hood / Kvothe-style story arcs.",
+  "assertions": [
+    {"id": "identifies-relevant-levers", "text": "Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope"},
+    {"id": "references-exact-files", "text": "Response references exact file paths (src/data/*-content.ts) for modifications"},
+    {"id": "produces-data-structures", "text": "Response includes concrete TypeScript data structures following existing patterns"},
+    {"id": "follows-checklist", "text": "Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode"},
+    {"id": "no-prose-writing", "text": "Response focuses on designing data structures, not writing narrative prose directly"},
+    {"id": "integration-awareness", "text": "Response shows how content flows through the narrative pipeline"}
+  ]
+}

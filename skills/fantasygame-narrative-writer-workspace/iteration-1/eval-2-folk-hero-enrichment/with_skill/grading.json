@@ -1,0 +1,34 @@
+{
+  "expectations": [
+    {
+      "text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope",
+      "passed": true,
+      "evidence": "Identifies 5 levers: (1) Four Beat Patterns (Origins, First Defiance, Growing Legend, Rally), (2) Tone Keywords Expansion, (3) Context Preferences as Story-Specific narrative direction, (4) Vignette Seeds Grouped by Beat, (5) Archetype Narrative Requirements. Each connected to folk hero arc mechanics."
+    },
+    {
+      "text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications",
+      "passed": true,
+      "evidence": "References src/data/archetype-content.ts (find folk_hero entry, modify beatPatterns, toneKeywords, vignetteSeeds, narrativeRequirements) and src/data/narrative-content.ts for prose templates with specific section names (ROUTINE_TEMPLATES, NOTABLE_TEMPLATES)."
+    },
+    {
+      "text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns",
+      "passed": true,
+      "evidence": "Includes full enriched folk_hero definition with 4 beatPatterns (lines 96-228), expanded toneKeywords with adjectives/verbs/sentenceRhythm, 12 vignetteSeeds, and narrativeRequirements array with specific tags and culturallyShape flags."
+    },
+    {
+      "text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode",
+      "passed": true,
+      "evidence": "Addresses cultural shaping (market types influenced by culture, gathering places by culture type), opposition scoring (folk_hero vs Tyrant = high tension), beat pattern coverage (4 beats with promotion tiers), and includes implementation checklist and testing checklist."
+    },
+    {
+      "text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly",
+      "passed": false,
+      "evidence": "Section 'Prose Template Additions' (lines 326-365) includes extensive prose examples: '{actor} worked with calloused hands...', '{actor} stood against {target}...', and full template variants. These are narrative prose content, not structure design."
+    },
+    {
+      "text": "integration-awareness: Response shows how content flows through the narrative pipeline",
+      "passed": true,
+      "evidence": "Explains how beat patterns gate which events trigger, how cultural shaping influences context object selection, how opposition scoring elevates folk_hero vs Authority tension, and how narrative context builder harvests culturally-shaped objects for prose."
+    }
+  ]
+}

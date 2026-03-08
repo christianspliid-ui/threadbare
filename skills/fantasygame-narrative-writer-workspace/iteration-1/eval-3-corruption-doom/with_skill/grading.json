@@ -1,0 +1,34 @@
+{
+  "expectations": [
+    {
+      "text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope",
+      "passed": true,
+      "evidence": "Identifies 3 levers: (1) DoomClockArchetype type registration, (2) ARCHETYPE_STAGE_NAMES (5 stage names), (3) Narrative prose templates (routine + notable). Each connected to corruption escalation mechanics."
+    },
+    {
+      "text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications",
+      "passed": true,
+      "evidence": "References src/types/doomClock.ts, src/data/doom-content.ts, src/data/narrative-content.ts, src/engine/narrative.ts (line 189), and src/engine/orchestrator.ts with exact section descriptions."
+    },
+    {
+      "text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns",
+      "passed": true,
+      "evidence": "Includes DoomClockArchetype union type extension with 'corruption' literal, ARCHETYPE_STAGE_NAMES entry with 5-tuple of stage names, ROUTINE_TEMPLATES and NOTABLE_TEMPLATES entries for doom_escalation with multiple template strings."
+    },
+    {
+      "text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode",
+      "passed": true,
+      "evidence": "Addresses sphere-specific vocabulary (Entropy, Time, Matter), includes testing checklist (type safety, doom clock generation, prose generation, UI display), and tuning knobs for sphere interaction and stage metaphors."
+    },
+    {
+      "text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly",
+      "passed": false,
+      "evidence": "File 3 section (lines 151-172) contains multiple prose template examples: 'In {target}, {adj} {noun} blooms...', 'The {adj} work of ages begins to fray...', 'A sickness spreads through {target}...'. These are narrative prose content, not data structure definitions."
+    },
+    {
+      "text": "integration-awareness: Response shows how content flows through the narrative pipeline",
+      "passed": true,
+      "evidence": "Explains full wiring: (1) Orchestrator detects stage transition, (2) TickEvent mapped to NarrativeEventType, (3) Narrative engine builds context and converts to NarrativeEvent, (4) Prose generation selects template and substitutes sphere vocabulary, (5) Chronicle entry logged."
+    }
+  ]
+}

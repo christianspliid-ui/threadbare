@@ -8,6 +8,7 @@
  * - PRIMARY_WEIGHT = 3: template includes alignment.primary
  * - SECONDARY_WEIGHT = 2: template includes alignment.secondary
  * - BASE_WEIGHT = 1: no match (all templates are eligible)
+ * - SIMULATION_ACHIEVABLE_MULTIPLIER = 2: simulation_achievable type gets 2x boost
  *
  * Selection uses weighted random based on these scores.
  */
@@ -22,6 +23,7 @@ import { MANDATE_TEMPLATES } from '../data/mandate-content';
 const PRIMARY_WEIGHT = 3;
 const SECONDARY_WEIGHT = 2;
 const BASE_WEIGHT = 1;
+const SIMULATION_ACHIEVABLE_MULTIPLIER = 2;
 
 // ─── Seeded PRNG (same as orchestrator.ts) ────────────────────────────────
 
@@ -48,26 +50,32 @@ function mulberry32(seed: number): () => number {
  * - PRIMARY_WEIGHT (3) if template includes alignment.primary
  * - SECONDARY_WEIGHT (2) if template includes alignment.secondary
  * - BASE_WEIGHT (1) otherwise
+ *
+ * Simulation-achievable mandates receive a 2x multiplier to increase selection likelihood.
  */
 function scoreTemplate(
   template: MandateTemplate,
   alignment: SphereAlignment,
 ): number {
   const { primary, secondary } = alignment;
-  const { sphereAffinities } = template;
+  const { sphereAffinities, type } = template;
 
-  // Check primary sphere (weight 3)
+  // Compute base weight
+  let baseWeight: number;
   if (sphereAffinities.includes(primary)) {
-    return PRIMARY_WEIGHT;
+    baseWeight = PRIMARY_WEIGHT;
+  } else if (sphereAffinities.includes(secondary)) {
+    baseWeight = SECONDARY_WEIGHT;
+  } else {
+    baseWeight = BASE_WEIGHT;
   }
 
-  // Check secondary sphere (weight 2)
-  if (sphereAffinities.includes(secondary)) {
-    return SECONDARY_WEIGHT;
+  // Apply simulation_achievable multiplier
+  if (type === 'simulation_achievable') {
+    return baseWeight * SIMULATION_ACHIEVABLE_MULTIPLIER;
   }
 
-  // Default weight for any mandate (weight 1)
-  return BASE_WEIGHT;
+  return baseWeight;
 }
 
 /**

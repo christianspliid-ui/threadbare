@@ -2,8 +2,8 @@
  * Tests for mandate content data structure and integrity.
  *
  * Validates:
- * - All 9 templates present
- * - Correct distribution: 3 per type (graph_state, sphere_dominance, narrative)
+ * - All 12 templates present
+ * - Correct distribution: 3 per type (graph_state, sphere_dominance, narrative, simulation_achievable)
  * - 3-stage structure with proper ordering
  * - At least 1 condition per stage
  * - All templates have sphere affinities
@@ -20,8 +20,8 @@ describe('Mandate Content Data', () => {
   // Template Presence and Count
   // ─────────────────────────────────────────────────────────────
 
-  it('exports exactly 9 mandate templates', () => {
-    expect(MANDATE_TEMPLATES).toHaveLength(9);
+  it('exports exactly 12 mandate templates', () => {
+    expect(MANDATE_TEMPLATES).toHaveLength(12);
   });
 
   it('has 3 graph_state mandates', () => {
@@ -37,6 +37,11 @@ describe('Mandate Content Data', () => {
   it('has 3 narrative mandates', () => {
     const narrative = MANDATE_TEMPLATES.filter((t) => t.type === 'narrative');
     expect(narrative).toHaveLength(3);
+  });
+
+  it('has 3 simulation_achievable mandates', () => {
+    const simulationAchievable = MANDATE_TEMPLATES.filter((t) => t.type === 'simulation_achievable');
+    expect(simulationAchievable).toHaveLength(3);
   });
 
   // ─────────────────────────────────────────────────────────────
@@ -234,6 +239,30 @@ describe('Mandate Content Data', () => {
     expect(template?.sphereAffinities).toContain('entropy');
   });
 
+  it('Threads of Fate has mind and spirit affinities', () => {
+    const template = MANDATE_TEMPLATES.find((t) => t.id === 'mandate.threads_of_fate');
+    expect(template).toBeDefined();
+    expect(template?.type).toBe('simulation_achievable');
+    expect(template?.sphereAffinities).toContain('mind');
+    expect(template?.sphereAffinities).toContain('spirit');
+  });
+
+  it('The Gathering has force and spirit affinities', () => {
+    const template = MANDATE_TEMPLATES.find((t) => t.id === 'mandate.the_gathering');
+    expect(template).toBeDefined();
+    expect(template?.type).toBe('simulation_achievable');
+    expect(template?.sphereAffinities).toContain('force');
+    expect(template?.sphereAffinities).toContain('spirit');
+  });
+
+  it('Cultural Convergence has life and mind affinities', () => {
+    const template = MANDATE_TEMPLATES.find((t) => t.id === 'mandate.cultural_convergence');
+    expect(template).toBeDefined();
+    expect(template?.type).toBe('simulation_achievable');
+    expect(template?.sphereAffinities).toContain('life');
+    expect(template?.sphereAffinities).toContain('mind');
+  });
+
   // ─────────────────────────────────────────────────────────────
   // Condition Type Specificity
   // ─────────────────────────────────────────────────────────────
@@ -270,6 +299,18 @@ describe('Mandate Content Data', () => {
       template.stages.forEach((stage) => {
         stage.conditions.forEach((condition) => {
           expect(condition.type).toBe('actor_tier');
+        });
+      });
+    });
+  });
+
+  it('simulation_achievable mandates use edge_count conditions', () => {
+    const simulationAchievable = MANDATE_TEMPLATES.filter((t) => t.type === 'simulation_achievable');
+
+    simulationAchievable.forEach((template) => {
+      template.stages.forEach((stage) => {
+        stage.conditions.forEach((condition) => {
+          expect(condition.type).toBe('edge_count');
         });
       });
     });
