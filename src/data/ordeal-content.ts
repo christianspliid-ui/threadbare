@@ -9,11 +9,44 @@
 
 import type { OrdealDefinition } from '../types/ordeal';
 
+// ─── Types ──────────────────────────────────────────────────────────
+
+/**
+ * Difficulty tier for an ordeal, including base multiplier and tone adjectives.
+ */
+export interface OrdealDifficultyTier {
+  /** Multiplier applied to base difficulty (e.g., 0.8 for easier, 1.3 for harder) */
+  difficultyMultiplier: number;
+  /** Tone adjectives to flavor prose at this difficulty level */
+  toneAdjectives: string[];
+}
+
 // ─── Tunable Constants ──────────────────────────────────────────
 
 /** Difficulty progression within a template (escalates per encounter) */
 const DIFFICULTY_BASE = 35;
 const DIFFICULTY_STEP = 10;
+
+// ─── 3 Difficulty Tiers ─────────────────────────────────────────
+
+/**
+ * Ordeal difficulty tiers determine how challenging an ordeal is and what tone it carries.
+ * Used to flavor prose and adjust difficulty multipliers for ordeal encounters.
+ */
+export const ORDEAL_DIFFICULTY_TIERS: Record<string, OrdealDifficultyTier> = {
+  early: {
+    difficultyMultiplier: 0.8,
+    toneAdjectives: ['uncertain', 'tentative', 'green', 'unsteady', 'fledgling'],
+  },
+  mid: {
+    difficultyMultiplier: 1.0,
+    toneAdjectives: ['determined', 'tested', 'hardened', 'resolute', 'seasoned'],
+  },
+  late: {
+    difficultyMultiplier: 1.3,
+    toneAdjectives: ['desperate', 'legendary', 'harrowed', 'transcendent', 'final'],
+  },
+};
 
 // ─── 10 Ordeal Templates ───────────────────────────────────────
 
