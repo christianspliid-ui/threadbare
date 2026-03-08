@@ -15,7 +15,8 @@
     "validate-model": "esbuild scripts/validate-world-model.ts --bundle --platform=node --format=esm --outfile=/tmp/validate-world-model.mjs --external:fs --external:path && node /tmp/validate-world-model.mjs",
     "generate-hex": "python scripts/generate-hex-tile.py",
     "generate-hex:batch": "python scripts/generate-hex-tile.py --batch --raw-also",
-    "resize-tiles": "esbuild scripts/resize-hex-tiles.ts --bundle --platform=node --format=esm --outfile=scripts/resize-hex-tiles.mjs --external:sharp --external:fs --external:path --external:url && node scripts/resize-hex-tiles.mjs"
+    "resize-tiles": "esbuild scripts/resize-hex-tiles.ts --bundle --platform=node --format=esm --outfile=scripts/resize-hex-tiles.mjs --external:sharp --external:fs --external:path --external:url && node scripts/resize-hex-tiles.mjs",
+    "playtest": "esbuild scripts/playtest.ts --bundle --platform=node --format=esm --outfile=/tmp/playtest.mjs --external:fs --external:path && node /tmp/playtest.mjs"
   },
   "dependencies": {
     "@types/d3": "^7.4.3",
