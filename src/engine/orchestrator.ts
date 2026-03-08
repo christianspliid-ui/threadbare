@@ -35,6 +35,12 @@ import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
 import { generateRoutineProse, generateNotableProse } from './narrative';
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
+import {
+  getAvailableOrdeals,
+  initiateOrdeal,
+  resolveEncounter,
+  advanceOrdeal,
+} from './ordeal';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -155,6 +161,78 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
   }
 
   return { tickEvents: [...state.tickEvents, ...events] };
+}
+
+// ─── Phase 2.25: Ordeal Progression ────────────────────────────────────
+
+export function phaseOrdealProgression(state: GameState): Partial<GameState> {
+  const rng = mulberry32(state.seed + state.tick * 43);
+  const events: TickEvent[] = [];
+
+  // 1. Progress active ordeals
+  const activeOrdeals = state.ordealProgress.filter(p => p.status === 'active');
+  for (const progress of activeOrdeals) {
+    // Resolve current encounter
+    const result = resolveEncounter(state, progress);
+    // Advance ordeal (mutates progress)
+    advanceOrdeal(state, progress, result.success, state.tick);
+
+    // Generate event based on outcome
+    const eventType = result.success ? 'ordeal_encounter_success' : 'ordeal_encounter_failure';
+    if (progress.status === 'completed') {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'ordeal_completed',
+        message: `An agent has completed their ordeal.`,
+        significance: 0.8,
+      });
+    } else if (progress.status === 'abandoned') {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'ordeal_encounter_failure',
+        message: `An agent failed their ordeal encounter.`,
+        significance: 0.5,
+      });
+    } else {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: eventType,
+        message: `An agent ${result.success ? 'succeeded' : 'struggled'} in their ordeal.`,
+        significance: 0.6,
+      });
+    }
+  }
+
+  // 2. Initiate new ordeals for eligible agents (small chance per tick)
+  const actors = state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual');
+  for (const actor of actors) {
+    // Skip if already has active ordeal
+    if (state.ordealProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
+
+    // 3% chance per tick to initiate
+    if (rng() < 0.03) {
+      const available = getAvailableOrdeals(state, actor.id);
+      if (available.length > 0) {
+        const ordeal = available[Math.floor(rng() * available.length)];
+        initiateOrdeal(state, actor.id, ordeal.id, state.tick);
+        events.push({
+          id: nextEventId(),
+          tick: state.tick,
+          type: 'ordeal_encounter_success',
+          message: `${actor.name} begins a new ordeal: ${ordeal.name}.`,
+          significance: 0.7,
+        });
+      }
+    }
+  }
+
+  return {
+    tickEvents: [...state.tickEvents, ...events],
+    ordealProgress: [...state.ordealProgress],
+  };
 }
 
 // ─── Phase 2.5: Dilemma Detection ──────────────────────────────────────
@@ -544,6 +622,11 @@ export function runTick(state: GameState): GameState {
   const agentActionsEvents = s.tickEvents.length - prevEventCount;
   phaseEventCounts['agent_actions'] = agentActionsEvents;
   agentsProcessed += agentActionsEvents; // Approximate: one event per agent action
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.25: Ordeal Progression
+  s = { ...s, ...phaseOrdealProgression(s) };
+  phaseEventCounts['ordeal_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.5: Dilemma Detection
