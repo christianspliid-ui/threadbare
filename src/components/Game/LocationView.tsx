@@ -43,7 +43,7 @@ export function LocationView({
         </button>
 
         {/* Location icon placeholder */}
-        <div className="w-8 h-8 rounded-full bg-stone-700 border border-amber-900/40 flex-shrink-0" />
+        <div className="w-8 h-8 rounded-full bg-stone-800 border border-amber-900/40 flex-shrink-0" />
 
         <div>
           <h2

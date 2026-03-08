@@ -58,7 +58,7 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
         if (def.secondarySphere) spheres.push(def.secondarySphere);
 
         return (
-          <div key={def.id} className="bg-stone-700/50 rounded px-2 py-1.5 border border-stone-600/30">
+          <div key={def.id} className="bg-stone-800/50 rounded px-2 py-1.5 border border-stone-700/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 {spheres.length > 0 ? (

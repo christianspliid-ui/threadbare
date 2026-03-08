@@ -16,7 +16,7 @@ const HARVEST_STYLES: Record<HarvestType, { title: string; color: string; bg: st
 function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
   const def = candidate.echoDefinition;
   return (
-    <div className="bg-stone-700/60 border border-amber-700/20 rounded-lg p-3 w-56 flex-shrink-0">
+    <div className="bg-stone-800/60 border border-amber-700/20 rounded-lg p-3 w-56 flex-shrink-0">
       <div className="flex items-center gap-2 mb-1">
         <div className="w-2 h-2 rounded-full bg-amber-400" />
         <span className="text-xs font-bold text-amber-100/90 truncate">{def.name}</span>

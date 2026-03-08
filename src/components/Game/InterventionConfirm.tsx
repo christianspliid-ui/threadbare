@@ -95,7 +95,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
         <div className="flex gap-2">
           {isOutOfRange ? (
             <button
-              className="flex-1 px-3 py-1.5 bg-stone-700 text-amber-200/70 rounded text-sm hover:bg-stone-600"
+              className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200/70 rounded text-sm hover:bg-stone-700"
               onClick={onCancel}
               aria-label="Cancel"
             >
@@ -110,7 +110,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
                 Go to Them (+15%)
               </button>
               <button
-                className="flex-1 px-3 py-1.5 bg-stone-700 text-amber-200 rounded text-sm hover:bg-stone-600"
+                className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200 rounded text-sm hover:bg-stone-700"
                 onClick={() => onConfirm('summon')}
               >
                 Summon (+1 ess)
@@ -126,7 +126,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
                 Confirm
               </button>
               <button
-                className="flex-1 px-3 py-1.5 bg-stone-700 text-amber-200/70 rounded text-sm hover:bg-stone-600"
+                className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200/70 rounded text-sm hover:bg-stone-700"
                 onClick={onCancel}
                 aria-label="Cancel"
               >

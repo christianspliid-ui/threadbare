@@ -77,14 +77,14 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.knowledgeLevel !== 'stranger' && (
           <>
             {card.archetypeLabel && (
-              <div className="bg-stone-700/50 border border-amber-900/30 rounded px-2 py-1.5">
+              <div className="bg-stone-800/50 border border-amber-900/30 rounded px-2 py-1.5">
                 <p className="text-amber-100 text-xs font-semibold">{card.archetypeLabel}</p>
               </div>
             )}
 
             {card.factionName && (
               <div className="inline-block">
-                <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-stone-700/50 border border-amber-900/30 text-amber-400/80">
+                <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-stone-800/50 border border-amber-900/30 text-amber-400/80">
                   {card.factionName}
                 </span>
               </div>

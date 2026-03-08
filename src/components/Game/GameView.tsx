@@ -145,7 +145,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         <button
           data-testid="debug-toggle"
           onClick={handleToggleDebug}
-          className="ml-auto px-3 py-1 rounded text-xs font-mono border border-amber-900/30 bg-stone-700/50 text-amber-200/70 hover:text-amber-100 hover:bg-stone-600/50 transition-colors flex items-center gap-1.5"
+          className="ml-auto px-3 py-1 rounded text-xs font-mono border border-amber-900/30 bg-stone-800/50 text-amber-200/70 hover:text-amber-100 hover:bg-stone-700/50 transition-colors flex items-center gap-1.5"
           title="Toggle debug trace panel (`)"
         >
           {debugPanelOpen && (

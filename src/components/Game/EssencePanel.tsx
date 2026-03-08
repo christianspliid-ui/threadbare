@@ -24,7 +24,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
   });
 
   return (
-    <div className="bg-stone-700/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
+    <div className="bg-stone-800/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <Tooltip id="ui.essence_panel">
           <h2

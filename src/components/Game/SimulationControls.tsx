@@ -20,7 +20,7 @@ export function SimulationControls({
   onToggle, onStep, onSpeedChange,
 }: SimulationControlsProps) {
   return (
-    <div className="bg-stone-700/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
+    <div className="bg-stone-800/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <h2
           className="text-sm font-bold text-amber-100 uppercase tracking-widest"
