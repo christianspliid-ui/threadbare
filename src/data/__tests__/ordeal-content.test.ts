@@ -4,6 +4,7 @@ import {
   CULTURAL_ORDEAL_OVERLAYS,
   ORDEAL_INSPECTION_VIGNETTES,
   ORDEAL_DIFFICULTY_TIERS,
+  ORDEAL_SYSTEM_CONNECTIONS,
   getOrdealsByLocationType,
   getOrdealById,
 } from '../ordeal-content';
@@ -147,6 +148,56 @@ describe('ordeal-content', () => {
           expect(typeof adj).toBe('string');
           expect(adj.length).toBeGreaterThan(0);
         }
+      }
+    });
+  });
+
+  describe('ordeal system connections', () => {
+    it('should have 9 ordeal system connection templates (3 doom + 3 culture + 3 rival)', () => {
+      expect(ORDEAL_SYSTEM_CONNECTIONS.doom).toHaveLength(3);
+      expect(ORDEAL_SYSTEM_CONNECTIONS.culture).toHaveLength(3);
+      expect(ORDEAL_SYSTEM_CONNECTIONS.rival).toHaveLength(3);
+    });
+
+    it('each connection template should have id, trigger, and prose', () => {
+      const allConnections = [
+        ...ORDEAL_SYSTEM_CONNECTIONS.doom,
+        ...ORDEAL_SYSTEM_CONNECTIONS.culture,
+        ...ORDEAL_SYSTEM_CONNECTIONS.rival,
+      ];
+      for (const conn of allConnections) {
+        expect(conn.id).toBeTruthy();
+        expect(conn.trigger).toBeTruthy();
+        expect(conn.prose).toBeTruthy();
+        expect(conn.prose.length).toBeGreaterThan(20);
+      }
+    });
+
+    it('all connection ids should be unique', () => {
+      const allConnections = [
+        ...ORDEAL_SYSTEM_CONNECTIONS.doom,
+        ...ORDEAL_SYSTEM_CONNECTIONS.culture,
+        ...ORDEAL_SYSTEM_CONNECTIONS.rival,
+      ];
+      const ids = allConnections.map(c => c.id);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('doom connections should have relevant trigger descriptions', () => {
+      for (const conn of ORDEAL_SYSTEM_CONNECTIONS.doom) {
+        expect(conn.trigger.length).toBeGreaterThan(10);
+      }
+    });
+
+    it('culture connections should have relevant trigger descriptions', () => {
+      for (const conn of ORDEAL_SYSTEM_CONNECTIONS.culture) {
+        expect(conn.trigger.length).toBeGreaterThan(10);
+      }
+    });
+
+    it('rival connections should have relevant trigger descriptions', () => {
+      for (const conn of ORDEAL_SYSTEM_CONNECTIONS.rival) {
+        expect(conn.trigger.length).toBeGreaterThan(10);
       }
     });
   });
