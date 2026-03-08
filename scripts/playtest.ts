@@ -36,9 +36,13 @@ import type { Snapshot, PlaytestReportData } from './playtest-format';
 
 // ─── Constants ────────────────────────────────────────────────────
 
+const DEFAULT_SEED = 42;
 const DEFAULT_TICKS = 50;
 const DEFAULT_INTERVAL = 10;
 const DEFAULT_MIN_SIG = 0.3;
+
+/** Phases that signal the simulation should stop early */
+const TERMINATION_PHASES: ReadonlyArray<string> = ['twilight', 'harvest'];
 
 // ─── CLI Argument Parsing ─────────────────────────────────────────
 
@@ -95,7 +99,7 @@ function parseArgs(): PlaytestArgs {
 
   // If no seeds specified, default to seed 42
   if (result.seeds.length === 0) {
-    result.seeds.push(42);
+    result.seeds.push(DEFAULT_SEED);
   }
 
   return result;
@@ -188,7 +192,7 @@ function runPlaytest(seed: number, maxTicks: number, snapshotInterval: number): 
 
   // Run ticks
   let tickCount = 0;
-  while (tickCount < maxTicks && state.phase !== 'harvest') {
+  while (tickCount < maxTicks && !TERMINATION_PHASES.includes(state.phase)) {
     state = runTick(state);
     tickCount++;
 
@@ -200,8 +204,8 @@ function runPlaytest(seed: number, maxTicks: number, snapshotInterval: number): 
       snapshots.push(captureSnapshot(state, tickCount));
     }
 
-    // Stop early if entered twilight or harvest phase
-    if (state.phase === 'twilight' || state.phase === 'harvest') {
+    // Stop early if entered a termination phase
+    if (TERMINATION_PHASES.includes(state.phase)) {
       break;
     }
   }
@@ -242,6 +246,8 @@ async function main(): Promise<void> {
   console.log(`  Min significance: ${args.minSig}`);
   console.log('');
 
+  const failedSeeds: number[] = [];
+
   for (const seed of args.seeds) {
     const startTime = Date.now();
     console.log(`[${seed}] Starting playtest...`);
@@ -261,6 +267,7 @@ async function main(): Promise<void> {
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
       console.log(`[${seed}] ✓ Complete (${elapsed}s) — ${filename}`);
     } catch (err) {
+      failedSeeds.push(seed);
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
       const message = err instanceof Error ? err.message : String(err);
       console.error(`[${seed}] ✗ Failed (${elapsed}s) — ${message}`);
@@ -268,6 +275,10 @@ async function main(): Promise<void> {
   }
 
   console.log('');
+  if (failedSeeds.length > 0) {
+    console.error(`${failedSeeds.length} playtest(s) failed: seeds ${failedSeeds.join(', ')}`);
+    process.exit(1);
+  }
   console.log('Playtests complete.');
 }
 
