@@ -3,6 +3,7 @@ import type { GraphNode, GraphEdge } from '../../types/graph';
 import type { LineOfSight } from '../../engine/hexZoom';
 import { getPolygonVertices, type Point } from '../../lib/polygonLayout';
 import { hexPolygonPoints } from '../../lib/hexMath';
+import { Tooltip } from '../shared/Tooltip';
 
 interface HexZoomViewProps {
   locations: GraphNode[];
@@ -137,78 +138,91 @@ export function HexZoomView({
         const agents = agentsByLocation[loc.id] ?? [];
 
         return (
-          <g
+          <Tooltip
             key={loc.id}
-            role="button"
-            aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}`}
-            tabIndex={0}
-            onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id, false)}
-            style={{ cursor: 'pointer', outline: 'none' }}
+            as="g"
+            label={isHidden ? 'Unknown' : loc.name}
+            desc="Location"
           >
-            {/* Location circle */}
-            <circle
-              cx={pos.x}
-              cy={pos.y}
-              r={LAYOUT_CONFIG.LOCATION_RADIUS}
-              fill={isHidden ? '#1a1a1e' : '#3a3a3e'}
-              stroke="#d4af37"
-              strokeWidth="1.5"
-              strokeOpacity={isHidden ? 0.2 : 0.6}
-              opacity={isDimmed ? 0.6 : 1}
-              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-              onClick={() => onLocationClick(loc.id)}
-              onDoubleClick={() => onLocationDoubleClick(loc.id)}
-            />
-
-            {/* Location name */}
-            <text
-              x={pos.x}
-              y={pos.y + LAYOUT_CONFIG.LOCATION_RADIUS + 16}
-              textAnchor="middle"
-              fill={isHidden ? '#666' : '#d4af37'}
-              fontSize="12"
-              fontFamily="Cinzel, serif"
-              style={{ cursor: 'pointer', pointerEvents: 'auto' }}
-              onClick={() => onLocationClick(loc.id)}
-              onDoubleClick={() => onLocationDoubleClick(loc.id)}
+            <g
+              role="button"
+              aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}`}
+              tabIndex={0}
+              onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id, false)}
+              style={{ cursor: 'pointer', outline: 'none' }}
             >
-              {isHidden ? '?' : loc.name}
-            </text>
+              {/* Location circle */}
+              <circle
+                cx={pos.x}
+                cy={pos.y}
+                r={LAYOUT_CONFIG.LOCATION_RADIUS}
+                fill={isHidden ? '#1a1a1e' : '#3a3a3e'}
+                stroke="#d4af37"
+                strokeWidth="1.5"
+                strokeOpacity={isHidden ? 0.2 : 0.6}
+                opacity={isDimmed ? 0.6 : 1}
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                onClick={() => onLocationClick(loc.id)}
+                onDoubleClick={() => onLocationDoubleClick(loc.id)}
+              />
 
-            {/* Agent squares */}
-            {!isHidden && agents.map((agent, ai) => {
-              // Position agents in a small arc above the location circle
-              const angleOffset = ((ai - (agents.length - 1) / 2) * LAYOUT_CONFIG.AGENT_ANGLE_OFFSET) * (Math.PI / 180);
-              const agentDist = LAYOUT_CONFIG.LOCATION_RADIUS + LAYOUT_CONFIG.AGENT_SIZE * LAYOUT_CONFIG.AGENT_DISTANCE_MULTIPLIER;
-              const ax = pos.x + agentDist * Math.sin(angleOffset);
-              const ay = pos.y - agentDist * Math.cos(angleOffset);
+              {/* Location name */}
+              <text
+                x={pos.x}
+                y={pos.y + LAYOUT_CONFIG.LOCATION_RADIUS + 16}
+                textAnchor="middle"
+                fill={isHidden ? '#666' : '#d4af37'}
+                fontSize="12"
+                fontFamily="Cinzel, serif"
+                style={{ cursor: 'pointer', pointerEvents: 'auto' }}
+                onClick={() => onLocationClick(loc.id)}
+                onDoubleClick={() => onLocationDoubleClick(loc.id)}
+              >
+                {isHidden ? '?' : loc.name}
+              </text>
 
-              return (
-                <g key={agent.id}>
-                  <rect
-                    x={ax - LAYOUT_CONFIG.AGENT_SIZE / 2}
-                    y={ay - LAYOUT_CONFIG.AGENT_SIZE / 2}
-                    width={LAYOUT_CONFIG.AGENT_SIZE}
-                    height={LAYOUT_CONFIG.AGENT_SIZE}
-                    rx="3"
-                    fill={agentColor(agent.name)}
-                    opacity={isDimmed ? 0.4 : 0.85}
-                  />
-                  <text
-                    x={ax}
-                    y={ay + 1}
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                    fill="white"
-                    fontSize="13"
-                    fontWeight="bold"
+              {/* Agent squares */}
+              {!isHidden && agents.map((agent, ai) => {
+                // Position agents in a small arc above the location circle
+                const angleOffset = ((ai - (agents.length - 1) / 2) * LAYOUT_CONFIG.AGENT_ANGLE_OFFSET) * (Math.PI / 180);
+                const agentDist = LAYOUT_CONFIG.LOCATION_RADIUS + LAYOUT_CONFIG.AGENT_SIZE * LAYOUT_CONFIG.AGENT_DISTANCE_MULTIPLIER;
+                const ax = pos.x + agentDist * Math.sin(angleOffset);
+                const ay = pos.y - agentDist * Math.cos(angleOffset);
+
+                return (
+                  <Tooltip
+                    key={agent.id}
+                    as="g"
+                    label={agent.name}
+                    desc="Agent"
                   >
-                    {agent.name.charAt(0)}
-                  </text>
-                </g>
-              );
-            })}
-          </g>
+                    <g>
+                      <rect
+                        x={ax - LAYOUT_CONFIG.AGENT_SIZE / 2}
+                        y={ay - LAYOUT_CONFIG.AGENT_SIZE / 2}
+                        width={LAYOUT_CONFIG.AGENT_SIZE}
+                        height={LAYOUT_CONFIG.AGENT_SIZE}
+                        rx="3"
+                        fill={agentColor(agent.name)}
+                        opacity={isDimmed ? 0.4 : 0.85}
+                      />
+                      <text
+                        x={ax}
+                        y={ay + 1}
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                        fill="white"
+                        fontSize="13"
+                        fontWeight="bold"
+                      >
+                        {agent.name.charAt(0)}
+                      </text>
+                    </g>
+                  </Tooltip>
+                );
+              })}
+            </g>
+          </Tooltip>
         );
       })}
     </svg>

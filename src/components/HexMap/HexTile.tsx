@@ -3,6 +3,7 @@ import type { HexVisibilityState } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
 import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
+import { Tooltip } from '../shared/Tooltip';
 
 // Hex tile display constants
 const UNEXPLORED_HEX_COLOR = '#1e1b2e'; // Dark world surface, ~12% brightness matching HEX_MAP_BACKGROUND
@@ -110,30 +111,42 @@ export function HexTileComponent({
     </>
   );
 
-  // Remembered: wrap in dimmed group
+  // Remembered: wrap in dimmed group with tooltip
   if (visibility === 'remembered') {
     return (
-      <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
-        <g opacity="0.4">
-          {tileContent}
+      <Tooltip
+        as="g"
+        label={tile.terrain}
+        id={`terrain.${tile.terrain}`}
+      >
+        <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+          <g opacity="0.4">
+            {tileContent}
+          </g>
         </g>
-      </g>
+      </Tooltip>
     );
   }
 
-  // Visible: normal rendering
+  // Visible: normal rendering with tooltip
   return (
-    <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
-      {tileContent}
-      {isAvatarHex && sphereColor && (
-        <polygon
-          points={points}
-          fill="none"
-          stroke={sphereColor}
-          strokeWidth={3}
-          className="avatar-pulse"
-        />
-      )}
-    </g>
+    <Tooltip
+      as="g"
+      label={tile.terrain}
+      id={`terrain.${tile.terrain}`}
+    >
+      <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+        {tileContent}
+        {isAvatarHex && sphereColor && (
+          <polygon
+            points={points}
+            fill="none"
+            stroke={sphereColor}
+            strokeWidth={3}
+            className="avatar-pulse"
+          />
+        )}
+      </g>
+    </Tooltip>
   );
 }
