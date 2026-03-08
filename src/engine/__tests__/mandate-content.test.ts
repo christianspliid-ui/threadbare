@@ -11,7 +11,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { MANDATE_TEMPLATES } from '../../data/mandate-content';
+import { MANDATE_TEMPLATES, MANDATE_MILESTONE_PROSE } from '../../data/mandate-content';
 import type { MandateType, MandateStage, MandateCondition } from '../../types/mandate';
 import type { SphereName } from '../../types/index';
 
@@ -340,6 +340,46 @@ describe('Mandate Content Data', () => {
       template.stages.forEach((stage) => {
         expect(stage.description).toBeTruthy();
         expect(typeof stage.description).toBe('string');
+      });
+    });
+  });
+
+  // ─────────────────────────────────────────────────────────────
+  // Milestone Prose
+  // ─────────────────────────────────────────────────────────────
+
+  it('should have at least 40 milestone prose entries', () => {
+    expect(Object.keys(MANDATE_MILESTONE_PROSE).length).toBeGreaterThanOrEqual(40);
+  });
+
+  it('each milestone prose entry should be a non-empty string', () => {
+    for (const [key, prose] of Object.entries(MANDATE_MILESTONE_PROSE)) {
+      expect(prose.length, `${key} prose empty or too short`).toBeGreaterThan(10);
+      expect(typeof prose).toBe('string');
+    }
+  });
+
+  it('milestone prose keys should follow mandate.id.transition pattern', () => {
+    const validTransitions = new Set(['setup_to_escalation', 'escalation_to_culmination', 'completed', 'failed']);
+    const mandateIds = new Set(MANDATE_TEMPLATES.map((t) => t.id.replace('mandate.', '')));
+
+    for (const key of Object.keys(MANDATE_MILESTONE_PROSE)) {
+      const parts = key.split('.');
+      expect(parts.length).toBe(2);
+      expect(mandateIds.has(parts[0])).toBe(true);
+      expect(validTransitions.has(parts[1])).toBe(true);
+    }
+  });
+
+  it('should have all 4 transition types for each mandate', () => {
+    const validTransitions = ['setup_to_escalation', 'escalation_to_culmination', 'completed', 'failed'];
+
+    MANDATE_TEMPLATES.forEach((template) => {
+      const mandateId = template.id.replace('mandate.', '');
+      validTransitions.forEach((transition) => {
+        const key = `${mandateId}.${transition}`;
+        expect(MANDATE_MILESTONE_PROSE[key]).toBeDefined();
+        expect(MANDATE_MILESTONE_PROSE[key].length).toBeGreaterThan(10);
       });
     });
   });

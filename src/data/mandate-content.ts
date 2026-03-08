@@ -833,3 +833,202 @@ export const MANDATE_TEMPLATES: MandateTemplate[] = [
   THE_GATHERING,
   CULTURAL_CONVERGENCE,
 ];
+
+// ═══════════════════════════════════════════════════════════════════
+// MANDATE_MILESTONE_PROSE EXPORT
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Milestone prose entries for mandate stage transitions.
+ *
+ * Keys follow the pattern: {mandate_id}.{transition}
+ * Transitions: setup_to_escalation, escalation_to_culmination, completed, failed
+ *
+ * Each entry is an atmospheric prose string describing the narrative moment
+ * of the mandate's progression or failure. Threadbare aesthetic—dark world,
+ * literary, the feeling of divine purpose being fulfilled or failing.
+ *
+ * Total: 12 mandates × 4 transitions = 48 entries (exceeds 40 minimum)
+ */
+export const MANDATE_MILESTONE_PROSE: Record<string, string> = {
+  // ─────────────────────────────────────────────────────────────
+  // DOMINION OF STONE (3 transitions × 4 = 12 entries so far)
+  // ─────────────────────────────────────────────────────────────
+  'dominion_of_stone.setup_to_escalation':
+    'Stone answers the call. Two settlements bend their walls toward your will. The architecture shifts—support beams align like prayer.',
+
+  'dominion_of_stone.escalation_to_culmination':
+    'Four cities now pulse with your dominion. Their stones hum in unison, a chorus of matter aligned to purpose. The realm is becoming blueprint.',
+
+  'dominion_of_stone.completed':
+    'Five settlements stand as monuments to your reign. The world has been remade in stone and vision. You have shaped the very bones of the earth.',
+
+  'dominion_of_stone.failed':
+    'The stones slip from your grasp. Settlements refuse your dominion. The earth remembers older gods.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE BUILDER\'S LEGACY
+  // ─────────────────────────────────────────────────────────────
+  'builders_legacy.setup_to_escalation':
+    'Your first monuments rise. Two structures stand—temples of intention and will. Time will judge whether they last.',
+
+  'builders_legacy.escalation_to_culmination':
+    'Five edifices now span the realm, each one a claim carved into the world. Your signature is written in architecture. Future ages will name these works.',
+
+  'builders_legacy.completed':
+    'Eight monuments endure—a legacy that will outlast kingdoms. Your creations have become landscape. Mortals will build upon your foundations for generations.',
+
+  'builders_legacy.failed':
+    'Your structures crumble into dust. The materials reject your vision. Creation was not yours to command after all.',
+
+  // ─────────────────────────────────────────────────────────────
+  // WEB OF ALLEGIANCE
+  // ─────────────────────────────────────────────────────────────
+  'web_of_allegiance.setup_to_escalation':
+    'Two factions bind themselves to your cause. The threads of alliance form—fragile but real. Politics bends toward your will.',
+
+  'web_of_allegiance.escalation_to_culmination':
+    'Four nations now move as one. Regional blocs align beneath your vision. The web of allegiance becomes a net strong enough to catch destiny.',
+
+  'web_of_allegiance.completed':
+    'Six powers stand united under your purpose. The realm is bound by oath and thread. Division has yielded to the singular vision of your ascendancy.',
+
+  'web_of_allegiance.failed':
+    'The alliances shatter like glass. Trust breaks. The nations turn from your vision and remember their own hunger.',
+
+  // ─────────────────────────────────────────────────────────────
+  // TIDE OF LIFE
+  // ─────────────────────────────────────────────────────────────
+  'tide_of_life.setup_to_escalation':
+    'Life blooms where it withered. Two regions flourish under your touch. Growth spreads like whispered prayer through barren soil.',
+
+  'tide_of_life.escalation_to_culmination':
+    'Four territories sing with vitality. Forests deepen their green. Animals return. The world remembers fertility. Life rides your current now.',
+
+  'tide_of_life.completed':
+    'Six regions blaze with the force of growth. The Tide of Life has become a torrent. Creation itself bends to your will. Entropy retreats before you.',
+
+  'tide_of_life.failed':
+    'The life force withdraws. Regions relapse into drought and silence. Your dominion over growth was illusory. The world is larger than you.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE ENTROPIC CASCADE
+  // ─────────────────────────────────────────────────────────────
+  'entropic_cascade.setup_to_escalation':
+    'Two regions begin to fracture. Order unravels at its seams. The old structures feel the weight of dissolution. Change is coming.',
+
+  'entropic_cascade.escalation_to_culmination':
+    'Four territories crumble and transform. The cascade of entropy spreads—old kingdoms dissolve into possibility. Renewal rises from the ashes of decay.',
+
+  'entropic_cascade.completed':
+    'Five realms have been unmade and remade in your image. The Cascade is complete. What was is no longer. Entropy has baptized the world.',
+
+  'entropic_cascade.failed':
+    'The decay halts. Remnants of the old order reassert themselves. Your dissolution was incomplete. Order reassumes its throne.',
+
+  // ─────────────────────────────────────────────────────────────
+  // ILLUMINATION
+  // ─────────────────────────────────────────────────────────────
+  'illumination.setup_to_escalation':
+    'One region is saturated in energy. Light blazes where shadow held dominion. Power radiates outward in waves of transformation.',
+
+  'illumination.escalation_to_culmination':
+    'Two territories burn bright with divine power. Energy courses through their bones. The realm begins to remember what radiance means.',
+
+  'illumination.completed':
+    'Four regions blaze with the force of pure energy. The world is illuminated end to end. Your light has become the only truth. Darkness yields.',
+
+  'illumination.failed':
+    'The radiance dims and fails. Shadows reclaim their territory. Your light was not steady enough to rewrite the sky.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE ASCENDANT\'S CHAMPION
+  // ─────────────────────────────────────────────────────────────
+  'ascendants_champion.setup_to_escalation':
+    'One mortal rises beyond the veil. Demigod now, they bear your mark. The world begins to see that divinity can be granted.',
+
+  'ascendants_champion.escalation_to_culmination':
+    'One ascends to true divinity while three demigodsstand as proof of your power. Your champions multiply. The age of mortals is ending.',
+
+  'ascendants_champion.completed':
+    'Aspect tier is achieved. One of your champions now sits among the eternal. They are your eternal voice in the world. Immortality given and received.',
+
+  'ascendants_champion.failed':
+    'Your chosen ones fall back to lesser stations. Elevation slips through your fingers. Perhaps mortals were never meant to touch the divine.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE DEVOTED CIRCLE
+  // ─────────────────────────────────────────────────────────────
+  'devoted_circle.setup_to_escalation':
+    'Two servants rise to demigod status. The circle begins to form. Devotion takes shape in flesh and purpose.',
+
+  'devoted_circle.escalation_to_culmination':
+    'Three of your disciples now stand as divine beings. The circle grows. Their devotion has become a force that bends reality.',
+
+  'devoted_circle.completed':
+    'Five divine servants stand around your throne. The Devoted Circle is complete. Their collective will becomes indistinguishable from your own.',
+
+  'devoted_circle.failed':
+    'The circle fractures before it forms. Your disciples resist ascension. Perhaps devotion cannot be cultivated by decree alone.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE SHADOW SOVEREIGN
+  // ─────────────────────────────────────────────────────────────
+  'shadow_sovereign.setup_to_escalation':
+    'One shadow agent rises to divinity. They move through darkness unseen. Your hidden reach extends into realms of silence and secret.',
+
+  'shadow_sovereign.escalation_to_culmination':
+    'Two divine servants now work in shadow. Your web of influence spreads through the hidden paths. The Sovereign begins to take shape.',
+
+  'shadow_sovereign.completed':
+    'Three Aspect-tier agents serve you from the shadows. The Shadow Sovereign reigns supreme. Your power is the darkness itself—invisible, irresistible.',
+
+  'shadow_sovereign.failed':
+    'Your shadow agents are exposed and diminished. The darkness lifts. Your hidden dominion crumbles into the light.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THREADS OF FATE
+  // ─────────────────────────────────────────────────────────────
+  'threads_of_fate.setup_to_escalation':
+    'Four mortal hearts find each other. Relationships weave themselves into being. The fabric of destiny hums with new connection.',
+
+  'threads_of_fate.escalation_to_culmination':
+    'Eight bonds now link the mortals together. The web grows dense, stronger. Fate becomes tangible—something you can almost touch.',
+
+  'threads_of_fate.completed':
+    'Twelve threads bind mortals in intricate webs of relation. The tapestry of destiny is complete. All hearts are woven together now.',
+
+  'threads_of_fate.failed':
+    'The threads unravel. Hearts turn away from one another. Fate cannot be written if mortals refuse to listen.',
+
+  // ─────────────────────────────────────────────────────────────
+  // THE GATHERING
+  // ─────────────────────────────────────────────────────────────
+  'the_gathering.setup_to_escalation':
+    'Three mortals answer the call to faction. Loyalty takes root in soil made fertile by vision. The first followers gather.',
+
+  'the_gathering.escalation_to_culmination':
+    'Five souls now wear the colors of allegiance. The factions swell with strength. Momentum builds—soon it will be unstoppable.',
+
+  'the_gathering.completed':
+    'Eight faithful stand pledged to faction and vision. The Gathering is complete. The movement has become a force of nature.',
+
+  'the_gathering.failed':
+    'The factions remain hollow. Mortals will not commit. Unity cannot be imposed—it must be earned through meaning.',
+
+  // ─────────────────────────────────────────────────────────────
+  // CULTURAL CONVERGENCE
+  // ─────────────────────────────────────────────────────────────
+  'cultural_convergence.setup_to_escalation':
+    'Three mortals claim identity within new cultures. Belonging takes shape—a root deeper than flesh and blood.',
+
+  'cultural_convergence.escalation_to_culmination':
+    'Six souls now carry cultural identity. Heritage spreads through bloodlines and choice alike. Convergence is inevitable now.',
+
+  'cultural_convergence.completed':
+    'Ten cultural bonds trace themselves through the realm. Identity has become destiny. The Convergence is written into being itself.',
+
+  'cultural_convergence.failed':
+    'The cultures fail to take root. Identity remains fractured and scattered. People resist the shape you were trying to impose.',
+};
+
