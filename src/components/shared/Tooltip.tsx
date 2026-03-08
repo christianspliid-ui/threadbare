@@ -8,6 +8,8 @@ import {
   TOOLTIP_SIDE_THRESHOLD,
   TOOLTIP_MAX_WIDTH,
   TOOLTIP_OFFSET,
+  TOOLTIP_MAX_CHAIN_DEPTH,
+  TOOLTIP_LINK_PATTERN,
 } from '../../types/tooltip';
 import { resolveTooltip } from '../../engine/tooltipResolver';
 
@@ -49,7 +51,77 @@ const TOOLTIP_BG = '#1a1a1e';
 const TOOLTIP_BORDER = '#57534e';
 const TOOLTIP_LABEL_COLOR = '#fcd34d';     // amber-200 (Cinzel)
 const TOOLTIP_DESC_COLOR = '#a8a29e';      // stone-400 (Inter)
+const TOOLTIP_LINK_COLOR = '#fbbf24';      // amber-400 for linked concepts
 const TOOLTIP_ARROW_SIZE = 6;              // px for arrow triangle
+
+/**
+ * Parse description text and render {{concept.id}} links as nested Tooltips.
+ *
+ * Splits on TOOLTIP_LINK_PATTERN regex and:
+ * - For resolved concepts at depth < TOOLTIP_MAX_CHAIN_DEPTH:
+ *   renders as underlined amber-400 span wrapped in nested Tooltip
+ * - For unresolved or at max depth:
+ *   renders as plain text (raw marker without {{ }})
+ *
+ * Returns array of text strings and tooltip-wrapped span elements.
+ */
+function parseDescription(
+  description: string | undefined,
+  depth: number
+): React.ReactNode[] {
+  if (!description) return [];
+
+  const result: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  // Reset regex state
+  const regex = new RegExp(TOOLTIP_LINK_PATTERN);
+
+  while ((match = regex.exec(description)) !== null) {
+    // Push text before the match
+    if (match.index > lastIndex) {
+      result.push(description.substring(lastIndex, match.index));
+    }
+
+    const conceptId = match[1];
+    const resolved = resolveTooltip(conceptId);
+
+    if (resolved && depth < TOOLTIP_MAX_CHAIN_DEPTH) {
+      // Render as nested Tooltip with underlined link
+      result.push(
+        <Tooltip
+          key={`link-${match.index}-${conceptId}`}
+          id={conceptId}
+          depth={depth + 1}
+        >
+          <span
+            data-tooltip-link={conceptId}
+            style={{
+              color: TOOLTIP_LINK_COLOR,
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+          >
+            {resolved.label}
+          </span>
+        </Tooltip>
+      );
+    } else {
+      // Unresolved or at max depth: render raw marker text (without {{ }})
+      result.push(match[0]);
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  // Push remaining text after last match
+  if (lastIndex < description.length) {
+    result.push(description.substring(lastIndex));
+  }
+
+  return result;
+}
 
 /**
  * Tooltip component with hover delay, keyboard escape, and smart positioning.
@@ -213,7 +285,7 @@ export const Tooltip = React.memo(function Tooltip({
         boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
         zIndex: 50,
         opacity: isVisible ? 1 : 0,
-        pointerEvents: 'none',
+        pointerEvents: isVisible ? 'auto' : 'none',
         transition: `opacity ${TOOLTIP_FADE_OUT}ms ease-out`,
       }}
     >
@@ -238,9 +310,10 @@ export const Tooltip = React.memo(function Tooltip({
             color: TOOLTIP_DESC_COLOR,
             fontFamily: 'Inter, system-ui, sans-serif',
             lineHeight: '1.4',
+            pointerEvents: 'auto',
           }}
         >
-          {finalDesc}
+          {parseDescription(finalDesc, depth)}
         </div>
       )}
 
