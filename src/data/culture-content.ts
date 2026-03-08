@@ -47,6 +47,16 @@ export interface BiomeModifier {
   metaphorPalette: string[];
 }
 
+// ─── Cultural Prose Palette Interface ──────────────────────────────
+
+export interface CulturalProsePalette {
+  adjectives: string[];
+  verbs: string[];
+  rhythms: string[];
+  greetings: string[];
+  oaths: string[];
+}
+
 // ─── Foundation Modifiers (4 sets) ────────────────────────────────
 
 export const FOUNDATION_MODIFIERS: FoundationModifier[] = [
@@ -1845,3 +1855,105 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     tags: ['spiritual', 'ritual'],
   },
 ];
+
+// ─── Cultural Prose Palettes (12 sphere voices) ───────────────────
+
+export const CULTURAL_PROSE_PALETTES: Record<string, CulturalProsePalette> = {
+  // ─── Foundation Spheres (4) ───────────────────────────────────────
+  chaos: {
+    adjectives: ['wild', 'untamed', 'roiling', 'defiant', 'turbulent', 'feral', 'reckless', 'unbound'],
+    verbs: ['ruptures', 'shatters', 'surges', 'erupts', 'claws', 'tears', 'storms', 'devours'],
+    rhythms: ['staccato bursts', 'jagged and breathless', 'a thunder that refuses stillness'],
+    greetings: ['Storm-kin, let the walls crack between us', 'Breach-walker, the fixed ways hold no grip'],
+    oaths: ['By the unending rebellion', 'Let the settled world shatter if it be so'],
+  },
+
+  order: {
+    adjectives: ['measured', 'precise', 'steadfast', 'rigid', 'deliberate', 'exacting', 'unwavering', 'crystalline'],
+    verbs: ['inscribes', 'arranges', 'constructs', 'mandates', 'aligns', 'anchors', 'codifies', 'binds'],
+    rhythms: ['rolling like seasons in their turning', 'a march neither hastened nor delayed', 'the beat of the turning wheel'],
+    greetings: ['Structured soul, let us speak in order', 'Ledger-keeper, all debts recorded find their due'],
+    oaths: ['By the eternal architecture', 'Let the pattern hold unbroken'],
+  },
+
+  light: {
+    adjectives: ['blazing', 'revealing', 'radiant', 'piercing', 'luminous', 'searing', 'glowing', 'incandescent'],
+    verbs: ['illuminates', 'sears', 'exposes', 'burns', 'kindles', 'ignites', 'blazes', 'radiates'],
+    rhythms: ['swift as dawn breaking over shadow', 'a clarion call that brokers no darkness', 'bright and relentless'],
+    greetings: ['Bright-bearer, let nothing hide between us', 'Sun-touched, your truth casts no shadow'],
+    oaths: ['By the revealing flame', 'Let all darkness flee before this witness'],
+  },
+
+  darkness: {
+    adjectives: ['veiled', 'hidden', 'secret', 'shadowed', 'obscure', 'silent', 'shrouded', 'mysterious'],
+    verbs: ['conceals', 'whispers', 'shrouds', 'hides', 'dissolves', 'masks', 'enfolds', 'swallows'],
+    rhythms: ['soft as breath in shadow', 'a silence that speaks volumes', 'muffled and profound'],
+    greetings: ['Shadow-sister, speak low that ears beyond cannot hear', 'Night-child, what secrets bind your heart'],
+    oaths: ['By the keeping dark', 'Let none know this but the void'],
+  },
+
+  // ─── Creation Spheres (8) ─────────────────────────────────────────
+  force: {
+    adjectives: ['violent', 'mighty', 'crushing', 'relentless', 'fierce', 'brutal', 'dominant', 'wrathful'],
+    verbs: ['smashes', 'drives', 'forces', 'shatters', 'overwhelms', 'dominates', 'strikes', 'compels'],
+    rhythms: ['hammer-blow cadence', 'the clash of iron on iron', 'a fist closing with finality'],
+    greetings: ['Strong-armed, let us test our mettle', 'Warrior-born, your grip shapes the world'],
+    oaths: ['By the unquenchable force', 'Let my will break all that stands'],
+  },
+
+  matter: {
+    adjectives: ['solid', 'grounded', 'heavy', 'enduring', 'substantial', 'dense', 'weighty', 'immutable'],
+    verbs: ['settles', 'anchors', 'grounds', 'solidifies', 'compacts', 'weighs', 'stands', 'roots'],
+    rhythms: ['steady as stone centuries old', 'the slow accumulation of years', 'a weight that cannot be moved'],
+    greetings: ['Stone-hearted, we meet on solid ground', 'Earth-keeper, your roots run deep and sure'],
+    oaths: ['By the undying stone', 'Let me be as unmoved as bedrock'],
+  },
+
+  energy: {
+    adjectives: ['crackling', 'kinetic', 'volatile', 'vibrant', 'electric', 'pulsing', 'rapid', 'tremulous'],
+    verbs: ['crackles', 'sparks', 'surges', 'trembles', 'vibrates', 'electrifies', 'propels', 'ignites'],
+    rhythms: ['rapid and scintillating', 'a tremor that will not settle', 'the hum of constant motion'],
+    greetings: ['Bright-sparking, let our power entwine', 'Force-dancer, feel the hum between us'],
+    oaths: ['By the ceaseless spark', 'Let energy flow through my every breath'],
+  },
+
+  life: {
+    adjectives: ['growing', 'verdant', 'vital', 'fertile', 'thriving', 'lush', 'bleeding', 'wild-bright'],
+    verbs: ['grows', 'blooms', 'sprouts', 'breeds', 'nourishes', 'flourishes', 'multiplies', 'unfolds'],
+    rhythms: ['the endless surge of spring', 'a pulse that quickens all it touches', 'the ache of becoming'],
+    greetings: ['Life-giver, let our roots entangle', 'Green-keeper, what grows within your heart'],
+    oaths: ['By the eternal flourish', 'Let me nurture what would otherwise perish'],
+  },
+
+  mind: {
+    adjectives: ['sharp', 'calculating', 'keen', 'precise', 'lucid', 'cutting', 'brilliant', 'cold'],
+    verbs: ['calculates', 'dissects', 'penetrates', 'reasons', 'perceives', 'untangles', 'sees', 'knows'],
+    rhythms: ['quick as thought branching', 'the turning of gears in sequence', 'a clarity that cuts'],
+    greetings: ['Sharp-minded, let us reason together', 'Thought-weaver, your cunning honors mine'],
+    oaths: ['By the keenest edge', 'Let my wits outlast my body'],
+  },
+
+  spirit: {
+    adjectives: ['ethereal', 'transcendent', 'whispering', 'luminous', 'profound', 'sacred', 'unknowable', 'sublime'],
+    verbs: ['ascends', 'illuminates', 'transcends', 'whispers', 'communes', 'sanctifies', 'transforms', 'pervades'],
+    rhythms: ['soft as prayer at dusk', 'the silence between breaths', 'a voice from beyond the veil'],
+    greetings: ['Spirit-touched, let the sacred pass between us', 'Holy-child, your essence echoes mine'],
+    oaths: ['By the deathless spirit', 'Let my essence endure when flesh has fallen'],
+  },
+
+  time: {
+    adjectives: ['ancient', 'inevitable', 'cyclical', 'endless', 'worn', 'patient', 'relentless', 'consuming'],
+    verbs: ['erodes', 'cycles', 'accumulates', 'transforms', 'repeats', 'consumes', 'wears', 'remembers'],
+    rhythms: ['the turning of great wheels', 'a heartbeat older than mountains', 'the patient unfolding of ages'],
+    greetings: ['Ancient-hearted, we are but moments in your span', 'Cycle-keeper, what patterns do you read'],
+    oaths: ['By the turning wheel', 'Let my name echo through the ages'],
+  },
+
+  entropy: {
+    adjectives: ['decaying', 'dissolving', 'final', 'silent', 'cold', 'empty', 'vast', 'inevitable'],
+    verbs: ['dissolves', 'decays', 'dissipates', 'crumbles', 'fades', 'silences', 'empties', 'ceases'],
+    rhythms: ['a slow unraveling toward silence', 'the gentle drift into nothingness', 'the last breath before stillness'],
+    greetings: ['Void-speaker, at last we meet as equals', 'Ending-walker, what does dissolution teach'],
+    oaths: ['By the final dissolution', 'Let all striving cease when the time comes'],
+  },
+};
