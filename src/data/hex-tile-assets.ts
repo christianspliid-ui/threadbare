@@ -35,6 +35,33 @@ export function getHexTileUrl(terrain: TerrainType): string {
   return `/hex-tiles/${TERRAIN_TILE_MAP[terrain]}`;
 }
 
+/** All sphere names (creation + foundation) for magic overlay lookup */
+export type AllSphereName =
+  | 'force' | 'matter' | 'energy' | 'life' | 'mind' | 'spirit' | 'time' | 'entropy'
+  | 'chaos' | 'order' | 'light' | 'darkness';
+
+/** Magic overlay filenames keyed by sphere name */
+export const MAGIC_OVERLAY_MAP: Record<AllSphereName, string> = {
+  // Creation spheres
+  force: 'magic-force.png',
+  matter: 'magic-matter.png',
+  energy: 'magic-energy.png',
+  life: 'magic-life.png',
+  mind: 'magic-mind.png',
+  spirit: 'magic-spirit.png',
+  time: 'magic-time.png',
+  entropy: 'magic-entropy.png',
+  // Foundation spheres
+  chaos: 'magic-chaos.png',
+  order: 'magic-order.png',
+  light: 'magic-light.png',
+  darkness: 'magic-darkness.png',
+};
+
+export function getMagicOverlayUrl(sphere: AllSphereName): string {
+  return `/hex-tiles/${MAGIC_OVERLAY_MAP[sphere]}`;
+}
+
 /** Full-size overlay icons (settlement areas and terrain-covering features — fill the hex) */
 const FULL_SIZE_OVERLAYS: Set<LocationSubtype> = new Set([
   'hamlet', 'town', 'city', 'capital', 'farmland',
