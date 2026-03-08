@@ -51,8 +51,8 @@ describe('HexTile fog rendering', () => {
   it('renders dimmed when visibility is remembered', () => {
     const { container } = renderTile({ visibility: 'remembered' });
     const groups = container.querySelectorAll('g');
-    // Second group (first is the outer wrapper) should have reduced opacity
-    expect(groups[1]?.getAttribute('opacity')).toBe('0.4');
+    // Find the dimmed group: Tooltip wrapper (groups[0]) -> outer g (groups[1]) -> dimmed g (groups[2])
+    expect(groups[2]?.getAttribute('opacity')).toBe('0.4');
   });
 });
 

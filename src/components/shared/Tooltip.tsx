@@ -41,6 +41,12 @@ interface TooltipProps {
    * @internal
    */
   depth?: number;
+
+  /**
+   * Wrapper element type: 'span' for DOM, 'g' for SVG.
+   * Defaults to 'span'.
+   */
+  as?: 'span' | 'g';
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -138,9 +144,10 @@ export const Tooltip = React.memo(function Tooltip({
   desc: explicitDesc,
   children,
   depth = 0,
+  as = 'span',
 }: TooltipProps) {
   const tooltipId = useId();
-  const triggerRef = useRef<HTMLSpanElement>(null);
+  const triggerRef = useRef<HTMLElement | SVGGElement>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [position, setPosition] = useState<{
     top: number;
@@ -341,23 +348,23 @@ export const Tooltip = React.memo(function Tooltip({
     </div>
   );
 
+  const WrapperTag = as;
+  const wrapperStyle = as === 'g' ? undefined : { display: 'inline-block' as const, cursor: 'inherit' as const };
+
   return (
     <>
       {/* Trigger wrapper */}
-      <span
-        ref={triggerRef}
+      <WrapperTag
+        ref={triggerRef as any}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
         onFocus={handleFocus}
         onBlur={handleBlur}
         aria-describedby={isVisible ? tooltipId : undefined}
-        style={{
-          display: 'inline-block',
-          cursor: 'inherit',
-        }}
+        style={wrapperStyle}
       >
         {children}
-      </span>
+      </WrapperTag>
 
       {/* Portal tooltip */}
       {isVisible && position && createPortal(tooltipContent, document.body)}

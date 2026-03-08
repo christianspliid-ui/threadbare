@@ -92,7 +92,7 @@ describe('disposition types and constants', () => {
     it('DILEMMA_STAKES_THRESHOLD is between 0 and 1', () => {
       expect(DILEMMA_STAKES_THRESHOLD).toBeGreaterThan(0);
       expect(DILEMMA_STAKES_THRESHOLD).toBeLessThan(1);
-      expect(DILEMMA_STAKES_THRESHOLD).toBe(0.6);
+      expect(DILEMMA_STAKES_THRESHOLD).toBe(0.3);
     });
   });
 
