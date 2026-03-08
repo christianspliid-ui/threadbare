@@ -62,6 +62,8 @@ import type { LocationSubtype } from '../../types';
 import type { LocalEncounterMode, InterventionType } from '../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
+import { DebugPanel } from './DebugPanel';
+import { enableTracing, disableTracing } from '../../engine/traceBuffer';
 import { AvatarHUD } from './AvatarHUD';
 import type { HexMapHandle } from '../HexMap/HexMap';
 import { getAvatarHexPosition } from '../../engine/visibility';
@@ -121,6 +123,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [scryVisible, setScryVisible] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
   const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
+  const [debugPanelOpen, setDebugPanelOpen] = useState(false);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hexMapRef = useRef<HexMapHandle>(null);
@@ -435,6 +438,24 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setRunning(r => !r);
   }, []);
 
+  const handleToggleDebug = useCallback(() => {
+    setDebugPanelOpen(prev => {
+      const next = !prev;
+      if (next) enableTracing();
+      else disableTracing();
+      return next;
+    });
+  }, []);
+
+  // Backtick keyboard shortcut for debug panel
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === '`') handleToggleDebug();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [handleToggleDebug]);
+
   const handleBackFromAgentDetail = useCallback(() => {
     setSelectedAgentId(null);
   }, []);
@@ -515,6 +536,17 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             />
           </>
         )}
+        <button
+          data-testid="debug-toggle"
+          onClick={handleToggleDebug}
+          className="ml-auto px-3 py-1 rounded text-xs font-mono border border-amber-900/30 bg-stone-700/50 text-amber-200/70 hover:text-amber-100 hover:bg-stone-600/50 transition-colors flex items-center gap-1.5"
+          title="Toggle debug trace panel (`)"
+        >
+          {debugPanelOpen && (
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+          )}
+          Debug
+        </button>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
@@ -685,26 +717,34 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           </div>
         </div>
 
-        {/* Right sidebar - Agent Detail or Retinue */}
-        <div className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto">
-          {agentDetail ? (
-            <AgentDetailPanel
-              detail={agentDetail}
-              onBack={handleBackFromAgentDetail}
-              onViewPsyche={handleViewPsyche}
-              onIntervene={handleOpenWheel}
-              onLocationClick={handleBackFromAgentDetail}
-            />
-          ) : (
-            <div className="p-4">
-              <RetinuePanel
-                agents={retinueAgents}
-                selectedAgentId={selectedAgentId}
-                onAgentSelect={handleAgentSelect}
+        {/* Right sidebar - Debug Panel OR Agent Detail/Retinue */}
+        {debugPanelOpen ? (
+          <DebugPanel
+            currentTick={gameState.tick}
+            followAgentId={selectedAgentId ?? undefined}
+            onClose={handleToggleDebug}
+          />
+        ) : (
+          <div data-testid="right-sidebar" className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto">
+            {agentDetail ? (
+              <AgentDetailPanel
+                detail={agentDetail}
+                onBack={handleBackFromAgentDetail}
+                onViewPsyche={handleViewPsyche}
+                onIntervene={handleOpenWheel}
+                onLocationClick={handleBackFromAgentDetail}
               />
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="p-4">
+                <RetinuePanel
+                  agents={retinueAgents}
+                  selectedAgentId={selectedAgentId}
+                  onAgentSelect={handleAgentSelect}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* StrandView overlay */}
