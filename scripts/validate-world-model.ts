@@ -104,8 +104,8 @@ if (
   const fs = await import('fs');
   const path = await import('path');
 
-  const scriptDir = path.dirname(import.meta.url.replace('file://', ''));
-  const modelPath = path.join(scriptDir, '../src/data/world-model.json');
+  // Use process.cwd() since we're running from project root
+  const modelPath = path.join(process.cwd(), 'src/data/world-model.json');
 
   const modelData = JSON.parse(fs.readFileSync(modelPath, 'utf-8'));
   const result = validateWorldModel(modelData);
