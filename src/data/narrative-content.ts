@@ -518,3 +518,125 @@ export const DILEMMA_STAKES_PROSE: Record<string, string> = {
   'mutual_distrust.high': '{actor} and {target} spiraled into {adj} {noun}, neither able to bridge the chasm. The distance between them grew {adj}, absolute, legendary in its {noun}.',
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// 8. SPHERE INFLUENCE EVENTS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Atmospheric prose for sphere influence changes at locations.
+ * Keys: {sphere}.{direction} where direction is 'gaining' or 'losing'.
+ * Used when a location\'s sphere influence shifts (8 spheres × 2 directions = 16 entries).
+ * Values contain {location} placeholder.
+ */
+export const SPHERE_INFLUENCE_EVENTS: Record<string, string> = {
+  'force.gaining': '{location} trembles with newfound {adj} power — the threads of fate grow taut, resonant with {noun}.',
+  'force.losing': 'The {adj} grip on {location} falters. Its {noun} drains like water through breaking stone.',
+
+  'matter.gaining': '{location} anchors itself deeper, its foundations growing {adj}, immovable. The world\'s {noun} settles into stone.',
+  'matter.losing': '{location} grows {adj}, insubstantial — walls crack, earth shifts. The {noun} that held it steady slips away.',
+
+  'energy.gaining': '{location} blazes with {adj} vitality, fire dancing across every surface. The {noun} here burns bright and dangerous.',
+  'energy.losing': '{location} dims, the {noun} draining from its streets and spires. Darkness settles in, {adj} and absolute.',
+
+  'life.gaining': '{location} blooms in impossible ways — growth erupts where none should flourish, {adj} and unstoppable. The {noun} here multiplies.',
+  'life.losing': 'Death creeps through {location}. Plants wither, animals flee, and the {adj} pulse of {noun} fades to silence.',
+
+  'mind.gaining': '{location} sharpens, its people growing {adj} and perceptive. Secrets cannot hide here anymore. The {noun} cuts like glass.',
+  'mind.losing': 'Fog rolls across {location}, {adj} and suffocating. The {noun} of wisdom scatters, leaving only confusion and numbness.',
+
+  'spirit.gaining': '{location} hums with {adj} presence — the veil thins, and other worlds press close. The {noun} of the sacred grows tangible.',
+  'spirit.losing': 'The {adj} aura around {location} fades. Its spiritual {noun} withdraws, leaving the place hollow and mortal.',
+
+  'time.gaining': '{location} resonates with ancient {noun} — the past and future draw close here, {adj} and inescapable. Chronology bends.',
+  'time.losing': '{location} slips free from history\'s grip. Its {noun} scatters into the eternal now, {adj} and untethered.',
+
+  'entropy.gaining': '{location} crumbles imperceptibly, its {adj} decay accelerating. The {noun} of dissolution spreads like rust through stone.',
+  'entropy.losing': '{location} stabilizes, held fast against the end. The {noun} that threatened to unmake it retreats, {adj} and distant.',
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// 9. SEASONAL VOCABULARY
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Seasonal word banks and atmosphere descriptions.
+ * Used to flavor prose based on the current season.
+ * Each season has adjectives, verbs, and an atmosphere string.
+ */
+export const SEASONAL_VOCABULARY: Record<string, {
+  adjectives: string[];
+  verbs: string[];
+  atmosphere: string;
+}> = {
+  spring: {
+    adjectives: ['verdant', 'fragile', 'awakening', 'tender', 'hopeful', 'violent'],
+    verbs: ['bloomed', 'burst', 'stirred', 'trembled', 'rushed', 'thawed'],
+    atmosphere: 'The world wakes with {adj} urgency. Life demands attention, impossible to ignore — growth breaking through dark soil.',
+  },
+  summer: {
+    adjectives: ['golden', 'blazing', 'abundant', 'relentless', 'ripe', 'oppressive'],
+    verbs: ['flourished', 'burned', 'ripened', 'seared', 'sweltered', 'consumed'],
+    atmosphere: 'Heat bears down {adj} and inescapable. Everything reaches peak — power and excess press upon the land like a hand upon the heart.',
+  },
+  autumn: {
+    adjectives: ['dying', 'crimson', 'bittersweet', 'waning', 'beautiful', 'fading'],
+    verbs: ['withered', 'scattered', 'darkened', 'withdrew', 'transformed', 'descended'],
+    atmosphere: 'The world exhales its last {adj} breath. Splendor and death dance together — seasons turn, and nothing stays.',
+  },
+  winter: {
+    adjectives: ['frozen', 'merciless', 'eternal', 'stark', 'dead', 'silent'],
+    verbs: ['froze', 'crystallized', 'entombed', 'stilled', 'shattered', 'numbed'],
+    atmosphere: 'Ice locks all motion. The land sleeps {adj} and deeply, waiting for the world\'s next awakening — or else remaining frozen in shadow.',
+  },
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// 10. ECHO FLAVOR TEXTS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Brief flavor text for echo revelations in the Ascendant interface.
+ * 12 templates with {archetype}, {sphere}, {outcome} placeholders.
+ * Used to add texture to the echo selection moment when choosing which echo to pursue.
+ */
+export const ECHO_FLAVOR_TEXTS: string[] = [
+  'A fragment of {archetype}, forever changed by {sphere}. The memory {outcome} in eternal darkness.',
+  'The {archetype}\'s final choice: surrender to {sphere} or transcend it? The answer waits in {outcome}.',
+  '{sphere} marked this {archetype} in ways few could fathom. What {outcome} when the echo reveals the truth?',
+  'This {archetype} walked a path {sphere} had paved. The ending {outcome} beyond mortal understanding.',
+  '{outcome} — the only word for what {sphere} did to the {archetype}\'s soul.',
+  'The {archetype} knew what {sphere} demanded. In the end, they {outcome} to its weight.',
+  'A {archetype} consumed by their devotion to {sphere}. The chronicle {outcome} this in darkness and awe.',
+  'When {sphere} finally spoke to this {archetype}, everything {outcome} in a single breath.',
+  'The {archetype}\'s story is written in {sphere}\'s language. Each echo {outcome} a different verse.',
+  'What would the {archetype} have chosen, if {sphere} had not chosen first? This echo {outcome} the question.',
+  'The {archetype} became a thread in {sphere}\'s tapestry. The pattern {outcome} long ago.',
+  'Some echoes speak of triumph. Others of {outcome} — when {sphere} and {archetype} became one.',
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// 11. STEALTH DETECTION PROSE
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Prose for stealth & detection state transitions.
+ * Keys: {observer_type}.{transition} where observer_type is 'mortal' or 'rival'.
+ * Transitions: unaware_to_suspicion, suspicion_to_realization, realization_to_worship, worship_to_fanaticism (mortal)
+ *              unaware_to_suspicion, suspicion_to_investigation, investigation_to_confirmation, confirmation_to_opposition (rival).
+ * Values contain {location} and {sphere} placeholders.
+ * Used when detection level changes due to player actions or agent witness events.
+ */
+export const STEALTH_DETECTION_PROSE: Record<string, string> = {
+  // Mortal detection chain
+  'mortal.unaware_to_suspicion': '{location}\'s people whisper of strange {adj} occurrences — a sign of {sphere}\'s touch, perhaps. Or mere coincidence? The threads are too {noun} to be certain.',
+  'mortal.suspicion_to_realization': 'It is no longer whispers. {location} has seen the {adj} work of {sphere} with their own eyes. The proof hangs in the air like {noun}, undeniable.',
+  'mortal.realization_to_worship': '{location} transforms. The people kneel before what they now understand — {sphere} walks among them, {adj} and real. Their devotion becomes {noun} and all-consuming.',
+  'mortal.worship_to_fanaticism': 'Reason fails in {location}. The faithful burn with {adj} fervor, their love of {sphere} becoming {noun} and terrible. They would burn the world to please their god.',
+
+  // Rival detection chain
+  'rival.unaware_to_suspicion': 'Another god\'s fingerprints appear in {location} — {sphere}\'s markings, {adj} and deliberate. A rival\'s intelligence network stirs with {noun} concern.',
+  'rival.suspicion_to_investigation': '{sphere}\'s presence in {location} is too {adj} to ignore. A rival god deploys their finest agents, the {noun} of conflict growing thick.',
+  'rival.investigation_to_confirmation': 'Confirmation arrives with {adj} certainty — {sphere} is active, reshaping {location} and laying claim to what a rival believed was theirs. The {noun} of ambition ignites.',
+  'rival.confirmation_to_opposition': 'War becomes inevitable. {location} is a prize no longer — it is a battlefield. Two gods claim {sphere}\'s domain, and the {adj} conflict spreads like {noun} across the land.',
+};
+
