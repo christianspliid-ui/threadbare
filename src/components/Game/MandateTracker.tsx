@@ -74,19 +74,20 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
   return (
     <div className="flex-1 min-w-0 relative">
       {/* Compact Bar */}
-      <Tooltip id="ui.mandate_tracker">
-        <div
-          onClick={handleToggle}
-          className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
-        >
+      <div
+        onClick={handleToggle}
+        className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
+      >
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 min-w-0">
-            <span
-              className="text-xs font-bold uppercase tracking-wider truncate"
-              style={{ color, fontFamily: 'Cinzel, serif' }}
-            >
-              {definition.name}
-            </span>
+            <Tooltip id="ui.mandate_tracker">
+              <span
+                className="text-xs font-bold uppercase tracking-wider truncate"
+                style={{ color, fontFamily: 'Cinzel, serif' }}
+              >
+                {definition.name}
+              </span>
+            </Tooltip>
             <div className="flex gap-1 flex-shrink-0">
               {STAGE_ORDER.map(stage => (
                 <div key={stage}>
@@ -100,8 +101,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
           </span>
         </div>
         <ProgressBar progress={state.progress} color={color} glow={true} />
-        </div>
-      </Tooltip>
+      </div>
 
       {/* Expanded Popover */}
       {isExpanded && (

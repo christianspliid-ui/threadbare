@@ -13,23 +13,23 @@ describe('AvatarHUD', () => {
     onScryClick: vi.fn(),
   };
 
-  it('displays avatar name', () => {
+  it('displays avatar name on the center button', () => {
     render(<AvatarHUD {...defaultProps} />);
-    // Avatar button now just shows "Avatar" (name is in sidebar)
-    expect(screen.getByRole('button', { name: /^avatar$/i })).toBeTruthy();
+    // Avatar button now shows the character name
+    expect(screen.getByRole('button', { name: /kael/i })).toBeTruthy();
   });
 
-  it('calls onCenterOnAvatar when name is clicked', () => {
+  it('calls onCenterOnAvatar when avatar name button is clicked', () => {
     render(<AvatarHUD {...defaultProps} />);
-    // Click the Avatar center button (replaces the name button)
-    fireEvent.click(screen.getByRole('button', { name: /^avatar$/i }));
+    // Click the center button showing avatar name
+    fireEvent.click(screen.getByRole('button', { name: /kael/i }));
     expect(defaultProps.onCenterOnAvatar).toHaveBeenCalled();
   });
 
-  it('renders Move, Wheel, and Scry action buttons', () => {
+  it('renders Move, Actions, and Scry buttons', () => {
     render(<AvatarHUD {...defaultProps} />);
     expect(screen.getByRole('button', { name: /move/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /wheel/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /actions/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /scry/i })).toBeTruthy();
   });
 
@@ -39,9 +39,9 @@ describe('AvatarHUD', () => {
     expect(defaultProps.onMoveClick).toHaveBeenCalled();
   });
 
-  it('calls onWheelClick when Wheel button is clicked', () => {
+  it('calls onWheelClick when Actions button is clicked', () => {
     render(<AvatarHUD {...defaultProps} />);
-    fireEvent.click(screen.getByRole('button', { name: /wheel/i }));
+    fireEvent.click(screen.getByRole('button', { name: /actions/i }));
     expect(defaultProps.onWheelClick).toHaveBeenCalled();
   });
 

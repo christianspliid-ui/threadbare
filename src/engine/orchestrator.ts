@@ -608,16 +608,7 @@ export function phaseMandate(state: GameState): Partial<GameState> {
 
   const events: TickEvent[] = [];
 
-  if (advanced.currentStage !== state.mandateState.currentStage) {
-    events.push({
-      id: nextEventId(),
-      tick: state.tick,
-      type: 'mandate_progress',
-      message: `Mandate "${state.mandateDefinition.name}" advances to ${advanced.currentStage}`,
-      significance: 0.8,
-    });
-  }
-
+  // Only emit visible narrative event when mandate is fulfilled (not for intermediate stage transitions)
   if (advanced.completed && !state.mandateState.completed) {
     events.push({
       id: nextEventId(),

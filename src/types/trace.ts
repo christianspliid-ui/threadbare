@@ -106,6 +106,18 @@ export interface FamiliarityChangeTrace extends TraceBase {
   multiplier: number;
 }
 
+/** Trace: divine intervention effect applied to an agent */
+export interface InterventionEffectTrace extends TraceBase {
+  category: 'intervention_effect';
+  interventionType: string;
+  targetAgentId: string;
+  targetAgentName: string;
+  sphere: string;
+  effects: string[];
+  consequenceMessage: string;
+  ticksRemaining: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -114,7 +126,8 @@ export type TraceEntry =
   | DilemmaResolutionTrace
   | TickSummaryTrace
   | OrdealResolutionTrace
-  | FamiliarityChangeTrace;
+  | FamiliarityChangeTrace
+  | InterventionEffectTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -125,6 +138,7 @@ export const TRACE_CATEGORIES = [
   'tick_summary',
   'ordeal_resolution',
   'familiarity_change',
+  'intervention_effect',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
