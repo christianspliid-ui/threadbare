@@ -12,6 +12,7 @@ import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
+import type { OrdealProgress } from './ordeal';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -78,6 +79,9 @@ export interface GameState {
 
   // Fog of War
   visibilityMap: VisibilityMap;      // hexCol,hexRow -> visibility state and snapshot
+
+  // Ordeals (agent growth narratives)
+  ordealProgress: OrdealProgress[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

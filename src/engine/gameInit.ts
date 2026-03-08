@@ -149,6 +149,7 @@ export function initializeGameState(
     chronicleEntries: [],
     stealthExposure: 0,
     visibilityMap,
+    ordealProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
