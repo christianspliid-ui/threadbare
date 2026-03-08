@@ -22,6 +22,7 @@ import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateMandate } from './mandateGenerator';
 import { createMandateState } from './mandate';
+import { FAMILIARITY_GAINS } from '../types/familiarity';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -145,6 +146,21 @@ export function initializeGameState(
     }
   }
 
+  // Initialize familiarity map and populate with initial worshipper familiarity
+  const familiarityMap = new Map<string, number>();
+  {
+    const worshipEdges = graph.getEdgesByType('worships');
+    for (const edge of worshipEdges) {
+      const worshipperId = edge.source;
+      const tier = (edge.properties?.tier ?? 1) as number;
+      // Map tier to familiarity gain: tier 1 = 0.3, tier 2 = 0.5, tier 3 = 0.7
+      const initialFamiliarity = FAMILIARITY_GAINS[
+        `worship_tier_${tier}` as keyof typeof FAMILIARITY_GAINS
+      ] ?? FAMILIARITY_GAINS.worship_tier_1;
+      familiarityMap.set(worshipperId, initialFamiliarity);
+    }
+  }
+
   // Generate rival gods
   const rivalDefs = generateRivals(cosmology, seed);
   const rivalStates = rivalDefs.map(r => createRivalState(r.id));
@@ -187,6 +203,7 @@ export function initializeGameState(
     chronicleEntries: [],
     stealthExposure: 0,
     visibilityMap,
+    familiarityMap,
     ordealProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),

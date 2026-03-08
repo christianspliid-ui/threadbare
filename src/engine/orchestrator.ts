@@ -41,6 +41,9 @@ import {
   resolveEncounter,
   advanceOrdeal,
 } from './ordeal';
+import { getAvatarHexPosition } from './visibility';
+import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
+import { FAMILIARITY_GAINS } from '../types/familiarity';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -363,6 +366,58 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
   return { tickEvents: [...state.tickEvents, ...events] };
 }
 
+// ─── Phase 2.75: Familiarity Gain (Proximity) ────────────────────────
+
+export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
+  // Get avatar's hex position
+  const avatarHex = getAvatarHexPosition(state.graph, state.ascendantId);
+  if (!avatarHex) return { familiarityMap: state.familiarityMap };
+
+  let map = state.familiarityMap;
+
+  // Find all agents in the avatar's hex
+  const actors = state.graph.getNodesByType('actor')
+    .filter(a => a.properties?.actorType === 'individual');
+
+  for (const actor of actors) {
+    // Get actor's location via locationId property
+    const locationId = actor.properties?.locationId as string | undefined;
+    if (!locationId) continue;
+
+    const location = state.graph.getNode(locationId);
+    if (!location || location.type !== 'location') continue;
+
+    const actorHexCol = location.properties?.hexCol as number | undefined;
+    const actorHexRow = location.properties?.hexRow as number | undefined;
+
+    // Check if actor is in the same hex as avatar
+    if (actorHexCol === avatarHex.col && actorHexRow === avatarHex.row) {
+      const oldFamiliarity = getFamiliarity(map, actor.id);
+      const newMap = addFamiliarity(map, actor.id, FAMILIARITY_GAINS.proximity);
+      const newFamiliarity = getFamiliarity(newMap, actor.id);
+      const levelChanged = checkThresholdCrossed(oldFamiliarity, newFamiliarity);
+
+      // Emit trace for this familiarity gain
+      emitTrace({
+        tick: state.tick,
+        category: 'familiarity_change',
+        summary: `${actor.name} familiarity: ${oldFamiliarity.toFixed(2)} → ${newFamiliarity.toFixed(2)}`,
+        actorId: actor.id,
+        actorName: actor.name,
+        source: 'proximity',
+        oldFamiliarity,
+        newFamiliarity,
+        levelChanged: levelChanged !== null,
+        newLevel: levelChanged ?? undefined,
+      });
+
+      map = newMap;
+    }
+  }
+
+  return { familiarityMap: map };
+}
+
 // ─── Phase 3: Rival Actions (simplified for vertical slice) ───────
 
 export function phaseRivalActions(state: GameState): Partial<GameState> {
@@ -632,6 +687,11 @@ export function runTick(state: GameState): GameState {
   // Phase 2.5: Dilemma Detection
   s = { ...s, ...phaseDilemmaDetection(s) };
   phaseEventCounts['dilemma_detection'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.75: Familiarity Gain (Proximity)
+  s = { ...s, ...phaseFamiliarityGain(s) };
+  phaseEventCounts['familiarity_gain'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 3: Rival Actions

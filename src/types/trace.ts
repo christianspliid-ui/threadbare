@@ -92,6 +92,18 @@ export interface OrdealResolutionTrace extends TraceBase {
   traitChanges: string[];
 }
 
+/** Trace: familiarity gained with an actor */
+export interface FamiliarityChangeTrace extends TraceBase {
+  category: 'familiarity_change';
+  actorId: string;
+  actorName: string;
+  source: 'worship_tier_1' | 'worship_tier_2' | 'worship_tier_3' | 'proximity' | 'scry' | 'narrative_contact' | 'dilemma';
+  oldFamiliarity: number;
+  newFamiliarity: number;
+  levelChanged: boolean;
+  newLevel?: string;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -99,7 +111,8 @@ export type TraceEntry =
   | ContextHarvestTrace
   | DilemmaResolutionTrace
   | TickSummaryTrace
-  | OrdealResolutionTrace;
+  | OrdealResolutionTrace
+  | FamiliarityChangeTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -109,6 +122,7 @@ export const TRACE_CATEGORIES = [
   'dilemma_resolution',
   'tick_summary',
   'ordeal_resolution',
+  'familiarity_change',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
