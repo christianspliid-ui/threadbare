@@ -9,6 +9,7 @@ import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../
 import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
+import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -190,6 +191,15 @@ export function useAgentInteraction({
           agenda: selectedAgenda ?? undefined,
         });
 
+        // Apply ascendant feedback (intervention history)
+        applyAscendantFeedback(
+          gameState.graph,
+          gameState.ascendantId,
+          pendingIntervention.interventionType,
+          slot.sphere,
+          gameState.tick
+        );
+
         // Play audio feedback
         playCastSound(slot.sphere, result.detected);
 
@@ -246,6 +256,7 @@ export function useAgentInteraction({
 
   const handleBackFromAgentDetail = useCallback(() => {
     setSelectedAgentId(null);
+    setDrawerOpen(false); // IX-007: auto-close drawer when deselecting agent
   }, []);
 
   const handleViewPsyche = useCallback(() => {
