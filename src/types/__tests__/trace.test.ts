@@ -12,13 +12,16 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 5 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(5);
+  it('TRACE_CATEGORIES has 8 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(8);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');
     expect(TRACE_CATEGORIES).toContain('dilemma_resolution');
     expect(TRACE_CATEGORIES).toContain('tick_summary');
+    expect(TRACE_CATEGORIES).toContain('ordeal_resolution');
+    expect(TRACE_CATEGORIES).toContain('familiarity_change');
+    expect(TRACE_CATEGORIES).toContain('intervention_effect');
   });
 
   it('ActionSelectionTrace satisfies TraceEntry union', () => {

@@ -42,6 +42,9 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
       <div className="space-y-1.5">
         {sorted.map((sphere) => {
           const value = pool[sphere];
+          // Hide spheres with zero essence to reduce visual noise
+          if (value === 0) return null;
+
           const pct = Math.min((value / maxEssence) * 100, 100);
           const isPrimary = sphere === primarySphere;
           const isSecondary = sphere === secondarySphere;
@@ -56,13 +59,18 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
                   style={{
                     width: `${pct}%`,
                     background: `linear-gradient(90deg, ${color}cc, ${color})`,
-                    boxShadow: value > 0 ? `0 0 6px ${color}66` : 'none',
+                    // Primary sphere gets glow effect; secondary and others don't
+                    boxShadow: isPrimary ? `0 0 8px ${color}80` : value > 0 ? `0 0 6px ${color}66` : 'none',
                   }}
                 />
               </div>
               <span
                 className="text-xs w-10 text-right font-mono"
-                style={{ color: isPrimary || isSecondary ? color : 'rgba(217, 189, 147, 0.5)' }}
+                style={{
+                  color,
+                  // Primary: full opacity, secondary: reduced opacity, others: dim
+                  opacity: isPrimary ? 1 : isSecondary ? 0.85 : 0.6,
+                }}
               >
                 {value.toFixed(1)}
               </span>

@@ -107,6 +107,19 @@ export interface DivineInfluence {
   }>;
 }
 
+/** A single active divine influence stored on an agent node's properties.divineInfluences[] */
+export interface DivineInfluenceEntry {
+  id: string;
+  interventionType: InterventionType;
+  sphere: SphereName;
+  tickApplied: number;
+  ticksRemaining: number;
+  valueDrifts?: Partial<Record<import('./agent').ValuePair, number>>;
+  traitId?: string;
+  personalityBoost?: number;
+  strategyOverride?: string;
+}
+
 // ─── Constants ───────────────────────────────────────────────────
 
 // Re-export content data for backward compatibility

@@ -130,9 +130,9 @@ export function AvatarHUD({
             Move
           </button>
         </Tooltip>
-        <Tooltip id="ui.avatar_wheel">
+        <Tooltip id="ui.avatar_actions">
           <button onClick={onWheelClick} style={OTHER_BUTTON_STYLE}>
-            Wheel
+            Actions
           </button>
         </Tooltip>
         <Tooltip id="ui.avatar_scry">
@@ -142,18 +142,18 @@ export function AvatarHUD({
         </Tooltip>
       </div>
 
-      {/* Avatar Center Button */}
+      {/* Avatar Center Button (simple action, not a toggle) */}
       <div style={CENTER_BUTTON_CONTAINER_STYLE}>
         {/* Accent Bar */}
         <div data-testid="avatar-accent" style={accentBarStyle} />
-        {/* Center Button */}
+        {/* Center Button - single click centers map on avatar */}
         <button
           onClick={onCenterOnAvatar}
           style={CENTER_BUTTON_STYLE}
           onMouseEnter={handleCenterButtonMouseEnter}
           onMouseLeave={handleCenterButtonMouseLeave}
         >
-          Avatar
+          {avatarName}
         </button>
       </div>
     </div>
