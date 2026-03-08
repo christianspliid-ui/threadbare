@@ -87,6 +87,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     drawerOpen,
     pendingIntervention,
     profileModalAgentId,
+    playingCardId,
     retinueAgents,
     agentDetail,
     agentInfoCard,
@@ -306,6 +307,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
               slots={wheelSlots}
               agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
               agentTier={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+              playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
               onClose={handleDrawerClose}
             />

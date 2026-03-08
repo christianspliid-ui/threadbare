@@ -18,6 +18,7 @@ import {
   getBeliefsStrand,
   getFearsStrand,
 } from '../../../engine/strands';
+import { useInterventionAudio } from './useInterventionAudio';
 
 interface UseAgentInteractionParams {
   gameState: GameState;
@@ -32,6 +33,9 @@ export function useAgentInteraction({
   archetype,
   onOpenScry,
 }: UseAgentInteractionParams) {
+  // ── Hooks ──
+  const { playCastSound } = useInterventionAudio();
+
   // ── State ──
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -151,6 +155,9 @@ export function useAgentInteraction({
           seed: gameState.seed,
         });
 
+        // Play audio feedback
+        playCastSound(slot.sphere, result.detected);
+
         setGameState(prev => {
           const newPool = { ...prev.essencePool };
           newPool[slot.sphere!] = Math.max(
@@ -184,7 +191,7 @@ export function useAgentInteraction({
 
       setPendingIntervention(null);
     },
-    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, gameState.graph, gameState.tick, gameState.seed, setGameState]
+    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, gameState.graph, gameState.tick, gameState.seed, setGameState, playCastSound]
   );
 
   const handleInterventionCancel = useCallback(() => {
