@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { getAgentDetail } from '../agentDetail';
+import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../agentDetail';
 import type { AgentDetail } from '../agentDetail';
 import type { AxiologicalProfile } from '../../types/agent';
 import type { ReachDomain } from '../../types/traits';
@@ -208,5 +208,223 @@ describe('getAgentDetail', () => {
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.recentInteractions).toHaveLength(0);
+  });
+});
+
+describe('getAgentInfoCard (familiarity-gated)', () => {
+  it('at stranger level: returns only name, location, sphere', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        domainCapabilities: makeDomainCaps({ iron: 7 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'stranger');
+    expect(card).not.toBeNull();
+    expect(card!.name).toBe('Kael');
+    expect(card!.locationName).toBe('Ashvale');
+    expect(card!.primarySphere).toBe('iron');
+    expect(card!.knowledgeLevel).toBe('stranger');
+    expect(card!.archetypeLabel).toBeUndefined();
+    expect(card!.domains).toBeUndefined();
+    expect(card!.topValues).toBeUndefined();
+    expect(card!.topBonds).toBeUndefined();
+  });
+
+  it('at recognised level: returns archetype, faction, 1 domain (vague), 1 value', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6 }),
+        domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addNode({ id: 'fac.1', type: 'actor', name: 'Iron Brotherhood', properties: { actorType: 'faction' } });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 'm.1', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: { role: 'member' } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'recognised');
+    expect(card).not.toBeNull();
+    expect(card!.name).toBe('Kael');
+    expect(card!.archetypeLabel).toBe('Tragic Hero');
+    expect(card!.factionName).toBe('Iron Brotherhood');
+    expect(card!.topValues).toHaveLength(1);
+    expect(card!.domains).toHaveLength(1);
+    expect(card!.topBonds).toBeUndefined();
+  });
+
+  it('at known level: returns top 3 domains + all dominant values + key bonds', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6, devotion_independence: 0.5 }),
+        domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    for (let i = 1; i <= 2; i++) {
+      graph.addNode({ id: `agent.${i + 1}`, type: 'actor', name: `Agent ${i + 1}`, properties: { actorType: 'individual' } });
+      graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i + 1}`, type: 'relationship', properties: { sentiment: 0.5, strength: 0.7 - i * 0.1, basis: 'friendship' } });
+    }
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'known');
+    expect(card).not.toBeNull();
+    expect(card!.domains).toHaveLength(3);
+    expect(card!.topValues).toBeDefined();
+    expect(card!.topValues!.length).toBeGreaterThan(0);
+    expect(card!.topBonds).toBeDefined();
+    expect(card!.quotes).toBeUndefined();
+  });
+
+  it('at intimate level: returns full 9 domains, all traits, all quotes, backstory paragraph 1', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6 }),
+        domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3, veil: 2, gold: 1, eye: 4, stone: 2, star: 3, flesh: 2 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+        cooperationStrategy: 'tit-for-tat',
+        reputationScore: 0.72,
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'intimate');
+    expect(card).not.toBeNull();
+    expect(card!.domains).toHaveLength(9);
+    expect(card!.quotes).toBeDefined();
+    expect(card!.quotes!.length).toBeGreaterThan(0);
+    expect(card!.cooperationStrategy).toBe('tit-for-tat');
+    expect(card!.backstoryParagraph1).toBeDefined();
+  });
+
+  it('at transparent level: includes full backstory + history', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        domainCapabilities: makeDomainCaps({ iron: 7 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'transparent');
+    expect(card).not.toBeNull();
+    expect(card!.backstoryParagraph1).toBeDefined();
+  });
+});
+
+describe('getAgentFullProfile (familiarity-gated)', () => {
+  it('at stranger level: returns undefined', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile(),
+        domainCapabilities: makeDomainCaps(),
+        locationId: 'loc.1',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const profile = getAgentFullProfile(graph, 'agent.1', 'asc', 'stranger');
+    expect(profile).toBeUndefined();
+  });
+
+  it('at intimate level: includes quotes + backstory paragraph 1', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        domainCapabilities: makeDomainCaps({ iron: 7 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+      },
+    });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const profile = getAgentFullProfile(graph, 'agent.1', 'asc', 'intimate');
+    expect(profile).not.toBeUndefined();
+    expect(profile!.quotes).toBeTruthy();
+    expect(profile!.backstoryParagraph1).toBeTruthy();
+    expect(profile!.fullBackstory).toBeUndefined();
+  });
+
+  it('at transparent level: includes full backstory + history timeline', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({
+      id: 'agent.1', type: 'actor', name: 'Kael',
+      properties: {
+        actorType: 'individual',
+        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        domainCapabilities: makeDomainCaps({ iron: 7 }),
+        locationId: 'loc.1',
+        narrativeArchetype: 'tragic_hero',
+        primarySphere: 'iron',
+        cooperationStrategy: 'tit-for-tat',
+        reputationScore: 0.72,
+      },
+    });
+    graph.addNode({ id: 'agent.2', type: 'actor', name: 'Mara', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+
+    const log: InteractionRecord[] = [
+      { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },
+      { tick: 8, actorMove: 'cooperate', targetMove: 'defect', context: 'diplomacy', stakes: 'high' },
+    ];
+    graph.addEdge({ id: 'rt.1', source: 'agent.1', target: 'agent.2', type: 'relates_to', properties: { interactionLog: log } });
+
+    const profile = getAgentFullProfile(graph, 'agent.1', 'asc', 'transparent');
+    expect(profile).not.toBeUndefined();
+    expect(profile!.fullBackstory).toBeTruthy();
+    expect(profile!.historyTimeline).toBeTruthy();
+    expect(profile!.historyTimeline!.length).toBeGreaterThan(0);
   });
 });
