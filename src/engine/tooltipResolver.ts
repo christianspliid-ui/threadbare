@@ -15,10 +15,21 @@
  */
 
 import type { TooltipContent } from '../types/tooltip';
+import type { FamiliarityMap } from '../types/familiarity';
 import { getUITooltip } from '../data/ui-content';
 import { getArchetype } from '../data/archetype-content';
 import { ARCHETYPE_STAGE_NAMES } from '../data/doom-content';
+import { getDomainWord } from '../data/domain-words';
+import { getFamiliarity, getKnowledgeLevel } from './familiarity';
+import { getAgentDetail } from './agentDetail';
+import type { WorldGraph } from './graph';
 import worldModel from '../data/world-model.json';
+
+export interface TooltipResolverContext {
+  graph: WorldGraph;
+  familiarityMap: FamiliarityMap;
+  ascendantId: string;
+}
 
 /**
  * Resolve a tooltip ID to its content.
@@ -30,12 +41,15 @@ import worldModel from '../data/world-model.json';
  * - terrain.* → Terrain biome from world-model.json
  * - archetype.* → Narrative archetype from archetype-content.ts
  * - doom.* → Doom stage or global doom definitions
+ * - agent.* → Agent name + archetype/domain info, gated by familiarity (Tier 1)
  * - mandate.* → Reserved for future implementation
  *
  * World-model descriptions longer than ~120 chars are truncated at
  * sentence boundaries to fit tooltip width constraints.
+ *
+ * @param context Optional context for agent.* prefix — contains graph, familiarityMap, ascendantId
  */
-export function resolveTooltip(id: string): TooltipContent | null {
+export function resolveTooltip(id: string, context?: TooltipResolverContext): TooltipContent | null {
   // Empty string or invalid format
   if (!id || !id.includes('.')) {
     return null;
@@ -129,6 +143,76 @@ export function resolveTooltip(id: string): TooltipContent | null {
 
     // Otherwise, return null for future mandate/etc lookups
     return null;
+  }
+
+  // ─── Agent Tooltip (Tier 1 — Familiarity-Aware) ─────────────────
+  if (prefix === 'agent') {
+    // Requires context: graph, familiarityMap, ascendantId
+    if (!context || !context.graph || !context.familiarityMap) {
+      return null;
+    }
+
+    const agentId = suffix;
+    const agentNode = context.graph.getNode(agentId);
+    if (!agentNode) {
+      return null;
+    }
+
+    const agentName = agentNode.name;
+
+    // Get familiarity and derive knowledge level
+    const familiarity = getFamiliarity(context.familiarityMap, agentId);
+    const knowledgeLevel = getKnowledgeLevel(familiarity);
+
+    // Stranger: just name + "A mysterious figure"
+    if (knowledgeLevel === 'stranger') {
+      return {
+        label: agentName,
+        desc: 'A mysterious figure.',
+      };
+    }
+
+    // Recognised+: Get agent detail to fetch archetype and domains
+    const detail = getAgentDetail(context.graph, agentId, context.ascendantId);
+    if (!detail) {
+      // Fallback if getAgentDetail fails
+      return {
+        label: agentName,
+        desc: 'A mysterious figure.',
+      };
+    }
+
+    // Recognised: archetype only
+    if (knowledgeLevel === 'recognised') {
+      const archetypeName = detail.archetype?.name ?? 'Unknown';
+      return {
+        label: agentName,
+        desc: `${archetypeName}.`,
+      };
+    }
+
+    // Known+: top domain word
+    // Find the highest domain capability
+    const domains = Object.entries(detail.domainCapabilities)
+      .map(([domain, value]) => ({ domain, value }))
+      .sort((a, b) => b.value - a.value);
+
+    if (domains.length > 0) {
+      const topDomain = domains[0].domain as any;
+      const domainWord = getDomainWord(topDomain, domains[0].value);
+      const archetypeName = detail.archetype?.name ?? 'Unknown';
+      return {
+        label: agentName,
+        desc: `${archetypeName}. ${domainWord}.`,
+      };
+    }
+
+    // Fallback if no domains
+    const archetypeName = detail.archetype?.name ?? 'Unknown';
+    return {
+      label: agentName,
+      desc: `${archetypeName}.`,
+    };
   }
 
   // ─── Unknown prefix or mandate (not yet implemented) ───────────

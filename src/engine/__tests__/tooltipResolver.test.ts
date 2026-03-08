@@ -268,6 +268,110 @@ describe('resolveTooltip', () => {
     });
   });
 
+  // ─── Agent Tooltips ────────────────────────────────────────────
+
+  describe('Agent tooltips (agent.*) — Tier 1', () => {
+    it('resolves agent.{id} with familiarity context at recognised level', () => {
+      // Setup: mock graph with agent node
+      // Stranger level: just name + "A mysterious figure"
+      // We'll use mocks since we can't easily create a real graph in tests
+      const result = resolveTooltip('agent.test-agent-id', {
+        graph: {
+          getNode: (id: string) => {
+            if (id === 'test-agent-id') {
+              return {
+                id: 'test-agent-id',
+                type: 'actor' as const,
+                name: 'Kael',
+                properties: { narrativeArchetype: 'tragic_hero' },
+              } as any;
+            }
+            return null;
+          },
+          getOutgoingEdges: () => [],
+          getIncomingEdges: () => [],
+        } as any,
+        familiarityMap: new Map([['test-agent-id', 0.4]]),
+        ascendantId: 'my-god',
+      });
+      expect(result).not.toBeNull();
+      expect(result!.label).toBe('Kael');
+    });
+
+    it('shows minimal info at stranger level', () => {
+      const result = resolveTooltip('agent.stranger-id', {
+        graph: {
+          getNode: (id: string) => {
+            if (id === 'stranger-id') {
+              return {
+                id: 'stranger-id',
+                type: 'actor' as const,
+                name: 'Vex',
+                properties: { narrativeArchetype: 'trickster' },
+              } as any;
+            }
+            return null;
+          },
+          getOutgoingEdges: () => [],
+        } as any,
+        familiarityMap: new Map([['stranger-id', 0.05]]),
+        ascendantId: 'my-god',
+      });
+      expect(result).not.toBeNull();
+      expect(result!.label).toBe('Vex');
+      expect(result!.desc).toContain('mysterious');
+    });
+
+    it('shows archetype at recognised level', () => {
+      const result = resolveTooltip('agent.known-id', {
+        graph: {
+          getNode: (id: string) => {
+            if (id === 'known-id') {
+              return {
+                id: 'known-id',
+                type: 'actor' as const,
+                name: 'Ero',
+                properties: {
+                  narrativeArchetype: 'tragic_hero',
+                  domainCapabilities: { iron: 0.5, gold: 0.3 },
+                  axiologicalProfile: { ambition_contentment: 0.7 },
+                },
+              } as any;
+            }
+            return null;
+          },
+          getOutgoingEdges: (agentId: string, edgeType: string) => {
+            if (agentId === 'known-id' && edgeType === 'worships') {
+              return [{ target: 'my-god', properties: { tier: 1 } }] as any;
+            }
+            return [];
+          },
+          getIncomingEdges: () => [],
+        } as any,
+        familiarityMap: new Map([['known-id', 0.35]]),
+        ascendantId: 'my-god',
+      });
+      expect(result).not.toBeNull();
+      expect(result!.desc).toContain('Tragic Hero');
+    });
+
+    it('returns null if context is missing', () => {
+      const result = resolveTooltip('agent.test-id');
+      expect(result).toBeNull();
+    });
+
+    it('returns null if agent not in graph', () => {
+      const result = resolveTooltip('agent.nonexistent-id', {
+        graph: {
+          getNode: () => null,
+        } as any,
+        familiarityMap: new Map(),
+        ascendantId: 'my-god',
+      });
+      expect(result).toBeNull();
+    });
+  });
+
   // ─── Mandate System (Future) ────────────────────────────────────
 
   describe('Mandate system (mandate.*)', () => {
