@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 import { ProgressBar } from '../shared/ProgressBar';
+import { Tooltip } from '../shared/Tooltip';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 
 interface MandateTrackerProps {
@@ -73,10 +74,11 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
   return (
     <div className="flex-1 min-w-0 relative">
       {/* Compact Bar */}
-      <div
-        onClick={handleToggle}
-        className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
-      >
+      <Tooltip id="ui.mandate_tracker">
+        <div
+          onClick={handleToggle}
+          className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
+        >
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 min-w-0">
             <span
@@ -98,7 +100,8 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
           </span>
         </div>
         <ProgressBar progress={state.progress} color={color} glow={true} />
-      </div>
+        </div>
+      </Tooltip>
 
       {/* Expanded Popover */}
       {isExpanded && (

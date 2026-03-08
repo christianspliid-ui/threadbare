@@ -1,3 +1,5 @@
+import { Tooltip } from '../shared/Tooltip';
+
 interface SimulationControlsProps {
   tick: number;
   season: string;
@@ -42,16 +44,18 @@ export function SimulationControls({
 
       {/* Controls */}
       <div className="flex items-center gap-2">
-        <button
-          onClick={onToggle}
-          className="flex-1 py-2 rounded-lg text-sm font-semibold transition-colors"
-          style={{
-            background: running ? '#7c2d12' : '#78350f',
-            color: '#fef3c7',
-          }}
-        >
-          {running ? '⏸ Pause' : '▶ Play'}
-        </button>
+        <Tooltip id="ui.sim_play_pause">
+          <button
+            onClick={onToggle}
+            className="flex-1 py-2 rounded-lg text-sm font-semibold transition-colors"
+            style={{
+              background: running ? '#7c2d12' : '#78350f',
+              color: '#fef3c7',
+            }}
+          >
+            {running ? '⏸ Pause' : '▶ Play'}
+          </button>
+        </Tooltip>
         <button
           onClick={onStep}
           disabled={running}
@@ -63,22 +67,24 @@ export function SimulationControls({
       </div>
 
       {/* Speed */}
-      <div className="flex items-center gap-3">
-        <span className="text-xs text-amber-400/60">Speed</span>
-        <input
-          type="range"
-          min={1}
-          max={20}
-          value={speed}
-          onChange={(e) => onSpeedChange(parseInt(e.target.value))}
-          className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
-          style={{
-            accentColor: '#b8860b',
-            background: `linear-gradient(to right, #b8860b ${(speed / 20) * 100}%, #3a3020 ${(speed / 20) * 100}%)`,
-          }}
-        />
-        <span className="text-xs text-amber-200 font-mono w-8 text-right">{speed}×</span>
-      </div>
+      <Tooltip id="ui.sim_speed">
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-amber-400/60">Speed</span>
+          <input
+            type="range"
+            min={1}
+            max={20}
+            value={speed}
+            onChange={(e) => onSpeedChange(parseInt(e.target.value))}
+            className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
+            style={{
+              accentColor: '#b8860b',
+              background: `linear-gradient(to right, #b8860b ${(speed / 20) * 100}%, #3a3020 ${(speed / 20) * 100}%)`,
+            }}
+          />
+          <span className="text-xs text-amber-200 font-mono w-8 text-right">{speed}×</span>
+        </div>
+      </Tooltip>
     </div>
   );
 }
