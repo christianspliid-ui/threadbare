@@ -95,6 +95,7 @@ export interface AgentInfoCardData {
   quotes?: string[];
   cooperationStrategy?: string;
   reputationWord?: string;
+  allTraits?: string[];
   backstoryParagraph1?: string;
   knowledgeLevel: KnowledgeLevel;
 }
@@ -225,6 +226,40 @@ export function getAgentDetail(
 // ─── Familiarity-gated Aggregators ──────────────────────────────────
 
 /**
+ * Extract trait names from an agent's has_trait edges.
+ * @private
+ */
+function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
+  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
+  const traitNames: string[] = [];
+  for (const edge of traitEdges) {
+    const traitNode = graph.getNode(edge.target);
+    if (traitNode) {
+      traitNames.push(traitNode.name);
+    }
+  }
+  return traitNames;
+}
+
+/**
+ * Extract culture name from an agent's belongs_to edges.
+ * Returns the first culture name found, or undefined if no culture edges exist.
+ * @private
+ */
+function getAgentCultureName(graph: WorldGraph, agentId: string): string | undefined {
+  const cultureEdges = graph.getOutgoingEdges(agentId, 'belongs_to')
+    .filter(e => {
+      const node = graph.getNode(e.target);
+      return node?.type === 'actor' && (node.properties as Record<string, unknown>).actorType === 'culture';
+    });
+
+  if (cultureEdges.length === 0) return undefined;
+
+  const cultureNode = graph.getNode(cultureEdges[0].target);
+  return cultureNode?.name;
+}
+
+/**
  * Get info card data for an agent, filtered by knowledge level.
  * Returns null if agent not found or has no worships edge to ascendant.
  */
@@ -241,6 +276,8 @@ export function getAgentInfoCard(
   if (!agentNode) return null;
 
   const primarySphere = (agentNode.properties as Record<string, unknown>).primarySphere as string | undefined;
+  const cultureName = getAgentCultureName(graph, agentId);
+  const traitNames = getAgentTraitNames(graph, agentId);
 
   // Base card (always visible)
   const card: AgentInfoCardData = {
@@ -248,6 +285,7 @@ export function getAgentInfoCard(
     name: detail.name,
     locationName: detail.locationName,
     primarySphere,
+    cultureName,
     knowledgeLevel,
   };
 
@@ -284,7 +322,7 @@ export function getAgentInfoCard(
     }
   }
 
-  // Known+: key bonds
+  // Known+: key bonds and 1 quote
   if (knowledgeLevel !== 'stranger' && knowledgeLevel !== 'recognised') {
     if (detail.topBonds.length > 0) {
       card.topBonds = detail.topBonds.map(bond => ({
@@ -293,9 +331,28 @@ export function getAgentInfoCard(
         sentiment: bond.sentiment >= 0 ? 'positive' : 'negative',
       }));
     }
+
+    // Known level: exactly 1 quote
+    if (knowledgeLevel === 'known') {
+      const dominantValueLabels = detail.topValues
+        .slice(0, 3)
+        .map(tv => getValueWord(tv.pair, tv.value));
+
+      const prng = mulberry32(agentId.charCodeAt(0) ^ (agentId.length * 37));
+      const allQuotes = generateQuotes(
+        {
+          archetypeId: detail.archetype?.id ?? 'sage',
+          dominantValues: dominantValueLabels,
+          primarySphere: primarySphere ?? 'eye',
+          name: detail.name,
+        },
+        prng,
+      );
+      card.quotes = [allQuotes[0]];
+    }
   }
 
-  // Intimate+: full 9 domains, quotes, cooperation strategy, reputation
+  // Intimate+: full 9 domains, quotes, cooperation strategy, reputation, all traits, backstory paragraph 1
   if (knowledgeLevel === 'intimate' || knowledgeLevel === 'transparent') {
     // All 9 domains
     card.domains = Object.entries(detail.domainCapabilities)
@@ -304,7 +361,7 @@ export function getAgentInfoCard(
         word: getDomainWord(domain as ReachDomain, value),
       }));
 
-    // Generate quotes
+    // Generate all quotes
     const dominantValueLabels = detail.topValues
       .slice(0, 3)
       .map(tv => getValueWord(tv.pair, tv.value));
@@ -323,26 +380,27 @@ export function getAgentInfoCard(
 
     card.cooperationStrategy = detail.cooperationStrategy ?? undefined;
     card.reputationWord = getReputationWord(detail.reputationScore);
-  }
 
-  // Intimate+: backstory paragraph 1
-  if (knowledgeLevel === 'intimate' || knowledgeLevel === 'transparent') {
-    // Generate backstory
-    const traitNames: string[] = []; // In full implementation, would extract from graph
+    // All traits
+    if (traitNames.length > 0) {
+      card.allTraits = traitNames;
+    }
+
+    // Generate backstory paragraph 1
     const bondNames = detail.topBonds.map(b => b.targetName);
-    const cultureName = card.cultureName ?? 'The Forgotten Lands';
+    const cultureNameForBackstory = cultureName ?? 'The Forgotten Lands';
 
-    const prng = mulberry32((agentId.charCodeAt(0) ^ 0xdeadbeef) * 17);
+    const prng2 = mulberry32((agentId.charCodeAt(0) ^ 0xdeadbeef) * 17);
     const backstory = generateBackstory(
       {
         archetypeId: detail.archetype?.id ?? 'sage',
-        cultureName,
+        cultureName: cultureNameForBackstory,
         traitNames,
         bondNames,
         name: detail.name,
         primarySphere: primarySphere ?? 'eye',
       },
-      prng,
+      prng2,
     );
 
     const paragraphs = backstory.split('\n\n');
@@ -376,6 +434,8 @@ export function getAgentFullProfile(
   const profile: AgentFullProfileData = {};
 
   const primarySphere = (agentNode.properties as Record<string, unknown>).primarySphere as string | undefined;
+  const traitNames = getAgentTraitNames(graph, agentId);
+  const cultureName = getAgentCultureName(graph, agentId) ?? 'The Forgotten Lands';
   const dominantValueLabels = detail.topValues
     .slice(0, 3)
     .map(tv => getValueWord(tv.pair, tv.value));
@@ -393,9 +453,7 @@ export function getAgentFullProfile(
       prng,
     );
 
-    const traitNames: string[] = [];
     const bondNames = detail.topBonds.map(b => b.targetName);
-    const cultureName = 'The Forgotten Lands';
 
     const prng2 = mulberry32((agentId.charCodeAt(0) ^ 0xdeadbeef) * 17);
     const backstory = generateBackstory(
@@ -416,9 +474,7 @@ export function getAgentFullProfile(
 
   // Transparent only: full backstory and history timeline
   if (knowledgeLevel === 'transparent') {
-    const traitNames: string[] = [];
     const bondNames = detail.topBonds.map(b => b.targetName);
-    const cultureName = 'The Forgotten Lands';
 
     const prng = mulberry32((agentId.charCodeAt(0) ^ 0xdeadbeef) * 17);
     const backstory = generateBackstory(
