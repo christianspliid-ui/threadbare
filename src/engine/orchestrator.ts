@@ -33,6 +33,7 @@ import {
 import { buildNarrativeContext } from './contextBuilder';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
 import { generateRoutineProse, generateNotableProse } from './narrative';
+import { DILEMMA_STAKES_PROSE } from '../data/narrative-content';
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import {
@@ -44,6 +45,7 @@ import {
 import { getAvatarHexPosition } from './visibility';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
+import type { DivineInfluenceEntry } from '../types/dream';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -352,12 +354,37 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
       targetNode.properties.reputationScore = newRep;
     }
 
+    // Generate varied dilemma message using prose templates
+    const stakesLevel = stakes > 0.6 ? 'high' : stakes > 0.3 ? 'medium' : 'low';
+    const templateKey = `${dilemma.outcome}.${stakesLevel}`;
+    const template = DILEMMA_STAKES_PROSE[templateKey];
+
+    let message = template || `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`;
+
+    if (template) {
+      // Word pools for placeholder replacement
+      const adjPool = ['quiet', 'fierce', 'solemn', 'bitter', 'fragile', 'burning', 'ancient', 'hollow'];
+      const nounPool = ['purpose', 'strength', 'resolve', 'shadow', 'faith', 'devotion', 'reckoning', 'silence'];
+      const verbPool = ['circled', 'retreated', 'watched', 'bristled'];
+
+      const adjIndex = Math.floor(rng() * adjPool.length);
+      const nounIndex = Math.floor(rng() * nounPool.length);
+      const verbIndex = Math.floor(rng() * verbPool.length);
+
+      message = template
+        .replace(/{actor}/g, actor.name)
+        .replace(/{target}/g, targetActor.name)
+        .replace(/{adj}/g, adjPool[adjIndex])
+        .replace(/{noun}/g, nounPool[nounIndex])
+        .replace(/{verb}/g, verbPool[verbIndex]);
+    }
+
     // Emit dilemma_resolved event
     events.push({
       id: nextEventId(),
       tick: state.tick,
       type: 'dilemma_resolved',
-      message: `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`,
+      message,
       sphere: event.sphere,
       significance: Math.max(0.3, stakes),
     });
@@ -587,6 +614,54 @@ export function phaseReputationDecay(state: GameState): Partial<GameState> {
   return {};
 }
 
+// ─── Phase 6.6: Divine Influence Decay ────────────────────────────
+
+export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> {
+  const graph = state.graph;
+
+  // Iterate all individual actors
+  const actors = graph.getNodesByType('actor')
+    .filter(node => node.properties?.actorType === 'individual');
+
+  for (const actor of actors) {
+    const influences = (actor.properties?.divineInfluences ?? []) as DivineInfluenceEntry[];
+
+    if (influences.length === 0) continue;
+
+    // Decrement ticksRemaining on all influences
+    const updated: DivineInfluenceEntry[] = [];
+
+    for (const influence of influences) {
+      const ticksRemaining = influence.ticksRemaining - 1;
+
+      // Emit trace for expired influences
+      if (ticksRemaining <= 0) {
+        emitTrace({
+          category: 'intervention_effect',
+          tick: state.tick,
+          agentId: actor.id,
+          summary: `Divine influence expired: ${influence.interventionType} (${influence.sphere})`,
+          interventionType: influence.interventionType,
+          targetAgentId: actor.id,
+          targetAgentName: actor.name,
+          sphere: influence.sphere,
+          effects: ['expired'],
+          consequenceMessage: `The ${influence.sphere} influence from ${influence.interventionType} fades.`,
+          ticksRemaining: 0,
+        });
+      } else {
+        // Keep influence with decremented counter
+        updated.push({ ...influence, ticksRemaining });
+      }
+    }
+
+    // Update actor's divine influences array
+    actor.properties.divineInfluences = updated;
+  }
+
+  return {};
+}
+
 // ─── Phase 7: Mandate Check ───────────────────────────────────────
 
 export function phaseMandate(state: GameState): Partial<GameState> {
@@ -711,6 +786,11 @@ export function runTick(state: GameState): GameState {
   // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
   phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6: Divine Influence Decay
+  s = { ...s, ...phaseDivineInfluenceDecay(s) };
+  phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
