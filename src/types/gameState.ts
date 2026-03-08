@@ -39,6 +39,8 @@ export interface TickEvent {
   sphere?: SphereName;
   /** Significance 0-1 for UI prominence */
   significance: number;
+  /** Marks this event as the result of a divine intervention */
+  isInterventionBeat?: boolean;
 }
 
 // ─── Game State ─────────────────────────────────────────────────
