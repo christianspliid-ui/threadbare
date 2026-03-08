@@ -1,9 +1,9 @@
 {
   "meta": {
     "version": "1.0.0",
-    "generated": "2026-03-08T09:09:37.545Z",
+    "generated": "2026-03-08T09:22:00.283Z",
     "nodeCount": 230,
-    "edgeCount": 326,
+    "edgeCount": 343,
     "categories": [
       "action-template",
       "actor-type",
@@ -5484,6 +5484,91 @@
       "source": "trait.condition.hunted",
       "target": "creation.force",
       "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.feared",
+      "target": "creation.mind",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.beloved",
+      "target": "creation.spirit",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.infamous",
+      "target": "creation.mind",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.condition.cursed",
+      "target": "creation.spirit",
+      "type": "rel.favors"
+    },
+    {
+      "source": "sublocation.library",
+      "target": "location.fortress",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.throne-room",
+      "target": "location.fortress",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.temple-quarter",
+      "target": "location.temple",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.dungeon",
+      "target": "location.cavern",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.barracks",
+      "target": "location.fortress",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.market-district",
+      "target": "location.marketplace",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.market-district",
+      "target": "location.market-town",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "location.academy",
+      "target": "terrain.grassland",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.academy",
+      "target": "terrain.hills",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.marketplace",
+      "target": "terrain.farmland",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.settlement",
+      "target": "terrain.desert",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.settlement",
+      "target": "terrain.tundra",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.grove",
+      "target": "terrain.taiga",
+      "type": "rel.terrain-valid"
     }
   ]
 }
