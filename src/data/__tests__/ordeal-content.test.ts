@@ -3,6 +3,7 @@ import {
   ORDEAL_TEMPLATES,
   CULTURAL_ORDEAL_OVERLAYS,
   ORDEAL_INSPECTION_VIGNETTES,
+  ORDEAL_DIFFICULTY_TIERS,
   getOrdealsByLocationType,
   getOrdealById,
 } from '../ordeal-content';
@@ -110,6 +111,42 @@ describe('ordeal-content', () => {
       ];
       for (const v of all) {
         expect(v.length).toBeGreaterThan(20);
+      }
+    });
+  });
+
+  describe('ordeal difficulty tiers', () => {
+    it('should have 3 difficulty tiers', () => {
+      expect(Object.keys(ORDEAL_DIFFICULTY_TIERS)).toHaveLength(3);
+    });
+
+    it('each tier should have difficultyMultiplier and toneAdjectives', () => {
+      for (const tier of Object.values(ORDEAL_DIFFICULTY_TIERS)) {
+        expect(tier.difficultyMultiplier).toBeGreaterThan(0);
+        expect(tier.toneAdjectives.length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('should have early, mid, and late tiers', () => {
+      expect(ORDEAL_DIFFICULTY_TIERS).toHaveProperty('early');
+      expect(ORDEAL_DIFFICULTY_TIERS).toHaveProperty('mid');
+      expect(ORDEAL_DIFFICULTY_TIERS).toHaveProperty('late');
+    });
+
+    it('difficulty multipliers should increase from early to mid to late', () => {
+      const early = ORDEAL_DIFFICULTY_TIERS.early.difficultyMultiplier;
+      const mid = ORDEAL_DIFFICULTY_TIERS.mid.difficultyMultiplier;
+      const late = ORDEAL_DIFFICULTY_TIERS.late.difficultyMultiplier;
+      expect(early).toBeLessThan(mid);
+      expect(mid).toBeLessThan(late);
+    });
+
+    it('all tone adjectives should be non-empty strings', () => {
+      for (const tier of Object.values(ORDEAL_DIFFICULTY_TIERS)) {
+        for (const adj of tier.toneAdjectives) {
+          expect(typeof adj).toBe('string');
+          expect(adj.length).toBeGreaterThan(0);
+        }
       }
     });
   });

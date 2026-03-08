@@ -13,6 +13,7 @@
  * 4. LIFECYCLE_TEMPLATES — 3 lifecycle events with 11 templates total
  * 5. VALUE_FLAVORS — personality modifiers for 10 value pairs
  * 6. ARCHETYPE_EVENT_TEMPLATES — 58+ archetype-specific templates for high-impact event/archetype combos
+ * 7. DILEMMA_STAKES_PROSE — 12 stakes-based prose variants for dilemma outcomes
  */
 
 import type { SphereName } from '../types/index';
@@ -484,3 +485,36 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'dreamer.tier_transition': '{actor}\'s visions grow {adj} and more vivid, their {adj} imagination reshaping reality itself. The dreamer\'s {adj} reality bends to their will.',
   'avenger.tier_transition': '{actor}\'s {adj} rage grows {adj} potent, their {adj} vendetta becoming an inferno. The avenger ascends into {adj} legend and {adj} terror.',
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// 7. DILEMMA STAKES PROSE
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Stakes-based prose variants for dilemma outcomes.
+ * Keys: {outcome}.{stakes} where outcomes are mutual_trust, betrayed, exploitation, mutual_distrust
+ * and stakes are low, medium, high. High stakes prose is darker, more dramatic, more consequential.
+ * Low stakes prose is lighter, more casual, with smaller emotional weight.
+ */
+export const DILEMMA_STAKES_PROSE: Record<string, string> = {
+  // MUTUAL TRUST outcomes
+  'mutual_trust.low': '{actor} and {target} found common ground — nothing grand, but {noun} enough to build on.',
+  'mutual_trust.medium': '{actor} and {target} forged a bond of {adj} trust, their {noun} intertwining in ways both knew would matter.',
+  'mutual_trust.high': '{actor} and {target}\'s covenant blazed eternal — {adj} and transcendent, a {noun} that would echo through ages unborn.',
+
+  // BETRAYED outcomes
+  'betrayed.low': '{actor} felt a {adj} pang when {target} slipped away, leaving a small wound of {noun}.',
+  'betrayed.medium': '{actor}\'s heart shattered as {target}\'s {adj} betrayal revealed itself — the {noun} of trust unmade.',
+  'betrayed.high': '{actor} plunged into profound {noun} as {target}\'s {adj} treachery laid bare the abyss within. A wound this {adj} would never truly heal.',
+
+  // EXPLOITATION outcomes
+  'exploitation.low': '{actor} took what {target} offered without thought — a {noun} gesture of {adj} self-interest.',
+  'exploitation.medium': '{actor} wielded {target}\'s {adj} faith like a {noun}, twisting their generosity into {noun} and {adj} dominion.',
+  'exploitation.high': '{actor}\'s {adj} cruelty consumed {target}\'s very essence, leaving behind only {noun} and the {adj} ghost of who they once were.',
+
+  // MUTUAL DISTRUST outcomes
+  'mutual_distrust.low': '{actor} and {target} kept their distance — {adj}, wary, cautious in ways neither could name.',
+  'mutual_distrust.medium': '{actor} and {target} {verb} as one, locked in {adj} {noun}, each seeing only the other\'s {adj} potential for {noun}.',
+  'mutual_distrust.high': '{actor} and {target} spiraled into {adj} {noun}, neither able to bridge the chasm. The distance between them grew {adj}, absolute, legendary in its {noun}.',
+};
+

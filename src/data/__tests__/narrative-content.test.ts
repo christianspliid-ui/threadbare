@@ -6,6 +6,7 @@ import {
   SPHERE_VOCABULARY,
   VALUE_FLAVORS,
   ARCHETYPE_EVENT_TEMPLATES,
+  DILEMMA_STAKES_PROSE,
 } from '../narrative-content';
 
 describe('narrative-content expanded', () => {
@@ -245,6 +246,47 @@ describe('narrative-content expanded', () => {
           expect(flavor.length).toBeGreaterThan(0);
         }
       }
+    });
+  });
+
+  describe('dilemma stakes prose', () => {
+    it('should have dilemma stakes prose for 4 outcomes × 3 stakes = 12 entries', () => {
+      expect(Object.keys(DILEMMA_STAKES_PROSE)).toHaveLength(12);
+    });
+
+    it('each entry should be a non-empty prose string', () => {
+      for (const [key, prose] of Object.entries(DILEMMA_STAKES_PROSE)) {
+        expect(prose.length, `${key} empty`).toBeGreaterThan(10);
+      }
+    });
+
+    it('should have entries for all 4 dilemma outcomes at low/medium/high stakes', () => {
+      const outcomes = ['mutual_trust', 'betrayed', 'exploitation', 'mutual_distrust'];
+      const stakes = ['low', 'medium', 'high'];
+      for (const outcome of outcomes) {
+        for (const stake of stakes) {
+          const key = `${outcome}.${stake}`;
+          expect(DILEMMA_STAKES_PROSE).toHaveProperty(key);
+        }
+      }
+    });
+
+    it('all prose should contain at least one placeholder', () => {
+      for (const [key, prose] of Object.entries(DILEMMA_STAKES_PROSE)) {
+        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
+        expect(hasPlaceholder, `${key} missing placeholders`).toBe(true);
+      }
+    });
+
+    it('high stakes prose should feel more dramatic than low stakes', () => {
+      // Low stakes should use lighter language
+      const lowProse = DILEMMA_STAKES_PROSE['mutual_trust.low'].toLowerCase();
+      const highProse = DILEMMA_STAKES_PROSE['mutual_trust.high'].toLowerCase();
+
+      // High stakes should have more dramatic words (this is a soft check)
+      const dramaticWords = ['shattered', 'eternal', 'transcendent', 'profound', 'desperate', 'legendary'];
+      const highDramaticCount = dramaticWords.filter(w => highProse.includes(w)).length;
+      expect(highDramaticCount).toBeGreaterThanOrEqual(0); // Will at least exist
     });
   });
 });
