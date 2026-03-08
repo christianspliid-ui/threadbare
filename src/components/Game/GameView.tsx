@@ -30,6 +30,7 @@ import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { AvatarHUD } from './AvatarHUD';
+import { WorldPulse } from './WorldPulse';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -131,21 +132,25 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   return (
     <div className="h-screen bg-stone-900 flex flex-col overflow-hidden">
       {/* Doom + Mandate bar at top */}
-      <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 flex gap-4 relative">
-        <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+      <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 flex gap-4 relative items-center">
+        <div className="flex-[2] min-w-0">
+          <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+        </div>
         {gameState.mandateDefinition && gameState.mandateState && (
           <>
             <div className="w-px bg-amber-900/30 self-stretch" />
-            <MandateTracker
-              definition={gameState.mandateDefinition}
-              state={gameState.mandateState}
-            />
+            <div className="flex-[1] min-w-0">
+              <MandateTracker
+                definition={gameState.mandateDefinition}
+                state={gameState.mandateState}
+              />
+            </div>
           </>
         )}
         <button
           data-testid="debug-toggle"
           onClick={handleToggleDebug}
-          className="ml-auto px-3 py-1 rounded text-xs font-mono border border-amber-900/30 bg-stone-800/50 text-amber-200/70 hover:text-amber-100 hover:bg-stone-700/50 transition-colors flex items-center gap-1.5"
+          className="ml-auto px-2.5 py-1 rounded text-[10px] font-mono border border-amber-900/30 bg-stone-800/50 text-amber-200/50 hover:text-amber-100 hover:bg-stone-700/50 transition-colors flex items-center gap-1.5 flex-shrink-0"
           title="Toggle debug trace panel (`)"
         >
           {debugPanelOpen && (
@@ -157,7 +162,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
       <div className="flex flex-1 overflow-hidden">
         {/* Left sidebar */}
-        <div className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-900/30 bg-stone-800/90">
+        <nav aria-label="Game status" className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-900/30 bg-stone-800/90">
           {/* Ascendant info */}
           <div className="text-center py-2">
             <h1
@@ -193,7 +198,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
-        </div>
+        </nav>
 
         {/* Main content area */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
@@ -322,13 +327,17 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 onViewProfile={handleViewProfile}
                 onBack={handleBackFromAgentDetail}
               />
-            ) : (
+            ) : retinueAgents.length > 0 ? (
               <div className="p-4">
                 <RetinuePanel
                   agents={retinueAgents}
                   selectedAgentId={selectedAgentId}
                   onAgentSelect={handleAgentSelect}
                 />
+              </div>
+            ) : (
+              <div className="p-4">
+                <WorldPulse gameState={gameState} />
               </div>
             )}
           </div>
