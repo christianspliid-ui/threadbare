@@ -62,7 +62,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const {
     hoveredHex, setHoveredHex, selectedHex, viewLevel,
     focusedHex, focusedLocationId, moveMode, hexMapRef,
-    handleHexClick, handleLocationDoubleClick, handleBackToWorld,
+    handleLocationDoubleClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
   } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS });
@@ -83,7 +83,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     selectedAgentId,
     wheelVisible,
     wheelFeedback,
-    strandViewAgent,
     pendingIntervention,
     retinueAgents,
     agentDetail,
