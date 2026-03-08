@@ -325,6 +325,20 @@ Camera very far above, nearly directly overhead, about 80 degrees from horizonta
 No sky. No horizon. No bare ground. No magic, no glowing elements. No text, no UI, no hexagonal shapes. No rivers, no streams. No paths.{suffix}"""
 
 
+def build_magic_prompt(sphere: str) -> str:
+    """Build prompt for a magic sphere overlay — luminous threads on black."""
+    reg = MAGIC_REGISTRY[sphere.lower()]
+    color = reg["bright"]
+    form = reg["form_language"]
+    name = reg["desc"]
+
+    return f"""Semi-transparent {name} magic threads on pure black background. Luminous {color} colored threads in {form}. The threads are intensely bright and saturated against pure black. 10-20% of the image area has visible luminous threads, the rest is pure black.
+
+No terrain, no scenery, no ground, no sky, no figures, no characters.
+Dark fantasy style, painterly brushwork, bright magical threads on black.
+No text, no UI, no labels. No hexagonal shapes."""
+
+
 # ---------------------------------------------------------------------------
 # Image generation via Gemini API
 # ---------------------------------------------------------------------------
