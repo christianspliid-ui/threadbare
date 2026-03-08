@@ -12,6 +12,8 @@ import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
+
+export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
 import type { EchoDefinition, EchoState } from './echo';
 import type { GreatChronicle } from './chronicle';
