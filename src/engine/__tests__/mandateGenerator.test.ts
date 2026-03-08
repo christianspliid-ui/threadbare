@@ -65,7 +65,7 @@ describe('mandateGenerator', () => {
     expect(typeof mandate.description).toBe('string');
 
     // Check mandate type
-    expect(mandate.type).toMatch(/^(graph_state|sphere_dominance|narrative)$/);
+    expect(mandate.type).toMatch(/^(graph_state|sphere_dominance|narrative|simulation_achievable)$/);
 
     // Check 3-stage structure
     expect(mandate.stages).toBeDefined();
@@ -174,7 +174,7 @@ describe('mandateGenerator', () => {
     });
   });
 
-  it('Should select from all 9 mandate templates over sufficient seed range', () => {
+  it('Should select from all 12 mandate templates over sufficient seed range', () => {
     const selectedMandates = new Set<string>();
     const numSeeds = 1000;
 
@@ -194,7 +194,7 @@ describe('mandateGenerator', () => {
       selectedMandates.add(mandate.id);
     }
 
-    // With 1000 seeds and varying alignments, we should see all 9 templates
-    expect(selectedMandates.size).toBe(9);
+    // With 1000 seeds and varying alignments, we should see all 12 templates
+    expect(selectedMandates.size).toBe(12);
   });
 });

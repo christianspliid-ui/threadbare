@@ -92,4 +92,19 @@ describe('doom clock state machine', () => {
     state = decelerateDoomClock(state, 10.0);
     expect(state.tickModifier).toBeCloseTo(0.1);
   });
+
+  it('all 5 stages are reachable within 120 ticks', () => {
+    let state = createDoomClockState('breach', 120);
+    const stagesReached = new Set<number>([state.currentStage]);
+
+    for (let i = 0; i < 120; i++) {
+      state = advanceDoomClock(state);
+      stagesReached.add(state.currentStage);
+    }
+
+    expect(stagesReached.size).toBe(5);
+    expect(stagesReached).toEqual(new Set([1, 2, 3, 4, 5]));
+    expect(state.expired).toBe(true);
+    expect(state.currentStage).toBe(5);
+  });
 });

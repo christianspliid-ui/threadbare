@@ -615,14 +615,199 @@ const THE_SHADOW_SOVEREIGN: MandateTemplate = {
 };
 
 // ═══════════════════════════════════════════════════════════════════
+// 4. SIMULATION-ACHIEVABLE MANDATES (3)
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Threads of Fate — Relationships form between mortals.
+ *
+ * The autonomous simulation creates relates_to edges between actors (~30% between pairs).
+ * The ascendant merely observes the web of destiny weaving itself.
+ *
+ * Affinities: mind (connection, understanding), spirit (shared bonds, destiny)
+ */
+const THREADS_OF_FATE: MandateTemplate = {
+  id: 'mandate.threads_of_fate',
+  type: 'simulation_achievable',
+  name: 'Threads of Fate',
+  description: 'Relationships form between mortals. Weave the web of destiny.',
+  sphereAffinities: ['mind', 'spirit'],
+  stages: [
+    {
+      stage: 'setup',
+      description: '4 relationships form.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '4+ relates_to edges',
+          params: {
+            edgeType: 'relates_to',
+            minCount: 4,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'escalation',
+      description: '8 relationships form.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '8+ relates_to edges',
+          params: {
+            edgeType: 'relates_to',
+            minCount: 8,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'culmination',
+      description: '12 relationships form.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '12+ relates_to edges',
+          params: {
+            edgeType: 'relates_to',
+            minCount: 12,
+          },
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * The Gathering — Factions grow in strength and numbers.
+ *
+ * The autonomous simulation assigns member_of edges to ~70% of actors.
+ * The ascendant guides how loyalty and affiliation take root.
+ *
+ * Affinities: force (unity, strength), spirit (shared purpose, commitment)
+ */
+const THE_GATHERING: MandateTemplate = {
+  id: 'mandate.the_gathering',
+  type: 'simulation_achievable',
+  name: 'The Gathering',
+  description: 'Factions grow in strength and numbers. Loyalty draws the faithful.',
+  sphereAffinities: ['force', 'spirit'],
+  stages: [
+    {
+      stage: 'setup',
+      description: '3 faction memberships.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '3+ member_of edges',
+          params: {
+            edgeType: 'member_of',
+            minCount: 3,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'escalation',
+      description: '5 faction memberships.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '5+ member_of edges',
+          params: {
+            edgeType: 'member_of',
+            minCount: 5,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'culmination',
+      description: '8 faction memberships.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '8+ member_of edges',
+          params: {
+            edgeType: 'member_of',
+            minCount: 8,
+          },
+        },
+      ],
+    },
+  ],
+};
+
+/**
+ * Cultural Convergence — Cultures spread and take root.
+ *
+ * The autonomous simulation assigns belongs_to edges to actors via culture generation.
+ * The ascendant watches identity become destiny as cultures flourish.
+ *
+ * Affinities: life (growth, identity), mind (culture, understanding)
+ */
+const CULTURAL_CONVERGENCE: MandateTemplate = {
+  id: 'mandate.cultural_convergence',
+  type: 'simulation_achievable',
+  name: 'Cultural Convergence',
+  description: 'Cultures spread and take root. Identity becomes destiny.',
+  sphereAffinities: ['life', 'mind'],
+  stages: [
+    {
+      stage: 'setup',
+      description: '3 cultural bonds.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '3+ belongs_to edges',
+          params: {
+            edgeType: 'belongs_to',
+            minCount: 3,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'escalation',
+      description: '6 cultural bonds.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '6+ belongs_to edges',
+          params: {
+            edgeType: 'belongs_to',
+            minCount: 6,
+          },
+        },
+      ],
+    },
+    {
+      stage: 'culmination',
+      description: '10 cultural bonds.',
+      conditions: [
+        {
+          type: 'edge_count',
+          description: '10+ belongs_to edges',
+          params: {
+            edgeType: 'belongs_to',
+            minCount: 10,
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ═══════════════════════════════════════════════════════════════════
 // MANDATE_TEMPLATES EXPORT
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Complete library of 9 mandate templates:
+ * Complete library of 12 mandate templates:
  * - 3 graph-state mandates (control, build, ally)
  * - 3 sphere dominance mandates (life, entropy, energy)
  * - 3 narrative mandates (champion, devoted circle, shadow sovereign)
+ * - 3 simulation-achievable mandates (threads of fate, gathering, cultural convergence)
  *
  * Each template is fully specified with conditions, descriptions, and sphere affinities.
  * Conditions use only mechanically verifiable types: node_count, edge_count, sphere_weight, actor_tier.
@@ -642,4 +827,9 @@ export const MANDATE_TEMPLATES: MandateTemplate[] = [
   THE_ASCENDANTS_CHAMPION,
   THE_DEVOTED_CIRCLE,
   THE_SHADOW_SOVEREIGN,
+
+  // Simulation-Achievable (3)
+  THREADS_OF_FATE,
+  THE_GATHERING,
+  CULTURAL_CONVERGENCE,
 ];

@@ -1,0 +1,34 @@
+{
+  "expectations": [
+    {
+      "text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope",
+      "passed": true,
+      "evidence": "Identifies 4 layers as levers: (1) Relationship Type (Graph + Disposition), (2) Cooperation Strategy (Character Profile), (3) Dilemma Detection & Resolution, (4) Narrative Prose (Archetype Beat Patterns). Each connected to betrayal mechanics via disposition system."
+    },
+    {
+      "text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications",
+      "passed": true,
+      "evidence": "References src/data/world-model.json, src/data/archetype-content.ts, src/data/narrative-content.ts, src/data/game-theory-content.ts, src/engine/disposition.ts, src/types/disposition.ts with specific line numbers and change descriptions."
+    },
+    {
+      "text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns",
+      "passed": true,
+      "evidence": "Includes beat pattern structures for schemer archetype (eventTypes, minimumTier, promoteTo, narrativeRequirements, contextPreferences), enhanced dilemma_betrayed templates, and references game-theory-content.ts strategy weights with concrete values (always-defect: 0.45)."
+    },
+    {
+      "text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode",
+      "passed": true,
+      "evidence": "Provides step-by-step breakdown (Steps 1-6) covering relationship edges, dilemma orchestration, beat patterns, templates, and narrative requirements. Includes testing checklist and tuning knobs section."
+    },
+    {
+      "text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly",
+      "passed": false,
+      "evidence": "Includes prose examples in Step 5 and Section 6 like '{actor} had positioned every piece for years...' and '{target} had called {actor} counselor and friend...' These are actual narrative prose, not structural data definitions."
+    },
+    {
+      "text": "integration-awareness: Response shows how content flows through the narrative pipeline",
+      "passed": true,
+      "evidence": "Explains how disposition system's game-theory logic triggers dilemma detection, which maps to narrative events, which are routed through prose pipeline. Shows beat pattern filtering and context object ranking by opposition scoring."
+    }
+  ]
+}

@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>V2 Hex Tiles: SVG-Friendly Regeneration Results</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d1a; color: #ccc; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
+  h1 { color: #d4af37; margin-bottom: 0.5rem; font-size: 1.6rem; }
+  .subtitle { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+
+  .biome-section { margin-bottom: 3rem; border-bottom: 1px solid #2a2a3a; padding-bottom: 2rem; }
+  .biome-title { color: #ffeb99; font-size: 1.2rem; margin-bottom: 0.3rem; }
+  .biome-verdict { font-size: 0.8rem; margin-bottom: 1rem; padding: 0.3rem 0.6rem; border-radius: 4px; display: inline-block; }
+  .verdict-great { background: #1a3a1a; color: #33ff77; }
+  .verdict-ok { background: #3a3a1a; color: #ffb355; }
+  .verdict-bad { background: #3a1a1a; color: #ff6b6b; }
+
+  .hex-row { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-end; justify-content: center; margin-bottom: 1.5rem; }
+  .hex-card { text-align: center; }
+  .hex-card .card-label { font-size: 0.7rem; color: #888; margin-bottom: 0.4rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .hex-card .card-meta { font-size: 0.65rem; color: #555; margin-top: 0.3rem; }
+
+  /* Hex clip — pointy-top for game consistency */
+  .hex-clip {
+    margin: 0 auto;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    overflow: hidden;
+    background: #1e1b2e;
+  }
+  .hex-clip img, .hex-clip object { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .hex-48  { width: 48px;  height: 55px; }
+  .hex-80  { width: 80px;  height: 92px; }
+  .hex-140 { width: 140px; height: 162px; }
+  .hex-220 { width: 220px; height: 254px; }
+
+  .size-group { margin-bottom: 1.5rem; }
+  .size-label { color: #666; font-size: 0.75rem; text-align: center; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* Full square previews */
+  .preview-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+  .preview-card { flex: 1; min-width: 200px; max-width: 300px; }
+  .preview-card .card-label { font-size: 0.7rem; color: #888; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .preview-card .card-meta { font-size: 0.65rem; color: #555; margin-top: 0.3rem; }
+  .img-wrap {
+    width: 100%; aspect-ratio: 1;
+    border: 1px solid #2a2a3a; border-radius: 4px; overflow: hidden;
+    background: #1e1b2e;
+  }
+  .img-wrap img, .img-wrap object { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .summary { background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 8px; padding: 1.5rem; margin-top: 2rem; }
+  .summary h2 { color: #d4af37; font-size: 1.1rem; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; color: #ffeb99; padding: 0.4rem 0.6rem; border-bottom: 1px solid #3a3a4a; }
+  td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #1a1a2a; }
+  .good { color: #33ff77; }
+  .bad { color: #ff6b6b; }
+  .neutral { color: #ffb355; }
+
+  .strategy { background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 8px; padding: 1.5rem; margin-top: 1.5rem; }
+  .strategy h2 { color: #d4af37; font-size: 1.1rem; margin-bottom: 0.8rem; }
+  .strategy p { font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.6rem; }
+</style>
+</head>
+<body>
+
+<h1>V2 Hex Tiles — SVG-Friendly Regeneration</h1>
+<p class="subtitle">Original painterly PNGs vs V2 flat-graphic PNGs (Imagen 4.0) vs V2 SVGs (Vectorizer.AI) — side-by-side at game hex sizes</p>
+
+<!-- ===== Dense Forest ===== -->
+<div class="biome-section">
+  <div class="biome-title">Dense Forest</div>
+  <div class="biome-verdict verdict-bad">SVG 4× larger than V2 PNG — still too complex</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (582 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/dense-forest.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (405 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/dense-forest-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (1,618 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/dense-forest-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/dense-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/dense-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/dense-forest-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/dense-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/dense-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/dense-forest-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/dense-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/dense-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/dense-forest-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Deciduous Forest ===== -->
+<div class="biome-section">
+  <div class="biome-title">Deciduous Forest</div>
+  <div class="biome-verdict verdict-bad">SVG 4.3× larger than V2 PNG — dense canopy resists vectorization</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (582 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/deciduous-forest.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (402 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/deciduous-forest-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (1,734 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/deciduous-forest-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/deciduous-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/deciduous-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/deciduous-forest-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/deciduous-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/deciduous-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/deciduous-forest-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/deciduous-forest.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/deciduous-forest-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/deciduous-forest-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Jungle ===== -->
+<div class="biome-section">
+  <div class="biome-title">Jungle</div>
+  <div class="biome-verdict verdict-ok">SVG 1.8× larger than V2 PNG — acceptable tradeoff for scalability</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (476 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/jungle.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (285 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/jungle-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (513 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/jungle-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/jungle.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/jungle-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/jungle-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/jungle.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/jungle-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/jungle-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/jungle.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/jungle-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/jungle-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Swamp ===== -->
+<div class="biome-section">
+  <div class="biome-title">Swamp</div>
+  <div class="biome-verdict verdict-great">SVG 1.1× V2 PNG — near parity! Great candidate</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (436 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/swamp.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (276 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/swamp-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (315 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/swamp-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/swamp.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/swamp-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/swamp-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/swamp.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/swamp-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/swamp-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/swamp.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/swamp-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/swamp-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Tundra ===== -->
+<div class="biome-section">
+  <div class="biome-title">Tundra</div>
+  <div class="biome-verdict verdict-great">SVG 31% SMALLER than V2 PNG — excellent vectorization!</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (406 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/tundra.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (247 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/tundra-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (171 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/tundra-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/tundra.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/tundra-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/tundra-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/tundra.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/tundra-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/tundra-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/tundra.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/tundra-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/tundra-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Open Grassland ===== -->
+<div class="biome-section">
+  <div class="biome-title">Open Grassland</div>
+  <div class="biome-verdict verdict-ok">SVG 1.85× larger than V2 PNG — acceptable tradeoff</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (311 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/open-grassland.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (291 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/open-grassland-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (539 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/open-grassland-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/open-grassland.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/open-grassland-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/open-grassland-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/open-grassland.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/open-grassland-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/open-grassland-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/open-grassland.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/open-grassland-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/open-grassland-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Bog ===== -->
+<div class="biome-section">
+  <div class="biome-title">Bog</div>
+  <div class="biome-verdict verdict-great">SVG 16% SMALLER than V2 PNG — excellent vectorization!</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (314 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/bog.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (338 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/bog-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (284 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/bog-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/bog.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/bog-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/bog-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/bog.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/bog-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/bog-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/bog.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/bog-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/bog-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Taiga ===== -->
+<div class="biome-section">
+  <div class="biome-title">Taiga</div>
+  <div class="biome-verdict verdict-bad">SVG 3.3× larger than V2 PNG — triangle shapes still too complex</div>
+
+  <div class="preview-row">
+    <div class="preview-card">
+      <div class="card-label">Original PNG (365 KB)</div>
+      <div class="img-wrap"><img src="../../public/hex-tiles/taiga.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 PNG — flat graphic (397 KB)</div>
+      <div class="img-wrap"><img src="v2-tiles/taiga-v2.png"></div>
+    </div>
+    <div class="preview-card">
+      <div class="card-label">V2 SVG (1,293 KB)</div>
+      <div class="img-wrap"><object data="v2-tiles/taiga-v2.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+
+  <div class="size-group">
+    <div class="size-label">Game sizes: 48px · 80px · 140px</div>
+    <div class="hex-row">
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-48"><img src="../../public/hex-tiles/taiga.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-48"><img src="v2-tiles/taiga-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-48"><object data="v2-tiles/taiga-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-80"><img src="../../public/hex-tiles/taiga.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-80"><img src="v2-tiles/taiga-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-80"><object data="v2-tiles/taiga-v2.svg" type="image/svg+xml"></object></div></div>
+      <div style="width:2rem"></div>
+      <div class="hex-card"><div class="card-label">Orig</div><div class="hex-clip hex-140"><img src="../../public/hex-tiles/taiga.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 PNG</div><div class="hex-clip hex-140"><img src="v2-tiles/taiga-v2.png"></div></div>
+      <div class="hex-card"><div class="card-label">V2 SVG</div><div class="hex-clip hex-140"><object data="v2-tiles/taiga-v2.svg" type="image/svg+xml"></object></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Summary Table ===== -->
+<div class="summary">
+  <h2>Complete Size Comparison</h2>
+  <table>
+    <tr><th>Biome</th><th>Original PNG</th><th>V2 PNG</th><th>V2 SVG</th><th>SVG vs V2 PNG</th><th>SVG vs Orig PNG</th><th>Verdict</th></tr>
+    <tr><td>Dense Forest</td><td>582 KB</td><td>405 KB</td><td>1,618 KB</td><td class="bad">4.0×</td><td class="bad">2.8×</td><td class="bad">Stay PNG</td></tr>
+    <tr><td>Deciduous Forest</td><td>582 KB</td><td>402 KB</td><td>1,734 KB</td><td class="bad">4.3×</td><td class="bad">3.0×</td><td class="bad">Stay PNG</td></tr>
+    <tr><td>Jungle</td><td>476 KB</td><td>285 KB</td><td>513 KB</td><td class="neutral">1.8×</td><td class="good">1.1×</td><td class="neutral">Borderline</td></tr>
+    <tr><td>Swamp</td><td>436 KB</td><td>276 KB</td><td>315 KB</td><td class="good">1.14×</td><td class="good">0.72×</td><td class="good">Use SVG</td></tr>
+    <tr><td>Tundra</td><td>406 KB</td><td>247 KB</td><td>171 KB</td><td class="good">0.69×</td><td class="good">0.42×</td><td class="good">Use SVG ★</td></tr>
+    <tr><td>Open Grassland</td><td>311 KB</td><td>291 KB</td><td>539 KB</td><td class="neutral">1.85×</td><td class="bad">1.73×</td><td class="neutral">Borderline</td></tr>
+    <tr><td>Bog</td><td>314 KB</td><td>338 KB</td><td>284 KB</td><td class="good">0.84×</td><td class="good">0.90×</td><td class="good">Use SVG ★</td></tr>
+    <tr><td>Taiga</td><td>365 KB</td><td>397 KB</td><td>1,293 KB</td><td class="bad">3.3×</td><td class="bad">3.5×</td><td class="bad">Stay PNG</td></tr>
+  </table>
+</div>
+
+<!-- Previously tested good candidates from original tiles -->
+<div class="summary" style="margin-top: 1.5rem;">
+  <h2>Previously Tested — Original Tiles (from hex-comparison.html)</h2>
+  <table>
+    <tr><th>Biome</th><th>Original PNG</th><th>SVG (direct)</th><th>Ratio</th><th>Verdict</th></tr>
+    <tr><td>Ocean</td><td>273 KB</td><td>50 KB</td><td class="good">0.18×</td><td class="good">Use SVG ★★</td></tr>
+    <tr><td>Mountain</td><td>201 KB</td><td>28 KB</td><td class="good">0.14×</td><td class="good">Use SVG ★★</td></tr>
+    <tr><td>Volcanic</td><td>324 KB</td><td>142 KB</td><td class="good">0.44×</td><td class="good">Use SVG ★</td></tr>
+    <tr><td>Overlay Castle</td><td>22 KB</td><td>12 KB</td><td class="good">0.55×</td><td class="good">Use SVG</td></tr>
+    <tr><td>Badlands</td><td>340 KB</td><td>420 KB</td><td class="neutral">1.24×</td><td class="neutral">Borderline</td></tr>
+  </table>
+</div>
+
+<div class="strategy">
+  <h2>Recommended Strategy</h2>
+  <p><strong>Tier 1 — Convert to SVG now</strong> (smaller than PNG, clear win): Ocean, Mountain, Volcanic, Tundra v2, Bog v2, Swamp v2, all overlay icons. These tiles have clean geometric shapes that vectorize beautifully.</p>
+  <p><strong>Tier 2 — Acceptable as SVG</strong> (1.1–1.85× larger, but gain infinite scalability): Jungle v2, Open Grassland v2, Badlands, Castle overlay. Worth it if scalability matters more than bandwidth.</p>
+  <p><strong>Tier 3 — Keep as PNG</strong> (3–4× larger as SVG, not worth it): Dense Forest, Deciduous Forest, Taiga. These have too many small shapes — even the flat-graphic v2 prompts didn't simplify them enough for efficient vectorization. For these, stick with PNGs and use CSS clip-path for the hex shape.</p>
+  <p><strong>Key insight:</strong> The V2 flat-graphic prompts dramatically improved jungle, swamp, tundra, and bog (all went from "unvectorizable" to reasonable), but forests and taiga remain stubbornly complex. The number of distinct shape boundaries matters more than texture detail.</p>
+</div>
+
+</body>
+</html>

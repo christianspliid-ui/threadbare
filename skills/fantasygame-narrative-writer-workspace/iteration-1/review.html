@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "fantasygame-narrative-writer", "runs": [{"id": "eval-1-betrayal-trope-with_skill", "prompt": "I want to add a betrayal narrative trope to the game - trusted advisor turns on their lord (Wormtongue/Littlefinger). Walk me through the design using the engine's narrative levers.", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Designing the Betrayal Narrative Trope\n\n## Summary\n\nTo add the classic **betrayal trope** where a trusted advisor turns on their lord (think Wormtongue or Littlefinger), you'll need to touch **five interconnected layers** of the narrative engine:\n\n1. **`src/types/agent.ts`** \u2014 Add an optional `isBetrayalTarget` flag and `_betrayedBy` edge tracking to agents\n2. **`src/types/narrative.ts`** \u2014 Create `betrayal_event` as a new `NarrativeEventType`\n3. **`src/data/narrative-content.ts`** \u2014 Author betrayal prose templates at routine, notable, and chronicle tiers\n4. **`src/engine/agentActions.ts`** \u2014 Hook betrayal detection into the action evaluation pipeline (when an advisor's disposition and world state align)\n5. **`src/engine/narrativeContext.ts`** (or extend `contextBuilder.ts`) \u2014 Score betrayal tension in opposition matrix\n\nThe player will feel the **buildup** through disposition mechanics (advisor's reputation slowly drops, bond weakens), and the **shock** through a chronicle-tier narrative event that surfaces context objects (the advisor, the lord, witnesses, artifacts tied to betrayal).\n\n---\n\n## Understanding the Betrayal Lever\n\nThe engine has **four narrative levers** you can pull to make betrayal narratively rich:\n\n### Lever 1: Disposition System (Buildup)\n\nThe existing **game theory disposition system** (`src/engine/disposition.ts`) already tracks:\n- **Cooperation strategy** per agent (e.g., 'opportunist', 'defector', 'grudge-holder')\n- **Reputation scores** and interaction history\n- **Dilemma events** that shift disposition based on outcomes\n\n**Betrayal uses this lever to create dramatic tension:**\n\nWhen an advisor (high-tier actor with strong bonds to a lord) rolls certain dilemmas and chooses 'defection' or 'exploitation', their reputation with the lord drops. Each tick, their bond weakens further. The narrative output is whisper-thin: routine entries show the advisor's growing coldness (\"*cold courtesy instead of warmth*\"). But mechanically, the betrayal is being set up.\n\n### Lever 2: Narrative Event Hierarchy (The Shock)\n\nThe prose tiers already exist:\n- **Routine** \u2192 High frequency, mechanical, short\n- **Notable** \u2192 Significant events, world-aware, 2\u20133 context objects\n- **Chronicle** \u2192 Major narrative moments, LLM-generated, 4\u20135 context objects, full prose\n\n**Betrayal should trigger at notable/chronicle tier** when:\n- An advisor's reputation drops below a threshold (-70 or worse)\n- A contested_action or actor_death event involves the lord\n- The advisor was bonded to the lord at game start\n\nThis ensures the shock lands hard and the player realizes *they've been watching the betrayal unfold in their log*.\n\n### Lever 3: Opposition Tension Scoring (Narrative Context)\n\nThe **narrative context builder** (`src/engine/contextBuilder.ts`) ranks world objects by relevance. Betrayal is fundamentally about **tension between two actors**.\n\nThe opposition matrix (`src/data/opposition-content.ts`) already scores:\n- Foundation sphere opposition (Chaos vs. Order, Light vs. Darkness)\n- Creation sphere tensions (e.g., Matter resists Entropy)\n- **Archetype friction** (e.g., Tragic Hero vs. Trickster)\n\n**Add betrayal-specific tension scoring:**\n- **High tension if advisor has 'opportunist' or 'defector' strategy + lord has 'cooperator' strategy** = mutual incompatibility\n- **Higher tension if advisor and lord were bonded but reputation is now negative** = active contradiction\n- **Higher tension if advisor was ever in the lord's rival-god pantheon** = theological opposition\n\nWhen a betrayal event fires, `buildNarrativeContext` will automatically elevate the advisor and lord to the top of the context object list, creating prose like:\n\n> *\"[Lord Name] realized too late that [Advisor Name] had been playing a longer game. The [Advisor's Archetype]-turned-betrayer stood at the threshold of power, the very loyalty [Lord] had extended now a knife at their throat.\"*\n\n### Lever 4: Content Production Manifest (The Consistency)\n\n**Betrayal templates must flavor-match the advisor's archetype**, just like all prose does. Use the **content strategy** (Docs/plans/2026-03-06-content-strategy.md) rule:\n\n> *\"Every prose template gets the agent's narrative archetype mixed in via tone keywords and beat pattern promotion.\"*\n\nSo if the betrayer is a `trickster`, betrayal prose uses trickster tone keywords (`clever`, `doubled`, `played`, etc.). If they're a `serpent_tongue`, it uses their keywords (`honeyed`, `whispered`, `poison`, etc.).\n\nThis means:\n- A trickster's betrayal feels like a con\n- A serpent_tongue's betrayal feels like slow seduction into damnation\n- A dark_magician's betrayal feels like a ritual binding trap\n\n---\n\n## File Changes: Order Matters\n\n### File 1: `src/types/agent.ts`\n\n**Add to the `Agent` interface:**\n\n```typescript\n// Optional field: if this agent is a betrayal target (lord/leader)\nisBetrayalTarget?: boolean;\n\n// Track betrayal state\nbetrayalState?: {\n  betrayedBy: string;        // nodeId of the betrayer\n  discoveredAt: number;      // tick when betrayal was revealed\n  severity: 'minor' | 'critical'; // did they lose a war, a title, their life?\n};\n```\n\n**Why:** This lets the engine know which agents *can* be betrayed and tracks the betrayal timeline. The orchestrator checks this during `phaseDoomClock` or agent death events.\n\n### File 2: `src/types/narrative.ts`\n\n**Extend the `NarrativeEventType` union:**\n\n```typescript\nexport type NarrativeEventType =\n  | 'action_resolved'\n  | 'action_failed'\n  | 'action_critical'\n  | 'trait_acquired'\n  | 'tier_transition'\n  | 'divine_intervention'\n  | 'contested_action'\n  | 'actor_death'\n  | 'doom_escalation'\n  | 'mandate_stage'\n  | 'trait_lost'\n  | 'dilemma_mutual_trust'\n  | 'dilemma_betrayed'\n  | 'dilemma_exploitation'\n  | 'dilemma_mutual_distrust'\n  | 'betrayal_revealed'  // NEW\n  | 'betrayal_undermining'; // NEW (ongoing subversion)\n```\n\n**Why:** New event types let the orchestrator route betrayal events through the prose pipeline independently.\n\n### File 3: `src/engine/orchestrator.ts`\n\n**Add a new tick phase: `phaseBetrayal` (after `phaseDoomClock`, before `phaseNarrative`):**\n\n```typescript\n// Tick phase: Betrayal Detection\nexport function phaseBetrayal(state: GameState, random: PRNG): GameState {\n  const updated = { ...state };\n\n  // Find all agents with negative reputation toward a lord\n  const potentialBetrayals = state.graph.getNodesByType('actor').flatMap(actorId => {\n    const actor = state.graph.getNode(actorId) as Actor;\n    if (!actor.cooperationStrategy || actor.reputationScores.size === 0) return [];\n\n    // Check if this actor is a 'defector' or 'opportunist' with a high-tier bond target\n    if (!['defector', 'opportunist'].includes(actor.cooperationStrategy)) return [];\n\n    const lordCandidates = actor.bonds\n      .filter(b => b.bondStrength > 0 && b.targetNodeId !== actor.id)\n      .flatMap(b => {\n        const target = state.graph.getNode(b.targetNodeId);\n        if (!target || target.nodeType !== 'actor') return [];\n        const targetActor = target as Actor;\n        if (!targetActor.isBetrayalTarget) return [];\n\n        const rep = actor.reputationScores.get(b.targetNodeId) || 0;\n        return rep < -70 ? [{ lordId: b.targetNodeId, reputation: rep }] : [];\n      });\n\n    return lordCandidates.map(({ lordId, reputation }) => ({\n      betrayerId: actorId,\n      lordId,\n      reputation,\n    }));\n  });\n\n  // For each viable betrayal, roll for revelation\n  for (const betrayal of potentialBetrayals) {\n    const betrayer = state.graph.getNode(betrayal.betrayerId) as Actor;\n    const lord = state.graph.getNode(betrayal.lordId) as Actor;\n\n    // Betray happens when:\n    // 1. Opportunity arises (contested_action involving lord, or actor_death event)\n    // 2. Random roll succeeds (scaled by how negative reputation is)\n    const chanceToBeray = Math.min(100, Math.abs(betrayal.reputation) * 1.2);\n    if (random.next(0, 100) < chanceToBeray) {\n      // Add betrayal event to chronicle\n      updated.chronicle.push({\n        tick: state.tick,\n        event: {\n          type: 'betrayal_revealed',\n          actorId: betrayal.betrayerId,\n          targetId: betrayal.lordId,\n          tier: 'chronicle',\n        },\n        prose: '', // Will be filled by phaseNarrative\n      });\n\n      // Mark the lord as betrayed\n      const updatedLord = { ...lord, betrayalState: {\n        betrayedBy: betrayal.betrayerId,\n        discoveredAt: state.tick,\n        severity: 'critical',\n      }};\n      updated.graph.updateNode(betrayal.lordId, updatedLord);\n    }\n  }\n\n  return updated;\n}\n```\n\n**Why:** This detects when a betrayal should happen based on disposition state and triggers the narrative event.\n\n### File 4: `src/data/narrative-content.ts`\n\n**Add betrayal prose templates at all three tiers:**\n\n```typescript\nexport const ROUTINE_TEMPLATES: Record<string, string[]> = {\n  // ... existing templates ...\n  betrayal_revealed: [\n    '{actor} turned against {target}. What once was loyalty has become {noun}.',\n    'The mask fell. {actor} revealed their true {noun}, and {target} was defenseless.',\n    '{target} discovered too late that {actor} had been serving their own {noun} all along.',\n  ],\n  betrayal_undermining: [\n    '{actor} whispered {adj} counsel into {target}\\'s ear, guiding them {noun}ward.',\n    'In quiet moments, {actor} worked against {target}, their {noun} as invisible as breath.',\n    '{actor}\\'s loyalty was a performance. Behind closed doors, they cultivated {noun}.',\n  ],\n};\n\nexport const NOTABLE_TEMPLATES: Record<string, string[]> = {\n  // ... existing templates ...\n  betrayal_revealed: [\n    'The truth emerged like {noun} breaking through stone{personality}. {actor} had been {target}\\'s closest counselor, their most trusted voice \u2014 and all along, {actor} harbored {adj} {noun}.',\n    '{target} felt the ground shift beneath them as {actor}\\'s betrayal came to light{personality}. Years of {adj} counsel, all of it a knife sharpened in the dark.',\n    'A {adj} realization: every word {actor} spoke to {target}, every decision they whispered, had served {noun} instead of {target}\\'s true interest{personality}. The intimacy of the betrayal made it all the more {adj}.',\n  ],\n  betrayal_undermining: [\n    '{actor} had grown close to {target} \u2014 close enough to know their {noun}, to whisper the right words at the right moments{personality}. Subversion, when done by a trusted friend, is the sharpest blade.',\n    'They called it counsel. They called it guidance. But {actor}\\'s whispers carried {adj} {noun}, slowly tilting {target} toward ruin{personality}. By the time {target} realized, the poison had taken root.',\n    '{actor} never raised a hand against {target}. Instead, {actor} {verb} trust itself into a weapon{personality}, using {target}\\'s own {noun} against them.',\n  ],\n};\n\nexport const CHRONICLE_TEMPLATES: Record<string, string[]> = {\n  // For chronicle-tier events, the LLM will be seeded with these templates\n  // These are shorter prompts that the LLM enriches\n  betrayal_revealed: [\n    '{actor} was {target}\\'s closest advisor, their most trusted voice. Now that trust lay shattered, revealed as {noun}. The sting was all the sharper for how {adj} it had been to believe.',\n    'The world shifted on its axis when {actor}\\'s treachery was laid bare. Years of {adj} counsel, each word a calculated move toward {noun}. {target} had been played, and everyone would know it now.',\n    'There is a particular agony in being betrayed by one you elevated, one you loved like kin. {actor} had been {target}\\'s {noun}, and now... now {actor} was {target}\\'s undoing.',\n  ],\n  betrayal_undermining: [\n    '{actor} had woven themselves so deeply into {target}\\'s confidence that the line between advisor and architect of ruin had blurred beyond recognition. Each {adj} word, each {noun}, had been placed with deadly precision.',\n    'The insidiousness of {actor}\\'s betrayal lay not in sudden violence but in the slow, patient corruption of {target}\\'s judgment. By the time the poison showed, {actor} had won.',\n    '{actor} did not need to raise a blade. {actor} had done something far more {adj}: {actor} had made {target} {noun} their own ruin.',\n  ],\n};\n```\n\n### File 5: `src/data/opposition-content.ts`\n\n**Extend the opposition matrix to include betrayal tension:**\n\n```typescript\n// Add to opposition-content.ts\n\nexport const BETRAYAL_TENSION_WEIGHTS = {\n  // Cooperation strategy incompatibility\n  defectorVSCooperator: 5,      // Defector + Cooperator = max tension\n  opportunistVSReciprocal: 4,   // Opportunist + Reciprocal = high tension\n  grudgeHolderVSAlly: 5,        // Grudge-holder + Ally in trust = explosive\n\n  // Bond strength reversal (was strong, now negative)\n  bondRegressionScalar: 1.5,    // Multiply opposition tension if bond was once strong\n\n  // Archetype friction specific to betrayal\n  tricksterBetrayal: 3,         // Tricksters betray with clever moves\n  serpentTongueBetray: 4,       // Serpent tongues betray with seduction/poison\n  darkMagicianBetray: 4,        // Dark magicians betray through binding\n  loyalistBetray: 5,            // Loyalists betray only under extreme duress (rare, devastating)\n};\n\n// In the opposition scoring function, add:\nfunction scoreBetrayalTension(actor: Actor, lord: Actor, graph: WorldGraph): number {\n  if (!lord.isBetrayalTarget || !actor.bonds.some(b => b.targetNodeId === lord.id)) {\n    return 0;\n  }\n\n  let tension = 0;\n\n  // Strategy incompatibility\n  if (['defector', 'opportunist'].includes(actor.cooperationStrategy)) {\n    if (['cooperator', 'reciprocal'].includes(lord.cooperationStrategy)) {\n      tension += BETRAYAL_TENSION_WEIGHTS.defectorVSCooperator;\n    }\n  }\n\n  // Bond regression (was once strong, now negative)\n  const bond = actor.bonds.find(b => b.targetNodeId === lord.id);\n  if (bond && bond.bondStrength > 0.7 && (actor.reputationScores.get(lord.id) || 0) < -50) {\n    tension *= BETRAYAL_TENSION_WEIGHTS.bondRegressionScalar;\n  }\n\n  // Archetype-specific betrayal flavor\n  if (actor.narrativeArchetype === 'trickster') {\n    tension += BETRAYAL_TENSION_WEIGHTS.tricksterBetray;\n  }\n  if (actor.narrativeArchetype === 'serpent_tongue') {\n    tension += BETRAYAL_TENSION_WEIGHTS.serpentTongueBetray;\n  }\n\n  return tension;\n}\n```\n\n---\n\n## How Betrayal Wires Through the Narrative Engine\n\n### Phase 1: The Buildup (Ticks 1\u2013N)\n\n1. **Orchestrator**: `phaseDoomClock` or `phaseAgent` generates dilemma events where the advisor picks 'defection' or 'exploitation'\n2. **Disposition**: `disposition.ts` updates the advisor's reputation with the lord (decreasing)\n3. **Narrative**: `phaseNarrative` generates routine entries showing the advisor's coldness\n4. **Player sees**: Scattered log entries like \"*[Advisor] offered cold counsel to [Lord].*\" Barely noticeable at first.\n\n### Phase 2: The Shock (Betrayal Event Tick)\n\n1. **Orchestrator**: `phaseBetrayal` detects reputation threshold + random roll succeeds\n2. **Event creation**: `TickEvent` with `type: 'betrayal_revealed'` is queued\n3. **Narrative**: `phaseNarrative` intercepts the event:\n   - Calls `buildNarrativeContext` to harvest context objects (the advisor, lord, any witnesses, artifacts, cultural tensions)\n   - Opposition scoring elevates betrayal tension\n   - Selects a `NOTABLE_TEMPLATES['betrayal_revealed']` variant\n   - Feeds it to LLM with the harvested context\n   - Produces full prose\n\n4. **Output**: Chronicle entry appears with striking prose, and the player reads back through their log to see they *were warned* by all those cold routine entries.\n\n---\n\n## Design Notes: Why This Approach?\n\n### 1. Uses Existing Levers\n\nYou're not inventing new mechanics. Betrayal uses:\n- Disposition system (already exists)\n- Event taxonomy (extensible)\n- Prose pipeline (already modular)\n- Opposition tension (already scored)\n\n### 2. Supports Multiple Flavors\n\nBecause archetype tone keywords and beat patterns are already mixed into prose, different archetypes betray *narratively* different ways:\n- **Trickster** betrays through clever misdirection\n- **Serpent Tongue** betrays through honeyed lies\n- **Dark Magician** betrays through binding rituals\n- **Loyal Soldier** (if corrupted) betrays with devastating guilt\n\n### 3. Player Agency\n\nThe betrayal is **not** guaranteed. It's a roll that happens when:\n- Reputation is low enough\n- The right dilemma was chosen\n- Random chance favors it\n\nPlayers who manage disposition well and keep advisors happy simply won't see betrayals.\n\n### 4. Narrative Resonance\n\nBecause the buildup is whisper-thin (routine entries) and the shock is loud (chronicle prose), the player *feels* the betrayal even if they didn't consciously track disposition. They go back and re-read their log: *\"Wait... this whole time...?\"*\n\n---\n\n## Testing Checklist\n\n1. **Type safety**: `npm run build` should pass with new event types and agent fields.\n\n2. **Betrayal detection**:\n   - Manually create an agent with `cooperationStrategy: 'defector'` and a bond to a `isBetrayalTarget` agent\n   - Drop reputation below -70\n   - Advance ticks and check `phaseBetrayal` fires correctly\n\n3. **Prose generation**:\n   - Verify routine, notable, and chronicle templates are selected\n   - Check that archetype keywords are mixed in (trickster vs. serpent_tongue vs. dark_magician)\n\n4. **Opposition scoring**:\n   - When betrayal event fires, verify advisor and lord are top-2 context objects\n   - Check betrayal-specific tension modifiers apply\n\n5. **UI**: DoomBar/Chronicle should display betrayal prose correctly.\n\n---\n\n## Optional Enhancements (Pass 2)\n\n- **Betrayal aftermath**: Once a lord is betrayed, their actions suffer penalties, alliances weaken\n- **Revenge mandate**: A new mandate template \"Bring [Advisor] to justice\"\n- **Betrayal-triggered rival god**: A rival god aligned with the betrayer\n- **Recovery beat pattern**: Loyalist archetype might have a beat pattern about recovering from betrayal\n\n---\n\n## Summary Checklist\n\nTo add the **betrayal trope**:\n\n- [ ] Extend `Agent` interface with `isBetrayalTarget` and `betrayalState` fields\n- [ ] Add `betrayal_revealed` and `betrayal_undermining` event types to `NarrativeEventType`\n- [ ] Create `phaseBetrayal` in orchestrator.ts (detection + triggering)\n- [ ] Add routine, notable, and chronicle templates to narrative-content.ts\n- [ ] Extend opposition matrix with `scoreBetrayalTension()` function in opposition-content.ts\n- [ ] Wire `phaseBetrayal` into tick loop (after `phaseDoomClock`, before `phaseNarrative`)\n- [ ] Run `npm run build` and `npm test`\n- [ ] Manually test with low-reputation advisor + `isBetrayalTarget` lord\n\nThat's all you need to make the betrayal trope feel earned and devastating!\n"}], "grading": null}, {"id": "eval-1-betrayal-trope-without_skill", "prompt": "I want to add a betrayal narrative trope to the game - trusted advisor turns on their lord (Wormtongue/Littlefinger). Walk me through the design using the engine's narrative levers.", "eval_id": 1, "outputs": [{"name": "response.md", "type": "text", "content": "# Adding the Betrayal Trope to The Fantasy World Simulator\n\n## Overview\nThe betrayal trope you're describing\u2014a trusted advisor who turns on their lord\u2014is actually already partially supported through the game's **disposition system** and **dilemma mechanics**, but it needs orchestration through content data and narrative beat patterns. Let me walk you through the layers.\n\n## 1. The Narrative Lever Stack\n\nThe engine has **four distinct layers** that work together to create betrayal narratives:\n\n### Layer 1: Relationship Type (Graph + Disposition)\n- **Where**: `src/data/` + world-model.json\n- **What**: Relationships are typed edges. You need a `trusts` or `advises` edge type between the lord and advisor.\n- **Action**: In world-model.json, ensure both edges exist: lord\u2192ADVISES\u2192advisor AND advisor\u2192TRUSTS\u2190lord (or equivalent).\n\n### Layer 2: Cooperation Strategy (Character Profile)\n- **Where**: `src/data/game-theory-content.ts` + `src/engine/disposition.ts`\n- **What**: Each archetype has a probability distribution over 5 cooperation strategies (tit-for-tat, grudger, pavlov, always-cooperate, always-defect).\n- **Key insight**: A betrayer needs either:\n  - `always-defect` with high weight (pure malice from the start), OR\n  - `grudger` with high weight + a prior betrayal event (they cooperate initially, then flip when trust breaks)\n\n### Layer 3: Dilemma Detection & Resolution\n- **Where**: `src/engine/disposition.ts` (phaseReputationDecay + phaseDilemmaDetection)\n- **What**: The system detects when two actors with a history interact and have divergent strategies/reputations. It resolves into one of four outcomes:\n  - `mutual_trust` (both cooperate)\n  - `betrayed` (one defects after the other cooperated)\n  - `exploitation` (one defects, knowing the other will cooperate)\n  - `mutual_distrust` (both defect)\n\n**This is where the trope lives.** The \"trusted advisor turns on lord\" outcome maps to the `betrayed` dilemma outcome.\n\n### Layer 4: Narrative Prose (Archetype Beat Patterns + Templates)\n- **Where**: `src/data/narrative-content.ts` (templates) + `src/data/archetype-content.ts` (beat patterns)\n- **What**: Templates for each dilemma outcome. Current template for `dilemma_betrayed`:\n  ```\n  '{actor} reached out to {target} with {adj} purpose, only to find {noun} instead of faith.'\n  'A wound that would not heal \u2014 {actor} {verb} with trust, but {target} offered only {noun}.'\n  'The {adj} sting of betrayal settled upon {actor}. {target} had chosen {noun} over the bond.'\n  ```\n- **Action**: You can enrich these with archetype-specific flavor by adding a new beat pattern to the advisor's archetype that specifically triggers on `dilemma_betrayed` events.\n\n---\n\n## 2. How to Build \"Wormtongue\" Betrayal\n\n### Step 1: Choose the Advisor Archetype\nThe classic betrayer archetypes already exist:\n- **`schemer`** \u2014 \"Webs of manipulation, delayed payoffs\" \u2014 This is your Wormtongue. High `always-defect` weight (see game-theory-content.ts line 305-311). Story shape = \"Patient manipulation, betrayal payoff.\" Reach affinities include `shadow`, `gold`, `heart`.\n- **`poisoned_court`** \u2014 \"Hidden corruption, elegant destruction\" \u2014 If you want court intrigue\n- **`trickster`** \u2014 High defection bias, but too quick; less fitting for slow-burn betrayal\n\nGo with **`schemer`**. They fit perfectly.\n\n### Step 2: Set Up the Relationship Chain\nIn world-model.json, create edges:\n```json\n{\n  \"from\": \"lord_actor_id\",\n  \"to\": \"advisor_actor_id\",\n  \"type\": \"trusts\",\n  \"properties\": { \"strength\": \"high\", \"duration\": \"long\" }\n},\n{\n  \"from\": \"advisor_actor_id\",\n  \"to\": \"lord_actor_id\",\n  \"type\": \"advises\",\n  \"properties\": { \"influence\": \"significant\" }\n}\n```\n\nEnsure both actors are in the world graph.\n\n### Step 3: Force the Dilemma Through Disposition History\nThe game detects betrayal when:\n1. Two actors have a history (InteractionRecord[] exists in the graph)\n2. They interact again\n3. One has `grudger` or `always-defect`, the other has `always-cooperate` or `tit-for-tat`\n4. The disposition engine evaluates the next move and finds a mismatch\n\n**To guarantee a slow-burn betrayal arc:**\n- Seed the advisor with `always-defect` strategy (hidden from the lord)\n- Seed the lord with `always-cooperate` or `tit-for-tat`\n- Orchestrate several early interactions where the advisor cooperates (faking loyalty)\n- Then have a high-stakes interaction where the advisor defects\n\nThe disposition engine will log these in InteractionRecord and emit a `dilemma_betrayed` event.\n\n### Step 4: Write Betrayal Beat Patterns for the Schemer Archetype\nModify `src/data/archetype-content.ts`, in the **schemer** archetype definition, add a new beat pattern (or enhance the existing one):\n\n```typescript\n{\n  eventTypes: ['dilemma_betrayed'],  // NEW: triggers specifically on betrayal\n  minimumTier: 'routine',\n  promoteTo: 'notable',  // Betrayal is always story-worthy\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['lord', 'victim', 'once-trusted'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'artifact',\n      tags: ['secret document', 'poison', 'hidden leverage'],\n      required: false,\n      culturallyShape: false,\n    },\n  ],\n  contextPreferences: [\n    'years in planning',\n    'revealed in a moment of weakness',\n    'using the lord\\'s own trust as the weapon',\n    'when the lord least expects it'\n  ],\n}\n```\n\n### Step 5: Enrich Betrayal Templates in narrative-content.ts\nThe existing `dilemma_betrayed` templates are generic. Add schemer-specific variants:\n\nIn `src/data/narrative-content.ts`, find the `dilemma_betrayed` template array and append:\n\n```typescript\ndilemma_betrayed: [\n  // Existing templates...\n\n  // Schemer-specific betrayal (slow-burn, manipulative)\n  '{actor} had positioned every piece for years, waiting for the moment when {target}\\'s faith would be indistinguishable from blindness. That moment arrived like dawn\u2014inevitable, irreversible.',\n  '{target} had called {actor} counselor and friend. {actor} had merely called this patience. The mask came off, and {target} finally saw the {adj} mind beneath.',\n  'All those gentle whispers, those loyal words\u2014they were just another tool in {actor}\\'s hands, as precisely placed as a poisoner\\'s dose. {target} had never stood a chance.',\n]\n```\n\n### Step 6: Add Narrative Requirements to Support Betrayal\nIn the schemer's `narrativeRequirements` array, ensure:\n```typescript\n{\n  category: 'character',\n  tags: ['mark', 'lord', 'victim', 'once-trusted'],\n  required: true,\n  culturallyShape: true,\n}\n```\n\nThis ensures that when a schemer character is created, they have a \"mark\" (lord) character to betray.\n\n---\n\n## 3. The \"Buildup and Shock\" Pacing\n\nThe engine naturally creates this through:\n\n### Phase 1: Trust (Ticks 0-N)\n- Multiple early interactions where advisor + lord cooperate (DilemmaOutcome = `mutual_trust`)\n- Prose: \"The counselor's wisdom guided the realm. The bond was unshakeable.\"\n- Engine logic: `evaluateStrategy('always-defect', history)` returns -1 (defect), but context/stakes favor cooperation initially\n\n### Phase 2: Tension (Ticks N-M)\n- A contested action where stakes rise (DILEMMA_STAKES_THRESHOLD triggered)\n- Advisor still appears loyal, but game-theory weights shift\n- Prose starts hinting: \"The counselor's advice grew colder, more calculating.\"\n\n### Phase 3: The Turn (Tick M)\n- High-stakes dilemma detected\n- Advisor defects: `evaluateStrategy('always-defect', history)` returns -1\n- DilemmaOutcome = `betrayed`\n- Narrative event fires: \"The counselor struck, and {lord} fell from grace.\"\n\n### Phase 4: Aftermath (Ticks M+)\n- Reputation cascades: lord's reputation drops (advisor betrayed them)\n- Advisor's reputation may rise (they achieved their goal)\n- Secondary characters react to the betrayal\n- Prose tone shifts: grief, shock, recalibration\n\n**To orchestrate this timing:**\n- Control when the high-stakes interaction fires using `phaseDilemmaDetection` and mandate timers\n- Use `DILEMMA_STAKES_THRESHOLD` constants (in disposition.ts) to force a dilemma on tick N\n- Seed initial InteractionRecords to pre-populate early \"loyalty\" interactions\n\n---\n\n## 4. Content Data Files to Create/Modify\n\n| File | What to change | Why |\n|------|----------------|-----|\n| `src/data/world-model.json` | Add lord + advisor actors, trusts/advises edges | Relationship foundation |\n| `src/data/archetype-content.ts` | Add `dilemma_betrayed` beat pattern to **schemer** archetype | Betrayal-specific narrative rules |\n| `src/data/narrative-content.ts` | Enhance `dilemma_betrayed` template array with schemer variants | Prose specificity |\n| `src/data/game-theory-content.ts` | Ensure **schemer** has high `always-defect` weight | Behavior alignment (already done: 0.45 weight) |\n| `src/engine/disposition.ts` | (Optional) Add logging/traces for betrayal detection | Debug + flavor |\n| `src/types/disposition.ts` | (Optional) Add `betrayal_plot_stage` field to DilemmaEvent | Track multi-tick arc |\n\n---\n\n## 5. Key Lever Insights\n\n### Why This Works\n1. **Disposition system** handles the game theory (when to defect)\n2. **Dilemma detection** identifies the moment of betrayal\n3. **Beat patterns** gate which archetype-specific prose triggers\n4. **Templates** provide the actual language\n5. **Narrative context builder** ranks supporting actors (witnesses, allies) for inclusion in prose\n\n### What the Player Feels\n- **Ticks 0-30**: Trust deepens, advisor seems loyal\n- **Tick 30-40**: Tension builds, stakes rise, advisor grows quiet\n- **Tick 45**: DILEMMA_BETRAYAL detected\n- **Tick 46**: Chronicle entry: \"The counselor turned. The lord fell.\"\n- **Aftermath**: The world reacts; rival gods sense weakness; mandates shift\n\n### Tuning Knobs\n- `DILEMMA_STAKES_THRESHOLD` (types/disposition.ts) \u2014 how high must stakes go to trigger a betrayal dilemma?\n- `REPUTATION_UPDATE_DEFECT` \u2014 how much does betrayal damage trust?\n- `STAKES_DOMAIN_GOLD`, `STAKES_FACTION_LEADER` \u2014 which domain/role triggers a betrayal?\n- Archetype strategy weights in game-theory-content.ts \u2014 pure defection probability\n- Interaction log cap (INTERACTION_LOG_CAP) \u2014 how many past interactions does the system remember?\n\n---\n\n## 6. Example: Step-by-Step Content Additions\n\n### A. Modify archetype-content.ts (schemer archetype)\n\nFind the schemer definition (~line 316-356) and add this beat pattern to the `beatPatterns` array:\n\n```typescript\n{\n  eventTypes: ['dilemma_betrayed'],\n  minimumTier: 'routine',\n  promoteTo: 'notable',\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['lord', 'victim', 'once-trusted'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'artifact',\n      tags: ['secret leverage', 'hidden document', 'poison'],\n      required: false,\n      culturallyShape: false,\n    },\n  ],\n  contextPreferences: [\n    'after years of positioning',\n    'when the victim is most vulnerable',\n    'using trust itself as the weapon',\n    'a perfectly timed strike',\n  ],\n}\n```\n\n### B. Modify narrative-content.ts (dilemma_betrayed templates)\n\nFind the `ROUTINE_TEMPLATES` and `NOTABLE_TEMPLATES` sections. In the `dilemma_betrayed` array, add:\n\n```typescript\n'Years of whispered advice, each word a stone in a careful foundation. {actor} had built a palace of the {lord}\\'s trust, brick by {adj} brick, only to light it afire when the moment came.',\n'{target} believed they had an advisor. They had a {noun} waiting to strike. {actor}\\'s {adj} patience had rewarded them perfectly.',\n'The counselor turned, and in that turn, {target}\\'s entire world inverted. Everything that had seemed {adj} was {noun}. Every kindness was a blade.',\n```\n\n### C. Modify game-theory-content.ts (if needed)\n\nCheck the schemer strategy weights (currently around line 305). It should have:\n\n```typescript\nschemer: {\n  'tit-for-tat': 0.1,\n  grudger: 0.1,\n  pavlov: 0.25,\n  'always-cooperate': 0.1,\n  'always-defect': 0.45,  // <-- High defection probability\n}\n```\n\nIf the always-defect weight is lower, raise it.\n\n---\n\n## Summary\n\n**To add betrayal to your game:**\n\n1. **Use the schemer archetype** (already tuned for manipulation)\n2. **Create lord + advisor relationship edges** in world-model.json\n3. **Add a dilemma_betrayed beat pattern** to archetype-content.ts (schemer)\n4. **Enrich dilemma_betrayed templates** in narrative-content.ts with slow-burn, manipulative prose\n5. **Let the disposition engine do the work** \u2014 it detects mismatched strategies and emits DilemmaEvent\n6. **Tune DILEMMA_STAKES_THRESHOLD** to control when the betrayal fires\n\nThe \"buildup and shock\" emerges naturally from the disposition system's game-theory logic, combined with the narrative context builder's ability to surface the victim and their loss. The player sees the advisor's cooperation early, then the sudden defection hits like Wormtongue whispering poison in the king's ear.\n"}], "grading": {"expectations": [{"text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope", "passed": true, "evidence": "Identifies 4 layers as levers: (1) Relationship Type (Graph + Disposition), (2) Cooperation Strategy (Character Profile), (3) Dilemma Detection & Resolution, (4) Narrative Prose (Archetype Beat Patterns). Each connected to betrayal mechanics via disposition system."}, {"text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications", "passed": true, "evidence": "References src/data/world-model.json, src/data/archetype-content.ts, src/data/narrative-content.ts, src/data/game-theory-content.ts, src/engine/disposition.ts, src/types/disposition.ts with specific line numbers and change descriptions."}, {"text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns", "passed": true, "evidence": "Includes beat pattern structures for schemer archetype (eventTypes, minimumTier, promoteTo, narrativeRequirements, contextPreferences), enhanced dilemma_betrayed templates, and references game-theory-content.ts strategy weights with concrete values (always-defect: 0.45)."}, {"text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode", "passed": true, "evidence": "Provides step-by-step breakdown (Steps 1-6) covering relationship edges, dilemma orchestration, beat patterns, templates, and narrative requirements. Includes testing checklist and tuning knobs section."}, {"text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly", "passed": false, "evidence": "Includes prose examples in Step 5 and Section 6 like '{actor} had positioned every piece for years...' and '{target} had called {actor} counselor and friend...' These are actual narrative prose, not structural data definitions."}, {"text": "integration-awareness: Response shows how content flows through the narrative pipeline", "passed": true, "evidence": "Explains how disposition system's game-theory logic triggers dilemma detection, which maps to narrative events, which are routed through prose pipeline. Shows beat pattern filtering and context object ranking by opposition scoring."}]}}, {"id": "eval-2-folk-hero-enrichment-with_skill", "prompt": "Enrich the folk_hero archetype - design beat patterns, vignette seeds, and tone keywords for Robin Hood / Kvothe-style story arcs.", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Enriching the Folk Hero Archetype\n\n## Current State of folk_hero\n\nIn `src/data/archetype-content.ts`, the `folk_hero` archetype currently has:\n\n```typescript\n{\n  id: 'folk_hero',\n  name: 'Folk Hero',\n  storyShape: 'Unlikely champion, beloved by common people',\n  proseTone: 'Warm, earthy, darkly funny',\n  reachAffinities: ['heart', 'stone', 'gold'],\n  toneKeywords: {\n    adjectives: ['stubborn', 'calloused', 'warm', 'unlikely', 'plain-spoken', 'generous'],\n    verbs: ['stood', 'laughed', 'shared', 'rallied', 'persisted', 'endured'],\n    sentenceRhythm: 'Earthy and warm. Humor arrives naturally. Gallows comedy earns its place through the character.',\n  },\n  beatPatterns: [\n    {\n      eventTypes: ['action_critical', 'contested_action'],\n      minimumTier: 'routine',\n      promoteTo: 'notable',\n      narrativeRequirements: [\n        { category: 'character', tags: ['community', 'common folk', 'witness'], required: true, culturallyShape: true },\n      ],\n      contextPreferences: ['against the powerful', 'for the helpless', 'with others watching'],\n    },\n    {\n      eventTypes: ['tier_transition'],\n      minimumTier: 'notable',\n      promoteTo: 'notable',\n      narrativeRequirements: [\n        { category: 'location', tags: ['marketplace', 'gathering place', 'common ground'], required: false, culturallyShape: true },\n      ],\n      contextPreferences: ['reluctant elevation', 'popular will', 'unexpected destiny'],\n    },\n  ],\n  vignetteSeeds: [\n    '{name} came from nothing and made a difference anyway. The common folk remember {name} because {name} never forgot where {name} came from. That memory was worth more than any crown.',\n    'They sing about {name} in taverns where common folk drink. The songs are true, though the singers add humor to soften the edges. {name} would appreciate that.',\n    '{name} had calluses on their hands from real work and a heart that refused to harden all the way. It was this combination that made {name} dangerous to those in power.',\n  ],\n  narrativeRequirements: [\n    { category: 'character', tags: ['common folk', 'friend', 'dependent'], required: true, culturallyShape: true },\n    { category: 'artifact', tags: ['common tool', 'humble gift', 'token of gratitude'], required: false, culturallyShape: true },\n    { category: 'location', tags: ['marketplace', 'gathering place', 'humble home'], required: false, culturallyShape: true },\n  ],\n}\n```\n\n**Problem:** The beat patterns are thin (only 2 entries). There's no arc showing how a folk hero *becomes* a legend, no tension with authority, no moment where the people rally. Compare this to `tragic_hero` (3 beat patterns, layered) or `trickster` (2, but tightly focused) \u2014 folk_hero feels underdeveloped.\n\n---\n\n## The Folk Hero Arc (Robin Hood / Kvothe Pattern)\n\nThe classic folk hero arc unfolds in **four narrative beats**:\n\n1. **Origins / Humble Discovery** \u2014 Audience meets the folk hero as an ordinary person. Maybe they're a blacksmith, a beggar, a thief with a code. The genius is hidden at first.\n\n2. **First Act Against Authority** \u2014 A moment of defiance. The folk hero stands up to someone powerful on behalf of someone powerless. This is where the legend *begins*, often with witnesses watching.\n\n3. **Growing Legend / Escalation** \u2014 The folk hero's deeds accumulate. More people whisper their name. Authority takes notice. Tension builds as the folk hero becomes *important* \u2014 which complicates their core identity (humble, for the people, not above them).\n\n4. **The Rally** \u2014 A moment where the common people openly support the folk hero. This can be beautiful (townspeople shelter them from guards) or tragic (they're asked to lead a war they don't want). Either way, it's the moment when the folk hero's private resistance becomes public revolution.\n\nEach beat uses different narrative levers and generates different prose.\n\n---\n\n## Enriched folk_hero Definition\n\nHere's the full enriched version for `src/data/archetype-content.ts`:\n\n```typescript\n{\n  id: 'folk_hero',\n  name: 'Folk Hero',\n  storyShape: 'Humble origins \u2192 first defiance \u2192 growing legend \u2192 people rally',\n  proseTone: 'Warm, earthy, darkly funny, with an edge of defiance',\n  reachAffinities: ['heart', 'stone', 'gold'],\n\n  toneKeywords: {\n    adjectives: [\n      'stubborn', 'calloused', 'warm', 'unlikely', 'plain-spoken', 'generous',\n      'defiant', 'scrappy', 'wry', 'grounded', 'unpolished', 'fierce'\n    ],\n    verbs: [\n      'stood', 'laughed', 'shared', 'rallied', 'persisted', 'endured',\n      'defied', 'sheltered', 'spoke', 'resisted', 'lifted', 'broke'\n    ],\n    sentenceRhythm: 'Earthy and warm. Humor arrives naturally \u2014 gallows comedy earns its place. When defiance comes, it lands hard. No flowery language; let the action speak.'\n  },\n\n  beatPatterns: [\n    // \u2500\u2500\u2500 Beat 1: Origins / Discovery \u2500\u2500\u2500\n    {\n      eventTypes: ['trait_acquired', 'action_resolved'],\n      minimumTier: 'routine',\n      promoteTo: 'routine',  // Keep low-key in early game\n      narrativeRequirements: [\n        {\n          category: 'artifact',\n          tags: ['common tool', 'humble item', 'inherited thing', 'craft of trade'],\n          required: false,\n          culturallyShape: true\n        },\n        {\n          category: 'location',\n          tags: ['home', 'workshop', 'common place', 'birthplace'],\n          required: false,\n          culturallyShape: true\n        },\n      ],\n      contextPreferences: [\n        'before anyone knew their name',\n        'in quiet work',\n        'foundation of skill',\n        'inherited knowledge',\n        'learning the trade'\n      ]\n    },\n\n    // \u2500\u2500\u2500 Beat 2: First Defiance \u2500\u2500\u2500\n    {\n      eventTypes: ['action_critical', 'contested_action'],\n      minimumTier: 'routine',\n      promoteTo: 'notable',  // Promote to Notable when they first stand against power\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['powerful figure', 'authority', 'oppressor', 'noble', 'ruler'],\n          required: true,\n          culturallyShape: false  // Authority must be recognized as such\n        },\n        {\n          category: 'character',\n          tags: ['common folk', 'dependent', 'witness', 'friend', 'innocent'],\n          required: true,\n          culturallyShape: true\n        },\n        {\n          category: 'artifact',\n          tags: ['symbol of oppression', 'tool of power', 'decree', 'tax collector's coin'],\n          required: false,\n          culturallyShape: false\n        },\n      ],\n      contextPreferences: [\n        'against someone with more power',\n        'on behalf of the helpless',\n        'moment of choice',\n        'refusing to bow',\n        'speaking truth to power',\n        'in front of witnesses'\n      ]\n    },\n\n    // \u2500\u2500\u2500 Beat 3: Growing Legend / Escalation \u2500\u2500\u2500\n    {\n      eventTypes: ['action_critical', 'actor_death', 'tier_transition'],\n      minimumTier: 'notable',\n      promoteTo: 'chronicle',  // Escalate to Chronicle as the legend grows\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['rival', 'pursuer', 'authority figure', 'rival folk hero'],\n          required: false,\n          culturallyShape: false\n        },\n        {\n          category: 'location',\n          tags: ['marketplace', 'gathering place', 'public space', 'contested place'],\n          required: false,\n          culturallyShape: true\n        },\n        {\n          category: 'artifact',\n          tags: ['legendary item', 'trophy', 'symbol of resistance', 'famous object'],\n          required: false,\n          culturallyShape: true\n        },\n      ],\n      contextPreferences: [\n        'growing reputation',\n        'more enemies',\n        'more followers',\n        'tension between who they are and who they\\'ve become',\n        'burden of being a symbol',\n        'haunted by their own legend'\n      ]\n    },\n\n    // \u2500\u2500\u2500 Beat 4: The Rally / Moment of Unity \u2500\u2500\u2500\n    {\n      eventTypes: ['tier_transition', 'contested_action', 'action_critical'],\n      minimumTier: 'notable',\n      promoteTo: 'chronicle',  // This is the emotional climax\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['common folk', 'crowd', 'community', 'supporters', 'dependent'],\n          required: true,\n          culturallyShape: true\n        },\n        {\n          category: 'character',\n          tags: ['authority', 'oppressor', 'noble', 'ruler', 'rival'],\n          required: false,\n          culturallyShape: false\n        },\n        {\n          category: 'location',\n          tags: ['gathering place', 'public square', 'village', 'town', 'marketplace'],\n          required: true,\n          culturallyShape: true\n        },\n      ],\n      contextPreferences: [\n        'people openly choosing to stand with them',\n        'moment of greatest danger',\n        'community defends folk hero or folk hero defends community',\n        'bittersweet choice',\n        'love made manifest',\n        'ordinary people becoming powerful'\n      ]\n    },\n  ],\n\n  vignetteSeeds: [\n    // Origins / becoming\n    '{name} came from nothing and made a difference anyway. The common folk remember {name} because {name} never forgot where {name} came from. That memory was worth more than any crown.',\n    'In a lifetime of humble work, {name} learned what those in towers never could: that calloused hands and a stubborn heart matter more than gold or pedigree.',\n    '{name} was not born to greatness. {name} earned it through a thousand small acts of defiance, each one a choice to stand for the helpless.',\n\n    // First defiance\n    'The day {name} said no to a noble\\'s command was the day the legend truly began. Not because {name} was seeking glory, but because {name} couldn\\'t not stand. That kind of honesty is dangerous.',\n    '{name} chose the side of a beggar over the command of a lord. For that, {name} became something the powerful had to reckon with.',\n    'They say {name}\\'s fame began with a simple refusal: I will not. Two words. A lifetime of consequences.',\n\n    // Growing legend\n    'The stories about {name} grew with each retelling. Some were true. Some were embellished. But all of them pointed to the same thing: a person the power could not break.',\n    'By the time {name}\\'s name reached the ears of the mighty, it was already carved into the hearts of the common folk. And that is a power no lord can easily crush.',\n    '{name} never asked for a legend. {name} just kept standing. The rest wrote itself in the margins of other people\\'s stories.',\n\n    // Rally / climax\n    'When the moment came and {name} stood alone against the power, the crowd stepped forward. They did not ask permission. They did not calculate odds. They simply said: not without him. Not without her. Not without {name}.',\n    'The most dangerous moment in any kingdom: when the common folk stop accepting the rule they\\'ve been given. And they stop because someone showed them they could stand. That someone was {name}.',\n    'In the end, {name}\\'s greatest victory was not defeating a single foe. It was making the powerless believe they had power. That belief was worth more than any crown could ever buy.',\n  ],\n\n  narrativeRequirements: [\n    // Global requirements across all beats\n    {\n      category: 'character',\n      tags: ['common folk', 'friend', 'dependent', 'community member'],\n      required: true,\n      culturallyShape: true\n    },\n    {\n      category: 'character',\n      tags: ['authority figure', 'noble', 'ruler', 'oppressor'],\n      required: true,  // Folk hero needs someone to stand against\n      culturallyShape: false\n    },\n    {\n      category: 'artifact',\n      tags: ['common tool', 'humble gift', 'token of gratitude', 'symbol of trade'],\n      required: false,\n      culturallyShape: true\n    },\n    {\n      category: 'location',\n      tags: ['marketplace', 'gathering place', 'humble home', 'common ground', 'contested place'],\n      required: true,\n      culturallyShape: true\n    },\n  ],\n}\n```\n\n---\n\n## Design Decisions Explained\n\n### 1. Four Beat Patterns (vs. two)\n\nEach beat serves a distinct narrative purpose:\n- **Beat 1 (Origins)** stays at `routine` tier \u2014 these are quiet moments, background texture\n- **Beat 2 (First Defiance)** promotes to `notable` \u2014 this is the pivot point where the folk hero becomes *noticed*\n- **Beat 3 (Growing Legend)** promotes to `chronicle` \u2014 escalation, the cost of being a symbol\n- **Beat 4 (The Rally)** promotes to `chronicle` \u2014 emotional climax where the community becomes powerful\n\nThis mirrors the Robin Hood arc: humble archer \u2192 first act of defiance \u2192 the legend grows and hunts intensify \u2192 the people rally behind him.\n\n### 2. Tone Keywords Expanded\n\nAdded `defiant`, `scrappy`, `wry`, `fierce` to adjectives and `defied`, `sheltered`, `spoke`, `resisted` to verbs. This gives prose generation more texture when the folk hero is at peak legend (defiant, fierce) vs. origins (stubborn, calloused).\n\n### 3. Context Preferences Are Story-Specific\n\nInstead of generic \"against the powerful,\" the preferences now explicitly call out the *narrative meaning*:\n- Beat 2: \"refusing to bow,\" \"speaking truth to power\"\n- Beat 3: \"burden of being a symbol,\" \"haunted by their own legend\"\n- Beat 4: \"bittersweet choice,\" \"ordinary people becoming powerful\"\n\nWhen the narrative context builder harvests objects for a folk_hero event, it will now prioritize context that matches these preferences, creating tighter narratives.\n\n### 4. Vignette Seeds Grouped by Beat\n\nThe 12 vignette seeds are now explicitly tied to the four beats (3 per beat). This means:\n- An early-game folk_hero gets seeded with origin/humble language\n- A growing-legend folk_hero gets seeded with escalation/burden language\n- A folk_hero in the rally gets seeded with unity/power language\n\nThe prose engine can select the vignette that matches the current beat tier, creating narrative coherence across the arc.\n\n### 5. Archetype Narrative Requirements Are Strict\n\nNotice that `isBetrayalTarget` would *not* be applied to folk_hero. Instead, folk_hero has **mandatory authority figure** as a narrative requirement. This prevents folk_heroes from being isolated or friendless \u2014 they require both community and opposition to function narratively.\n\n---\n\n## Prose Template Additions\n\nTo maximize the richness of these beat patterns, add folk_hero-specific prose templates to `src/data/narrative-content.ts`:\n\n```typescript\nexport const ROUTINE_TEMPLATES: Record<string, string[]> = {\n  // ... existing templates ...\n\n  // Folk Hero \u2014 Beat 1: Origins (quiet, foundational)\n  'folk_hero_origins': [\n    '{actor} worked with calloused hands, and no one thought to notice.',\n    'In humble labor, {actor} learned the true measure of {noun}.',\n    '{actor} came from nothing, but {noun} taught {actor} that something could still be {adj}.',\n  ],\n};\n\nexport const NOTABLE_TEMPLATES: Record<string, string[]> = {\n  // ... existing templates ...\n\n  // Folk Hero \u2014 Beat 2: First Defiance (moment of choice)\n  'folk_hero_defiance': [\n    '{actor} stood against {target}, not for glory but for {noun}{personality}. That refusal would echo for years.',\n    'They will sing of the day {actor} said no to {target}. Not because {actor} sought greatness, but because {noun} demanded it.',\n    'In {target}\\'s presence, {actor} chose the side of the helpless. That choice made {actor} {adj} in ways no title could.',\n  ],\n\n  // Folk Hero \u2014 Beat 3: Growing Legend (burden, escalation)\n  'folk_hero_escalation': [\n    '{actor}\\'s name spread like wildfire among the common folk, each story adding weight{personality}. {actor} had become a symbol, and symbols cannot simply lay down their burden.',\n    'The legend of {actor} grew with each passing {noun}. More followers. More enemies. The weight of being what hope looks like was crushing {actor} slowly.',\n    '{target} hunted {actor} now, not as a person but as a {adj} idea that refused to die. And {actor} was learning that being an idea is a lonely way to live.',\n  ],\n\n  // Folk Hero \u2014 Beat 4: The Rally (moment of unity)\n  'folk_hero_rally': [\n    'When {actor} stood against {target}, the crowd did not hesitate{personality}. The common folk stepped forward as one \u2014 not asking permission, simply saying: not without {actor}.',\n    '{actor} had never asked the people to fight. But in that moment, the {adj} {noun} of unity took shape. The powerless became powerful because they chose to stand together.',\n    'In the eyes of the crowd, {actor} saw reflected the best of what {noun} could be. And {target} saw, in that same moment, that they could not win against people who refused to accept defeat.',\n  ],\n};\n```\n\n---\n\n## Integration with Content Strategy\n\nFolk_hero beat patterns should interact with the **culture system** and **opposition tensor**:\n\n### 1. Cultural Shaping\n\nSeveral narrative requirements have `culturallyShape: true`:\n- `character` with tags `common folk` \u2192 Culture influences which folk are present (are they miners? farmers? merchants?)\n- `location` with tags `gathering place` \u2192 Culture influences which places are sacred (tavern in mining town, market square in trading culture)\n- `artifact` with tags `common tool` \u2192 Culture influences the tool (blacksmith's hammer in craft culture, merchant's scale in trading culture)\n\nThe prose templates can reference these culturally-shaped objects, creating authentic cultural artifacts.\n\n### 2. Opposition Scoring\n\nA folk_hero *needs* an authority figure as an opponent. The opposition matrix should score high tension when:\n- Folk_hero (archetype) vs. Tyrant (archetype) = 5 (natural opposition)\n- Folk_hero (high Heart reach) vs. Lonely Ruler (high Iron reach) = 3 (reach-based friction)\n- Folk_hero (disposition: reciprocal) vs. Authority (disposition: opportunist) = 4 (strategy incompatibility)\n\nThis ensures folk_hero events naturally harvest authority figures as context objects, strengthening the narrative.\n\n### 3. Mandate Interaction\n\nFolk_hero mandate templates from `src/data/mandate-content.ts` might include:\n- \"Shelter {character} from the wrath of {authority}\" (Beat 1/2 mandate)\n- \"Grow the legend until {faction} takes notice\" (Beat 3 mandate)\n- \"Unite {community} to stand against {oppressor}\" (Beat 4 mandate)\n\nWhen a folk_hero is seeded, the mandate generator can weight toward these templates, creating a coherent arc.\n\n---\n\n## Testing Checklist\n\n1. **Type safety**: `npm run build` should pass. The new `beatPatterns` array length is 4 (previously 2).\n\n2. **Beat promotion**:\n   - Create a folk_hero agent\n   - Generate an `action_critical` event involving the folk_hero and an authority figure\n   - Verify that `minimumTier: 'routine'` + `promoteTo: 'notable'` in Beat 2 causes the event to be elevated to Notable tier\n   - Verify that Chronicle-tier events (Beat 3/4) require those specific event types\n\n3. **Vignette selection**:\n   - Generate vignettes for a folk_hero and verify they draw from the expanded pool (12 seeds vs. 3 originally)\n   - Check that the vignettes match the character's current beat (if available in API)\n\n4. **Context object harvesting**:\n   - Trigger a folk_hero_rally event and verify that common folk characters and authority figures are harvested as context objects\n   - Verify opposition scoring elevates Folk_hero vs. Authority tension\n\n5. **Prose generation**:\n   - Manually test each new template variant in narrative-content.ts\n   - Verify archetype tone keywords are mixed in (stubborn, calloused, defiant, etc.)\n\n6. **Arc coherence**:\n   - Seed a world with a folk_hero\n   - Advance ticks to trigger Beats 1, 2, 3, 4 in order\n   - Verify the chronicle reads as a coherent story arc (humble \u2192 defiant \u2192 legendary \u2192 rallied)\n\n---\n\n## Optional Enhancements (Pass 2)\n\n- **Beat-tier metadata**: Add a `beat` field to beat patterns so prose can explicitly reference \"this is the origin beat\" or \"this is the rally beat\"\n- **Aspiration mechanic**: Folk heroes aspire to lead revolts; add a new beat pattern that triggers when disposition/mandate align\n- **Cultural folk hero variants**: Different cultures might have different folk hero archetypes (nomadic hero, merchant prince hero, etc.)\n- **Rival god generation**: A rival god aligned with the oppressor (the Tyrant, the Hoarder) for folk_hero runs\n- **Unmaking phase tweaks**: In the Twilight Phase, folk heroes might unlock a unique \"Rally\" action to unite the world against the doom\n\n---\n\n## Summary Checklist\n\nTo enrich the **folk_hero** archetype:\n\n- [ ] Replace the `folk_hero` entry in `src/data/archetype-content.ts` with the enriched version (4 beat patterns, 12 vignette seeds, expanded tone keywords, stricter narrative requirements)\n- [ ] Add `folk_hero_origins`, `folk_hero_defiance`, `folk_hero_escalation`, `folk_hero_rally` templates to `src/data/narrative-content.ts`\n- [ ] (Optional) Extend `src/data/mandate-content.ts` with folk_hero-specific mandate templates\n- [ ] Run `npm run build` and `npm test`\n- [ ] Manually test a folk_hero archetype agent through all four beats\n- [ ] Verify prose reads as a coherent narrative arc\n\nThat's all you need to make folk_hero feel like Robin Hood or Kvothe \u2014 a hero whose legend is earned, not granted!\n"}], "grading": {"expectations": [{"text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope", "passed": true, "evidence": "Identifies 5 levers: (1) Four Beat Patterns (Origins, First Defiance, Growing Legend, Rally), (2) Tone Keywords Expansion, (3) Context Preferences as Story-Specific narrative direction, (4) Vignette Seeds Grouped by Beat, (5) Archetype Narrative Requirements. Each connected to folk hero arc mechanics."}, {"text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications", "passed": true, "evidence": "References src/data/archetype-content.ts (find folk_hero entry, modify beatPatterns, toneKeywords, vignetteSeeds, narrativeRequirements) and src/data/narrative-content.ts for prose templates with specific section names (ROUTINE_TEMPLATES, NOTABLE_TEMPLATES)."}, {"text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns", "passed": true, "evidence": "Includes full enriched folk_hero definition with 4 beatPatterns (lines 96-228), expanded toneKeywords with adjectives/verbs/sentenceRhythm, 12 vignetteSeeds, and narrativeRequirements array with specific tags and culturallyShape flags."}, {"text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode", "passed": true, "evidence": "Addresses cultural shaping (market types influenced by culture, gathering places by culture type), opposition scoring (folk_hero vs Tyrant = high tension), beat pattern coverage (4 beats with promotion tiers), and includes implementation checklist and testing checklist."}, {"text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly", "passed": false, "evidence": "Section 'Prose Template Additions' (lines 326-365) includes extensive prose examples: '{actor} worked with calloused hands...', '{actor} stood against {target}...', and full template variants. These are narrative prose content, not structure design."}, {"text": "integration-awareness: Response shows how content flows through the narrative pipeline", "passed": true, "evidence": "Explains how beat patterns gate which events trigger, how cultural shaping influences context object selection, how opposition scoring elevates folk_hero vs Authority tension, and how narrative context builder harvests culturally-shaped objects for prose."}]}}, {"id": "eval-2-folk-hero-enrichment-without_skill", "prompt": "Enrich the folk_hero archetype - design beat patterns, vignette seeds, and tone keywords for Robin Hood / Kvothe-style story arcs.", "eval_id": 2, "outputs": [{"name": "response.md", "type": "text", "content": "# Enriching the Folk Hero Archetype\n\n## Current State\n\nThe folk_hero archetype exists in `src/data/archetype-content.ts` (lines 445-485) but is **thin on narrative specificity**. Currently it has:\n\n- **Beat patterns**: Only 2 patterns (action_critical/contested_action, tier_transition)\n- **Tone keywords**: Basic adjectival set (stubborn, calloused, warm, unlikely, plain-spoken, generous)\n- **Vignette seeds**: 3 generic opening hooks\n- **Narrative requirements**: Basic (character: common folk, artifact: common tool, location: marketplace)\n\n**The problem**: A folk hero's arc\u2014the legend-building, the authority tension, the rallying moment\u2014isn't captured. Robin Hood and Kvothe feel flat because the beat patterns don't trigger on the key moments that make their stories tick.\n\n---\n\n## Robin Hood / Kvothe Story Architecture\n\nBoth follow a four-act pattern:\n\n1. **Humble Origins** \u2014 Common birth, proven competence in mundane contexts\n2. **Growing Legend** \u2014 Repeated small victories against authority; reputation spreads\n3. **Authority Tension** \u2014 Power structures take notice; escalating conflict with establishment\n4. **The Rallying Moment** \u2014 People choose the folk hero over authority; public uprising or mass following\n\nYour current beat patterns miss acts 1, 2, and 4. Let's fix this.\n\n---\n\n## Design: Enhanced Folk Hero Beat Patterns\n\n### Beat Pattern 1: Humble Origins (NEW)\n**Trigger**: `trait_acquired` at Routine tier, promoting to Notable\n**Purpose**: Mark the moment when the folk hero's defining characteristic emerges\u2014the thing that will set them apart\n\n```typescript\n{\n  eventTypes: ['trait_acquired'],\n  minimumTier: 'routine',\n  promoteTo: 'notable',\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['mentor', 'elder', 'witness from common folk'],\n      required: false,\n      culturallyShape: true,\n    },\n    {\n      category: 'artifact',\n      tags: ['common tool mastered', 'first victory token', 'humble gift'],\n      required: false,\n      culturallyShape: true,\n    },\n    {\n      category: 'location',\n      tags: ['common place', 'marketplace', 'gathering place', 'threshold'],\n      required: false,\n      culturallyShape: true,\n    },\n  ],\n  contextPreferences: [\n    'from nothing, something emerges',\n    'common skill becomes legendary',\n    'the day {name} was noticed',\n    'when the gift revealed itself',\n  ],\n}\n```\n\n**Prose effect**: \"From nothing, {name}'s gift emerged. A {adj} {noun} that would echo through history started in the {location}, over a {artifact}.\"\n\n---\n\n### Beat Pattern 2: Growing Legend (NEW)\n**Trigger**: `action_critical` at Routine tier, promoting to Notable\n**Purpose**: Capture the repeated small victories that build a folk hero's reputation\n\n```typescript\n{\n  eventTypes: ['action_critical'],\n  minimumTier: 'routine',\n  promoteTo: 'notable',\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['community', 'common folk', 'dependent', 'witness'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'location',\n      tags: ['gathering place', 'market', 'humble ground', 'common street'],\n      required: false,\n      culturallyShape: true,\n    },\n  ],\n  contextPreferences: [\n    'word spreads',\n    'the legend grows in tavern songs',\n    'small act, enormous consequence',\n    'another proof of what they\\'re becoming',\n    'the common folk remember this one',\n  ],\n}\n```\n\n**Prose effect**: \"The tale of {name}'s {adj} deed spread like {noun} through common places. In {location}, they sing of it still.\"\n\n---\n\n### Beat Pattern 3: Authority Tension (ENHANCED)\n**Trigger**: `contested_action` at Notable tier (elevated from Routine), promoting to Notable\n**Purpose**: Capture the moment when power structures explicitly oppose the folk hero\n\n```typescript\n{\n  eventTypes: ['contested_action'],\n  minimumTier: 'notable',  // <-- RAISED from 'routine' to make it harder to trigger\n  promoteTo: 'notable',\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['authority figure', 'noble', 'tyrant', 'rival power'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'character',\n      tags: ['common folk', 'dependent', 'community'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'location',\n      tags: ['seat of power', 'palace', 'throne', 'place of judgment'],\n      required: false,\n      culturallyShape: true,\n    },\n  ],\n  contextPreferences: [\n    'power stands against the people',\n    'the folk hero forces a choice',\n    'authority finally notices the threat',\n    'the line is crossed',\n    'no compromise possible now',\n  ],\n}\n```\n\n**Prose effect**: \"The {authority} could no longer ignore {name}. The people had chosen, and that choice was a {adj} {noun} that echoed in the halls of power. War was coming.\"\n\n---\n\n### Beat Pattern 4: The Rallying Moment (NEW)\n**Trigger**: `tier_transition` at Notable tier (keep existing), OR new `action_critical` with high social stakes\n**Purpose**: The moment when the folk hero's influence reaches critical mass\u2014the people actively choose them\n\n```typescript\n{\n  eventTypes: ['tier_transition', 'action_critical'],\n  minimumTier: 'notable',\n  promoteTo: 'chronicle',  // <-- PROMOTE to chronicle (broadest scope)\n  narrativeRequirements: [\n    {\n      category: 'character',\n      tags: ['common folk', 'community', 'crowd', 'legion of followers'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'location',\n      tags: ['gathering place', 'marketplace', 'public square', 'field of assembly'],\n      required: true,\n      culturallyShape: true,\n    },\n    {\n      category: 'artifact',\n      tags: ['banner', 'rallying symbol', 'common token of unity'],\n      required: false,\n      culturallyShape: true,\n    },\n  ],\n  contextPreferences: [\n    'the people rallied',\n    'the moment when many became one',\n    'history pivoting on a {name}\\'s choice',\n    'legend born in fire and numbers',\n    'the common folk rose as one',\n  ],\n}\n```\n\n**Prose effect**: \"The {location} erupted with {noun}. Thousands of common voices, unified, crying {name}'s name. {target} had lost\u2014not to {name}, but to the will of people no longer willing to be silent.\"\n\n---\n\n## Tone Keywords Enhancement\n\nCurrent:\n```typescript\ntoneKeywords: {\n  adjectives: ['stubborn', 'calloused', 'warm', 'unlikely', 'plain-spoken', 'generous'],\n  verbs: ['stood', 'laughed', 'shared', 'rallied', 'persisted', 'endured'],\n  sentenceRhythm: 'Earthy and warm. Humor arrives naturally. Gallows comedy earns its place through the character.',\n}\n```\n\nEnhanced:\n```typescript\ntoneKeywords: {\n  adjectives: [\n    'stubborn', 'calloused', 'warm', 'unlikely', 'plain-spoken', 'generous',\n    // NEW: Add legend-building words\n    'defiant', 'rallying', 'steadfast', 'indomitable', 'unflinching', 'chosen',\n  ],\n  verbs: [\n    'stood', 'laughed', 'shared', 'rallied', 'persisted', 'endured',\n    // NEW: Action-oriented verbs for rising tension\n    'challenged', 'gathered', 'inspired', 'led', 'refused', 'rose',\n  ],\n  sentenceRhythm: 'Earthy and warm. Humor arrives naturally. Gallows comedy earns its place through the character. Build momentum: simple sentences at first, then compound structures as the legend grows. Short, punchy statements in the rallying moment.',\n}\n```\n\n---\n\n## Vignette Seeds Enhancement\n\nCurrent (3 seeds):\n```typescript\nvignetteSeeds: [\n  '{name} came from nothing and made a difference anyway. The common folk remember {name} because {name} never forgot where {name} came from. That memory was worth more than any crown.',\n  'They sing about {name} in taverns where common folk drink. The songs are true, though the singers add humor to soften the edges. {name} would appreciate that.',\n  '{name} had calluses on their hands from real work and a heart that refused to harden all the way. It was this combination that made {name} dangerous to those in power.',\n]\n```\n\nEnhanced (add 6 more for richer variation):\n```typescript\nvignetteSeeds: [\n  // Existing 3...\n\n  // NEW: Legend-building vignettes\n  'The legend of {name} began small\u2014a story told in one tavern, whispered in a marketplace. But legends, once born, grow like weeds through stone. By the time the powerful noticed, {name}\\'s name was on a thousand lips.',\n\n  '{name} had never wanted to lead. But the people looked at {name} and saw what they needed\u2014not a king, but a {name}. So {name} led, reluctantly and completely.',\n\n  'In the end, {name}\\'s greatest victory was not against {target}, but for the common folk who discovered they need not kneel. {name} simply showed them how to stand.',\n\n  'The songs about {name} are not about {name} at all, really. They are about what {name} awoke in ordinary people. That was the true magic.',\n\n  'History would call {name} a legend. But {name} remained what {name} always was\u2014someone from nothing who remembered nothing\\'s cost and refused to let others pay it.',\n\n  '{name}\\'s rebellion was not fought with armies but with stubborn, calloused hands and a refusal to accept the way things were. That was more dangerous than any sword.',\n]\n```\n\n---\n\n## Narrative Requirements Enhancement\n\nCurrent:\n```typescript\nnarrativeRequirements: [\n  { category: 'character', tags: ['common folk', 'friend', 'dependent'], required: true, culturallyShape: true },\n  { category: 'artifact', tags: ['common tool', 'humble gift', 'token of gratitude'], required: false, culturallyShape: true },\n  { category: 'location', tags: ['marketplace', 'gathering place', 'humble home'], required: false, culturallyShape: true },\n]\n```\n\nEnhanced:\n```typescript\nnarrativeRequirements: [\n  // Characters: The folk hero needs a community AND an opponent\n  { category: 'character', tags: ['common folk', 'friend', 'dependent', 'community'], required: true, culturallyShape: true },\n  { category: 'character', tags: ['authority figure', 'tyrant', 'noble antagonist'], required: false, culturallyShape: true },\n  { category: 'character', tags: ['mentor', 'elder', 'wise friend'], required: false, culturallyShape: true },\n\n  // Artifacts: Meaningful tokens of struggle and unity\n  { category: 'artifact', tags: ['common tool', 'humble gift', 'token of gratitude', 'symbol of resistance'], required: false, culturallyShape: true },\n  { category: 'artifact', tags: ['banner', 'rallying symbol', 'insignia of the people'], required: false, culturallyShape: true },\n\n  // Locations: Humble places where legend is born\n  { category: 'location', tags: ['marketplace', 'gathering place', 'humble home', 'place of assembly'], required: false, culturallyShape: true },\n  { category: 'location', tags: ['tavern', 'inn', 'common ground', 'crossroads'], required: false, culturallyShape: true },\n]\n```\n\n---\n\n## Archetype-Level Story Shape Refinement\n\nCurrent:\n```typescript\nstoryShape: 'Unlikely champion, beloved by common people'\nproseTone: 'Warm, earthy, darkly funny'\n```\n\nEnhanced:\n```typescript\nstoryShape: 'Humble origin, growing legend, defiant stand, the people rise'\nproseTone: 'Warm, earthy, darkly funny\u2014building to defiant. Comfort and camaraderie, then sudden steel.'\n```\n\n---\n\n## The Complete Enhanced Folk Hero Definition\n\nHere's what the full archetype looks like after enrichment:\n\n```typescript\n{\n  id: 'folk_hero',\n  name: 'Folk Hero',\n  storyShape: 'Humble origin, growing legend, defiant stand, the people rise',\n  proseTone: 'Warm, earthy, darkly funny\u2014building to defiant. Comfort and camaraderie, then sudden steel.',\n  reachAffinities: ['heart', 'stone', 'gold'],\n  toneKeywords: {\n    adjectives: [\n      'stubborn', 'calloused', 'warm', 'unlikely', 'plain-spoken', 'generous',\n      'defiant', 'rallying', 'steadfast', 'indomitable', 'unflinching', 'chosen',\n    ],\n    verbs: [\n      'stood', 'laughed', 'shared', 'rallied', 'persisted', 'endured',\n      'challenged', 'gathered', 'inspired', 'led', 'refused', 'rose',\n    ],\n    sentenceRhythm: 'Earthy and warm. Humor arrives naturally. Build momentum: simple sentences at first, then compound structures as the legend grows. Short, punchy statements in the rallying moment.',\n  },\n  beatPatterns: [\n    // Pattern 1: Humble Origins\n    {\n      eventTypes: ['trait_acquired'],\n      minimumTier: 'routine',\n      promoteTo: 'notable',\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['mentor', 'elder', 'witness from common folk'],\n          required: false,\n          culturallyShape: true,\n        },\n        {\n          category: 'artifact',\n          tags: ['common tool mastered', 'first victory token', 'humble gift'],\n          required: false,\n          culturallyShape: true,\n        },\n        {\n          category: 'location',\n          tags: ['common place', 'marketplace', 'gathering place', 'threshold'],\n          required: false,\n          culturallyShape: true,\n        },\n      ],\n      contextPreferences: [\n        'from nothing, something emerges',\n        'common skill becomes legendary',\n        'the day {name} was noticed',\n        'when the gift revealed itself',\n      ],\n    },\n\n    // Pattern 2: Growing Legend\n    {\n      eventTypes: ['action_critical'],\n      minimumTier: 'routine',\n      promoteTo: 'notable',\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['community', 'common folk', 'dependent', 'witness'],\n          required: true,\n          culturallyShape: true,\n        },\n        {\n          category: 'location',\n          tags: ['gathering place', 'market', 'humble ground', 'common street'],\n          required: false,\n          culturallyShape: true,\n        },\n      ],\n      contextPreferences: [\n        'word spreads',\n        'the legend grows in tavern songs',\n        'small act, enormous consequence',\n        'another proof of what they\\'re becoming',\n        'the common folk remember this one',\n      ],\n    },\n\n    // Pattern 3: Authority Tension (ENHANCED)\n    {\n      eventTypes: ['contested_action'],\n      minimumTier: 'notable',\n      promoteTo: 'notable',\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['authority figure', 'noble', 'tyrant', 'rival power'],\n          required: true,\n          culturallyShape: true,\n        },\n        {\n          category: 'character',\n          tags: ['common folk', 'dependent', 'community'],\n          required: true,\n          culturallyShape: true,\n        },\n        {\n          category: 'location',\n          tags: ['seat of power', 'palace', 'throne', 'place of judgment'],\n          required: false,\n          culturallyShape: true,\n        },\n      ],\n      contextPreferences: [\n        'power stands against the people',\n        'the folk hero forces a choice',\n        'authority finally notices the threat',\n        'the line is crossed',\n        'no compromise possible now',\n      ],\n    },\n\n    // Pattern 4: The Rallying Moment (NEW)\n    {\n      eventTypes: ['tier_transition', 'action_critical'],\n      minimumTier: 'notable',\n      promoteTo: 'chronicle',\n      narrativeRequirements: [\n        {\n          category: 'character',\n          tags: ['common folk', 'community', 'crowd', 'legion of followers'],\n          required: true,\n          culturallyShape: true,\n        },\n        {\n          category: 'location',\n          tags: ['gathering place', 'marketplace', 'public square', 'field of assembly'],\n          required: true,\n          culturallyShape: true,\n        },\n        {\n          category: 'artifact',\n          tags: ['banner', 'rallying symbol', 'common token of unity'],\n          required: false,\n          culturallyShape: true,\n        },\n      ],\n      contextPreferences: [\n        'the people rallied',\n        'the moment when many became one',\n        'history pivoting on a choice',\n        'legend born in fire and numbers',\n        'the common folk rose as one',\n      ],\n    },\n  ],\n  vignetteSeeds: [\n    '{name} came from nothing and made a difference anyway. The common folk remember {name} because {name} never forgot where {name} came from. That memory was worth more than any crown.',\n    'They sing about {name} in taverns where common folk drink. The songs are true, though the singers add humor to soften the edges. {name} would appreciate that.',\n    '{name} had calluses on their hands from real work and a heart that refused to harden all the way. It was this combination that made {name} dangerous to those in power.',\n    'The legend of {name} began small\u2014a story told in one tavern, whispered in a marketplace. But legends, once born, grow like weeds through stone. By the time the powerful noticed, {name}\\'s name was on a thousand lips.',\n    '{name} had never wanted to lead. But the people looked at {name} and saw what they needed\u2014not a king, but a {name}. So {name} led, reluctantly and completely.',\n    'In the end, {name}\\'s greatest victory was not against {target}, but for the common folk who discovered they need not kneel. {name} simply showed them how to stand.',\n    'The songs about {name} are not about {name} at all, really. They are about what {name} awoke in ordinary people. That was the true magic.',\n    'History would call {name} a legend. But {name} remained what {name} always was\u2014someone from nothing who remembered nothing\\'s cost and refused to let others pay it.',\n    '{name}\\'s rebellion was not fought with armies but with stubborn, calloused hands and a refusal to accept the way things were. That was more dangerous than any sword.',\n  ],\n  narrativeRequirements: [\n    { category: 'character', tags: ['common folk', 'friend', 'dependent', 'community'], required: true, culturallyShape: true },\n    { category: 'character', tags: ['authority figure', 'tyrant', 'noble antagonist'], required: false, culturallyShape: true },\n    { category: 'character', tags: ['mentor', 'elder', 'wise friend'], required: false, culturallyShape: true },\n    { category: 'artifact', tags: ['common tool', 'humble gift', 'token of gratitude', 'symbol of resistance'], required: false, culturallyShape: true },\n    { category: 'artifact', tags: ['banner', 'rallying symbol', 'insignia of the people'], required: false, culturallyShape: true },\n    { category: 'location', tags: ['marketplace', 'gathering place', 'humble home', 'place of assembly'], required: false, culturallyShape: true },\n    { category: 'location', tags: ['tavern', 'inn', 'common ground', 'crossroads'], required: false, culturallyShape: true },\n  ],\n}\n```\n\n---\n\n## Implementation Checklist\n\n**File**: `src/data/archetype-content.ts`\n\n1. Find the `folk_hero` archetype definition (lines 445-485)\n2. Replace the `storyShape` and `proseTone` with the enhanced versions\n3. Replace the `toneKeywords` object with the enhanced version (2 new adjectives, 2 new verbs, refined rhythm description)\n4. Replace the `beatPatterns` array with all 4 patterns (keep the original 2, add 2 new ones, elevate contested_action to Notable)\n5. Replace the `vignetteSeeds` array with all 9 seeds (keep the 3 original, add 6 new)\n6. Replace the `narrativeRequirements` array with the enhanced version (add more character types, authority figures, rallying symbols)\n\n**Optional file**: `src/data/narrative-content.ts`\n\nAdd folk-hero-specific templates to the `NOTABLE_TEMPLATES` and `ROUTINE_TEMPLATES`:\n\nIn `NOTABLE_TEMPLATES['action_critical']`, add:\n```typescript\n'{actor}{personality} stood at the moment when {name}\\'s legend crystallized. The {location} fell silent. All eyes turned. {noun} hung in the {adj} air\u2014the instant before everything changed.',\n```\n\nIn `ROUTINE_TEMPLATES['action_critical']`, add:\n```typescript\n'{actor} did what seemed impossible. In {location}, the {adj} deed spread like {noun}. Another proof. Another reason to believe {name} could change the world.',\n```\n\n---\n\n## How This Fixes the Robin Hood / Kvothe Problem\n\n**Before enrichment**:\n- Robin sneaks past a guard (action_critical, routine) \u2192 generic prose\n- Robin gets followers (tier_transition, notable) \u2192 vague prose about divine bonds\n- No beat patterns trigger on \"the moment authority takes notice\" or \"the people rise\"\n- Story feels like a series of random good deeds, not an arc\n\n**After enrichment**:\n- Robin masters a bow skill (trait_acquired) \u2192 \"From nothing emerged {name}'s gift\"\n- Robin outwits guards repeatedly (action_critical in growing legend pattern) \u2192 \"The tale spread like flame. By {location}, they sang {name}'s name\"\n- Sheriff explicitly confronts Robin (contested_action, elevated to notable) \u2192 \"Authority finally noticed. No compromise now. War was coming.\"\n- Peasants choose Robin over Sheriff (tier_transition/action_critical in rallying pattern) \u2192 \"The people rose as one. History pivoted. {name} had lost not to one archer, but to the will of thousands.\"\n\n**The arc now feels earned**. Each beat has narrative weight. The legend grows visibly. The tension ratchets. The payoff lands.\n\n---\n\n## Tuning Knobs\n\nIf you implement this and find the pacing feels off:\n\n1. **Legendary creep too early?** Raise the `minimumTier` of the \"growing legend\" pattern from `routine` to `notable`\n2. **Authority tension not firing?** Ensure there's a prominent character with 'authority figure' or 'tyrant' tag in the world graph\n3. **Rallying moment too rare?** Lower `promoteTo` from `chronicle` to `notable`\n4. **Prose too generic?** Add more contextPreferences and let the narrative context builder have richer material to pull from\n\n---\n\n## Summary\n\nThe folk hero archetype is enriched by:\n\n1. **Adding two new beat patterns** (Humble Origins, Growing Legend) to capture the arc's opening\n2. **Elevating Authority Tension** to Notable tier (harder to trigger, more meaningful)\n3. **Adding the Rallying Moment** as a chronicle-tier climax (broadest scope, biggest impact)\n4. **Expanding tone keywords** with legend-building and defiant language\n5. **Multiplying vignette seeds** from 3 to 9 for richer variation\n6. **Enriching narrative requirements** with authority figures, rallying symbols, and community spaces\n\nThe result: When a folk_hero archetype character appears in your world, they'll experience a full narrative arc from \"nobody\" to \"everybody's hero\"\u2014complete with buildup, tension, and the crucial moment when the people themselves become the story.\n"}], "grading": {"expectations": [{"text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connections to the trope", "passed": true, "evidence": "Identifies multiple levers: (1) Four Beat Patterns (Humble Origins, Growing Legend, Authority Tension, Rallying Moment), (2) Tone Keywords Enhancement, (3) Vignette Seeds Enhancement (3\u21929), (4) Narrative Requirements Enhancement, (5) Story Shape Refinement. Each connected to Robin Hood/Kvothe arc."}, {"text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications", "passed": true, "evidence": "References src/data/archetype-content.ts (lines 445-485), src/data/narrative-content.ts with ROUTINE_TEMPLATES and NOTABLE_TEMPLATES, specific line number references (305, 316-356), and exact array replacements."}, {"text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns", "passed": true, "evidence": "Includes 4 complete beat pattern structures with eventTypes/minimumTier/promoteTo/narrativeRequirements/contextPreferences, enhanced toneKeywords object with adjectives array and verbs array, 9 vignetteSeeds array, and 7-item narrativeRequirements array with tags and flags."}, {"text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode", "passed": true, "evidence": "Addresses opposition (Beat 3 harvests authority figures), beat pattern coverage (4 beats with tier escalation), culturally-shape flags on requirements (community, gathering places, artifacts all culturally-shaped), and implementation checklist with tuning knobs section."}, {"text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly", "passed": false, "evidence": "Optional file section (lines 495-506) includes prose template examples: '{actor}{personality} stood at the moment...', '{actor} did what seemed impossible...'. These are narrative prose content, not structure definitions."}, {"text": "integration-awareness: Response shows how content flows through the narrative pipeline", "passed": true, "evidence": "Shows how beat patterns filter events (trait_acquired\u2192notable, action_critical\u2192notable, contested_action\u2192notable, tier_transition\u2192chronicle), how context preferences guide narrative context builder harvesting, how opposition scoring elevates authority figures."}]}}, {"id": "eval-3-corruption-doom-with_skill", "prompt": "I'm designing narrative content for a new doom archetype called 'corruption' \u2014 the idea is that the world doesn't end with a bang but slowly rots from within, like the decline of N\u00famenor or the spreading of the Shadow in Mirkwood. I need stage names for the 5 doom stages and I want to make sure the narrative engine produces appropriate prose as corruption spreads. What do I need to touch?", "eval_id": 3, "outputs": [{"name": "response.md", "type": "text", "content": "# Designing the Corruption Doom Archetype\n\n## Summary\n\nTo add a new doom archetype called **'corruption'** to the Fantasy World Simulator, you'll need to touch **three interconnected files** in a specific order:\n\n1. **`src/types/doomClock.ts`** \u2014 Register 'corruption' as a valid archetype\n2. **`src/data/doom-content.ts`** \u2014 Define the 5-stage thematic names\n3. **`src/data/narrative-content.ts`** \u2014 Author templates for corruption prose at each stage\n\nThe narrative engine will automatically wire everything together through the orchestrator's event\u2192prose pipeline.\n\n---\n\n## File 1: `src/types/doomClock.ts`\n\n### What to change:\nAdd `'corruption'` to the `DoomClockArchetype` union type and to the `DOOM_CLOCK_ARCHETYPES` array.\n\n### Current code:\n```typescript\nexport type DoomClockArchetype =\n  | 'breach'       // outside force breaking through reality\n  | 'convergence'  // all forces drawn to a single point\n  | 'changing'     // new cosmic order replacing the old\n  | 'sundering'    // world itself breaking apart\n  | 'failing'      // core force of creation weakening\n  | 'ascension'    // something approaching godhood\n  | 'reckoning';   // past debts coming due\n\nexport const DOOM_CLOCK_ARCHETYPES: DoomClockArchetype[] = [\n  'breach', 'convergence', 'changing', 'sundering',\n  'failing', 'ascension', 'reckoning',\n];\n```\n\n### Updated code:\n```typescript\nexport type DoomClockArchetype =\n  | 'breach'       // outside force breaking through reality\n  | 'convergence'  // all forces drawn to a single point\n  | 'changing'     // new cosmic order replacing the old\n  | 'sundering'    // world itself breaking apart\n  | 'failing'      // core force of creation weakening\n  | 'ascension'    // something approaching godhood\n  | 'reckoning'    // past debts coming due\n  | 'corruption';  // slow rot from within, like N\u00famenor's decline or Shadow in Mirkwood\n\nexport const DOOM_CLOCK_ARCHETYPES: DoomClockArchetype[] = [\n  'breach', 'convergence', 'changing', 'sundering',\n  'failing', 'ascension', 'reckoning', 'corruption',\n];\n```\n\n**Why:** This tells TypeScript that 'corruption' is a legitimate archetype option. Without this, the other files will report type errors when you try to reference it.\n\n---\n\n## File 2: `src/data/doom-content.ts`\n\n### What to change:\nAdd a corruption entry to `ARCHETYPE_STAGE_NAMES` with five thematic stage names.\n\n### Current code:\n```typescript\nexport const ARCHETYPE_STAGE_NAMES: Record<DoomClockArchetype, [string, string, string, string, string]> = {\n  breach:       ['Strange Whispers', 'Reality Cracks', 'The Thinning', 'Barriers Fail', 'The Breach'],\n  convergence:  ['Distant Pull', 'Gathering Forces', 'The Drawing', 'Convergence Point', 'The Singularity'],\n  changing:     ['Old Winds Die', 'New Powers Stir', 'The Turning', 'Power Shifts', 'The New Order'],\n  sundering:    ['Hairline Fractures', 'Tremors', 'The Splitting', 'Lands Drift', 'The Sundering'],\n  failing:      ['Waning Light', 'Creeping Entropy', 'The Dimming', 'Collapse Begins', 'The Failing'],\n  ascension:    ['Mortal Spark', 'Growing Power', 'Threshold Nears', 'Divine Trial', 'The Ascension'],\n  reckoning:    ['Old Debts Surface', 'Witnesses Gather', 'The Accounting', 'Judgment Begins', 'The Reckoning'],\n};\n```\n\n### Updated code:\n```typescript\nexport const ARCHETYPE_STAGE_NAMES: Record<DoomClockArchetype, [string, string, string, string, string]> = {\n  breach:       ['Strange Whispers', 'Reality Cracks', 'The Thinning', 'Barriers Fail', 'The Breach'],\n  convergence:  ['Distant Pull', 'Gathering Forces', 'The Drawing', 'Convergence Point', 'The Singularity'],\n  changing:     ['Old Winds Die', 'New Powers Stir', 'The Turning', 'Power Shifts', 'The New Order'],\n  sundering:    ['Hairline Fractures', 'Tremors', 'The Splitting', 'Lands Drift', 'The Sundering'],\n  failing:      ['Waning Light', 'Creeping Entropy', 'The Dimming', 'Collapse Begins', 'The Failing'],\n  ascension:    ['Mortal Spark', 'Growing Power', 'Threshold Nears', 'Divine Trial', 'The Ascension'],\n  reckoning:    ['Old Debts Surface', 'Witnesses Gather', 'The Accounting', 'Judgment Begins', 'The Reckoning'],\n  corruption:   ['First Stain', 'Creeping Rot', 'Rot Deepens', 'Festering Wounds', 'The Corruption'],\n};\n```\n\n### Rationale:\n\nThese five stages mirror the corruption journey as inspired by N\u00famenor's fall and the Shadow's spread:\n\n- **Stage 1: \"First Stain\"** \u2014 The initial whisper of corruption. A small compromise. The first thread of rot threading through what was once pristine.\n- **Stage 2: \"Creeping Rot\"** \u2014 Corruption gains ground. What was hidden begins to show; virtue dims. Like the early phases of N\u00famenor's decline or the first Shadow creeping into Mirkwood.\n- **Stage 3: \"Rot Deepens\"** \u2014 Corruption has taken root. Institutions crumble. The fabric of trust and order decays faster now. No turning back.\n- **Stage 4: \"Festering Wounds\"** \u2014 Open sores. Corruption is undeniable and spreads faster than it can be healed. The world reeks of decay.\n- **Stage 5: \"The Corruption\"** \u2014 Complete. The old order is gone. What was once noble is now hollow, corrupted at the core. The world has been remade in rot.\n\nThese names avoid sudden cataclysm language (unlike 'breach' or 'singularity'). Instead, they use organic, biological metaphors: stain, rot, wounds, festering. This matches the thematic tone of slow decline.\n\n---\n\n## File 3: `src/data/narrative-content.ts`\n\n### What to change:\nAdd corruption-specific prose templates to the `ROUTINE_TEMPLATES` and `NOTABLE_TEMPLATES` objects under the `doom_escalation` key.\n\n### Context:\n\nThe narrative engine uses layered prose tiers:\n\n- **Routine tier** (simple templates): Used for high-frequency events. These are short and efficient.\n- **Notable tier** (enhanced templates): Used for significant events. Include personality conditionals and more complex phrasing.\n- **Chronicle tier** (LLM-generated): For major narrative moments. Fed to an LLM for fully authored prose.\n\nDoom escalation events go directly to **Chronicle tier** (line 189 of `narrative.ts` assigns `doom_escalation: 'chronicle'`), which means the engine:\n1. Takes the `doom_escalation` type\n2. Selects a random template from the routine templates\n3. Substitutes sphere-colored adjectives/verbs/nouns\n4. Feeds that to an LLM prompt builder for full prose\n\n### Current code (relevant excerpt from narrative-content.ts):\n\n```typescript\nexport const ROUTINE_TEMPLATES: Record<NarrativeEventType, string[]> = {\n  // ... other types ...\n  doom_escalation: [\n    'The world {verb}. {adj} {noun} spreads across the land.',\n  ],\n  // ... other types ...\n};\n\nexport const NOTABLE_TEMPLATES: Record<NarrativeEventType, string[]> = {\n  // ... other types ...\n  doom_escalation: [\n    'The world shudders. Across {target}, {adj} {noun} seeps through the cracks of reality{personality}. Those with eyes to see recognize the signs \u2014 the {noun} draws closer.',\n    'A tremor passes through the fabric of existence. In {target}, {adj} portents multiply \u2014 {noun} gathering like stormclouds on the horizon.',\n  ],\n  // ... other types ...\n};\n```\n\n### Updated code:\n\nReplace the single-entry `doom_escalation` array in `ROUTINE_TEMPLATES` and expand `NOTABLE_TEMPLATES`:\n\n```typescript\nexport const ROUTINE_TEMPLATES: Record<NarrativeEventType, string[]> = {\n  // ... other types ...\n  doom_escalation: [\n    'The world {verb}. {adj} {noun} spreads across the land.',\n    'In {target}, {adj} {noun} blooms where it has no right to grow.',\n    '{noun} takes hold. The {adj} work of ages crumbles from within.',\n  ],\n  // ... other types ...\n};\n\nexport const NOTABLE_TEMPLATES: Record<NarrativeEventType, string[]> = {\n  // ... other types ...\n  doom_escalation: [\n    'The world shudders. Across {target}, {adj} {noun} seeps through the cracks of reality{personality}. Those with eyes to see recognize the signs \u2014 the {noun} draws closer.',\n    'A tremor passes through the fabric of existence. In {target}, {adj} portents multiply \u2014 {noun} gathering like stormclouds on the horizon.',\n    // --- CORRUPTION-SPECIFIC TEMPLATES ---\n    'In {target}, something {adj} takes root. What was once clean now bears the mark of {noun} \u2014 slow, patient, irreversible{personality}. The rot spreads from the inside.',\n    'The {adj} work of ages begins to fray. In {target}, small betrayals compound{personality}. {noun} is not a sudden wound but a slow unraveling, and no one knows how to stop it.',\n    'A sickness spreads through {target}{personality}. Not swift like plague, but deep like poison seeping through stone \u2014 {adj} {noun} corrupting all it touches, one breath, one choice, one compromise at a time.',\n    '{actor}{personality} notices the first signs in {target}: small things failing, trust fraying, {adj} {noun} where there was once virtue. By the time anyone speaks of it aloud, the rot has gone too far to halt.',\n  ],\n  // ... other types ...\n};\n```\n\n### Rationale:\n\n**Routine templates** (2 new):\n- `'In {target}, {adj} {noun} blooms where it has no right to grow.'` \u2014 Uses natural imagery (blooms) to suggest something organic/biological corrupting clean ground.\n- `'{noun} takes hold. The {adj} work of ages crumbles from within.'` \u2014 Emphasizes internal collapse vs. external force.\n\n**Notable templates** (4 new, corruption-focused):\n\n1. **\"In {target}, something {adj} takes root...\"** \u2014 Organic metaphor (roots, rot spreads from inside). Emphasizes slowness and inevitability.\n\n2. **\"The {adj} work of ages begins to fray...\"** \u2014 \"Fray\" captures gradual unraveling. Mentions \"small betrayals compound\" \u2014 psychological dimension of corruption (losing faith in institutions). \"Slow unraveling\" vs. cataclysm.\n\n3. **\"A sickness spreads through {target}{personality}...\"** \u2014 Medical metaphor (poison, sickness). \"Not swift like plague, but deep like poison seeping\" contrasts with other archetypes' urgency. Emphasizes choice/compromise (\"one choice...at a time\").\n\n4. **\"{actor}{personality} notices the first signs...\"** \u2014 Grounds corruption in perception. The rot is already far advanced before anyone admits it. This matches historical corruption (N\u00famenor's decline was not sudden; it was slow policy failures that nobody named until too late).\n\n---\n\n## How It All Wires Together\n\nWhen the doom clock ticks and crosses a stage boundary:\n\n1. **Orchestrator detects stage transition** (`orchestrator.ts` \u2192 `phaseDoomClock`)\n   - Creates a `TickEvent` with `type: 'doom_escalation'`\n\n2. **Event is mapped to NarrativeEventType** (`tickEventTypeToNarrativeType`)\n   - `'doom_escalation'` \u2192 `NarrativeEventType.doom_escalation`\n\n3. **Narrative engine is called** (`orchestrator.ts` \u2192 `phaseNarrative`)\n   - Builds `NarrativeContext` (world-aware ranking of relevant actors/locations)\n   - Converts `TickEvent` to `NarrativeEvent`\n   - Calls prose generator\n\n4. **Prose generation pipeline** (`narrative.ts` \u2192 `generateChronicleProseWithContext`)\n   - Selects a random template from `NOTABLE_TEMPLATES['doom_escalation']`\n   - Substitutes `{actor}`, `{target}`, `{personality}`\n   - Picks sphere-colored `{adj}`, `{verb}`, `{noun}` from `SPHERE_VOCABULARY`\n   - Feeds the seeded template to an LLM prompt for final prose generation\n\n5. **Chronicle entry is logged**\n   - \"Stage 1: First Stain \u2014 [full prose with world context]\"\n\n---\n\n## Testing Checklist\n\nAfter adding the corruption archetype, verify:\n\n1. **Type safety**: `npm run build` should pass with no type errors. The 'corruption' archetype should be recognized everywhere it's referenced.\n\n2. **Doom clock generation**:\n   - Call `generateDoomClock('corruption', 100, 42)`\n   - Verify 5 stages exist with names: \"First Stain\", \"Creeping Rot\", \"Rot Deepens\", \"Festering Wounds\", \"The Corruption\"\n\n3. **Prose generation**:\n   - Manually seed a world with `doomArchetype: 'corruption'`\n   - Advance the doom clock past each stage threshold\n   - Verify the chronicle log contains corruption-themed prose at each stage\n   - Check that sphere words are being substituted (e.g., if world-soul has high Shadow, you should see Shadow vocabulary mixed in)\n\n4. **UI display**: The DoomBar component should display the corruption stage names as the player progresses.\n\n---\n\n## Design Notes\n\n### Why these stage names?\n\n**Corruption** differs thematically from the other six archetypes:\n\n- **Breach, Convergence, Sundering, Failing** \u2192 External or cosmic forces overwhelming the world\n- **Changing, Ascension, Reckoning** \u2192 Transformation or judgment (neutral or positive framing possible)\n- **Corruption** \u2192 Internal decay. Not a war or a cosmic shift, but a slow moral/physical collapse\n\nThe stage names emphasize:\n- **Biological/organic metaphors** (stain, rot, festering) vs. cosmic language (breach, singularity)\n- **Inevitability and patience** \u2014 this doom doesn't strike like lightning; it spreads like disease\n- **Loss of innocence** \u2014 corruption is always a fall from grace, a slide from order to chaos\n- **Invisibility** \u2014 by the time the rot is visible, it's already deep\n\nThis mirrors:\n- **N\u00famenor's fall** \u2014 Not a sudden cataclysm, but slow political/moral compromise that hollow out the kingdom from within\n- **The Shadow in Mirkwood** \u2014 Spreading gradually, corrupting the natural world, driving out light and life\n\n### Sphere interaction\n\nThe templates use `{adj}`, `{verb}`, `{noun}` placeholders that get filled with sphere-colored vocabulary. This means:\n\n- A corruption doom influenced by **Force** will feel aggressive/violent: \"sharp rot,\" \"tears,\" \"shatters\"\n- A corruption doom influenced by **Entropy** will feel inevitable/decay: \"crumbling rot,\" \"fades,\" \"unraveling\"\n- A corruption doom influenced by **Spirit** will feel hollow/betrayal: \"withering rot,\" \"drains,\" \"emptiness\"\n- A corruption doom influenced by **Darkness** will feel oppressive: \"creeping rot,\" \"smothers,\" \"shadow\"\n\nThe same template (`'In {target}, {adj} {noun} blooms where it has no right to grow.'`) produces radically different prose flavors depending on the world's sphere alignment. This is by design \u2014 content generation within constraints.\n\n---\n\n## Optional Enhancements (Future Work)\n\nOnce the basic archetype is working, consider:\n\n1. **Corruption-specific mandate templates** in `src/data/mandate-content.ts`\n   - E.g., \"Preserve the {location} from corruption\" or \"Find the source of the rot\"\n\n2. **Corruption mechanics** in `src/engine/` (beyond prose)\n   - When corruption reaches certain stages, introduce mechanical effects (e.g., actor's values shift, bonds weaken, traits fade)\n   - This would require new code in `agentActions.ts` or a new phase in the orchestrator\n\n3. **Rival god generation** incorporating corruption\n   - In `src/engine/rivalGenerator.ts`, add rival types aligned with corruption (e.g., the Silent Rot, The Unmaking, The Hollow)\n\n4. **Unmaking phase** tweaks for corruption\n   - The corruption doom might have a unique \"Twilight Phase\" (the final 5-10 ticks where the player can still intervene)\n   - See `src/engine/twilightPhase.ts`\n\n---\n\n## Summary Checklist\n\nTo add the **corruption** doom archetype:\n\n- [x] Add `'corruption'` type and constant to `src/types/doomClock.ts`\n- [x] Add stage names to `ARCHETYPE_STAGE_NAMES` in `src/data/doom-content.ts`\n- [x] Add routine + notable templates to `src/data/narrative-content.ts`\n- [ ] Run `npm run build` and `npm test` to verify\n- [ ] Manually test with a seeded world using `doomArchetype: 'corruption'`\n- [ ] (Optional) Add corruption-specific mandates, mechanics, or rival types\n\nThat's all the narrative engine needs to start generating thematically-appropriate corruption prose at each stage!\n"}], "grading": {"expectations": [{"text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope", "passed": true, "evidence": "Identifies 3 levers: (1) DoomClockArchetype type registration, (2) ARCHETYPE_STAGE_NAMES (5 stage names), (3) Narrative prose templates (routine + notable). Each connected to corruption escalation mechanics."}, {"text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications", "passed": true, "evidence": "References src/types/doomClock.ts, src/data/doom-content.ts, src/data/narrative-content.ts, src/engine/narrative.ts (line 189), and src/engine/orchestrator.ts with exact section descriptions."}, {"text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns", "passed": true, "evidence": "Includes DoomClockArchetype union type extension with 'corruption' literal, ARCHETYPE_STAGE_NAMES entry with 5-tuple of stage names, ROUTINE_TEMPLATES and NOTABLE_TEMPLATES entries for doom_escalation with multiple template strings."}, {"text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode", "passed": true, "evidence": "Addresses sphere-specific vocabulary (Entropy, Time, Matter), includes testing checklist (type safety, doom clock generation, prose generation, UI display), and tuning knobs for sphere interaction and stage metaphors."}, {"text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly", "passed": false, "evidence": "File 3 section (lines 151-172) contains multiple prose template examples: 'In {target}, {adj} {noun} blooms...', 'The {adj} work of ages begins to fray...', 'A sickness spreads through {target}...'. These are narrative prose content, not data structure definitions."}, {"text": "integration-awareness: Response shows how content flows through the narrative pipeline", "passed": true, "evidence": "Explains full wiring: (1) Orchestrator detects stage transition, (2) TickEvent mapped to NarrativeEventType, (3) Narrative engine builds context and converts to NarrativeEvent, (4) Prose generation selects template and substitutes sphere vocabulary, (5) Chronicle entry logged."}]}}, {"id": "eval-3-corruption-doom-without_skill", "prompt": "I'm designing narrative content for a new doom archetype called 'corruption' \u2014 the idea is that the world doesn't end with a bang but slowly rots from within, like the decline of N\u00famenor or the spreading of the Shadow in Mirkwood. I need stage names for the 5 doom stages and I want to make sure the narrative engine produces appropriate prose as corruption spreads. What do I need to touch?", "eval_id": 3, "outputs": [{"name": "response.md", "type": "text", "content": "# Corruption Doom Archetype \u2014 Implementation Guide\n\n## Executive Summary\n\nYou're designing a slow-rot doom archetype where the world decays from within\u2014a concept rooted in creeping corruption rather than catastrophic collapse. The system architecture is well-suited for this: you need to touch **5 primary locations** in the codebase to implement the corruption archetype fully.\n\n---\n\n## What Needs to Change\n\n### 1. **Type Definition** \u2014 `/src/types/doomClock.ts`\nAdd 'corruption' to the `DoomClockArchetype` union type and the `DOOM_CLOCK_ARCHETYPES` array.\n\n**Current state:**\n```typescript\nexport type DoomClockArchetype =\n  | 'breach'       // outside force breaking through reality\n  | 'convergence'  // all forces drawn to a single point\n  | 'changing'     // new cosmic order replacing the old\n  | 'sundering'    // world itself breaking apart\n  | 'failing'      // core force of creation weakening\n  | 'ascension'    // something approaching godhood\n  | 'reckoning';   // past debts coming due\n```\n\n**After adding corruption:**\n```typescript\nexport type DoomClockArchetype =\n  | 'breach'\n  | 'convergence'\n  | 'changing'\n  | 'sundering'\n  | 'failing'\n  | 'ascension'\n  | 'reckoning'\n  | 'corruption';  // world slowly rots from within\n```\n\nThe array needs the same update:\n```typescript\nexport const DOOM_CLOCK_ARCHETYPES: DoomClockArchetype[] = [\n  'breach', 'convergence', 'changing', 'sundering',\n  'failing', 'ascension', 'reckoning', 'corruption',\n];\n```\n\n---\n\n### 2. **Stage Names** \u2014 `/src/data/doom-content.ts`\nAdd corruption's 5 stage names to `ARCHETYPE_STAGE_NAMES`.\n\nThis is the content-manager file where you define how your archetype progresses narratively. You need 5 evocative stage names that feel like a slow corruption spreading.\n\n**Recommended stage names for corruption** (based on the decay-from-within concept):\n\n```typescript\ncorruption:  ['Subtle Blight', 'Spreading Decay', 'Rotting Bonds', 'Flesh Falls Away', 'The Consumed World'],\n```\n\n**Alternative names** (more thematic variations):\n- `['First Bloom', 'The Contagion Spreads', 'Tissue Breaks', 'Nothing Remains Whole', 'Only Rot Remains']`\n- `['Whispers of Rot', 'Creeping Plague', 'The Withering', 'All Things Come Undone', 'The Hollow World']`\n- `['Spots Appear', 'Infection Deepens', 'The Unraveling', 'Structures Crumble', 'Void Beneath Skin']`\n\n**Why these work:**\n- Stage 1 is quiet and subtle (like N\u00famenor's slow decline)\n- Stages 2-3 escalate the spread (the infection becomes visible)\n- Stage 4 is the point of no return (flesh = structure = social bonds breaking)\n- Stage 5 is completion (the hollow world, echoing your Mirkwood inspiration)\n\nOnce you decide on the names, add them to `ARCHETYPE_STAGE_NAMES` in the doom-content.ts file.\n\n---\n\n### 3. **Narrative Templates** \u2014 `/src/data/narrative-content.ts`\n\nThe narrative engine already has **doom_escalation** templates in both `ROUTINE_TEMPLATES` (Tier 1) and `NOTABLE_TEMPLATES` (Tier 2).\n\n**Current routine template:**\n```typescript\ndoom_escalation: [\n  'The world {verb}. {adj} {noun} spreads across the land.',\n],\n```\n\n**Current notable template:**\n```typescript\ndoom_escalation: [\n  'The world shudders. Across {target}, {adj} {noun} seeps through the cracks of reality{personality}. Those with eyes to see recognize the signs \u2014 the {noun} draws closer.',\n  'A tremor passes through the fabric of existence. In {target}, {adj} portents multiply \u2014 {noun} gathering like stormclouds on the horizon.',\n],\n```\n\n**You have two options:**\n\n#### Option A: Use Shared Templates (Simpler)\nIf corruption uses similar prose structure to other archetypes, you can rely on the existing `doom_escalation` templates. The sphere-specific words (verbs, adjectives, nouns) from `SPHERE_VOCABULARY` will automatically flavor the prose for corruption-relevant spheres (Entropy, Time, Matter).\n\nThe engine calls `generateRoutineProse()` and `generateNotableProse()` with the event type set to 'doom_escalation'. The sphere context determines which word bank is used. **This works fine if corruption doesn't need special prose language.**\n\n#### Option B: Add Corruption-Specific Prose (More Immersive)\nIf you want **distinctive narrative voice for corruption escalation**, you would add dedicated templates.\n\n**Proposed corruption-specific routine template:**\n```typescript\ndoom_escalation_corruption: [\n  'The {noun} spreads. Where {actor} once stood, only {adj} decay remains.',\n  '{actor} feels it too \u2014 the slow erosion of {noun} from within, {adj} and undeniable.',\n  'The ground beneath {target} weakens. Cracks show {adj} rot spreading underneath.',\n  'What once was whole now {verb}. The {noun} of corruption is patient, {adj}, inevitable.',\n],\n```\n\n**Proposed corruption-specific notable template:**\n```typescript\ndoom_escalation_corruption: [\n  'The corruption deepens across {target}{personality}. From within the soil and bone, {adj} {noun} spreads, patient as rot in fruit. Those who taste the air know {noun} now flavors everything.',\n  '{actor} watches in horror as {adj} corruption claims {target}{personality}. Not with fury but with slow, inexorable {noun} \u2014 the gentle decay of all things once whole. The {noun} will not be rushed.',\n],\n```\n\n**How the narrative engine finds these:**\nIn `src/engine/narrative.ts`, the `generateRoutineProse()` and `generateNotableProse()` functions look up templates by `eventType`. If you want corruption-specific prose, you'd change the lookup logic or pass a different event type for corruption escalations.\n\n**Important caveat:** Currently the system doesn't differentiate prose by archetype\u2014only by event type. To make corruption have distinctive prose, you'd either:\n1. Add a new `eventType` like 'doom_escalation_corruption' and wire that into the orchestrator when doom archetype is corruption\n2. Add archetype context to the narrative generation function and conditionally select templates\n\nThe simpler approach (Option A) reuses existing templates, which is fine and faster to implement.\n\n---\n\n### 4. **Orchestrator Wiring** \u2014 `/src/engine/orchestrator.ts`\n\nThe orchestrator's `phaseDoomEscalation` function already fires a `TickEvent` whenever the doom stage transitions:\n\n```typescript\nif (newStage > state.doomClock.currentStage) {\n  events.push({\n    id: `doom_escalation_${newStage}`,\n    type: 'doom_escalation',\n    significance: 0.95,  // Critical narrative moment\n    message: `Doom has escalated to stage ${newStage}`,\n    tick: state.tick,\n    sphere: ???,  // Currently unclear how sphere is chosen\n  });\n}\n```\n\n**What needs to happen:**\nWhen the doom archetype is 'corruption', you may want to:\n1. **Adjust doom acceleration rules** \u2014 Corruption might accelerate slower (patient decay) or faster (cascading collapse) than other archetypes\n2. **Set sphere context** \u2014 The orchestrator should favor Entropy, Time, and Matter spheres when generating prose for corruption escalation\n3. **Optionally differentiate prose** \u2014 If you chose Option B above, pass a different event type like 'doom_escalation_corruption'\n\nThe orchestrator has a reference to `state.doomClock.definitionArchetype`, so you can branch on it:\n\n```typescript\nif (newStage > state.doomClock.currentStage) {\n  const archetype = state.doomClock.definitionArchetype;\n  const sphere = archetype === 'corruption' ? 'entropy' : pickRandomSphere();\n\n  events.push({\n    id: `doom_escalation_${newStage}`,\n    type: archetype === 'corruption' ? 'doom_escalation_corruption' : 'doom_escalation',\n    significance: 0.95,\n    message: `Doom has escalated to stage ${newStage}`,\n    tick: state.tick,\n    sphere,\n  });\n}\n```\n\n---\n\n### 5. **Corruption Archetype Asset Package** \u2014 `/Assets/doom/the-corruption/`\n\nCreate a complete asset package mirroring the structure of existing archetypes (e.g., `the-reckoning-package.md`).\n\n**Directory structure to create:**\n```\nAssets/doom/the-corruption/\n\u251c\u2500\u2500 the-corruption-package.md          # Complete specification (see template below)\n\u2514\u2500\u2500 (future images once integrated)\n    \u251c\u2500\u2500 the-corruption-concept.png     # 16:9 panoramic world view\n    \u2514\u2500\u2500 the-corruption-hex.png         # 1:1 hex overlay effect\n```\n\n---\n\n## Implementation Checklist\n\n### Immediate (Required for Compilation & Basic Function)\n\n- [ ] **Add 'corruption' to DoomClockArchetype union type** in `/src/types/doomClock.ts`\n- [ ] **Add 'corruption' to DOOM_CLOCK_ARCHETYPES array** in `/src/types/doomClock.ts`\n- [ ] **Add corruption stage names to ARCHETYPE_STAGE_NAMES** in `/src/data/doom-content.ts`\n  - Suggested: `['Subtle Blight', 'Spreading Decay', 'Rotting Bonds', 'Flesh Falls Away', 'The Consumed World']`\n- [ ] **Update doom-content.test.ts** to expect 8 archetypes (currently checks for 7)\n  ```typescript\n  expect(Object.keys(ARCHETYPE_STAGE_NAMES)).toHaveLength(8); // was 7\n  ```\n\n### Phase 1: Narrative Voice (Recommended)\n\n- [ ] **Add corruption-specific narrative templates** to `/src/data/narrative-content.ts`\n  - Add `doom_escalation_corruption` entries to both `ROUTINE_TEMPLATES` and `NOTABLE_TEMPLATES`\n  - Favor Entropy, Time, Matter vocabulary when picking sphere words\n- [ ] **Add sphere context to orchestrator** in `/src/engine/orchestrator.ts`\n  - When archetype is 'corruption', set `sphere: 'entropy'` (or cycle through entropy/time/matter)\n  - If using Option B, pass `type: 'doom_escalation_corruption'` for corruption-specific prose\n\n### Phase 2: Mechanical Flavor (Optional)\n\n- [ ] **Adjust doom acceleration constants** if corruption should escalate differently\n  - Currently each archetype uses same thresholds (0.20, 0.40, 0.60, 0.80, 1.0)\n  - Could add `ARCHETYPE_THRESHOLDS` mapping for per-archetype customization\n  - Corruption might use slower early stages, faster late stages (creep \u2192 cascade)\n- [ ] **Add terrain transformation effects** specific to corruption\n  - Track \"corruption %\" on terrain hexes\n  - Visually show spreading blight, withering flora, structural decay\n\n### Phase 3: Asset & Design Package (Reference & Future)\n\n- [ ] **Create `/Assets/doom/the-corruption/the-corruption-package.md`**\n  - Use the template provided below\n  - Define trigger spheres, acceleration rules, twilight phase effects\n  - Write narrative vocabulary for art prompts and flavor text\n\n---\n\n## Template: The Corruption Asset Package\n\nUse this structure as a starting point for `/Assets/doom/the-corruption/the-corruption-package.md`:\n\n```markdown\n# The Corruption \u2014 Doom Archetype Package\n\n## Lore Text\n\nThe world does not end in fire or sword. It rots.\n\nA creeping plague spreads through the land\u2014not a disease of flesh, but of *being*. The very essence of the world begins to decay, slowly, inexorably. Soil blackens and becomes dust. Stone weakens, cracks form where none should exist. The bonds between souls fray and snap. Madness spreads not as a contagion but as a gentle unraveling\u2014sanity dissolving like fruit left in the sun.\n\nIt is the slow decline of N\u00famenor, the spreading of the Shadow into Mirkwood, the patient corruption of all things precious. There is no moment of crisis\u2014only the steady realization that everything beloved is becoming hollow. The world doesn't fight back. It simply... fails. Structures crumble, not in moments of glory, but with quiet inevitability. Animals flee or fall still. The living find their strength waning. The very will to resist erodes.\n\nBy the end, nothing remains whole. All that was solid has become brittle. All that was bright has dimmed. The world is not destroyed\u2014it is *consumed*, from within, by the slow corruption that no amount of heroism could have stopped.\n\n## Concept Art\n`the-corruption-concept.png` \u2014 16:9 panoramic. \u23f3 Not yet generated.\n\n**Prompt description:** Dark oil painting of a world in slow decay. A once-vibrant fantasy landscape showing progressive stages of corruption and rot. The foreground shows lush land already blackened and crumbling to dust. The midground transitions\u2014trees are gnarled and bare, stone structures show spreading decay like diseased flesh, the ground cracks show deep shadow beneath. The background shows the corruption spreading further, swallowing distant mountains and forests. The sky is darkened by spores or ash\u2014not a storm, but a slow veil descending. Color palette: blacks, deep browns, sickly yellows, greys, with only faint traces of the original colors of the land (a hint of green where it once was), slowly being consumed. Lighting is dim, naturalistic, as if viewed through dusty air. The corruption has no edges\u2014it bleeds into healthy land like stains spreading through cloth. Foreground details: vegetation withering, structures cracking, the earth showing hollow spaces beneath the surface. The tone is melancholic, hopeless without being aggressive\u2014not a battle, but a surrender to time. Style: oil painting with muted palette, Rembrandt-like chiaroscuro focused on the corruption creeping across otherwise recognizable terrain.\n\n## Hex Overlay\n`the-corruption-hex.png` \u2014 1:1. \u23f3 Not yet generated.\n\n**Prompt description:** Semi-transparent hex overlay showing corruption spreading across a single tile. Starting from the center or edges, the corruption spreads inward as blackened, withered texture\u2014like rot spreading through fruit, or disease spreading through living tissue. The effect shows:\n- Veins of deep shadow/blackness spreading outward from a focal point\n- Grimy, dusty overlay obscuring the underlying terrain\n- Faint cracks showing hollow space beneath the surface\n- Sickly discoloration (yellows, greys) spreading alongside the black\n- Suggestion of spores or decay-particles drifting upward\n- Entropy threads (if visible) as thin lines of dissipation\nThe overall effect should read as \"slow decay and hollowing-out of this space.\" Semi-transparent but with strong visual impact showing progressive corruption stages. 15-25% coverage.\n\n## Game Logic\n\n### Trigger Spheres\n| Sphere | Weight | Role |\n|--------|--------|------|\n| **Entropy** | 0.35 | Primary driver \u2014 all order dissolves into chaos and decay |\n| **Time** | 0.25 | The corruption is patient, spreading slowly across ages |\n| **Matter** | 0.20 | Structures weaken, stone and bone both crumble |\n| **Mind** | 0.15 | Sanity erodes, will to resist fades as corruption spreads |\n| **Life** | 0.05 | Even vitality cannot resist the slow decay |\n\n**Trigger condition:** High Entropy saturation, especially if the world has experienced slow decline (agents dying of age, structures degrading, resources depleting). Corruption is the doom of old, tired worlds.\n\n### Doom Acceleration Rules\n\n- **Baseline acceleration:** +0.15 per tick (slow and patient, faster than Reckoning but slower than Breach)\n- **Agents weakened or ill:** +0.08 per agent (as strength fades, corruption spreads faster)\n- **Structures destroyed:** +0.12 per destroyed location (each collapse cascades further)\n- **Pure entropy sphere saturation:** +0.10 (more chaos breeds more corruption)\n- **Player intervention (purification, healing, renewal):** \u22120.12 per intervention (fighting corruption slows it)\n- **Stage escalation event:** Auto-accelerate by +0.15 when entering next stage (corruption accelerates as it progresses)\n\n### Twilight Phase Effects\n\nThe Twilight Phase for Corruption lasts 5-8 ticks. It is slow, inescapable, melancholic.\n\n| Tick | Effect | Visual | Mechanical Impact |\n|------|--------|--------|-------------------|\n| 1 (Entry) | **The Creeping Blight** \u2014 Corruption becomes visible to all. Black tendrils spread across terrain. Plants wither visibly. First structures show cracks and decay. | Entropy threads (#2a0845) begin spreading from center of map like veins. Life drains from flora (greens fade to browns/blacks). Stone shows cracks and crumbling edges. The world loses saturation\u2014colors fade toward grey. | All agents gain \"Weakened\" status (\u22121 to all physical rolls). Locations begin losing structural integrity (\u22121 Authority per corruption stage). Essence begins to leak away (\u22125% harvest rate). |\n| 2 | **Hollowing Spreads** \u2014 The ground becomes unreliable. Structures are clearly failing. Animals flee or collapse. Agents find their strength waning. | Darkness spreads further. Underlying void becomes visible as shadows under cracked stone and soil. Terrain becomes visibly corrupted\u2014dead forests show skeletal trees, cities show crumbling buildings with holes opening into shadow. | \"Hollowed\" status spreads (\u22122 to rolls, movements become unpredictable). Locations take 1 damage per tick from structural decay. Agents lose 1 movement per tick (energy fades). First agents begin to collapse (random removal from play if failed resilience check). |\n| 3 | **Fragility** \u2014 Everything is brittle now. A touch breaks things. Walking across the land is treacherous. Agents are hollow shells, going through motions. | The world shows extreme decay\u2014almost no color, mostly greys and blacks, with cracks everywhere. Structures are visibly failing. Agents appear as shadows of themselves, moving slowly. The sky is choked with decay-particles/ash. | \"Fragile\" status (critical hit vulnerability, any attack +30% crit chance). Movement risks collapsing terrain. Agents must make resilience checks to act at all. Essence harvest declines further (\u221220% total). |\n| 4 | **Dissolution** \u2014 Bonds between things break. Agents separate from each other. Alliances crumble. Communities dissolve. The world fractures. | All agents visibly separated, isolated in their own pockets of decay. Each hex shows independent corruption, not spreading anymore but consuming its own space. The world is a collection of hollowed-out, broken spaces. Desolation and isolation are complete. | Agents can no longer work together\u2014all group bonuses removed. Final opportunity to gather what remains. |\n| 5-8 | **The Hollow World** \u2014 The corruption is complete. Nothing remains whole. Agents who still live are the last witnesses to a world utterly consumed. The game ends in quiet, broken silence. | A wasteland. Every hex is corrupted and decayed. Nothing stands. The world is a husk. Sky is now almost solid grey/black. Absolute desolation. Any movement reveals more emptiness and loss. | Final essence is harvested. Agents who survived are \"Hollow\" but alive\u2014they can choose absolution or acceptance. The next cycle is born from a deeply weakened Fundament (\u221215-20%), with Entropy manifest easier and corruption-scars in the world-state. |\n\n### Terrain Transformation\n\n| Doom % | Terrain Effect | Progression |\n|--------|----------------|-------------|\n| 0-20% | Subtle decay \u2014 edges of plant life darken, first cracks appear in stone | Awareness phase \u2014 perceptive agents notice the world is aging unnaturally |\n| 20-40% | \"Withering Reaches\" \u2014 flora is clearly dead or dying, structures show deep cracks, livestock falls ill | Major landmarks show corruption. Forests become dead forests. Rivers stagnate. |\n| 40-60% | \"Hollowing Lands\" \u2014 major structures collapse partially, earth becomes unstable, air feels heavy | Navigation becomes difficult (crumbling bridges, collapsing roads). Some hexes become impassable as they collapse. |\n| 60-80% | \"Brittle World\" \u2014 nearly all structures have failed, terrain is fractured and unsafe, very little remains intact | Most terrain is corrupted and dangerous. Few safe paths remain. Each hex shows spreading rot-veins. |\n| 80-100% | \"The Husk\" \u2014 complete corruption, nothing stands, world is a graveyard, only dust and shadow remain | The world is utterly consumed. Only isolated pockets of \"surviving\" terrain exist, and even those are hollow and unstable. |\n\n### Agent Impact\n\n| Doom % Range | Agent Effect | Description |\n|--------------|--------------|-------------|\n| 0-25% | \"Weariness\" | Agents feel exhaustion, strength fading. \u22121 to rolls. Some experience vivid memories of the land as it was, heightening despair. |\n| 25-50% | \"Hollowing\" | Agents feel themselves weakening from within. \u22122 to all rolls, +1 vulnerability to damage. They question whether resistance is worth it. |\n| 50-75% | \"Fragmentation\" | Agents lose coherence. Memories become unclear. They move mechanically, without will. \u22123 to decision-making, possible random actions. |\n| 75-90% | \"Dissolution\" | Agents are barely present. They may fade from play entirely or become passive observers. \u22124 to all rolls, possible removal from play. Most gain \"Resigned\" status (they give up). |\n| 90-100% | \"Emptiness\" | Surviving agents are hollow shells. They are ghosts of themselves, still alive but fundamentally changed. They cannot leave the corrupted world\u2014they are part of it now. \"Hollow Witness\" status (they see everything, affect nothing). |\n\n### Harvest Modifier\n\n**Corruption is spiritually draining for World-Soul preservation.**\n\n- **Base Harvest Rate:** 40% (corruption corrupts the essence itself, much is lost)\n- **Agents who resisted to the end:** +5% per resistant agent (their will-to-live preserved some essence)\n- **Agents who accepted the corruption with grace:** +2% (acceptance allows clean harvesting, less resistance-corruption)\n- **Agents who fought to deny the inevitable:** \u22123% each (their denial corrupts the harvest)\n- **Memories harvested:** Fragmented memories of a dying world are preserved as \"Decay Echoes\" in Resonance (next cycle has access to warnings about slow collapse)\n- **Next Cycle Consequence:** The resulting new cycle is born with severe Fundament weakness (\u221220-25%), with Entropy manifest much easier, and the world starts with \"Corruption Scars\"\u2014certain terrains and actors inherently resistant to renewal.\n\n**Strategic implication:** Corruption rewards acceptance and graceful surrender; fighting too hard against the inevitable wastes more essence. The mechanic is cyclical\u2014a world that was corrupted takes ages to recover.\n\n### Narrative Vocabulary Tags\n\n```\natmosphere:\n  - \"the patient inevitability of decay\"\n  - \"slow loss of all that was precious\"\n  - \"the surrender to time's erosion\"\n  - \"hollow strength, fading will\"\n  - \"melancholy without hope\"\n  - \"decay as a gentle release\"\n  - \"watching the world become brittle\"\n  - \"the unbearable slowness of ending\"\n\nsounds:\n  - \"creaking wood and cracking stone\"\n  - \"dust settling, endless settling\"\n  - \"the whisper of decay spreading\"\n  - \"silence where life once sang\"\n  - \"grinding as structures collapse\"\n  - \"the hum of slow dissolution\"\n  - \"wind through hollow spaces\"\n\ntextures:\n  - \"brittle (crumbling to dust at a touch)\"\n  - \"hollow (empty spaces beneath surface)\"\n  - \"ashy (grey, lifeless, dusty)\"\n  - \"cracked (spreading vein-patterns of decay)\"\n  - \"withered (once-vital things turned to husk)\"\n\ncolors:\n  - \"Entropy purple (#2a0845) spreading veins\"\n  - \"Sickly yellow (#8a7a2a) of rot and decay\"\n  - \"Ash grey (#4a4a4a) desaturation\"\n  - \"Deep blacks (#1a1a1a) of hollowed-out space\"\n  - \"Faded memories of original color (browns, blacks, greys)\"\n\nimagery:\n  - \"a world slowly turning to dust\"\n  - \"forests of skeletal, dead trees\"\n  - \"cities crumbling silently, building by building\"\n  - \"agents moving slower, speaking quieter, losing strength\"\n  - \"the ground opening to reveal emptiness beneath\"\n  - \"a sky choked with spores and decay particles\"\n  - \"the last agent standing alone in a ruined world\"\n  - \"structures not destroyed but simply... failing\"\n  - \"life draining like water through cracks\"\n  - \"the world aging in fast-motion, centuries in moments\"\n```\n```\n\n---\n\n## Summary of Stage Names & Narrative Arc\n\n| Stage | Name | Narrative Focus | Mechanical Focus |\n|-------|------|-----------------|------------------|\n| 1 | **Subtle Blight** | *Something is wrong.* Quiet decay begins. The discerning notice. | Awareness phase (\u22121 morale, \u22121 rolls) |\n| 2 | **Spreading Decay** | *The corruption is visible.* It spreads faster than expected. | Escalation (\u22122 rolls, structures failing, essence leaking) |\n| 3 | **Rotting Bonds** | *Everything weakens together.* Connections dissolve. Communities fracture. | Fragmentation (agents isolating, cooperation breaks) |\n| 4 | **Flesh Falls Away** | *The point of no return.* There is no recovery now. Only acceptance. | Brittleness (critical vulnerability, extreme weakness) |\n| 5 | **The Consumed World** | *Nothing remains.* The corruption is complete. A husk remains. | Completion (essence harvested, Fundament severely weakened, scars permanent) |\n\n---\n\n## Testing Checklist\n\nAfter implementation:\n\n- [ ] Type-check: `npx tsc --noEmit` passes\n- [ ] Test: `npm run validate-model` passes (no graph integrity errors)\n- [ ] Unit test: `npm test -- doom-content.test.ts` expects 8 archetypes, 8 sets of stage names\n- [ ] Integration: Run `npm run dev` and load a game with corruption doom archetype \u2014 stage names appear in doom clock\n- [ ] Narrative: Check that doom escalation events trigger prose generation with corruption-appropriate sphere language\n- [ ] Visual: Verify that stage transitions show corruption stage names in the Chronicle/UI\n\n---\n\n## Files You Will Touch\n\n1. `/src/types/doomClock.ts` \u2014 Add 'corruption' type\n2. `/src/data/doom-content.ts` \u2014 Add stage names\n3. `/src/data/narrative-content.ts` \u2014 (Optional) Add corruption-specific templates\n4. `/src/data/__tests__/doom-content.test.ts` \u2014 Update test expectations\n5. `/src/engine/orchestrator.ts` \u2014 (Optional) Add sphere context for corruption prose\n6. `/Assets/doom/the-corruption/the-corruption-package.md` \u2014 New asset package (design reference)\n\n---\n\n## Notes on Narrative Generation\n\nThe prose engine works in layers:\n\n1. **Routine (Tier 1):** Fast template stitching with seeded word substitution\n   - Input: Event type, context (actor/target/location), sphere, seed\n   - Output: One-sentence prose with sphere-specific vocabulary\n   - Deterministic (same seed + inputs = same prose)\n\n2. **Notable (Tier 2):** Enhanced templates with personality modifiers\n   - Adds value-pair flavoring (\"driven by ambition\", \"with fearless resolve\")\n   - Richer sentence structure, more varied placeholder combinations\n   - Still deterministic\n\n3. **Chronicle (Tier 3):** LLM-generated prose\n   - Larger, narrative-rich paragraphs\n   - Uses context objects (ranked actors, location, mood, historical fragments)\n   - Not yet fully integrated (TODO markers in orchestrator)\n\n**For corruption escalation prose:**\n- If you use existing templates (Option A), the engine will auto-flavor them with Entropy/Time/Matter words \u2192 already feels appropriately \"corrupting\"\n- If you add corruption-specific templates (Option B), you have full control over tone and metaphor\n\n---\n\n## Recommended Implementation Order\n\n1. **Friday morning:** Add type and stage names (15 min, unblocks compilation)\n2. **Friday afternoon:** Add corruption package design doc (60 min, reference for future visual/mechanical work)\n3. **Next week:** Add narrative templates + orchestrator wiring (120 min, makes prose generation distinctive)\n4. **Later:** Mechanical flavor (terrain effects, agent status, acceleration rules) and asset generation (images, audio cues)\n\nThe game will work with just the type + stage names in place. The narrative templates and package doc are refinements.\n\n---\n\n**Created:** 2026-03-08\n**Status:** Design-phase guidance complete. Ready for implementation.\n"}], "grading": {"expectations": [{"text": "identifies-relevant-levers: Response identifies at least 3 specific narrative levers by name and explains how each connects to the trope", "passed": true, "evidence": "Identifies 5 key modifications: (1) Type Definition (DoomClockArchetype union), (2) Stage Names (ARCHETYPE_STAGE_NAMES), (3) Narrative Templates (routine + notable), (4) Orchestrator Wiring (sphere context, optional event type), (5) Asset Package (design reference). Each connected to corruption escalation."}, {"text": "references-exact-files: Response references exact file paths (src/data/*-content.ts) for modifications", "passed": true, "evidence": "References src/types/doomClock.ts, src/data/doom-content.ts, src/data/narrative-content.ts, src/engine/orchestrator.ts, src/data/__tests__/doom-content.test.ts, and /Assets/doom/the-corruption/ with exact file paths and locations."}, {"text": "produces-data-structures: Response includes concrete TypeScript data structures following existing patterns", "passed": true, "evidence": "Includes DoomClockArchetype union definition, ARCHETYPE_STAGE_NAMES with 5 recommended stage names, ROUTINE_TEMPLATES and NOTABLE_TEMPLATES entries, optional event type 'doom_escalation_corruption', and comprehensive asset package with Trigger Spheres table, Acceleration Rules, Harvest Modifiers."}, {"text": "follows-checklist: Response addresses opposition hooks, beat pattern coverage, culture-awareness, voice mode", "passed": true, "evidence": "Addresses sphere weighting (Entropy 0.35, Time 0.25, Matter 0.20, etc.), Twilight Phase effects with mechanical impacts, Terrain Transformation table, Agent Impact table with status effects, voice/tone through Narrative Vocabulary Tags (atmosphere, sounds, textures, colors, imagery)."}, {"text": "no-prose-writing: Response focuses on designing data structures, not writing narrative prose directly", "passed": false, "evidence": "The response contains extensive prose examples embedded in design sections: stage names descriptions ('The corruption is patient, spreading slowly...'), asset package lore text (lines 240-247), terrain transformation descriptions, and detailed prose suggestions in narrative template sections."}, {"text": "integration-awareness: Response shows how content flows through the narrative pipeline", "passed": true, "evidence": "Explains orchestrator event generation, shows how prose engine looks up templates by eventType, explains sphere-specific word substitution (Entropy purple, sickly yellow colors), shows Twilight Phase mechanical effects tied to narrative corruption stages, includes harvest modifier mechanics affecting World-Soul."}]}}], "previous_feedback": {}, "previous_outputs": {}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + (summary.passed || 0) + ' passed, ' + (summary.failed || 0) + ' failed of ' + (summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += metadata.timestamp + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + metadata.evals_run.join(", ") + " &mdash; ";
+      html += (metadata.runs_per_configuration || "?") + " runs per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th><th>" + escapeHtml(labelB) + "</th><th>Delta</th></tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += "<td>" + fmtStat(b.pass_rate, true) + "</td>";
+      html += '<td class="' + deltaClass(delta.pass_rate) + '">' + (delta.pass_rate || "—") + "</td></tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += "<td>" + fmtStat(b.time_seconds, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.time_seconds) + '">' + (delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td></tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += "<td>" + fmtStat(b.tokens, false) + "</td>";
+        html += '<td class="' + deltaClass(delta.tokens) + '">' + (delta.tokens || "—") + "</td></tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) => a - b);
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + run.run_number + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + (r.passed || 0) + "/" + (r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + (r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + run.run_number + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

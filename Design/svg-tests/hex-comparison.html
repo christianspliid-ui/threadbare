@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hex Tile SVG Vectorization — Quality Test</title>
+<style>
+  :root {
+    --bg-deep: #0d0d14;
+    --bg-panel: #1a1a2e;
+    --bg-card: #12121e;
+    --gold: #d4af37;
+    --gold-bright: #ffeb99;
+    --text: #aaa;
+    --text-muted: #666;
+    --good: #33ff77;
+    --bad: #ff6b6b;
+    --neutral: #ffb355;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg-deep); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 2rem; }
+  h1 { color: var(--gold); font-size: 1.5rem; margin-bottom: 0.3rem; font-family: 'Cinzel', serif; }
+  .subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 2rem; }
+
+  .tile-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(212,175,55,0.1);
+  }
+  .tile-card { display: flex; flex-direction: column; align-items: center; }
+  .tile-label {
+    font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 0.5rem;
+  }
+  .tile-meta { font-size: 0.65rem; color: var(--text-muted); margin-top: 0.4rem; text-align: center; }
+  .tile-name {
+    font-size: 1rem; color: var(--gold-bright); margin-bottom: 1rem;
+    font-family: 'Cinzel', serif; text-align: center;
+    grid-column: 1 / -1;
+  }
+
+  /* Hex shapes at various sizes */
+  .hex-wrap {
+    display: flex; gap: 1.5rem; align-items: flex-end; justify-content: center;
+    flex-wrap: wrap; margin-top: 0.5rem;
+  }
+  .hex {
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    overflow: hidden; background: #1e1b2e;
+  }
+  .hex img, .hex object { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .hex-sm { width: 48px; height: 55px; }
+  .hex-md { width: 80px; height: 92px; }
+  .hex-lg { width: 140px; height: 161px; }
+  .hex-xl { width: 220px; height: 253px; }
+  .hex-xxl { width: 400px; height: 461px; }
+
+  .size-label { font-size: 0.55rem; color: var(--text-muted); text-align: center; margin-top: 0.3rem; }
+
+  /* Summary */
+  .summary {
+    background: var(--bg-panel); border: 1px solid rgba(212,175,55,0.15);
+    border-radius: 6px; padding: 1.5rem; margin-top: 2rem;
+  }
+  .summary h2 { color: var(--gold); font-size: 1.1rem; margin-bottom: 1rem; font-family: 'Cinzel', serif; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+  th { text-align: left; color: var(--gold-bright); padding: 0.5rem; border-bottom: 1px solid rgba(212,175,55,0.2); }
+  td { padding: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .good { color: var(--good); }
+  .bad { color: var(--bad); }
+  .neutral { color: var(--neutral); }
+
+  .verdict {
+    background: rgba(0,204,85,0.06); border: 1px solid rgba(0,204,85,0.15);
+    border-radius: 6px; padding: 1.2rem; margin-top: 1.5rem;
+  }
+  .verdict h3 { color: var(--good); font-size: 0.9rem; margin-bottom: 0.5rem; }
+  .verdict p { font-size: 0.8rem; line-height: 1.5; }
+
+  .warning {
+    background: rgba(255,100,100,0.06); border: 1px solid rgba(255,100,100,0.15);
+    border-radius: 6px; padding: 1.2rem; margin-top: 1rem;
+  }
+  .warning h3 { color: var(--bad); font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+  .section-header {
+    color: var(--gold); font-size: 1.1rem; margin: 2rem 0 1.5rem;
+    border-bottom: 2px solid rgba(212,175,55,0.2); padding-bottom: 0.4rem;
+    font-family: 'Cinzel', serif;
+  }
+
+  .zoom-test { text-align: center; margin: 2rem 0; }
+  .zoom-test p { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+
+<h1>Hex Tile Vectorization Test</h1>
+<p class="subtitle">Actual 512px game hex tiles (public/hex-tiles/) — PNG vs SVG via Vectorizer.AI production mode. 6 credits used.</p>
+
+<!-- ===== OCEAN ===== -->
+<h3 class="section-header">Ocean — Simple waves, low complexity</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 273 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/ocean.png"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/ocean.png"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/ocean.png"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/ocean.png"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 50 KB <span class="good">(82% smaller)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="ocean.svg" type="image/svg+xml"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="ocean.svg" type="image/svg+xml"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="ocean.svg" type="image/svg+xml"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="ocean.svg" type="image/svg+xml"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MOUNTAIN ===== -->
+<h3 class="section-header">Mountain — Geometric shapes, clean edges</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 201 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/mountain.png"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/mountain.png"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/mountain.png"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/mountain.png"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 28 KB <span class="good">(86% smaller)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="mountain.svg" type="image/svg+xml"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="mountain.svg" type="image/svg+xml"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="mountain.svg" type="image/svg+xml"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="mountain.svg" type="image/svg+xml"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== VOLCANIC ===== -->
+<h3 class="section-header">Volcanic — Organic lava cracks, medium complexity</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 324 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/volcanic.png"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/volcanic.png"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/volcanic.png"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/volcanic.png"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 142 KB <span class="good">(56% smaller)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="volcanic.svg" type="image/svg+xml"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="volcanic.svg" type="image/svg+xml"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="volcanic.svg" type="image/svg+xml"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="volcanic.svg" type="image/svg+xml"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BADLANDS ===== -->
+<h3 class="section-header">Badlands — Scattered icons on flat fill</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 340 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/badlands.png"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/badlands.png"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/badlands.png"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/badlands.png"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 420 KB <span class="bad">(24% larger)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="badlands.svg" type="image/svg+xml"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="badlands.svg" type="image/svg+xml"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="badlands.svg" type="image/svg+xml"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="badlands.svg" type="image/svg+xml"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== DECIDUOUS FOREST ===== -->
+<h3 class="section-header">Deciduous Forest — Dense repeating pattern, high complexity</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 583 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/deciduous-forest.png"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/deciduous-forest.png"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/deciduous-forest.png"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/deciduous-forest.png"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 1,543 KB <span class="bad">(2.6× larger)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="deciduous-forest.svg" type="image/svg+xml"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="deciduous-forest.svg" type="image/svg+xml"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="deciduous-forest.svg" type="image/svg+xml"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="deciduous-forest.svg" type="image/svg+xml"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== OVERLAY CASTLE ===== -->
+<h3 class="section-header">Overlay: Castle — Black silhouette, perfect vector candidate</h3>
+<div class="tile-row">
+  <div class="tile-card">
+    <div class="tile-label">PNG Original — 22 KB</div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><img src="../../public/hex-tiles/overlay-castle.png" style="filter: invert(1);"></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><img src="../../public/hex-tiles/overlay-castle.png" style="filter: invert(1);"></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><img src="../../public/hex-tiles/overlay-castle.png" style="filter: invert(1);"></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><img src="../../public/hex-tiles/overlay-castle.png" style="filter: invert(1);"></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+  <div class="tile-card">
+    <div class="tile-label">SVG Vector — 12 KB <span class="good">(45% smaller)</span></div>
+    <div class="hex-wrap">
+      <div><div class="hex hex-sm"><object data="overlay-castle.svg" type="image/svg+xml" style="filter: invert(1);"></object></div><div class="size-label">48px</div></div>
+      <div><div class="hex hex-md"><object data="overlay-castle.svg" type="image/svg+xml" style="filter: invert(1);"></object></div><div class="size-label">80px</div></div>
+      <div><div class="hex hex-lg"><object data="overlay-castle.svg" type="image/svg+xml" style="filter: invert(1);"></object></div><div class="size-label">140px</div></div>
+      <div><div class="hex hex-xl"><object data="overlay-castle.svg" type="image/svg+xml" style="filter: invert(1);"></object></div><div class="size-label">220px</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ZOOM TEST ===== -->
+<h3 class="section-header">Zoom Stress Test — SVG at 400px (blown up from 512px source)</h3>
+<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 1.5rem;">This is where SVG shines — crisp at any zoom level vs blurry/pixelated PNG.</p>
+<div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center;">
+  <div style="text-align: center;">
+    <div class="tile-label">Mountain PNG @ 400px</div>
+    <div class="hex hex-xxl"><img src="../../public/hex-tiles/mountain.png"></div>
+  </div>
+  <div style="text-align: center;">
+    <div class="tile-label">Mountain SVG @ 400px</div>
+    <div class="hex hex-xxl"><object data="mountain.svg" type="image/svg+xml"></object></div>
+  </div>
+</div>
+<div style="display: flex; gap: 2rem; flex-wrap: wrap; justify-content: center; margin-top: 2rem;">
+  <div style="text-align: center;">
+    <div class="tile-label">Ocean PNG @ 400px</div>
+    <div class="hex hex-xxl"><img src="../../public/hex-tiles/ocean.png"></div>
+  </div>
+  <div style="text-align: center;">
+    <div class="tile-label">Ocean SVG @ 400px</div>
+    <div class="hex hex-xxl"><object data="ocean.svg" type="image/svg+xml"></object></div>
+  </div>
+</div>
+
+<!-- ===== SUMMARY TABLE ===== -->
+<div class="summary">
+  <h2>Size Comparison</h2>
+  <table>
+    <tr><th>Tile</th><th>PNG</th><th>SVG</th><th>Ratio</th><th>Complexity</th></tr>
+    <tr><td>Ocean</td><td>273 KB</td><td>50 KB</td><td class="good">0.18× (82% smaller)</td><td>Low — wave lines</td></tr>
+    <tr><td>Mountain</td><td>201 KB</td><td>28 KB</td><td class="good">0.14× (86% smaller)</td><td>Low — geometric triangles</td></tr>
+    <tr><td>Overlay: Castle</td><td>22 KB</td><td>12 KB</td><td class="good">0.55× (45% smaller)</td><td>Minimal — silhouette</td></tr>
+    <tr><td>Volcanic</td><td>324 KB</td><td>142 KB</td><td class="good">0.44× (56% smaller)</td><td>Medium — lava cracks</td></tr>
+    <tr><td>Badlands</td><td>340 KB</td><td>420 KB</td><td class="bad">1.24× (24% larger)</td><td>Medium — scattered icons</td></tr>
+    <tr><td>Deciduous Forest</td><td>583 KB</td><td>1,543 KB</td><td class="bad">2.65× (165% larger)</td><td>High — dense leaf pattern</td></tr>
+  </table>
+
+  <div class="verdict">
+    <h3>Verdict: Mixed — great for clean tiles, bad for dense patterns</h3>
+    <p>
+      Tiles with clean geometric shapes (mountain, ocean, overlays) vectorize beautifully — <strong>80-86% smaller</strong> and
+      infinitely scalable. Tiles with dense organic patterns (deciduous forest, dense forest) explode in size because every leaf
+      becomes dozens of bezier paths.
+    </p>
+    <p style="margin-top: 0.5rem;">
+      <strong>Recommended approach:</strong> Convert the ~15 clean/geometric tiles to SVG, keep the ~12 dense/organic tiles as PNG.
+      Total cost: ~15 credits (you have 43 remaining). Or: redesign the dense tiles to be more graphic (fewer, larger shapes) and
+      then vectorize everything.
+    </p>
+  </div>
+
+  <div class="warning">
+    <h3>Watch out: Deciduous Forest / Dense Forest</h3>
+    <p style="font-size: 0.8rem;">
+      These tiles have hundreds of tiny leaf shapes. Each one becomes many SVG paths.
+      The 1.5 MB SVG will also render slower than the 583 KB PNG in the browser.
+      Either keep these as PNG or redesign them with larger, simpler canopy shapes.
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
