@@ -37,57 +37,89 @@ interface ActionCardProps {
   slot: WheelSlot;
   /** Callback when card is clicked (only if available) */
   onClick: (slotId: string) => void;
+  /** Whether this card is currently playing (pulsing animation) */
+  playing?: boolean;
 }
 
 /**
  * ActionCard component — displays a single action slot as a card.
  */
-export const ActionCard = React.memo(function ActionCard({ slot, onClick }: ActionCardProps) {
+export const ActionCard = React.memo(function ActionCard({ slot, onClick, playing = false }: ActionCardProps) {
   const glyph = getWheelSlotGlyph(slot.id);
   const sphereColor = slot.sphere ? getSphereColor(slot.sphere) : undefined;
 
   // Determine lock state
-  const isAvailable = slot.available;
+  const isAvailable = slot.available && !playing;
   const isLockedTier = slot.lockedReason?.includes('tier') || slot.lockedReason?.includes('Tier');
   const lockedOpacity = isLockedTier ? 'opacity-30' : 'opacity-50';
 
   // Determine container classes
   const containerClasses = [
     CARD_STYLES.baseCard,
-    isAvailable ? CARD_STYLES.availableCard : [CARD_STYLES.lockedCard, lockedOpacity],
+    playing ? 'card-pulse opacity-70' : (isAvailable ? CARD_STYLES.availableCard : [CARD_STYLES.lockedCard, lockedOpacity]),
   ]
     .flat()
     .join(' ');
 
   // Container style for left border color when available
-  const containerStyle: React.CSSProperties = isAvailable && sphereColor ? { borderLeftColor: sphereColor } : {};
+  const containerStyle: React.CSSProperties = (isAvailable || playing) && sphereColor ? { borderLeftColor: sphereColor } : {};
 
   // Handle click
   const handleClick = () => {
-    if (isAvailable) {
+    if (isAvailable && !playing) {
       onClick(slot.id);
     }
   };
 
   return (
-    <div
-      data-testid={`action-card-${slot.id}`}
-      className={containerClasses}
-      style={containerStyle}
-      onClick={handleClick}
-      role="button"
-      tabIndex={isAvailable ? 0 : -1}
-      onKeyDown={(e) => {
-        if (isAvailable && (e.key === 'Enter' || e.key === ' ')) {
-          e.preventDefault();
-          onClick(slot.id);
-        }
-      }}
-    >
+    <>
+      {playing && (
+        <style>{`
+          @keyframes cardPulse {
+            0% {
+              box-shadow: 0 0 0 0 ${sphereColor || '#d4a574'}40;
+            }
+            50% {
+              box-shadow: 0 0 20px 8px ${sphereColor || '#d4a574'}40;
+            }
+            100% {
+              box-shadow: 0 0 0 0 ${sphereColor || '#d4a574'}20;
+            }
+          }
+          .card-pulse {
+            animation: cardPulse 0.6s ease-out;
+          }
+          .card-pulse .glyph-pulse {
+            animation: glyphPulse 0.6s ease-out;
+          }
+          @keyframes glyphPulse {
+            0%, 100% {
+              transform: scale(1);
+            }
+            50% {
+              transform: scale(1.2);
+            }
+          }
+        `}</style>
+      )}
+      <div
+        data-testid={`action-card-${slot.id}`}
+        className={containerClasses}
+        style={containerStyle}
+        onClick={handleClick}
+        role="button"
+        tabIndex={isAvailable && !playing ? 0 : -1}
+        onKeyDown={(e) => {
+          if (isAvailable && !playing && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            onClick(slot.id);
+          }
+        }}
+      >
       {/* Glyph + Name header */}
       <div className="flex items-start gap-2 mb-1.5">
         <div
-          className="text-lg leading-none flex-shrink-0"
+          className={`text-lg leading-none flex-shrink-0 ${playing ? 'glyph-pulse' : ''}`}
           style={{ color: sphereColor || '#a1a1a1' }}
         >
           {glyph}
@@ -139,12 +171,23 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick }: Acti
       )}
 
       {/* Lock reason (if unavailable) */}
-      {!isAvailable && slot.lockedReason && (
+      {!isAvailable && !playing && slot.lockedReason && (
         <div className={CARD_STYLES.lockReasonText}>
           {slot.lockedReason}
         </div>
       )}
+
+      {/* Spent overlay */}
+      {playing && (
+        <div
+          data-testid="action-card-spent-overlay"
+          className="absolute inset-0 bg-emerald-900/40 rounded-lg flex items-center justify-center"
+        >
+          <div className="text-4xl text-emerald-400 font-bold">✓</div>
+        </div>
+      )}
     </div>
+    </>
   );
 });
 

@@ -24,6 +24,8 @@ export interface ActionDrawerProps {
   onSlotClick: (slotId: string) => void;
   /** Called when the drawer closes */
   onClose: () => void;
+  /** ID of the card currently playing (pulsing animation) */
+  playingCardId?: string | null;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -36,7 +38,7 @@ export interface ActionDrawerProps {
  * locked last. Filters out center slot.
  */
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
-  ({ open, slots, agentName, agentTier, onSlotClick, onClose }) => {
+  ({ open, slots, agentName, agentTier, onSlotClick, onClose, playingCardId }) => {
     // Handle Escape key
     useEffect(() => {
       if (!open) return;
@@ -110,7 +112,11 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                 onClick={() => onSlotClick(slot.id)}
                 className="flex-shrink-0"
               >
-                <ActionCard slot={slot} onClick={onSlotClick} />
+                <ActionCard
+                  slot={slot}
+                  onClick={onSlotClick}
+                  playing={slot.id === playingCardId}
+                />
               </div>
             ))}
           </div>
