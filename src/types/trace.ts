@@ -102,6 +102,8 @@ export interface FamiliarityChangeTrace extends TraceBase {
   newFamiliarity: number;
   levelChanged: boolean;
   newLevel?: string;
+  amount: number;
+  multiplier: number;
 }
 
 /** Discriminated union of all trace types */
