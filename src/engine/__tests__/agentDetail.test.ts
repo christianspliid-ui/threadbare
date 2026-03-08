@@ -270,7 +270,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.topBonds).toBeUndefined();
   });
 
-  it('at known level: returns top 3 domains + all dominant values + key bonds', () => {
+  it('at known level: returns top 3 domains + all dominant values + key bonds + 1 quote', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
     graph.addNode({
@@ -297,7 +297,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.topValues).toBeDefined();
     expect(card!.topValues!.length).toBeGreaterThan(0);
     expect(card!.topBonds).toBeDefined();
-    expect(card!.quotes).toBeUndefined();
+    expect(card!.quotes).toHaveLength(1);
   });
 
   it('at intimate level: returns full 9 domains, all traits, all quotes, backstory paragraph 1', () => {
@@ -317,7 +317,13 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
+    graph.addNode({ id: 'trait.1', type: 'trait', name: 'Resilient', properties: {} });
+    graph.addNode({ id: 'trait.2', type: 'trait', name: 'Protective', properties: {} });
+    graph.addNode({ id: 'culture.1', type: 'actor', name: 'The Ironborn', properties: { actorType: 'culture' } });
     graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 'ht.1', source: 'agent.1', target: 'trait.1', type: 'has_trait', properties: {} });
+    graph.addEdge({ id: 'ht.2', source: 'agent.1', target: 'trait.2', type: 'has_trait', properties: {} });
+    graph.addEdge({ id: 'bt.1', source: 'agent.1', target: 'culture.1', type: 'belongs_to', properties: { culturalStrength: 0.8 } });
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'intimate');
     expect(card).not.toBeNull();
@@ -326,6 +332,10 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.quotes!.length).toBeGreaterThan(0);
     expect(card!.cooperationStrategy).toBe('tit-for-tat');
     expect(card!.backstoryParagraph1).toBeDefined();
+    expect(card!.allTraits).toBeDefined();
+    expect(card!.allTraits).toContain('Resilient');
+    expect(card!.allTraits).toContain('Protective');
+    expect(card!.cultureName).toBe('The Ironborn');
   });
 
   it('at transparent level: includes full backstory + history', () => {
