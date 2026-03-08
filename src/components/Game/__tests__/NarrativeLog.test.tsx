@@ -97,4 +97,36 @@ describe('NarrativeLog', () => {
     fireEvent.click(screen.getByTestId('narrative-log-toggle'));
     expect(screen.getByText(/awaiting/i)).toBeInTheDocument();
   });
+
+  it('renders intervention events with sphere-colored left border', () => {
+    const events = [{
+      id: 'evt_1', tick: 1, type: 'narrative' as const,
+      message: 'Test narrative beat', significance: 0.8,
+      sphere: 'mind' as const,
+      isInterventionBeat: true,
+    }];
+    render(<NarrativeLog events={events} />);
+    // Panel auto-opens when intervention beat is present
+    expect(screen.getByTestId('narrative-log-panel')).toBeInTheDocument();
+    const entry = screen.getByText(/Test narrative beat/);
+    expect(entry.closest('[data-testid="intervention-beat"]')).toBeDefined();
+  });
+
+  it('auto-opens when intervention beat arrives', () => {
+    const normalEvents = [{
+      id: 'evt_1', tick: 1, type: 'narrative' as const,
+      message: 'Normal event', significance: 0.5,
+    }];
+    const { rerender } = render(<NarrativeLog events={normalEvents} />);
+    expect(screen.queryByTestId('narrative-log-panel')).not.toBeInTheDocument();
+
+    const withBeat = [...normalEvents, {
+      id: 'evt_2', tick: 2, type: 'narrative' as const,
+      message: 'Intervention beat', significance: 0.8,
+      sphere: 'mind' as const,
+      isInterventionBeat: true,
+    }];
+    rerender(<NarrativeLog events={withBeat} />);
+    expect(screen.getByTestId('narrative-log-panel')).toBeInTheDocument();
+  });
 });

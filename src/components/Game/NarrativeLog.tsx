@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import type { TickEvent } from '../../types/gameState';
+import { getSphereColor } from '../../data/sphereIcons';
 
 interface NarrativeLogProps {
   events: TickEvent[];
@@ -28,6 +29,16 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
       lastSeenCountRef.current = events.length;
     }
   }, [isOpen, events.length]);
+
+  // Auto-open when a new intervention beat arrives
+  useEffect(() => {
+    if (events.length > 0) {
+      const lastEvent = events[events.length - 1];
+      if (lastEvent.isInterventionBeat === true) {
+        setIsOpen(true);
+      }
+    }
+  }, [events]);
 
   // Handle Escape key
   useEffect(() => {
@@ -61,7 +72,7 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
             : 'bg-stone-800/90 hover:bg-stone-700/90 text-amber-200/70 hover:text-amber-200'
         } backdrop-blur-sm border border-amber-900/30`}
       >
-        <span className="text-lg">📜</span>
+        <span className="text-lg">☰</span>
         {!isOpen && unreadCount > 0 && (
           <span
             data-testid="narrative-log-badge"
@@ -100,11 +111,19 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
               events.map((evt) => {
                 const color = TYPE_COLORS[evt.type] ?? '#78716c';
                 const dimmed = evt.significance < 0.5;
+                const isInterventionBeat = evt.isInterventionBeat === true;
+                const sphereColor = isInterventionBeat ? getSphereColor(evt.sphere ?? 'mind') : undefined;
 
                 return (
                   <div
                     key={evt.id}
-                    className={`flex gap-2 text-xs py-1 ${dimmed ? 'opacity-50' : 'opacity-90'}`}
+                    data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
+                    className={`flex gap-2 py-1 ${
+                      isInterventionBeat
+                        ? 'text-sm opacity-100 pl-2 border-l-[3px]'
+                        : `text-xs ${dimmed ? 'opacity-50' : 'opacity-90'}`
+                    }`}
+                    style={isInterventionBeat ? { borderLeftColor: sphereColor } : undefined}
                   >
                     <span className="text-amber-200/30 font-mono w-8 text-right flex-shrink-0">
                       {evt.tick}

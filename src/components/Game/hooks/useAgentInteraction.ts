@@ -221,6 +221,7 @@ export function useAgentInteraction({
                 message: `${effectsResult.consequenceMessage} (${result.detected ? 'detected!' : 'undetected'})`,
                 significance: result.detected ? 0.8 : 0.5,
                 sphere: slot.sphere!,
+                isInterventionBeat: true,
               },
             ],
           };
