@@ -56,7 +56,13 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   const gRef = useRef<SVGGElement>(null);
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown>>();
 
-  // Set up d3-zoom behavior
+  // Store callbacks and initial values in refs to avoid re-running the zoom setup effect
+  const onZoomChangeRef = useRef(onZoomChange);
+  onZoomChangeRef.current = onZoomChange;
+  const initialCenterRef = useRef(initialCenter);
+  const initialScaleRef = useRef(initialScale);
+
+  // Set up d3-zoom behavior — runs ONCE on mount
   useEffect(() => {
     if (!svgRef.current) return;
 
@@ -68,26 +74,29 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         if (gRef.current) {
           gRef.current.setAttribute('transform', event.transform.toString());
         }
-        onZoomChange?.(event.transform);
+        onZoomChangeRef.current?.(event.transform);
       });
 
     svg.call(zoom);
     zoomRef.current = zoom;
 
-    // Apply initial transform if provided
-    if (initialCenter && initialScale) {
+    // Apply initial transform if provided (one-time on mount)
+    const center = initialCenterRef.current;
+    const scale = initialScaleRef.current;
+    if (center && scale) {
       const svgEl = svgRef.current;
       const viewWidth = svgEl.clientWidth || svgEl.viewBox.baseVal.width;
       const viewHeight = svgEl.clientHeight || svgEl.viewBox.baseVal.height;
       const t = d3.zoomIdentity
         .translate(
-          viewWidth / 2 - initialCenter.x * initialScale,
-          viewHeight / 2 - initialCenter.y * initialScale
+          viewWidth / 2 - center.x * scale,
+          viewHeight / 2 - center.y * scale
         )
-        .scale(initialScale);
+        .scale(scale);
       svg.call(zoom.transform, t);
     }
-  }, [onZoomChange, initialCenter, initialScale]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Expose centerOn method via ref
   useImperativeHandle(ref, () => ({
@@ -125,7 +134,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         style={{ background: HEX_MAP_BACKGROUND }}
       >
         <HexDefs size={hexSize} />
-        <g ref={gRef} className="zoom-group" transform={tileBaseTransform}>
+        <g ref={gRef} className="zoom-group">
+          <g transform={tileBaseTransform}>
           {tiles.map((tile) => {
             const { x, y } = hexToPixel(tile.coord, hexSize);
             const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
@@ -149,6 +159,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
               />
             );
           })}
+          </g>
         </g>
       </svg>
     </>

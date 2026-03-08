@@ -223,19 +223,37 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   moveMode={moveMode}
                 />
 
-                {/* Agent Wheel overlay */}
+                {/* Agent Wheel overlay — centered modal like ScryOverlay */}
                 {wheelSlots && wheelVisible && selectedAgentId && (
-                  <svg className="absolute inset-0" style={{ pointerEvents: 'auto' }} data-testid="wheel-svg">
-                    <AgentWheel
-                      slots={wheelSlots}
-                      agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
-                      agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
-                      cx={300}
-                      cy={200}
-                      onSlotClick={handleWheelSlotClick}
-                      onDismiss={handleWheelDismiss}
+                  <div
+                    className="fixed inset-0 z-50 flex items-center justify-center"
+                    style={{ pointerEvents: 'auto' }}
+                    data-testid="wheel-overlay"
+                  >
+                    {/* Backdrop click to dismiss */}
+                    <div
+                      className="absolute inset-0 bg-black/40"
+                      onClick={handleWheelDismiss}
+                      data-testid="wheel-backdrop"
                     />
-                  </svg>
+                    <svg
+                      width="320"
+                      height="320"
+                      viewBox="0 0 320 320"
+                      className="relative z-10"
+                      data-testid="wheel-svg"
+                    >
+                      <AgentWheel
+                        slots={wheelSlots}
+                        agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
+                        agentTitle={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+                        cx={160}
+                        cy={160}
+                        onSlotClick={handleWheelSlotClick}
+                        onDismiss={handleWheelDismiss}
+                      />
+                    </svg>
+                  </div>
                 )}
 
                 {/* Wheel feedback message (when no agents available) */}

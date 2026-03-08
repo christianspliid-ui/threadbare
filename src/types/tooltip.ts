@@ -21,8 +21,8 @@ export const TOOLTIP_SHOW_DELAY = 200;
 /** Fade-in animation duration (ms). */
 export const TOOLTIP_FADE_IN = 150;
 
-/** Fade-out animation duration (ms). */
-export const TOOLTIP_FADE_OUT = 100;
+/** Fade-out delay before hiding (ms). Acts as grace period for moving mouse to tooltip. */
+export const TOOLTIP_FADE_OUT = 150;
 
 /** Grace period for moving between tooltip targets without re-delay (ms). */
 export const TOOLTIP_RETRIGGER_GRACE = 300;
