@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import type { DivineInfluenceEntry } from '../dream';
 import type { InterventionEffectTrace, TraceEntry } from '../trace';
 import { TRACE_CATEGORIES } from '../trace';
+import { DECAY_CONSTANTS } from '../../engine/decayCurve';
 
 describe('DivineInfluenceEntry type', () => {
   it('can create a value-drift influence', () => {
@@ -10,10 +11,10 @@ describe('DivineInfluenceEntry type', () => {
       interventionType: 'dream',
       sphere: 'mind',
       tickApplied: 10,
-      ticksRemaining: 3,
+      ...DECAY_CONSTANTS.dream,
       valueDrifts: { courage_prudence: 0.12 },
     };
-    expect(influence.ticksRemaining).toBe(3);
+    expect(influence.maxDuration).toBe(DECAY_CONSTANTS.dream.maxDuration);
     expect(influence.valueDrifts?.courage_prudence).toBe(0.12);
   });
 
@@ -23,7 +24,7 @@ describe('DivineInfluenceEntry type', () => {
       interventionType: 'intimidate',
       sphere: 'force',
       tickApplied: 5,
-      ticksRemaining: 10,
+      ...DECAY_CONSTANTS.intimidate,
       strategyOverride: 'grudger',
       valueDrifts: { courage_prudence: -0.30 },
     };
@@ -36,7 +37,7 @@ describe('DivineInfluenceEntry type', () => {
       interventionType: 'inspire_intervention',
       sphere: 'spirit',
       tickApplied: 8,
-      ticksRemaining: 6,
+      ...DECAY_CONSTANTS.inspire_intervention,
       personalityBoost: 0.30,
       traitId: 'condition_divinely_inspired',
     };
@@ -60,9 +61,10 @@ describe('InterventionEffectTrace', () => {
       targetAgentId: 'actor.kael',
       targetAgentName: 'Kael',
       sphere: 'mind',
-      effects: ['courage_prudence +0.12 for 3 ticks'],
+      effects: ['courage_prudence +0.12 for decay'],
       consequenceMessage: 'Kael will be drawn toward courage.',
-      ticksRemaining: 3,
+      initialStrength: DECAY_CONSTANTS.dream.initialStrength,
+      maxDuration: DECAY_CONSTANTS.dream.maxDuration,
     };
     expect(trace.category).toBe('intervention_effect');
   });

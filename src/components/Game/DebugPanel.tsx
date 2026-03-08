@@ -535,8 +535,8 @@ const InterventionEffectDetail = React.memo(function InterventionEffectDetail({ 
         <div style={DETAIL_VALUE_STYLE}>{trace.sphere}</div>
       </div>
       <div style={DETAIL_ROW_STYLE}>
-        <div style={DETAIL_LABEL_STYLE}>Ticks Left</div>
-        <div style={DETAIL_VALUE_STYLE}>{trace.ticksRemaining}</div>
+        <div style={DETAIL_LABEL_STYLE}>Max Duration</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.maxDuration}</div>
       </div>
       {trace.effects.length > 0 && (
         <>

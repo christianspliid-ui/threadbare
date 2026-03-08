@@ -1,0 +1,17 @@
+
+> app@0.0.0 test
+> vitest run
+
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90m/sessions/elegant-keen-albattani/mnt/TheFantasyWorldSimulator[39m
+
+ [32m✓[39m src/data/__tests__/culture-content.test.ts [2m([22m[2m591 tests[22m[2m)[22m[32m 242[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/disposition.test.ts [2m([22m[2m61 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/worldModel.test.ts [2m([22m[2m51 tests[22m[2m)[22m[32m 186[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/worldSoul.test.ts [2m([22m[2m36 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/scry.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 42[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/echo.test.ts [2m([22m[2m30 tests[22m[2m)[22m[32m 16[2mms[22m[39m
+ [32m✓[39m scripts/__tests__/playtest-format.test.ts [2m([22m[2m37 tests[22m[2m)[22m[32m 14[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/ordeal.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/cultureGenerator.test.ts [2m([22m[2m19 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/engine/__tests__/influence.test.ts [2m([22m[2m21 tests[22m[2m)[22m[32m 30[2mms[22m[39m

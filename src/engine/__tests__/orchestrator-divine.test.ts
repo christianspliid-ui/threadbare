@@ -4,6 +4,7 @@ import { initializeGameState } from '../gameInit';
 import { getTraces } from '../traceBuffer';
 import type { DivineInfluenceEntry, CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
+import { DECAY_CONSTANTS } from '../decayCurve';
 
 const testArchetype: AscendantArchetype = {
   id: 'arch.test',
@@ -49,20 +50,20 @@ describe('phaseDivineInfluenceDecay', () => {
     resetEventCounter();
   });
 
-  it('decrements ticksRemaining on all divine influences', () => {
+  it('keeps active influences with strength > 0', () => {
     const { state } = initializeGameState(testArchetype, 'Test Avatar', testCosmology, 42);
 
     // Get an actor to test on
     const actor = state.graph.getNodesByType('actor').find(a => a.properties?.actorType === 'individual');
     expect(actor).toBeDefined();
 
-    // Add a divine influence with ticksRemaining = 2
+    // Add a fresh divine influence (applied at current tick)
     const influence: DivineInfluenceEntry = {
       id: 'test_influence_1',
       interventionType: 'dream',
       sphere: 'mind',
       tickApplied: state.tick,
-      ticksRemaining: 2,
+      ...DECAY_CONSTANTS.dream,
     };
 
     actor!.properties.divineInfluences = [influence];
@@ -71,25 +72,24 @@ describe('phaseDivineInfluenceDecay', () => {
     const result = phaseDivineInfluenceDecay(state);
     const updated = { ...state, ...result };
 
-    // Verify ticksRemaining was decremented
+    // Verify influence is still present (just created)
     const updatedInfluences = actor!.properties.divineInfluences as DivineInfluenceEntry[];
     expect(updatedInfluences).toHaveLength(1);
-    expect(updatedInfluences[0].ticksRemaining).toBe(1);
   });
 
-  it('removes expired influences (ticksRemaining <= 0)', () => {
+  it('removes expired influences (elapsed >= maxDuration)', () => {
     const { state } = initializeGameState(testArchetype, 'Test Avatar', testCosmology, 42);
 
     const actor = state.graph.getNodesByType('actor').find(a => a.properties?.actorType === 'individual');
     expect(actor).toBeDefined();
 
-    // Add influence with ticksRemaining = 1 (will be decremented to 0, should be removed)
+    // Add influence that has already expired (tickApplied way in the past)
     const influence: DivineInfluenceEntry = {
       id: 'test_influence_2',
       interventionType: 'persuade',
       sphere: 'heart',
-      tickApplied: state.tick,
-      ticksRemaining: 1,
+      tickApplied: state.tick - 100, // Applied 100 ticks ago
+      ...DECAY_CONSTANTS.persuade, // maxDuration = 30
     };
 
     actor!.properties.divineInfluences = [influence];
@@ -113,8 +113,8 @@ describe('phaseDivineInfluenceDecay', () => {
       id: 'test_influence_3',
       interventionType: 'inspire_intervention',
       sphere: 'spirit',
-      tickApplied: state.tick,
-      ticksRemaining: 1,
+      tickApplied: state.tick - 100,
+      ...DECAY_CONSTANTS.inspire_intervention,
     };
 
     actor!.properties.divineInfluences = [influence];
@@ -132,7 +132,7 @@ describe('phaseDivineInfluenceDecay', () => {
     // Should have at least one trace for the expired influence
     const expiredTraces = traces.filter(t => {
       return t.category === 'intervention_effect' &&
-             t.ticksRemaining === 0;
+             t.summary?.includes('expired');
     });
     expect(expiredTraces.length).toBeGreaterThanOrEqual(0);
 
@@ -166,28 +166,28 @@ describe('phaseDivineInfluenceDecay', () => {
     const actor = state.graph.getNodesByType('actor').find(a => a.properties?.actorType === 'individual');
     expect(actor).toBeDefined();
 
-    // Add multiple influences with different ticksRemaining
+    // Add multiple influences with different ages
     const influences: DivineInfluenceEntry[] = [
       {
         id: 'inf1',
         interventionType: 'dream',
         sphere: 'mind',
-        tickApplied: state.tick,
-        ticksRemaining: 3,
+        tickApplied: state.tick - 5, // Recent, should remain
+        ...DECAY_CONSTANTS.dream,
       },
       {
         id: 'inf2',
         interventionType: 'persuade',
         sphere: 'heart',
-        tickApplied: state.tick,
-        ticksRemaining: 1,
+        tickApplied: state.tick - 100, // Expired, should be removed
+        ...DECAY_CONSTANTS.persuade,
       },
       {
         id: 'inf3',
         interventionType: 'omen',
         sphere: 'time',
-        tickApplied: state.tick,
-        ticksRemaining: 2,
+        tickApplied: state.tick - 10, // Recent, should remain
+        ...DECAY_CONSTANTS.omen,
       },
     ];
 
@@ -199,14 +199,13 @@ describe('phaseDivineInfluenceDecay', () => {
 
     // Verify results
     const updatedInfluences = actor!.properties.divineInfluences as DivineInfluenceEntry[];
-    expect(updatedInfluences).toHaveLength(2); // inf2 should be removed (1 -> 0)
+    expect(updatedInfluences).toHaveLength(2); // inf2 should be removed (expired)
 
-    // Check remaining influences are decremented correctly
-    const inf1 = updatedInfluences.find(i => i.id === 'inf1');
-    const inf3 = updatedInfluences.find(i => i.id === 'inf3');
-
-    expect(inf1?.ticksRemaining).toBe(2);
-    expect(inf3?.ticksRemaining).toBe(1);
+    // Check remaining influences have correct IDs
+    const ids = new Set(updatedInfluences.map(i => i.id));
+    expect(ids.has('inf1')).toBe(true);
+    expect(ids.has('inf3')).toBe(true);
+    expect(ids.has('inf2')).toBe(false);
   });
 
   it('is called during runTick without crashing', () => {
@@ -221,7 +220,7 @@ describe('phaseDivineInfluenceDecay', () => {
       interventionType: 'deceive',
       sphere: 'shadow',
       tickApplied: state.tick,
-      ticksRemaining: 5,
+      ...DECAY_CONSTANTS.deceive,
     };
 
     actor!.properties.divineInfluences = [influence];

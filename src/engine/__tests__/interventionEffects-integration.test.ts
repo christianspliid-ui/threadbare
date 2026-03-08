@@ -3,6 +3,7 @@ import { initializeGameState } from '../gameInit';
 import { runTick } from '../orchestrator';
 import { applyInterventionEffects, getDivineInfluences } from '../interventionEffects';
 import { enableTracing, clearTraces, getTraces } from '../traceBuffer';
+import { getCurrentStrength, DECAY_CONSTANTS } from '../decayCurve';
 import type { GameState } from '../../types/gameState';
 import type { AscendantArchetype } from '../../types/influence';
 import type { CosmologyProfile } from '../../types';
@@ -45,7 +46,7 @@ describe('intervention effects — full integration', () => {
     clearTraces();
   });
 
-  it('dream intervention → divine influence stored → biases pipeline → decays to zero', () => {
+  it('dream intervention → divine influence stored → decays to zero', () => {
     // 1. Find an individual actor
     const actors = state.graph.getNodesByType('actor')
       .filter(a => a.properties?.actorType === 'individual');
@@ -69,16 +70,20 @@ describe('intervention effects — full integration', () => {
     // 3. Verify influence stored immediately
     let influences = getDivineInfluences(state.graph, target.id);
     expect(influences.length).toBe(1);
-    const initialDuration = influences[0].ticksRemaining;
-    expect(initialDuration).toBeGreaterThan(0);
+    const influence = influences[0];
+    const maxDuration = influence.maxDuration;
+    expect(maxDuration).toBeGreaterThan(0);
 
-    // 4. Run 3 ticks — influence should decay
-    for (let i = 0; i < initialDuration - 1; i++) {
+    // 4. Run until near expiry — strength should decay
+    const startStrength = getCurrentStrength(influence, state.tick);
+    expect(startStrength).toBeCloseTo(influence.initialStrength);
+
+    // Advance many ticks
+    for (let i = 0; i < maxDuration - 1; i++) {
       state = runTick(state);
-      influences = getDivineInfluences(state.graph, target.id);
-      expect(influences.length).toBe(1);
-      expect(influences[0].ticksRemaining).toBe(initialDuration - i - 1);
     }
+    influences = getDivineInfluences(state.graph, target.id);
+    expect(influences.length).toBe(1); // Still active, just decayed
 
     // 5. One more tick should remove it completely
     state = runTick(state);
