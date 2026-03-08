@@ -306,6 +306,26 @@ def apply_hex_mask(img: Image.Image, mask: Image.Image) -> Image.Image:
     return img
 
 
+# Brightness threshold — pixels with max(R,G,B) below this become transparent
+BLACK_THRESHOLD = 15
+
+def black_to_transparent(img: Image.Image, threshold: int = BLACK_THRESHOLD) -> Image.Image:
+    """Convert near-black pixels to transparent for magic overlay compositing.
+
+    Pixels where max(R,G,B) < threshold get alpha=0.
+    All other pixels keep their original color and alpha.
+    """
+    img = img.convert("RGBA")
+    pixels = img.load()
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = pixels[x, y]
+            if max(r, g, b) < threshold:
+                pixels[x, y] = (r, g, b, 0)
+    return img
+
+
 # ---------------------------------------------------------------------------
 # Prompt construction
 # ---------------------------------------------------------------------------

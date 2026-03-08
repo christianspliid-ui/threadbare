@@ -2,6 +2,8 @@
 import sys
 from pathlib import Path
 
+from PIL import Image
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
@@ -61,3 +63,40 @@ def test_build_magic_prompt_all_spheres():
         prompt = ns["build_magic_prompt"](sphere)
         assert len(prompt) > 50, f"{sphere} prompt too short"
         assert "black" in prompt.lower(), f"{sphere} prompt missing black background"
+
+
+def test_black_to_transparent_converts_black_pixels():
+    """Pure black pixels should become fully transparent."""
+    ns = {}
+    exec(
+        Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text(),
+        ns,
+    )
+    black_to_transparent = ns["black_to_transparent"]
+
+    img = Image.new("RGBA", (4, 4), (0, 0, 0, 255))
+    img.putpixel((2, 0), (255, 0, 0, 255))
+    img.putpixel((0, 2), (0, 255, 0, 255))
+    img.putpixel((2, 2), (0, 0, 255, 255))
+
+    result = black_to_transparent(img)
+
+    assert result.getpixel((0, 0))[3] == 0, "Black pixel should be transparent"
+    assert result.getpixel((1, 1))[3] == 0, "Black pixel should be transparent"
+    assert result.getpixel((2, 0))[3] == 255, "Red pixel should stay opaque"
+    assert result.getpixel((0, 2))[3] == 255, "Green pixel should stay opaque"
+    assert result.getpixel((2, 2))[3] == 255, "Blue pixel should stay opaque"
+
+
+def test_black_to_transparent_handles_near_black():
+    """Very dark pixels (brightness < 15) should also become transparent."""
+    ns = {}
+    exec(
+        Path(__file__).parent.parent.joinpath("generate-hex-tile.py").read_text(),
+        ns,
+    )
+    black_to_transparent = ns["black_to_transparent"]
+
+    img = Image.new("RGBA", (2, 2), (10, 8, 12, 255))
+    result = black_to_transparent(img)
+    assert result.getpixel((0, 0))[3] == 0, "Near-black should be transparent"
