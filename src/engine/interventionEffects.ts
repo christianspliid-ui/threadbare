@@ -20,6 +20,7 @@ import type { DivineInfluenceEntry, InterventionType } from '../types/dream';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SphereName } from '../types';
 import { DIVINE_INFLUENCE_CONSTANTS, getConsequenceMessage } from '../data/intervention-feedback-content';
+import { DECAY_CONSTANTS } from './decayCurve';
 
 // ─── Type Definitions ────────────────────────────────────────────
 
@@ -302,8 +303,8 @@ function handleDream(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.DREAM_DURATION;
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.DREAM_DRIFT;
+  const decayParams = DECAY_CONSTANTS.dream;
 
   const pairs = selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
@@ -322,7 +323,7 @@ function handleDream(
     interventionType: 'dream',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     valueDrifts,
   };
 
@@ -343,7 +344,8 @@ function handleDream(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -362,8 +364,8 @@ function handlePersuade(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.PERSUADE_DURATION;
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.PERSUADE_DRIFT;
+  const decayParams = DECAY_CONSTANTS.persuade;
 
   const pairs = selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
@@ -382,7 +384,7 @@ function handlePersuade(
     interventionType: 'persuade',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     valueDrifts,
   };
 
@@ -403,7 +405,8 @@ function handlePersuade(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -422,8 +425,8 @@ function handleDeceive(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.DECEIVE_DURATION;
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.DECEIVE_DRIFT;
+  const decayParams = DECAY_CONSTANTS.deceive;
 
   const pairs = selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
@@ -445,7 +448,7 @@ function handleDeceive(
     interventionType: 'deceive',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     valueDrifts,
     traitId,
   };
@@ -467,7 +470,8 @@ function handleDeceive(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -486,8 +490,8 @@ function handleIntimidate(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.INTIMIDATE_DURATION;
   const drift = DIVINE_INFLUENCE_CONSTANTS.INTIMIDATE_COURAGE_DRIFT;
+  const decayParams = DECAY_CONSTANTS.intimidate;
 
   // Always target courage_prudence (shift toward prudence)
   const valueDrifts: Partial<Record<ValuePair, number>> = {
@@ -504,7 +508,7 @@ function handleIntimidate(
     interventionType: 'intimidate',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     valueDrifts,
     strategyOverride,
   };
@@ -526,7 +530,8 @@ function handleIntimidate(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -545,8 +550,8 @@ function handleInspire(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.INSPIRE_INTERVENTION_DURATION;
   const boost = DIVINE_INFLUENCE_CONSTANTS.INSPIRE_PERSONALITY_BOOST;
+  const decayParams = DECAY_CONSTANTS.inspire_intervention;
 
   const domain = getDomainLabel(seed);
   const traitId = `trait.inspired.${generateInfluenceId()}`;
@@ -558,7 +563,7 @@ function handleInspire(
     interventionType: 'inspire_intervention',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     personalityBoost: boost,
     traitId,
   };
@@ -580,7 +585,8 @@ function handleInspire(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -601,6 +607,7 @@ function handleCoincidence(
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
   const boost = DIVINE_INFLUENCE_CONSTANTS.COINCIDENCE_SPHERE_BOOST;
+  const decayParams = DECAY_CONSTANTS.coincidence;
 
   // Update location's sphere influence
   const locNode = graph.getNode(locationId);
@@ -619,7 +626,7 @@ function handleCoincidence(
     interventionType: 'coincidence',
     sphere,
     tickApplied: tick,
-    ticksRemaining: DIVINE_INFLUENCE_CONSTANTS.COINCIDENCE_DURATION,
+    ...decayParams,
   };
   addDivineInfluence(graph, actorId, influence);
 
@@ -639,7 +646,8 @@ function handleCoincidence(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: DIVINE_INFLUENCE_CONSTANTS.COINCIDENCE_DURATION,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -658,8 +666,8 @@ function handleOmen(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.OMEN_DURATION;
   const moodDrift = DIVINE_INFLUENCE_CONSTANTS.OMEN_MOOD_DRIFT;
+  const decayParams = DECAY_CONSTANTS.omen;
 
   // Simplified: apply to target agent only (not all agents at location)
   const valueDrifts: Partial<Record<ValuePair, number>> = {
@@ -672,7 +680,7 @@ function handleOmen(
     interventionType: 'omen',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     valueDrifts,
   };
 
@@ -693,7 +701,8 @@ function handleOmen(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {
@@ -712,7 +721,7 @@ function handleAfflictBless(
   seed: number,
   effectsSummary: string[],
 ): ApplyInterventionEffectsResult {
-  const duration = DIVINE_INFLUENCE_CONSTANTS.AFFLICT_BLESS_DURATION;
+  const decayParams = DECAY_CONSTANTS.afflict_bless;
 
   // Determine bless vs afflict: even seed = bless, odd = afflict
   const isBless = Math.abs(seed) % 2 === 0;
@@ -728,7 +737,7 @@ function handleAfflictBless(
     interventionType: 'afflict_bless',
     sphere,
     tickApplied: tick,
-    ticksRemaining: duration,
+    ...decayParams,
     traitId,
   };
 
@@ -754,7 +763,8 @@ function handleAfflictBless(
     sphere,
     effects: effectsSummary,
     consequenceMessage: msg,
-    ticksRemaining: duration,
+    initialStrength: decayParams.initialStrength,
+    maxDuration: decayParams.maxDuration,
   });
 
   return {

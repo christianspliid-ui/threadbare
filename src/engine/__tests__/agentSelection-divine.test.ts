@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
 import { runSelectionPipeline } from '../agentSelection';
 import type { ActionCandidate, SelectionConfig } from '../../types/agent';
+import { DECAY_CONSTANTS } from '../decayCurve';
 
 describe('runSelectionPipeline with divine influences', () => {
   let graph: WorldGraph;
@@ -49,7 +50,7 @@ describe('runSelectionPipeline with divine influences', () => {
       interventionType: 'dream',
       sphere: 'mind',
       tickApplied: 1,
-      ticksRemaining: 2,
+      ...DECAY_CONSTANTS.dream,
       valueDrifts: { courage_prudence: 0.50 },
     }];
 
@@ -70,7 +71,7 @@ describe('runSelectionPipeline with divine influences', () => {
       interventionType: 'persuade',
       sphere: 'spirit',
       tickApplied: 1,
-      ticksRemaining: 8,
+      ...DECAY_CONSTANTS.persuade,
       valueDrifts: { loyalty_treachery: 0.20 },
     }];
 

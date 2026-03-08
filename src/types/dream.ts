@@ -113,11 +113,20 @@ export interface DivineInfluenceEntry {
   interventionType: InterventionType;
   sphere: SphereName;
   tickApplied: number;
-  ticksRemaining: number;
+  // Decay curve parameters (replace binary ticksRemaining)
+  initialStrength: number;
+  decayRate: number;
+  minimumStrength: number;
+  maxDuration: number;
+  // Effect data
   valueDrifts?: Partial<Record<import('./agent').ValuePair, number>>;
+  reachBoost?: { reach: string; bonus: number };
+  behaviorTag?: string;
   traitId?: string;
   personalityBoost?: number;
   strategyOverride?: string;
+  // Agenda reference
+  agendaId?: string;
 }
 
 // ─── Constants ───────────────────────────────────────────────────

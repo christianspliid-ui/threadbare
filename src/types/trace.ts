@@ -115,7 +115,8 @@ export interface InterventionEffectTrace extends TraceBase {
   sphere: string;
   effects: string[];
   consequenceMessage: string;
-  ticksRemaining: number;
+  initialStrength?: number;
+  maxDuration?: number;
 }
 
 /** Discriminated union of all trace types */

@@ -7,6 +7,7 @@ import {
 } from '../interventionEffects';
 import type { DivineInfluenceEntry } from '../../types/dream';
 import type { AxiologicalProfile } from '../../types/agent';
+import { DECAY_CONSTANTS } from '../decayCurve';
 
 describe('applyInterventionEffects', () => {
   let graph: WorldGraph;
@@ -60,7 +61,7 @@ describe('applyInterventionEffects', () => {
     const influences = getDivineInfluences(graph, actorId);
     expect(influences.length).toBe(1);
     expect(influences[0].interventionType).toBe('dream');
-    expect(influences[0].ticksRemaining).toBe(3);
+    expect(influences[0].maxDuration).toBe(DECAY_CONSTANTS.dream.maxDuration);
     expect(influences[0].valueDrifts).toBeDefined();
   });
 
@@ -75,7 +76,7 @@ describe('applyInterventionEffects', () => {
     });
     expect(result.success).toBe(true);
     const influences = getDivineInfluences(graph, actorId);
-    expect(influences[0].ticksRemaining).toBe(12);
+    expect(influences[0].maxDuration).toBe(DECAY_CONSTANTS.persuade.maxDuration);
   });
 
   it('intimidate: shifts courage toward prudence and may override strategy', () => {
@@ -131,7 +132,7 @@ describe('applyInterventionEffects', () => {
     });
     const influences = getDivineInfluences(graph, actorId);
     expect(influences[0].traitId).toBeDefined();
-    expect(influences[0].ticksRemaining).toBe(10);
+    expect(influences[0].maxDuration).toBe(DECAY_CONSTANTS.afflict_bless.maxDuration);
   });
 
   it('returns consequence message', () => {
@@ -170,7 +171,7 @@ describe('applyInterventionEffects', () => {
     });
     expect(result.success).toBe(true);
     const influences = getDivineInfluences(graph, actorId);
-    expect(influences[0].ticksRemaining).toBe(18);
+    expect(influences[0].maxDuration).toBe(DECAY_CONSTANTS.deceive.maxDuration);
     expect(influences[0].valueDrifts).toBeDefined();
     expect(influences[0].traitId).toBeDefined();
   });
@@ -187,7 +188,7 @@ describe('applyInterventionEffects', () => {
     expect(result.success).toBe(true);
     const influences = getDivineInfluences(graph, actorId);
     expect(influences[0].interventionType).toBe('omen');
-    expect(influences[0].ticksRemaining).toBe(5);
+    expect(influences[0].maxDuration).toBe(DECAY_CONSTANTS.omen.maxDuration);
   });
 });
 
@@ -211,7 +212,7 @@ describe('buildValueOverlay', () => {
         interventionType: 'dream',
         sphere: 'mind',
         tickApplied: 1,
-        ticksRemaining: 2,
+        ...DECAY_CONSTANTS.dream,
         valueDrifts: { courage_prudence: 0.12 },
       },
     ];
@@ -239,7 +240,7 @@ describe('buildValueOverlay', () => {
         interventionType: 'persuade',
         sphere: 'spirit',
         tickApplied: 1,
-        ticksRemaining: 10,
+        ...DECAY_CONSTANTS.persuade,
         valueDrifts: { ambition_contentment: 0.2 },
       },
     ];
@@ -266,7 +267,7 @@ describe('buildValueOverlay', () => {
         interventionType: 'dream',
         sphere: 'mind',
         tickApplied: 1,
-        ticksRemaining: 2,
+        ...DECAY_CONSTANTS.dream,
         valueDrifts: { courage_prudence: 0.1 },
       },
       {
@@ -274,7 +275,7 @@ describe('buildValueOverlay', () => {
         interventionType: 'persuade',
         sphere: 'spirit',
         tickApplied: 2,
-        ticksRemaining: 8,
+        ...DECAY_CONSTANTS.persuade,
         valueDrifts: { courage_prudence: 0.15 },
       },
     ];
@@ -302,7 +303,7 @@ describe('buildValueOverlay', () => {
         interventionType: 'dream',
         sphere: 'mind',
         tickApplied: 1,
-        ticksRemaining: 2,
+        ...DECAY_CONSTANTS.dream,
         valueDrifts: { courage_prudence: 0.5 },
       },
     ];
@@ -340,7 +341,7 @@ describe('getDivineInfluences', () => {
       interventionType: 'dream',
       sphere: 'mind',
       tickApplied: 1,
-      ticksRemaining: 2,
+      ...DECAY_CONSTANTS.dream,
       valueDrifts: { courage_prudence: 0.1 },
     };
     graph.addNode({

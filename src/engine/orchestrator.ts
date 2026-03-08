@@ -46,6 +46,7 @@ import { getAvatarHexPosition } from './visibility';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
+import { getCurrentStrength } from './decayCurve';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -628,14 +629,14 @@ export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> 
 
     if (influences.length === 0) continue;
 
-    // Decrement ticksRemaining on all influences
+    // Filter out expired influences based on decay curve
     const updated: DivineInfluenceEntry[] = [];
 
     for (const influence of influences) {
-      const ticksRemaining = influence.ticksRemaining - 1;
+      const strength = getCurrentStrength(influence, state.tick);
 
       // Emit trace for expired influences
-      if (ticksRemaining <= 0) {
+      if (strength <= 0) {
         emitTrace({
           category: 'intervention_effect',
           tick: state.tick,
@@ -647,11 +648,12 @@ export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> 
           sphere: influence.sphere,
           effects: ['expired'],
           consequenceMessage: `The ${influence.sphere} influence from ${influence.interventionType} fades.`,
-          ticksRemaining: 0,
+          initialStrength: influence.initialStrength,
+          maxDuration: influence.maxDuration,
         });
       } else {
-        // Keep influence with decremented counter
-        updated.push({ ...influence, ticksRemaining });
+        // Keep influence if still active
+        updated.push(influence);
       }
     }
 

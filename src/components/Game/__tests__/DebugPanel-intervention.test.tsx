@@ -19,9 +19,10 @@ describe('DebugPanel — intervention_effect renderer', () => {
       targetAgentId: 'actor.kael',
       targetAgentName: 'Kael',
       sphere: 'mind',
-      effects: ['courage_prudence +0.12 for 3 ticks'],
+      effects: ['courage_prudence +0.12 for duration'],
       consequenceMessage: 'Kael will be drawn toward courage in the days ahead.',
-      ticksRemaining: 3,
+      initialStrength: 0.50,
+      maxDuration: 20,
     });
 
     render(<DebugPanel currentTick={5} onClose={() => {}} />);
@@ -38,9 +39,10 @@ describe('DebugPanel — intervention_effect renderer', () => {
       targetAgentId: 'actor.kael',
       targetAgentName: 'Kael',
       sphere: 'mind',
-      effects: ['courage_prudence +0.12 for 3 ticks'],
+      effects: ['courage_prudence +0.12 for duration'],
       consequenceMessage: 'Kael will be drawn toward courage in the days ahead.',
-      ticksRemaining: 3,
+      initialStrength: 0.50,
+      maxDuration: 20,
     });
 
     render(<DebugPanel currentTick={5} onClose={() => {}} />);
@@ -68,9 +70,10 @@ describe('DebugPanel — intervention_effect renderer', () => {
       targetAgentId: 'actor.mira',
       targetAgentName: 'Mira',
       sphere: 'life',
-      effects: ['compassion_cruelty +0.15 for 10 ticks', 'cooperation boost applied', 'trait granted: blessed_aura'],
+      effects: ['compassion_cruelty +0.15 for duration', 'cooperation boost applied', 'trait granted: blessed_aura'],
       consequenceMessage: 'Mira feels a divine presence guiding her toward compassion.',
-      ticksRemaining: 10,
+      initialStrength: 0.75,
+      maxDuration: 30,
     });
 
     render(<DebugPanel currentTick={10} onClose={() => {}} />);
@@ -88,13 +91,14 @@ describe('DebugPanel — intervention_effect renderer', () => {
       tick: 7,
       category: 'intervention_effect',
       summary: 'Manipulation on Aldric via mind',
-      interventionType: 'manipulation',
+      interventionType: 'dream',
       targetAgentId: 'actor.aldric',
       targetAgentName: 'Aldric',
       sphere: 'mind',
-      effects: ['malice_benevolence +0.10 for 5 ticks'],
+      effects: ['malice_benevolence +0.10 for duration'],
       consequenceMessage: 'Aldric feels shadow thoughts creeping into his mind.',
-      ticksRemaining: 5,
+      initialStrength: 0.50,
+      maxDuration: 20,
     });
 
     render(<DebugPanel currentTick={7} onClose={() => {}} />);
@@ -102,18 +106,19 @@ describe('DebugPanel — intervention_effect renderer', () => {
     expect(screen.getByText('#7')).toBeDefined();
   });
 
-  it('shows ticks remaining as a field', () => {
+  it('shows max duration as a field', () => {
     emitTrace({
       tick: 15,
       category: 'intervention_effect',
       summary: 'Enchant on Lysara via spirit',
-      interventionType: 'enchant',
+      interventionType: 'inspire_intervention',
       targetAgentId: 'actor.lysara',
       targetAgentName: 'Lysara',
       sphere: 'spirit',
       effects: [],
       consequenceMessage: 'Lysara is touched by divine grace.',
-      ticksRemaining: 8,
+      initialStrength: 0.80,
+      maxDuration: 8,
     });
 
     render(<DebugPanel currentTick={15} onClose={() => {}} />);
@@ -129,13 +134,14 @@ describe('DebugPanel — intervention_effect renderer', () => {
       tick: 3,
       category: 'intervention_effect',
       summary: 'Silent intervention on Nox via entropy',
-      interventionType: 'silent',
+      interventionType: 'dream',
       targetAgentId: 'actor.nox',
       targetAgentName: 'Nox',
       sphere: 'entropy',
       effects: [],
       consequenceMessage: 'The threads of fate shift imperceptibly.',
-      ticksRemaining: 1,
+      initialStrength: 0.50,
+      maxDuration: 20,
     });
 
     render(<DebugPanel currentTick={3} onClose={() => {}} />);
