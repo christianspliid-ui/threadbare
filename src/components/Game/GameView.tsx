@@ -1,18 +1,9 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { CosmologyProfile, HexTile } from '../../types';
+import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import type { GameState } from '../../types/gameState';
-import { initializeGameState } from '../../engine/gameInit';
-import { runTick, resetEventCounter } from '../../engine/orchestrator';
-import {
-  startTwilight,
-  runTwilightTick,
-  computeHarvest,
-  transitionToNewCycle,
-} from '../../engine/cycleEnd';
-import type { HarvestResult } from '../../engine/cycleEnd';
-import { computeMaxEssence } from '../../engine/influence';
 import { recalcVisibility, collectLOSSources } from '../../engine/visibility';
+import { useSimulation } from './hooks/useSimulation';
 
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
@@ -79,9 +70,6 @@ interface GameViewProps {
   seed: number;
 }
 
-const COLS = 20;
-const ROWS = 15;
-
 /** Settlement priority for overlay conflicts — larger settlements win */
 const SETTLEMENT_PRIORITY: Partial<Record<LocationSubtype, number>> = {
   capital: 10, city: 8, town: 6, hamlet: 4,
@@ -93,20 +81,15 @@ function settlementPriority(subtype: LocationSubtype): number {
   return SETTLEMENT_PRIORITY[subtype] ?? 0;
 }
 
-const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
-
 export function GameView({ archetype, avatarName, cosmology, seed }: GameViewProps) {
-  // ── Initialize ──
-  const initial = useMemo(
-    () => initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS),
-    [archetype, avatarName, cosmology, seed]
-  );
+  // ── Use simulation hook ──
+  const {
+    gameState, setGameState, tiles, running, speed,
+    harvestResult, doTick, handleBeginNextCycle, handleToggleRunning,
+    setSpeed, seasonName, year, maxEssence, COLS, ROWS,
+  } = useSimulation({ archetype, avatarName, cosmology, seed });
 
-  const [gameState, setGameState] = useState<GameState>(initial.state);
-  const [tiles] = useState<HexTile[]>(initial.tiles);
-  const [running, setRunning] = useState(false);
-  const [speed, setSpeed] = useState(3);
-  const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
+  // ── Local state ──
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
@@ -125,68 +108,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hexMapRef = useRef<HexMapHandle>(null);
-
-  // ── Tick ──
-  const doTick = useCallback(() => {
-    setGameState(prev => {
-      if (prev.phase === 'playing') {
-        return runTick(prev);
-      }
-      if (prev.phase === 'twilight') {
-        const result = runTwilightTick(prev);
-        if (result.complete) {
-          // Compute harvest and pause for screen
-          const harvest = computeHarvest(result.state);
-          setTimeout(() => {
-            setHarvestResult(harvest);
-            setRunning(false);
-          }, 0);
-        }
-        return result.state;
-      }
-      return prev;
-    });
-  }, []);
-
-  // Watch for phase transition to twilight (doom expired)
-  useEffect(() => {
-    if (gameState.phase === 'twilight' && !harvestResult) {
-      setGameState(prev => startTwilight(prev));
-    }
-  }, [gameState.phase, harvestResult]);
-
-  // ── Auto-play ──
-  useEffect(() => {
-    if (running && gameState.phase !== 'harvest' && gameState.phase !== 'transition') {
-      const ms = Math.max(50, 1000 / speed);
-      intervalRef.current = setInterval(doTick, ms);
-    } else if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [running, speed, doTick, gameState.phase]);
-
-  // ── Handle new cycle ──
-  const handleBeginNextCycle = useCallback(() => {
-    if (!harvestResult) return;
-    const cosmicEchoes = harvestResult.cosmicEchoCandidates.map(c => c.echoDefinition);
-    setGameState(prev => {
-      const nextState = transitionToNewCycle(prev, cosmicEchoes, [], harvestResult.chronicleSummary);
-      return { ...nextState, phase: 'playing' };
-    });
-    setHarvestResult(null);
-    resetEventCounter();
-  }, [harvestResult]);
-
-  // Derived display values
-  const seasonName = SEASONS[gameState.clock.season % 4] ?? 'spring';
-  const year = Math.floor(gameState.tick / 120) + 1;
-  const maxEssence = computeMaxEssence(gameState.graph, gameState.ascendantId);
 
   const retinueAgents = useMemo(
     () => getRetinueAgents(gameState.graph, gameState.ascendantId),
@@ -432,10 +354,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
   const handleLocationClick = useCallback((_locationId: string) => {
     // Future: show info tooltip
-  }, []);
-
-  const handleToggleRunning = useCallback(() => {
-    setRunning(r => !r);
   }, []);
 
   const handleToggleDebug = useCallback(() => {
