@@ -697,6 +697,79 @@ export const ORDEAL_INSPECTION_VIGNETTES = {
   ],
 };
 
+// ═══════════════════════════════════════════════════════════════════
+// ORDEAL SYSTEM CONNECTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Connections between ordeals and other game systems: doom clock,
+ * cultural forces, and rival god interference. These templates describe
+ * how external forces shape or complicate an ordeal's outcome.
+ */
+export interface OrdealSystemConnection {
+  id: string;
+  trigger: string;
+  prose: string;
+}
+
+export const ORDEAL_SYSTEM_CONNECTIONS: {
+  doom: OrdealSystemConnection[];
+  culture: OrdealSystemConnection[];
+  rival: OrdealSystemConnection[];
+} = {
+  doom: [
+    {
+      id: 'doom_intensification',
+      trigger: 'Rising doom clock (>60%) intensifies ordeal stakes',
+      prose: 'The air thickens with dread. As doom rises, the ordeal\'s weight compounds—{location} itself seems to turn hostile, magic warping under pressure. {actor} must not merely pass the trial but do so before the world\'s collapse becomes complete.',
+    },
+    {
+      id: 'doom_corruption',
+      trigger: 'High doom (>80%) corrupts ordeal outcome',
+      prose: 'The ordeal has been touched by the approaching unmaking. Reality flickers here; success feels possible, but fragile. Even if {actor} prevails, the victory tastes ashen—tainted by knowledge that the world itself might not survive to remember {their} triumph.',
+    },
+    {
+      id: 'doom_acceleration',
+      trigger: 'Ordeal completion (success or failure) accelerates doom by 5 ticks',
+      prose: 'The {location} trembles as the ordeal concludes. Whether {actor} triumphed or fell, the trial\'s conclusion sends ripples outward—the doom clock ticks faster, as if the world must compress its reckoning into dwindling moments.',
+    },
+  ],
+  culture: [
+    {
+      id: 'culture_facilitation',
+      trigger: 'Ordeal\'s culture shares {actor}\'s cultural identity (>70% similarity)',
+      prose: 'The ordeal speaks {actor}\'s language. The rituals, the methods, the values tested here align with {their} own culture\'s traditions. {They} move through the trial with native grace—threads of {their} people\'s wisdom guide each step, making the impossible merely difficult.',
+    },
+    {
+      id: 'culture_opposition',
+      trigger: 'Ordeal\'s culture opposes {actor}\'s cultural values (tension >0.6)',
+      prose: 'The ordeal demands something {actor}\'s culture forbids. Each test feels like a betrayal of {their} own people. {They} must choose between honoring the tradition and passing the trial—a choice that will mark {them} forever in the eyes of {their} kind.',
+    },
+    {
+      id: 'culture_transformation',
+      trigger: 'Success in culturally opposed ordeal grants cultural trait',
+      prose: 'By passing this ordeal on foreign terms, {actor} is reforged. The culture of the trial seeps into {their} bones—{they} carry back not just triumph but a piece of something alien, woven now into {their} identity. {They} are no longer purely what {they} were.',
+    },
+  ],
+  rival: [
+    {
+      id: 'rival_interference',
+      trigger: 'Rival god opposes {actor}\'s sphere (faction conflict)',
+      prose: '{actor} is not alone in the ordeal. Phantom presence shadows every choice—a rival god, sensing vulnerability. The trial becomes a battleground; {actor} must overcome not just the ordeal\'s design but the subtle corruption that seeks to twist success into ruin.',
+    },
+    {
+      id: 'rival_corruption',
+      trigger: 'Rival agent stationed in ordeal location',
+      prose: 'The ordeal has been corrupted from within. A servant of a rival god moves through the trial\'s spaces, ready to tip the scales. {actor} must not only face the test but navigate {their} presence—and decide whether to confront {them} directly or move unseen.',
+    },
+    {
+      id: 'rival_escalation',
+      trigger: 'Ordeal victory grants {rival god} 0.3 escalation in response',
+      prose: 'As {actor} claims triumph, distant divine laughter echoes. A rival god recognizes the shift in power and rises to meet it. The victory is real—but {it} has been noticed, and the consequences ripple outward faster now. The game\'s stakes climb.',
+    },
+  ],
+};
+
 // ─── Lookup Functions ───────────────────────────────────────────
 
 /**
