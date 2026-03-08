@@ -21,6 +21,7 @@ import { AgentInfoCard } from './AgentInfoCard';
 import { AgentProfileModal } from './AgentProfileModal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
+import { AgendaPicker } from './AgendaPicker';
 import { ScryOverlay } from './ScryOverlay';
 import { ScryProvider } from './contexts/ScryContext';
 import { HexZoomView } from './HexZoomView';
@@ -89,6 +90,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     profileModalAgentId,
     playingCardId,
     selectedAgenda,
+    agendaPickerOpen,
+    pendingAgendas,
     retinueAgents,
     agentDetail,
     agentInfoCard,
@@ -99,6 +102,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
+    handleAgendaSelect,
+    handleAgendaCancel,
     handleDrawerClose,
     handleStrandClose,
     handleBackFromAgentDetail,
@@ -237,8 +242,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   moveMode={moveMode}
                 />
 
+                {/* Agenda picker overlay */}
+                {agendaPickerOpen && pendingAgendas && (() => {
+                  const slot = wheelSlots?.find(s => s.id === pendingIntervention?.slotId);
+                  return (
+                    <AgendaPicker
+                      agendas={pendingAgendas}
+                      onSelect={handleAgendaSelect}
+                      onCancel={handleAgendaCancel}
+                      sphere={slot?.sphere ?? 'mind'}
+                    />
+                  );
+                })()}
+
                 {/* Intervention confirmation popover */}
-                {pendingIntervention && wheelSlots && (() => {
+                {pendingIntervention && wheelSlots && !agendaPickerOpen && (() => {
                   const slot = wheelSlots.find(s => s.id === pendingIntervention.slotId);
                   if (!slot) return null;
                   return (
