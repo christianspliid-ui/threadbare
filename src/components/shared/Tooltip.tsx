@@ -1,10 +1,9 @@
-import React, { useRef, useState, useId, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useId, useEffect, useLayoutEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import type { TooltipContent } from '../../types/tooltip';
 import {
   TOOLTIP_SHOW_DELAY,
   TOOLTIP_FADE_OUT,
-  TOOLTIP_TOP_THRESHOLD,
   TOOLTIP_SIDE_THRESHOLD,
   TOOLTIP_MAX_WIDTH,
   TOOLTIP_OFFSET,
@@ -14,38 +13,11 @@ import {
 import { resolveTooltip } from '../../engine/tooltipResolver';
 
 interface TooltipProps {
-  /**
-   * Tooltip ID to resolve content from (e.g., "ui.doom_bar", "sphere.force").
-   * Will be overridden by explicit label/desc if provided.
-   */
   id?: string;
-
-  /**
-   * Explicit label (overrides resolved content).
-   */
   label?: string;
-
-  /**
-   * Explicit description (overrides resolved content).
-   * May contain {{concept.id}} links (Task 5).
-   */
   desc?: string;
-
-  /**
-   * The element that triggers the tooltip on hover/focus.
-   */
   children: React.ReactNode;
-
-  /**
-   * Internal depth counter for tooltip chain tracking (Task 5).
-   * @internal
-   */
   depth?: number;
-
-  /**
-   * Wrapper element type: 'span' for DOM, 'g' for SVG.
-   * Defaults to 'span'.
-   */
   as?: 'span' | 'g';
 }
 
@@ -55,24 +27,37 @@ interface TooltipProps {
 
 const TOOLTIP_BG = '#1a1a1e';
 const TOOLTIP_BORDER = '#57534e';
-const TOOLTIP_LABEL_COLOR = '#fcd34d';     // amber-200 (Cinzel)
-const TOOLTIP_DESC_COLOR = '#a8a29e';      // stone-400 (Inter)
-const TOOLTIP_LINK_COLOR = '#fbbf24';      // amber-400 for linked concepts
-const TOOLTIP_ARROW_SIZE = 6;              // px for arrow triangle
+const TOOLTIP_LABEL_COLOR = '#fcd34d';
+const TOOLTIP_DESC_COLOR = '#a8a29e';
+const TOOLTIP_LINK_COLOR = '#fbbf24';
+const TOOLTIP_ARROW_SIZE = 6;
 
-// Module-level regex for {{concept.id}} link parsing (reused across calls)
+/** Minimum distance (px) between any tooltip edge and the viewport edge. */
+const VIEWPORT_MARGIN = 8;
+
 const TOOLTIP_LINK_REGEX = new RegExp(TOOLTIP_LINK_PATTERN);
+
+// Gap bridge: invisible padding zone that keeps the tooltip alive while the
+// mouse travels across the gap between trigger and popup.
+const GAP_BRIDGE_SIZE = TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE + 4;
+
+type Placement = 'above' | 'below' | 'right' | 'left';
+
+interface TooltipPosition {
+  /** CSS top (used for 'below', 'right', 'left' placements). */
+  top?: number;
+  /** CSS bottom (used for 'above' placement — tooltip grows upward). */
+  bottom?: number;
+  /** CSS left. */
+  left: number;
+  /** Where the tooltip sits relative to its trigger. */
+  placement: Placement;
+  /** Set after useLayoutEffect corrects overflow — prevents infinite loop. */
+  corrected?: boolean;
+}
 
 /**
  * Parse description text and render {{concept.id}} links as nested Tooltips.
- *
- * Splits on TOOLTIP_LINK_PATTERN regex and:
- * - For resolved concepts at depth < TOOLTIP_MAX_CHAIN_DEPTH:
- *   renders as underlined amber-400 span wrapped in nested Tooltip
- * - For unresolved or at max depth:
- *   renders as plain text (raw marker without {{ }})
- *
- * Returns array of text strings and tooltip-wrapped span elements.
  */
 function parseDescription(
   description: string | undefined,
@@ -84,11 +69,9 @@ function parseDescription(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  // Reset lastIndex for reuse of global regex
   TOOLTIP_LINK_REGEX.lastIndex = 0;
 
   while ((match = TOOLTIP_LINK_REGEX.exec(description)) !== null) {
-    // Push text before the match
     if (match.index > lastIndex) {
       result.push(description.substring(lastIndex, match.index));
     }
@@ -97,7 +80,6 @@ function parseDescription(
     const resolved = resolveTooltip(conceptId);
 
     if (resolved && depth < TOOLTIP_MAX_CHAIN_DEPTH) {
-      // Render as nested Tooltip with underlined link
       result.push(
         <Tooltip
           key={`link-${match.index}-${conceptId}`}
@@ -117,14 +99,12 @@ function parseDescription(
         </Tooltip>
       );
     } else {
-      // Unresolved or at max depth: render raw marker text (without {{ }})
       result.push(match[0]);
     }
 
     lastIndex = TOOLTIP_LINK_REGEX.lastIndex;
   }
 
-  // Push remaining text after last match
   if (lastIndex < description.length) {
     result.push(description.substring(lastIndex));
   }
@@ -135,11 +115,13 @@ function parseDescription(
 /**
  * Tooltip component with hover delay, keyboard escape, and smart positioning.
  *
- * Renders a trigger element (children) that shows/hides a tooltip on hover, focus,
- * or Escape key. Content is resolved from an ID, or explicitly provided.
+ * Positioning strategy:
+ * - Depth 0: above or below the trigger (default above, flip if near edge).
+ * - Depth 1+: right or left of the parent tooltip (flip if near edge).
  *
- * Portal-renders the tooltip to document.body with absolute positioning.
- * Flips placement and shifts horizontally to stay within viewport.
+ * After the initial render, a useLayoutEffect measures the tooltip's actual
+ * bounding rect and flips/clamps placement if any edge overflows the viewport.
+ * This runs before paint so the user never sees the wrong position.
  */
 export const Tooltip = React.memo(function Tooltip({
   id,
@@ -151,29 +133,23 @@ export const Tooltip = React.memo(function Tooltip({
 }: TooltipProps) {
   const tooltipId = useId();
   const triggerRef = useRef<HTMLElement | SVGGElement>(null);
+  const tooltipOuterRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [position, setPosition] = useState<{
-    top: number;
-    left: number;
-    placement: 'above' | 'below';
-  } | null>(null);
+  const [position, setPosition] = useState<TooltipPosition | null>(null);
 
   const showTimerRef = useRef<NodeJS.Timeout>();
   const hideTimerRef = useRef<NodeJS.Timeout>();
 
-  // Resolve content from id or use explicit values
   const resolvedContent: TooltipContent | null = id
     ? resolveTooltip(id)
     : null;
 
   const finalLabel = explicitLabel || resolvedContent?.label;
   const finalDesc = explicitDesc || resolvedContent?.desc;
-
-  // Don't show tooltip if no content
   const hasContent = !!finalLabel;
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Position Calculation
+  // Position Calculation (Phase 1 — best guess before measuring)
   // ──────────────────────────────────────────────────────────────────────────
 
   const calculatePosition = () => {
@@ -183,31 +159,127 @@ export const Tooltip = React.memo(function Tooltip({
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
 
-    // Start with positioning above the trigger
-    let placement: 'above' | 'below' = 'above';
-    let top = triggerRect.top - TOOLTIP_OFFSET - TOOLTIP_ARROW_SIZE;
+    if (depth > 0) {
+      // ── Chained tooltip: position to the side of the parent tooltip ──
+      const parentTooltip = triggerRef.current.closest('[role="tooltip"]');
+      const parentRect = parentTooltip
+        ? parentTooltip.getBoundingClientRect()
+        : triggerRect;
 
-    // Flip to below if trigger is too close to top edge
-    if (triggerRect.top < TOOLTIP_TOP_THRESHOLD) {
-      placement = 'below';
-      top = triggerRect.bottom + TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE;
+      const spaceRight = viewportWidth - parentRect.right - TOOLTIP_OFFSET;
+      const spaceLeft = parentRect.left - TOOLTIP_OFFSET;
+
+      if (spaceRight >= TOOLTIP_MAX_WIDTH + VIEWPORT_MARGIN) {
+        setPosition({
+          top: Math.max(VIEWPORT_MARGIN, triggerRect.top - 8),
+          left: parentRect.right + TOOLTIP_OFFSET,
+          placement: 'right',
+        });
+      } else if (spaceLeft >= TOOLTIP_MAX_WIDTH + VIEWPORT_MARGIN) {
+        setPosition({
+          top: Math.max(VIEWPORT_MARGIN, triggerRect.top - 8),
+          left: parentRect.left - TOOLTIP_MAX_WIDTH - TOOLTIP_OFFSET,
+          placement: 'left',
+        });
+      } else {
+        // Fallback: below the parent tooltip
+        setPosition({
+          top: parentRect.bottom + TOOLTIP_OFFSET,
+          left: Math.max(
+            VIEWPORT_MARGIN,
+            Math.min(
+              triggerRect.left,
+              viewportWidth - TOOLTIP_MAX_WIDTH - VIEWPORT_MARGIN
+            )
+          ),
+          placement: 'below',
+        });
+      }
+    } else {
+      // ── Root tooltip: position above or below the trigger ──
+
+      // Horizontal: center on trigger, clamped to viewport
+      let left = triggerRect.left + triggerRect.width / 2 - TOOLTIP_MAX_WIDTH / 2;
+      if (left + TOOLTIP_MAX_WIDTH > viewportWidth - VIEWPORT_MARGIN) {
+        left = viewportWidth - TOOLTIP_MAX_WIDTH - VIEWPORT_MARGIN;
+      }
+      if (left < VIEWPORT_MARGIN) {
+        left = VIEWPORT_MARGIN;
+      }
+
+      // Default: above. Use CSS `bottom` so tooltip grows upward naturally.
+      const bottomValue = viewportHeight - triggerRect.top + TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE;
+      setPosition({
+        bottom: bottomValue,
+        left,
+        placement: 'above',
+      });
     }
-
-    // Horizontal positioning: center on trigger
-    let left = triggerRect.left + triggerRect.width / 2 - TOOLTIP_MAX_WIDTH / 2;
-
-    // Shift left if too close to right edge
-    if (left + TOOLTIP_MAX_WIDTH > viewportWidth - TOOLTIP_SIDE_THRESHOLD) {
-      left = viewportWidth - TOOLTIP_MAX_WIDTH - TOOLTIP_SIDE_THRESHOLD;
-    }
-
-    // Shift right if too close to left edge
-    if (left < TOOLTIP_SIDE_THRESHOLD) {
-      left = TOOLTIP_SIDE_THRESHOLD;
-    }
-
-    setPosition({ top, left, placement });
   };
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Phase 2 — Measure and correct overflow before paint
+  // ──────────────────────────────────────────────────────────────────────────
+
+  useLayoutEffect(() => {
+    const el = tooltipOuterRef.current;
+    if (!isVisible || !el || !position || position.corrected || !triggerRef.current) return;
+
+    const rect = el.getBoundingClientRect();
+    const triggerRect = triggerRef.current.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const vw = window.innerWidth;
+
+    let corrected: TooltipPosition | null = null;
+
+    // ── Vertical overflow ──
+    if (position.placement === 'above' && rect.top < VIEWPORT_MARGIN) {
+      // Tooltip overflows top of viewport — flip to below
+      corrected = {
+        top: triggerRect.bottom + TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE,
+        left: position.left,
+        placement: 'below',
+        corrected: true,
+      };
+    } else if (position.placement === 'below' && rect.bottom > vh - VIEWPORT_MARGIN) {
+      // Tooltip overflows bottom — try flipping to above
+      const aboveBottom = vh - triggerRect.top + TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE;
+      corrected = {
+        bottom: aboveBottom,
+        left: position.left,
+        placement: 'above',
+        corrected: true,
+      };
+    } else if ((position.placement === 'right' || position.placement === 'left') && rect.bottom > vh - VIEWPORT_MARGIN) {
+      // Side-placed tooltip overflows bottom — clamp top upward
+      corrected = {
+        ...position,
+        top: (position.top ?? 0) - (rect.bottom - vh + VIEWPORT_MARGIN),
+        corrected: true,
+      };
+    } else if ((position.placement === 'right' || position.placement === 'left') && rect.top < VIEWPORT_MARGIN) {
+      // Side-placed tooltip overflows top — clamp top downward
+      corrected = {
+        ...position,
+        top: VIEWPORT_MARGIN,
+        corrected: true,
+      };
+    }
+
+    // ── Horizontal overflow ──
+    if (rect.right > vw - VIEWPORT_MARGIN) {
+      corrected = corrected || { ...position, corrected: true };
+      corrected.left = vw - VIEWPORT_MARGIN - rect.width;
+      if (corrected.left < VIEWPORT_MARGIN) corrected.left = VIEWPORT_MARGIN;
+    } else if (rect.left < VIEWPORT_MARGIN) {
+      corrected = corrected || { ...position, corrected: true };
+      corrected.left = VIEWPORT_MARGIN;
+    }
+
+    if (corrected) {
+      setPosition(corrected);
+    }
+  }, [isVisible, position]);
 
   // ──────────────────────────────────────────────────────────────────────────
   // Show/Hide Handlers
@@ -216,13 +288,13 @@ export const Tooltip = React.memo(function Tooltip({
   const showTooltip = () => {
     if (!hasContent) return;
 
-    // Cancel any pending hide
     if (hideTimerRef.current) {
       clearTimeout(hideTimerRef.current);
       hideTimerRef.current = undefined;
     }
 
-    // Set up show delay
+    if (isVisible) return;
+
     showTimerRef.current = setTimeout(() => {
       calculatePosition();
       setIsVisible(true);
@@ -230,13 +302,11 @@ export const Tooltip = React.memo(function Tooltip({
   };
 
   const hideTooltip = () => {
-    // Cancel show timer if still pending
     if (showTimerRef.current) {
       clearTimeout(showTimerRef.current);
       showTimerRef.current = undefined;
     }
 
-    // Start fade-out
     hideTimerRef.current = setTimeout(() => {
       setIsVisible(false);
     }, TOOLTIP_FADE_OUT);
@@ -247,7 +317,6 @@ export const Tooltip = React.memo(function Tooltip({
   const handleFocus = () => showTooltip();
   const handleBlur = () => hideTooltip();
 
-  // Escape key listener — tied to visibility lifecycle, no race conditions
   useEffect(() => {
     if (!isVisible) return;
 
@@ -261,7 +330,6 @@ export const Tooltip = React.memo(function Tooltip({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isVisible]);
 
-  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
@@ -278,84 +346,127 @@ export const Tooltip = React.memo(function Tooltip({
     [finalDesc, depth]
   );
 
-  const tooltipContent = useMemo(() => (
+  // Outer wrapper style — includes gap-bridge padding for hover continuity.
+  const outerStyle: React.CSSProperties = (() => {
+    if (!position) return { position: 'fixed', zIndex: 50 + depth };
+    const base: React.CSSProperties = {
+      position: 'fixed',
+      left: position.left,
+      maxWidth: TOOLTIP_MAX_WIDTH,
+      zIndex: 50 + depth,
+      pointerEvents: isVisible ? 'auto' : 'none',
+    };
+
+    switch (position.placement) {
+      case 'above':
+        return {
+          ...base,
+          bottom: position.bottom,
+          paddingBottom: GAP_BRIDGE_SIZE,
+        };
+      case 'below':
+        return {
+          ...base,
+          top: (position.top ?? 0) - GAP_BRIDGE_SIZE,
+          paddingTop: GAP_BRIDGE_SIZE,
+        };
+      case 'right':
+        return {
+          ...base,
+          top: position.top,
+          left: (position.left ?? 0) - GAP_BRIDGE_SIZE,
+          paddingLeft: GAP_BRIDGE_SIZE,
+        };
+      case 'left':
+        return {
+          ...base,
+          top: position.top,
+          paddingRight: GAP_BRIDGE_SIZE,
+        };
+    }
+  })();
+
+  // Arrow — only for above/below root tooltips.
+  const arrowElement = position && (position.placement === 'above' || position.placement === 'below') ? (
     <div
+      style={{
+        position: 'absolute',
+        width: 0,
+        height: 0,
+        borderLeft: `${TOOLTIP_ARROW_SIZE}px solid transparent`,
+        borderRight: `${TOOLTIP_ARROW_SIZE}px solid transparent`,
+        ...(position.placement === 'above'
+          ? {
+              bottom: -TOOLTIP_ARROW_SIZE,
+              borderTop: `${TOOLTIP_ARROW_SIZE}px solid ${TOOLTIP_BG}`,
+            }
+          : {
+              top: -TOOLTIP_ARROW_SIZE,
+              borderBottom: `${TOOLTIP_ARROW_SIZE}px solid ${TOOLTIP_BG}`,
+            }),
+        left: '50%',
+        transform: 'translateX(-50%)',
+      }}
+    />
+  ) : null;
+
+  const tooltipContent = (
+    <div
+      ref={tooltipOuterRef}
       id={tooltipId}
       role="tooltip"
-      style={{
-        position: 'fixed',
-        top: position?.top ?? 0,
-        left: position?.left ?? 0,
-        maxWidth: TOOLTIP_MAX_WIDTH,
-        backgroundColor: TOOLTIP_BG,
-        border: `1px solid ${TOOLTIP_BORDER}`,
-        borderRadius: '0.25rem',
-        padding: '0.625rem 0.625rem',
-        boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-        zIndex: 50,
-        opacity: isVisible ? 1 : 0,
-        pointerEvents: isVisible ? 'auto' : 'none',
-        transition: `opacity ${TOOLTIP_FADE_OUT}ms ease-out`,
-      }}
+      onPointerEnter={showTooltip}
+      onPointerLeave={hideTooltip}
+      style={outerStyle}
     >
-      {/* Label */}
       <div
         style={{
-          fontSize: '0.75rem',
-          fontWeight: '600',
-          color: TOOLTIP_LABEL_COLOR,
-          fontFamily: 'Cinzel, serif',
-          marginBottom: finalDesc ? '0.25rem' : 0,
+          backgroundColor: TOOLTIP_BG,
+          border: `1px solid ${TOOLTIP_BORDER}`,
+          borderRadius: '0.25rem',
+          padding: '0.625rem 0.625rem',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+          opacity: isVisible ? 1 : 0,
+          transition: `opacity ${TOOLTIP_FADE_OUT}ms ease-out`,
+          position: 'relative',
         }}
       >
-        {finalLabel}
-      </div>
-
-      {/* Description */}
-      {finalDesc && (
         <div
           style={{
             fontSize: '0.75rem',
-            color: TOOLTIP_DESC_COLOR,
-            fontFamily: 'Inter, system-ui, sans-serif',
-            lineHeight: '1.4',
-            pointerEvents: 'auto',
+            fontWeight: '600',
+            color: TOOLTIP_LABEL_COLOR,
+            fontFamily: 'Cinzel, serif',
+            marginBottom: finalDesc ? '0.25rem' : 0,
           }}
         >
-          {parsedDesc}
+          {finalLabel}
         </div>
-      )}
 
-      {/* Arrow */}
-      <div
-        style={{
-          position: 'absolute',
-          width: 0,
-          height: 0,
-          borderLeft: `${TOOLTIP_ARROW_SIZE}px solid transparent`,
-          borderRight: `${TOOLTIP_ARROW_SIZE}px solid transparent`,
-          ...(position?.placement === 'above'
-            ? {
-                bottom: -TOOLTIP_ARROW_SIZE,
-                borderTop: `${TOOLTIP_ARROW_SIZE}px solid ${TOOLTIP_BG}`,
-              }
-            : {
-                top: -TOOLTIP_ARROW_SIZE,
-                borderBottom: `${TOOLTIP_ARROW_SIZE}px solid ${TOOLTIP_BG}`,
-              }),
-          left: '50%',
-          transform: 'translateX(-50%)',
-        }}
-      />
+        {finalDesc && (
+          <div
+            style={{
+              fontSize: '0.75rem',
+              color: TOOLTIP_DESC_COLOR,
+              fontFamily: 'Inter, system-ui, sans-serif',
+              lineHeight: '1.4',
+              pointerEvents: 'auto',
+            }}
+          >
+            {parsedDesc}
+          </div>
+        )}
+
+        {arrowElement}
+      </div>
     </div>
-  ), [tooltipId, position, isVisible, finalLabel, finalDesc, parsedDesc, depth]);
+  );
 
   const WrapperTag = as;
   const wrapperStyle = as === 'g' ? undefined : { display: 'inline-block' as const, cursor: 'inherit' as const };
 
   return (
     <>
-      {/* Trigger wrapper */}
       <WrapperTag
         ref={triggerRef as any}
         onPointerEnter={handlePointerEnter}
@@ -368,7 +479,6 @@ export const Tooltip = React.memo(function Tooltip({
         {children}
       </WrapperTag>
 
-      {/* Portal tooltip */}
       {isVisible && position && createPortal(tooltipContent, document.body)}
     </>
   );

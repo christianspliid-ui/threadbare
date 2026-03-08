@@ -316,7 +316,9 @@ describe('Tooltip', () => {
     expect(screen.getByText('Just Label')).toBeInTheDocument();
 
     // Check that the label div doesn't have bottom margin when no desc
-    const labelDiv = tooltip.firstChild as HTMLElement;
+    // tooltip > inner container > label div
+    const innerContainer = tooltip.firstChild as HTMLElement;
+    const labelDiv = innerContainer.firstChild as HTMLElement;
     const style = window.getComputedStyle(labelDiv);
     expect(style.marginBottom).toBe('0px');
   });

@@ -75,8 +75,21 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
   const events: TickEvent[] = [];
   const graph = state.graph;
 
+  // Filter individuals but EXCLUDE the player's avatar — the avatar must not
+  // die from old age, low reputation, or migrate via lifecycle mechanics.
+  const avatarNodeIds = new Set<string>();
+  {
+    const ascendantNode = graph.getNode(state.ascendantId);
+    if (ascendantNode) {
+      const avatarEdges = graph.getIncomingEdges(state.ascendantId, 'avatar_of');
+      for (const e of avatarEdges) {
+        avatarNodeIds.add(e.source);
+      }
+    }
+  }
+
   const actors = graph.getNodesByType('actor').filter(
-    n => n.properties.actorType === 'individual'
+    n => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id)
   );
 
   let deathOccurred = false;
@@ -209,7 +222,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
   // ── Migrations ─────────────────────────────────────────
   const remainingActors = graph.getNodesByType('actor').filter(
-    n => n.properties.actorType === 'individual'
+    n => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id)
   );
 
   for (const actor of remainingActors) {
