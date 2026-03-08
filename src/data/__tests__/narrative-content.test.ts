@@ -7,6 +7,10 @@ import {
   VALUE_FLAVORS,
   ARCHETYPE_EVENT_TEMPLATES,
   DILEMMA_STAKES_PROSE,
+  SPHERE_INFLUENCE_EVENTS,
+  SEASONAL_VOCABULARY,
+  ECHO_FLAVOR_TEXTS,
+  STEALTH_DETECTION_PROSE,
 } from '../narrative-content';
 
 describe('narrative-content expanded', () => {
@@ -287,6 +291,103 @@ describe('narrative-content expanded', () => {
       const dramaticWords = ['shattered', 'eternal', 'transcendent', 'profound', 'desperate', 'legendary'];
       const highDramaticCount = dramaticWords.filter(w => highProse.includes(w)).length;
       expect(highDramaticCount).toBeGreaterThanOrEqual(0); // Will at least exist
+    });
+  });
+
+  describe('connective tissue content', () => {
+    it('should have 16 sphere influence events (8 spheres × 2 directions)', () => {
+      expect(Object.keys(SPHERE_INFLUENCE_EVENTS)).toHaveLength(16);
+    });
+
+    it('each sphere influence event should be a non-empty string', () => {
+      for (const [key, prose] of Object.entries(SPHERE_INFLUENCE_EVENTS)) {
+        expect(typeof prose, `${key} should be a string`).toBe('string');
+        expect(prose.length, `${key} is empty`).toBeGreaterThan(10);
+      }
+    });
+
+    it('should have entries for all 8 spheres at gaining/losing', () => {
+      const spheres = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
+      const directions = ['gaining', 'losing'];
+      for (const sphere of spheres) {
+        for (const direction of directions) {
+          const key = `${sphere}.${direction}`;
+          expect(SPHERE_INFLUENCE_EVENTS).toHaveProperty(key);
+        }
+      }
+    });
+
+    it('should have 4 seasonal vocabulary entries', () => {
+      expect(Object.keys(SEASONAL_VOCABULARY)).toHaveLength(4);
+    });
+
+    it('each season should have adjectives, verbs, and atmosphere', () => {
+      const seasons = ['spring', 'summer', 'autumn', 'winter'];
+      for (const season of seasons) {
+        expect(SEASONAL_VOCABULARY).toHaveProperty(season);
+        const seasonData = SEASONAL_VOCABULARY[season];
+        expect(seasonData.adjectives.length).toBeGreaterThanOrEqual(5);
+        expect(seasonData.verbs.length).toBeGreaterThanOrEqual(5);
+        expect(seasonData.atmosphere.length).toBeGreaterThan(10);
+      }
+    });
+
+    it('should have 12 echo flavor texts', () => {
+      expect(ECHO_FLAVOR_TEXTS).toHaveLength(12);
+    });
+
+    it('each echo flavor text should be a non-empty string', () => {
+      for (let i = 0; i < ECHO_FLAVOR_TEXTS.length; i++) {
+        const text = ECHO_FLAVOR_TEXTS[i];
+        expect(typeof text, `echo[${i}] should be a string`).toBe('string');
+        expect(text.length, `echo[${i}] is empty`).toBeGreaterThan(10);
+      }
+    });
+
+    it('echo flavor texts should contain placeholders', () => {
+      for (let i = 0; i < ECHO_FLAVOR_TEXTS.length; i++) {
+        const text = ECHO_FLAVOR_TEXTS[i];
+        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(text);
+        expect(hasPlaceholder, `echo[${i}] missing placeholders: "${text.slice(0, 50)}..."`).toBe(true);
+      }
+    });
+
+    it('should have 8 stealth detection prose entries', () => {
+      expect(Object.keys(STEALTH_DETECTION_PROSE)).toHaveLength(8);
+    });
+
+    it('each stealth detection prose should be a non-empty string', () => {
+      for (const [key, prose] of Object.entries(STEALTH_DETECTION_PROSE)) {
+        expect(typeof prose, `${key} should be a string`).toBe('string');
+        expect(prose.length, `${key} is empty`).toBeGreaterThan(10);
+      }
+    });
+
+    it('should have entries for mortal and rival detection transitions', () => {
+      const keys = [
+        'mortal.unaware_to_suspicion',
+        'mortal.suspicion_to_realization',
+        'mortal.realization_to_worship',
+        'mortal.worship_to_fanaticism',
+        'rival.unaware_to_suspicion',
+        'rival.suspicion_to_investigation',
+        'rival.investigation_to_confirmation',
+        'rival.confirmation_to_opposition',
+      ];
+      for (const key of keys) {
+        expect(STEALTH_DETECTION_PROSE).toHaveProperty(key);
+      }
+    });
+
+    it('all sphere influence and stealth detection prose should contain placeholders', () => {
+      for (const [key, prose] of Object.entries(SPHERE_INFLUENCE_EVENTS)) {
+        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
+        expect(hasPlaceholder, `${key} missing placeholders`).toBe(true);
+      }
+      for (const [key, prose] of Object.entries(STEALTH_DETECTION_PROSE)) {
+        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
+        expect(hasPlaceholder, `${key} missing placeholders`).toBe(true);
+      }
     });
   });
 });
