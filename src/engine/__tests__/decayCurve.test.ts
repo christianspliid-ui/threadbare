@@ -48,6 +48,13 @@ describe('getCurrentStrength', () => {
     }, 105);
     expect(strength).toBeCloseTo(0.70 * Math.exp(-0.10 * 5), 2);
   });
+
+  it('returns initialStrength when currentTick < tickApplied (negative elapsed)', () => {
+    const strength = getCurrentStrength({
+      initialStrength: 0.70, decayRate: 0.10, minimumStrength: 0.05, maxDuration: 30, tickApplied: 10,
+    }, 5);
+    expect(strength).toBeCloseTo(0.70);
+  });
 });
 
 describe('DECAY_CONSTANTS', () => {
