@@ -29,6 +29,11 @@ export const DEFAULT_COLS = 20;
 export const DEFAULT_ROWS = 15;
 export const DEFAULT_TICKS_PER_SEASON = 90;
 
+/** How many seeded individuals start as initial worshippers of the ascendant. */
+export const INITIAL_WORSHIPPER_COUNT = { min: 3, max: 5 };
+/** Starting influence tier for initial worshippers. */
+export const INITIAL_WORSHIPPER_TIER = 1;
+
 // ─── Game Initialization ──────────────────────────────────────────
 
 /**
@@ -64,7 +69,7 @@ export function initializeGameState(
   const tiles = generateWorld(cosmology, cols, rows, seed);
 
   // Seed the world graph with actors, locations, artifacts
-  const { graph } = seedWorld(cosmology, tiles, seed);
+  const { graph, individualIds } = seedWorld(cosmology, tiles, seed);
 
   // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {
@@ -106,6 +111,39 @@ export function initializeGameState(
       formDescription: `The mortal vessel of ${archetype.title}`,
     },
   });
+
+  // ── Seed initial worshippers ─────────────────────────────────
+  // Give the player a starting retinue so the action wheel is usable from tick 0.
+  // Pick 3-5 random individuals and establish worships edges at tier 1.
+  {
+    // Use a deterministic sub-PRNG so this doesn't change existing seeding
+    let ws = (seed + 13337) | 0;
+    const worshipRng = () => {
+      ws = (ws + 0x6d2b79f5) | 0;
+      let t = Math.imul(ws ^ (ws >>> 15), 1 | ws);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+
+    const count = INITIAL_WORSHIPPER_COUNT.min +
+      Math.floor(worshipRng() * (INITIAL_WORSHIPPER_COUNT.max - INITIAL_WORSHIPPER_COUNT.min + 1));
+    const candidates = [...individualIds];
+    // Shuffle candidates deterministically
+    for (let i = candidates.length - 1; i > 0; i--) {
+      const j = Math.floor(worshipRng() * (i + 1));
+      [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+    }
+    const worshippers = candidates.slice(0, Math.min(count, candidates.length));
+    for (const indId of worshippers) {
+      graph.addEdge({
+        id: `edge_worship_init_${indId}`,
+        source: indId,
+        target: ascendantId,
+        type: 'worships',
+        properties: { tier: INITIAL_WORSHIPPER_TIER, devotion: 50 },
+      });
+    }
+  }
 
   // Generate rival gods
   const rivalDefs = generateRivals(cosmology, seed);
