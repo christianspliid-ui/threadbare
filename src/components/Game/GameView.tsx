@@ -1,13 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
 import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-import type { GameState } from '../../types/gameState';
-import { recalcVisibility, collectLOSSources } from '../../engine/visibility';
 import { useSimulation } from './hooks/useSimulation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
+import { useViewNavigation } from './hooks/useViewNavigation';
+export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
@@ -29,10 +28,6 @@ import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { AvatarHUD } from './AvatarHUD';
-import type { HexMapHandle } from '../HexMap/HexMap';
-import { moveAvatarToHex } from '../../engine/avatarMove';
-
-export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -49,15 +44,28 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setSpeed, seasonName, year, maxEssence, COLS, ROWS,
   } = useSimulation({ archetype, avatarName, cosmology, seed });
 
-  // ── Local state ──
-  const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
-  const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
-  const [viewLevel, setViewLevel] = useState<ViewLevel>('world');
-  const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
-  const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
-  const [moveMode, setMoveMode] = useState(false);
+  // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
+  const {
+    avatarPos,
+    sphereColor,
+    locationOverlays,
+    avatarPixelPos,
+    debugPanelOpen,
+    handleToggleDebug,
+  } = useAvatarData({
+    graph: gameState.graph,
+    ascendantId: gameState.ascendantId,
+    archetype,
+  });
 
-  const hexMapRef = useRef<HexMapHandle>(null);
+  // ── View navigation hook ──
+  const {
+    hoveredHex, setHoveredHex, selectedHex, viewLevel,
+    focusedHex, focusedLocationId, moveMode, hexMapRef,
+    handleHexClick, handleLocationDoubleClick, handleBackToWorld,
+    handleBackToHex, handleLocationClick, handleCenterOnAvatar,
+    handleAvatarMoveClick, handleHexClickMove,
+  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS });
 
   // ── Scry hook ──
   const {
@@ -98,7 +106,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     onOpenScry: handleOpenScry,
   });
 
-  // Hex zoom derived data
+  // ── Hex zoom derived data ──
   const {
     hexLocations,
     hexAgentsByLocation,
@@ -114,78 +122,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     focusedHex,
     focusedLocationId,
   });
-
-  // Avatar position, sphere color, location overlays, avatar pixel position, and debug panel
-  const {
-    avatarPos,
-    sphereColor,
-    locationOverlays,
-    avatarPixelPos,
-    debugPanelOpen,
-    handleToggleDebug,
-  } = useAvatarData({
-    graph: gameState.graph,
-    ascendantId: gameState.ascendantId,
-    archetype,
-  });
-
-  // Handlers for view-level state
-
-  const handleHexClick = useCallback((coord: { col: number; row: number }) => {
-    setSelectedHex(coord);
-    setViewLevel('hex-zoom');
-    setFocusedHex(coord);
-  }, []);
-
-  const handleLocationDoubleClick = useCallback((locationId: string) => {
-    setViewLevel('location');
-    setFocusedLocationId(locationId);
-  }, []);
-
-  const handleBackToWorld = useCallback(() => {
-    setViewLevel('world');
-    setFocusedHex(null);
-    setFocusedLocationId(null);
-  }, []);
-
-  const handleBackToHex = useCallback(() => {
-    setViewLevel('hex-zoom');
-    setFocusedLocationId(null);
-  }, []);
-
-  const handleLocationClick = useCallback((_locationId: string) => {
-    // Future: show info tooltip
-  }, []);
-
-  const handleCenterOnAvatar = useCallback(() => {
-    if (avatarPixelPos && hexMapRef.current) {
-      hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 3.0);
-    }
-  }, [avatarPixelPos]);
-
-  const handleAvatarMoveClick = useCallback(() => {
-    setMoveMode(true);
-  }, []);
-
-  // Handle hex click in move mode
-  const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
-    if (moveMode) {
-      // Move avatar to target hex
-      moveAvatarToHex(gameState.graph, gameState.ascendantId, coord);
-      // Recalculate visibility
-      const losSources = collectLOSSources(gameState.graph, gameState.ascendantId, []);
-      const newVisibilityMap = recalcVisibility(gameState.visibilityMap, losSources, gameState.graph, gameState.tick, COLS, ROWS);
-      setGameState(prev => ({
-        ...prev,
-        visibilityMap: newVisibilityMap,
-      }));
-      // Exit move mode
-      setMoveMode(false);
-    } else {
-      // Normal hex click behavior
-      handleHexClick(coord);
-    }
-  }, [moveMode, gameState, handleHexClick]);
 
   return (
     <div className="min-h-screen bg-stone-900 flex flex-col">
