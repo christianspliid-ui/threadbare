@@ -67,6 +67,7 @@ export const TRACE_CATEGORY_COLORS: Record<string, string> = {
   dilemma_resolution: '#ff4444',    // red
   tick_summary: '#ca8a04',          // amber-600
   ordeal_resolution: '#10b981',     // green (ordeal progress)
+  familiarity_change: '#fbbf24',    // amber-400 (knowledge/connection growth)
 };
 
 // ============================================================================

@@ -398,6 +398,7 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
       const levelChanged = checkThresholdCrossed(oldFamiliarity, newFamiliarity);
 
       // Emit trace for this familiarity gain
+      const gain = FAMILIARITY_GAINS.proximity;
       emitTrace({
         tick: state.tick,
         category: 'familiarity_change',
@@ -409,6 +410,8 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
         newFamiliarity,
         levelChanged: levelChanged !== null,
         newLevel: levelChanged ?? undefined,
+        amount: gain,
+        multiplier: 1.0,
       });
 
       map = newMap;

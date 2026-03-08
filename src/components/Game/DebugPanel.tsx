@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace, FamiliarityChangeTrace } from '../../types/trace';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -221,6 +221,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <TickSummaryDetail trace={trace as TickSummaryTrace} />;
     case 'ordeal_resolution':
       return <OrdealResolutionDetail trace={trace as OrdealResolutionTrace} />;
+    case 'familiarity_change':
+      return <FamiliarityChangeDetail trace={trace as FamiliarityChangeTrace} />;
     default:
       return <FallbackDetail trace={trace} />;
   }
@@ -470,6 +472,47 @@ const OrdealResolutionDetail = React.memo(function OrdealResolutionDetail({ trac
           ))}
         </>
       )}
+    </div>
+  );
+});
+
+const FamiliarityChangeDetail = React.memo(function FamiliarityChangeDetail({ trace }: { trace: FamiliarityChangeTrace }) {
+  const thresholdColor = TRACE_CATEGORY_COLORS.familiarity_change;
+
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Actor</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.actorName}</div>
+      </div>
+      <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+        <div style={DETAIL_LABEL_STYLE}>Level</div>
+        <div
+          style={{
+            ...DETAIL_VALUE_STYLE,
+            fontWeight: trace.levelChanged ? 600 : 400,
+            color: trace.levelChanged ? thresholdColor : PANEL_STYLES.textColor,
+          }}
+        >
+          {trace.newLevel ? `${trace.newLevel} (changed)` : 'No change'}
+        </div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Familiarity</div>
+        <div style={DETAIL_VALUE_STYLE}>
+          {trace.oldFamiliarity.toFixed(2)} → {trace.newFamiliarity.toFixed(2)}
+        </div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Source</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.source}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Amount</div>
+        <div style={DETAIL_VALUE_STYLE}>
+          +{trace.amount.toFixed(2)} (×{trace.multiplier.toFixed(1)})
+        </div>
+      </div>
     </div>
   );
 });
