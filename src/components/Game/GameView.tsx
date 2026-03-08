@@ -4,6 +4,8 @@ import type { AscendantArchetype } from '../../types/influence';
 import type { GameState } from '../../types/gameState';
 import { recalcVisibility, collectLOSSources } from '../../engine/visibility';
 import { useSimulation } from './hooks/useSimulation';
+import { useHexZoomData } from './hooks/useHexZoomData';
+import { useAvatarData } from './hooks/useAvatarData';
 
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
@@ -31,13 +33,6 @@ import {
 } from '../../engine/scry';
 import type { ScryState } from '../../types/scry';
 import type { Title } from '../../types/scry';
-import {
-  getLocationsInHex,
-  getAgentsAtLocation,
-  getHexSphereInfluence,
-  getLineOfSight,
-  getLocationConnections,
-} from '../../engine/hexZoom';
 import { getAgentWheelSlots } from '../../engine/wheel';
 import { getDeliveryInfo } from '../../engine/delivery';
 import { executeIntervention } from '../../engine/dream';
@@ -49,17 +44,13 @@ import {
   getBeliefsStrand,
   getFearsStrand,
 } from '../../engine/strands';
-import type { LocationSubtype } from '../../types';
 import type { LocalEncounterMode, InterventionType } from '../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
-import { enableTracing, disableTracing } from '../../engine/traceBuffer';
 import { AvatarHUD } from './AvatarHUD';
 import type { HexMapHandle } from '../HexMap/HexMap';
-import { getAvatarHexPosition } from '../../engine/visibility';
 import { moveAvatarToHex } from '../../engine/avatarMove';
-import { hexToPixel } from '../../lib/hexMath';
 
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
@@ -68,17 +59,6 @@ interface GameViewProps {
   avatarName: string;
   cosmology: CosmologyProfile;
   seed: number;
-}
-
-/** Settlement priority for overlay conflicts — larger settlements win */
-const SETTLEMENT_PRIORITY: Partial<Record<LocationSubtype, number>> = {
-  capital: 10, city: 8, town: 6, hamlet: 4,
-  fort: 3, castle: 3, temple: 3, tower: 2, shrine: 2,
-  mining: 2, camp: 1, farmland: 1, ruins: 1,
-  battleground: 1, oasis: 1, unexplored_poi: 0,
-};
-function settlementPriority(subtype: LocationSubtype): number {
-  return SETTLEMENT_PRIORITY[subtype] ?? 0;
 }
 
 export function GameView({ archetype, avatarName, cosmology, seed }: GameViewProps) {
@@ -106,7 +86,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [scryVisible, setScryVisible] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
   const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
-  const [debugPanelOpen, setDebugPanelOpen] = useState(false);
 
   const hexMapRef = useRef<HexMapHandle>(null);
 
@@ -132,89 +111,35 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   }, [selectedAgentId, wheelVisible, gameState.essencePool, retinueAgents, archetype]);
 
   // Hex zoom derived data
-  const hexLocations = useMemo(() => {
-    if (!focusedHex) return [];
-    return getLocationsInHex(gameState.graph, focusedHex.col, focusedHex.row);
-  }, [gameState.graph, focusedHex]);
+  const {
+    hexLocations,
+    hexAgentsByLocation,
+    hexConnections,
+    hexSphereInfluence,
+    hexLineOfSight,
+    hexTotalAgents,
+    focusedLocation,
+    focusedLocationAgents,
+  } = useHexZoomData({
+    graph: gameState.graph,
+    ascendantId: gameState.ascendantId,
+    focusedHex,
+    focusedLocationId,
+  });
 
-  const hexAgentsByLocation = useMemo(() => {
-    const map: Record<string, ReturnType<typeof getAgentsAtLocation>> = {};
-    for (const loc of hexLocations) {
-      map[loc.id] = getAgentsAtLocation(gameState.graph, loc.id);
-    }
-    return map;
-  }, [gameState.graph, hexLocations]);
-
-  const hexConnections = useMemo(() => {
-    return getLocationConnections(gameState.graph, hexLocations.map(l => l.id));
-  }, [gameState.graph, hexLocations]);
-
-  const hexSphereInfluence = useMemo(() => {
-    if (!focusedHex) return null;
-    return getHexSphereInfluence(gameState.graph, focusedHex.col, focusedHex.row);
-  }, [gameState.graph, focusedHex]);
-
-  const hexLineOfSight = useMemo(() => {
-    if (!focusedHex) return 'none' as const;
-    return getLineOfSight(gameState.graph, gameState.ascendantId, focusedHex);
-  }, [gameState.graph, gameState.ascendantId, focusedHex]);
-
-  const hexTotalAgents = useMemo(() => {
-    return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
-  }, [hexAgentsByLocation]);
-
-  const focusedLocation = useMemo(() => {
-    if (!focusedLocationId) return null;
-    return gameState.graph.getNode(focusedLocationId) ?? null;
-  }, [gameState.graph, focusedLocationId]);
-
-  const focusedLocationAgents = useMemo(() => {
-    if (!focusedLocationId) return [];
-    return getAgentsAtLocation(gameState.graph, focusedLocationId);
-  }, [gameState.graph, focusedLocationId]);
-
-  // Avatar position and sphere color
-  const avatarPos = useMemo(
-    () => getAvatarHexPosition(gameState.graph, gameState.ascendantId),
-    [gameState.graph, gameState.ascendantId]
-  );
-
-  const sphereColor = useMemo(() => {
-    // Simple mapping from primary foundation sphere to color
-    const primarySphere = archetype.sphereAlignment.primary;
-    const sphereColorMap: Record<string, string> = {
-      chaos: '#ff6633',
-      order: '#3366ff',
-      light: '#ffdd44',
-      darkness: '#9933cc',
-    };
-    return sphereColorMap[primarySphere] ?? '#ff6633';
-  }, [archetype.sphereAlignment.primary]);
-
-  // Build location overlay map: hex coord key → LocationSubtype for hex map rendering
-  const locationOverlays = useMemo(() => {
-    const overlayMap = new Map<string, LocationSubtype>();
-    const nodes = gameState.graph.getNodesByType('location');
-    for (const node of nodes) {
-      const props = node.properties;
-      if (props.hexCol !== undefined && props.hexRow !== undefined && props.locationSubtype) {
-        const key = `${props.hexCol},${props.hexRow}`;
-        // If multiple locations share a hex, prefer the "largest" settlement
-        const existing = overlayMap.get(key);
-        if (!existing || settlementPriority(props.locationSubtype as LocationSubtype) > settlementPriority(existing)) {
-          overlayMap.set(key, props.locationSubtype as LocationSubtype);
-        }
-      }
-    }
-    return overlayMap;
-  }, [gameState.graph]);
-
-  // Avatar pixel position for initial zoom
-  const avatarPixelPos = useMemo(() => {
-    if (!avatarPos) return null;
-    const HEX_SIZE = 30; // matches HexMap default
-    return hexToPixel(avatarPos, HEX_SIZE);
-  }, [avatarPos]);
+  // Avatar position, sphere color, location overlays, avatar pixel position, and debug panel
+  const {
+    avatarPos,
+    sphereColor,
+    locationOverlays,
+    avatarPixelPos,
+    debugPanelOpen,
+    handleToggleDebug,
+  } = useAvatarData({
+    graph: gameState.graph,
+    ascendantId: gameState.ascendantId,
+    archetype,
+  });
 
   // Handlers
   const handleAgentSelect = useCallback((agentId: string) => {
@@ -355,24 +280,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const handleLocationClick = useCallback((_locationId: string) => {
     // Future: show info tooltip
   }, []);
-
-  const handleToggleDebug = useCallback(() => {
-    setDebugPanelOpen(prev => {
-      const next = !prev;
-      if (next) enableTracing();
-      else disableTracing();
-      return next;
-    });
-  }, []);
-
-  // Backtick keyboard shortcut for debug panel
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === '`') handleToggleDebug();
-    };
-    document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [handleToggleDebug]);
 
   const handleBackFromAgentDetail = useCallback(() => {
     setSelectedAgentId(null);
