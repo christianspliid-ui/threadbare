@@ -20,6 +20,7 @@ import type { EchoDefinition, EchoState } from './echo';
 import type { GreatChronicle } from './chronicle';
 import type { WorldGraph } from '../engine/graph';
 import type { VisibilityMap } from './visibility';
+import type { FamiliarityMap } from './familiarity';
 
 // ─── Game Phase ─────────────────────────────────────────────────
 
@@ -79,6 +80,9 @@ export interface GameState {
 
   // Fog of War
   visibilityMap: VisibilityMap;      // hexCol,hexRow -> visibility state and snapshot
+
+  // Knowledge Fog of War
+  familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
 
   // Ordeals (agent growth narratives)
   ordealProgress: OrdealProgress[];
