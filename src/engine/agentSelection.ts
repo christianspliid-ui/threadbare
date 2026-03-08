@@ -15,6 +15,8 @@ import type {
 import { applyDispositionModifier } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { emitTrace } from './traceBuffer';
+import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
+import type { DivineInfluenceEntry } from '../types/dream';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -144,6 +146,20 @@ export function runSelectionPipeline(
     candidateIds: scored.map((c) => c.templateId),
     scores: scored.map((c) => c.score),
   });
+
+  // Step 1.5: Apply Divine Influence Overlay
+  const divineInfluences = getDivineInfluences(graph, actorId);
+  if (divineInfluences.length > 0) {
+    const overlayProfile = buildValueOverlay(profile, divineInfluences);
+    // Re-score with overlaid profile
+    scored = scoreByGoalAlignment(scored, overlayProfile);
+    stages.push({
+      stageName: 'divine_influence_overlay',
+      candidateIds: scored.map((c) => c.templateId),
+      scores: scored.map((c) => c.score),
+      notes: `${divineInfluences.length} active influence(s)`,
+    });
+  }
 
   // Step 2: Apply disposition modifier (game theory)
   // Group candidates by target and apply modifier per target
