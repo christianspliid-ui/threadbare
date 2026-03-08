@@ -72,7 +72,7 @@ Three orthogonal dimensions define the world:
 These guide every code architecture decision. When in tension, higher priorities win.
 
 1. **Tunability** — Every magic number is a named constant. Changing game feel should mean changing a number, not rewriting logic. Group constants at the top of each module or in the type file.
-2. **Inspectability** — You must be able to trace *why* something happened. Flat state objects (loggable, diffable), pure functions (testable in isolation), causal event trails. No hidden state in closures or singletons.
+2. **Inspectability** — You must be able to trace *why* something happened. Flat state objects (loggable, diffable), pure functions (testable in isolation), causal event trails. No hidden state in closures or singletons. All engine modules must emit structured traces via `emitTrace()` from `src/engine/traceBuffer.ts`. The debug panel (backtick key in-game) is the primary inspectability tool — if you can't see a decision or outcome in the panel, it's not inspectable. New trace categories follow a 3-step recipe: define interface, add to union, call emitTrace.
 3. **Determinism** — Seeded PRNG everywhere. Same seed + same inputs = same outputs. Essential for debugging ("broke on seed 42 tick 300") and replay ("I liked seed 7, let me tweak doom speed and replay").
 4. **Fail-soft** — The tick loop must never crash. Missing data → graceful fallback (idle, placeholder prose, skip), never thrown exceptions that kill the game. Validate inputs at boundaries, trust within.
 5. **Narrative over mechanical perfection** — When mechanical correctness and interesting narrative diverge, lean toward the story. This is a god-game, not a spreadsheet. Slightly unfair outcomes that create drama > perfectly balanced boredom.
@@ -280,6 +280,18 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — optional FoundationBalances param, cultureIds in SeedResult, culture generation + assignment phases | Culture generator wired into world seeding pipeline |
 | 2026-03-07 | Repo: tests | Created cultureGenerator.test.ts (19 tests), culture-integration.test.ts (4 tests), extended worldSeed.test.ts (+6 tests), culture-content.test.ts (+4 tests) — 33 new culture tests | Full culture generator test coverage |
 | 2026-03-07 | CLAUDE.md | Updated project status (culture generator Pass 1 complete), engine stats (~111 modules, ~20,971 lines), changelog | Culture generator documentation |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-debug-trace-panel-design.md, 2026-03-07-debug-trace-panel-implementation.md | Design doc (6 decisions, full UI spec) + 11-task TDD implementation plan for debug trace panel |
+| 2026-03-07 | Repo: src/types/ | Created trace.ts (96 lines) — TraceBase, PipelineStageSnapshot, 5 trace category interfaces, TraceEntry discriminated union, TRACE_CATEGORIES | Trace type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created traceBuffer.ts (75 lines) — ring buffer (500 entries), emitTrace, getTraces, getTracesForAgent, enable/disable/clear, zero-cost boolean toggle | Trace buffer engine |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — tick_summary trace at end of runTick() | Tick-level tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified agentSelection.ts — action_selection trace with 5-stage pipeline snapshots | Action selection tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified narrative.ts — narrative_generation trace in generateRoutineProse/generateNotableProse | Narrative generation tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified contextBuilder.ts — context_harvest trace with harvestedCount, rankedTop, oppositionTension | Context harvest tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified disposition.ts — dilemma_resolution trace with strategies, moves, outcome, stakes, deltas | Dilemma resolution tracing |
+| 2026-03-07 | Repo: src/components/Game/ | Created DebugPanel.tsx (510 lines) — 480px right-side drawer, 3 modes (Feed/Agent Follow/Tick Inspector), 5 category-specific renderers, Threadbare styling | Debug trace panel UI |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — backtick toggle, Debug pill button, right sidebar replacement with DebugPanel | Debug panel GameView wiring |
+| 2026-03-07 | Repo: tests | Created 10 test files for trace system: trace.test.ts (7), traceBuffer.test.ts (8), traceBuffer-orchestrator (5), traceBuffer-actions (6), traceBuffer-narrative (14), traceBuffer-context (7), traceBuffer-dilemma (11), traceBuffer-integration (10), DebugPanel.test.tsx (14), GameView-debug.test.tsx (6) — 88 new tests | Full trace system test coverage |
+| 2026-03-07 | CLAUDE.md | Updated §2 Inspectability (tracing requirement), §Session Workflow (tracing step), project status, changelog | Debug trace panel documentation |
 
 ## Session Workflow
 
@@ -294,6 +306,7 @@ When starting implementation work:
    - Update affected Obsidian vault notes (add new system notes, update existing ones with new concepts)
    - Append entries to the changelog below
    - Update the Project Status section in this file (phase status, engine stats)
+6. **Tracing**: Any new engine module that makes decisions or generates content must call `emitTrace()` with a structured trace entry. Verify new traces appear in the debug panel (backtick key) before considering the feature complete.
 
 **This is non-negotiable.** Documentation updates happen immediately after integration and testing, in the same session, not "later."
 
@@ -345,7 +358,8 @@ Repetitive workflows are a signal to invest in a reusable skill. If you notice y
 - Culture Content Data: ✅ Complete — 1,789-line content package with 163 entries (4 foundation + 8 creation sphere + 22 biome modifiers, 35 formative + 45 behavioral trait seeds, 25 insider beats, 18 sub-location templates, 6 artifact lore patterns), 9 lookup functions, 577 tests
 - Narrative Context Builder (Pass 1): ✅ Complete — harvest→rank→select→build pipeline with opposition tension scoring, wired into phaseNarrative, chronicle entries now world-aware with ranked context objects. 4 new files (contextBuilder.ts 443 lines, opposition-content.ts 112 lines, 3 test files), 60 new tests across 5 test files
 - Culture Generator (Pass 1): ✅ Complete — belongs_to edge type, CultureIdentity types + 5 constants, composeCultureIdentity (foundation × sphere × biome merger), generateCultureName (pattern-based), generateCultures (2-4 per world), assignCulturesToActors (70/20/10 budget model), wired into seedWorld with optional FoundationBalances param. 3 new files (culture.ts types, cultureGenerator.ts 314 lines, culture-integration.test.ts), name fragments added to culture-content.ts, 29 new culture tests + 6 seedWorld integration tests + 4 culture integration tests
-- Current phase: **Culture generator Pass 1 complete** — next up: Pass 2 (spawning, beat promotion, chronicler vignettes) or culture drift mechanics
-- Engine stats: ~111 modules, ~20,971 lines, ~1,491+ engine/data tests across 97 test files
+- Debug Trace Panel: ✅ Complete — 5 trace categories (action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary), ring buffer (500 entries), zero-cost toggle, 480px right-side drawer with 3 modes (Feed/Agent Follow/Tick Inspector), 5 category-specific renderers, backtick keyboard shortcut, Threadbare styling. 13 new files (2 types, 1 engine, 1 component, 10 test files), 88 new tests, 5 existing engine files instrumented
+- Current phase: **Debug trace panel complete** — next up: Pass 2 culture (spawning, beat promotion, chronicler vignettes) or culture drift mechanics
+- Engine stats: ~116 modules, ~22,000+ lines, ~1,579+ engine/data tests across 107 test files
 - Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 11 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789+ lines / 581+ tests, opposition-content.ts = 112 lines / 22 tests)
 
