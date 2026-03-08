@@ -12,6 +12,7 @@
  * 3. NOTABLE_TEMPLATES — 23 event-type templates for Tier 2 prose with personality
  * 4. LIFECYCLE_TEMPLATES — 3 lifecycle events with 11 templates total
  * 5. VALUE_FLAVORS — personality modifiers for 10 value pairs
+ * 6. ARCHETYPE_EVENT_TEMPLATES — 58+ archetype-specific templates for high-impact event/archetype combos
  */
 
 import type { SphereName } from '../types/index';
@@ -373,4 +374,113 @@ export const VALUE_FLAVORS: Partial<Record<ValuePair, string[]>> = {
   dominance_humility: ['commanding all before them', 'asserting dominion'],
   wrath_patience: ['with patient deliberation', 'measured and calm'],
   greed_generosity: ['with open-handed generosity', 'sharing freely'],
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// 6. ARCHETYPE-EVENT TEMPLATES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Archetype-specific prose templates for high-impact event combos.
+ * Keys are "{archetype}.{event_type}". Each template is a standalone prose block
+ * with {placeholder} variables for substitution.
+ *
+ * Strategy:
+ * - 5 priority archetypes × 6 priority events = 30 entries
+ * - All 19 archetypes × (death + tier_transition) = 38 unique entries (10 overlap with priority)
+ * - Total unique: 30 + (14 × 2) = 58 minimum
+ *
+ * Each archetype's prose voice should be DISTINCT:
+ * - tragic_hero: fatalistic, measured, inevitably doomed
+ * - trickster: witty, subversive, playful
+ * - conqueror: martial, dominating, triumphant
+ * - healer: compassionate, restorative, nurturing
+ * - prophet: mystical, visionary, foreboding
+ * - guardian: protective, steadfast, noble
+ * - wanderer: restless, seeking, philosophical
+ * - scholar: analytical, learned, curious
+ * - martyr: sacrificial, righteous, resolute
+ * - tyrant: brutal, controlling, absolute
+ * - mystic: ethereal, transcendent, cryptic
+ * - rebel: defiant, revolutionary, passionate
+ * - builder: constructive, ambitious, methodical
+ * - mentor: wise, patient, guiding
+ * - outcast: isolated, bitter, resilient
+ * - diplomat: conciliatory, subtle, strategic
+ * - hunter: predatory, focused, relentless
+ * - dreamer: imaginative, hopeful, ephemeral
+ * - avenger: vengeful, implacable, retributive
+ */
+export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
+  // TRAGIC_HERO — 6 priority events
+  'tragic_hero.actor_death': 'In the end, {actor} fell as tragic heroes must — reaching for glory and finding only the {adj} price of it. The threads they sought to untangle became the noose that bound them.',
+  'tragic_hero.action_critical': '{actor} seized the moment with {adj} resolve, but those who knew the tragic hero\'s pattern saw the cost already gathering in the shadows. Success and doom are siblings.',
+  'tragic_hero.tier_transition': '{actor} ascends, and the weight of the tragic hero\'s destiny grows heavier with each step upward. Power awaits those willing to pay what fate demands.',
+  'tragic_hero.divine_intervention': 'The gods reached for {actor}, yet the tragic hero\'s fate was already written in threads of {adj} consequence. Divine favor and divine curse are the same wound.',
+  'tragic_hero.contested_action': '{actor} fought for what mattered most, knowing as only a tragic hero can that victory and loss are carved from the same stone. The struggle was the point all along.',
+  'tragic_hero.ordeal_completed': '{actor} emerged from the ordeal transformed, the tragic hero\'s scars now written deeper than skin. Each trial was a step closer to the {adj} end they always knew was coming.',
+
+  // TRICKSTER — 6 priority events
+  'trickster.actor_death': '{actor} played one trick too many, and the universe had the last laugh. In death, the trickster finally found a game they could not cheat.',
+  'trickster.action_critical': '{actor} pulled off the impossible with a {adj} flourish, proving once again that wit cuts deeper than swords. The world would never see it coming.',
+  'trickster.tier_transition': '{actor} has climbed higher, and the trickster\'s grin grew wider still. More power, more games, more delicious chaos to orchestrate.',
+  'trickster.divine_intervention': 'The gods tried to play by mortal rules, but {actor} had already subverted the game. The trickster always has one more card hidden up their sleeve.',
+  'trickster.contested_action': '{actor} turned the tables with a {adj} trick, leaving their opponents wondering if they were ever truly in control. The best lies are wrapped in truth.',
+  'trickster.ordeal_completed': '{actor} escaped the ordeal through wit and misdirection, laughing all the way. The trickster\'s greatest magic is making people believe what never was.',
+
+  // CONQUEROR — 6 priority events
+  'conqueror.actor_death': 'The {adj} reign of {actor} came to an end, yet the lands they conquered remain forever marked by their passage. Conquerors die, but empires endure.',
+  'conqueror.action_critical': '{actor} struck with overwhelming force, shattering all resistance. The conqueror\'s {adj} will bent the world to their vision.',
+  'conqueror.tier_transition': '{actor} stands taller now, their dominion expanding ever outward. The conqueror\'s hunger only grows with each crown claimed.',
+  'conqueror.divine_intervention': 'Even the gods bowed before {actor}\'s {adj} ambition. The conqueror takes what they desire, divine or otherwise.',
+  'conqueror.contested_action': '{actor} overpowered their foe with {adj} might, proving once again that strength conquers all. Victory tastes sweetest when won by force.',
+  'conqueror.ordeal_completed': '{actor} triumphed over the ordeal\'s {adj} trials, emerging stronger and more ruthless. The conqueror pays the cost and calls it power.',
+
+  // HEALER — 6 priority events
+  'healer.actor_death': '{actor} gave their last breath to mend the wounds of others, a final {adj} mercy. The healer\'s greatest gift was teaching us to cherish those they saved.',
+  'healer.action_critical': '{actor} moved with {adj} grace, mending what was broken and restoring what was lost. The healer\'s touch brought hope where only suffering had dwelt.',
+  'healer.tier_transition': '{actor} rises in power, their gift for restoration growing {adj} and more profound. With greater strength comes the capacity to heal deeper wounds.',
+  'healer.divine_intervention': 'The gods smiled upon {actor}\'s {adj} work, blessing the hands that mend and the heart that cares. Divine grace flows through those who heal.',
+  'healer.contested_action': '{actor} restored balance with {adj} wisdom, proving that healing is as powerful as any weapon. The healer\'s path is the {adj} road.',
+  'healer.ordeal_completed': '{actor} emerged from the ordeal with renewed purpose, their compassion tempered but unbroken. The healer carries the scars of others and calls them {adj}.',
+
+  // PROPHET — 6 priority events
+  'prophet.actor_death': '{actor} saw the end coming long before the final breath. The prophet\'s last vision was {adj}, a glimpse of what comes after.',
+  'prophet.action_critical': '{actor} spoke words of {adj} truth, and the world bent to match their vision. The prophet\'s foresight moved the very threads of fate.',
+  'prophet.tier_transition': '{actor}\'s power deepens, and the visions grow ever more vivid and overwhelming. The prophet pays the price of knowledge with each new revelation.',
+  'prophet.divine_intervention': 'The gods reached through {actor} to speak to the mortal world. The prophet is but a voice for forces beyond comprehension.',
+  'prophet.contested_action': '{actor} foresaw the outcome and guided events toward {adj} destiny. The prophet knew the ending long before others understood the beginning.',
+  'prophet.ordeal_completed': '{actor} emerged from the ordeal with a {adj} prophecy burning in their mind. The ordeal was a doorway to deeper sight.',
+
+  // All 19 archetypes × actor_death (6 unique to non-priority archetypes)
+  'guardian.actor_death': '{actor} fell protecting those they had sworn to defend. The guardian\'s final act was {adj}, a selfless wall against the darkness.',
+  'wanderer.actor_death': '{actor} ended their long journey far from home, but never lost to themselves. The wanderer\'s {adj} road led them to peace at last.',
+  'scholar.actor_death': '{actor}\'s vast knowledge came to rest with their final breath. The scholar\'s {adj} legacy lives on in the minds they touched.',
+  'martyr.actor_death': '{actor} went to the end {adj} and unrepentant, faith unshaken by the coming dark. The martyr\'s sacrifice echoes across ages.',
+  'tyrant.actor_death': '{actor}\'s {adj} rule came to a violent end, yet their cruelty lingers in the broken lands they leave behind. The tyrant\'s legacy is written in scars.',
+  'mystic.actor_death': '{actor}\'s spirit departed this {adj} realm, returning to the ethereal spaces from which they came.',
+  'rebel.actor_death': '{actor} fell fighting against the chains they refused to bear. The rebel\'s {adj} defiance will inspire generations yet unborn.',
+  'builder.actor_death': '{actor} left behind monuments to their vision, {adj} testament to what one determined soul could create.',
+  'mentor.actor_death': '{actor}\'s wisdom will outlive them, {adj} guiding light for all they taught. The mentor\'s {adj} legacy continues in their students.',
+  'outcast.actor_death': '{actor} died as they lived — {adj}, untethered, and utterly themselves. The outcast\'s {adj} solitude became their freedom.',
+  'diplomat.actor_death': '{actor}\'s careful words fell silent, but the bridges they built still stand {adj} and unbroken.',
+  'hunter.actor_death': '{actor}\'s hunt finally ended, the prey becoming the hunted. The hunter knew {adj} the cost of their chase.',
+  'dreamer.actor_death': '{actor}\'s {adj} visions fade into silence, yet the dreams they dreamed live on in the hearts of others.',
+  'avenger.actor_death': '{actor}\'s {adj} vendetta came to its bloody end, justice or vengeance — the distinction had long since blurred.',
+
+  // All 19 archetypes × tier_transition (6 unique to non-priority archetypes)
+  'guardian.tier_transition': '{actor} stands {adj} taller now, their shield stronger and their resolve more absolute. The guardian\'s purpose deepens with each trial overcome.',
+  'wanderer.tier_transition': '{actor} has walked farther and seen more than most, their {adj} journey taking them to places few dare follow. The wanderer\'s {adj} path continues upward.',
+  'scholar.tier_transition': '{actor}\'s knowledge expands {adj}, reaching into corners of wisdom most will never comprehend. The scholar ascends toward {adj} understanding.',
+  'martyr.tier_transition': '{actor}\'s faith has been tested and strengthened, their {adj} commitment becoming {adj} still. The martyr\'s sacrifice grows ever more profound.',
+  'tyrant.tier_transition': '{actor} claims {adj} dominion now, their {adj} rule spreading like shadow across the land. The tyrant\'s power knows no {adj} bounds.',
+  'mystic.tier_transition': '{actor} ventures deeper into the {adj} mysteries that sustain the world. The mystic\'s communion with unseen forces grows {adj} and more consuming.',
+  'rebel.tier_transition': '{actor} stands {adj} against the old order, their {adj} revolution gathering momentum. The rebel\'s defiance echoes {adj} across the battlefields.',
+  'builder.tier_transition': '{actor}\'s visions grow {adj} and more ambitious, their {adj} constructions reshaping the very landscape. The builder\'s legacy rises ever {adj}.',
+  'mentor.tier_transition': '{actor}\'s wisdom deepens with the seasons, their {adj} guidance becoming {adj} precious. The mentor\'s influence expands in {adj} circles.',
+  'outcast.tier_transition': '{actor}\'s {adj} isolation has become {adj} strength, their rejection of society now their greatest asset. The outcast rises {adj}, unburdened by connection.',
+  'diplomat.tier_transition': '{actor}\'s influence grows {adj} through {adj} negotiation and {adj} grace. The diplomat\'s {adj} networks expand in all directions.',
+  'hunter.tier_transition': '{actor} has proven themselves the apex predator, their {adj} instincts {adj} honed. The hunter ascends to {adj} ranks of legend.',
+  'dreamer.tier_transition': '{actor}\'s visions grow {adj} and more vivid, their {adj} imagination reshaping reality itself. The dreamer\'s {adj} reality bends to their will.',
+  'avenger.tier_transition': '{actor}\'s {adj} rage grows {adj} potent, their {adj} vendetta becoming an inferno. The avenger ascends into {adj} legend and {adj} terror.',
 };
