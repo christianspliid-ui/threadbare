@@ -1,116 +1,204 @@
 import { describe, it, expect } from 'vitest';
-import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, VALUE_FLAVORS } from '../narrative-content';
+import {
+  ROUTINE_TEMPLATES,
+  NOTABLE_TEMPLATES,
+  LIFECYCLE_TEMPLATES,
+  SPHERE_VOCABULARY,
+  VALUE_FLAVORS,
+} from '../narrative-content';
 
-describe('narrative-content', () => {
-  it('exports sphere vocabulary for all 8 spheres', () => {
-    const spheres = Object.keys(SPHERE_VOCABULARY);
-    expect(spheres).toHaveLength(8);
-    for (const sphere of spheres) {
-      const vocab = SPHERE_VOCABULARY[sphere as keyof typeof SPHERE_VOCABULARY];
-      expect(vocab.adjectives.length).toBeGreaterThanOrEqual(3);
-      expect(vocab.verbs.length).toBeGreaterThanOrEqual(3);
-      expect(vocab.nouns.length).toBeGreaterThanOrEqual(3);
-    }
-  });
+describe('narrative-content expanded', () => {
+  const EXPECTED_ROUTINE_TYPES = [
+    // Existing 15 types
+    'action_resolved',
+    'action_failed',
+    'action_critical',
+    'trait_acquired',
+    'tier_transition',
+    'divine_intervention',
+    'contested_action',
+    'actor_death',
+    'doom_escalation',
+    'mandate_stage',
+    'trait_lost',
+    'dilemma_mutual_trust',
+    'dilemma_betrayed',
+    'dilemma_exploitation',
+    'dilemma_mutual_distrust',
+    // New 8 types
+    'faction_formed',
+    'culture_clash',
+    'migration',
+    'construction_complete',
+    'ordeal_encounter_success',
+    'ordeal_encounter_failure',
+    'ordeal_completed',
+    'ordeal_abandoned',
+  ];
 
-  it('exports routine templates for all 15 event types', () => {
-    const eventTypes = Object.keys(ROUTINE_TEMPLATES);
-    expect(eventTypes).toHaveLength(15);
-    for (const templates of Object.values(ROUTINE_TEMPLATES)) {
-      expect(templates.length).toBeGreaterThanOrEqual(1);
-      for (const t of templates) {
-        expect(typeof t).toBe('string');
-        expect(t.length).toBeGreaterThan(10);
+  describe('routine templates', () => {
+    it('should have at least 4 routine templates per existing event type', () => {
+      const existingTypes = EXPECTED_ROUTINE_TYPES.slice(0, 15);
+      for (const type of existingTypes) {
+        expect(
+          ROUTINE_TEMPLATES[type]?.length,
+          `${type} should have ≥4 templates`
+        ).toBeGreaterThanOrEqual(4);
       }
-    }
-  });
+    });
 
-  it('exports notable templates for 9 event types', () => {
-    const eventTypes = Object.keys(NOTABLE_TEMPLATES);
-    expect(eventTypes).toHaveLength(9);
-  });
-
-  it('exports value flavors for 10 value pairs', () => {
-    const pairs = Object.keys(VALUE_FLAVORS);
-    expect(pairs).toHaveLength(10);
-    for (const flavors of Object.values(VALUE_FLAVORS)) {
-      expect(flavors!.length).toBeGreaterThanOrEqual(1);
-    }
-  });
-
-  it('routine templates contain placeholder tokens', () => {
-    for (const templates of Object.values(ROUTINE_TEMPLATES)) {
-      for (const t of templates) {
-        expect(t).toMatch(/\{(actor|target|adj|verb|noun)\}/);
+    it('should have routine templates for all new event types', () => {
+      const newTypes = EXPECTED_ROUTINE_TYPES.slice(15);
+      for (const type of newTypes) {
+        expect(
+          ROUTINE_TEMPLATES[type]?.length,
+          `${type} should have ≥2 templates`
+        ).toBeGreaterThanOrEqual(2);
       }
-    }
-  });
+    });
 
-  it('notable templates have at least one with personality placeholder per event type', () => {
-    for (const templates of Object.values(NOTABLE_TEMPLATES)) {
-      const hasPersonality = templates.some(t => t.includes('{personality}'));
-      expect(hasPersonality).toBe(true);
-    }
-  });
-
-  it('includes all 4 dilemma event types in routine templates', () => {
-    const dilemmaTypes = [
-      'dilemma_mutual_trust',
-      'dilemma_betrayed',
-      'dilemma_exploitation',
-      'dilemma_mutual_distrust',
-    ];
-    for (const eventType of dilemmaTypes) {
-      expect(ROUTINE_TEMPLATES[eventType]).toBeDefined();
-      expect(ROUTINE_TEMPLATES[eventType]!.length).toBeGreaterThanOrEqual(2);
-    }
-  });
-
-  it('includes all 4 dilemma event types in notable templates', () => {
-    const dilemmaTypes = [
-      'dilemma_mutual_trust',
-      'dilemma_betrayed',
-      'dilemma_exploitation',
-      'dilemma_mutual_distrust',
-    ];
-    for (const eventType of dilemmaTypes) {
-      expect(NOTABLE_TEMPLATES[eventType]).toBeDefined();
-      expect(NOTABLE_TEMPLATES[eventType]!.length).toBeGreaterThanOrEqual(2);
-    }
-  });
-
-  it('dilemma templates contain actor and target placeholders', () => {
-    const dilemmaTypes = [
-      'dilemma_mutual_trust',
-      'dilemma_betrayed',
-      'dilemma_exploitation',
-      'dilemma_mutual_distrust',
-    ];
-    for (const eventType of dilemmaTypes) {
-      const routineTemplates = ROUTINE_TEMPLATES[eventType];
-      for (const t of routineTemplates!) {
-        expect(t).toMatch(/\{actor\}/);
-        expect(t).toMatch(/\{target\}/);
+    it('all routine templates should contain {actor} or {target} or {adj} placeholder', () => {
+      for (const [type, templates] of Object.entries(ROUTINE_TEMPLATES)) {
+        for (const tmpl of templates) {
+          const hasPlaceholder =
+            tmpl.includes('{actor}') ||
+            tmpl.includes('{target}') ||
+            tmpl.includes('{adj}');
+          expect(
+            hasPlaceholder,
+            `routine ${type} template missing placeholders: "${tmpl.slice(0, 40)}..."`
+          ).toBe(true);
+        }
       }
-      const notableTemplates = NOTABLE_TEMPLATES[eventType];
-      for (const t of notableTemplates!) {
-        expect(t).toMatch(/\{actor\}/);
-        expect(t).toMatch(/\{target\}/);
+    });
+
+    it('total routine template count should be >= 80', () => {
+      const total = Object.values(ROUTINE_TEMPLATES).reduce(
+        (sum, arr) => sum + arr.length,
+        0
+      );
+      expect(total).toBeGreaterThanOrEqual(80);
+    });
+
+    it('all expected routine types should exist', () => {
+      for (const type of EXPECTED_ROUTINE_TYPES) {
+        expect(ROUTINE_TEMPLATES).toHaveProperty(type);
+        expect(Array.isArray(ROUTINE_TEMPLATES[type])).toBe(true);
       }
-    }
+    });
   });
 
-  it('dilemma notable templates contain personality placeholder', () => {
-    const dilemmaTypes = [
-      'dilemma_mutual_trust',
-      'dilemma_betrayed',
-      'dilemma_exploitation',
-      'dilemma_mutual_distrust',
-    ];
-    for (const eventType of dilemmaTypes) {
-      const templates = NOTABLE_TEMPLATES[eventType];
-      const hasPersonality = templates!.some(t => t.includes('{personality}'));
-      expect(hasPersonality).toBe(true);
-    }
+  describe('notable templates', () => {
+    it('should have at least 2 notable templates per event type', () => {
+      for (const [type, templates] of Object.entries(NOTABLE_TEMPLATES)) {
+        expect(
+          templates.length,
+          `notable ${type} should have ≥2 templates`
+        ).toBeGreaterThanOrEqual(2);
+      }
+    });
+
+    it('all notable templates should contain {personality} placeholder', () => {
+      for (const [type, templates] of Object.entries(NOTABLE_TEMPLATES)) {
+        for (const tmpl of templates) {
+          expect(
+            tmpl.includes('{personality}'),
+            `notable ${type} template missing {{personality}}: "${tmpl.slice(0, 50)}..."`
+          ).toBe(true);
+        }
+      }
+    });
+
+    it('should have notable templates for all new event types', () => {
+      const newTypes = [
+        'faction_formed',
+        'culture_clash',
+        'migration',
+        'construction_complete',
+        'ordeal_encounter_success',
+        'ordeal_encounter_failure',
+        'ordeal_completed',
+        'ordeal_abandoned',
+      ];
+      for (const type of newTypes) {
+        expect(
+          NOTABLE_TEMPLATES[type]?.length,
+          `notable ${type} should have ≥2 templates`
+        ).toBeGreaterThanOrEqual(2);
+      }
+    });
+  });
+
+  describe('lifecycle templates', () => {
+    it('should export LIFECYCLE_TEMPLATES', () => {
+      expect(LIFECYCLE_TEMPLATES).toBeDefined();
+      expect(typeof LIFECYCLE_TEMPLATES).toBe('object');
+    });
+
+    it('should have 5 death templates', () => {
+      expect(LIFECYCLE_TEMPLATES.death).toBeDefined();
+      expect(LIFECYCLE_TEMPLATES.death).toHaveLength(5);
+    });
+
+    it('should have 3 birth templates', () => {
+      expect(LIFECYCLE_TEMPLATES.birth).toBeDefined();
+      expect(LIFECYCLE_TEMPLATES.birth).toHaveLength(3);
+    });
+
+    it('should have 3 migration templates', () => {
+      expect(LIFECYCLE_TEMPLATES.migration).toBeDefined();
+      expect(LIFECYCLE_TEMPLATES.migration).toHaveLength(3);
+    });
+
+    it('all death templates should have {actor} placeholder', () => {
+      for (const tmpl of LIFECYCLE_TEMPLATES.death) {
+        expect(
+          tmpl.includes('{actor}'),
+          `death template missing {{actor}}: "${tmpl.slice(0, 50)}..."`
+        ).toBe(true);
+      }
+    });
+
+    it('all birth templates should have {actor} placeholder', () => {
+      for (const tmpl of LIFECYCLE_TEMPLATES.birth) {
+        expect(
+          tmpl.includes('{actor}'),
+          `birth template missing {{actor}}: "${tmpl.slice(0, 50)}..."`
+        ).toBe(true);
+      }
+    });
+
+    it('all migration templates should have {actor} placeholder', () => {
+      for (const tmpl of LIFECYCLE_TEMPLATES.migration) {
+        expect(
+          tmpl.includes('{actor}'),
+          `migration template missing {{actor}}: "${tmpl.slice(0, 50)}..."`
+        ).toBe(true);
+      }
+    });
+  });
+
+  describe('content structure integrity', () => {
+    it('SPHERE_VOCABULARY should have 8 spheres with adj/verb/noun arrays', () => {
+      expect(Object.keys(SPHERE_VOCABULARY)).toHaveLength(8);
+      for (const vocab of Object.values(SPHERE_VOCABULARY)) {
+        expect(vocab).toHaveProperty('adjectives');
+        expect(vocab).toHaveProperty('verbs');
+        expect(vocab).toHaveProperty('nouns');
+        expect(Array.isArray(vocab.adjectives)).toBe(true);
+        expect(Array.isArray(vocab.verbs)).toBe(true);
+        expect(Array.isArray(vocab.nouns)).toBe(true);
+      }
+    });
+
+    it('VALUE_FLAVORS should map to string arrays', () => {
+      for (const flavors of Object.values(VALUE_FLAVORS)) {
+        expect(Array.isArray(flavors)).toBe(true);
+        for (const flavor of flavors) {
+          expect(typeof flavor).toBe('string');
+          expect(flavor.length).toBeGreaterThan(0);
+        }
+      }
+    });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useId, useEffect } from 'react';
+import React, { useRef, useState, useId, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import type { TooltipContent } from '../../types/tooltip';
 import {
@@ -60,6 +60,9 @@ const TOOLTIP_DESC_COLOR = '#a8a29e';      // stone-400 (Inter)
 const TOOLTIP_LINK_COLOR = '#fbbf24';      // amber-400 for linked concepts
 const TOOLTIP_ARROW_SIZE = 6;              // px for arrow triangle
 
+// Module-level regex for {{concept.id}} link parsing (reused across calls)
+const TOOLTIP_LINK_REGEX = new RegExp(TOOLTIP_LINK_PATTERN);
+
 /**
  * Parse description text and render {{concept.id}} links as nested Tooltips.
  *
@@ -81,10 +84,10 @@ function parseDescription(
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  // Reset regex state
-  const regex = new RegExp(TOOLTIP_LINK_PATTERN);
+  // Reset lastIndex for reuse of global regex
+  TOOLTIP_LINK_REGEX.lastIndex = 0;
 
-  while ((match = regex.exec(description)) !== null) {
+  while ((match = TOOLTIP_LINK_REGEX.exec(description)) !== null) {
     // Push text before the match
     if (match.index > lastIndex) {
       result.push(description.substring(lastIndex, match.index));
@@ -118,7 +121,7 @@ function parseDescription(
       result.push(match[0]);
     }
 
-    lastIndex = regex.lastIndex;
+    lastIndex = TOOLTIP_LINK_REGEX.lastIndex;
   }
 
   // Push remaining text after last match
@@ -157,7 +160,6 @@ export const Tooltip = React.memo(function Tooltip({
 
   const showTimerRef = useRef<NodeJS.Timeout>();
   const hideTimerRef = useRef<NodeJS.Timeout>();
-  const escapeListenerRef = useRef<((e: KeyboardEvent) => void) | null>(null);
 
   // Resolve content from id or use explicit values
   const resolvedContent: TooltipContent | null = id
@@ -224,16 +226,6 @@ export const Tooltip = React.memo(function Tooltip({
     showTimerRef.current = setTimeout(() => {
       calculatePosition();
       setIsVisible(true);
-
-      // Add escape listener when visible
-      if (!escapeListenerRef.current) {
-        escapeListenerRef.current = (e: KeyboardEvent) => {
-          if (e.key === 'Escape') {
-            hideTooltip();
-          }
-        };
-        document.addEventListener('keydown', escapeListenerRef.current);
-      }
     }, TOOLTIP_SHOW_DELAY);
   };
 
@@ -247,12 +239,6 @@ export const Tooltip = React.memo(function Tooltip({
     // Start fade-out
     hideTimerRef.current = setTimeout(() => {
       setIsVisible(false);
-
-      // Remove escape listener
-      if (escapeListenerRef.current) {
-        document.removeEventListener('keydown', escapeListenerRef.current);
-        escapeListenerRef.current = null;
-      }
     }, TOOLTIP_FADE_OUT);
   };
 
@@ -261,14 +247,25 @@ export const Tooltip = React.memo(function Tooltip({
   const handleFocus = () => showTooltip();
   const handleBlur = () => hideTooltip();
 
-  // Cleanup on unmount
+  // Escape key listener — tied to visibility lifecycle, no race conditions
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsVisible(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isVisible]);
+
+  // Cleanup timers on unmount
   useEffect(() => {
     return () => {
       if (showTimerRef.current) clearTimeout(showTimerRef.current);
       if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-      if (escapeListenerRef.current) {
-        document.removeEventListener('keydown', escapeListenerRef.current);
-      }
     };
   }, []);
 
@@ -276,7 +273,12 @@ export const Tooltip = React.memo(function Tooltip({
   // Render
   // ──────────────────────────────────────────────────────────────────────────
 
-  const tooltipContent = (
+  const parsedDesc = useMemo(
+    () => parseDescription(finalDesc, depth),
+    [finalDesc, depth]
+  );
+
+  const tooltipContent = useMemo(() => (
     <div
       id={tooltipId}
       role="tooltip"
@@ -320,7 +322,7 @@ export const Tooltip = React.memo(function Tooltip({
             pointerEvents: 'auto',
           }}
         >
-          {parseDescription(finalDesc, depth)}
+          {parsedDesc}
         </div>
       )}
 
@@ -346,7 +348,7 @@ export const Tooltip = React.memo(function Tooltip({
         }}
       />
     </div>
-  );
+  ), [tooltipId, position, isVisible, finalLabel, finalDesc, parsedDesc, depth]);
 
   const WrapperTag = as;
   const wrapperStyle = as === 'g' ? undefined : { display: 'inline-block' as const, cursor: 'inherit' as const };
