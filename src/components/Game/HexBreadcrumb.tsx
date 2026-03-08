@@ -1,18 +1,7 @@
 import type { SphereName } from '../../types';
 import type { SphereInfluence, LineOfSight } from '../../engine/hexZoom';
 import type { TerrainType } from '../../types';
-
-// Sphere display colors (matches STYLE.md)
-const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#cc3333',
-  matter: '#8b7355',
-  energy: '#ffcc00',
-  life: '#33cc66',
-  mind: '#6699ff',
-  spirit: '#cc99ff',
-  time: '#ff9933',
-  entropy: '#666666',
-};
+import { getSphereColor } from '../../data/sphereIcons';
 
 const SIGHT_LABELS: Record<LineOfSight, string> = {
   full: 'Full Sight',
@@ -114,7 +103,7 @@ export function HexBreadcrumb({
             <div
               key={sphere}
               className="w-2 h-2 rounded-full"
-              style={{ backgroundColor: SPHERE_COLORS[sphere] }}
+              style={{ backgroundColor: getSphereColor(sphere) }}
               title={sphere}
             />
           ))}

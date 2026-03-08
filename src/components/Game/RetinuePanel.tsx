@@ -44,8 +44,8 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 data-testid="retinue-entry"
                 onClick={() => onAgentSelect(agent.id)}
                 className={`
-                  bg-stone-700/50 rounded px-2.5 py-1.5 border border-stone-600/30 cursor-pointer
-                  transition-colors hover:bg-stone-600/50 active:bg-stone-600/70
+                  bg-stone-800/50 rounded px-2.5 py-1.5 border border-stone-700/30 cursor-pointer
+                  transition-colors hover:bg-stone-700/50 active:bg-stone-700/70
                   ${isSelected ? 'ring-2 ring-amber-400/60 border-amber-400/30' : ''}
                 `}
               >

@@ -85,7 +85,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {/* Archetype Banner */}
         {detail.archetype && (
-          <div className="bg-stone-700/50 border border-amber-900/30 rounded px-3 py-2.5">
+          <div className="bg-stone-800/50 border border-amber-900/30 rounded px-3 py-2.5">
             <h3
               className="text-amber-100 text-sm font-semibold tracking-wide"
               style={{ fontFamily: 'Cinzel, serif' }}
@@ -343,7 +343,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       <div className="flex gap-2 px-4 py-3 bg-stone-800/50 border-t border-amber-900/30 flex-shrink-0">
         <button
           onClick={onViewPsyche}
-          className="flex-1 px-3 py-2 bg-stone-700/80 hover:bg-stone-600/80 text-amber-100 text-xs font-medium rounded transition-colors border border-amber-900/30"
+          className="flex-1 px-3 py-2 bg-stone-800/80 hover:bg-stone-700/80 text-amber-100 text-xs font-medium rounded transition-colors border border-amber-900/30"
         >
           View Psyche
         </button>

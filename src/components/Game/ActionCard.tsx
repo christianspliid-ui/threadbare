@@ -18,7 +18,7 @@ import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
 // ─── Styling Constants ─────────────────────────────────────────────────────
 
 const CARD_STYLES = {
-  baseCard: 'relative flex flex-col w-40 bg-stone-700/95 border border-stone-600 rounded-lg px-3 py-2.5 transition-all duration-200',
+  baseCard: 'relative flex flex-col w-40 bg-stone-800/95 border border-stone-700 rounded-lg px-3 py-2.5 transition-all duration-200',
   availableCard: 'border-l-4 cursor-pointer hover:-translate-y-1 shadow-lg hover:shadow-xl',
   lockedCard: 'cursor-not-allowed',
   unavailableText: 'text-amber-300/50',
