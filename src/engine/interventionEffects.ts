@@ -19,6 +19,7 @@ import { emitTrace } from './traceBuffer';
 import type { DivineInfluenceEntry, InterventionType } from '../types/dream';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SphereName } from '../types';
+import type { AgendaTemplate } from '../data/agenda-content';
 import { DIVINE_INFLUENCE_CONSTANTS, getConsequenceMessage } from '../data/intervention-feedback-content';
 import { DECAY_CONSTANTS, getCurrentStrength } from './decayCurve';
 
@@ -31,6 +32,7 @@ export interface ApplyInterventionEffectsInput {
   sphere: SphereName;
   tick: number;
   seed: number;
+  agenda?: AgendaTemplate;
 }
 
 export interface ApplyInterventionEffectsResult {
@@ -198,7 +200,7 @@ function getDomainLabel(seed: number): string {
 export function applyInterventionEffects(
   input: ApplyInterventionEffectsInput,
 ): ApplyInterventionEffectsResult {
-  const { graph, interventionType, targetAgentId, sphere, tick, seed } = input;
+  const { graph, interventionType, targetAgentId, sphere, tick, seed, agenda } = input;
 
   // Validate target actor
   const actorNode = graph.getNode(targetAgentId);
@@ -225,6 +227,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'persuade':
       return handlePersuade(
@@ -235,6 +238,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'deceive':
       return handleDeceive(
@@ -245,6 +249,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'intimidate':
       return handleIntimidate(
@@ -255,6 +260,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'inspire_intervention':
       return handleInspire(
@@ -265,6 +271,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'coincidence':
       return handleCoincidence(
@@ -276,6 +283,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'omen':
       return handleOmen(
@@ -286,6 +294,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     case 'afflict_bless':
       return handleAfflictBless(
@@ -296,6 +305,7 @@ export function applyInterventionEffects(
         tick,
         seed,
         effectsSummary,
+        agenda,
       );
     default:
       return {
@@ -316,16 +326,25 @@ function handleDream(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.DREAM_DRIFT;
   const decayParams = DECAY_CONSTANTS.dream;
 
-  const pairs = selectValuePairs(1, seed);
+  // Use agenda valuePair if provided, otherwise select randomly
+  const pairs = agenda ? [agenda.valuePair] : selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
   const directions: string[] = [];
 
   for (const pair of pairs) {
-    const drift = Math.abs(seed) % 2 === 0 ? driftMag : -driftMag;
+    // Use agenda direction if provided, otherwise use seed
+    const drift = agenda
+      ? agenda.valueDirection === 'left'
+        ? driftMag
+        : -driftMag
+      : Math.abs(seed) % 2 === 0
+        ? driftMag
+        : -driftMag;
     valueDrifts[pair] = drift;
     const dir = getValueDirection(pair, seed);
     directions.push(dir);
@@ -339,6 +358,9 @@ function handleDream(
     tickApplied: tick,
     ...decayParams,
     valueDrifts,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -377,16 +399,25 @@ function handlePersuade(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.PERSUADE_DRIFT;
   const decayParams = DECAY_CONSTANTS.persuade;
 
-  const pairs = selectValuePairs(1, seed);
+  // Use agenda valuePair if provided, otherwise select randomly
+  const pairs = agenda ? [agenda.valuePair] : selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
   const directions: string[] = [];
 
   for (const pair of pairs) {
-    const drift = Math.abs(seed) % 2 === 0 ? driftMag : -driftMag;
+    // Use agenda direction if provided, otherwise use seed
+    const drift = agenda
+      ? agenda.valueDirection === 'left'
+        ? driftMag
+        : -driftMag
+      : Math.abs(seed) % 2 === 0
+        ? driftMag
+        : -driftMag;
     valueDrifts[pair] = drift;
     const dir = getValueDirection(pair, seed);
     directions.push(dir);
@@ -400,6 +431,9 @@ function handlePersuade(
     tickApplied: tick,
     ...decayParams,
     valueDrifts,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -438,16 +472,25 @@ function handleDeceive(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const driftMag = DIVINE_INFLUENCE_CONSTANTS.DECEIVE_DRIFT;
   const decayParams = DECAY_CONSTANTS.deceive;
 
-  const pairs = selectValuePairs(1, seed);
+  // Use agenda valuePair if provided, otherwise select randomly
+  const pairs = agenda ? [agenda.valuePair] : selectValuePairs(1, seed);
   const valueDrifts: Partial<Record<ValuePair, number>> = {};
   const directions: string[] = [];
 
   for (const pair of pairs) {
-    const drift = Math.abs(seed) % 2 === 0 ? driftMag : -driftMag;
+    // Use agenda direction if provided, otherwise use seed
+    const drift = agenda
+      ? agenda.valueDirection === 'left'
+        ? driftMag
+        : -driftMag
+      : Math.abs(seed) % 2 === 0
+        ? driftMag
+        : -driftMag;
     valueDrifts[pair] = drift;
     const dir = getValueDirection(pair, seed);
     directions.push(dir);
@@ -465,6 +508,9 @@ function handleDeceive(
     ...decayParams,
     valueDrifts,
     traitId,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -503,6 +549,7 @@ function handleIntimidate(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const drift = DIVINE_INFLUENCE_CONSTANTS.INTIMIDATE_COURAGE_DRIFT;
   const decayParams = DECAY_CONSTANTS.intimidate;
@@ -525,6 +572,9 @@ function handleIntimidate(
     ...decayParams,
     valueDrifts,
     strategyOverride,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -563,6 +613,7 @@ function handleInspire(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const boost = DIVINE_INFLUENCE_CONSTANTS.INSPIRE_PERSONALITY_BOOST;
   const decayParams = DECAY_CONSTANTS.inspire_intervention;
@@ -580,6 +631,9 @@ function handleInspire(
     ...decayParams,
     personalityBoost: boost,
     traitId,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -619,6 +673,7 @@ function handleCoincidence(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const boost = DIVINE_INFLUENCE_CONSTANTS.COINCIDENCE_SPHERE_BOOST;
   const decayParams = DECAY_CONSTANTS.coincidence;
@@ -641,6 +696,9 @@ function handleCoincidence(
     sphere,
     tickApplied: tick,
     ...decayParams,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
   addDivineInfluence(graph, actorId, influence);
 
@@ -679,6 +737,7 @@ function handleOmen(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const moodDrift = DIVINE_INFLUENCE_CONSTANTS.OMEN_MOOD_DRIFT;
   const decayParams = DECAY_CONSTANTS.omen;
@@ -696,6 +755,9 @@ function handleOmen(
     tickApplied: tick,
     ...decayParams,
     valueDrifts,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
@@ -734,6 +796,7 @@ function handleAfflictBless(
   tick: number,
   seed: number,
   effectsSummary: string[],
+  agenda?: AgendaTemplate,
 ): ApplyInterventionEffectsResult {
   const decayParams = DECAY_CONSTANTS.afflict_bless;
 
@@ -753,6 +816,9 @@ function handleAfflictBless(
     tickApplied: tick,
     ...decayParams,
     traitId,
+    reachBoost: agenda?.reachBoost,
+    behaviorTag: agenda?.behaviorTag,
+    agendaId: agenda?.id,
   };
 
   addDivineInfluence(graph, actorId, influence);
