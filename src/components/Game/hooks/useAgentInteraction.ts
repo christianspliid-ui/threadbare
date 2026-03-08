@@ -32,8 +32,7 @@ export function useAgentInteraction({
 }: UseAgentInteractionParams) {
   // ── State ──
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
-  const [wheelVisible, setWheelVisible] = useState(false);
-  const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
   const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
   const [pendingIntervention, setPendingIntervention] = useState<{
@@ -53,7 +52,7 @@ export function useAgentInteraction({
   }, [selectedAgentId, gameState.graph, gameState.ascendantId]);
 
   const wheelSlots = useMemo(() => {
-    if (!selectedAgentId || !wheelVisible) return null;
+    if (!selectedAgentId || !drawerOpen) return null;
     const agent = retinueAgents.find(a => a.id === selectedAgentId);
     if (!agent) return null;
     return getAgentWheelSlots({
@@ -61,7 +60,7 @@ export function useAgentInteraction({
       pool: gameState.essencePool,
       primarySphere: archetype.sphereAlignment.primary,
     });
-  }, [selectedAgentId, wheelVisible, gameState.essencePool, retinueAgents, archetype]);
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, retinueAgents, archetype]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;
@@ -96,7 +95,7 @@ export function useAgentInteraction({
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {
     setSelectedAgentId(agentId);
-    setWheelVisible(true);
+    setDrawerOpen(true);
     setStrandViewAgent(null);
   }, []);
 
@@ -165,7 +164,7 @@ export function useAgentInteraction({
       }
 
       setPendingIntervention(null);
-      setWheelVisible(false);
+      setDrawerOpen(false);
     },
     [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, setGameState]
   );
@@ -174,13 +173,13 @@ export function useAgentInteraction({
     setPendingIntervention(null);
   }, []);
 
-  const handleWheelDismiss = useCallback(() => {
-    setWheelVisible(false);
+  const handleDrawerClose = useCallback(() => {
+    setDrawerOpen(false);
   }, []);
 
   const handleStrandClose = useCallback(() => {
     setStrandViewAgent(null);
-    setWheelVisible(true);
+    setDrawerOpen(true);
   }, []);
 
   const handleBackFromAgentDetail = useCallback(() => {
@@ -191,21 +190,17 @@ export function useAgentInteraction({
     setStrandViewAgent(selectedAgentId);
   }, [selectedAgentId]);
 
-  const handleOpenWheel = useCallback(() => {
-    setWheelVisible(true);
+  const handleOpenDrawer = useCallback(() => {
+    setDrawerOpen(true);
   }, []);
 
-  const handleAvatarWheelClick = useCallback(() => {
+  const handleAvatarActionClick = useCallback(() => {
     if (retinueAgents.length === 0) {
-      setWheelFeedback(
-        'You have no agents under your influence yet. Use interventions to recruit agents.'
-      );
-      setTimeout(() => setWheelFeedback(null), 4000);
       return;
     }
 
     if (selectedAgentId) {
-      setWheelVisible(true);
+      setDrawerOpen(true);
     } else {
       handleAgentSelect(retinueAgents[0].id);
     }
@@ -221,8 +216,7 @@ export function useAgentInteraction({
 
   return {
     selectedAgentId,
-    wheelVisible,
-    wheelFeedback,
+    drawerOpen,
     strandViewAgent,
     pendingIntervention,
     profileModalAgentId,
@@ -236,12 +230,12 @@ export function useAgentInteraction({
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
-    handleWheelDismiss,
+    handleDrawerClose,
     handleStrandClose,
     handleBackFromAgentDetail,
     handleViewPsyche,
-    handleOpenWheel,
-    handleAvatarWheelClick,
+    handleOpenDrawer,
+    handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
   };

@@ -340,6 +340,22 @@ describe('AgentWheel', () => {
       expect(dreamSlot!.sphere).toBe('mind');
       expect(dreamSlot!.essenceCost).toBe(1);
     });
+
+    it('populates description from INTERVENTION_DEFINITIONS', () => {
+      const slots = getAgentWheelSlots({
+        tier: 3,
+        pool: { force: 100, matter: 100, energy: 100, life: 100, mind: 100, spirit: 100, time: 100, entropy: 100 },
+        primarySphere: 'mind',
+      });
+      const dreamSlot = slots.find(s => s.id === 'dream');
+      expect(dreamSlot?.description).toBe('Manipulate selection probabilities during sleep');
+
+      const scrySlot = slots.find(s => s.id === 'scry');
+      expect(scrySlot?.description).toBe('Observe agent psyche and situation');
+
+      const centerSlot = slots.find(s => s.id === 'center');
+      expect(centerSlot?.description).toBe('');
+    });
   });
 
   // Helper for range tests

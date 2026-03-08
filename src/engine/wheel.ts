@@ -45,6 +45,8 @@ export interface WheelSlot {
   rangeStatus: 'in_range' | 'out_of_range' | 'unlimited' | 'unknown';
   /** Hex distance from avatar to target (null if no position data) */
   hexDistance: number | null;
+  /** Brief description of what this action does */
+  description: string;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────
@@ -185,6 +187,7 @@ export function getAgentWheelSlots(params: {
         interventionType: null,
         rangeStatus: 'unknown',
         hexDistance: null,
+        description: '',
       };
     }
 
@@ -204,6 +207,7 @@ export function getAgentWheelSlots(params: {
         interventionType: null,
         rangeStatus: 'unknown',
         hexDistance: null,
+        description: 'Observe agent psyche and situation',
       };
     }
 
@@ -241,6 +245,7 @@ export function getAgentWheelSlots(params: {
         interventionType,
         rangeStatus,
         hexDistance: hexDist,
+        description: interventionDef.description,
       };
     }
 
@@ -263,6 +268,7 @@ export function getAgentWheelSlots(params: {
       interventionType,
       rangeStatus,
       hexDistance: hexDist,
+      description: interventionDef.description,
     };
 
     // Apply range gating
