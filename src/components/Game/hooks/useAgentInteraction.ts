@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { LocalEncounterMode, InterventionType } from '../../../types/dream';
+import type { AgendaTemplate } from '../../../data/agenda-content';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
 import { getRetinueAgents } from '../../../engine/retinue';
 import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
@@ -9,6 +10,7 @@ import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
+import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
 import {
   getPresenceStrand,
@@ -46,6 +48,9 @@ export function useAgentInteraction({
     interventionType: InterventionType;
   } | null>(null);
   const [playingCardId, setPlayingCardId] = useState<string | null>(null);
+  const [selectedAgenda, setSelectedAgenda] = useState<AgendaTemplate | null>(null);
+  const [agendaPickerOpen, setAgendaPickerOpen] = useState(false);
+  const [pendingAgendas, setPendingAgendas] = useState<AgendaTemplate[] | null>(null);
 
   // ── Computed values ──
   const retinueAgents = useMemo(
@@ -113,6 +118,9 @@ export function useAgentInteraction({
         return;
       }
 
+      // Guard: prevent rapid double-clicks from queuing multiple interventions
+      if (pendingIntervention || playingCardId) return;
+
       const slot = wheelSlots?.find(s => s.id === slotId);
       if (!slot?.interventionType || !slot.available) return;
 
@@ -120,13 +128,39 @@ export function useAgentInteraction({
         return;
       }
 
-      setPendingIntervention({
-        slotId,
-        interventionType: slot.interventionType,
-      });
+      // Generate agendas for this intervention
+      const targetNode = gameState.graph.getNode(selectedAgentId!);
+      const profile = targetNode?.properties?.axiologicalProfile as any;
+      const archetypeId = (targetNode?.properties?.narrativeArchetype as string) ?? 'unknown';
+
+      if (profile) {
+        const agendas = generateAgendas({
+          interventionType: slot.interventionType,
+          targetArchetypeId: archetypeId,
+          targetProfile: profile,
+          playerPrimarySphere: archetype.sphereAlignment.primary,
+          seed: gameState.seed + gameState.tick,
+        });
+        setPendingAgendas(agendas);
+        setAgendaPickerOpen(true);
+        // Store the slot info for later
+        setPendingIntervention({ slotId, interventionType: slot.interventionType });
+      }
     },
-    [selectedAgentId, wheelSlots, onOpenScry]
+    [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId]
   );
+
+  const handleAgendaSelect = useCallback((agenda: AgendaTemplate) => {
+    setSelectedAgenda(agenda);
+    setAgendaPickerOpen(false);
+    // pendingIntervention is already set from handleWheelSlotClick
+  }, []);
+
+  const handleAgendaCancel = useCallback(() => {
+    setAgendaPickerOpen(false);
+    setPendingAgendas(null);
+    setPendingIntervention(null);
+  }, []);
 
   const handleInterventionConfirm = useCallback(
     (encounterMode?: LocalEncounterMode) => {
@@ -153,6 +187,7 @@ export function useAgentInteraction({
           sphere: slot.sphere,
           tick: gameState.tick,
           seed: gameState.seed,
+          agenda: selectedAgenda ?? undefined,
         });
 
         // Play audio feedback
@@ -189,9 +224,11 @@ export function useAgentInteraction({
         }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
       }
 
+      setSelectedAgenda(null);
+      setPendingAgendas(null);
       setPendingIntervention(null);
     },
-    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, gameState.graph, gameState.tick, gameState.seed, setGameState, playCastSound]
+    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, gameState.graph, gameState.tick, gameState.seed, selectedAgenda, setGameState, playCastSound]
   );
 
   const handleInterventionCancel = useCallback(() => {
@@ -246,6 +283,9 @@ export function useAgentInteraction({
     pendingIntervention,
     profileModalAgentId,
     playingCardId,
+    selectedAgenda,
+    agendaPickerOpen,
+    pendingAgendas,
     retinueAgents,
     agentDetail,
     agentInfoCard,
@@ -254,6 +294,8 @@ export function useAgentInteraction({
     strandData,
     handleAgentSelect,
     handleWheelSlotClick,
+    handleAgendaSelect,
+    handleAgendaCancel,
     handleInterventionConfirm,
     handleInterventionCancel,
     handleDrawerClose,
