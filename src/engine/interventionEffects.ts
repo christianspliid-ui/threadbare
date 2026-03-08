@@ -20,7 +20,7 @@ import type { DivineInfluenceEntry, InterventionType } from '../types/dream';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SphereName } from '../types';
 import { DIVINE_INFLUENCE_CONSTANTS, getConsequenceMessage } from '../data/intervention-feedback-content';
-import { DECAY_CONSTANTS } from './decayCurve';
+import { DECAY_CONSTANTS, getCurrentStrength } from './decayCurve';
 
 // ─── Type Definitions ────────────────────────────────────────────
 
@@ -107,18 +107,32 @@ function addDivineInfluence(
  * Build a temporary value overlay by applying all active divine influences.
  * Creates a copy; never mutates the original profile.
  * Clamps all values to [-1, 1].
+ * Multiplies each drift by the influence's current decay strength.
  */
 export function buildValueOverlay(
   baseProfile: AxiologicalProfile,
   influences: DivineInfluenceEntry[],
+  currentTick: number = 0,
 ): AxiologicalProfile {
   const overlay: AxiologicalProfile = { ...baseProfile };
 
   for (const influence of influences) {
-    if (!influence.valueDrifts) continue;
-    for (const [pair, drift] of Object.entries(influence.valueDrifts)) {
-      const key = pair as ValuePair;
-      overlay[key] = Math.max(-1, Math.min(1, overlay[key] + drift));
+    // Compute current decay strength
+    const strength = getCurrentStrength({
+      initialStrength: influence.initialStrength,
+      decayRate: influence.decayRate,
+      minimumStrength: influence.minimumStrength,
+      maxDuration: influence.maxDuration,
+      tickApplied: influence.tickApplied,
+    }, currentTick);
+
+    if (strength <= 0) continue; // Expired
+
+    if (influence.valueDrifts) {
+      for (const [pair, drift] of Object.entries(influence.valueDrifts)) {
+        const key = pair as ValuePair;
+        overlay[key] = Math.max(-1, Math.min(1, overlay[key] + drift * strength));
+      }
     }
   }
 

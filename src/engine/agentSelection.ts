@@ -150,7 +150,7 @@ export function runSelectionPipeline(
   // Step 1.5: Apply Divine Influence Overlay
   const divineInfluences = getDivineInfluences(graph, actorId);
   if (divineInfluences.length > 0) {
-    const overlayProfile = buildValueOverlay(profile, divineInfluences);
+    const overlayProfile = buildValueOverlay(profile, divineInfluences, tick);
     // Re-score with overlaid profile
     scored = scoreByGoalAlignment(scored, overlayProfile);
     stages.push({
