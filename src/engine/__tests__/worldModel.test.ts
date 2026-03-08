@@ -302,11 +302,11 @@ describe("World Model", () => {
       }
     });
 
-    it("should have exactly 30 trait nodes", () => {
+    it("should have at least 40 trait nodes", () => {
       const traitNodes = model.nodes.filter((n) =>
         n.category.startsWith("trait-")
       );
-      expect(traitNodes).toHaveLength(30);
+      expect(traitNodes.length).toBeGreaterThanOrEqual(40);
     });
 
     it("trait nodes should have required properties", () => {

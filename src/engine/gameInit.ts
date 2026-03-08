@@ -66,13 +66,34 @@ export function initializeGameState(
   // Seed the world graph with actors, locations, artifacts
   const { graph } = seedWorld(cosmology, tiles, seed);
 
-  // Ensure starting location exists
+  // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {
+    const centerCol = Math.floor(cols / 2);
+    const centerRow = Math.floor(rows / 2);
+
+    // Find closest habitable tile to center (non-ocean, non-coastal)
+    const habitableTiles = tiles.filter(t =>
+      t.terrain !== 'ocean' && t.terrain !== 'coastal_shallows'
+    );
+    const startTile = habitableTiles.length > 0
+      ? habitableTiles.reduce((best, t) => {
+          const d = Math.abs(t.coord.col - centerCol) + Math.abs(t.coord.row - centerRow);
+          const bestD = Math.abs(best.coord.col - centerCol) + Math.abs(best.coord.row - centerRow);
+          return d < bestD ? t : best;
+        })
+      : tiles[Math.floor(tiles.length / 2)]; // fallback to literal center tile
+
     graph.addNode({
       id: 'loc.start',
       type: 'location',
       name: 'Sacred Grove',
-      properties: { locationType: 'location' },
+      properties: {
+        locationType: 'location',
+        locationSubtype: 'shrine',
+        hexCol: startTile.coord.col,
+        hexRow: startTile.coord.row,
+        terrain: startTile.terrain,
+      },
     });
   }
 

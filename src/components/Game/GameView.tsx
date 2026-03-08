@@ -21,6 +21,7 @@ import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
 import { ScryOverlay } from './ScryOverlay';
+import { ScryProvider } from './contexts/ScryContext';
 import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
@@ -358,17 +359,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
       {/* Scry overlay */}
       {scryVisible && (
-        <ScryOverlay
-          scryState={scryState}
-          retinueAgents={retinueAgents}
-          essencePool={gameState.essencePool}
-          primarySphere={archetype.sphereAlignment.primary}
-          tick={gameState.tick}
-          seed={gameState.seed + gameState.tick}
-          onAssign={handleScryAssign}
-          onDemote={handleScryDemote}
-          onClose={handleCloseScry}
-        />
+        <ScryProvider
+          value={{
+            scryState,
+            retinueAgents,
+            essencePool: gameState.essencePool,
+            primarySphere: archetype.sphereAlignment.primary,
+            tick: gameState.tick,
+            seed: gameState.seed + gameState.tick,
+            onAssign: handleScryAssign,
+            onDemote: handleScryDemote,
+            onClose: handleCloseScry,
+          }}
+        >
+          <ScryOverlay />
+        </ScryProvider>
       )}
 
       {/* Harvest overlay */}

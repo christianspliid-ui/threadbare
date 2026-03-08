@@ -191,7 +191,7 @@ describe('StrandView', () => {
       />
     );
 
-    const closeButton = screen.getByRole('button', { name: '✕' });
+    const closeButton = screen.getByRole('button', { name: 'Close Psyche Strands' });
     fireEvent.click(closeButton);
 
     expect(onClose).toHaveBeenCalledTimes(1);

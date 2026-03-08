@@ -2,7 +2,7 @@ import { useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallbac
 import * as d3 from 'd3';
 import type { HexTile, HexCoord, OverlayMode, LocationSubtype } from '../../types';
 import type { VisibilityMap } from '../../types/visibility';
-import { hexToPixel } from '../../lib/hexMath';
+import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
 import { HexDefs } from './HexDefs';
@@ -45,9 +45,9 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   onHexClick, onHexHover,
 }, ref) => {
   const { width, height } = useMemo(() => {
-    // Flat-top hex layout: horizontal spacing = 1.5 * size, vertical spacing = √3 * size
-    const w = cols * hexSize * 1.5 + hexSize * 0.5;
-    const h = rows * Math.sqrt(3) * hexSize + Math.sqrt(3) * hexSize * 0.5;
+    // Flat-top hex layout: horizontal spacing = HEX_SCALE_X * size, vertical spacing = HEX_SCALE_Y * size
+    const w = cols * hexSize * HEX_SCALE_X + hexSize * 0.5;
+    const h = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5;
     return { width: w + hexSize, height: h + hexSize };
   }, [cols, rows, hexSize]);
 

@@ -1,9 +1,9 @@
 {
   "meta": {
     "version": "1.0.0",
-    "generated": "2026-03-05T13:22:04.732Z",
-    "nodeCount": 203,
-    "edgeCount": 290,
+    "generated": "2026-03-08T09:09:37.545Z",
+    "nodeCount": 230,
+    "edgeCount": 326,
     "categories": [
       "action-template",
       "actor-type",
@@ -3272,9 +3272,18 @@
       "properties": {
         "color": "#2a3520",
         "icon": "🌲",
-        "elevation_range": [0.4, 0.8],
-        "temperature_range": [0.15, 0.6],
-        "moisture_range": [0.55, 1.0]
+        "elevation_range": [
+          0.4,
+          0.8
+        ],
+        "temperature_range": [
+          0.15,
+          0.6
+        ],
+        "moisture_range": [
+          0.55,
+          1
+        ]
       }
     },
     {
@@ -3285,9 +3294,18 @@
       "properties": {
         "color": "#2a3520",
         "icon": "🌳",
-        "elevation_range": [0.4, 0.8],
-        "temperature_range": [0.3, 0.7],
-        "moisture_range": [0.55, 1.0]
+        "elevation_range": [
+          0.4,
+          0.8
+        ],
+        "temperature_range": [
+          0.3,
+          0.7
+        ],
+        "moisture_range": [
+          0.55,
+          1
+        ]
       }
     },
     {
@@ -3298,9 +3316,18 @@
       "properties": {
         "color": "#2a3520",
         "icon": "🌴",
-        "elevation_range": [0.4, 0.8],
-        "temperature_range": [0.6, 1.0],
-        "moisture_range": [0.7, 1.0]
+        "elevation_range": [
+          0.4,
+          0.8
+        ],
+        "temperature_range": [
+          0.6,
+          1
+        ],
+        "moisture_range": [
+          0.7,
+          1
+        ]
       }
     },
     {
@@ -3311,9 +3338,18 @@
       "properties": {
         "color": "#1a2a10",
         "icon": "🌳",
-        "elevation_range": [0.3, 0.6],
-        "temperature_range": [0.3, 0.7],
-        "moisture_range": [0.6, 1.0]
+        "elevation_range": [
+          0.3,
+          0.6
+        ],
+        "temperature_range": [
+          0.3,
+          0.7
+        ],
+        "moisture_range": [
+          0.6,
+          1
+        ]
       }
     },
     {
@@ -3324,10 +3360,208 @@
       "properties": {
         "color": "#3a3530",
         "icon": "💀",
-        "elevation_range": [0.25, 0.5],
-        "temperature_range": [0.5, 0.7],
-        "moisture_range": [0.0, 0.25]
+        "elevation_range": [
+          0.25,
+          0.5
+        ],
+        "temperature_range": [
+          0.5,
+          0.7
+        ],
+        "moisture_range": [
+          0,
+          0.25
+        ]
       }
+    },
+    {
+      "id": "location.grove",
+      "name": "Grove",
+      "category": "location-type",
+      "description": "A sacred stand of ancient trees where life-magic pools",
+      "properties": {}
+    },
+    {
+      "id": "location.cavern",
+      "name": "Cavern",
+      "category": "location-type",
+      "description": "A natural underground chamber hiding darkness and forgotten things",
+      "properties": {}
+    },
+    {
+      "id": "location.monastery",
+      "name": "Monastery",
+      "category": "location-type",
+      "description": "A secluded retreat where contemplatives seek inner truth",
+      "properties": {}
+    },
+    {
+      "id": "location.marketplace",
+      "name": "Marketplace",
+      "category": "location-type",
+      "description": "An open trading ground where merchants gather and fortunes change hands",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.forge",
+      "name": "Forge",
+      "category": "sublocation-type",
+      "description": "A smithy where raw metal becomes weapon, tool, or art",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.archive",
+      "name": "Archive",
+      "category": "sublocation-type",
+      "description": "A repository of written knowledge — scrolls, tomes, tablets",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.prison",
+      "name": "Prison",
+      "category": "sublocation-type",
+      "description": "A place of confinement for those who broke the compact",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.garden",
+      "name": "Garden",
+      "category": "sublocation-type",
+      "description": "A cultivated green space where life is coaxed into patterns",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.docks",
+      "name": "Docks",
+      "category": "sublocation-type",
+      "description": "Wooden piers and warehouses at the water's edge",
+      "properties": {}
+    },
+    {
+      "id": "sublocation.crypt",
+      "name": "Crypt",
+      "category": "sublocation-type",
+      "description": "An underground burial place where the honored dead rest — or stir",
+      "properties": {}
+    },
+    {
+      "id": "region.contested-zone",
+      "name": "Contested Zone",
+      "category": "region-type",
+      "description": "Territory claimed by multiple factions, none dominant",
+      "properties": {}
+    },
+    {
+      "id": "region.holy-ground",
+      "name": "Holy Ground",
+      "category": "region-type",
+      "description": "Land consecrated to a sphere or faith, defended by custom",
+      "properties": {}
+    },
+    {
+      "id": "region.trade-route",
+      "name": "Trade Route",
+      "category": "region-type",
+      "description": "A well-traveled corridor connecting settlements, rich in movement and opportunity",
+      "properties": {}
+    },
+    {
+      "id": "trait.scar.burned",
+      "name": "Burned",
+      "category": "trait-scar",
+      "description": "Flesh marked by fire — a reminder of what heat takes",
+      "properties": {}
+    },
+    {
+      "id": "trait.scar.hollow-eyed",
+      "name": "Hollow-Eyed",
+      "category": "trait-scar",
+      "description": "Something behind the gaze was consumed and never returned",
+      "properties": {}
+    },
+    {
+      "id": "trait.scar.dream-touched",
+      "name": "Dream-Touched",
+      "category": "trait-scar",
+      "description": "Exposure to divine will left marks visible only to those who know where to look",
+      "properties": {}
+    },
+    {
+      "id": "trait.mastery.siege-breaker",
+      "name": "Siege-Breaker",
+      "category": "trait-mastery",
+      "description": "Walls and defenses are puzzles they have solved before",
+      "properties": {}
+    },
+    {
+      "id": "trait.mastery.tongue-of-silver",
+      "name": "Tongue-of-Silver",
+      "category": "trait-mastery",
+      "description": "Words shaped with such precision that minds bend willingly",
+      "properties": {}
+    },
+    {
+      "id": "trait.mastery.star-reader",
+      "name": "Star-Reader",
+      "category": "trait-mastery",
+      "description": "The night sky speaks to them of fate and navigation",
+      "properties": {}
+    },
+    {
+      "id": "trait.innate.second-sight",
+      "name": "Second Sight",
+      "category": "trait-innate",
+      "description": "Born with the ability to perceive what others cannot",
+      "properties": {}
+    },
+    {
+      "id": "trait.innate.iron-blooded",
+      "name": "Iron-Blooded",
+      "category": "trait-innate",
+      "description": "A constitution that shrugs off poison and plague",
+      "properties": {}
+    },
+    {
+      "id": "trait.innate.storm-touched",
+      "name": "Storm-Touched",
+      "category": "trait-innate",
+      "description": "Weather bends around them — born under lightning",
+      "properties": {}
+    },
+    {
+      "id": "trait.destiny.world-shaper",
+      "name": "World-Shaper",
+      "category": "trait-destiny",
+      "description": "Fated to alter the course of civilizations",
+      "properties": {}
+    },
+    {
+      "id": "trait.destiny.doom-herald",
+      "name": "Doom-Herald",
+      "category": "trait-destiny",
+      "description": "Their presence accelerates the coming end",
+      "properties": {}
+    },
+    {
+      "id": "trait.destiny.bridge-walker",
+      "name": "Bridge-Walker",
+      "category": "trait-destiny",
+      "description": "Fated to stand between worlds, cultures, or ages",
+      "properties": {}
+    },
+    {
+      "id": "trait.condition.enlightened",
+      "name": "Enlightened",
+      "category": "trait-condition",
+      "description": "A state of clarity that elevates perception and judgment",
+      "properties": {}
+    },
+    {
+      "id": "trait.condition.hunted",
+      "name": "Hunted",
+      "category": "trait-condition",
+      "description": "Pursued relentlessly — rest is a luxury they cannot afford",
+      "properties": {}
     }
   ],
   "edges": [
@@ -5070,6 +5304,186 @@
       "target": "sublocation.market-district",
       "type": "rel.contains-type",
       "weight": 1
+    },
+    {
+      "source": "location.marketplace",
+      "target": "terrain.grassland",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.marketplace",
+      "target": "terrain.coastal",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.grove",
+      "target": "terrain.deciduous_forest",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.grove",
+      "target": "terrain.jungle",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.cavern",
+      "target": "terrain.mountains",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.cavern",
+      "target": "terrain.hills",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.monastery",
+      "target": "terrain.mountains",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "location.monastery",
+      "target": "terrain.desert",
+      "type": "rel.terrain-valid"
+    },
+    {
+      "source": "sublocation.forge",
+      "target": "location.fortress",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.forge",
+      "target": "location.mine",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.archive",
+      "target": "location.academy",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.archive",
+      "target": "location.monastery",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.prison",
+      "target": "location.fortress",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.garden",
+      "target": "location.monastery",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.garden",
+      "target": "location.grove",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.docks",
+      "target": "location.port",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.crypt",
+      "target": "location.monastery",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "sublocation.crypt",
+      "target": "location.cavern",
+      "type": "rel.contains-type"
+    },
+    {
+      "source": "trait.scar.burned",
+      "target": "creation.energy",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.scar.hollow-eyed",
+      "target": "creation.mind",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.scar.dream-touched",
+      "target": "creation.spirit",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.feared",
+      "target": "creation.force",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.beloved",
+      "target": "creation.life",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.reputation.infamous",
+      "target": "creation.entropy",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.mastery.siege-breaker",
+      "target": "creation.force",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.mastery.tongue-of-silver",
+      "target": "creation.mind",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.mastery.star-reader",
+      "target": "creation.time",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.innate.second-sight",
+      "target": "creation.mind",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.innate.iron-blooded",
+      "target": "creation.matter",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.innate.storm-touched",
+      "target": "creation.energy",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.destiny.world-shaper",
+      "target": "creation.time",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.destiny.doom-herald",
+      "target": "creation.entropy",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.destiny.bridge-walker",
+      "target": "creation.spirit",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.condition.cursed",
+      "target": "creation.entropy",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.condition.enlightened",
+      "target": "creation.spirit",
+      "type": "rel.favors"
+    },
+    {
+      "source": "trait.condition.hunted",
+      "target": "creation.force",
+      "type": "rel.favors"
     }
   ]
 }

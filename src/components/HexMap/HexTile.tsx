@@ -1,7 +1,7 @@
 import type { HexTile, LocationSubtype } from '../../types';
 import type { HexVisibilityState } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
-import { hexPolygonPoints } from '../../lib/hexMath';
+import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
 import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
 
 // Hex tile display constants
@@ -39,7 +39,7 @@ export function HexTileComponent({
   const strokeColor = 'rgba(139, 105, 60, 0.3)';
   const points = hexPolygonPoints(cx, cy, size);
   const tileUrl = getHexTileUrl(tile.terrain);
-  const imgSize = size * 2;
+  const imgSize = size * HEX_IMG_SCALE;
 
   // Unexplored: only render dark fill, no content
   if (visibility === 'unexplored') {

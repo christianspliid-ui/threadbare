@@ -2,6 +2,7 @@ import React from 'react';
 import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
+import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 
 interface AgentDetailPanelProps {
   detail: AgentDetail;
@@ -10,14 +11,6 @@ interface AgentDetailPanelProps {
   onIntervene: () => void;
   onLocationClick: (locationId: string) => void;
 }
-
-// Tier colors: 1=gray, 2=purple, 3=gold, 4=red
-const TIER_COLORS: Record<number, string> = {
-  1: '#6b7280', // gray
-  2: '#a78bfa', // purple
-  3: '#eab308', // gold
-  4: '#ef4444', // red
-};
 
 // Domain display names
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
@@ -111,7 +104,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                     key={reach}
                     className="w-1.5 h-1.5 rounded-full flex-shrink-0"
                     style={{
-                      backgroundColor: '#b4a07f', // amber tone
+                      backgroundColor: ARCHETYPE_DOT_COLOR,
                     }}
                     title={DOMAIN_NAMES[reach]}
                   />
@@ -127,9 +120,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <span
               className="inline-block px-2.5 py-1 text-xs font-medium rounded"
               style={{
-                color: '#b4a07f',
-                backgroundColor: '#78716c40',
-                border: '1px solid #78716c80',
+                color: FACTION_TAG_COLOR,
+                backgroundColor: FACTION_TAG_BACKGROUND,
+                border: `1px solid ${FACTION_TAG_BORDER}`,
               }}
             >
               {detail.factionName}
@@ -225,8 +218,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               {detail.topBonds.map(bond => {
                 const sentimentColor =
                   bond.sentiment >= 0
-                    ? '#22c55e' // green
-                    : '#ef4444'; // red
+                    ? SENTIMENT_GREEN
+                    : SENTIMENT_RED;
                 const sentimentWidth = Math.abs(bond.sentiment) * 100;
 
                 return (
@@ -295,7 +288,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                     className="h-full transition-all duration-200 rounded"
                     style={{
                       width: `${detail.reputationScore * 100}%`,
-                      backgroundColor: detail.reputationScore >= 0.5 ? '#22c55e' : '#ef4444',
+                      backgroundColor: detail.reputationScore >= 0.5 ? SENTIMENT_GREEN : SENTIMENT_RED,
                       opacity: 0.7,
                     }}
                   />

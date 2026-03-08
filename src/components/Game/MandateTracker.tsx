@@ -1,16 +1,12 @@
 import { useState, useEffect } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
+import { ProgressBar } from '../shared/ProgressBar';
+import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 
 interface MandateTrackerProps {
   definition: MandateDefinition;
   state: MandateState;
 }
-
-const TYPE_COLORS: Record<string, string> = {
-  graph_state: '#d4a574',       // warm amber
-  sphere_dominance: '#5c6bc0',  // indigo
-  narrative: '#9c27b0',         // purple
-};
 
 const STAGE_ORDER = ['setup', 'escalation', 'culmination'] as const;
 
@@ -27,29 +23,31 @@ function getStagePipStatus(
   return 'empty';
 }
 
+const PIP_COLOR = MANDATE_TYPE_COLORS.graph_state;
+
 function renderStagePip(status: 'filled' | 'half' | 'empty') {
   if (status === 'filled') {
     return (
-      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#d4a574' }} data-testid="stage-pip" />
+      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: PIP_COLOR }} data-testid="stage-pip" />
     );
   }
   if (status === 'half') {
     return (
       <div
         className="w-2 h-2 rounded-full border"
-        style={{ borderColor: '#d4a574', backgroundColor: '#d4a57466' }}
+        style={{ borderColor: PIP_COLOR, backgroundColor: `${PIP_COLOR}66` }}
         data-testid="stage-pip"
       />
     );
   }
   return (
-    <div className="w-2 h-2 rounded-full border" style={{ borderColor: '#d4a574/30' }} data-testid="stage-pip" />
+    <div className="w-2 h-2 rounded-full border" style={{ borderColor: `${PIP_COLOR}4d` }} data-testid="stage-pip" />
   );
 }
 
 export function MandateTracker({ definition, state }: MandateTrackerProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const color = TYPE_COLORS[definition.type] ?? '#d4a574';
+  const color = MANDATE_TYPE_COLORS[definition.type] ?? MANDATE_TYPE_COLORS.graph_state;
   const pct = Math.round(state.progress * 100);
   const displayText = state.completed ? 'FULFILLED' : pct === 0 ? 'NEW' : `${pct}%`;
   const currentStageDef = definition.stages.find(s => s.stage === state.currentStage);
@@ -99,16 +97,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             {displayText}
           </span>
         </div>
-        <div className="w-full h-2 bg-stone-700 rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500 ease-out"
-            style={{
-              width: `${pct}%`,
-              backgroundColor: color,
-              boxShadow: `0 0 8px ${color}80`,
-            }}
-          />
-        </div>
+        <ProgressBar progress={state.progress} color={color} glow={true} />
       </div>
 
       {/* Expanded Popover */}
@@ -150,7 +139,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                   <div
                     className="flex items-center gap-2 mb-1"
                     style={{
-                      color: isCompleted ? '#10b981' : isCurrent ? color : '#6b7280',
+                      color: isCompleted ? SENTIMENT_GREEN : isCurrent ? color : '#6b7280',
                       opacity: isCompleted || isCurrent ? 1 : 0.5,
                     }}
                   >
@@ -161,7 +150,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
                   {isCurrent && (
                     <div className="ml-6 space-y-1">
                       {stageDef.conditions.map((cond, condIdx) => (
-                        <div key={condIdx} style={{ color: cond.met ? '#10b981' : '#9ca3af' }}>
+                        <div key={condIdx} style={{ color: cond.met ? SENTIMENT_GREEN : '#9ca3af' }}>
                           <span>{cond.met ? '✓' : '○'}</span>
                           <span className="ml-1">{cond.description}</span>
                         </div>
