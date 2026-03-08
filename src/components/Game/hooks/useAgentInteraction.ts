@@ -7,7 +7,9 @@ import { getRetinueAgents } from '../../../engine/retinue';
 import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
 import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
+import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
+import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
 import {
   getPresenceStrand,
   getDesiresStrand,
@@ -39,6 +41,7 @@ export function useAgentInteraction({
     slotId: string;
     interventionType: InterventionType;
   } | null>(null);
+  const [playingCardId, setPlayingCardId] = useState<string | null>(null);
 
   // ── Computed values ──
   const retinueAgents = useMemo(
@@ -125,7 +128,6 @@ export function useAgentInteraction({
     (encounterMode?: LocalEncounterMode) => {
       if (!pendingIntervention || !selectedAgentId) return;
 
-      const def = INTERVENTION_DEFINITIONS[pendingIntervention.interventionType];
       const slot = wheelSlots?.find(s => s.id === pendingIntervention.slotId);
       if (!slot?.sphere) return;
 
@@ -139,6 +141,16 @@ export function useAgentInteraction({
       });
 
       if (result.success) {
+        // Apply real world effects
+        const effectsResult = applyInterventionEffects({
+          graph: gameState.graph,
+          interventionType: pendingIntervention.interventionType,
+          targetAgentId: selectedAgentId,
+          sphere: slot.sphere,
+          tick: gameState.tick,
+          seed: gameState.seed,
+        });
+
         setGameState(prev => {
           const newPool = { ...prev.essencePool };
           newPool[slot.sphere!] = Math.max(
@@ -154,19 +166,25 @@ export function useAgentInteraction({
                 id: `evt_intervention_${prev.tick}_${Date.now()}`,
                 tick: prev.tick,
                 type: 'narrative' as const,
-                message: `${def.description} (${result.detected ? 'detected!' : 'undetected'})`,
+                message: `${effectsResult.consequenceMessage} (${result.detected ? 'detected!' : 'undetected'})`,
                 significance: result.detected ? 0.8 : 0.5,
                 sphere: slot.sphere!,
               },
             ],
           };
         });
+
+        // Set playing card and delayed close
+        setPlayingCardId(pendingIntervention.slotId);
+        setTimeout(() => {
+          setPlayingCardId(null);
+          setDrawerOpen(false);
+        }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
       }
 
       setPendingIntervention(null);
-      setDrawerOpen(false);
     },
-    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, setGameState]
+    [pendingIntervention, selectedAgentId, wheelSlots, gameState.essencePool, gameState.graph, gameState.tick, gameState.seed, setGameState]
   );
 
   const handleInterventionCancel = useCallback(() => {
@@ -220,6 +238,7 @@ export function useAgentInteraction({
     strandViewAgent,
     pendingIntervention,
     profileModalAgentId,
+    playingCardId,
     retinueAgents,
     agentDetail,
     agentInfoCard,
