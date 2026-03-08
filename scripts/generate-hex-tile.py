@@ -181,6 +181,87 @@ BIOME_REGISTRY = {
 }
 
 # ---------------------------------------------------------------------------
+# Magic overlay registry — sphere-specific thread patterns
+# ---------------------------------------------------------------------------
+
+MAGIC_REGISTRY = {
+    # Creation Spheres (8)
+    "force": {
+        "color": "#ff4444",
+        "bright": "#ff6b6b",
+        "form_language": "sharp directional streaks and impact radiants, lightning-bolt angles, shockwave arcs, arrow-like directional lines, explosive radiants from impact points",
+        "desc": "Force",
+    },
+    "matter": {
+        "color": "#8b6b4a",
+        "bright": "#a8886a",
+        "form_language": "crystalline lattices and hexagonal facets, mineral-like structures, hard-edged tessellating crystal formations, angular geometric nodes",
+        "desc": "Matter",
+    },
+    "energy": {
+        "color": "#ffd700",
+        "bright": "#ffe44d",
+        "form_language": "radiating spikes and star-burst coronas, pulsing outward from bright centers like tiny suns, flickering flame tongues, electric arcs, solar flare shapes",
+        "desc": "Energy",
+    },
+    "life": {
+        "color": "#00cc55",
+        "bright": "#33ff77",
+        "form_language": "organic branching veins roots and mycelium, Fibonacci spirals, tendril curls, capillary networks, cell-like nodes, the most natural-looking patterns",
+        "desc": "Life",
+    },
+    "mind": {
+        "color": "#2288ff",
+        "bright": "#44aaff",
+        "form_language": "neural dendrites and concentric rings, dendrite networks, eye-like nodes, mandala patterns at intersections, precise but complexly branching",
+        "desc": "Mind",
+    },
+    "spirit": {
+        "color": "#aa44dd",
+        "bright": "#cc66ff",
+        "form_language": "ascending wisps and ethereal ribbons, smoke-like trails rising, ghostly flame shapes, dissolving transparent edges, ribbons that partially fade into nothing",
+        "desc": "Spirit",
+    },
+    "time": {
+        "color": "#ff9933",
+        "bright": "#ffb355",
+        "form_language": "concentric ripples and overlapping echoes, clock-arc shapes, time-wave rings expanding from nodes, overlapping afterimages of the same thread visible in multiple moments",
+        "desc": "Time",
+    },
+    "entropy": {
+        "color": "#5a8a7a",
+        "bright": "#7aaa9a",
+        "form_language": "fracturing patterns and scattering particles, cracking and fragmenting at edges, dissolving into scattered motes, erosion lines",
+        "desc": "Entropy",
+    },
+    # Foundation Spheres (4)
+    "chaos": {
+        "color": "#8a8a8e",
+        "bright": "#aaaaae",
+        "form_language": "fractals and turbulent swirls, every tendril goes a different direction, no repeating pattern, like fractal lightning or turbulent fluid",
+        "desc": "Chaos",
+    },
+    "order": {
+        "color": "#d4af37",
+        "bright": "#e4cf57",
+        "form_language": "geometric grids and tessellations, clean straight lines, repeating symmetrical patterns, sacred geometry, crystalline lattice structures",
+        "desc": "Order",
+    },
+    "light": {
+        "color": "#ffeb99",
+        "bright": "#fff5cc",
+        "form_language": "expanding aureoles and radiant beams, warm radiance spreading outward from bright center points in concentric circles of illumination",
+        "desc": "Light",
+    },
+    "darkness": {
+        "color": "#4a3a8a",
+        "bright": "#6a5aaa",
+        "form_language": "absorbing voids with rim-glow, deep indigo holes that pull light in, void-like depths edged with faint luminous rims",
+        "desc": "Darkness",
+    },
+}
+
+# ---------------------------------------------------------------------------
 # Hex mask generation
 # ---------------------------------------------------------------------------
 
