@@ -632,6 +632,38 @@ export const CULTURAL_ORDEAL_OVERLAYS: Record<
   },
 };
 
+// ─── Ordeal Inspection Vignettes ────────────────────────────────
+//
+// Prose describing what a player/god observes when inspecting a location
+// with active ordeal activity, completed success, or failed attempt.
+
+export const ORDEAL_INSPECTION_VIGNETTES = {
+  inProgress: [
+    'The air thrums with barely-contained trial. A figure moves through the test, strain evident in every breath and gesture. The outcome hangs unresolved.',
+    'Ritual markers glow faintly on the ground, pulsing with the cadence of the ordeal\'s progression. The candidate struggles forward, will against demand.',
+    'The location crackles with sacred tension. An ordeal is underway—the veil between triumph and ruin paper-thin here.',
+    'Threads of consequence shimmer around the ordeal. The outcome is not yet written; the candidate still pushes against their limit.',
+    'The ground seems to hold its breath. An ordeal unfolds—a test older than kingdoms, demanding payment in will or blood.',
+    'Unresolved power coils in this place. The ordeal is active; success is still possible, but the way is steep and uncertain.',
+    'A figure stands at the threshold between trials, the ordeal\'s weight pressing down. The next moment will reshape them or break them.',
+    'The location is thick with challenge and determination. An ordeal is being faced; the candidate is neither victor nor corpse—yet.',
+    'Echoes of ancient tests linger here, now playing out again through a new candidate. The outcome remains suspended, waiting.',
+    'The air smells of sweat and magic. An ordeal is underway—hope and despair both possible in the next heartbeat.',
+  ],
+  completed: [
+    'The location is serene now, the ordeal\'s fire extinguished. A figure bears the marks of having passed through trial—scarred, changed, unmistakably stronger.',
+    'This place remembers victory. The ordeal has been completed; remnants of challenge still linger, but the candidate walks freely, bearing the weight of their triumph.',
+    'A glow of completion rests upon this location. The ordeal is finished; the candidate succeeded, and the land itself seems to acknowledge their new standing.',
+    'The traces of trial have faded, leaving behind only the echo of a completed ordeal. The candidate moves with the certainty of having endured and prevailed.',
+    'This location holds the silence of finished trials. The ordeal is complete; the candidate stands transformed, carrying proof of their passage in bearing and breath.',
+  ],
+  failed: [
+    'The ground is scarred here, torn by an ordeal that ended in defeat. The candidate retreated or was cast back; failure clings to this place like ash.',
+    'Something is broken here—not just in stone and structure, but in the air itself. An ordeal failed; the candidate was found wanting, and the trial\'s mercy is the only mercy they received.',
+    'The location is hollow now, drained. An ordeal was attempted and did not end in victory. The candidate bears the invisible marks of trial that broke them.',
+  ],
+};
+
 // ─── Lookup Functions ───────────────────────────────────────────
 
 /**

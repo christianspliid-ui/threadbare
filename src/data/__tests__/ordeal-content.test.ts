@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   ORDEAL_TEMPLATES,
   CULTURAL_ORDEAL_OVERLAYS,
+  ORDEAL_INSPECTION_VIGNETTES,
   getOrdealsByLocationType,
   getOrdealById,
 } from '../ordeal-content';
@@ -85,6 +86,31 @@ describe('ordeal-content', () => {
 
     it('getOrdealById should return undefined for unknown id', () => {
       expect(getOrdealById('ordeal.nonexistent')).toBeUndefined();
+    });
+  });
+
+  describe('ordeal inspection vignettes', () => {
+    it('should have 10 in-progress vignettes', () => {
+      expect(ORDEAL_INSPECTION_VIGNETTES.inProgress).toHaveLength(10);
+    });
+
+    it('should have 5 completed vignettes', () => {
+      expect(ORDEAL_INSPECTION_VIGNETTES.completed).toHaveLength(5);
+    });
+
+    it('should have 3 failed vignettes', () => {
+      expect(ORDEAL_INSPECTION_VIGNETTES.failed).toHaveLength(3);
+    });
+
+    it('all vignettes should be non-empty strings', () => {
+      const all = [
+        ...ORDEAL_INSPECTION_VIGNETTES.inProgress,
+        ...ORDEAL_INSPECTION_VIGNETTES.completed,
+        ...ORDEAL_INSPECTION_VIGNETTES.failed,
+      ];
+      for (const v of all) {
+        expect(v.length).toBeGreaterThan(20);
+      }
     });
   });
 });
