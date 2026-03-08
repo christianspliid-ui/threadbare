@@ -5,6 +5,7 @@ import {
   LIFECYCLE_TEMPLATES,
   SPHERE_VOCABULARY,
   VALUE_FLAVORS,
+  ARCHETYPE_EVENT_TEMPLATES,
 } from '../narrative-content';
 
 describe('narrative-content expanded', () => {
@@ -174,6 +175,51 @@ describe('narrative-content expanded', () => {
           tmpl.includes('{actor}'),
           `migration template missing {{actor}}: "${tmpl.slice(0, 50)}..."`
         ).toBe(true);
+      }
+    });
+  });
+
+  describe('archetype-event prose', () => {
+    it('should have templates for 5 priority archetypes × 6 priority events = 30 entries', () => {
+      const priorityArchetypes = ['tragic_hero', 'trickster', 'conqueror', 'healer', 'prophet'];
+      const priorityEvents = ['actor_death', 'action_critical', 'tier_transition', 'divine_intervention', 'contested_action', 'ordeal_completed'];
+      for (const arch of priorityArchetypes) {
+        for (const evt of priorityEvents) {
+          const key = `${arch}.${evt}`;
+          expect(ARCHETYPE_EVENT_TEMPLATES[key], `missing ${key}`).toBeDefined();
+          expect(ARCHETYPE_EVENT_TEMPLATES[key].length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('should have death + tier_transition for all 19 archetypes', () => {
+      const archetypes = [
+        'tragic_hero', 'trickster', 'conqueror', 'healer', 'prophet',
+        'guardian', 'wanderer', 'scholar', 'martyr', 'tyrant',
+        'mystic', 'rebel', 'builder', 'mentor', 'outcast',
+        'diplomat', 'hunter', 'dreamer', 'avenger',
+      ];
+      for (const arch of archetypes) {
+        expect(ARCHETYPE_EVENT_TEMPLATES[`${arch}.actor_death`], `missing ${arch}.actor_death`).toBeDefined();
+        expect(ARCHETYPE_EVENT_TEMPLATES[`${arch}.tier_transition`], `missing ${arch}.tier_transition`).toBeDefined();
+      }
+    });
+
+    it('total archetype-event templates should be >= 58', () => {
+      expect(Object.keys(ARCHETYPE_EVENT_TEMPLATES).length).toBeGreaterThanOrEqual(58);
+    });
+
+    it('all archetype-event templates should be non-empty strings', () => {
+      for (const [key, template] of Object.entries(ARCHETYPE_EVENT_TEMPLATES)) {
+        expect(typeof template, `${key} should be a string`).toBe('string');
+        expect(template.length, `${key} template is empty`).toBeGreaterThan(0);
+      }
+    });
+
+    it('should contain at least one {placeholder} in each template', () => {
+      for (const [key, template] of Object.entries(ARCHETYPE_EVENT_TEMPLATES)) {
+        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(template);
+        expect(hasPlaceholder, `${key} template missing placeholders: "${template.slice(0, 50)}..."`).toBe(true);
       }
     });
   });
