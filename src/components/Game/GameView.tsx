@@ -6,6 +6,7 @@ import { recalcVisibility, collectLOSSources } from '../../engine/visibility';
 import { useSimulation } from './hooks/useSimulation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
+import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 
 import { HexMap } from '../HexMap/HexMap';
@@ -24,14 +25,6 @@ import { ScryOverlay } from './ScryOverlay';
 import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
-import {
-  createScryState,
-  initializeCourt,
-  assignAgentToPosition,
-  demoteAgent,
-} from '../../engine/scry';
-import type { ScryState } from '../../types/scry';
-import type { Title } from '../../types/scry';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
@@ -62,20 +55,20 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const [viewLevel, setViewLevel] = useState<ViewLevel>('world');
   const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
   const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
-  const [scryState, setScryState] = useState<ScryState>(createScryState());
-  const [scryVisible, setScryVisible] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
 
   const hexMapRef = useRef<HexMapHandle>(null);
 
-  // Open scry callback (shared with hook and avatar HUD)
-  const handleOpenScry = useCallback(() => {
-    // Auto-initialize with high_house if not initialized
-    if (!scryState.initialized) {
-      setScryState(prev => initializeCourt(prev, 'high_house'));
-    }
-    setScryVisible(true);
-  }, [scryState.initialized]);
+  // ── Scry hook ──
+  const {
+    scryState,
+    scryVisible,
+    handleOpenScry,
+    handleScryAssign,
+    handleScryDemote,
+    handleCloseScry,
+    handleAvatarScryClick,
+  } = useScry({ gameState, setGameState, archetype });
 
   // ── Agent interaction hook ──
   const {
@@ -136,25 +129,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     archetype,
   });
 
-  // Handlers for scry and other view-level state
-
-  const handleScryAssign = useCallback((positionId: string, agentId: string, title: Title, cost: number) => {
-    // Spend essence from primary sphere
-    const primarySphere = archetype.sphereAlignment.primary;
-    setGameState(prev => {
-      const newPool = { ...prev.essencePool };
-      if (newPool[primarySphere] >= cost) {
-        newPool[primarySphere] -= cost;
-      }
-      return { ...prev, essencePool: newPool };
-    });
-
-    setScryState(prev => assignAgentToPosition(prev, positionId, agentId, title, cost, gameState.tick));
-  }, [archetype, gameState.tick]);
-
-  const handleScryDemote = useCallback((positionId: string) => {
-    setScryState(prev => demoteAgent(prev, positionId, gameState.tick));
-  }, [gameState.tick]);
+  // Handlers for view-level state
 
   const handleHexClick = useCallback((coord: { col: number; row: number }) => {
     setSelectedHex(coord);
@@ -182,11 +157,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     // Future: show info tooltip
   }, []);
 
-
-  const handleCloseScry = useCallback(() => {
-    setScryVisible(false);
-  }, []);
-
   const handleCenterOnAvatar = useCallback(() => {
     if (avatarPixelPos && hexMapRef.current) {
       hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 3.0);
@@ -196,11 +166,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const handleAvatarMoveClick = useCallback(() => {
     setMoveMode(true);
   }, []);
-
-
-  const handleAvatarScryClick = useCallback(() => {
-    handleOpenScry();
-  }, [handleOpenScry]);
 
   // Handle hex click in move mode
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
