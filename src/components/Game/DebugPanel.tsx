@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace } from '../../types/trace';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -219,6 +219,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <DilemmaResolutionDetail trace={trace as DilemmaResolutionTrace} />;
     case 'tick_summary':
       return <TickSummaryDetail trace={trace as TickSummaryTrace} />;
+    case 'ordeal_resolution':
+      return <OrdealResolutionDetail trace={trace as OrdealResolutionTrace} />;
     default:
       return <FallbackDetail trace={trace} />;
   }
@@ -414,6 +416,56 @@ const TickSummaryDetail = React.memo(function TickSummaryDetail({ trace }: { tra
               <div style={DETAIL_VALUE_STYLE}>
                 {phase}: {count}
               </div>
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+});
+
+const OrdealResolutionDetail = React.memo(function OrdealResolutionDetail({ trace }: { trace: OrdealResolutionTrace }) {
+  const successColor = TRACE_CATEGORY_COLORS.ordeal_resolution;
+  const failColor = TRACE_CATEGORY_COLORS.dilemma_resolution;
+
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Ordeal</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.ordealId}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Actor</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.actorId}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Encounter</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.encounterName}</div>
+      </div>
+      <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+        <div style={DETAIL_LABEL_STYLE}>Capability</div>
+        <div style={DETAIL_VALUE_STYLE}>
+          {trace.capability.toFixed(2)} / {trace.difficulty.toFixed(2)} (prob: {trace.probability.toFixed(2)})
+        </div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Roll Result</div>
+        <div style={{ ...DETAIL_VALUE_STYLE, color: trace.success ? successColor : failColor, fontWeight: 600 }}>
+          {trace.roll.toFixed(2)} — {trace.success ? 'SUCCESS' : 'FAILURE'}
+        </div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Status</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.status}</div>
+      </div>
+      {trace.traitChanges.length > 0 && (
+        <>
+          <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+            <div style={DETAIL_LABEL_STYLE}>Traits</div>
+          </div>
+          {trace.traitChanges.map((change, idx) => (
+            <div key={idx} style={DETAIL_ROW_STYLE}>
+              <div style={DETAIL_VALUE_STYLE}>{change}</div>
             </div>
           ))}
         </>
