@@ -268,14 +268,16 @@ describe('Ordeal Engine', () => {
     it('returns success when roll passes probability threshold', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Give actor high capability in iron
-      addTraitToActor(state.graph, actorId, 'trait.iron', 'iron', 5);
+      // Location is 'market', so first ordeal is Merchant's Gambit
+      // First encounter is 'Negotiation' with reach: 'gold'
+      // Give actor high capability in gold
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
 
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
-      // Resolve with deterministic roll
-      const result = resolveEncounter(state, progress, 30); // Low roll → success
+      // With high capability, even a mid-range roll should pass
+      const result = resolveEncounter(state, progress, 50); // Mid roll with high capability → success
 
       expect(result.success).toBe(true);
     });
@@ -286,7 +288,7 @@ describe('Ordeal Engine', () => {
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
-      // Resolve with high roll
+      // With default low capability and high roll, should fail
       const result = resolveEncounter(state, progress, 95); // High roll → failure
 
       expect(result.success).toBe(false);
@@ -308,14 +310,15 @@ describe('Ordeal Engine', () => {
     it('applies capability modifier based on domain', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Create two actors, one with high capability, one without
-      addTraitToActor(state.graph, actorId, 'trait.high', 'iron', 10);
+      // Location is 'market', first ordeal is Merchant's Gambit
+      // First encounter uses 'gold' reach
+      addTraitToActor(state.graph, actorId, 'trait.high', 'gold', 10);
 
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress1 = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
-      // With trait, 50 should pass
-      const result1 = resolveEncounter(state, progress1, 50);
+      // With high trait, mid-range roll should pass
+      const result1 = resolveEncounter(state, progress1, 60);
       expect(result1.success).toBe(true);
     });
 
@@ -336,10 +339,14 @@ describe('Ordeal Engine', () => {
     it('records outcome in history', () => {
       const { state, actorId } = buildTestGameState();
 
+      // Merchant's Gambit: first encounter needs 'gold', second needs 'eye'
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
+      addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
+
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 30);
+      const result = resolveEncounter(state, progress, 50);
       advanceOrdeal(state, progress, result.success, 1);
 
       expect(progress.history.length).toBe(1);
@@ -350,10 +357,14 @@ describe('Ordeal Engine', () => {
     it('increments currentEncounterIndex on success', () => {
       const { state, actorId } = buildTestGameState();
 
+      // Merchant's Gambit: first encounter needs 'gold'
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
+      addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
+
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 30);
+      const result = resolveEncounter(state, progress, 50);
       const initialIdx = progress.currentEncounterIndex;
       advanceOrdeal(state, progress, result.success, 1);
 
@@ -363,6 +374,10 @@ describe('Ordeal Engine', () => {
     it('sets status to completed on final encounter success', () => {
       const { state, actorId } = buildTestGameState();
 
+      // Merchant's Gambit: encounters need 'gold' and 'eye' and 'gold' again
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 10);
+      addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 10);
+
       const ordeals = getAvailableOrdeals(state, actorId);
       const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
 
@@ -370,7 +385,7 @@ describe('Ordeal Engine', () => {
       const ordeal = ordeals[0];
       for (let i = 0; i < ordeal.encounters.length; i++) {
         progress.currentEncounterIndex = i;
-        const result = resolveEncounter(state, progress, 30);
+        const result = resolveEncounter(state, progress, 50); // Mid-range roll with high capability
         advanceOrdeal(state, progress, result.success, i + 1);
       }
 
@@ -456,10 +471,10 @@ describe('Ordeal Engine', () => {
     });
 
     it('returns empty for unknown location type', () => {
-      const { state, graph } = buildTestGameState();
+      const { state } = buildTestGameState();
 
       const unknownLocId = 'loc.unknown';
-      graph.addNode({
+      state.graph.addNode({
         id: unknownLocId,
         type: 'location',
         name: 'UnknownLoc',
