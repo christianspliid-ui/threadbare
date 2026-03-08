@@ -341,7 +341,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           <button
             onClick={onClose}
             className="px-4 py-2 bg-amber-900/40 hover:bg-amber-900/60 text-amber-200 rounded text-sm transition-colors"
-            aria-label="close-modal"
+            aria-label={`Close profile for ${card.name}`}
           >
             Close
           </button>
