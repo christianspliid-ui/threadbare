@@ -9,6 +9,7 @@ import {
   SUB_LOCATION_TEMPLATES,
   ARTIFACT_LORE_PATTERNS,
   CULTURE_NAME_FRAGMENTS,
+  CULTURAL_PROSE_PALETTES,
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
@@ -26,6 +27,7 @@ import {
   type InsiderBeat,
   type SubLocationTemplate,
   type ArtifactLorePattern,
+  type CulturalProsePalette,
 } from '../culture-content';
 import { SPHERE_NAMES } from '../../types/index';
 import { REACH_DOMAINS } from '../../types/traits';
@@ -858,6 +860,54 @@ describe('culture-content', () => {
           expect(count).toBe(1);
         });
       }
+    });
+  });
+
+  // ─── Cultural Prose Palettes Tests ────────────────────────────────
+
+  describe('CULTURAL_PROSE_PALETTES', () => {
+    it('should have 12 palette entries (4 foundation + 8 creation)', () => {
+      expect(Object.keys(CULTURAL_PROSE_PALETTES)).toHaveLength(12);
+    });
+
+    it('each palette should have adjectives, verbs, rhythms, greetings, and oaths', () => {
+      for (const [id, palette] of Object.entries(CULTURAL_PROSE_PALETTES)) {
+        expect(Array.isArray(palette.adjectives), `${id} has adjectives array`).toBe(true);
+        expect(palette.adjectives.length, `${id} adjectives count`).toBeGreaterThanOrEqual(6);
+        expect(Array.isArray(palette.verbs), `${id} has verbs array`).toBe(true);
+        expect(palette.verbs.length, `${id} verbs count`).toBeGreaterThanOrEqual(6);
+        expect(Array.isArray(palette.rhythms), `${id} has rhythms array`).toBe(true);
+        expect(palette.rhythms.length, `${id} rhythms count`).toBeGreaterThanOrEqual(3);
+        expect(Array.isArray(palette.greetings), `${id} has greetings array`).toBe(true);
+        expect(palette.greetings.length, `${id} greetings count`).toBeGreaterThanOrEqual(2);
+        expect(Array.isArray(palette.oaths), `${id} has oaths array`).toBe(true);
+        expect(palette.oaths.length, `${id} oaths count`).toBeGreaterThanOrEqual(2);
+      }
+    });
+
+    it('all palette ids should be unique', () => {
+      const ids = Object.keys(CULTURAL_PROSE_PALETTES);
+      expect(new Set(ids).size).toBe(ids.length);
+    });
+
+    it('should cover all foundation spheres (chaos, order, light, darkness)', () => {
+      const ids = Object.keys(CULTURAL_PROSE_PALETTES);
+      expect(ids).toContain('chaos');
+      expect(ids).toContain('order');
+      expect(ids).toContain('light');
+      expect(ids).toContain('darkness');
+    });
+
+    it('should cover all creation spheres (force, matter, energy, life, mind, spirit, time, entropy)', () => {
+      const ids = Object.keys(CULTURAL_PROSE_PALETTES);
+      expect(ids).toContain('force');
+      expect(ids).toContain('matter');
+      expect(ids).toContain('energy');
+      expect(ids).toContain('life');
+      expect(ids).toContain('mind');
+      expect(ids).toContain('spirit');
+      expect(ids).toContain('time');
+      expect(ids).toContain('entropy');
     });
   });
 });
