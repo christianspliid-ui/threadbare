@@ -455,6 +455,61 @@ def generate_tile(biome: str, color: str, features: str | None, prompt_override:
     return str(out_path)
 
 
+def generate_magic_tile(sphere: str, output: Path | None, size: int,
+                        no_mask: bool, raw_also: bool, api_key: str) -> str:
+    """Generate a single magic sphere overlay tile. Returns output path."""
+
+    prompt = build_magic_prompt(sphere)
+    sphere_slug = sphere.lower()
+
+    if output:
+        out_path = Path(output)
+    else:
+        out_path = Path(__file__).parent.parent / "public" / "hex-tiles" / f"magic-{sphere_slug}.png"
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    print(f"Generating magic overlay: {sphere}")
+    print(f"Prompt ({len(prompt)} chars):")
+    print(f"  {prompt[:120]}...")
+    print()
+
+    print("Calling Imagen API...")
+    raw_img = generate_image(prompt, api_key)
+    print(f"  Got {raw_img.size[0]}x{raw_img.size[1]} image")
+
+    w, h = raw_img.size
+    if w != h:
+        side = min(w, h)
+        left = (w - side) // 2
+        top = (h - side) // 2
+        raw_img = raw_img.crop((left, top, left + side, top + side))
+    if raw_img.size != (size, size):
+        raw_img = raw_img.resize((size, size), Image.LANCZOS)
+
+    if raw_also:
+        raw_path = out_path.with_stem(out_path.stem + "-raw")
+        raw_img.save(raw_path, "PNG")
+        print(f"  Raw saved: {raw_path}")
+
+    print("Converting black to transparent...")
+    transparent_img = black_to_transparent(raw_img)
+
+    if not no_mask:
+        print("Applying hex mask...")
+        mask = make_hex_mask(size)
+        result = apply_hex_mask(transparent_img, mask)
+    else:
+        result = transparent_img
+
+    result.save(out_path, "PNG")
+    print(f"  Saved: {out_path}")
+    print("Done!")
+    print()
+
+    return str(out_path)
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
