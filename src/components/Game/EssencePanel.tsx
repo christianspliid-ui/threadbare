@@ -1,6 +1,7 @@
 import { SPHERE_NAMES, type SphereName } from '../../types';
 import type { EssencePool } from '../../types/influence';
 import { SphereIcon } from '../shared/SphereIcon';
+import { Tooltip } from '../shared/Tooltip';
 import { getSphereColor } from '../../data/sphereIcons';
 
 interface EssencePanelProps {
@@ -25,12 +26,14 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
   return (
     <div className="bg-stone-700/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
-        <h2
-          className="text-sm font-bold text-amber-100 uppercase tracking-widest"
-          style={{ fontFamily: 'Cinzel, serif' }}
-        >
-          Divine Essence
-        </h2>
+        <Tooltip id="ui.essence_panel">
+          <h2
+            className="text-sm font-bold text-amber-100 uppercase tracking-widest"
+            style={{ fontFamily: 'Cinzel, serif' }}
+          >
+            Divine Essence
+          </h2>
+        </Tooltip>
         <span className="text-xs text-amber-400/60 font-mono">
           {totalEssence.toFixed(1)} / {(maxEssence * 8).toFixed(0)}
         </span>

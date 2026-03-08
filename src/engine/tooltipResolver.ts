@@ -115,7 +115,7 @@ export function resolveTooltip(id: string): TooltipContent | null {
     if (suffix === 'unmaking') {
       return {
         label: 'The Unmaking',
-        desc: 'The final stage where all spheres collapse. The world returns to void.',
+        desc: 'The final stage where all spheres collapse. Tracked by {{ui.doom_bar}}. The world returns to void.',
       };
     }
 
@@ -123,7 +123,7 @@ export function resolveTooltip(id: string): TooltipContent | null {
     if (suffix === 'clock') {
       return {
         label: 'Doom Clock',
-        desc: 'A measure of how close the world draws to the Unmaking.',
+        desc: 'A measure of how close the world draws to the Unmaking. Managed via {{ui.mandate_tracker}}.',
       };
     }
 

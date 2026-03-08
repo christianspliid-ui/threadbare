@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalIcon } from '../shared/RivalIcon';
+import { Tooltip } from '../shared/Tooltip';
 
 interface RivalPanelProps {
   definitions: RivalDefinition[];
@@ -33,12 +34,14 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
   return (
     <div className="space-y-2">
       <div>
-        <h2
-          className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
-          style={{ fontFamily: 'Cinzel, serif' }}
-        >
-          Rival Gods
-        </h2>
+        <Tooltip id="ui.rival_panel">
+          <h2
+            className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
+            style={{ fontFamily: 'Cinzel, serif' }}
+          >
+            Rival Gods
+          </h2>
+        </Tooltip>
         <div className="mt-2 flex items-center gap-1.5">
           <span className="text-[10px] text-amber-200/40 uppercase tracking-wider font-semibold">Hostility</span>
         </div>

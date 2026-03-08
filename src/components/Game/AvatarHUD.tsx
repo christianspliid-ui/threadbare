@@ -1,4 +1,5 @@
 import { useMemo, useCallback } from 'react';
+import { Tooltip } from '../shared/Tooltip';
 
 interface AvatarHUDProps {
   avatarName: string;
@@ -124,15 +125,21 @@ export function AvatarHUD({
     <div style={CONTAINER_STYLE}>
       {/* Action Buttons Row */}
       <div style={BUTTONS_ROW_STYLE}>
-        <button onClick={onMoveClick} style={moveButtonStyle} title="Move">
-          Move
-        </button>
-        <button onClick={onWheelClick} style={OTHER_BUTTON_STYLE} title="Divine Wheel">
-          Wheel
-        </button>
-        <button onClick={onScryClick} style={OTHER_BUTTON_STYLE} title="Scry">
-          Scry
-        </button>
+        <Tooltip id="ui.avatar_move">
+          <button onClick={onMoveClick} style={moveButtonStyle}>
+            Move
+          </button>
+        </Tooltip>
+        <Tooltip id="ui.avatar_wheel">
+          <button onClick={onWheelClick} style={OTHER_BUTTON_STYLE}>
+            Wheel
+          </button>
+        </Tooltip>
+        <Tooltip id="ui.avatar_scry">
+          <button onClick={onScryClick} style={OTHER_BUTTON_STYLE}>
+            Scry
+          </button>
+        </Tooltip>
       </div>
 
       {/* Avatar Center Button */}
