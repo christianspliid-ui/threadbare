@@ -4,9 +4,10 @@ import type { AscendantArchetype } from '../../../types/influence';
 import type { LocalEncounterMode, InterventionType } from '../../../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
 import { getRetinueAgents } from '../../../engine/retinue';
-import { getAgentDetail } from '../../../engine/agentDetail';
+import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
 import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
+import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import {
   getPresenceStrand,
   getDesiresStrand,
@@ -34,6 +35,7 @@ export function useAgentInteraction({
   const [wheelVisible, setWheelVisible] = useState(false);
   const [wheelFeedback, setWheelFeedback] = useState<string | null>(null);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
+  const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
   const [pendingIntervention, setPendingIntervention] = useState<{
     slotId: string;
     interventionType: InterventionType;
@@ -76,6 +78,20 @@ export function useAgentInteraction({
       },
     };
   }, [strandViewAgent, gameState.graph]);
+
+  const agentInfoCard = useMemo(() => {
+    if (!selectedAgentId) return null;
+    const familiarity = getFamiliarity(gameState.familiarityMap, selectedAgentId);
+    const knowledgeLevel = getKnowledgeLevel(familiarity);
+    return getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap]);
+
+  const agentFullProfile = useMemo(() => {
+    if (!profileModalAgentId) return undefined;
+    const familiarity = getFamiliarity(gameState.familiarityMap, profileModalAgentId);
+    const knowledgeLevel = getKnowledgeLevel(familiarity);
+    return getAgentFullProfile(gameState.graph, profileModalAgentId, gameState.ascendantId, knowledgeLevel);
+  }, [profileModalAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap]);
 
   // ── Handlers ──
   const handleAgentSelect = useCallback((agentId: string) => {
@@ -195,14 +211,25 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId, retinueAgents, handleAgentSelect]);
 
+  const handleViewProfile = useCallback(() => {
+    if (selectedAgentId) setProfileModalAgentId(selectedAgentId);
+  }, [selectedAgentId]);
+
+  const handleCloseProfile = useCallback(() => {
+    setProfileModalAgentId(null);
+  }, []);
+
   return {
     selectedAgentId,
     wheelVisible,
     wheelFeedback,
     strandViewAgent,
     pendingIntervention,
+    profileModalAgentId,
     retinueAgents,
     agentDetail,
+    agentInfoCard,
+    agentFullProfile,
     wheelSlots,
     strandData,
     handleAgentSelect,
@@ -215,5 +242,7 @@ export function useAgentInteraction({
     handleViewPsyche,
     handleOpenWheel,
     handleAvatarWheelClick,
+    handleViewProfile,
+    handleCloseProfile,
   };
 }

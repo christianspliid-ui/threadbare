@@ -16,7 +16,8 @@ import { NarrativeFeed } from './NarrativeFeed';
 import { RivalPanel } from './RivalPanel';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
-import { AgentDetailPanel } from './AgentDetailPanel';
+import { AgentInfoCard } from './AgentInfoCard';
+import { AgentProfileModal } from './AgentProfileModal';
 import { AgentWheel } from './AgentWheel';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
@@ -85,8 +86,11 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     wheelVisible,
     wheelFeedback,
     pendingIntervention,
+    profileModalAgentId,
     retinueAgents,
     agentDetail,
+    agentInfoCard,
+    agentFullProfile,
     wheelSlots,
     strandData,
     handleAgentSelect,
@@ -99,6 +103,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleViewPsyche,
     handleOpenWheel,
     handleAvatarWheelClick,
+    handleViewProfile,
+    handleCloseProfile,
   } = useAgentInteraction({
     gameState,
     setGameState,
@@ -336,7 +342,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           </div>
         </div>
 
-        {/* Right sidebar - Debug Panel OR Agent Detail/Retinue */}
+        {/* Right sidebar - Debug Panel OR Agent Info Card/Retinue */}
         {debugPanelOpen ? (
           <DebugPanel
             currentTick={gameState.tick}
@@ -345,13 +351,11 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           />
         ) : (
           <div data-testid="right-sidebar" className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-800/90 overflow-y-auto">
-            {agentDetail ? (
-              <AgentDetailPanel
-                detail={agentDetail}
+            {agentInfoCard ? (
+              <AgentInfoCard
+                card={agentInfoCard}
+                onViewProfile={handleViewProfile}
                 onBack={handleBackFromAgentDetail}
-                onViewPsyche={handleViewPsyche}
-                onIntervene={handleOpenWheel}
-                onLocationClick={handleBackFromAgentDetail}
               />
             ) : (
               <div className="p-4">
@@ -400,6 +404,15 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           harvest={harvestResult}
           cycle={gameState.cycle}
           onBeginNextCycle={handleBeginNextCycle}
+        />
+      )}
+
+      {/* Agent Profile Modal overlay */}
+      {profileModalAgentId && agentInfoCard && (
+        <AgentProfileModal
+          card={agentInfoCard}
+          profile={agentFullProfile}
+          onClose={handleCloseProfile}
         />
       )}
     </div>
