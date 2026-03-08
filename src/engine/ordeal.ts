@@ -8,6 +8,7 @@
 
 import type { GameState } from '../types/gameState';
 import type { OrdealProgress, OrdealDefinition, EncounterOutcome } from '../types/ordeal';
+import type { OrdealResolutionTrace } from '../types/trace';
 import {
   ORDEAL_ABANDON_COOLDOWN,
 } from '../types/ordeal';
@@ -86,6 +87,7 @@ export function initiateOrdeal(
   ordealId: string,
   tick: number,
 ): OrdealProgress {
+  const ordeal = getOrdealById(ordealId);
   const progress: OrdealProgress = {
     ordealId,
     actorId,
@@ -97,16 +99,28 @@ export function initiateOrdeal(
 
   state.ordealProgress.push(progress);
 
-  // TODO: Task 6 will add ordeal_resolution to the trace union
-  // For now, emit as a narrative_generation trace as a workaround
-  if (typeof emitTrace === 'function') {
-    (emitTrace as any)({
-      category: 'ordeal_resolution',
-      agentId: actorId,
-      tick,
-      summary: `Ordeal initiated: ${ordealId}`,
-    } as any);
-  }
+  const firstEncounter = ordeal?.encounters[0];
+  const trace: OrdealResolutionTrace = {
+    id: state.traceBuffer?.length ?? 0,
+    tick,
+    timestamp: Date.now(),
+    category: 'ordeal_resolution',
+    agentId: actorId,
+    ordealId,
+    actorId,
+    encounterId: firstEncounter?.id ?? 'unknown',
+    encounterName: firstEncounter?.name ?? 'Unknown Encounter',
+    difficulty: firstEncounter?.difficulty ?? 0,
+    capability: 0,
+    probability: 0,
+    roll: 0,
+    success: false,
+    status: 'initiated',
+    traitChanges: [],
+    summary: `Ordeal initiated: ${ordealId}`,
+  };
+
+  emitTrace(trace);
 
   return progress;
 }
@@ -158,15 +172,27 @@ export function resolveEncounter(
   // Select the appropriate outcome
   const outcome = success ? encounter.onSuccess : encounter.onFailure;
 
-  // TODO: Task 6 will add ordeal_resolution to the trace union
-  if (typeof emitTrace === 'function') {
-    (emitTrace as any)({
-      category: 'ordeal_resolution',
-      agentId: progress.actorId,
-      tick: state.tick,
-      summary: `${encounter.id}: ${resolution.outcome} (roll ${resolution.roll})`,
-    } as any);
-  }
+  const trace: OrdealResolutionTrace = {
+    id: state.traceBuffer?.length ?? 0,
+    tick: state.tick,
+    timestamp: Date.now(),
+    category: 'ordeal_resolution',
+    agentId: progress.actorId,
+    ordealId: progress.ordealId,
+    actorId: progress.actorId,
+    encounterId: encounter.id,
+    encounterName: encounter.name,
+    difficulty: encounter.difficulty,
+    capability,
+    probability,
+    roll: resolution.roll,
+    success,
+    status: 'active',
+    traitChanges: outcome.traitChanges ?? [],
+    summary: `${encounter.id}: ${resolution.outcome} (roll ${resolution.roll.toFixed(2)})`,
+  };
+
+  emitTrace(trace);
 
   return { success, outcome };
 }
@@ -211,15 +237,27 @@ export function advanceOrdeal(
     progress.status = 'abandoned';
   }
 
-  // TODO: Task 6 will add ordeal_resolution to the trace union
-  if (typeof emitTrace === 'function') {
-    (emitTrace as any)({
-      category: 'ordeal_resolution',
-      agentId: progress.actorId,
-      tick,
-      summary: `Advanced ordeal: ${success ? 'success' : 'abandoned'}`,
-    } as any);
-  }
+  const trace: OrdealResolutionTrace = {
+    id: state.traceBuffer?.length ?? 0,
+    tick,
+    timestamp: Date.now(),
+    category: 'ordeal_resolution',
+    agentId: progress.actorId,
+    ordealId: progress.ordealId,
+    actorId: progress.actorId,
+    encounterId: encounter.id,
+    encounterName: encounter.name,
+    difficulty: encounter.difficulty,
+    capability: 0,
+    probability: 0,
+    roll: 0,
+    success,
+    status: progress.status,
+    traitChanges: [],
+    summary: `Advanced ordeal: ${success ? 'success' : 'abandoned'}`,
+  };
+
+  emitTrace(trace);
 }
 
 /**
