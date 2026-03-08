@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace, FamiliarityChangeTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace } from '../../types/trace';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -223,6 +223,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <OrdealResolutionDetail trace={trace as OrdealResolutionTrace} />;
     case 'familiarity_change':
       return <FamiliarityChangeDetail trace={trace as FamiliarityChangeTrace} />;
+    case 'intervention_effect':
+      return <InterventionEffectDetail trace={trace as InterventionEffectTrace} />;
     default:
       return <FallbackDetail trace={trace} />;
   }
@@ -512,6 +514,47 @@ const FamiliarityChangeDetail = React.memo(function FamiliarityChangeDetail({ tr
         <div style={DETAIL_VALUE_STYLE}>
           +{trace.amount.toFixed(2)} (×{trace.multiplier.toFixed(1)})
         </div>
+      </div>
+    </div>
+  );
+});
+
+const InterventionEffectDetail = React.memo(function InterventionEffectDetail({ trace }: { trace: InterventionEffectTrace }) {
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Intervention</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.interventionType}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Target</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.targetAgentName} ({trace.targetAgentId})</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Sphere</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.sphere}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Ticks Left</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.ticksRemaining}</div>
+      </div>
+      {trace.effects.length > 0 && (
+        <>
+          <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+            <div style={DETAIL_LABEL_STYLE}>Effects</div>
+          </div>
+          {trace.effects.map((effect, idx) => (
+            <div key={idx} style={DETAIL_ROW_STYLE}>
+              <div style={DETAIL_VALUE_STYLE}>• {effect}</div>
+            </div>
+          ))}
+        </>
+      )}
+      <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+        <div style={DETAIL_LABEL_STYLE}>Consequence</div>
+      </div>
+      <div style={{ ...DETAIL_AREA_STYLE, background: PANEL_STYLES.detailBg, padding: '8px', borderRadius: '3px', fontStyle: 'italic', color: PANEL_STYLES.textColor, fontFamily: 'sans-serif' }}>
+        "{trace.consequenceMessage}"
       </div>
     </div>
   );
