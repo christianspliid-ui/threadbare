@@ -31,6 +31,7 @@ import {
   STAKES_EXTREME_SENTIMENT,
   STAKES_FACTION_LEADER,
   STAKES_TERRITORY_CONTROL,
+  STAKES_BASE,
   DILEMMA_MUTUAL_TRUST_SENTIMENT,
   DILEMMA_MUTUAL_TRUST_STRENGTH,
   DILEMMA_BETRAYAL_SENTIMENT,
@@ -324,7 +325,7 @@ export function computeStakes(
   isFactionLeader: boolean,
   isTerritory: boolean,
 ): number {
-  let stakes = 0;
+  let stakes = STAKES_BASE; // Base floor — every interaction has minimum stakes
 
   if (domain === 'gold') stakes += STAKES_DOMAIN_GOLD;
   if (domain === 'iron') stakes += STAKES_DOMAIN_IRON;

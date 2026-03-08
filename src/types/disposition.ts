@@ -68,7 +68,10 @@ export const REPUTATION_DECAY_PER_TICK = 0.005;
 export const INTERACTION_LOG_CAP = 10;
 
 /** Stakes threshold above which a dilemma triggers narrative event */
-export const DILEMMA_STAKES_THRESHOLD = 0.6;
+export const DILEMMA_STAKES_THRESHOLD = 0.3;
+
+/** Base stakes floor — every dilemma candidate gets this minimum to enable non-gold/non-iron spheres */
+export const STAKES_BASE = 0.15;
 
 /** Reputation boost when agent cooperates */
 export const REPUTATION_UPDATE_COOPERATE = 0.05;

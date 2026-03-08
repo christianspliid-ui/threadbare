@@ -209,6 +209,12 @@ export function seedWorld(
 
     const locationSubtype = pickLocationSubtype(rng, tile.terrain, i, locCount);
 
+    // Initialize sphereInfluence on each location (used by mandate evaluation)
+    const sphereInfluence: Record<string, number> = {};
+    for (const sp of SPHERE_NAMES) {
+      sphereInfluence[sp] = (sphereBiases as Record<string, number>)[sp] ?? (rng() * 0.1);
+    }
+
     graph.addNode({
       id,
       type: 'location',
@@ -220,6 +226,7 @@ export function seedWorld(
         hexRow: tile.coord.row,
         terrain: tile.terrain,
         sphereBiases,
+        sphereInfluence,
       },
     });
     locationIds.push(id);
@@ -264,6 +271,38 @@ export function seedWorld(
       },
     });
     factionIds.push(id);
+  }
+
+  // ── Seed graph structures for mandate evaluation ──────────
+  // Give each location 1-2 constructed_by edges (to random factions/individuals later)
+  // and 1 controls edge to the strongest faction at each location
+  for (let li = 0; li < locationIds.length; li++) {
+    const locId = locationIds[li];
+    // Controls: first faction controls first location, etc. (round-robin)
+    if (factionIds.length > 0) {
+      const controllingFaction = factionIds[li % factionIds.length];
+      graph.addEdge({
+        id: `edge_controls_${li}`,
+        source: controllingFaction,
+        target: locId,
+        type: 'controls',
+        properties: { influence: 0.5 + rng() * 0.3 },
+      });
+    }
+    // Constructed_by: 1-2 structures per location (constructed by factions)
+    const structureCount = 1 + Math.floor(rng() * 2);
+    for (let si = 0; si < structureCount; si++) {
+      if (factionIds.length > 0) {
+        const builder = factionIds[Math.floor(rng() * factionIds.length)];
+        graph.addEdge({
+          id: `edge_built_${li}_${si}`,
+          source: builder,
+          target: locId,
+          type: 'constructed_by',
+          properties: { structureType: si === 0 ? 'settlement' : 'fortification' },
+        });
+      }
+    }
   }
 
   // ── Individuals ──────────────────────────────────────────
