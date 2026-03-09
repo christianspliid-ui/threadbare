@@ -156,24 +156,24 @@ describe('chaikinSmooth', () => {
 });
 
 describe('ensureClockwise', () => {
-  it('does not reverse already-clockwise loops', () => {
-    const cw: ContourLoop = [
-      { x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }, { x: 0, y: 10 },
-    ];
-    // In screen coordinates (y down), clockwise is positive
-    expect(signedArea(cw)).toBeGreaterThan(0);
-    const result = ensureClockwise([...cw]);
-    expect(signedArea(result)).toBeGreaterThan(0);
-  });
-
-  it('reverses CCW loops to CW', () => {
+  it('does not reverse already-CCW loops (prototype convention)', () => {
     const ccw: ContourLoop = [
       { x: 0, y: 0 }, { x: 0, y: 10 }, { x: 10, y: 10 }, { x: 10, y: 0 },
     ];
-    // In screen coordinates (y down), CCW is negative
+    // Prototype convention: ensureClockwise ensures negative signedArea (CCW in screen coords)
     expect(signedArea(ccw)).toBeLessThan(0);
     const result = ensureClockwise([...ccw]);
-    expect(signedArea(result)).toBeGreaterThan(0);
+    expect(signedArea(result)).toBeLessThan(0);
+  });
+
+  it('reverses CW loops to CCW (prototype convention)', () => {
+    const cw: ContourLoop = [
+      { x: 0, y: 0 }, { x: 10, y: 0 }, { x: 10, y: 10 }, { x: 0, y: 10 },
+    ];
+    // In screen coordinates (y down), CW is positive — should be reversed
+    expect(signedArea(cw)).toBeGreaterThan(0);
+    const result = ensureClockwise([...cw]);
+    expect(signedArea(result)).toBeLessThan(0);
   });
 });
 

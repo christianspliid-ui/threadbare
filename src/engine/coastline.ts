@@ -23,6 +23,8 @@ export interface ScalarFieldResult {
   fieldRes: number;
   canvasW: number;
   canvasH: number;
+  /** Margin added to hex positions in field space; must be subtracted from contour output. */
+  margin: number;
 }
 
 /**
@@ -77,7 +79,7 @@ export function buildScalarField(
     }
   }
 
-  return { field, gridW, gridH, fieldRes, canvasW, canvasH };
+  return { field, gridW, gridH, fieldRes, canvasW, canvasH, margin };
 }
 
 // ─── Marching Squares Iso-Contour Extraction ──────────────────────
@@ -238,7 +240,9 @@ export function signedArea(loop: ContourLoop): number {
 }
 
 export function ensureClockwise(loop: ContourLoop): ContourLoop {
-  if (signedArea(loop) < 0) loop.reverse();
+  // In screen coordinates (Y-down), positive signedArea = CW.
+  // Prototype convention: reverse if positive → ensure CCW (consistent outward normals).
+  if (signedArea(loop) > 0) loop.reverse();
   return loop;
 }
 
@@ -328,6 +332,13 @@ function processLoops(
   return loops.filter(l => l.length >= minLoopPoints);
 }
 
+/** Shift all contour points back to hexToPixel coordinate space by subtracting the field margin. */
+function shiftLoops(loops: ContourLoop[], margin: number): ContourLoop[] {
+  return loops.map(loop =>
+    loop.map(p => ({ x: p.x - margin, y: p.y - margin })),
+  );
+}
+
 /**
  * Full coastline computation pipeline.
  */
@@ -339,7 +350,7 @@ export function computeCoastline(
   seed: number,
   config: CoastlineConfig = COASTLINE_DEFAULTS,
 ): CoastlineData {
-  const { field, gridW, gridH, fieldRes } = buildScalarField(tiles, hexSize, cols, rows, config);
+  const { field, gridW, gridH, fieldRes, margin } = buildScalarField(tiles, hexSize, cols, rows, config);
 
   const loops = processLoops(
     field, gridW, gridH,
@@ -369,7 +380,13 @@ export function computeCoastline(
     );
   }
 
-  return { loops, shallowLoops };
+  // Shift contour coordinates from field-space back to hexToPixel-space.
+  // The scalar field adds a margin offset to hex positions for smooth edge rolloff;
+  // this must be subtracted so contour paths align with hex tile rendering.
+  return {
+    loops: shiftLoops(loops, margin),
+    shallowLoops: shiftLoops(shallowLoops, margin),
+  };
 }
 
 // ─── SVG Path Conversion ──────────────────────────────────────────
