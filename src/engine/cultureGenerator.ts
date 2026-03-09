@@ -28,6 +28,7 @@ import {
 import type { WorldGraph } from './graph';
 import type { FoundationBalances } from '../types/worldSoul';
 import { DEFAULT_FOUNDATION_BALANCES } from '../types/worldSoul';
+import { generateCultureFlag } from './cultureFlag';
 
 /** Merge arrays and deduplicate */
 function mergeUnique(...arrays: string[][]): string[] {
@@ -241,11 +242,15 @@ export function generateCultures(
     const identity = composeCultureIdentity(foundationId, spheres, biome);
     const name = generateCultureName(identity, rng);
 
+    // Generate deterministic flag from seeded PRNG
+    const flagSeed = Math.floor(rng() * 0xFFFFFFFF);
+    const flagSvg = generateCultureFlag(identity, flagSeed);
+
     graph.addNode({
       id,
       type: 'actor',
       name,
-      properties: { actorType: 'culture', cultureIdentity: identity },
+      properties: { actorType: 'culture', cultureIdentity: identity, flagSvg },
     });
     cultureIds.push(id);
   }
