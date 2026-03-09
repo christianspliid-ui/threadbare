@@ -2971,7 +2971,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.scholar_aid',
     name: 'The Academic Preservation',
-    locationTypes: ['library', 'ruins', 'temple'],
+    locationTypes: ['ruins', 'temple'],
     reachPrimary: 'eye',
     reachSecondary: 'heart',
     encounterType: 'assist',
@@ -3626,7 +3626,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.sanctuary_construction',
     name: 'The Sanctuary Construction',
-    locationTypes: ['cave', 'mining', 'unexplored_poi'],
+    locationTypes: ['mining', 'unexplored_poi'],
     reachPrimary: 'stone',
     reachSecondary: 'heart',
     encounterType: 'build',
@@ -4013,6 +4013,121 @@ export const ENCOUNTER_SYSTEM_CONNECTIONS: {
     },
   ],
 };
+
+// ─── Encounter Verb/Action/Noun Pools ────────────────────────────
+
+/** Verbs for encounter narratives (base form — 's' is appended for 3rd person) */
+const ENCOUNTER_VERB_POOL = [
+  'stir', 'pulse', 'howl', 'surge', 'seethe', 'coil', 'groan',
+  'tremble', 'shift', 'crack', 'burn', 'ring', 'echo', 'flash',
+  'waver', 'flicker', 'twist', 'shatter', 'bloom', 'fade',
+];
+
+/** Action phrases for {action} placeholder */
+const ENCOUNTER_ACTION_POOL = [
+  'practiced hands', 'iron will', 'careful deliberation',
+  'raw instinct', 'patient skill', 'fierce focus',
+  'quiet precision', 'desperate strength', 'steady rhythm',
+];
+
+/** Nouns for {noun} placeholder */
+const ENCOUNTER_NOUN_POOL = [
+  'purpose', 'strength', 'resolve', 'shadow', 'faith',
+  'devotion', 'silence', 'defiance', 'memory', 'ruin',
+  'ambition', 'cunning', 'valor', 'wisdom', 'fury',
+];
+
+// ─── Narrative Resolver ──────────────────────────────────────────
+
+/**
+ * Simple deterministic hash from a string seed → number.
+ * Used to pick words consistently for the same encounter step.
+ */
+function simpleHash(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+/**
+ * Resolve template placeholders in an encounter narrative string.
+ *
+ * Replaces {actor}, {adj}, {verb}, {verb}s, {themselves}, {their},
+ * {them}, {They}, {they}, {action}, {noun}, {target}, {it}.
+ *
+ * Multiple occurrences of {adj} in the same string get different adjectives
+ * by cycling through the pool with an incrementing offset.
+ */
+export function resolveEncounterNarrative(
+  narrative: string,
+  actorName: string,
+  stepId: string,
+  threatRating: string = 'moderate',
+): string {
+  const seed = simpleHash(stepId);
+
+  // Pick adjective tier based on threat rating
+  const tierKey =
+    threatRating === 'trivial' || threatRating === 'easy' ? 'early'
+    : threatRating === 'hard' || threatRating === 'deadly' ? 'late'
+    : 'mid';
+  const adjPool = ENCOUNTER_DIFFICULTY_TIERS[tierKey].toneAdjectives;
+
+  let text = narrative;
+
+  // Replace {actor} globally
+  text = text.replace(/\{actor\}/g, actorName);
+
+  // Replace pronouns
+  text = text.replace(/\{themselves\}/g, 'themselves');
+  text = text.replace(/\{their\}/g, 'their');
+  text = text.replace(/\{them\}/g, 'them');
+  text = text.replace(/\{They\}/g, 'They');
+  text = text.replace(/\{they\}/g, 'they');
+  text = text.replace(/\{it\}/g, 'it');
+
+  // Replace {target} with generic (no target context in display)
+  text = text.replace(/\{target\}/g, 'their opponent');
+
+  // Replace {verb}s first (before {verb}) — base form + 's'
+  let verbIdx = seed;
+  text = text.replace(/\{verb\}s/g, () => {
+    const verb = ENCOUNTER_VERB_POOL[verbIdx % ENCOUNTER_VERB_POOL.length];
+    verbIdx++;
+    return verb + 's';
+  });
+  // Replace remaining {verb} — also conjugated 3rd person
+  text = text.replace(/\{verb\}/g, () => {
+    const verb = ENCOUNTER_VERB_POOL[verbIdx % ENCOUNTER_VERB_POOL.length];
+    verbIdx++;
+    return verb + 's';
+  });
+
+  // Replace {adj} — cycle through pool for variety
+  let adjIdx = seed;
+  text = text.replace(/\{adj\}/g, () => {
+    const adj = adjPool[adjIdx % adjPool.length];
+    adjIdx++;
+    return adj;
+  });
+
+  // Replace {action}
+  text = text.replace(/\{action\}/g, () => {
+    return ENCOUNTER_ACTION_POOL[seed % ENCOUNTER_ACTION_POOL.length];
+  });
+
+  // Replace {noun}
+  let nounIdx = seed;
+  text = text.replace(/\{noun\}/g, () => {
+    const noun = ENCOUNTER_NOUN_POOL[nounIdx % ENCOUNTER_NOUN_POOL.length];
+    nounIdx++;
+    return noun;
+  });
+
+  return text;
+}
 
 // ─── Lookup Functions ───────────────────────────────────────────
 

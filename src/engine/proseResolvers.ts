@@ -16,6 +16,8 @@ import {
   SUBTYPE_ESTABLISHING_PROSE,
   FACTION_CONTROL_PROSE,
   POPULATION_PROSE_TEMPLATES,
+  ARCHETYPE_PROSE,
+  DISPOSITION_PROSE,
 } from '../data/prose-layer-content';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -292,6 +294,161 @@ export function populationResolver(nodeId: string, graph: WorldGraph, seed: numb
       priority: 50,
       category: 'character',
       source: 'populationResolver',
+    },
+  ];
+}
+
+// ─── Agent Resolvers ──────────────────────────────────────────
+
+/**
+ * archetypeResolver — agent character prose by narrative archetype.
+ * Priority: 100 (origin)
+ * Category: 'origin'
+ *
+ * Reads narrativeArchetype from agent node properties.
+ * Looks up ARCHETYPE_PROSE[archetype] and picks template via seeded PRNG.
+ * Replaces {name} placeholder with agent name.
+ */
+export function archetypeResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  const archetype = node.properties?.narrativeArchetype as string | undefined;
+  if (!archetype) return [];
+
+  const templates = ARCHETYPE_PROSE[archetype];
+  if (!templates) return [];
+
+  const template = pickTemplate(templates, seed);
+  if (!template) return [];
+
+  const text = replacePlaceholder(template, 'name', node.name);
+
+  return [
+    {
+      text,
+      priority: 100,
+      category: 'origin',
+      source: 'archetypeResolver',
+    },
+  ];
+}
+
+/**
+ * agentCultureResolver — agent culture-affiliated prose via belongs_to edge.
+ * Priority: 90 (character)
+ * Category: 'character'
+ *
+ * Agent -> belongs_to -> Culture node
+ * Reads cultureIdentity.foundationPair from culture.
+ * Looks up CULTURE_LOCATION_PROSE[foundationPair] and picks template via seeded PRNG.
+ */
+export function agentCultureResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  // Find outgoing belongs_to edges
+  const edges = graph.getOutgoingEdges(nodeId, 'belongs_to');
+  if (edges.length === 0) return [];
+
+  // Get first culture edge
+  const cultureEdge = edges[0];
+  const cultureNode = graph.getNode(cultureEdge.target);
+  if (!cultureNode) return [];
+
+  // Extract foundationPair from cultureIdentity
+  const cultureIdentity = cultureNode.properties?.cultureIdentity as
+    | { foundationPair?: string }
+    | undefined;
+  if (!cultureIdentity?.foundationPair) return [];
+
+  const templates = CULTURE_LOCATION_PROSE[cultureIdentity.foundationPair];
+  if (!templates) return [];
+
+  const template = pickTemplate(templates, seed);
+  if (!template) return [];
+
+  return [
+    {
+      text: template,
+      priority: 90,
+      category: 'character',
+      source: 'agentCultureResolver',
+    },
+  ];
+}
+
+/**
+ * agentFactionResolver — agent faction membership prose via member_of edge.
+ * Priority: 70 (character)
+ * Category: 'character'
+ *
+ * Agent -> member_of -> Faction node
+ * Picks from FACTION_CONTROL_PROSE via seeded PRNG.
+ * Replaces {faction} placeholder with faction name.
+ */
+export function agentFactionResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  // Find outgoing member_of edges
+  const edges = graph.getOutgoingEdges(nodeId, 'member_of');
+  if (edges.length === 0) return [];
+
+  // Get first faction edge
+  const factionEdge = edges[0];
+  const factionNode = graph.getNode(factionEdge.target);
+  if (!factionNode) return [];
+
+  const templates = FACTION_CONTROL_PROSE;
+  if (templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed);
+  if (!template) return [];
+
+  const text = replacePlaceholder(template, 'faction', factionNode.name);
+
+  return [
+    {
+      text,
+      priority: 70,
+      category: 'character',
+      source: 'agentFactionResolver',
+    },
+  ];
+}
+
+/**
+ * dispositionResolver — agent cooperation strategy prose.
+ * Priority: 60 (character)
+ * Category: 'character'
+ *
+ * Reads cooperationStrategy from agent node properties.
+ * Looks up DISPOSITION_PROSE[strategy] and picks template via seeded PRNG.
+ * Replaces {name} placeholder with agent name.
+ * CRITICAL: Strategies use hyphens (tit-for-tat, always-cooperate, etc.), not underscores.
+ */
+export function dispositionResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  const strategy = node.properties?.cooperationStrategy as string | undefined;
+  if (!strategy) return [];
+
+  const templates = DISPOSITION_PROSE[strategy];
+  if (!templates) return [];
+
+  const template = pickTemplate(templates, seed);
+  if (!template) return [];
+
+  const text = replacePlaceholder(template, 'name', node.name);
+
+  return [
+    {
+      text,
+      priority: 60,
+      category: 'character',
+      source: 'dispositionResolver',
     },
   ];
 }

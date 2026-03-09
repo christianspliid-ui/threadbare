@@ -3,7 +3,6 @@ import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { ScryState, Title } from '../../../types/scry';
 import {
-  createScryState,
   initializeCourt,
   assignAgentToPosition,
   demoteAgent,
@@ -13,10 +12,11 @@ interface UseScryParams {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   archetype: AscendantArchetype;
+  scryState: ScryState;
+  setScryState: React.Dispatch<React.SetStateAction<ScryState>>;
 }
 
-export function useScry({ gameState, setGameState, archetype }: UseScryParams) {
-  const [scryState, setScryState] = useState<ScryState>(createScryState());
+export function useScry({ gameState, setGameState, archetype, scryState, setScryState }: UseScryParams) {
   const [scryVisible, setScryVisible] = useState(false);
 
   // Open scry callback (shared with hook and avatar HUD)
@@ -26,7 +26,7 @@ export function useScry({ gameState, setGameState, archetype }: UseScryParams) {
       setScryState(prev => initializeCourt(prev, 'high_house'));
     }
     setScryVisible(true);
-  }, [scryState.initialized]);
+  }, [scryState.initialized, setScryState]);
 
   const handleScryAssign = useCallback((positionId: string, agentId: string, title: Title, cost: number) => {
     // Spend essence from primary sphere
@@ -40,11 +40,11 @@ export function useScry({ gameState, setGameState, archetype }: UseScryParams) {
     });
 
     setScryState(prev => assignAgentToPosition(prev, positionId, agentId, title, cost, gameState.tick));
-  }, [archetype, gameState.tick, setGameState]);
+  }, [archetype, gameState.tick, setGameState, setScryState]);
 
   const handleScryDemote = useCallback((positionId: string) => {
     setScryState(prev => demoteAgent(prev, positionId, gameState.tick));
-  }, [gameState.tick]);
+  }, [gameState.tick, setScryState]);
 
   const handleCloseScry = useCallback(() => {
     setScryVisible(false);

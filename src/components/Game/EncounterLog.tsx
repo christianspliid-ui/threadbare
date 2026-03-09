@@ -45,6 +45,7 @@ export const EncounterLog = memo(function EncounterLog({
             style={{
               fontSize: 'var(--text-sm)',
               color: isAbandoned ? 'var(--text-tertiary)' : 'var(--text-primary)',
+              fontFamily: 'var(--font-display)',
             }}
           >
             {agentName} faces {template.name}
@@ -53,10 +54,11 @@ export const EncounterLog = memo(function EncounterLog({
 
         {/* Threat rating badge */}
         <div
-          className="flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold whitespace-nowrap"
+          className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap border"
           style={{
-            backgroundColor: threatColor,
-            color: 'white',
+            backgroundColor: 'var(--bg-deep)',
+            color: threatColor,
+            borderColor: threatColor,
           }}
         >
           {template.threatRating}
@@ -65,22 +67,30 @@ export const EncounterLog = memo(function EncounterLog({
         {/* Status indicator */}
         <div className="flex-shrink-0">
           {isCompleted && (
-            <span style={{ color: '#4ade80', fontSize: '16px' }}>✓</span>
+            <span style={{ color: 'var(--status-success, #4ade80)', fontSize: '16px' }}>✓</span>
           )}
           {isAbandoned && (
-            <span style={{ color: '#ef4444', fontSize: '16px' }}>✕</span>
+            <span style={{ color: 'var(--status-error, #ef4444)', fontSize: '16px' }}>✕</span>
           )}
         </div>
       </div>
 
       {/* Step progress indicators (dots) */}
-      <div className="flex gap-1 mb-3">
+      <div
+        className="flex gap-1 mb-3"
+        role="group"
+        aria-label={`Encounter progress: step ${progress.currentEncounterIndex + 1} of ${template.steps.length}`}
+      >
         {template.steps.map((step, idx) => {
           const isCurrentOrPassed = idx <= progress.currentEncounterIndex;
+          const isCurrent = idx === progress.currentEncounterIndex;
+          const stepLabel = isCurrent ? 'current' : isCurrentOrPassed ? 'completed' : 'upcoming';
           return (
             <div
               key={step.id}
               className="w-2 h-2 rounded-full transition-opacity"
+              role="img"
+              aria-label={`Step ${idx + 1}: ${step.name} (${stepLabel})`}
               style={{
                 backgroundColor: isCurrentOrPassed
                   ? 'var(--accent-gold)'

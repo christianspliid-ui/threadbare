@@ -1,6 +1,8 @@
-import { useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
+import type { ScryState } from '../../types/scry';
+import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import { getEncountersByLocationType, getEncounterById } from '../../data/encounter-content';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -45,12 +47,15 @@ interface GameViewProps {
 }
 
 export function GameView({ archetype, avatarName, cosmology, seed }: GameViewProps) {
+  // ── Scry state (lifted here so simulation + navigation can use it for LOS) ──
+  const [scryState, setScryState] = useState<ScryState>(createScryState);
+
   // ── Use simulation hook ──
   const {
     gameState, setGameState, tiles, running, speed,
     harvestResult, doTick, handleBeginNextCycle, handleToggleRunning,
     setSpeed, seasonName, year, maxEssence, COLS, ROWS,
-  } = useSimulation({ archetype, avatarName, cosmology, seed });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState });
 
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
   const {
@@ -73,18 +78,17 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleHexClick, handleLocationDoubleClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
-  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS });
+  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS, scryState });
 
   // ── Scry hook ──
   const {
-    scryState,
     scryVisible,
     handleOpenScry,
     handleScryAssign,
     handleScryDemote,
     handleCloseScry,
     handleAvatarScryClick,
-  } = useScry({ gameState, setGameState, archetype });
+  } = useScry({ gameState, setGameState, archetype, scryState, setScryState });
 
   // ── Agent interaction hook ──
   const {
@@ -158,13 +162,23 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     // Get available encounters for this location type
     const available = subtype ? getEncountersByLocationType(subtype) : [];
 
-    // Get active encounters at this location (for now, include all active encounters)
-    const active = gameState.encounterProgress.filter(
-      p => p.status === 'active'
-    );
+    // Get active encounters whose actor is at this location
+    const active = gameState.encounterProgress.filter(p => {
+      if (p.status !== 'active') return false;
+      const actorEdges = gameState.graph.getAllEdgesForNode(p.actorId);
+      return actorEdges.some(
+        e => e.type === 'located_at' && e.target === focusedLocation.id
+      );
+    });
 
     return { available, active };
-  }, [focusedLocation, viewLevel, gameState.encounterProgress]);
+  }, [focusedLocation, viewLevel, gameState.encounterProgress, gameState.graph]);
+
+  // RC-002: Extracted to avoid inline arrow in render
+  const getAgentName = useCallback(
+    (id: string) => gameState.graph.getNode(id)?.name ?? 'Unknown',
+    [gameState.graph],
+  );
 
   // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion
   const handleScryWithMutex = useCallback(() => {
@@ -448,7 +462,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 onBack={handleBackToHex}
                 availableEncounters={locationEncounters.available}
                 activeEncounters={locationEncounters.active}
-                getAgentName={(id) => gameState.graph.getNode(id)?.name ?? 'Unknown'}
+                getAgentName={getAgentName}
                 getEncounterTemplate={getEncounterById}
               />
             )}

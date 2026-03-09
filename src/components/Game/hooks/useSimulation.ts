@@ -13,12 +13,15 @@ import {
 } from '../../../engine/cycleEnd';
 import type { HarvestResult } from '../../../engine/cycleEnd';
 import { computeMaxEssence } from '../../../engine/influence';
+import type { ScryState } from '../../../types/scry';
+import { getScryTargetHexes } from '../../../engine/visibility';
 
 interface UseSimulationParams {
   archetype: AscendantArchetype;
   avatarName: string;
   cosmology: CosmologyProfile;
   seed: number;
+  scryState: ScryState;
 }
 
 const COLS = 20;
@@ -30,6 +33,7 @@ export function useSimulation({
   avatarName,
   cosmology,
   seed,
+  scryState,
 }: UseSimulationParams) {
   // ── Initialize ──
   const initial = useMemo(
@@ -44,12 +48,15 @@ export function useSimulation({
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scryStateRef = useRef(scryState);
+  scryStateRef.current = scryState;
 
   // ── Tick ──
   const doTick = useCallback(() => {
     setGameState(prev => {
       if (prev.phase === 'playing') {
-        return runTick(prev);
+        const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
+        return runTick(prev, targets);
       }
       if (prev.phase === 'twilight') {
         const result = runTwilightTick(prev);
