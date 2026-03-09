@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace } from '../../types/trace';
+import type { ModifierResolutionTrace } from '../../types/modifiers';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -225,6 +226,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <FamiliarityChangeDetail trace={trace as FamiliarityChangeTrace} />;
     case 'intervention_effect':
       return <InterventionEffectDetail trace={trace as InterventionEffectTrace} />;
+    case 'modifier_resolution':
+      return <ModifierResolutionDetail trace={trace as ModifierResolutionTrace} />;
     default:
       return <FallbackDetail trace={trace} />;
   }
@@ -555,6 +558,47 @@ const InterventionEffectDetail = React.memo(function InterventionEffectDetail({ 
       </div>
       <div style={{ ...DETAIL_AREA_STYLE, background: PANEL_STYLES.detailBg, padding: '8px', borderRadius: '3px', fontStyle: 'italic', color: PANEL_STYLES.textColor, fontFamily: 'sans-serif' }}>
         "{trace.consequenceMessage}"
+      </div>
+    </div>
+  );
+});
+
+const ModifierResolutionDetail = React.memo(function ModifierResolutionDetail({ trace }: { trace: ModifierResolutionTrace }) {
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Attribute</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.attribute}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Node</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.nodeId}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Base Value</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.baseValue.toFixed(2)}</div>
+      </div>
+      {trace.modifiers.length > 0 && (
+        <>
+          <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+            <div style={DETAIL_LABEL_STYLE}>Modifiers</div>
+          </div>
+          {trace.modifiers.map((mod, idx) => (
+            <div key={idx} style={DETAIL_ROW_STYLE}>
+              <div style={DETAIL_VALUE_STYLE}>
+                <span>{mod.sourceName}</span>
+                <span style={{ color: PANEL_STYLES.tickColor, marginLeft: '4px' }}>({mod.edgeType})</span>
+                <span style={{ color: mod.delta >= 0 ? '#10b981' : '#ef4444', fontWeight: 600, marginLeft: '8px' }}>
+                  {mod.delta >= 0 ? '+' : ''}{mod.delta.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+        <div style={DETAIL_LABEL_STYLE}>Final Value</div>
+        <div style={{ ...DETAIL_VALUE_STYLE, fontWeight: 600 }}>{trace.finalValue.toFixed(2)}</div>
       </div>
     </div>
   );
