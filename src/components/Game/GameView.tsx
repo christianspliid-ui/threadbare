@@ -28,6 +28,8 @@ import { ScryProvider } from './contexts/ScryContext';
 import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
+import { HexFlavorPanel } from './HexFlavorPanel';
+import { HexPoiPanel } from './HexPoiPanel';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
@@ -349,37 +351,67 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
               </>
             )}
 
-            {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (
-              <div className="flex flex-col h-full w-full">
-                <HexBreadcrumb
-                  hexCol={focusedHex.col}
-                  hexRow={focusedHex.row}
-                  terrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
-                  locationCount={hexLocations.length}
-                  agentCount={hexTotalAgents}
-                  lineOfSight={hexLineOfSight}
-                  sphereInfluence={hexSphereInfluence}
-                  cultures={hexCultures}
-                  factions={hexFactions}
-                  onBack={handleBackToWorld}
-                  data-testid="hex-breadcrumb"
-                />
-                <div className="flex-1 flex items-center justify-center overflow-hidden">
-                  <HexZoomView
-                    locations={hexLocations}
-                    agentsByLocation={hexAgentsByLocation}
-                    connections={hexConnections}
+            {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (() => {
+              const hexTerrain = tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland';
+              return (
+                <div className="flex flex-col h-full w-full">
+                  <HexBreadcrumb
+                    hexCol={focusedHex.col}
+                    hexRow={focusedHex.row}
+                    terrain={hexTerrain}
+                    locationCount={hexLocations.length}
+                    agentCount={hexTotalAgents}
                     lineOfSight={hexLineOfSight}
-                    terrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
+                    sphereInfluence={hexSphereInfluence}
                     cultures={hexCultures}
                     factions={hexFactions}
-                    onLocationClick={handleLocationClick}
-                    onLocationDoubleClick={handleLocationDoubleClickWithClose}
-                    data-testid="hex-zoom-view"
+                    onBack={handleBackToWorld}
+                    data-testid="hex-breadcrumb"
                   />
+                  <div className="flex-1 flex overflow-hidden">
+                    {/* Left: Flavor text */}
+                    <div className="flex-shrink-0 overflow-hidden" style={{ width: '220px' }}>
+                      <HexFlavorPanel
+                        terrain={hexTerrain}
+                        lineOfSight={hexLineOfSight}
+                        sphereInfluence={hexSphereInfluence}
+                        cultures={hexCultures}
+                        factions={hexFactions}
+                        locationCount={hexLocations.length}
+                        agentCount={hexTotalAgents}
+                      />
+                    </div>
+
+                    {/* Center: Hex zoom SVG */}
+                    <div className="flex-1 flex items-center justify-center overflow-hidden">
+                      <HexZoomView
+                        locations={hexLocations}
+                        agentsByLocation={hexAgentsByLocation}
+                        connections={hexConnections}
+                        lineOfSight={hexLineOfSight}
+                        terrain={hexTerrain}
+                        cultures={hexCultures}
+                        factions={hexFactions}
+                        onLocationClick={handleLocationClick}
+                        onLocationDoubleClick={handleLocationDoubleClickWithClose}
+                        data-testid="hex-zoom-view"
+                      />
+                    </div>
+
+                    {/* Right: Points of interest list */}
+                    <div className="flex-shrink-0 overflow-hidden" style={{ width: '220px' }}>
+                      <HexPoiPanel
+                        locations={hexLocations}
+                        agentsByLocation={hexAgentsByLocation}
+                        lineOfSight={hexLineOfSight}
+                        onLocationClick={handleLocationClick}
+                        onLocationDoubleClick={handleLocationDoubleClickWithClose}
+                      />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {viewLevel === 'location' && focusedLocation && focusedHex && (
               <LocationView

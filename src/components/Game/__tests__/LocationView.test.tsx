@@ -58,9 +58,9 @@ describe('LocationView', () => {
     expect(screen.getByText(/3, 4/)).toBeTruthy();
   });
 
-  it('shows ordeal placeholder', () => {
+  it('shows encounter placeholder', () => {
     render(<LocationView {...defaultProps} />);
-    expect(screen.getByText(/No active Ordeals/i)).toBeTruthy();
+    expect(screen.getByText(/No active Encounters/i)).toBeTruthy();
   });
 
   it('renders with empty agents list', () => {

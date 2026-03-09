@@ -19,7 +19,7 @@ describe('TraceEntry types', () => {
     expect(TRACE_CATEGORIES).toContain('context_harvest');
     expect(TRACE_CATEGORIES).toContain('dilemma_resolution');
     expect(TRACE_CATEGORIES).toContain('tick_summary');
-    expect(TRACE_CATEGORIES).toContain('ordeal_resolution');
+    expect(TRACE_CATEGORIES).toContain('encounter_resolution');
     expect(TRACE_CATEGORIES).toContain('familiarity_change');
     expect(TRACE_CATEGORIES).toContain('intervention_effect');
   });

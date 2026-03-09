@@ -109,6 +109,92 @@ export function getLineOfSight(
   return 'none';
 }
 
+/** Culture summary for a hex — derived from belongs_to edges of locations in the hex. */
+export interface HexCultureSummary {
+  cultureName: string;
+  cultureId: string;
+  dominantSpheres: SphereName[];
+  foundationBias: string;
+  strength: number; // average cultural strength across locations
+}
+
+/**
+ * Dominant cultures influencing locations in a hex.
+ * Walks belongs_to edges from each location, aggregates by culture,
+ * returns sorted by average strength descending.
+ */
+export function getHexCultures(graph: WorldGraph, col: number, row: number): HexCultureSummary[] {
+  const locations = getLocationsInHex(graph, col, row);
+  const cultureMap = new Map<string, { node: GraphNode; strengths: number[] }>();
+
+  for (const loc of locations) {
+    const edges = graph.getOutgoingEdges(loc.id, 'belongs_to');
+    for (const edge of edges) {
+      const props = edge.properties as Record<string, unknown>;
+      if (props.cultureLayer !== 'current') continue;
+      const cultureNode = graph.getNode(edge.target);
+      if (!cultureNode) continue;
+      const existing = cultureMap.get(cultureNode.id);
+      const strength = (props.culturalStrength as number) ?? 0.5;
+      if (existing) {
+        existing.strengths.push(strength);
+      } else {
+        cultureMap.set(cultureNode.id, { node: cultureNode, strengths: [strength] });
+      }
+    }
+  }
+
+  const summaries: HexCultureSummary[] = [];
+  for (const [id, { node, strengths }] of cultureMap) {
+    const identity = (node.properties as Record<string, unknown>).cultureIdentity as
+      { veneratedSpheres?: SphereName[]; foundationBias?: string } | undefined;
+    const avgStrength = strengths.reduce((a, b) => a + b, 0) / strengths.length;
+    summaries.push({
+      cultureName: node.name,
+      cultureId: id,
+      dominantSpheres: identity?.veneratedSpheres ?? [],
+      foundationBias: identity?.foundationBias ?? 'unknown',
+      strength: avgStrength,
+    });
+  }
+
+  return summaries.sort((a, b) => b.strength - a.strength);
+}
+
+/** Faction summary for a hex — derived from controls edges to locations. */
+export interface HexFactionSummary {
+  factionName: string;
+  factionId: string;
+  locationCount: number;
+}
+
+/**
+ * Factions controlling locations in this hex.
+ * Looks for 'controls' edges pointing at locations in the hex.
+ */
+export function getHexFactions(graph: WorldGraph, col: number, row: number): HexFactionSummary[] {
+  const locations = getLocationsInHex(graph, col, row);
+  const factionMap = new Map<string, { name: string; count: number }>();
+
+  for (const loc of locations) {
+    const edges = graph.getIncomingEdges(loc.id, 'controls');
+    for (const edge of edges) {
+      const factionNode = graph.getNode(edge.source);
+      if (!factionNode) continue;
+      const existing = factionMap.get(factionNode.id);
+      if (existing) {
+        existing.count++;
+      } else {
+        factionMap.set(factionNode.id, { name: factionNode.name, count: 1 });
+      }
+    }
+  }
+
+  return Array.from(factionMap.entries())
+    .map(([id, { name, count }]) => ({ factionId: id, factionName: name, locationCount: count }))
+    .sort((a, b) => b.locationCount - a.locationCount);
+}
+
 /**
  * All adjacency edges between locations in the given set.
  * Only returns edges where BOTH source and target are in locationIds.

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, OrdealResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace } from '../../types/trace';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -13,12 +13,12 @@ interface DebugPanelProps {
 type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector';
 
 const PANEL_STYLES = {
-  background: '#0d0b14',
-  borderColor: 'rgba(120, 53, 15, 0.3)',
-  textColor: '#c8c0d8',
-  tickColor: 'rgba(200, 192, 216, 0.3)',
-  detailBg: 'rgba(28, 25, 23, 0.4)',
-  detailBorder: 'rgba(120, 53, 15, 0.15)',
+  background: 'var(--bg-deep)',
+  borderColor: 'var(--border-subtle)',
+  textColor: 'var(--text-primary)',
+  tickColor: 'var(--text-muted)',
+  detailBg: 'var(--bg-raised)',
+  detailBorder: 'var(--border-subtle)',
   width: 480,
   zIndex: 45,
 } as const;
@@ -41,7 +41,7 @@ const HEADER_STYLE: React.CSSProperties = {
   padding: '12px 16px',
   borderBottom: `1px solid ${PANEL_STYLES.borderColor}`,
   color: PANEL_STYLES.textColor,
-  fontSize: '12px',
+  fontSize: '13px',
 };
 
 const TAB_BAR_STYLE: React.CSSProperties = {
@@ -49,7 +49,7 @@ const TAB_BAR_STYLE: React.CSSProperties = {
   gap: '8px',
   borderBottom: `1px solid ${PANEL_STYLES.borderColor}`,
   padding: '8px 12px',
-  background: 'rgba(13, 11, 20, 0.5)',
+  background: 'var(--bg-abyss)',
 };
 
 const TAB_BUTTON_BASE: React.CSSProperties = {
@@ -58,7 +58,7 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
   background: 'transparent',
   color: PANEL_STYLES.textColor,
   cursor: 'pointer',
-  fontSize: '11px',
+  fontSize: '12px',
   fontWeight: 500,
   transition: 'all 200ms ease-out',
 };
@@ -66,7 +66,7 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
 const getTabButtonStyle = (isActive: boolean): React.CSSProperties => ({
   ...TAB_BUTTON_BASE,
   borderBottom: isActive ? `2px solid ${TRACE_CATEGORY_COLORS.action_selection}` : 'none',
-  color: isActive ? '#f0f0f0' : PANEL_STYLES.textColor,
+  color: isActive ? 'var(--accent-gold)' : PANEL_STYLES.textColor,
   opacity: isActive ? 1 : 0.6,
 });
 
@@ -76,7 +76,7 @@ const FILTER_AREA_STYLE: React.CSSProperties = {
   display: 'flex',
   flexWrap: 'wrap',
   gap: '6px',
-  fontSize: '10px',
+  fontSize: '11px',
 };
 
 const CHECKBOX_LABEL_STYLE: React.CSSProperties = {
@@ -100,7 +100,7 @@ const EMPTY_STATE_STYLE: React.CSSProperties = {
   textAlign: 'center',
   color: PANEL_STYLES.textColor,
   opacity: 0.4,
-  fontSize: '12px',
+  fontSize: '13px',
 };
 
 const TRACE_ENTRY_STYLE: React.CSSProperties = {
@@ -114,8 +114,8 @@ const TRACE_ENTRY_STYLE: React.CSSProperties = {
 
 const TRACE_ENTRY_HOVER_STYLE: React.CSSProperties = {
   ...TRACE_ENTRY_STYLE,
-  background: 'rgba(40, 35, 45, 0.6)',
-  borderColor: 'rgba(120, 53, 15, 0.4)',
+  background: 'var(--bg-hover)',
+  borderColor: 'var(--border-medium)',
 };
 
 const TRACE_HEADER_STYLE: React.CSSProperties = {
@@ -123,13 +123,13 @@ const TRACE_HEADER_STYLE: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  fontSize: '13px',
+  fontSize: '14px',
 };
 
 const BADGE_BASE_STYLE: React.CSSProperties = {
   padding: '2px 6px',
   borderRadius: '3px',
-  fontSize: '9px',
+  fontSize: '10px',
   fontWeight: 600,
   textTransform: 'uppercase',
   letterSpacing: '0.5px',
@@ -144,14 +144,14 @@ const getBadgeStyle = (category: string): React.CSSProperties => ({
 
 const TICK_NUMBER_STYLE: React.CSSProperties = {
   fontFamily: 'monospace',
-  fontSize: '11px',
+  fontSize: '12px',
   color: PANEL_STYLES.tickColor,
   marginLeft: 'auto',
 };
 
 const DETAIL_AREA_STYLE: React.CSSProperties = {
   padding: '12px',
-  fontSize: '11px',
+  fontSize: '12px',
   fontFamily: 'monospace',
   color: PANEL_STYLES.textColor,
   lineHeight: 1.5,
@@ -195,7 +195,7 @@ const TraceEntryItem = React.memo(function TraceEntryItem({ trace, isExpanded, o
     >
       <div style={TRACE_HEADER_STYLE}>
         <div style={badgeStyle}>{trace.category}</div>
-        <div style={{ flex: 1, color: PANEL_STYLES.textColor, fontSize: '12px' }}>{trace.summary}</div>
+        <div style={{ flex: 1, color: PANEL_STYLES.textColor, fontSize: '13px' }}>{trace.summary}</div>
         <div style={TICK_NUMBER_STYLE}>#{trace.tick}</div>
       </div>
       {isExpanded && <TraceDetailRenderer trace={trace} />}
@@ -219,8 +219,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <DilemmaResolutionDetail trace={trace as DilemmaResolutionTrace} />;
     case 'tick_summary':
       return <TickSummaryDetail trace={trace as TickSummaryTrace} />;
-    case 'ordeal_resolution':
-      return <OrdealResolutionDetail trace={trace as OrdealResolutionTrace} />;
+    case 'encounter_resolution':
+      return <EncounterResolutionDetail trace={trace as EncounterResolutionTrace} />;
     case 'familiarity_change':
       return <FamiliarityChangeDetail trace={trace as FamiliarityChangeTrace} />;
     case 'intervention_effect':
@@ -342,7 +342,7 @@ const DilemmaResolutionDetail = React.memo(function DilemmaResolutionDetail({ tr
       <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px', marginBottom: '8px' }}>
         <div style={DETAIL_LABEL_STYLE}>Payoff</div>
       </div>
-      <table style={{ width: '100%', marginBottom: '8px', fontSize: '10px', borderCollapse: 'collapse' }}>
+      <table style={{ width: '100%', marginBottom: '8px', fontSize: '11px', borderCollapse: 'collapse' }}>
         <tbody>
           <tr style={{ borderBottom: `1px solid ${PANEL_STYLES.borderColor}` }}>
             <td style={{ padding: '4px', color: PANEL_STYLES.tickColor }}>Actor</td>
@@ -428,23 +428,23 @@ const TickSummaryDetail = React.memo(function TickSummaryDetail({ trace }: { tra
   );
 });
 
-const OrdealResolutionDetail = React.memo(function OrdealResolutionDetail({ trace }: { trace: OrdealResolutionTrace }) {
-  const successColor = TRACE_CATEGORY_COLORS.ordeal_resolution;
+const EncounterResolutionDetail = React.memo(function EncounterResolutionDetail({ trace }: { trace: EncounterResolutionTrace }) {
+  const successColor = TRACE_CATEGORY_COLORS.encounter_resolution;
   const failColor = TRACE_CATEGORY_COLORS.dilemma_resolution;
 
   return (
     <div style={DETAIL_AREA_STYLE}>
       <div style={DETAIL_ROW_STYLE}>
-        <div style={DETAIL_LABEL_STYLE}>Ordeal</div>
-        <div style={DETAIL_VALUE_STYLE}>{trace.ordealId}</div>
+        <div style={DETAIL_LABEL_STYLE}>Encounter</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.encounterId}</div>
       </div>
       <div style={DETAIL_ROW_STYLE}>
         <div style={DETAIL_LABEL_STYLE}>Actor</div>
         <div style={DETAIL_VALUE_STYLE}>{trace.actorId}</div>
       </div>
       <div style={DETAIL_ROW_STYLE}>
-        <div style={DETAIL_LABEL_STYLE}>Encounter</div>
-        <div style={DETAIL_VALUE_STYLE}>{trace.encounterName}</div>
+        <div style={DETAIL_LABEL_STYLE}>Step</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.stepName}</div>
       </div>
       <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
         <div style={DETAIL_LABEL_STYLE}>Capability</div>
@@ -654,7 +654,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
       {/* Header */}
       <div style={HEADER_STYLE}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontWeight: 600, color: '#f0f0f0', fontSize: '13px' }}>Debug Trace</span>
+          <span style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '14px' }}>Debug Trace</span>
           {onClose && (
             <button
               onClick={onClose}
@@ -665,7 +665,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
                 border: 'none',
                 color: PANEL_STYLES.textColor,
                 cursor: 'pointer',
-                fontSize: '14px',
+                fontSize: '15px',
               }}
             >
               ✕
@@ -703,11 +703,11 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             style={{
               width: '100%',
               padding: '6px 8px',
-              background: PANEL_STYLES.detailBg,
-              border: `1px solid ${PANEL_STYLES.borderColor}`,
-              color: PANEL_STYLES.textColor,
+              background: 'var(--bg-raised)',
+              border: `1px solid var(--border-subtle)`,
+              color: 'var(--text-primary)',
               borderRadius: '3px',
-              fontSize: '11px',
+              fontSize: '12px',
               cursor: 'pointer',
             }}
           >
@@ -767,7 +767,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             border: 'none',
             borderRadius: '12px',
             color: '#000',
-            fontSize: '11px',
+            fontSize: '12px',
             fontWeight: 600,
             cursor: 'pointer',
             zIndex: 50,

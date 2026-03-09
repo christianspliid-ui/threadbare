@@ -44,7 +44,7 @@ export const CHRONICLER_VIGNETTES: Record<string, string> = {
     'Silver changes hands, and with it, secrets. A crossroads where strangers meet and the balance of power shifts with every bargain. No walls can hold back whispers.',
   military_post:
     'Order carved from chaos by will and steel. The threads are tied tight here, held by discipline and fear. But all threads fray eventually.',
-  ordeal_site:
+  encounter_site:
     'Something broke here. The ground remembers pain, and the magic tastes of ash and rust. Those who enter seeking trial will find truth, if they survive it.',
   divine_touched:
     'A god\'s hand rests here still. The threads glow faintly where they pass, and mortals feel the weight of attention from beyond the veil. Blessed or cursed — who can say?',

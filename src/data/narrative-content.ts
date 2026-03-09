@@ -14,6 +14,9 @@
  * 5. VALUE_FLAVORS — personality modifiers for 10 value pairs
  * 6. ARCHETYPE_EVENT_TEMPLATES — 58+ archetype-specific templates for high-impact event/archetype combos
  * 7. DILEMMA_STAKES_PROSE — 12 stakes-based prose variants for dilemma outcomes
+ * 8. DILEMMA_WORD_POOLS — adjective, noun, and verb banks for dilemma prose placeholder substitution
+ * 9-12. [Content sections continue...]
+ * 13. BORN_NAMES — Name pool for newly born agents in agentLifecycle.ts
  */
 
 import type { SphereName } from '../types/index';
@@ -196,27 +199,27 @@ export const ROUTINE_TEMPLATES: Record<string, string[]> = {
     'The {adj} structure rose beneath {actor}\'s hands, a monument of {noun}.',
     '{actor} laid the final thread, and the {adj} {noun} was made whole.',
   ],
-  ordeal_encounter_success: [
+  encounter_step_success: [
     '{actor} faced the {adj} {noun} and emerged unbroken.',
     'The {noun} tested {actor} with {adj} trials, yet they {verb} toward triumph.',
     '{actor} endured the {adj} gauntlet, their {noun} proving stronger than the test.',
     'Against {adj} odds, {actor} passed through the {noun} transformed.',
   ],
-  ordeal_encounter_failure: [
+  encounter_step_failure: [
     '{actor} crumbled before the {adj} {noun}, their resolve shattered.',
-    'The {noun} broke {actor}. When the {adj} ordeal ended, little of them remained whole.',
+    'The {noun} broke {actor}. When the {adj} encounter ended, little of them remained whole.',
     '{actor} faced {adj} {noun} and fell short, their {noun} insufficient to the task.',
     'Defeated by {adj} {noun}, {actor} staggered from the crucible diminished.',
   ],
-  ordeal_completed: [
-    '{actor} emerged from their ordeal {adj} and reborn, the {noun} within them transformed.',
+  encounter_completed: [
+    '{actor} emerged from their encounter {adj} and reborn, the {noun} within them transformed.',
     'The {adj} trials completed, {actor} stood changed — no longer the person they were before.',
-    'Through {adj} {noun}, {actor}\'s ordeal finally ended, etching itself into their essence.',
+    'Through {adj} {noun}, {actor}\'s encounter finally ended, etching itself into their essence.',
     '{actor} crossed the threshold of {noun}, forever marked by what they had endured with {adj} {noun}.',
   ],
-  ordeal_abandoned: [
+  encounter_abandoned: [
     '{actor} turned from their path, leaving the {adj} {noun} unfinished.',
-    'The ordeal pulled at {actor}, but they chose to abandon the {adj} {noun}.',
+    'The encounter pulled at {actor}, but they chose to abandon the {adj} {noun}.',
     '{actor} broke away from the trial, leaving only {adj} {noun} in their wake.',
     'Too much. Too {adj}. {actor} left the {noun} behind and walked into {noun}.',
   ],
@@ -284,22 +287,22 @@ export const NOTABLE_TEMPLATES: Record<string, string[]> = {
     '{actor}\'s {adj} work stood complete{personality} — a monument of {noun} rising where once was {noun}. Future generations would walk its halls and forget who built it.',
     'What {actor} began in {adj} vision came to fruition in {noun}{personality}. The structure stood, {adj} and undeniable, a proof against the void.',
   ],
-  ordeal_encounter_success: [
+  encounter_step_success: [
     '{actor} faced the {adj} {noun} and emerged unbroken{personality} — scarred, transformed, but unbowed.',
     'The trial tested {actor} with {adj} {noun}, yet they {verb} past every threshold{personality}. What survives of them is {adj} steel.',
   ],
-  ordeal_encounter_failure: [
+  encounter_step_failure: [
     '{actor} crumbled before the {adj} {noun}{personality} — their thread snapped, their {noun} insufficient. What crawled from the crucible was {adj} shadow of who they were.',
-    'The {noun} broke {actor}{personality}. When the {adj} ordeal ended, little remained whole. The {noun} had consumed all that was {adj}.',
+    'The {noun} broke {actor}{personality}. When the {adj} encounter ended, little remained whole. The {noun} had consumed all that was {adj}.',
   ],
-  ordeal_completed: [
-    '{actor}\'s ordeal drew to a close{personality}, leaving them {adj} and reborn. The {noun} woven through their being now marked them as transformed — no longer the person they were before.',
+  encounter_completed: [
+    '{actor}\'s encounter drew to a close{personality}, leaving them {adj} and reborn. The {noun} woven through their being now marked them as transformed — no longer the person they were before.',
     'Through {adj} {noun}, {actor}\'s trial finally ended{personality}, etching itself into their essence. They had survived {noun} and emerged {adj} — altered at the root.',
   ],
-  ordeal_abandoned: [
+  encounter_abandoned: [
     '{actor} turned from their path{personality}, leaving the {adj} {noun} unfinished. Mercy or cowardice — the {noun} would decide which.',
     'The trial pulled at {actor}, threads tightening around their will{personality}, but they chose to abandon the {adj} {noun}. What price their escape would exact remained unknown.',
-    '{actor} escaped the ordeal{personality}, but escape brought no relief — only the {adj} {noun} of what they had left unfinished.',
+    '{actor} escaped the encounter{personality}, but escape brought no relief — only the {adj} {noun} of what they had left unfinished.',
   ],
   action_resolved: [
     '{actor}{personality} moved deliberately against {target}, and the {adj} {noun} settled like dust.',
@@ -419,7 +422,7 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'tragic_hero.tier_transition': '{actor} ascends, and the weight of the tragic hero\'s destiny grows heavier with each step upward. Power awaits those willing to pay what fate demands.',
   'tragic_hero.divine_intervention': 'The gods reached for {actor}, yet the tragic hero\'s fate was already written in threads of {adj} consequence. Divine favor and divine curse are the same wound.',
   'tragic_hero.contested_action': '{actor} fought for what mattered most, knowing as only a tragic hero can that victory and loss are carved from the same stone. The struggle was the point all along.',
-  'tragic_hero.ordeal_completed': '{actor} emerged from the ordeal transformed, the tragic hero\'s scars now written deeper than skin. Each trial was a step closer to the {adj} end they always knew was coming.',
+  'tragic_hero.encounter_completed': '{actor} emerged from the encounter transformed, the tragic hero\'s scars now written deeper than skin. Each trial was a step closer to the {adj} end they always knew was coming.',
 
   // TRICKSTER — 6 priority events
   'trickster.actor_death': '{actor} played one trick too many, and the universe had the last laugh. In death, the trickster finally found a game they could not cheat.',
@@ -427,7 +430,7 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'trickster.tier_transition': '{actor} has climbed higher, and the trickster\'s grin grew wider still. More power, more games, more delicious chaos to orchestrate.',
   'trickster.divine_intervention': 'The gods tried to play by mortal rules, but {actor} had already subverted the game. The trickster always has one more card hidden up their sleeve.',
   'trickster.contested_action': '{actor} turned the tables with a {adj} trick, leaving their opponents wondering if they were ever truly in control. The best lies are wrapped in truth.',
-  'trickster.ordeal_completed': '{actor} escaped the ordeal through wit and misdirection, laughing all the way. The trickster\'s greatest magic is making people believe what never was.',
+  'trickster.encounter_completed': '{actor} escaped the encounter through wit and misdirection, laughing all the way. The trickster\'s greatest magic is making people believe what never was.',
 
   // CONQUEROR — 6 priority events
   'conqueror.actor_death': 'The {adj} reign of {actor} came to an end, yet the lands they conquered remain forever marked by their passage. Conquerors die, but empires endure.',
@@ -435,7 +438,7 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'conqueror.tier_transition': '{actor} stands taller now, their dominion expanding ever outward. The conqueror\'s hunger only grows with each crown claimed.',
   'conqueror.divine_intervention': 'Even the gods bowed before {actor}\'s {adj} ambition. The conqueror takes what they desire, divine or otherwise.',
   'conqueror.contested_action': '{actor} overpowered their foe with {adj} might, proving once again that strength conquers all. Victory tastes sweetest when won by force.',
-  'conqueror.ordeal_completed': '{actor} triumphed over the ordeal\'s {adj} trials, emerging stronger and more ruthless. The conqueror pays the cost and calls it power.',
+  'conqueror.encounter_completed': '{actor} triumphed over the encounter\'s {adj} trials, emerging stronger and more ruthless. The conqueror pays the cost and calls it power.',
 
   // HEALER — 6 priority events
   'healer.actor_death': '{actor} gave their last breath to mend the wounds of others, a final {adj} mercy. The healer\'s greatest gift was teaching us to cherish those they saved.',
@@ -443,7 +446,7 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'healer.tier_transition': '{actor} rises in power, their gift for restoration growing {adj} and more profound. With greater strength comes the capacity to heal deeper wounds.',
   'healer.divine_intervention': 'The gods smiled upon {actor}\'s {adj} work, blessing the hands that mend and the heart that cares. Divine grace flows through those who heal.',
   'healer.contested_action': '{actor} restored balance with {adj} wisdom, proving that healing is as powerful as any weapon. The healer\'s path is the {adj} road.',
-  'healer.ordeal_completed': '{actor} emerged from the ordeal with renewed purpose, their compassion tempered but unbroken. The healer carries the scars of others and calls them {adj}.',
+  'healer.encounter_completed': '{actor} emerged from the encounter with renewed purpose, their compassion tempered but unbroken. The healer carries the scars of others and calls them {adj}.',
 
   // PROPHET — 6 priority events
   'prophet.actor_death': '{actor} saw the end coming long before the final breath. The prophet\'s last vision was {adj}, a glimpse of what comes after.',
@@ -451,7 +454,7 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
   'prophet.tier_transition': '{actor}\'s power deepens, and the visions grow ever more vivid and overwhelming. The prophet pays the price of knowledge with each new revelation.',
   'prophet.divine_intervention': 'The gods reached through {actor} to speak to the mortal world. The prophet is but a voice for forces beyond comprehension.',
   'prophet.contested_action': '{actor} foresaw the outcome and guided events toward {adj} destiny. The prophet knew the ending long before others understood the beginning.',
-  'prophet.ordeal_completed': '{actor} emerged from the ordeal with a {adj} prophecy burning in their mind. The ordeal was a doorway to deeper sight.',
+  'prophet.encounter_completed': '{actor} emerged from the encounter with a {adj} prophecy burning in their mind. The encounter was a doorway to deeper sight.',
 
   // All 19 archetypes × actor_death (6 unique to non-priority archetypes)
   'guardian.actor_death': '{actor} fell protecting those they had sworn to defend. The guardian\'s final act was {adj}, a selfless wall against the darkness.',
@@ -639,4 +642,61 @@ export const STEALTH_DETECTION_PROSE: Record<string, string> = {
   'rival.investigation_to_confirmation': 'Confirmation arrives with {adj} certainty — {sphere} is active, reshaping {location} and laying claim to what a rival believed was theirs. The {noun} of ambition ignites.',
   'rival.confirmation_to_opposition': 'War becomes inevitable. {location} is a prize no longer — it is a battlefield. Two gods claim {sphere}\'s domain, and the {adj} conflict spreads like {noun} across the land.',
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// 8. DILEMMA WORD POOLS
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Word banks for dilemma prose template placeholder substitution.
+ * Used in orchestrator.ts phaseDilemmaDetection to fill {adj}, {noun}, {verb} slots.
+ * Keeping these in the content package makes them testable and expandable.
+ */
+export const DILEMMA_ADJ_POOL = [
+  'quiet', 'fierce', 'solemn', 'bitter', 'fragile', 'burning', 'ancient', 'hollow',
+  'trembling', 'cold', 'desperate', 'measured', 'ragged', 'luminous', 'unspoken',
+];
+
+export const DILEMMA_NOUN_POOL = [
+  'purpose', 'strength', 'resolve', 'shadow', 'faith', 'devotion', 'reckoning', 'silence',
+  'hunger', 'grief', 'defiance', 'memory', 'weight', 'obligation', 'ruin',
+];
+
+export const DILEMMA_VERB_POOL = [
+  'circled', 'retreated', 'watched', 'bristled',
+  'faltered', 'steadied', 'stiffened', 'glanced away', 'held still',
+  'narrowed their gaze', 'drew breath', 'said nothing', 'turned cold',
+  'weighed the silence', 'chose their words',
+];
+
+// ═══════════════════════════════════════════════════════════════════
+// 13. BORN NAMES
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Name pool for newly born agents in agentLifecycle.ts.
+ * Selected via seeded PRNG. Names are placeholder identities —
+ * agents may acquire proper names through narrative events later.
+ *
+ * Mix of sphere-tinted, culture-neutral, and poetic names.
+ */
+export const BORN_NAMES = [
+  // Original pool
+  'Newborn of the Weave', 'Child of Embers', 'Seedling of the Veil',
+  'Heir of the Forge', 'Wanderer Reborn', 'Whisper of Dawn',
+  'Thread of Fate', 'Echo of the Past', 'Spark of the New',
+  'Voice of the Unwritten',
+  // Sphere-tinted
+  'Ember of Force', 'Clay-Born', 'Shard of Light',
+  'Thorn of Life', 'Thought-Touched', 'Spirit-Kissed',
+  'Daughter of Hours', 'Son of Entropy',
+  // Poetic / culture-neutral
+  'The Unnamed', 'A Quiet Arrival', 'Born Between Tides',
+  'First Breath of Morning', 'Child of Broken Ground',
+  'Stranger on the Threshold', 'The One Who Came After',
+  'Dream-Woken', 'Ash and Promise', 'The Unlooked-For',
+  // Wonder-tinted
+  'Gift of the Season', 'Laughter in the Ruins',
+  'Small Miracle', 'Hope Against Hope',
+];
 

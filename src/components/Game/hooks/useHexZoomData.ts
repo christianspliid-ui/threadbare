@@ -6,7 +6,10 @@ import {
   getHexSphereInfluence,
   getLineOfSight,
   getLocationConnections,
+  getHexCultures,
+  getHexFactions,
 } from '../../../engine/hexZoom';
+import type { HexCultureSummary, HexFactionSummary } from '../../../engine/hexZoom';
 
 export interface UseHexZoomDataParams {
   graph: WorldGraph;
@@ -22,6 +25,8 @@ export interface UseHexZoomDataReturn {
   hexSphereInfluence: ReturnType<typeof getHexSphereInfluence> | null;
   hexLineOfSight: ReturnType<typeof getLineOfSight>;
   hexTotalAgents: number;
+  hexCultures: HexCultureSummary[];
+  hexFactions: HexFactionSummary[];
   focusedLocation: ReturnType<typeof graph.getNode> | null;
   focusedLocationAgents: ReturnType<typeof getAgentsAtLocation>;
 }
@@ -67,6 +72,16 @@ export function useHexZoomData({
     return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
   }, [hexAgentsByLocation]);
 
+  const hexCultures = useMemo(() => {
+    if (!focusedHex) return [];
+    return getHexCultures(graph, focusedHex.col, focusedHex.row);
+  }, [graph, focusedHex]);
+
+  const hexFactions = useMemo(() => {
+    if (!focusedHex) return [];
+    return getHexFactions(graph, focusedHex.col, focusedHex.row);
+  }, [graph, focusedHex]);
+
   const focusedLocation = useMemo(() => {
     if (!focusedLocationId) return null;
     return graph.getNode(focusedLocationId) ?? null;
@@ -84,6 +99,8 @@ export function useHexZoomData({
     hexSphereInfluence,
     hexLineOfSight,
     hexTotalAgents,
+    hexCultures,
+    hexFactions,
     focusedLocation,
     focusedLocationAgents,
   };

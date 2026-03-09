@@ -1,4 +1,5 @@
 import type { GraphNode } from '../../types/graph';
+import { getAgentColor } from '../../data/sphereIcons';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -8,14 +9,6 @@ interface LocationViewProps {
   hexRow: number;
   onAgentClick: (agentId: string) => void;
   onBack: () => void;
-}
-
-// Agent color by name hash (same as HexZoomView)
-function agentColor(name: string): string {
-  const colors = ['#cc3333', '#33cc66', '#6699ff', '#cc99ff', '#ff9933', '#ffcc00', '#8b7355', '#666666'];
-  let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
-  return colors[Math.abs(hash) % colors.length];
 }
 
 export function LocationView({
@@ -28,89 +21,159 @@ export function LocationView({
   onBack,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
-  const locType = (location.properties as Record<string, unknown>).locationType as string || 'location';
+  // RC-041: Safe property access with type guard
+  const locProps = (location.properties ?? {}) as Record<string, unknown>;
+  const locType = typeof locProps.locationType === 'string' ? locProps.locationType : 'location';
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
       {/* Header bar */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-stone-800/90 border-b border-amber-900/30">
+      <div
+        className="flex items-center gap-4 px-6 py-4 border-b"
+        style={{
+          backgroundColor: 'var(--bg-deep)',
+          borderColor: 'var(--border-subtle)',
+        }}
+      >
         <button
           onClick={onBack}
           aria-label="back"
-          className="text-amber-400 hover:text-amber-200 transition-colors text-lg px-2"
+          className="transition-colors text-xl px-2"
+          style={{ color: 'var(--accent-gold)' }}
         >
           ←
         </button>
 
         {/* Location icon placeholder */}
-        <div className="w-8 h-8 rounded-full bg-stone-800 border border-amber-900/40 flex-shrink-0" />
+        <div
+          className="w-10 h-10 rounded-full border flex-shrink-0"
+          style={{
+            backgroundColor: 'var(--bg-raised)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        />
 
         <div>
           <h2
-            className="text-amber-100 text-sm font-semibold tracking-wide"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="font-semibold tracking-wide"
+            style={{
+              fontSize: 'var(--text-lg)',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-display)',
+            }}
           >
             {location.name}
           </h2>
-          <p className="text-amber-400/50 text-xs">
+          <p
+            style={{
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-tertiary)',
+            }}
+          >
             {locType} · in {terrainLabel} Hex ({hexCol}, {hexRow})
           </p>
         </div>
       </div>
 
-      {/* Establishing shot placeholder */}
+      {/* Establishing shot placeholder — large and prominent */}
       <div
-        className="mx-4 mt-4 rounded border border-amber-900/20 bg-stone-800/60 flex items-center justify-center"
-        style={{ aspectRatio: '16/9', maxHeight: '200px' }}
+        className="mx-6 mt-5 rounded-lg border flex items-center justify-center"
+        style={{
+          aspectRatio: '21/9',
+          minHeight: '180px',
+          backgroundColor: 'var(--bg-raised)',
+          borderColor: 'var(--border-subtle)',
+        }}
       >
         <span
-          className="text-amber-400/30 text-sm"
-          style={{ fontFamily: 'Cinzel, serif' }}
+          style={{
+            fontSize: 'var(--text-base)',
+            color: 'var(--text-muted)',
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '2px',
+            textTransform: 'uppercase',
+          }}
         >
           — establishing shot —
         </span>
       </div>
 
-      {/* Two-column layout */}
-      <div className="flex-1 flex gap-4 p-4 min-h-0">
+      {/* Two-column layout — generous padding and spacing */}
+      <div className="flex-1 flex gap-6 p-6 min-h-0">
         {/* Left: Agents Present */}
         <div className="flex-1 min-w-0">
           <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="section-heading mb-3"
+            style={{
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-display)',
+            }}
           >
             Agents Present
           </h3>
 
           {agents.length === 0 ? (
-            <p className="text-amber-400/30 text-xs italic">No agents present</p>
+            <p
+              className="italic"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              No agents present
+            </p>
           ) : (
             <div className="space-y-1">
               {agents.map(agent => {
-                const props = agent.properties as Record<string, unknown>;
-                const actorType = props.actorType as string || 'unknown';
+                // RC-041: Safe property access with type guard
+                const props = (agent.properties ?? {}) as Record<string, unknown>;
+                const actorType = typeof props.actorType === 'string' ? props.actorType : 'unknown';
 
                 return (
                   <button
                     key={agent.id}
                     onClick={() => onAgentClick(agent.id)}
-                    className="w-full text-left flex items-center gap-2 px-2 py-1.5 rounded hover:bg-amber-900/20 transition-colors group"
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
                   >
                     {/* Agent square */}
                     <div
-                      className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0"
-                      style={{ backgroundColor: agentColor(agent.name) }}
+                      className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: getAgentColor(agent.name) }}
                     >
-                      <span className="text-white text-xs font-bold">
+                      <span
+                        className="font-bold"
+                        style={{
+                          fontSize: 'var(--text-sm)',
+                          color: 'white',
+                        }}
+                      >
                         {agent.name.charAt(0)}
                       </span>
                     </div>
 
                     <div className="min-w-0">
-                      <p className="text-amber-100 text-sm truncate group-hover:text-amber-50">
+                      <p
+                        className="truncate group-hover:opacity-80 transition-opacity"
+                        style={{
+                          fontSize: 'var(--text-base)',
+                          color: 'var(--text-primary)',
+                        }}
+                      >
                         {agent.name}
                       </p>
-                      <p className="text-amber-400/40 text-xs">
+                      <p
+                        style={{
+                          fontSize: 'var(--text-sm)',
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
                         {actorType}
                       </p>
                     </div>
@@ -121,15 +184,27 @@ export function LocationView({
           )}
         </div>
 
-        {/* Right: Ordeals placeholder */}
+        {/* Right: Encounters placeholder */}
         <div className="flex-1 min-w-0">
           <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="section-heading mb-3"
+            style={{
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-secondary)',
+              fontFamily: 'var(--font-display)',
+            }}
           >
-            Ordeals
+            Encounters
           </h3>
-          <p className="text-amber-400/30 text-xs italic">No active Ordeals</p>
+          <p
+            className="italic"
+            style={{
+              fontSize: 'var(--text-sm)',
+              color: 'var(--text-muted)',
+            }}
+          >
+            No active Encounters
+          </p>
         </div>
       </div>
     </div>

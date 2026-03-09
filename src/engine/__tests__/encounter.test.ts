@@ -1,13 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
-  getAvailableOrdeals,
-  initiateOrdeal,
+  getAvailableEncounters,
+  initiateEncounter,
   resolveEncounter,
-  advanceOrdeal,
-  abandonOrdeal,
-  generateOrdealsForLocation,
-} from '../ordeal';
-import type { GameState, OrdealProgress } from '../../types';
+  advanceEncounter,
+  abandonEncounter,
+  generateEncountersForLocation,
+} from '../encounter';
+import type { GameState, EncounterProgress } from '../../types';
 import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
 
@@ -16,7 +16,7 @@ import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
 // ──────────────────────────────────────────────────────────────────────
 
 /**
- * Build a minimal GameState for ordeal testing.
+ * Build a minimal GameState for encounter testing.
  * Creates: ascendant, actor, location, located_at edge.
  */
 function buildTestGameState(): {
@@ -51,7 +51,7 @@ function buildTestGameState(): {
     properties: {
       hexCol: 5,
       hexRow: 7,
-      locationType: 'market',
+      locationSubtype: 'town',
     },
   });
 
@@ -85,7 +85,7 @@ function buildTestGameState(): {
     chronicleEntries: [],
     stealthExposure: 0,
     visibilityMap: new Map(),
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: {
         chaos: 0.5,
@@ -146,7 +146,7 @@ function addTraitToActor(
 // TESTS
 // ──────────────────────────────────────────────────────────────────────
 
-describe('Ordeal Engine', () => {
+describe('Encounter Engine', () => {
   beforeEach(() => {
     enableTracing();
   });
@@ -156,14 +156,14 @@ describe('Ordeal Engine', () => {
     clearTraces();
   });
 
-  describe('getAvailableOrdeals', () => {
-    it('returns ordeals matching location type', () => {
+  describe('getAvailableEncounters', () => {
+    it('returns encounters matching location type', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
+      const encounters = getAvailableEncounters(state, actorId);
 
-      expect(ordeals.length).toBeGreaterThan(0);
-      expect(ordeals.some(o => o.id === 'ordeal.merchants_gambit')).toBe(true);
+      expect(encounters.length).toBeGreaterThan(0);
+      expect(encounters.some(o => o.id === 'encounter.merchants_gambit')).toBe(true);
     });
 
     it('returns empty if actor has no location', () => {
@@ -173,93 +173,93 @@ describe('Ordeal Engine', () => {
         state.graph.removeEdge(e.id);
       });
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      expect(ordeals).toEqual([]);
+      const encounters = getAvailableEncounters(state, actorId);
+      expect(encounters).toEqual([]);
     });
 
-    it('excludes ordeals with active progress', () => {
+    it('excludes encounters with active progress', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Initiate an ordeal
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const ordealToStart = ordeals[0];
-      initiateOrdeal(state, actorId, ordealToStart.id, 0);
+      // Initiate an encounter
+      const encounters = getAvailableEncounters(state, actorId);
+      const encounterToStart = encounters[0];
+      initiateEncounter(state, actorId, encounterToStart.id, 0);
 
-      // Now get available ordeals again
-      const available = getAvailableOrdeals(state, actorId);
+      // Now get available encounters again
+      const available = getAvailableEncounters(state, actorId);
 
-      // The ordeal we just started should not be available
-      expect(available.find(o => o.id === ordealToStart.id)).toBeUndefined();
+      // The encounter we just started should not be available
+      expect(available.find(o => o.id === encounterToStart.id)).toBeUndefined();
     });
 
-    it('excludes ordeals with abandoned status but within cooldown', () => {
+    it('excludes encounters with abandoned status but within cooldown', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const ordealId = ordeals[0].id;
+      const encounters = getAvailableEncounters(state, actorId);
+      const encounterId = encounters[0].id;
 
       // Initiate and abandon
-      const progress = initiateOrdeal(state, actorId, ordealId, 0);
-      abandonOrdeal(progress);
+      const progress = initiateEncounter(state, actorId, encounterId, 0);
+      abandonEncounter(progress);
 
       // Within cooldown, should be excluded
-      const available = getAvailableOrdeals(state, actorId);
-      expect(available.find(o => o.id === ordealId)).toBeUndefined();
+      const available = getAvailableEncounters(state, actorId);
+      expect(available.find(o => o.id === encounterId)).toBeUndefined();
     });
 
-    it('includes abandoned ordeals after cooldown expires', () => {
+    it('includes abandoned encounters after cooldown expires', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const ordealId = ordeals[0].id;
+      const encounters = getAvailableEncounters(state, actorId);
+      const encounterId = encounters[0].id;
 
       // Initiate and abandon at tick 0
-      const progress = initiateOrdeal(state, actorId, ordealId, 0);
-      abandonOrdeal(progress);
+      const progress = initiateEncounter(state, actorId, encounterId, 0);
+      abandonEncounter(progress);
 
       // Advance state to tick 25 (cooldown is 20)
       state.tick = 25;
 
-      const available = getAvailableOrdeals(state, actorId);
-      expect(available.find(o => o.id === ordealId)).toBeDefined();
+      const available = getAvailableEncounters(state, actorId);
+      expect(available.find(o => o.id === encounterId)).toBeDefined();
     });
   });
 
-  describe('initiateOrdeal', () => {
-    it('creates a new OrdealProgress with status active', () => {
+  describe('initiateEncounter', () => {
+    it('creates a new EncounterProgress with status active', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 5);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 5);
 
       expect(progress.status).toBe('active');
       expect(progress.actorId).toBe(actorId);
-      expect(progress.ordealId).toBe(ordeals[0].id);
+      expect(progress.encounterId).toBe(encounters[0].id);
       expect(progress.currentEncounterIndex).toBe(0);
       expect(progress.startedTick).toBe(5);
       expect(progress.history).toEqual([]);
     });
 
-    it('adds progress to state.ordealProgress', () => {
+    it('adds progress to state.encounterProgress', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const initialLen = state.ordealProgress.length;
+      const encounters = getAvailableEncounters(state, actorId);
+      const initialLen = state.encounterProgress.length;
 
-      initiateOrdeal(state, actorId, ordeals[0].id, 5);
+      initiateEncounter(state, actorId, encounters[0].id, 5);
 
-      expect(state.ordealProgress.length).toBe(initialLen + 1);
+      expect(state.encounterProgress.length).toBe(initialLen + 1);
     });
 
     it('emits a trace', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
+      const encounters = getAvailableEncounters(state, actorId);
       clearTraces();
 
-      initiateOrdeal(state, actorId, ordeals[0].id, 5);
+      initiateEncounter(state, actorId, encounters[0].id, 5);
 
-      // Note: ordeal_resolution trace may not exist yet in types, so just check that something was traced
+      // Note: encounter_resolution trace may not exist yet in types, so just check that something was traced
       // This will be properly validated in Task 6 when trace types are updated
     });
   });
@@ -268,13 +268,13 @@ describe('Ordeal Engine', () => {
     it('returns success when roll passes probability threshold', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Location is 'market', so first ordeal is Merchant's Gambit
+      // Location is 'market', so first encounter is Merchant's Gambit
       // First encounter is 'Negotiation' with reach: 'gold'
       // Give actor high capability in gold
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       // With high capability, even a mid-range roll should pass
       const result = resolveEncounter(state, progress, 50); // Mid roll with high capability → success
@@ -285,8 +285,8 @@ describe('Ordeal Engine', () => {
     it('returns failure when roll fails probability threshold', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       // With default low capability and high roll, should fail
       const result = resolveEncounter(state, progress, 95); // High roll → failure
@@ -297,8 +297,8 @@ describe('Ordeal Engine', () => {
     it('includes EncounterOutcome with narrative', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 30); // Success
 
@@ -310,12 +310,12 @@ describe('Ordeal Engine', () => {
     it('applies capability modifier based on domain', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Location is 'market', first ordeal is Merchant's Gambit
+      // Location is 'market', first encounter is Merchant's Gambit
       // First encounter uses 'gold' reach
       addTraitToActor(state.graph, actorId, 'trait.high', 'gold', 10);
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress1 = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress1 = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       // With high trait, mid-range roll should pass
       const result1 = resolveEncounter(state, progress1, 60);
@@ -325,8 +325,8 @@ describe('Ordeal Engine', () => {
     it('emits a trace with outcome details', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       clearTraces();
       resolveEncounter(state, progress, 30);
@@ -335,7 +335,7 @@ describe('Ordeal Engine', () => {
     });
   });
 
-  describe('advanceOrdeal', () => {
+  describe('advanceEncounter', () => {
     it('records outcome in history', () => {
       const { state, actorId } = buildTestGameState();
 
@@ -343,11 +343,11 @@ describe('Ordeal Engine', () => {
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 50);
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.history.length).toBe(1);
       expect(progress.history[0].success).toBe(true);
@@ -361,12 +361,12 @@ describe('Ordeal Engine', () => {
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 50);
       const initialIdx = progress.currentEncounterIndex;
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.currentEncounterIndex).toBe(initialIdx + 1);
     });
@@ -378,15 +378,15 @@ describe('Ordeal Engine', () => {
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 10);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 10);
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       // Simulate completing all encounters
-      const ordeal = ordeals[0];
-      for (let i = 0; i < ordeal.encounters.length; i++) {
+      const encounter = encounters[0];
+      for (let i = 0; i < encounter.steps.length; i++) {
         progress.currentEncounterIndex = i;
         const result = resolveEncounter(state, progress, 50); // Mid-range roll with high capability
-        advanceOrdeal(state, progress, result.success, i + 1);
+        advanceEncounter(state, progress, result.success, i + 1);
       }
 
       expect(progress.status).toBe('completed');
@@ -395,11 +395,11 @@ describe('Ordeal Engine', () => {
     it('sets status to abandoned on failure', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 95); // Failure
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.status).toBe('abandoned');
     });
@@ -407,12 +407,12 @@ describe('Ordeal Engine', () => {
     it('does not increment encounter on failure', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 95); // Failure
       const idx = progress.currentEncounterIndex;
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.currentEncounterIndex).toBe(idx);
     });
@@ -420,26 +420,26 @@ describe('Ordeal Engine', () => {
     it('emits a trace', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 30);
       clearTraces();
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       // Proper trace validation in Task 6
     });
   });
 
-  describe('abandonOrdeal', () => {
+  describe('abandonEncounter', () => {
     it('sets status to abandoned', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       expect(progress.status).toBe('active');
-      abandonOrdeal(progress);
+      abandonEncounter(progress);
 
       expect(progress.status).toBe('abandoned');
     });
@@ -447,27 +447,27 @@ describe('Ordeal Engine', () => {
     it('preserves history', () => {
       const { state, actorId } = buildTestGameState();
 
-      const ordeals = getAvailableOrdeals(state, actorId);
-      const progress = initiateOrdeal(state, actorId, ordeals[0].id, 0);
+      const encounters = getAvailableEncounters(state, actorId);
+      const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 30);
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       const historyLen = progress.history.length;
-      abandonOrdeal(progress);
+      abandonEncounter(progress);
 
       expect(progress.history.length).toBe(historyLen);
     });
   });
 
-  describe('generateOrdealsForLocation', () => {
-    it('returns ordeals matching location type', () => {
+  describe('generateEncountersForLocation', () => {
+    it('returns encounters matching location type', () => {
       const { state, locationId } = buildTestGameState();
 
-      const ordeals = generateOrdealsForLocation(state, locationId);
+      const encounters = generateEncountersForLocation(state, locationId);
 
-      expect(ordeals.length).toBeGreaterThan(0);
-      expect(ordeals.every(o => o.locationTypes.includes('market'))).toBe(true);
+      expect(encounters.length).toBeGreaterThan(0);
+      expect(encounters.every(o => o.locationTypes.includes('town'))).toBe(true);
     });
 
     it('returns empty for unknown location type', () => {
@@ -485,15 +485,15 @@ describe('Ordeal Engine', () => {
         },
       });
 
-      const ordeals = generateOrdealsForLocation(state, unknownLocId);
-      expect(ordeals).toEqual([]);
+      const encounters = generateEncountersForLocation(state, unknownLocId);
+      expect(encounters).toEqual([]);
     });
 
     it('handles missing location gracefully', () => {
       const { state } = buildTestGameState();
 
-      const ordeals = generateOrdealsForLocation(state, 'nonexistent.loc');
-      expect(ordeals).toEqual([]);
+      const encounters = generateEncountersForLocation(state, 'nonexistent.loc');
+      expect(encounters).toEqual([]);
     });
   });
 });

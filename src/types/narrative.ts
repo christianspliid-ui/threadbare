@@ -32,10 +32,10 @@ export type NarrativeEventType =
   | 'dilemma_betrayed'
   | 'dilemma_exploitation'
   | 'dilemma_mutual_distrust'
-  | 'ordeal_encounter_success'
-  | 'ordeal_encounter_failure'
-  | 'ordeal_completed'
-  | 'ordeal_abandoned';
+  | 'encounter_step_success'
+  | 'encounter_step_failure'
+  | 'encounter_completed'
+  | 'encounter_abandoned';
 
 export interface NarrativeEvent {
   id: string;

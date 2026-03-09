@@ -1,17 +1,17 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getAvailableOrdeals,
-  initiateOrdeal,
+  getAvailableEncounters,
+  initiateEncounter,
   resolveEncounter,
-  advanceOrdeal,
-} from '../ordeal';
-import { phaseOrdealProgression, resetEventCounter } from '../orchestrator';
+  advanceEncounter,
+} from '../encounter';
+import { phaseEncounterProgression, resetEventCounter } from '../orchestrator';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
 import type { GameState, TickEvent } from '../../types/gameState';
 import type { CosmologyProfile, SphereName } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
-import type { OrdealProgress } from '../../types/ordeal';
+import type { EncounterProgress } from '../../types/encounter';
 import { createGreatChronicle } from '../chronicle';
 import { createDefaultFundament, createResonanceState } from '../worldSoul';
 import { generateRivals, createRivalState } from '../rival';
@@ -55,7 +55,7 @@ function createTestGameState(seed: number = 42): GameState {
     id: 'loc.start',
     type: 'location',
     name: 'Sacred Grove',
-    properties: { locationType: 'location' },
+    properties: { locationSubtype: 'town' },
   });
 
   const { ascendantId } = createAscendant(graph, {
@@ -122,7 +122,7 @@ function createTestGameState(seed: number = 42): GameState {
     chronicleEntries: [],
     stealthExposure: 0,
     visibilityMap,
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
@@ -134,224 +134,224 @@ function createTestGameState(seed: number = 42): GameState {
   };
 }
 
-describe('phaseOrdealProgression', () => {
+describe('phaseEncounterProgression', () => {
   beforeEach(() => {
     resetEventCounter();
   });
 
-  // Test 1: Handle empty ordeal progress gracefully
-  it('handles empty ordealProgress array gracefully', () => {
+  // Test 1: Handle empty encounter progress gracefully
+  it('handles empty encounterProgress array gracefully', () => {
     const state = createTestGameState(1);
-    state.ordealProgress = [];
+    state.encounterProgress = [];
 
-    const result = phaseOrdealProgression(state);
+    const result = phaseEncounterProgression(state);
 
     expect(result).toBeDefined();
     expect(result.tickEvents).toBeDefined();
     expect(Array.isArray(result.tickEvents)).toBe(true);
   });
 
-  // Test 2: Progress active ordeals through encounters
-  it('resolves and advances active ordeals each tick', () => {
+  // Test 2: Progress active encounters through encounters
+  it('resolves and advances active encounters each tick', () => {
     const state = createTestGameState(2);
 
-    // Get available ordeals for an actor at a location
+    // Get available encounters for an actor at a location
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     expect(actors.length).toBeGreaterThan(0);
 
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
-    // If no ordeals available in this world, skip this test gracefully
+    // If no encounters available in this world, skip this test gracefully
     if (available.length === 0) {
       // Just verify the phase runs without error
-      const result = phaseOrdealProgression(state);
+      const result = phaseEncounterProgression(state);
       expect(result.tickEvents).toBeDefined();
       return;
     }
 
-    // Initiate an ordeal
-    const ordeal = available[0];
-    const progress = initiateOrdeal(state, actor.id, ordeal.id, 1);
+    // Initiate an encounter
+    const encounter = available[0];
+    const progress = initiateEncounter(state, actor.id, encounter.id, 1);
     expect(progress.status).toBe('active');
     expect(progress.currentEncounterIndex).toBe(0);
 
     // Run phase
-    const result = phaseOrdealProgression(state);
+    const result = phaseEncounterProgression(state);
 
     // Should have generated events
     expect(result.tickEvents).toBeDefined();
     expect(Array.isArray(result.tickEvents)).toBe(true);
 
     // Progress status should have changed (advanced or completed)
-    const updatedProgress = state.ordealProgress[0];
+    const updatedProgress = state.encounterProgress[0];
     expect(updatedProgress).toBeDefined();
     // Either advanced to next encounter or completed
     expect(['active', 'completed', 'abandoned']).toContain(updatedProgress.status);
   });
 
-  // Test 3: Events are generated for ordeal progression
-  it('generates TickEvents for ordeal outcomes (success/failure/completion)', () => {
+  // Test 3: Events are generated for encounter progression
+  it('generates TickEvents for encounter outcomes (success/failure/completion)', () => {
     const state = createTestGameState(3);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
     if (available.length > 0) {
-      const ordeal = available[0];
-      initiateOrdeal(state, actor.id, ordeal.id, 1);
+      const encounter = available[0];
+      initiateEncounter(state, actor.id, encounter.id, 1);
 
-      const result = phaseOrdealProgression(state);
+      const result = phaseEncounterProgression(state);
 
-      // Should have ordeal-related events in the output
-      const ordealEvents = result.tickEvents.filter(e =>
-        e.type === 'ordeal_encounter_success' ||
-        e.type === 'ordeal_encounter_failure' ||
-        e.type === 'ordeal_completed'
+      // Should have encounter-related events in the output
+      const encounterEvents = result.tickEvents.filter(e =>
+        e.type === 'encounter_encounter_success' ||
+        e.type === 'encounter_encounter_failure' ||
+        e.type === 'encounter_completed'
       );
 
-      expect(ordealEvents.length).toBeGreaterThanOrEqual(1);
-      ordealEvents.forEach(e => {
+      expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
+      encounterEvents.forEach(e => {
         expect(e.significance).toBeGreaterThan(0);
         expect(e.message).toBeDefined();
       });
     }
   });
 
-  // Test 4: Ordeal completion event generated
-  it('generates ordeal_completed event when final encounter succeeds', () => {
+  // Test 4: Encounter completion event generated
+  it('generates encounter_completed event when final encounter succeeds', () => {
     const state = createTestGameState(4);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
     if (available.length > 0) {
-      const ordeal = available[0];
-      const progress = initiateOrdeal(state, actor.id, ordeal.id, 1);
+      const encounter = available[0];
+      const progress = initiateEncounter(state, actor.id, encounter.id, 1);
 
       // Manually advance through encounters using deterministic rolls
       // (Success rolls for all encounters to reach completion)
-      for (let i = 0; i < ordeal.encounters.length; i++) {
+      for (let i = 0; i < encounter.steps.length; i++) {
         const result = resolveEncounter(state, progress, 10); // 10 = success
-        advanceOrdeal(state, progress, result.success, 1 + i);
+        advanceEncounter(state, progress, result.success, 1 + i);
       }
 
       // Progress should now be completed
       expect(progress.status).toBe('completed');
 
       // Phase should generate completion event
-      const phaseResult = phaseOrdealProgression(state);
-      const completionEvent = phaseResult.tickEvents.find(e => e.type === 'ordeal_completed');
+      const phaseResult = phaseEncounterProgression(state);
+      const completionEvent = phaseResult.tickEvents.find(e => e.type === 'encounter_completed');
       expect(completionEvent).toBeDefined();
       expect(completionEvent?.significance).toBeGreaterThan(0.7);
     }
   });
 
-  // Test 5: Skips actors who already have active ordeals
-  it('does not initiate a new ordeal if actor already has an active one', () => {
+  // Test 5: Skips actors who already have active encounters
+  it('does not initiate a new encounter if actor already has an active one', () => {
     const state = createTestGameState(5);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
     if (available.length > 0) {
-      // Start one ordeal
-      initiateOrdeal(state, actor.id, available[0].id, 1);
-      const initialCount = state.ordealProgress.length;
+      // Start one encounter
+      initiateEncounter(state, actor.id, available[0].id, 1);
+      const initialCount = state.encounterProgress.length;
 
       // Run phase with high initiation chance (deterministic seed)
-      const result = phaseOrdealProgression(state);
+      const result = phaseEncounterProgression(state);
 
-      // New ordeal should NOT be initiated since actor already has active
-      expect(state.ordealProgress.filter(p => p.actorId === actor.id && p.status === 'active').length)
+      // New encounter should NOT be initiated since actor already has active
+      expect(state.encounterProgress.filter(p => p.actorId === actor.id && p.status === 'active').length)
         .toBeLessThanOrEqual(1);
     }
   });
 
-  // Test 6: Initiates new ordeals for eligible actors
-  it('may initiate new ordeals for actors without active ones', () => {
+  // Test 6: Initiates new encounters for eligible actors
+  it('may initiate new encounters for actors without active ones', () => {
     const state = createTestGameState(6);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     expect(actors.length).toBeGreaterThan(0);
 
-    // Start with no ordeals
-    state.ordealProgress = [];
+    // Start with no encounters
+    state.encounterProgress = [];
 
     // Run phase multiple times to increase chance of initiation
     for (let i = 0; i < 10; i++) {
       state.tick = i + 2; // Update tick
-      phaseOrdealProgression(state);
+      phaseEncounterProgression(state);
     }
 
-    // By high tick count, at least one actor should have started an ordeal
+    // By high tick count, at least one actor should have started an encounter
     // (3% per tick per actor means very likely after 10 ticks)
-    const hasOrdeal = actors.some(a =>
-      state.ordealProgress.some(p => p.actorId === a.id && p.status === 'active')
+    const hasEncounter = actors.some(a =>
+      state.encounterProgress.some(p => p.actorId === a.id && p.status === 'active')
     );
 
     // This is probabilistic, so we can't guarantee, but 10 ticks should be likely
     // Just verify the structure is correct
-    state.ordealProgress.forEach(p => {
-      expect(p.ordealId).toBeDefined();
+    state.encounterProgress.forEach(p => {
+      expect(p.encounterId).toBeDefined();
       expect(p.actorId).toBeDefined();
       expect(['active', 'completed', 'abandoned']).toContain(p.status);
     });
   });
 
-  // Test 7: Maintains ordealProgress array properly
-  it('maintains ordealProgress array in state after phase execution', () => {
+  // Test 7: Maintains encounterProgress array properly
+  it('maintains encounterProgress array in state after phase execution', () => {
     const state = createTestGameState(7);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
     if (available.length > 0) {
-      initiateOrdeal(state, actor.id, available[0].id, 1);
-      const beforeCount = state.ordealProgress.length;
+      initiateEncounter(state, actor.id, available[0].id, 1);
+      const beforeCount = state.encounterProgress.length;
 
-      const result = phaseOrdealProgression(state);
+      const result = phaseEncounterProgression(state);
 
-      // Result should include ordealProgress
-      expect(result.ordealProgress).toBeDefined();
-      expect(Array.isArray(result.ordealProgress)).toBe(true);
-      expect(result.ordealProgress.length).toBeGreaterThanOrEqual(beforeCount);
+      // Result should include encounterProgress
+      expect(result.encounterProgress).toBeDefined();
+      expect(Array.isArray(result.encounterProgress)).toBe(true);
+      expect(result.encounterProgress.length).toBeGreaterThanOrEqual(beforeCount);
     }
   });
 
-  // Test 8: Abandoned ordeal generates failure event
-  it('generates ordeal_encounter_failure event when encounter fails', () => {
+  // Test 8: Abandoned encounter generates failure event
+  it('generates encounter_encounter_failure event when encounter fails', () => {
     const state = createTestGameState(8);
 
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableOrdeals(state, actor.id);
+    const available = getAvailableEncounters(state, actor.id);
 
     if (available.length > 0) {
-      const ordeal = available[0];
-      const progress = initiateOrdeal(state, actor.id, ordeal.id, 1);
+      const encounter = available[0];
+      const progress = initiateEncounter(state, actor.id, encounter.id, 1);
 
       // Force failure with deterministic roll
       const result = resolveEncounter(state, progress, 90); // 90 = failure
-      advanceOrdeal(state, progress, result.success, 1);
+      advanceEncounter(state, progress, result.success, 1);
 
       // Progress should be abandoned
       expect(progress.status).toBe('abandoned');
 
       // Phase should process and generate event
-      const phaseResult = phaseOrdealProgression(state);
-      const failureEvent = phaseResult.tickEvents.find(e => e.type === 'ordeal_encounter_failure');
+      const phaseResult = phaseEncounterProgression(state);
+      const failureEvent = phaseResult.tickEvents.find(e => e.type === 'encounter_encounter_failure');
       expect(failureEvent).toBeDefined();
       expect(failureEvent?.significance).toBeGreaterThan(0.4);
     }

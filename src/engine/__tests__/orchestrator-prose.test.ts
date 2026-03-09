@@ -121,7 +121,7 @@ function createTestGameState(): GameState {
     chronicleEntries: [],
     stealthExposure: 0.0,
     visibilityMap,
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

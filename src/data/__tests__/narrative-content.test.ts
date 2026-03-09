@@ -36,10 +36,10 @@ describe('narrative-content expanded', () => {
     'culture_clash',
     'migration',
     'construction_complete',
-    'ordeal_encounter_success',
-    'ordeal_encounter_failure',
-    'ordeal_completed',
-    'ordeal_abandoned',
+    'encounter_step_success',
+    'encounter_step_failure',
+    'encounter_completed',
+    'encounter_abandoned',
   ];
 
   describe('routine templates', () => {
@@ -121,10 +121,10 @@ describe('narrative-content expanded', () => {
         'culture_clash',
         'migration',
         'construction_complete',
-        'ordeal_encounter_success',
-        'ordeal_encounter_failure',
-        'ordeal_completed',
-        'ordeal_abandoned',
+        'encounter_step_success',
+        'encounter_step_failure',
+        'encounter_completed',
+        'encounter_abandoned',
       ];
       for (const type of newTypes) {
         expect(
@@ -187,7 +187,7 @@ describe('narrative-content expanded', () => {
   describe('archetype-event prose', () => {
     it('should have templates for 5 priority archetypes × 6 priority events = 30 entries', () => {
       const priorityArchetypes = ['tragic_hero', 'trickster', 'conqueror', 'healer', 'prophet'];
-      const priorityEvents = ['actor_death', 'action_critical', 'tier_transition', 'divine_intervention', 'contested_action', 'ordeal_completed'];
+      const priorityEvents = ['actor_death', 'action_critical', 'tier_transition', 'divine_intervention', 'contested_action', 'encounter_completed'];
       for (const arch of priorityArchetypes) {
         for (const evt of priorityEvents) {
           const key = `${arch}.${evt}`;
