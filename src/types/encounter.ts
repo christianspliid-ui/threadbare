@@ -29,6 +29,22 @@ export const THREAT_CAPABILITY_BANDS: Record<ThreatRating, [number, number]> = {
 export const THREAT_COURAGE_THRESHOLD = 0.3;
 export const THREAT_PRUDENCE_THRESHOLD = -0.3;
 
+// ─── Type → Value Pair Mapping ──────────────────────────────────
+
+/** Maps encounter type to value pairs that drive agent preference */
+export const ENCOUNTER_TYPE_MOTIVATIONS: Record<EncounterType, ValuePair[]> = {
+  explore:  ['courage_prudence', 'ambition_contentment'],
+  acquire:  ['greed_generosity', 'ambition_contentment'],
+  create:   ['tradition_innovation', 'devotion_independence'],
+  hire:     ['dominance_humility', 'loyalty_treachery'],
+  duel:     ['wrath_patience', 'courage_prudence'],
+  steal:    ['cunning_honesty', 'greed_generosity'],
+  trade:    ['greed_generosity', 'cunning_honesty'],
+  assist:   ['cruelty_compassion', 'loyalty_treachery'],
+  build:    ['tradition_innovation', 'devotion_independence'],
+  lead:     ['dominance_humility', 'ambition_contentment'],
+};
+
 // ─── Tunable Constants ──────────────────────────────────────────
 
 /** Maximum steps per encounter template */
