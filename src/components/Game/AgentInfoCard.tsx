@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
+import type { WorldGraph } from '../../engine/graph';
 import type { ReachDomain } from '../../types/traits';
 import { Tooltip } from '../shared/Tooltip';
+import { generateEntityProse } from '../../engine/proseGenerator';
 
 interface AgentInfoCardProps {
   card: AgentInfoCardData;
   onViewProfile: () => void;
   onBack: () => void;
   onZoomToLocation?: (locationId: string) => void;
+  // Prose generation (optional)
+  graph?: WorldGraph;
+  seed?: number;
 }
 
 // Domain display names
@@ -37,8 +42,16 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   onViewProfile,
   onBack,
   onZoomToLocation,
+  graph,
+  seed,
 }: AgentInfoCardProps) {
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
+
+  // Generate prose for agent (memoized)
+  const agentProse = useMemo(() => {
+    if (!graph || seed === undefined) return '';
+    return generateEntityProse(card.agentId, graph, seed, 'summary');
+  }, [card.agentId, graph, seed]);
 
   return (
     <div
@@ -116,6 +129,27 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
             </button>
           )}
         </div>
+
+        {/* Agent summary prose (Recognised+) */}
+        {agentProse && card.knowledgeLevel !== 'stranger' && (
+          <div
+            className="rounded p-2.5"
+            style={{
+              backgroundColor: 'var(--bg-raised)',
+              borderTop: '1px solid var(--border-subtle)',
+            }}
+          >
+            <p
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                lineHeight: '1.5',
+              }}
+            >
+              {agentProse.trim()}
+            </p>
+          </div>
+        )}
 
         {/* Stranger level: just name and location */}
         {card.knowledgeLevel === 'stranger' && (
