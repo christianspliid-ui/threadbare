@@ -30,17 +30,19 @@ Then open `http://localhost:5173` in your browser. The game should load immediat
 
 ## Documentation Strategy (decided 2026-03-04)
 
-Three documentation layers, each with a distinct purpose. Do not duplicate content across them.
+Four documentation layers, each with a distinct purpose. Do not duplicate content across them.
 
 | Layer | Tool | Purpose | When to use |
 |-------|------|---------|-------------|
 | **Graph model** | Obsidian vault (`TheFantasyWorldSimulator/`) | System specs and relationships — concise notes with wikilinks showing what connects to what | Primary context when implementing a system. Read the Index.md first, then follow links to relevant systems. |
 | **Project tracking** | Notion backlog | Sprint progress, implementation phase status, task assignment | Check what to build next, update progress after completing work. |
 | **Design rationale** | Repo (`Docs/plans/`) | Full decision documents with tradeoffs, worked examples, and "why we chose X over Y" | Deep reference when you need to understand the reasoning behind a design choice. |
+| **UI patterns** | Repo (`Docs/ui-patterns.md`) | Established frontend interaction conventions — component patterns, accessibility rules, prop shapes, styling norms | Before building any new UI component. Follow existing patterns; add new ones here in the same session. |
 
 - **Obsidian** says *what the system is* (specs, connections, formulas)
 - **Repo docs** say *why we chose it* (decision rationale, tradeoffs)
 - **Notion** says *what to build next* (backlog, phases, progress)
+- **UI patterns** say *how we build the frontend* (interaction conventions, accessibility, performance)
 
 ## Key Links
 
@@ -49,6 +51,7 @@ Three documentation layers, each with a distinct purpose. Do not duplicate conte
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Visual style guide (source of truth): `STYLE.md`
 - Visual style tile (HTML reference): `Design/style-tile.html`
+- UI patterns (frontend conventions): `Docs/ui-patterns.md`
 
 ## Visual Style
 
@@ -401,6 +404,17 @@ The goal is traceability without overhead. If you changed it, note when and why.
 | 2026-03-08 | Obsidian: Systems/ | Created Action Narrative System.md — agenda selection, decay curves, consequence prose, ascendant feedback, NarrativeLog integration | Action Narrative System: vault documentation |
 | 2026-03-08 | Obsidian: Index.md | Added Action Narrative Systems section with link to Action Narrative System | Action Narrative System: vault index |
 | 2026-03-08 | CLAUDE.md | Updated project status (Action Narrative System complete), engine stats, changelog | Action Narrative System documentation |
+| 2026-03-09 | Repo: Docs/ | Created ui-patterns.md — 7 sections: zoom-to-location eye icon, progressive disclosure tiers, overlay stack, panel styling, accessibility baseline, performance conventions | Frontend conventions need a dedicated doc, not STYLE.md |
+| 2026-03-09 | CLAUDE.md | Added UI patterns as 4th documentation layer, added to Key Links | ui-patterns.md discoverable by agents |
+| 2026-03-09 | Repo: src/types/ | Created coastline.ts — Point2D, ContourLoop, CoastlineData, CoastlineConfig, COASTLINE_DEFAULTS | Coastline type foundation |
+| 2026-03-09 | Repo: src/lib/ | Created simplexNoise.ts — seeded 2D simplex noise port for deterministic displacement | Coastline noise generation |
+| 2026-03-09 | Repo: src/engine/ | Created coastline.ts (391 lines) — isWaterTerrain, buildScalarField (quartic falloff), extractContours (marching squares 16-case), chainSegmentsIntoLoops, chaikinSmooth, displaceContour, computeCoastline, SVG path conversion | Full coastline rendering pipeline |
+| 2026-03-09 | Repo: src/components/HexMap/ | Created CoastlineOverlay.tsx, useCoastline.ts — memoized SVG overlay with shallows + land paths | Coastline React components |
+| 2026-03-09 | Repo: src/components/HexMap/ | Modified HexMap.tsx — seed prop, DEFAULT_COASTLINE_SEED, CoastlineOverlay rendered before hex tiles | HexMap coastline integration |
+| 2026-03-09 | Repo: src/components/HexMap/ | Modified HexTile.tsx — visible water hexes transparent (no terrain image), remembered water dimmed 0.4 opacity, unexplored unchanged | Water hex transparency for organic coastlines |
+| 2026-03-09 | Repo: src/components/Game/ | Modified GameView.tsx — seed={gameState.seed} wired to HexMap | Deterministic coastline from world seed |
+| 2026-03-09 | Repo: Docs/plans/ | Created 2026-03-09-coastline-integration.md (1858 lines) — 13-task TDD implementation plan | Coastline integration design + implementation plan |
+| 2026-03-09 | CLAUDE.md | Updated project status (Coastline Integration complete), engine stats, changelog | Coastline integration documentation |
 
 ## Session Workflow
 
@@ -481,7 +495,8 @@ Repetitive workflows are a signal to invest in a reusable skill. If you notice y
 - QA Fix Sprint #2: ✅ Complete — 24 active findings fixed across 6 task batches (1 obsolete RC-025 skipped, 7 pre-resolved). Task 1: React.memo + useCallback/useMemo optimizations on 6 components + hooks. Task 2: keyboard navigation (Enter/Space) on interactive SVG elements + focus ring outlines. Task 3: descriptive aria-labels on 7 close/dismiss buttons + role="list"/role="listitem" semantics. Task 4: AvatarHUD shows avatarName, MandateTracker tooltip scoped, mandate stage transitions as traces, EssencePanel zero-value hiding + opacity hierarchy. Task 5: 13 components darkened bg-stone-700→stone-800, HexBreadcrumb canonical sphere colors. Task 6: dilemma DILEMMA_STAKES_PROSE templates, rival templates 4→8/type, WorldPulse empty sidebar, DoomBar/MandateTracker flex proportions, nav landmark. ScryOverlay test expectations updated for new aria-labels (20/20). All type checks + targeted test suites pass
 - Intervention Effects System: ✅ Complete — 12-task TDD implementation: (1) intervention-feedback-content.ts with 40 tunable constants + 24 consequence templates + sphere audio config, (2) DivineInfluenceEntry interface with decay curves + InterventionEffectTrace, (3) interventionEffects.ts engine (~765 lines) with all 8 intervention type handlers (dream/persuade/deceive/intimidate/inspire/coincidence/omen/afflict_bless), (4) buildValueOverlay pipeline integration + divine influence decay in action selection, (5) phaseDivineInfluenceDecay orchestrator phase, (6) useAgentInteraction hook wiring with applyInterventionEffects + consequence messages, (7) ActionCard CSS pulse animation (cardPulse/glyphPulse @keyframes + spent overlay ✓), (8) useInterventionAudio Web Audio synthesis (sphere-colored pitch + detection overlay), (9) GameView playingCardId wiring, (10) DebugPanel InterventionEffectDetail renderer, (11) 10-test integration suite, (12) full verification. 92 new tests across 7 test files. Design doc + 12-task plan in Docs/plans/
 - Action Narrative System (Agenda + Decay): ✅ Complete — 13-task TDD implementation via Subagent-Driven Development. (1) decayCurve.ts exponential decay math (`currentStrength = max(min, init × e^(-rate × elapsed))`), (2) DivineInfluenceEntry extended with decay fields + agenda fields (agendaId, reachBoost, behaviorTag), (3) buildValueOverlay multiplies drifts by getCurrentStrength with expiry filtering, (4) agenda-content.ts with 40 AgendaTemplates (8 types × 5 each) with valuePair/direction/narrativeHook/reachBoost/archetypeAffinities, (5) AgendaPicker component (sphere-colored cards, Escape dismiss), (6) interventionEffects wired with agenda param + per-type DECAY_CONSTANTS, (7) InterventionConfirm shows agenda name + narrative hook, (8) agenda-consequence-templates.ts with 240 templates (8 types × 10 categories × 3 variants) + DECAY_HINTS + placeholder resolution, (9) ascendantFeedback.ts records intervention history on ascendant node, (10) NarrativeLog sphere-colored intervention beats with auto-open, (11) AgendaPicker wired into GameView overlay stack, (12) 4-test full-flow integration (agenda→effects→decay→overlay→feedback), (13) verification. 13 commits, 63 new tests across 8 test files. Design doc + 13-task plan in Docs/plans/
-- Current phase: **Action Narrative System complete** — next up: check Notion backlog for next priority
-- Engine stats: ~160 modules, ~33,000+ lines, ~2,060+ engine/data tests across 160+ test files
+- Coastline Integration: ✅ Complete — 13-task TDD implementation via Subagent-Driven Development. Organic coastline rendering pipeline: (1) types/coastline.ts with CoastlineData, CoastlineConfig, COASTLINE_DEFAULTS, (2) lib/simplexNoise.ts seeded 2D noise port, (3-7) engine/coastline.ts (391 lines) — isWaterTerrain, buildScalarField (quartic falloff blobs), extractContours (marching squares 16-case lookup), chainSegmentsIntoLoops (endpoint snapping), chaikinSmooth (corner-cutting), displaceContour (simplex noise), computeCoastline orchestrator, SVG path conversion, (8-9) CoastlineOverlay.tsx + useCoastline.ts memoized React components, HexMap.tsx seed prop + overlay wiring, (10) HexTile.tsx water transparency — visible water hexes render transparent so organic coastline shows through, remembered water dimmed, unexplored unchanged, (11) GameView.tsx seed={gameState.seed} wiring, (12) 9 integration tests (real world gen, perf <500ms, determinism, all-ocean/all-land, seed variance, water classification, large grid, shallow loops). 7 new files, 4 modified, ~50 new tests. Design doc + 13-task plan in Docs/plans/
+- Current phase: **Coastline Integration complete** — next up: check Notion backlog for next priority
+- Engine stats: ~165 modules, ~34,000+ lines, ~2,110+ engine/data tests across 165+ test files
 - Content stats: 198 graph nodes, 290 typed edges, 18 categories, 203 generated Obsidian vault notes, 13 content packages (archetype-content.ts fully enriched, culture-content.ts = 1,789+ lines / 591+ tests, opposition-content.ts = 112 lines / 22 tests, ui-content.ts = 11 tooltip entries, agenda-content.ts = 40 templates, agenda-consequence-templates.ts = 240 templates), 910+ data tests across 17 content test files
 
