@@ -40,19 +40,20 @@ export function buildScalarField(
   const blobRadius = opts.blobRadius * hexSize;
   const r2 = blobRadius * blobRadius;
 
-  // Canvas dimensions (matching HexMap.tsx computation)
-  const padding = hexSize;
-  const canvasW = cols * hexSize * HEX_SCALE_X + hexSize * 0.5 + hexSize * 2 + padding * 2;
-  const canvasH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5 + hexSize * 2 + padding * 2;
+  // Canvas dimensions in local coordinate space (inside tileBaseTransform group).
+  // Add hexSize margin on each side so the scalar field rolls off smoothly at edges.
+  const margin = hexSize;
+  const canvasW = cols * hexSize * HEX_SCALE_X + hexSize * 0.5 + hexSize + margin * 2;
+  const canvasH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5 + hexSize + margin * 2;
 
-  // Collect land hex pixel positions (with the same offset as HexMap tileBaseTransform)
-  const offsetX = padding + hexSize;
-  const offsetY = padding + hexSize * 0.8;
+  // Collect land hex pixel positions in local space (NO tileBaseTransform offset —
+  // CoastlineOverlay is rendered inside the same <g transform> that positions hex tiles,
+  // so contour points must use the same coordinate system as hexToPixel output).
   const landPositions: Point2D[] = [];
   for (const tile of tiles) {
     if (isWaterTerrain(tile.terrain)) continue;
     const { x, y } = hexToPixel(tile.coord, hexSize);
-    landPositions.push({ x: x + offsetX, y: y + offsetY });
+    landPositions.push({ x: x + margin, y: y + margin });
   }
 
   const gridW = Math.ceil(canvasW / fieldRes) + 1;
