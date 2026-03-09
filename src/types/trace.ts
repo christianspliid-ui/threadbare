@@ -1,4 +1,5 @@
 import type { SphereName } from './index';
+import type { ModifierResolutionTrace } from './modifiers';
 
 /** Base shape for all trace entries */
 export interface TraceBase {
@@ -128,7 +129,8 @@ export type TraceEntry =
   | TickSummaryTrace
   | EncounterResolutionTrace
   | FamiliarityChangeTrace
-  | InterventionEffectTrace;
+  | InterventionEffectTrace
+  | ModifierResolutionTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -140,6 +142,7 @@ export const TRACE_CATEGORIES = [
   'encounter_resolution',
   'familiarity_change',
   'intervention_effect',
+  'modifier_resolution',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
