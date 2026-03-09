@@ -4,7 +4,11 @@ import { combineLoopPaths } from '../../engine/coastline';
 
 interface CoastlineOverlayProps {
   data: CoastlineData;
+  /** Full SVG bounding box so deepWater rect covers entire map */
+  svgWidth: number;
+  svgHeight: number;
   colors: {
+    deepWater: string;
     shallows: string;
     coastEdge: string;
   };
@@ -12,6 +16,8 @@ interface CoastlineOverlayProps {
 
 export const CoastlineOverlay = memo(function CoastlineOverlay({
   data,
+  svgWidth,
+  svgHeight,
   colors,
 }: CoastlineOverlayProps) {
   const shallowsD = useMemo(
@@ -26,6 +32,14 @@ export const CoastlineOverlay = memo(function CoastlineOverlay({
 
   return (
     <g className="coastline-overlay">
+      {/* Deep water fill — covers entire map area so transparent water hexes show proper ocean color */}
+      <rect
+        x={-svgWidth}
+        y={-svgHeight}
+        width={svgWidth * 3}
+        height={svgHeight * 3}
+        fill={colors.deepWater}
+      />
       {shallowsD && (
         <path
           d={shallowsD}

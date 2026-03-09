@@ -21,7 +21,7 @@ function renderInSvg(children: React.ReactNode) {
 describe('CoastlineOverlay', () => {
   it('renders shallows path before land contour path', () => {
     const { container } = renderInSvg(
-      <CoastlineOverlay data={mockData} colors={COASTLINE_DEFAULTS.colors} />
+      <CoastlineOverlay data={mockData} svgWidth={600} svgHeight={400} colors={COASTLINE_DEFAULTS.colors} />
     );
     const paths = container.querySelectorAll('path');
     expect(paths.length).toBeGreaterThanOrEqual(2);
@@ -29,7 +29,7 @@ describe('CoastlineOverlay', () => {
 
   it('applies correct fill colors', () => {
     const { container } = renderInSvg(
-      <CoastlineOverlay data={mockData} colors={COASTLINE_DEFAULTS.colors} />
+      <CoastlineOverlay data={mockData} svgWidth={600} svgHeight={400} colors={COASTLINE_DEFAULTS.colors} />
     );
     const paths = container.querySelectorAll('path');
     const fills = Array.from(paths).map(p => p.getAttribute('fill'));
@@ -40,7 +40,7 @@ describe('CoastlineOverlay', () => {
   it('renders nothing when loops are empty', () => {
     const emptyData: CoastlineData = { loops: [], shallowLoops: [] };
     const { container } = renderInSvg(
-      <CoastlineOverlay data={emptyData} colors={COASTLINE_DEFAULTS.colors} />
+      <CoastlineOverlay data={emptyData} svgWidth={600} svgHeight={400} colors={COASTLINE_DEFAULTS.colors} />
     );
     const paths = container.querySelectorAll('path');
     expect(paths).toHaveLength(0);
@@ -52,7 +52,7 @@ describe('CoastlineOverlay', () => {
       shallowLoops: [],
     };
     const { container } = renderInSvg(
-      <CoastlineOverlay data={noShallows} colors={COASTLINE_DEFAULTS.colors} />
+      <CoastlineOverlay data={noShallows} svgWidth={600} svgHeight={400} colors={COASTLINE_DEFAULTS.colors} />
     );
     const paths = container.querySelectorAll('path');
     expect(paths).toHaveLength(1);

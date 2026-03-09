@@ -52,8 +52,8 @@ export const COASTLINE_DEFAULTS: CoastlineConfig = {
   fieldResolution: 4,
   minLoopPoints: 20,
   colors: {
-    deepWater: '#1a2a3a',
-    shallows: '#1e3a4a',
+    deepWater: '#12243a',
+    shallows: '#1e4858',
     coastEdge: '#2a2a1a',
   },
 };
