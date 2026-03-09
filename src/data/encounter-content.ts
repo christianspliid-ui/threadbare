@@ -1,20 +1,20 @@
 /**
- * Ordeal Content Package — 10 ordeal templates with 30 encounters and cultural vocabulary overlays.
+ * Encounter Content Package — 10 encounter templates with 30 steps and cultural vocabulary overlays.
  *
  * ═══════════════════════════════════════════════════════════════════
- * CONTENT MANAGER: This is the file you edit to change ordeal templates,
- * encounter sequences, difficulty curves, and cultural prose variations.
+ * CONTENT MANAGER: This is the file you edit to change encounter templates,
+ * step sequences, difficulty curves, and cultural prose variations.
  * ═══════════════════════════════════════════════════════════════════
  */
 
-import type { OrdealDefinition } from '../types/ordeal';
+import type { EncounterTemplate } from '../types/encounter';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
 /**
- * Difficulty tier for an ordeal, including base multiplier and tone adjectives.
+ * Difficulty tier for an encounter, including base multiplier and tone adjectives.
  */
-export interface OrdealDifficultyTier {
+export interface EncounterDifficultyTier {
   /** Multiplier applied to base difficulty (e.g., 0.8 for easier, 1.3 for harder) */
   difficultyMultiplier: number;
   /** Tone adjectives to flavor prose at this difficulty level */
@@ -23,17 +23,17 @@ export interface OrdealDifficultyTier {
 
 // ─── Tunable Constants ──────────────────────────────────────────
 
-/** Difficulty progression within a template (escalates per encounter) */
+/** Difficulty progression within a template (escalates per step) */
 const DIFFICULTY_BASE = 35;
 const DIFFICULTY_STEP = 10;
 
 // ─── 3 Difficulty Tiers ─────────────────────────────────────────
 
 /**
- * Ordeal difficulty tiers determine how challenging an ordeal is and what tone it carries.
- * Used to flavor prose and adjust difficulty multipliers for ordeal encounters.
+ * Encounter difficulty tiers determine how challenging an encounter is and what tone it carries.
+ * Used to flavor prose and adjust difficulty multipliers for encounter steps.
  */
-export const ORDEAL_DIFFICULTY_TIERS: Record<string, OrdealDifficultyTier> = {
+export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier> = {
   early: {
     difficultyMultiplier: 0.8,
     toneAdjectives: ['uncertain', 'tentative', 'green', 'unsteady', 'fledgling'],
@@ -48,20 +48,23 @@ export const ORDEAL_DIFFICULTY_TIERS: Record<string, OrdealDifficultyTier> = {
   },
 };
 
-// ─── 10 Ordeal Templates ───────────────────────────────────────
+// ─── 10 Encounter Templates ───────────────────────────────────
 
 /**
- * The 10 ordeal archetypes cover all major domains and location types.
- * Each has 3 encounters with escalating difficulty (35 → 45 → 55).
+ * The 10 encounter archetypes cover all major domains and location types.
+ * Each has 3 steps with escalating difficulty (35 → 45 → 55).
  */
-export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
+export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
-    id: 'ordeal.deep_descent',
+    id: 'encounter.deep_descent',
     name: 'The Deep Descent',
-    locationTypes: ['dungeon', 'cavern'],
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining'],
     reachPrimary: 'iron',
     reachSecondary: 'shadow',
-    encounters: [
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'deep_descent.entrance',
         name: 'The Entrance',
@@ -112,12 +115,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.trial_of_flame',
+    id: 'encounter.trial_of_flame',
     name: 'Trial of Flame',
-    locationTypes: ['forge', 'mine', 'volcanic'],
+    locationTypes: ['mining', 'fort', 'camp'],
     reachPrimary: 'iron',
     reachSecondary: 'stone',
-    encounters: [
+    encounterType: 'create',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'trial_of_flame.ignition',
         name: 'The Ignition',
@@ -168,12 +174,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.spirit_walk',
+    id: 'encounter.spirit_walk',
     name: 'The Spirit Walk',
-    locationTypes: ['grove', 'monastery', 'temple'],
+    locationTypes: ['shrine', 'temple'],
     reachPrimary: 'veil',
     reachSecondary: 'heart',
-    encounters: [
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'spirit_walk.threshold',
         name: 'The Threshold',
@@ -224,12 +233,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.merchants_gambit',
+    id: 'encounter.merchants_gambit',
     name: 'Merchant\'s Gambit',
-    locationTypes: ['market', 'port', 'bazaar'],
+    locationTypes: ['town', 'city', 'capital', 'oasis'],
     reachPrimary: 'gold',
     reachSecondary: 'eye',
-    encounters: [
+    encounterType: 'trade',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'merchants_gambit.negotiation',
         name: 'The Negotiation',
@@ -280,12 +292,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.shadow_hunt',
+    id: 'encounter.shadow_hunt',
     name: 'The Shadow Hunt',
-    locationTypes: ['dungeon', 'forest', 'ruin', 'city'],
+    locationTypes: ['ruins', 'ruined_village', 'ruined_city', 'city'],
     reachPrimary: 'shadow',
     reachSecondary: 'star',
-    encounters: [
+    encounterType: 'steal',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'shadow_hunt.stalk',
         name: 'The Stalk',
@@ -336,12 +351,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.knowledge_test',
+    id: 'encounter.knowledge_test',
     name: 'The Knowledge Test',
-    locationTypes: ['academy', 'archive', 'library', 'tower'],
+    locationTypes: ['tower', 'temple', 'capital'],
     reachPrimary: 'eye',
     reachSecondary: 'veil',
-    encounters: [
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'knowledge_test.archives',
         name: 'The Archives',
@@ -392,12 +410,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.warlords_crucible',
+    id: 'encounter.warlords_crucible',
     name: 'The Warlord\'s Crucible',
-    locationTypes: ['fortress', 'battlefield', 'garrison'],
+    locationTypes: ['fort', 'castle', 'battleground'],
     reachPrimary: 'iron',
     reachSecondary: 'stone',
-    encounters: [
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'warlords_crucible.duel',
         name: 'The Duel',
@@ -448,12 +469,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.healers_oath',
+    id: 'encounter.healers_oath',
     name: 'The Healer\'s Oath',
-    locationTypes: ['temple', 'monastery', 'sanctuary'],
+    locationTypes: ['temple', 'shrine'],
     reachPrimary: 'flesh',
     reachSecondary: 'heart',
-    encounters: [
+    encounterType: 'assist',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'healers_oath.diagnosis',
         name: 'The Diagnosis',
@@ -504,12 +528,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.diplomats_maze',
+    id: 'encounter.diplomats_maze',
     name: 'The Diplomat\'s Maze',
-    locationTypes: ['throne_room', 'market', 'cathedral'],
+    locationTypes: ['capital', 'city', 'town'],
     reachPrimary: 'heart',
     reachSecondary: 'gold',
-    encounters: [
+    encounterType: 'lead',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'diplomats_maze.audience',
         name: 'The Audience',
@@ -560,12 +587,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
     ],
   },
   {
-    id: 'ordeal.starborn_vigil',
+    id: 'encounter.starborn_vigil',
     name: 'The Starborn Vigil',
-    locationTypes: ['hilltop', 'plain', 'tower', 'mountain'],
+    locationTypes: ['tower', 'fort', 'castle', 'camp'],
     reachPrimary: 'star',
     reachSecondary: 'veil',
-    encounters: [
+    encounterType: 'explore',
+    threatRating: 'moderate',
+    motivations: ['courage_prudence', 'ambition_contentment'],
+    steps: [
       {
         id: 'starborn_vigil.vigil',
         name: 'The Vigil',
@@ -617,15 +647,15 @@ export const ORDEAL_TEMPLATES: OrdealDefinition[] = [
   },
 ];
 
-// ─── Cultural Ordeal Overlays ───────────────────────────────────
+// ─── Cultural Encounter Overlays ───────────────────────────────────
 
 /**
- * 6 cultural vocabulary sets that modify encounter prose generation
+ * 6 cultural vocabulary sets that modify step prose generation
  * without changing the underlying structure. Each covers foundation
  * sphere affinities (chaos, order, light, darkness) plus key creation
  * spheres (force, mind).
  */
-export const CULTURAL_ORDEAL_OVERLAYS: Record<
+export const CULTURAL_ENCOUNTER_OVERLAYS: Record<
   string,
   {
     adjectives: string[];
@@ -665,106 +695,106 @@ export const CULTURAL_ORDEAL_OVERLAYS: Record<
   },
 };
 
-// ─── Ordeal Inspection Vignettes ────────────────────────────────
+// ─── Encounter Inspection Vignettes ────────────────────────────────
 //
 // Prose describing what a player/god observes when inspecting a location
-// with active ordeal activity, completed success, or failed attempt.
+// with active encounter activity, completed success, or failed attempt.
 
-export const ORDEAL_INSPECTION_VIGNETTES = {
+export const ENCOUNTER_INSPECTION_VIGNETTES = {
   inProgress: [
     'The air thrums with barely-contained trial. A figure moves through the test, strain evident in every breath and gesture. The outcome hangs unresolved.',
-    'Ritual markers glow faintly on the ground, pulsing with the cadence of the ordeal\'s progression. The candidate struggles forward, will against demand.',
-    'The location crackles with sacred tension. An ordeal is underway—the veil between triumph and ruin paper-thin here.',
-    'Threads of consequence shimmer around the ordeal. The outcome is not yet written; the candidate still pushes against their limit.',
-    'The ground seems to hold its breath. An ordeal unfolds—a test older than kingdoms, demanding payment in will or blood.',
-    'Unresolved power coils in this place. The ordeal is active; success is still possible, but the way is steep and uncertain.',
-    'A figure stands at the threshold between trials, the ordeal\'s weight pressing down. The next moment will reshape them or break them.',
-    'The location is thick with challenge and determination. An ordeal is being faced; the candidate is neither victor nor corpse—yet.',
+    'Ritual markers glow faintly on the ground, pulsing with the cadence of the encounter\'s progression. The candidate struggles forward, will against demand.',
+    'The location crackles with sacred tension. An encounter is underway—the veil between triumph and ruin paper-thin here.',
+    'Threads of consequence shimmer around the encounter. The outcome is not yet written; the candidate still pushes against their limit.',
+    'The ground seems to hold its breath. An encounter unfolds—a test older than kingdoms, demanding payment in will or blood.',
+    'Unresolved power coils in this place. The encounter is active; success is still possible, but the way is steep and uncertain.',
+    'A figure stands at the threshold between trials, the encounter\'s weight pressing down. The next moment will reshape them or break them.',
+    'The location is thick with challenge and determination. An encounter is being faced; the candidate is neither victor nor corpse—yet.',
     'Echoes of ancient tests linger here, now playing out again through a new candidate. The outcome remains suspended, waiting.',
-    'The air smells of sweat and magic. An ordeal is underway—hope and despair both possible in the next heartbeat.',
+    'The air smells of sweat and magic. An encounter is underway—hope and despair both possible in the next heartbeat.',
   ],
   completed: [
-    'The location is serene now, the ordeal\'s fire extinguished. A figure bears the marks of having passed through trial—scarred, changed, unmistakably stronger.',
-    'This place remembers victory. The ordeal has been completed; remnants of challenge still linger, but the candidate walks freely, bearing the weight of their triumph.',
-    'A glow of completion rests upon this location. The ordeal is finished; the candidate succeeded, and the land itself seems to acknowledge their new standing.',
-    'The traces of trial have faded, leaving behind only the echo of a completed ordeal. The candidate moves with the certainty of having endured and prevailed.',
-    'This location holds the silence of finished trials. The ordeal is complete; the candidate stands transformed, carrying proof of their passage in bearing and breath.',
+    'The location is serene now, the encounter\'s fire extinguished. A figure bears the marks of having passed through trial—scarred, changed, unmistakably stronger.',
+    'This place remembers victory. The encounter has been completed; remnants of challenge still linger, but the candidate walks freely, bearing the weight of their triumph.',
+    'A glow of completion rests upon this location. The encounter is finished; the candidate succeeded, and the land itself seems to acknowledge their new standing.',
+    'The traces of trial have faded, leaving behind only the echo of a completed encounter. The candidate moves with the certainty of having endured and prevailed.',
+    'This location holds the silence of finished trials. The encounter is complete; the candidate stands transformed, carrying proof of their passage in bearing and breath.',
   ],
   failed: [
-    'The ground is scarred here, torn by an ordeal that ended in defeat. The candidate retreated or was cast back; failure clings to this place like ash.',
-    'Something is broken here—not just in stone and structure, but in the air itself. An ordeal failed; the candidate was found wanting, and the trial\'s mercy is the only mercy they received.',
-    'The location is hollow now, drained. An ordeal was attempted and did not end in victory. The candidate bears the invisible marks of trial that broke them.',
+    'The ground is scarred here, torn by an encounter that ended in defeat. The candidate retreated or was cast back; failure clings to this place like ash.',
+    'Something is broken here—not just in stone and structure, but in the air itself. An encounter failed; the candidate was found wanting, and the trial\'s mercy is the only mercy they received.',
+    'The location is hollow now, drained. An encounter was attempted and did not end in victory. The candidate bears the invisible marks of trial that broke them.',
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════════
-// ORDEAL SYSTEM CONNECTIONS
+// ENCOUNTER SYSTEM CONNECTIONS
 // ═══════════════════════════════════════════════════════════════════
 
 /**
- * Connections between ordeals and other game systems: doom clock,
+ * Connections between encounters and other game systems: doom clock,
  * cultural forces, and rival god interference. These templates describe
- * how external forces shape or complicate an ordeal's outcome.
+ * how external forces shape or complicate an encounter's outcome.
  */
-export interface OrdealSystemConnection {
+export interface EncounterSystemConnection {
   id: string;
   trigger: string;
   prose: string;
 }
 
-export const ORDEAL_SYSTEM_CONNECTIONS: {
-  doom: OrdealSystemConnection[];
-  culture: OrdealSystemConnection[];
-  rival: OrdealSystemConnection[];
+export const ENCOUNTER_SYSTEM_CONNECTIONS: {
+  doom: EncounterSystemConnection[];
+  culture: EncounterSystemConnection[];
+  rival: EncounterSystemConnection[];
 } = {
   doom: [
     {
       id: 'doom_intensification',
-      trigger: 'Rising doom clock (>60%) intensifies ordeal stakes',
-      prose: 'The air thickens with dread. As doom rises, the ordeal\'s weight compounds—{location} itself seems to turn hostile, magic warping under pressure. {actor} must not merely pass the trial but do so before the world\'s collapse becomes complete.',
+      trigger: 'Rising doom clock (>60%) intensifies encounter stakes',
+      prose: 'The air thickens with dread. As doom rises, the encounter\'s weight compounds—{location} itself seems to turn hostile, magic warping under pressure. {actor} must not merely pass the trial but do so before the world\'s collapse becomes complete.',
     },
     {
       id: 'doom_corruption',
-      trigger: 'High doom (>80%) corrupts ordeal outcome',
-      prose: 'The ordeal has been touched by the approaching unmaking. Reality flickers here; success feels possible, but fragile. Even if {actor} prevails, the victory tastes ashen—tainted by knowledge that the world itself might not survive to remember {their} triumph.',
+      trigger: 'High doom (>80%) corrupts encounter outcome',
+      prose: 'The encounter has been touched by the approaching unmaking. Reality flickers here; success feels possible, but fragile. Even if {actor} prevails, the victory tastes ashen—tainted by knowledge that the world itself might not survive to remember {their} triumph.',
     },
     {
       id: 'doom_acceleration',
-      trigger: 'Ordeal completion (success or failure) accelerates doom by 5 ticks',
-      prose: 'The {location} trembles as the ordeal concludes. Whether {actor} triumphed or fell, the trial\'s conclusion sends ripples outward—the doom clock ticks faster, as if the world must compress its reckoning into dwindling moments.',
+      trigger: 'Encounter completion (success or failure) accelerates doom by 5 ticks',
+      prose: 'The {location} trembles as the encounter concludes. Whether {actor} triumphed or fell, the trial\'s conclusion sends ripples outward—the doom clock ticks faster, as if the world must compress its reckoning into dwindling moments.',
     },
   ],
   culture: [
     {
       id: 'culture_facilitation',
-      trigger: 'Ordeal\'s culture shares {actor}\'s cultural identity (>70% similarity)',
-      prose: 'The ordeal speaks {actor}\'s language. The rituals, the methods, the values tested here align with {their} own culture\'s traditions. {They} move through the trial with native grace—threads of {their} people\'s wisdom guide each step, making the impossible merely difficult.',
+      trigger: 'Encounter\'s culture shares {actor}\'s cultural identity (>70% similarity)',
+      prose: 'The encounter speaks {actor}\'s language. The rituals, the methods, the values tested here align with {their} own culture\'s traditions. {They} move through the trial with native grace—threads of {their} people\'s wisdom guide each step, making the impossible merely difficult.',
     },
     {
       id: 'culture_opposition',
-      trigger: 'Ordeal\'s culture opposes {actor}\'s cultural values (tension >0.6)',
-      prose: 'The ordeal demands something {actor}\'s culture forbids. Each test feels like a betrayal of {their} own people. {They} must choose between honoring the tradition and passing the trial—a choice that will mark {them} forever in the eyes of {their} kind.',
+      trigger: 'Encounter\'s culture opposes {actor}\'s cultural values (tension >0.6)',
+      prose: 'The encounter demands something {actor}\'s culture forbids. Each test feels like a betrayal of {their} own people. {They} must choose between honoring the tradition and passing the trial—a choice that will mark {them} forever in the eyes of {their} kind.',
     },
     {
       id: 'culture_transformation',
-      trigger: 'Success in culturally opposed ordeal grants cultural trait',
-      prose: 'By passing this ordeal on foreign terms, {actor} is reforged. The culture of the trial seeps into {their} bones—{they} carry back not just triumph but a piece of something alien, woven now into {their} identity. {They} are no longer purely what {they} were.',
+      trigger: 'Success in culturally opposed encounter grants cultural trait',
+      prose: 'By passing this encounter on foreign terms, {actor} is reforged. The culture of the trial seeps into {their} bones—{they} carry back not just triumph but a piece of something alien, woven now into {their} identity. {They} are no longer purely what {they} were.',
     },
   ],
   rival: [
     {
       id: 'rival_interference',
       trigger: 'Rival god opposes {actor}\'s sphere (faction conflict)',
-      prose: '{actor} is not alone in the ordeal. Phantom presence shadows every choice—a rival god, sensing vulnerability. The trial becomes a battleground; {actor} must overcome not just the ordeal\'s design but the subtle corruption that seeks to twist success into ruin.',
+      prose: '{actor} is not alone in the encounter. Phantom presence shadows every choice—a rival god, sensing vulnerability. The trial becomes a battleground; {actor} must overcome not just the encounter\'s design but the subtle corruption that seeks to twist success into ruin.',
     },
     {
       id: 'rival_corruption',
-      trigger: 'Rival agent stationed in ordeal location',
-      prose: 'The ordeal has been corrupted from within. A servant of a rival god moves through the trial\'s spaces, ready to tip the scales. {actor} must not only face the test but navigate {their} presence—and decide whether to confront {them} directly or move unseen.',
+      trigger: 'Rival agent stationed in encounter location',
+      prose: 'The encounter has been corrupted from within. A servant of a rival god moves through the trial\'s spaces, ready to tip the scales. {actor} must not only face the test but navigate {their} presence—and decide whether to confront {them} directly or move unseen.',
     },
     {
       id: 'rival_escalation',
-      trigger: 'Ordeal victory grants {rival god} 0.3 escalation in response',
+      trigger: 'Encounter victory grants {rival god} 0.3 escalation in response',
       prose: 'As {actor} claims triumph, distant divine laughter echoes. A rival god recognizes the shift in power and rises to meet it. The victory is real—but {it} has been noticed, and the consequences ripple outward faster now. The game\'s stakes climb.',
     },
   ],
@@ -773,17 +803,17 @@ export const ORDEAL_SYSTEM_CONNECTIONS: {
 // ─── Lookup Functions ───────────────────────────────────────────
 
 /**
- * Return all ordeals available at a given location type.
+ * Return all encounters available at a given location type.
  */
-export function getOrdealsByLocationType(locationType: string): OrdealDefinition[] {
-  return ORDEAL_TEMPLATES.filter(ordeal =>
-    ordeal.locationTypes.includes(locationType)
+export function getEncountersByLocationType(locationType: string): EncounterTemplate[] {
+  return ENCOUNTER_TEMPLATES.filter(encounter =>
+    encounter.locationTypes.includes(locationType)
   );
 }
 
 /**
- * Retrieve a specific ordeal by ID.
+ * Retrieve a specific encounter by ID.
  */
-export function getOrdealById(id: string): OrdealDefinition | undefined {
-  return ORDEAL_TEMPLATES.find(ordeal => ordeal.id === id);
+export function getEncounterById(id: string): EncounterTemplate | undefined {
+  return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
 }

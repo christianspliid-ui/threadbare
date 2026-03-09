@@ -341,7 +341,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
     trigger: 'An accused must prove innocence',
     proseSeeds: [
       'The flames would judge — {actor} stepped into the trial circle as the culture demanded.',
-      '{actor} faced the elemental ordeal, flames licking at their resolve.',
+      '{actor} faced the elemental encounter, flames licking at their resolve.',
     ],
   },
   {
@@ -466,8 +466,8 @@ export const INSIDER_BEATS: InsiderBeat[] = [
     ],
   },
   {
-    id: 'initiation_ordeal',
-    name: 'Initiation Ordeal',
+    id: 'initiation_encounter',
+    name: 'Initiation Encounter',
     requiredCultureTags: ['darkness', 'force'],
     minStrength: 0.7,
     trigger: 'An outsider seeks acceptance into the culture',

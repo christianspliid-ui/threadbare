@@ -115,6 +115,9 @@ export function useAgentInteraction({
   const handleWheelSlotClick = useCallback(
     (slotId: string) => {
       if (slotId === 'scry') {
+        // IX-019: Close drawer and deselect agent when opening scry
+        setDrawerOpen(false);
+        setSelectedAgentId(null);
         onOpenScry();
         return;
       }
@@ -261,6 +264,8 @@ export function useAgentInteraction({
   }, []);
 
   const handleViewPsyche = useCallback(() => {
+    // IX-002: mutual exclusion — close profile modal when opening strand view
+    setProfileModalAgentId(null);
     setStrandViewAgent(selectedAgentId);
   }, [selectedAgentId]);
 
@@ -281,11 +286,28 @@ export function useAgentInteraction({
   }, [selectedAgentId, retinueAgents, handleAgentSelect]);
 
   const handleViewProfile = useCallback(() => {
-    if (selectedAgentId) setProfileModalAgentId(selectedAgentId);
+    if (selectedAgentId) {
+      // IX-002: mutual exclusion — close strand view when opening profile modal
+      // IX-008: close drawer when opening full-screen profile modal
+      setStrandViewAgent(null);
+      setDrawerOpen(false);
+      setProfileModalAgentId(selectedAgentId);
+    }
   }, [selectedAgentId]);
 
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
+  }, []);
+
+  // IX-002: Close all agent-related overlays (used by cross-hook coordination)
+  const closeAllAgentOverlays = useCallback(() => {
+    setDrawerOpen(false);
+    setStrandViewAgent(null);
+    setProfileModalAgentId(null);
+    setPendingIntervention(null);
+    setAgendaPickerOpen(false);
+    setPendingAgendas(null);
+    setSelectedAgenda(null);
   }, []);
 
   return {
@@ -318,5 +340,6 @@ export function useAgentInteraction({
     handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
+    closeAllAgentOverlays,
   };
 }

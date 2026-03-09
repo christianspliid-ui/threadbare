@@ -12,7 +12,7 @@ import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
-import type { OrdealProgress } from './ordeal';
+import type { EncounterProgress } from './encounter';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -86,8 +86,8 @@ export interface GameState {
   // Knowledge Fog of War
   familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
 
-  // Ordeals (agent growth narratives)
-  ordealProgress: OrdealProgress[];
+  // Encounters (agent growth narratives)
+  encounterProgress: EncounterProgress[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

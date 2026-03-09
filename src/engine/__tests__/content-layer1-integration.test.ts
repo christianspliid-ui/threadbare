@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { initializeGameState } from '../gameInit';
 import { runTick } from '../orchestrator';
-import { ORDEAL_TEMPLATES } from '../../data/ordeal-content';
+import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
@@ -46,14 +46,14 @@ describe('Layer 1 content integration', () => {
     },
   };
 
-  it('ordeal templates are accessible and non-empty', () => {
-    expect(ORDEAL_TEMPLATES).toBeDefined();
-    expect(Array.isArray(ORDEAL_TEMPLATES)).toBe(true);
-    expect(ORDEAL_TEMPLATES.length).toBeGreaterThan(0);
+  it('encounter templates are accessible and non-empty', () => {
+    expect(ENCOUNTER_TEMPLATES).toBeDefined();
+    expect(Array.isArray(ENCOUNTER_TEMPLATES)).toBe(true);
+    expect(ENCOUNTER_TEMPLATES.length).toBeGreaterThan(0);
   });
 
-  it('all ordeal templates have required structure', () => {
-    for (const template of ORDEAL_TEMPLATES) {
+  it('all encounter templates have required structure', () => {
+    for (const template of ENCOUNTER_TEMPLATES) {
       expect(template.id).toBeDefined();
       expect(template.name).toBeDefined();
       expect(template.locationTypes).toBeDefined();
@@ -267,7 +267,7 @@ describe('Layer 1 content integration', () => {
     expect(lifecycleEvents.size).toBeGreaterThanOrEqual(0);
   });
 
-  it('ordeal progression events can fire', () => {
+  it('encounter progression events can fire', () => {
     const { state: initialState } = initializeGameState(
       testArchetype,
       'Test Avatar',
@@ -276,18 +276,18 @@ describe('Layer 1 content integration', () => {
     );
 
     let current = initialState;
-    const ordealEvents = new Set<string>();
+    const encounterEvents = new Set<string>();
 
     for (let i = 0; i < 100; i++) {
       current = runTick(current);
       for (const event of current.tickEvents) {
-        if (event.type.startsWith('ordeal_')) {
-          ordealEvents.add(event.type);
+        if (event.type.startsWith('encounter_')) {
+          encounterEvents.add(event.type);
         }
       }
     }
 
-    // Ordeal events should be possible
-    expect(ordealEvents.size).toBeGreaterThanOrEqual(0);
+    // Encounter events should be possible
+    expect(encounterEvents.size).toBeGreaterThanOrEqual(0);
   });
 });

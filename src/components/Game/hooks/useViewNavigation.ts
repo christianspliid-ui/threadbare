@@ -1,8 +1,9 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexMapHandle } from '../../HexMap/HexMap';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
 import { recalcVisibility, collectLOSSources } from '../../../engine/visibility';
+import { visKey } from '../../../types/visibility';
 
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
@@ -49,20 +50,26 @@ export function useViewNavigation({
   const hexMapRef = useRef<HexMapHandle>(null);
 
   const handleHexClick = useCallback((coord: { col: number; row: number }) => {
+    // Only allow hex zoom into fully visible hexes — not unexplored or remembered (fog of war)
+    const hexVis = gameState.visibilityMap.get(visKey(coord.col, coord.row));
+    if (!hexVis || hexVis.state !== 'visible') return;
+
     setSelectedHex(coord);
     setViewLevel('hex-zoom');
     setFocusedHex(coord);
-  }, []);
+  }, [gameState.visibilityMap]);
 
   const handleLocationDoubleClick = useCallback((locationId: string) => {
     setViewLevel('location');
     setFocusedLocationId(locationId);
+    // IX-013: View transition is handled; drawer close is done at GameView level
   }, []);
 
   const handleBackToWorld = useCallback(() => {
     setViewLevel('world');
     setFocusedHex(null);
     setFocusedLocationId(null);
+    setSelectedHex(null); // IX-006: clear selection state on back navigation
   }, []);
 
   const handleBackToHex = useCallback(() => {
@@ -83,6 +90,25 @@ export function useViewNavigation({
   const handleAvatarMoveClick = useCallback(() => {
     setMoveMode(true);
   }, []);
+
+  // IX-009: Escape key cancels move mode; auto-timeout after 10s
+  useEffect(() => {
+    if (!moveMode) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMoveMode(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    const timeout = setTimeout(() => setMoveMode(false), 10_000);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      clearTimeout(timeout);
+    };
+  }, [moveMode]);
 
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
     if (moveMode) {

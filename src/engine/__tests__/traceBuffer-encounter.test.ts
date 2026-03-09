@@ -1,6 +1,6 @@
 /**
- * Test trace instrumentation for ordeal resolution.
- * Verifies that ordeal functions emit ordeal_resolution traces.
+ * Test trace instrumentation for encounter resolution.
+ * Verifies that encounter functions emit encounter_resolution traces.
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
@@ -11,7 +11,7 @@ import {
   getTraces,
   getTracesForAgent,
 } from '../traceBuffer';
-import { initiateOrdeal, resolveEncounter, advanceOrdeal } from '../ordeal';
+import { initiateEncounter, resolveEncounter, advanceEncounter } from '../encounter';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
 import { generateRivals, createRivalState } from '../rival';
@@ -21,7 +21,7 @@ import { createDefaultFundament, createResonanceState } from '../worldSoul';
 import { recalcVisibility, collectLOSSources } from '../visibility';
 import type { GameState, CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
-import type { OrdealResolutionTrace } from '../../types/trace';
+import type { EncounterResolutionTrace } from '../../types/trace';
 import { CULTURE_COUNT } from '../../types/culture';
 
 function balancedCosmology(): CosmologyProfile {
@@ -62,7 +62,7 @@ function createTestGameState(): GameState {
     id: 'loc.start',
     type: 'location',
     name: 'Sacred Grove',
-    properties: { locationType: 'location' },
+    properties: { locationSubtype: 'town' },
   });
   const { ascendantId } = createAscendant(graph, {
     archetype: {
@@ -127,7 +127,7 @@ function createTestGameState(): GameState {
     chronicleEntries: [],
     stealthExposure: 0.0,
     visibilityMap,
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
@@ -140,7 +140,7 @@ function createTestGameState(): GameState {
   };
 }
 
-describe('traceBuffer-ordeal: Ordeal Resolution Instrumentation', () => {
+describe('traceBuffer-encounter: Encounter Resolution Instrumentation', () => {
   beforeEach(() => {
     clearTraces();
     enableTracing();
@@ -151,132 +151,132 @@ describe('traceBuffer-ordeal: Ordeal Resolution Instrumentation', () => {
     clearTraces();
   });
 
-  it('should emit ordeal_resolution trace when initiating ordeal', () => {
+  it('should emit encounter_resolution trace when initiating encounter', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actorId = actors[0]?.id ?? 'test-actor';
 
-    initiateOrdeal(state, actorId, 'ordeal.deep_descent', 10);
+    initiateEncounter(state, actorId, 'encounter.deep_descent', 10);
 
     const traces = getTraces();
-    const ordealTrace = traces.find(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace | undefined;
+    const encounterTrace = traces.find(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace | undefined;
 
-    expect(ordealTrace).toBeDefined();
-    expect(ordealTrace?.category).toBe('ordeal_resolution');
-    expect(ordealTrace?.agentId).toBe(actorId);
-    expect(ordealTrace?.status).toBe('initiated');
+    expect(encounterTrace).toBeDefined();
+    expect(encounterTrace?.category).toBe('encounter_resolution');
+    expect(encounterTrace?.agentId).toBe(actorId);
+    expect(encounterTrace?.status).toBe('initiated');
   });
 
-  it('should emit ordeal_resolution trace when resolving encounter', () => {
+  it('should emit encounter_resolution trace when resolving encounter', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actorId = actors[0]?.id ?? 'test-actor';
 
-    const progress = initiateOrdeal(state, actorId, 'ordeal.deep_descent', 10);
+    const progress = initiateEncounter(state, actorId, 'encounter.deep_descent', 10);
     clearTraces(); // Clear initiate trace
 
     const { success } = resolveEncounter(state, progress, 0.5);
 
     const traces = getTraces();
-    const ordealTrace = traces.find(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace | undefined;
+    const encounterTrace = traces.find(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace | undefined;
 
-    expect(ordealTrace).toBeDefined();
-    expect(ordealTrace?.category).toBe('ordeal_resolution');
-    expect(ordealTrace?.roll).toBe(0.5);
-    expect(typeof ordealTrace?.success).toBe('boolean');
+    expect(encounterTrace).toBeDefined();
+    expect(encounterTrace?.category).toBe('encounter_resolution');
+    expect(encounterTrace?.roll).toBe(0.5);
+    expect(typeof encounterTrace?.success).toBe('boolean');
   });
 
-  it('should filter ordeal_resolution traces by agent', () => {
+  it('should filter encounter_resolution traces by agent', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actor1 = actors[0]?.id ?? 'actor-1';
     const actor2 = actors[1]?.id ?? 'actor-2';
 
-    initiateOrdeal(state, actor1, 'ordeal.deep_descent', 10);
-    initiateOrdeal(state, actor2, 'ordeal.trial_of_flame', 11);
+    initiateEncounter(state, actor1, 'encounter.deep_descent', 10);
+    initiateEncounter(state, actor2, 'encounter.trial_of_flame', 11);
 
     const actor1Traces = getTracesForAgent(actor1);
-    const filteredOrdealTraces = actor1Traces.filter(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace[];
+    const filteredEncounterTraces = actor1Traces.filter(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace[];
 
-    expect(filteredOrdealTraces.length).toBeGreaterThan(0);
-    expect(filteredOrdealTraces.every(t => t.agentId === actor1)).toBe(true);
+    expect(filteredEncounterTraces.length).toBeGreaterThan(0);
+    expect(filteredEncounterTraces.every(t => t.agentId === actor1)).toBe(true);
   });
 
-  it('should have proper ordeal_resolution trace structure', () => {
+  it('should have proper encounter_resolution trace structure', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actorId = actors[0]?.id ?? 'test-actor';
 
-    initiateOrdeal(state, actorId, 'ordeal.deep_descent', 10);
+    initiateEncounter(state, actorId, 'encounter.deep_descent', 10);
 
     const traces = getTraces();
-    const ordealTrace = traces.find(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace | undefined;
+    const encounterTrace = traces.find(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace | undefined;
 
     // Check all required fields
-    expect(ordealTrace?.id).toBeDefined();
-    expect(ordealTrace?.tick).toBe(10);
-    expect(ordealTrace?.timestamp).toBeDefined();
-    expect(ordealTrace?.category).toBe('ordeal_resolution');
-    expect(ordealTrace?.agentId).toBe(actorId);
-    expect(ordealTrace?.ordealId).toBe('ordeal.deep_descent');
-    expect(ordealTrace?.actorId).toBe(actorId);
-    expect(ordealTrace?.encounterId).toBeDefined();
-    expect(ordealTrace?.encounterName).toBeDefined();
-    expect(ordealTrace?.difficulty).toBeDefined();
-    expect(ordealTrace?.capability).toBeDefined();
-    expect(ordealTrace?.probability).toBeDefined();
-    expect(ordealTrace?.roll).toBeDefined();
-    expect(typeof ordealTrace?.success).toBe('boolean');
-    expect(ordealTrace?.status).toBeDefined();
-    expect(Array.isArray(ordealTrace?.traitChanges)).toBe(true);
-    expect(ordealTrace?.summary).toBeDefined();
+    expect(encounterTrace?.id).toBeDefined();
+    expect(encounterTrace?.tick).toBe(10);
+    expect(encounterTrace?.timestamp).toBeDefined();
+    expect(encounterTrace?.category).toBe('encounter_resolution');
+    expect(encounterTrace?.agentId).toBe(actorId);
+    expect(encounterTrace?.encounterId).toBe('encounter.deep_descent');
+    expect(encounterTrace?.actorId).toBe(actorId);
+    expect(encounterTrace?.encounterId).toBeDefined();
+    expect(encounterTrace?.stepName).toBeDefined();
+    expect(encounterTrace?.difficulty).toBeDefined();
+    expect(encounterTrace?.capability).toBeDefined();
+    expect(encounterTrace?.probability).toBeDefined();
+    expect(encounterTrace?.roll).toBeDefined();
+    expect(typeof encounterTrace?.success).toBe('boolean');
+    expect(encounterTrace?.status).toBeDefined();
+    expect(Array.isArray(encounterTrace?.traitChanges)).toBe(true);
+    expect(encounterTrace?.summary).toBeDefined();
   });
 
-  it('should emit ordeal_resolution trace when advancing ordeal', () => {
+  it('should emit encounter_resolution trace when advancing encounter', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actorId = actors[0]?.id ?? 'test-actor';
 
-    const progress = initiateOrdeal(state, actorId, 'ordeal.deep_descent', 10);
+    const progress = initiateEncounter(state, actorId, 'encounter.deep_descent', 10);
     clearTraces();
 
-    advanceOrdeal(state, progress, true, 11);
+    advanceEncounter(state, progress, true, 11);
 
     const traces = getTraces();
-    const ordealTrace = traces.find(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace | undefined;
+    const encounterTrace = traces.find(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace | undefined;
 
-    expect(ordealTrace).toBeDefined();
-    expect(ordealTrace?.tick).toBe(11);
-    expect(ordealTrace?.success).toBe(true);
+    expect(encounterTrace).toBeDefined();
+    expect(encounterTrace?.tick).toBe(11);
+    expect(encounterTrace?.success).toBe(true);
   });
 
-  it('should include trait changes in ordeal_resolution trace', () => {
+  it('should include trait changes in encounter_resolution trace', () => {
     const state = createTestGameState();
     const actors = state.graph.getNodesByType('actor');
     const actorId = actors[0]?.id ?? 'test-actor';
 
-    const progress = initiateOrdeal(state, actorId, 'ordeal.deep_descent', 10);
+    const progress = initiateEncounter(state, actorId, 'encounter.deep_descent', 10);
     clearTraces();
 
     // Resolve with a deterministic roll
     resolveEncounter(state, progress, 0.9);
 
     const traces = getTraces();
-    const ordealTrace = traces.find(
-      (t) => t.category === 'ordeal_resolution'
-    ) as OrdealResolutionTrace | undefined;
+    const encounterTrace = traces.find(
+      (t) => t.category === 'encounter_resolution'
+    ) as EncounterResolutionTrace | undefined;
 
-    expect(ordealTrace).toBeDefined();
-    expect(Array.isArray(ordealTrace?.traitChanges)).toBe(true);
+    expect(encounterTrace).toBeDefined();
+    expect(Array.isArray(encounterTrace?.traitChanges)).toBe(true);
   });
 });

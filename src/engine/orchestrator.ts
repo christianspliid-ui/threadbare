@@ -33,15 +33,20 @@ import {
 import { buildNarrativeContext } from './contextBuilder';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
 import { generateRoutineProse, generateNotableProse } from './narrative';
-import { DILEMMA_STAKES_PROSE } from '../data/narrative-content';
+import {
+  DILEMMA_STAKES_PROSE,
+  DILEMMA_ADJ_POOL,
+  DILEMMA_NOUN_POOL,
+  DILEMMA_VERB_POOL,
+} from '../data/narrative-content';
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import {
-  getAvailableOrdeals,
-  initiateOrdeal,
+  getAvailableEncounters,
+  initiateEncounter,
   resolveEncounter,
-  advanceOrdeal,
-} from './ordeal';
+  advanceEncounter,
+} from './encounter';
 import { getAvatarHexPosition } from './visibility';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
@@ -169,36 +174,36 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
   return { tickEvents: [...state.tickEvents, ...events] };
 }
 
-// ─── Phase 2.25: Ordeal Progression ────────────────────────────────────
+// ─── Phase 2.25: Encounter Progression ────────────────────────────────────
 
-export function phaseOrdealProgression(state: GameState): Partial<GameState> {
+export function phaseEncounterProgression(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 43);
   const events: TickEvent[] = [];
 
-  // 1. Progress active ordeals
-  const activeOrdeals = state.ordealProgress.filter(p => p.status === 'active');
-  for (const progress of activeOrdeals) {
-    // Resolve current encounter
+  // 1. Progress active encounters
+  const activeEncounters = state.encounterProgress.filter(p => p.status === 'active');
+  for (const progress of activeEncounters) {
+    // Resolve current step
     const result = resolveEncounter(state, progress);
-    // Advance ordeal (mutates progress)
-    advanceOrdeal(state, progress, result.success, state.tick);
+    // Advance encounter (mutates progress)
+    advanceEncounter(state, progress, result.success, state.tick);
 
     // Generate event based on outcome
-    const eventType = result.success ? 'ordeal_encounter_success' : 'ordeal_encounter_failure';
+    const eventType = result.success ? 'encounter_step_success' : 'encounter_step_failure';
     if (progress.status === 'completed') {
       events.push({
         id: nextEventId(),
         tick: state.tick,
-        type: 'ordeal_completed',
-        message: `An agent has completed their ordeal.`,
+        type: 'encounter_completed',
+        message: `An agent has completed their encounter.`,
         significance: 0.8,
       });
     } else if (progress.status === 'abandoned') {
       events.push({
         id: nextEventId(),
         tick: state.tick,
-        type: 'ordeal_encounter_failure',
-        message: `An agent failed their ordeal encounter.`,
+        type: 'encounter_step_failure',
+        message: `An agent failed their encounter step.`,
         significance: 0.5,
       });
     } else {
@@ -206,29 +211,29 @@ export function phaseOrdealProgression(state: GameState): Partial<GameState> {
         id: nextEventId(),
         tick: state.tick,
         type: eventType,
-        message: `An agent ${result.success ? 'succeeded' : 'struggled'} in their ordeal.`,
+        message: `An agent ${result.success ? 'succeeded' : 'struggled'} in their encounter.`,
         significance: 0.6,
       });
     }
   }
 
-  // 2. Initiate new ordeals for eligible agents (small chance per tick)
+  // 2. Initiate new encounters for eligible agents (small chance per tick)
   const actors = state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual');
   for (const actor of actors) {
-    // Skip if already has active ordeal
-    if (state.ordealProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
+    // Skip if already has active encounter
+    if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
 
     // 3% chance per tick to initiate
     if (rng() < 0.03) {
-      const available = getAvailableOrdeals(state, actor.id);
+      const available = getAvailableEncounters(state, actor.id);
       if (available.length > 0) {
-        const ordeal = available[Math.floor(rng() * available.length)];
-        initiateOrdeal(state, actor.id, ordeal.id, state.tick);
+        const encounter = available[Math.floor(rng() * available.length)];
+        initiateEncounter(state, actor.id, encounter.id, state.tick);
         events.push({
           id: nextEventId(),
           tick: state.tick,
-          type: 'ordeal_encounter_success',
-          message: `${actor.name} begins a new ordeal: ${ordeal.name}.`,
+          type: 'encounter_step_success',
+          message: `${actor.name} begins a new encounter: ${encounter.name}.`,
           significance: 0.7,
         });
       }
@@ -237,7 +242,7 @@ export function phaseOrdealProgression(state: GameState): Partial<GameState> {
 
   return {
     tickEvents: [...state.tickEvents, ...events],
-    ordealProgress: [...state.ordealProgress],
+    encounterProgress: [...state.encounterProgress],
   };
 }
 
@@ -363,10 +368,10 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
     let message = template || `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`;
 
     if (template) {
-      // Word pools for placeholder replacement
-      const adjPool = ['quiet', 'fierce', 'solemn', 'bitter', 'fragile', 'burning', 'ancient', 'hollow'];
-      const nounPool = ['purpose', 'strength', 'resolve', 'shadow', 'faith', 'devotion', 'reckoning', 'silence'];
-      const verbPool = ['circled', 'retreated', 'watched', 'bristled'];
+      // Use word pools from narrative-content package
+      const adjPool = DILEMMA_ADJ_POOL;
+      const nounPool = DILEMMA_NOUN_POOL;
+      const verbPool = DILEMMA_VERB_POOL;
 
       const adjIndex = Math.floor(rng() * adjPool.length);
       const nounIndex = Math.floor(rng() * nounPool.length);
@@ -750,9 +755,9 @@ export function runTick(state: GameState): GameState {
   agentsProcessed += agentActionsEvents; // Approximate: one event per agent action
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2.25: Ordeal Progression
-  s = { ...s, ...phaseOrdealProgression(s) };
-  phaseEventCounts['ordeal_progression'] = s.tickEvents.length - prevEventCount;
+  // Phase 2.25: Encounter Progression
+  s = { ...s, ...phaseEncounterProgression(s) };
+  phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.5: Dilemma Detection

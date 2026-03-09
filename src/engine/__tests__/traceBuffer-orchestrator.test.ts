@@ -119,7 +119,7 @@ function createTestGameState(): GameState {
     chronicleEntries: [],
     stealthExposure: 0,
     visibilityMap: {},
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: { fundament, resonance, currentCycle: 1 },
     echoDefinitions: [],
     echoStates: [],

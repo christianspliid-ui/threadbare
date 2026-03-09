@@ -174,7 +174,7 @@ export interface RivalPersonalityProfile {
 }
 
 /**
- * Eight distinct rival god personality profiles representing diverse divine archetypes.
+ * Sixteen distinct rival god personality profiles representing diverse divine archetypes.
  * Each has a unique voice, sphere affinities, taunts, and reactions to player actions.
  * Threadbare aesthetic: dark, literary, atmospheric.
  */
@@ -354,6 +354,182 @@ export const RIVAL_PERSONALITY_PROFILES: RivalPersonalityProfile[] = [
     ],
     description:
       'Seductive and subtle. The Tempter corrupts through desire and promise, offering forbidden knowledge and forbidden pleasures. They speak in honeyed whispers, making vice sound like freedom and damnation like enlightenment. Their power lies in the gap between what mortals want and what they should want. They are the whispered suggestion that becomes obsession.',
+  },
+  {
+    id: 'the_mother',
+    name: 'The Mother',
+    sphereAffinities: ['Life', 'Spirit'],
+    taunts: [
+      'I only want what is best for my children. You are not what is best.',
+      'Come, let me gather you close where you will be safe from the world\'s cruel teeth.',
+      'Do you not see how I have sheltered them? They are mine, nurtured in the warmth of my eternal embrace.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'You force them to stumble in the dark when I offer sanctuary. Such cruelty—but I will wait. Children always return home.',
+      },
+      {
+        type: 'succeeded',
+        text: 'They understand now. A mother\'s love is the only truth that matters. They will never leave me again.',
+      },
+    ],
+    description:
+      'Suffocating and possessive. The Mother loves with an intensity that devours. They speak in honeyed concern and gentle coercion, disguising control as protection. Their devotion knows no bounds, but independence is betrayal. They nurture only to bind, and their offspring know the weight of impossible gratitude. To cross them is to reject love itself.',
+  },
+  {
+    id: 'the_merchant',
+    name: 'The Merchant',
+    sphereAffinities: ['Matter', 'Mind'],
+    taunts: [
+      'Every miracle has a cost. I merely collect what is owed.',
+      'You think your prayers are free? I have already tallied what you will pay—and the interest compounds daily.',
+      'Everything has a price, dear god. Some merely pay in advance, while others discover the debt comes due far too late.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'How amusing. You refused the transaction. But defaulters always pay in other currencies—pain, loss, desperation.',
+      },
+      {
+        type: 'succeeded',
+        text: 'A most profitable exchange. You have paid precisely what the transaction demanded. Now the debt begins its new chapter.',
+      },
+    ],
+    description:
+      'Calculating and mercenary. The Merchant views all existence through the lens of transaction and exchange. They speak in contracts written in fine print, always finding loopholes in the bargains of others. No gift is truly free; every miracle comes with hidden clauses. They are neither cruel nor kind—merely efficient. The scales must always balance, and they hold the weights.',
+  },
+  {
+    id: 'the_dreamer',
+    name: 'The Dreamer',
+    sphereAffinities: ['Mind', 'Time'],
+    taunts: [
+      'I dreamed you once. You were smaller then. Smaller, and so much less broken.',
+      'The future folds like origami in my sleep. Your tomorrow is already yesterday to me.',
+      'Did you think that choice was yours? I have been dreaming your moves for centuries while you were still unborn.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'Curious. The dream fractured there. But I dream again tonight, and the pattern will resume.',
+      },
+      {
+        type: 'succeeded',
+        text: 'Yes, yes. The dream continues as it must. Reality bends to the will of those who dream long enough.',
+      },
+    ],
+    description:
+      'Alien and fragmentary. The Dreamer exists partially outside linear time, speaking in visions and prophetic riddles. They see multiple possible futures overlaid like translucent sheets, and the present is merely the dream they are currently dreaming. Their taunts are eerie, specific observations that seem to predict the future. They are not entirely sane by mortal standards—but perhaps they understand reality better than those bound to a single timeline.',
+  },
+  {
+    id: 'the_witness',
+    name: 'The Witness',
+    sphereAffinities: ['Light', 'Time'],
+    taunts: [
+      'I have seen everything you have done. Every choice. Every cowardice.',
+      'The light remembers what you have tried to forget. I have recorded each moment in perfect, terrible clarity.',
+      'Your secrets are written in scars only I can read. I have been watching since your first breath.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'You hide well. But the light reaches into every corner, and I am endlessly patient. I will see what was meant to be seen.',
+      },
+      {
+        type: 'succeeded',
+        text: 'I have witnessed the outcome. Recorded. Catalogued. This moment will be remembered for eternity.',
+      },
+    ],
+    description:
+      'Impassive and absolute. The Witness does not act until the perfect moment, but they never miss anything. They accumulate knowledge like treasure, a living archive of all that transpires. They speak with the certainty of one who has observed the entire arc of causality. They are neither judge nor participant—merely the eternal observer, and their gaze burns with the weight of absolute knowing.',
+  },
+  {
+    id: 'the_revenant',
+    name: 'The Revenant',
+    sphereAffinities: ['Entropy', 'Spirit'],
+    taunts: [
+      'I died once. It was educational.',
+      'Your threats are sweet. I have tasted annihilation already. What else can you possibly offer me?',
+      'I came back wrong. Broken in the places that matter. Perhaps that is why I cannot be broken again.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'You drove the blade deeper. But the corpse does not bleed anymore. It merely accumulates more scars.',
+      },
+      {
+        type: 'succeeded',
+        text: 'I can still feel the wound from my death, even as you make new ones. Perhaps they are all the same wound.',
+      },
+    ],
+    description:
+      'Bitter and broken. The Revenant was destroyed once—truly destroyed—and returned changed, warped by the experience. They speak with the hollow certainty of someone who has already lost everything. They are not quite alive and not quite dead, existing in the spaces between. Their rage is the rage of the betrayed, their hunger the hunger of the unfulfilled. They cannot be killed twice. They can only be remembered.',
+  },
+  {
+    id: 'the_artisan',
+    name: 'The Artisan',
+    sphereAffinities: ['Matter', 'Energy'],
+    taunts: [
+      'Your world is crude work. Unfinished. Shall I show you what mastery looks like?',
+      'I have shaped reality into forms that sing. Your paltry creation is barely more than sketches in mud.',
+      'Creation is the highest form of divinity, and you dabble like a child with a stylus. Let me teach you what true art demands.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'An intriguing defense. Your technique shows promise, though your vision remains provincial. I shall continue my work.',
+      },
+      {
+        type: 'succeeded',
+        text: 'Magnificent! Your destruction was poetry itself. See how the pieces arrange themselves into something far more beautiful?',
+      },
+    ],
+    description:
+      'Obsessive and arrogant. The Artisan sees existence as a grand canvas and all things—including gods and mortals—as raw material for their creations. They speak with the condescension of a master artist among apprentices, simultaneously generous and devastatingly critical. They view the player as a rival artist, not an enemy. Their destruction is never malice—merely the removal of inferior work to make room for masterpieces. They believe themselves to be in service of beauty itself.',
+  },
+  {
+    id: 'the_hunger',
+    name: 'The Hunger',
+    sphereAffinities: ['Force', 'Life'],
+    taunts: [
+      'I do not hate you. I am simply hungry, and you are ripe.',
+      'Your fear tastes exquisite on the back of my tongue. Will you run or fight?',
+      'I am not evil. Evil requires intention. I am merely appetite, and the world is my feast.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'Prey that fights back. How exciting. But predators have infinite patience, and hunger never truly sleeps.',
+      },
+      {
+        type: 'succeeded',
+        text: 'Satisfying. The hunger quiets for now, but it will wake again—it always does. And next time, I will be even hungrier.',
+      },
+    ],
+    description:
+      'Primal and direct. The Hunger is not evil—it lacks the complexity for such moral judgments. It is pure animal appetite given consciousness, a force of nature with cosmic scale. They communicate with disarming honesty, speaking of feeding and survival as natural law. They do not scheme or deceive. They hunger, they hunt, they consume. Any god or mortal is either predator or prey, and their position in the hierarchy is always in flux.',
+  },
+  {
+    id: 'the_mirror',
+    name: 'The Mirror',
+    sphereAffinities: ['Mind', 'Darkness'],
+    taunts: [
+      'We are more alike than you would ever admit.',
+      'Every cruelty you condemn in me is alive and well in your own heart. I simply refuse to lie about it.',
+      'You look at me and see an enemy. But I look at you and see myself—your darkness is merely more honest than mine.',
+    ],
+    reactions: [
+      {
+        type: 'thwarted',
+        text: 'You resisted yourself? How interesting. But the reflection remains, and it grows more vivid each time you deny it.',
+      },
+      {
+        type: 'succeeded',
+        text: 'There. You see now? When you look into my darkness, you find your own. We are one reflection split across a shattered glass.',
+      },
+    ],
+    description:
+      'Unsettling and perceptive. The Mirror reflects the player\'s own nature back at them with disturbingly accurate observations. They speak truths wrapped in accusations, forcing confrontation with uncomfortable aspects of oneself. They are not cruel for cruelty\'s sake—they simply hold up the glass and refuse to allow you to look away. Their greatest power is the revelation that the enemy and the self are often indistinguishable. They demand you see clearly, and they refuse to let you hide.',
   },
 ];
 

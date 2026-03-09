@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ORDEAL_TEMPLATES, ORDEAL_INSPECTION_VIGNETTES, ORDEAL_DIFFICULTY_TIERS, ORDEAL_SYSTEM_CONNECTIONS } from '../../data/ordeal-content';
+import { ENCOUNTER_TEMPLATES, ENCOUNTER_INSPECTION_VIGNETTES, ENCOUNTER_DIFFICULTY_TIERS, ENCOUNTER_SYSTEM_CONNECTIONS } from '../../data/encounter-content';
 import { CHRONICLER_VIGNETTES, SUBLOCATION_FLAVOR, ARTIFACT_LORE, LOCATION_TYPE_FLAVOR, MAGIC_TRADITION_FLAVOR } from '../../data/chronicler-content';
 import { ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, LIFECYCLE_TEMPLATES, ARCHETYPE_EVENT_TEMPLATES, SPHERE_INFLUENCE_EVENTS, SEASONAL_VOCABULARY, ECHO_FLAVOR_TEXTS, STEALTH_DETECTION_PROSE, DILEMMA_STAKES_PROSE } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
@@ -9,7 +9,7 @@ import { FUNDAMENT_DESCRIPTIONS, RESONANCE_FRAGMENT_PROSE } from '../../data/wor
 
 describe('Full content population integration', () => {
   it('Layer 1: minimum visible playthrough content present', () => {
-    expect(ORDEAL_TEMPLATES.length).toBe(10);
+    expect(ENCOUNTER_TEMPLATES.length).toBe(10);
     expect(Object.values(ROUTINE_TEMPLATES).flat().length).toBeGreaterThanOrEqual(80);
     expect(Object.values(NOTABLE_TEMPLATES).flat().length).toBeGreaterThanOrEqual(20);
     expect(Object.values(LIFECYCLE_TEMPLATES).flat().length).toBe(11);
@@ -22,7 +22,7 @@ describe('Full content population integration', () => {
     expect(ARTIFACT_LORE).toHaveLength(30);
     expect(Object.keys(LOCATION_TYPE_FLAVOR)).toHaveLength(15);
     expect(Object.keys(MAGIC_TRADITION_FLAVOR)).toHaveLength(34);
-    expect(ORDEAL_INSPECTION_VIGNETTES.inProgress).toHaveLength(10);
+    expect(ENCOUNTER_INSPECTION_VIGNETTES.inProgress).toHaveLength(10);
   });
 
   it('Layer 3: replay variety content present', () => {
@@ -30,7 +30,7 @@ describe('Full content population integration', () => {
     expect(Object.keys(ARCHETYPE_EVENT_TEMPLATES).length).toBeGreaterThanOrEqual(58);
     expect(RIVAL_PERSONALITY_PROFILES).toHaveLength(8);
     expect(Object.keys(DILEMMA_STAKES_PROSE)).toHaveLength(12);
-    expect(Object.keys(ORDEAL_DIFFICULTY_TIERS)).toHaveLength(3);
+    expect(Object.keys(ENCOUNTER_DIFFICULTY_TIERS)).toHaveLength(3);
   });
 
   it('Layer 4: connective tissue present', () => {
@@ -41,11 +41,11 @@ describe('Full content population integration', () => {
     expect(Object.keys(FUNDAMENT_DESCRIPTIONS)).toHaveLength(12);
     expect(RESONANCE_FRAGMENT_PROSE).toHaveLength(8);
     expect(Object.keys(CULTURAL_TENSION_TEMPLATES)).toHaveLength(4);
-    expect(ORDEAL_SYSTEM_CONNECTIONS.doom).toHaveLength(3);
+    expect(ENCOUNTER_SYSTEM_CONNECTIONS.doom).toHaveLength(3);
   });
 
   it('grand total: substantial content across all layers', () => {
-    const layer1 = ORDEAL_TEMPLATES.length * 3 + // ordeal encounters
+    const layer1 = ENCOUNTER_TEMPLATES.length * 3 + // encounter steps
       Object.values(ROUTINE_TEMPLATES).flat().length +
       Object.values(NOTABLE_TEMPLATES).flat().length +
       Object.values(LIFECYCLE_TEMPLATES).flat().length +
@@ -56,13 +56,13 @@ describe('Full content population integration', () => {
       ARTIFACT_LORE.length +
       Object.keys(LOCATION_TYPE_FLAVOR).length +
       Object.keys(MAGIC_TRADITION_FLAVOR).length +
-      (ORDEAL_INSPECTION_VIGNETTES.inProgress.length + ORDEAL_INSPECTION_VIGNETTES.completed.length + ORDEAL_INSPECTION_VIGNETTES.failed.length);
+      (ENCOUNTER_INSPECTION_VIGNETTES.inProgress.length + ENCOUNTER_INSPECTION_VIGNETTES.completed.length + ENCOUNTER_INSPECTION_VIGNETTES.failed.length);
 
     const layer3 = Object.keys(CULTURAL_PROSE_PALETTES).length +
       Object.keys(ARCHETYPE_EVENT_TEMPLATES).length +
       RIVAL_PERSONALITY_PROFILES.length +
       Object.keys(DILEMMA_STAKES_PROSE).length +
-      Object.keys(ORDEAL_DIFFICULTY_TIERS).length;
+      Object.keys(ENCOUNTER_DIFFICULTY_TIERS).length;
 
     const layer4 = Object.keys(SPHERE_INFLUENCE_EVENTS).length +
       Object.keys(SEASONAL_VOCABULARY).length +
@@ -71,9 +71,9 @@ describe('Full content population integration', () => {
       Object.keys(FUNDAMENT_DESCRIPTIONS).length +
       RESONANCE_FRAGMENT_PROSE.length +
       Object.keys(CULTURAL_TENSION_TEMPLATES).length +
-      ORDEAL_SYSTEM_CONNECTIONS.doom.length +
-      ORDEAL_SYSTEM_CONNECTIONS.culture.length +
-      ORDEAL_SYSTEM_CONNECTIONS.rival.length;
+      ENCOUNTER_SYSTEM_CONNECTIONS.doom.length +
+      ENCOUNTER_SYSTEM_CONNECTIONS.culture.length +
+      ENCOUNTER_SYSTEM_CONNECTIONS.rival.length;
 
     // Verify totals are in the right ballpark
     expect(layer1).toBeGreaterThan(150);

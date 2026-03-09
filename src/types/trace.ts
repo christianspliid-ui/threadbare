@@ -76,13 +76,13 @@ export interface TickSummaryTrace extends TraceBase {
   mandateProgress: number;
 }
 
-/** Trace: ordeal encounter resolved */
-export interface OrdealResolutionTrace extends TraceBase {
-  category: 'ordeal_resolution';
-  ordealId: string;
-  actorId: string;
+/** Trace: encounter step resolved */
+export interface EncounterResolutionTrace extends TraceBase {
+  category: 'encounter_resolution';
   encounterId: string;
-  encounterName: string;
+  actorId: string;
+  stepId: string;
+  stepName: string;
   difficulty: number;
   capability: number;
   probability: number;
@@ -126,7 +126,7 @@ export type TraceEntry =
   | ContextHarvestTrace
   | DilemmaResolutionTrace
   | TickSummaryTrace
-  | OrdealResolutionTrace
+  | EncounterResolutionTrace
   | FamiliarityChangeTrace
   | InterventionEffectTrace;
 
@@ -137,7 +137,7 @@ export const TRACE_CATEGORIES = [
   'context_harvest',
   'dilemma_resolution',
   'tick_summary',
-  'ordeal_resolution',
+  'encounter_resolution',
   'familiarity_change',
   'intervention_effect',
 ] as const;
