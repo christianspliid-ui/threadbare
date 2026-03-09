@@ -107,8 +107,37 @@ describe('coastline integration', () => {
   it('scalar field handles large grids without overflow', () => {
     const largeTiles = generateWorld(cosmology, 30, 20, 100);
     const data = computeCoastline(largeTiles, 30, 30, 20, 42);
-    // Just verify no errors and reasonable structure
     expect(data.loops).toBeDefined();
     expect(Array.isArray(data.loops)).toBe(true);
+    // Verify loop points are finite (no NaN/Infinity from large grid math)
+    for (const loop of data.loops) {
+      expect(loop.length).toBeGreaterThanOrEqual(0);
+      for (const pt of loop) {
+        expect(isFinite(pt.x)).toBe(true);
+        expect(isFinite(pt.y)).toBe(true);
+      }
+    }
+    // SVG path generation shouldn't fail on large grids
+    if (data.loops.length > 0) {
+      const path = combineLoopPaths(data.loops);
+      expect(path.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('shallow loops are valid when present', () => {
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const data = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    // Shallow loops may be empty for some seeds, but if present must be valid
+    for (const loop of data.shallowLoops) {
+      expect(loop.length).toBeGreaterThanOrEqual(COASTLINE_DEFAULTS.minLoopPoints);
+      for (const pt of loop) {
+        expect(isFinite(pt.x)).toBe(true);
+        expect(isFinite(pt.y)).toBe(true);
+      }
+    }
+    if (data.shallowLoops.length > 0) {
+      const path = combineLoopPaths(data.shallowLoops);
+      expect(path).toMatch(/^M/);
+    }
   });
 });
