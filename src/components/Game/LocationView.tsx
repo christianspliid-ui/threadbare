@@ -1,5 +1,6 @@
 import type { GraphNode } from '../../types/graph';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
+import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { getAgentColor } from '../../data/sphereIcons';
 import { EncounterLog } from './EncounterLog';
 
@@ -250,16 +251,8 @@ export function LocationView({
               </h4>
               <div className="space-y-2">
                 {availableEncounters.slice(0, 5).map(encounter => {
-                  // Simple threat color mapping
-                  const threatColors: Record<string, string> = {
-                    trivial: '#4ade80',
-                    easy: '#60a5fa',
-                    moderate: '#fbbf24',
-                    hard: '#f87171',
-                    deadly: '#d946ef',
-                  };
                   const threatColor =
-                    threatColors[encounter.threatRating] ?? '#a78bfa';
+                    THREAT_RATING_COLORS[encounter.threatRating] ?? '#a78bfa';
 
                   return (
                     <div
