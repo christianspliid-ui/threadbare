@@ -18,8 +18,8 @@ export const TERRAIN_MODIFIERS: Partial<Record<TerrainType, Record<string, numbe
   mountains:                  { los_range: 2 },
   hills:                      { los_range: 1 },
   plateau:                    { los_range: 1 },
-  forested_hills_evergreen:   { los_range: 0 }, // elevation + forest cancel out
-  forested_hills_deciduous:   { los_range: 0 }, // elevation + forest cancel out
+  // Note: forested_hills_evergreen and forested_hills_deciduous intentionally
+  // omitted — elevation (+1) and forest cover (-1) cancel to net zero.
 
   // Fog/mist blocks vision
   swamp:                      { los_range: -1 },
