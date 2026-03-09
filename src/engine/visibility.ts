@@ -22,6 +22,8 @@ import {
   SCRY_SIGHT_RANGE,
 } from '../types/visibility';
 import type { HexCoord } from '../types';
+import type { ScryState } from '../types/scry';
+import { getModifiedValue } from './modifiers';
 
 /**
  * Traverse ascendant → avatar_of → located_at → location → hexCol/hexRow.
@@ -52,6 +54,37 @@ export function getAvatarHexPosition(graph: WorldGraph, ascendantId: string): He
 }
 
 /**
+ * Extract hex coordinates of agents assigned to scry court positions.
+ * Returns HexCoord[] suitable for passing to collectLOSSources.
+ */
+export function getScryTargetHexes(scryState: ScryState, graph: WorldGraph): HexCoord[] {
+  const targets: HexCoord[] = [];
+  if (!scryState.initialized) return targets;
+
+  for (const position of scryState.positions) {
+    if (!position.assignedAgentId) continue;
+
+    const agent = graph.getNode(position.assignedAgentId);
+    if (!agent) continue;
+
+    // Find agent's location via located_at edge
+    const locEdges = graph.getOutgoingEdges(position.assignedAgentId, 'located_at');
+    if (locEdges.length === 0) continue;
+
+    const loc = graph.getNode(locEdges[0].target);
+    if (!loc || loc.type !== 'location') continue;
+
+    const hexCol = loc.properties.hexCol as number | undefined;
+    const hexRow = loc.properties.hexRow as number | undefined;
+    if (hexCol !== undefined && hexRow !== undefined) {
+      targets.push({ col: hexCol, row: hexRow });
+    }
+  }
+
+  return targets;
+}
+
+/**
  * Collect all LOS sources: avatar + retinue agents + scry targets.
  * Returns array of {hexCol, hexRow, range}.
  */
@@ -65,10 +98,17 @@ export function collectLOSSources(
   // Avatar
   const avatarPos = getAvatarHexPosition(graph, ascendantId);
   if (avatarPos) {
+    // Find avatar node ID for modifier resolution
+    const avatarEdges = graph.getIncomingEdges(ascendantId, 'avatar_of');
+    const avatarId = avatarEdges.length > 0 ? avatarEdges[0].source : null;
+    const avatarRange = avatarId
+      ? getModifiedValue(graph, avatarId, 'los_range', AVATAR_SIGHT_RANGE)
+      : AVATAR_SIGHT_RANGE;
+
     sources.push({
       hexCol: avatarPos.col,
       hexRow: avatarPos.row,
-      range: AVATAR_SIGHT_RANGE,
+      range: avatarRange,
     });
   }
 
@@ -117,7 +157,7 @@ export function collectLOSSources(
       sources.push({
         hexCol: agentHex.col,
         hexRow: agentHex.row,
-        range: AGENT_SIGHT_RANGE,
+        range: getModifiedValue(graph, agentId, 'los_range', AGENT_SIGHT_RANGE),
       });
     }
   }
