@@ -105,9 +105,8 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
     if (shouldDie) {
       // Remove all edges connected to this actor
-      const outEdges = graph.getAllOutgoingEdges(actor.id);
-      const inEdges = graph.getAllIncomingEdges(actor.id);
-      for (const edge of [...outEdges, ...inEdges]) {
+      const allEdges = graph.getAllEdgesForNode(actor.id);
+      for (const edge of allEdges) {
         graph.removeEdge(edge.id);
       }
       graph.removeNode(actor.id);
