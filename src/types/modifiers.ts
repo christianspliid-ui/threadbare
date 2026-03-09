@@ -4,7 +4,7 @@ import type { EdgeType } from './graph';
 /** A single modifier contribution from one edge */
 export interface ModifierSource {
   edgeId: string;
-  edgeType: EdgeType | string;
+  edgeType: EdgeType;
   sourceName: string;
   delta: number;
 }
