@@ -46,6 +46,14 @@ describe('entityDetail types', () => {
       keywords: ['bone', 'ash', 'iron'],
       accent: '#d4a040',
     };
+    const bondList: StructuredBlock = {
+      type: 'bond_list',
+      bonds: [{ name: 'Kael', sentiment: 'positive', strength: 'strong' }],
+    };
+    const domainGrid: StructuredBlock = {
+      type: 'domain_grid',
+      domains: [{ domain: 'iron', word: 'Warlord' }],
+    };
     const timeline: StructuredBlock = {
       type: 'timeline',
       events: [{ tick: 10, label: 'Founded the outpost', significance: 0.8 }],
@@ -54,6 +62,8 @@ describe('entityDetail types', () => {
     expect(traitGrid.type).toBe('trait_grid');
     expect(territorySummary.type).toBe('territory_summary');
     expect(keywordCloud.type).toBe('keyword_cloud');
+    expect(bondList.type).toBe('bond_list');
+    expect(domainGrid.type).toBe('domain_grid');
     expect(timeline.type).toBe('timeline');
   });
 
