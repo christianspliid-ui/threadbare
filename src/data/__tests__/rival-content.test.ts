@@ -38,8 +38,8 @@ describe('rival-content', () => {
 });
 
 describe('rival personality profiles', () => {
-  it('should have 8 profiles', () => {
-    expect(RIVAL_PERSONALITY_PROFILES).toHaveLength(8);
+  it('should have at least 16 profiles', () => {
+    expect(RIVAL_PERSONALITY_PROFILES.length).toBeGreaterThanOrEqual(16);
   });
 
   it('each profile should have id, name, sphereAffinities, taunts, reactions, and description', () => {

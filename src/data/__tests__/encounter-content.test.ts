@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import type { EncounterType } from '../../types/encounter';
 import {
   ENCOUNTER_TEMPLATES,
   CULTURAL_ENCOUNTER_OVERLAYS,
@@ -11,8 +12,8 @@ import {
 
 describe('encounter-content', () => {
   describe('ENCOUNTER_TEMPLATES', () => {
-    it('should have exactly 10 encounter templates', () => {
-      expect(ENCOUNTER_TEMPLATES).toHaveLength(10);
+    it('should have exactly 64 encounter templates', () => {
+      expect(ENCOUNTER_TEMPLATES).toHaveLength(64);
     });
 
     it('every template should have a unique id', () => {
@@ -54,6 +55,76 @@ describe('encounter-content', () => {
       const deepDescent = ENCOUNTER_TEMPLATES[0];
       expect(deepDescent.id).toBe('encounter.deep_descent');
       expect(deepDescent.name).toBe('The Deep Descent');
+    });
+
+    it('every LocationSubtype has at least 3 encounter templates', () => {
+      const allSubtypes = [
+        'hamlet', 'town', 'city', 'capital', 'camp', 'farmland', 'castle', 'fort',
+        'tower', 'shrine', 'temple', 'mining', 'ruins', 'ruined_tower', 'ruined_city',
+        'ruined_village', 'battleground', 'oasis', 'unexplored_poi', 'wilderness'
+      ];
+      for (const st of allSubtypes) {
+        const matches = ENCOUNTER_TEMPLATES.filter(t => t.locationTypes.includes(st));
+        expect(matches.length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('every EncounterType has at least 4 templates', () => {
+      const allTypes: EncounterType[] = ['explore', 'acquire', 'create', 'hire', 'duel', 'steal', 'trade', 'assist', 'build', 'lead'];
+      for (const et of allTypes) {
+        const matches = ENCOUNTER_TEMPLATES.filter(t => t.encounterType === et);
+        expect(matches.length).toBeGreaterThanOrEqual(4);
+      }
+    });
+
+    it('all templates have valid encounterType', () => {
+      const validTypes: EncounterType[] = ['explore', 'acquire', 'create', 'hire', 'duel', 'steal', 'trade', 'assist', 'build', 'lead'];
+      for (const t of ENCOUNTER_TEMPLATES) {
+        expect(validTypes).toContain(t.encounterType);
+      }
+    });
+
+    it('all templates have valid threatRating', () => {
+      const validRatings = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];
+      for (const t of ENCOUNTER_TEMPLATES) {
+        expect(validRatings).toContain(t.threatRating);
+      }
+    });
+
+    it('all templates have valid motivations', () => {
+      for (const t of ENCOUNTER_TEMPLATES) {
+        expect(t.motivations.length).toBeGreaterThanOrEqual(1);
+      }
+    });
+
+    it('all templates have 2-4 steps with escalating difficulty', () => {
+      for (const t of ENCOUNTER_TEMPLATES) {
+        expect(t.steps.length).toBeGreaterThanOrEqual(2);
+        expect(t.steps.length).toBeLessThanOrEqual(4);
+        for (let i = 1; i < t.steps.length; i++) {
+          expect(t.steps[i].difficulty).toBeGreaterThan(t.steps[i-1].difficulty);
+        }
+      }
+    });
+
+    it('all step IDs are unique within their template', () => {
+      for (const t of ENCOUNTER_TEMPLATES) {
+        const stepIds = t.steps.map(s => s.id);
+        expect(new Set(stepIds).size).toBe(stepIds.length);
+      }
+    });
+
+    it('threat rating distribution is balanced (not all moderate)', () => {
+      const distribution: Record<string, number> = {};
+      for (const t of ENCOUNTER_TEMPLATES) {
+        distribution[t.threatRating] = (distribution[t.threatRating] || 0) + 1;
+      }
+      // At least 3 different threat ratings used
+      expect(Object.keys(distribution).length).toBeGreaterThanOrEqual(3);
+      // No single rating has more than 50% of templates
+      for (const count of Object.values(distribution)) {
+        expect(count).toBeLessThanOrEqual(ENCOUNTER_TEMPLATES.length * 0.5);
+      }
     });
   });
 

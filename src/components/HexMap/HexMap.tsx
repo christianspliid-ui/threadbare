@@ -9,6 +9,7 @@ import { HexDefs } from './HexDefs';
 import { CoastlineOverlay } from './CoastlineOverlay';
 import { useCoastline } from './useCoastline';
 import { COASTLINE_DEFAULTS } from '../../types/coastline';
+import { combineLoopPaths, isWaterTerrain } from '../../engine/coastline';
 
 // Hex map display constants
 const DEFAULT_ZOOM_SCALE = 3.0;
@@ -120,6 +121,11 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
     },
   }), []);
 
+  // Land contour clip path — clips land hex tiles to the organic coastline shape
+  // so hex edges don't extend past the smooth contour boundary.
+  const landClipId = `land-contour-clip-${hexSize}`;
+  const landPathD = useMemo(() => combineLoopPaths(coastlineData.loops), [coastlineData.loops]);
+
   const tileBaseTransform = `translate(${padding + hexSize}, ${padding + hexSize * 0.8})`;
   const hexClipId = `hex-clip-${hexSize}`;
 
@@ -143,8 +149,46 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group">
           <g transform={tileBaseTransform}>
+            {/* Land contour clip path definition */}
+            {landPathD && (
+              <defs>
+                <clipPath id={landClipId}>
+                  <path d={landPathD} clipRule="evenodd" />
+                </clipPath>
+              </defs>
+            )}
+            {/* Layer 1: Coastline fills (deep water → shallows → coastEdge land contour) */}
             <CoastlineOverlay data={coastlineData} svgWidth={width} svgHeight={height} colors={COASTLINE_DEFAULTS.colors} />
+            {/* Layer 2: Land hex tiles — clipped to the organic contour shape */}
+            <g clipPath={landPathD ? `url(#${landClipId})` : undefined}>
+              {tiles.map((tile) => {
+                if (isWaterTerrain(tile.terrain)) return null;
+                const { x, y } = hexToPixel(tile.coord, hexSize);
+                const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
+                const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
+                const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
+                const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+                const coordKey = `${tile.coord.col},${tile.coord.row}`;
+                const locSubtype = locationOverlays?.get(coordKey);
+                return (
+                  <HexTileComponent
+                    key={`${tile.coord.col}-${tile.coord.row}`}
+                    tile={tile} cx={x} cy={y} size={hexSize} hexClipId={hexClipId}
+                    isHovered={isHovered} isSelected={isSelected}
+                    visibility={visibility}
+                    isAvatarHex={isAvatar}
+                    sphereColor={sphereColor}
+                    locationSubtype={locSubtype}
+                    onClick={() => onHexClick(tile.coord)}
+                    onMouseEnter={() => onHexHover(tile.coord)}
+                    onMouseLeave={() => onHexHover(null)}
+                  />
+                );
+              })}
+            </g>
+            {/* Layer 3: Water hex tiles — unclipped (transparent hit areas for interaction) */}
             {tiles.map((tile) => {
+              if (!isWaterTerrain(tile.terrain)) return null;
               const { x, y } = hexToPixel(tile.coord, hexSize);
               const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
               const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;

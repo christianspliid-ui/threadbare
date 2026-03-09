@@ -44,10 +44,13 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
       />
 
       {/* Panel */}
-      <div className="relative bg-stone-900 border border-amber-700/40 rounded-lg p-4 w-80 shadow-2xl">
+      <div
+        className="relative border rounded-lg p-4 w-80 shadow-2xl"
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+      >
         <h3
-          className="text-amber-100 text-sm font-bold mb-3 text-center"
-          style={{ fontFamily: 'Cinzel, serif' }}
+          className="text-sm font-bold mb-3 text-center"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
         >
           Choose Your Agenda
         </h3>
@@ -57,25 +60,37 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
             <button
               key={agenda.id}
               onClick={() => onSelect(agenda)}
-              className="w-full text-left p-3 rounded border border-amber-900/30 hover:border-amber-600/60 bg-stone-800/80 hover:bg-stone-700/80 transition-all duration-150 group"
+              className="w-full text-left p-3 rounded border transition-all duration-150 group"
+              style={{
+                backgroundColor: 'var(--bg-raised)',
+                borderColor: 'var(--border-subtle)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                e.currentTarget.style.borderColor = 'var(--border-medium)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--bg-raised)';
+                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+              }}
             >
               <div className="flex items-center gap-2 mb-1">
                 <span
                   className="w-2 h-2 rounded-full flex-shrink-0"
                   style={{ backgroundColor: sphereColor }}
                 />
-                <span className="text-amber-100 text-sm font-semibold group-hover:text-amber-50">
+                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
                   {agenda.name}
                 </span>
               </div>
-              <p className="text-amber-200/50 text-xs italic leading-relaxed pl-4">
+              <p className="italic leading-relaxed pl-4" style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
                 {agenda.narrativeHook}
               </p>
               <div className="flex items-center gap-3 mt-1.5 pl-4">
-                <span className="text-amber-200/30 text-[10px]">
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
                   {agenda.reachBoost.reach} +{Math.round(agenda.reachBoost.bonus * 100)}%
                 </span>
-                <span className="text-amber-200/30 text-[10px]">
+                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
                   {agenda.behaviorTag}
                 </span>
               </div>

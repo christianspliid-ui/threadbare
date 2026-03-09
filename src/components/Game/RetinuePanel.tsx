@@ -6,6 +6,7 @@ interface RetinuePanelProps {
   agents: RetinueAgent[];
   selectedAgentId: string | null;
   onAgentSelect: (agentId: string) => void;
+  onZoomToLocation?: (locationId: string) => void;
 }
 
 // Tier colors: 1=gray, 2=purple, 3=gold, 4=red
@@ -16,24 +17,39 @@ const TIER_COLORS: Record<number, string> = {
   4: '#ef4444', // red
 };
 
-export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect }: RetinuePanelProps) {
+export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onZoomToLocation }: RetinuePanelProps) {
   if (agents.length === 0) {
     return (
-      <div className="text-amber-200/30 text-xs italic text-center py-2">
+      <div
+        className="italic text-center py-2"
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-muted)',
+        }}
+      >
         No agents under your influence yet.
       </div>
     );
   }
 
+  // IA-002: Group agents by tier to avoid repeating tier labels per entry
+  const uniqueTiers = new Set(agents.map(a => a.tier));
+  const showTierBadge = uniqueTiers.size > 1;
+
   return (
     <div className="space-y-2">
       <h3
-        className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
-        style={{ fontFamily: 'Cinzel, serif' }}
+        className="font-bold uppercase tracking-wider"
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-tertiary)',
+          fontFamily: 'var(--font-display)',
+        }}
       >
         Retinue ({agents.length})
       </h3>
-      <div className="space-y-1.5 max-h-[calc(100vh-200px)] overflow-y-auto">
+      {/* IX-015: removed max-h — parent sidebar handles overflow scrolling */}
+      <div className="space-y-1.5" role="list">
         {agents.map((agent) => {
           const tierColor = TIER_COLORS[agent.tier] || '#78716c';
           const isSelected = agent.id === selectedAgentId;
@@ -41,41 +57,66 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
           return (
             <Tooltip key={agent.id} label={agent.name} desc={agent.tierName}>
               <div
+                role="listitem"
                 data-testid="retinue-entry"
                 onClick={() => onAgentSelect(agent.id)}
                 className={`
-                  bg-stone-800/50 rounded px-2.5 py-1.5 border border-stone-700/30 cursor-pointer
-                  transition-colors hover:bg-stone-700/50 active:bg-stone-700/70
+                  rounded px-2.5 py-1.5 border cursor-pointer
+                  transition-colors active:opacity-90
                   ${isSelected ? 'ring-2 ring-amber-400/60 border-amber-400/30' : ''}
                 `}
+                style={{
+                  backgroundColor: 'var(--bg-raised)',
+                  borderColor: isSelected ? undefined : 'var(--border-subtle)',
+                  borderLeftColor: tierColor,
+                  borderLeftWidth: '3px',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-raised)';
+                }}
               >
-                {/* Agent name and tier */}
+                {/* Agent name and optional tier badge */}
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span className="text-sm font-medium text-amber-100/90 truncate flex-1">
-                    {agent.name}
-                  </span>
                   <span
-                    className="text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+                    className="font-medium truncate flex-1"
                     style={{
-                      color: tierColor,
-                      backgroundColor: tierColor + '20', // 20% opacity
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--text-primary)',
+                      opacity: 0.9,
                     }}
                   >
-                    {agent.tierName}
+                    {agent.name}
                   </span>
+                  {showTierBadge && (
+                    <span
+                      className="font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: tierColor,
+                        backgroundColor: tierColor + '20',
+                      }}
+                    >
+                      {agent.tierName}
+                    </span>
+                  )}
                 </div>
 
-                {/* Location and faction on second line */}
-                <div className="text-[11px] text-amber-200/60 space-y-0.5">
-                  <div className="flex items-center gap-1">
-                    <span className="text-amber-200/40">Location:</span>
-                    <span className="truncate">{agent.locationName}</span>
-                  </div>
-                  {agent.factionName && (
-                    <div className="flex items-center gap-1">
-                      <span className="text-amber-200/40">Faction:</span>
-                      <span className="truncate">{agent.factionName}</span>
-                    </div>
+                {/* Location on second line */}
+                <div className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                  <span className="truncate">{agent.locationName}</span>
+                  {onZoomToLocation && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onZoomToLocation(agent.locationId); }}
+                      aria-label={`Zoom to ${agent.locationName}`}
+                      className="flex-shrink-0 transition-opacity hover:opacity-70"
+                      style={{ color: 'var(--accent-gold-dim)', fontSize: 'var(--text-xs)', lineHeight: 1 }}
+                      title={`Zoom to ${agent.locationName}`}
+                    >
+                      &#x1F441;
+                    </button>
                   )}
                 </div>
               </div>

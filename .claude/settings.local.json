@@ -7,7 +7,14 @@
       "Bash(where npx)",
       "Bash(where npm)",
       "Bash(pkill -f \"vite\")",
-      "WebFetch(domain:stockcake.com)"
+      "WebFetch(domain:stockcake.com)",
+      "Bash(xargs ls -la)",
+      "Bash(python3 -c \"import json; d = json.load\\(open\\(''src/data/world-model.json''\\)\\); terrains = [n for n in d[''nodes''] if n.get\\(''category''\\) == ''Terrain'']; print\\(f''Total terrain entries: {len\\(terrains\\)}''\\); print\\(''\\\\nSample terrain entries:''\\); import pprint; pprint.pprint\\(terrains[:5]\\)\")",
+      "Bash(grep -A 3 '\"\"category\"\": \"\"Terrain\"\"' src/data/world-model.json)",
+      "Bash(ls -lh /c/Users/chris/TheFantasyWorldSimulator/public/hex-tiles/magic-*.png)",
+      "Bash(grep '\"\"category\"\": \"\"Terrain\"\"' src/data/world-model.json)",
+      "Bash(grep '\"\"category\"\"' src/data/world-model.json)",
+      "Bash(grep -A 5 '\"\"category\"\": \"\"terrain\"\"' src/data/world-model.json)"
     ]
   }
 }

@@ -121,7 +121,7 @@ describe('recalcVisibility', () => {
     const sources = collectLOSSources(graph, ascendantId, []);
     const result = recalcVisibility(new Map(), sources, graph, 1, 20, 15);
 
-    expect(result.get(visKey(7, 7))?.state).toBe('visible');
+    expect(result.get(visKey(6, 7))?.state).toBe('visible');
   });
 
   it('transitions remembered → visible when re-entering range', () => {

@@ -1,302 +1,596 @@
 [
   {
-    "id": "VS-002",
+    "id": "VS-101",
     "agent": "visual",
     "severity": "major",
-    "category": "emoji-usage",
-    "title": "Sphere emoji in Divine Essence section should use sphere-colored icons",
-    "description": "The Divine Essence section uses Unicode emoji (⚡🪨🔥🌿🧠👻⏳🌀) to represent creation spheres. Per STYLE.md, these should be replaced with dedicated sphere-colored SVG/CSS icons following the sphere form language system.",
-    "evidence": "12 emoji instances found in SPAN.text-sm elements in Divine Essence sections",
-    "location": "Divine Essence section (creation screen + main game sidebar)",
-    "effort": "L",
-    "suggestedFix": "Replace emoji with CSS-based sphere icons using sphere-specific colors from STYLE.md. Each should have distinct visual form per sphere form language."
+    "category": "color-violation",
+    "title": "Left sidebar background too bright (52.5% vs 20-24% spec)",
+    "effort": "S",
+    "location": "LEFT_SIDEBAR"
   },
   {
-    "id": "VS-003",
+    "id": "VS-102",
     "agent": "visual",
-    "severity": "major",
-    "category": "emoji-usage",
-    "title": "Rival Gods uses generic emoji instead of dedicated icons",
-    "description": "The Rival Gods section uses generic emoji (🌊⚔️🏰) instead of unique visual identities tied to each rival god's sphere affinities.",
-    "evidence": "Three emoji instances in Rival Gods panel: 🌊, ⚔️, 🏰",
-    "location": "Rival Gods section right sidebar",
+    "severity": "critical",
+    "category": "icon-violation",
+    "title": "Emoji sphere icons instead of sphere-colored vector icons",
     "effort": "M",
-    "suggestedFix": "Create custom icons per rival god reflecting their sphere affinities, using Threadbare color palette and sphere form language."
+    "location": "Multiple components"
   },
   {
-    "id": "VS-004",
+    "id": "VS-103",
+    "agent": "visual",
+    "severity": "major",
+    "category": "color-violation",
+    "title": "Sphere text colors below 70% brightness threshold",
+    "effort": "S",
+    "location": "EssencePanel, RetinuePanel"
+  },
+  {
+    "id": "VS-104",
     "agent": "visual",
     "severity": "minor",
-    "category": "color-specification",
-    "title": "UI chrome brightness slightly above STYLE.md spec threshold",
-    "description": "STYLE.md specifies UI chrome at oklch(0.21-0.24). Some chrome elements measure at oklch(0.374), exceeding the upper threshold.",
-    "evidence": "Dark panels oklch(0.268) slightly above, lighter chrome oklch(0.374) well above spec",
-    "location": "DIV chrome borders, bg-stone-700 panels",
+    "category": "typography",
+    "title": "Serif font usage unclear for narrative vs data",
     "effort": "S",
-    "suggestedFix": "Adjust oklch L component for lighter chrome elements from 0.374 down to max 0.24."
+    "location": "NarrativeLog"
   },
   {
-    "id": "VS-005",
+    "id": "VS-105",
+    "agent": "visual",
+    "severity": "minor",
+    "category": "color-violation",
+    "title": "Hex tile borders could be darker",
+    "effort": "S",
+    "location": "HexMap"
+  },
+  {
+    "id": "VS-106",
     "agent": "visual",
     "severity": "suggestion",
-    "category": "brightness",
-    "title": "Sphere indicator colors below STYLE.md magic brightness range (70-100%)",
-    "description": "Sphere indicators use 5-47% brightness. STYLE.md specifies magic elements at 70-100% brightness for concentrated threadlike appearance.",
-    "evidence": "Force #dc2626 (40.8% L), Time #ea580c (47.1% L), Mind #9c27b0 (5.3% L), Life #059669 (31.5% L)",
-    "location": "Creation Spheres sliders and Divine Essence labels",
-    "effort": "M",
-    "suggestedFix": "Shift sphere indicator colors to 70-100% brightness: Force→#ff6666, Time→#ffaa33, Mind→#dd66ff."
+    "category": "contrast",
+    "title": "Mandate tracker labels low contrast",
+    "effort": "S",
+    "location": "MandateTracker"
   },
   {
     "id": "IA-001",
     "agent": "info-arch",
     "severity": "major",
-    "category": "redundant-text",
-    "title": "Avatar label appears 3 times across left sidebar and center HUD",
-    "description": "The word 'Avatar' appears at 3 positions simultaneously: sidebar header, center HUD button (×2). The sidebar already anchors player identity.",
-    "evidence": "Avatar text at (16,116), (349,137), (360,142)",
-    "location": "LeftSidebar + CenterHUD",
+    "category": "redundancy",
+    "title": "Avatar name repeated in three locations",
     "effort": "S",
-    "suggestedFix": "Rename center HUD 'Avatar' button to 'Move' or remove redundant label; sidebar divine name is sufficient."
+    "location": "LEFT_SIDEBAR, CENTER_MAP, RIGHT_SIDEBAR"
   },
   {
     "id": "IA-002",
     "agent": "info-arch",
     "severity": "major",
-    "category": "redundant-text",
-    "title": "Mandate name appears 13 times in redundant DOM nesting",
-    "description": "The mandate name 'Threads of Fate' appears 13 times across nested DOM elements — likely due to overlapping container rendering. Should appear once in top bar, once in narrative feed.",
-    "evidence": "13 occurrences at overlapping coordinates (824,8), (840,16), etc.",
-    "location": "TopBar + MandateTracker + NarrativeFeed",
-    "effort": "M",
-    "suggestedFix": "Refactor mandate tracker DOM to eliminate nested text duplication. Only 1-2 visible instances needed."
+    "category": "redundancy",
+    "title": "'Touched' tier label repeated 3 times in retinue list",
+    "effort": "S",
+    "location": "RIGHT_SIDEBAR"
   },
   {
     "id": "IA-003",
     "agent": "info-arch",
-    "severity": "major",
-    "category": "density-imbalance",
-    "title": "Extreme density imbalance: center 1024 words vs left sidebar 90 words",
-    "description": "Center zone (mostly hex grid) contains 1024 words while the critical control panel (left sidebar) has only 90. Narrative feed in bottom has 102 words.",
-    "evidence": "LEFT={52 nodes, 90 words}, CENTER={178 nodes, 1024 words}, BOTTOM={16 nodes, 102 words}",
-    "location": "GlobalLayout",
-    "effort": "L",
-    "suggestedFix": "Expand left sidebar with more descriptive labels. Consider moving some narrative context to dedicated panel."
+    "severity": "minor",
+    "category": "redundancy",
+    "title": "'Location:' and 'Faction:' labels repeated identically in retinue",
+    "effort": "S",
+    "location": "RIGHT_SIDEBAR"
   },
   {
     "id": "IA-004",
     "agent": "info-arch",
     "severity": "major",
-    "category": "redundant-text",
-    "title": "Mandate progression logged 3× in narrative feed plus status badge",
-    "description": "Players see mandate completion 16+ times: 13× DOM nesting + 3 narrative entries (escalation/culmination/fulfilled). Only the final 'Victory!' is meaningful in the feed.",
-    "evidence": "Tick 1: escalation, Tick 2: culmination, Tick 3: fulfilled — plus top bar badge + 13 DOM instances",
-    "location": "TopBar + NarrativeFeed",
-    "effort": "M",
-    "suggestedFix": "Log only final 'Victory!' in narrative feed. Use top-bar tracker for real-time progression. Remove intermediate state changes from feed."
+    "category": "density_imbalance",
+    "title": "Zero-value displays consuming screen real estate",
+    "effort": "S",
+    "location": "TOP_BAR, LEFT_SIDEBAR"
   },
   {
     "id": "IA-005",
     "agent": "info-arch",
-    "severity": "minor",
-    "category": "redundant-text",
-    "title": "6 identical essence values (2.2) displayed with no visual hierarchy",
-    "description": "Six of eight sphere values show identical '2.2' in the Divine Essence grid. No visual distinction between primary, secondary, and neutral spheres.",
-    "evidence": "'2.2' appears 6 times at (246,469-599) in same column, font, color",
-    "location": "LeftSidebar / DivineEssence Grid",
-    "effort": "S",
-    "suggestedFix": "Add context labels ('primary'/'neutral') or use a bar chart. Consider collapsing identical low values."
+    "severity": "major",
+    "category": "information_density",
+    "title": "Essence sphere breakdown (8 items) creates bloated left sidebar",
+    "effort": "M",
+    "location": "LEFT_SIDEBAR"
+  },
+  {
+    "id": "IA-006",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "density_imbalance",
+    "title": "Right sidebar domain vastly under-populated vs left sidebar (2.75:1)",
+    "effort": "L",
+    "location": "LEFT_SIDEBAR, RIGHT_SIDEBAR"
   },
   {
     "id": "IA-007",
     "agent": "info-arch",
-    "severity": "minor",
-    "category": "redundant-text",
-    "title": "15 identical 'mutual trust' entries in narrative feed with no prose variation",
-    "description": "Narrative feed contains 15 entries of '[A] and [B]: mutual trust' — all identical phrasing. No adjectives, no variation, no narrative richness.",
-    "evidence": "15 entries across ticks 1-25, all using identical format",
-    "location": "NarrativeFeed",
-    "effort": "M",
-    "suggestedFix": "Vary relationship prose: 'bond deepens', 'alliance forms', 'recognizes trust'. Consult narrative engine for tone-appropriate templates."
+    "severity": "major",
+    "category": "information_architecture",
+    "title": "Narrative feed fully hidden from main view (80+ entries, zero visibility)",
+    "effort": "L",
+    "location": "NARRATIVE_FEED"
   },
   {
     "id": "IA-008",
     "agent": "info-arch",
     "severity": "minor",
-    "category": "redundant-text",
-    "title": "Rival god actions repeat exact wording across ticks",
-    "description": "'The Bone Tyrant extends their reach into new territory' appears at ticks 5 and 27 (exact duplicate). Only 2-3 templates per god visible in 33-tick window.",
-    "evidence": "Exact duplicate at ticks 5 and 27",
-    "location": "NarrativeFeed",
+    "category": "heading_hierarchy",
+    "title": "Inconsistent heading nesting (H1->H2->H3 with gaps)",
     "effort": "S",
-    "suggestedFix": "Verify rival-content.ts RIVAL_ACTION_TEMPLATES has 3-4+ variants per action type. Check PRNG template selection in orchestrator."
+    "location": "LEFT_SIDEBAR, RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-009",
+    "agent": "info-arch",
+    "severity": "minor",
+    "category": "dead_space",
+    "title": "Center map area underutilized (only 3 HUD buttons)",
+    "effort": "M",
+    "location": "CENTER_MAP"
   },
   {
     "id": "IA-010",
     "agent": "info-arch",
-    "severity": "minor",
-    "category": "dead-space",
-    "title": "Right sidebar empty when no agent selected (8 words total)",
-    "description": "Right sidebar shows only 'No agents under your influence yet.' — large dead zone. Could surface mandate details, rival profiles, or sphere breakdown.",
-    "evidence": "8 words in ~300×800px sidebar area",
-    "location": "RightSidebar",
+    "severity": "major",
+    "category": "content_density",
+    "title": "Rival Gods section shows only labels and spheres, no actionable context",
     "effort": "M",
-    "suggestedFix": "Show default content: expanded mandate view, rival profiles with hostility meters, or sphere influence breakdown."
+    "location": "LEFT_SIDEBAR"
   },
   {
     "id": "IA-011",
     "agent": "info-arch",
-    "severity": "suggestion",
-    "category": "information-hierarchy",
-    "title": "Top bar treats doom, mandate, and debug with equal visual weight",
-    "description": "Doom clock (game-end timer), mandate tracker, and Debug button are equally prominent in the top bar. Doom should be most prominent.",
-    "evidence": "All elements in single horizontal bar with no size/color differentiation",
-    "location": "TopBar",
-    "effort": "M",
-    "suggestedFix": "Use color/size hierarchy: doom in red/orange (left, prominent), mandate in gold (center, smaller), debug in gray (right, tucked away)."
-  },
-  {
-    "id": "IA-012",
-    "agent": "info-arch",
-    "severity": "suggestion",
-    "category": "heading-hierarchy",
-    "title": "Left sidebar has 4 H2 headings but no H3 subheadings",
-    "description": "All sidebar sections (Time, Divine Essence, Rival Gods) are H2 siblings. No H3 subheadings for sub-sections.",
-    "evidence": "[H1: title], [H2: Time], [H2: Divine Essence], [H2: Rival Gods]. No H3 tags.",
-    "location": "LeftSidebar",
+    "severity": "minor",
+    "category": "redundancy",
+    "title": "'Ardenmor Keep' location name appears twice in retinue",
     "effort": "S",
-    "suggestedFix": "Add H3 subheadings: H2 'Divine Essence' → H3 'Sphere Pools'. H2 'Rival Gods' → H3 'Hostility'."
+    "location": "RIGHT_SIDEBAR"
   },
   {
     "id": "IX-001",
     "agent": "interaction",
-    "severity": "minor",
-    "category": "missing-feedback",
-    "title": "Avatar button toggle state doesn't visibly change the sidebar",
-    "description": "Avatar button can be toggled active/inactive, but sidebar remains unchanged. Unclear what 'active' state represents to the user.",
-    "evidence": "Avatar button toggles but sidebar shows 'No agents under your influence yet' regardless",
-    "location": "AvatarHUD.tsx",
-    "effort": "S",
-    "suggestedFix": "Show avatar detail panel in sidebar when Avatar is clicked, or remove active state and make it informational only."
+    "severity": "major",
+    "category": "state",
+    "title": "ActionDrawer double-click vulnerability \u2014 cards clickable during animation",
+    "effort": "M",
+    "location": "ActionDrawer"
   },
   {
-    "id": "RC-008",
+    "id": "IX-002",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "overlay",
+    "title": "Multiple overlays can open simultaneously \u2014 no mutual exclusion",
+    "effort": "M",
+    "location": "GameView overlays"
+  },
+  {
+    "id": "IX-003",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "ActionDrawer close button doesn't prevent rapid Escape+click closure",
+    "effort": "S",
+    "location": "ActionDrawer"
+  },
+  {
+    "id": "IX-004",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "InterventionConfirm doesn't close when cost exceeds available essence",
+    "effort": "S",
+    "location": "InterventionConfirm"
+  },
+  {
+    "id": "IX-005",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Scry overlay assignments persist when retinue changes mid-session",
+    "effort": "M",
+    "location": "ScryOverlay"
+  },
+  {
+    "id": "IX-006",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "navigation",
+    "title": "Hex zoom breadcrumb back navigation doesn't clear selection state",
+    "effort": "S",
+    "location": "HexBreadcrumb"
+  },
+  {
+    "id": "IX-007",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "ActionDrawer stays open if selectedAgentId cleared while open",
+    "effort": "S",
+    "location": "ActionDrawer, useAgentInteraction"
+  },
+  {
+    "id": "IX-008",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "Agent profile modal can open from sidebar while ActionDrawer is open",
+    "effort": "S",
+    "location": "AgentInfoCard, ActionDrawer"
+  },
+  {
+    "id": "IX-009",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Avatar movement mode doesn't auto-clear if hex out of range",
+    "effort": "S",
+    "location": "useAvatarData"
+  },
+  {
+    "id": "IX-010",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Rapid wheel slot clicks queue multiple interventions",
+    "effort": "S",
+    "location": "useAgentInteraction"
+  },
+  {
+    "id": "IX-011",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "Strand view close button doesn't re-open action drawer",
+    "effort": "S",
+    "location": "StrandView"
+  },
+  {
+    "id": "IX-012",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "overlay",
+    "title": "ScryOverlay backdrop click doesn't close overlay",
+    "effort": "S",
+    "location": "ScryOverlay"
+  },
+  {
+    "id": "IX-013",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "state",
+    "title": "HexZoomView location double-click opens detail without closing drawer",
+    "effort": "S",
+    "location": "HexZoomView"
+  },
+  {
+    "id": "IX-014",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "InterventionConfirm can remain visible during backdrop click + essence deduction",
+    "effort": "S",
+    "location": "InterventionConfirm"
+  },
+  {
+    "id": "IX-015",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "navigation",
+    "title": "Right sidebar doesn't scroll if retinue panel overflows",
+    "effort": "S",
+    "location": "GameView sidebar"
+  },
+  {
+    "id": "IX-016",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Momentum scroll closes ActionDrawer unintentionally",
+    "effort": "S",
+    "location": "ActionDrawer"
+  },
+  {
+    "id": "IX-017",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Essence pool updates don't trigger wheel slot recalculation",
+    "effort": "S",
+    "location": "useAgentInteraction"
+  },
+  {
+    "id": "IX-018",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "ActionCard locked reason text may overflow card width",
+    "effort": "S",
+    "location": "ActionCard"
+  },
+  {
+    "id": "IX-019",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Agent assignment to Scry doesn't clear sidebar selection immediately",
+    "effort": "S",
+    "location": "ScryOverlay, useAgentInteraction"
+  },
+  {
+    "id": "IX-020",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "NarrativeLog toggle may be hidden behind ActionDrawer",
+    "effort": "S",
+    "location": "NarrativeLog, ActionDrawer"
+  },
+  {
+    "id": "RC-026",
     "agent": "react-code",
     "severity": "major",
+    "category": "performance",
+    "title": "ActionCard inline style objects & handleClick on every render",
+    "effort": "S",
+    "location": "ActionCard.tsx"
+  },
+  {
+    "id": "RC-027",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "ActionCard inline animation keyframes in JSX",
+    "effort": "S",
+    "location": "ActionCard.tsx"
+  },
+  {
+    "id": "RC-028",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "ActionDrawer does not memoize displaySlots computation",
+    "effort": "S",
+    "location": "ActionDrawer.tsx"
+  },
+  {
+    "id": "RC-029",
+    "agent": "react-code",
+    "severity": "minor",
     "category": "prop-drilling",
-    "title": "Excessive prop drilling through GameView to ScryOverlay",
-    "description": "ScryOverlay receives 9+ props passed from GameView through hooks. Context API would reduce this coupling.",
-    "evidence": "GameView.tsx: ScryOverlay receives scryState, retinueAgents, essencePool, primarySphere, tick, seed, onAssign, onDemote, onClose",
-    "location": "GameView.tsx → ScryOverlay.tsx",
-    "effort": "M",
-    "suggestedFix": "Create ScryContext to hold scryState, handlers, and dependencies. Wrap with provider at GameView level."
+    "title": "GameView passes agentName twice (via find + string)",
+    "effort": "S",
+    "location": "GameView.tsx"
   },
   {
-    "id": "RC-011",
-    "agent": "react-code",
-    "severity": "minor",
-    "category": "magic-number",
-    "title": "Hardcoded color strings duplicated across 5+ components",
-    "description": "Colors like '#d4a574', '#a78bfa', '#eab308' are independently defined in StrandView, DebugPanel, MandateTracker, DoomBar. No single source of truth.",
-    "evidence": "4+ separate color maps: STRAND_COLORS, CATEGORY_BADGE_COLORS, ARCHETYPE_COLORS, TYPE_COLORS",
-    "location": "Multiple Game/ components",
-    "effort": "M",
-    "suggestedFix": "Create src/data/uiColorPalette.ts with shared color constants. Import across all components."
-  },
-  {
-    "id": "RC-012",
+    "id": "RC-030",
     "agent": "react-code",
     "severity": "major",
     "category": "performance",
-    "title": "ScryOverlay creates inline closures in map callbacks without memoization",
-    "description": "PositionSlot and ContextMenu rendered inline inside map callbacks create new function references every render. With 10+ slots, causes unnecessary re-renders.",
-    "evidence": "ScryOverlay.tsx: apexPositions.map(pos => (<div><PositionSlot .../><ContextMenu .../></div>))",
-    "location": "ScryOverlay.tsx",
-    "effort": "M",
-    "suggestedFix": "Extract PositionSlotWithMenu as a memoized component. Use React.memo on inner components."
+    "title": "NarrativeLog TYPE_COLORS re-created from module scope",
+    "effort": "S",
+    "location": "NarrativeLog.tsx"
   },
   {
-    "id": "RC-013",
+    "id": "RC-031",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "NarrativeLog close button lacks aria-label",
+    "effort": "S",
+    "location": "NarrativeLog.tsx"
+  },
+  {
+    "id": "RC-032",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "AgentInfoCard hardcoded domain names should be constants",
+    "effort": "M",
+    "location": "AgentInfoCard.tsx"
+  },
+  {
+    "id": "RC-033",
     "agent": "react-code",
     "severity": "minor",
     "category": "code-hygiene",
-    "title": "Type casting to 'any' in ScryOverlay inner components",
-    "description": "PositionSlot and AgentPickerPanel accept 'position: any' rather than proper Position type.",
-    "evidence": "ScryOverlay.tsx: function PositionSlot({ position }: { position: any; ... })",
-    "location": "ScryOverlay.tsx",
+    "title": "AgentProfileModal duplicates getSphereColor in local scope",
     "effort": "S",
-    "suggestedFix": "Import Position type from types/scry and replace 'any' with proper types."
+    "location": "AgentProfileModal.tsx"
   },
   {
-    "id": "RC-017",
+    "id": "RC-034",
     "agent": "react-code",
     "severity": "major",
     "category": "performance",
-    "title": "StrandView renderContent() not memoized — 6 branches evaluated every render",
-    "description": "renderContent() returns large JSX conditionally without useMemo. activeStrand state change triggers full re-render.",
-    "evidence": "StrandView.tsx: renderContent() function (186 lines) runs 6 switch branches every render, no useMemo",
-    "location": "StrandView.tsx",
+    "title": "AgentProfileModal repeated conditional logic for knowledge gating",
     "effort": "M",
-    "suggestedFix": "Wrap in useMemo(() => renderContent(), [activeStrand]) or extract 6 separate memoized strand components."
+    "location": "AgentProfileModal.tsx"
   },
   {
-    "id": "RC-010",
-    "agent": "react-code",
-    "severity": "minor",
-    "category": "accessibility",
-    "title": "SVG elements with click handlers missing ARIA labels and keyboard support",
-    "description": "HexZoomView location circles and text respond to click/doubleClick but lack role='button', aria-label, or onKeyDown.",
-    "evidence": "HexZoomView.tsx: <circle> and <text> elements have onClick but no ARIA attributes",
-    "location": "HexZoomView.tsx",
-    "effort": "M",
-    "suggestedFix": "Wrap in <g role='button' aria-label='{loc.name}' tabIndex={0} onKeyDown={...}>."
-  },
-  {
-    "id": "RC-019",
-    "agent": "react-code",
-    "severity": "minor",
-    "category": "accessibility",
-    "title": "DebugPanel and overlay close buttons lack descriptive aria-labels",
-    "description": "Close buttons use '✕' text with no aria-label. Screen readers can't identify button purpose.",
-    "evidence": "DebugPanel.tsx, ScryOverlay.tsx, StrandView.tsx: <button> ✕ </button> without aria-label",
-    "location": "DebugPanel.tsx, ScryOverlay.tsx, StrandView.tsx",
-    "effort": "S",
-    "suggestedFix": "Add aria-label='Close [panel name]' and title='Close (Esc)' to all close buttons."
-  },
-  {
-    "id": "RC-015",
-    "agent": "react-code",
-    "severity": "minor",
-    "category": "magic-number",
-    "title": "Hex size calculations repeated inline across HexMap and HexTile",
-    "description": "HexMap computes 1.5*size, √3*size inline. HexTile recomputes imgSize = size*2. No shared hex math utility.",
-    "evidence": "HexMap.tsx: cols * hexSize * 1.5 + hexSize * 0.5; HexTile.tsx: size * 2",
-    "location": "HexMap/HexMap.tsx, HexMap/HexTile.tsx",
-    "effort": "S",
-    "suggestedFix": "Add HEX_SCALE_X = 1.5, HEX_SCALE_Y = Math.sqrt(3) to lib/hexMath.ts. Import consistently."
-  },
-  {
-    "id": "RC-023",
+    "id": "RC-035",
     "agent": "react-code",
     "severity": "minor",
     "category": "code-hygiene",
-    "title": "MandateTracker and DoomBar duplicate progress bar implementation",
-    "description": "Both components implement identical progress bars (h-2 rounded-full, boxShadow glow). Code duplication.",
-    "evidence": "MandateTracker.tsx and DoomBar.tsx both have identical progress bar CSS",
-    "location": "MandateTracker.tsx, DoomBar.tsx",
+    "title": "DebugPanel uses extensive inline styles instead of CSS classes",
     "effort": "M",
-    "suggestedFix": "Extract shared ProgressBar component: <ProgressBar progress={0.65} color='#d4a574' glow={true} />."
+    "location": "DebugPanel.tsx"
   },
   {
-    "id": "RC-025",
+    "id": "RC-036",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "DebugPanel TraceEntryItem creates badgeStyle on every render",
+    "effort": "S",
+    "location": "DebugPanel.tsx"
+  },
+  {
+    "id": "RC-037",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "InterventionConfirm uses ternary chains for rangeText",
+    "effort": "S",
+    "location": "InterventionConfirm.tsx"
+  },
+  {
+    "id": "RC-038",
     "agent": "react-code",
     "severity": "minor",
     "category": "magic-number",
-    "title": "AgentWheel hardcoded glyph emoji map not data-driven",
-    "description": "SLOT_GLYPHS uses hardcoded emoji (👁💭🗣 etc.) directly in component. Should be in data layer.",
-    "evidence": "AgentWheel.tsx: const SLOT_GLYPHS: Record<string, string> = { scry: '👁', dream: '💭', ... }",
-    "location": "AgentWheel.tsx",
+    "title": "HexZoomView hardcodes agent color palette and polygon constants",
+    "effort": "M",
+    "location": "HexZoomView.tsx"
+  },
+  {
+    "id": "RC-039",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "agentColor function duplicated in HexZoomView and LocationView",
     "effort": "S",
-    "suggestedFix": "Move SLOT_GLYPHS to src/data/uiAssets.ts. Import at module level."
+    "location": "HexZoomView.tsx, LocationView.tsx"
+  },
+  {
+    "id": "RC-040",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "HexZoomView keyboard handler doesn't preventDefault for Space",
+    "effort": "S",
+    "location": "HexZoomView.tsx"
+  },
+  {
+    "id": "RC-041",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "LocationView casts properties without type safety",
+    "effort": "S",
+    "location": "LocationView.tsx"
+  },
+  {
+    "id": "RC-042",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "MandateTracker hardcodes stage order and color constants",
+    "effort": "S",
+    "location": "MandateTracker.tsx"
+  },
+  {
+    "id": "RC-043",
+    "agent": "react-code",
+    "severity": "major",
+    "category": "performance",
+    "title": "AvatarHUD creates styles on every render despite useMemo",
+    "effort": "S",
+    "location": "AvatarHUD.tsx"
+  },
+  {
+    "id": "RC-044",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "AvatarHUD inconsistent style constant naming",
+    "effort": "S",
+    "location": "AvatarHUD.tsx"
+  },
+  {
+    "id": "RC-045",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "Tooltip depth tracking doesn't validate max depth",
+    "effort": "S",
+    "location": "Tooltip.tsx"
+  },
+  {
+    "id": "RC-046",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "HexTile uses inline IIFE for location overlay logic",
+    "effort": "S",
+    "location": "HexTile.tsx"
+  },
+  {
+    "id": "RC-047",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "HexMap eslint-disable for zoom setup effect",
+    "effort": "S",
+    "location": "HexMap.tsx"
+  },
+  {
+    "id": "RC-048",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "RetinuePanel and RivalPanel duplicate React.memo pattern",
+    "effort": "S",
+    "location": "RetinuePanel.tsx, RivalPanel.tsx"
+  },
+  {
+    "id": "RC-049",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "RivalPanel hardcodes behavior icons and colors",
+    "effort": "S",
+    "location": "RivalPanel.tsx"
+  },
+  {
+    "id": "RC-050",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "EssencePanel sorts spheres on every render without useMemo",
+    "effort": "S",
+    "location": "EssencePanel.tsx"
+  },
+  {
+    "id": "RC-051",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "SimulationControls hardcodes season icons",
+    "effort": "S",
+    "location": "SimulationControls.tsx"
+  },
+  {
+    "id": "RC-052",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "useViewNavigation has undefined handleLocationClick",
+    "effort": "S",
+    "location": "useViewNavigation.ts"
+  },
+  {
+    "id": "RC-053",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "prop-drilling",
+    "title": "useAgentInteraction hook too large (268 lines), too many concerns",
+    "effort": "L",
+    "location": "useAgentInteraction.ts"
+  },
+  {
+    "id": "RC-054",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "error-handling",
+    "title": "useInterventionAudio doesn't handle AudioContext errors",
+    "effort": "S",
+    "location": "useInterventionAudio.ts"
   }
 ]

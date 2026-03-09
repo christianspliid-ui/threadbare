@@ -36,7 +36,7 @@ export const TOOLTIP_TOP_THRESHOLD = 80;
 export const TOOLTIP_SIDE_THRESHOLD = 100;
 
 /** Maximum tooltip width in px. */
-export const TOOLTIP_MAX_WIDTH = 220;
+export const TOOLTIP_MAX_WIDTH = 280;
 
 /** Gap between tooltip and trigger element in px. */
 export const TOOLTIP_OFFSET = 8;

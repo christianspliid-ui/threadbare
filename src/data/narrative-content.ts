@@ -17,6 +17,7 @@
  * 8. DILEMMA_WORD_POOLS — adjective, noun, and verb banks for dilemma prose placeholder substitution
  * 9-12. [Content sections continue...]
  * 13. BORN_NAMES — Name pool for newly born agents in agentLifecycle.ts
+ * 14. WONDER_CONTENT — Vignettes, triggers, and sphere-specific flavors for awe/beauty moments
  */
 
 import type { SphereName } from '../types/index';
@@ -699,4 +700,107 @@ export const BORN_NAMES = [
   'Gift of the Season', 'Laughter in the Ruins',
   'Small Miracle', 'Hope Against Hope',
 ];
+
+// ═══════════════════════════════════════════════════════════════════
+// 14. WONDER CONTENT
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * WONDER_VIGNETTES — Short prose fragments describing moments of unexpected beauty,
+ * awe, or transcendence in the game world. These are sphere-neutral and always set
+ * against a backdrop of decay or struggle, making the wonder feel earned and meaningful.
+ *
+ * Used to punctuate the narrative with moments of light breaking through darkness —
+ * the "Threadbare" aesthetic: rare beauty, fleeting grace, wonder layered over grief.
+ */
+export const WONDER_VIGNETTES: string[] = [
+  'For a single breath, the clouds parted and light fell on the ruins like a benediction.',
+  'A child\'s laughter echoed through the market — the first anyone could remember in weeks.',
+  'The old tower, forgotten for centuries, suddenly caught the sunset. For a moment, it burned gold.',
+  'In the mud and ash, a flower bloomed — small, defiant, impossible.',
+  'The refugee gave the last of their bread to a stranger. In that gesture, the world felt less broken.',
+  'An enemy laid down their weapon without a word. In the silence that followed, something shifted.',
+  'The bells rang again. No one could remember the sound. It felt like forgiveness.',
+  'Two rivals stood together against the storm. For the first time, neither raised a hand.',
+  'The plague-marked child smiled. It was the first time the healer had seen them without pain.',
+  'The song rose from a hundred throats — a memory of what the world used to be, kept alive by voice alone.',
+  'The prisoner was released. They stood in sunlight for the first time in years and wept.',
+  'The scholar found the lost text, its pages yellowed but whole. Knowledge survived the fire.',
+  'The stranger said "thank you" — three words that made the exhausted listener remember why they persisted.',
+  'The war-torn field fell silent. For one heartbeat, the whole world held its breath.',
+  'A hand reached out in the darkness and found another. Neither would be alone tonight.',
+  'The ocean, which had seemed barren, suddenly glowed with bioluminescence — beauty hiding beneath despair.',
+];
+
+/**
+ * WONDER_TRIGGERS — Conditions under which a wonder moment might manifest.
+ * Each trigger has an id, a descriptive condition string, and a weight (0.1-1.0).
+ * Weights reflect how often the trigger should fire relative to others.
+ *
+ * Conditions are descriptive (not executable code). The engine will evaluate these
+ * contextually based on game state during CB-012 implementation.
+ */
+export const WONDER_TRIGGERS: Array<{ id: string; condition: string; weight: number }> = [
+  { id: 'high_sphere_influence', condition: 'A sphere has achieved high influence in a location', weight: 0.6 },
+  { id: 'after_dilemma_resolution', condition: 'A dilemma was resolved through cooperation or sacrifice', weight: 0.7 },
+  { id: 'birth_event', condition: 'A new agent is born into the world', weight: 0.8 },
+  { id: 'low_doom', condition: 'Doom clock is below 25% and world feels hopeful', weight: 0.4 },
+  { id: 'cultural_celebration', condition: 'A culture achieves a major milestone or celebration', weight: 0.5 },
+  { id: 'agent_bond_formed', condition: 'Two agents form a strong bond or alliance', weight: 0.6 },
+  { id: 'first_visit_location', condition: 'The avatar discovers a new location', weight: 0.5 },
+  { id: 'intervention_success', condition: 'A divine intervention produces unexpected positive outcomes', weight: 0.7 },
+  { id: 'mandate_progress', condition: 'A mandate reaches a major milestone or completion', weight: 0.5 },
+  { id: 'peaceful_tick', condition: 'A tick passes with no deaths, no conflict, no escalation', weight: 0.3 },
+];
+
+/**
+ * SPHERE_WONDER_FLAVORS — Sphere-specific wonder phrases. Each Creation Sphere has
+ * 3 unique wonder-related flavor descriptors that can be woven into wonder vignettes
+ * or serve as modifiers for wonder moments when a particular sphere is dominant.
+ *
+ * Used to add narrative texture: a Force-flavored wonder feels different from
+ * a Mind-flavored wonder, even if they're describing the same moment.
+ */
+export const SPHERE_WONDER_FLAVORS: Record<string, string[]> = {
+  force: [
+    'a blade singing in the wind',
+    'the clean ring of iron on iron',
+    'strength given freely',
+  ],
+  matter: [
+    'stone that remembers its shape',
+    'earth breaking open to reveal growth',
+    'something solid and real you can hold',
+  ],
+  energy: [
+    'light spilling through broken windows',
+    'a spark that refuses to die',
+    'warmth spreading through cold hands',
+  ],
+  life: [
+    'a heartbeat where silence had reigned',
+    'green pushing through ash',
+    'breath returning to the broken',
+  ],
+  mind: [
+    'a truth suddenly, crystalline and clear',
+    'understanding blooming between strangers',
+    'knowledge passed like a precious gift',
+  ],
+  spirit: [
+    'a presence felt but not named',
+    'grace descending without warning',
+    'connection across the void',
+  ],
+  time: [
+    'a moment stretched into eternity',
+    'the past and future aligned as one',
+    'a second chance, against all odds',
+  ],
+  entropy: [
+    'beauty in decay, pattern in chaos',
+    'the phoenix-moment of necessary ending',
+    'transformation through dissolution',
+  ],
+};
 

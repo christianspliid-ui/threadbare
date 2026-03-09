@@ -14,20 +14,26 @@ import {
 export function useInterventionAudio() {
   const ctxRef = useRef<AudioContext | null>(null);
 
-  const getContext = useCallback(() => {
-    if (!ctxRef.current) {
-      ctxRef.current = new AudioContext();
+  const getContext = useCallback((): AudioContext | null => {
+    try {
+      if (!ctxRef.current) {
+        ctxRef.current = new AudioContext();
+      }
+      // Resume audio context if suspended (required on some browsers after user interaction)
+      if (ctxRef.current.state === 'suspended') {
+        ctxRef.current.resume();
+      }
+      return ctxRef.current;
+    } catch {
+      // RC-054: Fail-soft — AudioContext unavailable (e.g., no Web Audio support)
+      return null;
     }
-    // Resume audio context if suspended (required on some browsers after user interaction)
-    if (ctxRef.current.state === 'suspended') {
-      ctxRef.current.resume();
-    }
-    return ctxRef.current;
   }, []);
 
   const playCastSound = useCallback(
     (sphere: string, detected: boolean) => {
       const ctx = getContext();
+      if (!ctx) return; // RC-054: Fail-soft if AudioContext unavailable
       const config = SPHERE_AUDIO_CONFIG[sphere] ?? SPHERE_AUDIO_CONFIG.mind;
       const {
         AUDIO_BASE_FREQ,

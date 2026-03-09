@@ -1,4 +1,5 @@
 import type { SphereName } from '../../types';
+import { getSphereSymbol, getSphereColor } from '../../data/sphereIcons';
 
 const SPHERE_LABELS: Record<SphereName, string> = {
   force: 'Force',
@@ -11,28 +12,6 @@ const SPHERE_LABELS: Record<SphereName, string> = {
   entropy: 'Entropy',
 };
 
-const SPHERE_ICONS: Record<SphereName, string> = {
-  force: '⚡',
-  matter: '🪨',
-  energy: '🔥',
-  life: '🌿',
-  mind: '🧠',
-  spirit: '👻',
-  time: '⏳',
-  entropy: '🌀',
-};
-
-const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#d4a574',
-  matter: '#9d7b5a',
-  energy: '#e87534',
-  life: '#7cb342',
-  mind: '#9c27b0',
-  spirit: '#5c6bc0',
-  time: '#00bcd4',
-  entropy: '#b71c1c',
-};
-
 interface SphereSliderProps {
   sphere: SphereName;
   value: number;
@@ -40,10 +19,10 @@ interface SphereSliderProps {
 }
 
 export function SphereSlider({ sphere, value, onChange }: SphereSliderProps) {
-  const color = SPHERE_COLORS[sphere];
+  const color = getSphereColor(sphere);
   return (
     <div className="flex items-center gap-3 py-1.5">
-      <span className="text-lg w-6 text-center">{SPHERE_ICONS[sphere]}</span>
+      <span className="text-lg w-6 text-center" style={{ color }}>{getSphereSymbol(sphere)}</span>
       <span className="text-sm font-medium w-16 text-amber-100" style={{ color }}>
         {SPHERE_LABELS[sphere]}
       </span>

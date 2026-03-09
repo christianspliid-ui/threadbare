@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
+import { getSphereColor } from '../../data/sphereIcons';
+import { Tooltip } from '../shared/Tooltip';
 
 export interface AgentProfileModalProps {
   card: AgentInfoCardData;
@@ -20,6 +22,20 @@ const DOMAIN_NAMES: Record<ReachDomain, string> = {
   star: 'Star',
   flesh: 'Flesh',
 };
+
+// RC-034: Knowledge level hierarchy — centralizes repeated conditional checks
+const KNOWLEDGE_RANK: Record<string, number> = {
+  stranger: 0,
+  recognised: 1,
+  known: 2,
+  intimate: 3,
+  transparent: 4,
+};
+
+/** Returns true if the agent's knowledge level is at least the given minimum */
+function hasKnowledge(level: string, minimum: string): boolean {
+  return (KNOWLEDGE_RANK[level] ?? 0) >= (KNOWLEDGE_RANK[minimum] ?? 0);
+}
 
 export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalProps) {
   // Escape key handler
@@ -48,19 +64,19 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/80"
+        className="absolute inset-0"
         onClick={onClose}
-        style={{ pointerEvents: 'auto' }}
+        style={{ pointerEvents: 'auto', backgroundColor: 'rgba(10, 10, 14, 0.9)' }}
       />
 
       {/* Modal Content */}
       <div
-        className="relative bg-stone-900 border border-amber-900/40 rounded-lg max-w-2xl w-full h-[90vh] flex flex-col shadow-2xl"
-        style={{ pointerEvents: 'auto' }}
+        className="relative border rounded-lg max-w-2xl w-full h-[90vh] flex flex-col shadow-2xl"
+        style={{ pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header Zone */}
-        <div className="border-b border-amber-900/30 p-6 pb-4">
+        <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="flex gap-4 mb-3">
             {/* Portrait Placeholder */}
             <div
@@ -77,27 +93,33 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
             {/* Header Text */}
             <div className="flex-1">
               <h1
-                className="text-2xl font-bold text-amber-100 mb-1"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="text-2xl font-bold mb-1"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 {card.name}
               </h1>
 
               {/* Knowledge level badge */}
-              <div className="inline-block px-2 py-0.5 bg-amber-900/40 rounded text-amber-300/70 text-xs mb-2">
-                {card.knowledgeLevel}
-              </div>
+              <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
+                <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
+                  {card.knowledgeLevel}
+                </div>
+              </Tooltip>
 
               {/* Metadata */}
               <div className="space-y-1">
                 {card.locationName && (
-                  <p className="text-amber-200/70 text-sm">{card.locationName}</p>
+                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>
                 )}
-                {card.knowledgeLevel !== 'stranger' && card.archetypeLabel && (
-                  <p className="text-amber-300/80 text-sm italic">{card.archetypeLabel}</p>
+                {hasKnowledge(card.knowledgeLevel, 'recognised') && card.archetypeLabel && (
+                  <p className="text-sm italic" style={{ color: 'var(--accent-gold)' }}>
+                    {card.archetypeId ? (
+                      <Tooltip id={`archetype.${card.archetypeId}`}><span className="underline decoration-dotted cursor-help">{card.archetypeLabel}</span></Tooltip>
+                    ) : card.archetypeLabel}
+                  </p>
                 )}
-                {card.knowledgeLevel !== 'stranger' && (card.factionName || card.cultureName) && (
-                  <p className="text-amber-200/60 text-xs">
+                {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.cultureName) && (
+                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     {[card.factionName, card.cultureName].filter(Boolean).join(' · ')}
                   </p>
                 )}
@@ -108,14 +130,16 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           {/* Primary Sphere Indicator */}
           {card.primarySphere && (
             <div className="flex gap-2 items-center pt-2">
-              <span className="text-amber-400/70 text-xs">Attuned to</span>
+              <span className="text-xs" style={{ color: 'var(--accent-gold)' }}>Attuned to</span>
               <div
                 className="w-2 h-2 rounded-full"
                 style={{
                   backgroundColor: getSphereColor(card.primarySphere),
                 }}
               />
-              <span className="text-amber-200/60 text-xs capitalize">{card.primarySphere}</span>
+              <Tooltip id={`sphere.${card.primarySphere}`}>
+                <span className="text-xs capitalize underline decoration-dotted cursor-help" style={{ color: 'var(--text-secondary)' }}>{card.primarySphere}</span>
+              </Tooltip>
             </div>
           )}
         </div>
@@ -123,11 +147,11 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Quotes Section (known+) */}
-          {card.knowledgeLevel !== 'stranger' && card.knowledgeLevel !== 'recognised' && card.quotes && card.quotes.length > 0 && (
+          {hasKnowledge(card.knowledgeLevel, 'known') && card.quotes && card.quotes.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Words
               </h2>
@@ -135,7 +159,8 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                 {card.quotes.map((quote, idx) => (
                   <div
                     key={idx}
-                    className="border-l-2 border-amber-400/40 pl-3 text-amber-200/70 italic text-sm"
+                    className="border-l-2 pl-3 italic text-sm"
+                    style={{ borderColor: 'var(--accent-gold)', color: 'var(--text-secondary)' }}
                   >
                     {quote}
                   </div>
@@ -145,17 +170,17 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Values Section (recognised+) */}
-          {card.knowledgeLevel !== 'stranger' && card.topValues && card.topValues.length > 0 && (
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && card.topValues && card.topValues.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Nature
               </h2>
               <div className="space-y-2">
                 {card.topValues.map((val, idx) => (
-                  <p key={idx} className="text-amber-200/70 text-sm">
+                  <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                     {val.word}
                   </p>
                 ))}
@@ -164,20 +189,20 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Prowess Section (recognised+) */}
-          {card.knowledgeLevel !== 'stranger' && card.domains && card.domains.length > 0 && (
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && card.domains && card.domains.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Prowess
               </h2>
-              <p className="text-amber-200/70 text-sm space-x-1">
+              <p className="text-sm space-x-1" style={{ color: 'var(--text-secondary)' }}>
                 {card.domains.map((dom, idx) => (
                   <span key={idx}>
-                    {idx > 0 && <span className="text-amber-400/50">·</span>}
+                    {idx > 0 && <span style={{ color: 'var(--accent-gold)' }}>·</span>}
                     <span className="ml-1">
-                      {dom.word} in {DOMAIN_NAMES[dom.domain]}
+                      {dom.word} in <Tooltip id={`reach.${dom.domain}`}><span className="underline decoration-dotted cursor-help">{DOMAIN_NAMES[dom.domain]}</span></Tooltip>
                     </span>
                   </span>
                 ))}
@@ -186,20 +211,20 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Bonds Section (known+) */}
-          {card.knowledgeLevel !== 'stranger' && card.knowledgeLevel !== 'recognised' && card.topBonds && card.topBonds.length > 0 && (
+          {hasKnowledge(card.knowledgeLevel, 'known') && card.topBonds && card.topBonds.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Bonds
               </h2>
               <div className="space-y-2">
                 {card.topBonds.map((bond, idx) => (
-                  <p key={idx} className="text-amber-200/70 text-sm">
-                    <span className="text-amber-300/80">{bond.name}</span>
+                  <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <span style={{ color: 'var(--accent-gold)' }}>{bond.name}</span>
                     {' — '}
-                    <span className="text-amber-200/60">
+                    <span style={{ color: 'var(--text-secondary)' }}>
                       {bond.strengthWord} {bond.sentiment === 'positive' ? '(favored)' : '(opposed)'}
                     </span>
                   </p>
@@ -209,11 +234,11 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Traits Section (intimate+) */}
-          {(card.knowledgeLevel === 'intimate' || card.knowledgeLevel === 'transparent') && card.allTraits && card.allTraits.length > 0 && (
+          {hasKnowledge(card.knowledgeLevel, 'intimate') && card.allTraits && card.allTraits.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Traits
               </h2>
@@ -221,7 +246,8 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                 {card.allTraits.map((trait, idx) => (
                   <span
                     key={idx}
-                    className="px-2.5 py-1 bg-amber-900/30 border border-amber-700/40 rounded text-amber-200/80 text-xs"
+                    className="px-2.5 py-1 border rounded text-xs"
+                    style={{ backgroundColor: 'var(--border-subtle)', borderColor: 'var(--border-medium)', color: 'var(--text-secondary)' }}
                   >
                     {trait}
                   </span>
@@ -231,15 +257,15 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Backstory Section (intimate+) */}
-          {(card.knowledgeLevel === 'intimate' || card.knowledgeLevel === 'transparent') && card.backstoryParagraph1 && (
+          {hasKnowledge(card.knowledgeLevel, 'intimate') && card.backstoryParagraph1 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Origin
               </h2>
-              <p className="text-amber-200/70 text-sm leading-relaxed">{card.backstoryParagraph1}</p>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{card.backstoryParagraph1}</p>
             </section>
           )}
 
@@ -247,12 +273,12 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           {card.knowledgeLevel === 'transparent' && profile?.fullBackstory && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Full Account
               </h2>
-              <div className="text-amber-200/70 text-sm space-y-3">
+              <div className="text-sm space-y-3" style={{ color: 'var(--text-secondary)' }}>
                 {profile.fullBackstory.split('\n\n').map((para, idx) => (
                   <p key={idx} className="leading-relaxed">
                     {para}
@@ -263,23 +289,25 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
 
           {/* Disposition Section (intimate+) */}
-          {(card.knowledgeLevel === 'intimate' || card.knowledgeLevel === 'transparent') && card.cooperationStrategy && (
+          {hasKnowledge(card.knowledgeLevel, 'intimate') && card.cooperationStrategy && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Disposition
               </h2>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-amber-200/60 text-sm">Strategy</span>
-                  <span className="text-amber-300/80 text-sm">{formatStrategy(card.cooperationStrategy)}</span>
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Strategy</span>
+                  <Tooltip label="Cooperation Strategy" desc="How this agent behaves in prisoner's dilemma situations. Affects trust, betrayal, and reputation.">
+                    <span className="text-sm underline decoration-dotted cursor-help" style={{ color: 'var(--accent-gold)' }}>{formatStrategy(card.cooperationStrategy)}</span>
+                  </Tooltip>
                 </div>
                 {card.reputationWord && (
                   <div className="flex justify-between">
-                    <span className="text-amber-200/60 text-sm">Reputation</span>
-                    <span className="text-amber-300/80 text-sm capitalize">{card.reputationWord}</span>
+                    <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Reputation</span>
+                    <span className="text-sm capitalize" style={{ color: 'var(--accent-gold)' }}>{card.reputationWord}</span>
                   </div>
                 )}
               </div>
@@ -290,17 +318,17 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           {card.knowledgeLevel === 'transparent' && profile?.historyTimeline && profile.historyTimeline.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 History
               </h2>
               <div className="space-y-2">
                 {profile.historyTimeline.map((entry, idx) => (
-                  <div key={idx} className="text-amber-200/70 text-xs">
-                    <span className="text-amber-400/60">t{entry.tick}</span>
+                  <div key={idx} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <span style={{ color: 'var(--accent-gold)' }}>t{entry.tick}</span>
                     {' — '}
-                    <span className="text-amber-200/60">{entry.event}</span>
+                    <span style={{ color: 'var(--text-tertiary)' }}>{entry.event}</span>
                   </div>
                 ))}
               </div>
@@ -311,23 +339,23 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           {card.knowledgeLevel === 'transparent' && profile?.dispositionRecord && profile.dispositionRecord.length > 0 && (
             <section>
               <h2
-                className="text-amber-100 font-bold mb-3"
-                style={{ fontFamily: 'Cinzel, serif' }}
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
               >
                 Interaction Record
               </h2>
               <div className="space-y-2">
                 {profile.dispositionRecord.map((record, idx) => (
-                  <div key={idx} className="text-amber-200/70 text-xs p-2 bg-stone-800/40 rounded">
+                  <div key={idx} className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>
                     <div className="flex justify-between mb-1">
-                      <span className="text-amber-400/60">t{record.tick}</span>
-                      <span className="capitalize text-amber-300/70">{record.context}</span>
+                      <span style={{ color: 'var(--accent-gold)' }}>t{record.tick}</span>
+                      <span className="capitalize" style={{ color: 'var(--accent-gold)' }}>{record.context}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-amber-200/60">
+                      <span style={{ color: 'var(--text-secondary)' }}>
                         {record.actorMove} → {record.targetMove}
                       </span>
-                      <span className="text-amber-200/50 capitalize">{record.stakes}</span>
+                      <span style={{ color: 'var(--text-tertiary)', textTransform: 'capitalize' }}>{record.stakes}</span>
                     </div>
                   </div>
                 ))}
@@ -337,10 +365,13 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
         </div>
 
         {/* Close Button */}
-        <div className="border-t border-amber-900/30 p-4 flex justify-end">
+        <div className="border-t p-4 flex justify-end" style={{ borderColor: 'var(--border-subtle)' }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-amber-900/40 hover:bg-amber-900/60 text-amber-200 rounded text-sm transition-colors"
+            className="px-4 py-2 rounded text-sm transition-colors"
+            style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--border-subtle)')}
             aria-label={`Close profile for ${card.name}`}
           >
             Close
@@ -351,25 +382,3 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
   );
 }
 
-/**
- * Get a color for a sphere name (for visual indicators)
- */
-function getSphereColor(sphereName: string): string {
-  const colors: Record<string, string> = {
-    // Foundation spheres
-    chaos: '#ef4444',
-    order: '#3b82f6',
-    light: '#fbbf24',
-    darkness: '#1f2937',
-    // Creation spheres
-    force: '#dc2626',
-    matter: '#78350f',
-    energy: '#ea580c',
-    life: '#22c55e',
-    mind: '#6366f1',
-    spirit: '#d946ef',
-    time: '#f97316',
-    entropy: '#64748b',
-  };
-  return colors[sphereName.toLowerCase()] ?? '#a78bfa';
-}

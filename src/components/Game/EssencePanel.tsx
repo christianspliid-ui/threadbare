@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { SPHERE_NAMES, type SphereName } from '../../types';
 import type { EssencePool } from '../../types/influence';
 import { SphereIcon } from '../shared/SphereIcon';
@@ -14,46 +15,46 @@ interface EssencePanelProps {
 export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere }: EssencePanelProps) {
   const totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
 
-  // Sort: primary first, secondary second, then by amount descending
-  const sorted = [...SPHERE_NAMES].sort((a, b) => {
+  // RC-050: Memoize sphere sorting to avoid recomputing on every render
+  const sorted = useMemo(() => [...SPHERE_NAMES].sort((a, b) => {
     if (a === primarySphere) return -1;
     if (b === primarySphere) return 1;
     if (a === secondarySphere) return -1;
     if (b === secondarySphere) return 1;
     return pool[b] - pool[a];
-  });
+  }), [pool, primarySphere, secondarySphere]);
 
   return (
-    <div className="bg-stone-800/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
+    <div className="panel-glass space-y-2" style={{ padding: 'var(--panel-padding)' }}>
       <div className="flex items-center justify-between">
         <Tooltip id="ui.essence_panel">
           <h2
-            className="text-sm font-bold text-amber-100 uppercase tracking-widest"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="font-bold uppercase tracking-widest"
+            style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
           >
             Divine Essence
           </h2>
         </Tooltip>
-        <span className="text-xs text-amber-400/60 font-mono">
+        <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
           {totalEssence.toFixed(1)} / {(maxEssence * 8).toFixed(0)}
         </span>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-1">
         {sorted.map((sphere) => {
           const value = pool[sphere];
-          // Hide spheres with zero essence to reduce visual noise
-          if (value === 0) return null;
-
-          const pct = Math.min((value / maxEssence) * 100, 100);
           const isPrimary = sphere === primarySphere;
           const isSecondary = sphere === secondarySphere;
+          // IA-004: Hide spheres with negligible essence (< 0.5) unless primary/secondary
+          if (value < 0.5 && !isPrimary && !isSecondary) return null;
+
+          const pct = Math.min((value / maxEssence) * 100, 100);
           const color = getSphereColor(sphere);
 
           return (
             <div key={sphere} className="flex items-center gap-2">
               <SphereIcon sphereName={sphere} size="1rem" className="w-5 text-center" />
-              <div className="flex-1 h-3 rounded-full bg-stone-800/80 overflow-hidden relative">
+              <div className="flex-1 h-2 rounded-full overflow-hidden relative" style={{ backgroundColor: 'var(--bg-raised)' }}>
                 <div
                   className="h-full rounded-full transition-all duration-500 ease-out"
                   style={{
@@ -65,8 +66,9 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
                 />
               </div>
               <span
-                className="text-xs w-10 text-right font-mono"
+                className="w-10 text-right font-mono"
                 style={{
+                  fontSize: 'var(--text-xs)',
                   color,
                   // Primary: full opacity, secondary: reduced opacity, others: dim
                   opacity: isPrimary ? 1 : isSecondary ? 0.85 : 0.6,
@@ -75,10 +77,10 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
                 {value.toFixed(1)}
               </span>
               {isPrimary && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-800/40 text-amber-300/80">1st</span>
+                <span style={{ fontSize: 'var(--text-xs)', padding: '0.375rem 0.375rem', borderRadius: '0.25rem', backgroundColor: 'var(--accent-gold-dim)', color: 'var(--text-primary)' }}>1st</span>
               )}
               {isSecondary && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-600/60 text-amber-400/60">2nd</span>
+                <span style={{ fontSize: 'var(--text-xs)', padding: '0.375rem 0.375rem', borderRadius: '0.25rem', backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>2nd</span>
               )}
             </div>
           );

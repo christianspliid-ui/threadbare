@@ -457,18 +457,26 @@ describe('culture-content', () => {
       expect(SUB_LOCATION_TEMPLATES.length).toBeGreaterThanOrEqual(15);
     });
 
+    it('has 27 sub-location templates with biome coverage', () => {
+      expect(SUB_LOCATION_TEMPLATES.length).toBe(27);
+    });
+
     it('each template has required fields', () => {
       for (const tmpl of SUB_LOCATION_TEMPLATES) {
         expect(tmpl.id).toBeTruthy();
         expect(typeof tmpl.id).toBe('string');
         expect(tmpl.name).toBeTruthy();
         expect(typeof tmpl.name).toBe('string');
+        expect(Array.isArray(tmpl.biomes)).toBe(true);
+        expect(tmpl.biomes.length).toBeGreaterThanOrEqual(1);
+        expect(tmpl.sphereAffinity).toBeTruthy();
+        expect(typeof tmpl.sphereAffinity).toBe('string');
+        expect(tmpl.flavorText).toBeTruthy();
+        expect(typeof tmpl.flavorText).toBe('string');
         expect(Array.isArray(tmpl.grantedByTags)).toBe(true);
         expect(tmpl.grantedByTags.length).toBeGreaterThanOrEqual(1);
         expect(Array.isArray(tmpl.culturalVariantDescriptors)).toBe(true);
         expect(tmpl.culturalVariantDescriptors.length).toBeGreaterThanOrEqual(2);
-        expect(tmpl.description).toBeTruthy();
-        expect(typeof tmpl.description).toBe('string');
       }
     });
 
@@ -493,6 +501,84 @@ describe('culture-content', () => {
           expect(tag.length).toBeGreaterThan(0);
         }
       }
+    });
+
+    it('biomes are valid terrain types', () => {
+      const validTerrainTypes = new Set([
+        'ocean', 'coastal_shallows', 'lake', 'river',
+        'grassland', 'farmland', 'savanna', 'steppe',
+        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
+        'swamp', 'bog',
+        'hills', 'mountains', 'plateau', 'badlands',
+        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'desert', 'tundra', 'glacier', 'volcanic',
+        'broken_lands', 'great_home_trees',
+      ]);
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        for (const biome of tmpl.biomes) {
+          expect(validTerrainTypes.has(biome as any)).toBe(true);
+        }
+      }
+    });
+
+    it('sphere affinities are valid creation spheres', () => {
+      const validSpheres = new Set(['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy']);
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        expect(validSpheres.has(tmpl.sphereAffinity as any)).toBe(true);
+      }
+    });
+
+    it('each biome has at least 1 template', () => {
+      const biomeCoverage: Record<string, number> = {};
+      const allTerrainTypes = [
+        'ocean', 'coastal_shallows', 'lake', 'river',
+        'grassland', 'farmland', 'savanna', 'steppe',
+        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
+        'swamp', 'bog',
+        'hills', 'mountains', 'plateau', 'badlands',
+        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'desert', 'tundra', 'glacier', 'volcanic', 'broken_lands',
+      ];
+
+      for (const biome of allTerrainTypes) {
+        biomeCoverage[biome] = 0;
+      }
+
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        for (const biome of tmpl.biomes) {
+          biomeCoverage[biome]++;
+        }
+      }
+
+      for (const biome of allTerrainTypes) {
+        expect(biomeCoverage[biome]).toBeGreaterThanOrEqual(1);
+      }
+    });
+
+    it('most biomes have at least 2-3 templates', () => {
+      const biomeCoverage: Record<string, number> = {};
+      const allTerrainTypes = [
+        'ocean', 'coastal_shallows', 'lake', 'river',
+        'grassland', 'farmland', 'savanna', 'steppe',
+        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
+        'swamp', 'bog',
+        'hills', 'mountains', 'plateau', 'badlands',
+        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'desert', 'tundra', 'glacier', 'volcanic', 'broken_lands',
+      ];
+
+      for (const biome of allTerrainTypes) {
+        biomeCoverage[biome] = 0;
+      }
+
+      for (const tmpl of SUB_LOCATION_TEMPLATES) {
+        for (const biome of tmpl.biomes) {
+          biomeCoverage[biome]++;
+        }
+      }
+
+      const underserved = Object.entries(biomeCoverage).filter(([_, count]) => count < 2);
+      expect(underserved.length).toBeLessThanOrEqual(3);
     });
   });
 
@@ -813,9 +899,9 @@ describe('culture-content', () => {
 
     describe('sub-location templates', () => {
       for (const template of SUB_LOCATION_TEMPLATES) {
-        it(`"${template.name}" has valid description length`, () => {
-          expect(typeof template.description).toBe('string');
-          expect(template.description.length).toBeGreaterThanOrEqual(15);
+        it(`"${template.name}" has valid flavor text length`, () => {
+          expect(typeof template.flavorText).toBe('string');
+          expect(template.flavorText.length).toBeGreaterThanOrEqual(15);
         });
 
         it(`"${template.name}" has valid grantedByTags`, () => {

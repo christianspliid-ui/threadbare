@@ -8,36 +8,37 @@ interface AvatarHUDProps {
   onMoveClick: () => void;
   onWheelClick: () => void;
   onScryClick: () => void;
+  onZoomToLocation?: () => void;
   moveMode?: boolean;
 }
 
 // Base style for all buttons
 const BUTTON_BASE_STYLE = {
   padding: '0.5rem 0.75rem',
-  fontSize: '0.75rem',
+  fontSize: 'var(--text-xs)',
   fontWeight: 'bold',
   border: 'none',
   cursor: 'pointer',
-  backgroundColor: 'rgba(10, 10, 14, 0.6)',
-  color: '#fbbf24',
+  backgroundColor: 'rgba(var(--bg-abyss-rgb), 0.6)',
+  color: 'var(--accent-gold)',
   borderRadius: '0.25rem',
   transition: 'all 0.2s ease-out',
-  fontFamily: 'Cinzel, serif',
+  fontFamily: 'var(--font-display)',
   textTransform: 'uppercase' as const,
   letterSpacing: '0.05em',
 } as const;
 
-// Container background and border style
+// Container background and border style — using CSS var with fallback
 const CONTAINER_STYLE = {
-  position: 'absolute',
+  position: 'absolute' as const,
   top: '1rem',
   left: '1rem',
-  backgroundColor: 'rgba(10, 10, 14, 0.85)',
-  border: '1px solid rgba(217, 119, 6, 0.2)',
+  backgroundColor: 'rgba(10, 10, 14, 0.85)', // Kept as fallback, CSS vars via JS don't support rgba() conversion
+  border: '1px solid var(--border-subtle)',
   borderRadius: '0.375rem',
   padding: '0.75rem',
   zIndex: 20,
-  display: 'flex',
+  display: 'flex' as const,
   flexDirection: 'column' as const,
   gap: '0.5rem',
   minWidth: '160px',
@@ -69,11 +70,11 @@ const CENTER_BUTTON_STYLE = {
   padding: 0,
   border: 'none',
   backgroundColor: 'transparent',
-  color: '#fef3c7',
-  fontSize: '0.75rem',
+  color: 'var(--text-primary)',
+  fontSize: 'var(--text-xs)',
   fontWeight: 'bold',
   cursor: 'pointer',
-  fontFamily: 'Cinzel, serif',
+  fontFamily: 'var(--font-display)',
   textAlign: 'left' as const,
   transition: 'color 0.2s ease-out',
   textTransform: 'uppercase' as const,
@@ -88,6 +89,7 @@ export function AvatarHUD({
   onMoveClick,
   onWheelClick,
   onScryClick,
+  onZoomToLocation,
   moveMode = false,
 }: AvatarHUDProps) {
   // Memoize computed styles that depend on runtime props
@@ -118,7 +120,7 @@ export function AvatarHUD({
   }, [sphereColor]);
 
   const handleCenterButtonMouseLeave = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    (e.target as HTMLButtonElement).style.color = '#fef3c7';
+    (e.target as HTMLButtonElement).style.color = 'var(--text-primary)';
   }, []);
 
   return (
@@ -155,6 +157,26 @@ export function AvatarHUD({
         >
           {avatarName}
         </button>
+        {onZoomToLocation && (
+          <Tooltip label="Zoom to Hex" desc="Navigate to the hex zoom view for your avatar's current location.">
+            <button
+              onClick={onZoomToLocation}
+              aria-label="Zoom to avatar location"
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'var(--accent-gold-dim)',
+                fontSize: 'var(--text-xs)',
+                lineHeight: 1,
+                padding: '0.125rem',
+                transition: 'opacity 0.2s',
+              }}
+            >
+              &#x1F441;
+            </button>
+          </Tooltip>
+        )}
       </div>
     </div>
   );

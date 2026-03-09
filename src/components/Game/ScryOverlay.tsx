@@ -6,7 +6,7 @@
  * picker (position → agent → title), title proposal viewing, and position demotion.
  */
 
-import { useState, useCallback, memo } from 'react';
+import { useState, useCallback, useEffect, useMemo, memo } from 'react';
 import type { Title, TitleProposal, Position } from '../../types/scry';
 import { RANK_MIN_TIER } from '../../types/scry';
 import type { SphereName } from '../../types';
@@ -17,20 +17,10 @@ import {
   getReassignmentCost,
 } from '../../engine/scry';
 import type { TitleGenerationParams } from '../../engine/scry';
+import { getSphereColor } from '../../data/sphereIcons';
 import { useScryContext } from './contexts/ScryContext';
 
 type PickerMode = 'closed' | 'agent' | 'title';
-
-const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#d4a574',
-  matter: '#9d7b5a',
-  energy: '#e87534',
-  life: '#7cb342',
-  mind: '#9c27b0',
-  spirit: '#5c6bc0',
-  time: '#00bcd4',
-  entropy: '#b71c1c',
-};
 
 interface PositionSlotProps {
   position: Position;
@@ -49,13 +39,13 @@ const PositionSlot = memo(function PositionSlot(
         onClick={onSelect}
         className="w-full p-3 rounded-lg border transition-all hover:scale-105"
         style={{
-          backgroundColor: 'rgba(30, 24, 18, 0.6)',
-          borderColor: 'rgba(180, 160, 120, 0.15)',
+          backgroundColor: 'var(--bg-surface)',
+          borderColor: 'var(--border-subtle)',
         }}
       >
-        <div className="text-xs font-bold text-amber-200/70 mb-1">{rankLabel}</div>
-        <div className="text-sm text-amber-100">{position.archetype}</div>
-        <div className="text-xs text-amber-200/40 mt-1">Empty</div>
+        <div className="text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
+        <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Empty</div>
       </button>
     );
   }
@@ -63,24 +53,24 @@ const PositionSlot = memo(function PositionSlot(
   // Filled slot
   if (position.activeTitle) {
     const title = position.activeTitle;
-    const sphereColor = title ? SPHERE_COLORS[title.sphereAffinity as SphereName] || '#b4a078' : '#b4a078';
+    const sphereColor = title ? getSphereColor(title.sphereAffinity) : '#b4a078';
 
     return (
       <button
         onClick={onSelect}
         className="w-full p-3 rounded-lg border transition-all hover:scale-105 text-left"
         style={{
-          backgroundColor: 'rgba(30, 24, 18, 0.8)',
-          borderColor: 'rgba(180, 160, 120, 0.15)',
+          backgroundColor: 'var(--bg-raised)',
+          borderColor: 'var(--border-subtle)',
           borderLeftColor: sphereColor,
           borderLeftWidth: '4px',
         }}
       >
-        <div className="text-xs font-bold text-amber-200/70 mb-1">{rankLabel}</div>
-        <div className="text-sm text-amber-100">{position.archetype}</div>
+        <div className="text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
         {title && (
           <div>
-            <div className="text-xs text-amber-200/60 mt-1 line-clamp-2">{title.name}</div>
+            <div className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{title.name}</div>
           </div>
         )}
       </button>
@@ -101,15 +91,18 @@ const ContextMenu = memo(function ContextMenu({
 }: ContextMenuProps) {
   return (
     <div
-      className="absolute bg-stone-800 border rounded-lg shadow-lg z-40"
-      style={{ borderColor: 'rgba(180, 160, 120, 0.2)' }}
+      className="absolute border rounded-lg shadow-lg z-40"
+      style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-subtle)' }}
     >
       <button
         onClick={() => {
           onDemote();
           onClose();
         }}
-        className="block w-full text-left px-3 py-2 text-sm text-amber-200 hover:bg-stone-700/50 transition"
+        className="block w-full text-left px-3 py-2 text-sm transition"
+        style={{ color: 'var(--text-primary)', backgroundColor: 'transparent' }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
       >
         Demote
       </button>
@@ -135,31 +128,32 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
   const eligible = agents.filter(a => a.tier >= minTier);
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60">
+    <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
       <div
-        className="bg-stone-900 border rounded-xl p-6 max-w-md w-full mx-4"
-        style={{ borderColor: 'rgba(180, 160, 120, 0.2)' }}
+        className="border rounded-xl p-6 max-w-md w-full mx-4"
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-amber-100">Choose Agent</h3>
+          <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Choose Agent</h3>
           <button
             onClick={onClose}
             aria-label="Close Agent Picker"
             title="Close (Esc)"
-            className="text-amber-200/50 hover:text-amber-200 text-xl"
+            className="text-xl"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             ✕
           </button>
         </div>
-        <p className="text-xs text-amber-200/50 mb-4">
-          Position: <span className="text-amber-100">{position.archetype}</span>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-tertiary)' }}>
+          Position: <span style={{ color: 'var(--text-primary)' }}>{position.archetype}</span>
           <br />
-          Minimum tier: <span className="text-amber-100">{minTier}</span>
+          Minimum tier: <span style={{ color: 'var(--text-primary)' }}>{minTier}</span>
         </p>
 
         {eligible.length === 0 ? (
           <div className="text-center py-4">
-            <p className="text-sm text-amber-200/50">No eligible agents available.</p>
+            <p className="text-sm" style={{ color: 'var(--text-tertiary)' }}>No eligible agents available.</p>
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
@@ -167,17 +161,19 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
               <button
                 key={agent.id}
                 onClick={() => onSelectAgent(agent)}
-                className="w-full text-left p-3 rounded-lg border transition-all hover:bg-stone-700/50"
+                className="w-full text-left p-3 rounded-lg border transition-all"
                 style={{
-                  backgroundColor: 'rgba(30, 24, 18, 0.6)',
-                  borderColor: 'rgba(180, 160, 120, 0.15)',
+                  backgroundColor: 'var(--bg-raised)',
+                  borderColor: 'var(--border-subtle)',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-raised)')}
               >
-                <div className="text-sm font-bold text-amber-100">{agent.name}</div>
-                <div className="text-xs text-amber-200/60 mt-0.5">
+                <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{agent.name}</div>
+                <div className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
                   {agent.tierName} • {agent.locationName}
                 </div>
-                <div className="text-xs text-amber-200/40 mt-1">
+                <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
                   Top domain: <span className="capitalize">{agent.id.split('.')[0]}</span>
                 </div>
               </button>
@@ -277,32 +273,33 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
   const canAfford = essencePool[primarySphere] >= reassignmentCost;
 
   return (
-    <div className="absolute inset-0 z-40 flex items-center justify-center bg-black/60">
+    <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
       <div
-        className="bg-stone-900 border rounded-xl p-6 max-w-2xl w-full mx-4"
-        style={{ borderColor: 'rgba(180, 160, 120, 0.2)' }}
+        className="border rounded-xl p-6 max-w-2xl w-full mx-4"
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-amber-100">Select Title for {agent.name}</h3>
+          <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Select Title for {agent.name}</h3>
           <button
             onClick={onBack}
             aria-label="Back to Agent Picker"
             title="Back"
-            className="text-amber-200/50 hover:text-amber-200 text-xl"
+            className="text-xl"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             ←
           </button>
         </div>
 
-        <div className="mb-4 text-xs text-amber-200/50">
-          Cost: <span className="text-amber-100">{Math.ceil(reassignmentCost)}</span>{' '}
+        <div className="mb-4 text-xs" style={{ color: 'var(--text-tertiary)' }}>
+          Cost: <span style={{ color: 'var(--text-primary)' }}>{Math.ceil(reassignmentCost)}</span>{' '}
           <span className="capitalize">{primarySphere}</span> essence
         </div>
 
         <div className="grid grid-cols-2 gap-3 max-h-96 overflow-y-auto">
           {proposals.map((proposal, idx) => {
             const title = proposal.title;
-            const sphereColor = SPHERE_COLORS[title.sphereAffinity];
+            const sphereColor = getSphereColor(title.sphereAffinity);
 
             return (
               <button
@@ -313,7 +310,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
                   !canAfford ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105'
                 }`}
                 style={{
-                  backgroundColor: 'rgba(30, 24, 18, 0.6)',
+                  backgroundColor: 'var(--bg-raised)',
                   borderColor: sphereColor + '40',
                 }}
               >
@@ -323,14 +320,14 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
                 >
                   {title.name}
                 </div>
-                <div className="text-xs text-amber-200/60 mb-1">{proposal.rationale}</div>
+                <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>{proposal.rationale}</div>
                 {title.bonuses.length > 0 && (
-                  <div className="text-xs text-green-400/80 mb-1">
+                  <div className="text-xs mb-1" style={{ color: 'var(--positive)' }}>
                     {title.bonuses.length} bonus{title.bonuses.length > 1 ? 'es' : ''}
                   </div>
                 )}
                 {title.weaknesses.length > 0 && (
-                  <div className="text-xs text-red-400/80">
+                  <div className="text-xs" style={{ color: 'var(--negative)' }}>
                     {title.weaknesses.length} weakness{title.weaknesses.length > 1 ? 'es' : ''}
                   </div>
                 )}
@@ -340,7 +337,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
         </div>
 
         {!canAfford && (
-          <div className="mt-4 text-xs text-red-400/70">
+          <div className="mt-4 text-xs" style={{ color: 'var(--negative)' }}>
             Insufficient {primarySphere} essence. Required: {Math.ceil(reassignmentCost)}, Available:{' '}
             {Math.floor(essencePool[primarySphere])}
           </div>
@@ -369,6 +366,37 @@ export function ScryOverlay() {
   );
   const [titleProposals, setTitleProposals] = useState<TitleProposal[] | null>(null);
   const [contextMenuPositionId, setContextMenuPositionId] = useState<string | null>(null);
+
+  // IX-005: Track retinue agent IDs to detect when assigned agents leave
+  const retinueIds = useMemo(() => new Set(retinueAgents.map(a => a.id)), [retinueAgents]);
+
+  // IX-005: Validate that all assigned agents still exist in retinue
+  useEffect(() => {
+    for (const pos of scryState.positions) {
+      if (pos.assignedAgentId && !retinueIds.has(pos.assignedAgentId)) {
+        // Agent no longer in retinue — auto-demote
+        onDemote(pos.id);
+      }
+    }
+  }, [retinueIds, scryState.positions, onDemote]);
+
+  // IX-012: Handle Escape key to close overlay
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (pickerMode !== 'closed') {
+          setPickerMode('closed');
+          setSelectedPositionId(null);
+          setSelectedAgentForAssignment(null);
+          setTitleProposals(null);
+        } else {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [pickerMode, onClose]);
 
   const structDef = getCourtStructureDefinition(scryState.courtStructureType);
   if (!structDef) {
@@ -456,31 +484,41 @@ export function ScryOverlay() {
     ? RANK_MIN_TIER[scryState.positions.find(p => p.id === selectedPositionId)?.rank || 'outer']
     : 1;
 
+  // IX-012: Backdrop click handler — close overlay when clicking outside content
+  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if clicking the backdrop itself, not child content
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  }, [onClose]);
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto"
       style={{
-        backgroundColor: 'rgba(10, 8, 6, 0.95)',
+        backgroundColor: 'rgba(10, 10, 14, 0.95)',
         backdropFilter: 'blur(4px)',
         pointerEvents: 'auto',
       }}
+      onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-4xl mx-4 py-8">
+      <div className="w-full max-w-4xl mx-4 py-8" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6 px-6">
           <div>
-            <div className="text-xs text-amber-200/50 uppercase tracking-widest mb-1">✦</div>
-            <h1 className="text-3xl font-bold text-amber-100" style={{ fontFamily: 'Cinzel, serif' }}>
+            <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--text-tertiary)' }}>✦</div>
+            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
               The Scry
             </h1>
-            <p className="text-sm text-amber-200/60 mt-1">{structDef.name}</p>
-            <p className="text-xs text-amber-200/40 italic mt-1">{structDef.flavorText}</p>
+            <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{structDef.name}</p>
+            <p className="text-xs italic mt-1" style={{ color: 'var(--text-tertiary)' }}>{structDef.flavorText}</p>
           </div>
           <button
             onClick={onClose}
             aria-label="Close Ascendant Scry"
             title="Close (Esc)"
-            className="text-amber-200/50 hover:text-amber-200 transition text-2xl"
+            className="transition text-2xl"
+            style={{ color: 'var(--text-tertiary)' }}
           >
             ✕
           </button>
@@ -489,13 +527,13 @@ export function ScryOverlay() {
         <div
           className="rounded-lg border p-6 space-y-6"
           style={{
-            backgroundColor: 'rgba(20, 15, 10, 0.8)',
-            borderColor: 'rgba(180, 160, 120, 0.15)',
+            backgroundColor: 'var(--bg-raised)',
+            borderColor: 'var(--border-subtle)',
           }}
         >
           {/* Apex */}
           <div>
-            <h2 className="text-sm font-bold text-amber-200/70 uppercase tracking-wider mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
               Apex
             </h2>
             <div className="flex gap-4 justify-center">
@@ -515,7 +553,7 @@ export function ScryOverlay() {
 
           {/* Inner */}
           <div>
-            <h2 className="text-sm font-bold text-amber-200/70 uppercase tracking-wider mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
               Inner Circle
             </h2>
             <div className="grid grid-cols-3 gap-4">
@@ -535,7 +573,7 @@ export function ScryOverlay() {
 
           {/* Outer */}
           <div>
-            <h2 className="text-sm font-bold text-amber-200/70 uppercase tracking-wider mb-3">
+            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
               Outer Reaches
             </h2>
             <div className="grid grid-cols-6 gap-2">
@@ -556,18 +594,19 @@ export function ScryOverlay() {
           {/* Sacred Sites & Artifacts */}
           <div className="grid grid-cols-2 gap-6 mt-8">
             <div>
-              <h2 className="text-sm font-bold text-amber-200/70 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                 Sacred Sites
               </h2>
               <div className="space-y-2">
                 {scryState.sacredSites.slice(0, 2).map((_, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg text-center text-xs text-amber-200/50"
+                    className="p-3 rounded-lg text-center text-xs"
                     style={{
-                      backgroundColor: 'rgba(30, 24, 18, 0.4)',
-                      borderColor: 'rgba(180, 160, 120, 0.1)',
+                      backgroundColor: 'var(--bg-surface)',
+                      borderColor: 'var(--border-subtle)',
                       border: '1px solid',
+                      color: 'var(--text-tertiary)',
                     }}
                   >
                     ◇ Coming Soon
@@ -577,18 +616,19 @@ export function ScryOverlay() {
             </div>
 
             <div>
-              <h2 className="text-sm font-bold text-amber-200/70 uppercase tracking-wider mb-3">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                 Divine Artifacts
               </h2>
               <div className="space-y-2">
                 {scryState.artifacts.slice(0, 2).map((_, idx) => (
                   <div
                     key={idx}
-                    className="p-3 rounded-lg text-center text-xs text-amber-200/50"
+                    className="p-3 rounded-lg text-center text-xs"
                     style={{
-                      backgroundColor: 'rgba(30, 24, 18, 0.4)',
-                      borderColor: 'rgba(180, 160, 120, 0.1)',
+                      backgroundColor: 'var(--bg-surface)',
+                      borderColor: 'var(--border-subtle)',
                       border: '1px solid',
+                      color: 'var(--text-tertiary)',
                     }}
                   >
                     ◇ Coming Soon
@@ -600,11 +640,12 @@ export function ScryOverlay() {
 
           {/* Structure Bonus */}
           <div
-            className="p-3 rounded-lg text-xs text-amber-200/60 italic"
+            className="p-3 rounded-lg text-xs italic"
             style={{
-              backgroundColor: 'rgba(30, 24, 18, 0.4)',
-              borderColor: 'rgba(180, 160, 120, 0.1)',
+              backgroundColor: 'var(--bg-surface)',
+              borderColor: 'var(--border-subtle)',
               border: '1px solid',
+              color: 'var(--text-secondary)',
             }}
           >
             <span className="font-bold">Structure Bonus:</span> {structDef.structureBonus.description}

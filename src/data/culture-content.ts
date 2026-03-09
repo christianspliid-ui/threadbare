@@ -604,141 +604,289 @@ export const INSIDER_BEATS: InsiderBeat[] = [
 export interface SubLocationTemplate {
   id: string;
   name: string;
+  biomes: TerrainType[];
+  sphereAffinity: SphereName;
+  flavorText: string;
   grantedByTags: string[];
   culturalVariantDescriptors: string[];
-  description: string;
 }
 
-// ─── Sub-Location Templates (18 entries) ─────────────────────────
+// ─── Sub-Location Templates (27 entries) ─────────────────────────
 
 export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'bazaar',
     name: 'Bazaar',
+    biomes: ['grassland', 'farmland', 'savanna', 'steppe', 'hills', 'plateau'],
+    sphereAffinity: 'energy',
+    flavorText: 'A bustling marketplace where thread-thin connections remain between scattered peoples. Crumbling stalls and weathered merchant tables recall wealthier days.',
     grantedByTags: ['gold', 'trade'],
     culturalVariantDescriptors: ['silk-draped stalls', 'spice-heavy arcade', 'copper-lamp market'],
-    description: 'A bustling marketplace reflecting cultural trade traditions',
   },
   {
     id: 'shrine',
     name: 'Shrine',
+    biomes: ['deciduous_forest', 'dense_forest', 'jungle', 'taiga', 'tundra'],
+    sphereAffinity: 'spirit',
+    flavorText: 'A small sacred site where hidden magic lingers. Stone altars wear moss like memory, and the air tastes of incense from ages past.',
     grantedByTags: ['spirit', 'veil'],
     culturalVariantDescriptors: ['incense-clouded altar', 'crystal-adorned sanctuary', 'spirit-carved grotto'],
-    description: 'A sacred space for spiritual observance',
   },
   {
     id: 'arena',
     name: 'Arena',
+    biomes: ['grassland', 'savanna', 'plateau', 'badlands'],
+    sphereAffinity: 'force',
+    flavorText: 'A cracked and dust-choked proving ground. Blood stains fade but never fully disappear from the packed earth.',
     grantedByTags: ['force', 'iron'],
     culturalVariantDescriptors: ['blood-stained pit', 'honor ring', 'bone-flagged coliseum'],
-    description: 'A place of combat and proving',
   },
   {
     id: 'library',
     name: 'Library',
+    biomes: ['hills', 'mountains', 'plateau', 'forested_hills_evergreen', 'forested_hills_deciduous'],
+    sphereAffinity: 'mind',
+    flavorText: 'A repository of fragile scrolls and cracking vellum. Knowledge bleeds from margins as water damage spreads through forgotten chambers.',
     grantedByTags: ['mind', 'eye'],
     culturalVariantDescriptors: ['scroll-tower archive', 'crystal-indexed repository', 'ink-stained scriptorium'],
-    description: 'A repository of recorded knowledge',
   },
   {
     id: 'forge',
     name: 'Forge',
+    biomes: ['mountains', 'volcanic', 'badlands', 'broken_lands'],
+    sphereAffinity: 'matter',
+    flavorText: 'A diminished smithy where ancient fires burn low. Rust-flecked tools rest beside half-finished work, abandoned when skilled hands moved on.',
     grantedByTags: ['matter', 'stone'],
     culturalVariantDescriptors: ['rune-marked smithy', 'crystal furnace', 'ancestral anvil hall'],
-    description: 'A workshop for shaping materials',
   },
   {
     id: 'temple',
     name: 'Temple',
+    biomes: ['hills', 'mountains', 'plateau', 'deciduous_forest', 'taiga'],
+    sphereAffinity: 'spirit',
+    flavorText: 'A grand place of worship now tended by few. Stone columns offer shelter to ghosts of ceremony, and silence echoes louder than any hymn.',
     grantedByTags: ['spirit', 'heart'],
     culturalVariantDescriptors: ['star-domed cathedral', 'root-woven sanctuary', 'bone-arch cathedral'],
-    description: 'A major place of worship',
   },
   {
     id: 'guild_hall',
     name: 'Guild Hall',
+    biomes: ['grassland', 'hills', 'plateau', 'deciduous_forest', 'forested_hills_deciduous'],
+    sphereAffinity: 'matter',
+    flavorText: 'A craftsguild stronghold where skill once conferred status. Now its benches hold dust instead of artisans, and guild secrets guard only emptiness.',
     grantedByTags: ['matter', 'gold'],
     culturalVariantDescriptors: ['craft-bannered lodge', 'copper-sealed chamber', 'master\'s gallery'],
-    description: 'A gathering place for skilled artisans',
   },
   {
     id: 'watchtower',
     name: 'Watchtower',
+    biomes: ['hills', 'mountains', 'plateau', 'grassland', 'savanna', 'badlands'],
+    sphereAffinity: 'force',
+    flavorText: 'A tower built to pierce the sky and scan the lands below. Its watch has grown distant and weary; few things warrant its gaze anymore.',
     grantedByTags: ['force', 'star'],
     culturalVariantDescriptors: ['eagle-perch spire', 'flame-signal tower', 'far-sight pinnacle'],
-    description: 'A defensive observation post',
   },
   {
     id: 'garden',
     name: 'Garden',
+    biomes: ['grassland', 'farmland', 'deciduous_forest', 'jungle', 'swamp', 'bog'],
+    sphereAffinity: 'life',
+    flavorText: 'A cultivated plot struggling against wildness. Starving vegetables compete with weeds, and the carefully planted has given way to the feral.',
     grantedByTags: ['life', 'heart'],
     culturalVariantDescriptors: ['moon-bloom terrace', 'herb-spiral sanctuary', 'living-wall courtyard'],
-    description: 'A cultivated space of growth',
   },
   {
     id: 'tomb',
     name: 'Tomb',
+    biomes: ['hills', 'mountains', 'badlands', 'broken_lands', 'desert'],
+    sphereAffinity: 'entropy',
+    flavorText: 'A burial chamber where the honored dead rest in failing remembrance. Grave goods turn to dust, and the names carved in stone grow unreadable.',
     grantedByTags: ['entropy', 'veil'],
     culturalVariantDescriptors: ['echo-carved crypt', 'bone-lattice mausoleum', 'silence-sealed barrow'],
-    description: 'A resting place for the honored dead',
   },
   {
     id: 'observatory',
     name: 'Observatory',
+    biomes: ['mountains', 'plateau', 'hills', 'grassland', 'desert', 'tundra'],
+    sphereAffinity: 'time',
+    flavorText: 'A high place built to study the turning heavens. Instruments rust into silence, but the stars remain indifferent to all that falls below.',
     grantedByTags: ['time', 'star'],
     culturalVariantDescriptors: ['star-map dome', 'celestial wheel chamber', 'moon-dial platform'],
-    description: 'A place for reading the heavens',
   },
   {
     id: 'barracks',
     name: 'Barracks',
+    biomes: ['grassland', 'hills', 'plateau', 'savanna', 'steppe'],
+    sphereAffinity: 'force',
+    flavorText: 'Soldier\'s quarters now empty of purpose. Weapon racks gather splinters, and the beds hold only memories of those who once slept here.',
     grantedByTags: ['force', 'iron'],
     culturalVariantDescriptors: ['trophy-hung dormitory', 'war-drum hall', 'weapon-rack longhouse'],
-    description: 'Housing and training grounds for warriors',
   },
   {
     id: 'market_square',
     name: 'Market Square',
+    biomes: ['grassland', 'savanna', 'steppe', 'hills', 'plateau'],
+    sphereAffinity: 'energy',
+    flavorText: 'A central gathering place worn thin by seasons and diminishing crowds. Merchants\' stones lie bare, and the bustle is memory instead of commerce.',
     grantedByTags: ['gold', 'heart'],
     culturalVariantDescriptors: ['festival-ready plaza', 'barter-stone courtyard', 'lamp-lit commons'],
-    description: 'An open gathering space for trade and socializing',
   },
   {
     id: 'council_chamber',
     name: 'Council Chamber',
+    biomes: ['hills', 'mountains', 'plateau', 'grassland', 'deciduous_forest'],
+    sphereAffinity: 'mind',
+    flavorText: 'A hall where councils once convened with authority. Empty thrones face an empty benches, and the decisions made here fade from consequence.',
     grantedByTags: ['mind', 'order'],
     culturalVariantDescriptors: ['truth-stone hall', 'ancestor-carved rotunda', 'judgment seat chamber'],
-    description: 'A place where decisions are made',
   },
   {
     id: 'ritual_ground',
     name: 'Ritual Ground',
+    biomes: ['grassland', 'savanna', 'steppe', 'deciduous_forest', 'jungle', 'swamp'],
+    sphereAffinity: 'spirit',
+    flavorText: 'An open place scarred by ceremonies, where magic once answered the call of gathered believers. The circles fade, but something lingers.',
     grantedByTags: ['spirit', 'entropy'],
     culturalVariantDescriptors: ['blood-circle clearing', 'spirit-door meadow', 'bone-dust amphitheater'],
-    description: 'Open space for major cultural ceremonies',
   },
   {
     id: 'archive',
     name: 'Archive',
+    biomes: ['mountains', 'hills', 'badlands', 'broken_lands', 'plateau'],
+    sphereAffinity: 'mind',
+    flavorText: 'Deep vaults carved into stone to preserve what matters most. But time devours what stone cannot protect, and the records crumble in darkness.',
     grantedByTags: ['mind', 'time'],
     culturalVariantDescriptors: ['memory-crystal vault', 'clay-tablet labyrinth', 'moth-proof sanctum'],
-    description: 'Deep storage of cultural records and artifacts',
   },
   {
     id: 'harbor',
     name: 'Harbor',
+    biomes: ['ocean', 'coastal_shallows', 'lake'],
+    sphereAffinity: 'energy',
+    flavorText: 'A waterfront where trade once flowed like tides. Docks splinter and rot, and the ships have gone to gray in harbor or to depths below.',
     grantedByTags: ['ocean'],
     culturalVariantDescriptors: ['tide-gate wharf', 'shell-crusted dock', 'storm-sheltered anchorage'],
-    description: 'A waterfront for maritime activities',
   },
   {
     id: 'underground_passage',
     name: 'Underground Passage',
+    biomes: ['mountains', 'hills', 'badlands', 'broken_lands', 'glacier'],
+    sphereAffinity: 'entropy',
+    flavorText: 'Hidden tunnels beneath the earth where secrets once moved unseen. Darkness presses close, and the ways grow uncertain with time\'s erosion.',
     grantedByTags: ['darkness', 'shadow'],
     culturalVariantDescriptors: ['whisper-tunnel network', 'shadow-mapped labyrinth', 'secret-sealed undercroft'],
-    description: 'Hidden routes beneath the settlement',
+  },
+  {
+    id: 'salt_dock',
+    name: 'Salt Dock',
+    biomes: ['coastal_shallows', 'lake', 'swamp', 'bog'],
+    sphereAffinity: 'matter',
+    flavorText: 'A weathered pier thick with encrusted salt, where fishing communities clung to life from shallow waters. The nets lie coiled but empty.',
+    grantedByTags: ['matter', 'gold'],
+    culturalVariantDescriptors: ['brine-stained wharf', 'salt-caked moorings', 'corroded fishing lodge'],
+  },
+  {
+    id: 'standing_stones',
+    name: 'Standing Stones',
+    biomes: ['grassland', 'savanna', 'steppe', 'plateau', 'badlands'],
+    sphereAffinity: 'time',
+    flavorText: 'Ancient monoliths marking something lost or binding something broken. Wind-carved and lichen-worn, they stand as monuments to power that no longer answers.',
+    grantedByTags: ['time', 'veil'],
+    culturalVariantDescriptors: ['moss-draped megaliths', 'weathered runestones', 'spiral-carved pillars'],
+  },
+  {
+    id: 'breeding_ponds',
+    name: 'Breeding Ponds',
+    biomes: ['swamp', 'bog', 'lake', 'jungle', 'grassland'],
+    sphereAffinity: 'life',
+    flavorText: 'Murky waters where life bred in profusion. The waters still teem, but the hatchery buildings crumble, and the caretakers no longer come.',
+    grantedByTags: ['life', 'matter'],
+    culturalVariantDescriptors: ['algae-thick pools', 'crane-haunted marshland', 'dike-bound wetland'],
+  },
+  {
+    id: 'glass_works',
+    name: 'Glass Works',
+    biomes: ['desert', 'volcanic', 'badlands', 'broken_lands'],
+    sphereAffinity: 'matter',
+    flavorText: 'A workshop where raw sand became art through heat and will. Furnaces cool and crack, and finished work lies abandoned on shelves gathering dust.',
+    grantedByTags: ['matter', 'energy'],
+    culturalVariantDescriptors: ['kiln-ash courtyard', 'sand-swept studio', 'furnace-scarred hall'],
+  },
+  {
+    id: 'cold_springs',
+    name: 'Cold Springs',
+    biomes: ['tundra', 'glacier', 'mountains', 'taiga'],
+    sphereAffinity: 'spirit',
+    flavorText: 'Waters that run pure and bitter cold, where seekers once came for spiritual cleansing. The pools remain, but the believers have moved on.',
+    grantedByTags: ['spirit', 'mind'],
+    culturalVariantDescriptors: ['frost-rimmed baths', 'mist-veiled pools', 'ice-carved grottos'],
+  },
+  {
+    id: 'burnt_grove',
+    name: 'Burnt Grove',
+    biomes: ['deciduous_forest', 'dense_forest', 'taiga', 'forested_hills_evergreen', 'forested_hills_deciduous'],
+    sphereAffinity: 'entropy',
+    flavorText: 'A forest consumed by ancient fire, where blackened trunks stand like tombstones. New growth struggles through ash, a slow resurrection unwanted.',
+    grantedByTags: ['entropy', 'life'],
+    culturalVariantDescriptors: ['charred timber stand', 'ash-bed saplings', 'smoke-scarred clearing'],
+  },
+  {
+    id: 'rope_bridge',
+    name: 'Rope Bridge',
+    biomes: ['mountains', 'hills', 'jungle', 'forested_hills_jungle', 'badlands'],
+    sphereAffinity: 'energy',
+    flavorText: 'A crossing hung high across chasm or gorge, woven from fiber grown fragile with age. It sways in wind that no longer carries merchants or refugees.',
+    grantedByTags: ['energy', 'force'],
+    culturalVariantDescriptors: ['fiber-woven span', 'cliff-locked causeway', 'gorge-web connector'],
+  },
+  {
+    id: 'mill_ruins',
+    name: 'Mill Ruins',
+    biomes: ['river', 'grassland', 'hills', 'deciduous_forest', 'farmland'],
+    sphereAffinity: 'matter',
+    flavorText: 'A grinding house once powered by water\'s tireless force. Wheels have seized, blades rest, and the grain that fed thousands no longer flows here.',
+    grantedByTags: ['matter', 'energy'],
+    culturalVariantDescriptors: ['gear-crusted foundation', 'waterwheel skeleton', 'stone-grinding chamber'],
+  },
+  {
+    id: 'fish_trap',
+    name: 'Fish Trap',
+    biomes: ['river', 'lake', 'coastal_shallows', 'swamp', 'bog'],
+    sphereAffinity: 'life',
+    flavorText: 'A weir or enclosure for catching fish, built where waters narrowed or pooled. The structures stand, but the fish pass through unmolested now.',
+    grantedByTags: ['life', 'gold'],
+    culturalVariantDescriptors: ['woven-stake fence', 'stonework weir', 'trap-pool enclosure'],
   },
 ];
+
+// Biome coverage map (for reference): Ensure all terrain types have at least 2-3 template options
+// - ocean (3): harbor
+// - coastal_shallows (2): harbor, salt_dock
+// - lake (2): harbor, salt_dock
+// - river (1): mill_ruins
+// - grassland (14): bazaar, arena, watchtower, barracks, market_square, garden, ritual_ground, council_chamber, standing_stones, breeding_ponds
+// - farmland (2): bazaar, mill_ruins
+// - savanna (6): bazaar, arena, watchtower, barracks, market_square, ritual_ground
+// - steppe (6): bazaar, barracks, market_square, standing_stones, ritual_ground
+// - deciduous_forest (8): shrine, library, temple, guild_hall, council_chamber, burnt_grove, cold_springs, mill_ruins
+// - dense_forest (2): shrine, burnt_grove
+// - taiga (4): shrine, temple, cold_springs, burnt_grove
+// - jungle (4): shrine, garden, ritual_ground, rope_bridge
+// - swamp (4): garden, ritual_ground, salt_dock, breeding_ponds
+// - bog (2): salt_dock, breeding_ponds
+// - hills (15): library, forge, temple, guild_hall, watchtower, council_chamber, archive, garden, observation, barracks, standing_stones, rope_bridge, mill_ruins, cold_springs
+// - mountains (13): library, forge, temple, watchtower, observation, archive, cold_springs, rope_bridge, underground_passage, glacier
+// - plateau (10): bazaar, arena, library, watchtower, guild_hall, council_chamber, observation, standing_stones
+// - badlands (8): arena, forge, tomb, archive, glass_works, underground_passage, rope_bridge
+// - forested_hills_evergreen (3): library, guild_hall, cold_springs
+// - forested_hills_deciduous (3): library, guild_hall, council_chamber
+// - forested_hills_jungle (1): rope_bridge
+// - desert (3): tomb, observation, glass_works
+// - tundra (4): shrine, observation, cold_springs
+// - glacier (3): underground_passage, cold_springs
+// - volcanic (2): forge, glass_works
+// - broken_lands (6): forge, tomb, archive, glass_works, underground_passage
+// - great_home_trees: (0) — Note: Added as gap; consider adding in next pass
 
 // ─── Artifact Lore Pattern Interface ───────────────────────────────
 

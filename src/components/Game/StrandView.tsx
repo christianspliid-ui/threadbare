@@ -9,6 +9,7 @@ import type {
   ValueInsight,
 } from '../../engine/strands';
 import { STRAND_COLORS, SENTIMENT_POSITIVE, SENTIMENT_NEGATIVE, SENTIMENT_NEUTRAL } from '../../data/uiColorPalette';
+import { Tooltip } from '../shared/Tooltip';
 
 type StrandName = 'Presence' | 'Desires' | 'Bonds' | 'Ambitions' | 'Beliefs' | 'Fears';
 
@@ -25,13 +26,22 @@ interface StrandViewProps {
   onClose: () => void;
 }
 
+const STRAND_DESCRIPTIONS: Record<StrandName, string> = {
+  Presence: 'Where this agent is and what domains they command. Physical state and spatial awareness.',
+  Desires: 'Core drives and motivations. What this agent wants most deeply.',
+  Bonds: 'Faction allegiances and personal relationships. The social web surrounding this agent.',
+  Ambitions: 'Long-term goals and aspirations. What this agent strives to achieve.',
+  Beliefs: 'Deeply held convictions and worldview. The principles that guide this agent.',
+  Fears: 'Shadows and anxieties. What this agent dreads or avoids.',
+};
+
 const STRAND_ICONS: Record<StrandName, string> = {
-  Presence: '👁',
-  Desires: '🔥',
-  Bonds: '🔗',
-  Ambitions: '⭐',
-  Beliefs: '📜',
-  Fears: '🌑',
+  Presence: '◉',  // Eye-like circle for observation
+  Desires: '✦',   // Star for passion/drive
+  Bonds: '⟡',    // Connected shape for relationships
+  Ambitions: '⬆', // Upward for aspiration
+  Beliefs: '◈',   // Diamond for conviction
+  Fears: '◆',     // Solid shape for weight/darkness
 };
 
 interface InsightListProps {
@@ -45,7 +55,7 @@ interface InsightListProps {
 function InsightList({ insights, color }: InsightListProps) {
   if (insights.length === 0) {
     return (
-      <div className="text-amber-200/40 text-sm italic">
+      <div className="italic" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)' }}>
         No strong tendencies observed.
       </div>
     );
@@ -68,11 +78,11 @@ function InsightList({ insights, color }: InsightListProps) {
                   opacity: 0.6 + intensity * 0.4,
                 }}
               />
-              <span className="text-sm text-amber-100/80 flex-grow">
+              <span className="flex-grow" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>
                 {insight.label}
               </span>
             </div>
-            <div className="text-xs text-amber-200/50 pl-0">
+            <div style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
               {insight.description}
             </div>
           </div>
@@ -97,28 +107,30 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
           <div className="space-y-4">
             {data.locationName && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-2">
+                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Location
                 </h4>
-                <p className="text-sm text-amber-100/90">{data.locationName}</p>
+                <p style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{data.locationName}</p>
               </div>
             )}
 
             {data.topDomains.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-2">
+                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Domain Mastery
                 </h4>
                 <div className="space-y-2">
                   {data.topDomains.map((domain) => (
                     <div key={domain.domain} className="space-y-1">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-amber-100/80">{domain.domain}</span>
-                        <span className="text-xs text-amber-200/50">
+                        <Tooltip id={`reach.${domain.domain}`}>
+                          <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{domain.domain}</span>
+                        </Tooltip>
+                        <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
                           {(domain.score * 100).toFixed(0)}%
                         </span>
                       </div>
-                      <div className="h-2 bg-stone-700/50 rounded-full overflow-hidden">
+                      <div className="h-2 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-deep)' }}>
                         <div
                           className="h-full rounded-full transition-all"
                           style={{
@@ -135,12 +147,12 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.companions.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-2">
+                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Companions Present
                 </h4>
                 <div className="space-y-1">
                   {data.companions.map((companion) => (
-                    <div key={companion.id} className="text-sm text-amber-100/80">
+                    <div key={companion.id} style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>
                       {companion.name}
                     </div>
                   ))}
@@ -155,7 +167,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.desires;
         return (
           <div>
-            <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-3">
+            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
               Core Desires
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
@@ -169,15 +181,15 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
           <div className="space-y-4">
             {data.factions.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-2">
+                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Faction Allegiances
                 </h4>
                 <div className="space-y-1">
                   {data.factions.map((faction) => (
-                    <div key={faction.id} className="text-sm">
-                      <span className="text-amber-100/90">{faction.name}</span>
+                    <div key={faction.id}>
+                      <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{faction.name}</span>
                       {faction.role && (
-                        <span className="text-amber-200/40 text-xs ml-2">
+                        <span style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }} className="ml-2">
                           • {faction.role}
                         </span>
                       )}
@@ -189,7 +201,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.relationships.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-2">
+                <h4 className="font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Key Relationships
                 </h4>
                 <div className="space-y-2">
@@ -200,15 +212,12 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
                     return (
                       <div key={rel.targetId} className="space-y-1">
                         <div className="flex justify-between items-start">
-                          <span className="text-sm text-amber-100/90">{rel.targetName}</span>
-                          <span
-                            className="text-xs"
-                            style={{ color: sentimentColor }}
-                          >
+                          <span style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{rel.targetName}</span>
+                          <span style={{ color: sentimentColor, fontSize: 'var(--text-xs)' }}>
                             {rel.basis}
                           </span>
                         </div>
-                        <div className="h-1.5 bg-stone-700/50 rounded-full overflow-hidden">
+                        <div className="h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-deep)' }}>
                           <div
                             className="h-full rounded-full transition-all"
                             style={{
@@ -226,7 +235,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
             {data.insights.length > 0 && (
               <div>
-                <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-3">
+                <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
                   Bond Insights
                 </h4>
                 <InsightList insights={data.insights} color={activeColor} />
@@ -240,7 +249,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.ambitions;
         return (
           <div>
-            <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-3">
+            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
               Ambitions
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
@@ -252,7 +261,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.beliefs;
         return (
           <div>
-            <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-3">
+            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
               Core Beliefs
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
@@ -264,7 +273,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
         const data = strands.fears;
         return (
           <div>
-            <h4 className="text-xs font-bold text-amber-100/60 uppercase tracking-wider mb-3">
+            <h4 className="font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>
               Shadows & Fears
             </h4>
             <InsightList insights={data.insights} color={activeColor} />
@@ -279,25 +288,29 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={onClose}
       data-testid="backdrop"
       style={{ pointerEvents: 'auto' }}
     >
       <div
-        className="w-[70%] max-w-4xl h-[70%] bg-stone-900/95 rounded-lg border border-amber-900/40 flex flex-col"
+        className="w-[70%] max-w-4xl h-[70%] rounded-lg border flex flex-col"
         onClick={(e) => e.stopPropagation()}
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
       >
         {/* Header */}
-        <div className="border-b border-amber-900/20 px-6 py-4 flex items-start justify-between flex-shrink-0">
+        <div
+          className="border-b px-6 py-4 flex items-start justify-between flex-shrink-0"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           <div>
             <h2
-              className="text-2xl font-bold text-amber-100 tracking-wide"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="text-2xl font-bold tracking-wide"
+              style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
             >
               {agentName}
             </h2>
-            <p className="text-xs text-amber-200/50 italic mt-1">
+            <p className="italic mt-1" style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
               You peer into their soul and see...
             </p>
           </div>
@@ -305,14 +318,20 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
             onClick={onClose}
             aria-label="Close Psyche Strands"
             title="Close (Esc)"
-            className="text-xl text-amber-200/60 hover:text-amber-100 transition-colors"
+            className="text-xl transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-secondary)')}
           >
             ✕
           </button>
         </div>
 
         {/* Strand Tabs */}
-        <div className="border-b border-amber-900/20 px-6 flex gap-0 flex-shrink-0">
+        <div
+          className="border-b px-6 flex gap-0 flex-shrink-0"
+          style={{ borderColor: 'var(--border-subtle)' }}
+        >
           {strandNames.map((strandName) => {
             const isActive = activeStrand === strandName;
             const color = STRAND_COLORS[strandName];
@@ -322,25 +341,25 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
               <button
                 key={strandName}
                 onClick={() => setActiveStrand(strandName)}
-                className={`px-4 py-3 text-sm font-medium transition-all border-b-2 ${
-                  isActive
-                    ? 'text-amber-100 border-b-2'
-                    : 'text-amber-400/40 border-b-2 border-transparent'
-                }`}
+                className="px-4 py-3 text-sm font-medium transition-all border-b-2"
                 style={{
                   borderBottomColor: isActive ? color : 'transparent',
-                  color: isActive ? color : undefined,
+                  color: isActive ? color : 'var(--text-tertiary)',
                 }}
               >
-                <span className="mr-2">{icon}</span>
-                {strandName}
+                <Tooltip label={strandName} desc={STRAND_DESCRIPTIONS[strandName]}>
+                  <span className="cursor-help">
+                    <span className="mr-2">{icon}</span>
+                    {strandName}
+                  </span>
+                </Tooltip>
               </button>
             );
           })}
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 text-amber-100/90">
+        <div className="flex-1 overflow-y-auto px-6 py-4" style={{ color: 'var(--text-primary)' }}>
           {renderedContent}
         </div>
       </div>

@@ -1,15 +1,6 @@
 import type { SphereName } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
-
-const SPHERE_ICONS: Record<SphereName, string> = {
-  force: '⚡', matter: '🪨', energy: '🔥', life: '🌿',
-  mind: '🧠', spirit: '👻', time: '⏳', entropy: '🌀',
-};
-
-const SPHERE_COLORS: Record<SphereName, string> = {
-  force: '#d4a574', matter: '#9d7b5a', energy: '#e87534', life: '#7cb342',
-  mind: '#9c27b0', spirit: '#5c6bc0', time: '#00bcd4', entropy: '#b71c1c',
-};
+import { getSphereSymbol, getSphereColor } from '../../data/sphereIcons';
 
 const SPHERE_LABELS: Record<SphereName, string> = {
   force: 'Force', matter: 'Matter', energy: 'Energy', life: 'Life',
@@ -17,8 +8,8 @@ const SPHERE_LABELS: Record<SphereName, string> = {
 };
 
 const REACH_LABELS: Record<string, string> = {
-  iron: '⚔️ Iron', gold: '💰 Gold', shadow: '🗡️ Shadow', veil: '✨ Veil',
-  heart: '❤️ Heart', eye: '👁️ Eye', stone: '🏗️ Stone', star: '⭐ Star', flesh: '🫀 Flesh',
+  iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
+  heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star', flesh: 'Flesh',
 };
 
 interface ArchetypeCardProps {
@@ -29,8 +20,8 @@ interface ArchetypeCardProps {
 
 export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardProps) {
   const { primary, secondary } = archetype.sphereAlignment;
-  const primaryColor = SPHERE_COLORS[primary];
-  const secondaryColor = SPHERE_COLORS[secondary];
+  const primaryColor = getSphereColor(primary);
+  const secondaryColor = getSphereColor(secondary);
 
   const domains = Object.entries(archetype.startingDomainAffinities)
     .sort(([, a], [, b]) => (b as number) - (a as number));
@@ -61,14 +52,14 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
       {/* Sphere alignment */}
       <div className="flex items-center gap-3 mb-3">
         <span className="flex items-center gap-1.5 text-sm">
-          <span className="text-base">{SPHERE_ICONS[primary]}</span>
+          <span className="text-base" style={{ color: primaryColor }}>{getSphereSymbol(primary)}</span>
           <span style={{ color: primaryColor }} className="font-semibold">
             {SPHERE_LABELS[primary]}
           </span>
         </span>
         <span className="text-amber-600 text-xs">+</span>
         <span className="flex items-center gap-1.5 text-sm">
-          <span className="text-base">{SPHERE_ICONS[secondary]}</span>
+          <span className="text-base" style={{ color: secondaryColor }}>{getSphereSymbol(secondary)}</span>
           <span style={{ color: secondaryColor }} className="font-medium">
             {SPHERE_LABELS[secondary]}
           </span>
