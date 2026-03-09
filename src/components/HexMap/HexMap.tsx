@@ -143,7 +143,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group">
           <g transform={tileBaseTransform}>
-            <CoastlineOverlay data={coastlineData} colors={COASTLINE_DEFAULTS.colors} />
+            <CoastlineOverlay data={coastlineData} svgWidth={width} svgHeight={height} colors={COASTLINE_DEFAULTS.colors} />
             {tiles.map((tile) => {
               const { x, y } = hexToPixel(tile.coord, hexSize);
               const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;

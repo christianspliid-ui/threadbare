@@ -20,8 +20,8 @@ describe('coastline types', () => {
   });
 
   it('exports COASTLINE_COLORS with all required fields', () => {
-    expect(COASTLINE_DEFAULTS.colors.deepWater).toBe('#1a2a3a');
-    expect(COASTLINE_DEFAULTS.colors.shallows).toBe('#1e3a4a');
+    expect(COASTLINE_DEFAULTS.colors.deepWater).toBe('#12243a');
+    expect(COASTLINE_DEFAULTS.colors.shallows).toBe('#1e4858');
     expect(COASTLINE_DEFAULTS.colors.coastEdge).toBe('#2a2a1a');
   });
 
