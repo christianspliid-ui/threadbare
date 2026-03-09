@@ -48,6 +48,9 @@ import {
   advanceEncounter,
 } from './encounter';
 import { getAvatarHexPosition } from './visibility';
+import { generateEncounterCandidates } from './encounterCandidates';
+import { runSelectionPipeline } from './agentSelection';
+import { getEncounterById } from '../data/encounter-content';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
@@ -99,7 +102,13 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   return { doomClock: newDoom, tickEvents: [...state.tickEvents, ...events] };
 }
 
-// ─── Phase 2: Agent Actions (simplified for vertical slice) ───────
+// ─── Phase 2: Agent Actions ────────────────────────────────────
+
+/** Chance per tick that an agent considers an encounter */
+const ENCOUNTER_ATTEMPT_CHANCE = 0.20;
+
+/** Chance of a non-encounter routine action */
+const ROUTINE_ACTION_CHANCE = 0.10;
 
 /** Notable action interval — every N ticks, force one high-significance event */
 const NOTABLE_ACTION_INTERVAL = 5;
@@ -108,25 +117,69 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 31);
   const events: TickEvent[] = [];
 
-  // Get all individual actors
   const actors = state.graph.getNodesByType('actor').filter(
     n => n.properties.actorType === 'individual'
   );
 
-  // Each actor has a chance to do something per tick
   for (const actor of actors) {
-    if (rng() < 0.15) { // 15% chance per tick of an action
+    // Skip if already in an active encounter
+    if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
+
+    // Encounter attempt
+    if (rng() < ENCOUNTER_ATTEMPT_CHANCE) {
+      // Find actor's location
+      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
+      if (locEdges.length === 0) continue;
+      const locationId = locEdges[0].target;
+
+      // Generate candidates from available encounters
+      const candidates = generateEncounterCandidates(state.graph, actor.id, locationId);
+
+      if (candidates.length > 0) {
+        try {
+          const result = runSelectionPipeline(
+            state.graph,
+            actor.id,
+            candidates,
+            { topN: 5, survivalThreshold: 0.8 },
+            state.tick,
+            rng(),
+          );
+
+          // Initiate the selected encounter
+          const template = getEncounterById(result.selected.templateId);
+          if (template) {
+            initiateEncounter(state, actor.id, template.id, state.tick);
+
+            const locationNode = state.graph.getNode(locationId);
+            const locationName = locationNode?.name ?? 'the realm';
+            events.push({
+              id: nextEventId(),
+              tick: state.tick,
+              type: 'agent_action_resolved',
+              message: `${actor.name} begins ${template.name} at ${locationName}.`,
+              sphere: template.sphereAffinity ?? (SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName),
+              significance: 0.7,
+            });
+          }
+        } catch {
+          // Selection pipeline can fail if no valid profile — fall through to routine action
+        }
+      }
+    }
+
+    // Routine action (non-encounter flavor text)
+    else if (rng() < ROUTINE_ACTION_CHANCE) {
       const spheres: SphereName[] = [...SPHERE_NAMES];
       const sphere = spheres[Math.floor(rng() * spheres.length)];
-      // Widened range: 0.3–0.9 (was 0.3–0.8) — ~17% chance of ≥ 0.8 (notable)
-      const significance = 0.3 + rng() * 0.6;
+      const significance = 0.3 + rng() * 0.4;
 
-      // Use narrative prose engine instead of static message
       const prose = generateRoutineProse('action_resolved', {
         actorName: actor.name,
+        actorId: actor.id,
         sphere,
         locationName: 'the realm',
-      }, state.seed + state.tick * 100 + actors.indexOf(actor));
+      }, state.seed + state.tick * 100 + actors.indexOf(actor), state.graph);
 
       events.push({
         id: nextEventId(),
@@ -137,10 +190,10 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
         significance,
       });
 
-      // Increment sphere influence at agent's location (drives mandate progress)
-      const locationId = actor.properties.locationId as string | undefined;
-      if (locationId) {
-        const locNode = state.graph.getNode(locationId);
+      // Sphere influence
+      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
+      if (locEdges.length > 0) {
+        const locNode = state.graph.getNode(locEdges[0].target);
         if (locNode?.properties?.sphereInfluence) {
           const inf = locNode.properties.sphereInfluence as Record<string, number>;
           inf[sphere] = (inf[sphere] ?? 0) + 0.02;
@@ -149,7 +202,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
     }
   }
 
-  // Periodic notable action — every NOTABLE_ACTION_INTERVAL ticks, generate one high-significance event
+  // Keep notable action interval
   if (actors.length > 0 && state.tick % NOTABLE_ACTION_INTERVAL === 0) {
     const notableActor = actors[Math.floor(rng() * actors.length)];
     const spheres: SphereName[] = [...SPHERE_NAMES];
@@ -157,9 +210,10 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
 
     const prose = generateNotableProse('action_critical', {
       actorName: notableActor.name,
+      actorId: notableActor.id,
       sphere,
       locationName: 'the realm',
-    }, state.seed + state.tick * 200);
+    }, state.seed + state.tick * 200, state.graph);
 
     events.push({
       id: nextEventId(),
