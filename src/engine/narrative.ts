@@ -4,6 +4,9 @@
  * Tier 1 (Routine): Template-stitched from pre-authored fragments.
  * Tier 2 (Notable): Enhanced templates with conditional clauses.
  * Tier 3 (Chronicle): Structured prompts for LLM generation.
+ *
+ * Cultural prose integration: When an actor belongs to a culture, the prose
+ * can be subtly flavored (30% chance) with cultural vocabulary.
  */
 import type { SphereName } from '../types/index';
 import type {
@@ -18,7 +21,9 @@ import type {
 } from '../types/narrative';
 import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES, VALUE_FLAVORS } from '../data/narrative-content';
 import type { ValuePair } from '../types/agent';
+import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
+import { getCulturalFlavorWords, pickCulturalWord } from './culturalProse';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -52,21 +57,64 @@ function getVoice(eventType: NarrativeEventType): VoiceMode {
   return 'third_person_omniscient';
 }
 
+// ─── Cultural Flavor Application ────────────────────────────────────
+
+/**
+ * Apply cultural flavor words to prose.
+ * 30% chance: substitute a sphere word with a cultural variant (if available).
+ */
+function applyCulturalFlavor(
+  words: { adj: string; verb: string; noun: string },
+  culturalFlavor: ReturnType<typeof getCulturalFlavorWords> | null,
+  seed: number,
+): { adj: string; verb: string; noun: string } {
+  if (!culturalFlavor) return words;
+
+  const rng = mulberry32(seed);
+  const CULTURAL_FLAVOR_CHANCE = 0.3;
+
+  return {
+    adj: rng() < CULTURAL_FLAVOR_CHANCE && culturalFlavor.adjectives.length > 0
+      ? pickCulturalWord(culturalFlavor.adjectives, seed)
+      : words.adj,
+    verb: rng() < CULTURAL_FLAVOR_CHANCE && culturalFlavor.verbs.length > 0
+      ? pickCulturalWord(culturalFlavor.verbs, seed + 1)
+      : words.verb,
+    noun: rng() < CULTURAL_FLAVOR_CHANCE && culturalFlavor.phrases && culturalFlavor.phrases.length > 0
+      ? pickCulturalWord(culturalFlavor.phrases, seed + 2)
+      : words.noun,
+  };
+}
+
 // ─── Tier 1: Routine Template Stitching ──────────────────────────
 
 export function generateRoutineProse(
   eventType: NarrativeEventType,
   context: ProseContext,
   seed: number,
+  graph?: WorldGraph,
 ): ProseFragment {
   const rng = mulberry32(seed);
   const sphere = context.sphere ?? 'force';
   const templates = ROUTINE_TEMPLATES[eventType] ?? ROUTINE_TEMPLATES.action_resolved;
   const template = templates[Math.floor(rng() * templates.length)];
 
-  const adj = pickSphereWord(sphere, 'adjectives', seed + 1);
-  const verb = pickSphereWord(sphere, 'verbs', seed + 2);
-  const noun = pickSphereWord(sphere, 'nouns', seed + 3);
+  let adj = pickSphereWord(sphere, 'adjectives', seed + 1);
+  let verb = pickSphereWord(sphere, 'verbs', seed + 2);
+  let noun = pickSphereWord(sphere, 'nouns', seed + 3);
+
+  // Apply cultural flavor if actor and graph provided
+  let culturalFlavorApplied = false;
+  if (graph && context.actorId) {
+    const culturalFlavor = getCulturalFlavorWords(graph, context.actorId);
+    if (culturalFlavor) {
+      const flavored = applyCulturalFlavor({ adj, verb, noun }, culturalFlavor, seed + 100);
+      adj = flavored.adj;
+      verb = flavored.verb;
+      noun = flavored.noun;
+      culturalFlavorApplied = true;
+    }
+  }
 
   const text = template
     .replace(/\{actor\}/g, context.actorName ?? 'the actor')
@@ -81,6 +129,7 @@ export function generateRoutineProse(
     summary: `Routine prose: "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}"`,
     tier: 'routine',
     sphereWords: [adj, verb, noun].filter(Boolean),
+    culturalFlavorApplied,
     finalProse: text,
   });
 
@@ -110,16 +159,30 @@ export function generateNotableProse(
   eventType: NarrativeEventType,
   context: ProseContext,
   seed: number,
+  graph?: WorldGraph,
 ): ProseFragment {
   const rng = mulberry32(seed);
   const sphere = context.sphere ?? 'force';
   const templates = NOTABLE_TEMPLATES[eventType] ?? NOTABLE_TEMPLATES.action_critical;
   const template = templates[Math.floor(rng() * templates.length)];
 
-  const adj = pickSphereWord(sphere, 'adjectives', seed + 10);
-  const verb = pickSphereWord(sphere, 'verbs', seed + 20);
-  const noun = pickSphereWord(sphere, 'nouns', seed + 30);
+  let adj = pickSphereWord(sphere, 'adjectives', seed + 10);
+  let verb = pickSphereWord(sphere, 'verbs', seed + 20);
+  let noun = pickSphereWord(sphere, 'nouns', seed + 30);
   const personality = getPersonalityClause(context.dominantValues, seed + 40);
+
+  // Apply cultural flavor if actor and graph provided
+  let culturalFlavorApplied = false;
+  if (graph && context.actorId) {
+    const culturalFlavor = getCulturalFlavorWords(graph, context.actorId);
+    if (culturalFlavor) {
+      const flavored = applyCulturalFlavor({ adj, verb, noun }, culturalFlavor, seed + 100);
+      adj = flavored.adj;
+      verb = flavored.verb;
+      noun = flavored.noun;
+      culturalFlavorApplied = true;
+    }
+  }
 
   const text = template
     .replace(/\{actor\}/g, context.actorName ?? 'the figure')
@@ -136,6 +199,7 @@ export function generateNotableProse(
     tier: 'notable',
     sphereWords: [adj, verb, noun].filter(Boolean),
     personalityClause: personality || undefined,
+    culturalFlavorApplied,
     finalProse: text,
   });
 
@@ -211,14 +275,15 @@ export function routeEvent(
   event: NarrativeEvent,
   context: ProseContext,
   seed: number,
+  graph?: WorldGraph,
 ): ProseFragment {
   const tier = event.tier;
 
   switch (tier) {
     case 'routine':
-      return generateRoutineProse(event.eventType, context, seed);
+      return generateRoutineProse(event.eventType, context, seed, graph);
     case 'notable':
-      return generateNotableProse(event.eventType, context, seed);
+      return generateNotableProse(event.eventType, context, seed, graph);
     case 'chronicle':
       return {
         text: `[Chronicle: ${event.description}]`,
@@ -228,6 +293,6 @@ export function routeEvent(
         sphereColoring: event.sphere,
       };
     default:
-      return generateRoutineProse(event.eventType, context, seed);
+      return generateRoutineProse(event.eventType, context, seed, graph);
   }
 }

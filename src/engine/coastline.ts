@@ -43,8 +43,10 @@ export function buildScalarField(
   const r2 = blobRadius * blobRadius;
 
   // Canvas dimensions in local coordinate space (inside tileBaseTransform group).
-  // Add hexSize margin on each side so the scalar field rolls off smoothly at edges.
-  const margin = hexSize;
+  // Margin must be at least as large as the blob radius so blobs from edge hexes
+  // roll off smoothly within the field — otherwise marching squares clips them,
+  // producing triangular contour artifacts along the field boundary.
+  const margin = Math.ceil(blobRadius);
   const canvasW = cols * hexSize * HEX_SCALE_X + hexSize * 0.5 + hexSize + margin * 2;
   const canvasH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5 + hexSize + margin * 2;
 

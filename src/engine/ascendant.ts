@@ -20,6 +20,7 @@ import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import type { WorldGraph } from './graph';
 import { createEmptyEssencePool } from './influence';
+import { ARCHETYPE_TITLES } from '../data/ascendant-content';
 
 // ─── Seeded PRNG (simple mulberry32) ─────────────────────────────────
 
@@ -32,19 +33,6 @@ function mulberry32(seed: number): () => number {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
-
-// ─── Archetype Names ─────────────────────────────────────────────────
-
-const ARCHETYPE_TITLES: Record<SphereName, string[]> = {
-  force: ['The Warlord Ascendant', 'The Iron Sovereign', 'The Storm Marshal'],
-  matter: ['The Stone Architect', 'The Foundation Lord', 'The Earthshaper'],
-  energy: ['The Flame Herald', 'The Lightning Weaver', 'The Radiant One'],
-  life: ['The Verdant One', 'The Bloom Shepherd', 'The Lifebinder'],
-  mind: ['The Dream Architect', 'The Thought Weaver', 'The Silent Oracle'],
-  spirit: ['The Veil Walker', 'The Soul Shepherd', 'The Ethereal Guide'],
-  time: ['The Chronicler', 'The Moment Keeper', 'The Tide Turner'],
-  entropy: ['The Unraveler', 'The Ash Herald', 'The Void Whisperer'],
-};
 
 const VALUE_PAIRS: ValuePair[] = [
   'ambition_contentment',

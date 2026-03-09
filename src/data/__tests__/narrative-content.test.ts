@@ -11,6 +11,9 @@ import {
   SEASONAL_VOCABULARY,
   ECHO_FLAVOR_TEXTS,
   STEALTH_DETECTION_PROSE,
+  WONDER_VIGNETTES,
+  WONDER_TRIGGERS,
+  SPHERE_WONDER_FLAVORS,
 } from '../narrative-content';
 
 describe('narrative-content expanded', () => {
@@ -387,6 +390,96 @@ describe('narrative-content expanded', () => {
       for (const [key, prose] of Object.entries(STEALTH_DETECTION_PROSE)) {
         const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
         expect(hasPlaceholder, `${key} missing placeholders`).toBe(true);
+      }
+    });
+  });
+
+  describe('wonder content', () => {
+    it('WONDER_VIGNETTES should have at least 15 entries', () => {
+      expect(WONDER_VIGNETTES.length).toBeGreaterThanOrEqual(15);
+    });
+
+    it('all wonder vignettes should be non-empty strings', () => {
+      for (let i = 0; i < WONDER_VIGNETTES.length; i++) {
+        const vignette = WONDER_VIGNETTES[i];
+        expect(typeof vignette, `vignette[${i}] should be a string`).toBe('string');
+        expect(vignette.length, `vignette[${i}] is empty`).toBeGreaterThan(0);
+      }
+    });
+
+    it('should have no duplicate wonder vignettes', () => {
+      const seen = new Set<string>();
+      for (const vignette of WONDER_VIGNETTES) {
+        expect(seen.has(vignette), `duplicate vignette: "${vignette}"`).toBe(false);
+        seen.add(vignette);
+      }
+    });
+
+    it('WONDER_TRIGGERS should have at least 10 entries', () => {
+      expect(WONDER_TRIGGERS.length).toBeGreaterThanOrEqual(10);
+    });
+
+    it('all wonder triggers should have id, condition, and weight fields', () => {
+      for (let i = 0; i < WONDER_TRIGGERS.length; i++) {
+        const trigger = WONDER_TRIGGERS[i];
+        expect(trigger).toHaveProperty('id');
+        expect(trigger).toHaveProperty('condition');
+        expect(trigger).toHaveProperty('weight');
+        expect(typeof trigger.id, `trigger[${i}].id should be string`).toBe('string');
+        expect(typeof trigger.condition, `trigger[${i}].condition should be string`).toBe('string');
+        expect(typeof trigger.weight, `trigger[${i}].weight should be number`).toBe('number');
+      }
+    });
+
+    it('all wonder trigger weights should be between 0.1 and 1.0', () => {
+      for (let i = 0; i < WONDER_TRIGGERS.length; i++) {
+        const weight = WONDER_TRIGGERS[i].weight;
+        expect(weight, `trigger[${i}].weight ${weight} out of range`).toBeGreaterThanOrEqual(0.1);
+        expect(weight, `trigger[${i}].weight ${weight} out of range`).toBeLessThanOrEqual(1.0);
+      }
+    });
+
+    it('all wonder trigger ids and conditions should be non-empty', () => {
+      for (let i = 0; i < WONDER_TRIGGERS.length; i++) {
+        const { id, condition } = WONDER_TRIGGERS[i];
+        expect(id.length, `trigger[${i}].id is empty`).toBeGreaterThan(0);
+        expect(condition.length, `trigger[${i}].condition is empty`).toBeGreaterThan(0);
+      }
+    });
+
+    it('SPHERE_WONDER_FLAVORS should cover all 8 creation spheres', () => {
+      const expectedSpheres = ['force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'];
+      for (const sphere of expectedSpheres) {
+        expect(SPHERE_WONDER_FLAVORS).toHaveProperty(sphere);
+      }
+    });
+
+    it('each sphere in SPHERE_WONDER_FLAVORS should have at least 3 flavors', () => {
+      for (const [sphere, flavors] of Object.entries(SPHERE_WONDER_FLAVORS)) {
+        expect(
+          Array.isArray(flavors),
+          `${sphere} flavors should be an array`
+        ).toBe(true);
+        expect(
+          flavors.length,
+          `${sphere} should have at least 3 flavors, has ${flavors.length}`
+        ).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('all sphere wonder flavors should be non-empty strings', () => {
+      for (const [sphere, flavors] of Object.entries(SPHERE_WONDER_FLAVORS)) {
+        for (let i = 0; i < flavors.length; i++) {
+          const flavor = flavors[i];
+          expect(
+            typeof flavor,
+            `${sphere}[${i}] should be a string`
+          ).toBe('string');
+          expect(
+            flavor.length,
+            `${sphere}[${i}] is empty`
+          ).toBeGreaterThan(0);
+        }
       }
     });
   });

@@ -11,6 +11,7 @@ import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
+import { BORN_NAMES } from '../data/narrative-content';
 import { assignCooperationStrategy } from './disposition';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
@@ -58,15 +59,6 @@ function nextLifecycleId(prefix: string): string {
 export function resetLifecycleCounter(): void {
   lifecycleCounter = 0;
 }
-
-// ─── Individual Names Pool ───────────────────────────────────────
-
-const BORN_NAMES = [
-  'Newborn of the Weave', 'Child of Embers', 'Seedling of the Veil',
-  'Heir of the Forge', 'Wanderer Reborn', 'Whisper of Dawn',
-  'Thread of Fate', 'Echo of the Past', 'Spark of the New',
-  'Voice of the Unwritten',
-];
 
 // ─── Phase: Agent Lifecycle ──────────────────────────────────────
 

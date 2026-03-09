@@ -9,6 +9,7 @@
  */
 
 import { getArchetype } from '../data/archetype-content';
+import { QUOTE_TEMPLATES, SPHERE_FLAVOR, ORIGIN_TEMPLATES, MIDDLE_TEMPLATES, CLOSING_TEMPLATES } from '../data/profile-content';
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -41,58 +42,6 @@ export interface PortraitParams {
   name: string;
 }
 
-// ─── Quote Templates ─────────────────────────────────────────────
-
-const QUOTE_TEMPLATES = [
-  '{name} once said: "Power is not taken — it is woven, thread by thread, from the silence between words."',
-  '"The {sphere} teaches patience," {name} was known to say. "Even the longest night ends."',
-  '"I did not choose this path," {name} once confessed. "The path chose me, and I was too {value} to refuse."',
-  '"Let them call me {value}. Better that than forgotten."',
-  '"In the {sphere}, I found what others seek in temples — a truth that does not flinch."',
-  '"They will remember what I built, not what I destroyed."',
-  '"Do not mistake my silence for weakness. I am simply deciding."',
-  '"The threads of fate are thinner than you think. Pull too hard and they snap."',
-  '"I have seen what lies beyond the veil. It is not darkness — it is patience."',
-  '"Every bond I forge is a thread in the great weave. Every betrayal, a thread cut."',
-  '"What is a kingdom but a story that enough people believe?"',
-  '"The {sphere} does not care for your ambitions. But it rewards those who listen."',
-];
-
-const SPHERE_FLAVOR: Record<string, string> = {
-  force: 'clash of arms',
-  matter: 'weight of stone',
-  energy: 'crackling light',
-  life: 'pulse of growing things',
-  mind: 'whisper of thought',
-  spirit: 'echo of the divine',
-  time: 'slow turn of ages',
-  entropy: 'quiet unraveling',
-  chaos: 'wild surge',
-  order: 'perfect symmetry',
-  light: 'radiance',
-  darkness: 'deep shadow',
-};
-
-// ─── Backstory Templates ─────────────────────────────────────────
-
-const ORIGIN_TEMPLATES = [
-  '{name} was born among the {culture}, in a time when the world still remembered what it had lost.',
-  'The {culture} tell stories of {name} — how even as a child, the threads of {sphere} clung to them.',
-  'No one remembers when {name} first appeared among the {culture}. Some say they were always there, waiting.',
-  'Before {name} earned their name, they were simply another soul of the {culture}, shaped by the land and its demands.',
-];
-
-const MIDDLE_TEMPLATES = [
-  'Those who knew {name} spoke of their {trait} nature — a quality that set them apart from their peers. Their bond with {bond} defined much of what came next.',
-  'It was {name}\'s {trait} character that first drew attention, and their connection to {bond} that sealed their fate.',
-  'The {sphere} marked {name} early. Their {trait} ways made them both feared and admired, and {bond} became the axis around which their story turned.',
-];
-
-const CLOSING_TEMPLATES = [
-  'Now {name} stands at a crossroads, their choices rippling through the weave of the world.',
-  'What {name} will become is not yet written. But the threads are gathering, and the pattern grows clearer with each passing day.',
-  'The world watches {name}, though it does not yet know why. The threads know. They always do.',
-];
 
 // ─── Helpers ─────────────────────────────────────────────────────
 

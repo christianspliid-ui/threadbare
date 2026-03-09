@@ -54,6 +54,6 @@ export const COASTLINE_DEFAULTS: CoastlineConfig = {
   colors: {
     deepWater: '#12243a',
     shallows: '#1e4858',
-    coastEdge: '#2a2a1a',
+    coastEdge: '#e3d08a',
   },
 };

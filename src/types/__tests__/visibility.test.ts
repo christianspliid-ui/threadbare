@@ -10,7 +10,7 @@ import type { HexVisibility, HexVisibilityState, StaleSnapshot } from '../visibi
 
 describe('visibility types and constants', () => {
   it('exports sight range constants', () => {
-    expect(AVATAR_SIGHT_RANGE).toBe(3);
+    expect(AVATAR_SIGHT_RANGE).toBe(1);
     expect(AGENT_SIGHT_RANGE).toBe(1);
     expect(SCRY_SIGHT_RANGE).toBe(1);
     expect(SCRY_ESSENCE_PER_TICK).toBe(2);

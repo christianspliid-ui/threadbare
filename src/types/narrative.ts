@@ -62,6 +62,7 @@ export interface ProseFragment {
 
 export interface ProseContext {
   actorName?: string;
+  actorId?: string; // For cultural flavor lookup
   targetName?: string;
   locationName?: string;
   sphere?: SphereName;

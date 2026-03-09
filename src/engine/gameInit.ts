@@ -204,7 +204,7 @@ export function initializeGameState(
     stealthExposure: 0,
     visibilityMap,
     familiarityMap,
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

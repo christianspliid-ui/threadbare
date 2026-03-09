@@ -9,6 +9,7 @@ import type { AgentInfoCardData } from '../../../engine/agentDetail';
 const strangerCard: AgentInfoCardData = {
   id: 'agent.1',
   name: 'Kael',
+  locationId: 'loc.1',
   locationName: 'Ashvale',
   primarySphere: 'shadow',
   knowledgeLevel: 'stranger',
@@ -17,6 +18,7 @@ const strangerCard: AgentInfoCardData = {
 const recognisedCard: AgentInfoCardData = {
   id: 'agent.2',
   name: 'Lyra',
+  locationId: 'loc.2',
   locationName: 'Ironhearth',
   primarySphere: 'heart',
   archetypeLabel: 'Sage',
@@ -33,6 +35,7 @@ const recognisedCard: AgentInfoCardData = {
 const knownCard: AgentInfoCardData = {
   id: 'agent.3',
   name: 'Mordach',
+  locationId: 'loc.3',
   locationName: 'The Warrens',
   primarySphere: 'iron',
   archetypeLabel: 'Warlord',
@@ -59,6 +62,7 @@ const knownCard: AgentInfoCardData = {
 const intimateCard: AgentInfoCardData = {
   id: 'agent.4',
   name: 'Sera',
+  locationId: 'loc.4',
   locationName: 'The Sanctum',
   primarySphere: 'veil',
   archetypeLabel: 'Oracle',
@@ -140,7 +144,8 @@ describe('AgentInfoCard', () => {
 
   it('shows one domain at recognised level', () => {
     render(<AgentInfoCard card={recognisedCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByText('Perceptive in Eye')).toBeInTheDocument();
+    // Domain name wrapped in Tooltip span
+    expect(screen.getByText('Eye')).toBeInTheDocument();
   });
 
   it('shows one value at recognised level', () => {
@@ -152,9 +157,10 @@ describe('AgentInfoCard', () => {
 
   it('shows domain words in "word in domain" format at known level', () => {
     render(<AgentInfoCard card={knownCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByText('Fearsome in Iron')).toBeInTheDocument();
-    expect(screen.getByText('Shrewd in Gold')).toBeInTheDocument();
-    expect(screen.getByText('Cunning in Shadow')).toBeInTheDocument();
+    // Domain names wrapped in Tooltip spans — check domain names are present
+    expect(screen.getByText('Iron')).toBeInTheDocument();
+    expect(screen.getByText('Gold')).toBeInTheDocument();
+    expect(screen.getByText('Shadow')).toBeInTheDocument();
   });
 
   it('shows all top values at known level', () => {
@@ -185,8 +191,9 @@ describe('AgentInfoCard', () => {
 
   it('shows all 9 domains at intimate level', () => {
     render(<AgentInfoCard card={intimateCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByText('Mystical in Veil')).toBeInTheDocument();
-    expect(screen.getByText('Vigorous in Flesh')).toBeInTheDocument();
+    // Domain names are now wrapped in Tooltip spans, so test for domain name separately
+    expect(screen.getByText('Veil')).toBeInTheDocument();
+    expect(screen.getByText('Flesh')).toBeInTheDocument();
   });
 
   it('shows cooperation strategy at intimate level', () => {
@@ -223,13 +230,13 @@ describe('AgentInfoCard', () => {
 
   it('shows View Profile button', () => {
     render(<AgentInfoCard card={knownCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /view profile/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /view full character sheet/i })).toBeInTheDocument();
   });
 
   it('calls onViewProfile when View Profile button clicked', () => {
     const onViewProfile = vi.fn();
     render(<AgentInfoCard card={knownCard} onViewProfile={onViewProfile} onBack={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: /view profile/i }));
+    fireEvent.click(screen.getByRole('button', { name: /view full character sheet/i }));
     expect(onViewProfile).toHaveBeenCalledOnce();
   });
 
@@ -273,6 +280,7 @@ describe('AgentInfoCard', () => {
     const minimalCard: AgentInfoCardData = {
       id: 'agent.5',
       name: 'Ghost',
+      locationId: 'loc.5',
       locationName: 'Unknown',
       knowledgeLevel: 'stranger',
     };

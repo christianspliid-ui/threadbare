@@ -25,7 +25,7 @@ const BEHAVIOR_COLORS: Record<string, string> = {
 export const RivalPanel = React.memo(function RivalPanel({ definitions, states }: RivalPanelProps) {
   if (definitions.length === 0) {
     return (
-      <div className="text-amber-200/30 text-xs italic text-center py-2">
+      <div className="italic text-center py-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
         No rival gods stir... yet.
       </div>
     );
@@ -36,14 +36,14 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
       <div>
         <Tooltip id="ui.rival_panel">
           <h2
-            className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="font-bold uppercase tracking-wider"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
           >
             Rival Gods
           </h2>
         </Tooltip>
         <div className="mt-2 flex items-center gap-1.5">
-          <span className="text-[10px] text-amber-200/40 uppercase tracking-wider font-semibold">Hostility</span>
+          <span className="uppercase tracking-wider font-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Hostility</span>
         </div>
       </div>
       {definitions.map((def) => {
@@ -58,7 +58,7 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
         if (def.secondarySphere) spheres.push(def.secondarySphere);
 
         return (
-          <div key={def.id} className="bg-stone-800/50 rounded px-2 py-1.5 border border-stone-700/30">
+          <div key={def.id} className="rounded px-2 py-1.5" style={{ backgroundColor: 'var(--bg-raised)', border: `1px solid var(--border-subtle)` }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1.5">
                 {spheres.length > 0 ? (
@@ -66,15 +66,15 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                 ) : (
                   <span className="text-sm" style={{ color }}>{icon}</span>
                 )}
-                <span className="text-xs text-amber-100/80 font-medium truncate max-w-[140px]">
+                <span className="font-medium truncate max-w-[140px]" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', opacity: 0.8 }}>
                   {def.name}
                 </span>
               </div>
-              <span className="text-[10px] uppercase tracking-wider" style={{ color }}>
+              <span className="uppercase tracking-wider" style={{ fontSize: 'var(--text-xs)', color }}>
                 {def.behavior}
               </span>
             </div>
-            <div className="mt-1 flex-1 h-1 bg-stone-600/50 rounded-full overflow-hidden">
+            <div className="mt-1 flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
               <div
                 className="h-full rounded-full transition-all duration-300"
                 style={{
@@ -83,6 +83,12 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
                 }}
               />
             </div>
+            {/* IA-010: Show last action for actionable context */}
+            {rivalState?.lastAction && (
+              <p className="mt-1 truncate italic" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                Last: {rivalState.lastAction}
+              </p>
+            )}
           </div>
         );
       })}

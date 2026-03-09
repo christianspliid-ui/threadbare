@@ -33,29 +33,29 @@ export const WorldPulse = React.memo(function WorldPulse({ gameState }: WorldPul
   return (
     <div className="space-y-4">
       <h3
-        className="text-xs font-bold text-amber-100/60 uppercase tracking-wider"
-        style={{ fontFamily: 'Cinzel, serif' }}
+        className="font-bold uppercase tracking-wider"
+        style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
       >
         World Pulse
       </h3>
 
-      <div className="space-y-2 text-xs text-amber-200/70">
+      <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <span className="text-amber-200/50">Tick</span>
-          <span className="font-mono text-amber-100">{gameState.tick}</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Tick</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{gameState.tick}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-amber-200/50">Active Agents</span>
-          <span className="font-mono text-amber-100">{activeAgents}</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Active Agents</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{activeAgents}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="text-amber-200/50">Cultures</span>
-          <span className="font-mono text-amber-100">{cultures}</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Cultures</span>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{cultures}</span>
         </div>
       </div>
 
-      <div className="pt-3 border-t border-amber-900/30">
-        <p className="text-[11px] italic text-amber-200/60 leading-relaxed">
+      <div className="pt-3" style={{ borderTop: `1px solid var(--border-subtle)` }}>
+        <p className="italic leading-relaxed" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
           {mood}
         </p>
       </div>

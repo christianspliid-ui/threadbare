@@ -16,6 +16,7 @@
 import type { WorldGraph } from './graph';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
+import { VALUE_LABELS, FEAR_DESCRIPTIONS } from '../data/strand-content';
 
 // ============================================================================
 // TYPES
@@ -94,31 +95,7 @@ export type StrandData =
 // CONSTANTS
 // ============================================================================
 
-const VALUE_LABELS: Record<ValuePair, [string, string]> = {
-  ambition_contentment: ['Ambitious', 'Content'],
-  courage_prudence: ['Courageous', 'Prudent'],
-  cruelty_compassion: ['Cruel', 'Compassionate'],
-  cunning_honesty: ['Cunning', 'Honest'],
-  devotion_independence: ['Devoted', 'Independent'],
-  loyalty_treachery: ['Loyal', 'Treacherous'],
-  tradition_innovation: ['Traditional', 'Innovative'],
-  dominance_humility: ['Dominant', 'Humble'],
-  wrath_patience: ['Wrathful', 'Patient'],
-  greed_generosity: ['Greedy', 'Generous'],
-};
-
-const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
-  ambition_contentment: ['Fears irrelevance and failure', 'Fears being forced to strive'],
-  courage_prudence: ['Fears showing weakness', 'Fears reckless consequences'],
-  cruelty_compassion: ['Fears vulnerability', 'Fears becoming heartless'],
-  cunning_honesty: ['Fears being outwitted', 'Fears having to deceive'],
-  devotion_independence: ['Fears abandonment by their cause', 'Fears losing freedom'],
-  loyalty_treachery: ['Fears betrayal by those they trust', 'Fears being bound by loyalty'],
-  tradition_innovation: ['Fears the loss of the old ways', 'Fears stagnation'],
-  dominance_humility: ['Fears losing control', 'Fears being forced to dominate'],
-  wrath_patience: ['Fears being powerless to act', 'Fears losing their temper'],
-  greed_generosity: ['Fears poverty and scarcity', 'Fears becoming selfish'],
-};
+// VALUE_LABELS and FEAR_DESCRIPTIONS are imported from src/data/strand-content.ts
 
 // Strand categorizations
 const DESIRES_PAIRS: ValuePair[] = [

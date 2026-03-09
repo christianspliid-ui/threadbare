@@ -84,8 +84,10 @@ export interface AgentDetail {
 export interface AgentInfoCardData {
   id: string;
   name: string;
+  locationId: string;
   locationName: string;
   primarySphere?: string;
+  archetypeId?: string;
   archetypeLabel?: string;
   factionName?: string;
   cultureName?: string;
@@ -283,6 +285,7 @@ export function getAgentInfoCard(
   const card: AgentInfoCardData = {
     id: detail.id,
     name: detail.name,
+    locationId: detail.locationId,
     locationName: detail.locationName,
     primarySphere,
     cultureName,
@@ -292,6 +295,7 @@ export function getAgentInfoCard(
   // Recognised+: archetype, faction, culture, 1 domain (vague), 1 value
   if (knowledgeLevel !== 'stranger') {
     if (detail.archetype) {
+      card.archetypeId = detail.archetype.id;
       card.archetypeLabel = detail.archetype.name;
     }
     if (detail.factionName) {

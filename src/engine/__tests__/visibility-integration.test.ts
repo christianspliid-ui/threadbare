@@ -119,7 +119,7 @@ function createTestGameState(cols: number, rows: number): GameState {
     recentEvents: [],
     chronicleEntries: [],
     stealthExposure: 0.0,
-    ordealProgress: [],
+    encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

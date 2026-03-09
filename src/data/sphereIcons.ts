@@ -33,7 +33,7 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
 
   // Matter: Crystalline lattices, hexagonal facets — mineral-like structures
   matter: {
-    color: '#a8886a',
+    color: '#d4a87a', // VS-103: brightened from #a8886a (53%) to ~70% perceived brightness
     symbol: '⬡', // Hexagon represents crystalline lattices
     formLanguage: 'crystalline lattices, hexagonal facets',
   },
@@ -75,7 +75,7 @@ export const SPHERE_ICONS: Record<SphereName, SphereIconDef> = {
 
   // Entropy: Fracturing patterns, scattering particles — breaking apart, erosion
   entropy: {
-    color: '#7aaa9a',
+    color: '#8fd4c0', // VS-103: brightened from #7aaa9a (59%) to ~70% perceived brightness
     symbol: '◆', // Solid diamond suggests fractured/broken structure
     formLanguage: 'fracturing patterns, scattering particles',
   },
@@ -161,4 +161,28 @@ export function getSphereSymbol(sphereName: string): string {
  */
 export function getWheelSlotGlyph(slotId: string): string {
   return WHEEL_SLOT_GLYPHS[slotId] || '◯';
+}
+
+/**
+ * RC-039: Agent color palette — hash-based color assignment for agent dots/badges.
+ * Shared by HexZoomView and LocationView.
+ */
+const AGENT_COLOR_PALETTE = [
+  '#cc3333',
+  '#33cc66',
+  '#6699ff',
+  '#cc99ff',
+  '#ff9933',
+  '#ffcc00',
+  '#8b7355',
+  '#666666',
+] as const;
+
+/**
+ * Deterministic color for an agent based on name hash.
+ */
+export function getAgentColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+  return AGENT_COLOR_PALETTE[Math.abs(hash) % AGENT_COLOR_PALETTE.length];
 }

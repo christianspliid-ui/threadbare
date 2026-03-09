@@ -10,6 +10,7 @@ import type { InteractionRecord } from '../../../types/disposition';
 const strangerCard: AgentInfoCardData = {
   id: 'agent.1',
   name: 'Kael the Scorned',
+  locationId: 'loc.1',
   locationName: 'Ashvale',
   knowledgeLevel: 'stranger',
 };
@@ -17,6 +18,7 @@ const strangerCard: AgentInfoCardData = {
 const recognisedCard: AgentInfoCardData = {
   id: 'agent.1',
   name: 'Kael the Scorned',
+  locationId: 'loc.1',
   locationName: 'Ashvale',
   primarySphere: 'iron',
   archetypeLabel: 'Tragic Hero',
@@ -156,15 +158,16 @@ describe('AgentProfileModal', () => {
 
   it('shows all 9 domains at intimate level', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    expect(screen.getByText(/Fearsome in Iron/)).toBeTruthy();
-    expect(screen.getByText(/Shrewd in Gold/)).toBeTruthy();
-    expect(screen.getByText(/Subtle in Shadow/)).toBeTruthy();
-    expect(screen.getByText(/Attuned in Veil/)).toBeTruthy();
-    expect(screen.getByText(/Beloved in Heart/)).toBeTruthy();
-    expect(screen.getByText(/Perceptive in Eye/)).toBeTruthy();
-    expect(screen.getByText(/Skilled in Stone/)).toBeTruthy();
-    expect(screen.getByText(/Fated in Star/)).toBeTruthy();
-    expect(screen.getByText(/Resilient in Flesh/)).toBeTruthy();
+    // Domain names are now wrapped in Tooltip spans — check domain names are present
+    expect(screen.getByText('Iron')).toBeTruthy();
+    expect(screen.getByText('Gold')).toBeTruthy();
+    expect(screen.getByText('Shadow')).toBeTruthy();
+    expect(screen.getByText('Veil')).toBeTruthy();
+    expect(screen.getByText('Heart')).toBeTruthy();
+    expect(screen.getByText('Eye')).toBeTruthy();
+    expect(screen.getByText('Stone')).toBeTruthy();
+    expect(screen.getByText('Star')).toBeTruthy();
+    expect(screen.getByText('Flesh')).toBeTruthy();
   });
 
   it('shows traits section at intimate level', () => {
@@ -234,6 +237,7 @@ describe('AgentProfileModal', () => {
     const minimalCard: AgentInfoCardData = {
       id: 'agent.2',
       name: 'Emissary of None',
+      locationId: 'loc.void',
       locationName: 'The Void',
       knowledgeLevel: 'stranger',
     };

@@ -17,7 +17,7 @@
 
 .viewer-title {
   margin: 0 0 12px 0;
-  font-size: 28px;
+  font-size: 29px;
   font-weight: 600;
   color: #f5f1e8;
   font-family: 'Cinzel', serif;
@@ -38,7 +38,7 @@
   color: #d4a017;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -86,7 +86,7 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 16px;
+  font-size: 17px;
   color: #999;
   font-style: italic;
 }
@@ -181,7 +181,7 @@
 
 @media (max-width: 768px) {
   .viewer-title {
-    font-size: 20px;
+    font-size: 21px;
   }
 
   .category-filters {
@@ -190,7 +190,7 @@
 
   .filter-button {
     padding: 4px 8px;
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .graph-container {

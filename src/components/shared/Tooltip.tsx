@@ -22,14 +22,14 @@ interface TooltipProps {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Tooltip Style Constants (Threadbare)
+// Tooltip Style Constants (Dark Tapestry)
 // ────────────────────────────────────────────────────────────────────────────
 
-const TOOLTIP_BG = '#1a1a1e';
-const TOOLTIP_BORDER = '#57534e';
-const TOOLTIP_LABEL_COLOR = '#fcd34d';
-const TOOLTIP_DESC_COLOR = '#a8a29e';
-const TOOLTIP_LINK_COLOR = '#fbbf24';
+const TOOLTIP_BG = 'var(--bg-surface)';
+const TOOLTIP_BORDER = 'var(--border-medium)';
+const TOOLTIP_LABEL_COLOR = 'var(--accent-gold)';
+const TOOLTIP_DESC_COLOR = 'var(--text-secondary)';
+const TOOLTIP_LINK_COLOR = 'var(--accent-gold)';
 const TOOLTIP_ARROW_SIZE = 6;
 
 /** Minimum distance (px) between any tooltip edge and the viewport edge. */
@@ -433,10 +433,10 @@ export const Tooltip = React.memo(function Tooltip({
       >
         <div
           style={{
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             fontWeight: '600',
             color: TOOLTIP_LABEL_COLOR,
-            fontFamily: 'Cinzel, serif',
+            fontFamily: 'var(--font-display)',
             marginBottom: finalDesc ? '0.25rem' : 0,
           }}
         >
@@ -446,9 +446,9 @@ export const Tooltip = React.memo(function Tooltip({
         {finalDesc && (
           <div
             style={{
-              fontSize: '0.75rem',
+              fontSize: 'var(--text-xs)',
               color: TOOLTIP_DESC_COLOR,
-              fontFamily: 'Inter, system-ui, sans-serif',
+              fontFamily: 'var(--font-body)',
               lineHeight: '1.4',
               pointerEvents: 'auto',
             }}

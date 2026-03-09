@@ -12,7 +12,7 @@ interface SimulationControlsProps {
 }
 
 const SEASON_ICONS: Record<string, string> = {
-  spring: '🌱', summer: '☀️', autumn: '🍂', winter: '❄️',
+  spring: '∿', summer: '☼', autumn: '◇', winter: '❋',
 };
 
 export function SimulationControls({
@@ -20,15 +20,15 @@ export function SimulationControls({
   onToggle, onStep, onSpeedChange,
 }: SimulationControlsProps) {
   return (
-    <div className="bg-stone-800/80 border border-amber-700/30 rounded-xl p-4 space-y-3">
+    <div className="panel-glass space-y-3" style={{ padding: 'var(--panel-padding)' }}>
       <div className="flex items-center justify-between">
         <h2
-          className="text-sm font-bold text-amber-100 uppercase tracking-widest"
-          style={{ fontFamily: 'Cinzel, serif' }}
+          className="font-bold uppercase tracking-widest"
+          style={{ fontSize: 'var(--text-sm)', color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
         >
           Time
         </h2>
-        <span className="text-xs text-amber-400/60 font-mono">
+        <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
           Tick {tick}
         </span>
       </div>
@@ -37,8 +37,8 @@ export function SimulationControls({
       <div className="flex items-center justify-center gap-3 py-2">
         <span className="text-2xl">{SEASON_ICONS[season] ?? '🌍'}</span>
         <div className="text-center">
-          <p className="text-amber-100 text-sm font-semibold capitalize">{season}</p>
-          <p className="text-amber-400/50 text-xs">Year {year}</p>
+          <p className="font-semibold capitalize" style={{ color: 'var(--text-primary)', fontSize: 'var(--text-sm)' }}>{season}</p>
+          <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>Year {year}</p>
         </div>
       </div>
 
@@ -47,10 +47,11 @@ export function SimulationControls({
         <Tooltip id="ui.sim_play_pause">
           <button
             onClick={onToggle}
-            className="flex-1 py-2 rounded-lg text-sm font-semibold transition-colors"
+            className="flex-1 py-2 rounded-lg font-semibold transition-colors"
             style={{
-              background: running ? '#7c2d12' : '#78350f',
-              color: '#fef3c7',
+              fontSize: 'var(--text-sm)',
+              background: running ? 'var(--accent-gold)' : 'var(--bg-raised)',
+              color: running ? 'var(--bg-abyss)' : 'var(--text-primary)',
             }}
           >
             {running ? '⏸ Pause' : '▶ Play'}
@@ -59,8 +60,8 @@ export function SimulationControls({
         <button
           onClick={onStep}
           disabled={running}
-          className="px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-30"
-          style={{ background: '#44403c', color: '#d6d3d1' }}
+          className="px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-30"
+          style={{ fontSize: 'var(--text-sm)', background: 'var(--bg-raised)', color: 'var(--text-primary)' }}
         >
           ⏭ Step
         </button>
@@ -69,7 +70,7 @@ export function SimulationControls({
       {/* Speed */}
       <Tooltip id="ui.sim_speed">
         <div className="flex items-center gap-3">
-          <span className="text-xs text-amber-400/60">Speed</span>
+          <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Speed</span>
           <input
             type="range"
             min={1}
@@ -78,11 +79,11 @@ export function SimulationControls({
             onChange={(e) => onSpeedChange(parseInt(e.target.value))}
             className="flex-1 h-1.5 rounded-lg appearance-none cursor-pointer"
             style={{
-              accentColor: '#b8860b',
-              background: `linear-gradient(to right, #b8860b ${(speed / 20) * 100}%, #3a3020 ${(speed / 20) * 100}%)`,
+              accentColor: 'var(--accent-gold)',
+              background: `linear-gradient(to right, var(--accent-gold) ${(speed / 20) * 100}%, var(--bg-raised) ${(speed / 20) * 100}%)`,
             }}
           />
-          <span className="text-xs text-amber-200 font-mono w-8 text-right">{speed}×</span>
+          <span className="font-mono w-8 text-right" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{speed}×</span>
         </div>
       </Tooltip>
     </div>

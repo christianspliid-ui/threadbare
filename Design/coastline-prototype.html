@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Organic Coastline Prototype — Iso-Contour Approach</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1e1b2e;
+    color: #c8b89a;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #controls {
+    width: 280px;
+    padding: 16px;
+    background: #15131f;
+    border-right: 1px solid #3a3050;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
+  #controls h2 { font-size: 14px; color: #e8d8c8; margin-bottom: 12px; }
+  #controls h3 { font-size: 12px; color: #a89878; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .control-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px; font-size: 12px;
+  }
+  .control-row label { flex: 1; }
+  .control-row input[type="range"] { width: 100px; }
+  .control-row .val { width: 36px; text-align: right; color: #e8d8c8; font-variant-numeric: tabular-nums; }
+  button {
+    background: #3a3050; color: #c8b89a; border: 1px solid #5a4870;
+    padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px;
+    margin: 4px 4px 4px 0;
+  }
+  button:hover { background: #4a4060; }
+  button.active { background: #5a4870; border-color: #7a68a0; }
+  #canvas-wrap {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  canvas { background: #1e1b2e; }
+  .toggle-row { margin-bottom: 6px; font-size: 12px; }
+  .toggle-row label { cursor: pointer; }
+  .seed-row { display: flex; gap: 6px; margin-bottom: 8px; }
+  .seed-row input { width: 80px; background: #2a2540; color: #c8b89a; border: 1px solid #3a3050; padding: 4px 6px; border-radius: 3px; font-size: 12px; }
+  #perf { font-size: 10px; color: #6a5a4a; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div id="controls">
+  <h2>Iso-Contour Coastline</h2>
+
+  <h3>Map Seed</h3>
+  <div class="seed-row">
+    <input type="number" id="seed" value="42" min="0" max="9999">
+    <button onclick="regenerate()">Regenerate</button>
+  </div>
+
+  <h3>Coastline Shape</h3>
+  <div class="control-row">
+    <label>Blob Radius</label>
+    <input type="range" id="blobRadius" min="0.6" max="2.5" step="0.05" value="1.8">
+    <span class="val" id="blobRadius_v">1.8</span>
+  </div>
+  <div class="control-row">
+    <label>Threshold</label>
+    <input type="range" id="threshold" min="0.05" max="0.9" step="0.05" value="0.35">
+    <span class="val" id="threshold_v">0.35</span>
+  </div>
+  <div class="control-row">
+    <label>Smooth Passes</label>
+    <input type="range" id="smoothPasses" min="0" max="6" step="1" value="2">
+    <span class="val" id="smoothPasses_v">2</span>
+  </div>
+  <div class="control-row">
+    <label>Irregularity</label>
+    <input type="range" id="displacement" min="0" max="0.6" step="0.02" value="0.02">
+    <span class="val" id="displacement_v">0.02</span>
+  </div>
+  <div class="control-row">
+    <label>Noise Scale</label>
+    <input type="range" id="noiseScale" min="0.005" max="0.08" step="0.002" value="0.02">
+    <span class="val" id="noiseScale_v">0.02</span>
+  </div>
+
+  <h3>Coastal Shallows</h3>
+  <div class="control-row">
+    <label>Width</label>
+    <input type="range" id="shallowWidth" min="0" max="0.25" step="0.01" value="0.19">
+    <span class="val" id="shallowWidth_v">0.19</span>
+  </div>
+  <div class="control-row">
+    <label>Color</label>
+    <input type="color" id="shallowColor" value="#1e3a4a">
+  </div>
+
+  <h3>Colors</h3>
+  <div class="control-row">
+    <label>Deep Water</label>
+    <input type="color" id="deepColor" value="#1a2a3a">
+  </div>
+  <div class="control-row">
+    <label>Coast Edge</label>
+    <input type="color" id="coastBase" value="#2a2a1a">
+  </div>
+
+  <h3>Display</h3>
+  <div class="toggle-row"><label><input type="checkbox" id="showGrid" checked> Show hex grid</label></div>
+  <div class="toggle-row"><label><input type="checkbox" id="showCoast" checked> Organic coastline</label></div>
+  <div class="toggle-row"><label><input type="checkbox" id="showDebug" checked> Show scalar field</label></div>
+  <div class="toggle-row"><label><input type="checkbox" id="showContourPts"> Show contour points</label></div>
+
+  <h3>Map Layout</h3>
+  <div class="control-row">
+    <label>Water %</label>
+    <input type="range" id="waterPct" min="0.15" max="0.65" step="0.05" value="0.35">
+    <span class="val" id="waterPct_v">0.35</span>
+  </div>
+  <div style="margin-top:8px;">
+    <button onclick="presetIsland()">Island</button>
+    <button onclick="presetContinent()">Continent</button>
+    <button onclick="presetArchipelago()">Archipelago</button>
+    <button onclick="presetLakeRiver()">Lakes & River</button>
+  </div>
+
+  <div id="perf"></div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+</div>
+
+<script>
+// ===== SIMPLEX NOISE (compact 2D implementation) =====
+class SimplexNoise {
+  constructor(seed = 0) {
+    this.p = new Uint8Array(512);
+    const perm = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) perm[i] = i;
+    let s = seed;
+    const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 4294967296; };
+    for (let i = 255; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [perm[i], perm[j]] = [perm[j], perm[i]];
+    }
+    for (let i = 0; i < 512; i++) this.p[i] = perm[i & 255];
+  }
+  noise2D(x, y) {
+    const G2 = (3 - Math.sqrt(3)) / 6;
+    const F2 = (Math.sqrt(3) - 1) / 2;
+    const s = (x + y) * F2;
+    const i = Math.floor(x + s), j = Math.floor(y + s);
+    const t = (i + j) * G2;
+    const X0 = i - t, Y0 = j - t;
+    const x0 = x - X0, y0 = y - Y0;
+    const i1 = x0 > y0 ? 1 : 0, j1 = x0 > y0 ? 0 : 1;
+    const x1 = x0 - i1 + G2, y1 = y0 - j1 + G2;
+    const x2 = x0 - 1 + 2 * G2, y2 = y0 - 1 + 2 * G2;
+    const ii = i & 255, jj = j & 255;
+    const grad = [[1,1],[-1,1],[1,-1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+    const gi0 = this.p[ii + this.p[jj]] % 8;
+    const gi1 = this.p[ii + i1 + this.p[jj + j1]] % 8;
+    const gi2 = this.p[ii + 1 + this.p[jj + 1]] % 8;
+    const dot = (g, x, y) => g[0] * x + g[1] * y;
+    let n0 = 0, n1 = 0, n2 = 0;
+    let t0 = 0.5 - x0*x0 - y0*y0;
+    if (t0 > 0) { t0 *= t0; n0 = t0 * t0 * dot(grad[gi0], x0, y0); }
+    let t1 = 0.5 - x1*x1 - y1*y1;
+    if (t1 > 0) { t1 *= t1; n1 = t1 * t1 * dot(grad[gi1], x1, y1); }
+    let t2 = 0.5 - x2*x2 - y2*y2;
+    if (t2 > 0) { t2 *= t2; n2 = t2 * t2 * dot(grad[gi2], x2, y2); }
+    return 70 * (n0 + n1 + n2);
+  }
+}
+
+// ===== HEX MATH (matching game's flat-top odd-q) =====
+const HEX_SIZE = 36;
+const COLS = 16, ROWS = 12;
+
+function hexToPixel(col, row) {
+  const x = col * HEX_SIZE * 1.5;
+  const y = row * Math.sqrt(3) * HEX_SIZE + (col % 2 === 1 ? Math.sqrt(3) * HEX_SIZE / 2 : 0);
+  return { x, y };
+}
+
+function hexVertices(cx, cy) {
+  const verts = [];
+  for (let i = 0; i < 6; i++) {
+    const angle = (Math.PI / 180) * (60 * i);
+    verts.push({ x: cx + HEX_SIZE * Math.cos(angle), y: cy + HEX_SIZE * Math.sin(angle) });
+  }
+  return verts;
+}
+
+function hexNeighbors(col, row) {
+  const isOdd = col % 2 === 1;
+  const dirs = isOdd
+    ? [[1,1],[1,0],[0,-1],[-1,0],[-1,1],[0,1]]
+    : [[1,0],[1,-1],[0,-1],[-1,-1],[-1,0],[0,1]];
+  return dirs.map(([dc, dr]) => ({ col: col + dc, row: row + dr }));
+}
+
+function edgeNeighbor(col, row, edgeIndex) {
+  const isOdd = col % 2 === 1;
+  const dirs = isOdd
+    ? [[1, 1], [0, 1], [-1, 1], [-1, 0], [0, -1], [1, 0]]
+    : [[1, 0], [0, 1], [-1, 0], [-1, -1], [0, -1], [1, -1]];
+  const [dc, dr] = dirs[edgeIndex];
+  return { col: col + dc, row: row + dr };
+}
+
+function hexKey(col, row) { return `${col},${row}`; }
+
+// ===== TERRAIN COLORS (matching Threadbare palette) =====
+const WATER_TERRAINS = new Set(['ocean', 'coastal_shallows', 'lake', 'river']);
+const LAND_COLORS = {
+  grassland: '#3a3a20', deciduous_forest: '#2a3a1a', dense_forest: '#1a2a10',
+  hills: '#3a3520', mountains: '#2a2a2a', desert: '#3a3020',
+  swamp: '#2a3a1a', tundra: '#2a3035', savanna: '#3a3520',
+};
+const WATER_COLORS_MAP = {
+  ocean: '#1a2a3a', coastal_shallows: '#2a3a4a', lake: '#1e3040', river: '#253545',
+};
+
+// ===== MAP GENERATION =====
+let terrainMap = {};
+let noise, noise2;
+
+function generateMap(seed, preset = 'default') {
+  noise = new SimplexNoise(seed);
+  noise2 = new SimplexNoise(seed + 1000);
+  terrainMap = {};
+
+  const waterPct = parseFloat(document.getElementById('waterPct').value);
+  const landTypes = Object.keys(LAND_COLORS);
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const { x, y } = hexToPixel(col, row);
+      const nx = x / (COLS * HEX_SIZE), ny = y / (ROWS * HEX_SIZE);
+      let waterVal;
+
+      if (preset === 'island') {
+        const cx = (col - COLS/2) / (COLS/2), cy = (row - ROWS/2) / (ROWS/2);
+        const dist = Math.sqrt(cx*cx + cy*cy);
+        waterVal = dist * 0.7 + noise.noise2D(nx * 4, ny * 4) * 0.3;
+        waterVal = waterVal > (1 - waterPct) ? 1 : 0;
+      } else if (preset === 'continent') {
+        const cx = (col - COLS * 0.35) / COLS;
+        waterVal = cx * 1.2 + noise.noise2D(nx * 3, ny * 3) * 0.4;
+        waterVal = waterVal > (0.5 - waterPct * 0.5) ? 1 : 0;
+      } else if (preset === 'archipelago') {
+        const n1 = noise.noise2D(nx * 6, ny * 6);
+        const n2 = noise2.noise2D(nx * 12, ny * 12) * 0.3;
+        waterVal = (n1 + n2) < (waterPct - 0.5) ? 0 : 1;
+      } else if (preset === 'lake_river') {
+        const cx = (col - COLS * 0.6) / COLS, cy = (row - ROWS * 0.4) / ROWS;
+        const lakeDist = Math.sqrt(cx*cx*4 + cy*cy*4);
+        const riverStrip = Math.abs(row - ROWS * 0.5 - noise.noise2D(col * 0.3, 0) * 2) < 1.2;
+        if (lakeDist < 0.3 + noise.noise2D(nx * 8, ny * 8) * 0.1) {
+          waterVal = 1;
+        } else if (riverStrip && col > COLS * 0.15) {
+          waterVal = 1;
+        } else {
+          waterVal = 0;
+        }
+      } else {
+        const n1 = noise.noise2D(nx * 4, ny * 4);
+        const n2 = noise2.noise2D(nx * 8, ny * 8) * 0.3;
+        waterVal = (n1 + n2) < (waterPct - 0.5) * 2 ? 0 : 1;
+      }
+
+      if (waterVal > 0.5) {
+        terrainMap[hexKey(col, row)] = 'ocean';
+      } else {
+        terrainMap[hexKey(col, row)] = landTypes[Math.floor(Math.abs(noise.noise2D(col * 0.5, row * 0.5)) * landTypes.length) % landTypes.length];
+      }
+    }
+  }
+
+  // Second pass: classify water subtypes
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const key = hexKey(col, row);
+      if (!WATER_TERRAINS.has(terrainMap[key])) continue;
+      const neighbors = hexNeighbors(col, row);
+      const hasLandNeighbor = neighbors.some(n =>
+        n.col >= 0 && n.col < COLS && n.row >= 0 && n.row < ROWS &&
+        !WATER_TERRAINS.has(terrainMap[hexKey(n.col, n.row)])
+      );
+      if (hasLandNeighbor) {
+        terrainMap[key] = 'coastal_shallows';
+      }
+    }
+  }
+}
+
+function isWater(col, row) {
+  if (col < 0 || col >= COLS || row < 0 || row >= ROWS) return true; // off-map = water
+  return WATER_TERRAINS.has(terrainMap[hexKey(col, row)]);
+}
+
+// ===== SCALAR FIELD (metaball-style land blobs) =====
+// Each land hex emits a quartic falloff blob. Adjacent blobs merge
+// smoothly, producing oblong shapes for rows of hexes.
+
+const FIELD_RES = 4; // pixels per grid cell
+
+function buildScalarField(offsetX, offsetY) {
+  const blobRadius = parseFloat(document.getElementById('blobRadius').value) * HEX_SIZE;
+  const r2 = blobRadius * blobRadius;
+
+  // Collect land hex pixel positions
+  const landHexes = [];
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      if (!isWater(col, row)) {
+        const { x, y } = hexToPixel(col, row);
+        landHexes.push({ x: x + offsetX, y: y + offsetY });
+      }
+    }
+  }
+
+  const gridW = Math.ceil(canvas.width / FIELD_RES) + 1;
+  const gridH = Math.ceil(canvas.height / FIELD_RES) + 1;
+  const field = new Float32Array(gridW * gridH);
+
+  for (let gy = 0; gy < gridH; gy++) {
+    const py = gy * FIELD_RES;
+    for (let gx = 0; gx < gridW; gx++) {
+      const px = gx * FIELD_RES;
+      let value = 0;
+
+      for (const hex of landHexes) {
+        const dx = px - hex.x;
+        const dy = py - hex.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= r2) continue; // quartic has compact support
+        const t = 1 - d2 / r2;
+        value += t * t; // quartic falloff: (1 - d²/r²)²
+      }
+
+      field[gy * gridW + gx] = value;
+    }
+  }
+
+  return { field, gridW, gridH };
+}
+
+// ===== MARCHING SQUARES =====
+// Extracts iso-contour line segments from the scalar field.
+// Corners: c0=top-left, c1=top-right, c2=bottom-right, c3=bottom-left
+// Edges:   e0=top(c0-c1), e1=right(c1-c2), e2=bottom(c3-c2), e3=left(c0-c3)
+
+function extractContours(field, gridW, gridH, threshold) {
+  const segments = [];
+
+  // Lookup table: case index → pairs of [edgeA, edgeB]
+  const CASES = [
+    [],            // 0: none above
+    [[3, 0]],      // 1: c0
+    [[0, 1]],      // 2: c1
+    [[3, 1]],      // 3: c0,c1
+    [[1, 2]],      // 4: c2
+    [[3, 0],[1, 2]], // 5: c0,c2 (saddle)
+    [[0, 2]],      // 6: c1,c2
+    [[3, 2]],      // 7: c0,c1,c2
+    [[2, 3]],      // 8: c3
+    [[2, 0]],      // 9: c0,c3
+    [[0, 1],[2, 3]], // 10: c1,c3 (saddle)
+    [[2, 1]],      // 11: c0,c1,c3
+    [[1, 3]],      // 12: c2,c3
+    [[1, 0]],      // 13: c0,c2,c3
+    [[0, 3]],      // 14: c1,c2,c3
+    [],            // 15: all above
+  ];
+
+  for (let gy = 0; gy < gridH - 1; gy++) {
+    for (let gx = 0; gx < gridW - 1; gx++) {
+      const v0 = field[gy * gridW + gx];           // top-left
+      const v1 = field[gy * gridW + gx + 1];       // top-right
+      const v2 = field[(gy + 1) * gridW + gx + 1]; // bottom-right
+      const v3 = field[(gy + 1) * gridW + gx];     // bottom-left
+
+      let ci = 0;
+      if (v0 >= threshold) ci |= 1;
+      if (v1 >= threshold) ci |= 2;
+      if (v2 >= threshold) ci |= 4;
+      if (v3 >= threshold) ci |= 8;
+
+      if (ci === 0 || ci === 15) continue;
+
+      // Pixel corners of this grid cell
+      const x0 = gx * FIELD_RES, y0 = gy * FIELD_RES;
+      const x1 = x0 + FIELD_RES,  y1 = y0 + FIELD_RES;
+
+      // Interpolation on each edge
+      function interp(va, vb, ax, ay, bx, by) {
+        if (Math.abs(vb - va) < 1e-10) return { x: (ax + bx) / 2, y: (ay + by) / 2 };
+        const t = (threshold - va) / (vb - va);
+        return { x: ax + t * (bx - ax), y: ay + t * (by - ay) };
+      }
+
+      const edgePts = [
+        interp(v0, v1, x0, y0, x1, y0), // edge 0: top
+        interp(v1, v2, x1, y0, x1, y1), // edge 1: right
+        interp(v3, v2, x0, y1, x1, y1), // edge 2: bottom (c3→c2)
+        interp(v0, v3, x0, y0, x0, y1), // edge 3: left (c0→c3)
+      ];
+
+      for (const [ea, eb] of CASES[ci]) {
+        segments.push({ p1: edgePts[ea], p2: edgePts[eb] });
+      }
+    }
+  }
+
+  return segments;
+}
+
+// ===== CONTOUR CHAINING =====
+// Connect marching squares segments into closed loops.
+// Uses endpoint snapping since adjacent cells share edge positions.
+
+function chainSegmentsIntoLoops(segments) {
+  if (segments.length === 0) return [];
+
+  const SNAP = 0.5; // sub-pixel snap distance
+  const snapKey = (p) => `${Math.round(p.x / SNAP)},${Math.round(p.y / SNAP)}`;
+
+  // Index segments by both endpoints
+  const segs = segments.map((s, i) => ({
+    i,
+    p1: s.p1,
+    p2: s.p2,
+    k1: snapKey(s.p1),
+    k2: snapKey(s.p2),
+    used: false,
+  }));
+
+  const byEndpoint = {};
+  for (const seg of segs) {
+    (byEndpoint[seg.k1] = byEndpoint[seg.k1] || []).push({ seg, startSide: true });
+    (byEndpoint[seg.k2] = byEndpoint[seg.k2] || []).push({ seg, startSide: false });
+  }
+
+  const loops = [];
+
+  for (const startSeg of segs) {
+    if (startSeg.used) continue;
+    startSeg.used = true;
+
+    const chain = [startSeg.p1, startSeg.p2];
+    let currentKey = startSeg.k2;
+    const startKey = startSeg.k1;
+
+    // Follow chain forward
+    let safety = 0;
+    while (safety++ < 50000) {
+      const candidates = (byEndpoint[currentKey] || []).filter(c => !c.seg.used);
+      if (candidates.length === 0) break;
+
+      const next = candidates[0];
+      next.seg.used = true;
+
+      // Determine which end connects and which is the new endpoint
+      if (next.startSide) {
+        // p1 matched → follow to p2
+        chain.push(next.seg.p2);
+        currentKey = next.seg.k2;
+      } else {
+        // p2 matched → follow to p1
+        chain.push(next.seg.p1);
+        currentKey = next.seg.k1;
+      }
+
+      // Check if loop closed
+      if (currentKey === startKey) break;
+    }
+
+    if (chain.length >= 3) {
+      loops.push(chain);
+    }
+  }
+
+  return loops;
+}
+
+// ===== CHAIKIN CORNER-CUTTING SMOOTHING =====
+// Each pass replaces each segment with two shorter segments,
+// cutting 25% from each end. Produces progressively smoother curves.
+
+function chaikinSmooth(loop, passes) {
+  let pts = loop;
+  for (let pass = 0; pass < passes; pass++) {
+    const n = pts.length;
+    if (n < 3) break;
+    const smoothed = [];
+    for (let i = 0; i < n; i++) {
+      const p0 = pts[i];
+      const p1 = pts[(i + 1) % n];
+      smoothed.push({
+        x: 0.75 * p0.x + 0.25 * p1.x,
+        y: 0.75 * p0.y + 0.25 * p1.y,
+      });
+      smoothed.push({
+        x: 0.25 * p0.x + 0.75 * p1.x,
+        y: 0.25 * p0.y + 0.75 * p1.y,
+      });
+    }
+    pts = smoothed;
+  }
+  return pts;
+}
+
+// ===== CONTOUR DISPLACEMENT =====
+// Adds low-frequency noise along the outward normal for organic irregularity.
+// The normal at each point is perpendicular to the local tangent,
+// oriented outward (toward water / lower field values).
+
+function displaceContour(loop, noiseInst, noiseScale, amplitude) {
+  if (amplitude < 0.001) return loop;
+
+  const n = loop.length;
+  const displaced = [];
+
+  for (let i = 0; i < n; i++) {
+    const prev = loop[(i - 1 + n) % n];
+    const curr = loop[i];
+    const next = loop[(i + 1) % n];
+
+    // Tangent from prev to next
+    const tx = next.x - prev.x;
+    const ty = next.y - prev.y;
+    const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
+
+    // Outward normal (perpendicular, pointing right of tangent direction)
+    // For CW winding this points outward; we'll verify orientation below
+    let nx = ty / tLen;
+    let ny = -tx / tLen;
+
+    // Noise-based displacement along normal
+    const n1 = noiseInst.noise2D(curr.x * noiseScale, curr.y * noiseScale);
+    const disp = n1 * amplitude * HEX_SIZE;
+
+    displaced.push({
+      x: curr.x + nx * disp,
+      y: curr.y + ny * disp,
+    });
+  }
+
+  return displaced;
+}
+
+// ===== CONTOUR OFFSET (for shallow water band) =====
+// Pushes each point outward along its normal by a given distance.
+// Uses noise for gentle width variance.
+
+function offsetContour(loop, distance, noiseInst, noiseScale, variance) {
+  const n = loop.length;
+  const offset = [];
+
+  for (let i = 0; i < n; i++) {
+    const prev = loop[(i - 1 + n) % n];
+    const curr = loop[i];
+    const next = loop[(i + 1) % n];
+
+    const tx = next.x - prev.x;
+    const ty = next.y - prev.y;
+    const tLen = Math.sqrt(tx * tx + ty * ty) || 1;
+
+    // Outward normal (same convention as displaceContour)
+    let nx = ty / tLen;
+    let ny = -tx / tLen;
+
+    // Noise-modulated distance
+    const nv = noiseInst.noise2D(curr.x * noiseScale + 500, curr.y * noiseScale + 500);
+    const d = distance * (1 + nv * variance);
+
+    offset.push({
+      x: curr.x + nx * d,
+      y: curr.y + ny * d,
+    });
+  }
+
+  return offset;
+}
+
+// ===== WINDING ORDER =====
+// Ensure loops have consistent winding (CW = land exterior, outward normal points to water)
+
+function signedArea(loop) {
+  let area = 0;
+  for (let i = 0; i < loop.length; i++) {
+    const j = (i + 1) % loop.length;
+    area += loop[i].x * loop[j].y;
+    area -= loop[j].x * loop[i].y;
+  }
+  return area / 2;
+}
+
+function ensureClockwise(loop) {
+  if (signedArea(loop) > 0) {
+    loop.reverse();
+  }
+  return loop;
+}
+
+// ===== RENDERING =====
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  const padding = 60;
+  const gridW = (COLS - 1) * HEX_SIZE * 1.5 + HEX_SIZE * 2;
+  const gridH = ROWS * Math.sqrt(3) * HEX_SIZE + Math.sqrt(3) * HEX_SIZE / 2;
+  canvas.width = gridW + padding * 2;
+  canvas.height = gridH + padding * 2;
+}
+
+function drawPath(loop) {
+  if (loop.length < 3) return;
+  ctx.moveTo(loop[0].x, loop[0].y);
+  for (let i = 1; i < loop.length; i++) {
+    ctx.lineTo(loop[i].x, loop[i].y);
+  }
+  ctx.closePath();
+}
+
+function drawOrganicMap(offsetX, offsetY) {
+  const t0 = performance.now();
+
+  const deepColor = document.getElementById('deepColor').value;
+  const shallowColor = document.getElementById('shallowColor').value;
+  const shallowWidth = parseFloat(document.getElementById('shallowWidth').value);
+  const threshold = parseFloat(document.getElementById('threshold').value);
+  const smoothPasses = parseInt(document.getElementById('smoothPasses').value);
+  const displacementAmt = parseFloat(document.getElementById('displacement').value);
+  const noiseScale = parseFloat(document.getElementById('noiseScale').value);
+  const showGrid = document.getElementById('showGrid').checked;
+  const showDebug = document.getElementById('showDebug').checked;
+  const showContourPts = document.getElementById('showContourPts').checked;
+
+  // ── Step 1: Deep water background ──────────────────────────────
+  ctx.fillStyle = deepColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // ── Step 2: Build scalar field ─────────────────────────────────
+  const { field, gridW, gridH } = buildScalarField(offsetX, offsetY);
+
+  // Debug: visualize scalar field
+  if (showDebug) {
+    for (let gy = 0; gy < gridH; gy++) {
+      for (let gx = 0; gx < gridW; gx++) {
+        const v = field[gy * gridW + gx];
+        if (v > 0.01) {
+          const intensity = Math.min(1, v / 2);
+          ctx.fillStyle = `rgba(100, 200, 100, ${intensity * 0.4})`;
+          ctx.fillRect(gx * FIELD_RES, gy * FIELD_RES, FIELD_RES, FIELD_RES);
+        }
+      }
+    }
+  }
+
+  // ── Step 3: Extract iso-contours via marching squares ──────────
+  const rawSegments = extractContours(field, gridW, gridH, threshold);
+  let loops = chainSegmentsIntoLoops(rawSegments);
+
+  // ── Step 4: Smooth + displace contours ─────────────────────────
+  loops = loops.map(loop => {
+    let smoothed = chaikinSmooth(loop, smoothPasses);
+    smoothed = ensureClockwise(smoothed);
+    smoothed = displaceContour(smoothed, noise, noiseScale, displacementAmt);
+    return smoothed;
+  });
+
+  // Filter out tiny loops (< 20 points after smoothing = noise artifacts)
+  loops = loops.filter(l => l.length >= 20);
+
+  // ── Step 5: Coastal shallows band ───────────────────────────────
+  // Extract a second iso-contour at a LOWER threshold from the same
+  // scalar field. Lower threshold = larger contour = extends into water.
+  // The visible band between this and the land contour = coastal shallows.
+
+  if (shallowWidth > 0) {
+    const shallowThreshold = Math.max(0.01, threshold - shallowWidth);
+    const shallowSegments = extractContours(field, gridW, gridH, shallowThreshold);
+    let shallowLoops = chainSegmentsIntoLoops(shallowSegments);
+
+    shallowLoops = shallowLoops.map(loop => {
+      let smoothed = chaikinSmooth(loop, smoothPasses);
+      smoothed = ensureClockwise(smoothed);
+      smoothed = displaceContour(smoothed, noise, noiseScale, displacementAmt);
+      return smoothed;
+    });
+    shallowLoops = shallowLoops.filter(l => l.length >= 20);
+
+    ctx.fillStyle = shallowColor;
+    for (const loop of shallowLoops) {
+      ctx.beginPath();
+      drawPath(loop);
+      ctx.fill();
+    }
+  }
+
+  // ── Step 6: Fill land inside contours (two-pass) ────────────────
+  // Pass A: Fill contour with base color → smooth organic coastline edge
+  // Pass B: Draw hex terrain fills at full size, clipped to contour
+
+  const COAST_BASE_COLOR = document.getElementById('coastBase').value;
+
+  if (loops.length > 0) {
+    // Pass A: solid contour fill — the smooth coastline boundary
+    ctx.fillStyle = COAST_BASE_COLOR;
+    for (const loop of loops) {
+      ctx.beginPath();
+      drawPath(loop);
+      ctx.fill();
+    }
+
+    // Pass B: terrain-colored hexes at full size, clipped to contour
+    ctx.save();
+    ctx.beginPath();
+    for (const loop of loops) {
+      drawPath(loop);
+    }
+    ctx.clip('evenodd');
+
+    for (let row = 0; row < ROWS; row++) {
+      for (let col = 0; col < COLS; col++) {
+        if (isWater(col, row)) continue;
+        const terrain = terrainMap[hexKey(col, row)];
+        const color = LAND_COLORS[terrain] || '#3a3a20';
+        const { x, y } = hexToPixel(col, row);
+        const cx = x + offsetX, cy = y + offsetY;
+        const verts = hexVertices(cx, cy);
+
+        ctx.beginPath();
+        ctx.moveTo(verts[0].x, verts[0].y);
+        for (let i = 1; i < 6; i++) ctx.lineTo(verts[i].x, verts[i].y);
+        ctx.closePath();
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+    }
+
+    // ── Step 7: Grid lines (inside clip so they don't escape contour)
+    if (showGrid) {
+      ctx.strokeStyle = 'rgba(139, 105, 60, 0.3)';
+      ctx.lineWidth = 0.6;
+      for (let row = 0; row < ROWS; row++) {
+        for (let col = 0; col < COLS; col++) {
+          if (isWater(col, row)) continue;
+          const { x, y } = hexToPixel(col, row);
+          const cx = x + offsetX, cy = y + offsetY;
+          const verts = hexVertices(cx, cy);
+
+          for (let i = 0; i < 6; i++) {
+            const n = edgeNeighbor(col, row, i);
+            if (isWater(n.col, n.row)) continue; // skip water edges
+            if (n.col < col || (n.col === col && n.row < row)) continue;
+            ctx.beginPath();
+            ctx.moveTo(verts[i].x, verts[i].y);
+            ctx.lineTo(verts[(i + 1) % 6].x, verts[(i + 1) % 6].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    ctx.restore();
+  }
+
+  // ── Debug: show contour points ─────────────────────────────────
+  if (showContourPts) {
+    for (const loop of loops) {
+      for (const p of loop) {
+        ctx.fillStyle = 'rgba(255, 100, 100, 0.6)';
+        ctx.fillRect(p.x - 1, p.y - 1, 2, 2);
+      }
+    }
+  }
+
+  const elapsed = (performance.now() - t0).toFixed(1);
+  document.getElementById('perf').textContent =
+    `${elapsed}ms | ${rawSegments.length} segments → ${loops.length} loops | field ${gridW}×${gridH}`;
+}
+
+function drawFlatGrid(offsetX, offsetY) {
+  for (let row = 0; row < ROWS; row++) {
+    for (let col = 0; col < COLS; col++) {
+      const { x, y } = hexToPixel(col, row);
+      const cx = x + offsetX, cy = y + offsetY;
+      const terrain = terrainMap[hexKey(col, row)];
+      const isW = WATER_TERRAINS.has(terrain);
+      const color = isW ? (WATER_COLORS_MAP[terrain] || '#1a2a3a') : (LAND_COLORS[terrain] || '#3a3a20');
+
+      const verts = hexVertices(cx, cy);
+      ctx.beginPath();
+      ctx.moveTo(verts[0].x, verts[0].y);
+      for (let i = 1; i < 6; i++) ctx.lineTo(verts[i].x, verts[i].y);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(139, 105, 60, 0.3)';
+      ctx.lineWidth = 0.6;
+      ctx.stroke();
+    }
+  }
+}
+
+function render() {
+  resize();
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const offsetX = 60;
+  const offsetY = 60;
+  const showOrganic = document.getElementById('showCoast').checked;
+
+  if (showOrganic) {
+    drawOrganicMap(offsetX, offsetY);
+  } else {
+    ctx.fillStyle = '#1e1b2e';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawFlatGrid(offsetX, offsetY);
+  }
+}
+
+// ===== PRESETS =====
+let currentPreset = 'default';
+
+function presetIsland() { currentPreset = 'island'; regenerate(); }
+function presetContinent() { currentPreset = 'continent'; regenerate(); }
+function presetArchipelago() { currentPreset = 'archipelago'; regenerate(); }
+function presetLakeRiver() { currentPreset = 'lake_river'; regenerate(); }
+
+function regenerate() {
+  const seed = parseInt(document.getElementById('seed').value) || 42;
+  generateMap(seed, currentPreset);
+  render();
+}
+
+// ===== EVENT WIRING =====
+document.querySelectorAll('input[type="range"]').forEach(input => {
+  const valSpan = document.getElementById(input.id + '_v');
+  input.addEventListener('input', () => {
+    if (valSpan) valSpan.textContent = input.value;
+    render();
+  });
+});
+
+document.querySelectorAll('input[type="checkbox"], input[type="color"]').forEach(input => {
+  input.addEventListener('input', () => render());
+});
+
+// Init
+generateMap(42, 'default');
+render();
+</script>
+</body>
+</html>

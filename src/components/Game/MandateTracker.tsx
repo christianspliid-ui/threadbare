@@ -76,14 +76,24 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
       {/* Compact Bar */}
       <div
         onClick={handleToggle}
-        className="cursor-pointer px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 hover:bg-stone-700/95 transition-colors relative z-50"
+        className="cursor-pointer px-4 py-2 border-b transition-colors relative z-50"
+        style={{
+          backgroundColor: 'var(--bg-surface)',
+          borderColor: 'var(--border-subtle)',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
+        }}
       >
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2 min-w-0">
             <Tooltip id="ui.mandate_tracker">
               <span
-                className="text-xs font-bold uppercase tracking-wider truncate"
-                style={{ color, fontFamily: 'Cinzel, serif' }}
+                className="font-bold uppercase tracking-wider truncate"
+                style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
               >
                 {definition.name}
               </span>
@@ -96,7 +106,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               ))}
             </div>
           </div>
-          <span className="text-xs font-mono ml-2 flex-shrink-0" style={{ color }}>
+          <span className="font-mono ml-2 flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
             {displayText}
           </span>
         </div>
@@ -106,15 +116,20 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
       {/* Expanded Popover */}
       {isExpanded && (
         <div
-          className="absolute top-full left-0 right-0 mt-1 bg-stone-800/98 border border-amber-900/40 rounded shadow-lg p-4 z-50 max-w-md"
-          style={{ boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)' }}
+          className="absolute top-full left-0 right-0 mt-1 border rounded shadow-lg p-4 z-50 max-w-md"
+          style={{
+            backgroundColor: 'var(--bg-surface)',
+            borderColor: 'var(--border-medium)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
+          }}
           onClick={e => e.stopPropagation()}
         >
           {/* Type Badge */}
           <div className="flex items-center gap-2 mb-3">
             <span
-              className="text-xs font-bold uppercase px-2 py-1 rounded"
+              className="font-bold uppercase px-2 py-1 rounded"
               style={{
+                fontSize: 'var(--text-xs)',
                 backgroundColor: `${color}20`,
                 color,
                 border: `1px solid ${color}40`,
@@ -127,7 +142,9 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
           </div>
 
           {/* Description */}
-          <p className="text-xs text-amber-200/80 mb-3">{definition.description}</p>
+          <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginBottom: '0.75rem' }}>
+            {definition.description}
+          </p>
 
           {/* 3-Stage Timeline */}
           <div className="space-y-3 mb-3">
@@ -138,7 +155,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
               const isCurrent = stageDef.stage === state.currentStage;
 
               return (
-                <div key={stageDef.stage} className="text-xs">
+                <div key={stageDef.stage} style={{ fontSize: 'var(--text-xs)' }}>
                   <div
                     className="flex items-center gap-2 mb-1"
                     style={{
@@ -166,7 +183,9 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
           </div>
 
           {/* Close hint */}
-          <div className="text-xs text-amber-900/60 text-center">Click to close</div>
+          <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', textAlign: 'center' }}>
+            Click to close
+          </div>
         </div>
       )}
 

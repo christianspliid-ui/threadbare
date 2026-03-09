@@ -56,61 +56,85 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
       className="absolute inset-0 flex items-center justify-center z-50"
       style={{ pointerEvents: 'auto' }}
     >
-      {/* Backdrop */}
+      {/* Backdrop — IX-014: stopPropagation prevents bleed-through to elements underneath */}
       <div
         className="absolute inset-0 bg-black/50"
-        onClick={onCancel}
+        onClick={(e) => { e.stopPropagation(); onCancel(); }}
       />
 
       {/* Panel */}
-      <div className="relative bg-stone-800 border border-amber-700/60 rounded-lg p-4 w-72 shadow-xl">
+      <div
+        className="relative border rounded-lg p-4 w-72 shadow-xl"
+        style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-medium)' }}
+      >
         {/* Header */}
         <h3
-          className="text-amber-100 text-lg font-bold mb-1"
-          style={{ fontFamily: 'Cinzel, serif' }}
+          className="text-lg font-bold mb-1"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
         >
           {label}
         </h3>
-        <p className="text-amber-400/70 text-xs mb-3">{description}</p>
+        <p className="mb-3" style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>{description}</p>
 
         {/* Agenda display */}
         {props.agendaName && (
-          <div className="mb-3 p-2 bg-stone-700/40 border border-amber-900/30 rounded">
-            <div className="text-amber-100 text-sm font-semibold">{props.agendaName}</div>
+          <div
+            className="mb-3 p-2 border rounded"
+            style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-subtle)' }}
+          >
+            <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{props.agendaName}</div>
             {props.agendaNarrativeHook && (
-              <p className="text-amber-300/60 text-xs mt-1 italic">"{props.agendaNarrativeHook}"</p>
+              <p className="mt-1 italic" style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>"{props.agendaNarrativeHook}"</p>
             )}
           </div>
         )}
 
         {/* Stats */}
-        <div className="space-y-1 mb-3 text-sm">
-          <div className="flex justify-between text-amber-200/80">
-            <span>Cost</span>
-            <span>{essenceCost} {sphere} essence</span>
+        <div className="space-y-1 mb-3">
+          <div className="flex justify-between" style={{ fontSize: 'var(--text-sm)' }}>
+            <span style={{ color: 'var(--text-tertiary)' }}>Cost</span>
+            <span style={{ color: 'var(--text-primary)' }}>{essenceCost} {sphere} essence</span>
           </div>
-          <div className="flex justify-between text-amber-200/80">
-            <span>Detection</span>
-            <span>{riskPercent}% risk</span>
+          <div className="flex justify-between" style={{ fontSize: 'var(--text-sm)' }}>
+            <span style={{ color: 'var(--text-tertiary)' }}>Detection</span>
+            <span style={{ color: 'var(--text-primary)' }}>{riskPercent}% risk</span>
           </div>
           {rangeText && (
-            <div className="flex justify-between text-amber-200/80">
-              <span>Range</span>
-              <span className={isOutOfRange ? 'text-red-400' : ''}>{rangeText}</span>
+            <div className="flex justify-between" style={{ fontSize: 'var(--text-sm)' }}>
+              <span style={{ color: 'var(--text-tertiary)' }}>Range</span>
+              <span style={{ color: isOutOfRange ? 'var(--negative)' : 'var(--text-primary)' }}>{rangeText}</span>
             </div>
           )}
         </div>
 
         {/* Out of range message */}
         {isOutOfRange && (
-          <div className="mb-3 p-2 bg-red-900/30 border border-red-700/40 rounded text-red-300 text-xs text-center">
+          <div
+            className="mb-3 p-2 border rounded text-center"
+            style={{
+              backgroundColor: 'var(--negative)',
+              borderColor: 'var(--negative)',
+              color: 'var(--text-primary)',
+              fontSize: 'var(--text-xs)',
+              opacity: 0.8,
+            }}
+          >
             Out of range — move avatar closer
           </div>
         )}
 
         {/* Insufficient essence message */}
         {!isOutOfRange && !canAfford && (
-          <div className="mb-3 p-2 bg-red-900/30 border border-red-700/40 rounded text-red-300 text-xs text-center">
+          <div
+            className="mb-3 p-2 border rounded text-center"
+            style={{
+              backgroundColor: 'var(--negative)',
+              borderColor: 'var(--negative)',
+              color: 'var(--text-primary)',
+              fontSize: 'var(--text-xs)',
+              opacity: 0.8,
+            }}
+          >
             Insufficient {sphere} essence (need {essenceCost}, have {Math.floor(props.availableEssence ?? 0)})
           </div>
         )}
@@ -119,25 +143,45 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
         <div className="flex gap-2">
           {isOutOfRange ? (
             <button
-              className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200/70 rounded text-sm hover:bg-stone-700"
+              className="flex-1 px-3 py-1.5 rounded text-sm"
+              style={{
+                backgroundColor: 'var(--bg-surface)',
+                color: 'var(--text-secondary)',
+              }}
               onClick={onCancel}
               aria-label="Cancel"
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
             >
               Cancel
             </button>
           ) : isLocal ? (
             <>
               <button
-                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-amber-800/60 text-amber-100 hover:bg-amber-700/60' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                className="flex-1 px-3 py-1.5 rounded text-sm"
+                style={{
+                  backgroundColor: canAfford ? 'var(--accent-gold-dim)' : 'var(--bg-surface)',
+                  color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
+                  cursor: canAfford ? 'pointer' : 'not-allowed',
+                }}
                 onClick={() => canAfford && onConfirm('visit')}
                 disabled={!canAfford}
+                onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold)')}
+                onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold-dim)')}
               >
                 Go to Them (+15%)
               </button>
               <button
-                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-stone-800 text-amber-200 hover:bg-stone-700' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                className="flex-1 px-3 py-1.5 rounded text-sm"
+                style={{
+                  backgroundColor: canAfford ? 'var(--bg-surface)' : 'var(--bg-deep)',
+                  color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
+                  cursor: canAfford ? 'pointer' : 'not-allowed',
+                }}
                 onClick={() => canAfford && onConfirm('summon')}
                 disabled={!canAfford}
+                onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
               >
                 Summon (+1 ess)
               </button>
@@ -145,17 +189,30 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           ) : (
             <>
               <button
-                className={`flex-1 px-3 py-1.5 rounded text-sm ${canAfford ? 'bg-amber-800/60 text-amber-100 hover:bg-amber-700/60' : 'bg-stone-700/40 text-amber-200/30 cursor-not-allowed'}`}
+                className="flex-1 px-3 py-1.5 rounded text-sm"
+                style={{
+                  backgroundColor: canAfford ? 'var(--accent-gold-dim)' : 'var(--bg-surface)',
+                  color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
+                  cursor: canAfford ? 'pointer' : 'not-allowed',
+                }}
                 onClick={() => canAfford && onConfirm()}
                 disabled={!canAfford}
                 aria-label="Confirm"
+                onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold)')}
+                onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold-dim)')}
               >
                 Confirm
               </button>
               <button
-                className="flex-1 px-3 py-1.5 bg-stone-800 text-amber-200/70 rounded text-sm hover:bg-stone-700"
+                className="flex-1 px-3 py-1.5 rounded text-sm"
+                style={{
+                  backgroundColor: 'var(--bg-surface)',
+                  color: 'var(--text-secondary)',
+                }}
                 onClick={onCancel}
                 aria-label="Cancel"
+                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
               >
                 Cancel
               </button>

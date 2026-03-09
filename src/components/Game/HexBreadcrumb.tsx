@@ -1,5 +1,5 @@
 import type { SphereName } from '../../types';
-import type { SphereInfluence, LineOfSight } from '../../engine/hexZoom';
+import type { SphereInfluence, LineOfSight, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { TerrainType } from '../../types';
 import { getSphereColor } from '../../data/sphereIcons';
 
@@ -49,6 +49,8 @@ interface HexBreadcrumbProps {
   agentCount: number;
   lineOfSight: LineOfSight;
   sphereInfluence: SphereInfluence;
+  cultures: HexCultureSummary[];
+  factions: HexFactionSummary[];
   onBack: () => void;
 }
 
@@ -60,6 +62,8 @@ export function HexBreadcrumb({
   agentCount,
   lineOfSight,
   sphereInfluence,
+  cultures,
+  factions,
   onBack,
 }: HexBreadcrumbProps) {
   const terrainLabel = terrain
@@ -71,13 +75,22 @@ export function HexBreadcrumb({
     .filter(([, v]) => v > 0);
 
   const terrainColor = TERRAIN_COLORS[terrain] || '#6b8e23';
+  const dominantCulture = cultures.length > 0 ? cultures[0] : null;
+  const dominantFaction = factions.length > 0 ? factions[0] : null;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 bg-stone-800/90 border-b border-amber-900/30">
+    <div
+      className="flex items-center gap-3 px-4 py-2.5 border-b"
+      style={{
+        backgroundColor: 'var(--bg-deep)',
+        borderColor: 'var(--border-subtle)',
+      }}
+    >
       <button
         onClick={onBack}
         aria-label="back"
-        className="text-amber-400 hover:text-amber-200 transition-colors text-lg px-2"
+        className="transition-colors text-lg px-2"
+        style={{ color: 'var(--accent-gold)' }}
       >
         ←
       </button>
@@ -89,16 +102,37 @@ export function HexBreadcrumb({
         title={terrainLabel}
       />
 
-      <h2
-        className="text-amber-100 text-sm font-semibold tracking-wide"
-        style={{ fontFamily: 'Cinzel, serif' }}
-      >
-        {terrainLabel} Hex ({hexCol}, {hexRow})
-      </h2>
+      {/* Hex title + culture subtitle */}
+      <div className="flex flex-col min-w-0">
+        <h2
+          className="font-semibold tracking-wide truncate"
+          style={{
+            fontSize: 'var(--text-sm)',
+            color: 'var(--text-primary)',
+            fontFamily: 'var(--font-display)',
+          }}
+        >
+          {terrainLabel} ({hexCol}, {hexRow})
+        </h2>
+        {/* Culture / Faction sub-line */}
+        {(dominantCulture || dominantFaction) && (
+          <span
+            className="truncate"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+            }}
+          >
+            {dominantCulture && dominantCulture.cultureName}
+            {dominantCulture && dominantFaction && ' · '}
+            {dominantFaction && dominantFaction.factionName}
+          </span>
+        )}
+      </div>
 
       {/* Sphere influence dots */}
       {activeSpheres.length > 0 && (
-        <div className="flex gap-1 ml-2">
+        <div className="flex gap-1 ml-1">
           {activeSpheres.map(([sphere]) => (
             <div
               key={sphere}
@@ -113,14 +147,24 @@ export function HexBreadcrumb({
       <div className="flex-1" />
 
       {/* Stats */}
-      <span className="text-amber-400/60 text-xs">
-        {locationCount} locations · {agentCount} agents
+      <span
+        className="whitespace-nowrap"
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-tertiary)',
+        }}
+      >
+        {locationCount} loc · {agentCount} agents
       </span>
 
       {/* Line of sight */}
       <span
-        className="text-xs font-medium px-2 py-0.5 rounded"
-        style={{ color: SIGHT_COLORS[lineOfSight], borderColor: SIGHT_COLORS[lineOfSight], borderWidth: 1 }}
+        className="font-medium px-2 py-0.5 rounded whitespace-nowrap border"
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: SIGHT_COLORS[lineOfSight],
+          borderColor: SIGHT_COLORS[lineOfSight],
+        }}
       >
         {SIGHT_LABELS[lineOfSight]}
       </span>

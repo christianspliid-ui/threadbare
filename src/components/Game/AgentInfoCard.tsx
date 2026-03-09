@@ -1,11 +1,13 @@
 import React from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
+import { Tooltip } from '../shared/Tooltip';
 
 interface AgentInfoCardProps {
   card: AgentInfoCardData;
   onViewProfile: () => void;
   onBack: () => void;
+  onZoomToLocation?: (locationId: string) => void;
 }
 
 // Domain display names
@@ -34,41 +36,96 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   card,
   onViewProfile,
   onBack,
+  onZoomToLocation,
 }: AgentInfoCardProps) {
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
 
   return (
-    <div className="flex flex-col h-full bg-stone-900 overflow-y-auto">
+    <div
+      className="flex flex-col h-full overflow-y-auto"
+      style={{ backgroundColor: 'var(--bg-surface)' }}
+    >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-stone-800/90 border-b border-amber-900/30 flex-shrink-0">
+      <div
+        className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+        style={{
+          backgroundColor: 'var(--bg-deep)',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
         <button
           onClick={onBack}
           aria-label="back"
-          className="text-amber-400 hover:text-amber-200 transition-colors text-lg px-1"
+          className="transition-colors text-lg px-1"
+          style={{ color: 'var(--accent-gold)', fontSize: '1.1875rem' }}
         >
           ←
         </button>
-        <div className="flex-1">
-          <h2
-            className="text-amber-100 text-sm font-semibold tracking-wide"
-            style={{ fontFamily: 'Cinzel, serif' }}
-          >
-            {card.name}
-          </h2>
-          <div className="text-xs text-amber-400/70">{knowledgeLevelLabel}</div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h2
+              className="font-semibold tracking-wide truncate"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              {card.name}
+            </h2>
+            <button
+              onClick={onViewProfile}
+              className="flex-shrink-0 transition-opacity hover:opacity-70"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--accent-gold)',
+              }}
+              aria-label={`Open full character sheet for ${card.name}`}
+            >
+              Sheet →
+            </button>
+          </div>
+          <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
+            <div
+              className="underline decoration-dotted cursor-help"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--accent-gold-dim)',
+              }}
+            >
+              {knowledgeLevelLabel}
+            </div>
+          </Tooltip>
         </div>
       </div>
 
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
         {/* Location */}
-        <div>
-          <span className="text-xs text-amber-400/70">In {card.locationName}</span>
+        <div className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          <span>In {card.locationName}</span>
+          {onZoomToLocation && (
+            <button
+              onClick={(e) => { e.stopPropagation(); onZoomToLocation(card.locationId); }}
+              aria-label={`Zoom to ${card.locationName}`}
+              className="flex-shrink-0 transition-opacity hover:opacity-70"
+              style={{ color: 'var(--accent-gold-dim)', fontSize: 'var(--text-xs)', lineHeight: 1 }}
+              title={`Zoom to ${card.locationName}`}
+            >
+              &#x1F441;
+            </button>
+          )}
         </div>
 
         {/* Stranger level: just name and location */}
         {card.knowledgeLevel === 'stranger' && (
-          <div className="text-amber-400/50 text-xs italic">
+          <div
+            className="italic"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+            }}
+          >
             Identity obscured...
           </div>
         )}
@@ -77,22 +134,46 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.knowledgeLevel !== 'stranger' && (
           <>
             {card.archetypeLabel && (
-              <div className="bg-stone-800/50 border border-amber-900/30 rounded px-2 py-1.5">
-                <p className="text-amber-100 text-xs font-semibold">{card.archetypeLabel}</p>
+              <div
+                className="rounded px-2 py-1.5"
+                style={{
+                  backgroundColor: 'var(--bg-raised)',
+                  border: '1px solid var(--border-subtle)',
+                }}
+              >
+                <p
+                  className="font-semibold"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-primary)',
+                  }}
+                >
+                  {card.archetypeId ? (
+                    <Tooltip id={`archetype.${card.archetypeId}`}><span className="underline decoration-dotted cursor-help">{card.archetypeLabel}</span></Tooltip>
+                  ) : card.archetypeLabel}
+                </p>
               </div>
             )}
 
             {card.factionName && (
               <div className="inline-block">
-                <span className="inline-block px-2 py-1 text-xs font-medium rounded bg-stone-800/50 border border-amber-900/30 text-amber-400/80">
+                <span
+                  className="inline-block px-2 py-1 font-medium rounded"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    backgroundColor: 'var(--bg-raised)',
+                    border: '1px solid var(--border-subtle)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
                   {card.factionName}
                 </span>
               </div>
             )}
 
             {card.cultureName && (
-              <div className="text-xs text-amber-400/60">
-                Culture: <span className="text-amber-300">{card.cultureName}</span>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                Culture: <span style={{ color: 'var(--text-primary)' }}>{card.cultureName}</span>
               </div>
             )}
           </>
@@ -102,14 +183,18 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.topValues && card.topValues.length > 0 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Character
             </h3>
             <div className="space-y-1">
               {card.topValues.map((val, idx) => (
-                <div key={idx} className="text-xs text-amber-400/70">
+                <div key={idx} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                   {val.word}
                 </div>
               ))}
@@ -121,15 +206,19 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.domains && card.domains.length > 0 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Domains
             </h3>
             <div className="space-y-1">
               {card.domains.map((dom, idx) => (
-                <div key={idx} className="text-xs text-amber-400/70">
-                  {dom.word} in {DOMAIN_NAMES[dom.domain]}
+                <div key={idx} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                  {dom.word} in <Tooltip id={`reach.${dom.domain}`}><span className="underline decoration-dotted cursor-help">{DOMAIN_NAMES[dom.domain]}</span></Tooltip>
                 </div>
               ))}
             </div>
@@ -140,8 +229,12 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.topBonds && card.topBonds.length > 0 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Bonds
             </h3>
@@ -149,7 +242,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
               {card.topBonds.map((bond, idx) => {
                 const sentimentColor = bond.sentiment === 'positive' ? 'text-green-400/70' : 'text-red-400/70';
                 return (
-                  <div key={idx} className={`text-xs ${sentimentColor}`}>
+                  <div key={idx} className={`${sentimentColor}`} style={{ fontSize: 'var(--text-xs)' }}>
                     {bond.name} — {bond.strengthWord}
                   </div>
                 );
@@ -162,14 +255,18 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.quotes && card.quotes.length > 0 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Voice
             </h3>
             <div className="space-y-1">
               {card.quotes.map((quote, idx) => (
-                <p key={idx} className="text-xs text-amber-400/60 italic">
+                <p key={idx} className="italic" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
                   "{quote}"
                 </p>
               ))}
@@ -181,17 +278,23 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.cooperationStrategy && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Disposition
             </h3>
-            <div className="text-xs text-amber-400/70">
-              Strategy: <span className="text-amber-300">{card.cooperationStrategy}</span>
-            </div>
+            <Tooltip label="Cooperation Strategy" desc="How this agent behaves in prisoner's dilemma situations. Affects trust, betrayal, and reputation.">
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+                Strategy: <span className="underline decoration-dotted cursor-help" style={{ color: 'var(--text-primary)' }}>{card.cooperationStrategy}</span>
+              </div>
+            </Tooltip>
             {card.reputationWord && (
-              <div className="text-xs text-amber-400/70 mt-0.5">
-                Reputation: <span className="text-amber-300">{card.reputationWord}</span>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', marginTop: '0.125rem' }}>
+                Reputation: <span style={{ color: 'var(--text-primary)' }}>{card.reputationWord}</span>
               </div>
             )}
           </div>
@@ -201,14 +304,18 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.allTraits && card.allTraits.length > 0 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Traits
             </h3>
             <div className="space-y-1">
               {card.allTraits.map((trait, idx) => (
-                <div key={idx} className="text-xs text-amber-400/70">
+                <div key={idx} style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                   {trait}
                 </div>
               ))}
@@ -220,25 +327,44 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.backstoryParagraph1 && (
           <div>
             <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-1.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              className="font-semibold tracking-wider uppercase mb-1.5"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-secondary)',
+                fontFamily: 'var(--font-display)',
+              }}
             >
               Backstory
             </h3>
-            <p className="text-xs text-amber-400/70 leading-relaxed">
+            <p className="leading-relaxed" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               {card.backstoryParagraph1}
             </p>
           </div>
         )}
       </div>
 
-      {/* Footer buttons */}
-      <div className="flex gap-2 px-4 py-3 bg-stone-800/90 border-t border-amber-900/30 flex-shrink-0">
+      {/* Footer: prominent View Profile button */}
+      <div
+        className="flex gap-2 px-4 py-4 flex-shrink-0"
+        style={{
+          backgroundColor: 'var(--bg-deep)',
+          borderTop: '1px solid var(--border-subtle)',
+        }}
+      >
         <button
           onClick={onViewProfile}
-          className="flex-1 px-3 py-2 text-xs font-medium rounded bg-amber-900/40 border border-amber-900/60 text-amber-200 hover:bg-amber-900/60 transition-colors"
+          className="flex-1 px-4 py-3 font-semibold rounded-lg transition-all"
+          style={{
+            fontSize: 'var(--text-sm)',
+            fontFamily: 'var(--font-display)',
+            backgroundColor: 'var(--accent-gold)',
+            color: 'var(--bg-abyss, #0a0a0e)',
+            letterSpacing: '0.5px',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = '0.85'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = '1'; }}
         >
-          View Profile
+          View Full Character Sheet
         </button>
       </div>
     </div>

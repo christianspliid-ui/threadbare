@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 
@@ -58,26 +58,32 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       return null;
     }
 
-    // Filter out center slot and sort: available first, then locked
-    const displaySlots = slots
-      .filter(slot => slot.type !== 'info') // Exclude center slot
-      .sort((a, b) => {
-        // Available slots first
-        if (a.available !== b.available) {
-          return a.available ? -1 : 1;
-        }
-        // Then sort observations before interventions
-        if (a.type !== b.type) {
-          return a.type === 'observation' ? -1 : 1;
-        }
-        return 0;
-      });
+    // RC-028: Memoize slot filtering and sorting
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const displaySlots = useMemo(() =>
+      slots
+        .filter(slot => slot.type !== 'info') // Exclude center slot
+        .sort((a, b) => {
+          // Available slots first
+          if (a.available !== b.available) {
+            return a.available ? -1 : 1;
+          }
+          // Then sort observations before interventions
+          if (a.type !== b.type) {
+            return a.type === 'observation' ? -1 : 1;
+          }
+          return 0;
+        }),
+      [slots]
+    );
 
     return (
       <div
         data-testid="action-drawer"
-        className="fixed bottom-0 left-0 right-0 bg-stone-900/98 border-t border-amber-800/50 shadow-2xl backdrop-blur-sm"
+        className="fixed bottom-0 left-0 right-0 shadow-2xl backdrop-blur-sm"
         style={{
+          backgroundColor: 'var(--bg-deep)',
+          borderTop: '1px solid var(--border-medium)',
           height: `${DRAWER_CONFIG.HEIGHT_PERCENT}%`,
           transition: `all ${DRAWER_CONFIG.TRANSITION_MS}ms ease-out`,
           transform: open ? 'translateY(0)' : `translateY(100%)`,
@@ -85,31 +91,51 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
         }}
       >
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-amber-900/20 bg-stone-900/50">
+        <div
+          className="flex items-center justify-between px-4 py-3"
+          style={{
+            backgroundColor: 'var(--bg-surface)',
+            borderBottom: '1px solid var(--border-subtle)',
+          }}
+        >
           {/* Agent name and tier */}
           <div className="flex flex-col">
-            <div className="text-lg font-serif text-amber-100">{agentName}</div>
-            <div className="text-xs text-amber-700">{agentTier}</div>
+            <div
+              style={{
+                fontSize: 'var(--text-lg)',
+                fontFamily: 'var(--font-display)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              {agentName}
+            </div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+              {agentTier}
+            </div>
           </div>
 
           {/* Close button */}
           <button
             data-testid="action-drawer-close"
             onClick={onClose}
-            className="text-2xl text-amber-700 hover:text-amber-400 transition-colors"
+            className="transition-colors text-2xl"
+            style={{ color: 'var(--text-tertiary)' }}
             aria-label="Close action drawer"
           >
             ×
           </button>
         </div>
 
-        {/* Card area */}
-        <div className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-3">
+        {/* Card area — onTouchMove stops propagation to prevent momentum scroll from closing drawer */}
+        <div
+          className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-3"
+          onTouchMove={(e) => e.stopPropagation()}
+          onWheel={(e) => e.stopPropagation()}
+        >
           <div className="flex gap-3">
             {displaySlots.map(slot => (
               <div
                 key={slot.id}
-                onClick={() => onSlotClick(slot.id)}
                 className="flex-shrink-0"
               >
                 <ActionCard

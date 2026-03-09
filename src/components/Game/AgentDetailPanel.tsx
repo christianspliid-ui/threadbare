@@ -317,7 +317,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                         {ir.targetMove === 'cooperate' ? '✓' : '✗'}
                       </span>
                       <span className="text-amber-400/30 flex-1 truncate">
-                        {ir.stakes === 'high' ? '⚡' : ''} {ir.context}
+                        {ir.stakes === 'high' ? '✦' : ''} {ir.context}
                       </span>
                     </div>
                   ))}

@@ -43,7 +43,8 @@ export const ProgressBar = React.memo(function ProgressBar({
 
   return (
     <div
-      className={`${className} bg-stone-700 rounded-full overflow-hidden`}
+      className={`${className} rounded-full overflow-hidden`}
+      style={{ backgroundColor: 'var(--bg-raised)' }}
       data-testid={dataTestId}
     >
       <div

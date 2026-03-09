@@ -66,11 +66,17 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
       <button
         data-testid="narrative-log-toggle"
         onClick={togglePanel}
-        className={`fixed bottom-4 left-4 px-3 py-2 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-2 ${
+        className={`fixed bottom-4 left-4 z-50 px-3 py-2 rounded-full font-medium transition-all duration-200 flex items-center gap-2 backdrop-blur-sm ${
           isOpen
-            ? 'bg-amber-900/40 text-amber-200/90'
-            : 'bg-stone-800/90 hover:bg-stone-700/90 text-amber-200/70 hover:text-amber-200'
-        } backdrop-blur-sm border border-amber-900/30`}
+            ? 'text-primary'
+            : 'text-secondary hover:text-primary'
+        } border transition-colors`}
+        style={{
+          fontSize: 'var(--text-xs)',
+          backgroundColor: isOpen ? 'var(--accent-gold-dim)' : 'var(--bg-raised)',
+          color: isOpen ? 'var(--text-primary)' : 'var(--text-secondary)',
+          borderColor: 'var(--border-subtle)',
+        }}
       >
         <span className="text-lg">☰</span>
         {!isOpen && unreadCount > 0 && (
@@ -87,14 +93,33 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
       {isOpen && (
         <div
           data-testid="narrative-log-panel"
-          className="fixed bottom-20 left-4 w-80 max-h-96 bg-stone-900/95 border border-amber-900/40 rounded-lg shadow-2xl backdrop-blur-sm overflow-hidden flex flex-col"
+          className="fixed bottom-20 left-4 z-50 w-80 max-h-96 rounded-lg shadow-2xl backdrop-blur-sm overflow-hidden flex flex-col border"
+          style={{
+            backgroundColor: 'var(--bg-surface)',
+            borderColor: 'var(--border-medium)',
+          }}
         >
           {/* Header */}
-          <div className="border-b border-amber-900/20 px-4 py-3 flex items-center justify-between flex-shrink-0">
-            <h3 className="text-sm font-semibold text-amber-200/90">Chronicle</h3>
+          <div
+            className="px-4 py-3 flex items-center justify-between flex-shrink-0 border-b"
+            style={{ borderColor: 'var(--border-subtle)' }}
+          >
+            <h3
+              className="font-semibold"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-primary)',
+              }}
+            >
+              Chronicle
+            </h3>
             <button
               onClick={togglePanel}
-              className="text-amber-200/50 hover:text-amber-200/80 transition-colors"
+              className="transition-colors"
+              style={{
+                fontSize: 'var(--text-base)',
+                color: 'var(--text-tertiary)',
+              }}
               aria-label="Close narrative log"
             >
               ✕
@@ -104,7 +129,13 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
           {/* Events list */}
           <div className="flex-1 overflow-y-auto space-y-1 px-3 py-3 pr-2">
             {events.length === 0 ? (
-              <div className="text-amber-200/30 text-xs italic text-center py-8">
+              <div
+                className="italic text-center py-8"
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: 'var(--text-muted)',
+                }}
+              >
                 Awaiting the first whispers of fate...
               </div>
             ) : (
@@ -120,19 +151,28 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
                     data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
                     className={`flex gap-2 py-1 ${
                       isInterventionBeat
-                        ? 'text-sm opacity-100 pl-2 border-l-[3px]'
-                        : `text-xs ${dimmed ? 'opacity-50' : 'opacity-90'}`
+                        ? 'opacity-100 pl-2 border-l-[3px]'
+                        : `${dimmed ? 'opacity-50' : 'opacity-90'}`
                     }`}
-                    style={isInterventionBeat ? { borderLeftColor: sphereColor } : undefined}
+                    style={{
+                      fontSize: isInterventionBeat ? 'var(--text-sm)' : 'var(--text-xs)',
+                      ...(isInterventionBeat ? { borderLeftColor: sphereColor } : {}),
+                    }}
                   >
-                    <span className="text-amber-200/30 font-mono w-8 text-right flex-shrink-0">
+                    <span
+                      className="font-mono w-8 text-right flex-shrink-0"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
                       {evt.tick}
                     </span>
                     <span
                       className="w-1.5 h-1.5 rounded-full mt-1 flex-shrink-0"
                       style={{ backgroundColor: color }}
                     />
-                    <span className="text-amber-200/80 flex-1 leading-relaxed">
+                    <span
+                      className="flex-1 leading-relaxed"
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
                       {evt.message}
                     </span>
                   </div>

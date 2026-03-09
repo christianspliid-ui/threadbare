@@ -21,16 +21,16 @@ export function DoomBar({ definition, state }: DoomBarProps) {
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-2">
             <span
-              className="text-xs font-bold uppercase tracking-wider"
-              style={{ color, fontFamily: 'Cinzel, serif' }}
+              className="font-bold uppercase tracking-wider"
+              style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
             >
               {definition.archetype}
             </span>
-            <span className="text-amber-200/60 text-xs">
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               Stage {state.currentStage}: {stageName}
             </span>
           </div>
-          <span className="text-xs font-mono" style={{ color }}>
+          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color }}>
             {state.expired ? 'THE UNMAKING' : `${pct}%`}
           </span>
         </div>
