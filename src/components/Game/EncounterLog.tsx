@@ -1,5 +1,7 @@
 import { memo } from 'react';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
+import { THREAT_RATING_COLORS } from '../../types/encounter';
+import { resolveEncounterNarrative } from '../../data/encounter-content';
 
 interface EncounterLogProps {
   progress: EncounterProgress;
@@ -23,15 +25,7 @@ export const EncounterLog = memo(function EncounterLog({
   const isCompleted = progress.status === 'completed';
   const isAbandoned = progress.status === 'abandoned';
 
-  // Get threat rating color (simple mapping)
-  const threatColors: Record<string, string> = {
-    trivial: '#4ade80',   // green
-    easy: '#60a5fa',      // blue
-    moderate: '#fbbf24',  // amber
-    hard: '#f87171',      // red
-    deadly: '#d946ef',    // magenta
-  };
-  const threatColor = threatColors[template.threatRating] ?? '#a78bfa'; // default purple
+  const threatColor = THREAT_RATING_COLORS[template.threatRating] ?? '#a78bfa';
 
   return (
     <div
@@ -117,7 +111,12 @@ export const EncounterLog = memo(function EncounterLog({
                 : 'var(--text-primary)',
             }}
           >
-            {currentStep.narrative}
+            {resolveEncounterNarrative(
+              currentStep.narrative,
+              agentName,
+              currentStep.id,
+              template.threatRating,
+            )}
           </p>
         </div>
       )}

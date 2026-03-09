@@ -26,6 +26,14 @@ export const THREAT_CAPABILITY_BANDS: Record<ThreatRating, [number, number]> = {
   deadly:   [70, 100],
 };
 
+export const THREAT_RATING_COLORS: Record<ThreatRating, string> = {
+  trivial:  '#4ade80',  // green
+  easy:     '#60a5fa',  // blue
+  moderate: '#fbbf24',  // amber
+  hard:     '#f87171',  // red
+  deadly:   '#d946ef',  // magenta
+};
+
 export const THREAT_COURAGE_THRESHOLD = 0.3;
 export const THREAT_PRUDENCE_THRESHOLD = -0.3;
 
