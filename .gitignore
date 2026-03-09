@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 scripts/resize-hex-tiles.mjs
 scripts/playtest.mjs
+
+# Git worktrees
+.worktrees/
