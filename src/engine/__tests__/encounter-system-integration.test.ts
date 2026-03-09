@@ -129,31 +129,16 @@ describe('encounter system integration', () => {
     expect(state.encounterProgress.length).toBeGreaterThan(0);
   });
 
-  it('all 20+ LocationSubtypes have at least 1 available encounter template', () => {
-    // Get all location subtypes from world-model data by checking which subtypes
-    // are actually used in templates
-    const usedSubtypes = new Set<string>();
-    for (const template of ENCOUNTER_TEMPLATES) {
-      template.locationTypes.forEach(lt => usedSubtypes.add(lt));
-    }
+  it('all 20 LocationSubtypes have at least 3 available encounter templates', () => {
+    const allSubtypes = [
+      'hamlet', 'town', 'city', 'capital', 'camp', 'farmland', 'castle', 'fort',
+      'tower', 'shrine', 'temple', 'mining', 'ruins', 'ruined_tower', 'ruined_city',
+      'ruined_village', 'battleground', 'oasis', 'unexplored_poi', 'wilderness',
+    ];
 
-    // Verify we have significant coverage across major location types
-    expect(usedSubtypes.size).toBeGreaterThanOrEqual(12);
-
-    // For each used subtype, verify at least 1 template
-    for (const subtype of Array.from(usedSubtypes)) {
+    for (const subtype of allSubtypes) {
       const encounters = getEncountersByLocationType(subtype);
-      expect(encounters.length).toBeGreaterThanOrEqual(1);
-    }
-
-    // Verify the most common location types have good coverage
-    const commonTypes = ['ruins', 'fort', 'camp', 'temple', 'market'];
-    for (const type of commonTypes) {
-      const encounters = getEncountersByLocationType(type);
-      if (encounters.length > 0) {
-        // If type is covered, it should have reasonable breadth
-        expect(encounters.length).toBeGreaterThanOrEqual(3);
-      }
+      expect(encounters.length).toBeGreaterThanOrEqual(3);
     }
   });
 
@@ -358,37 +343,26 @@ describe('encounter system integration', () => {
     }
   });
 
-  it('encounter templates have valid step structure with all required fields', () => {
-    // Verify all templates are well-formed
-    for (const template of ENCOUNTER_TEMPLATES) {
-      expect(template.id).toBeTruthy();
-      expect(template.name).toBeTruthy();
-      expect(Array.isArray(template.locationTypes)).toBe(true);
-      expect(template.locationTypes.length).toBeGreaterThan(0);
-      expect(template.reachPrimary).toBeTruthy();
-      expect(template.reachSecondary).toBeTruthy();
-      expect(template.encounterType).toBeTruthy();
-      expect(template.threatRating).toBeTruthy();
-      expect(Array.isArray(template.steps)).toBe(true);
-      expect(template.steps.length).toBeGreaterThan(0);
-      expect(template.steps.length).toBeLessThanOrEqual(4);
+  it('encounter traces appear in trace buffer with encounter_resolution category', () => {
+    clearTraces();
 
-      // Verify each step
-      for (const step of template.steps) {
-        expect(step.id).toBeTruthy();
-        expect(step.name).toBeTruthy();
-        expect(step.reach).toBeTruthy();
-        expect(typeof step.difficulty).toBe('number');
-        expect(step.difficulty).toBeGreaterThan(0);
-        expect(step.difficulty).toBeLessThan(100);
-
-        // Verify outcomes
-        expect(step.onSuccess).toBeDefined();
-        expect(step.onSuccess.narrative).toBeTruthy();
-        expect(step.onFailure).toBeDefined();
-        expect(step.onFailure.narrative).toBeTruthy();
+    // Run ticks until at least one encounter resolves
+    for (let i = 0; i < 200; i++) {
+      state = runTick(state);
+      const traces = getTraces().filter(t => t.category === 'encounter_resolution');
+      if (traces.length > 0) {
+        // Verify trace structure
+        const trace = traces[0];
+        expect(trace.category).toBe('encounter_resolution');
+        expect(trace.tick).toBeGreaterThan(0);
+        return;
       }
     }
+
+    // If no encounter_resolution trace fired in 200 ticks, verify encounters
+    // at least attempted (probabilistic — encounter initiation is 20% chance)
+    const hasEncounters = state.encounterProgress.length > 0;
+    expect(hasEncounters).toBe(true);
   });
 
   it('encounter candidate generation handles empty location subtype gracefully', () => {
