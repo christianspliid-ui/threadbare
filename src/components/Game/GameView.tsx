@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { useSimulation } from './hooks/useSimulation';
@@ -66,7 +67,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const {
     hoveredHex, setHoveredHex, selectedHex, viewLevel,
     focusedHex, focusedLocationId, moveMode, hexMapRef,
-    handleLocationDoubleClick, handleBackToWorld,
+    handleHexClick, handleLocationDoubleClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
   } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS });
@@ -112,6 +113,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleAvatarActionClick,
     handleViewProfile,
     handleCloseProfile,
+    closeAllAgentOverlays,
   } = useAgentInteraction({
     gameState,
     setGameState,
@@ -127,6 +129,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     hexSphereInfluence,
     hexLineOfSight,
     hexTotalAgents,
+    hexCultures,
+    hexFactions,
     focusedLocation,
     focusedLocationAgents,
   } = useHexZoomData({
@@ -136,16 +140,53 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     focusedLocationId,
   });
 
+  // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion
+  const handleScryWithMutex = useCallback(() => {
+    closeAllAgentOverlays();
+    handleAvatarScryClick();
+  }, [closeAllAgentOverlays, handleAvatarScryClick]);
+
+  // Zoom to an agent's location hex from sidebar/retinue eye icon
+  const handleZoomToLocation = useCallback((locationId: string) => {
+    const locNode = gameState.graph.getNode(locationId);
+    if (!locNode) return;
+    const props = (locNode.properties ?? {}) as Record<string, unknown>;
+    const col = typeof props.hexCol === 'number' ? props.hexCol : undefined;
+    const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
+    if (col !== undefined && row !== undefined) {
+      handleHexClick({ col, row });
+    }
+  }, [gameState.graph, handleHexClick]);
+
+  // Zoom to the ascendant's current hex from AvatarHUD eye icon
+  const handleAvatarZoomToLocation = useCallback(() => {
+    if (avatarPos) {
+      handleHexClick({ col: avatarPos.col, row: avatarPos.row });
+    }
+  }, [avatarPos, handleHexClick]);
+
+  // IX-013: Wrapped location double-click closes drawer before drilling down
+  const handleLocationDoubleClickWithClose = useCallback((locationId: string) => {
+    handleDrawerClose();
+    handleLocationDoubleClick(locationId);
+  }, [handleDrawerClose, handleLocationDoubleClick]);
+
   return (
-    <div className="h-screen bg-stone-900 flex flex-col overflow-hidden">
-      {/* Doom + Mandate bar at top */}
-      <div className="w-full px-4 py-2 bg-stone-800/95 border-b border-amber-900/30 flex gap-4 relative items-center">
+    <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
+      {/* ═══ Top status bar — Doom + Mandate ═══ */}
+      <div
+        className="w-full px-5 py-2.5 flex gap-4 items-center relative z-30 flex-shrink-0"
+        style={{
+          background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
+      >
         <div className="flex-[2] min-w-0">
           <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
         </div>
         {gameState.mandateDefinition && gameState.mandateState && (
           <>
-            <div className="w-px bg-amber-900/30 self-stretch" />
+            <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
             <div className="flex-[1] min-w-0">
               <MandateTracker
                 definition={gameState.mandateDefinition}
@@ -157,31 +198,57 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         <button
           data-testid="debug-toggle"
           onClick={handleToggleDebug}
-          className="ml-auto px-2.5 py-1 rounded text-[10px] font-mono border border-amber-900/30 bg-stone-800/50 text-amber-200/50 hover:text-amber-100 hover:bg-stone-700/50 transition-colors flex items-center gap-1.5 flex-shrink-0"
+          className="ml-auto px-2.5 py-1 rounded flex items-center gap-1.5 flex-shrink-0 transition-colors"
+          style={{
+            fontSize: 'var(--text-xs)',
+            fontFamily: 'var(--font-body)',
+            fontWeight: 500,
+            color: debugPanelOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
+            background: debugPanelOpen ? 'var(--accent-gold-glow)' : 'transparent',
+            border: `1px solid ${debugPanelOpen ? 'var(--accent-gold-dim)' : 'var(--border-subtle)'}`,
+          }}
           title="Toggle debug trace panel (`)"
         >
           {debugPanelOpen && (
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-gold)' }} />
           )}
           Debug
         </button>
       </div>
 
+      {/* ═══ Main content area ═══ */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left sidebar */}
-        <nav aria-label="Game status" className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-900/30 bg-stone-900/95">
-          {/* Ascendant info */}
+        {/* ── Left sidebar ── */}
+        <nav
+          aria-label="Game status"
+          className="flex-shrink-0 flex flex-col overflow-y-auto"
+          style={{
+            width: 'var(--sidebar-width)',
+            background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+            borderRight: '1px solid var(--border-subtle)',
+            padding: 'var(--panel-padding)',
+            gap: '0.75rem',
+          }}
+        >
+          {/* Ascendant identity */}
           <div className="text-center py-2">
             <h1
-              className="text-lg font-bold text-amber-100 tracking-wide"
-              style={{ fontFamily: 'Cinzel, serif' }}
+              style={{
+                fontFamily: 'var(--font-display)',
+                fontSize: 'var(--text-lg)',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                letterSpacing: '0.06em',
+              }}
             >
               {archetype.title}
             </h1>
-            <p className="text-xs text-amber-400/50 mt-0.5">
-              Avatar: {avatarName} · Cycle {gameState.cycle}
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+              Cycle {gameState.cycle}
             </p>
           </div>
+
+          <div className="divider-gold" />
 
           <SimulationControls
             tick={gameState.tick}
@@ -207,9 +274,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           />
         </nav>
 
-        {/* Main content area */}
+        {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 p-4 flex items-center justify-center overflow-hidden relative">
+          <div className="flex-1 flex items-center justify-center overflow-hidden relative">
             {/* NarrativeLog overlay */}
             <NarrativeLog events={gameState.recentEvents} />
             {viewLevel === 'world' && (
@@ -219,6 +286,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   tiles={tiles}
                   cols={COLS}
                   rows={ROWS}
+                  seed={gameState.seed}
                   hoveredHex={hoveredHex}
                   selectedHex={selectedHex}
                   overlayMode="none"
@@ -238,7 +306,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   onCenterOnAvatar={handleCenterOnAvatar}
                   onMoveClick={handleAvatarMoveClick}
                   onWheelClick={handleAvatarActionClick}
-                  onScryClick={handleAvatarScryClick}
+                  onScryClick={handleScryWithMutex}
+                  onZoomToLocation={handleAvatarZoomToLocation}
                   moveMode={moveMode}
                 />
 
@@ -281,7 +350,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             )}
 
             {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (
-              <div className="flex flex-col h-full">
+              <div className="flex flex-col h-full w-full">
                 <HexBreadcrumb
                   hexCol={focusedHex.col}
                   hexRow={focusedHex.row}
@@ -290,17 +359,22 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   agentCount={hexTotalAgents}
                   lineOfSight={hexLineOfSight}
                   sphereInfluence={hexSphereInfluence}
+                  cultures={hexCultures}
+                  factions={hexFactions}
                   onBack={handleBackToWorld}
                   data-testid="hex-breadcrumb"
                 />
-                <div className="flex-1 flex items-center justify-center">
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
                   <HexZoomView
                     locations={hexLocations}
                     agentsByLocation={hexAgentsByLocation}
                     connections={hexConnections}
                     lineOfSight={hexLineOfSight}
+                    terrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
+                    cultures={hexCultures}
+                    factions={hexFactions}
                     onLocationClick={handleLocationClick}
-                    onLocationDoubleClick={handleLocationDoubleClick}
+                    onLocationDoubleClick={handleLocationDoubleClickWithClose}
                     data-testid="hex-zoom-view"
                   />
                 </div>
@@ -335,7 +409,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           )}
         </div>
 
-        {/* Right sidebar - Debug Panel OR Agent Info Card/Retinue */}
+        {/* ── Right sidebar — Debug Panel OR Agent Info Card/Retinue ── */}
         {debugPanelOpen ? (
           <DebugPanel
             currentTick={gameState.tick}
@@ -343,23 +417,33 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             onClose={handleToggleDebug}
           />
         ) : (
-          <div data-testid="right-sidebar" className="w-72 flex-shrink-0 border-l border-amber-900/30 bg-stone-900/95 overflow-y-auto">
+          <div
+            data-testid="right-sidebar"
+            className="flex-shrink-0 overflow-y-auto"
+            style={{
+              width: 'var(--sidebar-width)',
+              background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+              borderLeft: '1px solid var(--border-subtle)',
+            }}
+          >
             {agentInfoCard ? (
               <AgentInfoCard
                 card={agentInfoCard}
                 onViewProfile={handleViewProfile}
                 onBack={handleBackFromAgentDetail}
+                onZoomToLocation={handleZoomToLocation}
               />
             ) : retinueAgents.length > 0 ? (
-              <div className="p-4">
+              <div style={{ padding: 'var(--panel-padding)' }}>
                 <RetinuePanel
                   agents={retinueAgents}
                   selectedAgentId={selectedAgentId}
                   onAgentSelect={handleAgentSelect}
+                  onZoomToLocation={handleZoomToLocation}
                 />
               </div>
             ) : (
-              <div className="p-4">
+              <div style={{ padding: 'var(--panel-padding)' }}>
                 <WorldPulse gameState={gameState} />
               </div>
             )}
