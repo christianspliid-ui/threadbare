@@ -1,9 +1,11 @@
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import type { GraphNode } from '../../types/graph';
+import type { WorldGraph } from '../../engine/graph';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { getAgentColor } from '../../data/sphereIcons';
 import { EncounterLog } from './EncounterLog';
+import { generateEntityProse } from '../../engine/proseGenerator';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -18,6 +20,9 @@ interface LocationViewProps {
   activeEncounters: EncounterProgress[];
   getAgentName: (id: string) => string;
   getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  // Prose generation (optional)
+  graph?: WorldGraph;
+  seed?: number;
 }
 
 export const LocationView = memo(function LocationView({
@@ -32,11 +37,19 @@ export const LocationView = memo(function LocationView({
   activeEncounters,
   getAgentName,
   getEncounterTemplate,
+  graph,
+  seed,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
   const locProps = (location.properties ?? {}) as Record<string, unknown>;
   const locType = typeof locProps.locationType === 'string' ? locProps.locationType : 'location';
+
+  // Generate prose for location (memoized)
+  const locationProse = useMemo(() => {
+    if (!graph || seed === undefined) return '';
+    return generateEntityProse(location.id, graph, seed, 'full');
+  }, [location.id, graph, seed]);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -88,28 +101,55 @@ export const LocationView = memo(function LocationView({
         </div>
       </div>
 
-      {/* Establishing shot placeholder — large and prominent */}
-      <div
-        className="mx-6 mt-5 rounded-lg border flex items-center justify-center"
-        style={{
-          aspectRatio: '21/9',
-          minHeight: '180px',
-          backgroundColor: 'var(--bg-raised)',
-          borderColor: 'var(--border-subtle)',
-        }}
-      >
-        <span
+      {/* Prose or establishing shot placeholder */}
+      {locationProse ? (
+        <div
+          className="mx-6 mt-5 rounded-lg border p-4 overflow-y-auto"
           style={{
-            fontSize: 'var(--text-base)',
-            color: 'var(--text-muted)',
-            fontFamily: 'var(--font-display)',
-            letterSpacing: '2px',
-            textTransform: 'uppercase',
+            minHeight: '120px',
+            maxHeight: '180px',
+            backgroundColor: 'var(--bg-raised)',
+            borderColor: 'var(--border-subtle)',
           }}
         >
-          — establishing shot —
-        </span>
-      </div>
+          <div className="space-y-3">
+            {locationProse.split('\n\n').map((para, idx) => (
+              <p
+                key={idx}
+                style={{
+                  fontSize: 'var(--text-sm)',
+                  color: 'var(--text-muted)',
+                  lineHeight: '1.5',
+                }}
+              >
+                {para.trim()}
+              </p>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div
+          className="mx-6 mt-5 rounded-lg border flex items-center justify-center"
+          style={{
+            aspectRatio: '21/9',
+            minHeight: '180px',
+            backgroundColor: 'var(--bg-raised)',
+            borderColor: 'var(--border-subtle)',
+          }}
+        >
+          <span
+            style={{
+              fontSize: 'var(--text-base)',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+            }}
+          >
+            — establishing shot —
+          </span>
+        </div>
+      )}
 
       {/* Two-column layout — generous padding and spacing */}
       <div className="flex-1 flex gap-6 p-6 min-h-0">

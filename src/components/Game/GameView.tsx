@@ -464,6 +464,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 activeEncounters={locationEncounters.active}
                 getAgentName={getAgentName}
                 getEncounterTemplate={getEncounterById}
+                graph={gameState.graph}
+                seed={gameState.seed}
               />
             )}
           </div>
@@ -505,6 +507,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 onViewProfile={handleViewProfile}
                 onBack={handleBackFromAgentDetail}
                 onZoomToLocation={handleZoomToLocation}
+                graph={gameState.graph}
+                seed={gameState.seed}
               />
             ) : retinueAgents.length > 0 ? (
               <div style={{ padding: 'var(--panel-padding)' }}>
