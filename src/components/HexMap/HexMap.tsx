@@ -15,6 +15,7 @@ const DEFAULT_ZOOM_SCALE = 3.0;
 const MIN_ZOOM_SCALE = 1.0;
 const MAX_ZOOM_SCALE = 4.0;
 const HEX_MAP_BACKGROUND = '#1e1b2e'; // Dark world surface, ~12% brightness with cool purple cast matching Threadbare aesthetic
+const DEFAULT_COASTLINE_SEED = 42; // Fallback seed when HexMap seed prop is not provided
 
 interface HexMapProps {
   tiles: HexTile[];
@@ -55,7 +56,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
     return { width: w + hexSize, height: h + hexSize };
   }, [cols, rows, hexSize]);
 
-  const coastlineData = useCoastline(tiles, hexSize, cols, rows, seed ?? 42);
+  const coastlineData = useCoastline(tiles, hexSize, cols, rows, seed ?? DEFAULT_COASTLINE_SEED);
 
   const padding = hexSize;
   const svgRef = useRef<SVGSVGElement>(null);
