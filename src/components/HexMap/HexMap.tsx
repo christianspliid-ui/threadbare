@@ -6,6 +6,9 @@ import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
 import { HexDefs } from './HexDefs';
+import { CoastlineOverlay } from './CoastlineOverlay';
+import { useCoastline } from './useCoastline';
+import { COASTLINE_DEFAULTS } from '../../types/coastline';
 
 // Hex map display constants
 const DEFAULT_ZOOM_SCALE = 3.0;
@@ -18,6 +21,7 @@ interface HexMapProps {
   cols: number;
   rows: number;
   hexSize?: number;
+  seed?: number;
   hoveredHex: HexCoord | null;
   selectedHex: HexCoord | null;
   overlayMode: OverlayMode;
@@ -37,7 +41,7 @@ export interface HexMapHandle {
 }
 
 const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
-  tiles, cols, rows, hexSize = 30,
+  tiles, cols, rows, hexSize = 30, seed,
   hoveredHex, selectedHex, overlayMode,
   visibilityMap, locationOverlays, avatarHex, sphereColor,
   initialCenter, initialScale,
@@ -50,6 +54,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
     const h = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5;
     return { width: w + hexSize, height: h + hexSize };
   }, [cols, rows, hexSize]);
+
+  const coastlineData = useCoastline(tiles, hexSize, cols, rows, seed ?? 42);
 
   const padding = hexSize;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -136,29 +142,30 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         <HexDefs size={hexSize} />
         <g ref={gRef} className="zoom-group">
           <g transform={tileBaseTransform}>
-          {tiles.map((tile) => {
-            const { x, y } = hexToPixel(tile.coord, hexSize);
-            const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
-            const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
-            const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
-            const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
-            const coordKey = `${tile.coord.col},${tile.coord.row}`;
-            const locSubtype = locationOverlays?.get(coordKey);
-            return (
-              <HexTileComponent
-                key={`${tile.coord.col}-${tile.coord.row}`}
-                tile={tile} cx={x} cy={y} size={hexSize} hexClipId={hexClipId}
-                isHovered={isHovered} isSelected={isSelected}
-                visibility={visibility}
-                isAvatarHex={isAvatar}
-                sphereColor={sphereColor}
-                locationSubtype={locSubtype}
-                onClick={() => onHexClick(tile.coord)}
-                onMouseEnter={() => onHexHover(tile.coord)}
-                onMouseLeave={() => onHexHover(null)}
-              />
-            );
-          })}
+            <CoastlineOverlay data={coastlineData} colors={COASTLINE_DEFAULTS.colors} />
+            {tiles.map((tile) => {
+              const { x, y } = hexToPixel(tile.coord, hexSize);
+              const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
+              const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
+              const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
+              const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+              const coordKey = `${tile.coord.col},${tile.coord.row}`;
+              const locSubtype = locationOverlays?.get(coordKey);
+              return (
+                <HexTileComponent
+                  key={`${tile.coord.col}-${tile.coord.row}`}
+                  tile={tile} cx={x} cy={y} size={hexSize} hexClipId={hexClipId}
+                  isHovered={isHovered} isSelected={isSelected}
+                  visibility={visibility}
+                  isAvatarHex={isAvatar}
+                  sphereColor={sphereColor}
+                  locationSubtype={locSubtype}
+                  onClick={() => onHexClick(tile.coord)}
+                  onMouseEnter={() => onHexHover(tile.coord)}
+                  onMouseLeave={() => onHexHover(null)}
+                />
+              );
+            })}
           </g>
         </g>
       </svg>
