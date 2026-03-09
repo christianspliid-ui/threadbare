@@ -1,5 +1,7 @@
 import type { GraphNode } from '../../types/graph';
+import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import { getAgentColor } from '../../data/sphereIcons';
+import { EncounterLog } from './EncounterLog';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -9,6 +11,11 @@ interface LocationViewProps {
   hexRow: number;
   onAgentClick: (agentId: string) => void;
   onBack: () => void;
+  // Encounter data
+  availableEncounters: EncounterTemplate[];
+  activeEncounters: EncounterProgress[];
+  getAgentName: (id: string) => string;
+  getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
 }
 
 export function LocationView({
@@ -19,6 +26,10 @@ export function LocationView({
   hexRow,
   onAgentClick,
   onBack,
+  availableEncounters,
+  activeEncounters,
+  getAgentName,
+  getEncounterTemplate,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -184,8 +195,8 @@ export function LocationView({
           )}
         </div>
 
-        {/* Right: Encounters placeholder */}
-        <div className="flex-1 min-w-0">
+        {/* Right: Encounters (active and available) */}
+        <div className="flex-1 min-w-0 overflow-y-auto">
           <h3
             className="section-heading mb-3"
             style={{
@@ -196,15 +207,125 @@ export function LocationView({
           >
             Encounters
           </h3>
-          <p
-            className="italic"
-            style={{
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-muted)',
-            }}
-          >
-            No active Encounters
-          </p>
+
+          {/* Active encounters section */}
+          {activeEncounters.length > 0 && (
+            <div className="mb-6">
+              <h4
+                className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                style={{
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                Active
+              </h4>
+              <div className="space-y-2">
+                {activeEncounters.map(progress => {
+                  const template = getEncounterTemplate(progress.encounterId);
+                  if (!template) return null;
+                  const agentName = getAgentName(progress.actorId);
+                  return (
+                    <EncounterLog
+                      key={progress.encounterId}
+                      progress={progress}
+                      template={template}
+                      agentName={agentName}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Available encounters section */}
+          {availableEncounters.length > 0 && (
+            <div>
+              <h4
+                className="text-xs font-semibold mb-2 uppercase tracking-wider"
+                style={{
+                  color: 'var(--text-tertiary)',
+                }}
+              >
+                Available
+              </h4>
+              <div className="space-y-2">
+                {availableEncounters.slice(0, 5).map(encounter => {
+                  // Simple threat color mapping
+                  const threatColors: Record<string, string> = {
+                    trivial: '#4ade80',
+                    easy: '#60a5fa',
+                    moderate: '#fbbf24',
+                    hard: '#f87171',
+                    deadly: '#d946ef',
+                  };
+                  const threatColor =
+                    threatColors[encounter.threatRating] ?? '#a78bfa';
+
+                  return (
+                    <div
+                      key={encounter.id}
+                      className="px-3 py-2 rounded-lg border"
+                      style={{
+                        backgroundColor: 'var(--bg-deep)',
+                        borderColor: 'var(--border-subtle)',
+                      }}
+                    >
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <p
+                          className="text-xs font-semibold"
+                          style={{
+                            color: 'var(--text-primary)',
+                          }}
+                        >
+                          {encounter.name}
+                        </p>
+                        <div
+                          className="flex-shrink-0 px-1.5 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
+                          style={{
+                            backgroundColor: threatColor,
+                            color: 'white',
+                          }}
+                        >
+                          {encounter.threatRating}
+                        </div>
+                      </div>
+                      <p
+                        className="text-xs"
+                        style={{
+                          color: 'var(--text-tertiary)',
+                        }}
+                      >
+                        {encounter.encounterType} · {encounter.reachPrimary}
+                      </p>
+                    </div>
+                  );
+                })}
+                {availableEncounters.length > 5 && (
+                  <p
+                    className="text-xs italic"
+                    style={{
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    +{availableEncounters.length - 5} more available
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {activeEncounters.length === 0 && availableEncounters.length === 0 && (
+            <p
+              className="italic"
+              style={{
+                fontSize: 'var(--text-sm)',
+                color: 'var(--text-muted)',
+              }}
+            >
+              No encounters at this location
+            </p>
+          )}
         </div>
       </div>
     </div>
