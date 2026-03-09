@@ -1,7 +1,8 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { useSimulation } from './hooks/useSimulation';
+import { getEncountersByLocationType, getEncounterById } from '../../data/encounter-content';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
@@ -141,6 +142,29 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     focusedHex,
     focusedLocationId,
   });
+
+  // ── Location encounter data (available + active) ──
+  const locationEncounters = useMemo(() => {
+    if (!focusedLocation || viewLevel !== 'location') {
+      return { available: [], active: [] };
+    }
+
+    // Get location subtype for encounter lookup
+    const locProps = (focusedLocation.properties ?? {}) as Record<string, unknown>;
+    const subtype = typeof locProps.locationSubtype === 'string'
+      ? locProps.locationSubtype
+      : '';
+
+    // Get available encounters for this location type
+    const available = subtype ? getEncountersByLocationType(subtype) : [];
+
+    // Get active encounters at this location (for now, include all active encounters)
+    const active = gameState.encounterProgress.filter(
+      p => p.status === 'active'
+    );
+
+    return { available, active };
+  }, [focusedLocation, viewLevel, gameState.encounterProgress]);
 
   // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion
   const handleScryWithMutex = useCallback(() => {
@@ -422,7 +446,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 hexRow={focusedHex.row}
                 onAgentClick={handleAgentSelect}
                 onBack={handleBackToHex}
-                data-testid="location-view"
+                availableEncounters={locationEncounters.available}
+                activeEncounters={locationEncounters.active}
+                getAgentName={(id) => gameState.graph.getNode(id)?.name ?? 'Unknown'}
+                getEncounterTemplate={getEncounterById}
               />
             )}
           </div>
