@@ -85,6 +85,7 @@ export interface GameState {
 
   // Knowledge Fog of War
   familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
+  culturalInsightMap: Map<string, number>;  // culture ID -> insight score (0.0-1.0)
 
   // Encounters (agent growth narratives)
   encounterProgress: EncounterProgress[];

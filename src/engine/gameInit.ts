@@ -204,6 +204,7 @@ export function initializeGameState(
     stealthExposure: 0,
     visibilityMap,
     familiarityMap,
+    culturalInsightMap: new Map<string, number>(),
     encounterProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
