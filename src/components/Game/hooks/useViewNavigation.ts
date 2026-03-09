@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexMapHandle } from '../../HexMap/HexMap';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
-import { recalcVisibility, collectLOSSources } from '../../../engine/visibility';
+import { recalcVisibility, collectLOSSources, getScryTargetHexes } from '../../../engine/visibility';
+import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
 
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
@@ -13,6 +14,7 @@ interface UseViewNavigationParams {
   avatarPixelPos: { x: number; y: number } | null;
   COLS: number;
   ROWS: number;
+  scryState: ScryState;
 }
 
 interface UseViewNavigationReturn {
@@ -40,6 +42,7 @@ export function useViewNavigation({
   avatarPixelPos,
   COLS,
   ROWS,
+  scryState,
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
@@ -113,7 +116,8 @@ export function useViewNavigation({
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
     if (moveMode) {
       moveAvatarToHex(gameState.graph, gameState.ascendantId, coord);
-      const losSources = collectLOSSources(gameState.graph, gameState.ascendantId, []);
+      const scryTargets = getScryTargetHexes(scryState, gameState.graph);
+      const losSources = collectLOSSources(gameState.graph, gameState.ascendantId, scryTargets);
       const newVisibilityMap = recalcVisibility(gameState.visibilityMap, losSources, gameState.graph, gameState.tick, COLS, ROWS);
       setGameState(prev => ({
         ...prev,
@@ -123,7 +127,7 @@ export function useViewNavigation({
     } else {
       handleHexClick(coord);
     }
-  }, [moveMode, gameState, handleHexClick, COLS, ROWS, setGameState]);
+  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.visibilityMap, gameState.tick, handleHexClick, COLS, ROWS, setGameState, scryState]);
 
   return {
     hoveredHex,

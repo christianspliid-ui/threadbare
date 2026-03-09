@@ -162,7 +162,7 @@ export function collectLOSSources(
     }
   }
 
-  // Scry targets
+  // Scry targets use static range — no node ID for modifier resolution
   for (const target of scryTargets) {
     sources.push({
       hexCol: target.col,

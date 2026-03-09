@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
@@ -19,7 +20,7 @@ interface LocationViewProps {
   getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
 }
 
-export function LocationView({
+export const LocationView = memo(function LocationView({
   location,
   agents,
   hexTerrain,
@@ -49,8 +50,8 @@ export function LocationView({
       >
         <button
           onClick={onBack}
-          aria-label="back"
-          className="transition-colors text-xl px-2"
+          aria-label="Back to hex view"
+          className="transition-colors text-xl px-2 cursor-pointer"
           style={{ color: 'var(--accent-gold)' }}
         >
           ←
@@ -146,7 +147,9 @@ export function LocationView({
                   <button
                     key={agent.id}
                     onClick={() => onAgentClick(agent.id)}
-                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group"
+                    aria-label={`View ${agent.name}`}
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group cursor-pointer focus:outline-none focus:ring-1"
+                    style={{ '--tw-ring-color': 'var(--accent-gold)' } as React.CSSProperties}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
                     }}
@@ -257,10 +260,16 @@ export function LocationView({
                   return (
                     <div
                       key={encounter.id}
-                      className="px-3 py-2 rounded-lg border"
+                      className="px-3 py-2.5 rounded-lg border transition-colors"
                       style={{
                         backgroundColor: 'var(--bg-deep)',
                         borderColor: 'var(--border-subtle)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--accent-gold)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.borderColor = 'var(--border-subtle)';
                       }}
                     >
                       <div className="flex items-start justify-between gap-2 mb-1">
@@ -268,15 +277,17 @@ export function LocationView({
                           className="text-xs font-semibold"
                           style={{
                             color: 'var(--text-primary)',
+                            fontFamily: 'var(--font-display)',
                           }}
                         >
                           {encounter.name}
                         </p>
                         <div
-                          className="flex-shrink-0 px-1.5 py-0.5 rounded text-xs font-semibold whitespace-nowrap"
+                          className="flex-shrink-0 px-1.5 py-0.5 rounded text-xs font-semibold whitespace-nowrap border"
                           style={{
-                            backgroundColor: threatColor,
-                            color: 'white',
+                            backgroundColor: 'var(--bg-deep)',
+                            color: threatColor,
+                            borderColor: threatColor,
                           }}
                         >
                           {encounter.threatRating}
@@ -323,4 +334,4 @@ export function LocationView({
       </div>
     </div>
   );
-}
+});

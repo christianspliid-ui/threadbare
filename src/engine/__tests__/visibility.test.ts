@@ -70,7 +70,7 @@ describe('collectLOSSources', () => {
     const scryTargets = [{ col: 15, row: 10 }];
     const sources = collectLOSSources(graph, ascendantId, scryTargets);
     expect(sources.length).toBeGreaterThanOrEqual(2); // avatar + scry
-    expect(sources).toContainEqual({ hexCol: 15, hexRow: 10, range: 1 });
+    expect(sources).toContainEqual({ hexCol: 15, hexRow: 10, range: 0 });
   });
 });
 
@@ -82,8 +82,9 @@ describe('recalcVisibility', () => {
     const next = recalcVisibility(prev, sources, graph, 1, 20, 15);
 
     expect(next.get(visKey(5, 7))?.state).toBe('visible');
-    expect(next.get(visKey(6, 7))?.state).toBe('visible');
-    expect(next.get(visKey(4, 7))?.state).toBe('visible');
+    // With range 0, adjacent hexes are NOT visible
+    expect(next.get(visKey(6, 7))?.state).toBe('unexplored');
+    expect(next.get(visKey(4, 7))?.state).toBe('unexplored');
   });
 
   it('marks distant hexes as unexplored', () => {
@@ -121,7 +122,9 @@ describe('recalcVisibility', () => {
     const sources = collectLOSSources(graph, ascendantId, []);
     const result = recalcVisibility(new Map(), sources, graph, 1, 20, 15);
 
-    expect(result.get(visKey(6, 7))?.state).toBe('visible');
+    // With range 0, only the avatar's own hex is visible
+    expect(result.get(visKey(5, 7))?.state).toBe('visible');
+    expect(result.get(visKey(6, 7))?.state).toBe('unexplored');
   });
 
   it('transitions remembered → visible when re-entering range', () => {

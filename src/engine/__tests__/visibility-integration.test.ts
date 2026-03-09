@@ -157,9 +157,9 @@ describe('visibility integration', () => {
 
   it('visibility state transitions from visible to remembered when avatar moves away', () => {
     const gs1 = createTestGameState(20, 15);
-    const initialVisibleKey = visKey(2, 1);
+    const initialVisibleKey = visKey(2, 2);
     const initial = gs1.visibilityMap.get(initialVisibleKey);
-    expect(initial?.state).toBe('visible'); // Should be near avatar at 2,2
+    expect(initial?.state).toBe('visible'); // Avatar's own hex at 2,2
 
     // Manually move avatar location
     const avatarLoc = gs1.graph.getNode('loc.start')!;

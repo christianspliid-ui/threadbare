@@ -101,10 +101,8 @@ export function initiateEncounter(
   state.encounterProgress.push(progress);
 
   const firstStep = encounter?.steps[0];
-  const trace: EncounterResolutionTrace = {
-    id: state.traceBuffer?.length ?? 0,
+  const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
     tick,
-    timestamp: Date.now(),
     category: 'encounter_resolution',
     agentId: actorId,
     encounterId,
@@ -173,10 +171,8 @@ export function resolveEncounter(
   // Select the appropriate outcome
   const outcome = success ? step.onSuccess : step.onFailure;
 
-  const trace: EncounterResolutionTrace = {
-    id: state.traceBuffer?.length ?? 0,
+  const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
     tick: state.tick,
-    timestamp: Date.now(),
     category: 'encounter_resolution',
     agentId: progress.actorId,
     encounterId: progress.encounterId,
@@ -238,10 +234,8 @@ export function advanceEncounter(
     progress.status = 'abandoned';
   }
 
-  const trace: EncounterResolutionTrace = {
-    id: state.traceBuffer?.length ?? 0,
+  const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
     tick,
-    timestamp: Date.now(),
     category: 'encounter_resolution',
     agentId: progress.actorId,
     encounterId: progress.encounterId,

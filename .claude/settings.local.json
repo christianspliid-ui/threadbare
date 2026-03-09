@@ -14,7 +14,20 @@
       "Bash(ls -lh /c/Users/chris/TheFantasyWorldSimulator/public/hex-tiles/magic-*.png)",
       "Bash(grep '\"\"category\"\": \"\"Terrain\"\"' src/data/world-model.json)",
       "Bash(grep '\"\"category\"\"' src/data/world-model.json)",
-      "Bash(grep -A 5 '\"\"category\"\": \"\"terrain\"\"' src/data/world-model.json)"
+      "Bash(grep -A 5 '\"\"category\"\": \"\"terrain\"\"' src/data/world-model.json)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx vitest run src/types/__tests__/visibility.test.ts src/engine/__tests__/visibility.test.ts)",
+      "Bash(npx vitest run src/engine/__tests__/visibility-integration.test.ts)",
+      "Bash(npx vitest run src/engine/__tests__/visibility.test.ts src/engine/__tests__/visibility-integration.test.ts)",
+      "Bash(npx vitest run src/engine/__tests__/orchestrator.test.ts)",
+      "Bash(npx vitest run --reporter=verbose)",
+      "Bash(npx vitest run src/engine/__tests__/visibility.test.ts src/engine/__tests__/visibility-integration.test.ts src/types/__tests__/visibility.test.ts)",
+      "Bash(npm install)",
+      "Bash(npm test)",
+      "mcp__paper__get_basic_info",
+      "mcp__paper__get_font_family_info",
+      "mcp__paper__create_artboard",
+      "mcp__paper__write_html"
     ]
   }
 }

@@ -6,7 +6,7 @@
  * sigmoid → d100 resolution. Cultural vocabulary overlays
  * vary the flavor without changing structure.
  */
-import type { SphereName } from './index';
+import type { SphereName, LocationSubtype } from './index';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 
@@ -114,7 +114,7 @@ export interface EncounterTemplate {
   /** Display name */
   name: string;
   /** Location types where this encounter can spawn */
-  locationTypes: string[];
+  locationTypes: LocationSubtype[];
   /** Linear sequence of steps */
   steps: EncounterStep[];
   /** Primary reach tested */

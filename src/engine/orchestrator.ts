@@ -781,7 +781,7 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
 
 // ─── Master Tick ──────────────────────────────────────────────────
 
-export function runTick(state: GameState): GameState {
+export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = []): GameState {
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [] };
 
@@ -869,7 +869,7 @@ export function runTick(state: GameState): GameState {
   phaseEventCounts['doom_expiry'] = s.tickEvents.length - prevEventCount;
 
   // Recalculate visibility
-  const losSources = collectLOSSources(s.graph, s.ascendantId, []);
+  const losSources = collectLOSSources(s.graph, s.ascendantId, scryTargets);
   const gridSize = {
     cols: Math.max(...s.tiles.map(t => t.coord.col)) + 1,
     rows: Math.max(...s.tiles.map(t => t.coord.row)) + 1,
