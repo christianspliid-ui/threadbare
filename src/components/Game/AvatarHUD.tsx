@@ -14,7 +14,7 @@ interface AvatarHUDProps {
 
 // Base style for all buttons
 const BUTTON_BASE_STYLE = {
-  padding: '0.5rem 0.75rem',
+  padding: 'var(--space-2) var(--space-3)',
   fontSize: 'var(--text-xs)',
   fontWeight: 'bold',
   border: 'none',
@@ -36,26 +36,26 @@ const CONTAINER_STYLE = {
   backgroundColor: 'rgba(10, 10, 14, 0.85)', // Kept as fallback, CSS vars via JS don't support rgba() conversion
   border: '1px solid var(--border-subtle)',
   borderRadius: '0.375rem',
-  padding: '0.75rem',
+  padding: 'var(--space-3)',
   zIndex: 20,
   display: 'flex' as const,
   flexDirection: 'column' as const,
-  gap: '0.5rem',
+  gap: 'var(--space-2)',
   minWidth: '160px',
 };
 
 // Row container for action buttons
 const BUTTONS_ROW_STYLE = {
   display: 'flex',
-  gap: '0.5rem',
-  marginBottom: '0.25rem',
+  gap: 'var(--space-2)',
+  marginBottom: 'var(--space-1)',
 };
 
 // Container for center button with accent bar
 const CENTER_BUTTON_CONTAINER_STYLE = {
   display: 'flex',
   alignItems: 'center',
-  gap: '0.5rem',
+  gap: 'var(--space-2)',
 };
 
 // Other button style (Wheel, Scry)
