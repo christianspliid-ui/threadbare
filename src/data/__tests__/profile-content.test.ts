@@ -23,8 +23,8 @@ describe('profile-content', () => {
   // ─── §1. Quote Templates ────────────────────────────────────────────
 
   describe('QUOTE_TEMPLATES', () => {
-    it('exports at least 12 quote templates', () => {
-      expect(QUOTE_TEMPLATES.length).toBeGreaterThanOrEqual(12);
+    it('exports at least 24 quote templates', () => {
+      expect(QUOTE_TEMPLATES.length).toBeGreaterThanOrEqual(24);
     });
 
     it('all quotes contain {{name}} placeholder', () => {
