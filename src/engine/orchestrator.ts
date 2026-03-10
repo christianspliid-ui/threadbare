@@ -582,7 +582,10 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
     // Generate varied dilemma message using prose templates
     const stakesLevel = stakes > 0.6 ? 'high' : stakes > 0.3 ? 'medium' : 'low';
     const templateKey = `${dilemma.outcome}.${stakesLevel}`;
-    const template = DILEMMA_STAKES_PROSE[templateKey];
+    const proseOptions = DILEMMA_STAKES_PROSE[templateKey];
+    const template = Array.isArray(proseOptions)
+      ? proseOptions[Math.floor(rng() * proseOptions.length)]
+      : proseOptions;
 
     let message = template || `${actor.name} and ${targetActor.name}: ${dilemma.outcome.replace(/_/g, ' ')}`;
 

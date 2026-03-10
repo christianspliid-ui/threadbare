@@ -500,26 +500,62 @@ export const ARCHETYPE_EVENT_TEMPLATES: Record<string, string> = {
  * and stakes are low, medium, high. High stakes prose is darker, more dramatic, more consequential.
  * Low stakes prose is lighter, more casual, with smaller emotional weight.
  */
-export const DILEMMA_STAKES_PROSE: Record<string, string> = {
+export const DILEMMA_STAKES_PROSE: Record<string, string[]> = {
   // MUTUAL TRUST outcomes
-  'mutual_trust.low': '{actor} and {target} found common ground — nothing grand, but {noun} enough to build on.',
-  'mutual_trust.medium': '{actor} and {target} forged a bond of {adj} trust, their {noun} intertwining in ways both knew would matter.',
-  'mutual_trust.high': '{actor} and {target}\'s covenant blazed eternal — {adj} and transcendent, a {noun} that would echo through ages unborn.',
+  'mutual_trust.low': [
+    '{actor} and {target} found common ground — nothing grand, but {noun} enough to build on.',
+    '{actor} nodded to {target} across the distance. A small thing. But small things are how trust begins.',
+  ],
+  'mutual_trust.medium': [
+    '{actor} and {target} forged a bond of {adj} trust, their {noun} intertwining in ways both knew would matter.',
+    'Something shifted between {actor} and {target} — a {adj} recognition, like two stones settling into the same foundation.',
+  ],
+  'mutual_trust.high': [
+    '{actor} and {target}\'s covenant blazed eternal — {adj} and transcendent, a {noun} that would echo through ages unborn.',
+    'What {actor} and {target} built together was {adj} beyond reckoning — a {noun} so complete it frightened those who witnessed it.',
+  ],
 
   // BETRAYED outcomes
-  'betrayed.low': '{actor} felt a {adj} pang when {target} slipped away, leaving a small wound of {noun}.',
-  'betrayed.medium': '{actor}\'s heart shattered as {target}\'s {adj} betrayal revealed itself — the {noun} of trust unmade.',
-  'betrayed.high': '{actor} plunged into profound {noun} as {target}\'s {adj} treachery laid bare the abyss within. A wound this {adj} would never truly heal.',
+  'betrayed.low': [
+    '{actor} felt a {adj} pang when {target} slipped away, leaving a small wound of {noun}.',
+    '{target} was gone before {actor} understood what had happened. A {adj} absence, nothing more — but absences have weight.',
+  ],
+  'betrayed.medium': [
+    '{actor}\'s heart shattered as {target}\'s {adj} betrayal revealed itself — the {noun} of trust unmade.',
+    'The look on {actor}\'s face when {target}\'s {adj} deception surfaced — that look would haunt everyone who saw it. {noun} made visible.',
+  ],
+  'betrayed.high': [
+    '{actor} plunged into profound {noun} as {target}\'s {adj} treachery laid bare the abyss within. A wound this {adj} would never truly heal.',
+    '{actor} stood in the wreckage of everything {target} had promised. The {noun} was {adj} and absolute — the kind that remakes a person entirely.',
+  ],
 
   // EXPLOITATION outcomes
-  'exploitation.low': '{actor} took what {target} offered without thought — a {noun} gesture of {adj} self-interest.',
-  'exploitation.medium': '{actor} wielded {target}\'s {adj} faith like a {noun}, twisting their generosity into {noun} and {adj} dominion.',
-  'exploitation.high': '{actor}\'s {adj} cruelty consumed {target}\'s very essence, leaving behind only {noun} and the {adj} ghost of who they once were.',
+  'exploitation.low': [
+    '{actor} took what {target} offered without thought — a {noun} gesture of {adj} self-interest.',
+    '{actor} barely noticed the cost to {target}. That was the {adj} part — how easy it was, how little {noun} it required.',
+  ],
+  'exploitation.medium': [
+    '{actor} wielded {target}\'s {adj} faith like a {noun}, twisting their generosity into {noun} and {adj} dominion.',
+    '{target}\'s trust became {actor}\'s instrument — shaped with {adj} precision into a tool of {noun} that served only one master.',
+  ],
+  'exploitation.high': [
+    '{actor}\'s {adj} cruelty consumed {target}\'s very essence, leaving behind only {noun} and the {adj} ghost of who they once were.',
+    'What {actor} did to {target} went beyond betrayal into something {adj} and systematic — a dismantling of {noun} so thorough it became its own kind of monument.',
+  ],
 
   // MUTUAL DISTRUST outcomes
-  'mutual_distrust.low': '{actor} and {target} kept their distance — {adj}, wary, cautious in ways neither could name.',
-  'mutual_distrust.medium': '{actor} and {target} {verb} as one, locked in {adj} {noun}, each seeing only the other\'s {adj} potential for {noun}.',
-  'mutual_distrust.high': '{actor} and {target} spiraled into {adj} {noun}, neither able to bridge the chasm. The distance between them grew {adj}, absolute, legendary in its {noun}.',
+  'mutual_distrust.low': [
+    '{actor} and {target} kept their distance — {adj}, wary, cautious in ways neither could name.',
+    '{actor} and {target} passed each other like strangers. The {adj} space between them was its own kind of {noun}.',
+  ],
+  'mutual_distrust.medium': [
+    '{actor} and {target} {verb} as one, locked in {adj} {noun}, each seeing only the other\'s {adj} potential for {noun}.',
+    'Neither {actor} nor {target} would move first. The {adj} standoff hardened into something that resembled {noun} but was only fear.',
+  ],
+  'mutual_distrust.high': [
+    '{actor} and {target} spiraled into {adj} {noun}, neither able to bridge the chasm. The distance between them grew {adj}, absolute, legendary in its {noun}.',
+    '{actor} and {target} became a parable — two forces locked in {adj} opposition, their {noun} so complete it warped everything around them.',
+  ],
 };
 
 // ═══════════════════════════════════════════════════════════════════
