@@ -673,7 +673,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
     }
   }, [followAgentId, viewMode]);
 
-  const allTraces = useMemo(() => getTraces(), []);
+  const allTraces = useMemo(() => [...getTraces()], [currentTick]);
 
   const displayTraces = useMemo(() => {
     let traces = Array.from(allTraces).reverse(); // Newest first
