@@ -55,6 +55,9 @@ import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familia
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
+import { progressAction, isActionComplete, completeAction, isAgentIdle } from './actionLifecycle';
+import { getActionTemplateById } from '../data/action-template-content';
+import { executeGraphOps } from './graphOpExecutor';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -122,8 +125,9 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
   );
 
   for (const actor of actors) {
-    // Skip if already in an active encounter
+    // Skip if already in an active encounter or action
     if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
+    if (!isAgentIdle(state.actionsInProgress, actor.id)) continue;
 
     // Encounter attempt
     if (rng() < ENCOUNTER_ATTEMPT_CHANCE) {
@@ -297,6 +301,84 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
   return {
     tickEvents: [...state.tickEvents, ...events],
     encounterProgress: [...state.encounterProgress],
+  };
+}
+
+// ─── Phase 2.3: Action Progress ────────────────────────────────────────
+
+export function phaseActionProgress(state: GameState): Partial<GameState> {
+  const events: TickEvent[] = [];
+  const rng = mulberry32(state.seed + state.tick * 47);
+
+  // Progress and resolve active actions
+  const updatedActions = state.actionsInProgress.map((action) => {
+    // Skip already resolved actions
+    if (action.resolved) return action;
+
+    // Increment progress
+    let updated = progressAction(action);
+
+    // Check if completed
+    if (isActionComplete(updated)) {
+      // Resolve the action
+      const template = getActionTemplateById(updated.templateId);
+      const isSuccess = rng() < (1 - (template?.difficulty ?? 0.5));
+      const outcome = isSuccess ? 'success' : 'failure';
+
+      // Apply GraphOps
+      if (template) {
+        const ops = isSuccess ? template.onSuccess : template.onFailure;
+        const ctx = {
+          actorId: updated.actorId,
+          targetId: updated.targetId,
+          locationId: updated.targetId,
+        };
+
+        try {
+          executeGraphOps(state.graph, ops, ctx);
+        } catch {
+          // Silently fail graph ops for now
+        }
+      }
+
+      // Mark as resolved
+      updated = completeAction(state.graph, updated, outcome);
+
+      // Emit trace
+      emitTrace({
+        id: 0,
+        category: 'action_execution',
+        tick: state.tick,
+        timestamp: Date.now(),
+        summary: `${updated.templateId} resolved`,
+        agentId: updated.actorId,
+        templateId: updated.templateId,
+        actorId: updated.actorId,
+        outcome,
+        opsApplied: isSuccess ? (template?.onSuccess.length ?? 0) : 0,
+        opsFailed: isSuccess ? 0 : (template?.onFailure.length ?? 0),
+        duration: updated.duration,
+      });
+
+      // Emit event
+      const actorNode = state.graph.getNode(updated.actorId);
+      const templateNode = state.graph.getNode(updated.templateId);
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'agent_action_resolved',
+        message: `${actorNode?.name ?? 'An agent'} ${isSuccess ? 'completed' : 'failed'} ${templateNode?.name ?? 'an action'}.`,
+        sphere: SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName,
+        significance: isSuccess ? 0.6 : 0.4,
+      });
+    }
+
+    return updated;
+  });
+
+  return {
+    actionsInProgress: updatedActions,
+    tickEvents: [...state.tickEvents, ...events],
   };
 }
 
@@ -812,6 +894,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.25: Encounter Progression
   s = { ...s, ...phaseEncounterProgression(s) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.3: Action Progress
+  s = { ...s, ...phaseActionProgress(s) };
+  phaseEventCounts['action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.5: Dilemma Detection
