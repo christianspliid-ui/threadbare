@@ -6,7 +6,7 @@
  * of this state in and returns updated pieces out.
  */
 import type { CosmologyProfile, HexTile, SphereName } from './index';
-import type { SimulationClock } from './temporal';
+import type { SimulationClock, ActionInProgress } from './temporal';
 import type { EssencePool } from './influence';
 import type { MandateState, MandateDefinition } from './mandate';
 import type { RivalDefinition, RivalState } from './rival';
@@ -89,6 +89,9 @@ export interface GameState {
 
   // Encounters (agent growth narratives)
   encounterProgress: EncounterProgress[];
+
+  // CRUD Actions (unified with encounters)
+  actionsInProgress: ActionInProgress[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;
