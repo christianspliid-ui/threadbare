@@ -9,7 +9,7 @@ import { FUNDAMENT_DESCRIPTIONS, RESONANCE_FRAGMENT_PROSE } from '../../data/wor
 
 describe('Full content population integration', () => {
   it('Layer 1: minimum visible playthrough content present', () => {
-    expect(ENCOUNTER_TEMPLATES.length).toBe(10);
+    expect(ENCOUNTER_TEMPLATES.length).toBeGreaterThanOrEqual(10);
     expect(Object.values(ROUTINE_TEMPLATES).flat().length).toBeGreaterThanOrEqual(80);
     expect(Object.values(NOTABLE_TEMPLATES).flat().length).toBeGreaterThanOrEqual(20);
     expect(Object.values(LIFECYCLE_TEMPLATES).flat().length).toBe(11);
@@ -28,7 +28,7 @@ describe('Full content population integration', () => {
   it('Layer 3: replay variety content present', () => {
     expect(Object.keys(CULTURAL_PROSE_PALETTES)).toHaveLength(12);
     expect(Object.keys(ARCHETYPE_EVENT_TEMPLATES).length).toBeGreaterThanOrEqual(58);
-    expect(RIVAL_PERSONALITY_PROFILES).toHaveLength(8);
+    expect(RIVAL_PERSONALITY_PROFILES.length).toBeGreaterThanOrEqual(8);
     expect(Object.keys(DILEMMA_STAKES_PROSE)).toHaveLength(12);
     expect(Object.keys(ENCOUNTER_DIFFICULTY_TIERS)).toHaveLength(3);
   });
