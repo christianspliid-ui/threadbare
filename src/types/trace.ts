@@ -120,6 +120,17 @@ export interface InterventionEffectTrace extends TraceBase {
   maxDuration?: number;
 }
 
+/** Trace: CRUD action executed */
+export interface ActionExecutionTrace extends TraceBase {
+  category: 'action_execution';
+  templateId: string;
+  actorId: string;
+  outcome: string;
+  opsApplied: number;
+  opsFailed: number;
+  duration: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -130,6 +141,7 @@ export type TraceEntry =
   | EncounterResolutionTrace
   | FamiliarityChangeTrace
   | InterventionEffectTrace
+  | ActionExecutionTrace
   | ModifierResolutionTrace;
 
 /** All known trace categories */
@@ -142,6 +154,7 @@ export const TRACE_CATEGORIES = [
   'encounter_resolution',
   'familiarity_change',
   'intervention_effect',
+  'action_execution',
   'modifier_resolution',
 ] as const;
 
