@@ -155,6 +155,22 @@ export class WorldGraph {
     return [...neighbors];
   }
 
+  /**
+   * Find all nodes whose `properties.tags` array includes ALL of the specified tags.
+   * Optionally filter by node type. Returns empty array if no matches.
+   */
+  getByTag(tags: string[], nodeType?: NodeType): GraphNode[] {
+    const candidates = nodeType
+      ? this.getNodesByType(nodeType)
+      : Array.from(this.nodes.values());
+
+    return candidates.filter(node => {
+      const nodeTags = node.properties.tags as string[] | undefined;
+      if (!nodeTags || !Array.isArray(nodeTags)) return false;
+      return tags.every(tag => nodeTags.includes(tag));
+    });
+  }
+
   // --- Batch mutations ---
 
   applyMutations(mutations: GraphMutation[]): void {
