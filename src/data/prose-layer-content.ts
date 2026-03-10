@@ -160,6 +160,74 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'Streams cut through the forested hills in silver threads, their courses marked by the greener growth along their banks. The water knows the way; everything else follows.',
     'The forest-covered slopes suggest shelter that the deeper you venture, proves illusory. Within the trees, the horizon closes in quickly.',
   ],
+  deep_ocean: [
+    'The deep ocean is a darkness with weight — pressure and cold conspiring against anything that breathes. Light dies within the first hundred fathoms, leaving only what thrives on absence.',
+    'Nothing returns unchanged from the deep ocean. The pressure remakes flesh and memory alike, pressing both into shapes the surface world would not recognize.',
+  ],
+  tropical_ocean: [
+    'The tropical ocean is warm enough to feel alive, its currents carrying the illusion of benevolence. Beneath the sun-bright surface, predators patrol in patient silence.',
+    'Coral and colour deceive the eye into thinking beauty means safety. The tropical ocean is as indifferent as any other — it simply wears a prettier mask.',
+  ],
+  coast: [
+    'The coast is where certainty ends. Land frays into rock and sand, battered by a sea that never stops arguing. Nothing permanent is built here without being tested.',
+    'Salt wind and spray have bleached everything along the coast to a uniform grey-white. What stands has survived not by strength but by knowing when to bend.',
+  ],
+  reef: [
+    'The reef is a city built by creatures too small to see, a labyrinth of living stone beneath shallow water. Navigation here is a negotiation between hull and coral.',
+    'Sharp coral ridges lie in wait just below the surface, patient as any predator. The reef does not hunt — it simply occupies the space where accidents happen.',
+  ],
+  floodplain: [
+    'The floodplain remembers every drowning. Rich silt marks the high-water line like a scar, and the soil beneath is fat with the deposits of seasonal violence.',
+    'Settlers build here because the soil is generous, then curse the generosity when the river returns to collect. The floodplain is a loan, not a gift.',
+  ],
+  tropical_forest: [
+    'The tropical forest is a green machinery of growth and decay operating at a pace that mocks temperate patience. Everything rots and regenerates in the same breath.',
+    'Canopy so thick it creates its own weather — rain above, rain below, and between them a humidity that dissolves will and intention.',
+  ],
+  evergreen_forest: [
+    'The evergreen forest holds its needles through every season, a stubbornness the deciduous cannot match. The floor is a carpet of brown needles that muffles all sound.',
+    'Pine resin scents the air with something between sweetness and medicine. The evergreen forest is a pharmacy and a cathedral — both equally indifferent to visitors.',
+  ],
+  light_forest: [
+    'The light forest is almost generous — trees spaced wide enough for sun to reach the understory, wildflowers claiming the gaps between trunks.',
+    'Open woodland where the canopy politely declines to block the sky entirely. Pleasant, almost inviting — which makes the rare darkness between the trees more unsettling.',
+  ],
+  dead_forest: [
+    'The dead forest stands as testimony to what was. Grey trunks stripped of bark point skyward like accusations, and nothing grows in their shadow.',
+    'Whatever killed this forest left it standing — a cruelty beyond simple destruction. The dead wood creaks in wind that carries no seeds, no pollen, no promise.',
+  ],
+  moor_bog: [
+    'The moor stretches in waterlogged desolation, heather and peat offering nothing to the eye but endurance. Pools of dark water reflect a sky that never fully commits to clearing.',
+    'Bog ground gives way without warning — solid-seeming turf that opens onto black water and the slow pull of ancient peat. The moor keeps what it takes.',
+  ],
+  high_mountains: [
+    'The high mountains exist above the treeline, above mercy, above the altitude where breath comes easily. Stone and ice are the only residents that do not struggle.',
+    'Thin air and killing exposure rule the high peaks. Those who climb here do so knowing the mountains offer nothing in return — not shelter, not wisdom, not safe passage.',
+  ],
+  mountain_pass: [
+    'The pass is a compromise the mountains make reluctantly — a gap narrow enough to funnel wind into a weapon, but wide enough for the desperate to attempt crossing.',
+    'Carved by water and widened by travellers over centuries, the mountain pass is a scar in the rock that both sides of the range share without acknowledgment.',
+  ],
+  oasis: [
+    'The oasis is a green wound in the desert\'s monotony — water and shade where neither has any right to exist. Those who find it drink first and ask questions after.',
+    'Palm shade and still water, surrounded by a waste that watches and waits. The oasis is not generous — it simply marks where the water table breaches the surface.',
+  ],
+  rocky_desert: [
+    'The rocky desert is stone baked beyond mercy — a pavement of fractured rock where nothing grows except in the cracks between. Shade is a rumour here.',
+    'Heat radiates upward from stone that has been cooking since before memory. The rocky desert does not kill quickly — it prefers erosion, the slow grinding of resolve.',
+  ],
+  sand_dunes: [
+    'The dunes shift with a patience that outlasts every footprint. Sand moves in slow waves driven by wind, erasing paths, burying landmarks, rewriting the landscape overnight.',
+    'Sand dunes are the desert in motion — a terrain that refuses to be mapped because it cannot hold still. What was a valley yesterday is a ridge by morning.',
+  ],
+  arctic: [
+    'The arctic is darkness and ice sharing dominion over a world that has forgotten warmth exists. Survival here is measured in hours, not days.',
+    'Frozen waste stretching to horizons that offer nothing but more of the same. The arctic is not hostile — hostility implies interest. It is simply, thoroughly, indifferent.',
+  ],
+  snow_fields: [
+    'Unbroken snow reflects a sky that cannot decide between grey and white. The snow fields muffle everything — sound, movement, the distinction between ground and air.',
+    'The snow is deep enough to bury standing. What lies beneath it is anyone\'s guess, and guessing wrong means disappearing without witness.',
+  ],
 };
 
 // ─── Culture Location Prose ──────────────────────────────────────────────────

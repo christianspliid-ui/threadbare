@@ -3,12 +3,16 @@ import { getHexTileUrl, TERRAIN_TILE_MAP, getMagicOverlayUrl, MAGIC_OVERLAY_MAP 
 import type { TerrainType } from '../../types';
 
 const ALL_TERRAIN_TYPES: TerrainType[] = [
-  'ocean', 'coastal_shallows', 'lake', 'river',
-  'grassland', 'farmland', 'savanna', 'steppe',
+  'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
+  'grassland', 'farmland', 'savanna', 'steppe', 'floodplain',
   'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
-  'swamp', 'marsh',
-  'hills', 'mountains', 'plateau', 'badlands',
-  'desert', 'tundra', 'glacier', 'volcano',
+  'tropical_forest', 'evergreen_forest', 'light_forest', 'dead_forest',
+  'swamp', 'marsh', 'moor_bog',
+  'hills', 'mountains', 'high_mountains', 'plateau', 'badlands', 'mountain_pass',
+  'forested_hills',
+  'great_home_trees', 'broken_lands', 'oasis',
+  'desert', 'rocky_desert', 'sand_dunes', 'tundra', 'glacier', 'volcano',
+  'arctic', 'snow_fields',
 ];
 
 describe('hex-tile-assets', () => {
