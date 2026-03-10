@@ -6,6 +6,16 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Where | What changed | Why |
 |------|-------|-------------|-----|
+| 2026-03-10 | Repo: profile-content.ts | Expanded MIDDLE_TEMPLATES 8→16, CLOSING_TEMPLATES 8→16 with new emotional registers | Backstory repetition visible by 4th agent scry — middle/closing pools were thinnest |
+| 2026-03-10 | Repo: narrative-content.ts | Expanded DILEMMA_STAKES_PROSE from Record<string,string> to Record<string,string[]> (12 keys × 2 variants = 24 total) | Dilemmas fire every ~5 ticks, 12 templates cycle fast |
+| 2026-03-10 | Repo: orchestrator.ts | Updated DILEMMA_STAKES_PROSE consumer to pick from array via rng() | Type change from string to string[] required engine-side array selection |
+| 2026-03-10 | Repo: profile-content.ts | Expanded QUOTE_TEMPLATES 16→24 with 8 new emotional registers (dark humor, regret, pragmatism, awe, defiance, tenderness, weariness, clarity) | Quotes are the first line players read in agent modal — needed more variety |
+| 2026-03-10 | Repo: narrative-content.ts | Expanded BORN_NAMES 28→40 with foundation-tinted names (Chaos/Order/Light/Darkness) | Birth events are common, needed foundation-axis coverage |
+| 2026-03-10 | Repo: content-full-integration.test.ts | Changed ENCOUNTER_TEMPLATES and RIVAL_PERSONALITY_PROFILES assertions to minimum bounds | Prior exact-count assertions broke when content sprints expanded pools |
+| 2026-03-10 | Docs/plans/ | Created content-worldbuilding-assessment.md and tier0-content-depth-sprint.md | Content Lead assessment: infrastructure mature, prose pool depth is the repetition bottleneck |
+| 2026-03-10 | Repo: orchestrator.ts | Added emitTrace for CRUD action starts (category: action_execution, outcome: started) + StrictMode graph mutation doc comment | Action starts weren't traced in debug panel — only completions were |
+| 2026-03-10 | Repo: gameInit.ts | Register ACTION_TEMPLATES as graph nodes in initializeGameState | createAction failed silently (fail-soft) because template nodes didn't exist for performing edges |
+| 2026-03-10 | Repo: orchestrator.ts | Wired CRUD action creation into phaseAgentActions (CRUD_ACTION_CHANCE=0.35 branch) | Phase 2 had encounter + routine branches but never called generateActionCandidates/createAction |
 | 2026-03-10 | Notion backlog | Added 🎨 Visual Asset Backlog section (ART-01 through ART-18, 3 waves) | No asset tracking existed — pipeline overview doc wasn't actionable as tasks |
 | 2026-03-10 | Docs/plans/ | Created `2026-03-10-visual-asset-strategy.md` — assessment, 3-sprint plan, quality controls | Need a concrete way forward to get produced assets into the game |
 | 2026-03-05 | Notion: Visual Style Tile | Updated color palette, core visual principle, color behavior sections | Synced with STYLE.md rewrite — dark world direction, Time→orange, form language system |
