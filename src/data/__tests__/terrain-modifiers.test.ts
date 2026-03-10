@@ -36,7 +36,7 @@ describe('terrain-modifiers', () => {
       'grassland', 'farmland', 'savanna', 'steppe',
       'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
       'swamp', 'marsh', 'hills', 'mountains', 'plateau', 'badlands',
-      'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+      'forested_hills',
       'great_home_trees', 'broken_lands', 'desert', 'tundra', 'glacier', 'volcano',
     ];
     for (const key of Object.keys(TERRAIN_MODIFIERS)) {

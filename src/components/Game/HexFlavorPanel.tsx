@@ -27,9 +27,7 @@ const TERRAIN_FLAVOR: Record<string, string> = {
   tundra: 'Frozen earth stretches to the edge of sight. In summer the permafrost weeps; in winter it locks tight as a tomb.',
   glacier: 'Ancient ice creeps forward with geological patience, grinding mountains to dust beneath its weight.',
   volcano: 'The earth here is restless. Fumaroles hiss, hot springs bubble, and the ground shakes with subterranean fury.',
-  forested_hills_evergreen: 'Pine-clad hills rise in green waves, their slopes hiding deep ravines and old stone ruins.',
-  forested_hills_deciduous: 'Wooded hills alive with birdsong and rustling canopy. Every hollow shelters something — village, shrine, or ambush.',
-  forested_hills_jungle: 'Tropical hills choked with vine and fern. Waterfalls tumble into mist-filled gorges.',
+  forested_hills: 'Wooded hills rise in green waves, their slopes hiding deep ravines and old stone ruins. Every hollow shelters something.',
   great_home_trees: 'Trees of impossible scale rise like living towers. Entire communities dwell among the branches.',
   broken_lands: 'Shattered terrain — fissures, rubble, and the scars of some ancient cataclysm. The land itself seems wounded.',
 };

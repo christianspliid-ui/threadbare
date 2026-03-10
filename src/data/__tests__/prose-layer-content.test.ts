@@ -37,9 +37,7 @@ describe('Prose Layer Content', () => {
       'volcano',
       'broken_lands',
       'great_home_trees',
-      'forested_hills_evergreen',
-      'forested_hills_deciduous',
-      'forested_hills_jungle',
+      'forested_hills',
     ];
 
     test('has entries for all required terrain types', () => {

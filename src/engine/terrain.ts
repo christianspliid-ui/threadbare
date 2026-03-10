@@ -53,14 +53,14 @@ export function classifyBiome(
   if (elevation < 0.60) {
     // Very wet mid-elevation → forested hills
     if (moisture > 0.7) {
-      if (temperature > 0.6) return 'forested_hills_jungle';
-      if (temperature > 0.3) return 'forested_hills_deciduous';
+      if (temperature > 0.6) return 'forested_hills';
+      if (temperature > 0.3) return 'forested_hills';
       return 'boreal_forest';
     }
     // Moderate wet mid-elevation → forested hills or deciduous
     if (moisture > 0.55) {
-      if (temperature > 0.6) return 'forested_hills_deciduous';
-      if (temperature > 0.3) return 'forested_hills_evergreen';
+      if (temperature > 0.6) return 'forested_hills';
+      if (temperature > 0.3) return 'forested_hills';
       return 'boreal_forest';
     }
     // Moderate mid-elevation
@@ -78,8 +78,8 @@ export function classifyBiome(
   if (elevation < 0.80) {
     // Wet highlands — forested hills
     if (moisture > 0.65) {
-      if (temperature > 0.5) return 'forested_hills_deciduous';
-      if (temperature > 0.3) return 'forested_hills_evergreen';
+      if (temperature > 0.5) return 'forested_hills';
+      if (temperature > 0.3) return 'forested_hills';
       return 'boreal_forest';
     }
     if (moisture > 0.5) {

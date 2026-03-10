@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-03-08T09:22:00.283Z",
-    "nodeCount": 230,
+    "nodeCount": 228,
     "edgeCount": 343,
     "categories": [
       "action-template",
@@ -3265,10 +3265,10 @@
       "properties": {}
     },
     {
-      "id": "terrain.forested_hills_evergreen",
-      "name": "Forested Hills (Evergreen)",
+      "id": "terrain.forested_hills",
+      "name": "Forested Hills",
       "category": "terrain",
-      "description": "Rolling hills covered in dense evergreen forest. Pine and spruce cling to steep slopes, creating a dark canopy that filters light into green-gold shafts. The air smells of resin and earth.",
+      "description": "Rolling hills covered in dense forest. Trees cling to steep slopes, creating a dark canopy that filters light into green-gold shafts. Hidden valleys shelter streams and old ruins.",
       "properties": {
         "color": "#2a3520",
         "icon": "🌲",
@@ -3278,54 +3278,10 @@
         ],
         "temperature_range": [
           0.15,
-          0.6
+          1
         ],
         "moisture_range": [
           0.55,
-          1
-        ]
-      }
-    },
-    {
-      "id": "terrain.forested_hills_deciduous",
-      "name": "Forested Hills (Deciduous)",
-      "category": "terrain",
-      "description": "Gentle hills draped in deciduous woodland. In autumn the slopes blaze with color; in winter, bare branches sketch against grey skies. Rich soil supports diverse undergrowth.",
-      "properties": {
-        "color": "#2a3520",
-        "icon": "🌳",
-        "elevation_range": [
-          0.4,
-          0.8
-        ],
-        "temperature_range": [
-          0.3,
-          0.7
-        ],
-        "moisture_range": [
-          0.55,
-          1
-        ]
-      }
-    },
-    {
-      "id": "terrain.forested_hills_jungle",
-      "name": "Forested Hills (Jungle)",
-      "category": "terrain",
-      "description": "Tropical hills smothered in jungle growth. Vines hang from ancient trees, exotic birds call through the humid air, and hidden waterfalls cascade down mossy rock faces.",
-      "properties": {
-        "color": "#2a3520",
-        "icon": "🌴",
-        "elevation_range": [
-          0.4,
-          0.8
-        ],
-        "temperature_range": [
-          0.6,
-          1
-        ],
-        "moisture_range": [
-          0.7,
           1
         ]
       }

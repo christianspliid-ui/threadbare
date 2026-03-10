@@ -153,26 +153,12 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The roots of the great trees have created their own terrain — ridges and valleys of wood and earth intertwined, where streams flow through tunnels of living bark.',
     'Communities build entire settlements on the lower branches, never touching the ground. The trees tolerate this the way cathedrals tolerate mice.',
   ],
-  forested_hills_evergreen: [
-    'The evergreen forest rolls in hills that rise and fall like waves, green-black against grey sky. The canopy is thick enough to turn afternoon into dusk.',
-    'Conifers climb the slopes in dense ranks, their darkness suggesting depth that swallows light. The forest floor is soft with needle and decay.',
+  forested_hills: [
+    'The forest rolls in hills that rise and fall like waves, dark against grey sky. The canopy is thick enough to turn afternoon into dusk.',
+    'Trees climb the slopes in dense ranks, their darkness suggesting depth that swallows light. The forest floor is soft with decay.',
     'The forested hills stand in permanent twilight, where growth and rot happen simultaneously in the deep shade.',
-    'Mist clings to the evergreen slopes like gauze on a wound. The hills exhale cold air in the morning and inhale it at dusk, the forest breathing with them.',
-    'The needle-carpeted ground muffles every step. Moving through these hills is like walking through a held breath.',
-  ],
-  forested_hills_deciduous: [
-    'The deciduous forest cloaks the rolling hills in patterns of branch and bare wood. In the seasons between, the landscape is honest about its emptiness.',
-    'Hills rise and fall beneath a canopy that changes like breath — full in spring, skeletal in winter, never truly generous. The forest is patient.',
-    'The forest-covered slopes suggest shelter that the deeper you venture, proves illusory. Within the trees, the horizon closes in quickly.',
     'Streams cut through the forested hills in silver threads, their courses marked by the greener growth along their banks. The water knows the way; everything else follows.',
-    'The deciduous hills are a landscape of seasonal revelation — each autumn strips the slopes bare, exposing the stone bones the summer hid.',
-  ],
-  forested_hills_jungle: [
-    'The jungle clings to the slopes with suffocating intensity — green so vivid it seems to drain color from the sky. The hills become terrain features rather than distinct formations.',
-    'Vines and massive trees struggle for dominion, creating a layered landscape where ground level is a different world from canopy. Everywhere is shadow and struggle.',
-    'The jungle hills are labyrinthine and hostile, where even the native creatures find the density oppressive. Green is not peace here — it is competition.',
-    'Waterfalls cascade down the jungle slopes, disappearing into the canopy before they reach the ground. The moisture feeds everything and the everything feeds something else.',
-    'The jungle-clad hills are steeper than they appear from outside — the vegetation disguises the grade until you\'re climbing hand over root.',
+    'The forest-covered slopes suggest shelter that the deeper you venture, proves illusory. Within the trees, the horizon closes in quickly.',
   ],
 };
 

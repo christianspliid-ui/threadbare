@@ -24,9 +24,7 @@ export const TERRAIN_TILE_MAP: Record<TerrainType, string> = {
   glacier: 'glacier.png',
   volcano: 'volcanic.png',
   // New terrain types
-  forested_hills_evergreen: 'forested-hills-evergreen.png',
-  forested_hills_deciduous: 'forested-hills-deciduous.png',
-  forested_hills_jungle: 'forested-hills-jungle.png',
+  forested_hills: 'forested-hills-evergreen.png',
   great_home_trees: 'great-home-trees.png',
   broken_lands: 'broken-lands.png',
 };

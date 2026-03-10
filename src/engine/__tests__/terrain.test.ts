@@ -43,14 +43,14 @@ describe('classifyBiome', () => {
     expect(biome).toBe('temperate_forest');
   });
 
-  it('returns forested_hills_evergreen for mid-elevation, moderate moisture, cool temp', () => {
+  it('returns forested_hills for mid-elevation, moderate moisture, cool temp', () => {
     const biome = classifyBiome(0.45, 0.35, 0.60);
-    expect(biome).toBe('forested_hills_evergreen');
+    expect(biome).toBe('forested_hills');
   });
 
-  it('returns forested_hills_jungle for mid-elevation, high moisture, hot temp', () => {
+  it('returns forested_hills for mid-elevation, high moisture, hot temp', () => {
     const biome = classifyBiome(0.50, 0.65, 0.75);
-    expect(biome).toBe('forested_hills_jungle');
+    expect(biome).toBe('forested_hills');
   });
 
   it('returns broken_lands for dry lowland with moderate-hot temp', () => {
