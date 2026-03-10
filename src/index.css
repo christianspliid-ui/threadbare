@@ -55,6 +55,20 @@
 
     /* ── Grain texture ────────────────────────────────────────── */
     --grain-opacity: 0.03;
+
+    /* Animation timing */
+    --anim-fast: 150ms;
+    --anim-normal: 200ms;
+    --anim-slow: 400ms;
+
+    /* Spacing grid (4px base) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
   }
 
   /* Base styles */
@@ -194,4 +208,94 @@
 @keyframes pulseGlow {
   0%, 100% { box-shadow: 0 0 0 0 var(--sphere-color, #d4a040); }
   50% { box-shadow: 0 0 12px 4px var(--sphere-color, #d4a040); }
+}
+
+/* === FE Polish Sprint #1 — Animation Classes === */
+
+/* Mount/unmount animation pairs */
+.anim-fade-enter {
+  animation: fadeInOnly var(--anim-normal) ease-out forwards;
+}
+.anim-fade-exit {
+  animation: fadeOutOnly var(--anim-normal) ease-in forwards;
+}
+
+.anim-fade-up-enter {
+  animation: fadeSlideUpIn var(--anim-normal) ease-out forwards;
+}
+.anim-fade-up-exit {
+  animation: fadeSlideUpOut var(--anim-normal) ease-in forwards;
+}
+
+.anim-fade-down-enter {
+  animation: fadeSlideDownIn var(--anim-normal) ease-out forwards;
+}
+.anim-fade-down-exit {
+  animation: fadeSlideDownOut var(--anim-normal) ease-in forwards;
+}
+
+/* One-shot highlight pulses */
+.pulse-gold {
+  animation: pulseGoldFlare 600ms ease-out;
+}
+.pulse-doom {
+  animation: pulseDoomFlare 600ms ease-out;
+}
+
+/* Breathe utility (for empty states) */
+.animate-breathe {
+  animation: breathe 3s ease-in-out infinite;
+}
+
+/* Screen reader only (visually hidden, accessible to assistive tech) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Keyframes */
+@keyframes fadeInOnly {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOutOnly {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fadeSlideUpIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideUpOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes fadeSlideDownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideDownOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes pulseGoldFlare {
+  0% { box-shadow: 0 0 0 0 rgba(212, 160, 64, 0); }
+  50% { box-shadow: 0 0 12px 4px rgba(212, 160, 64, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 160, 64, 0); }
+}
+
+@keyframes pulseDoomFlare {
+  0% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+  50% { box-shadow: 0 0 12px 4px rgba(248, 113, 113, 0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
 }
