@@ -261,9 +261,13 @@ describe('narrative-content expanded', () => {
       expect(Object.keys(DILEMMA_STAKES_PROSE)).toHaveLength(12);
     });
 
-    it('each entry should be a non-empty prose string', () => {
-      for (const [key, prose] of Object.entries(DILEMMA_STAKES_PROSE)) {
-        expect(prose.length, `${key} empty`).toBeGreaterThan(10);
+    it('each entry should be a non-empty array of prose strings', () => {
+      for (const [key, variants] of Object.entries(DILEMMA_STAKES_PROSE)) {
+        expect(Array.isArray(variants), `${key} should be an array`).toBe(true);
+        expect(variants.length, `${key} should have at least 2 variants`).toBeGreaterThanOrEqual(2);
+        for (const prose of variants) {
+          expect(prose.length, `${key} variant empty`).toBeGreaterThan(10);
+        }
       }
     });
 
@@ -278,17 +282,19 @@ describe('narrative-content expanded', () => {
       }
     });
 
-    it('all prose should contain at least one placeholder', () => {
-      for (const [key, prose] of Object.entries(DILEMMA_STAKES_PROSE)) {
-        const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
-        expect(hasPlaceholder, `${key} missing placeholders`).toBe(true);
+    it('all prose variants should contain at least one placeholder', () => {
+      for (const [key, variants] of Object.entries(DILEMMA_STAKES_PROSE)) {
+        for (const prose of variants) {
+          const hasPlaceholder = /\{[a-zA-Z_]+\}/.test(prose);
+          expect(hasPlaceholder, `${key} variant missing placeholders`).toBe(true);
+        }
       }
     });
 
     it('high stakes prose should feel more dramatic than low stakes', () => {
       // Low stakes should use lighter language
-      const lowProse = DILEMMA_STAKES_PROSE['mutual_trust.low'].toLowerCase();
-      const highProse = DILEMMA_STAKES_PROSE['mutual_trust.high'].toLowerCase();
+      const lowProse = DILEMMA_STAKES_PROSE['mutual_trust.low'].join(' ').toLowerCase();
+      const highProse = DILEMMA_STAKES_PROSE['mutual_trust.high'].join(' ').toLowerCase();
 
       // High stakes should have more dramatic words (this is a soft check)
       const dramaticWords = ['shattered', 'eternal', 'transcendent', 'profound', 'desperate', 'legendary'];
