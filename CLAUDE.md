@@ -95,6 +95,7 @@ Context for specific problem types lives in on-demand skills, not in this file. 
 | Content systems & worldbuilding | `content-worldbuilding` | Cosmology, spheres, reaches, content packages, graph data |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Creative prose | `prose-resolver` (platform) | Writing prose content, implementing resolvers |
+| Attachment content | `content-authoring` (project) | Creating items, conditions, spells, powers, agreements, retainers |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
