@@ -96,6 +96,30 @@ export const MIDDLE_TEMPLATES = [
 
   // Reckoning and power
   'When {name}\'s {trait} gifts finally blossomed, {bond} was the first to see both the wonder and the cost.',
+
+  // Isolation and self-reliance
+  '{name} walked alone for a long time. Their {trait} nature kept others at a careful distance, and only {bond} ever saw what that distance cost.',
+
+  // Ambition and consequence
+  'The {sphere} called to {name} with promises that matched their {trait} hunger. {bond} watched the transformation and said nothing — there was nothing left to say.',
+
+  // Tenderness beneath armor
+  'For all their {trait} reputation, {name} kept one thing gentle: the bond with {bond}. It was the crack in the armor that made everything else bearable.',
+
+  // Dread and premonition
+  'Something changed in {name} the season the {sphere} went quiet. Their {trait} certainty wavered, and {bond} noticed the way they started watching the horizon.',
+
+  // Quiet strength
+  '{name} never spoke of what the {sphere} demanded. Their {trait} silence said enough, and {bond} learned to read the weight in it.',
+
+  // Defiance
+  'When the {sphere} tried to claim {name} entirely, their {trait} stubbornness held. {bond} was the anchor — the one thread even divine power could not sever.',
+
+  // Loss that reshapes
+  'After the loss, {name} became something new — still {trait}, but colder, more precise. {bond} remembered who they had been before and grieved quietly.',
+
+  // Transformation accepted
+  '{name} did not resist the change. Their {trait} nature made them suited to what the {sphere} required, and {bond} could only watch as the person they knew became something else entirely.',
 ];
 
 // ─── §5. Backstory Closing Templates ─────────────────────────────────────────
@@ -116,6 +140,30 @@ export const CLOSING_TEMPLATES = [
 
   // Consequence and reckoning
   'All {name} has done and chosen has led to this moment — a moment that will scatter consequences like seeds on the wind.',
+
+  // Uncertainty as power
+  'No one can predict what {name} will do next. That uncertainty is itself a kind of power — and {name} knows it.',
+
+  // Approaching storm
+  'The threads around {name} are tightening. Whether this means triumph or unraveling, even the gods cannot say.',
+
+  // Quiet resolve
+  '{name} has stopped asking for permission. Whatever comes next, they will meet it standing.',
+
+  // Legacy already forming
+  'Already the {culture} speak of {name} in tones reserved for legends. Whether that legend ends in glory or cautionary tale remains unwritten.',
+
+  // Cost acknowledged
+  '{name} knows the price of what they carry. They have counted the cost and chosen to pay it — not because they must, but because no one else will.',
+
+  // Earned peace (rare, wonder-tinted)
+  'For now, {name} rests. Not in defeat, not in victory, but in the brief stillness between storms. It will not last. It never does.',
+
+  // Ironic reversal
+  'Everything {name} fought to avoid has come to pass. And yet — here they stand, unbroken. Perhaps that was the point all along.',
+
+  // The world watching
+  'The weave bends around {name} like water around a stone. They may not know it yet, but the world is already reshaping itself to accommodate what they will become.',
 ];
 
 // ─── §6. Lookup Functions ────────────────────────────────────────────────────

@@ -149,8 +149,8 @@ describe('profile-content', () => {
   // ─── §4. Middle Templates ───────────────────────────────────────────
 
   describe('MIDDLE_TEMPLATES', () => {
-    it('exports at least 8 middle templates', () => {
-      expect(MIDDLE_TEMPLATES.length).toBeGreaterThanOrEqual(8);
+    it('exports at least 16 middle templates', () => {
+      expect(MIDDLE_TEMPLATES.length).toBeGreaterThanOrEqual(16);
     });
 
     it('all middles contain {{trait}} placeholder', () => {
@@ -195,8 +195,8 @@ describe('profile-content', () => {
   // ─── §5. Closing Templates ──────────────────────────────────────────
 
   describe('CLOSING_TEMPLATES', () => {
-    it('exports at least 8 closing templates', () => {
-      expect(CLOSING_TEMPLATES.length).toBeGreaterThanOrEqual(8);
+    it('exports at least 16 closing templates', () => {
+      expect(CLOSING_TEMPLATES.length).toBeGreaterThanOrEqual(16);
     });
 
     it('all closings contain {{name}} placeholder', () => {
