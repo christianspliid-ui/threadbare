@@ -36,6 +36,30 @@ export const QUOTE_TEMPLATES = [
   // Mystical — magic, connection, transcendence
   '"{name} claimed there is a voice beneath the {sphere} that speaks only to those {value} enough to listen."',
   '"{name} heard songs in stones, and stories in the {sphere}. Whether mad or {value}, none could say."',
+
+  // Dark humor
+  '"{name} laughed when asked about the {sphere}. It was not a kind laugh. \'You want to know what I learned? Run.\'"',
+
+  // Regret
+  '"I was {value} once," {name} said. "Before the {sphere} taught me what that word actually costs."',
+
+  // Pragmatism
+  '"Prophecy is a luxury," {name} observed. "In the {sphere}, we deal in what is, not what should be."',
+
+  // Awe before the divine
+  '"I have seen the {sphere} move," {name} whispered. "Not as metaphor. It moved. And the world bent around it like grass before wind."',
+
+  // Defiance against fate
+  '"The threads say I am {value}," {name} told the silence. "The threads are wrong. They have been wrong before."',
+
+  // Tenderness
+  '"There is a kindness in the {sphere} that nobody speaks of," {name} said quietly. "Not because it is secret, but because it is fragile."',
+
+  // Weariness
+  '"I have been {value} for so long," {name} admitted, "that I have forgotten what the alternative feels like."',
+
+  // Clarity after suffering
+  '"Pain clarifies," {name} said, with the calm of someone who had tested the theory. "The {sphere} knows this. That is why it hurts."',
 ];
 
 // ─── §2. Sphere Flavor Text ───────────────────────────────────────────────────
