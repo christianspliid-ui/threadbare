@@ -7,17 +7,19 @@ describe('HexBreadcrumb', () => {
   const defaultProps = {
     hexCol: 5,
     hexRow: 3,
-    terrain: 'deciduous_forest' as const,
+    terrain: 'temperate_forest' as const,
     locationCount: 3,
     agentCount: 7,
     lineOfSight: 'full' as const,
     sphereInfluence: { force: 0, matter: 0, energy: 0, life: 0.2, mind: 0.3, spirit: 0, time: 0, entropy: 0 },
+    cultures: [] as any[],
+    factions: [] as any[],
     onBack: vi.fn(),
   };
 
   it('renders hex name with coordinates', () => {
     render(<HexBreadcrumb {...defaultProps} />);
-    expect(screen.getByText(/Deciduous Forest Hex/)).toBeTruthy();
+    expect(screen.getByText(/Temperate Forest/)).toBeTruthy();
     expect(screen.getByText(/5, 3/)).toBeTruthy();
   });
 
@@ -30,7 +32,7 @@ describe('HexBreadcrumb', () => {
 
   it('shows location and agent counts', () => {
     render(<HexBreadcrumb {...defaultProps} />);
-    expect(screen.getByText(/3 locations/i)).toBeTruthy();
+    expect(screen.getByText(/3 loc/i)).toBeTruthy();
     expect(screen.getByText(/7 agents/i)).toBeTruthy();
   });
 
@@ -58,13 +60,13 @@ describe('HexBreadcrumb', () => {
   });
 
   it('handles different terrain types', () => {
-    render(<HexBreadcrumb {...defaultProps} terrain="mountain" />);
-    expect(screen.getByText(/Mountain Hex/)).toBeTruthy();
+    render(<HexBreadcrumb {...defaultProps} terrain="mountains" />);
+    expect(screen.getByText(/Mountains/)).toBeTruthy();
   });
 
   it('handles underscored terrain names correctly', () => {
     render(<HexBreadcrumb {...defaultProps} terrain="coastal_shallows" />);
-    expect(screen.getByText(/Coastal Shallows Hex/)).toBeTruthy();
+    expect(screen.getByText(/Coastal Shallows/)).toBeTruthy();
   });
 
   it('shows different line of sight levels', () => {

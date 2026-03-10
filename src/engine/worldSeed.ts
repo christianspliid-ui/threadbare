@@ -130,11 +130,11 @@ const TERRAIN_SETTLEMENT_WEIGHTS: Partial<Record<TerrainType, Array<[LocationSub
   desert:     [['oasis', 3], ['camp', 4], ['ruins', 2], ['hamlet', 1]],
   mountains:  [['mining', 3], ['fort', 2], ['shrine', 2], ['tower', 1], ['ruins', 1]],
   hills:      [['hamlet', 3], ['town', 2], ['mining', 2], ['fort', 1], ['ruins', 1]],
-  volcanic:   [['mining', 2], ['ruins', 3], ['camp', 2], ['shrine', 1]],
+  volcano:    [['mining', 2], ['ruins', 3], ['camp', 2], ['shrine', 1]],
   broken_lands: [['ruins', 4], ['camp', 2], ['battleground', 2]],
   jungle:     [['ruins', 3], ['shrine', 2], ['camp', 2], ['hamlet', 1]],
   swamp:      [['ruins', 2], ['camp', 2], ['shrine', 1], ['hamlet', 1]],
-  bog:        [['ruins', 2], ['camp', 2], ['shrine', 1]],
+  marsh:      [['ruins', 2], ['camp', 2], ['shrine', 1]],
   glacier:    [['ruins', 1], ['shrine', 1]],
   tundra:     [['camp', 3], ['hamlet', 1], ['ruins', 1]],
 };

@@ -17,10 +17,10 @@ describe('BIOME_COLORS (Threadbare dark fallback)', () => {
   const allTerrains: TerrainType[] = [
     'ocean', 'coastal_shallows', 'lake', 'river',
     'grassland', 'farmland', 'savanna', 'steppe',
-    'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-    'swamp', 'bog',
+    'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+    'swamp', 'marsh',
     'hills', 'mountains', 'plateau', 'badlands',
-    'desert', 'tundra', 'glacier', 'volcanic',
+    'desert', 'tundra', 'glacier', 'volcano',
   ];
 
   it('all biome colors have brightness under 120', () => {

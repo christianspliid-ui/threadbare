@@ -1287,8 +1287,8 @@
       }
     },
     {
-      "id": "terrain.deciduous_forest",
-      "name": "Deciduous Forest",
+      "id": "terrain.temperate_forest",
+      "name": "Temperate Forest",
       "category": "terrain",
       "description": "A forest of broad-leafed trees that lose their leaves seasonally. Rich undergrowth, dappled light, and the songs of countless birds characterize this temperate biome.",
       "properties": {
@@ -1331,8 +1331,8 @@
       }
     },
     {
-      "id": "terrain.taiga",
-      "name": "Taiga & Boreal Forest",
+      "id": "terrain.boreal_forest",
+      "name": "Boreal Forest",
       "category": "terrain",
       "description": "The northernmost forest, dominated by coniferous trees like spruce and pine. Long, harsh winters and brief summers define this biome. Solitude and resilience are its hallmarks.",
       "properties": {
@@ -1397,8 +1397,8 @@
       }
     },
     {
-      "id": "terrain.bog",
-      "name": "Bog & Fen",
+      "id": "terrain.marsh",
+      "name": "Marsh",
       "category": "terrain",
       "description": "A cold, waterlogged biome where sphagnum moss dominates. Sparse vegetation, dark water, and a sense of desolation pervade. Strange lights dance over the water at night.",
       "properties": {
@@ -1573,8 +1573,8 @@
       }
     },
     {
-      "id": "terrain.volcanic",
-      "name": "Volcanic",
+      "id": "terrain.volcano",
+      "name": "Volcano",
       "category": "terrain",
       "description": "Landscapes shaped by volcanic activity. Lava flows, ash fields, and hot springs dot the terrain. The earth rumbles with primal power; danger and opportunity intertwine.",
       "properties": {
@@ -4107,7 +4107,7 @@
     },
     {
       "source": "creation.matter",
-      "target": "terrain.volcanic",
+      "target": "terrain.volcano",
       "type": "rel.biome-affinity",
       "weight": 0.75
     },
@@ -4119,7 +4119,7 @@
     },
     {
       "source": "creation.energy",
-      "target": "terrain.volcanic",
+      "target": "terrain.volcano",
       "type": "rel.biome-affinity",
       "weight": 0.8
     },
@@ -4131,7 +4131,7 @@
     },
     {
       "source": "creation.life",
-      "target": "terrain.deciduous_forest",
+      "target": "terrain.temperate_forest",
       "type": "rel.biome-affinity",
       "weight": 0.85
     },
@@ -4179,7 +4179,7 @@
     },
     {
       "source": "creation.spirit",
-      "target": "terrain.bog",
+      "target": "terrain.marsh",
       "type": "rel.biome-affinity",
       "weight": 0.6
     },
@@ -4209,7 +4209,7 @@
     },
     {
       "source": "creation.entropy",
-      "target": "terrain.volcanic",
+      "target": "terrain.volcano",
       "type": "rel.biome-affinity",
       "weight": 0.5
     },
@@ -4221,7 +4221,7 @@
     },
     {
       "source": "terrain.grassland",
-      "target": "terrain.deciduous_forest",
+      "target": "terrain.temperate_forest",
       "type": "rel.adjacent",
       "weight": 1
     },
@@ -4244,19 +4244,19 @@
       "weight": 0.7
     },
     {
-      "source": "terrain.deciduous_forest",
+      "source": "terrain.temperate_forest",
       "target": "terrain.dense_forest",
       "type": "rel.adjacent",
       "weight": 0.7
     },
     {
-      "source": "terrain.deciduous_forest",
-      "target": "terrain.taiga",
+      "source": "terrain.temperate_forest",
+      "target": "terrain.boreal_forest",
       "type": "rel.adjacent",
       "weight": 0.6
     },
     {
-      "source": "terrain.deciduous_forest",
+      "source": "terrain.temperate_forest",
       "target": "terrain.hills",
       "type": "rel.adjacent",
       "weight": 0.8
@@ -4274,7 +4274,7 @@
       "weight": 0.7
     },
     {
-      "source": "terrain.taiga",
+      "source": "terrain.boreal_forest",
       "target": "terrain.tundra",
       "type": "rel.adjacent",
       "weight": 0.8
@@ -4287,7 +4287,7 @@
     },
     {
       "source": "terrain.swamp",
-      "target": "terrain.bog",
+      "target": "terrain.marsh",
       "type": "rel.adjacent",
       "weight": 0.6
     },
@@ -4317,7 +4317,7 @@
     },
     {
       "source": "terrain.mountains",
-      "target": "terrain.taiga",
+      "target": "terrain.boreal_forest",
       "type": "rel.adjacent",
       "weight": 0.7
     },
@@ -4365,7 +4365,7 @@
     },
     {
       "source": "terrain.tundra",
-      "target": "terrain.taiga",
+      "target": "terrain.boreal_forest",
       "type": "rel.adjacent",
       "weight": 0.8
     },
@@ -4376,19 +4376,19 @@
       "weight": 0.8
     },
     {
-      "source": "terrain.volcanic",
+      "source": "terrain.volcano",
       "target": "terrain.badlands",
       "type": "rel.adjacent",
       "weight": 0.6
     },
     {
-      "source": "terrain.volcanic",
+      "source": "terrain.volcano",
       "target": "terrain.desert",
       "type": "rel.adjacent",
       "weight": 0.5
     },
     {
-      "source": "terrain.volcanic",
+      "source": "terrain.volcano",
       "target": "terrain.mountains",
       "type": "rel.adjacent",
       "weight": 0.7
@@ -4431,7 +4431,7 @@
     },
     {
       "source": "terrain.river",
-      "target": "terrain.deciduous_forest",
+      "target": "terrain.temperate_forest",
       "type": "rel.adjacent",
       "weight": 0.7
     },
@@ -4563,7 +4563,7 @@
     },
     {
       "source": "magic.fire",
-      "target": "terrain.volcanic",
+      "target": "terrain.volcano",
       "type": "rel.draws-from",
       "weight": 0.9
     },
@@ -4593,7 +4593,7 @@
     },
     {
       "source": "magic.necromancy",
-      "target": "terrain.bog",
+      "target": "terrain.marsh",
       "type": "rel.draws-from",
       "weight": 0.7
     },
@@ -5317,7 +5317,7 @@
     },
     {
       "source": "location.grove",
-      "target": "terrain.deciduous_forest",
+      "target": "terrain.temperate_forest",
       "type": "rel.terrain-valid"
     },
     {
@@ -5567,7 +5567,7 @@
     },
     {
       "source": "location.grove",
-      "target": "terrain.taiga",
+      "target": "terrain.boreal_forest",
       "type": "rel.terrain-valid"
     }
   ]

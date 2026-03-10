@@ -67,7 +67,7 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'The open steppe offers no shelter.',
   ],
   // Forest
-  deciduous_forest: [
+  temperate_forest: [
     'These ancient forests shade the land.',
     'Dense woodland stretches across the hex.',
     'Broad-leafed trees form a canopy overhead.',
@@ -77,7 +77,7 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Old-growth trees crowd together in darkness.',
     'The forest is thick and primordial.',
   ],
-  taiga: [
+  boreal_forest: [
     'Evergreen forest blankets the cold earth.',
     'Spruce and pine stand in silent ranks.',
     'The taiga stretches northward without end.',
@@ -93,7 +93,7 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'The swamp breathes mist and decay.',
     'Boggy ground sinks underfoot here.',
   ],
-  bog: [
+  marsh: [
     'Peat moss covers the waterlogged ground.',
     'The bog stretches, treacherous and silent.',
     'Stagnant water hides beneath a skin of moss.',
@@ -162,7 +162,7 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'The glacier crawls forward, ancient and patient.',
     'A frozen river of ice dominates the land.',
   ],
-  volcanic: [
+  volcano: [
     'Volcanic rock radiates lingering heat.',
     'The ground smokes near vents and fissures.',
     'Lava once flowed here — the scars remain.',

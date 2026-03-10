@@ -40,7 +40,7 @@ function buildAgentTestGraph(): { graph: WorldGraph; agentId: string } {
       cultureIdentity: {
         foundationPair: 'chaos_darkness',
         creationSphere: 'entropy',
-        biomeName: 'volcanic',
+        biomeName: 'volcano',
       },
     },
   };

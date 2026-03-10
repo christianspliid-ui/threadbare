@@ -41,7 +41,7 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The steppe is old enough to have worn down its own features. What remains is elemental — stone, wind, the low scrub that has learned to grow sideways.',
     'Travelers cross the steppe and emerge changed by the silence. There is nothing to distract from one\'s own thoughts, and the steppe is merciless about that.',
   ],
-  deciduous_forest: [
+  temperate_forest: [
     'A forest of leafless grey boughs standing in November light — limbs skeletal against dark sky. The forest floor is ankle-deep in rot that smells of time.',
     'Birches and oaks lean together as if sharing secrets the world need not hear. Light falls in rays through the canopy, illuminating nothing but the emptiness between.',
     'The forest stands in permanent dusk, its understory thick with shadow and fallen wood. Here, growth and decay pulse in the same breath.',
@@ -55,7 +55,7 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The canopy is so thick that rain arrives late, filtered through leaves into a secondary drizzle that smells of chlorophyll and patience.',
     'Sound behaves differently in the deep forest — voices carry strangely, footfalls vanish, and the silence between bird calls is thick enough to lean against.',
   ],
-  taiga: [
+  boreal_forest: [
     'Conifers stand in grey-green ranks under a low sky that has forgotten how to brighten. The earth beneath is half-frozen, neither truly solid nor entirely yielding.',
     'Sparse spruce and larch cling to granite, their branches laden with ice even in mild seasons. The silence here is profound and intentional.',
     'The boreal forest is patient and unforgiving. Moss and lichen cover all wounds, slowly erasing the scars of any intrusion.',
@@ -76,7 +76,7 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The swamp moves when you\'re not watching. Channels shift, islands drift, and what was solid ground yesterday is brown water today.',
     'Insects own the swamp in numbers that make human settlement feel like a polite request. The buzzing is constant — a hymn to moisture and decay.',
   ],
-  bog: [
+  marsh: [
     'The bog is a place of slow surrender. Sphagnum moss covers everything in a pale shroud, soft and deceptive as a liar\'s promise.',
     'Water dark as peat stains everything that touches it. The bog preserves the dead for centuries, keeping them fresh for a remembering that will never come.',
     'Stunted plants cling to the acidic soil in shapes twisted by hopelessness. Nothing thrives here — only endures in diminished form.',
@@ -132,7 +132,7 @@ export const BIOME_PROSE: Record<string, string[]> = {
     'The glacier groans in the night — deep, structural sounds that could be the earth protesting or the ice settling into more comfortable positions.',
     'Light refracts through the ice in blues so deep they seem to contain their own darkness. The glacier is beautiful in the way that things which can kill you slowly tend to be.',
   ],
-  volcanic: [
+  volcano: [
     'The volcanic plain is studded with cones both fresh and ancient, their slopes dark with basalt and ash. Steam rises from cracks in the earth like the world\'s breath.',
     'The ground here remembers violence and promises it may repeat. Lava formations twist into shapes that suggest rage given physical form.',
     'The volcanic land is bare and mineral — stone in its rawest states, colored by ancient fire. Life struggles to find purchase on ground so recently unmade.',

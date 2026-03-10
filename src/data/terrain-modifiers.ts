@@ -23,11 +23,11 @@ export const TERRAIN_MODIFIERS: Partial<Record<TerrainType, Record<string, numbe
 
   // Fog/mist blocks vision
   swamp:                      { los_range: -1 },
-  bog:                        { los_range: -1 },
+  marsh:                        { los_range: -1 },
 
   // Extreme conditions
   glacier:                    { los_range: 1 },  // flat + reflective
-  volcanic:                   { los_range: -1 }, // smoke/haze
+  volcano:                   { los_range: -1 }, // smoke/haze
 };
 
 /** Get modifiers for a terrain type. Returns empty object if none. */

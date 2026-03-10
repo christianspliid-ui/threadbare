@@ -27,10 +27,10 @@ describe('generateWorld', () => {
     const validTerrains = [
       'ocean', 'coastal_shallows', 'lake', 'river',
       'grassland', 'farmland', 'savanna', 'steppe',
-      'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-      'swamp', 'bog',
+      'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+      'swamp', 'marsh',
       'hills', 'mountains', 'plateau', 'badlands',
-      'desert', 'tundra', 'glacier', 'volcanic',
+      'desert', 'tundra', 'glacier', 'volcano',
     ];
     for (const tile of tiles) {
       expect(validTerrains).toContain(tile.terrain);

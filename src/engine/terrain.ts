@@ -25,17 +25,17 @@ export function classifyBiome(
   if (elevation < 0.40) {
     // Very wet lowlands
     if (moisture > 0.8) {
-      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'swamp' : 'bog';
+      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'swamp' : 'marsh';
     }
     if (moisture > 0.65) {
-      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'dense_forest' : 'bog';
+      return temperature > 0.6 ? 'jungle' : temperature > 0.3 ? 'dense_forest' : 'marsh';
     }
     // Moderate moisture lowlands
     if (moisture > 0.45) {
       if (temperature > 0.7) return 'savanna';
       if (temperature > 0.5) return 'grassland';
-      if (temperature > 0.3) return 'deciduous_forest';
-      return 'taiga';
+      if (temperature > 0.3) return 'temperate_forest';
+      return 'boreal_forest';
     }
     // Dry lowlands
     if (moisture > 0.25) {
@@ -55,19 +55,19 @@ export function classifyBiome(
     if (moisture > 0.7) {
       if (temperature > 0.6) return 'forested_hills_jungle';
       if (temperature > 0.3) return 'forested_hills_deciduous';
-      return 'taiga';
+      return 'boreal_forest';
     }
     // Moderate wet mid-elevation → forested hills or deciduous
     if (moisture > 0.55) {
       if (temperature > 0.6) return 'forested_hills_deciduous';
       if (temperature > 0.3) return 'forested_hills_evergreen';
-      return 'taiga';
+      return 'boreal_forest';
     }
     // Moderate mid-elevation
     if (moisture > 0.45) {
-      if (temperature > 0.6) return 'deciduous_forest';
-      if (temperature > 0.3) return 'deciduous_forest';
-      return 'taiga';
+      if (temperature > 0.6) return 'temperate_forest';
+      if (temperature > 0.3) return 'temperate_forest';
+      return 'boreal_forest';
     }
     // Drier mid-elevation → hills or badlands
     if (temperature > 0.65) return 'badlands';
@@ -80,10 +80,10 @@ export function classifyBiome(
     if (moisture > 0.65) {
       if (temperature > 0.5) return 'forested_hills_deciduous';
       if (temperature > 0.3) return 'forested_hills_evergreen';
-      return 'taiga';
+      return 'boreal_forest';
     }
     if (moisture > 0.5) {
-      return temperature > 0.3 ? 'hills' : 'taiga';
+      return temperature > 0.3 ? 'hills' : 'boreal_forest';
     }
     if (temperature > 0.65) return 'plateau';
     if (temperature < 0.15) return 'glacier';
@@ -92,7 +92,7 @@ export function classifyBiome(
 
   // High mountains and extremes: > 0.8 elevation
   if (temperature < 0.15) return 'glacier';
-  if (temperature > 0.7 && Math.random() < 0.05) return 'volcanic'; // Rare volcanic peaks
+  if (temperature > 0.7 && Math.random() < 0.05) return 'volcano'; // Rare volcanic peaks
   return 'mountains';
 }
 

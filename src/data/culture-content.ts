@@ -216,7 +216,7 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
 
   // Forest (4)
   {
-    terrain: 'deciduous_forest',
+    terrain: 'temperate_forest',
     survivalTraitKeywords: ['foraging', 'tree-climbing', 'seasonal tracking', 'canopy-reading', 'leaf-craft'],
     materialCulture: ['hardwood', 'acorn flour', 'maple syrup', 'bark cloth', 'mushroom leather'],
     metaphorPalette: ['the canopy\'s counsel', 'roots that whisper', 'leaves that fall like pages'],
@@ -228,7 +228,7 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     metaphorPalette: ['the green darkness', 'paths that close behind you', 'the forest\'s memory'],
   },
   {
-    terrain: 'taiga',
+    terrain: 'boreal_forest',
     survivalTraitKeywords: ['cold-endurance', 'trapping', 'resin-craft', 'winter-wise', 'silence-hearing'],
     materialCulture: ['pine resin', 'fur pelts', 'frozen amber', 'snowshoe frames', 'smoked fish'],
     metaphorPalette: ['the endless white', 'trees bent by patience', 'silence that cracks like ice'],
@@ -248,7 +248,7 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     metaphorPalette: ['the ground that drinks', 'mist that thinks', 'waters that remember the dead'],
   },
   {
-    terrain: 'bog',
+    terrain: 'marsh',
     survivalTraitKeywords: ['preservation-lore', 'sphagnum-craft', 'sinking-avoidance', 'peat-wise', 'time-keeper'],
     materialCulture: ['bog butter', 'preserved wood', 'peat bricks', 'cranberry dye', 'sphagnum bandages'],
     metaphorPalette: ['the earth that swallows whole', 'time trapped in amber', 'the false path'],
@@ -300,7 +300,7 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     metaphorPalette: ['the river of ice', 'the grinding patience', 'cold that preserves'],
   },
   {
-    terrain: 'volcanic',
+    terrain: 'volcano',
     survivalTraitKeywords: ['heat-resistance', 'lava-reading', 'obsidian-craft', 'ash-navigation', 'magma-sense'],
     materialCulture: ['basalt', 'volcanic glass', 'pumice', 'sulfur', 'obsidian blades'],
     metaphorPalette: ['the mountain\'s anger', 'fire that builds as it destroys', 'the forge of the earth'],
@@ -626,7 +626,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'shrine',
     name: 'Shrine',
-    biomes: ['deciduous_forest', 'dense_forest', 'jungle', 'taiga', 'tundra'],
+    biomes: ['temperate_forest', 'dense_forest', 'jungle', 'boreal_forest', 'tundra'],
     sphereAffinity: 'spirit',
     flavorText: 'A small sacred site where hidden magic lingers. Stone altars wear moss like memory, and the air tastes of incense from ages past.',
     grantedByTags: ['spirit', 'veil'],
@@ -653,7 +653,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'forge',
     name: 'Forge',
-    biomes: ['mountains', 'volcanic', 'badlands', 'broken_lands'],
+    biomes: ['mountains', 'volcano', 'badlands', 'broken_lands'],
     sphereAffinity: 'matter',
     flavorText: 'A diminished smithy where ancient fires burn low. Rust-flecked tools rest beside half-finished work, abandoned when skilled hands moved on.',
     grantedByTags: ['matter', 'stone'],
@@ -662,7 +662,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'temple',
     name: 'Temple',
-    biomes: ['hills', 'mountains', 'plateau', 'deciduous_forest', 'taiga'],
+    biomes: ['hills', 'mountains', 'plateau', 'temperate_forest', 'boreal_forest'],
     sphereAffinity: 'spirit',
     flavorText: 'A grand place of worship now tended by few. Stone columns offer shelter to ghosts of ceremony, and silence echoes louder than any hymn.',
     grantedByTags: ['spirit', 'heart'],
@@ -671,7 +671,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'guild_hall',
     name: 'Guild Hall',
-    biomes: ['grassland', 'hills', 'plateau', 'deciduous_forest', 'forested_hills_deciduous'],
+    biomes: ['grassland', 'hills', 'plateau', 'temperate_forest', 'forested_hills_deciduous'],
     sphereAffinity: 'matter',
     flavorText: 'A craftsguild stronghold where skill once conferred status. Now its benches hold dust instead of artisans, and guild secrets guard only emptiness.',
     grantedByTags: ['matter', 'gold'],
@@ -689,7 +689,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'garden',
     name: 'Garden',
-    biomes: ['grassland', 'farmland', 'deciduous_forest', 'jungle', 'swamp', 'bog'],
+    biomes: ['grassland', 'farmland', 'temperate_forest', 'jungle', 'swamp', 'marsh'],
     sphereAffinity: 'life',
     flavorText: 'A cultivated plot struggling against wildness. Starving vegetables compete with weeds, and the carefully planted has given way to the feral.',
     grantedByTags: ['life', 'heart'],
@@ -734,7 +734,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'council_chamber',
     name: 'Council Chamber',
-    biomes: ['hills', 'mountains', 'plateau', 'grassland', 'deciduous_forest'],
+    biomes: ['hills', 'mountains', 'plateau', 'grassland', 'temperate_forest'],
     sphereAffinity: 'mind',
     flavorText: 'A hall where councils once convened with authority. Empty thrones face an empty benches, and the decisions made here fade from consequence.',
     grantedByTags: ['mind', 'order'],
@@ -743,7 +743,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'ritual_ground',
     name: 'Ritual Ground',
-    biomes: ['grassland', 'savanna', 'steppe', 'deciduous_forest', 'jungle', 'swamp'],
+    biomes: ['grassland', 'savanna', 'steppe', 'temperate_forest', 'jungle', 'swamp'],
     sphereAffinity: 'spirit',
     flavorText: 'An open place scarred by ceremonies, where magic once answered the call of gathered believers. The circles fade, but something lingers.',
     grantedByTags: ['spirit', 'entropy'],
@@ -779,7 +779,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'salt_dock',
     name: 'Salt Dock',
-    biomes: ['coastal_shallows', 'lake', 'swamp', 'bog'],
+    biomes: ['coastal_shallows', 'lake', 'swamp', 'marsh'],
     sphereAffinity: 'matter',
     flavorText: 'A weathered pier thick with encrusted salt, where fishing communities clung to life from shallow waters. The nets lie coiled but empty.',
     grantedByTags: ['matter', 'gold'],
@@ -797,7 +797,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'breeding_ponds',
     name: 'Breeding Ponds',
-    biomes: ['swamp', 'bog', 'lake', 'jungle', 'grassland'],
+    biomes: ['swamp', 'marsh', 'lake', 'jungle', 'grassland'],
     sphereAffinity: 'life',
     flavorText: 'Murky waters where life bred in profusion. The waters still teem, but the hatchery buildings crumble, and the caretakers no longer come.',
     grantedByTags: ['life', 'matter'],
@@ -806,7 +806,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'glass_works',
     name: 'Glass Works',
-    biomes: ['desert', 'volcanic', 'badlands', 'broken_lands'],
+    biomes: ['desert', 'volcano', 'badlands', 'broken_lands'],
     sphereAffinity: 'matter',
     flavorText: 'A workshop where raw sand became art through heat and will. Furnaces cool and crack, and finished work lies abandoned on shelves gathering dust.',
     grantedByTags: ['matter', 'energy'],
@@ -815,7 +815,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'cold_springs',
     name: 'Cold Springs',
-    biomes: ['tundra', 'glacier', 'mountains', 'taiga'],
+    biomes: ['tundra', 'glacier', 'mountains', 'boreal_forest'],
     sphereAffinity: 'spirit',
     flavorText: 'Waters that run pure and bitter cold, where seekers once came for spiritual cleansing. The pools remain, but the believers have moved on.',
     grantedByTags: ['spirit', 'mind'],
@@ -824,7 +824,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'burnt_grove',
     name: 'Burnt Grove',
-    biomes: ['deciduous_forest', 'dense_forest', 'taiga', 'forested_hills_evergreen', 'forested_hills_deciduous'],
+    biomes: ['temperate_forest', 'dense_forest', 'boreal_forest', 'forested_hills_evergreen', 'forested_hills_deciduous'],
     sphereAffinity: 'entropy',
     flavorText: 'A forest consumed by ancient fire, where blackened trunks stand like tombstones. New growth struggles through ash, a slow resurrection unwanted.',
     grantedByTags: ['entropy', 'life'],
@@ -842,7 +842,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'mill_ruins',
     name: 'Mill Ruins',
-    biomes: ['river', 'grassland', 'hills', 'deciduous_forest', 'farmland'],
+    biomes: ['river', 'grassland', 'hills', 'temperate_forest', 'farmland'],
     sphereAffinity: 'matter',
     flavorText: 'A grinding house once powered by water\'s tireless force. Wheels have seized, blades rest, and the grain that fed thousands no longer flows here.',
     grantedByTags: ['matter', 'energy'],
@@ -851,7 +851,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'fish_trap',
     name: 'Fish Trap',
-    biomes: ['river', 'lake', 'coastal_shallows', 'swamp', 'bog'],
+    biomes: ['river', 'lake', 'coastal_shallows', 'swamp', 'marsh'],
     sphereAffinity: 'life',
     flavorText: 'A weir or enclosure for catching fish, built where waters narrowed or pooled. The structures stand, but the fish pass through unmolested now.',
     grantedByTags: ['life', 'gold'],
@@ -868,12 +868,12 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
 // - farmland (2): bazaar, mill_ruins
 // - savanna (6): bazaar, arena, watchtower, barracks, market_square, ritual_ground
 // - steppe (6): bazaar, barracks, market_square, standing_stones, ritual_ground
-// - deciduous_forest (8): shrine, library, temple, guild_hall, council_chamber, burnt_grove, cold_springs, mill_ruins
+// - temperate_forest (8): shrine, library, temple, guild_hall, council_chamber, burnt_grove, cold_springs, mill_ruins
 // - dense_forest (2): shrine, burnt_grove
-// - taiga (4): shrine, temple, cold_springs, burnt_grove
+// - boreal_forest (4): shrine, temple, cold_springs, burnt_grove
 // - jungle (4): shrine, garden, ritual_ground, rope_bridge
 // - swamp (4): garden, ritual_ground, salt_dock, breeding_ponds
-// - bog (2): salt_dock, breeding_ponds
+// - marsh (2): salt_dock, breeding_ponds
 // - hills (15): library, forge, temple, guild_hall, watchtower, council_chamber, archive, garden, observation, barracks, standing_stones, rope_bridge, mill_ruins, cold_springs
 // - mountains (13): library, forge, temple, watchtower, observation, archive, cold_springs, rope_bridge, underground_passage, glacier
 // - plateau (10): bazaar, arena, library, watchtower, guild_hall, council_chamber, observation, standing_stones
@@ -884,7 +884,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
 // - desert (3): tomb, observation, glass_works
 // - tundra (4): shrine, observation, cold_springs
 // - glacier (3): underground_passage, cold_springs
-// - volcanic (2): forge, glass_works
+// - volcano (2): forge, glass_works
 // - broken_lands (6): forge, tomb, archive, glass_works, underground_passage
 // - great_home_trees: (0) — Note: Added as gap; consider adding in next pass
 
@@ -962,15 +962,15 @@ export const CULTURE_NAME_FRAGMENTS: {
     grassland: ['Plains', 'Meadows', 'Fields', 'Steppe'],
     savanna: ['Savanna', 'Dry Fields', 'Sun-Lands', 'Flatlands'],
     steppe: ['Steppe', 'Windlands', 'Dry Reaches', 'Barrens'],
-    deciduous_forest: ['Groves', 'Canopy', 'Glades', 'Timberlands'],
+    temperate_forest: ['Groves', 'Canopy', 'Glades', 'Timberlands'],
     dense_forest: ['Deepwood', 'Thickets', 'Dark Timber', 'Old Growth'],
-    taiga: ['Pinelands', 'Frost-Wood', 'Northern Trees', 'Cold Forest'],
+    boreal_forest: ['Pinelands', 'Frost-Wood', 'Northern Trees', 'Cold Forest'],
     jungle: ['Tangles', 'Green Depths', 'Rain Canopy', 'Overgrowth'],
     swamp: ['Mires', 'Bog-Lands', 'Still Waters', 'Fenlands'],
-    bog: ['Marshes', 'Peatlands', 'Dark Pools', 'Fen'],
+    marsh: ['Marshes', 'Peatlands', 'Dark Pools', 'Fen'],
     tundra: ['Frost', 'Ice Fields', 'Cold Reach', 'Permafrost'],
     glacier: ['Glacier', 'Ice Wall', 'Frozen Reach', 'Rime'],
-    volcanic: ['Cinder', 'Ember Fields', 'Ash Slopes', 'Crater'],
+    volcano: ['Cinder', 'Ember Fields', 'Ash Slopes', 'Crater'],
     broken_lands: ['Shatter', 'Ruin-Fields', 'Scarlands', 'Breach'],
     plateau: ['Mesa', 'High Table', 'Flatrock', 'Skyfield'],
     badlands: ['Badlands', 'Gulch', 'Dry Canyons', 'Cracked Earth'],
@@ -1307,7 +1307,7 @@ export const FORMATIVE_TRAIT_SEEDS: FormativeTraitSeed[] = [
     id: 'foraging',
     name: 'Foraging',
     description: 'Finding sustenance in wild places; plant and fungi lore',
-    sourceTags: ['deciduous_forest', 'jungle'],
+    sourceTags: ['temperate_forest', 'jungle'],
     domainContributions: { eye: 1, flesh: 1 },
     tags: ['survival', 'knowledge'],
   },
@@ -1323,7 +1323,7 @@ export const FORMATIVE_TRAIT_SEEDS: FormativeTraitSeed[] = [
     id: 'cold_endurance',
     name: 'Cold Endurance',
     description: 'Natural resistance to bitter cold and icy conditions',
-    sourceTags: ['taiga', 'tundra', 'glacier'],
+    sourceTags: ['boreal_forest', 'tundra', 'glacier'],
     domainContributions: { flesh: 2, iron: 1 },
     tags: ['physical', 'survival'],
   },
@@ -1339,7 +1339,7 @@ export const FORMATIVE_TRAIT_SEEDS: FormativeTraitSeed[] = [
     id: 'mud_navigation',
     name: 'Mud Navigation',
     description: 'Moving safely through treacherous wetlands and mire',
-    sourceTags: ['swamp', 'bog'],
+    sourceTags: ['swamp', 'marsh'],
     domainContributions: { star: 1, flesh: 1 },
     tags: ['navigation', 'survival'],
   },
@@ -1395,7 +1395,7 @@ export const FORMATIVE_TRAIT_SEEDS: FormativeTraitSeed[] = [
     id: 'lava_reading',
     name: 'Lava Reading',
     description: 'Predicting eruptions and finding safe volcanic paths',
-    sourceTags: ['volcanic'],
+    sourceTags: ['volcano'],
     domainContributions: { eye: 2, star: 1 },
     tags: ['knowledge', 'survival'],
   },
@@ -1772,7 +1772,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'communal_warmth',
     name: 'Communal Warmth',
     description: 'Sharing body heat and shelter as survival necessity turned social norm',
-    sourceTags: ['tundra', 'glacier', 'taiga'],
+    sourceTags: ['tundra', 'glacier', 'boreal_forest'],
     strengthThresholds: {
       fanatical: 'Sleeping alone is abandonment; forced physical intimacy is norm',
       strong: 'Sleeping close in groups is expected; personal space is unknown',
@@ -1811,7 +1811,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'canopy_reverence',
     name: 'Canopy Reverence',
     description: 'Trees are sacred; the canopy is divine shelter',
-    sourceTags: ['deciduous_forest', 'dense_forest', 'jungle'],
+    sourceTags: ['temperate_forest', 'dense_forest', 'jungle'],
     strengthThresholds: {
       fanatical: 'Cannot harm trees without ritual; lives in canopy not ground',
       strong: 'Trees are sacred; their use is restricted to necessary harvest',
@@ -1850,7 +1850,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'volcanic_sacrifice',
     name: 'Volcanic Sacrifice',
     description: 'Ritualistic appeasement of volcanic powers',
-    sourceTags: ['volcanic'],
+    sourceTags: ['volcano'],
     strengthThresholds: {
       fanatical: 'Regular human sacrifices required to appease the mountain',
       strong: 'Ritual sacrifices and offerings to prevent volcanic wrath',
@@ -1863,7 +1863,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'bog_memory',
     name: 'Bog Memory',
     description: 'Belief that the swamp remembers and judges all actions',
-    sourceTags: ['bog', 'swamp'],
+    sourceTags: ['marsh', 'swamp'],
     strengthThresholds: {
       fanatical: 'The bog judges souls; cannot lie or hide in wetlands',
       strong: 'Bog is sentient; secrets confessed to bog cannot be kept',
@@ -1889,7 +1889,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'fire_dance',
     name: 'Fire Dance',
     description: 'Fire as celebration and spiritual expression',
-    sourceTags: ['savanna', 'volcanic'],
+    sourceTags: ['savanna', 'volcano'],
     strengthThresholds: {
       fanatical: 'Compelled to dance in fire; pain is pleasure',
       strong: 'Major festivals center on fire rituals and communal dances',
@@ -1993,7 +1993,7 @@ export const BEHAVIORAL_TRAIT_SEEDS: BehavioralTraitSeed[] = [
     id: 'sulfur_purification',
     name: 'Sulfur Purification',
     description: 'Volcanic minerals are cleansing and protective',
-    sourceTags: ['volcanic'],
+    sourceTags: ['volcano'],
     strengthThresholds: {
       fanatical: 'Sulfur baths are constant; burning sulfur as protective barrier around homes',
       strong: 'Sulfur is used in all protective rituals and cleansing ceremonies',

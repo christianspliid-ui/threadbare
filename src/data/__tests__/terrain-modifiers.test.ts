@@ -34,10 +34,10 @@ describe('terrain-modifiers', () => {
     const validTerrains: TerrainType[] = [
       'ocean', 'coastal_shallows', 'lake', 'river',
       'grassland', 'farmland', 'savanna', 'steppe',
-      'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-      'swamp', 'bog', 'hills', 'mountains', 'plateau', 'badlands',
+      'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+      'swamp', 'marsh', 'hills', 'mountains', 'plateau', 'badlands',
       'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
-      'great_home_trees', 'broken_lands', 'desert', 'tundra', 'glacier', 'volcanic',
+      'great_home_trees', 'broken_lands', 'desert', 'tundra', 'glacier', 'volcano',
     ];
     for (const key of Object.keys(TERRAIN_MODIFIERS)) {
       expect(validTerrains).toContain(key);
