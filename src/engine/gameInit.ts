@@ -206,6 +206,7 @@ export function initializeGameState(
     familiarityMap,
     culturalInsightMap: new Map<string, number>(),
     encounterProgress: [],
+    actionsInProgress: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),
