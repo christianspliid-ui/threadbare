@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace, ActionExecutionTrace } from '../../types/trace';
 import type { ModifierResolutionTrace } from '../../types/modifiers';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
@@ -226,6 +226,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <FamiliarityChangeDetail trace={trace as FamiliarityChangeTrace} />;
     case 'intervention_effect':
       return <InterventionEffectDetail trace={trace as InterventionEffectTrace} />;
+    case 'action_execution':
+      return <ActionExecutionDetail trace={trace as ActionExecutionTrace} />;
     case 'modifier_resolution':
       return <ModifierResolutionDetail trace={trace as ModifierResolutionTrace} />;
     default:
@@ -558,6 +560,41 @@ const InterventionEffectDetail = React.memo(function InterventionEffectDetail({ 
       </div>
       <div style={{ ...DETAIL_AREA_STYLE, background: PANEL_STYLES.detailBg, padding: '8px', borderRadius: '3px', fontStyle: 'italic', color: PANEL_STYLES.textColor, fontFamily: 'sans-serif' }}>
         "{trace.consequenceMessage}"
+      </div>
+    </div>
+  );
+});
+
+const ActionExecutionDetail = React.memo(function ActionExecutionDetail({ trace }: { trace: ActionExecutionTrace }) {
+  const successColor = TRACE_CATEGORY_COLORS.action_selection;
+  const failColor = TRACE_CATEGORY_COLORS.dilemma_resolution;
+  const isSuccess = trace.outcome === 'success';
+
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Template</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.templateId}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Actor</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.actorId}</div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Duration</div>
+        <div style={DETAIL_VALUE_STYLE}>{trace.duration} ticks</div>
+      </div>
+      <div style={{ ...DETAIL_ROW_STYLE, borderTop: `1px solid ${PANEL_STYLES.borderColor}`, paddingTop: '8px', marginTop: '8px' }}>
+        <div style={DETAIL_LABEL_STYLE}>Outcome</div>
+        <div style={{ ...DETAIL_VALUE_STYLE, color: isSuccess ? successColor : failColor, fontWeight: 600 }}>
+          {trace.outcome.toUpperCase()}
+        </div>
+      </div>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Graph Ops</div>
+        <div style={DETAIL_VALUE_STYLE}>
+          Applied: {trace.opsApplied}, Failed: {trace.opsFailed}
+        </div>
       </div>
     </div>
   );
