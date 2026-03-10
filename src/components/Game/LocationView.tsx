@@ -146,7 +146,7 @@ export const LocationView = memo(function LocationView({
               textTransform: 'uppercase',
             }}
           >
-            — establishing shot —
+            — select a hex to peer into the world below —
           </span>
         </div>
       )}
@@ -174,7 +174,7 @@ export const LocationView = memo(function LocationView({
                 color: 'var(--text-muted)',
               }}
             >
-              No agents present
+              This place lies quiet — for now.
             </p>
           ) : (
             <div className="space-y-1">
@@ -188,8 +188,8 @@ export const LocationView = memo(function LocationView({
                     key={agent.id}
                     onClick={() => onAgentClick(agent.id)}
                     aria-label={`View ${agent.name}`}
-                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group cursor-pointer focus:outline-none focus:ring-1"
-                    style={{ '--tw-ring-color': 'var(--accent-gold)' } as React.CSSProperties}
+                    className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group cursor-pointer focus:outline-none focus:ring-1 duration-150"
+                    style={{ '--tw-ring-color': 'var(--accent-gold)', transition: 'background-color 150ms ease' } as React.CSSProperties}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
                     }}
@@ -367,7 +367,7 @@ export const LocationView = memo(function LocationView({
                 color: 'var(--text-muted)',
               }}
             >
-              No encounters at this location
+              The stillness here is unbroken.
             </p>
           )}
         </div>

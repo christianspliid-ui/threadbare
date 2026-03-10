@@ -232,7 +232,7 @@ describe('RetinuePanel', () => {
       />
     );
     expect(
-      screen.getByText('No agents under your influence yet.')
+      screen.getByText('The threads of fate lie still. No souls yet attend your court.')
     ).toBeInTheDocument();
   });
 

@@ -26,7 +26,7 @@ export function EventLog({ entries }: EventLogProps) {
       >
         Chronicle
       </h3>
-      <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin" aria-live="polite" aria-label="Game event log">
         {entries.length === 0 && (
           <p className="text-xs text-amber-600/40 italic">The world awaits...</p>
         )}

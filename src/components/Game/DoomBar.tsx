@@ -1,3 +1,4 @@
+import { useRef, useState, useEffect } from 'react';
 import type { DoomClockState, DoomClockDefinition } from '../../types/doomClock';
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
@@ -14,6 +15,29 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
   const stageName = currentStageDef?.name ?? 'Unknown';
+
+  // Track doom progress and trigger pulse on increase
+  const prevProgressRef = useRef(state.progress);
+  const [isPulsing, setIsPulsing] = useState(false);
+  const prevStageRef = useRef(state.currentStage);
+  const [stageAnnouncement, setStageAnnouncement] = useState('');
+
+  useEffect(() => {
+    if (state.progress > prevProgressRef.current) {
+      setIsPulsing(true);
+      const timer = setTimeout(() => setIsPulsing(false), 600);
+      prevProgressRef.current = state.progress;
+      return () => clearTimeout(timer);
+    }
+    prevProgressRef.current = state.progress;
+  }, [state.progress]);
+
+  useEffect(() => {
+    if (state.currentStage !== prevStageRef.current) {
+      setStageAnnouncement(`Doom has reached ${stageName}`);
+      prevStageRef.current = state.currentStage;
+    }
+  }, [state.currentStage, stageName]);
 
   return (
     <Tooltip id="ui.doom_bar">
@@ -34,7 +58,12 @@ export function DoomBar({ definition, state }: DoomBarProps) {
             {state.expired ? 'THE UNMAKING' : `${pct}%`}
           </span>
         </div>
-        <ProgressBar progress={state.progress} color={color} glow={true} />
+        <div className={isPulsing ? 'pulse-doom' : ''}>
+          <ProgressBar progress={state.progress} color={color} glow={true} />
+        </div>
+        <span className="sr-only" aria-live="assertive">
+          {stageAnnouncement}
+        </span>
       </div>
     </Tooltip>
   );

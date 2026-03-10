@@ -72,7 +72,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
   }, [isExpanded]);
 
   return (
-    <div className="flex-1 min-w-0 relative">
+    <div className="flex-1 min-w-0 relative" aria-live="polite" aria-label="Mandate progress">
       {/* Compact Bar */}
       <div
         onClick={handleToggle}
