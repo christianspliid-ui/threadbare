@@ -6,6 +6,12 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Where | What changed | Why |
 |------|-------|-------------|-----|
+| 2026-03-10 | Repo: .claude/skills/qa-orchestrator/SKILL.md | Created qa-orchestrator skill — 3 modes (interactive playtest, headless sweep, targeted audit), 4 sequential agents (VS/IA/IX/RC), finding schema with backlog routing (CB/FE/SYS/ART), 14-step checklist, tracing integration | Unified QA workflow for systematic UI/UX/frontend sweeps |
+| 2026-03-10 | Repo: src/debug-bridge.ts, src/debug-bridge.d.ts, src/main.tsx | Added window.__DEBUG bridge — dev-only exposure of traceBuffer (getTraces, enable/disable, clear) via dynamic imports, tree-shaken in production | Playwright QA agents need programmatic access to engine traces |
+| 2026-03-10 | Repo: src/components/Game/DebugPanel.tsx | Fixed stale trace bug — useMemo dep array [] → [currentTick] with spread operator for reference stability | Traces were read once on mount, never refreshed on subsequent ticks |
+| 2026-03-10 | Notion: DEF-006 | Filed Dream intervention no-op stub — useAgentInteraction.ts:131-133 early return bypasses agenda flow | QA interactive test: Dream card appears available but click does nothing |
+| 2026-03-10 | Notion: FE-16 | Filed disabled action card feedback — no visual disabled state or click feedback | QA interactive test: unavailable cards silently ignore clicks |
+| 2026-03-10 | Repo: Docs/qa/ | Created 2026-03-10-action-card-qa-findings.json with 2 findings | QA session on action card interaction flow |
 | 2026-03-10 | Repo: profile-content.ts | Expanded MIDDLE_TEMPLATES 8→16, CLOSING_TEMPLATES 8→16 with new emotional registers | Backstory repetition visible by 4th agent scry — middle/closing pools were thinnest |
 | 2026-03-10 | Repo: narrative-content.ts | Expanded DILEMMA_STAKES_PROSE from Record<string,string> to Record<string,string[]> (12 keys × 2 variants = 24 total) | Dilemmas fire every ~5 ticks, 12 templates cycle fast |
 | 2026-03-10 | Repo: orchestrator.ts | Updated DILEMMA_STAKES_PROSE consumer to pick from array via rng() | Type change from string to string[] required engine-side array selection |
@@ -18,6 +24,10 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 | 2026-03-10 | Repo: orchestrator.ts | Wired CRUD action creation into phaseAgentActions (CRUD_ACTION_CHANCE=0.35 branch) | Phase 2 had encounter + routine branches but never called generateActionCandidates/createAction |
 | 2026-03-10 | Notion backlog | Added 🎨 Visual Asset Backlog section (ART-01 through ART-18, 3 waves) | No asset tracking existed — pipeline overview doc wasn't actionable as tasks |
 | 2026-03-10 | Docs/plans/ | Created `2026-03-10-visual-asset-strategy.md` — assessment, 3-sprint plan, quality controls | Need a concrete way forward to get produced assets into the game |
+| 2026-03-10 | public/icons/spheres/ | Generated 12 sphere icons (8 creation + 4 foundation) via MCP Imagen | ART-01: Replace emoji placeholders with proper Threadbare sphere art |
+| 2026-03-10 | src/data/sphereIcons.ts, src/components/shared/SphereIcon.tsx | Added `imagePath` field to SphereIconDef + `useImage` prop for img-based icon rendering | Code support for ART-01 sphere icon images |
+| 2026-03-10 | public/hex-tiles/clear-*.png | Replaced 7 placeholder clear-tiles (8KB→1.6-2.3MB) with painterly terrain + hex masking | ART-05: Fill terrain tile coverage gaps |
+| 2026-03-10 | public/screens/title-screen.png | Generated first key screen painting (16:9, 813KB) | ART-03: Prove Threadbare visual identity with title screen |
 | 2026-03-05 | Notion: Visual Style Tile | Updated color palette, core visual principle, color behavior sections | Synced with STYLE.md rewrite — dark world direction, Time→orange, form language system |
 | 2026-03-05 | STYLE.md | Full rewrite — dark world direction, sphere form language, Time `#ff9933` | Previous style too bright/diffuse; needed concentrated threadlike magic and unique sphere silhouettes |
 | 2026-03-05 | Repo: src/engine/ | Added retinue.ts, wheel.ts, strands.ts — 3 new engine modules | Layer 1 Core Interaction: data helpers for retinue queries, wheel slot generation, 6 psyche strand extractors |
