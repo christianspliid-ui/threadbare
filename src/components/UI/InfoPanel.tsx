@@ -9,12 +9,12 @@ const TERRAIN_DISPLAY: Record<string, string> = {
   farmland: 'Farmland',
   savanna: 'Savanna',
   steppe: 'Steppe',
-  deciduous_forest: 'Deciduous Forest',
+  temperate_forest: 'Temperate Forest',
   dense_forest: 'Dense Forest',
-  taiga: 'Taiga',
+  boreal_forest: 'Boreal Forest',
   jungle: 'Jungle',
   swamp: 'Swamp',
-  bog: 'Bog',
+  marsh: 'Marsh',
   hills: 'Hills',
   mountains: 'Mountains',
   plateau: 'Plateau',
@@ -22,7 +22,7 @@ const TERRAIN_DISPLAY: Record<string, string> = {
   desert: 'Desert',
   tundra: 'Tundra',
   glacier: 'Glacier',
-  volcanic: 'Volcanic',
+  volcano: 'Volcano',
 };
 
 function getTerrainDescription(

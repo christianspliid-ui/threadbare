@@ -8,6 +8,13 @@ export default defineConfig({
     environment: 'node',
     // Component tests use special config with jsdom
     setupFiles: './src/test/setup.ts',
+    exclude: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.worktrees/**',
+      '**/preview/**',
+      '**/preview-build/**',
+    ],
   },
   define: {
     // Use node environment for all tests except components

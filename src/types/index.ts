@@ -34,9 +34,9 @@ export type TerrainType =
   // Lowlands
   | 'grassland' | 'farmland' | 'savanna' | 'steppe'
   // Forest
-  | 'deciduous_forest' | 'dense_forest' | 'taiga' | 'jungle'
+  | 'temperate_forest' | 'dense_forest' | 'boreal_forest' | 'jungle'
   // Wet
-  | 'swamp' | 'bog'
+  | 'swamp' | 'marsh'
   // Elevated
   | 'hills' | 'mountains' | 'plateau' | 'badlands'
   // Elevated + forested
@@ -44,7 +44,7 @@ export type TerrainType =
   // Special
   | 'great_home_trees' | 'broken_lands'
   // Extreme
-  | 'desert' | 'tundra' | 'glacier' | 'volcanic';
+  | 'desert' | 'tundra' | 'glacier' | 'volcano';
 
 /** Settlement/structure types for location overlays */
 export type LocationSubtype =

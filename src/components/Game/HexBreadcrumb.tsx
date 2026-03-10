@@ -25,12 +25,12 @@ const TERRAIN_COLORS: Record<string, string> = {
   farmland: '#7a9d32',
   savanna: '#9a9933',
   steppe: '#8a8933',
-  deciduous_forest: '#4a7c3e',
+  temperate_forest: '#4a7c3e',
   dense_forest: '#2d5a2d',
-  taiga: '#5a6e3f',
+  boreal_forest: '#5a6e3f',
   jungle: '#1d4d1d',
   swamp: '#5a5a3a',
-  bog: '#6a6a4a',
+  marsh: '#6a6a4a',
   hills: '#9a8a6a',
   mountains: '#8a7a5a',
   plateau: '#a89a7a',
@@ -38,7 +38,7 @@ const TERRAIN_COLORS: Record<string, string> = {
   desert: '#d4a574',
   tundra: '#c0c0c0',
   glacier: '#e8f0f8',
-  volcanic: '#4a3a2a',
+  volcano: '#4a3a2a',
 };
 
 interface HexBreadcrumbProps {

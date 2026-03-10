@@ -16,12 +16,12 @@ import {
 const ALL_TERRAINS = [
   'ocean','coastal_shallows','lake','river',
   'grassland','farmland','savanna','steppe',
-  'deciduous_forest','dense_forest','taiga','jungle',
-  'swamp','bog',
+  'temperate_forest','dense_forest','boreal_forest','jungle',
+  'swamp','marsh',
   'hills','mountains','plateau','badlands',
   'forested_hills_evergreen','forested_hills_deciduous','forested_hills_jungle',
   'great_home_trees','broken_lands',
-  'desert','tundra','glacier','volcanic',
+  'desert','tundra','glacier','volcano',
 ] as const;
 
 const TEMP_BANDS = ['frigid','cold','temperate','warm','scorching'] as const;

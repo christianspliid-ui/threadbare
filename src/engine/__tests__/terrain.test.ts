@@ -37,10 +37,10 @@ describe('classifyBiome', () => {
     expect(biome).toBe('glacier');
   });
 
-  it('returns deciduous_forest for lowland elevation, moderate moisture, temperate temp', () => {
+  it('returns temperate_forest for lowland elevation, moderate moisture, temperate temp', () => {
     // Lowland (0.35) avoids mid-elevation forested hills zone
     const biome = classifyBiome(0.35, 0.35, 0.55);
-    expect(biome).toBe('deciduous_forest');
+    expect(biome).toBe('temperate_forest');
   });
 
   it('returns forested_hills_evergreen for mid-elevation, moderate moisture, cool temp', () => {

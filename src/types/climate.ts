@@ -13,11 +13,11 @@ export const BIOME_CLIMATE_MAP: Record<string, ClimateGroup> = {
   wetland: 'temperate',
   river: 'temperate',
   lake: 'temperate',
-  deciduous_forest: 'temperate',
+  temperate_forest: 'temperate',
   // Warm & Dry
   desert: 'warm_dry',
   savanna: 'warm_dry',
-  volcanic: 'warm_dry',
+  volcano: 'warm_dry',
   badlands: 'warm_dry',
   mesa: 'warm_dry',
   scrubland: 'warm_dry',

@@ -5,10 +5,10 @@ import type { TerrainType } from '../../types';
 const ALL_TERRAIN_TYPES: TerrainType[] = [
   'ocean', 'coastal_shallows', 'lake', 'river',
   'grassland', 'farmland', 'savanna', 'steppe',
-  'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-  'swamp', 'bog',
+  'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+  'swamp', 'marsh',
   'hills', 'mountains', 'plateau', 'badlands',
-  'desert', 'tundra', 'glacier', 'volcanic',
+  'desert', 'tundra', 'glacier', 'volcano',
 ];
 
 describe('hex-tile-assets', () => {

@@ -19,14 +19,14 @@ export const BIOME_COLORS: Record<TerrainType, string> = {
   steppe: '#35351e',
 
   // Forest — deep dark greens
-  deciduous_forest: '#2a3a1a',
+  temperate_forest: '#2a3a1a',
   dense_forest: '#1a2a10',
-  taiga: '#1a2a1a',
+  boreal_forest: '#1a2a1a',
   jungle: '#1a3a1a',
 
   // Wet — dark olive
   swamp: '#2a3a1a',
-  bog: '#2a3020',
+  marsh: '#2a3020',
 
   // Elevated — dark browns/greys
   hills: '#3a3520',
@@ -47,7 +47,7 @@ export const BIOME_COLORS: Record<TerrainType, string> = {
   desert: '#3a3020',
   tundra: '#2a3035',
   glacier: '#2a3a4a',
-  volcanic: '#2a1515',
+  volcano: '#2a1515',
 };
 
 export interface RGB {

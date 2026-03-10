@@ -181,10 +181,10 @@ describe('resolveTooltip', () => {
       expect(tooltip?.label).toBe('Grassland & Plains');
     });
 
-    it('resolves terrain.deciduous_forest', () => {
-      const tooltip = resolveTooltip('terrain.deciduous_forest');
+    it('resolves terrain.temperate_forest', () => {
+      const tooltip = resolveTooltip('terrain.temperate_forest');
       expect(tooltip).not.toBeNull();
-      expect(tooltip?.label).toBe('Deciduous Forest');
+      expect(tooltip?.label).toBe('Temperate Forest');
       expect(tooltip?.desc).toContain('forest');
     });
 

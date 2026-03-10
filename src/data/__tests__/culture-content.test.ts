@@ -36,10 +36,10 @@ import { REACH_DOMAINS } from '../../types/traits';
 const ALL_TERRAIN_TYPES = [
   'ocean', 'coastal_shallows', 'lake', 'river',
   'grassland', 'farmland', 'savanna', 'steppe',
-  'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-  'swamp', 'bog',
+  'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+  'swamp', 'marsh',
   'hills', 'mountains', 'plateau', 'badlands',
-  'desert', 'tundra', 'glacier', 'volcanic',
+  'desert', 'tundra', 'glacier', 'volcano',
 ];
 
 describe('culture-content', () => {
@@ -507,11 +507,11 @@ describe('culture-content', () => {
       const validTerrainTypes = new Set([
         'ocean', 'coastal_shallows', 'lake', 'river',
         'grassland', 'farmland', 'savanna', 'steppe',
-        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-        'swamp', 'bog',
+        'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+        'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
         'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
-        'desert', 'tundra', 'glacier', 'volcanic',
+        'desert', 'tundra', 'glacier', 'volcano',
         'broken_lands', 'great_home_trees',
       ]);
       for (const tmpl of SUB_LOCATION_TEMPLATES) {
@@ -533,11 +533,11 @@ describe('culture-content', () => {
       const allTerrainTypes = [
         'ocean', 'coastal_shallows', 'lake', 'river',
         'grassland', 'farmland', 'savanna', 'steppe',
-        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-        'swamp', 'bog',
+        'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+        'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
         'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
-        'desert', 'tundra', 'glacier', 'volcanic', 'broken_lands',
+        'desert', 'tundra', 'glacier', 'volcano', 'broken_lands',
       ];
 
       for (const biome of allTerrainTypes) {
@@ -560,11 +560,11 @@ describe('culture-content', () => {
       const allTerrainTypes = [
         'ocean', 'coastal_shallows', 'lake', 'river',
         'grassland', 'farmland', 'savanna', 'steppe',
-        'deciduous_forest', 'dense_forest', 'taiga', 'jungle',
-        'swamp', 'bog',
+        'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+        'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
         'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
-        'desert', 'tundra', 'glacier', 'volcanic', 'broken_lands',
+        'desert', 'tundra', 'glacier', 'volcano', 'broken_lands',
       ];
 
       for (const biome of allTerrainTypes) {

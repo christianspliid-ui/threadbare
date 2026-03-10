@@ -17,7 +17,7 @@ function skewedCosmology(): CosmologyProfile {
 function diverseTiles(): HexTile[] {
   const terrains: TerrainType[] = [
     'desert', 'mountains', 'jungle', 'grassland', 'tundra',
-    'swamp', 'hills', 'volcanic', 'deciduous_forest', 'steppe',
+    'swamp', 'hills', 'volcano', 'temperate_forest', 'steppe',
   ];
   return terrains.map((terrain, i) => ({
     coord: { col: i % 5, row: Math.floor(i / 5) },
