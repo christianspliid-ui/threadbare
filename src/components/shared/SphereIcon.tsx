@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { getSphereColor, getSphereSymbol } from '../../data/sphereIcons';
+import { getSphereColor, getSphereSymbol, getSphereImagePath } from '../../data/sphereIcons';
 
 export interface SphereIconProps {
   /** Sphere name (e.g., 'force', 'mind', 'chaos') */
@@ -21,6 +21,8 @@ export interface SphereIconProps {
   monochrome?: boolean;
   /** Optional title for accessibility */
   title?: string;
+  /** When true, render the generated image instead of the Unicode glyph */
+  useImage?: boolean;
 }
 
 /**
@@ -37,12 +39,34 @@ export const SphereIcon = React.memo(function SphereIcon({
   style,
   monochrome = false,
   title,
+  useImage = false,
 }: SphereIconProps) {
   const color = getSphereColor(sphereName);
   const symbol = getSphereSymbol(sphereName);
+  const imagePath = useImage ? getSphereImagePath(sphereName) : undefined;
 
   const fontSize = typeof size === 'number' ? `${size}px` : size;
 
+  // Image rendering path
+  if (useImage && imagePath) {
+    const imgSize = typeof size === 'number' ? size : parseInt(size, 10) || 24;
+    return (
+      <img
+        src={imagePath}
+        alt={title || sphereName}
+        className={className}
+        width={imgSize}
+        height={imgSize}
+        style={{
+          display: 'inline-block',
+          objectFit: 'contain',
+          ...style,
+        }}
+      />
+    );
+  }
+
+  // Glyph fallback (existing behavior)
   return (
     <span
       className={className}

@@ -1,299 +1,289 @@
 ---
 name: qa-orchestrator
-description: Use when running a QA sweep of The Fantasy World Simulator UI. Trigger on "run QA", "check the UI", "visual audit", "find UI bugs", "frontend QA", or after completing a major implementation phase. Dispatches 4 specialist sub-agents sequentially for visual style, information architecture, interaction flows, and React code quality.
+description: Use when running QA on The Fantasy World Simulator — interactive playtests via Playwright, headless sweeps, or targeted audits. Triggers on "run QA", "test the game", "find bugs", "QA sweep", "playtest", "check the UI", or after completing a major implementation phase. Routes findings to the correct Notion backlog.
 ---
 
 # QA Orchestrator
 
 ## Overview
 
-Dispatches 4 specialist sub-agents **sequentially** to audit The Fantasy World Simulator's UI against STYLE.md, check for redundant information, test interaction flows, and scan React code for anti-patterns. Each agent produces structured findings. The orchestrator merges, deduplicates, and presents a prioritized report.
-
-Sequential dispatch is required because Playwright MCP controls a single browser instance — parallel agents would conflict.
+Play the game via Playwright, find bugs, route them to the right backlog. Three modes: interactive playtest (browser), headless sweep (tests + CLI), targeted audit (specific system deep-dive).
 
 ## Prerequisites
 
-Before running this skill, verify:
+Before starting, verify in order:
 
-1. **Dev server running** — `npm run dev` must be active on the user's machine at `http://localhost:5173`
-2. **STYLE.md exists** — visual style reference at project root
-3. **Playwright MCP connected** — browser tools (`browser_navigate`, `browser_take_screenshot`, etc.) must respond
-4. **Notion MCP connected** — for writing findings to the Development Backlog
+1. **Dev server** — `browser_navigate` to `http://localhost:5173` — page must load with "Fantasy World Simulator" title
+2. **STYLE.md** — read project root `STYLE.md` for visual rules (brightness ceilings, sphere colors, typography)
+3. **Notion MCP** — `notion-fetch` the backlog page at `https://www.notion.so/3182b241dfb081b9af78c279eef405cf`
 
-**Pre-flight check sequence:**
-1. `browser_navigate` to `http://localhost:5173` — page must load
-2. Read `STYLE.md` — must contain color definitions
-3. Test Notion search for "Development Backlog" — must find the page
+If any fails, stop and tell the user what's missing. If dev server isn't running, fall back to headless sweep mode only.
 
-If any prerequisite fails, stop and inform the user what's missing.
+## Backlog Routing
+
+All findings route to sections on the [Notion Development Backlog](https://www.notion.so/3182b241dfb081b9af78c279eef405cf):
+
+| Backlog | Notion Section | Prefix | Routes When... |
+|---------|---------------|--------|----------------|
+| Content & Worldbuilding | 📝 Content Backlog / 🐛 Defects | CB / DEF | Repetitive prose, thin pools, hardcoded strings in engine, missing templates |
+| Design & Frontend | 🎨 Frontend Polish Backlog | FE | Layout, animation, a11y, responsiveness, UX confusion, focus mgmt |
+| Architecture & Systems | Main body / 🔮 Next Up | SYS | Engine crashes, type errors, data flow bugs, perf, state mgmt, tracing |
+| Visual Assets | 🎨 Visual Asset Backlog | ART | STYLE.md violations, brightness, missing art, placeholders, visual regression |
+
+**Routing decision:** What needs to change to fix it?
+- Engine code / types → Architecture (SYS)
+- Art assets / STYLE.md compliance → Visual Assets (ART)
+- Content data / templates / prose pools → Content (CB/DEF)
+- React components / CSS / UX → Frontend (FE)
 
 ## Finding Schema
 
-Every agent produces findings in this format. Use this exact structure so the orchestrator can merge and deduplicate.
+```json
+{
+  "id": "QA-YYYY-MM-DD-NNN",
+  "mode": "interactive|headless|targeted",
+  "severity": "critical|major|minor|cosmetic",
+  "category": "data-flow|visual|ux|content|accessibility|performance|type-error",
+  "backlog": "content|frontend|architecture|visual-assets",
+  "title": "Short description",
+  "description": "Full description with repro steps",
+  "evidence": "Code ref, CSS value, console output, or trace data",
+  "screenshot": "Docs/qa/screenshots/QA-YYYY-MM-DD-NNN.png|null",
+  "location": "src/path/to/file.ts:line|null",
+  "effort": "S|M|L|XL",
+  "suggestedFix": "What to do"
+}
+```
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | string | Prefix by agent: VS-001, IA-001, IX-001, RC-001 |
-| `agent` | enum | `visual` \| `info-arch` \| `interaction` \| `react-code` |
-| `severity` | enum | `critical` \| `major` \| `minor` \| `suggestion` |
-| `category` | string | e.g., `color-violation`, `redundant-text`, `broken-flow`, `anti-pattern` |
-| `title` | string | One-line summary |
-| `description` | string | What's wrong, with evidence |
-| `evidence` | string? | CSS value, screenshot ref, code snippet |
-| `location` | string | File path or UI panel name |
-| `effort` | enum | `S` (<30min) \| `M` (30-120min) \| `L` (2h+) |
-| `suggestedFix` | string? | How to fix it |
+## Mode 1: Interactive Playtest (Playwright)
 
-### Severity Guide
+The primary mode. Play the full game via Playwright MCP tools.
 
-- **Critical:** Violates STYLE.md hard rules OR breaks core interaction flow
-- **Major:** Significantly degrades UX or contradicts design intent
-- **Minor:** Polish issue, no functional impact
-- **Suggestion:** Improvement opportunity, not a defect
+### Game Flow Sequence
 
-### Agent ID Prefixes
+This is the exact click path through the game. Use `browser_snapshot` before each action to get current element refs.
 
-| Agent | Prefix | Example |
-|-------|--------|---------|
-| Visual Style | VS | VS-001, VS-002 |
-| Info Architecture | IA | IA-001, IA-002 |
-| Interaction | IX | IX-001, IX-002 |
-| React Code | RC | RC-001, RC-002 |
+```
+PHASE A — WORLD CREATION
+1. browser_navigate → http://localhost:5173
+2. browser_snapshot → find sphere sliders, presets, seed input, "Generate World" button
+3. (Optional) Adjust sphere sliders or click a preset like "balanced"
+4. browser_click → "Generate World"
+5. browser_take_screenshot → save world creation state
+6. browser_click → "✧ Shape Your Divinity ✧"
 
-## Agent 1: Visual Style Compliance
+PHASE B — ASCENDANT CREATION
+7. browser_snapshot → find archetype cards (4 options)
+8. browser_click → select an archetype card
+9. (Optional) browser_type into avatar name textbox
+10. browser_click → "✧ Ascend ✧"
+11. browser_take_screenshot → save ascendant screen
 
-**Dispatch with:** `Agent` tool, `subagent_type: "general-purpose"`
+PHASE C — GAME VIEW (main gameplay)
+12. browser_snapshot → verify: sidebar (Time, Divine Essence, Rival Gods),
+    hex map, AvatarHUD (Move/Actions/Scry tabs), Retinue panel
+13. browser_click → "Debug" button (top-right) — THIS ENABLES TRACING
+14. browser_take_screenshot → initial game state
 
-**Prompt template:**
+PHASE D — TICK PROGRESSION
+15. browser_click → "⏭ Step" button (advances 1 tick)
+16. browser_snapshot → check: tick counter, doom %, essence values, narrative log
+17. Repeat step 15-16 for 10-20 ticks
+18. browser_take_screenshot → save mid-game state
+19. Check narrative log toggle (☰ button with count badge) for accumulated events
 
-> You are a Visual Style Compliance auditor for The Fantasy World Simulator. Your job is to check every visible UI element against the game's STYLE.md specification.
->
-> **First:** Read STYLE.md at the project root for the full color/typography/brightness spec. Key rules:
-> - World surfaces: 10-40% brightness (dark world aesthetic)
-> - Magic elements: sphere-specific colors at 70-100% brightness, threadlike/concentrated
-> - UI chrome: oklch(0.21-0.24, ...) dark range
-> - Typography: system monospace for data, serif for narrative
-> - No emoji where sphere-colored icons should be
-> - Threadlike decorative elements (thin lines, not broad glows)
->
-> **Then:** Use Playwright MCP tools to:
-> 1. Navigate to http://localhost:5173
-> 2. Click through world creation (select spheres, confirm) to reach the main game view
-> 3. Take a full viewport screenshot
-> 4. Extract ALL CSS background-color, color, border-color values via browser_evaluate
-> 5. Compute brightness for each color value (convert to HSL, check L component)
-> 6. Compare against STYLE.md thresholds
-> 7. Screenshot individual panels for detail inspection
-> 8. Advance game 10+ ticks (click Play, wait, click Pause), screenshot again
->
-> **Output:** Return a JSON array of Finding objects with these fields: id (VS-NNN), agent ("visual"), severity, category, title, description, evidence (actual CSS values), location (UI panel or selector), effort (S/M/L), suggestedFix.
->
-> Severity guide: critical = violates hard brightness/color rules; major = typography/icon issues; minor = polish.
->
-> **Known issues from previous audits:** The hex map SVG background was rgb(244, 232, 193) at ~88% brightness — this is a critical violation. Check if this has been fixed.
+PHASE E — AGENT INTERACTION
+20. browser_click → agent name in Retinue panel → right sidebar populates
+21. browser_click → "Actions" tab in AvatarHUD
+22. browser_snapshot → verify action drawer opens with agent cards
+23. browser_click → select an agent card → intervention options appear
+24. browser_click → select intervention type
+25. browser_snapshot → verify AgendaPicker or InterventionConfirm appears
+26. browser_take_screenshot → save intervention flow
 
-**Tools needed:** Playwright MCP (browser_navigate, browser_take_screenshot, browser_evaluate, browser_snapshot, browser_click)
+PHASE F — MAP INTERACTION
+27. browser_click → a hex tile on the map → should enter hex zoom
+28. browser_snapshot → verify HexZoomView with sublocations, breadcrumb nav
+29. browser_click → breadcrumb to return to world view
+30. browser_click → "Move" tab → click destination hex → avatar moves
 
-**Expected output:** 5-15 findings, mostly severity critical or major.
+PHASE G — SCRY
+31. browser_click → "Scry" tab → ScryOverlay opens
+32. browser_snapshot → verify court positions, agent assignment UI
+33. browser_click → close/dismiss scry
 
-## Agent 2: Information Architecture
+PHASE H — DEBUG TRACE INSPECTION
+34. browser_snapshot → read Debug Panel content (right side drawer)
+35. Verify traces are appearing (if "No traces yet" after ticks → file as SYS bug)
+36. Check trace categories: action_selection, narrative_generation, tick_summary should have entries
+37. Try Feed/Agent/Tick view modes
+```
 
-**Dispatch with:** `Agent` tool, `subagent_type: "general-purpose"`
+### What to Check at Each Step
 
-**Prompt template:**
+| Check | What to look for | Backlog if broken |
+|-------|-----------------|-------------------|
+| Console errors | `browser_console_messages` after each major action | Architecture (SYS) |
+| Visual style | Screenshot brightness, colors vs STYLE.md | Visual Assets (ART) |
+| Text repetition | Same prose appearing multiple ticks in a row | Content (CB) |
+| Empty states | Panels with no content, "undefined", "NaN" | Frontend (FE) |
+| Interaction flow | Click→expected result, overlays open/close properly | Frontend (FE) |
+| Accessibility | Interactive elements have ARIA labels, keyboard works | Frontend (FE) |
+| Trace output | Debug panel shows traces after ticks run | Architecture (SYS) |
+| Placeholder text | Emoji where icons should be, "TODO", lorem ipsum | Visual Assets (ART) |
+| Content pools | Same name/verb/adjective repeating within 10 ticks | Content (CB) |
 
-> You are an Information Architecture auditor for The Fantasy World Simulator. Your job is to identify redundant text, dead space, information density imbalance, and wasted screen real estate.
->
-> **Use Playwright MCP tools to:**
-> 1. Navigate to http://localhost:5173 (game should already be running from Agent 1)
-> 2. If on title screen, click through creation flow to reach main game view
-> 3. Run a DOM analysis via browser_evaluate that:
->    - Extracts all visible text nodes with their parent element tags and screen positions
->    - Groups text by screen zone (LEFT_SIDEBAR: x<250, TOP_BAR: y<60, CENTER_MAP: 250<x<viewport-350, RIGHT_SIDEBAR: x>viewport-350, NARRATIVE_FEED: bottom 200px)
->    - Finds duplicate text strings (same text appearing 2+ times)
->    - Counts words per zone for density analysis
->    - Identifies zero-value displays ("0.0", "0%", "N/A")
-> 4. Advance game 10+ ticks if not already advanced
-> 5. Re-run analysis to see if densities improve with game progression
-> 6. Check heading hierarchy (H1→H2→H3 nesting)
-> 7. Measure the right sidebar — is it populated or empty?
->
-> **Output:** Return a JSON array of Finding objects with fields: id (IA-NNN), agent ("info-arch"), severity, category, title, description, evidence (duplicate strings and positions), location (screen zones), effort, suggestedFix.
->
-> Severity guide: major = redundant critical information or large dead zones; minor = zero-values or slight imbalance.
->
-> **Known issues from previous audits:** "The Hollow King" appeared in 3 places (sidebar, HUD, narrative), "Hostility" was repeated 3x identically, right sidebar was empty when no agent selected, narrative feed had 47 items with repetitive content.
+## Mode 2: Headless Sweep
 
-**Tools needed:** Playwright MCP (browser_evaluate, browser_snapshot, browser_click)
+No browser needed. Run from the skill directly:
 
-**Expected output:** 3-8 findings, mostly severity major.
+```bash
+# Type checking
+npx tsc --noEmit
 
-## Agent 3: Interaction & State
+# Full test suite
+npm test
 
-**Dispatch with:** `Agent` tool, `subagent_type: "general-purpose"`
+# Multi-seed playtest (4 seeds × 100 ticks)
+npm run playtest -- --seeds 1,42,100,999 --ticks 100
 
-**Prompt template:**
+# World model validation
+npm run validate-model
+```
 
-> You are an Interaction & State auditor for The Fantasy World Simulator. Your job is to click through every interactive flow and verify correct state transitions, overlay behavior, and user feedback.
->
-> **Use Playwright MCP tools to systematically test each flow:**
->
-> 1. **World Creation Flow:** Navigate to http://localhost:5173. Select spheres, confirm creation, verify game starts. Screenshot each step.
->
-> 2. **Retinue Panel (left sidebar):** Click an agent name → right sidebar should populate with AgentDetailPanel. Click a different agent → sidebar updates. Click same agent again → document behavior.
->
-> 3. **Agent Wheel:** Select an agent, click "Wheel" button in AvatarHUD. Verify wheel overlay appears with action slots. Click a slot → InterventionConfirm popover should appear. Confirm → essence deducted, narrative event appears. Cancel → popover closes, no state change.
->
-> 4. **Scry Overlay:** Click "Scry" button → full-screen overlay with court positions. Assign an agent to a position. Close overlay → assignments persist.
->
-> 5. **Hex Zoom:** Click a hex tile → HexZoomView with locations. Click a location → LocationView detail. Use breadcrumb to navigate back. Verify: world ↔ hex-zoom ↔ location.
->
-> 6. **Avatar Movement:** Click "Move" in AvatarHUD → click a hex → avatar moves. Verify fog of war updates.
->
-> 7. **Mandate Tracker:** Click mandate bar → popover with progress. Close popover.
->
-> 8. **Edge Cases:** Double-click rapidly. Click outside overlay → should close. Try to open two overlays simultaneously. Click disabled actions.
->
-> **For each test:** Screenshot before and after. Use browser_snapshot to verify DOM state.
->
-> **Output:** Return a JSON array of Finding objects with fields: id (IX-NNN), agent ("interaction"), severity, category, title, description, evidence (expected vs actual behavior), location (component/flow name), effort, suggestedFix.
->
-> Severity guide: critical = broken flow (can't complete action); major = missing feedback or wrong state; minor = edge case polish.
+Parse output for:
+- **Type errors** → Architecture (SYS)
+- **Test failures** → route by test file location (engine/ → SYS, components/ → FE, data/ → CB)
+- **Playtest anomalies** → doom frozen (SYS), zero dilemmas (SYS), repetitive prose (CB), population collapse (SYS)
+- **Model validation failures** → Content (CB)
 
-**Tools needed:** Playwright MCP (full set — navigate, click, snapshot, screenshot, evaluate, wait_for)
+## Mode 3: Targeted Audit
 
-**Expected output:** 5-20 findings.
+When asked to audit a specific system (e.g., "audit the encounter flow"):
 
-## Agent 4: React Code Quality
+1. Read the relevant design doc from `Docs/plans/`
+2. Read the implementation files
+3. Play through that specific flow via Playwright
+4. Cross-reference: does the UI match the design doc? Does the engine trace show expected behavior?
+5. File findings scoped to that system
 
-**Dispatch with:** `Agent` tool, `subagent_type: "general-purpose"`
+## Tracing System
 
-**Prompt template:**
+### Enabling Traces
 
-> You are a React Code Quality auditor for The Fantasy World Simulator. Analyze React components for anti-patterns, performance issues, and accessibility gaps. No browser needed — static code analysis only.
->
-> **REQUIRED BACKGROUND:** Read the react-best-practices skill first for performance guidelines.
->
-> **Scan all .tsx files in src/components/ for:**
->
-> 1. **Performance:** Inline object/array creation in JSX, missing useCallback/useMemo for prop-passed functions, large components (>300 lines), missing React.memo on presentational components.
->
-> 2. **Prop Drilling:** Props passed >3 levels deep (suggests context needed).
->
-> 3. **Accessibility:** Interactive elements without ARIA labels, click handlers on non-button elements without role="button", missing keyboard navigation.
->
-> 4. **Code Hygiene:** Console.log left in components, unused imports, hardcoded magic numbers (project priority #1 is tunability — every magic number should be a named constant), inconsistent naming.
->
-> 5. **Error Handling:** Missing error boundaries, unhandled promise rejections, missing loading/empty states.
->
-> **Key files:** GameView.tsx, RetinuePanel.tsx, AgentWheel.tsx, StrandView.tsx, InterventionConfirm.tsx, ScryOverlay.tsx, HexZoomView.tsx, LocationView.tsx, HexBreadcrumb.tsx, AgentDetailPanel.tsx, MandateTracker.tsx, DoomBar.tsx, AvatarHUD.tsx, NarrativeFeed.tsx, RivalPanel.tsx, HexTile.tsx, HexMap.tsx
->
-> **Output:** Return a JSON array of Finding objects with fields: id (RC-NNN), agent ("react-code"), severity, category, title, description, evidence (code snippet + file:line), location (exact file path), effort, suggestedFix (corrected code pattern).
->
-> Severity guide: major = performance in hot paths or accessibility blockers; minor = style/hygiene; suggestion = optimization opportunities.
+Tracing is **off by default** for performance. Two ways to enable:
 
-**Tools needed:** File system only (Read, Grep, Glob).
+**Via UI (always available):**
+Click the "Debug" button in the top-right corner of the game view. This calls `enableTracing()`. The backtick key (`` ` ``) also toggles it.
 
-**Expected output:** 10-30 findings, mostly minor or suggestion.
+**Via window.__DEBUG (if implemented):**
+```javascript
+await page.evaluate(() => window.__DEBUG?.enableTracing())
+```
+
+After enabling, step ticks. Traces accumulate in a 500-entry ring buffer.
+
+### Reading Traces
+
+**Via Debug Panel DOM:**
+After enabling tracing and stepping ticks, `browser_snapshot` the debug panel. Traces appear as entries with category, tick number, agent ID, and detail data. Three view modes:
+- **Feed** — all traces, newest first
+- **Agent** — filter by agent ID
+- **Tick** — filter by tick number
+
+10 trace categories: action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, intervention_effect, action_execution, modifier_resolution.
+
+**Via window.__DEBUG (if implemented):**
+```javascript
+const traces = await page.evaluate(() => window.__DEBUG?.getTraces())
+```
+
+### Known Bug: Stale Trace Display
+
+`DebugPanel.tsx` line 676: `useMemo(() => getTraces(), [])` — empty dependency array means traces read once on mount, never refreshed. If you open the debug panel and step ticks but see "No traces yet", this bug is the cause.
+
+**Fix:** Change to `useMemo(() => getTraces(), [currentTick])`. File as Architecture (SYS) finding if still present.
+
+**Workaround:** Close and reopen the debug panel between tick steps (forces re-mount).
+
+### Trace-Based Checks
+
+When traces are accessible:
+- **Are dilemmas firing?** Check for `dilemma_resolution` traces (should appear every few ticks)
+- **Are encounters progressing?** Check for `encounter_resolution` traces
+- **Is narrative generating?** Check for `narrative_generation` traces every tick
+- **Are interventions working?** After applying one, check for `intervention_effect` trace
+- **Determinism:** Same seed should produce identical trace sequences
 
 ## Orchestrator Checklist
 
-**IMPORTANT: Use TodoWrite to create todos for EACH numbered step below.**
-
-This is the rigid flow the orchestrator (you) follows when running a QA sweep. Do not skip steps. Do not reorder.
+**Use TodoWrite for each step.**
 
 ### Phase 1: Setup
+- [ ] Read this skill fully
+- [ ] Read STYLE.md
+- [ ] Pre-flight: dev server + Playwright + Notion all respond
+- [ ] Create findings collection: `findings = []`
 
-- [ ] **Step 1:** Read this skill file fully before starting
-- [ ] **Step 2:** Read STYLE.md for current visual spec
-- [ ] **Step 3:** Pre-flight checks — verify dev server, Playwright MCP, Notion MCP all respond
-- [ ] **Step 4:** Create a timestamped findings collection: `findings_YYYY-MM-DD = []`
+### Phase 2: Execute (pick mode)
+- [ ] **Interactive:** Follow game flow sequence above, screenshot + check at each phase
+- [ ] **Headless:** Run all CLI commands, parse output
+- [ ] **Targeted:** Read design doc, play specific flow, cross-reference
 
-### Phase 2: Agent Dispatch (Sequential)
+### Phase 3: Report
+- [ ] Deduplicate: same element + same issue → merge
+- [ ] Route each finding to correct backlog using routing table
+- [ ] Sort by severity (critical first), then effort (S first)
+- [ ] Present summary: "Found N findings: X critical, Y major, Z minor"
+- [ ] Ask user: "Push to Notion? (all / critical+major only / specific IDs)"
 
-- [ ] **Step 5:** Dispatch Agent 1 (Visual Style Compliance) — collect findings, log count
-- [ ] **Step 6:** Dispatch Agent 2 (Information Architecture) — collect findings, log count
-- [ ] **Step 7:** Dispatch Agent 3 (Interaction & State) — collect findings, log count
-- [ ] **Step 8:** Dispatch Agent 4 (React Code Quality) — collect findings, log count
-
-### Phase 3: Merge & Report
-
-- [ ] **Step 9:** Deduplicate findings
-  - Same UI element + same issue → merge, keep more detailed description
-  - Related issues → group under parent finding
-  - Cross-agent links: visual color flag + code hardcoded value → reference both
-
-- [ ] **Step 10:** Sort: severity (critical→suggestion), then effort (S→L). Group by agent.
-
-- [ ] **Step 11:** Present prioritized report
-  - Summary line: "QA sweep found N findings: X critical, Y major, Z minor, W suggestions"
-  - Table: ID | Severity | Title | Effort | Location
-  - Ask: "Which findings should I add to the Notion backlog? (all / critical+major / specific IDs)"
-
-### Phase 4: Backlog Integration
-
-- [ ] **Step 12:** Add approved findings to Notion Development Backlog
-  - Fetch the backlog page
-  - Insert section: "QA Findings [YYYY-MM-DD]"
-  - Table with: ID, Severity, Category, Title, Effort, Status ("To Fix")
-
-- [ ] **Step 13:** (Optional) Dispatch fix agents if user requests immediate fixes
-
-### Phase 5: Archive
-
-- [ ] **Step 14:** Save raw findings JSON to `Docs/qa/YYYY-MM-DD-qa-findings.json`
+### Phase 4: Archive
+- [ ] Save findings JSON to `Docs/qa/YYYY-MM-DD-qa-findings.json`
+- [ ] Save screenshots to `Docs/qa/screenshots/`
+- [ ] Push approved findings to Notion backlog sections
 
 ## Notion Integration
 
-The Development Backlog is at:
-`https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf`
+Backlog page: `https://www.notion.so/3182b241dfb081b9af78c279eef405cf`
 
-**Adding findings:** Use the Notion MCP tools:
-1. `notion-fetch` the backlog page to get current content and find the last section heading
-2. `notion-update-page` with `command: "update_content"` — use `old_str` to match the last section's heading + first line, and `new_str` to append the new findings section after it
-3. Format the new section as markdown table:
+To add findings:
+1. `notion-fetch` the page
+2. `notion-update-page` with `command: "update_content"` — append after the relevant backlog section
+3. Format each finding as a checkbox item matching existing backlog style:
 
-```
-## QA Findings [YYYY-MM-DD]
-
-| ID | Severity | Category | Title | Effort | Status |
-|----|----------|----------|-------|--------|--------|
-| VS-001 | Critical | color-violation | Hex map background too bright | S | To Fix |
+```markdown
+### QA-YYYY-MM-DD-NNN: [Title] 🔴
+**Severity:** [severity] | **Type:** [category] | **Effort:** [effort]
+[description]
+- [ ] [suggestedFix]
 ```
 
-**Status flow:** To Fix → In Progress → Fixed → Verified
+## STYLE.md Quick Reference for Visual Checks
 
-## Fix Agent Dispatch
+These are the key rules to check against (read the full STYLE.md for details):
 
-When the user approves fixes, create fix agents with this prompt pattern:
-
-> You are fixing a QA finding for The Fantasy World Simulator.
->
-> **Finding:** [paste full finding object]
->
-> **Instructions:**
-> 1. Read the file at [location]
-> 2. Apply the suggested fix: [suggestedFix]
-> 3. Run `npm test` to ensure no regressions
-> 4. If tests fail, investigate without changing the fix intent
->
-> Do not change anything unrelated to this finding.
-
-Group related findings into a single fix agent when they share a file.
+- **World brightness:** 10-40% (non-magic surfaces)
+- **Magic brightness:** 70-100% (sphere-colored, threadlike)
+- **UI chrome:** oklch(0.21-0.24, ...) dark range
+- **Background:** Dark charcoal/near-black, NOT light tan
+- **Typography:** System mono for data, serif for narrative
+- **Sphere colors:** Force=rose, Matter=amber, Energy=gold, Life=green, Mind=blue, Spirit=purple, Time=muted-gold, Entropy=teal
+- **No stray emoji** where sphere-colored icons should be
 
 ## When NOT to Use
 
-- During active development (game state unstable)
-- Without the dev server running (Agents 1-3 need the browser)
-- For backend/engine-only changes (use unit tests instead)
-- For content review (narrative quality, world-model data)
+- During active development with unstable game state
+- Without dev server running (use headless mode only)
+- For content quality review (use prose-resolver skill)
+- For engine-only changes (use unit tests)
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Running agents in parallel | Playwright MCP is single-browser. Run sequentially. |
-| Skipping pre-flight checks | Agent 1 fails silently if dev server isn't running |
-| Fixing during sweep | Collect first, fix later. Mid-sweep changes invalidate later agents. |
+| Not clicking Debug before stepping ticks | No traces collected. Always enable tracing first. |
+| Fixing during the sweep | Collect all findings first, fix after. Mid-sweep changes invalidate later checks. |
 | Not saving raw JSON | Lose ability to diff between QA runs |
-| Merging all findings to Notion | Ask user first — they may want to defer suggestions |
+| Pushing all findings to Notion without asking | Some findings may be deferred. Always ask first. |
+| Forgetting to screenshot | Evidence is key. Screenshot at every phase transition. |
+| Ignoring console errors | `browser_console_messages` catches JS errors invisible to visual inspection |
