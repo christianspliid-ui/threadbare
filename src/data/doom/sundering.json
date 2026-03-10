@@ -1,0 +1,6 @@
+{
+  "archetype": "sundering",
+  "description": "The world itself breaking apart",
+  "stageNames": ["Hairline Fractures", "Tremors", "The Splitting", "Lands Drift", "The Sundering"],
+  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
+}
