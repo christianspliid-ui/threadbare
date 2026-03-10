@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import type { MandateDefinition, MandateState } from '../../types/mandate';
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
+import { AnimateMount } from '../shared/AnimateMount';
 import { MANDATE_TYPE_COLORS, SENTIMENT_GREEN, SENTIMENT_NEGATIVE } from '../../data/uiColorPalette';
 
 interface MandateTrackerProps {
@@ -114,7 +115,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
       </div>
 
       {/* Expanded Popover */}
-      {isExpanded && (
+      <AnimateMount show={isExpanded} animation="anim-fade-down">
         <div
           className="absolute top-full left-0 right-0 mt-1 border rounded shadow-lg p-4 z-50 max-w-md"
           style={{
@@ -187,7 +188,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             Click to close
           </div>
         </div>
-      )}
+      </AnimateMount>
 
       {/* Backdrop click handler */}
       {isExpanded && (

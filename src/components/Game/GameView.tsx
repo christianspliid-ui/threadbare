@@ -13,6 +13,7 @@ import { useViewNavigation } from './hooks/useViewNavigation';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
+import { AnimateMount } from '../shared/AnimateMount';
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
@@ -354,17 +355,19 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 />
 
                 {/* Agenda picker overlay */}
-                {agendaPickerOpen && pendingAgendas && (() => {
-                  const slot = wheelSlots?.find(s => s.id === pendingIntervention?.slotId);
-                  return (
-                    <AgendaPicker
-                      agendas={pendingAgendas}
-                      onSelect={handleAgendaSelect}
-                      onCancel={handleAgendaCancel}
-                      sphere={slot?.sphere ?? 'mind'}
-                    />
-                  );
-                })()}
+                <AnimateMount show={agendaPickerOpen && !!pendingAgendas} animation="anim-fade">
+                  {pendingAgendas && (() => {
+                    const slot = wheelSlots?.find(s => s.id === pendingIntervention?.slotId);
+                    return (
+                      <AgendaPicker
+                        agendas={pendingAgendas}
+                        onSelect={handleAgendaSelect}
+                        onCancel={handleAgendaCancel}
+                        sphere={slot?.sphere ?? 'mind'}
+                      />
+                    );
+                  })()}
+                </AnimateMount>
 
                 {/* Intervention confirmation popover */}
                 {pendingIntervention && wheelSlots && !agendaPickerOpen && (() => {
@@ -531,16 +534,18 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       </div>
 
       {/* StrandView overlay */}
-      {strandData && (
-        <StrandView
-          agentName={strandData.agentName}
-          strands={strandData.strands}
-          onClose={handleStrandClose}
-        />
-      )}
+      <AnimateMount show={strandData !== null} animation="anim-fade">
+        {strandData && (
+          <StrandView
+            agentName={strandData.agentName}
+            strands={strandData.strands}
+            onClose={handleStrandClose}
+          />
+        )}
+      </AnimateMount>
 
       {/* Scry overlay */}
-      {scryVisible && (
+      <AnimateMount show={scryVisible} animation="anim-fade">
         <ScryProvider
           value={{
             scryState,
@@ -556,25 +561,29 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         >
           <ScryOverlay />
         </ScryProvider>
-      )}
+      </AnimateMount>
 
       {/* Harvest overlay */}
-      {harvestResult && (
-        <HarvestScreen
-          harvest={harvestResult}
-          cycle={gameState.cycle}
-          onBeginNextCycle={handleBeginNextCycle}
-        />
-      )}
+      <AnimateMount show={harvestResult !== null} animation="anim-fade">
+        {harvestResult && (
+          <HarvestScreen
+            harvest={harvestResult}
+            cycle={gameState.cycle}
+            onBeginNextCycle={handleBeginNextCycle}
+          />
+        )}
+      </AnimateMount>
 
       {/* Agent Profile Modal overlay */}
-      {profileModalAgentId && agentInfoCard && (
-        <AgentProfileModal
-          card={agentInfoCard}
-          profile={agentFullProfile}
-          onClose={handleCloseProfile}
-        />
-      )}
+      <AnimateMount show={!!profileModalAgentId && !!agentInfoCard} animation="anim-fade-up">
+        {agentInfoCard && (
+          <AgentProfileModal
+            card={agentInfoCard}
+            profile={agentFullProfile}
+            onClose={handleCloseProfile}
+          />
+        )}
+      </AnimateMount>
     </div>
     </GameErrorBoundary>
   );
