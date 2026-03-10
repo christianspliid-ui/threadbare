@@ -12,6 +12,7 @@ import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
+import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
@@ -212,7 +213,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   }, [handleDrawerClose, handleLocationDoubleClick]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
+    <GameErrorBoundary>
+      <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
       {/* ═══ Top status bar — Doom + Mandate ═══ */}
       <div
         className="w-full px-5 py-2.5 flex gap-4 items-center relative z-30 flex-shrink-0"
@@ -574,5 +576,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         />
       )}
     </div>
+    </GameErrorBoundary>
   );
 }
