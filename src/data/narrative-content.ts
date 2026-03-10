@@ -735,6 +735,14 @@ export const BORN_NAMES = [
   // Wonder-tinted
   'Gift of the Season', 'Laughter in the Ruins',
   'Small Miracle', 'Hope Against Hope',
+  // Foundation-tinted (Chaos)
+  'Storm Without Warning', 'The Unplanned', 'Crack in the Pattern',
+  // Foundation-tinted (Order)
+  'The Expected', 'Measure of the Day', 'Child of the Sequence',
+  // Foundation-tinted (Light)
+  'Born in Full View', 'Morning\'s Witness', 'The Clearly Seen',
+  // Foundation-tinted (Darkness)
+  'Shadow\'s New Thread', 'The Hidden Arrival', 'Dusk-Cradled',
 ];
 
 // ═══════════════════════════════════════════════════════════════════
