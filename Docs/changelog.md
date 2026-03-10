@@ -1,0 +1,343 @@
+# Change Audit Trail
+
+Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
+
+### Recent Changes
+
+| Date | Where | What changed | Why |
+|------|-------|-------------|-----|
+| 2026-03-05 | Notion: Visual Style Tile | Updated color palette, core visual principle, color behavior sections | Synced with STYLE.md rewrite — dark world direction, Time→orange, form language system |
+| 2026-03-05 | STYLE.md | Full rewrite — dark world direction, sphere form language, Time `#ff9933` | Previous style too bright/diffuse; needed concentrated threadlike magic and unique sphere silhouettes |
+| 2026-03-05 | Repo: src/engine/ | Added retinue.ts, wheel.ts, strands.ts — 3 new engine modules | Layer 1 Core Interaction: data helpers for retinue queries, wheel slot generation, 6 psyche strand extractors |
+| 2026-03-05 | Repo: src/components/Game/ | Added RetinuePanel, AgentWheel, StrandView — 3 new UI components | Layer 1 Core Interaction: right sidebar, radial action menu, agent deep-dive overlay |
+| 2026-03-05 | Repo: GameView.tsx | Wired Layer 1 components — 3-column layout, selection state, wheel/strand overlays | Connects retinue→wheel→scry→strands interaction flow |
+| 2026-03-05 | CLAUDE.md | Updated session workflow, project status, engine stats | Layer 1 complete; made doc-updates-after-implementation mandatory |
+| 2026-03-05 | Obsidian: Index.md | Added 3 new links: Retinue Panel, Agent Wheel, Psyche Strands | Layer 1 systems now in vault |
+| 2026-03-05 | Obsidian: Systems/ | Created Retinue Panel.md, Agent Wheel.md, Psyche Strands.md | New system notes for Layer 1 interaction components |
+| 2026-03-05 | Notion: Backlog | Split Phase 6 into 6A-6D, marked 6A complete, added reference docs | Layer 1 done; Layer 2-4 tasks visible in backlog |
+| 2026-03-05 | Repo: Docs/plans/ | Created 2026-03-05-intervention-delivery-mechanics.md | Design doc for spatial delivery modes (Astral/Regional/Remote/Local), local encounter sub-modes, range constants |
+| 2026-03-05 | Obsidian: Systems/ | Created Intervention Delivery.md | System note for delivery modes with wikilinks to connected systems |
+| 2026-03-05 | Obsidian: Index.md | Added Intervention Delivery link to Player Systems | New system now discoverable from vault hub |
+| 2026-03-05 | Repo: src/data/ | Created world-model.json — 198 nodes, 290 edges, 18 categories | Unified graph: single source of truth replacing 6 separate taxonomy JSONs |
+| 2026-03-05 | Repo: src/engine/ | Refactored taxonomy.ts to import from world-model.json | Old per-file imports replaced with single consolidated import |
+| 2026-03-05 | Repo: scripts/ | Created validate-world-model.ts, generate-vault.ts, consolidate-taxonomy.ts | Content pipeline tooling: validation (7 checks), vault generation (199 notes), migration helper |
+| 2026-03-05 | Repo: tests | Added worldModel.test.ts (51), validate.test.ts (10), generateVault.test.ts (37) — 98 tests | Full coverage for graph integrity, validation rules, and vault generation |
+| 2026-03-05 | Repo: package.json | Added generate-vault, generate-vault:dry, validate-model npm scripts | CLI convenience for vault regeneration via esbuild bundling |
+| 2026-03-05 | Obsidian vault | Generated 199 notes across 11 folders (Actions, Actors, Cosmology, Cultures, Domains, Locations, Magic, Relationships, Terrain, Traits + Index) | Vault now generated from JSON — wikilinks, YAML frontmatter, connection sections |
+| 2026-03-05 | Repo: src/data/taxonomy/ | Deleted 6 old taxonomy JSON files + README | Replaced by unified world-model.json; taxonomy.ts no longer imports them |
+| 2026-03-05 | Repo: Docs/plans/ | Created 2026-03-05-content-pipeline-design.md, 2026-03-05-content-pipeline-implementation.md | Design rationale + 9-task implementation plan for content pipeline |
+| 2026-03-05 | CLAUDE.md | Updated project status, engine stats, content stats, changelog | Content pipeline complete |
+| 2026-03-06 | Repo: src/types/dream.ts | Added DeliveryMode, LocalEncounterMode types, deliveryMode field, DELIVERY_RANGE + LOCAL_ENCOUNTER constants | Layer 2 Task 1: spatial delivery type system |
+| 2026-03-06 | Repo: src/engine/delivery.ts | Created delivery.ts — hexDistance, isInRange, getDeliveryInfo | Layer 2 Task 2: range-checking engine for hex grid |
+| 2026-03-06 | Repo: src/engine/wheel.ts | Added rangeStatus + hexDistance to WheelSlot, optional avatarPos/targetPos params | Layer 2 Task 3: wheel slots gate by delivery range |
+| 2026-03-06 | Repo: src/components/Game/ | Created InterventionConfirm.tsx — popover with cost, risk, range, local encounter choice | Layer 2 Task 4: confirmation UI before intervention execution |
+| 2026-03-06 | Repo: src/components/Game/GameView.tsx | Wired intervention flow: wheel click → confirm → execute → spend essence → narrative event | Layer 2 Task 5: end-to-end intervention interaction |
+| 2026-03-06 | Repo: tests | Added delivery.test.ts (17), delivery-integration.test.ts (3), InterventionConfirm.test.tsx (7), extended wheel.test.ts (+5) — 54 new tests | Layer 2 test coverage across all new modules |
+| 2026-03-06 | Obsidian: Systems/ | Updated Agent Wheel.md (range gating, confirmation flow), Intervention Delivery.md (implementation details) | Layer 2 systems documented in vault |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6B complete), engine stats, changelog | Layer 2 Divine Toolkit UI complete |
+| 2026-03-06 | STYLE.md | Rewrote Prompt Construction Guide — narrative-first, NB2-optimized ordering, magic spectrum, camera/lighting defaults, 4 new examples | Research-driven prompt improvement; content-type art direction |
+| 2026-03-06 | STYLE.md | Added Content-Type Art Direction section — dual-image variants, camera & lighting defaults table, terrain-neutral framing, aspect ratios | Unified art direction across all content types |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-nano-banana-prompt-research.md | NB2 prompting research: 8 findings, before/after examples, camera/lighting defaults |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-art-prompt-model-design.md | Design rationale: 7 decisions (magic spectrum, 3-layer separation, terrain-neutral, single-hex zoom, dual images, heraldry, doom-as-event) |
+| 2026-03-06 | Obsidian: Systems/ | Rewrote View Levels.md — Region Level → Hex Zoom Level (single-hex, not multi-hex groups) | Design change: click one hex to see all locations inside it; simplifies art, interaction, and region management |
+| 2026-03-06 | STYLE.md | Rewrote Prompt Construction Guide — narrative-first, NB2-optimized ordering, magic spectrum, camera/lighting defaults, 4 new examples | Research-driven prompt improvement; content-type art direction |
+| 2026-03-06 | STYLE.md | Added Content-Type Art Direction section — dual-image variants, camera & lighting defaults table, terrain-neutral framing, aspect ratios | Unified art direction across all content types |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-nano-banana-prompt-research.md | NB2 prompting research: 8 findings, before/after examples, camera/lighting defaults |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-art-prompt-model-design.md | Design rationale: 7 decisions (magic spectrum, 3-layer separation, terrain-neutral, single-hex zoom, dual images, heraldry, doom-as-event) |
+| 2026-03-06 | image-generation.skill | Updated skill — content-type identification, narrative prompting, magic spectrum, camera/lighting, iterative refinement workflow | Skill now matches NB2 best practices and content-type art direction |
+| 2026-03-06 | STYLE.md | Rewrote Hex Tile System section — centered features, no rivers/paths, outer 20% clear, pipeline reference, updated prompt template | Hex tiling fix: features must not touch edges for clean hex masking |
+| 2026-03-06 | Repo: scripts/ | Created generate-hex-tile.py — full pipeline: Imagen API → hex mask → save PNG. 9 built-in biome presets | Automated hex tile generation with hexagonal alpha masking |
+| 2026-03-06 | Repo: package.json | Added `generate-hex` npm script | CLI convenience for hex tile pipeline |
+| 2026-03-06 | image-generation.skill | Updated skill v2 — hex pipeline integration, centered-feature tiling rules, pipeline exception for direct API | Skill now covers automated hex masking workflow |
+| 2026-03-06 | Repo: src/lib/ | Created polygonLayout.ts — regular polygon vertex computation | Phase 6C Task 1: hex zoom location positioning |
+| 2026-03-06 | Repo: src/engine/ | Created hexZoom.ts — 5 pure query functions for hex zoom data | Phase 6C Task 2: locations, agents, sphere influence, line of sight, connections |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — ViewLevel type, state machine, 4 navigation handlers | Phase 6C Task 3: view state machine for world/hex-zoom/location |
+| 2026-03-06 | Repo: src/components/Game/ | Created HexBreadcrumb.tsx — header bar with terrain, sphere dots, line of sight | Phase 6C Task 4: navigation breadcrumb for hex zoom |
+| 2026-03-06 | Repo: src/components/Game/ | Created HexZoomView.tsx — SVG polygon layout with locations, agents, travel lines | Phase 6C Task 5: main hex zoom visualization |
+| 2026-03-06 | Repo: src/components/Game/ | Created LocationView.tsx — detail view with agents list, establishing shot placeholder | Phase 6C Task 6: location detail panel |
+| 2026-03-06 | Repo: src/components/Game/ | Wired HexZoomView, LocationView, HexBreadcrumb into GameView with 8 derived data blocks | Phase 6C Task 7: replaced placeholders with real components |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created hexZoom-integration.test.ts — full data flow verification | Phase 6C Task 8: integration test |
+| 2026-03-06 | Obsidian: Systems/ | Created Hex Zoom View.md, Location View.md; updated View Levels.md | Phase 6C documentation: new system notes + implementation status |
+| 2026-03-06 | Notion: Backlog | Added Phase 6C as complete, renumbered 6D/6E, added reference docs | Phase 6C backlog update |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6C complete), engine stats, changelog | Phase 6C documentation |
+| 2026-03-06 | Repo: src/types/ | Created scry.ts — ScryState, Position, Title, TitleEffect, CourtStructureDefinition + constants | Phase 6D Task 1: scry type system |
+| 2026-03-06 | Repo: src/data/ | Created scry-content.ts — 4 court structures, archetypes, title fragments/templates, bonus rules, weakness pool | Phase 6D Task 2: scry content package |
+| 2026-03-06 | Repo: src/engine/ | Created scry.ts — createScryState, initializeCourt, generateTitleProposals, assignAgentToPosition, demoteAgent | Phase 6D Tasks 3-5: scry engine (531 lines, 37 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created ScryOverlay.tsx — full-screen court overlay with position slots, agent picker, title proposals | Phase 6D Task 6: ScryOverlay component (566 lines, 20 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — scry state, handlers, wheel scry slot → ScryOverlay, overlay rendering | Phase 6D Task 7: GameView wiring |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created scry-integration.test.ts — full court flow: init → assign → demote → escalation, 4 structures | Phase 6D Task 8: integration test |
+| 2026-03-06 | Obsidian: Systems/ | Created Ascendant Scry.md; updated Index.md with Ascendant Scry link | Phase 6D vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Scry complete), engine stats, changelog | Phase 6D documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-mandate-tracker-design.md | Design doc: 5 decisions (curated pool, graph-verifiable, minimal tracker, sphere-weighted, real evaluation) |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-mandate-tracker-implementation.md | 9-task implementation plan for mandate tracker system |
+| 2026-03-06 | Repo: src/data/ | Created mandate-content.ts — 9 curated mandate templates with sphere affinities | Phase 6D Mandate: content data (30 tests) |
+| 2026-03-06 | Repo: src/engine/ | Created mandateGenerator.ts — sphere-weighted PRNG selection | Phase 6D Mandate: generator (8 tests) |
+| 2026-03-06 | Repo: src/engine/ | Modified mandate.ts — real sphere_weight + actor_tier evaluation; orchestrator.ts — real evaluateMandate | Phase 6D Mandate: condition evaluation + orchestrator wiring (12+15 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created MandateTracker.tsx — compact bar + expanded popover with type colors | Phase 6D Mandate: tracker component (10 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — mandate generation in init, shared DoomBar+MandateTracker container | Phase 6D Mandate: GameView wiring |
+| 2026-03-06 | Repo: src/components/Game/ | Modified DoomBar.tsx — moved chrome to shared parent container (flex-1 min-w-0) | Phase 6D Mandate: DoomBar refactor for shared layout |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created mandate-integration.test.ts — full lifecycle, actor_tier cycle, all templates evaluable | Phase 6D Mandate: integration tests (3 tests) |
+| 2026-03-06 | Obsidian: Systems/ | Created Mandate Tracker.md; updated Index.md with Mandate Tracker link | Phase 6D Mandate vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6D Mandate complete), engine stats, changelog | Phase 6D Mandate documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-agent-detail-panel-design.md | Design doc: 6 decisions (sidebar replacement, full character sheet, archetype integration, data sources, section layout, single aggregator) |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-agent-detail-panel-implementation.md | 8-task implementation plan for agent detail panel |
+| 2026-03-06 | Repo: src/data/ | Created archetype-content.ts — 19 narrative archetypes with story shape, prose tone, reach affinities | Phase 6E Task 1: archetype content package (6 tests) |
+| 2026-03-06 | Repo: src/engine/ | Created agentDetail.ts — getAgentDetail aggregator: tier, archetype, top values, top bonds, location, faction | Phase 6E Task 2: agent detail aggregator (6 tests) |
+| 2026-03-06 | Repo: src/components/Game/ | Created AgentDetailPanel.tsx — full character sheet: header, archetype banner, 3×3 domain grid, values compass, bonds list | Phase 6E Task 3: detail panel component (12 tests) |
+| 2026-03-06 | Repo: src/engine/ | Modified worldSeed.ts — assigns random narrativeArchetype to each individual agent | Phase 6E Task 4: archetype assignment in world seeding (1 test) |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — conditional right sidebar: AgentDetailPanel when agent selected, RetinuePanel otherwise | Phase 6E Task 5: GameView wiring |
+| 2026-03-06 | Repo: src/engine/__tests__/ | Created agentDetail-integration.test.ts — full flow + all 19 archetypes resolvable | Phase 6E Task 6: integration tests (2 tests) |
+| 2026-03-06 | Obsidian: Systems/ | Created Agent Detail Panel.md; updated Index.md with Agent Detail Panel link | Phase 6E vault documentation |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6E complete), engine stats, changelog | Phase 6E documentation |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-package-architecture.md | 7-task plan to extract ~350 lines of content from engine/type files into 5 new `*-content.ts` packages |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-strategy.md | Content strategy: 3 prose modes, 19 archetypes, cultural palettes, thematic rules, exclusions |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-narrative-context-pipeline.md | Narrative context pipeline: harvest-rank-select-feed, opposition tension scoring, narrative spawning |
+| 2026-03-06 | Obsidian: Systems/ | Created Content Strategy.md, Narrative Archetypes.md, Narrative Context Pipeline.md, Content Packages.md | 4 new system notes for content strategy and architecture |
+| 2026-03-06 | Notion: Backlog | Added Content Strategy & Architecture section with 3 completed design items + 5 pending implementation items | Content strategy design phase complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-extraction-design.md | Design doc: 5 new packages, boundary decisions, pattern rules, sequencing roadmap |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-content-extraction-implementation.md | 7-task TDD implementation plan for content package extraction |
+| 2026-03-06 | Repo: src/data/ | Created narrative-content.ts (171 lines) | Sphere vocabulary, routine/notable templates, value flavors — extracted from types/narrative.ts + engine/narrative.ts |
+| 2026-03-06 | Repo: src/data/ | Created dream-content.ts (204 lines) | Manipulation/intervention definitions, tier modifiers, delivery/encounter constants — extracted from types/dream.ts |
+| 2026-03-06 | Repo: src/data/ | Created doom-content.ts | Stage names, default thresholds — extracted from engine/doomClock.ts |
+| 2026-03-06 | Repo: src/data/ | Created rival-content.ts (104 lines) | Name fragments, behavior weights, action types — extracted from types/rival.ts + engine/rival.ts |
+| 2026-03-06 | Repo: src/data/ | Created influence-content.ts (66 lines) | Tier names, economy constants, action costs — extracted from types/influence.ts |
+| 2026-03-06 | Repo: src/types/ | Moved RivalAction interface from engine/rival.ts to types/rival.ts | Prevented circular import between rival-content.ts and engine/rival.ts |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — all 8 packages marked complete | Content extraction status reflected in vault |
+| 2026-03-06 | Notion: Backlog | Marked Content Package Migration complete | 5 new packages, 28 tests, ~350 lines extracted |
+| 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Content extraction complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-archetype-enrichment-design.md | Design doc: enrich-in-place approach, enriched interface, beat pattern coverage, lookup functions |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-archetype-enrichment-implementation.md | 8-task TDD implementation plan for archetype enrichment |
+| 2026-03-06 | Repo: src/data/ | Enriched archetype-content.ts (894 lines) — 19 archetypes with toneKeywords, beatPatterns, vignetteSeeds, narrativeRequirements + 3 lookup functions | All 4 content layers from content strategy populated |
+| 2026-03-06 | Repo: src/data/__tests__/ | Rewrote archetype-content.test.ts (357 lines, 53 tests) — structural, content quality, lookup functions, per-archetype validation | Full test coverage for enriched archetypes |
+| 2026-03-06 | Obsidian: Systems/ | Updated Narrative Archetypes.md — implementation status, lookup functions, beat pattern structure | Enrichment complete, vault reflects current state |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Packages.md — archetype-content.ts marked as enriched (894 lines, 53 tests) | Content package status updated |
+| 2026-03-06 | Notion: Backlog | Marked Archetype Content Data implementation complete | 894 lines, 53 tests, design + plan docs linked |
+| 2026-03-06 | CLAUDE.md | Updated project status, engine stats, changelog | Archetype enrichment complete |
+| 2026-03-06 | Repo: Docs/plans/ | Created 2026-03-06-culture-bounded-context-design.md | 9-section design doc: budget model, traits, locations, artifacts, beats, composite modifiers, content manifest, narrative integration, cultural drift |
+| 2026-03-06 | Repo: Docs/plans/ | Updated 2026-03-06-content-strategy.md — added §4a Content Production Manifest, updated §4 palette generation, updated §7 culture-content.ts scope, added 3 decisions | Culture system content production requirements integrated into content strategy |
+| 2026-03-06 | Obsidian: Systems/ | Created Culture Bounded Context.md | New system note for culture system with connections to World-Soul, Trait System, Narrative Engine, Content Pipeline |
+| 2026-03-06 | Obsidian: Actors/ | Updated Culture.md — appended Culture Bounded Context section | Actor note now links to full system design |
+| 2026-03-06 | Obsidian: Systems/ | Updated Content Strategy.md, Content Packages.md — culture palette generation, content scope | Culture design references added to existing system notes |
+| 2026-03-06 | Obsidian: Index.md | Added Culture Bounded Context link to Content Strategy & Architecture section | New system discoverable from vault hub |
+| 2026-03-06 | Notion: Backlog | Added Culture Bounded Context design as complete, added to reference documents | Culture design phase tracked in backlog |
+| 2026-03-06 | CLAUDE.md | Updated project status (culture design complete), content stats, changelog | Culture bounded context documentation |
+| 2026-03-06 | CLAUDE.md | Added "Running the Prototype" section with commands, prerequisites, Cowork networking note | User confirmed prototype runs; documenting how to launch it |
+| 2026-03-06 | Repo: src/types/ | Created visibility.ts — HexVisibility, StaleSnapshot, VisibilityMap, LOSSource types + 5 constants | Phase 6F Task 1: fog of war type foundation |
+| 2026-03-06 | Repo: src/engine/ | Created visibility.ts — getAvatarHexPosition, collectLOSSources, recalcVisibility (232 lines, 10 tests) | Phase 6F Task 2: fog of war engine |
+| 2026-03-06 | Repo: src/types/ + src/engine/ | Added visibilityMap to GameState, wired into orchestrator tick loop + GameView init | Phase 6F Task 3: visibility state integration |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexTile.tsx — three-state fog rendering (unexplored=black, remembered=dimmed, visible=normal) | Phase 6F Task 4: fog rendering |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexTile.tsx + HexMap.tsx — sphere-colored pulsing avatar hex overlay with CSS breathe animation | Phase 6F Task 5: avatar hex overlay |
+| 2026-03-06 | Repo: src/components/HexMap/ | Modified HexMap.tsx — d3-zoom (scroll-wheel + drag-pan), forwardRef with centerOn(), scale 1.0-4.0 | Phase 6F Task 6: zoom/pan |
+| 2026-03-06 | Repo: src/components/Game/ | Created AvatarHUD.tsx — top-left panel with name, Move/Wheel/Scry buttons, sphere accent (9 tests) | Phase 6F Task 7: avatar HUD |
+| 2026-03-06 | Repo: src/engine/ | Created avatarMove.ts — moveAvatarToHex with transient location creation (3 tests) | Phase 6F Task 8: avatar movement |
+| 2026-03-06 | Repo: src/components/Game/ | Modified GameView.tsx — wired visibility, zoom, AvatarHUD, move mode, initial camera centering | Phase 6F Task 9: full integration |
+| 2026-03-06 | CLAUDE.md | Updated project status (Phase 6F complete), engine stats, changelog | Phase 6F documentation |
+| 2026-03-07 | skills/qa-orchestrator/ | Created QA orchestrator skill — 4 specialist agents (visual, info-arch, interaction, react-code), finding schema, 14-step orchestrator checklist, Notion integration | Repeatable QA flow for UI/UX/frontend |
+| 2026-03-07 | Docs/plans/ | Created 2026-03-07-qa-orchestrator-design.md, 2026-03-07-qa-orchestrator-implementation.md | Design rationale (7 decisions) + 12-task TDD implementation plan |
+| 2026-03-07 | Docs/qa/ | Created skill test results (RED-GREEN comparison) | Baseline vs with-skill: structured JSON output, per-finding effort/severity, Notion-ready |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-game-theory-disposition-design.md, 2026-03-07-game-theory-disposition-implementation.md | Design doc (9 sections) + 16-task TDD implementation plan (1,063 lines) |
+| 2026-03-07 | Repo: src/types/ | Created disposition.ts (112 lines) — CooperationStrategy, InteractionRecord, DilemmaEvent, DilemmaOutcome, StakesLevel + 12 tunable constants | Game theory type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created disposition.ts (400+ lines) — evaluateStrategy, applyDispositionModifier, logInteraction, updateReputation, decayReputation, computeStakes, resolveDilemma, applyDilemmaEffects | Core disposition engine with 5 strategies and dilemma resolution |
+| 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — assigns random cooperationStrategy + default reputation to seeded agents | Disposition data seeded into world graph |
+| 2026-03-07 | Repo: src/engine/ | Modified agentActions.ts — applyDispositionModifier as stage 2 in action selection pipeline | Disposition modifier wired into agent behavior |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — added phaseDilemmaDetection + phaseReputationDecay tick phases | Dilemma detection and reputation decay in tick loop |
+| 2026-03-07 | Repo: src/engine/ | Modified narrative.ts — added 4 dilemma beat templates (mutual_trust, betrayed, exploitation, mutual_distrust) | Narrative beats for all dilemma outcomes |
+| 2026-03-07 | Repo: src/engine/ | Modified agentDetail.ts — added cooperationStrategy, reputationScore, recentInteractions to AgentDetail | Agent detail aggregator surfaces disposition data |
+| 2026-03-07 | Repo: src/components/Game/ | Modified AgentDetailPanel.tsx — added Disposition section with strategy name, reputation bar, interaction history | UI surfaces agent cooperation strategy and history |
+| 2026-03-07 | Repo: tests | Created 6 test files: disposition.test.ts (61), disposition-integration.test.ts (6), disposition-dilemma-integration.test.ts (4), extended agentDetail.test.ts (+5), AgentDetailPanel.test.tsx (+3) — 98 new tests | Full test coverage for disposition system |
+| 2026-03-07 | CLAUDE.md | Updated project status (disposition system complete), engine stats (~70 modules, ~11,500 lines, ~1,106 tests), changelog | Game theory disposition system documentation |
+| 2026-03-07 | Repo: src/components/HexMap/ | Modified HexMap.tsx + HexTile.tsx — `HEX_MAP_BACKGROUND` and `UNEXPLORED_HEX_COLOR` constants (#1e1b2e) | QA fix VS-001: hex map background too bright for Threadbare aesthetic |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — wheelFeedback state, agent null-check before wheel; StrandView.tsx + ScryOverlay.tsx — pointerEvents: 'auto' | QA fixes IX-001/002/004: wheel interaction feedback and overlay pointer events |
+| 2026-03-07 | Repo: src/components/Game/ | Modified RivalPanel, EssencePanel, SimulationControls — h2 headings; AvatarHUD — "Avatar" button text; MandateTracker — Escape key handler | QA fixes IA-001/003/005, IX-003: heading hierarchy, accessible labels, keyboard interaction |
+| 2026-03-07 | Repo: src/components/Game/ | Added React.memo to RetinuePanel, RivalPanel, AgentDetailPanel; extracted WHEEL_CONFIG (9 constants) in AgentWheel, LAYOUT_CONFIG (7 constants) in HexZoomView | QA fixes RC-001/002: unnecessary re-renders and magic numbers |
+| 2026-03-07 | Repo: src/components/Game/ | Modified NarrativeFeed.tsx — useMemo log aggregation grouping consecutive identical messages with ×N badge | QA fix IA-004: repetitive log entries |
+| 2026-03-07 | Repo: src/data/ + src/engine/ | Added RIVAL_ACTION_TEMPLATES to rival-content.ts (3-4 variants per action type); orchestrator.ts uses seeded PRNG template selection | QA fix IA-008: repetitive rival action text |
+| 2026-03-07 | Repo: src/components/Game/ | Modified MandateTracker.tsx — z-50 on compact bar for toggle-close, "NEW" display for 0% progress | QA fixes IX-005/IA-010: mandate toggle and empty progress display |
+| 2026-03-07 | Repo: src/components/Game/ | Modified AvatarHUD.tsx — module-level BUTTON_BASE_STYLE/CONTAINER_STYLE constants, useMemo for dynamic styles, useCallback for handlers | QA fix RC-003: inline object creation on every render |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — 5 useCallback handlers (handleToggleRunning, handleBackFromAgentDetail, etc.), removed gameState.tick from 6 useMemo deps | QA fixes RC-007/017: inline event handlers and over-broad memo deps |
+| 2026-03-07 | CLAUDE.md | Updated project status (QA sweep complete), engine stats (~106 modules, ~17,949 lines), changelog | QA fix sprint documentation |
+| 2026-03-07 | Repo: src/data/ | Created culture-content.ts (1,789 lines) — 4 foundation modifiers, 8 creation sphere modifiers, 22 biome modifiers, 35 formative trait seeds, 45 behavioral trait seeds, 25 insider beats, 18 sub-location templates, 6 artifact lore patterns, 9 lookup functions | Culture content data implementation |
+| 2026-03-07 | Repo: src/data/__tests__/ | Created culture-content.test.ts (822 lines, 577 tests) — structural validation, uniqueness, cross-references, lookup functions, per-entry quality validation | Culture content test coverage |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-culture-content-implementation.md | 10-task TDD implementation plan for culture content data package |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-narrative-context-builder-design.md, 2026-03-07-narrative-context-builder-implementation.md | Pass 1 design doc (146 lines) + 9-task TDD implementation plan (1,697 lines) |
+| 2026-03-07 | Repo: src/data/ | Created opposition-content.ts (112 lines) — foundation sphere opposition matrix, creation sphere tensions, archetype friction pairs, PROXIMITY/INVOLVEMENT/HARVEST/SELECTION scoring constants, 3 lookup functions | Opposition tension scoring content package |
+| 2026-03-07 | Repo: src/types/ | Modified narrative.ts — added ContextCategory, ContextObject, OpposingPair, OppositionSummary, NarrativeContext types; extended ProseContext with contextObjects, historicalFragments, oppositionSummary | Context builder type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created contextBuilder.ts (443 lines) — harvestContext (BFS graph traversal), rankObjects (proximity+involvement+opposition scoring), selectObjects (greedy with category cap), buildNarrativeContext (full pipeline) | Narrative context builder harvest→rank→select→build pipeline |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — phaseNarrative now converts TickEvent→NarrativeEvent, calls buildNarrativeContext, populates promptContext with real actors/location/mood/previousEvents | Chronicle entries now world-aware with ranked context objects |
+| 2026-03-07 | Repo: tests | Created contextBuilder.test.ts (540 lines, 20 tests), orchestrator-narrative.test.ts (246 lines, 10 tests), contextBuilder-integration.test.ts (110 lines, 4 tests), opposition-content.test.ts (22 tests), narrativeContext.test.ts (4 tests) — 60 new tests | Full test coverage for narrative context builder |
+| 2026-03-07 | CLAUDE.md | Updated project status (narrative context builder Pass 1 complete), engine stats (~110 modules, ~21,077 lines, ~1,743 tests), changelog | Narrative context builder documentation |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-culture-generator-design.md, 2026-03-07-culture-generator-implementation.md | Design doc + 11-task TDD implementation plan for culture generator Pass 1 |
+| 2026-03-07 | Repo: src/types/ | Created culture.ts — CultureIdentity, CultureEdgeProperties, 5 tunable constants; modified graph.ts — added belongs_to EdgeType | Culture generator type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created cultureGenerator.ts (314 lines) — composeCultureIdentity, generateCultureName, generateCultures, assignCultureToActor, assignCultureToLocation, assignCulturesToActors | Culture generator engine with foundation × sphere × biome composition |
+| 2026-03-07 | Repo: src/data/ | Extended culture-content.ts — added CULTURE_NAME_FRAGMENTS (foundation/sphere/biome fragments + 6 pattern templates) | Culture name generation data |
+| 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — optional FoundationBalances param, cultureIds in SeedResult, culture generation + assignment phases | Culture generator wired into world seeding pipeline |
+| 2026-03-07 | Repo: tests | Created cultureGenerator.test.ts (19 tests), culture-integration.test.ts (4 tests), extended worldSeed.test.ts (+6 tests), culture-content.test.ts (+4 tests) — 33 new culture tests | Full culture generator test coverage |
+| 2026-03-07 | CLAUDE.md | Updated project status (culture generator Pass 1 complete), engine stats (~111 modules, ~20,971 lines), changelog | Culture generator documentation |
+| 2026-03-07 | Repo: Docs/plans/ | Created 2026-03-07-debug-trace-panel-design.md, 2026-03-07-debug-trace-panel-implementation.md | Design doc (6 decisions, full UI spec) + 11-task TDD implementation plan for debug trace panel |
+| 2026-03-07 | Repo: src/types/ | Created trace.ts (96 lines) — TraceBase, PipelineStageSnapshot, 5 trace category interfaces, TraceEntry discriminated union, TRACE_CATEGORIES | Trace type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created traceBuffer.ts (75 lines) — ring buffer (500 entries), emitTrace, getTraces, getTracesForAgent, enable/disable/clear, zero-cost boolean toggle | Trace buffer engine |
+| 2026-03-07 | Repo: src/engine/ | Modified orchestrator.ts — tick_summary trace at end of runTick() | Tick-level tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified agentSelection.ts — action_selection trace with 5-stage pipeline snapshots | Action selection tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified narrative.ts — narrative_generation trace in generateRoutineProse/generateNotableProse | Narrative generation tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified contextBuilder.ts — context_harvest trace with harvestedCount, rankedTop, oppositionTension | Context harvest tracing |
+| 2026-03-07 | Repo: src/engine/ | Modified disposition.ts — dilemma_resolution trace with strategies, moves, outcome, stakes, deltas | Dilemma resolution tracing |
+| 2026-03-07 | Repo: src/components/Game/ | Created DebugPanel.tsx (510 lines) — 480px right-side drawer, 3 modes (Feed/Agent Follow/Tick Inspector), 5 category-specific renderers, Threadbare styling | Debug trace panel UI |
+| 2026-03-07 | Repo: src/components/Game/ | Modified GameView.tsx — backtick toggle, Debug pill button, right sidebar replacement with DebugPanel | Debug panel GameView wiring |
+| 2026-03-07 | Repo: tests | Created 10 test files for trace system: trace.test.ts (7), traceBuffer.test.ts (8), traceBuffer-orchestrator (5), traceBuffer-actions (6), traceBuffer-narrative (14), traceBuffer-context (7), traceBuffer-dilemma (11), traceBuffer-integration (10), DebugPanel.test.tsx (14), GameView-debug.test.tsx (6) — 88 new tests | Full trace system test coverage |
+| 2026-03-07 | CLAUDE.md | Updated §2 Inspectability (tracing requirement), §Session Workflow (tracing step), project status, changelog | Debug trace panel documentation |
+| 2026-03-07 | Repo: src/types/ | Extended culture.ts — CultureIdentity interface, CULTURE_COUNT/CULTURAL_STRENGTH constants; extended narrative.ts — InsiderBeatSummary type, availableInsiderBeats field on NarrativeContext | Culture Pass 2 type foundation |
+| 2026-03-07 | Repo: src/engine/ | Created culturalTension.ts (204 lines) — 4 tension detectors (mismatch, conquest, dual, fanaticism) + aggregate scorer with CULTURAL_TENSION_SCORES constants | Cultural tension detection module |
+| 2026-03-07 | Repo: src/engine/ | Created insiderBeatDetection.ts (76 lines) — getAvailableInsiderBeats walks belongs_to edges, extracts culture tags, matches insider beats by strength threshold | Insider beat detection module |
+| 2026-03-07 | Repo: src/engine/ | Modified contextBuilder.ts — imports culturalTension + insiderBeatDetection, computes culturalStrength/culturalTension/availableInsiderBeats in buildNarrativeContext | NarrativeContext cultural enrichment |
+| 2026-03-07 | Repo: src/engine/ | Modified worldSeed.ts — cultural trait instantiation (formative + behavioral) from culture-content seeds, grants to actors via has_trait edges | Cultural traits granted at world seeding |
+| 2026-03-07 | Repo: tests | Created culturalTension.test.ts (10 tests), insiderBeatDetection.test.ts (4 tests), culture-pass2-integration.test.ts (3 tests); extended narrativeContext.test.ts (+1), contextBuilder tests pass with new fields | ~30 new culture Pass 2 tests |
+| 2026-03-07 | CLAUDE.md | Updated project status (Culture Pass 2 complete), engine stats, changelog | Culture Pass 2 documentation |
+| 2026-03-08 | Repo: src/engine/ | Created gameInit.ts — extracted initializeGameState from GameView.tsx (17 tests) | Playtest Capture Task 1: reusable game initialization |
+| 2026-03-08 | Repo: scripts/ | Created playtest-format.ts — formatFullReport with 3-section markdown (dashboard, narrative log, trace deep-dive) | Playtest Capture Task 2: report formatter |
+| 2026-03-08 | Repo: scripts/ | Created playtest.ts — headless runner with multi-seed, configurable ticks/interval/significance, esbuild bundling | Playtest Capture Task 3: playtest runner |
+| 2026-03-08 | Repo: Docs/playtests/ | First batch: 9 seed reports (42, 7, 100, 1, 2, 8, 9, 123, 999) + review-summary.md with 7 findings | Playtest Capture Task 4: first real playtest run |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-playtest-capture-design.md, 2026-03-08-playtest-capture-implementation.md | Playtest capture design rationale + 5-task implementation plan |
+| 2026-03-08 | CLAUDE.md | Updated project status (Playtest Capture complete), engine stats, changelog | Playtest Capture Task 5: documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-golden-path-polish-design.md, 2026-03-08-golden-path-polish-implementation.md | Design doc (5 fixes) + 8-task TDD implementation plan for playtest findings |
+| 2026-03-08 | Repo: src/types/ | Modified disposition.ts — DILEMMA_STAKES_THRESHOLD 0.6→0.3, added STAKES_BASE = 0.15 | Fix 3: dilemma detection tuning |
+| 2026-03-08 | Repo: src/engine/ | Modified disposition.ts — computeStakes starts at STAKES_BASE instead of 0 | Fix 3: stakes floor for non-gold/iron spheres |
+| 2026-03-08 | Repo: src/engine/ | Modified orchestrator.ts — phaseAgentActions rewrite (routine/notable prose, significance 0.3-0.9, sphere influence +0.02, notable events every 5 ticks), phaseDilemmaDetection actor selection fix, phaseAgentLifecycle wired into runTick | Fixes 2-5: narrative differentiation, dilemma detection, mandate progress, lifecycle phase |
+| 2026-03-08 | Repo: src/engine/ | Modified worldSeed.ts — sphereInfluence initialization on locations, constructed_by + controls edges seeded after faction creation | Fix 4: mandate progress graph structures |
+| 2026-03-08 | Repo: src/engine/ | Created agentLifecycle.ts (~240 lines) — phaseAgentLifecycle with death (rep<0.1→2%, age>200→1%), birth (density≥3→1%), migration (2%) | Fix 5: agent population evolves |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created orchestrator-dilemma.test.ts, orchestrator-prose.test.ts — dilemma stakes + prose differentiation tests | Golden Path test coverage |
+| 2026-03-08 | Repo: Docs/playtests/ | Updated seed 42/7/100 reports — 100-tick verification runs confirming all 5 fixes | Verification playtest results |
+| 2026-03-08 | CLAUDE.md | Updated project status (Golden Path Polish Sprint complete), engine stats, changelog | Golden Path documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-gameview-decomposition-design.md, 2026-03-08-gameview-decomposition-implementation.md | Design doc (5 sections) + 8-task implementation plan for GameView decomposition |
+| 2026-03-08 | Repo: src/components/Game/hooks/ | Created useSimulation.ts (130 lines), useHexZoomData.ts (90 lines), useAvatarData.ts (113 lines), useAgentInteraction.ts (219 lines), useScry.ts (66 lines), useViewNavigation.ts (120 lines) | 6 custom hooks extracted from GameView — total 738 lines of hook code |
+| 2026-03-08 | Repo: src/components/Game/ | Modified GameView.tsx — 791→384 lines, zero state/handlers/effects, purely hook calls + JSX layout | GameView decomposition: all logic delegated to hooks |
+| 2026-03-08 | CLAUDE.md | Updated project status (GameView Decomposition complete), engine stats, changelog | GameView decomposition documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-batch-art-pipeline-design.md, 2026-03-08-batch-art-pipeline-implementation.md | Design doc (7 decisions) + 10-task TDD implementation plan for batch art pipeline |
+| 2026-03-08 | Repo: scripts/generate-hex-tile.py | Added MAGIC_REGISTRY (12 spheres), build_magic_prompt, black_to_transparent, generate_magic_tile, audit_assets, enhanced CLI (--category, --sphere, --audit, --batch-all) | Batch art generation pipeline: magic overlay support, asset auditing, CLI consolidation |
+| 2026-03-08 | Repo: scripts/generate-hex-tile.py | Changed default terrain output from Assets/biomes/ to public/hex-tiles/ | Output consolidation — all hex art goes to web-servable directory |
+| 2026-03-08 | Repo: scripts/tests/ | Created test_pipeline.py (13 tests), __init__.py | Python pipeline test coverage: registry, prompts, transparency, audit, CLI |
+| 2026-03-08 | Repo: package.json | Replaced generate-hex:batch with generate-hex:terrain, generate-hex:magic, generate-hex:audit, generate-hex:all | npm script aliases for new pipeline categories |
+| 2026-03-08 | Repo: src/data/hex-tile-assets.ts | Added AllSphereName type, MAGIC_OVERLAY_MAP (12 entries), getMagicOverlayUrl helper | TypeScript magic overlay map for runtime sphere→PNG lookup |
+| 2026-03-08 | Repo: src/data/__tests__/hex-tile-assets.test.ts | Extended with 6 new tests for MAGIC_OVERLAY_MAP and getMagicOverlayUrl | Magic overlay test coverage |
+| 2026-03-08 | CLAUDE.md | Updated project status (Batch Art Pipeline complete), engine stats, changelog | Batch art pipeline documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-tooltip-system-design.md, 2026-03-08-tooltip-system-implementation.md | Design doc (7 decisions) + 10-task TDD implementation plan for tooltip system |
+| 2026-03-08 | Repo: src/types/ | Created tooltip.ts — TooltipContent, TooltipPlacement types + 8 tunable constants | Tooltip type foundation (7 tests) |
+| 2026-03-08 | Repo: src/data/ | Created ui-content.ts — 11 UI tooltip entries with {{concept.id}} links | UI tooltip content package (5 tests) |
+| 2026-03-08 | Repo: src/engine/ | Created tooltipResolver.ts — prefix-routing resolver for sphere, reach, terrain, archetype, doom, mandate, UI | Tooltip resolver engine (46 tests) |
+| 2026-03-08 | Repo: src/components/shared/ | Created Tooltip.tsx — hover/focus/Escape, smart positioning, portal rendering, SVG support (as="g" prop), linked concept chains via parseDescription | Tooltip component core (21 tests) + chain tests (15 tests) |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created tooltipValidation.test.ts — broken link detection, label checks, length limits | Content validation tests (5 tests) |
+| 2026-03-08 | Repo: src/components/Game/ | Modified DoomBar, AvatarHUD, MandateTracker, SimulationControls, RivalPanel, EssencePanel — added Tooltip wrapping | Core HUD tooltip wiring |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created tooltip-integration.test.ts — chain resolution, valid chains, no circular refs | Integration tests (5 tests) |
+| 2026-03-08 | Repo: src/components/ | Modified RetinuePanel, HexZoomView, HexTile — agent/location/terrain tooltips with SVG as="g" | Agent and location tooltip wiring |
+| 2026-03-08 | CLAUDE.md | Updated project status (Tooltip System complete), engine stats, changelog | Tooltip system documentation |
+| 2026-03-08 | Repo: src/data/ | Populated ordeal-content.ts — 10 templates (3-act structure), inspection vignettes (30), difficulty tiers (3), system connections (9) | Content Population: ordeal content package |
+| 2026-03-08 | Repo: src/data/ | Populated chronicler-content.ts — 15 vignettes, 14 sublocation flavors, 30 artifact lore, 15 location type flavors, 34 magic traditions | Content Population: chronicler/inspection content |
+| 2026-03-08 | Repo: src/data/ | Extended narrative-content.ts — sphere influence events (16 spheres), seasonal vocabulary (4 seasons), echo flavor (12), stealth detection (8) | Content Population: connective tissue layer |
+| 2026-03-08 | Repo: src/data/ | Extended culture-content.ts — 12 cultural prose palettes, 4 cultural tension templates | Content Population: culture prose |
+| 2026-03-08 | Repo: src/data/ | Extended rival-content.ts — 8 rival personality profiles | Content Population: rival personalities |
+| 2026-03-08 | Repo: src/data/ | Created worldsoul-content.ts — 12 fundament descriptions, 8 resonance fragment prose | Content Population: world-soul content |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created content-full-integration.test.ts — 4-layer cross-package count verification (5 tests) | Content Population: integration test |
+| 2026-03-08 | Repo: src/engine/gameInit.ts | Added INITIAL_WORSHIPPER_COUNT/TIER constants, worshipper seeding block after ascendant creation | Bug fix: action wheel unusable — retinue always empty |
+| 2026-03-08 | Repo: src/engine/__tests__/gameInit.test.ts | Added 4 tests: retinue non-empty, correct tier, deterministic, seed variance | Bug fix: initial worshipper tests |
+| 2026-03-08 | CLAUDE.md | Updated project status (Content Population + Action Wheel fix), engine stats, changelog | Documentation updates |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-action-card-redesign-design.md, 2026-03-08-action-card-redesign-implementation.md | Design doc (5 decisions) + 8-task implementation plan for card-based action system |
+| 2026-03-08 | Repo: src/engine/wheel.ts | Added `description: string` to WheelSlot interface, populated from INTERVENTION_DEFINITIONS | Action card redesign Task 1: slot descriptions for card display |
+| 2026-03-08 | Repo: src/components/Game/ | Created ActionCard.tsx (~152 lines) — sphere-colored card with glyph, name, description, cost/risk/range, 4 visual states | Action card redesign Task 2: individual action card component |
+| 2026-03-08 | Repo: src/components/Game/ | Created ActionDrawer.tsx (~123 lines) — bottom drawer with header bar, horizontal scrollable card row, sort logic | Action card redesign Task 3: bottom drawer container |
+| 2026-03-08 | Repo: src/components/Game/ | Created NarrativeLog.tsx (~128 lines) — floating pill toggle + overlay panel with unread badge, Escape dismiss | Action card redesign Task 4: floating narrative log |
+| 2026-03-08 | Repo: src/components/Game/hooks/ | Modified useAgentInteraction.ts — wheelVisible→drawerOpen, handleWheelDismiss→handleDrawerClose, removed wheelFeedback | Action card redesign Task 5: hook state rename |
+| 2026-03-08 | Repo: src/components/Game/ | Modified GameView.tsx — removed wheel overlay + fixed NarrativeFeed bar, added ActionDrawer + NarrativeLog | Action card redesign Task 6: GameView wiring |
+| 2026-03-08 | Repo: src/components/Game/ | Deleted AgentWheel.tsx + test; modified AvatarHUD.tsx "Wheel"→"Actions" | Action card redesign Task 7: old component removal |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created actionCardRedesign-integration.test.ts (293 lines, 10 tests) — descriptions, sorting, unread tracking, removal verification | Action card redesign Task 8: integration tests |
+| 2026-03-08 | CLAUDE.md | Updated project status (Action Card Redesign complete), engine stats, changelog | Action card redesign documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-progressive-disclosure-design.md, 2026-03-08-progressive-disclosure-implementation.md | Design doc (6 decisions) + 14-task TDD implementation plan for progressive disclosure info system |
+| 2026-03-08 | Repo: src/types/ | Created familiarity.ts — KnowledgeLevel, FamiliarityMap, FAMILIARITY_THRESHOLDS, FAMILIARITY_GAIN_AMOUNTS, SPHERE_BONUS constants | Progressive disclosure Task 1: familiarity type foundation |
+| 2026-03-08 | Repo: src/engine/ | Created familiarity.ts — getFamiliarity, addFamiliarity, getKnowledgeLevel, checkThresholdCrossed, getEffectiveKnowledgeLevel | Progressive disclosure Task 2: familiarity engine |
+| 2026-03-08 | Repo: src/data/ | Created domain-words.ts — DOMAIN_WORD_SCALES (9 reaches × 5 tiers), VALUE_WORD_MAP (10 pairs), REPUTATION_WORDS, BOND_STRENGTH_WORDS + 4 converter functions | Progressive disclosure Task 3: verbal stat display (57 tests) |
+| 2026-03-08 | Repo: src/engine/ | Created profileGenerator.ts — generateQuotes, generateBackstory, generatePortraitPrompt with template pools + seeded PRNG | Progressive disclosure Task 4: profile content generator (24 tests) |
+| 2026-03-08 | Repo: src/engine/ | Modified agentDetail.ts — added getAgentInfoCard + getAgentFullProfile with knowledge-level gating, AgentInfoCardData + AgentFullProfileData types | Progressive disclosure Task 5: gated aggregators (18 tests) |
+| 2026-03-08 | Repo: src/engine/ | Modified orchestrator.ts — phaseFamiliarityGain with proximity/worship/scry/narrative/dilemma sources, familiarityMap on GameState, familiarity_change trace emission | Progressive disclosure Task 6: familiarity in GameState + tick gain |
+| 2026-03-08 | Repo: src/components/Game/ | Created AgentInfoCard.tsx — Tier 2 sidebar card with knowledge-level gated sections (29 tests) | Progressive disclosure Task 7: info card component |
+| 2026-03-08 | Repo: src/components/Game/ | Created AgentProfileModal.tsx — Tier 3 full-screen modal with generated flavor content + familiarity gating (20 tests) | Progressive disclosure Task 8: profile modal component |
+| 2026-03-08 | Repo: src/components/Game/ | Modified GameView.tsx + useAgentInteraction.ts — replaced AgentDetailPanel with AgentInfoCard, added AgentProfileModal overlay | Progressive disclosure Task 9: GameView wiring |
+| 2026-03-08 | Repo: src/engine/ | Modified tooltipResolver.ts — added agent.* prefix routing with TooltipResolverContext (5 new tests) | Progressive disclosure Task 10: enhanced agent tooltips |
+| 2026-03-08 | Repo: src/components/Game/ | Modified DebugPanel.tsx — added FamiliarityChangeDetail renderer for familiarity_change traces | Progressive disclosure Task 11: debug panel trace renderer |
+| 2026-03-08 | Repo: src/engine/__tests__/ | Created progressive-disclosure-integration.test.ts (480 lines, 8 tests) — full flow, scry gain, word scales, knowledge thresholds | Progressive disclosure Task 12: integration tests |
+| 2026-03-08 | CLAUDE.md | Updated project status (Progressive Disclosure complete), engine stats, changelog | Progressive disclosure documentation |
+| 2026-03-08 | Repo: Docs/qa/ | Created 2026-03-08-qa-findings.json — 25 QA findings (0 critical, 8 major, 14 minor, 3 suggestions) | QA sweep findings from qa-orchestrator skill |
+| 2026-03-08 | Repo: src/components/ | React.memo on 6 components (RetinuePanel, RivalPanel, HexBreadcrumb, ActionCard, LocationView, HexZoomView), useCallback/useMemo optimizations across hooks and GameView | QA fix Task 1: RC memoization + performance findings |
+| 2026-03-08 | Repo: src/components/ | Keyboard navigation (Enter/Space + onKeyDown) on HexZoomView location circles, LocationView agent rows; focus:ring outlines on interactive elements | QA fix Task 2: IX keyboard + focus findings |
+| 2026-03-08 | Repo: src/components/ | Descriptive aria-labels on all close/dismiss buttons (ScryOverlay, ActionDrawer, NarrativeLog, StrandView, DebugPanel, AgentProfileModal, InterventionConfirm), role="list"/role="listitem" on RetinuePanel/RivalPanel | QA fix Task 3: accessibility aria-label + semantic HTML findings |
+| 2026-03-08 | Repo: src/components/Game/ | AvatarHUD shows avatarName, MandateTracker tooltip on name only, mandate stage transitions as traces not events, EssencePanel hides zero-value spheres with opacity hierarchy | QA fix Task 4: IA-001/002/004/005 + IX-001 |
+| 2026-03-08 | Repo: src/components/ | 13 components darkened bg-stone-700→bg-stone-800 for Threadbare spec compliance, HexBreadcrumb sphere colors via canonical getSphereColor() | QA fix Task 5: VS-004/005 panel darkness + sphere consistency |
+| 2026-03-08 | Repo: src/engine/ + src/data/ + src/components/Game/ | Dilemma messages use DILEMMA_STAKES_PROSE templates, rival templates expanded 4→8 per type, WorldPulse.tsx for empty sidebar, DoomBar flex-[2] + MandateTracker flex-[1], left sidebar `<nav>` | QA fix Task 6: IA-007/008/010/011/012 |
+| 2026-03-08 | CLAUDE.md | Updated project status (QA Fix Sprint #2 complete), engine stats, changelog | QA fix sprint documentation |
+| 2026-03-08 | Repo: Docs/plans/ | Created 2026-03-08-intervention-effects-design.md, 2026-03-08-intervention-effects-implementation.md | Design doc (5 decisions) + 12-task TDD implementation plan for intervention effects system |
+| 2026-03-08 | Repo: src/data/ | Created intervention-feedback-content.ts (~170 lines) — DIVINE_INFLUENCE_CONSTANTS (40 tunable values), CONSEQUENCE_TEMPLATES (24 templates across 8 types), getConsequenceMessage(), SPHERE_AUDIO_CONFIG | Intervention effects content package |
+| 2026-03-08 | Repo: src/types/ | Extended dream.ts — DivineInfluenceEntry interface with decay curve params, value drifts, behavior tags; extended trace.ts — InterventionEffectTrace + intervention_effect category | Intervention effects type foundation |
+| 2026-03-08 | Repo: src/engine/ | Created interventionEffects.ts (~765 lines) — getDivineInfluences, addDivineInfluence, buildValueOverlay, applyInterventionEffects with all 8 intervention type handlers | Core intervention effects engine |
+| 2026-03-08 | Repo: src/engine/ | Created decayCurve.ts — exponential decay with minimumStrength, getCurrentStrength, isExpired | Decay curve math for divine influence strength over time |
+| 2026-03-08 | Repo: src/engine/ | Modified agentSelection.ts — buildValueOverlay integration between goal_alignment and disposition stages | Divine influence overlay in action selection pipeline |
+| 2026-03-08 | Repo: src/engine/ | Modified orchestrator.ts — phaseDivineInfluenceDecay tick phase, intervention_effect trace emission | Influence decay lifecycle in tick loop |
+| 2026-03-08 | Repo: src/components/Game/ | Modified ActionCard.tsx — playing prop, CSS @keyframes cardPulse/glyphPulse animations, spent overlay ✓ | Visual feedback on action card play |
+| 2026-03-08 | Repo: src/components/Game/ | Modified ActionDrawer.tsx — playingCardId prop, passes playing state to cards | Drawer wiring for card pulse state |
+| 2026-03-08 | Repo: src/components/Game/hooks/ | Created useInterventionAudio.ts — Web Audio API synthesis with sphere-colored pitch + detection overlay | Audio feedback hook for interventions |
+| 2026-03-08 | Repo: src/components/Game/hooks/ | Modified useAgentInteraction.ts — playCastSound call, consequence message in narrative events | Hook wiring for audio + effects |
+| 2026-03-08 | Repo: src/components/Game/ | Modified GameView.tsx — playingCardId prop to ActionDrawer | GameView wiring for card pulse |
+| 2026-03-08 | Repo: src/components/Game/ | Modified DebugPanel.tsx — InterventionEffectDetail renderer for intervention_effect traces | Debug panel trace visualization |
+| 2026-03-08 | Repo: tests | Created 7 test files: interventionEffects.test.ts (16), intervention-feedback-content.test.ts (16), agentSelection-divine.test.ts (3), orchestrator-divine.test.ts (6), decayCurve.test.ts (7), DebugPanel-intervention.test.tsx (7), interventionEffects-integration.test.ts (10) — 92 new tests | Full intervention effects test coverage |
+| 2026-03-08 | CLAUDE.md | Updated project status (Intervention Effects complete), engine stats, changelog | Intervention effects documentation |
+| 2026-03-08 | Repo: src/engine/ | Created decayCurve.ts, agendaGenerator.ts, ascendantFeedback.ts — 3 new engine modules | Action Narrative System: decay math, agenda generation, ascendant feedback |
+| 2026-03-08 | Repo: src/data/ | Created agenda-content.ts (40 templates), agenda-consequence-templates.ts (240 templates) — 2 new content packages | Action Narrative System: agenda + consequence content |
+| 2026-03-08 | Repo: src/components/Game/ | Created AgendaPicker.tsx, modified NarrativeLog.tsx (intervention beats), modified GameView.tsx (overlay wiring) | Action Narrative System: UI components |
+| 2026-03-08 | Repo: src/components/Game/hooks/ | Modified useAgentInteraction.ts — agenda flow, ascendant feedback, intervention beat flag | Action Narrative System: hook wiring |
+| 2026-03-08 | Repo: tests | Created 8 test files: decayCurve.test.ts (7), agendaGenerator.test.ts (12), ascendantFeedback.test.ts (5), agenda-content.test.ts (8), agenda-consequence-templates.test.ts (10), AgendaPicker.test.tsx (8), NarrativeLog.test.tsx (+2), actionNarrative-integration.test.ts (4) — 63 new tests | Action Narrative System: full test coverage |
+| 2026-03-08 | Obsidian: Systems/ | Created Action Narrative System.md — agenda selection, decay curves, consequence prose, ascendant feedback, NarrativeLog integration | Action Narrative System: vault documentation |
+| 2026-03-08 | Obsidian: Index.md | Added Action Narrative Systems section with link to Action Narrative System | Action Narrative System: vault index |
+| 2026-03-08 | CLAUDE.md | Updated project status (Action Narrative System complete), engine stats, changelog | Action Narrative System documentation |
+| 2026-03-09 | Repo: Docs/ | Created ui-patterns.md — 7 sections: zoom-to-location eye icon, progressive disclosure tiers, overlay stack, panel styling, accessibility baseline, performance conventions | Frontend conventions need a dedicated doc, not STYLE.md |
+| 2026-03-09 | CLAUDE.md | Added UI patterns as 4th documentation layer, added to Key Links | ui-patterns.md discoverable by agents |
+| 2026-03-09 | Repo: src/types/ | Created coastline.ts — Point2D, ContourLoop, CoastlineData, CoastlineConfig, COASTLINE_DEFAULTS | Coastline type foundation |
+| 2026-03-09 | Repo: src/lib/ | Created simplexNoise.ts — seeded 2D simplex noise port for deterministic displacement | Coastline noise generation |
+| 2026-03-09 | Repo: src/engine/ | Created coastline.ts (391 lines) — isWaterTerrain, buildScalarField (quartic falloff), extractContours (marching squares 16-case), chainSegmentsIntoLoops, chaikinSmooth, displaceContour, computeCoastline, SVG path conversion | Full coastline rendering pipeline |
+| 2026-03-09 | Repo: src/components/HexMap/ | Created CoastlineOverlay.tsx, useCoastline.ts — memoized SVG overlay with shallows + land paths | Coastline React components |
+| 2026-03-09 | Repo: src/components/HexMap/ | Modified HexMap.tsx — seed prop, DEFAULT_COASTLINE_SEED, CoastlineOverlay rendered before hex tiles | HexMap coastline integration |
+| 2026-03-09 | Repo: src/components/HexMap/ | Modified HexTile.tsx — visible water hexes transparent (no terrain image), remembered water dimmed 0.4 opacity, unexplored unchanged | Water hex transparency for organic coastlines |
+| 2026-03-09 | Repo: src/components/Game/ | Modified GameView.tsx — seed={gameState.seed} wired to HexMap | Deterministic coastline from world seed |
+| 2026-03-09 | Repo: Docs/plans/ | Created 2026-03-09-coastline-integration.md (1858 lines) — 13-task TDD implementation plan | Coastline integration design + implementation plan |
+| 2026-03-09 | CLAUDE.md | Updated project status (Coastline Integration complete), engine stats, changelog | Coastline integration documentation |
+| 2026-03-09 | Repo: Docs/plans/ | Created 2026-03-09-encounter-system-design.md, 2026-03-09-encounter-system-implementation.md | Design doc + 9-task TDD implementation plan for encounter system |
+| 2026-03-09 | Repo: src/types/encounter.ts | Renamed ordeal→encounter throughout — EncounterType, EncounterTemplate, EncounterProgress, ENCOUNTER_* constants, THREAT_RATING_COLORS extraction | Encounter system Task 1: type rename |
+| 2026-03-09 | Repo: src/engine/ | Created encounter.ts (encounter orchestrator), encounterCandidates.ts (candidate generation + type→motivation mapping) | Encounter system Tasks 2+4: core engine modules |
+| 2026-03-09 | Repo: ~30 consumer files | Renamed ordeal→encounter across imports, types, variables, function names in orchestrator, agentActions, narrative, worldSeed, etc. | Encounter system Task 3: codebase-wide rename |
+| 2026-03-09 | Repo: src/data/ | Created encounter-content.ts (3,844 lines) — 64 encounter templates across all 20 LocationSubtypes, CULTURAL_ENCOUNTER_OVERLAYS, ENCOUNTER_INSPECTION_VIGNETTES, ENCOUNTER_DIFFICULTY_TIERS, ENCOUNTER_SYSTEM_CONNECTIONS | Encounter system Task 6: content package |
+| 2026-03-09 | Repo: src/engine/ | Modified orchestrator.ts — phaseEncounterProgression wired with real encounter selection pipeline using generateEncounterCandidates + personality-weighted scoring | Encounter system Task 5: orchestrator wiring |
+| 2026-03-09 | Repo: src/components/Game/ | Created EncounterLog.tsx (~129 lines) — active encounter progress with step dots, narrative, threat badge, visual states | Encounter system Task 7: encounter log component |
+| 2026-03-09 | Repo: src/components/Game/ | Modified LocationView.tsx — active + available encounter sections with EncounterLog integration | Encounter system Task 7: location view encounter UI |
+| 2026-03-09 | Repo: src/engine/__tests__/ | Created encounter-system-integration.test.ts (12 tests) — full lifecycle, 20 LocationSubtype coverage, 10 EncounterType coverage, personality influence, threat filtering, divine influence, progress tracking, encounter progression, completion counters, trace verification | Encounter system Task 8: integration tests |
+| 2026-03-09 | Repo: src/engine/ | Modified agentLifecycle.ts — fixed non-existent graph method calls (getAllOutgoingEdges→getAllEdgesForNode) | Encounter system: bug fix discovered during integration testing |
+| 2026-03-09 | CLAUDE.md | Updated project status (Encounter System complete), engine stats, content stats, changelog | Encounter system Task 9: documentation |
+| 2026-03-09 | Repo: Docs/plans/ | Created 2026-03-09-graph-native-modifier-system-design.md, 2026-03-09-graph-native-modifier-system-implementation.md | Design doc (9 sections) + 8-task TDD implementation plan for graph-native modifier system |
+| 2026-03-09 | Repo: src/types/ | Created modifiers.ts — ModifierSource, ATTRIBUTE_FLOORS, DEFAULT_FLOOR, ModifierResolutionTrace | Modifier system type foundation |
+| 2026-03-09 | Repo: src/engine/ | Created modifiers.ts — collectModifiers (outgoing+incoming edge walk + terrain lookup), getModifiedValue (sum+clamp+trace) | Core modifier engine |
+| 2026-03-09 | Repo: src/data/ | Created terrain-modifiers.ts — TERRAIN_MODIFIERS (mountains +2, hills +1, dense_forest -1 LOS), getTerrainModifiers lookup | Terrain modifier content data |
+| 2026-03-09 | Repo: src/engine/ | Modified visibility.ts — collectLOSSources uses getModifiedValue for avatar + agent ranges | Visibility integration with modifier system |
+| 2026-03-09 | Repo: src/components/Game/ | Modified DebugPanel.tsx — ModifierResolutionDetail renderer for modifier_resolution traces | Debug panel modifier trace visualization |
+| 2026-03-09 | Repo: src/data/ | Created trait-modifiers.ts — 5 LOS traits (Eagle-Eyed, Night Blind, Far Sight, Fog-Touched, Mountain-Born), getLOSTraitModifiers lookup | LOS-modifying trait content data |
+| 2026-03-09 | Repo: src/engine/__tests__/ | Created modifier-system-integration.test.ts — full pipeline, floor clamping, trace emission, multi-source stacking (4 tests) | Modifier system integration tests |
+| 2026-03-09 | CLAUDE.md | Updated project status (Graph-Native Modifier System complete), engine stats, content stats, changelog | Modifier system documentation |
+| 2026-03-10 | Repo: src/types/ | Created prose.ts — ProseLayer, ProseCategory, ProseMode, ProseResolver, ResolverRegistry types + 4 tunable constants | Prose generator Task 1: type foundation |
+| 2026-03-10 | Repo: src/engine/ | Created proseComposer.ts (45 lines) — composeProse (sort→cap→join), composeSummary (≤200 chars) | Prose generator Task 2: composer engine |
+| 2026-03-10 | Repo: src/data/ | Created prose-layer-content.ts (~413 lines) — 8 content tables: BIOME_PROSE (23), CULTURE_LOCATION_PROSE (4), SPHERE_LOCATION_PROSE (8), SUBTYPE_ESTABLISHING_PROSE (20), FACTION_CONTROL_PROSE (6), ARCHETYPE_PROSE (19), DISPOSITION_PROSE (5), POPULATION_PROSE_TEMPLATES (6) | Prose generator Task 3: content package |
+| 2026-03-10 | Repo: src/engine/ | Created proseResolvers.ts (~455 lines) — mulberry32 PRNG, 6 location resolvers (subtype/biome/culture/sphere/faction/population), 4 agent resolvers (archetype/culture/faction/disposition) | Prose generator Tasks 4+5: all 10 resolvers |
+| 2026-03-10 | Repo: src/engine/ | Created proseGenerator.ts (104 lines) — generateEntityProse public API with resolver registry, actor-type gating, per-entity seeded PRNG, narrative_generation trace emission | Prose generator Task 6: public API |
+| 2026-03-10 | Repo: src/components/Game/ | Modified LocationView.tsx — optional graph/seed props, useMemo prose generation ('full' mode), paragraph rendering | Prose generator Task 8: location prose UI |
+| 2026-03-10 | Repo: src/components/Game/ | Modified AgentInfoCard.tsx — optional graph/seed props, useMemo prose generation ('summary' mode), knowledge-level gating (Recognised+) | Prose generator Task 8: agent prose UI |
+| 2026-03-10 | Repo: src/components/Game/ | Modified GameView.tsx — wired graph={gameState.graph} seed={gameState.seed} to LocationView + AgentInfoCard | Prose generator Task 8: GameView wiring |
+| 2026-03-10 | Repo: tests | Created 7 test files: proseComposer.test.ts (7), proseResolvers.test.ts (22), proseResolvers-agent.test.ts (21), proseGenerator.test.ts (7), proseGenerator-integration.test.ts (5), proseGenerator-ui-integration.test.ts (5), prose-layer-content.test.ts (34) — 101 new tests | Prose generator: full test coverage |
+| 2026-03-10 | Repo: Docs/plans/ | Created 2026-03-09-prose-generator-framework-design.md, 2026-03-09-prose-generator-framework-implementation.md | Design doc + 9-task TDD implementation plan |
+| 2026-03-10 | CLAUDE.md | Updated project status (Prose Generator Framework complete), engine stats, content stats, changelog | Prose generator Task 9: documentation |
+| 2026-03-10 | Repo: Docs/plans/ | Created 2026-03-10-crud-action-unification-design.md | Design decision doc: Three Connective Pieces (GraphOp Executor, Template Enrichment, ActionInProgress Lifecycle) |
+| 2026-03-10 | Repo: Docs/plans/ | Created 2026-03-10-crud-action-unification-implementation.md | 10-task TDD implementation plan for CRUD action unification |
+| 2026-03-10 | Obsidian: Systems/ | Created CRUD Action Unification.md; updated Index.md with Action Execution Systems section | New system note for unified action execution |
+| 2026-03-10 | Notion: Backlog | Added CRUD Action Unification section with 10 tasks | Current implementation priority |
+

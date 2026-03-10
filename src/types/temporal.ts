@@ -16,6 +16,9 @@ export interface ActionInProgress {
   startTick: number;
   duration: number;             // total ticks to complete
   progress: number;             // current progress (0 to duration)
+  encounterId?: string;         // if this action spawned an encounter
+  resolved?: boolean;           // true once resolution ran
+  outcome?: string;             // outcome from resolution system (success|failure|etc)
 }
 
 /** AP budgets by actor type (from design doc) */

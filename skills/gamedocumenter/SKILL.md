@@ -1,6 +1,6 @@
 ---
 name: gamedocumenter
-description: Use after completing any implementation work on The Fantasy World Simulator to update all three documentation layers (CLAUDE.md changelog, Obsidian vault system notes, Notion backlog). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". This skill encodes critical workarounds for Obsidian MCP API quirks and Notion editing patterns that will save you from wasting time on failed API calls.
+description: Use after completing any implementation work on The Fantasy World Simulator to update all three documentation layers (Docs/changelog.md + Docs/project-status.md, Obsidian vault system notes, Notion backlog). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". This skill encodes critical workarounds for Obsidian MCP API quirks and Notion editing patterns that will save you from wasting time on failed API calls.
 ---
 
 # Game Documenter
@@ -10,7 +10,7 @@ description: Use after completing any implementation work on The Fantasy World S
 A rigid post-implementation checklist for updating The Fantasy World Simulator's three documentation layers. Every step includes the exact tool calls, known API workarounds, and expected output format. Follow this start-to-finish after completing implementation work — no steps are optional.
 
 The three layers serve different purposes and must stay in sync:
-- **CLAUDE.md** (in repo) — changelog + project status. Says "what changed and where we are."
+- **`Docs/changelog.md`** + **`Docs/project-status.md`** (in repo) — changelog + project status. Says "what changed and where we are." CLAUDE.md has compact pointers to these files.
 - **Obsidian vault** (via MCP) — system specs and graph relationships. Says "what the system IS."
 - **Notion backlog** — sprint progress and task tracking. Says "what to build next."
 
@@ -27,9 +27,9 @@ Run the lightweight subset (Steps 1-2 only) for:
 
 ## The Checklist
 
-### Step 1: Update CLAUDE.md Changelog
+### Step 1: Update Changelog
 
-**What:** Append rows to the `### Recent Changes` table at the bottom of the Change Audit Trail section.
+**What:** Append rows to the table in `Docs/changelog.md`.
 
 **Format:** Each row is `| date | where | what changed | why |`
 
@@ -46,17 +46,22 @@ Run the lightweight subset (Steps 1-2 only) for:
 | 2026-03-06 | Repo: src/components/Game/ | Created AvatarHUD.tsx — top-left panel with Move/Wheel/Scry buttons (9 tests) | Phase 6F Task 7: avatar HUD |
 ```
 
-**Tool:** Use `Edit` tool on the repo file at `CLAUDE.md`. This is a normal filesystem file — no API quirks.
+**Tool:** Use `Edit` tool on `Docs/changelog.md`. This is a normal filesystem file — no API quirks.
 
-### Step 2: Update CLAUDE.md Project Status
+### Step 2: Update Project Status
 
-**What:** Update the `## Project Status` section in CLAUDE.md.
+**What:** Update `Docs/project-status.md` (full phase-by-phase status) AND the compact summary in `CLAUDE.md` `## Project Status`.
 
-**Changes needed:**
+**Changes needed in `Docs/project-status.md`:**
 1. Add a new line for the completed phase/task with ✅ status
 2. Update the "Current phase" line to reflect what's next
 3. Update "Engine stats" (module count, line count, test count)
 4. Update "Content stats" if content packages changed
+
+**Changes needed in `CLAUDE.md` `## Project Status`:**
+1. Update the current in-progress bullet to reflect the new phase/task
+2. Update the "Current phase" line
+3. Update "Engine stats" and "Content stats" summary lines
 
 **How to get accurate stats:**
 ```bash
@@ -196,7 +201,7 @@ N new tests across M test files. P commits.
 **What:** Stage and commit any repo-level documentation changes.
 
 ```bash
-git add CLAUDE.md
+git add CLAUDE.md Docs/changelog.md Docs/project-status.md
 git commit -m "docs: update project status for Phase 6X completion
 
 <brief summary of what was documented>
@@ -204,24 +209,24 @@ git commit -m "docs: update project status for Phase 6X completion
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 ```
 
-Only CLAUDE.md and files in `Docs/plans/` should be committed. Obsidian and Notion changes are made via their respective APIs.
+Only CLAUDE.md, `Docs/changelog.md`, `Docs/project-status.md`, and files in `Docs/plans/` should be committed. Obsidian and Notion changes are made via their respective APIs.
 
 ## Quick Reference: Tool → Purpose
 
 | Tool | Use For | Notes |
 |------|---------|-------|
-| `Edit` | CLAUDE.md changes | Normal filesystem file |
+| `Edit` | CLAUDE.md, Docs/changelog.md, Docs/project-status.md | Normal filesystem files |
 | `obsidian_get_file_contents` | Read vault notes | Via MCP, not filesystem |
 | `obsidian_append_content` | Create new notes / add content | ALWAYS works |
 | `obsidian_patch_content` | Edit existing note content | UNRELIABLE — use with caution, simple targets only |
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
 | `notion-fetch` | Read Notion page before editing | ALWAYS do this first |
 | `notion-update-page` | Edit Notion content | Use `replace_content` with `selection_with_ellipsis` + `new_str`. Old commands `replace_content_range`/`insert_content_after` no longer work |
-| `git commit` | Commit CLAUDE.md changes | Only repo files |
+| `git commit` | Commit doc changes | CLAUDE.md + Docs/changelog.md + Docs/project-status.md |
 
 ## Common Mistakes
 
-**Forgetting a layer.** The most common failure is updating CLAUDE.md but skipping Obsidian or Notion. The checklist exists to prevent this — follow all 6 steps.
+**Forgetting a layer.** The most common failure is updating the changelog but skipping Obsidian or Notion. The checklist exists to prevent this — follow all 6 steps.
 
 **Using `obsidian_patch_content` on Index.md headings.** This WILL fail because headings contain `*(added ...)` suffixes. Use `obsidian_append_content` instead.
 
