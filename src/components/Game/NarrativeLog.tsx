@@ -22,6 +22,14 @@ const TYPE_COLORS: Record<TickEvent['type'], string> = {
 export function NarrativeLog({ events }: NarrativeLogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const lastSeenCountRef = useRef(0);
+  const prevCountRef = useRef(events.length);
+
+  // Track new entries for animation
+  const newEntryCount = events.length - prevCountRef.current;
+
+  useEffect(() => {
+    prevCountRef.current = events.length;
+  }, [events.length]);
 
   // Update lastSeenCount when panel opens
   useEffect(() => {
@@ -139,17 +147,18 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
                 Awaiting the first whispers of fate...
               </div>
             ) : (
-              events.map((evt) => {
+              events.map((evt, i) => {
                 const color = TYPE_COLORS[evt.type] ?? '#78716c';
                 const dimmed = evt.significance < 0.5;
                 const isInterventionBeat = evt.isInterventionBeat === true;
                 const sphereColor = isInterventionBeat ? getSphereColor(evt.sphere ?? 'mind') : undefined;
+                const isNew = newEntryCount > 0 && i >= events.length - newEntryCount;
 
                 return (
                   <div
                     key={evt.id}
                     data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
-                    className={`flex gap-2 py-1 ${
+                    className={`flex gap-2 py-1 ${isNew ? 'anim-fade-up-enter' : ''} ${
                       isInterventionBeat
                         ? 'opacity-100 pl-2 border-l-[3px]'
                         : `${dimmed ? 'opacity-50' : 'opacity-90'}`
