@@ -1,0 +1,6 @@
+{
+  "archetype": "breach",
+  "description": "An outside force breaking through reality",
+  "stageNames": ["Strange Whispers", "Reality Cracks", "The Thinning", "Barriers Fail", "The Breach"],
+  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
+}
