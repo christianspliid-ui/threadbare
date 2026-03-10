@@ -120,20 +120,10 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Wind-carved stone forms alien shapes.',
   ],
   // Elevated + forested
-  forested_hills_evergreen: [
-    'Pine-clad hills roll into the distance.',
-    'Evergreen forests climb the hillsides.',
-    'Dark conifers blanket the rising ground.',
-  ],
-  forested_hills_deciduous: [
+  forested_hills: [
     'Wooded hills shelter hidden valleys.',
-    'Deciduous forest covers the undulating land.',
+    'Dense forest blankets the rising ground.',
     'Leafy canopies drape over rolling hills.',
-  ],
-  forested_hills_jungle: [
-    'Tropical forest clings to steep hillsides.',
-    'Jungle growth spills over the ridgelines.',
-    'Dense vegetation swallows the hilly terrain.',
   ],
   // Special
   great_home_trees: [

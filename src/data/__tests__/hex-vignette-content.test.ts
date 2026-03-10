@@ -19,7 +19,7 @@ const ALL_TERRAINS = [
   'temperate_forest','dense_forest','boreal_forest','jungle',
   'swamp','marsh',
   'hills','mountains','plateau','badlands',
-  'forested_hills_evergreen','forested_hills_deciduous','forested_hills_jungle',
+  'forested_hills',
   'great_home_trees','broken_lands',
   'desert','tundra','glacier','volcano',
 ] as const;
@@ -31,7 +31,7 @@ const COMPASS_DIRS = ['north','northeast','east','southeast','south','southwest'
 
 describe('hex-vignette-content', () => {
   describe('TERRAIN_OPENINGS', () => {
-    it('has entries for all 27 terrain types', () => {
+    it('has entries for all 25 terrain types', () => {
       for (const t of ALL_TERRAINS) {
         expect(TERRAIN_OPENINGS[t], `missing terrain: ${t}`).toBeDefined();
         expect(TERRAIN_OPENINGS[t].length).toBeGreaterThanOrEqual(2);

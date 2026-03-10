@@ -35,9 +35,7 @@ export const BIOME_COLORS: Record<TerrainType, string> = {
   badlands: '#3a2520',
 
   // Elevated + forested — dark olive-browns
-  forested_hills_evergreen: '#2a3520',
-  forested_hills_deciduous: '#2a3520',
-  forested_hills_jungle: '#2a3520',
+  forested_hills: '#2a3520',
 
   // Special
   great_home_trees: '#1a2a10',

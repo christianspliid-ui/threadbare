@@ -644,7 +644,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'library',
     name: 'Library',
-    biomes: ['hills', 'mountains', 'plateau', 'forested_hills_evergreen', 'forested_hills_deciduous'],
+    biomes: ['hills', 'mountains', 'plateau', 'forested_hills'],
     sphereAffinity: 'mind',
     flavorText: 'A repository of fragile scrolls and cracking vellum. Knowledge bleeds from margins as water damage spreads through forgotten chambers.',
     grantedByTags: ['mind', 'eye'],
@@ -671,7 +671,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'guild_hall',
     name: 'Guild Hall',
-    biomes: ['grassland', 'hills', 'plateau', 'temperate_forest', 'forested_hills_deciduous'],
+    biomes: ['grassland', 'hills', 'plateau', 'temperate_forest', 'forested_hills'],
     sphereAffinity: 'matter',
     flavorText: 'A craftsguild stronghold where skill once conferred status. Now its benches hold dust instead of artisans, and guild secrets guard only emptiness.',
     grantedByTags: ['matter', 'gold'],
@@ -824,7 +824,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'burnt_grove',
     name: 'Burnt Grove',
-    biomes: ['temperate_forest', 'dense_forest', 'boreal_forest', 'forested_hills_evergreen', 'forested_hills_deciduous'],
+    biomes: ['temperate_forest', 'dense_forest', 'boreal_forest', 'forested_hills'],
     sphereAffinity: 'entropy',
     flavorText: 'A forest consumed by ancient fire, where blackened trunks stand like tombstones. New growth struggles through ash, a slow resurrection unwanted.',
     grantedByTags: ['entropy', 'life'],
@@ -833,7 +833,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
   {
     id: 'rope_bridge',
     name: 'Rope Bridge',
-    biomes: ['mountains', 'hills', 'jungle', 'forested_hills_jungle', 'badlands'],
+    biomes: ['mountains', 'hills', 'jungle', 'forested_hills', 'badlands'],
     sphereAffinity: 'energy',
     flavorText: 'A crossing hung high across chasm or gorge, woven from fiber grown fragile with age. It sways in wind that no longer carries merchants or refugees.',
     grantedByTags: ['energy', 'force'],
@@ -878,9 +878,7 @@ export const SUB_LOCATION_TEMPLATES: SubLocationTemplate[] = [
 // - mountains (13): library, forge, temple, watchtower, observation, archive, cold_springs, rope_bridge, underground_passage, glacier
 // - plateau (10): bazaar, arena, library, watchtower, guild_hall, council_chamber, observation, standing_stones
 // - badlands (8): arena, forge, tomb, archive, glass_works, underground_passage, rope_bridge
-// - forested_hills_evergreen (3): library, guild_hall, cold_springs
-// - forested_hills_deciduous (3): library, guild_hall, council_chamber
-// - forested_hills_jungle (1): rope_bridge
+// - forested_hills (5): library, guild_hall, cold_springs, council_chamber, rope_bridge
 // - desert (3): tomb, observation, glass_works
 // - tundra (4): shrine, observation, cold_springs
 // - glacier (3): underground_passage, cold_springs
@@ -975,9 +973,7 @@ export const CULTURE_NAME_FRAGMENTS: {
     plateau: ['Mesa', 'High Table', 'Flatrock', 'Skyfield'],
     badlands: ['Badlands', 'Gulch', 'Dry Canyons', 'Cracked Earth'],
     farmland: ['Furrows', 'Tilth', 'Harvest-Lands', 'Homesteads'],
-    forested_hills_evergreen: ['Pine Ridges', 'Green Heights', 'Evergreen Slopes', 'Needle Hills'],
-    forested_hills_deciduous: ['Leaf Hollows', 'Autumn Ridges', 'Rustling Heights', 'Dappled Hills'],
-    forested_hills_jungle: ['Vine Ridges', 'Green Crests', 'Canopy Hills', 'Humid Heights'],
+    forested_hills: ['Green Heights', 'Wooded Ridges', 'Forest Slopes', 'Dappled Hills'],
   },
   patterns: [
     'The {foundation} {sphere} of the {biome}',

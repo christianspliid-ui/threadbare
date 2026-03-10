@@ -14,8 +14,8 @@ describe('BIOME_COLORS', () => {
     });
   });
 
-  it('has colors for all 27 biome types', () => {
-    expect(Object.keys(BIOME_COLORS).length).toBe(27);
+  it('has colors for all 25 biome types', () => {
+    expect(Object.keys(BIOME_COLORS).length).toBe(25);
   });
 
   it('ocean has a dark blue color', () => {

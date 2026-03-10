@@ -510,7 +510,7 @@ describe('culture-content', () => {
         'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
         'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
-        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'forested_hills',
         'desert', 'tundra', 'glacier', 'volcano',
         'broken_lands', 'great_home_trees',
       ]);
@@ -536,7 +536,7 @@ describe('culture-content', () => {
         'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
         'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
-        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'forested_hills',
         'desert', 'tundra', 'glacier', 'volcano', 'broken_lands',
       ];
 
@@ -563,7 +563,7 @@ describe('culture-content', () => {
         'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
         'swamp', 'marsh',
         'hills', 'mountains', 'plateau', 'badlands',
-        'forested_hills_evergreen', 'forested_hills_deciduous', 'forested_hills_jungle',
+        'forested_hills',
         'desert', 'tundra', 'glacier', 'volcano', 'broken_lands',
       ];
 

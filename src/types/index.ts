@@ -40,7 +40,7 @@ export type TerrainType =
   // Elevated
   | 'hills' | 'mountains' | 'plateau' | 'badlands'
   // Elevated + forested
-  | 'forested_hills_evergreen' | 'forested_hills_deciduous' | 'forested_hills_jungle'
+  | 'forested_hills'
   // Special
   | 'great_home_trees' | 'broken_lands'
   // Extreme

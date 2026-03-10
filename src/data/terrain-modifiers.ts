@@ -12,14 +12,12 @@ export const TERRAIN_MODIFIERS: Partial<Record<TerrainType, Record<string, numbe
   dense_forest:               { los_range: -1 },
   jungle:                     { los_range: -1 },
   great_home_trees:           { los_range: -1 },
-  forested_hills_jungle:      { los_range: -1 },
-
   // Elevation grants vision
   mountains:                  { los_range: 2 },
   hills:                      { los_range: 1 },
   plateau:                    { los_range: 1 },
-  // Note: forested_hills_evergreen and forested_hills_deciduous intentionally
-  // omitted — elevation (+1) and forest cover (-1) cancel to net zero.
+  // Note: forested_hills intentionally omitted —
+  // elevation (+1) and forest cover (-1) cancel to net zero.
 
   // Fog/mist blocks vision
   swamp:                      { los_range: -1 },
