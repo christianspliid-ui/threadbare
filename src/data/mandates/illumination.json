@@ -1,0 +1,61 @@
+{
+  "id": "mandate.illumination",
+  "type": "sphere_dominance",
+  "name": "Illumination",
+  "description": "Energy saturates the realm. Blaze with divine power.",
+  "targetSphere": "energy",
+  "sphereAffinities": ["energy"],
+  "stages": [
+    {
+      "stage": "setup",
+      "description": "Energy reaches 50% influence in at least 1 region.",
+      "conditions": [
+        {
+          "type": "sphere_weight",
+          "description": "Energy sphere influence at 0.5+ in 1+ region",
+          "params": {
+            "sphere": "energy",
+            "minWeight": 0.5,
+            "minRegions": 1
+          }
+        }
+      ]
+    },
+    {
+      "stage": "escalation",
+      "description": "Energy reaches 60% influence in at least 2 regions.",
+      "conditions": [
+        {
+          "type": "sphere_weight",
+          "description": "Energy sphere influence at 0.6+ in 2+ regions",
+          "params": {
+            "sphere": "energy",
+            "minWeight": 0.6,
+            "minRegions": 2
+          }
+        }
+      ]
+    },
+    {
+      "stage": "culmination",
+      "description": "Energy reaches 70% influence in at least 4 regions. The realm burns bright.",
+      "conditions": [
+        {
+          "type": "sphere_weight",
+          "description": "Energy sphere influence at 0.7+ in 4+ regions",
+          "params": {
+            "sphere": "energy",
+            "minWeight": 0.7,
+            "minRegions": 4
+          }
+        }
+      ]
+    }
+  ],
+  "prose": {
+    "setup_to_escalation": "One region is saturated in energy. Light blazes where shadow held dominion. Power radiates outward in waves of transformation.",
+    "escalation_to_culmination": "Two territories burn bright with divine power. Energy courses through their bones. The realm begins to remember what radiance means.",
+    "completed": "Four regions blaze with the force of pure energy. The world is illuminated end to end. Your light has become the only truth. Darkness yields.",
+    "failed": "The radiance dims and fails. Shadows reclaim their territory. Your light was not steady enough to rewrite the sky."
+  }
+}

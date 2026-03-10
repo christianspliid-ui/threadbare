@@ -1,0 +1,57 @@
+{
+  "id": "mandate.the_gathering",
+  "type": "simulation_achievable",
+  "name": "The Gathering",
+  "description": "Factions grow in strength and numbers. Loyalty draws the faithful.",
+  "sphereAffinities": ["force", "spirit"],
+  "stages": [
+    {
+      "stage": "setup",
+      "description": "3 faction memberships.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "3+ member_of edges",
+          "params": {
+            "edgeType": "member_of",
+            "minCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "stage": "escalation",
+      "description": "5 faction memberships.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "5+ member_of edges",
+          "params": {
+            "edgeType": "member_of",
+            "minCount": 5
+          }
+        }
+      ]
+    },
+    {
+      "stage": "culmination",
+      "description": "8 faction memberships.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "8+ member_of edges",
+          "params": {
+            "edgeType": "member_of",
+            "minCount": 8
+          }
+        }
+      ]
+    }
+  ],
+  "prose": {
+    "setup_to_escalation": "Three mortals answer the call to faction. Loyalty takes root in soil made fertile by vision. The first followers gather.",
+    "escalation_to_culmination": "Five souls now wear the colors of allegiance. The factions swell with strength. Momentum builds—soon it will be unstoppable.",
+    "completed": "Eight faithful stand pledged to faction and vision. The Gathering is complete. The movement has become a force of nature.",
+    "failed": "The factions remain hollow. Mortals will not commit. Unity cannot be imposed—it must be earned through meaning."
+  }
+}
