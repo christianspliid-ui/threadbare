@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { MandateTracker } from '../MandateTracker';
 import type { MandateDefinition, MandateState } from '../../../types/mandate';
 
@@ -86,7 +86,8 @@ describe('MandateTracker', () => {
     expect(pips).toHaveLength(3);
   });
 
-  it('toggles expanded popover on click', () => {
+  it('toggles expanded popover on click', async () => {
+    vi.useFakeTimers();
     render(
       <MandateTracker
         definition={baseMandateDefinition}
@@ -102,7 +103,12 @@ describe('MandateTracker', () => {
 
     // Click the mandate name again to collapse
     fireEvent.click(screen.getByText('Node Dominance'));
+    // Wait for AnimateMount exit animation to complete (default 200ms)
+    await act(async () => {
+      vi.advanceTimersByTime(250);
+    });
     expect(screen.queryByText('Establish control over the world-graph')).not.toBeInTheDocument();
+    vi.useRealTimers();
   });
 
   it('shows "FULFILLED" when completed', () => {
@@ -207,7 +213,8 @@ describe('MandateTracker', () => {
     expect(popover?.textContent).toMatch('✓');
   });
 
-  it('closes popover when clicking backdrop', () => {
+  it('closes popover when clicking backdrop', async () => {
+    vi.useFakeTimers();
     const { container } = render(
       <MandateTracker
         definition={baseMandateDefinition}
@@ -222,6 +229,11 @@ describe('MandateTracker', () => {
     if (backdrop) {
       fireEvent.click(backdrop);
     }
+    // Wait for AnimateMount exit animation to complete (default 200ms)
+    await act(async () => {
+      vi.advanceTimersByTime(250);
+    });
     expect(screen.queryByText('Establish control over the world-graph')).not.toBeInTheDocument();
+    vi.useRealTimers();
   });
 });
