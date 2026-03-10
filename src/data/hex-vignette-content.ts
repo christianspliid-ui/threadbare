@@ -45,6 +45,26 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Flowing water carves its path onward.',
     'The river bends and widens here.',
   ],
+  deep_ocean: [
+    'Fathomless depths press upward with cold weight.',
+    'The deep ocean offers nothing but darkness below.',
+    'Abyssal currents stir in waters too deep to fathom.',
+  ],
+  tropical_ocean: [
+    'Warm currents drift through sun-bright waters.',
+    'The tropical sea shimmers with deceptive calm.',
+    'Heat-heavy waves roll across the open tropics.',
+  ],
+  coast: [
+    'The coast breaks where land meets the relentless sea.',
+    'Rocky shoreline endures the tide\'s endless argument.',
+    'Salt spray and wind scour the coastal edge.',
+  ],
+  reef: [
+    'Coral ridges lurk just beneath the surface.',
+    'The reef sprawls in hidden architecture below the waves.',
+    'Shallow waters hide a labyrinth of living stone.',
+  ],
   // Lowlands
   grassland: [
     'Open grasslands roll toward the horizon.',
@@ -65,6 +85,11 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Wind-swept steppe extends in every direction.',
     'Short grass covers the dry plain.',
     'The open steppe offers no shelter.',
+  ],
+  floodplain: [
+    'Rich silt marks where waters rise and fall.',
+    'The floodplain lies low, shaped by seasonal drowning.',
+    'Fertile mud stretches flat beneath an uncertain sky.',
   ],
   // Forest
   temperate_forest: [
@@ -87,6 +112,26 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Vines and broadleaves fight for light.',
     'The jungle canopy blocks out the sky.',
   ],
+  tropical_forest: [
+    'Tropical growth presses in from every direction.',
+    'The forest drips with heat and green abundance.',
+    'Dense tropical canopy admits no direct light.',
+  ],
+  evergreen_forest: [
+    'Needled branches hold their green through every season.',
+    'The evergreen forest stands in year-round shadow.',
+    'Pine and spruce crowd together in dark permanence.',
+  ],
+  light_forest: [
+    'Scattered trees admit generous light between them.',
+    'The woodland is open and airy, almost welcoming.',
+    'Light forest covers the ground in dappled shade.',
+  ],
+  dead_forest: [
+    'Bare trunks stand like monuments to what once lived.',
+    'The forest died standing — grey and skeletal.',
+    'Dead wood stretches in every direction, stripped of life.',
+  ],
   // Wet
   swamp: [
     'Murky water pools beneath twisted roots.',
@@ -97,6 +142,11 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Peat moss covers the waterlogged ground.',
     'The bog stretches, treacherous and silent.',
     'Stagnant water hides beneath a skin of moss.',
+  ],
+  moor_bog: [
+    'Peat and heather stretch across waterlogged moor.',
+    'The bog hides its depths beneath false ground.',
+    'Wind-swept moorland offers nothing but endurance.',
   ],
   // Elevated
   hills: [
@@ -119,6 +169,16 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'The badlands crack and crumble underfoot.',
     'Wind-carved stone forms alien shapes.',
   ],
+  high_mountains: [
+    'The highest peaks vanish into perpetual cloud.',
+    'Sheer rock faces rise beyond where anything grows.',
+    'Thin air and killing cold rule the high mountains.',
+  ],
+  mountain_pass: [
+    'A narrow gap threads between towering walls of stone.',
+    'The pass is the only way through — and barely that.',
+    'Wind funnels through the mountain pass with force.',
+  ],
   // Elevated + forested
   forested_hills: [
     'Wooded hills shelter hidden valleys.',
@@ -135,6 +195,11 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'The earth itself is shattered and wrong.',
     'Reality fractures across the broken lands.',
     'Twisted terrain defies natural order.',
+  ],
+  oasis: [
+    'A pocket of green defies the surrounding waste.',
+    'Water surfaces here against all expectation.',
+    'The oasis is a promise the desert rarely keeps.',
   ],
   // Extreme
   desert: [
@@ -156,6 +221,26 @@ export const TERRAIN_OPENINGS: Record<TerrainType, string[]> = {
     'Volcanic rock radiates lingering heat.',
     'The ground smokes near vents and fissures.',
     'Lava once flowed here — the scars remain.',
+  ],
+  rocky_desert: [
+    'Stone and gravel stretch without mercy or shade.',
+    'The rocky desert bakes under an indifferent sun.',
+    'Nothing soft survives on this sunbaked pavement.',
+  ],
+  sand_dunes: [
+    'Dunes shift and reform in the wind\'s image.',
+    'Sand rises in waves that mock the ocean\'s patience.',
+    'The dunes erase all paths within hours.',
+  ],
+  arctic: [
+    'Ice and darkness share dominion over this place.',
+    'The arctic waste admits no compromise with warmth.',
+    'Frozen silence stretches to the edge of the world.',
+  ],
+  snow_fields: [
+    'Unbroken snow blankets the land in white silence.',
+    'The snow fields reflect a sky that offers no comfort.',
+    'Drifts of snow bury everything that does not move.',
   ],
 };
 

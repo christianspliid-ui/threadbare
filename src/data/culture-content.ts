@@ -305,6 +305,128 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['basalt', 'volcanic glass', 'pumice', 'sulfur', 'obsidian blades'],
     metaphorPalette: ['the mountain\'s anger', 'fire that builds as it destroys', 'the forge of the earth'],
   },
+  // New terrain types
+  {
+    terrain: 'deep_ocean',
+    survivalTraitKeywords: ['pressure-endurance', 'bioluminescence-reading', 'depth-navigation', 'cold-tolerance', 'current-mapping'],
+    materialCulture: ['abyssal-shell', 'pressure-glass', 'deep-coral', 'whale-fall-bone', 'vent-mineral', 'brine-crystal'],
+    metaphorPalette: ['crushing depth', 'lightless truth', 'pressure shapes', 'abyssal patience', 'surface forgotten'],
+  },
+  {
+    terrain: 'tropical_ocean',
+    survivalTraitKeywords: ['reef-navigation', 'storm-prediction', 'warm-current-riding', 'pearl-diving', 'tide-reading'],
+    materialCulture: ['pearl', 'tropical-wood', 'palm-fiber', 'bright-coral', 'turtle-shell', 'sea-glass'],
+    metaphorPalette: ['warm deception', 'beautiful danger', 'current beneath calm', 'colour hiding teeth', 'sun-bright cruelty'],
+  },
+  {
+    terrain: 'coast',
+    survivalTraitKeywords: ['tidal-awareness', 'salt-foraging', 'storm-shelter', 'cliff-scaling', 'wave-reading'],
+    materialCulture: ['driftwood', 'sea-salt', 'beach-stone', 'rope-grass', 'bleached-bone', 'tide-iron'],
+    metaphorPalette: ['edge of certainty', 'tide-marked patience', 'salt-worn endurance', 'between worlds', 'erosion as truth'],
+  },
+  {
+    terrain: 'reef',
+    survivalTraitKeywords: ['shallow-navigation', 'coral-reading', 'spearfishing', 'current-sense', 'hull-patching'],
+    materialCulture: ['coral-fragment', 'reef-stone', 'shell-blade', 'sea-sponge', 'pearl-dust', 'fish-leather'],
+    metaphorPalette: ['hidden architecture', 'patience of accretion', 'sharp beneath beauty', 'colony over self', 'slow construction'],
+  },
+  {
+    terrain: 'floodplain',
+    survivalTraitKeywords: ['flood-prediction', 'silt-farming', 'levee-building', 'water-storage', 'seasonal-migration'],
+    materialCulture: ['river-clay', 'woven-reed', 'flood-timber', 'silt-brick', 'irrigation-stone', 'rush-mat'],
+    metaphorPalette: ['generous destruction', 'seasonal drowning', 'fertility from violence', 'the river remembers', 'borrowed ground'],
+  },
+  {
+    terrain: 'tropical_forest',
+    survivalTraitKeywords: ['canopy-climbing', 'venom-knowledge', 'humidity-endurance', 'fruit-foraging', 'insect-navigation'],
+    materialCulture: ['hardwood', 'vine-rope', 'broad-leaf', 'tree-resin', 'feather-work', 'bark-cloth'],
+    metaphorPalette: ['green machinery', 'rot and renewal', 'canopy politics', 'growth as violence', 'humidity of intent'],
+  },
+  {
+    terrain: 'evergreen_forest',
+    survivalTraitKeywords: ['needle-craft', 'resin-tapping', 'winter-foraging', 'snowshoe-travel', 'pine-medicine'],
+    materialCulture: ['pine-resin', 'needle-mat', 'spruce-bark', 'cone-seed', 'evergreen-timber', 'pitch-tar'],
+    metaphorPalette: ['year-round shadow', 'stubborn green', 'needle patience', 'resin-sealed memory', 'muffled permanence'],
+  },
+  {
+    terrain: 'light_forest',
+    survivalTraitKeywords: ['herb-gathering', 'game-tracking', 'sun-reading', 'path-finding', 'shelter-building'],
+    materialCulture: ['light-timber', 'wildflower', 'berry-leather', 'thin-bark', 'meadow-grass', 'sapling-pole'],
+    metaphorPalette: ['generous canopy', 'dappled truth', 'space between trees', 'almost welcoming', 'false safety'],
+  },
+  {
+    terrain: 'dead_forest',
+    survivalTraitKeywords: ['deadfall-awareness', 'fungus-knowledge', 'ash-reading', 'charcoal-craft', 'ghost-sense'],
+    materialCulture: ['charcoal', 'dead-wood', 'fungus', 'ash-powder', 'hollow-trunk', 'grey-bark'],
+    metaphorPalette: ['standing death', 'grey accusation', 'aftermath as landscape', 'silence of absence', 'testimony of loss'],
+  },
+  {
+    terrain: 'moor_bog',
+    survivalTraitKeywords: ['peat-cutting', 'safe-path-finding', 'bog-iron-smelting', 'weather-reading', 'heather-craft'],
+    materialCulture: ['peat', 'heather-bundle', 'bog-iron', 'moss-packing', 'wicker', 'turf-brick'],
+    metaphorPalette: ['false ground', 'slow drowning', 'preservation in darkness', 'the moor keeps', 'waterlogged memory'],
+  },
+  {
+    terrain: 'high_mountains',
+    survivalTraitKeywords: ['altitude-endurance', 'ice-climbing', 'thin-air-breathing', 'avalanche-sense', 'crevasse-reading'],
+    materialCulture: ['granite', 'ice-crystal', 'mountain-goat-hide', 'wind-stone', 'lichen-dye', 'peak-iron'],
+    metaphorPalette: ['above mercy', 'thin-air truth', 'stone indifference', 'killing height', 'permanence of peaks'],
+  },
+  {
+    terrain: 'mountain_pass',
+    survivalTraitKeywords: ['pass-navigation', 'wind-resistance', 'rockfall-awareness', 'altitude-crossing', 'supply-rationing'],
+    materialCulture: ['cairn-stone', 'pass-rope', 'wind-cloth', 'trail-marker', 'goat-leather', 'shelter-rock'],
+    metaphorPalette: ['reluctant compromise', 'narrow mercy', 'funneled force', 'the only way through', 'passage as wound'],
+  },
+  {
+    terrain: 'oasis',
+    survivalTraitKeywords: ['water-finding', 'shade-craft', 'date-farming', 'well-digging', 'sand-navigation'],
+    materialCulture: ['palm-wood', 'date-fruit', 'well-stone', 'shade-cloth', 'spring-water', 'oasis-clay'],
+    metaphorPalette: ['promise rarely kept', 'green wound', 'water table truth', 'generosity with limits', 'surrounded abundance'],
+  },
+  {
+    terrain: 'rocky_desert',
+    survivalTraitKeywords: ['heat-endurance', 'shade-finding', 'stone-shelter', 'dry-foraging', 'sun-navigation'],
+    materialCulture: ['desert-stone', 'heat-glass', 'cactus-fiber', 'sun-bleached-bone', 'sandstone', 'dry-clay'],
+    metaphorPalette: ['stone patience', 'baked indifference', 'erosion as artist', 'crack survival', 'heat-hammered truth'],
+  },
+  {
+    terrain: 'sand_dunes',
+    survivalTraitKeywords: ['dune-navigation', 'sand-swimming', 'wind-prediction', 'water-caching', 'star-navigation'],
+    materialCulture: ['sand-glass', 'dune-silk', 'wind-veil', 'sand-brick', 'buried-cache', 'sun-shade'],
+    metaphorPalette: ['shifting truth', 'path-erasing patience', 'landscape in motion', 'memory burial', 'wind-written law'],
+  },
+  {
+    terrain: 'arctic',
+    survivalTraitKeywords: ['ice-navigation', 'blubber-craft', 'darkness-endurance', 'snow-shelter', 'aurora-reading'],
+    materialCulture: ['ice-block', 'whale-blubber', 'seal-hide', 'bone-needle', 'snow-crystal', 'polar-fur'],
+    metaphorPalette: ['frozen indifference', 'darkness shared', 'ice as law', 'survival measured in hours', 'warmth as memory'],
+  },
+  {
+    terrain: 'snow_fields',
+    survivalTraitKeywords: ['snowshoe-travel', 'igloo-building', 'frost-bite-prevention', 'cache-location', 'white-out-navigation'],
+    materialCulture: ['packed-snow', 'ice-lens', 'fur-wrap', 'frozen-hide', 'snow-brick', 'drift-wood'],
+    metaphorPalette: ['white silence', 'burial without witness', 'muffled world', 'depth deception', 'erased distinction'],
+  },
+  // Gap terrains (referenced elsewhere but previously missing from BIOME_MODIFIERS)
+  {
+    terrain: 'forested_hills',
+    survivalTraitKeywords: ['hill-climbing', 'forest-foraging', 'valley-shelter', 'slope-farming', 'timber-craft'],
+    materialCulture: ['hill-timber', 'slope-stone', 'valley-clay', 'ridge-iron', 'canopy-leaf', 'root-fiber'],
+    metaphorPalette: ['sheltered ascent', 'hidden valleys', 'canopy over contour', 'green elevation', 'rooted rising'],
+  },
+  {
+    terrain: 'great_home_trees',
+    survivalTraitKeywords: ['canopy-dwelling', 'trunk-climbing', 'aerial-foraging', 'branch-building', 'root-navigation'],
+    materialCulture: ['great-bark', 'living-wood', 'canopy-silk', 'trunk-resin', 'root-stone', 'leaf-weave'],
+    metaphorPalette: ['monuments to life', 'vertical world', 'root memory', 'growth beyond scale', 'sheltered enormity'],
+  },
+  {
+    terrain: 'broken_lands',
+    survivalTraitKeywords: ['reality-sense', 'fracture-navigation', 'anomaly-avoidance', 'twisted-foraging', 'instability-endurance'],
+    materialCulture: ['reality-shard', 'twisted-stone', 'fracture-glass', 'anomaly-crystal', 'void-touched-metal', 'broken-earth'],
+    metaphorPalette: ['shattered order', 'defiance of nature', 'fracture as truth', 'wrongness made terrain', 'reality-wound'],
+  },
 ];
 
 // ─── Insider Beat Interface ───────────────────────────────────────

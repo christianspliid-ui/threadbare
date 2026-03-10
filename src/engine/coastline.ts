@@ -8,7 +8,7 @@ import { SimplexNoise } from '../lib/simplexNoise';
 
 // ─── Water terrain classification ─────────────────────────────────
 const WATER_TERRAINS: ReadonlySet<TerrainType> = new Set([
-  'ocean', 'coastal_shallows', 'lake', 'river',
+  'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
 ] as TerrainType[]);
 
 export function isWaterTerrain(terrain: TerrainType): boolean {

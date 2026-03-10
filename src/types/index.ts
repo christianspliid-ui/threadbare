@@ -27,24 +27,26 @@ export interface CubeCoord {
   s: number;
 }
 
-/** Naturalistic biome types (27 types) */
+/** Naturalistic biome types (42 types) */
 export type TerrainType =
   // Water
-  | 'ocean' | 'coastal_shallows' | 'lake' | 'river'
+  | 'ocean' | 'deep_ocean' | 'tropical_ocean' | 'coastal_shallows' | 'coast' | 'lake' | 'river' | 'reef'
   // Lowlands
-  | 'grassland' | 'farmland' | 'savanna' | 'steppe'
+  | 'grassland' | 'farmland' | 'savanna' | 'steppe' | 'floodplain'
   // Forest
   | 'temperate_forest' | 'dense_forest' | 'boreal_forest' | 'jungle'
+  | 'tropical_forest' | 'evergreen_forest' | 'light_forest' | 'dead_forest'
   // Wet
-  | 'swamp' | 'marsh'
+  | 'swamp' | 'marsh' | 'moor_bog'
   // Elevated
-  | 'hills' | 'mountains' | 'plateau' | 'badlands'
+  | 'hills' | 'mountains' | 'high_mountains' | 'plateau' | 'badlands' | 'mountain_pass'
   // Elevated + forested
   | 'forested_hills'
   // Special
-  | 'great_home_trees' | 'broken_lands'
+  | 'great_home_trees' | 'broken_lands' | 'oasis'
   // Extreme
-  | 'desert' | 'tundra' | 'glacier' | 'volcano';
+  | 'desert' | 'rocky_desert' | 'sand_dunes' | 'tundra' | 'glacier' | 'volcano'
+  | 'arctic' | 'snow_fields';
 
 /** Settlement/structure types for location overlays */
 export type LocationSubtype =

@@ -34,12 +34,16 @@ import { SPHERE_NAMES } from '../../types/index';
 import { REACH_DOMAINS } from '../../types/traits';
 
 const ALL_TERRAIN_TYPES = [
-  'ocean', 'coastal_shallows', 'lake', 'river',
-  'grassland', 'farmland', 'savanna', 'steppe',
+  'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
+  'grassland', 'farmland', 'savanna', 'steppe', 'floodplain',
   'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
-  'swamp', 'marsh',
-  'hills', 'mountains', 'plateau', 'badlands',
-  'desert', 'tundra', 'glacier', 'volcano',
+  'tropical_forest', 'evergreen_forest', 'light_forest', 'dead_forest',
+  'swamp', 'marsh', 'moor_bog',
+  'hills', 'mountains', 'high_mountains', 'plateau', 'badlands', 'mountain_pass',
+  'forested_hills',
+  'great_home_trees', 'broken_lands', 'oasis',
+  'desert', 'rocky_desert', 'sand_dunes', 'tundra', 'glacier', 'volcano',
+  'arctic', 'snow_fields',
 ];
 
 describe('culture-content', () => {
@@ -172,11 +176,11 @@ describe('culture-content', () => {
   // ─── Biome Modifiers Tests ────────────────────────────────────────
 
   describe('BIOME_MODIFIERS', () => {
-    it('exports exactly 22 biome modifiers', () => {
-      expect(BIOME_MODIFIERS).toHaveLength(22);
+    it('exports exactly 42 biome modifiers', () => {
+      expect(BIOME_MODIFIERS).toHaveLength(42);
     });
 
-    it('covers all 22 terrain types', () => {
+    it('covers all 42 terrain types', () => {
       const terrains = BIOME_MODIFIERS.map(m => m.terrain);
       for (const terrain of ALL_TERRAIN_TYPES) {
         expect(terrains).toContain(terrain);

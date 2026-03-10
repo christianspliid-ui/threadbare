@@ -14,14 +14,16 @@ import {
 } from '../hex-vignette-content';
 
 const ALL_TERRAINS = [
-  'ocean','coastal_shallows','lake','river',
-  'grassland','farmland','savanna','steppe',
+  'ocean','deep_ocean','tropical_ocean','coastal_shallows','coast','lake','river','reef',
+  'grassland','farmland','savanna','steppe','floodplain',
   'temperate_forest','dense_forest','boreal_forest','jungle',
-  'swamp','marsh',
-  'hills','mountains','plateau','badlands',
+  'tropical_forest','evergreen_forest','light_forest','dead_forest',
+  'swamp','marsh','moor_bog',
+  'hills','mountains','high_mountains','plateau','badlands','mountain_pass',
   'forested_hills',
-  'great_home_trees','broken_lands',
-  'desert','tundra','glacier','volcano',
+  'great_home_trees','broken_lands','oasis',
+  'desert','rocky_desert','sand_dunes','tundra','glacier','volcano',
+  'arctic','snow_fields',
 ] as const;
 
 const TEMP_BANDS = ['frigid','cold','temperate','warm','scorching'] as const;
@@ -31,7 +33,7 @@ const COMPASS_DIRS = ['north','northeast','east','southeast','south','southwest'
 
 describe('hex-vignette-content', () => {
   describe('TERRAIN_OPENINGS', () => {
-    it('has entries for all 25 terrain types', () => {
+    it('has entries for all 42 terrain types', () => {
       for (const t of ALL_TERRAINS) {
         expect(TERRAIN_OPENINGS[t], `missing terrain: ${t}`).toBeDefined();
         expect(TERRAIN_OPENINGS[t].length).toBeGreaterThanOrEqual(2);

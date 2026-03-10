@@ -27,6 +27,25 @@ export const TERRAIN_TILE_MAP: Record<TerrainType, string> = {
   forested_hills: 'forested-hills-evergreen.png',
   great_home_trees: 'great-home-trees.png',
   broken_lands: 'broken-lands.png',
+  // New terrain types — art on disk
+  coast: 'coast.png',
+  evergreen_forest: 'evergreen-forest.png',
+  light_forest: 'light-forest.png',
+  // New terrain types — placeholder mappings to closest analog
+  deep_ocean: 'ocean.png',
+  tropical_ocean: 'ocean.png',
+  reef: 'coastal-shallows.png',
+  floodplain: 'open-grassland.png',
+  tropical_forest: 'jungle.png',
+  dead_forest: 'broken-lands.png',
+  moor_bog: 'marsh.png',
+  high_mountains: 'mountain.png',
+  mountain_pass: 'hills.png',
+  oasis: 'lake.png',
+  rocky_desert: 'badlands.png',
+  sand_dunes: 'desert.png',
+  arctic: 'tundra.png',
+  snow_fields: 'glacier.png',
 };
 
 export function getHexTileUrl(terrain: TerrainType): string {
