@@ -2,11 +2,12 @@ import type { SphereName } from './index';
 
 // ─── Mandate Types ───────────────────────────────────────────────
 
-/** The three mandate categories */
+/** The four mandate categories */
 export type MandateType =
-  | 'graph_state'        // achieve specific world configuration
-  | 'narrative'          // trigger specific story beats
-  | 'sphere_dominance';  // establish cosmic supremacy
+  | 'graph_state'             // achieve specific world configuration
+  | 'narrative'               // trigger specific story beats
+  | 'sphere_dominance'        // establish cosmic supremacy
+  | 'simulation_achievable';  // emergent simulation milestones
 
 /** The universal 3-stage structure */
 export type MandateStage = 'setup' | 'escalation' | 'culmination';
