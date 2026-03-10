@@ -351,4 +351,36 @@ describe('DebugPanel', () => {
     expect(screen.getByText(/tit-for-tat/i)).toBeTruthy();
     expect(screen.getByText(/Mutual distrust/)).toBeTruthy();
   });
+
+  it('refreshes traces when currentTick changes', () => {
+    emitTrace({
+      tick: 1,
+      category: 'tick_summary',
+      summary: 'Tick 1 summary',
+      phaseEventCounts: { agent_actions: 1 },
+      agentsProcessed: 1,
+      doomStage: 1,
+      essenceTotal: 10,
+      mandateProgress: 0.1,
+    } as any);
+
+    const { rerender } = render(<DebugPanel currentTick={1} />);
+    expect(screen.getByText(/Tick 1 summary/)).toBeTruthy();
+
+    // Emit a new trace for tick 2
+    emitTrace({
+      tick: 2,
+      category: 'tick_summary',
+      summary: 'Tick 2 summary',
+      phaseEventCounts: { agent_actions: 2 },
+      agentsProcessed: 2,
+      doomStage: 1,
+      essenceTotal: 20,
+      mandateProgress: 0.2,
+    } as any);
+
+    // Re-render with updated tick — traces should refresh
+    rerender(<DebugPanel currentTick={2} />);
+    expect(screen.getByText(/Tick 2 summary/)).toBeTruthy();
+  });
 });
