@@ -209,6 +209,10 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
               const durRange = template.durationRange;
               const duration = durRange.min + Math.floor(rng() * (durRange.max - durRange.min + 1));
 
+              // NOTE: createAction mutates the graph (adds performing edge).
+              // In React StrictMode dev builds, runTick executes twice per tick,
+              // causing duplicate edges. This is benign — production builds run once.
+              // Future: make graph immutable via copy-on-write if this becomes an issue.
               const action = createAction(state.graph, {
                 actorId: actor.id,
                 templateId: template.id,

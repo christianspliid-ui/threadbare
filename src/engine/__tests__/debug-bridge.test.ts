@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 
 // We test the bridge by directly importing and calling the functions it exposes,
 // since the bridge itself uses dynamic imports to the same modules.

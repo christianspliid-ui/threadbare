@@ -5,6 +5,7 @@ import {
   WHEEL_SLOT_GLYPHS,
   getSphereColor,
   getSphereSymbol,
+  getSphereImagePath,
   getWheelSlotGlyph,
   type SphereIconDef,
 } from '../sphereIcons';
@@ -213,6 +214,47 @@ describe('sphereIcons data', () => {
         const symbol = getSphereSymbol(sphere);
         expect(symbol.length).toBe(1);
       });
+    });
+  });
+
+  describe('sphere icon image paths', () => {
+    it('every creation sphere has an imagePath', () => {
+      for (const [name, def] of Object.entries(SPHERE_ICONS)) {
+        expect(def.imagePath, `${name} missing imagePath`).toBeDefined();
+        expect(def.imagePath).toMatch(/^\/icons\/spheres\/.*\.png$/);
+      }
+    });
+
+    it('every foundation sphere has an imagePath', () => {
+      for (const [name, def] of Object.entries(FOUNDATION_SPHERE_ICONS)) {
+        expect(def.imagePath, `${name} missing imagePath`).toBeDefined();
+        expect(def.imagePath).toMatch(/^\/icons\/spheres\/.*\.png$/);
+      }
+    });
+
+    it('imagePath matches sphere name', () => {
+      for (const [name, def] of Object.entries(SPHERE_ICONS)) {
+        expect(def.imagePath).toBe(`/icons/spheres/${name}.png`);
+      }
+      for (const [name, def] of Object.entries(FOUNDATION_SPHERE_ICONS)) {
+        expect(def.imagePath).toBe(`/icons/spheres/${name}.png`);
+      }
+    });
+  });
+
+  describe('getSphereImagePath', () => {
+    it('returns image path for creation spheres', () => {
+      expect(getSphereImagePath('force')).toBe('/icons/spheres/force.png');
+      expect(getSphereImagePath('mind')).toBe('/icons/spheres/mind.png');
+    });
+
+    it('returns image path for foundation spheres', () => {
+      expect(getSphereImagePath('chaos')).toBe('/icons/spheres/chaos.png');
+      expect(getSphereImagePath('order')).toBe('/icons/spheres/order.png');
+    });
+
+    it('returns undefined for unknown sphere', () => {
+      expect(getSphereImagePath('unknown-sphere')).toBeUndefined();
     });
   });
 
