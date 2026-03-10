@@ -127,10 +127,10 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
           </div>
 
           {/* Events list */}
-          <div className="flex-1 overflow-y-auto space-y-1 px-3 py-3 pr-2">
+          <div className="flex-1 overflow-y-auto space-y-1 px-3 py-3 pr-2" aria-live="polite" aria-label="Narrative event log">
             {events.length === 0 ? (
               <div
-                className="italic text-center py-8"
+                className="italic text-center py-8 animate-breathe"
                 style={{
                   fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',

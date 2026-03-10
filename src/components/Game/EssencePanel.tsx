@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect, useState } from 'react';
 import { SPHERE_NAMES, type SphereName } from '../../types';
 import type { EssencePool } from '../../types/influence';
 import { SphereIcon } from '../shared/SphereIcon';
@@ -23,6 +23,25 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
     if (b === secondarySphere) return 1;
     return pool[b] - pool[a];
   }), [pool, primarySphere, secondarySphere]);
+
+  // Track previous essence pool and trigger pulse on value changes
+  const prevPoolRef = useRef<Record<string, number>>({});
+  const [pulsingIds, setPulsingIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const newPulsing = new Set<string>();
+    for (const [id, val] of Object.entries(pool)) {
+      if (prevPoolRef.current[id] !== undefined && prevPoolRef.current[id] !== val) {
+        newPulsing.add(id);
+      }
+    }
+    prevPoolRef.current = { ...pool };
+    if (newPulsing.size > 0) {
+      setPulsingIds(newPulsing);
+      const timer = setTimeout(() => setPulsingIds(new Set()), 600);
+      return () => clearTimeout(timer);
+    }
+  }, [pool]);
 
   return (
     <div className="panel-glass space-y-2" style={{ padding: 'var(--panel-padding)' }}>
@@ -56,7 +75,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
               <SphereIcon sphereName={sphere} size="1rem" className="w-5 text-center" />
               <div className="flex-1 h-2 rounded-full overflow-hidden relative" style={{ backgroundColor: 'var(--bg-raised)' }}>
                 <div
-                  className="h-full rounded-full transition-all duration-500 ease-out"
+                  className={`h-full rounded-full transition-all duration-500 ease-out${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
                   style={{
                     width: `${pct}%`,
                     background: `linear-gradient(90deg, ${color}cc, ${color})`,

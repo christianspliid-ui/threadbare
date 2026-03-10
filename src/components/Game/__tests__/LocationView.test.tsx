@@ -105,12 +105,12 @@ describe('LocationView', () => {
 
   it('renders encounter section with no encounters', () => {
     render(<LocationView {...defaultProps} />);
-    expect(screen.getByText(/No encounters at this location/i)).toBeTruthy();
+    expect(screen.getByText(/the stillness here is unbroken/i)).toBeTruthy();
   });
 
   it('renders with empty agents list', () => {
     render(<LocationView {...defaultProps} agents={[]} />);
-    expect(screen.getByText(/no agents present/i)).toBeTruthy();
+    expect(screen.getByText(/this place lies quiet/i)).toBeTruthy();
   });
 
   it('renders available encounters', () => {

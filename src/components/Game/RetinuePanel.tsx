@@ -21,13 +21,13 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
   if (agents.length === 0) {
     return (
       <div
-        className="italic text-center py-2"
+        className="italic text-center py-2 animate-breathe"
         style={{
           fontSize: 'var(--text-xs)',
-          color: 'var(--text-muted)',
+          color: 'var(--text-tertiary)',
         }}
       >
-        No agents under your influence yet.
+        The threads of fate lie still. No souls yet attend your court.
       </div>
     );
   }
@@ -62,7 +62,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 onClick={() => onAgentSelect(agent.id)}
                 className={`
                   rounded px-2.5 py-1.5 border cursor-pointer
-                  transition-colors active:opacity-90
+                  transition-colors active:opacity-90 duration-150
                   ${isSelected ? 'ring-2 ring-amber-400/60 border-amber-400/30' : ''}
                 `}
                 style={{
@@ -70,6 +70,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                   borderColor: isSelected ? undefined : 'var(--border-subtle)',
                   borderLeftColor: tierColor,
                   borderLeftWidth: '3px',
+                  transition: 'background-color 150ms ease',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
