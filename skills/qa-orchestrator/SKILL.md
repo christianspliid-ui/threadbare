@@ -249,9 +249,9 @@ The Development Backlog is at:
 `https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf`
 
 **Adding findings:** Use the Notion MCP tools:
-1. `notion-fetch` the backlog page to get current content
-2. `notion-update-page` with `insert_content_after` to add a new section after existing content
-3. Format as markdown table:
+1. `notion-fetch` the backlog page to get current content and find the last section heading
+2. `notion-update-page` with `command: "update_content"` — use `old_str` to match the last section's heading + first line, and `new_str` to append the new findings section after it
+3. Format the new section as markdown table:
 
 ```
 ## QA Findings [YYYY-MM-DD]

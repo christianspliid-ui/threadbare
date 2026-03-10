@@ -6,6 +6,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Where | What changed | Why |
 |------|-------|-------------|-----|
+| 2026-03-10 | Notion backlog | Added 🎨 Visual Asset Backlog section (ART-01 through ART-18, 3 waves) | No asset tracking existed — pipeline overview doc wasn't actionable as tasks |
+| 2026-03-10 | Docs/plans/ | Created `2026-03-10-visual-asset-strategy.md` — assessment, 3-sprint plan, quality controls | Need a concrete way forward to get produced assets into the game |
 | 2026-03-05 | Notion: Visual Style Tile | Updated color palette, core visual principle, color behavior sections | Synced with STYLE.md rewrite — dark world direction, Time→orange, form language system |
 | 2026-03-05 | STYLE.md | Full rewrite — dark world direction, sphere form language, Time `#ff9933` | Previous style too bright/diffuse; needed concentrated threadlike magic and unique sphere silhouettes |
 | 2026-03-05 | Repo: src/engine/ | Added retinue.ts, wheel.ts, strands.ts — 3 new engine modules | Layer 1 Core Interaction: data helpers for retinue queries, wheel slot generation, 6 psyche strand extractors |
@@ -341,3 +343,18 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 | 2026-03-10 | Obsidian: Systems/ | Created CRUD Action Unification.md; updated Index.md with Action Execution Systems section | New system note for unified action execution |
 | 2026-03-10 | Notion: Backlog | Added CRUD Action Unification section with 10 tasks | Current implementation priority |
 
+| 2026-03-10 | Repo: src/types/ | Created graphOp.ts — 6 GraphOp types (add/remove/update node/edge), symbolic refs ($actor/$target/$location), resolveRef helper, GraphOpContext, GraphOpResult, GraphOpBatchResult | CRUD Action Unification Task 1: GraphOp type foundation |
+| 2026-03-10 | Repo: src/engine/ | Created graphOpExecutor.ts (~317 lines) — executeGraphOps fail-soft batch execution, 6 operation handlers, graph_op_execution trace emission, resetOpCounter for tests | CRUD Action Unification Task 2: GraphOp executor engine |
+| 2026-03-10 | Repo: src/data/ | Created action-template-content.ts — 36 enriched ActionTemplateData (4 per reach × 9 reaches), onSuccess/onFailure GraphOps, difficulty 0.1-0.7, narrativeTemplates | CRUD Action Unification Task 3: action template enrichment |
+| 2026-03-10 | Repo: src/engine/ | Created actionCandidates.ts (~78 lines) — generateActionCandidates with location subtype + actor affinity filtering | CRUD Action Unification Task 4: action candidate generator |
+| 2026-03-10 | Repo: src/engine/ | Created actionLifecycle.ts (~145 lines) — createAction/progressAction/isActionComplete/completeAction/isAgentIdle/getActiveActions with performing edges | CRUD Action Unification Task 5: ActionInProgress lifecycle |
+| 2026-03-10 | Repo: src/types/ | Extended temporal.ts — ActionInProgress interface with encounterId?, resolved?, outcome? fields | CRUD Action Unification Task 5: ActionInProgress type extension |
+| 2026-03-10 | Repo: src/engine/ | Modified orchestrator.ts — phaseActionProgress tick phase (progress increment, success=rng<1-difficulty, GraphOp execution), isAgentIdle guard in phaseAgentActions | CRUD Action Unification Task 6: orchestrator wiring |
+| 2026-03-10 | Repo: src/types/ | Extended trace.ts — ActionExecutionTrace + action_execution category in TraceEntry union | CRUD Action Unification Task 7: trace type |
+| 2026-03-10 | Repo: src/components/Game/ | Modified DebugPanel.tsx — ActionExecutionDetail renderer for action_execution traces | CRUD Action Unification Task 7: debug panel trace renderer |
+| 2026-03-10 | Repo: src/engine/ | Modified gameInit.ts — actionsInProgress: [] in initialized GameState | CRUD Action Unification Task 8: GameInit wiring |
+| 2026-03-10 | Repo: src/engine/__tests__/ | Created crud-action-integration.test.ts (448 lines, 6 tests) — full lifecycle, coexistence, all 36 templates, resolution probability, success/failure GraphOps | CRUD Action Unification Task 9: integration tests |
+| 2026-03-10 | Repo: tests | 74 CRUD tests passing across 8 test files: graphOpExecutor.test.ts, actionCandidates.test.ts, actionLifecycle.test.ts, action-template-content.test.ts, graphOp.test.ts, orchestrator-actions.test.ts, DebugPanel-actions.test.tsx, crud-action-integration.test.ts | CRUD Action Unification: full test coverage |
+| 2026-03-10 | Obsidian: Systems/ | Updated CRUD Action Unification.md — appended Implementation Status section (all 10 tasks complete, 74 tests) | CRUD Action Unification Task 10: vault documentation |
+| 2026-03-10 | Docs/project-status.md | Updated CRUD Action Unification status to ✅ Complete, engine stats (~180 modules, ~37,500+ lines, ~2,389+ tests) | CRUD Action Unification Task 10: project status |
+| 2026-03-10 | CLAUDE.md | Updated project status (CRUD Action Unification complete), engine stats, content stats | CRUD Action Unification Task 10: documentation |

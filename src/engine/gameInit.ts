@@ -23,6 +23,7 @@ import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateMandate } from './mandateGenerator';
 import { createMandateState } from './mandate';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
+import { ACTION_TEMPLATES } from '../data/action-template-content';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -71,6 +72,18 @@ export function initializeGameState(
 
   // Seed the world graph with actors, locations, artifacts
   const { graph, individualIds } = seedWorld(cosmology, tiles, seed);
+
+  // Register action template nodes so createAction can add performing edges
+  for (const template of ACTION_TEMPLATES) {
+    if (!graph.getNode(template.id)) {
+      graph.addNode({
+        id: template.id,
+        type: 'action_template',
+        name: template.name,
+        properties: { reach: template.reach },
+      });
+    }
+  }
 
   // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {

@@ -55,9 +55,10 @@ import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familia
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
-import { progressAction, isActionComplete, completeAction, isAgentIdle } from './actionLifecycle';
-import { getActionTemplateById } from '../data/action-template-content';
+import { createAction, progressAction, isActionComplete, completeAction, isAgentIdle } from './actionLifecycle';
+import { getActionTemplateById, ACTION_TEMPLATES } from '../data/action-template-content';
 import { executeGraphOps } from './graphOpExecutor';
+import { generateActionCandidates } from './actionCandidates';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -113,12 +114,16 @@ const ENCOUNTER_ATTEMPT_CHANCE = 0.20;
 /** Chance of a non-encounter routine action */
 const ROUTINE_ACTION_CHANCE = 0.10;
 
+/** Chance of starting a CRUD action when not encountering */
+const CRUD_ACTION_CHANCE = 0.35;
+
 /** Notable action interval — every N ticks, force one high-significance event */
 const NOTABLE_ACTION_INTERVAL = 5;
 
 export function phaseAgentActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 31);
   const events: TickEvent[] = [];
+  const newActions = [...(state.actionsInProgress ?? [])];
 
   const actors = state.graph.getNodesByType('actor').filter(
     n => n.properties.actorType === 'individual'
@@ -127,7 +132,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
   for (const actor of actors) {
     // Skip if already in an active encounter or action
     if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
-    if (!isAgentIdle(state.actionsInProgress, actor.id)) continue;
+    if (!isAgentIdle(state.actionsInProgress ?? [], actor.id)) continue;
 
     // Encounter attempt
     if (rng() < ENCOUNTER_ATTEMPT_CHANCE) {
@@ -168,6 +173,84 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
           }
         } catch {
           // Selection pipeline can fail if no valid profile — fall through to routine action
+        }
+      }
+    }
+
+    // CRUD action attempt (non-encounter, creates ActionInProgress)
+    else if (rng() < CRUD_ACTION_CHANCE) {
+      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
+      if (locEdges.length > 0) {
+        const locationId = locEdges[0].target;
+        const actionCandidates = generateActionCandidates(state.graph, actor.id, locationId);
+
+        if (actionCandidates.length > 0) {
+          try {
+            // Pick a candidate — use selection pipeline if agent has profile, else random
+            let selectedCandidate = actionCandidates[Math.floor(rng() * actionCandidates.length)];
+
+            try {
+              const result = runSelectionPipeline(
+                state.graph,
+                actor.id,
+                actionCandidates,
+                { topN: 5, survivalThreshold: 0.8 },
+                state.tick,
+                rng(),
+              );
+              selectedCandidate = result.selected;
+            } catch {
+              // Selection pipeline can fail if no valid profile — use random fallback
+            }
+
+            const template = getActionTemplateById(selectedCandidate.templateId);
+            if (template) {
+              // Compute duration from template range
+              const durRange = template.durationRange;
+              const duration = durRange.min + Math.floor(rng() * (durRange.max - durRange.min + 1));
+
+              const action = createAction(state.graph, {
+                actorId: actor.id,
+                templateId: template.id,
+                targetId: selectedCandidate.targetId,
+                domain: template.reach,
+                duration,
+                tick: state.tick,
+              });
+
+              newActions.push(action);
+
+              const locationNode = state.graph.getNode(locationId);
+              const locationName = locationNode?.name ?? 'the realm';
+
+              // Emit trace for action start (inspectability)
+              emitTrace({
+                id: 0,
+                category: 'action_execution',
+                tick: state.tick,
+                timestamp: Date.now(),
+                summary: `${actor.name} begins ${template.name}`,
+                agentId: actor.id,
+                templateId: template.id,
+                actorId: actor.id,
+                outcome: 'started',
+                opsApplied: 0,
+                opsFailed: 0,
+                duration: duration,
+              });
+
+              events.push({
+                id: nextEventId(),
+                tick: state.tick,
+                type: 'agent_action_resolved',
+                message: `${actor.name} begins ${template.name} at ${locationName}.`,
+                sphere: (SPHERE_NAMES.includes(template.reach as any) ? template.reach : SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)]) as SphereName,
+                significance: 0.5,
+              });
+            }
+          } catch {
+            // Fail-soft: template node may not exist in graph yet — skip CRUD action
+          }
         }
       }
     }
@@ -229,7 +312,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
     });
   }
 
-  return { tickEvents: [...state.tickEvents, ...events] };
+  return { tickEvents: [...state.tickEvents, ...events], actionsInProgress: newActions };
 }
 
 // ─── Phase 2.25: Encounter Progression ────────────────────────────────────
