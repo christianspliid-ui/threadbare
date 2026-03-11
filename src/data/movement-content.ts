@@ -115,6 +115,23 @@ export const LOCATION_ENTRY_TAXES: Record<LocationSubtype, number> = {
 };
 
 /**
+ * Base tick cost per graph edge traversal.
+ * Every edge costs at least this before terrain/location taxes.
+ */
+export const BASE_EDGE_TRAVERSAL_COST = 1;
+
+/**
+ * Ticks between agent destination re-evaluation (~1 in-game day).
+ * Idle agents reconsider their destination every N ticks.
+ */
+export const DECISION_REEVALUATION_TICKS = 4;
+
+/**
+ * Number of recent movement entries kept for trail rendering.
+ */
+export const TRAIL_HISTORY_TICKS = 12;
+
+/**
  * Distance decay factor for range-based effects
  *
  * Applied to scale values based on distance from origin.

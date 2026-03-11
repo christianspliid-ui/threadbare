@@ -1,13 +1,6 @@
-// --- Tunable constants (P0 defaults, will move to content data in P1) ---
-
-/** Base tick cost per graph edge traversal */
-export const BASE_EDGE_TRAVERSAL_COST = 1;
-
-/** Ticks between agent destination re-evaluation (~1 in-game day) */
-export const DECISION_REEVALUATION_TICKS = 4;
-
-/** Number of recent ticks shown as movement trail */
-export const TRAIL_HISTORY_TICKS = 12;
+// Tunable constants re-exported from content data for backward compatibility.
+// Canonical definitions live in src/data/movement-content.ts.
+export { BASE_EDGE_TRAVERSAL_COST, DECISION_REEVALUATION_TICKS, TRAIL_HISTORY_TICKS } from '../data/movement-content';
 
 // --- Types ---
 
