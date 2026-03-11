@@ -15,12 +15,12 @@ import {
   P0_BASE_MOTIVATION_PULL,
   P0_AMBITION_WEIGHT,
   MAX_CANDIDATE_DISTANCE,
+  DEFAULT_QUEST_PRIORITY,
 } from '../data/movement-content';
+import { isEncounterVisibleToAgent } from './questVisibility';
 
 /**
  * Score a movement candidate: motivationPull × distanceDecay.
- *
- * P0: threat and social modifiers are not yet applied (deferred to P1).
  */
 export function scoreMovementCandidate(motivationPull: number, tickDistance: number): number {
   const distanceDecay = 1 / (1 + DISTANCE_DECAY_FACTOR * tickDistance);
@@ -31,11 +31,8 @@ export function scoreMovementCandidate(motivationPull: number, tickDistance: num
  * Generate movement candidates for an agent at a given location.
  *
  * Finds all reachable location nodes within MAX_CANDIDATE_DISTANCE,
- * computes a motivation score for each based on the agent's axiological profile,
- * and returns scored MovementCandidate entries.
- *
- * P0: motivation is a simple heuristic based on location having encounters.
- * Full axiological scoring against encounter templates deferred to P1 integration.
+ * computes a motivation score for each based on the agent's axiological profile
+ * and any quest encounters present, returns scored MovementCandidate entries.
  */
 export function generateMovementCandidates(
   graph: WorldGraph,
@@ -45,27 +42,23 @@ export function generateMovementCandidates(
 ): MovementCandidate[] {
   const candidates: MovementCandidate[] = [];
 
-  // Gather all location nodes as potential destinations
   const allLocations = graph.getNodesByType('location');
 
   for (const loc of allLocations) {
     if (loc.id === currentLocationId) continue;
 
-    // Find path
     const pathResult = findShortestPath(graph, agentId, currentLocationId, loc.id);
     if (!pathResult || pathResult.totalCost > MAX_CANDIDATE_DISTANCE) continue;
     if (pathResult.path.length === 0) continue;
 
-    // P0 motivation heuristic: base pull of 0.5 for any reachable location
-    // In P1 this will be replaced by axiological scoring against destination encounter templates
-    const basePull = computeBasePull(graph, loc.id, profile);
+    const { pull: basePull, bestTemplateId } = computeBasePull(graph, loc.id, agentId, profile);
     if (basePull <= 0) continue;
 
     const score = scoreMovementCandidate(basePull, pathResult.totalCost);
 
     candidates.push({
       destinationId: loc.id,
-      bestTemplateId: '', // P0 placeholder — filled in P1 with encounter template scoring
+      bestTemplateId,
       motivationPull: basePull,
       distanceDecay: 1 / (1 + DISTANCE_DECAY_FACTOR * pathResult.totalCost),
       score,
@@ -74,26 +67,61 @@ export function generateMovementCandidates(
     });
   }
 
-  // Sort by score descending
   candidates.sort((a, b) => b.score - a.score);
   return candidates;
 }
 
 /**
- * P0 motivation heuristic: locations that are hex centers score higher.
- * Scaled by the agent's ambition (ambitious agents are more motivated to move).
- * This is a placeholder — P1 replaces with full axiological scoring of encounter templates.
+ * Compute motivation pull for a destination based on encounter templates there.
+ * Uses the best-matching encounter's questPriority as a multiplier.
+ * P1: reads encounter templates at the destination and scores by visibility + quest priority.
  */
-function computeBasePull(graph: WorldGraph, locationId: string, profile: AxiologicalProfile): number {
-  // Locations that are hex centers get a base pull (agents want to explore)
+function computeBasePull(
+  graph: WorldGraph,
+  locationId: string,
+  agentId: string,
+  profile: AxiologicalProfile,
+): { pull: number; bestTemplateId: string } {
   const node = graph.getNode(locationId);
-  if (!node) return 0;
+  if (!node) return { pull: 0, bestTemplateId: '' };
 
-  // Skip non-hex-center locations for P0 (agents move hex-to-hex)
+  // Skip non-hex-center locations (agents move hex-to-hex)
   const locType = node.properties?.locationType;
-  if (locType !== 'hex_center') return 0;
+  if (locType !== 'hex_center') return { pull: 0, bestTemplateId: '' };
 
-  // Base pull + ambition bonus (P0 heuristic, replaced by axiological scoring in P1)
+  // Base pull from P0 heuristic (always computed)
   const ambitionBonus = Math.max(0, profile.ambition_contentment) * P0_AMBITION_WEIGHT;
-  return P0_BASE_MOTIVATION_PULL + ambitionBonus;
+  const baseHeuristicPull = P0_BASE_MOTIVATION_PULL + ambitionBonus;
+
+  // Check for encounter templates at this location
+  const encounterEdges = graph.getIncomingEdges(locationId, 'encounter_at');
+  let bestPull = 0;
+  let bestTemplateId = '';
+
+  for (const edge of encounterEdges) {
+    const encNode = graph.getNode(edge.source);
+    if (!encNode) continue;
+
+    // Check visibility
+    const visibleTo = encNode.properties?.visibleTo as string[] | undefined;
+    if (!isEncounterVisibleToAgent(graph, agentId, visibleTo)) continue;
+
+    // Quest priority multiplier
+    const questPriority = (encNode.properties?.questPriority as number) ?? DEFAULT_QUEST_PRIORITY;
+
+    // Apply quest priority to base pull
+    const pull = baseHeuristicPull * questPriority;
+
+    if (pull > bestPull) {
+      bestPull = pull;
+      bestTemplateId = encNode.id;
+    }
+  }
+
+  // Fallback: if no encounters, use P0 heuristic for hex centers
+  if (bestPull === 0) {
+    return { pull: baseHeuristicPull, bestTemplateId: '' };
+  }
+
+  return { pull: bestPull, bestTemplateId };
 }

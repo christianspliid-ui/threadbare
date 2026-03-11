@@ -173,6 +173,12 @@ export const P0_BASE_MOTIVATION_PULL = 0.3;
 export const P0_AMBITION_WEIGHT = 0.4;
 
 /**
+ * Default quest priority for encounters without explicit questPriority.
+ * Used as the multiplier when an encounter doesn't specify a priority value.
+ */
+export const DEFAULT_QUEST_PRIORITY = 1.0;
+
+/**
  * Minimum score threshold for movement candidates to be selected.
  * Candidates scoring below this are ignored.
  */

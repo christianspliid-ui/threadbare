@@ -113,3 +113,12 @@ describe('generateMovementCandidates', () => {
     }
   });
 });
+
+describe('quest priority integration', () => {
+  it('questPriority multiplies motivationPull', () => {
+    const normalScore = scoreMovementCandidate(0.5, 10);
+    const questScore = scoreMovementCandidate(0.5 * 5.0, 10); // questPriority = 5.0
+    expect(questScore).toBeGreaterThan(normalScore);
+    expect(questScore / normalScore).toBeCloseTo(5.0, 1);
+  });
+});
