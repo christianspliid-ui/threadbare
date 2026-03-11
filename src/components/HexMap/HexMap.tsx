@@ -2,12 +2,14 @@ import { useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallbac
 import * as d3 from 'd3';
 import type { HexTile, HexCoord, OverlayMode, LocationSubtype } from '../../types';
 import type { VisibilityMap } from '../../types/visibility';
+import type { WorldGraph } from '../../engine/graph';
 import { hexToPixel, hexPolygonPoints, HEX_SCALE_X, HEX_SCALE_Y } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
 import { HexDefs } from './HexDefs';
 import { CoastlineOverlay } from './CoastlineOverlay';
 import { RiverOverlay } from './RiverOverlay';
+import { AgentDots } from './AgentDots';
 import { useCoastline } from './useCoastline';
 import { useRivers } from './useRivers';
 import { COASTLINE_DEFAULTS } from '../../types/coastline';
@@ -36,6 +38,7 @@ interface HexMapProps {
   sphereColor?: string;
   initialCenter?: { x: number; y: number };
   initialScale?: number;
+  graph?: WorldGraph;
   onZoomChange?: (transform: d3.ZoomTransform) => void;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
@@ -50,6 +53,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   hoveredHex, selectedHex, overlayMode,
   visibilityMap, locationOverlays, avatarHex, sphereColor,
   initialCenter, initialScale,
+  graph,
   onZoomChange,
   onHexClick, onHexHover,
 }, ref) => {
@@ -168,6 +172,21 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
     return result;
   }, [tiles, visibilityMap, hexSize]);
 
+  // Compute location positions for agent rendering
+  const locationPositions = useMemo(() => {
+    if (!graph) return [];
+    const positions: Array<{ locationId: string; x: number; y: number }> = [];
+    const locationNodes = graph.getNodesByType('location');
+    for (const loc of locationNodes) {
+      const col = loc.properties?.hexCol as number | undefined;
+      const row = loc.properties?.hexRow as number | undefined;
+      if (col == null || row == null) continue;
+      const { x, y } = hexToPixel({ col, row }, hexSize);
+      positions.push({ locationId: loc.id, x, y });
+    }
+    return positions;
+  }, [graph, hexSize]);
+
   return (
     <>
       <style>{`
@@ -274,6 +293,14 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                   <polygon key={p.key} points={p.points} fill={HEX_MAP_BACKGROUND} opacity={p.opacity} style={{ pointerEvents: 'none' }} />
                 ))}
               </g>
+            )}
+            {/* Layer 4: Agent dots — on top of all map layers */}
+            {graph && locationPositions.length > 0 && (
+              <AgentDots
+                graph={graph}
+                locationPositions={locationPositions}
+                zoomScale={DEFAULT_ZOOM_SCALE}
+              />
             )}
           </g>
         </g>
