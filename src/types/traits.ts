@@ -7,7 +7,7 @@
 
 import type { CulturalStrengthRange } from '../data/culture-content';
 
-export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
+export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural';
 
 export type TraitVisibility = 'public' | 'discoverable' | 'divine_only';
 
@@ -44,10 +44,6 @@ export interface TraitAssignmentProperties {
   lastReinforcedTick: number;
   source: string;                // what caused acquisition
   visibility: TraitVisibility;
-  /** Ticks until auto-removal. null = permanent until dispelled. undefined = no decay. */
-  ticksRemaining?: number | null;
-  /** Attribute deltas carried by this trait assignment (fed into modifier engine). */
-  modifiers?: Record<string, number>;
 }
 
 /** 10-tier narrative lexicon per domain */

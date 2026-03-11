@@ -83,7 +83,7 @@ describe('ActionDrawer', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('sorts cards: available first, locked last', () => {
+  it('sorts cards: available first, locked last (IA-003 progressive disclosure)', () => {
     const mixedSlots: WheelSlot[] = [
       { ...mockSlots[0] },
       {
@@ -99,9 +99,16 @@ describe('ActionDrawer', () => {
       <ActionDrawer open={true} slots={mixedSlots} agentName="Kael" agentTier="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
-    // Get all card elements (top-level action-card-* with role="button")
-    const cards = screen.getAllByRole('button').filter(el => el.getAttribute('data-testid')?.startsWith('action-card-'));
-    expect(cards[0].getAttribute('data-testid')).toBe('action-card-scry');
-    expect(cards[cards.length - 1].getAttribute('data-testid')).toBe('action-card-coincidence');
+    // Available cards are visible immediately
+    const availableCards = screen.getAllByRole('button').filter(el => el.getAttribute('data-testid')?.startsWith('action-card-'));
+    expect(availableCards[0].getAttribute('data-testid')).toBe('action-card-scry');
+
+    // Locked cards hidden by default — toggle reveals them
+    expect(screen.queryByTestId('action-card-coincidence')).toBeNull();
+    const toggleBtn = screen.getByRole('button', { name: /locked/i });
+    fireEvent.click(toggleBtn);
+
+    // After expanding, locked card is visible
+    expect(screen.getByTestId('action-card-coincidence')).toBeInTheDocument();
   });
 });
