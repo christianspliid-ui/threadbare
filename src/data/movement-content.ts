@@ -190,6 +190,13 @@ export const MOVEMENT_SCORE_THRESHOLD = 0.1;
 export const MOVEMENT_EVENT_SIGNIFICANCE = 0.3;
 
 /**
+ * Minimum threat modifier (floor — even max coward keeps some motivation).
+ * Prevents threat from reducing movement score to zero, ensuring agents
+ * will still consider destinations even in dangerous areas.
+ */
+export const THREAT_MODIFIER_FLOOR = 0.1;
+
+/**
  * Get terrain tax for a specific terrain type
  *
  * Returns the tunable cost modifier for traversing that terrain.
