@@ -137,6 +137,36 @@ export const DEFAULT_LOCATION_ENTRY_TAX = 0;
 export const MIN_EDGE_COST = 0.5;
 
 /**
+ * Maximum tick distance to consider for movement candidates.
+ * Locations further than this are not evaluated as destinations.
+ */
+export const MAX_CANDIDATE_DISTANCE = 40;
+
+/**
+ * P0 base motivation pull for reachable hex_center locations.
+ * Floor value before ambition bonus is applied.
+ * P1 replaces this with full axiological scoring.
+ */
+export const P0_BASE_MOTIVATION_PULL = 0.3;
+
+/**
+ * P0 weight applied to agent ambition for movement motivation.
+ * motivationPull = P0_BASE_MOTIVATION_PULL + max(0, ambition) × P0_AMBITION_WEIGHT
+ */
+export const P0_AMBITION_WEIGHT = 0.4;
+
+/**
+ * Minimum score threshold for movement candidates to be selected.
+ * Candidates scoring below this are ignored.
+ */
+export const MOVEMENT_SCORE_THRESHOLD = 0.1;
+
+/**
+ * Event significance for agent movement transitions.
+ */
+export const MOVEMENT_EVENT_SIGNIFICANCE = 0.3;
+
+/**
  * Get terrain tax for a specific terrain type
  *
  * Returns the tunable cost modifier for traversing that terrain.

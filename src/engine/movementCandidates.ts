@@ -10,10 +10,12 @@ import type { WorldGraph } from './graph';
 import type { AxiologicalProfile } from '../types/agent';
 import type { MovementCandidate } from '../types/movement';
 import { findShortestPath } from './pathfinding';
-import { DISTANCE_DECAY_FACTOR } from '../data/movement-content';
-
-/** Maximum tick distance to consider for movement candidates */
-const MAX_CANDIDATE_DISTANCE = 40;
+import {
+  DISTANCE_DECAY_FACTOR,
+  P0_BASE_MOTIVATION_PULL,
+  P0_AMBITION_WEIGHT,
+  MAX_CANDIDATE_DISTANCE,
+} from '../data/movement-content';
 
 /**
  * Score a movement candidate: motivationPull × distanceDecay.
@@ -91,7 +93,7 @@ function computeBasePull(graph: WorldGraph, locationId: string, profile: Axiolog
   const locType = node.properties?.locationType;
   if (locType !== 'hex_center') return 0;
 
-  // Base pull: 0.3 + ambition bonus
-  const ambitionBonus = Math.max(0, profile.ambition_contentment) * 0.4;
-  return 0.3 + ambitionBonus;
+  // Base pull + ambition bonus (P0 heuristic, replaced by axiological scoring in P1)
+  const ambitionBonus = Math.max(0, profile.ambition_contentment) * P0_AMBITION_WEIGHT;
+  return P0_BASE_MOTIVATION_PULL + ambitionBonus;
 }

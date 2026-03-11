@@ -12,12 +12,8 @@ import { DECISION_REEVALUATION_TICKS } from '../types/movement';
 import { tickMovement, initMovementState } from './movementExecution';
 import { generateMovementCandidates } from './movementCandidates';
 import { computeEdgeCost } from './movementCost';
+import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
-
-// ─── Configuration ─────────────────────────────────────────────────
-
-/** Minimum score threshold for movement candidates to be selected */
-const MOVEMENT_SCORE_THRESHOLD = 0.1;
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -75,7 +71,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           tick: state.tick,
           type: 'agent_movement',
           message: `${actor.name} moves to ${state.graph.getNode(result.newLocationId!)?.name ?? 'a location'}.`,
-          significance: 0.3,
+          significance: MOVEMENT_EVENT_SIGNIFICANCE,
         });
       }
 
