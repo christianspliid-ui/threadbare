@@ -16,8 +16,10 @@ import {
   P0_AMBITION_WEIGHT,
   MAX_CANDIDATE_DISTANCE,
   DEFAULT_QUEST_PRIORITY,
+  THREAT_MODIFIER_FLOOR,
 } from '../data/movement-content';
 import { isEncounterVisibleToAgent } from './questVisibility';
+import { computeHexThreatRating } from './threatRating';
 
 /**
  * Score a movement candidate: motivationPull × distanceDecay.
@@ -25,6 +27,20 @@ import { isEncounterVisibleToAgent } from './questVisibility';
 export function scoreMovementCandidate(motivationPull: number, tickDistance: number): number {
   const distanceDecay = 1 / (1 + DISTANCE_DECAY_FACTOR * tickDistance);
   return motivationPull * distanceDecay;
+}
+
+/**
+ * Compute threat modifier for movement scoring.
+ *
+ * threatModifier = 1.0 - (hexThreatRating × (1.0 - courageFactor))
+ * where courageFactor maps courage_prudence [-1, 1] to [0, 1].
+ * High courage → threat matters less. Low courage → threat reduces score.
+ * Floored at THREAT_MODIFIER_FLOOR to prevent zero scores.
+ */
+export function computeThreatModifier(threatRating: number, couragePrudence: number): number {
+  const courageFactor = (couragePrudence + 1) / 2;
+  const modifier = 1.0 - (threatRating * (1.0 - courageFactor));
+  return Math.max(THREAT_MODIFIER_FLOOR, modifier);
 }
 
 /**
@@ -54,7 +70,9 @@ export function generateMovementCandidates(
     const { pull: basePull, bestTemplateId } = computeBasePull(graph, loc.id, agentId, profile);
     if (basePull <= 0) continue;
 
-    const score = scoreMovementCandidate(basePull, pathResult.totalCost);
+    const threat = computeHexThreatRating(graph, loc.id);
+    const threatMod = computeThreatModifier(threat, profile.courage_prudence);
+    const score = scoreMovementCandidate(basePull * threatMod, pathResult.totalCost);
 
     candidates.push({
       destinationId: loc.id,
