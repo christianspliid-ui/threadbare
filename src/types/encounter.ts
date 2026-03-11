@@ -9,6 +9,7 @@
 import type { SphereName, LocationSubtype } from './index';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
+import type { RewardPoolRecipe } from './attachments';
 
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
@@ -83,6 +84,8 @@ export interface EncounterOutcome {
   tierPromotionEligible?: boolean;
   /** Trait changes for logging (optional) */
   traitChanges?: string[];
+  /** Reward pool recipe for attachment generation on this outcome */
+  rewardPool?: RewardPoolRecipe;
 }
 
 // ─── Step Definition ────────────────────────────────────────────
@@ -115,6 +118,8 @@ export interface EncounterTemplate {
   name: string;
   /** Location types where this encounter can spawn */
   locationTypes: LocationSubtype[];
+  /** Sublocation types where this encounter can occur (optional refinement on location level) */
+  sublocationTypes?: string[];
   /** Linear sequence of steps */
   steps: EncounterStep[];
   /** Primary reach tested */

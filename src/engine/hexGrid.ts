@@ -9,6 +9,10 @@ export function generateWorld(
   rows: number,
   seed: number,
 ): HexTile[] {
+  // Note: generateWorld uses cosmology-biased geoField directly.
+  // The WorldGenData pipeline (createWorldGenData) runs without cosmology
+  // for rivers/lakes. Full unification deferred until forceField supports
+  // cosmology in the pipeline path.
   const coords = generateHexGrid(cols, rows);
   const geoField = generateGeoField(cols, rows, seed, cosmology);
 
@@ -27,3 +31,10 @@ export function generateWorld(
     return { coord, geoParams, terrain };
   });
 }
+
+/**
+ * Pipeline-based world generation (for rivers/lakes passes).
+ * Returns WorldGenData that can be enriched by passes, then converted to HexTile[].
+ */
+export { createWorldGenData, toHexTiles } from './worldGenData';
+export type { WorldGenData, RiverPath } from './worldGenData';

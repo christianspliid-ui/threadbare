@@ -59,6 +59,7 @@ import { createAction, progressAction, isActionComplete, completeAction, isAgent
 import { getActionTemplateById, ACTION_TEMPLATES } from '../data/action-template-content';
 import { executeGraphOps } from './graphOpExecutor';
 import { generateActionCandidates } from './actionCandidates';
+import { checkDissolutions } from './sublocation';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -661,6 +662,7 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
       emitTrace({
         tick: state.tick,
         category: 'familiarity_change',
+        agentId: actor.id,
         summary: `${actor.name} familiarity: ${oldFamiliarity.toFixed(2)} → ${newFamiliarity.toFixed(2)}`,
         actorId: actor.id,
         actorName: actor.name,
@@ -989,6 +991,36 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.3: Action Progress
   s = { ...s, ...phaseActionProgress(s) };
   phaseEventCounts['action_progress'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.4: Sublocation Dissolution
+  const dissolutions = checkDissolutions(s.graph, s.tick, s.encounterProgress);
+  for (const dissolution of dissolutions) {
+    s = {
+      ...s,
+      tickEvents: [
+        ...s.tickEvents,
+        {
+          id: nextEventId(),
+          tick: s.tick,
+          type: 'sublocation_dissolved' as const,
+          message: `${dissolution.sublocationName} at ${dissolution.parentLocationId} dissolved: ${dissolution.reason}`,
+          significance: 0.6,
+        },
+      ],
+    };
+    // Mark encounters at dissolved sublocation as abandoned
+    s = {
+      ...s,
+      encounterProgress: s.encounterProgress.map(ep => {
+        if (dissolution.displacedAgentIds.includes(ep.actorId) && ep.status === 'active') {
+          return { ...ep, status: 'abandoned' as const };
+        }
+        return ep;
+      }),
+    };
+  }
+  phaseEventCounts['sublocation_dissolution'] = dissolutions.length;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.5: Dilemma Detection

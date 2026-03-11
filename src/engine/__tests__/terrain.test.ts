@@ -62,4 +62,13 @@ describe('classifyBiome', () => {
     const biome = classifyBiome(0.3, 0.1, 0.4);
     expect(biome).toBe('tundra');
   });
+
+  it('is deterministic for volcano classification (no Math.random)', () => {
+    // Same inputs must always produce the same output
+    const results = Array.from({ length: 10 }, () =>
+      classifyBiome(0.9, 0.8, 0.5)
+    );
+    const allSame = results.every(r => r === results[0]);
+    expect(allSame).toBe(true);
+  });
 });

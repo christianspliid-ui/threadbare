@@ -2,8 +2,8 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-03-08T09:22:00.283Z",
-    "nodeCount": 228,
-    "edgeCount": 343,
+    "nodeCount": 244,
+    "edgeCount": 371,
     "categories": [
       "action-template",
       "actor-type",
@@ -3258,11 +3258,17 @@
       }
     },
     {
-      "id": "terrain.coastal",
-      "name": "Coastal",
+      "id": "terrain.coast",
+      "name": "Coast",
       "category": "terrain",
-      "description": "Shorelines, beaches, and seaside regions",
-      "properties": {}
+      "description": "Shorelines, beaches, and seaside regions where land meets sea. Windswept cliffs, sandy coves, and rocky headlands define the boundary between terrestrial and marine worlds.",
+      "properties": {
+        "color": "#2a3a4a",
+        "icon": "🏖️",
+        "elevation_range": [-0.1, 0.1],
+        "temperature_range": [5, 28],
+        "moisture_range": [60, 90]
+      }
     },
     {
       "id": "terrain.forested_hills",
@@ -3328,6 +3334,214 @@
           0,
           0.25
         ]
+      }
+    },
+    {
+      "id": "terrain.deep_ocean",
+      "name": "Deep Ocean",
+      "category": "terrain",
+      "description": "The abyssal depths where sunlight never reaches. Crushing pressure, bioluminescent creatures, and ancient things that have never seen the sky. Only the most powerful magic can sustain mortal life here.",
+      "properties": {
+        "color": "#0f1a2a",
+        "icon": "🌊",
+        "elevation_range": [-1, -0.6],
+        "temperature_range": [0, 5],
+        "moisture_range": [100, 100]
+      }
+    },
+    {
+      "id": "terrain.tropical_ocean",
+      "name": "Tropical Ocean",
+      "category": "terrain",
+      "description": "Warm azure waters teeming with colorful marine life. Coral formations shimmer beneath the surface, and the air is thick with salt and warmth. Island chains dot these waters.",
+      "properties": {
+        "color": "#1a2f3a",
+        "icon": "🐠",
+        "elevation_range": [-1, -0.3],
+        "temperature_range": [20, 35],
+        "moisture_range": [100, 100]
+      }
+    },
+    {
+      "id": "terrain.reef",
+      "name": "Reef",
+      "category": "terrain",
+      "description": "Living structures of coral and stone rising from the seabed. Reefs teem with marine life and form natural barriers that protect coastlines. Ancient ones may harbor drowned temples.",
+      "properties": {
+        "color": "#1a3040",
+        "icon": "🪸",
+        "elevation_range": [-0.4, -0.1],
+        "temperature_range": [18, 32],
+        "moisture_range": [100, 100]
+      }
+    },
+    {
+      "id": "terrain.rocky_desert",
+      "name": "Rocky Desert",
+      "category": "terrain",
+      "description": "A harsh landscape of exposed stone, gravel plains, and wind-carved formations. The sun beats down mercilessly on cracked rock. Sparse, hardy plants cling to existence in sheltered crevices.",
+      "properties": {
+        "color": "#3a3020",
+        "icon": "🪨",
+        "elevation_range": [0.1, 0.5],
+        "temperature_range": [25, 50],
+        "moisture_range": [0, 10]
+      }
+    },
+    {
+      "id": "terrain.sand_dunes",
+      "name": "Sand Dunes",
+      "category": "terrain",
+      "description": "Endless waves of golden sand that shift and reshape with the wind. Dunes march across the landscape like slow giants. Travelers who lose the path may wander forever among the rolling crests.",
+      "properties": {
+        "color": "#3a3520",
+        "icon": "🏜️",
+        "elevation_range": [0, 0.3],
+        "temperature_range": [20, 55],
+        "moisture_range": [0, 5]
+      }
+    },
+    {
+      "id": "terrain.arctic",
+      "name": "Arctic",
+      "category": "terrain",
+      "description": "The frozen extremity of the world where ice meets sky. Perpetual winter reigns here, with months of darkness broken by months of pale, unending light. Only the hardiest creatures survive.",
+      "properties": {
+        "color": "#2a3540",
+        "icon": "❄️",
+        "elevation_range": [0, 0.4],
+        "temperature_range": [-40, -5],
+        "moisture_range": [20, 60]
+      }
+    },
+    {
+      "id": "terrain.snow_fields",
+      "name": "Snow Fields",
+      "category": "terrain",
+      "description": "Vast expanses of snow-covered ground stretching to the horizon. The silence is absolute, broken only by wind. Beneath the white blanket, the land remembers warmer seasons.",
+      "properties": {
+        "color": "#2a3a4a",
+        "icon": "🏔️",
+        "elevation_range": [0.1, 0.6],
+        "temperature_range": [-20, 0],
+        "moisture_range": [40, 80]
+      }
+    },
+    {
+      "id": "terrain.tropical_forest",
+      "name": "Tropical Forest",
+      "category": "terrain",
+      "description": "Lush, warm forest with broad-leafed trees and hanging vines. Humidity hangs heavy as birdsong and insect chorus fill the canopy. Life here is abundant and fiercely competitive.",
+      "properties": {
+        "color": "#1a3a1a",
+        "icon": "🌴",
+        "elevation_range": [0, 0.3],
+        "temperature_range": [22, 35],
+        "moisture_range": [70, 95]
+      }
+    },
+    {
+      "id": "terrain.evergreen_forest",
+      "name": "Evergreen Forest",
+      "category": "terrain",
+      "description": "Dense coniferous woodland of pine, spruce, and fir. The air is sharp with resin, and needles carpet the forest floor. These ancient woods keep their green through every season.",
+      "properties": {
+        "color": "#1a2a1a",
+        "icon": "🌲",
+        "elevation_range": [0.1, 0.5],
+        "temperature_range": [-5, 15],
+        "moisture_range": [50, 80]
+      }
+    },
+    {
+      "id": "terrain.light_forest",
+      "name": "Light Forest",
+      "category": "terrain",
+      "description": "Open woodland where trees stand well-spaced, allowing dappled sunlight to reach a meadow floor. Wildflowers bloom between the trunks, and deer move freely through the gentle landscape.",
+      "properties": {
+        "color": "#2a3a20",
+        "icon": "🌿",
+        "elevation_range": [0, 0.25],
+        "temperature_range": [8, 22],
+        "moisture_range": [40, 65]
+      }
+    },
+    {
+      "id": "terrain.dead_forest",
+      "name": "Dead Forest",
+      "category": "terrain",
+      "description": "Skeletal trees stand leafless against a grey sky, their bark peeling and trunks bleached. Something killed this forest—blight, curse, or unnatural fire—and the land has not recovered.",
+      "properties": {
+        "color": "#3a3530",
+        "icon": "🥀",
+        "elevation_range": [0, 0.35],
+        "temperature_range": [5, 25],
+        "moisture_range": [15, 40]
+      }
+    },
+    {
+      "id": "terrain.high_mountains",
+      "name": "High Mountains",
+      "category": "terrain",
+      "description": "Towering peaks that pierce the clouds, their summits crowned with eternal snow. The air thins, winds howl, and only the most determined travelers ascend these heights.",
+      "properties": {
+        "color": "#2a2a2a",
+        "icon": "⛰️",
+        "elevation_range": [0.85, 1],
+        "temperature_range": [-30, 5],
+        "moisture_range": [30, 70]
+      }
+    },
+    {
+      "id": "terrain.mountain_pass",
+      "name": "Mountain Pass",
+      "category": "terrain",
+      "description": "A narrow gap between peaks where travelers can cross the mountain barrier. Passes are strategic chokepoints—easily defended, hotly contested, and often swept by fierce winds.",
+      "properties": {
+        "color": "#3a3020",
+        "icon": "🛤️",
+        "elevation_range": [0.5, 0.75],
+        "temperature_range": [-10, 10],
+        "moisture_range": [20, 50]
+      }
+    },
+    {
+      "id": "terrain.floodplain",
+      "name": "Floodplain",
+      "category": "terrain",
+      "description": "Flat, fertile land alongside rivers that floods seasonally. Rich alluvial soil supports abundant agriculture. Civilizations rise here, blessed by the river's bounty and threatened by its wrath.",
+      "properties": {
+        "color": "#2a3520",
+        "icon": "🌱",
+        "elevation_range": [-0.05, 0.1],
+        "temperature_range": [10, 30],
+        "moisture_range": [70, 95]
+      }
+    },
+    {
+      "id": "terrain.moor_bog",
+      "name": "Moor & Bog",
+      "category": "terrain",
+      "description": "Bleak, windswept heathland where the ground is perpetually waterlogged. Peat bogs conceal treacherous depths, and mist clings to the low hills. An eerie, haunting landscape.",
+      "properties": {
+        "color": "#2a3020",
+        "icon": "🌫️",
+        "elevation_range": [0.05, 0.25],
+        "temperature_range": [2, 15],
+        "moisture_range": [75, 95]
+      }
+    },
+    {
+      "id": "terrain.oasis",
+      "name": "Oasis",
+      "category": "terrain",
+      "description": "A miraculous pocket of green in the heart of the wasteland. Palm trees shade a freshwater spring, and the air is sweet after the dust. Oases are lifelines for desert travelers and settlements.",
+      "properties": {
+        "color": "#2a3520",
+        "icon": "🌴",
+        "elevation_range": [0, 0.15],
+        "temperature_range": [20, 40],
+        "moisture_range": [60, 85]
       }
     },
     {
@@ -4410,6 +4624,174 @@
       "weight": 0.9
     },
     {
+      "source": "terrain.ocean",
+      "target": "terrain.deep_ocean",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.ocean",
+      "target": "terrain.tropical_ocean",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.tropical_ocean",
+      "target": "terrain.reef",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.coastal_shallows",
+      "target": "terrain.coast",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.coastal_shallows",
+      "target": "terrain.reef",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.coast",
+      "target": "terrain.grassland",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.desert",
+      "target": "terrain.rocky_desert",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.desert",
+      "target": "terrain.sand_dunes",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.desert",
+      "target": "terrain.oasis",
+      "type": "rel.adjacent",
+      "weight": 0.3
+    },
+    {
+      "source": "terrain.rocky_desert",
+      "target": "terrain.badlands",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.sand_dunes",
+      "target": "terrain.rocky_desert",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
+      "source": "terrain.tundra",
+      "target": "terrain.arctic",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.tundra",
+      "target": "terrain.snow_fields",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.arctic",
+      "target": "terrain.snow_fields",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.arctic",
+      "target": "terrain.glacier",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.jungle",
+      "target": "terrain.tropical_forest",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.temperate_forest",
+      "target": "terrain.evergreen_forest",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.temperate_forest",
+      "target": "terrain.light_forest",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.dense_forest",
+      "target": "terrain.dead_forest",
+      "type": "rel.adjacent",
+      "weight": 0.3
+    },
+    {
+      "source": "terrain.boreal_forest",
+      "target": "terrain.evergreen_forest",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.mountains",
+      "target": "terrain.high_mountains",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.mountains",
+      "target": "terrain.mountain_pass",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.high_mountains",
+      "target": "terrain.glacier",
+      "type": "rel.adjacent",
+      "weight": 0.7
+    },
+    {
+      "source": "terrain.river",
+      "target": "terrain.floodplain",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.floodplain",
+      "target": "terrain.farmland",
+      "type": "rel.adjacent",
+      "weight": 0.9
+    },
+    {
+      "source": "terrain.marsh",
+      "target": "terrain.moor_bog",
+      "type": "rel.adjacent",
+      "weight": 0.8
+    },
+    {
+      "source": "terrain.moor_bog",
+      "target": "terrain.grassland",
+      "type": "rel.adjacent",
+      "weight": 0.5
+    },
+    {
+      "source": "terrain.grassland",
+      "target": "terrain.light_forest",
+      "type": "rel.adjacent",
+      "weight": 0.6
+    },
+    {
       "source": "creation.force",
       "target": "creation.matter",
       "type": "rel.amplifies",
@@ -5041,7 +5423,7 @@
     },
     {
       "source": "location.settlement",
-      "target": "terrain.coastal",
+      "target": "terrain.coast",
       "type": "rel.terrain-valid",
       "weight": 1
     },
@@ -5071,7 +5453,7 @@
     },
     {
       "source": "location.port",
-      "target": "terrain.coastal",
+      "target": "terrain.coast",
       "type": "rel.terrain-valid",
       "weight": 1
     },
@@ -5089,7 +5471,7 @@
     },
     {
       "source": "location.market-town",
-      "target": "terrain.coastal",
+      "target": "terrain.coast",
       "type": "rel.terrain-valid",
       "weight": 1
     },
@@ -5268,7 +5650,7 @@
     },
     {
       "source": "location.marketplace",
-      "target": "terrain.coastal",
+      "target": "terrain.coast",
       "type": "rel.terrain-valid"
     },
     {

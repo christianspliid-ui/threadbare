@@ -1,5 +1,6 @@
+import { memo, useCallback } from 'react';
 import type { ReactElement } from 'react';
-import type { HexTile, LocationSubtype } from '../../types';
+import type { HexTile, HexCoord, LocationSubtype } from '../../types';
 import type { HexVisibilityState } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
@@ -8,9 +9,13 @@ import { isWaterTerrain } from '../../engine/coastline';
 import { Tooltip } from '../shared/Tooltip';
 
 // Hex tile display constants
-const UNEXPLORED_HEX_COLOR = '#1e1b2e'; // Dark world surface, ~12% brightness matching HEX_MAP_BACKGROUND
+const UNEXPLORED_HEX_COLOR = '#0a0a0c'; // Neutral near-black for unexplored fog — no purple tint
 const HEX_BORDER_COLOR = 'rgba(139, 105, 60, 0.3)'; // VS-105: Tan/brown border at 30% opacity
 const SELECTION_RING_COLOR = '#5A3A1A'; // VS-105: Dark brown dashed ring for selected hex
+const SELECTION_RING_INSET = 3; // Pixels to shrink selection ring inside hex boundary
+const SELECTION_RING_WIDTH = 1.5; // Stroke width for selection ring
+const SELECTION_RING_DASH = '4,2'; // Dash pattern for selection ring
+const AVATAR_PULSE_WIDTH = 3; // Stroke width for avatar hex pulse ring
 const OVERLAY_OPACITY = 0.85; // Location overlay icon opacity
 
 // Overlay sizing: full-size settlements fill the hex, structures render at half size
@@ -44,6 +49,14 @@ function renderLocationOverlay(
   );
 }
 
+// IX-202: Concise geo description for hex tooltips
+function geoDesc(elev: number, temp: number, moist: number): string {
+  const e = elev < 0.25 ? 'Low' : elev < 0.6 ? 'Mid' : 'High';
+  const t = temp < 0.3 ? 'Cold' : temp < 0.7 ? 'Temperate' : 'Hot';
+  const m = moist < 0.3 ? 'Arid' : moist < 0.7 ? 'Moderate' : 'Wet';
+  return `${e} elevation · ${t} · ${m} moisture`;
+}
+
 interface HexTileProps {
   tile: HexTile;
   cx: number;
@@ -56,27 +69,41 @@ interface HexTileProps {
   isAvatarHex?: boolean;
   sphereColor?: string;
   locationSubtype?: LocationSubtype;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
+  /** RC-201: Stable callback refs — HexTile binds its own coord internally */
+  onHexClick?: (coord: HexCoord) => void;
+  onHexHover?: (coord: HexCoord | null) => void;
 }
 
-export function HexTileComponent({
+export const HexTileComponent = memo(function HexTileComponent({
   tile, cx, cy, size, hexClipId,
   isHovered = false, isSelected = false,
   visibility = 'visible', isAvatarHex = false, sphereColor,
   locationSubtype,
-  onClick, onMouseEnter, onMouseLeave,
+  onHexClick, onHexHover,
 }: HexTileProps) {
+  // RC-201: Stable handlers — only re-create when callback ref or coord changes, not on hover
+  const onClick = useCallback(() => onHexClick?.(tile.coord), [onHexClick, tile.coord]);
+  const onMouseEnter = useCallback(() => onHexHover?.(tile.coord), [onHexHover, tile.coord]);
+  const onMouseLeave = useCallback(() => onHexHover?.(null), [onHexHover]);
   const fillColor = BIOME_COLORS[tile.terrain];
   const points = hexPolygonPoints(cx, cy, size);
   const tileUrl = getHexTileUrl(tile.terrain);
   const imgSize = size * HEX_IMG_SCALE;
 
+  // IX-205: Data attributes for test selectors and accessibility
+  const dataAttrs = {
+    'data-terrain': tile.terrain,
+    'data-col': tile.coord.col,
+    'data-row': tile.coord.row,
+  };
+
+  // IX-202: Geo description for tooltip
+  const geoDescText = geoDesc(tile.geoParams.elevation, tile.geoParams.temperature, tile.geoParams.moisture);
+
   // Unexplored: only render dark fill, no content
   if (visibility === 'unexplored') {
     return (
-      <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+      <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
         <polygon
           points={points}
           fill={UNEXPLORED_HEX_COLOR}
@@ -93,21 +120,21 @@ export function HexTileComponent({
   // Visible water hex: render transparent — let CoastlineOverlay show through
   if (visibility === 'visible' && isWater) {
     return (
-      <Tooltip as="g" label={tile.terrain} id={`terrain.${tile.terrain}`}>
-        <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+      <Tooltip as="g" label={tile.terrain} desc={geoDescText} id={`terrain.${tile.terrain}`}>
+        <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
           {/* Transparent hit area for click/hover events */}
           <polygon points={points} fill="transparent" stroke="none" />
           {isSelected && (
             <polygon
-              points={hexPolygonPoints(cx, cy, size - 3)}
+              points={hexPolygonPoints(cx, cy, size - SELECTION_RING_INSET)}
               fill="none"
               stroke={SELECTION_RING_COLOR}
-              strokeWidth={1.5}
-              strokeDasharray="4,2"
+              strokeWidth={SELECTION_RING_WIDTH}
+              strokeDasharray={SELECTION_RING_DASH}
             />
           )}
           {isAvatarHex && sphereColor && (
-            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={3} className="avatar-pulse" />
+            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={AVATAR_PULSE_WIDTH} className="avatar-pulse" />
           )}
         </g>
       </Tooltip>
@@ -117,13 +144,13 @@ export function HexTileComponent({
   // Remembered water hex: transparent with dimmed border
   if (visibility === 'remembered' && isWater) {
     return (
-      <Tooltip as="g" label={tile.terrain} id={`terrain.${tile.terrain}`}>
-        <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+      <Tooltip as="g" label={tile.terrain} desc={geoDescText} id={`terrain.${tile.terrain}`}>
+        <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
           <g opacity="0.4">
             <polygon points={points} fill="transparent" stroke={HEX_BORDER_COLOR} strokeWidth={0.6} />
           </g>
           {isAvatarHex && sphereColor && (
-            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={3} className="avatar-pulse" />
+            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={AVATAR_PULSE_WIDTH} className="avatar-pulse" />
           )}
         </g>
       </Tooltip>
@@ -157,11 +184,11 @@ export function HexTileComponent({
       {/* Selection ring */}
       {isSelected && (
         <polygon
-          points={hexPolygonPoints(cx, cy, size - 3)}
+          points={hexPolygonPoints(cx, cy, size - SELECTION_RING_INSET)}
           fill="none"
           stroke={SELECTION_RING_COLOR}
-          strokeWidth={1.5}
-          strokeDasharray="4,2"
+          strokeWidth={SELECTION_RING_WIDTH}
+          strokeDasharray={SELECTION_RING_DASH}
         />
       )}
     </>
@@ -173,9 +200,10 @@ export function HexTileComponent({
       <Tooltip
         as="g"
         label={tile.terrain}
+        desc={geoDescText}
         id={`terrain.${tile.terrain}`}
       >
-        <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+        <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
           <g opacity="0.4">
             {tileContent}
           </g>
@@ -189,9 +217,10 @@ export function HexTileComponent({
     <Tooltip
       as="g"
       label={tile.terrain}
+      desc={geoDescText}
       id={`terrain.${tile.terrain}`}
     >
-      <g onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
+      <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
         {tileContent}
         {isAvatarHex && sphereColor && (
           <polygon
@@ -205,4 +234,4 @@ export function HexTileComponent({
       </g>
     </Tooltip>
   );
-}
+});

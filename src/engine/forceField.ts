@@ -1,29 +1,27 @@
 import { createNoise2D } from 'simplex-noise';
 import { type CosmologyProfile, type GeoParams } from '../types';
+import { mulberry32 } from '../lib/prng';
 
-function mulberry32(seed: number) {
-  return () => {
-    let t = (seed += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// ─── Noise generation parameters (NFP #1: Tunability) ────────
+// Change terrain character by adjusting these values — no logic rewrites needed.
 
-const ELEVATION_SCALE = 0.06;
-const ELEVATION_OCTAVES = 4;
-const ELEVATION_PERSISTENCE = 0.5;
-const ELEVATION_LACUNARITY = 2.0;
+/** Elevation noise: large-scale continental shapes */
+export const ELEVATION_SCALE = 0.06;
+export const ELEVATION_OCTAVES = 4;
+export const ELEVATION_PERSISTENCE = 0.5;
+export const ELEVATION_LACUNARITY = 2.0;
 
-const TEMP_NOISE_SCALE = 0.04;
-const TEMP_OCTAVES = 2;
-const TEMP_PERSISTENCE = 0.5;
-const TEMP_LACUNARITY = 2.0;
+/** Temperature noise: local climate variation */
+export const TEMP_NOISE_SCALE = 0.04;
+export const TEMP_OCTAVES = 2;
+export const TEMP_PERSISTENCE = 0.5;
+export const TEMP_LACUNARITY = 2.0;
 
-const MOISTURE_NOISE_SCALE = 0.05;
-const MOISTURE_OCTAVES = 3;
-const MOISTURE_PERSISTENCE = 0.5;
-const MOISTURE_LACUNARITY = 2.0;
+/** Moisture noise: rainfall and humidity patterns */
+export const MOISTURE_NOISE_SCALE = 0.05;
+export const MOISTURE_OCTAVES = 3;
+export const MOISTURE_PERSISTENCE = 0.5;
+export const MOISTURE_LACUNARITY = 2.0;
 
 function fractalNoise(
   noise2D: (x: number, y: number) => number,

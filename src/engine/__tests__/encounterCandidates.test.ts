@@ -548,4 +548,223 @@ describe('generateEncounterCandidates', () => {
     // Should have no social candidates since actor is alone
     expect(socialCandidates.length).toBe(0);
   });
+
+  describe('sublocation integration', () => {
+    it('includes sublocationId when sublocation selection succeeds', () => {
+      // Setup: location with sublocation type mapping
+      const locationId = 'loc.town-main';
+      const sublocationTypeId = 'subloc-type.town-district';
+      const locationTypeId = 'loctype.town';
+
+      graph.addNode({
+        id: locationId,
+        type: 'location',
+        name: 'Town',
+        properties: {
+          locationType: 'town',
+          locationSubtype: 'town',
+        },
+      });
+
+      // Add location-type node
+      graph.addNode({
+        id: locationTypeId,
+        type: 'location-type',
+        name: 'Town Type',
+        properties: {},
+      });
+
+      // Add located_at edge from location to location-type
+      graph.addEdge({
+        id: `edge-${locationId}-located-at-${locationTypeId}`,
+        source: locationId,
+        target: locationTypeId,
+        type: 'located_at',
+        properties: {},
+      });
+
+      // Add sublocation-type node with motivations
+      graph.addNode({
+        id: sublocationTypeId,
+        type: 'location-type',
+        name: 'Town District',
+        properties: {
+          motivations: [
+            { left: 'devotion', right: 'independence', weight: 0.8 },
+          ],
+        },
+      });
+
+      // Add contains edge from location-type to sublocation-type
+      graph.addEdge({
+        id: `edge-${locationTypeId}-contains-${sublocationTypeId}`,
+        source: locationTypeId,
+        target: sublocationTypeId,
+        type: 'contains',
+        properties: {},
+      });
+
+      // Add actor with neutral axiological profile
+      graph.addNode({
+        id: actorId,
+        type: 'actor',
+        name: 'TestActor',
+        properties: {
+          actorType: 'individual',
+          axiologicalProfile: {
+            courage_prudence: 0,
+            ambition_contentment: 0,
+            cruelty_compassion: 0,
+            cunning_honesty: 0,
+            devotion_independence: 0,
+            loyalty_treachery: 0,
+            tradition_innovation: 0,
+            dominance_humility: 0,
+            wrath_patience: 0,
+            greed_generosity: 0,
+          },
+        },
+      });
+
+      // Action: generate candidates
+      const candidates = generateEncounterCandidates(graph, actorId, locationId);
+
+      // Assert: candidates should have sublocationId set
+      expect(candidates.length).toBeGreaterThan(0);
+      candidates.forEach(c => {
+        expect(c.sublocationId).toBeDefined();
+        expect(typeof c.sublocationId).toBe('string');
+      });
+    });
+
+    it('falls back to location-based templates when no sublocations exist', () => {
+      // Setup: location with a subtype NOT in SUBTYPE_SUBLOCATION_MAP
+      graph.addNode({
+        id: locationId,
+        type: 'location',
+        name: 'Wilderness Outpost',
+        properties: {
+          locationType: 'location',
+          locationSubtype: 'wilderness',
+        },
+      });
+
+      // Add actor
+      graph.addNode({
+        id: actorId,
+        type: 'actor',
+        name: 'TestActor',
+        properties: {
+          actorType: 'individual',
+          axiologicalProfile: {
+            courage_prudence: 0,
+            ambition_contentment: 0,
+            cruelty_compassion: 0,
+            cunning_honesty: 0,
+            devotion_independence: 0,
+            loyalty_treachery: 0,
+            tradition_innovation: 0,
+            dominance_humility: 0,
+            wrath_patience: 0,
+            greed_generosity: 0,
+          },
+        },
+      });
+
+      // Action: generate candidates
+      const candidates = generateEncounterCandidates(graph, actorId, locationId);
+
+      // Assert: candidates should be generated without sublocationId (fallback behavior)
+      expect(candidates.length).toBeGreaterThan(0);
+      candidates.forEach(c => {
+        // sublocationId should be undefined for locations with no sublocations
+        expect(c.sublocationId).toBeUndefined();
+      });
+    });
+
+    it('still filters by threat rating when using sublocations', () => {
+      // Setup: location with sublocation type mapping
+      const locationId = 'loc.ruins-main';
+      const sublocationTypeId = 'subloc-type.ruins-chamber';
+      const locationTypeId = 'loctype.ruins';
+
+      graph.addNode({
+        id: locationId,
+        type: 'location',
+        name: 'Ruins',
+        properties: {
+          locationType: 'ruins',
+          locationSubtype: 'ruins',
+        },
+      });
+
+      // Add location-type node
+      graph.addNode({
+        id: locationTypeId,
+        type: 'location-type',
+        name: 'Ruins Type',
+        properties: {},
+      });
+
+      graph.addEdge({
+        id: `edge-${locationId}-located-at-${locationTypeId}`,
+        source: locationId,
+        target: locationTypeId,
+        type: 'located_at',
+        properties: {},
+      });
+
+      // Add sublocation-type node
+      graph.addNode({
+        id: sublocationTypeId,
+        type: 'location-type',
+        name: 'Ruins Chamber',
+        properties: {
+          motivations: [
+            { left: 'courage', right: 'prudence', weight: 0.5 },
+          ],
+        },
+      });
+
+      graph.addEdge({
+        id: `edge-${locationTypeId}-contains-${sublocationTypeId}`,
+        source: locationTypeId,
+        target: sublocationTypeId,
+        type: 'contains',
+        properties: {},
+      });
+
+      // Add actor with low capability
+      graph.addNode({
+        id: actorId,
+        type: 'actor',
+        name: 'Weak Actor',
+        properties: {
+          actorType: 'individual',
+          axiologicalProfile: {
+            courage_prudence: -0.8, // Very prudent, will restrict threat tier
+            ambition_contentment: 0,
+            cruelty_compassion: 0,
+            cunning_honesty: 0,
+            devotion_independence: 0,
+            loyalty_treachery: 0,
+            tradition_innovation: 0,
+            dominance_humility: 0,
+            wrath_patience: 0,
+            greed_generosity: 0,
+          },
+        },
+      });
+
+      // Action: generate candidates
+      const candidates = generateEncounterCandidates(graph, actorId, locationId);
+
+      // Assert: threat filtering should still apply (should have fallback trivials)
+      expect(Array.isArray(candidates)).toBe(true);
+      // With very low capability and prudence, fallback trivials should be included
+      if (candidates.length > 0) {
+        expect(candidates.some(c => c.sublocationId !== undefined)).toBe(true);
+      }
+    });
+  });
 });

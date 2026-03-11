@@ -16,8 +16,9 @@ import {
   THREAT_COURAGE_THRESHOLD,
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
-import { getEncountersByLocationType } from '../data/encounter-content';
+import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
+import { ensureSublocations, selectSublocation } from './sublocation';
 
 // ─── Constants ──────────────────────────────────────────────────
 
@@ -34,15 +35,19 @@ const SOCIAL_ENCOUNTER_TYPES = new Set(['duel', 'steal', 'trade', 'assist']);
  *
  * Steps:
  * 1. Gets the location node and reads locationSubtype
- * 2. Gets matching encounter templates via getEncountersByLocationType
- * 3. For each template:
+ * 2. Ensures sublocations exist via ensureSublocations (lazy node creation)
+ * 3. If sublocations exist and non-empty:
+ *    a. Selects one via selectSublocation (scored by axiological motivation alignment)
+ *    b. Gets templates matching sublocation type via getEncountersBySublocationAndLocation
+ * 4. If no sublocations: falls back to getEncountersByLocationType unchanged
+ * 5. For each template:
  *    a. Computes agent capability in the template's reachPrimary domain
  *    b. Multiplies by 100 to get 0-100 scale for THREAT_CAPABILITY_BANDS
  *    c. Checks if capability is within threat tolerance (with courage/prudence modulation)
  *    d. Determines target: location for non-social, another agent for social encounters
  *    e. Creates ActionCandidate with motivations from template or ENCOUNTER_TYPE_MOTIVATIONS
- * 4. Fallback: if no candidates passed threat filter, includes all trivial encounters
- * 5. Returns candidates array
+ * 6. Fallback: if no candidates passed threat filter, includes all trivial encounters
+ * 7. Returns candidates array (with sublocationId set when a sublocation was selected)
  */
 export function generateEncounterCandidates(
   graph: WorldGraph,
@@ -55,15 +60,38 @@ export function generateEncounterCandidates(
   const subtype = (locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined;
   if (!subtype) return [];
 
-  const templates = getEncountersByLocationType(subtype);
-  if (templates.length === 0) return [];
-
   // Get actor node and courage value for threat tolerance modulation
   const actorNode = graph.getNode(actorId);
   if (!actorNode) return [];
 
   const axiologicalProfile = actorNode.properties.axiologicalProfile as Record<string, number> | undefined;
   const courageValue = axiologicalProfile?.courage_prudence ?? 0;
+
+  // Step 2: Ensure sublocations exist (lazy node creation, idempotent)
+  // Use a deterministic seed based on locationId + actorId for sublocation creation
+  const seed = hashLocationActor(locationId, actorId);
+  const sublocations = ensureSublocations(graph, locationId, seed);
+
+  // Step 3: Select a sublocation if they exist, and filter templates accordingly
+  let templates: EncounterTemplate[];
+  let selectedSublocationId: string | undefined;
+
+  if (sublocations.length > 0) {
+    const selectedSublocation = selectSublocation(graph, sublocations, actorId, seed);
+    if (selectedSublocation) {
+      selectedSublocationId = selectedSublocation.id;
+      const sublocationTypeId = (selectedSublocation.properties.sublocationTypeId ?? '') as string;
+      templates = getEncountersBySublocationAndLocation(sublocationTypeId, subtype);
+    } else {
+      // selectSublocation returned undefined, fallback to location-based templates
+      templates = getEncountersByLocationType(subtype);
+    }
+  } else {
+    // No sublocations, use standard location-based templates
+    templates = getEncountersByLocationType(subtype);
+  }
+
+  if (templates.length === 0) return [];
 
   const candidates: ActionCandidate[] = [];
 
@@ -98,6 +126,7 @@ export function generateEncounterCandidates(
       domain: template.reachPrimary,
       score: 0, // Selection pipeline fills this in
       motivations: template.motivations ?? ENCOUNTER_TYPE_MOTIVATIONS[template.encounterType],
+      sublocationId: selectedSublocationId,
     });
   }
 
@@ -122,6 +151,7 @@ export function generateEncounterCandidates(
         domain: t.reachPrimary,
         score: 0,
         motivations: t.motivations ?? ENCOUNTER_TYPE_MOTIVATIONS[t.encounterType],
+        sublocationId: selectedSublocationId,
       });
     }
   }
@@ -181,4 +211,21 @@ function getOtherAgentsAtLocation(graph: WorldGraph, actorId: string, locationId
   return locatedAtEdges
     .map(e => e.source)
     .filter(id => id !== actorId);
+}
+
+/**
+ * Compute a deterministic seed from locationId and actorId.
+ * Used for sublocation selection to ensure consistency across calls.
+ */
+function hashLocationActor(locationId: string, actorId: string): number {
+  // Simple hash: concatenate and sum char codes
+  const combined = locationId + actorId;
+  let hash = 0;
+  for (let i = 0; i < combined.length; i++) {
+    const char = combined.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  // Return absolute value to ensure positive seed
+  return Math.abs(hash) || 1;
 }

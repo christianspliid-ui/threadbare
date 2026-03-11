@@ -7,13 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg-deep: #0d0d14;
-    --bg-dark: #1a1a2e;
-    --bg-mid: #16213e;
-    --text-light: #e8e0d4;
-    --text-muted: #a09888;
-    --gold: #d4af37;
-    --gold-bright: #e8c860;
+    /* Synced with src/index.css "Dark Tapestry" design system — 2026-03-10 */
+    --bg-deep: #0a0a0e;       /* was #0d0d14 — matches --bg-abyss */
+    --bg-dark: #1a1a1f;       /* was #1a1a2e — matches --bg-surface */
+    --bg-mid: #222228;        /* was #16213e — matches --bg-raised */
+    --text-light: #e8dcc8;    /* was #e8e0d4 — matches --text-primary (warm parchment) */
+    --text-muted: #8a7e70;    /* was #a09888 — matches --text-tertiary */
+    --gold: #d4a040;          /* was #d4af37 — matches --accent-gold */
+    --gold-bright: #d4a040;   /* was #e8c860 — single gold, no bright variant */
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -1378,6 +1379,282 @@
       </div>
     </div>
     <p class="note">Shadows minimal by default — depth from border opacity, not drop shadows. Divine glow reserved for active player intervention.</p>
+  </div>
+
+  <!-- ======== SUBLOCATION CARDS ======== -->
+  <div class="section">
+    <h2>Sublocation Cards — Location View Pattern</h2>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.2rem;">
+      When the player drills into a location, encounters and agents are grouped under <strong style="color: var(--text-light);">sublocation cards</strong>.
+      Each card shows its persistence type (badge), agents present with encounter progress, and available encounters.
+      Active sublocations sort first; empty ones collapse to a single muted row.
+    </p>
+
+    <style>
+      /* Sublocation palette — mirrors src/index.css variables */
+      .sub-demo {
+        --sub-permanent: #5a8a5a;
+        --sub-permanent-bg: rgba(90, 138, 90, 0.13);
+        --sub-temporal: #d4a040;
+        --sub-temporal-bg: rgba(212, 160, 64, 0.13);
+        --sub-divine: #9c8cdc;
+        --sub-divine-bg: rgba(156, 140, 220, 0.13);
+        --sub-divine-tint: #1e1a2e;
+        --sub-divine-border: rgba(124, 108, 204, 0.27);
+        --sub-step-done: #4ade80;
+        --sub-step-current: #d4a040;
+        --sub-step-current-glow: rgba(212, 160, 64, 0.53);
+        --sub-step-pending: #2a2a32;
+      }
+      .sub-card {
+        border: 1px solid rgba(42, 37, 32, 0.8);
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        margin-bottom: 0.625rem;
+        background: #1a1a1f;
+      }
+      .sub-card.divine {
+        background: linear-gradient(135deg, #1a1a1f, #1e1a2e);
+        border-color: rgba(124, 108, 204, 0.27);
+      }
+      .sub-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+      }
+      .sub-card-title {
+        font-family: 'Cinzel', serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-light);
+        letter-spacing: 0.04em;
+      }
+      .sub-badge {
+        font-size: 0.6rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        padding: 0.15rem 0.5rem;
+        border-radius: 999px;
+      }
+      .sub-badge.permanent {
+        color: #5a8a5a;
+        background: rgba(90, 138, 90, 0.13);
+      }
+      .sub-badge.temporal {
+        color: #d4a040;
+        background: rgba(212, 160, 64, 0.13);
+      }
+      .sub-badge.divine {
+        color: #9c8cdc;
+        background: rgba(156, 140, 220, 0.13);
+      }
+      .sub-agent-row {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.375rem 0;
+      }
+      .sub-agent-pip {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+      }
+      .sub-agent-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .sub-agent-name {
+        font-size: 0.8rem;
+        color: var(--text-light);
+      }
+      .sub-agent-encounter {
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+      }
+      .sub-step-dots {
+        display: flex;
+        gap: 3px;
+      }
+      .sub-step-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .sub-step-dot.done { background: #4ade80; }
+      .sub-step-dot.current { background: #d4a040; box-shadow: 0 0 6px rgba(212, 160, 64, 0.53); }
+      .sub-step-dot.pending { background: #2a2a32; }
+      .sub-avail-row {
+        font-size: 0.7rem;
+        color: #5a5248;
+        padding: 0.25rem 0 0.25rem 2.375rem;
+      }
+      .sub-empty-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        background: #111114;
+        border: 1px solid rgba(42, 37, 32, 0.5);
+        margin-bottom: 0.375rem;
+      }
+      .sub-empty-name {
+        font-family: 'Cinzel', serif;
+        font-size: 0.7rem;
+        color: #5a5248;
+        letter-spacing: 0.04em;
+      }
+      .sub-empty-badge {
+        font-size: 0.55rem;
+        color: #5a8a5a;
+        opacity: 0.6;
+      }
+      .sub-dissolve-note {
+        font-size: 0.65rem;
+        font-style: italic;
+        color: #8a7e70;
+        margin-top: 0.25rem;
+      }
+    </style>
+
+    <!-- Live demo cards -->
+    <div class="sub-demo" style="max-width: 420px;">
+
+      <!-- Card 1: Permanent, active -->
+      <div class="sub-card">
+        <div class="sub-card-header">
+          <span class="sub-card-title">Temple Quarter</span>
+          <span class="sub-badge permanent">Permanent</span>
+        </div>
+        <div class="sub-agent-row">
+          <div class="sub-agent-pip" style="background: #6366f1;">K</div>
+          <div class="sub-agent-info">
+            <div class="sub-agent-name">Kael the Devoted</div>
+            <div class="sub-agent-encounter">
+              Rite of Ascension
+              <span class="sub-step-dots">
+                <span class="sub-step-dot done"></span>
+                <span class="sub-step-dot current"></span>
+                <span class="sub-step-dot pending"></span>
+                <span class="sub-step-dot pending"></span>
+              </span>
+              <span style="color: #d4a040; font-size: 0.65rem;">2/4</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub-agent-row">
+          <div class="sub-agent-pip" style="background: #8b5cf6;">S</div>
+          <div class="sub-agent-info">
+            <div class="sub-agent-name">Sister Maren</div>
+            <div class="sub-agent-encounter" style="color: #5a5248; font-style: italic;">Idle — considering options</div>
+          </div>
+        </div>
+        <div class="sub-avail-row">+ Vigil of the Undying, Sanctum Offering</div>
+      </div>
+
+      <!-- Card 2: Divine, temporal -->
+      <div class="sub-card divine">
+        <div class="sub-card-header">
+          <span class="sub-card-title">The Moonlit Garden</span>
+          <span class="sub-badge divine">Divine</span>
+        </div>
+        <div class="sub-agent-row">
+          <div class="sub-agent-pip" style="background: #ec4899;">R</div>
+          <div class="sub-agent-info">
+            <div class="sub-agent-name">Reva the Exile</div>
+            <div class="sub-agent-encounter">
+              A Chance Encounter
+              <span class="sub-step-dots">
+                <span class="sub-step-dot current"></span>
+                <span class="sub-step-dot pending"></span>
+              </span>
+              <span style="color: #d4a040; font-size: 0.65rem;">1/2</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub-dissolve-note">Dissolves when encounter completes</div>
+      </div>
+
+      <!-- Card 3: Permanent, active (single agent) -->
+      <div class="sub-card">
+        <div class="sub-card-header">
+          <span class="sub-card-title">Market District</span>
+          <span class="sub-badge permanent">Permanent</span>
+        </div>
+        <div class="sub-agent-row">
+          <div class="sub-agent-pip" style="background: #f59e0b;">V</div>
+          <div class="sub-agent-info">
+            <div class="sub-agent-name">Voss the Cunning</div>
+            <div class="sub-agent-encounter">
+              The Grand Bargain
+              <span class="sub-step-dots">
+                <span class="sub-step-dot done"></span>
+                <span class="sub-step-dot done"></span>
+                <span class="sub-step-dot current"></span>
+                <span class="sub-step-dot pending"></span>
+              </span>
+              <span style="color: #d4a040; font-size: 0.65rem;">3/4</span>
+            </div>
+          </div>
+        </div>
+        <div class="sub-avail-row">+ Merchant's Gambit, Pickpocket Chase</div>
+      </div>
+
+      <!-- Collapsed empty sublocations -->
+      <div class="sub-empty-row">
+        <span class="sub-empty-name">Barracks</span>
+        <span class="sub-empty-badge">permanent</span>
+      </div>
+      <div class="sub-empty-row">
+        <span class="sub-empty-name">Docks</span>
+        <span class="sub-empty-badge">permanent</span>
+      </div>
+    </div>
+
+    <!-- Annotation notes -->
+    <div style="margin-top: 1.2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem;">
+      <div>
+        <h3>Persistence Badges</h3>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.4rem;">
+          <span class="sub-badge permanent">Permanent</span>
+          <span class="sub-badge temporal">Temporal</span>
+          <span class="sub-badge divine">Divine</span>
+        </div>
+        <p class="note">Pill badges, top-right of card header. Color encodes persistence type at a glance.</p>
+      </div>
+      <div>
+        <h3>Step Dots</h3>
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 0.4rem;">
+          <span class="sub-step-dot done" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+          <span style="font-size: 0.65rem; color: #4ade80;">Done</span>
+          <span class="sub-step-dot current" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+          <span style="font-size: 0.65rem; color: #d4a040;">Current</span>
+          <span class="sub-step-dot pending" style="width: 8px; height: 8px; border-radius: 50%; display: inline-block;"></span>
+          <span style="font-size: 0.65rem; color: #5a5248;">Pending</span>
+        </div>
+        <p class="note">Inline step progression for multi-step encounters. Compact, scannable at a glance.</p>
+      </div>
+      <div>
+        <h3>Divine Card Tint</h3>
+        <p class="note">Divine sublocations get a subtle purple gradient (<code style="font-size: 0.65rem; color: var(--gold-bright);">#1a1a1f → #1e1a2e</code>) and a faint purple border. Signals divine origin without overwhelming the palette.</p>
+      </div>
+      <div>
+        <h3>Empty Collapse</h3>
+        <p class="note">Sublocations with no agents compress to a single muted row — name + badge, no card chrome. Keeps focus on activity, not empty space.</p>
+      </div>
+    </div>
   </div>
 
   <!-- ======== EXCLUSIONS ======== -->
