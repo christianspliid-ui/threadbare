@@ -136,6 +136,18 @@ export interface EncounterTemplate {
   sphereAffinity?: SphereName;
   /** Optional cultural affinity for filtering */
   culturalAffinity?: string;
+  /**
+   * Visibility filter — which agents/factions can see this encounter.
+   * Format: 'faction:<id>', 'agent:<id>', 'archetype:<id>', 'culture:<id>', or 'all'.
+   * Undefined = visible to all (backward compatible).
+   */
+  visibleTo?: string[];
+  /**
+   * Score multiplier for quest encounters (1.0 = normal, 2.0–10.0 = quest).
+   * Applied to motivationPull in movement candidate scoring.
+   * Undefined = treated as 1.0 (no boost).
+   */
+  questPriority?: number;
 }
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────
