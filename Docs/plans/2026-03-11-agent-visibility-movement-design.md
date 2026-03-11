@@ -1,7 +1,7 @@
 # DES-009: Agent Visibility, Movement & Pathfinding
 
 **Date:** 2026-03-11
-**Status:** Approved — pending implementation planning
+**Status:** P0 implemented — P1 pending (2026-03-11: movement types, content data, edge costs, pathfinding, candidates, execution, phase integration all shipped with 131 tests)
 **Scope:** Visual representation of agents on hex map, fog-of-war integration, graph-based movement architecture, goal-directed pathfinding, colocation encounter detection (DES-010 hook)
 **Depends on:** Hex map renderer, graph engine, encounter system, axiological selection pipeline, modifier system, culture/faction systems
 **Backlog items:** DES-009 (Agent Visibility on Hex Map), DES-010 (Agent Encounter Engine)
