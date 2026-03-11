@@ -269,7 +269,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
             </section>
           )}
 
-          {/* Full Backstory (transparent only) */}
+          {/* Full Backstory (transparent only) — RC-022: defensive optional chaining */}
           {card.knowledgeLevel === 'transparent' && profile?.fullBackstory && (
             <section>
               <h2
@@ -279,7 +279,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                 Full Account
               </h2>
               <div className="text-sm space-y-3" style={{ color: 'var(--text-secondary)' }}>
-                {profile.fullBackstory.split('\n\n').map((para, idx) => (
+                {profile?.fullBackstory?.split('\n\n').map((para, idx) => (
                   <p key={idx} className="leading-relaxed">
                     {para}
                   </p>
@@ -314,8 +314,8 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
             </section>
           )}
 
-          {/* History Timeline (transparent only) */}
-          {card.knowledgeLevel === 'transparent' && profile?.historyTimeline && profile.historyTimeline.length > 0 && (
+          {/* History Timeline (transparent only) — RC-022: defensive optional chaining */}
+          {card.knowledgeLevel === 'transparent' && profile?.historyTimeline && profile?.historyTimeline.length > 0 && (
             <section>
               <h2
                 className="font-bold mb-3"
@@ -324,7 +324,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                 History
               </h2>
               <div className="space-y-2">
-                {profile.historyTimeline.map((entry, idx) => (
+                {profile?.historyTimeline?.map((entry, idx) => (
                   <div key={idx} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                     <span style={{ color: 'var(--accent-gold)' }}>t{entry.tick}</span>
                     {' — '}
@@ -335,8 +335,8 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
             </section>
           )}
 
-          {/* Disposition Record (transparent only) */}
-          {card.knowledgeLevel === 'transparent' && profile?.dispositionRecord && profile.dispositionRecord.length > 0 && (
+          {/* Disposition Record (transparent only) — RC-022: defensive optional chaining */}
+          {card.knowledgeLevel === 'transparent' && profile?.dispositionRecord && profile?.dispositionRecord.length > 0 && (
             <section>
               <h2
                 className="font-bold mb-3"
@@ -345,7 +345,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                 Interaction Record
               </h2>
               <div className="space-y-2">
-                {profile.dispositionRecord.map((record, idx) => (
+                {profile?.dispositionRecord?.map((record, idx) => (
                   <div key={idx} className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>
                     <div className="flex justify-between mb-1">
                       <span style={{ color: 'var(--accent-gold)' }}>t{record.tick}</span>

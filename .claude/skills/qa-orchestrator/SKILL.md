@@ -7,6 +7,34 @@ description: Use when running a QA sweep of The Fantasy World Simulator UI. Trig
 
 Systematic QA sweep of The Fantasy World Simulator. Three modes, four specialist agents, structured findings with backlog routing.
 
+## Test Surface Registry
+
+**CRITICAL — Read before every sweep:** This skill maintains a companion file `test-surfaces.md` in the same directory. It lists every testable UI surface (49 components + 7 cross-cutting concerns) with:
+- **Surface IDs** (S-001 through S-106, X-001 through X-007)
+- **Prerequisites** for reaching each surface
+- **Testable actions** per surface
+
+### How Agents Use the Registry
+
+1. **Before dispatching agents:** Read `test-surfaces.md` to know the full surface inventory.
+2. **During sweep:** Each agent maps their findings to one or more surface IDs via the `surfaceIds` field.
+3. **After sweep:** The orchestrator produces a **coverage report** showing which surfaces were tested vs. skipped. The goal is 100% coverage of non-dev surfaces on full sweeps.
+4. **After implementing new components:** Add a new entry to `test-surfaces.md`. This is non-negotiable — an unlisted surface is an untested surface.
+
+### Coverage Tracking
+
+After merging findings from all agents, produce a coverage summary:
+
+```
+## Coverage: YYYY-MM-DD
+Tested: S-001, S-002, S-010, S-011, S-020, ... (N/49)
+Skipped: S-078 (harvest — cycle end not reached), S-091 (dev-only)
+Cross-cutting: X-001 ✓, X-002 ✓, X-003 ✗ (not checked), ...
+Coverage: N/49 surfaces (XX%)
+```
+
+Save coverage data alongside findings in the JSON archive.
+
 ## Mode Selection
 
 Ask the user which mode to run, or default to Mode 1 if they said "run QA" without specifics.
@@ -49,6 +77,7 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
   "category": "color-violation",
   "backlog": "visual-assets",
   "notionPrefix": "ART",
+  "surfaceIds": ["S-030"],
   "title": "Hex map background exceeds brightness ceiling",
   "description": "Background color rgb(244,232,193) computes to 88% brightness. STYLE.md requires world surfaces in 10-40% range.",
   "evidence": "CSS: background-color: rgb(244, 232, 193); HSL: hsl(39, 76%, 86%)",
@@ -69,6 +98,7 @@ Every agent produces findings in this exact JSON structure. Consistent schema en
 | `category` | string | Free-form: `color-violation`, `redundant-text`, `broken-flow`, `anti-pattern`, etc. |
 | `backlog` | enum | `content` \| `frontend` \| `architecture` \| `visual-assets` |
 | `notionPrefix` | enum | `CB` \| `FE` \| `SYS` \| `ART` |
+| `surfaceIds` | string[] | Surface IDs from `test-surfaces.md` (e.g., `["S-030", "S-031"]`). Every finding must map to at least one surface. |
 | `title` | string | One-line summary |
 | `description` | string | Full description with reproduction steps |
 | `evidence` | string? | CSS value, screenshot path, code snippet |
@@ -181,6 +211,8 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 
 > You are an Interaction & State auditor for The Fantasy World Simulator. Click through every interactive flow and verify correct state transitions, overlay behavior, and user feedback.
 >
+> **Surface coverage:** Read `test-surfaces.md` in the qa-orchestrator skill directory. Your job is to touch as many surfaces as possible. Tag every finding with `surfaceIds` from the registry. After testing, report which surface IDs you visited vs. skipped.
+>
 > **Use Playwright MCP to systematically test each flow:**
 >
 > 1. **World Creation:** Navigate to `http://localhost:5173`. Select spheres, confirm creation, verify game starts. Screenshot each step.
@@ -220,6 +252,8 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 **Prompt template (copy this entire block as the agent prompt):**
 
 > You are a React Code Quality auditor for The Fantasy World Simulator. Analyze React components for anti-patterns, performance issues, and accessibility gaps. This is static code analysis — no browser needed.
+>
+> **Surface coverage:** Read `test-surfaces.md` in the qa-orchestrator skill directory. Map each component file to its surface ID. Tag every finding with `surfaceIds`. After scanning, report which surface IDs you covered vs. skipped.
 >
 > **Scan all `.tsx` files in `src/components/`:**
 >
@@ -263,30 +297,36 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 ### Phase 1: Setup
 
 1. Read this skill file fully
-2. Read `STYLE.md` for current visual spec
-3. Pre-flight: `browser_navigate` to `http://localhost:5173` — must load. Test Notion MCP responds.
-4. Initialize findings collection
+2. Read `test-surfaces.md` (companion file in this skill directory) — this is your surface checklist
+3. Read `STYLE.md` for current visual spec
+4. Pre-flight: `browser_navigate` to `http://localhost:5173` — must load. Test Notion MCP responds.
+5. Initialize findings collection and surface coverage tracker (all surface IDs start as "untested")
 
 ### Phase 2: Agent Dispatch (Sequential)
 
-5. **Dispatch Agent 1** (Visual Style) — use the prompt template above. Collect returned findings.
-6. **Dispatch Agent 2** (Info Architecture) — use the prompt template above. Collect returned findings.
-7. **Dispatch Agent 3** (Interaction & State) — use the prompt template above. Collect returned findings.
-8. **Dispatch Agent 4** (React Code Quality) — use the prompt template above. Collect returned findings.
+6. **Dispatch Agent 1** (Visual Style) — use the prompt template above. Collect returned findings. Each finding must include `surfaceIds`.
+7. **Dispatch Agent 2** (Info Architecture) — use the prompt template above. Collect returned findings.
+8. **Dispatch Agent 3** (Interaction & State) — use the prompt template above. Collect returned findings.
+9. **Dispatch Agent 4** (React Code Quality) — use the prompt template above. Collect returned findings.
 
 **Why sequential:** Playwright MCP controls a single browser. Parallel agents would conflict. Later agents also benefit from the game state left by earlier agents.
 
 ### Phase 3: Merge & Report
 
-9. **Deduplicate:** Same UI element + same issue -> merge, keep the more detailed description. Cross-agent links: if Agent 1 flags a color and Agent 4 finds the hardcoded value -> reference both.
-10. **Route:** Apply the Backlog Routing Decision Tree to every finding.
-11. **Sort:** Primary: severity (critical->suggestion). Secondary: effort (S->L).
-12. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions". Table format with ID, severity, title, effort, backlog. Ask: "Which findings should I add to the Notion backlog? (all / critical+major / select specific IDs)"
+10. **Deduplicate:** Same UI element + same issue -> merge, keep the more detailed description. Cross-agent links: if Agent 1 flags a color and Agent 4 finds the hardcoded value -> reference both.
+11. **Route:** Apply the Backlog Routing Decision Tree to every finding.
+12. **Sort:** Primary: severity (critical->suggestion). Secondary: effort (S->L).
+13. **Coverage report:** Collect all `surfaceIds` from all findings. Compare against the full surface registry. Produce coverage summary showing tested vs. untested surfaces and coverage percentage. Flag any non-dev surfaces that no agent touched.
+14. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions. Coverage: N/49 surfaces tested (XX%)." Table format with ID, severity, title, effort, backlog. Ask: "Which findings should I add to the Notion backlog? (all / critical+major / select specific IDs)"
 
 ### Phase 4: Backlog Integration
 
-13. **Notion:** Add user-approved findings to the Development Backlog at `https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf`. Create a section "QA Findings [YYYY-MM-DD]" with a table: ID, Severity, Category, Title, Effort, Status (default: "To Fix").
-14. **Save raw JSON:** Write all findings to `Docs/qa/YYYY-MM-DD-qa-findings.json` for future diffing.
+15. **Notion:** Add user-approved findings to the Development Backlog at `https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf`. Create a section "QA Findings [YYYY-MM-DD]" with a table: ID, Severity, Category, Title, Effort, Status (default: "To Fix").
+16. **Save raw JSON:** Write all findings to `Docs/qa/YYYY-MM-DD-qa-findings.json` for future diffing. Include a top-level `coverage` object with `tested`, `skipped`, `crossCutting`, and `percentage` fields.
+
+### Phase 5: Surface Registry Maintenance
+
+17. **Update registry:** If any new components were discovered during the sweep that aren't in `test-surfaces.md`, add them now. If any listed components no longer exist, mark them `deprecated`.
 
 ---
 
@@ -359,6 +399,9 @@ const traces = await window.__DEBUG.getTraces();
 | Not saving raw JSON | You lose the ability to diff between QA runs |
 | Merging all findings to Notion without asking | Ask user first — they may want to defer suggestions |
 | Forgetting backlog routing | Every finding needs `backlog` and `notionPrefix` fields |
+| Not reading test-surfaces.md | Every sweep must start by reading the surface registry |
+| Adding components without updating registry | New components = new registry entry, same session |
+| Findings without surfaceIds | Every finding must map to at least one surface ID |
 
 ## When NOT to Use This Skill
 

@@ -35,8 +35,6 @@ const TOOLTIP_ARROW_SIZE = 6;
 /** Minimum distance (px) between any tooltip edge and the viewport edge. */
 const VIEWPORT_MARGIN = 8;
 
-const TOOLTIP_LINK_REGEX = new RegExp(TOOLTIP_LINK_PATTERN);
-
 // Gap bridge: invisible padding zone that keeps the tooltip alive while the
 // mouse travels across the gap between trigger and popup.
 const GAP_BRIDGE_SIZE = TOOLTIP_OFFSET + TOOLTIP_ARROW_SIZE + 4;
@@ -58,6 +56,7 @@ interface TooltipPosition {
 
 /**
  * Parse description text and render {{concept.id}} links as nested Tooltips.
+ * RC-015: Uses matchAll() to avoid mutable lastIndex on a shared regex instance.
  */
 function parseDescription(
   description: string | undefined,
@@ -67,13 +66,11 @@ function parseDescription(
 
   const result: React.ReactNode[] = [];
   let lastIndex = 0;
-  let match: RegExpExecArray | null;
 
-  TOOLTIP_LINK_REGEX.lastIndex = 0;
-
-  while ((match = TOOLTIP_LINK_REGEX.exec(description)) !== null) {
-    if (match.index > lastIndex) {
-      result.push(description.substring(lastIndex, match.index));
+  // matchAll() creates a fresh iterator — safe under concurrent rendering.
+  for (const match of description.matchAll(TOOLTIP_LINK_PATTERN)) {
+    if (match.index! > lastIndex) {
+      result.push(description.substring(lastIndex, match.index!));
     }
 
     const conceptId = match[1];
@@ -102,7 +99,7 @@ function parseDescription(
       result.push(match[0]);
     }
 
-    lastIndex = TOOLTIP_LINK_REGEX.lastIndex;
+    lastIndex = match.index! + match[0].length;
   }
 
   if (lastIndex < description.length) {
@@ -410,11 +407,13 @@ export const Tooltip = React.memo(function Tooltip({
     />
   ) : null;
 
+  // RC-014: aria-live="polite" announces tooltip content to screen readers
   const tooltipContent = (
     <div
       ref={tooltipOuterRef}
       id={tooltipId}
       role="tooltip"
+      aria-live="polite"
       onPointerEnter={showTooltip}
       onPointerLeave={hideTooltip}
       style={outerStyle}

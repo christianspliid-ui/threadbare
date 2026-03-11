@@ -11,7 +11,7 @@
  * - out-of-range: 50% opacity with distance display
  */
 
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState, useRef } from 'react';
 import type { WheelSlot } from '../../engine/wheel';
 import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
 
@@ -53,12 +53,18 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
   const isLockedTier = slot.lockedReason?.includes('tier') || slot.lockedReason?.includes('Tier');
   const lockedOpacity = isLockedTier ? 'opacity-30' : 'opacity-50';
 
+  // FE-16: Shake state for disabled click feedback
+  const [shaking, setShaking] = useState(false);
+  const shakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Determine container classes
   const containerClasses = [
     CARD_STYLES.baseCard,
     playing ? 'card-pulse opacity-70' : (isAvailable ? CARD_STYLES.availableCard : [CARD_STYLES.lockedCard, lockedOpacity]),
+    shaking ? 'anim-shake-no' : '',
   ]
     .flat()
+    .filter(Boolean)
     .join(' ');
 
   // RC-026: Memoize container style to avoid new object on every render
@@ -68,9 +74,15 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
   );
 
   // RC-026: Memoize click handler
+  // FE-16: Shake feedback when clicking a disabled card
   const handleClick = useCallback(() => {
     if (isAvailable && !playing) {
       onClick(slot.id);
+    } else if (!isAvailable && !playing) {
+      // Trigger shake animation on disabled card click
+      setShaking(true);
+      if (shakeTimer.current) clearTimeout(shakeTimer.current);
+      shakeTimer.current = setTimeout(() => setShaking(false), 400);
     }
   }, [isAvailable, playing, onClick, slot.id]);
 
@@ -117,11 +129,12 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
         }}
         onClick={handleClick}
         role="button"
-        tabIndex={isAvailable && !playing ? 0 : -1}
+        aria-disabled={!isAvailable && !playing ? true : undefined}
+        tabIndex={playing ? -1 : 0}
         onKeyDown={(e) => {
-          if (isAvailable && !playing && (e.key === 'Enter' || e.key === ' ')) {
+          if ((e.key === 'Enter' || e.key === ' ')) {
             e.preventDefault();
-            onClick(slot.id);
+            handleClick();
           }
         }}
       >

@@ -95,7 +95,6 @@ Context for specific problem types lives in on-demand skills, not in this file. 
 | Content systems & worldbuilding | `content-worldbuilding` | Cosmology, spheres, reaches, content packages, graph data |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Creative prose | `prose-resolver` (platform) | Writing prose content, implementing resolvers |
-| Attachment content | `content-authoring` (project) | Creating items, conditions, spells, powers, agreements, retainers |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
@@ -108,6 +107,6 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 Full status: **`Docs/project-status.md`**
 
-- Current phase: **Attachment System complete** — check Notion backlog for next priority
-- Engine: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
-- Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
+- Current phase: **CRUD Action Unification complete** — check Notion backlog for next priority
+- Engine: ~180 modules, ~37,500+ lines, ~2,389+ tests across 193+ test files
+- Content: 198 graph nodes, 290 typed edges, 18 categories, 18 content packages, 975+ data tests

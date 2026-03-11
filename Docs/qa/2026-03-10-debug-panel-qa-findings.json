@@ -1,0 +1,50 @@
+[
+  {
+    "id": "QA-2026-03-10-003",
+    "mode": "interactive",
+    "severity": "major",
+    "category": "ux",
+    "backlog": "frontend",
+    "notionPrefix": "FE",
+    "status": "OPEN",
+    "title": "Debug panel Agent tab always shows 'No traces yet' — Feed view unreachable when agent selected",
+    "description": "When selecting an agent (e.g. Brynn from retinue) and opening the Debug panel, it auto-switches to 'agent-follow' mode showing 'Following: ind_2' but displays 'No traces yet. Enable tracing in code.' even though the trace buffer contains data.\n\nThe useEffect at DebugPanel.tsx lines 668-674 auto-switches viewMode to 'agent-follow' whenever followAgentId is truthy. This means:\n1. The user cannot switch to Feed view — clicking Feed immediately gets overridden back to agent-follow\n2. The agent-follow filter (t.agentId === followAgentId) finds no matches because most trace types don't set agentId (see QA-2026-03-10-004)\n3. The Tick Inspector tab is also overridden when followAgentId is set\n\nRepro steps:\n1. Start game (seed 42, Storm Marshal), advance 2+ ticks with debug panel open to generate traces\n2. Close debug panel, select Brynn from retinue\n3. Reopen debug panel → shows 'Following: ind_2' with empty trace list\n4. Click 'Feed' tab → briefly switches then snaps back to agent-follow mode\n5. Even advancing another tick doesn't help — all new Brynn-related traces lack agentId\n\nRoot cause: The useEffect dependency on [followAgentId, viewMode] creates a feedback loop. When viewMode changes to 'feed' but followAgentId is truthy, the effect fires and resets viewMode to 'agent-follow'.",
+    "evidence": "Verified via Playwright + JS evaluation: buffer contains 22 traces across 2 ticks, 8 have agentId (all 'avatar.archetype.force_0'), 0 match 'ind_2' (Brynn). Clicking Feed tab is immediately overridden by the useEffect. Confirmed with browser_evaluate: getTraces() returns 22 entries, isTracingEnabled() returns true.",
+    "screenshot": null,
+    "location": "src/components/Game/DebugPanel.tsx:668",
+    "effort": "S",
+    "suggestedFix": "1. Remove the auto-switch useEffect or make it only trigger on initial mount (not on every followAgentId change). Let the user manually switch tabs. 2. Alternatively, only auto-switch to agent-follow on followAgentId CHANGE (not just truthy), and don't override user-initiated tab switches. Use a ref to track whether the user manually selected a tab."
+  },
+  {
+    "id": "QA-2026-03-10-004",
+    "mode": "interactive",
+    "severity": "major",
+    "category": "engine",
+    "backlog": "architecture",
+    "notionPrefix": "SYS",
+    "status": "OPEN",
+    "title": "Most trace emitters don't set agentId — Agent Follow mode can never show familiarity_change, narrative_generation, or tick_summary traces",
+    "description": "The TraceBase type defines an optional agentId field, and the DebugPanel's Agent Follow mode filters traces by t.agentId === followAgentId. However, most trace emitters only set actorId (a type-specific field) and never populate the base agentId.\n\nMissing agentId on these trace types:\n- familiarity_change: sets actorId but NOT agentId (orchestrator.ts ~line 661)\n- narrative_generation: no agentId at all (narrative.ts line 126, proseGenerator.ts line 93)\n- tick_summary: no agentId (expected for global summaries, but makes tick_summary invisible in agent view)\n\nCorrectly setting agentId:\n- action_selection: agentId set ✓ (agentSelection.ts line 258)\n- encounter_resolution: agentId set ✓ (encounter.ts lines 107, 177, 240)\n- dilemma_resolution: agentId set ✓ (disposition.ts line 402)\n- context_harvest: agentId set ✓ (contextBuilder.ts line 483)\n- action_execution: agentId set ✓ (orchestrator.ts line 237)\n- intervention_effect: agentId set ✓ (orchestrator.ts line 874, ascendantFeedback.ts line 43)\n\nAt early ticks only the avatar acts, so even the trace types that DO set agentId only show avatar data. Retinue agents (ind_2, ind_3, ind_4) don't appear in any agentId field until they start performing actions at later ticks — but even then, their familiarity and narrative traces would still be invisible.",
+    "evidence": "JS evaluation at Tick 2: 22 total traces, 8 with agentId (all 'avatar.archetype.force_0'), 0 matching Brynn (ind_2). actorId values present: ['ind_4', 'avatar.archetype.force_0']. Mirael (ind_4) has familiarity_change traces with actorId but no agentId.",
+    "screenshot": null,
+    "location": "src/engine/orchestrator.ts:661, src/engine/narrative.ts:126, src/engine/proseGenerator.ts:93",
+    "effort": "M",
+    "suggestedFix": "Add agentId to all trace emitters that have an actor context:\n1. orchestrator.ts familiarity_change (~line 661): add agentId: actor.id\n2. narrative.ts generateRoutineProse/generateNotableProse: accept and propagate actorId as agentId\n3. proseGenerator.ts generateProse: accept and propagate the actor's node ID as agentId\n4. Consider making agentId required on TraceBase for trace types that always have an actor context."
+  },
+  {
+    "id": "QA-2026-03-10-005",
+    "mode": "interactive",
+    "severity": "minor",
+    "category": "engine",
+    "backlog": "architecture",
+    "notionPrefix": "SYS",
+    "status": "OPEN",
+    "title": "React StrictMode causes every trace to be emitted twice in development",
+    "description": "In development mode, React StrictMode (enabled in main.tsx) causes runTick to execute twice per tick advancement. This results in every trace entry being duplicated in the trace buffer — each tick produces 2× the expected number of traces.\n\nThe orchestrator already has a comment at line 213 acknowledging this for graph mutations: 'In React StrictMode dev builds, runTick executes twice per tick, causing duplicate edges.' The same double-execution affects all emitTrace calls.\n\nThis is a dev-only issue (production builds run once) but makes the debug panel harder to read — every trace appears twice, doubling the visual noise.\n\nRepro steps:\n1. Open debug panel, advance one tick\n2. Observe: each trace category appears twice (e.g., two tick_summary entries for the same tick)\n\nAt Tick 1: 6 traces total (3 unique × 2). At Tick 2: 22 traces total (11 unique × 2).",
+    "evidence": "Buffer inspection at Tick 1: [narrative_generation#0, familiarity_change#1, tick_summary#2, narrative_generation#3, familiarity_change#4, tick_summary#5] — exact duplicates. StrictMode confirmed in main.tsx lines 1,8,10.",
+    "screenshot": null,
+    "location": "src/main.tsx:8, src/engine/orchestrator.ts:213",
+    "effort": "M",
+    "suggestedFix": "Options: 1. Deduplicate traces in the DebugPanel display layer (e.g., filter by unique summary+tick+category combo). 2. Guard emitTrace in orchestrator with a tick-level 'already emitted' check. 3. Accept as dev-only noise and add a note in the debug panel UI. Option 1 is simplest and doesn't affect the engine."
+  }
+]
