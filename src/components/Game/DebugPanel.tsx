@@ -64,12 +64,21 @@ const TAB_BUTTON_BASE: React.CSSProperties = {
   transition: 'all 200ms ease-out',
 };
 
-const getTabButtonStyle = (isActive: boolean): React.CSSProperties => ({
+// RC-019: Pre-computed tab styles to avoid object allocation per render
+const TAB_BUTTON_ACTIVE: React.CSSProperties = {
   ...TAB_BUTTON_BASE,
-  borderBottom: isActive ? `2px solid ${TRACE_CATEGORY_COLORS.action_selection}` : 'none',
-  color: isActive ? 'var(--accent-gold)' : PANEL_STYLES.textColor,
-  opacity: isActive ? 1 : 0.6,
-});
+  borderBottom: `2px solid ${TRACE_CATEGORY_COLORS.action_selection}`,
+  color: 'var(--accent-gold)',
+  opacity: 1,
+};
+const TAB_BUTTON_INACTIVE: React.CSSProperties = {
+  ...TAB_BUTTON_BASE,
+  borderBottom: 'none',
+  color: PANEL_STYLES.textColor,
+  opacity: 0.6,
+};
+const getTabButtonStyle = (isActive: boolean): React.CSSProperties =>
+  isActive ? TAB_BUTTON_ACTIVE : TAB_BUTTON_INACTIVE;
 
 const FILTER_AREA_STYLE: React.CSSProperties = {
   padding: '8px 12px',

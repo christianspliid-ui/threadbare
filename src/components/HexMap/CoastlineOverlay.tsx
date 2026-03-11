@@ -31,7 +31,7 @@ export const CoastlineOverlay = memo(function CoastlineOverlay({
   );
 
   return (
-    <g className="coastline-overlay">
+    <g className="coastline-overlay" aria-hidden="true">
       {/* Deep water fill — covers entire map area so transparent water hexes show proper ocean color */}
       <rect
         x={-svgWidth}

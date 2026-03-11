@@ -93,6 +93,7 @@ export function generateEntityProse(
   emitTrace({
     tick: 0,
     category: 'narrative_generation',
+    agentId: node.type === 'actor' ? nodeId : undefined,
     summary: `Prose [${mode}] for ${node.name}: ${allLayers.length} layers → ${result.length} chars`,
     tier: 'notable',
     sphereWords: [],
