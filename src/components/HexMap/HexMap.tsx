@@ -10,6 +10,9 @@ import { HexDefs } from './HexDefs';
 import { CoastlineOverlay } from './CoastlineOverlay';
 import { RiverOverlay } from './RiverOverlay';
 import { AgentDots } from './AgentDots';
+import { MovementTrails } from './MovementTrails';
+import { GhostDots } from './GhostDots';
+import type { GhostDotEntry } from '../../engine/ghostDots';
 import { useCoastline } from './useCoastline';
 import { useRivers } from './useRivers';
 import { COASTLINE_DEFAULTS } from '../../types/coastline';
@@ -39,6 +42,8 @@ interface HexMapProps {
   initialCenter?: { x: number; y: number };
   initialScale?: number;
   graph?: WorldGraph;
+  currentTick?: number;
+  ghostDots?: GhostDotEntry[];
   onZoomChange?: (transform: d3.ZoomTransform) => void;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
@@ -54,6 +59,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   visibilityMap, locationOverlays, avatarHex, sphereColor,
   initialCenter, initialScale,
   graph,
+  currentTick,
+  ghostDots: ghostDotsProp,
   onZoomChange,
   onHexClick, onHexHover,
 }, ref) => {
@@ -294,6 +301,10 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 ))}
               </g>
             )}
+            {/* Layer 3.8: Movement trails — under agents but over fog */}
+            {graph && currentTick != null && (
+              <MovementTrails graph={graph} hexSize={hexSize} currentTick={currentTick} />
+            )}
             {/* Layer 4: Agent dots — on top of all map layers */}
             {graph && locationPositions.length > 0 && (
               <AgentDots
@@ -301,6 +312,10 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 locationPositions={locationPositions}
                 zoomScale={DEFAULT_ZOOM_SCALE}
               />
+            )}
+            {/* Layer 4.5: Ghost dots — fading agents that left LOS */}
+            {ghostDotsProp && ghostDotsProp.length > 0 && currentTick != null && (
+              <GhostDots ghosts={ghostDotsProp} hexSize={hexSize} currentTick={currentTick} />
             )}
           </g>
         </g>
