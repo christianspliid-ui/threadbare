@@ -12,6 +12,8 @@
 
 **Depends on:** P0 movement system (complete), encounter system, hex renderer, rival/faction state.
 
+**Status:** ✅ P1 implemented (2026-03-11) — 78 tests across 12 files, all passing. P2 pending.
+
 ---
 
 ### Task 1: Quest Encounter Types
