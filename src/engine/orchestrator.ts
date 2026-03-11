@@ -60,6 +60,7 @@ import { getActionTemplateById, ACTION_TEMPLATES } from '../data/action-template
 import { executeGraphOps } from './graphOpExecutor';
 import { generateActionCandidates } from './actionCandidates';
 import { checkDissolutions } from './sublocation';
+import { phaseMovement } from './phaseMovement';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -991,6 +992,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.3: Action Progress
   s = { ...s, ...phaseActionProgress(s) };
   phaseEventCounts['action_progress'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.35: Agent Movement (goal-directed pathfinding)
+  s = { ...s, ...phaseMovement(s) };
+  phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution

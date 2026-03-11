@@ -46,7 +46,9 @@ export const BIRTH_CHANCE = 0.01;
 /** Minimum agents at a location for birth to be possible */
 export const BIRTH_DENSITY_THRESHOLD = 3;
 
-/** Chance per tick per agent of migration */
+/** Chance per tick per agent of migration
+ * @deprecated Replaced by phaseMovement with axiological scoring (DES-009 Task 7)
+ */
 export const MIGRATION_CHANCE = 0.02;
 
 // ─── ID Generator ────────────────────────────────────────────────
@@ -208,61 +210,6 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
         break; // At most one birth per tick
       }
-    }
-  }
-
-  // ── Migrations ─────────────────────────────────────────
-  const remainingActors = graph.getNodesByType('actor').filter(
-    n => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id)
-  );
-
-  for (const actor of remainingActors) {
-    if (rng() < MIGRATION_CHANCE) {
-      const currentLocId = actor.properties.locationId as string | undefined;
-      if (!currentLocId) continue;
-
-      // Find adjacent locations
-      const adjEdges = [
-        ...graph.getOutgoingEdges(currentLocId, 'adjacent'),
-        ...graph.getIncomingEdges(currentLocId, 'adjacent'),
-      ];
-      const adjLocIds = adjEdges.map(e =>
-        e.source === currentLocId ? e.target : e.source
-      );
-      if (adjLocIds.length === 0) continue;
-
-      // Pick a destination (prefer less populated locations)
-      const dest = adjLocIds[Math.floor(rng() * adjLocIds.length)];
-
-      // Update location
-      actor.properties.locationId = dest;
-
-      // Move contains edge
-      const containsEdge = graph.getOutgoingEdges(actor.id, 'contains')
-        .find(e => e.target === currentLocId) ??
-        graph.getIncomingEdges(currentLocId, 'contains')
-          .find(e => e.source === actor.id);
-      if (containsEdge) {
-        graph.removeEdge(containsEdge.id);
-      }
-      graph.addEdge({
-        id: `edge_at_${actor.id}_${state.tick}`,
-        source: actor.id,
-        target: dest,
-        type: 'contains',
-        properties: {},
-      });
-
-      const destNode = graph.getNode(dest);
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'agent_migration' as any,
-        message: `${actor.name} travels to ${destNode?.name ?? 'a new land'}.`,
-        significance: 0.3,
-      });
-
-      break; // At most one migration per tick to keep events manageable
     }
   }
 
