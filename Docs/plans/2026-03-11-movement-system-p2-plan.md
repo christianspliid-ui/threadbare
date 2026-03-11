@@ -12,7 +12,7 @@
 
 **Depends on:** P0 + P1 movement system (complete), visibility system, hex renderer, agent dots (P1 Task 7).
 
-**Status:** Pending
+**Status:** ✅ P2 implemented (2026-03-11) — 75 tests across 14 files, all passing. Zero type errors, production build green.
 
 ---
 
