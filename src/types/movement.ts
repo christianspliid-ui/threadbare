@@ -22,6 +22,8 @@ export interface MovementState {
   currentEdgeCost: number;
   lastDecisionTick: number;
   movementHistory: MovementHistoryEntry[];
+  /** Original motivation pull for the current destination path (used in mid-path re-evaluation) */
+  motivationPull?: number;
 }
 
 /** One entry in the movement trail history */

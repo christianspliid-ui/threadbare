@@ -10,7 +10,7 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { MovementState } from '../types/movement';
 import { DECISION_REEVALUATION_TICKS } from '../types/movement';
 import { tickMovement, initMovementState } from './movementExecution';
-import { generateMovementCandidates } from './movementCandidates';
+import { generateMovementCandidates, scoreMovementCandidate } from './movementCandidates';
 import { computeEdgeCost } from './movementCost';
 import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
@@ -73,6 +73,68 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           message: `${actor.name} moves to ${state.graph.getNode(result.newLocationId!)?.name ?? 'a location'}.`,
           significance: MOVEMENT_EVENT_SIGNIFICANCE,
         });
+      }
+
+      // --- Mid-path re-evaluation ---
+      // Check if enough ticks have elapsed since last decision
+      if (result.updatedState.movementQueue.length > 0 &&
+          (state.tick - (result.updatedState.lastDecisionTick ?? 0) >= DECISION_REEVALUATION_TICKS)) {
+        // Get current location for re-evaluation
+        const currentLocEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
+        if (currentLocEdges.length > 0) {
+          const currentLocId = currentLocEdges[0].target;
+          const profile = (actor.properties?.axiologicalProfile as AxiologicalProfile) || {
+            ambition_contentment: 0,
+            courage_prudence: 0,
+            cruelty_compassion: 0,
+            cunning_honesty: 0,
+            devotion_independence: 0,
+            loyalty_treachery: 0,
+            tradition_innovation: 0,
+            dominance_humility: 0,
+            wrath_patience: 0,
+            greed_generosity: 0,
+          };
+          const newCandidates = generateMovementCandidates(state.graph, actorId, currentLocId, profile);
+
+          if (newCandidates.length > 0 && newCandidates[0].destinationId !== result.updatedState.destinationId) {
+            // Compare: only switch if new candidate is significantly better (2x)
+            const currentRemainingScore = scoreMovementCandidate(
+              result.updatedState.motivationPull ?? newCandidates[0].motivationPull,
+              result.updatedState.movementQueue.length,
+            );
+
+            if (newCandidates[0].score > currentRemainingScore * 2) {
+              // Switch to new destination
+              const newPath = newCandidates[0].path;
+              if (newPath.length > 0) {
+                const newEdgeCost = computeEdgeCost(state.graph, actorId, currentLocId, newPath[0]).totalCost;
+                const switchedState = initMovementState(
+                  newCandidates[0].destinationId,
+                  newPath,
+                  newEdgeCost,
+                  state.tick,
+                );
+                // Preserve movement history from current state
+                switchedState.movementHistory = result.updatedState.movementHistory;
+                // Track the original motivation pull for future re-evaluations
+                switchedState.motivationPull = newCandidates[0].motivationPull;
+
+                state.graph.updateNode(actorId, {
+                  properties: { ...actor.properties, movementState: switchedState },
+                });
+                continue; // Skip the normal update below
+              }
+            }
+          }
+
+          // Update lastDecisionTick regardless of whether we switched
+          result.updatedState.lastDecisionTick = state.tick;
+          // Track motivation pull for future re-evaluations
+          if (result.updatedState.motivationPull === undefined && newCandidates.length > 0) {
+            result.updatedState.motivationPull = newCandidates[0].motivationPull;
+          }
+        }
       }
 
       continue; // Skip re-evaluation this tick
