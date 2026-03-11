@@ -61,6 +61,7 @@ import { executeGraphOps } from './graphOpExecutor';
 import { generateActionCandidates } from './actionCandidates';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement } from './phaseMovement';
+import { phaseColocationDetection } from './phaseColocationDetection';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -997,6 +998,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
   s = { ...s, ...phaseMovement(s) };
   phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
+  s = { ...s, ...phaseColocationDetection(s) };
+  phaseEventCounts['colocation_detection'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution
