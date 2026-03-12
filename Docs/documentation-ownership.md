@@ -18,7 +18,7 @@
 
 **One fact, one home.** If the same information exists in two places, one of them is wrong or stale.
 
-- **Phase/sprint status** → Notion only. `project-status.md` may summarize phases as completed/in-progress but does not describe task detail.
+- **Phase/sprint status** → Notion only. `project-status.md` holds current focus only (≤ 20 lines). `project-history.md` holds the append-only completed milestone log.
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
 - **Visual component shape/anatomy** → Paper only. Obsidian may link to the Paper board; repo docs do not describe component appearance.
@@ -46,7 +46,8 @@
 - Tradeoffs, alternatives considered, "why not X"
 
 ### Repo — `Docs/` (top level)
-- `project-status.md` — phase completion summary (completed/in-progress, no task detail)
+- `project-status.md` — current focus + next priority (≤ 20 lines, orientation only)
+- `project-history.md` — append-only completed milestone archive (troubleshooting reference)
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ui-patterns.md` — frontend interaction conventions and component patterns
 - `documentation-ownership.md` — this file
