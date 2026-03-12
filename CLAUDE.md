@@ -22,19 +22,20 @@ npm run dev    # start Vite dev server with hot reload
 
 ## Documentation Strategy
 
-Four layers, each with a distinct purpose. Do not duplicate content across them.
+Four surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| **Graph model** | Obsidian vault | System specs and relationships (wikilinks). Read `Index.md` first. |
-| **Project tracking** | Notion backlogs per domain| Sprint progress, phase status, task assignment |
-| **Design rationale** | Repo (`Docs/plans/`) | Decision documents with tradeoffs and "why we chose X over Y" |
-| **UI patterns** | Repo (`Docs/ui-patterns.md`) | Frontend interaction conventions, component patterns, accessibility |
+| Surface | Owns |
+|---------|------|
+| **Obsidian vault** | Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first. |
+| **Notion** | Sprint tasks, phase status, backlog, audit follow-ups |
+| **Repo `Docs/`** | Implementation rationale (`plans/`), changelog, UI patterns, this ownership map |
+| **Paper** | Visual documentation: component anatomy, style, asset registry, player journey maps |
 
 ## Key Links
 
 - Notion backlog: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
+- Documentation ownership: `Docs/documentation-ownership.md`
 - Visual style guide: `STYLE.md`
 - Visual style tile: `Design/style-tile.html`
 - UI patterns: `Docs/ui-patterns.md`
