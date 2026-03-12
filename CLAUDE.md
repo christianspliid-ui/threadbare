@@ -83,7 +83,7 @@ When modifying Notion pages or Obsidian vault notes:
 2. Read Obsidian `Index.md` via MCP, follow links to the relevant system
 3. Check Notion backlog for current phase and next tasks
 4. Read relevant design doc in `Docs/plans/` before writing code
-5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status, backlogs). Non-negotiable — same session, not "later."
+5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status/project-history, backlogs). Non-negotiable — same session, not "later."
 
 ## Domain Skills
 
@@ -107,7 +107,7 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 ## Project Status
 
-Full status: **`Docs/project-status.md`**
+Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
 - Current phase: **Attachment System complete** — check Notion backlog for next priority
 - Engine: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
