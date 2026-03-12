@@ -423,3 +423,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 | 2026-03-12 | Notion: Remediation Plan | Added Paper-specific recommendations covering player journey boards, style-tile splitting, architecture-board drift, and documentation ownership | Folded live Paper audit findings into the prioritized remediation plan |
 | 2026-03-12 | Docs/documentation-ownership.md | Created documentation ownership map defining what lives in Notion, Obsidian, repo docs, and Paper with duplication rules | DOC-02 from remediation plan |
 | 2026-03-12 | CLAUDE.md | Updated Documentation Strategy section to reference ownership map instead of restating rules inline; added ownership map to Key Links | DOC-02 from remediation plan |
+| 2026-03-12 | Docs/project-history.md | Created as append-only archive of completed milestones; seeded with content from project-status.md (56 ✅ entries) | DOC-01 source-of-truth reset |
+| 2026-03-12 | Docs/project-status.md | Rewritten as thin now/next/later orientation file (≤ 20 lines); current focus = PROD-01, up next = STRUCT-01 | DOC-01 source-of-truth reset |
+| 2026-03-12 | CLAUDE.md | Updated project status references to reflect two-file split: current focus → project-status.md, completed milestones → project-history.md | DOC-01 source-of-truth reset |
+| 2026-03-12 | .skills/gamedocumenter/SKILL.md | Updated step 2 to distinguish append-to-history on milestone completion vs update-status on focus change | DOC-01 source-of-truth reset |
+| 2026-03-12 | Docs/documentation-ownership.md | Updated references to reflect two-file split; added project-history.md to quick-reference table | DOC-01 source-of-truth reset |
