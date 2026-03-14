@@ -8,7 +8,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveStyle('width: 50%');
   });
 
@@ -16,7 +16,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.75} color="#5c6bc0" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveStyle('backgroundColor: #5c6bc0');
   });
 
@@ -24,7 +24,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#eab308" glow={true} />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     const boxShadow = progressFill?.getAttribute('style');
     expect(boxShadow).toContain('0 0 8px');
   });
@@ -33,7 +33,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#eab308" glow={false} />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     const style = progressFill?.getAttribute('style');
     expect(style).not.toContain('boxShadow');
   });
@@ -42,7 +42,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#eab308" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     const boxShadow = progressFill?.getAttribute('style');
     expect(boxShadow).toContain('0 0 8px');
   });
@@ -75,7 +75,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveStyle('width: 0%');
   });
 
@@ -83,7 +83,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={1} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveStyle('width: 100%');
   });
 
@@ -91,7 +91,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.333} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveStyle('width: 33%');
   });
 
@@ -99,7 +99,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveClass('rounded-full');
   });
 
@@ -107,7 +107,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#d4a574" />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     expect(progressFill).toHaveClass('transition-all');
   });
 
@@ -115,7 +115,7 @@ describe('ProgressBar', () => {
     const { container } = render(
       <ProgressBar progress={0.5} color="#ff0000" glow={true} />
     );
-    const progressFill = container.querySelector('div > div');
+    const progressFill = container.querySelector('div > div > div');
     const boxShadow = progressFill?.getAttribute('style');
     expect(boxShadow).toContain('#ff000080');
   });
