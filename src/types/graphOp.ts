@@ -40,6 +40,8 @@ export interface GraphOpContext {
   targetId: string;
   /** The location where the action takes place */
   locationId: string;
+  /** Current tick, used by apply_influence for tickApplied timestamp */
+  tick?: number;
   /** Extra named references for complex templates */
   extras?: Record<string, string>;
 }
@@ -69,7 +71,27 @@ export type GraphOpType =
   | 'update_node'
   | 'add_edge'
   | 'remove_edge'
-  | 'update_edge';
+  | 'update_edge'
+  | 'apply_influence';
+
+/**
+ * Payload for the apply_influence GraphOp.
+ * Adds a decaying divine influence entry to an actor node.
+ * This replaces the hardcoded intervention effect handlers.
+ */
+export interface InfluencePayload {
+  readonly interventionType: string;
+  readonly sphere: string;
+  readonly initialStrength: number;
+  readonly decayRate: number;
+  readonly minimumStrength: number;
+  readonly maxDuration: number;
+  readonly valueDrifts?: Record<string, number>;
+  readonly reachBoost?: { readonly reach: string; readonly bonus: number };
+  readonly behaviorTag?: string;
+  readonly traitId?: string;
+  readonly strategyOverride?: string;
+}
 
 /**
  * A single graph operation: a structured mutation that can be applied
@@ -116,6 +138,9 @@ export interface GraphOp {
 
   /** Changes to apply for update operations */
   changes?: Record<string, unknown>;
+
+  /** Influence payload for apply_influence operations */
+  influence?: InfluencePayload;
 }
 
 // ─── Result Types ───────────────────────────────────────────────
