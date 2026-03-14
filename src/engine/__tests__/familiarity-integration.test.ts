@@ -64,11 +64,28 @@ describe('familiarity integration', () => {
   });
 
   it('proximity tick increases familiarity for agents in avatar hex', () => {
-    // Get initial state with worshippers already at 0.3 familiarity
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    expect(worshipEdges.length).toBeGreaterThan(0);
+    // Find a worshipper that is in the same hex as the avatar
+    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
+    expect(avatarEdges.length).toBeGreaterThan(0);
+    const avatarId = avatarEdges[0].source;
+    const locEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
+    expect(locEdges.length).toBeGreaterThan(0);
+    const avatarLocation = state.graph.getNode(locEdges[0].target);
+    const avatarHexCol = avatarLocation?.properties?.hexCol as number;
+    const avatarHexRow = avatarLocation?.properties?.hexRow as number;
 
-    const worshipperId = worshipEdges[0].source;
+    const worshipEdges = state.graph.getEdgesByType('worships');
+    const inHexWorshipper = worshipEdges.find(edge => {
+      const worshipperId = edge.source;
+      const worshipper = state.graph.getNode(worshipperId);
+      const locationId = worshipper?.properties?.locationId as string | undefined;
+      if (!locationId) return false;
+      const location = state.graph.getNode(locationId);
+      return location?.properties?.hexCol === avatarHexCol && location?.properties?.hexRow === avatarHexRow;
+    });
+    expect(inHexWorshipper).toBeDefined();
+
+    const worshipperId = inHexWorshipper!.source;
     const oldFamiliarity = getFamiliarity(state.familiarityMap, worshipperId);
     expect(oldFamiliarity).toBe(0.3); // Initial worship tier
 
@@ -104,9 +121,24 @@ describe('familiarity integration', () => {
   });
 
   it('familiarity threshold crossing emits levelChanged flag', () => {
-    // Manually bump a worshipper to near the "known" threshold (0.4)
+    // Find a worshipper in the avatar's hex (same approach as proximity test)
+    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
+    const avatarId = avatarEdges[0].source;
+    const locEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
+    const avatarLocation = state.graph.getNode(locEdges[0].target);
+    const avatarHexCol = avatarLocation?.properties?.hexCol as number;
+    const avatarHexRow = avatarLocation?.properties?.hexRow as number;
     const worshipEdges = state.graph.getEdgesByType('worships');
-    const worshipperId = worshipEdges[0].source;
+    const inHexWorshipper = worshipEdges.find(edge => {
+      const worshipperId = edge.source;
+      const worshipper = state.graph.getNode(worshipperId);
+      const locationId = worshipper?.properties?.locationId as string | undefined;
+      if (!locationId) return false;
+      const location = state.graph.getNode(locationId);
+      return location?.properties?.hexCol === avatarHexCol && location?.properties?.hexRow === avatarHexRow;
+    });
+    expect(inHexWorshipper).toBeDefined();
+    const worshipperId = inHexWorshipper!.source;
 
     const map = new Map(state.familiarityMap);
     map.set(worshipperId, 0.35); // Just below "known" threshold

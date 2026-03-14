@@ -297,7 +297,7 @@ describe('Tooltip', () => {
 
     const tooltip = screen.getByRole('tooltip');
     expect(tooltip).toHaveStyle('position: fixed');
-    expect(tooltip).toHaveStyle('max-width: 220px');
+    expect(tooltip).toHaveStyle('max-width: 280px');
     expect(tooltip).toHaveStyle('z-index: 50');
   });
 

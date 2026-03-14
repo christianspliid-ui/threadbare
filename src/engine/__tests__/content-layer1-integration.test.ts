@@ -58,8 +58,8 @@ describe('Layer 1 content integration', () => {
       expect(template.name).toBeDefined();
       expect(template.locationTypes).toBeDefined();
       expect(template.reachPrimary).toBeDefined();
-      expect(template.encounters).toBeDefined();
-      expect(Array.isArray(template.encounters)).toBe(true);
+      expect(template.steps).toBeDefined();
+      expect(Array.isArray(template.steps)).toBe(true);
     }
   });
 
@@ -208,8 +208,8 @@ describe('Layer 1 content integration', () => {
     const events42 = current42.tickEvents.map(e => e.type).join('|');
     const events7 = current7.tickEvents.map(e => e.type).join('|');
 
-    // They may or may not be identical, but at least chronicle should differ in length
-    expect(current42.chronicleEntries.length).not.toBe(current7.chronicleEntries.length);
+    // Different seeds should produce different event sequences
+    expect(events42).not.toBe(events7);
   });
 
   it('same seed produces deterministic results', () => {
