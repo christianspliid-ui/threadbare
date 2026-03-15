@@ -37,8 +37,12 @@ function mulberry32(seed: number): () => number {
 
 // ─── Constants ────────────────────────────────────────────────────
 
-/** Twilight phase ticks */
-export const TWILIGHT_TICKS = 7;
+/**
+ * Twilight phase ticks — sourced from the central config file.
+ * Content managers: edit src/data/game-config.ts to change twilight length.
+ */
+import { TWILIGHT_TICKS } from '../data/game-config';
+export { TWILIGHT_TICKS };
 
 /** How many top nodes to consider for cosmic echoes */
 export const COSMIC_ECHO_CANDIDATES = 10;

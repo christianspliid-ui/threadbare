@@ -84,6 +84,7 @@ When modifying Notion pages or Obsidian vault notes:
 3. Check Notion backlog for current phase and next tasks
 4. Read relevant design doc in `Docs/plans/` before writing code
 5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status/project-history, backlogs). Non-negotiable — same session, not "later."
+6. **Push changes to GitHub** — commit and push to the remote repo before closing out. Do not leave work only on the local machine.
 
 ## Domain Skills
 
