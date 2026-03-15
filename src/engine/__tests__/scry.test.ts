@@ -646,6 +646,57 @@ describe('Task 5: Assignment Operations', () => {
     });
   });
 
+  describe('usedTitleIds tracking', () => {
+    it('createScryState includes empty usedTitleIds', () => {
+      const state = createScryState();
+      expect(state.usedTitleIds).toEqual([]);
+    });
+
+    it('initializeCourt includes empty usedTitleIds', () => {
+      const state = initializeCourt(createScryState(), 'high_house');
+      expect(state.usedTitleIds).toEqual([]);
+    });
+
+    it('assignAgentToPosition records title id in usedTitleIds', () => {
+      const pos = state.positions[0];
+      const proposals = generateTitleProposals({
+        agent,
+        positionRank: pos.rank,
+        structureType: 'high_house',
+        positionArchetype: pos.archetype,
+        primarySphere: 'force',
+        seed: 700,
+      });
+      const title = proposals[0].title;
+
+      const newState = assignAgentToPosition(state, pos.id, agent.id, title, 15, 1);
+
+      expect(newState.usedTitleIds).toContain(title.id);
+    });
+
+    it('usedTitleIds accumulates across multiple assignments', () => {
+      const agent2 = createMockAgent({ id: 'agent_002', tier: 2 });
+      const innerPos = state.positions.find(p => p.rank === 'inner')!;
+      const outerPos = state.positions.find(p => p.rank === 'outer')!;
+
+      const proposals1 = generateTitleProposals({
+        agent, positionRank: 'inner', structureType: 'high_house',
+        positionArchetype: innerPos.archetype, primarySphere: 'force', seed: 701,
+      });
+      const proposals2 = generateTitleProposals({
+        agent: agent2, positionRank: 'outer', structureType: 'high_house',
+        positionArchetype: outerPos.archetype, primarySphere: 'force', seed: 702,
+      });
+
+      let s = assignAgentToPosition(state, innerPos.id, agent.id, proposals1[0].title, 15, 1);
+      s = assignAgentToPosition(s, outerPos.id, agent2.id, proposals2[0].title, 5, 2);
+
+      expect(s.usedTitleIds).toContain(proposals1[0].title.id);
+      expect(s.usedTitleIds).toContain(proposals2[0].title.id);
+      expect(s.usedTitleIds).toHaveLength(2);
+    });
+  });
+
   describe('getReassignmentCost', () => {
     it('returns base cost for 0 reassignments', () => {
       expect(getReassignmentCost('apex', 0)).toBe(30);

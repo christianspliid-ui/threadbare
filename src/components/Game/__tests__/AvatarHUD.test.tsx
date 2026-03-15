@@ -26,11 +26,11 @@ describe('AvatarHUD', () => {
     expect(defaultProps.onCenterOnAvatar).toHaveBeenCalled();
   });
 
-  it('renders Move, Actions, and Scry buttons', () => {
+  it('renders Move, Actions, and Investiture buttons', () => {
     render(<AvatarHUD {...defaultProps} />);
     expect(screen.getByRole('button', { name: /move/i })).toBeTruthy();
     expect(screen.getByRole('button', { name: /actions/i })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /scry/i })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /investiture/i })).toBeTruthy();
   });
 
   it('calls onMoveClick when Move button is clicked', () => {
@@ -45,9 +45,9 @@ describe('AvatarHUD', () => {
     expect(defaultProps.onWheelClick).toHaveBeenCalled();
   });
 
-  it('calls onScryClick when Scry button is clicked', () => {
+  it('calls onScryClick when Investiture button is clicked', () => {
     render(<AvatarHUD {...defaultProps} />);
-    fireEvent.click(screen.getByRole('button', { name: /scry/i }));
+    fireEvent.click(screen.getByRole('button', { name: /investiture/i }));
     expect(defaultProps.onScryClick).toHaveBeenCalled();
   });
 

@@ -139,7 +139,7 @@ export function AvatarHUD({
         </Tooltip>
         <Tooltip id="ui.avatar_scry">
           <button onClick={onScryClick} style={OTHER_BUTTON_STYLE}>
-            Scry
+            Investiture
           </button>
         </Tooltip>
       </div>
