@@ -163,8 +163,8 @@ describe('culturalTension', () => {
         reachPreferences: makeReachPrefs('shadow'),
       });
 
-      graph.getNode('culture_0')!.properties = { actorType: 'culture', identity: identity0 };
-      graph.getNode('culture_1')!.properties = { actorType: 'culture', identity: identity1 };
+      graph.getNode('culture_0')!.properties = { actorType: 'culture', cultureIdentity: identity0 };
+      graph.getNode('culture_1')!.properties = { actorType: 'culture', cultureIdentity: identity1 };
 
       graph.addNode({ id: 'actor_1', type: 'actor', name: 'Outsider', properties: { actorType: 'individual' } });
       graph.addEdge({ id: 'e_a1_c1', source: 'actor_1', target: 'culture_1', type: 'belongs_to', properties: { culturalStrength: 0.7 } });
@@ -190,8 +190,8 @@ describe('culturalTension', () => {
         reachPreferences: makeReachPrefs('iron'),
       });
 
-      graph.getNode('culture_0')!.properties = { actorType: 'culture', identity: identity0 };
-      graph.getNode('culture_1')!.properties = { actorType: 'culture', identity: identity1 };
+      graph.getNode('culture_0')!.properties = { actorType: 'culture', cultureIdentity: identity0 };
+      graph.getNode('culture_1')!.properties = { actorType: 'culture', cultureIdentity: identity1 };
 
       graph.addNode({ id: 'actor_1', type: 'actor', name: 'Outsider', properties: { actorType: 'individual' } });
       graph.addEdge({ id: 'e_a1_c1', source: 'actor_1', target: 'culture_1', type: 'belongs_to', properties: { culturalStrength: 0.7 } });
@@ -216,8 +216,8 @@ describe('culturalTension', () => {
         reachPreferences: makeReachPrefs('shadow'),
       });
 
-      graph.getNode('culture_0')!.properties = { actorType: 'culture', identity: identity0 };
-      graph.getNode('culture_1')!.properties = { actorType: 'culture', identity: identity1 };
+      graph.getNode('culture_0')!.properties = { actorType: 'culture', cultureIdentity: identity0 };
+      graph.getNode('culture_1')!.properties = { actorType: 'culture', cultureIdentity: identity1 };
 
       // Add historical culture layer that differs from current
       graph.addEdge({ id: 'e_loc_hist', source: 'loc_1', target: 'culture_1', type: 'belongs_to', properties: { culturalStrength: 0.5, cultureLayer: 'historical' } });
