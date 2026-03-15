@@ -4,8 +4,7 @@
  */
 import type { ActionCandidate } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
-
-export type AmbitionPriority = 'primary' | 'secondary';
+import type { AmbitionPriority } from '../types/ambition';
 
 export const PRIMARY_AMBITION_WEIGHT = 0.6;
 export const SECONDARY_AMBITION_WEIGHT = 0.2;

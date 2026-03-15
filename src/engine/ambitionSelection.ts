@@ -47,7 +47,7 @@ export interface AmbitionSelection {
 
 // ─── Filter 1: "Can I?" ────────────────────────────────────────
 
-function passesEligibility(
+export function passesEligibility(
   template: AmbitionTemplate,
   agent: AmbitionAgentSnapshot,
 ): boolean {
@@ -72,7 +72,7 @@ function passesEligibility(
 
 // ─── Filter 2: "Should I?" — scoring ───────────────────────────
 
-function scoreDesirability(
+export function scoreDesirability(
   template: AmbitionTemplate,
   agent: AmbitionAgentSnapshot,
   rng: () => number,
