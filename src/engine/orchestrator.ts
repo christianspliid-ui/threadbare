@@ -106,6 +106,13 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       type: 'doom_escalation',
       message: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
       significance: 0.9,
+      notification: {
+        channel: 'popup',
+        popup: {
+          title: stageName,
+          body: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
+        },
+      },
     });
   }
 
@@ -735,6 +742,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         type: 'rival_action',
         message: actionDesc,
         significance: 0.7,
+        notification: { channel: 'toast' },
       });
     }
   }
@@ -934,6 +942,10 @@ export function phaseMandate(state: GameState): Partial<GameState> {
       type: 'mandate_progress',
       message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
       significance: 1.0,
+      notification: {
+        channel: 'alert',
+        icon: 'mandate',
+      },
     });
   }
 
@@ -955,6 +967,13 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
         type: 'phase_change',
         message: 'The Unmaking begins. The world trembles.',
         significance: 1.0,
+        notification: {
+          channel: 'popup',
+          popup: {
+            title: 'The Unmaking',
+            body: 'The Unmaking begins. The world trembles.',
+          },
+        },
       }],
     };
   }

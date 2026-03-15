@@ -119,6 +119,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         type: 'agent_death' as any,
         message: `${actor.name} has departed from the world.`,
         significance: 0.7,
+        notification: { channel: 'toast' },
       });
 
       deathOccurred = true;
@@ -206,6 +207,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
           type: 'agent_birth' as any,
           message: `${name} has emerged in ${locNode?.name ?? 'the world'}.`,
           significance: 0.5,
+          notification: { channel: 'toast' },
         });
 
         break; // At most one birth per tick
