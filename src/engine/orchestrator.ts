@@ -62,6 +62,9 @@ import { generateActionCandidates } from './actionCandidates';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement } from './phaseMovement';
 import { phaseColocationDetection } from './phaseColocationDetection';
+import { phaseUnifiedActionProgress } from './unifiedActionResolution';
+import { phaseIdleSelection } from './unifiedActionPhases';
+import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -978,22 +981,26 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['doom'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2: Agent Actions
-  s = { ...s, ...phaseAgentActions(s) };
-  const agentActionsEvents = s.tickEvents.length - prevEventCount;
-  phaseEventCounts['agent_actions'] = agentActionsEvents;
-  agentsProcessed += agentActionsEvents; // Approximate: one event per agent action
+  // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
+  // Phase 2a: Progress + resolve existing unified actions (Phases 1-6 of unified pipeline)
+  const uaRng = mulberry32(state.seed + state.tick * 31);
+  s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng) };
+  phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2.25: Encounter Progression
-  s = { ...s, ...phaseEncounterProgression(s) };
-  phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
+  // Phase 2b: Idle selection — agents pick new unified actions (Phase 7 of unified pipeline)
+  const idleRng = mulberry32(state.seed + state.tick * 37);
+  s = { ...s, ...phaseIdleSelection(s, idleRng) };
+  const idleSelectionEvents = s.tickEvents.length - prevEventCount;
+  phaseEventCounts['idle_selection'] = idleSelectionEvents;
+  agentsProcessed += idleSelectionEvents;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2.3: Action Progress
-  s = { ...s, ...phaseActionProgress(s) };
-  phaseEventCounts['action_progress'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
+  // DEPRECATED: Old phases replaced by unified pipeline above.
+  // Kept for reference during transition. Remove in Sprint 5.
+  // s = { ...s, ...phaseAgentActions(s) };
+  // s = { ...s, ...phaseEncounterProgression(s) };
+  // s = { ...s, ...phaseActionProgress(s) };
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
   s = { ...s, ...phaseMovement(s) };

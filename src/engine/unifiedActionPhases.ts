@@ -69,7 +69,7 @@ export function phaseIdleSelection(
   rng: () => number,
 ): Partial<GameState> {
   const events: TickEvent[] = [];
-  const newActions = [...state.unifiedActions];
+  const newActions = [...(state.unifiedActions ?? [])];
 
   const actors = state.graph.getNodesByType('actor').filter(
     n => n.properties.actorType === 'individual',
@@ -77,7 +77,7 @@ export function phaseIdleSelection(
 
   for (const actor of actors) {
     // Skip if already has active unified action
-    if (!isUnifiedAgentIdle(state.unifiedActions, actor.id)) continue;
+    if (!isUnifiedAgentIdle(state.unifiedActions ?? [], actor.id)) continue;
 
     // Also skip if still has active legacy encounter or action
     // (during transition period — once old phases are fully replaced, this check goes away)

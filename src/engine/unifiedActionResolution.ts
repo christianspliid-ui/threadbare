@@ -210,8 +210,8 @@ export function phaseUnifiedActionProgress(
 ): Partial<GameState> {
   const events: TickEvent[] = [];
 
-  // Phase 1: Progress all
-  let actions = progressAllActions(state.unifiedActions);
+  // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
+  let actions = progressAllActions(state.unifiedActions ?? []);
 
   // Phase 2: Collect completions
   const completing = collectCompletions(actions);
