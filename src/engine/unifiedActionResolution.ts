@@ -5,7 +5,7 @@
  * These functions implement Phases 1-6 of the unified action pipeline:
  *   Phase 1: Progress all active actions (+1 stepProgress)
  *   Phase 2: Collect actions whose current step completed this tick
- *   Phase 3: (Contestation detection — Sprint 4, stubbed here)
+ *   Phase 3: Contestation detection and resolution (Sprint 4)
  *   Phase 4+5: Resolve and execute GraphOps
  *   Phase 6: Advance completed steps or mark action resolved
  *
@@ -31,6 +31,10 @@ import { computeCapability } from './domainCapability';
 import { resolveAction } from './resolution';
 import { executeGraphOps } from './graphOpExecutor';
 import { emitTrace } from './traceBuffer';
+import {
+  detectContestations,
+  resolveContestationPair,
+} from './contestation';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -216,10 +220,56 @@ export function phaseUnifiedActionProgress(
   // Phase 2: Collect completions
   const completing = collectCompletions(actions);
 
-  // Phase 3: Sort by priority
-  const sorted = sortByPriority(completing);
+  // Phase 3: Contestation detection and resolution
+  const contestPairs = detectContestations(completing, templates);
+  const contestedIds = new Set<string>();
 
-  // Phase 4-6: Resolve, execute, advance
+  for (const pair of contestPairs) {
+    const attacker = actions.find((a) => a.actionId === pair.attackerActionId);
+    const defender = actions.find((a) => a.actionId === pair.defenderActionId);
+    if (!attacker || !defender) continue;
+
+    const atkTemplate = templates.find((t) => t.id === attacker.templateId);
+    const defTemplate = templates.find((t) => t.id === defender.templateId);
+    if (!atkTemplate || !defTemplate) continue;
+
+    const contestResult = resolveContestationPair(
+      attacker, defender, atkTemplate, defTemplate, state, rng,
+    );
+
+    // Apply attacker outcome
+    const atkOps = contestResult.attackerOutcome === 'success'
+      ? (atkTemplate.steps[attacker.currentStep]?.onSuccess ?? [])
+      : (atkTemplate.steps[attacker.currentStep]?.onFailure ?? []);
+    const { updatedAction: updAtk, events: atkEvents } = executeStepResult(
+      attacker, atkTemplate, contestResult.attackerOutcome, atkOps, state, rng, state.tick,
+    );
+
+    // Apply defender outcome
+    const defOps = contestResult.defenderOutcome === 'success'
+      ? (defTemplate.steps[defender.currentStep]?.onSuccess ?? [])
+      : (defTemplate.steps[defender.currentStep]?.onFailure ?? []);
+    const { updatedAction: updDef, events: defEvents } = executeStepResult(
+      defender, defTemplate, contestResult.defenderOutcome, defOps, state, rng, state.tick,
+    );
+
+    // Replace in actions array
+    actions = actions.map((a) => {
+      if (a.actionId === updAtk.actionId) return updAtk;
+      if (a.actionId === updDef.actionId) return updDef;
+      return a;
+    });
+
+    events.push(...atkEvents, ...defEvents);
+    contestedIds.add(pair.attackerActionId);
+    contestedIds.add(pair.defenderActionId);
+  }
+
+  // Phase 3b: Sort remaining (uncontested) completions by priority
+  const uncontested = completing.filter((a) => !contestedIds.has(a.actionId));
+  const sorted = sortByPriority(uncontested);
+
+  // Phase 4-6: Resolve and execute uncontested actions
   for (const completing_action of sorted) {
     const template = templates.find((t) => t.id === completing_action.templateId);
     if (!template) continue; // fail-soft: skip unknown template
