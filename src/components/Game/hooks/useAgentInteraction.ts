@@ -10,6 +10,9 @@ import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
+import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
+import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
+import { mulberry32 } from '../../../lib/prng';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -179,52 +182,111 @@ export function useAgentInteraction({
       });
 
       if (result.success) {
-        // Apply real world effects
-        const effectsResult = applyInterventionEffects({
-          graph: gameState.graph,
-          interventionType: pendingIntervention.interventionType,
-          targetAgentId: selectedAgentId,
-          sphere: slot.sphere,
-          tick: gameState.tick,
-          seed: gameState.seed,
-          agenda: selectedAgenda ?? undefined,
-        });
+        // Look up the divine unified action template
+        // Map intervention type → template ID (inspire_intervention → inspire)
+        const templateSuffix = pendingIntervention.interventionType === 'inspire_intervention'
+          ? 'inspire'
+          : pendingIntervention.interventionType;
+        const divineTemplateId = `divine.${templateSuffix}`;
+        const divineTemplate = getUnifiedTemplateById(divineTemplateId);
 
-        // Apply ascendant feedback (intervention history)
-        applyAscendantFeedback(
-          gameState.graph,
-          gameState.ascendantId,
-          pendingIntervention.interventionType,
-          slot.sphere,
-          gameState.tick
-        );
+        if (divineTemplate) {
+          // Create a UnifiedAction — the pipeline resolves it on the next tick
+          const rng = mulberry32(gameState.seed + gameState.tick * 43);
+          const divineAction = createUnifiedAction({
+            actorId: gameState.ascendantId,
+            templateId: divineTemplateId,
+            targetId: selectedAgentId,
+            scale: 'cosmic',
+            source: 'player',
+            tick: gameState.tick,
+            template: divineTemplate,
+            rng,
+            essencePaid: result.essenceSpent[slot.sphere!] ?? 0,
+          });
 
-        // Play audio feedback
-        playCastSound(slot.sphere, result.detected);
-
-        setGameState(prev => {
-          const newPool = { ...prev.essencePool };
-          newPool[slot.sphere!] = Math.max(
-            0,
-            newPool[slot.sphere!] - result.essenceSpent[slot.sphere!]
+          // Apply ascendant feedback (intervention history)
+          applyAscendantFeedback(
+            gameState.graph,
+            gameState.ascendantId,
+            pendingIntervention.interventionType,
+            slot.sphere,
+            gameState.tick
           );
-          return {
-            ...prev,
-            essencePool: newPool,
-            recentEvents: [
-              ...prev.recentEvents.slice(-99),
-              {
-                id: `evt_intervention_${prev.tick}_${Date.now()}`,
-                tick: prev.tick,
-                type: 'narrative' as const,
-                message: `${effectsResult.consequenceMessage} (${result.detected ? 'detected!' : 'undetected'})`,
-                significance: result.detected ? 0.8 : 0.5,
-                sphere: slot.sphere!,
-                isInterventionBeat: true,
-              },
-            ],
-          };
-        });
+
+          // Play audio feedback
+          playCastSound(slot.sphere, result.detected);
+
+          setGameState(prev => {
+            const newPool = { ...prev.essencePool };
+            newPool[slot.sphere!] = Math.max(
+              0,
+              newPool[slot.sphere!] - result.essenceSpent[slot.sphere!]
+            );
+            return {
+              ...prev,
+              essencePool: newPool,
+              unifiedActions: [...(prev.unifiedActions ?? []), divineAction],
+              recentEvents: [
+                ...prev.recentEvents.slice(-99),
+                {
+                  id: `evt_intervention_${prev.tick}_${Date.now()}`,
+                  tick: prev.tick,
+                  type: 'narrative' as const,
+                  message: `The Ascendant ${divineTemplate.narrativeTemplates.initiation}. (${result.detected ? 'detected!' : 'undetected'})`,
+                  significance: result.detected ? 0.8 : 0.5,
+                  sphere: slot.sphere!,
+                  isInterventionBeat: true,
+                },
+              ],
+            };
+          });
+        } else {
+          // Fallback: use legacy path if divine template not found
+          const effectsResult = applyInterventionEffects({
+            graph: gameState.graph,
+            interventionType: pendingIntervention.interventionType,
+            targetAgentId: selectedAgentId,
+            sphere: slot.sphere,
+            tick: gameState.tick,
+            seed: gameState.seed,
+            agenda: selectedAgenda ?? undefined,
+          });
+
+          applyAscendantFeedback(
+            gameState.graph,
+            gameState.ascendantId,
+            pendingIntervention.interventionType,
+            slot.sphere,
+            gameState.tick
+          );
+
+          playCastSound(slot.sphere, result.detected);
+
+          setGameState(prev => {
+            const newPool = { ...prev.essencePool };
+            newPool[slot.sphere!] = Math.max(
+              0,
+              newPool[slot.sphere!] - result.essenceSpent[slot.sphere!]
+            );
+            return {
+              ...prev,
+              essencePool: newPool,
+              recentEvents: [
+                ...prev.recentEvents.slice(-99),
+                {
+                  id: `evt_intervention_${prev.tick}_${Date.now()}`,
+                  tick: prev.tick,
+                  type: 'narrative' as const,
+                  message: `${effectsResult.consequenceMessage} (${result.detected ? 'detected!' : 'undetected'})`,
+                  significance: result.detected ? 0.8 : 0.5,
+                  sphere: slot.sphere!,
+                  isInterventionBeat: true,
+                },
+              ],
+            };
+          });
+        }
 
         // Set playing card and delayed close
         setPlayingCardId(pendingIntervention.slotId);
