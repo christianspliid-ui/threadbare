@@ -604,8 +604,35 @@ Wraps the game area content, NOT the entire app — shell/nav survives if the ga
 
 ---
 
+## 18. Hex Chronicle Pattern
+
+The hex detail view uses a narrative chronicle design with four layers instead of traditional data-label panels.
+
+**Structure:** Collapsible sidebar (HexSidebar) + scrollable narrative (HexChronicle).
+
+**Four Narrative Layers:**
+- **The Land** — Terrain prose establishing atmosphere and geography
+- **The Soul** — Sphere influence descriptions with inline sphere pills
+- **The People** — Culture/faction vignettes, inline LocationCards and SoulCards
+- **The Ruins** — Historical culture prose, region etymology, epitaph, exploration hooks (conditional: only when historical culture exists)
+
+**Inline Components:**
+- `LocationCard` — Clickable card with subtype glyph, name, flavor text, agent count
+- `SoulCard` — Agent card with sphere-colored border, archetype tag
+- `EventBlock` — Gold-bordered event description (Stirring/Crisis)
+- `ExplorationHook` — Gold diamond glyph (⟐) with italic discovery prompt
+
+**Data Flow:** `useHexZoomData` hook → `hexRegionData` (via `getHexRegionData`) → HexChronicle/HexSidebar. Historical culture prose via `historicalCultureResolver` and `regionEtymologyResolver`.
+
+**Animation:** `.chronicle-layer` class with staggered `chronicle-fade-in` (0.05s–0.35s delay per layer).
+
+**Fog of War:** `lineOfSight === 'none'` shows "Unknown Territory" message instead of full chronicle.
+
+---
+
 ## Changelog
 
 *(2026-03-09 — Created. 11 numbered interaction patterns + 3 cross-cutting sections (panel styling, accessibility, performance). Sourced from codebase audit of 15+ component/hook files.)*
 *(2026-03-10 — Added sections 12-16: AnimateMount, value feedback, empty states, ARIA live regions, GameErrorBoundary. FE Polish Sprint #1.)*
 *(2026-03-10 — Added section 17: Disabled Action Feedback (Shake-No). FE-16.)*
+*(2026-03-15 — Added section 18: Hex Chronicle Pattern. HexChronicle redesign with four narrative layers, inline components, staggered animations, and fog-of-war awareness.)*
