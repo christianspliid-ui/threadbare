@@ -14,6 +14,7 @@ import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
 import type { UnifiedAction } from './unifiedAction';
+import type { NotificationDirective } from './notification';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -42,6 +43,7 @@ export interface TickEvent {
   significance: number;
   /** Marks this event as the result of a divine intervention */
   isInterventionBeat?: boolean;
+  notification?: NotificationDirective;
 }
 
 // ─── Game State ─────────────────────────────────────────────────
