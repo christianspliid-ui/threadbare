@@ -13,6 +13,7 @@ import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
+import type { UnifiedAction } from './unifiedAction';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -90,8 +91,11 @@ export interface GameState {
   // Encounters (agent growth narratives)
   encounterProgress: EncounterProgress[];
 
-  // CRUD Actions (unified with encounters)
+  // CRUD Actions (legacy — kept until Sprint 5 cleanup)
   actionsInProgress: ActionInProgress[];
+
+  // Unified Actions (replaces actionsInProgress + encounterProgress)
+  unifiedActions: UnifiedAction[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;
