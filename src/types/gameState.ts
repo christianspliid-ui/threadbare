@@ -44,6 +44,8 @@ export interface TickEvent {
   /** Marks this event as the result of a divine intervention */
   isInterventionBeat?: boolean;
   notification?: NotificationDirective;
+  /** Hex coordinates where this event occurred — absent for global events */
+  hexCoords?: { col: number; row: number };
 }
 
 // ─── Game State ─────────────────────────────────────────────────
