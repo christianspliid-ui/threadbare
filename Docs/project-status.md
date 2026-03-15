@@ -3,10 +3,10 @@
 > Updated 2026-03-12. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-PROD-01 Vertical Slice Contract — define the current player loop, in-scope systems, out-of-scope systems, and next milestone success criteria.
+Region Naming & Historical Cultures complete — check Notion backlog for next priority.
 
 ## Up Next
-STRUCT-01 Repo Boundary Cleanup — move loose screenshots, stale markdown, and temp artifacts from repo root into proper locations.
+PROD-01 Vertical Slice Contract — define the current player loop, in-scope systems, out-of-scope systems, and next milestone success criteria.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf

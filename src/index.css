@@ -10,14 +10,15 @@
     /* ── Typography ───────────────────────────────────────────── */
     --font-display: 'Cinzel', serif;
     --font-body: 'Alegreya Sans', 'Segoe UI', system-ui, sans-serif;
+    --font-prose: 'EB Garamond', 'Cormorant Garamond', serif;
 
-    /* Type Scale — minimum 14px body, up to 29px for titles (+1px bump) */
-    --text-xs: 0.875rem;    /* 14px — smallest readable size */
-    --text-sm: 0.9375rem;   /* 15px — secondary text */
-    --text-base: 1rem;      /* 16px — primary body text */
-    --text-lg: 1.1875rem;   /* 19px — section headings */
-    --text-xl: 1.5625rem;   /* 25px — panel titles */
-    --text-2xl: 1.8125rem;  /* 29px — page titles */
+    /* Type Scale — minimum 16px body, generous for readability */
+    --text-xs: 1rem;        /* 16px — smallest readable size */
+    --text-sm: 1.0625rem;   /* 17px — secondary text */
+    --text-base: 1.125rem;  /* 18px — primary body text */
+    --text-lg: 1.3125rem;   /* 21px — section headings */
+    --text-xl: 1.625rem;    /* 26px — panel titles */
+    --text-2xl: 1.9375rem;  /* 31px — page titles */
 
     /* ── Colors ───────────────────────────────────────────────── */
     /* Background layers — deep to surface */
@@ -29,9 +30,9 @@
 
     /* Text hierarchy — high contrast on dark */
     --text-primary: #e8dcc8;      /* warm parchment — WCAG AA on #1a1a1f */
-    --text-secondary: #b8a890;    /* muted warm — readable on surface */
-    --text-tertiary: #8a7e70;     /* subtle — labels and metadata */
-    --text-muted: #5a5248;        /* very dim — decorative only */
+    --text-secondary: #c8b89a;    /* warm secondary — readable on surface */
+    --text-tertiary: #a89880;     /* labels and metadata — WCAG AA on surface */
+    --text-muted: #7a6e60;        /* dim but readable — decorative/hints */
 
     /* Accent — gold thread that runs through the dark */
     --accent-gold: #d4a040;

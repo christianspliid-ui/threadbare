@@ -525,7 +525,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
               </svg>
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   fontFamily: 'var(--font-display)',
                   letterSpacing: '1.5px',
@@ -928,7 +928,7 @@ export const LocationView = memo(function LocationView({
               </svg>
               <span
                 style={{
-                  fontSize: '11px',
+                  fontSize: 'var(--text-xs)',
                   color: 'var(--text-muted)',
                   fontFamily: 'var(--font-display)',
                   letterSpacing: '1.5px',
