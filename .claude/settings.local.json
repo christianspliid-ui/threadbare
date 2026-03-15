@@ -40,7 +40,9 @@
       "Bash(python3 -c \"import sys,json; data=json.loads\\(sys.stdin.read\\(\\)\\); print\\(data[0][''''text'''']\\)\")",
       "Bash(node -e \":*)",
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
-      "Bash(xargs wc:*)"
+      "Bash(xargs wc:*)",
+      "Bash(xargs grep:*)",
+      "Bash(ls -la /c/Users/chris/TheFantasyWorldSimulator/Design/*.html)"
     ]
   }
 }
