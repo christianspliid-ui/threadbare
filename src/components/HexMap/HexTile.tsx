@@ -1,11 +1,12 @@
 import { memo, useCallback } from 'react';
 import type { ReactElement } from 'react';
 import type { HexTile, HexCoord, LocationSubtype } from '../../types';
-import type { HexVisibilityState } from '../../types/visibility';
+import type { HexVisibilityState, StaleSnapshot } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
 import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
 import { isWaterTerrain } from '../../engine/coastline';
+import { buildHexTooltipProse } from '../../engine/hexTooltipProse';
 import { Tooltip } from '../shared/Tooltip';
 
 // Hex tile display constants
@@ -49,12 +50,68 @@ function renderLocationOverlay(
   );
 }
 
-// IX-202: Concise geo description for hex tooltips
-function geoDesc(elev: number, temp: number, moist: number): string {
-  const e = elev < 0.25 ? 'Low' : elev < 0.6 ? 'Mid' : 'High';
-  const t = temp < 0.3 ? 'Cold' : temp < 0.7 ? 'Temperate' : 'Hot';
-  const m = moist < 0.3 ? 'Arid' : moist < 0.7 ? 'Moderate' : 'Wet';
-  return `${e} elevation · ${t} · ${m} moisture`;
+// Human-readable labels for location subtypes (used for tooltip label)
+const SUBTYPE_LABELS: Record<LocationSubtype, string> = {
+  hamlet: 'Hamlet',
+  town: 'Town',
+  city: 'City',
+  capital: 'Capital City',
+  camp: 'Camp',
+  farmland: 'Farmland',
+  castle: 'Castle',
+  fort: 'Fort',
+  tower: 'Watchtower',
+  shrine: 'Shrine',
+  temple: 'Temple',
+  mining: 'Mining Settlement',
+  ruins: 'Ruins',
+  ruined_tower: 'Ruined Tower',
+  ruined_city: 'Ruined City',
+  ruined_village: 'Ruined Village',
+  battleground: 'Battleground',
+  oasis: 'Oasis',
+  unexplored_poi: 'Unknown Site',
+  wilderness: 'Wilderness',
+};
+
+/**
+ * Builds contextual tooltip label and prose desc based on what is visible on the hex.
+ *
+ * Label logic:
+ * - Visible hex with an overlay: overlay type is the label (e.g. "City").
+ * - Remembered hex with location names: location names are the label.
+ * - Otherwise: terrain name.
+ *
+ * Desc: atmospheric prose from hexTooltipProse engine.
+ */
+function buildTooltipProps(
+  tile: HexTile,
+  visibility: HexVisibilityState,
+  locationSubtype: LocationSubtype | undefined,
+  snapshot: StaleSnapshot | undefined,
+): { label: string; desc: string } {
+  const { terrain, geoParams } = tile;
+  const desc = buildHexTooltipProse(
+    terrain,
+    geoParams.elevation,
+    geoParams.temperature,
+    geoParams.moisture,
+    visibility,
+    locationSubtype,
+    snapshot,
+  );
+
+  // Visible hex with a recognisable overlay — promote the location type to label
+  if (visibility === 'visible' && locationSubtype && locationSubtype !== 'wilderness') {
+    return { label: SUBTYPE_LABELS[locationSubtype] ?? locationSubtype, desc };
+  }
+
+  // Remembered hex — surface any location names from the stale snapshot
+  if (visibility === 'remembered' && snapshot && snapshot.locationNames.length > 0) {
+    return { label: snapshot.locationNames.join(', '), desc };
+  }
+
+  return { label: terrain, desc };
 }
 
 interface HexTileProps {
@@ -69,6 +126,8 @@ interface HexTileProps {
   isAvatarHex?: boolean;
   sphereColor?: string;
   locationSubtype?: LocationSubtype;
+  /** Stale snapshot from fog-of-war — present on remembered hexes with prior LOS. */
+  snapshot?: StaleSnapshot;
   /** RC-201: Stable callback refs — HexTile binds its own coord internally */
   onHexClick?: (coord: HexCoord) => void;
   onHexHover?: (coord: HexCoord | null) => void;
@@ -78,7 +137,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   tile, cx, cy, size, hexClipId,
   isHovered = false, isSelected = false,
   visibility = 'visible', isAvatarHex = false, sphereColor,
-  locationSubtype,
+  locationSubtype, snapshot,
   onHexClick, onHexHover,
 }: HexTileProps) {
   // RC-201: Stable handlers — only re-create when callback ref or coord changes, not on hover
@@ -97,8 +156,8 @@ export const HexTileComponent = memo(function HexTileComponent({
     'data-row': tile.coord.row,
   };
 
-  // IX-202: Geo description for tooltip
-  const geoDescText = geoDesc(tile.geoParams.elevation, tile.geoParams.temperature, tile.geoParams.moisture);
+  // Build contextual tooltip label + prose description
+  const tooltipProps = buildTooltipProps(tile, visibility, locationSubtype, snapshot);
 
   // Unexplored: only render dark fill, no content
   if (visibility === 'unexplored') {
@@ -120,7 +179,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   // Visible water hex: render transparent — let CoastlineOverlay show through
   if (visibility === 'visible' && isWater) {
     return (
-      <Tooltip as="g" label={tile.terrain} desc={geoDescText} id={`terrain.${tile.terrain}`}>
+      <Tooltip as="g" label={tooltipProps.label} desc={tooltipProps.desc} id={`terrain.${tile.terrain}`}>
         <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
           {/* Transparent hit area for click/hover events */}
           <polygon points={points} fill="transparent" stroke="none" />
@@ -144,7 +203,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   // Remembered water hex: transparent with dimmed border
   if (visibility === 'remembered' && isWater) {
     return (
-      <Tooltip as="g" label={tile.terrain} desc={geoDescText} id={`terrain.${tile.terrain}`}>
+      <Tooltip as="g" label={tooltipProps.label} desc={tooltipProps.desc} id={`terrain.${tile.terrain}`}>
         <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
           <g opacity="0.4">
             <polygon points={points} fill="transparent" stroke={HEX_BORDER_COLOR} strokeWidth={0.6} />
@@ -199,8 +258,8 @@ export const HexTileComponent = memo(function HexTileComponent({
     return (
       <Tooltip
         as="g"
-        label={tile.terrain}
-        desc={geoDescText}
+        label={tooltipProps.label}
+        desc={tooltipProps.desc}
         id={`terrain.${tile.terrain}`}
       >
         <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
@@ -216,8 +275,8 @@ export const HexTileComponent = memo(function HexTileComponent({
   return (
     <Tooltip
       as="g"
-      label={tile.terrain}
-      desc={geoDescText}
+      label={tooltipProps.label}
+      desc={tooltipProps.desc}
       id={`terrain.${tile.terrain}`}
     >
       <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
