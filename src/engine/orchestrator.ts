@@ -66,6 +66,7 @@ import { phaseColocationDetection } from './phaseColocationDetection';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
+import { phaseAmbitionProgress } from './ambitionTick';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1110,6 +1111,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.6: Divine Influence Decay
   s = { ...s, ...phaseDivineInfluenceDecay(s) };
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
+  s = { ...s, ...phaseAmbitionProgress(s) };
+  phaseEventCounts['ambition_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
