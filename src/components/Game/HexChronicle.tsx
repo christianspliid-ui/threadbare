@@ -7,53 +7,59 @@ import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { LocationCard, SoulCard, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver } from '../../engine/proseResolvers';
+import { generateEntityProse } from '../../engine/proseGenerator';
+import { mulberry32 } from '../../lib/prng';
+import {
+  BIOME_PROSE,
+  SPHERE_LOCATION_PROSE,
+  CULTURE_LOCATION_PROSE,
+  FACTION_CONTROL_PROSE,
+} from '../../data/prose-layer-content';
 
-// ── Terrain flavor text ──────────────────────────────────────────────
-const TERRAIN_FLAVOR: Record<string, string> = {
-  ocean: 'Vast waters stretch to every horizon, deep and uncharted. Only the most daring — or desperate — venture far from shore.',
-  coastal_shallows: 'Warm shallows lap at the edges of the land, teeming with life where salt and fresh water mingle.',
-  lake: 'Still waters mirror the sky, hiding depths that have swallowed secrets since before the first age.',
-  river: 'A ribbon of swift water carves through the land, carrying trade, stories, and the occasional body.',
-  grassland: 'Endless grasses roll under wind and sky. Herds move like slow rivers across the open plain.',
-  farmland: 'Terraced fields and low stone walls mark the patient work of generations who bent the land to their will.',
-  savanna: 'Sun-baked earth and scattered thorn trees define a land of dry seasons and sudden, violent rains.',
-  steppe: 'Harsh wind-scoured flatlands where only the tough survive. Nomadic trails crisscross the sparse grass.',
-  temperate_forest: 'Broad-leafed canopy shifts from emerald to gold with the turning seasons. Ancient paths thread between gnarled trunks.',
-  dense_forest: 'The canopy swallows all light. In the perpetual twilight below, strange things grow and stranger things watch.',
-  boreal_forest: 'Evergreens stand sentinel in frozen silence. The air tastes of pine and coming snow.',
-  jungle: 'Green chaos. Vines strangle trees that strangle other trees. Life here is loud, wet, and ruthlessly competitive.',
-  swamp: 'Murky water hides what lies beneath. The air is thick with insects and the smell of slow decay.',
-  marsh: 'Spongy ground gives way without warning. Mist clings to the hollows, and the dead are preserved perfectly in the peat.',
-  hills: 'Rolling highlands offer long views and defensible ground. Shepherds and bandits share these slopes uneasily.',
-  mountains: 'Stone peaks claw at the sky, wreathed in cloud and legend. Passes are few, and each one is worth dying for.',
-  plateau: 'A high flat expanse above the world, wind-scoured and remote. Those who live here answer to no lowland lord.',
-  badlands: 'Eroded spires and razor ridges of rust-colored stone. Nothing grows here but lichen, resentment, and echoes.',
-  desert: 'Sand and silence. The sun bleaches bone and memory alike. Oases are the only currency that matters.',
-  tundra: 'Frozen earth stretches to the edge of sight. In summer the permafrost weeps; in winter it locks tight as a tomb.',
-  glacier: 'Ancient ice creeps forward with geological patience, grinding mountains to dust beneath its weight.',
-  volcano: 'The earth here is restless. Fumaroles hiss, hot springs bubble, and the ground shakes with subterranean fury.',
-  forested_hills: 'Wooded hills rise in green waves, their slopes hiding deep ravines and old stone ruins. Every hollow shelters something.',
-  great_home_trees: 'Trees of impossible scale rise like living towers. Entire communities dwell among the branches.',
-  broken_lands: 'Shattered terrain — fissures, rubble, and the scars of some ancient cataclysm. The land itself seems wounded.',
-};
+// ── Helpers ─────────────────────────────────────────────────────────
 
-const FALLBACK_TERRAIN_FLAVOR = 'An unremarkable stretch of land, waiting for someone to give it meaning.';
+/** Seeded pick from an array — deterministic, same seed = same result. */
+function pickFromArray<T>(arr: T[], seed: number): T | undefined {
+  if (arr.length === 0) return undefined;
+  const rng = mulberry32(seed);
+  return arr[Math.floor(rng() * arr.length)];
+}
 
-// ── Sphere flavor ────────────────────────────────────────────────────
-const SPHERE_FLAVOR: Record<string, string> = {
-  force: 'Force stirs — a pressure in the air, a taste of iron.',
-  matter: 'The stone itself hums with latent potential.',
-  energy: 'Crackling currents thread the ground like veins.',
-  life: 'Growth is relentless here; even cut stone sprouts moss overnight.',
-  mind: 'Thoughts echo strangely, as if the land itself is listening.',
-  spirit: 'The veil between worlds thins. Whispers carry from somewhere close and nowhere at all.',
-  time: 'Moments stretch and compress — the air feels thick with history.',
-  entropy: 'Decay creeps at the edges. Things left here don\'t last.',
-  chaos: 'Nothing stays settled. Even the rules of nature feel like suggestions.',
-  order: 'Everything here tends toward pattern — paths straighten, stones align.',
-  light: 'A warm radiance lingers, even when no sun is visible.',
-  darkness: 'Shadows pool in corners and the light seems reluctant to stay.',
-};
+/** Pick two distinct items from an array using seeded PRNG. */
+function pickTwoFromArray(arr: string[], seed: number): [string, string | undefined] {
+  if (arr.length === 0) return ['', undefined];
+  if (arr.length === 1) return [arr[0], undefined];
+  const rng = mulberry32(seed);
+  const idx1 = Math.floor(rng() * arr.length);
+  let idx2 = Math.floor(rng() * (arr.length - 1));
+  if (idx2 >= idx1) idx2++;
+  return [arr[idx1], arr[idx2]];
+}
+
+/** Hash a string into a numeric seed offset — deterministic per entity. */
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
+/** Strip leading "The " from a name to avoid "The The X" constructions. */
+function stripLeadingThe(name: string): string {
+  return name.replace(/^The\s+/i, '');
+}
+
+/** Get sphere strength label from influence value. */
+function getSphereLabel(value: number): string {
+  if (value >= 0.6) return 'strong';
+  if (value >= 0.3) return 'faint';
+  return 'trace';
+}
+
+// ── Fallbacks ────────────────────────────────────────────────────────
+
+const FALLBACK_TERRAIN_PROSE = 'An unremarkable stretch of land, waiting for someone to give it meaning.';
 
 // ── Component ────────────────────────────────────────────────────────
 
@@ -92,7 +98,8 @@ export const HexChronicle = memo(function HexChronicle({
   graph,
   seed,
 }: HexChronicleProps) {
-  // Terrain label for display
+  // ── Derived data ─────────────────────────────────────────────────
+
   const terrainLabel = useMemo(() => {
     return terrain
       .split('_')
@@ -100,58 +107,131 @@ export const HexChronicle = memo(function HexChronicle({
       .join(' ');
   }, [terrain]);
 
-  // Terrain flavor text
-  const terrainFlavorText = useMemo(() => {
-    return TERRAIN_FLAVOR[terrain] ?? FALLBACK_TERRAIN_FLAVOR;
-  }, [terrain]);
+  // Hex-specific seed for deterministic prose selection
+  const hexSeed = useMemo(() => seed + hexCol * 1000 + hexRow, [seed, hexCol, hexRow]);
 
-  // Dominant sphere from influence
-  const dominantSphere = useMemo(() => {
-    if (!sphereInfluence) return null;
-    const entries = Object.entries(sphereInfluence) as [SphereName, number][];
-    const sorted = entries.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
-    return sorted.length > 0 ? sorted[0] : null;
-  }, [sphereInfluence]);
+  // ── LAND: Two paragraphs from BIOME_PROSE ──────────────────────
 
-  // Top 2-3 spheres for pills
-  const topSpheres = useMemo(() => {
+  const [landProse1, landProse2] = useMemo(() => {
+    const templates = BIOME_PROSE[terrain];
+    if (!templates || templates.length === 0) return [FALLBACK_TERRAIN_PROSE, undefined];
+    return pickTwoFromArray(templates, hexSeed);
+  }, [terrain, hexSeed]);
+
+  // ── SOUL: Rich sphere prose + strength labels ──────────────────
+
+  const sortedSpheres = useMemo(() => {
     if (!sphereInfluence) return [];
     const entries = Object.entries(sphereInfluence) as [SphereName, number][];
-    return entries.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    return entries.filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
   }, [sphereInfluence]);
 
-  // Dominant culture and faction
+  const dominantSphere = useMemo(() => sortedSpheres.length > 0 ? sortedSpheres[0] : null, [sortedSpheres]);
+  const secondarySphere = useMemo(() => sortedSpheres.length > 1 ? sortedSpheres[1] : null, [sortedSpheres]);
+  const topSpheres = useMemo(() => sortedSpheres.slice(0, 3), [sortedSpheres]);
+
+  // Rich sphere prose from content tables
+  const dominantSphereProse = useMemo(() => {
+    if (!dominantSphere) return null;
+    const templates = SPHERE_LOCATION_PROSE[dominantSphere[0]];
+    if (!templates) return null;
+    return pickFromArray(templates, hexSeed + 100);
+  }, [dominantSphere, hexSeed]);
+
+  const secondarySphereProse = useMemo(() => {
+    if (!secondarySphere || secondarySphere[1] < 0.2) return null;
+    const templates = SPHERE_LOCATION_PROSE[secondarySphere[0]];
+    if (!templates) return null;
+    return pickFromArray(templates, hexSeed + 200);
+  }, [secondarySphere, hexSeed]);
+
+  // ── PEOPLE: Culture + faction prose from content tables ────────
+
   const dominantCulture = useMemo(() => cultures.length > 0 ? cultures[0] : null, [cultures]);
   const dominantFaction = useMemo(() => factions.length > 0 ? factions[0] : null, [factions]);
 
-  // Flatten all agents with their location info
+  const cultureProse = useMemo(() => {
+    if (!dominantCulture?.foundationBias) return null;
+    // foundationBias is like "order" or "chaos" — map to foundationPair key
+    // CULTURE_LOCATION_PROSE is keyed by foundationPair: "order_light", "order_darkness", etc.
+    const bias = dominantCulture.foundationBias;
+    const spheres = dominantCulture.dominantSpheres || [];
+    const hasLight = spheres.includes('light' as SphereName);
+    const hasDarkness = spheres.includes('darkness' as SphereName);
+    let pairKey = bias;
+    if (hasLight) pairKey = `${bias}_light`;
+    else if (hasDarkness) pairKey = `${bias}_darkness`;
+    else pairKey = `${bias}_light`; // default
+
+    const templates = CULTURE_LOCATION_PROSE[pairKey];
+    if (!templates) return null;
+    return pickFromArray(templates, hexSeed + hashString(dominantCulture.cultureId));
+  }, [dominantCulture, hexSeed]);
+
+  const factionProse = useMemo(() => {
+    if (!dominantFaction) return null;
+    const template = pickFromArray(FACTION_CONTROL_PROSE, hexSeed + hashString(dominantFaction.factionId));
+    if (!template) return null;
+    return template.replace(/\{faction\}/g, dominantFaction.factionName);
+  }, [dominantFaction, hexSeed]);
+
+  // ── Location + agent prose via generateEntityProse ─────────────
+
+  const locationProse = useMemo(() => {
+    const result: Record<string, string> = {};
+    for (const loc of locations) {
+      const prose = generateEntityProse(loc.id, graph, seed, 'summary');
+      if (prose) result[loc.id] = prose;
+    }
+    return result;
+  }, [locations, graph, seed]);
+
   const allAgents = useMemo(() => {
     return Object.entries(agentsByLocation).flatMap(([locId, agents]) =>
       agents.map(a => ({ ...a, locationId: locId }))
     );
   }, [agentsByLocation]);
 
-  // Historical culture prose layers
+  const agentProse = useMemo(() => {
+    const result: Record<string, string> = {};
+    for (const agent of allAgents) {
+      const prose = generateEntityProse(agent.id, graph, seed, 'summary');
+      if (prose) result[agent.id] = prose;
+    }
+    return result;
+  }, [allAgents, graph, seed]);
+
+  // ── RUINS: Historical culture resolvers ────────────────────────
+
   const historyLayers = useMemo(() => {
     if (!regionData?.regionId) return [];
     return historicalCultureResolver(regionData.regionId, graph, seed);
   }, [regionData, graph, seed]);
 
-  // Region etymology prose layers
   const etymologyLayers = useMemo(() => {
     if (!regionData?.regionId) return [];
     return regionEtymologyResolver(regionData.regionId, graph, seed);
   }, [regionData, graph, seed]);
 
-  // Exploration hooks from ruin descriptors
   const explorationHooks = useMemo(() => {
     if (!regionData?.historicalCulture?.ruinDescriptors) return [];
-    return regionData.historicalCulture.ruinDescriptors.slice(0, 2).map(desc =>
+    return regionData.historicalCulture.ruinDescriptors.slice(0, 3).map(desc =>
       `The ${desc} have not been fully explored. What remains within may reward — or punish — the curious.`
     );
   }, [regionData]);
 
-  // Fog of war case
+  // ── HERO subtitle composition ──────────────────────────────────
+
+  const heroSubtitle = useMemo(() => {
+    const parts: string[] = [];
+    parts.push(`${terrainLabel} at ${hexCol}, ${hexRow}`);
+    if (dominantCulture) parts.push(dominantCulture.cultureName);
+    if (dominantFaction) parts.push(dominantFaction.factionName);
+    return parts.join(' · ');
+  }, [terrainLabel, hexCol, hexRow, dominantCulture, dominantFaction]);
+
+  // ── Fog of war ─────────────────────────────────────────────────
+
   if (lineOfSight === 'none') {
     return (
       <div className="flex-1 flex items-center justify-center" style={{ background: 'var(--bg-abyss)' }}>
@@ -179,6 +259,40 @@ export const HexChronicle = memo(function HexChronicle({
     );
   }
 
+  // ── Prose style constants ──────────────────────────────────────
+
+  const proseStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-prose)',
+    fontSize: 'var(--text-sm)',
+    color: 'var(--text-secondary)',
+    lineHeight: 1.8,
+    fontStyle: 'italic',
+    margin: '0 0 16px 0',
+  };
+
+  const markerStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '12px',
+    margin: '0 0 20px 0',
+  };
+
+  const ruleStyle: React.CSSProperties = {
+    flex: 1,
+    height: '1px',
+    background: 'var(--border-subtle)',
+  };
+
+  const labelStyle: React.CSSProperties = {
+    fontFamily: 'var(--font-display)',
+    fontSize: 'var(--text-xs)',
+    color: 'var(--text-muted)',
+    textTransform: 'uppercase',
+    letterSpacing: '0.1em',
+    whiteSpace: 'nowrap',
+  };
+
   return (
     <div
       className="flex-1 overflow-y-auto"
@@ -205,102 +319,51 @@ export const HexChronicle = memo(function HexChronicle({
           textTransform: 'uppercase',
           letterSpacing: '0.08em',
         }}>
-          {terrainLabel} · ({hexCol}, {hexRow})
+          {heroSubtitle}
         </div>
       </div>
 
-      {/* ─── THE LAND LAYER ──────────────────────────────────────────────── */}
+      {/* ─── THE LAND ─────────────────────────────────────────────────────── */}
       <div className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.1s both',
       }}>
-        <div className="chronicle-marker" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          margin: '0 0 20px 0',
-        }}>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            whiteSpace: 'nowrap',
-          }}>
-            The Land
-          </span>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The Land</span>
+          <div style={ruleStyle} />
         </div>
-        <p className="chronicle-prose" style={{
-          fontFamily: 'var(--font-prose)',
-          fontSize: 'var(--text-sm)',
-          color: 'var(--text-secondary)',
-          lineHeight: 1.8,
-          fontStyle: 'italic',
-          margin: 0,
-        }}>
-          {terrainFlavorText}
+        <p className="chronicle-prose" style={proseStyle}>
+          {landProse1}
         </p>
+        {landProse2 && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {landProse2}
+          </p>
+        )}
       </div>
 
-      {/* ─── THE SOUL LAYER ──────────────────────────────────────────────── */}
+      {/* ─── THE SOUL ─────────────────────────────────────────────────────── */}
       <div className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.2s both',
       }}>
-        <div className="chronicle-marker" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          margin: '0 0 20px 0',
-        }}>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            whiteSpace: 'nowrap',
-          }}>
-            The Soul
-          </span>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The Soul</span>
+          <div style={ruleStyle} />
         </div>
 
-        {dominantSphere && (
-          <>
-            <p className="chronicle-prose" style={{
-              fontFamily: 'var(--font-prose)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.8,
-              fontStyle: 'italic',
-              margin: '0 0 16px 0',
-            }}>
-              {SPHERE_FLAVOR[dominantSphere[0]] ?? ''}
-            </p>
-          </>
+        {dominantSphereProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {dominantSphereProse}
+          </p>
+        )}
+
+        {secondarySphereProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {secondarySphereProse}
+          </p>
         )}
 
         {topSpheres.length > 0 && (
@@ -310,104 +373,84 @@ export const HexChronicle = memo(function HexChronicle({
             flexWrap: 'wrap',
             margin: 0,
           }}>
-            {topSpheres.map(([sphereName]) => (
-              <div
-                key={sphereName}
-                className="sphere-pill"
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  background: 'var(--bg-surface)',
-                  border: `1px solid ${getSphereColor(sphereName)}`,
-                  borderRadius: '12px',
-                  padding: '4px 10px',
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-secondary)',
-                  fontFamily: 'var(--font-body)',
-                  textTransform: 'capitalize',
-                }}
-              >
+            {topSpheres.map(([sphereName, sphereValue]) => {
+              const color = getSphereColor(sphereName);
+              const label = getSphereLabel(sphereValue);
+              return (
                 <div
+                  key={sphereName}
+                  className="sphere-pill"
                   style={{
-                    width: '6px',
-                    height: '6px',
-                    borderRadius: '50%',
-                    backgroundColor: getSphereColor(sphereName),
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'var(--bg-surface)',
+                    border: `1px solid ${color}`,
+                    borderRadius: '12px',
+                    padding: '4px 10px',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-body)',
+                    textTransform: 'capitalize',
+                    opacity: label === 'trace' ? 0.55 : 1,
                   }}
-                />
-                {sphereName}
-              </div>
-            ))}
+                >
+                  <div
+                    style={{
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      backgroundColor: color,
+                    }}
+                  />
+                  {sphereName} · {label}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* ─── THE PEOPLE LAYER ─────────────────────────────────────────────── */}
+      {/* ─── THE PEOPLE ───────────────────────────────────────────────────── */}
       <div className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.3s both',
       }}>
-        <div className="chronicle-marker" style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          margin: '0 0 20px 0',
-        }}>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
-          <span style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            whiteSpace: 'nowrap',
-          }}>
-            The People
-          </span>
-          <div style={{
-            flex: 1,
-            height: '1px',
-            background: 'var(--border-subtle)',
-          }} />
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The People</span>
+          <div style={ruleStyle} />
         </div>
 
-        {dominantCulture && (
-          <p className="chronicle-prose" style={{
-            fontFamily: 'var(--font-prose)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.8,
-            margin: '0 0 16px 0',
-          }}>
-            The {dominantCulture.cultureName} hold sway here, their traditions shaping the land and its people.
+        {dominantCulture && cultureProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {cultureProse}
+          </p>
+        )}
+        {dominantCulture && !cultureProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
           </p>
         )}
 
-        {dominantFaction && (
-          <p className="chronicle-prose" style={{
-            fontFamily: 'var(--font-prose)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.8,
-            margin: '0 0 16px 0',
-          }}>
-            Control rests with the {dominantFaction.factionName}.
+        {dominantFaction && factionProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {factionProse}
+          </p>
+        )}
+        {dominantFaction && !factionProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            Control rests with {dominantFaction.factionName}.
           </p>
         )}
 
-        {/* Location cards */}
+        {/* Location cards with prose flavor text */}
         {locations.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
             {locations.map(loc => {
               const agentsHere = agentsByLocation[loc.id] || [];
               const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
-              const flavorText = '';
+              const flavorText = locationProse[loc.id] ?? '';
 
               return (
                 <LocationCard
@@ -424,19 +467,16 @@ export const HexChronicle = memo(function HexChronicle({
           </div>
         )}
 
-        {/* Soul cards */}
+        {/* Soul cards with prose flavor text */}
         {allAgents.length > 0 && (
           <div style={{ marginBottom: '16px' }}>
             {allAgents.map(agent => {
               const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
               const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
               const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-
-              // Find location name
               const locationNode = locations.find(l => l.id === agent.locationId);
               const locationName = locationNode?.name ?? 'Unknown';
-
-              const flavorText = '';
+              const flavorText = agentProse[agent.id] ?? '';
 
               return (
                 <SoulCard
@@ -452,76 +492,33 @@ export const HexChronicle = memo(function HexChronicle({
             })}
           </div>
         )}
-
-        {/* Event blocks (empty for now) */}
       </div>
 
-      {/* ─── THE RUINS LAYER (conditional) ───────────────────────────────── */}
+      {/* ─── THE RUINS (conditional) ──────────────────────────────────────── */}
       {regionData?.historicalCulture && (
         <div className="chronicle-layer" style={{
           marginBottom: '40px',
           animation: 'fadeIn 0.6s ease-out 0.4s both',
         }}>
-          <div className="chronicle-marker" style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '12px',
-            margin: '0 0 20px 0',
-          }}>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              background: 'var(--border-subtle)',
-            }} />
-            <span style={{
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.1em',
-              whiteSpace: 'nowrap',
-            }}>
-              The Ruins
-            </span>
-            <div style={{
-              flex: 1,
-              height: '1px',
-              background: 'var(--border-subtle)',
-            }} />
+          <div className="chronicle-marker" style={markerStyle}>
+            <div style={ruleStyle} />
+            <span style={labelStyle}>The Ruins</span>
+            <div style={ruleStyle} />
           </div>
 
-          <p className="chronicle-prose" style={{
-            fontFamily: 'var(--font-prose)',
-            fontSize: 'var(--text-sm)',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.8,
-            margin: '0 0 16px 0',
-          }}>
-            These lands once throned the {regionData.historicalCulture.name}. Their reign has passed,
-            but their echoes linger in stone and shadow.
+          <p className="chronicle-prose" style={proseStyle}>
+            Before the current inhabitants came, this land belonged to the {stripLeadingThe(regionData.historicalCulture.name)}.
+            Their reign has passed, but their echoes linger in stone and shadow.
           </p>
 
           {historyLayers.length > 0 && (
-            <p className="chronicle-prose" style={{
-              fontFamily: 'var(--font-prose)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.8,
-              margin: '0 0 16px 0',
-            }}>
+            <p className="chronicle-prose" style={proseStyle}>
               {historyLayers[0]?.text}
             </p>
           )}
 
           {etymologyLayers.length > 0 && (
-            <p className="chronicle-prose" style={{
-              fontFamily: 'var(--font-prose)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.8,
-              margin: '0 0 16px 0',
-            }}>
+            <p className="chronicle-prose" style={proseStyle}>
               {etymologyLayers[0]?.text}
             </p>
           )}

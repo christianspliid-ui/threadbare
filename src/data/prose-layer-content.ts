@@ -316,6 +316,30 @@ export const SPHERE_LOCATION_PROSE: Record<string, string[]> = {
     'Rust blooms on every iron surface like an orange flower. Wood softens, stone powders, and the people here have learned to build with the expectation of loss rather than against it.',
     'The settlement does not fight its own dissolution. Roofs sag, foundations shift, and the inhabitants patch what they can with the calm resignation of people who understand that mending is temporary.',
   ],
+  chaos: [
+    'Chaos reigns here — nothing stays in its place for long. Streets shift, buildings lean at improbable angles, and the locals have stopped trying to impose order on a place that refuses it.',
+    'The settlement thrums with restless, unpredictable energy. Markets erupt and vanish overnight, alliances shift with the wind, and the only constant is constant change.',
+    'Disorder is not a failing here but a philosophy. The people have learned to thrive in turbulence, reading opportunity in confusion the way farmers read weather.',
+    'Wild magic saturates the air — doors open onto different rooms each morning, and the townspeople navigate by instinct rather than habit.',
+  ],
+  order: [
+    'Everything here has its place, its schedule, its regulation. The settlement runs with mechanical precision, and deviation from routine draws sharp attention.',
+    'Perfect symmetry governs the layout — streets at right angles, buildings of uniform height, gardens trimmed to geometric exactness. The order is beautiful and slightly unnerving.',
+    'Law is not merely enforced here but woven into the fabric of daily life. Even the market stalls are arranged by an ancient and exacting protocol that no one questions.',
+    'The settlement operates like a single organism. Each person knows their role, each structure serves its purpose, and the whole hums with quiet, coordinated efficiency.',
+  ],
+  light: [
+    'Light lingers here longer than it should — dawn comes early, dusk arrives late, and even moonless nights carry a faint luminance that seems to rise from the earth itself.',
+    'The settlement glows with an inner warmth. Kindness is currency here, honesty is reflex, and strangers are greeted with a trust that borders on recklessness.',
+    'Truth is inescapable in this place. Lies wither on the tongue, shadows refuse to hide what they contain, and every secret eventually finds its way into the open.',
+    'Radiance suffuses the architecture — pale stone that catches and holds sunlight, windows designed to flood every room with clarity. There are no dark corners here.',
+  ],
+  darkness: [
+    'Shadow clings to this place like a second skin. Even at midday the light feels muted, filtered through something that turns warmth to coolness and brightness to grey.',
+    'Secrets are the true currency here. Everyone carries them, everyone trades in them, and the settlement thrives on what remains unspoken and unseen.',
+    'The darkness here is not hostile — it is sheltering. It hides those who need hiding, obscures what should not be seen, and offers a velvet silence that some find more honest than light.',
+    'Night is the natural state. The inhabitants have adapted — they see clearly in dimness, speak softly, and understand that some truths are better discovered by touch than by sight.',
+  ],
 };
 
 // ─── Subtype Establishing Prose ──────────────────────────────────────────────
