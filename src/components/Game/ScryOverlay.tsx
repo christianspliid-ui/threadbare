@@ -50,15 +50,14 @@ const PositionSlot = memo(function PositionSlot(
     );
   }
 
-  // Filled slot
+  // Filled slot — non-interactive (one-way investiture)
   if (position.activeTitle) {
     const title = position.activeTitle;
     const sphereColor = title ? getSphereColor(title.sphereAffinity) : '#b4a078';
 
     return (
-      <button
-        onClick={onSelect}
-        className="w-full p-3 rounded-lg border transition-all hover:scale-105 text-left"
+      <div
+        className="w-full p-3 rounded-lg border text-left"
         style={{
           backgroundColor: 'var(--bg-raised)',
           borderColor: 'var(--border-subtle)',
@@ -73,7 +72,7 @@ const PositionSlot = memo(function PositionSlot(
             <div className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{title.name}</div>
           </div>
         )}
-      </button>
+      </div>
     );
   }
 
@@ -114,6 +113,7 @@ interface AgentPickerPanelProps {
   position: Position;
   agents: RetinueAgent[];
   minTier: number;
+  assignedAgentIds: Set<string>;
   onSelectAgent: (agent: RetinueAgent) => void;
   onClose: () => void;
 }
@@ -122,10 +122,11 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
   position,
   agents,
   minTier,
+  assignedAgentIds,
   onSelectAgent,
   onClose,
 }: AgentPickerPanelProps) {
-  const eligible = agents.filter(a => a.tier >= minTier);
+  const eligible = agents.filter(a => a.tier >= minTier && !assignedAgentIds.has(a.id));
 
   return (
     <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
@@ -408,11 +409,8 @@ export function ScryOverlay() {
       const position = scryState.positions.find(p => p.id === positionId);
       if (!position) return;
 
-      if (position.assignedAgentId) {
-        // Show context menu for filled position
-        setContextMenuPositionId(contextMenuPositionId === positionId ? null : positionId);
-      } else {
-        // Open agent picker for empty position
+      if (!position.assignedAgentId) {
+        // Open agent picker for empty position only (one-way investiture)
         setSelectedPositionId(positionId);
         setPickerMode('agent');
         setContextMenuPositionId(null);
@@ -438,7 +436,10 @@ export function ScryOverlay() {
         seed: seed + agent.id.charCodeAt(0),
       };
 
-      const proposals = generateTitleProposals(params);
+      const usedIds = new Set(scryState.usedTitleIds);
+      const proposals = generateTitleProposals(params).filter(
+        p => !usedIds.has(p.title.id)
+      );
       setTitleProposals(proposals);
       setPickerMode('title');
     },
@@ -484,6 +485,11 @@ export function ScryOverlay() {
     ? RANK_MIN_TIER[scryState.positions.find(p => p.id === selectedPositionId)?.rank || 'outer']
     : 1;
 
+  const assignedAgentIds = useMemo(
+    () => new Set(scryState.positions.map(p => p.assignedAgentId).filter(Boolean) as string[]),
+    [scryState.positions]
+  );
+
   // IX-012: Backdrop click handler — close overlay when clicking outside content
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     // Only close if clicking the backdrop itself, not child content
@@ -508,14 +514,14 @@ export function ScryOverlay() {
           <div>
             <div className="text-xs uppercase tracking-widest mb-1" style={{ color: 'var(--text-tertiary)' }}>✦</div>
             <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
-              The Scry
+              Divine Court
             </h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{structDef.name}</p>
             <p className="text-xs italic mt-1" style={{ color: 'var(--text-tertiary)' }}>{structDef.flavorText}</p>
           </div>
           <button
             onClick={onClose}
-            aria-label="Close Ascendant Scry"
+            aria-label="Close Divine Court"
             title="Close (Esc)"
             className="transition text-2xl"
             style={{ color: 'var(--text-tertiary)' }}
@@ -659,6 +665,7 @@ export function ScryOverlay() {
           position={scryState.positions.find(p => p.id === selectedPositionId)}
           agents={retinueAgents}
           minTier={minTierForSelectedPosition}
+          assignedAgentIds={assignedAgentIds}
           onSelectAgent={handleSelectAgent}
           onClose={() => {
             setPickerMode('closed');

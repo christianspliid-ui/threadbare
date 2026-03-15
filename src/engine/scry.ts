@@ -88,6 +88,7 @@ export function createScryState(): ScryState {
     artifacts: [],
     titleHistory: [],
     totalReassignmentCount: 0,
+    usedTitleIds: [],
     initialized: false,
   };
 }
@@ -125,6 +126,7 @@ export function initializeCourt(
     artifacts: [],
     titleHistory: [],
     totalReassignmentCount: 0,
+    usedTitleIds: [],
     initialized: true,
   };
 
@@ -469,6 +471,7 @@ export function assignAgentToPosition(
   };
 
   newState.titleHistory = [...newState.titleHistory, entry];
+  newState.usedTitleIds = [...newState.usedTitleIds, title.id];
 
   return newState;
 }

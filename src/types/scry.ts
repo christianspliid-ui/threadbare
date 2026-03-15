@@ -171,6 +171,8 @@ export interface ScryState {
   titleHistory: TitleAssignment[];
   /** Running count of reassignments (for cost escalation) */
   totalReassignmentCount: number;
+  /** Title IDs that have been assigned at least once — cannot be reused */
+  usedTitleIds: string[];
   /** Whether the scry has been initialized (player has chosen a structure) */
   initialized: boolean;
 }
