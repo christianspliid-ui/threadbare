@@ -58,6 +58,8 @@ export function useNotifications({
 
   const prevTickEventsRef = useRef<TickEvent[]>([]);
   const wasRunningRef = useRef(running);
+  const runningRef = useRef(running);
+  runningRef.current = running;
 
   // Route new tick events into notification state
   useEffect(() => {
@@ -67,7 +69,8 @@ export function useNotifications({
       return;
     }
     prevTickEventsRef.current = tickEvents;
-    setState(prev => routeNotifications(tickEvents, prev, Date.now()));
+    const now = Date.now();
+    setState(prev => routeNotifications(tickEvents, prev, now));
   }, [tickEvents]);
 
   // Toast expiry timer — pauses when sim is paused
@@ -82,11 +85,11 @@ export function useNotifications({
   // Auto-pause for popups with choices
   useEffect(() => {
     const currentPopup = state.popupQueue[0] ?? null;
-    if (currentPopup?.choices && currentPopup.choices.length > 0 && running) {
+    if (currentPopup?.choices && currentPopup.choices.length > 0 && runningRef.current) {
       wasRunningRef.current = true;
       setRunning(false);
     }
-  }, [state.popupQueue, running, setRunning]);
+  }, [state.popupQueue, setRunning]);
 
   const handleDismissToast = useCallback((id: string) => {
     setState(prev => dismissToast(prev, id));
