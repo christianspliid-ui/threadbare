@@ -496,6 +496,7 @@ export interface InsiderBeat {
   trigger: string;                // human-readable trigger condition
   proseSeeds: string[];           // template sentences for narrative generation
   archetypeAffinity?: string[];   // archetype ids that amplify this beat
+  readonly reachRequirements?: Partial<Record<ReachDomain, number>>;  // min reach thresholds the culture must meet
 }
 
 // ─── Insider Beats (~25 entries) ──────────────────────────────────
@@ -511,6 +512,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'Steel sang as {actor} drew blade against {target}, invoking the ancient rite of blood oath.',
       'The challenge echoed across the settlement — no force culture refuses a blood oath.',
     ],
+    reachRequirements: { iron: 0.3 },
   },
   {
     id: 'trial_by_element',
@@ -533,6 +535,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'In the sacred grove, {actor} knelt to hear the whispers of those who came before.',
       'The ancestor spirits stirred as {actor} sought their counsel on the matter.',
     ],
+    reachRequirements: { veil: 0.3 },
   },
   {
     id: 'name_day_tournament',
@@ -555,6 +558,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'In the veiled bazaar, {actor} traded in things that light-sworn cultures would burn.',
       'The shadow market opened its doors — here, secrets are the truest currency.',
     ],
+    reachRequirements: { shadow: 0.3 },
   },
   {
     id: 'dream_walk',
