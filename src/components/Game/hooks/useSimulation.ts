@@ -128,6 +128,7 @@ export function useSimulation({
     doTick,
     handleBeginNextCycle,
     handleToggleRunning,
+    setRunning,
     seasonName,
     year,
     maxEssence,
