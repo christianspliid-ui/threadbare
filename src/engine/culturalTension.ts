@@ -64,7 +64,7 @@ function getLocationCultureIds(graph: WorldGraph, locationId: string, layer?: 'h
 function getCultureIdentity(graph: WorldGraph, cultureNodeId: string): CultureIdentity | undefined {
   const node = graph.getNode(cultureNodeId);
   if (!node) return undefined;
-  return (node.properties as any)?.identity as CultureIdentity | undefined;
+  return (node.properties as any)?.cultureIdentity as CultureIdentity | undefined;
 }
 
 /**
