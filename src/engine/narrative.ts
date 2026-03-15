@@ -126,6 +126,7 @@ export function generateRoutineProse(
   emitTrace({
     tick: 0,
     category: 'narrative_generation',
+    agentId: context.actorId,
     summary: `Routine prose: "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}"`,
     tier: 'routine',
     sphereWords: [adj, verb, noun].filter(Boolean),
@@ -195,6 +196,7 @@ export function generateNotableProse(
   emitTrace({
     tick: 0,
     category: 'narrative_generation',
+    agentId: context.actorId,
     summary: `Notable prose: "${text.slice(0, 60)}${text.length > 60 ? '...' : ''}"`,
     tier: 'notable',
     sphereWords: [adj, verb, noun].filter(Boolean),

@@ -27,7 +27,15 @@
       "mcp__paper__get_basic_info",
       "mcp__paper__get_font_family_info",
       "mcp__paper__create_artboard",
-      "mcp__paper__write_html"
+      "mcp__paper__write_html",
+      "Bash(ls -lh /c/Users/chris/TheFantasyWorldSimulator/src/data/*-content.ts)",
+      "Bash(ls -la /c/Users/chris/TheFantasyWorldSimulator/src/data/*.json)",
+      "Bash(npm test -- terrain.test.ts --reporter=verbose)",
+      "Bash(claude mcp:*)",
+      "Bash(jq \".nodes[] | select\\(.id | startswith\\(\"\"foundation.\"\"\\) or startswith\\(\"\"creation.\"\"\\) or startswith\\(\"\"reach.\"\"\\) or startswith\\(\"\"terrain.\"\"\\)\\) | {id, name}\" /c/Users/chris/TheFantasyWorldSimulator/src/data/world-model.json)",
+      "Bash(grep -rh 'id={`\\\\|id=\"\"\"\"' /c/Users/chris/TheFantasyWorldSimulator/src/components --include=\"*.tsx\")",
+      "Bash(grep -o '\\\\$\\\\{[^}]*\\\\}\\\\|\"\"\"\"[a-z_]*\\\\.[^\"\"\"\"]*')",
+      "mcp__paper__get_screenshot"
     ]
   }
 }

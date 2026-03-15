@@ -26,6 +26,7 @@ export interface ActionCandidate {
   motivations: ValuePair[];    // which values drive this choice
   probability?: number;        // normalized probability (post top-N)
   socialOrientation?: SocialOrientation;  // cooperative/defective/neutral bias
+  sublocationId?: string;      // selected sublocation instance (if any)
 }
 
 /** Configuration for the selection pipeline */

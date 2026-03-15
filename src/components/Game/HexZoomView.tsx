@@ -67,6 +67,9 @@ const TRAVEL_LINE_WIDTH = 1.5;
 const CENTER_X = LAYOUT.VIEW_W / 2;
 const CENTER_Y = LAYOUT.VIEW_H / 2;
 
+// RC-009: Pre-compute hex outline points — all inputs are module-level constants
+const HEX_OUTLINE_POINTS = hexPolygonPoints(CENTER_X, CENTER_Y, LAYOUT.HEX_RADIUS);
+
 // ── Helpers ───────────────────────────────────────────────────────────
 
 /** Format location subtype as human-readable label */
@@ -169,7 +172,7 @@ export const HexZoomView = memo(function HexZoomView({
     return map;
   }, [locations, vertices]);
 
-  const hexPoints = hexPolygonPoints(CENTER_X, CENTER_Y, LAYOUT.HEX_RADIUS);
+  const hexPoints = HEX_OUTLINE_POINTS;
   const isHidden = lineOfSight === 'none';
   const isDimmed = lineOfSight === 'partial';
 
@@ -314,7 +317,7 @@ export const HexZoomView = memo(function HexZoomView({
           >
             <g
               role="button"
-              aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}`}
+              aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}${agents.length > 0 ? `, ${agents.length} agent${agents.length !== 1 ? 's' : ''}` : ''}`}
               tabIndex={0}
               onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id, false)}
               style={{ cursor: 'pointer', outline: 'none' }}
@@ -374,6 +377,7 @@ export const HexZoomView = memo(function HexZoomView({
                   fill={COLORS.LOCATION_NAME_HIDDEN}
                   fontSize="24"
                   fontFamily="Cinzel, serif"
+                  aria-hidden="true"
                   style={{ pointerEvents: 'none' }}
                 >
                   ?
@@ -407,7 +411,7 @@ export const HexZoomView = memo(function HexZoomView({
                 </text>
               )}
 
-              {/* Subtype label — compact, below name */}
+              {/* RC-010: Subtype label — decorative, hidden from screen readers */}
               {!isHidden && subtype && subtype !== 'wilderness' && (
                 <text
                   x={pos.x}
@@ -418,15 +422,16 @@ export const HexZoomView = memo(function HexZoomView({
                   fontSize={FONT.SUBTYPE_SIZE}
                   fontFamily="Cinzel, serif"
                   opacity={0.65}
+                  aria-hidden="true"
                   style={{ pointerEvents: 'none' }}
                 >
                   {formatSubtype(subtype)}
                 </text>
               )}
 
-              {/* Agent count badge (top-right of circle) */}
+              {/* RC-010: Agent count badge — decorative (count conveyed via aria-label on parent g) */}
               {!isHidden && agents.length > 0 && (
-                <g>
+                <g aria-hidden="true">
                   <circle
                     cx={pos.x + LAYOUT.LOCATION_RADIUS * 0.7}
                     cy={pos.y + LAYOUT.AGENT_COUNT_BADGE_OFFSET}
@@ -490,6 +495,7 @@ export const HexZoomView = memo(function HexZoomView({
                         fill="white"
                         fontSize={FONT.AGENT_INITIAL_SIZE}
                         fontWeight="bold"
+                        aria-hidden="true"
                         style={{ pointerEvents: 'none' }}
                       >
                         {agent.name.charAt(0)}

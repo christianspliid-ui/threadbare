@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 
@@ -39,6 +39,9 @@ export interface ActionDrawerProps {
  */
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
   ({ open, slots, agentName, agentTier, onSlotClick, onClose, playingCardId }) => {
+    // IA-003: Progressive disclosure — locked actions collapsed by default
+    const [showLocked, setShowLocked] = useState(false);
+
     // Handle Escape key
     useEffect(() => {
       if (!open) return;
@@ -60,22 +63,21 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
 
     // RC-028: Memoize slot filtering and sorting
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const displaySlots = useMemo(() =>
-      slots
+    const { availableSlots, lockedSlots } = useMemo(() => {
+      const filtered = slots
         .filter(slot => slot.type !== 'info') // Exclude center slot
         .sort((a, b) => {
-          // Available slots first
-          if (a.available !== b.available) {
-            return a.available ? -1 : 1;
-          }
-          // Then sort observations before interventions
+          // Sort observations before interventions
           if (a.type !== b.type) {
             return a.type === 'observation' ? -1 : 1;
           }
           return 0;
-        }),
-      [slots]
-    );
+        });
+      return {
+        availableSlots: filtered.filter(s => s.available),
+        lockedSlots: filtered.filter(s => !s.available),
+      };
+    }, [slots]);
 
     return (
       <div
@@ -133,11 +135,8 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           onWheel={(e) => e.stopPropagation()}
         >
           <div className="flex gap-3">
-            {displaySlots.map(slot => (
-              <div
-                key={slot.id}
-                className="flex-shrink-0"
-              >
+            {availableSlots.map(slot => (
+              <div key={slot.id} className="flex-shrink-0">
                 <ActionCard
                   slot={slot}
                   onClick={onSlotClick}
@@ -145,6 +144,37 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                 />
               </div>
             ))}
+
+            {/* IA-003: Locked actions collapsible section */}
+            {lockedSlots.length > 0 && (
+              <>
+                <div className="flex-shrink-0 flex items-center">
+                  <button
+                    onClick={() => setShowLocked(!showLocked)}
+                    className="px-3 py-2 rounded transition-colors whitespace-nowrap"
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'var(--bg-surface)',
+                    }}
+                    aria-expanded={showLocked}
+                    aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
+                  >
+                    {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
+                  </button>
+                </div>
+                {showLocked && lockedSlots.map(slot => (
+                  <div key={slot.id} className="flex-shrink-0">
+                    <ActionCard
+                      slot={slot}
+                      onClick={onSlotClick}
+                      playing={slot.id === playingCardId}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
           </div>
         </div>
       </div>

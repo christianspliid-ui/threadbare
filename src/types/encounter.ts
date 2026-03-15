@@ -9,6 +9,7 @@
 import type { SphereName, LocationSubtype } from './index';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
+import type { RewardPoolRecipe } from './attachments';
 
 // ─── Encounter Types & Threat Ratings ───────────────────────────
 
@@ -83,6 +84,8 @@ export interface EncounterOutcome {
   tierPromotionEligible?: boolean;
   /** Trait changes for logging (optional) */
   traitChanges?: string[];
+  /** Reward pool recipe for attachment generation on this outcome */
+  rewardPool?: RewardPoolRecipe;
 }
 
 // ─── Step Definition ────────────────────────────────────────────
@@ -115,6 +118,8 @@ export interface EncounterTemplate {
   name: string;
   /** Location types where this encounter can spawn */
   locationTypes: LocationSubtype[];
+  /** Sublocation types where this encounter can occur (optional refinement on location level) */
+  sublocationTypes?: string[];
   /** Linear sequence of steps */
   steps: EncounterStep[];
   /** Primary reach tested */
@@ -131,6 +136,18 @@ export interface EncounterTemplate {
   sphereAffinity?: SphereName;
   /** Optional cultural affinity for filtering */
   culturalAffinity?: string;
+  /**
+   * Visibility filter — which agents/factions can see this encounter.
+   * Format: 'faction:<id>', 'agent:<id>', 'archetype:<id>', 'culture:<id>', or 'all'.
+   * Undefined = visible to all (backward compatible).
+   */
+  visibleTo?: string[];
+  /**
+   * Score multiplier for quest encounters (1.0 = normal, 2.0–10.0 = quest).
+   * Applied to motivationPull in movement candidate scoring.
+   * Undefined = treated as 1.0 (no boost).
+   */
+  questPriority?: number;
 }
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────

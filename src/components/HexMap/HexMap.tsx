@@ -2,12 +2,19 @@ import { useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallbac
 import * as d3 from 'd3';
 import type { HexTile, HexCoord, OverlayMode, LocationSubtype } from '../../types';
 import type { VisibilityMap } from '../../types/visibility';
-import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../lib/hexMath';
+import type { WorldGraph } from '../../engine/graph';
+import { hexToPixel, hexPolygonPoints, HEX_SCALE_X, HEX_SCALE_Y } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 import { HexTileComponent } from './HexTile';
 import { HexDefs } from './HexDefs';
 import { CoastlineOverlay } from './CoastlineOverlay';
+import { RiverOverlay } from './RiverOverlay';
+import { AgentDots } from './AgentDots';
+import { MovementTrails } from './MovementTrails';
+import { GhostDots } from './GhostDots';
+import type { GhostDotEntry } from '../../engine/ghostDots';
 import { useCoastline } from './useCoastline';
+import { useRivers } from './useRivers';
 import { COASTLINE_DEFAULTS } from '../../types/coastline';
 import { combineLoopPaths, isWaterTerrain } from '../../engine/coastline';
 
@@ -15,7 +22,8 @@ import { combineLoopPaths, isWaterTerrain } from '../../engine/coastline';
 const DEFAULT_ZOOM_SCALE = 3.0;
 const MIN_ZOOM_SCALE = 1.0;
 const MAX_ZOOM_SCALE = 4.0;
-const HEX_MAP_BACKGROUND = '#1e1b2e'; // Dark world surface, ~12% brightness with cool purple cast matching Threadbare aesthetic
+const HEX_MAP_BACKGROUND = '#0a0a0c'; // Neutral near-black for fog/background — no purple tint
+const FOG_OPACITY_REMEMBERED = 0.6; // Remembered hexes: semi-transparent fog (rivers/coastline dim to ~40%)
 const DEFAULT_COASTLINE_SEED = 42; // Fallback seed when HexMap seed prop is not provided
 
 interface HexMapProps {
@@ -33,6 +41,9 @@ interface HexMapProps {
   sphereColor?: string;
   initialCenter?: { x: number; y: number };
   initialScale?: number;
+  graph?: WorldGraph;
+  currentTick?: number;
+  ghostDots?: GhostDotEntry[];
   onZoomChange?: (transform: d3.ZoomTransform) => void;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
@@ -47,6 +58,9 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   hoveredHex, selectedHex, overlayMode,
   visibilityMap, locationOverlays, avatarHex, sphereColor,
   initialCenter, initialScale,
+  graph,
+  currentTick,
+  ghostDots: ghostDotsProp,
   onZoomChange,
   onHexClick, onHexHover,
 }, ref) => {
@@ -58,6 +72,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   }, [cols, rows, hexSize]);
 
   const coastlineData = useCoastline(tiles, hexSize, cols, rows, seed ?? DEFAULT_COASTLINE_SEED);
+  const riverPaths = useRivers(cols, rows, seed ?? DEFAULT_COASTLINE_SEED);
 
   const padding = hexSize;
   const svgRef = useRef<SVGSVGElement>(null);
@@ -129,6 +144,56 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   const tileBaseTransform = `translate(${padding + hexSize}, ${padding + hexSize * 0.8})`;
   const hexClipId = `hex-clip-${hexSize}`;
 
+  // RC-210: Memoize fog recover polygons — only recompute when visibility changes, not on hover
+  const landFogPolygons = useMemo(() => {
+    if (!visibilityMap) return [];
+    const result: { key: string; points: string; opacity: number }[] = [];
+    for (const tile of tiles) {
+      if (isWaterTerrain(tile.terrain)) continue;
+      const vis = visibilityMap.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+      if (vis === 'visible') continue;
+      const { x, y } = hexToPixel(tile.coord, hexSize);
+      result.push({
+        key: `fog-${tile.coord.col}-${tile.coord.row}`,
+        points: hexPolygonPoints(x, y, hexSize),
+        opacity: vis === 'unexplored' ? 1.0 : FOG_OPACITY_REMEMBERED,
+      });
+    }
+    return result;
+  }, [tiles, visibilityMap, hexSize]);
+
+  const waterFogPolygons = useMemo(() => {
+    if (!visibilityMap) return [];
+    const result: { key: string; points: string; opacity: number }[] = [];
+    for (const tile of tiles) {
+      if (!isWaterTerrain(tile.terrain)) continue;
+      const vis = visibilityMap.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+      if (vis === 'visible') continue;
+      const { x, y } = hexToPixel(tile.coord, hexSize);
+      result.push({
+        key: `wfog-${tile.coord.col}-${tile.coord.row}`,
+        points: hexPolygonPoints(x, y, hexSize),
+        opacity: vis === 'unexplored' ? 1.0 : FOG_OPACITY_REMEMBERED,
+      });
+    }
+    return result;
+  }, [tiles, visibilityMap, hexSize]);
+
+  // Compute location positions for agent rendering
+  const locationPositions = useMemo(() => {
+    if (!graph) return [];
+    const positions: Array<{ locationId: string; x: number; y: number }> = [];
+    const locationNodes = graph.getNodesByType('location');
+    for (const loc of locationNodes) {
+      const col = loc.properties?.hexCol as number | undefined;
+      const row = loc.properties?.hexRow as number | undefined;
+      if (col == null || row == null) continue;
+      const { x, y } = hexToPixel({ col, row }, hexSize);
+      positions.push({ locationId: loc.id, x, y });
+    }
+    return positions;
+  }, [graph, hexSize]);
+
   return (
     <>
       <style>{`
@@ -179,21 +244,37 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                     isAvatarHex={isAvatar}
                     sphereColor={sphereColor}
                     locationSubtype={locSubtype}
-                    onClick={() => onHexClick(tile.coord)}
-                    onMouseEnter={() => onHexHover(tile.coord)}
-                    onMouseLeave={() => onHexHover(null)}
+                    onHexClick={onHexClick}
+                    onHexHover={onHexHover}
                   />
                 );
               })}
             </g>
-            {/* Layer 3: Water hex tiles — unclipped (transparent hit areas for interaction) */}
+            {/* Layer 2.5: River paths — rendered on top of land, clipped to coastline */}
+            <g clipPath={landPathD ? `url(#${landClipId})` : undefined}>
+              <RiverOverlay riverPaths={riverPaths} hexSize={hexSize} seed={seed ?? DEFAULT_COASTLINE_SEED} />
+            </g>
+            {/* Layer 2.75: Fog-of-war re-cover — stamps fog back over rivers for non-visible hexes.
+                Without this, rivers (Layer 2.5) bleed through unexplored/remembered fog because
+                they're drawn after the hex tile layer where per-tile visibility lives. */}
+            {landFogPolygons.length > 0 && (
+              <g clipPath={landPathD ? `url(#${landClipId})` : undefined} className="fog-recover">
+                {landFogPolygons.map((p) => (
+                  <polygon key={p.key} points={p.points} fill={HEX_MAP_BACKGROUND} opacity={p.opacity} style={{ pointerEvents: 'none' }} />
+                ))}
+              </g>
+            )}
+            {/* Layer 3: Water hex tiles — unclipped (transparent hit areas for interaction).
+                Only rendered for visible water; non-visible water is fully fogged below. */}
             {tiles.map((tile) => {
               if (!isWaterTerrain(tile.terrain)) return null;
+              const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+              // Skip non-visible water entirely — fog covers the coastline colors beneath
+              if (visibility !== 'visible') return null;
               const { x, y } = hexToPixel(tile.coord, hexSize);
               const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
               const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
               const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
-              const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
               const coordKey = `${tile.coord.col},${tile.coord.row}`;
               const locSubtype = locationOverlays?.get(coordKey);
               return (
@@ -205,12 +286,37 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                   isAvatarHex={isAvatar}
                   sphereColor={sphereColor}
                   locationSubtype={locSubtype}
-                  onClick={() => onHexClick(tile.coord)}
-                  onMouseEnter={() => onHexHover(tile.coord)}
-                  onMouseLeave={() => onHexHover(null)}
+                  onHexClick={onHexClick}
+                  onHexHover={onHexHover}
                 />
               );
             })}
+            {/* Layer 3.5: Water fog-of-war — stamps dark hexes over non-visible water tiles
+                to hide the CoastlineOverlay shallows/deep-water colors beneath. Not clipped
+                to land contour since water lives outside it. */}
+            {waterFogPolygons.length > 0 && (
+              <g className="fog-recover-water">
+                {waterFogPolygons.map((p) => (
+                  <polygon key={p.key} points={p.points} fill={HEX_MAP_BACKGROUND} opacity={p.opacity} style={{ pointerEvents: 'none' }} />
+                ))}
+              </g>
+            )}
+            {/* Layer 3.8: Movement trails — under agents but over fog */}
+            {graph && currentTick != null && (
+              <MovementTrails graph={graph} hexSize={hexSize} currentTick={currentTick} />
+            )}
+            {/* Layer 4: Agent dots — on top of all map layers */}
+            {graph && locationPositions.length > 0 && (
+              <AgentDots
+                graph={graph}
+                locationPositions={locationPositions}
+                zoomScale={DEFAULT_ZOOM_SCALE}
+              />
+            )}
+            {/* Layer 4.5: Ghost dots — fading agents that left LOS */}
+            {ghostDotsProp && ghostDotsProp.length > 0 && currentTick != null && (
+              <GhostDots ghosts={ghostDotsProp} hexSize={hexSize} currentTick={currentTick} />
+            )}
           </g>
         </g>
       </svg>

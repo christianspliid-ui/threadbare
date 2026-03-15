@@ -23,7 +23,8 @@ export type NodeType =
   | 'resource'        // steady or consumable resource nodes
   | 'action_template' // CRUD action definitions
   | 'event'           // resolved action records
-  | 'cosmology';      // sphere/foundation nodes (imported from taxonomy)
+  | 'cosmology'       // sphere/foundation nodes (imported from taxonomy)
+  | 'region';         // geographic region clusters (terrain gen Phase 2)
 
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';

@@ -22,19 +22,20 @@ npm run dev    # start Vite dev server with hot reload
 
 ## Documentation Strategy
 
-Four layers, each with a distinct purpose. Do not duplicate content across them.
+Four surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| **Graph model** | Obsidian vault | System specs and relationships (wikilinks). Read `Index.md` first. |
-| **Project tracking** | Notion backlogs per domain| Sprint progress, phase status, task assignment |
-| **Design rationale** | Repo (`Docs/plans/`) | Decision documents with tradeoffs and "why we chose X over Y" |
-| **UI patterns** | Repo (`Docs/ui-patterns.md`) | Frontend interaction conventions, component patterns, accessibility |
+| Surface | Owns |
+|---------|------|
+| **Obsidian vault** | Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first. |
+| **Notion** | Sprint tasks, phase status, backlog, audit follow-ups |
+| **Repo `Docs/`** | Implementation rationale (`plans/`), changelog, UI patterns, this ownership map |
+| **Paper** | Visual documentation: component anatomy, style, asset registry, player journey maps |
 
 ## Key Links
 
 - Notion backlog: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
+- Documentation ownership: `Docs/documentation-ownership.md`
 - Visual style guide: `STYLE.md`
 - Visual style tile: `Design/style-tile.html`
 - UI patterns: `Docs/ui-patterns.md`
@@ -82,7 +83,7 @@ When modifying Notion pages or Obsidian vault notes:
 2. Read Obsidian `Index.md` via MCP, follow links to the relevant system
 3. Check Notion backlog for current phase and next tasks
 4. Read relevant design doc in `Docs/plans/` before writing code
-5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status, backlogs). Non-negotiable — same session, not "later."
+5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status/project-history, backlogs). Non-negotiable — same session, not "later."
 
 ## Domain Skills
 
@@ -95,6 +96,7 @@ Context for specific problem types lives in on-demand skills, not in this file. 
 | Content systems & worldbuilding | `content-worldbuilding` | Cosmology, spheres, reaches, content packages, graph data |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Creative prose | `prose-resolver` (platform) | Writing prose content, implementing resolvers |
+| Attachment content | `content-authoring` (project) | Creating items, conditions, spells, powers, agreements, retainers |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
@@ -105,8 +107,8 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 ## Project Status
 
-Full status: **`Docs/project-status.md`**
+Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
-- Current phase: **CRUD Action Unification complete** — check Notion backlog for next priority
-- Engine: ~180 modules, ~37,500+ lines, ~2,389+ tests across 193+ test files
-- Content: 198 graph nodes, 290 typed edges, 18 categories, 18 content packages, 975+ data tests
+- Current phase: **Attachment System complete** — check Notion backlog for next priority
+- Engine: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
+- Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests

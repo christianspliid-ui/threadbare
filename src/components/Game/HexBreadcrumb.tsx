@@ -15,30 +15,36 @@ const SIGHT_COLORS: Record<LineOfSight, string> = {
   none: '#666666',
 };
 
-// Terrain display colors
+// Terrain display colors — all capped at ~40%L per STYLE.md brightness ceiling
 const TERRAIN_COLORS: Record<string, string> = {
   ocean: '#1e3a5f',
-  coastal_shallows: '#2e5a7f',
-  lake: '#3a6fa8',
-  river: '#4a7fb8',
-  grassland: '#6b8e23',
-  farmland: '#7a9d32',
-  savanna: '#9a9933',
-  steppe: '#8a8933',
-  temperate_forest: '#4a7c3e',
-  dense_forest: '#2d5a2d',
-  boreal_forest: '#5a6e3f',
-  jungle: '#1d4d1d',
-  swamp: '#5a5a3a',
-  marsh: '#6a6a4a',
-  hills: '#9a8a6a',
-  mountains: '#8a7a5a',
-  plateau: '#a89a7a',
-  badlands: '#b8956a',
-  desert: '#d4a574',
-  tundra: '#c0c0c0',
-  glacier: '#e8f0f8',
-  volcano: '#4a3a2a',
+  coastal_shallows: '#2e4a60',
+  deep_ocean: '#142840',
+  tropical_ocean: '#1e3858',
+  reef: '#2a4a55',
+  lake: '#2a4a68',
+  river: '#2a4568',
+  grassland: '#3a5518',
+  farmland: '#3e5520',
+  savanna: '#4a4a1a',
+  steppe: '#3e3e1a',
+  temperate_forest: '#2a4a24',
+  dense_forest: '#1d3a1d',
+  boreal_forest: '#2e3a20',
+  forested_hills: '#2a4020',
+  great_home_trees: '#1a3018',
+  jungle: '#1d3d1d',
+  swamp: '#3a3a22',
+  marsh: '#3a3a28',
+  hills: '#4a4028',
+  mountains: '#3a3228',
+  plateau: '#4a4028',
+  badlands: '#4a3820',
+  broken_lands: '#3a3020',
+  desert: '#5a4020',
+  tundra: '#484848',
+  glacier: '#4a5058',
+  volcano: '#3a2a1a',
 };
 
 interface HexBreadcrumbProps {
@@ -66,17 +72,19 @@ export function HexBreadcrumb({
   factions,
   onBack,
 }: HexBreadcrumbProps) {
-  const terrainLabel = terrain
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  const isHidden = lineOfSight === 'none';
 
-  const activeSpheres = (Object.entries(sphereInfluence) as [SphereName, number][])
-    .filter(([, v]) => v > 0);
+  const terrainLabel = isHidden
+    ? 'Unknown'
+    : terrain.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
-  const terrainColor = TERRAIN_COLORS[terrain] || '#6b8e23';
-  const dominantCulture = cultures.length > 0 ? cultures[0] : null;
-  const dominantFaction = factions.length > 0 ? factions[0] : null;
+  const activeSpheres = isHidden
+    ? []
+    : (Object.entries(sphereInfluence) as [SphereName, number][]).filter(([, v]) => v > 0);
+
+  const terrainColor = isHidden ? '#333333' : (TERRAIN_COLORS[terrain] || '#3a5518');
+  const dominantCulture = isHidden ? null : (cultures.length > 0 ? cultures[0] : null);
+  const dominantFaction = isHidden ? null : (factions.length > 0 ? factions[0] : null);
 
   return (
     <div
