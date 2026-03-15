@@ -8,11 +8,14 @@
  */
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SphereName } from '../types/index';
+import type { ReachDomain } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { BORN_NAMES } from '../data/narrative-content';
 import { assignCooperationStrategy } from './disposition';
+import { assignInitialAmbitions } from './ambitionAssignment';
+import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -106,6 +109,13 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
     }
 
     if (shouldDie) {
+      // Capture location before removing edges
+      const locEdges = graph.getOutgoingEdges(actor.id, 'located_at');
+      const deathLocNode = locEdges.length > 0 ? graph.getNode(locEdges[0].target) : undefined;
+      const deathHexCoords = deathLocNode?.properties?.hexCol != null
+        ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
+        : undefined;
+
       // Remove all edges connected to this actor
       const allEdges = graph.getAllEdgesForNode(actor.id);
       for (const edge of allEdges) {
@@ -119,6 +129,8 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         type: 'agent_death' as any,
         message: `${actor.name} has departed from the world.`,
         significance: 0.7,
+        notification: { channel: 'toast' },
+        hexCoords: deathHexCoords,
       });
 
       deathOccurred = true;
@@ -200,12 +212,66 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
           });
         }
 
+        // Assign initial ambitions
+        const agentSnapshot = {
+          domainCapabilities: domainCaps as Record<ReachDomain, number>,
+          traits: [] as string[],  // newly born agents have no traits yet
+          culturalSpheres: parentCultures.length > 0
+            ? [dominantSphere]
+            : [],
+          bonds: [],  // newly born agents have no bonds yet
+        };
+        const ambitionAssignments = assignInitialAmbitions(
+          AMBITION_TEMPLATES,
+          agentSnapshot,
+          state.seed + state.tick * 113 + newId.charCodeAt(0),
+        );
+
+        for (const assignment of ambitionAssignments) {
+          // Find or create the ambition template node in the graph
+          const ambitionNodeId = `ambition.${assignment.templateId}`;
+          if (!graph.getNode(ambitionNodeId)) {
+            const template = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
+            if (template) {
+              graph.addNode({
+                id: ambitionNodeId,
+                type: 'ambition',
+                name: template.displayName,
+                properties: {
+                  templateId: template.id,
+                  displayName: template.displayName,
+                  category: template.category,
+                  reachAffinity: template.reachAffinity,
+                  totalMilestones: template.milestones.length,
+                },
+              });
+            }
+          }
+
+          graph.addEdge({
+            id: `edge_pursues_${newId}_${assignment.templateId}`,
+            source: newId,
+            target: ambitionNodeId,
+            type: 'pursues',
+            properties: {
+              priority: assignment.priority,
+              status: 'active',
+              assignedTick: state.tick,
+              completedMilestones: [],
+            },
+          });
+        }
+
         events.push({
           id: nextEventId(),
           tick: state.tick,
           type: 'agent_birth' as any,
           message: `${name} has emerged in ${locNode?.name ?? 'the world'}.`,
           significance: 0.5,
+          notification: { channel: 'toast' },
+          hexCoords: locNode?.properties?.hexCol != null
+            ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }
+            : undefined,
         });
 
         break; // At most one birth per tick

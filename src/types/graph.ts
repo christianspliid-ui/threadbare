@@ -24,7 +24,8 @@ export type NodeType =
   | 'action_template' // CRUD action definitions
   | 'event'           // resolved action records
   | 'cosmology'       // sphere/foundation nodes (imported from taxonomy)
-  | 'region';         // geographic region clusters (terrain gen Phase 2)
+  | 'region'          // geographic region clusters (terrain gen Phase 2)
+  | 'ambition';       // ambition template instances assigned to actors
 
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';
@@ -66,7 +67,9 @@ export type EdgeType =
   | 'performing'       // actor → action_template (in-progress action)
   // Cosmology
   | 'aligned_with'     // actor/location → sphere alignment
-  | 'sphere_influence';// location/actor → sphere influence (weight/dominance tracking)
+  | 'sphere_influence' // location/actor → sphere influence (weight/dominance tracking)
+  // Ambition
+  | 'pursues';         // actor → ambition (priority, status, milestones)
 
 /** Result type for graph mutations */
 export interface GraphMutation {
