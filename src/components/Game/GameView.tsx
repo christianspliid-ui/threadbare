@@ -33,8 +33,6 @@ import { ScryProvider } from './contexts/ScryContext';
 import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
-import { HexFlavorPanel } from './HexFlavorPanel';
-import { HexPoiPanel } from './HexPoiPanel';
 import { HexSidebar } from './HexSidebar';
 import { HexChronicle } from './HexChronicle';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';

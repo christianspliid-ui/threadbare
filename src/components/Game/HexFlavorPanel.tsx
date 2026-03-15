@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by HexChronicle + HexSidebar in the chronicle redesign (2026-03-15).
+ * Kept for reference; safe to delete once chronicle is stable.
+ */
 import { memo, useMemo } from 'react';
 import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, HexCultureSummary, HexFactionSummary, SphereInfluence } from '../../engine/hexZoom';

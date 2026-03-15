@@ -1,3 +1,7 @@
+/**
+ * @deprecated Replaced by HexChronicle (People layer + inline LocationCards) in the chronicle redesign (2026-03-15).
+ * Kept for reference; safe to delete once chronicle is stable.
+ */
 import { memo, useMemo } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { LocationSubtype } from '../../types';
