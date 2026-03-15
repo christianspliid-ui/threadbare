@@ -55,6 +55,17 @@ Before dispatching browser-based agents, verify:
 
 **Pre-flight check:** Navigate to `http://localhost:5173` via Playwright. If the page doesn't load, stop and tell the user to start the dev server.
 
+### Game Entry Flow (required for all browser agents)
+
+To reach the main game view, agents must click through this exact sequence:
+
+1. **Generate World** — click the "Generate World" button on the world generation screen
+2. **Shape Your Divinity** — click the "✧ Shape Your Divinity ✧" button to enter character selection
+3. **Select a character** — click one of the 4 archetype cards (e.g., "The Storm Marshal", "The Patient One", etc.)
+4. **Ascend** — click the "✧ Ascend ✧" button to enter the game
+
+After step 4, the main game view loads with the hex map, sidebar panels, and HUD. Wait 2-3 seconds after Ascend for all components to mount before beginning tests.
+
 ## Prerequisites (Mode 2)
 
 No browser needed. Just verify the project directory is correct and `npm test` can run.
@@ -157,7 +168,7 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 >
 > **Step 2:** Use Playwright MCP to play through the game:
 > 1. `browser_navigate` to `http://localhost:5173`
-> 2. Click through world creation to reach the main game view
+> 2. Enter the game: click "Generate World" → click "✧ Shape Your Divinity ✧" → click a character card → click "✧ Ascend ✧". Wait 3 seconds for the game to load.
 > 3. `browser_take_screenshot` — full viewport
 > 4. `browser_evaluate` to extract ALL computed CSS background-color, color, border-color values from visible elements. Convert each to HSL and check the L (lightness) component against STYLE.md brightness thresholds.
 > 5. Screenshot individual panels for detail inspection
@@ -183,7 +194,7 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 > You are an Information Architecture auditor for The Fantasy World Simulator. Identify redundant text, dead space, information density imbalance, and wasted screen real estate.
 >
 > **Use Playwright MCP tools:**
-> 1. Navigate to `http://localhost:5173`. If on title screen, click through creation to reach main game view.
+> 1. Navigate to `http://localhost:5173`. Enter the game: click "Generate World" → "✧ Shape Your Divinity ✧" → click a character card → "✧ Ascend ✧". Wait 3 seconds.
 > 2. `browser_evaluate` to run a DOM analysis that:
 >    - Extracts all visible text nodes with their parent element tags and bounding rects
 >    - Groups by screen zone (LEFT_SIDEBAR: x<250, TOP_BAR: y<60, CENTER_MAP: 250<x<viewport-350, RIGHT_SIDEBAR: x>viewport-350, BOTTOM: bottom 200px)
@@ -215,7 +226,7 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 >
 > **Use Playwright MCP to systematically test each flow:**
 >
-> 1. **World Creation:** Navigate to `http://localhost:5173`. Select spheres, confirm creation, verify game starts. Screenshot each step.
+> 1. **World Creation:** Navigate to `http://localhost:5173`. Click "Generate World" → "✧ Shape Your Divinity ✧" → select a character card → "✧ Ascend ✧". Wait 3 seconds. Screenshot each step.
 >
 > 2. **Tick Progression:** Click "Step" button 5+ times. Verify: narrative log updates, doom bar moves, essence values change. Screenshot before/after.
 >
