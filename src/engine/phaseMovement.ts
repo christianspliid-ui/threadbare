@@ -66,12 +66,16 @@ export function phaseMovement(state: GameState): Partial<GameState> {
 
       // Emit event on movement transition
       if (result.moved) {
+        const destNode = state.graph.getNode(result.newLocationId!);
         events.push({
           id: nextEventId(),
           tick: state.tick,
           type: 'agent_movement',
-          message: `${actor.name} moves to ${state.graph.getNode(result.newLocationId!)?.name ?? 'a location'}.`,
+          message: `${actor.name} moves to ${destNode?.name ?? 'a location'}.`,
           significance: MOVEMENT_EVENT_SIGNIFICANCE,
+          hexCoords: destNode?.properties?.hexCol != null
+            ? { col: destNode.properties.hexCol as number, row: destNode.properties.hexRow as number }
+            : undefined,
         });
       }
 
