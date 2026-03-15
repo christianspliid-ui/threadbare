@@ -88,10 +88,10 @@ export interface GameState {
   familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
   culturalInsightMap: Map<string, number>;  // culture ID -> insight score (0.0-1.0)
 
-  // Encounters (agent growth narratives)
+  /** @deprecated Replaced by unifiedActions. Kept for backward compatibility with existing tests. */
   encounterProgress: EncounterProgress[];
 
-  // CRUD Actions (legacy — kept until Sprint 5 cleanup)
+  /** @deprecated Replaced by unifiedActions. Kept for backward compatibility with existing tests. */
   actionsInProgress: ActionInProgress[];
 
   // Unified Actions (replaces actionsInProgress + encounterProgress)

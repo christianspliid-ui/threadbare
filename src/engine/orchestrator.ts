@@ -126,6 +126,7 @@ const CRUD_ACTION_CHANCE = 0.35;
 /** Notable action interval — every N ticks, force one high-significance event */
 const NOTABLE_ACTION_INTERVAL = 5;
 
+/** @deprecated Replaced by phaseIdleSelection + phaseUnifiedActionProgress. No longer called in the tick pipeline. */
 export function phaseAgentActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 31);
   const events: TickEvent[] = [];
@@ -327,6 +328,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
 
 // ─── Phase 2.25: Encounter Progression ────────────────────────────────────
 
+/** @deprecated Replaced by phaseUnifiedActionProgress. No longer called in the tick pipeline. */
 export function phaseEncounterProgression(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 43);
   const events: TickEvent[] = [];
@@ -399,6 +401,7 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
 
 // ─── Phase 2.3: Action Progress ────────────────────────────────────────
 
+/** @deprecated Replaced by phaseUnifiedActionProgress. No longer called in the tick pipeline. */
 export function phaseActionProgress(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
   const rng = mulberry32(state.seed + state.tick * 47);
@@ -995,12 +998,6 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['idle_selection'] = idleSelectionEvents;
   agentsProcessed += idleSelectionEvents;
   prevEventCount = s.tickEvents.length;
-
-  // DEPRECATED: Old phases replaced by unified pipeline above.
-  // Kept for reference during transition. Remove in Sprint 5.
-  // s = { ...s, ...phaseAgentActions(s) };
-  // s = { ...s, ...phaseEncounterProgression(s) };
-  // s = { ...s, ...phaseActionProgress(s) };
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
   s = { ...s, ...phaseMovement(s) };
