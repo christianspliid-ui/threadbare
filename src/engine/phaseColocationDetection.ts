@@ -104,6 +104,9 @@ export function phaseColocationDetection(state: GameState): Partial<GameState> {
             type: 'agent_encounter',
             message: `${observer.name} encounters ${target.name} at ${locNode?.name ?? 'a location'}.`,
             significance: COLOCATION_EVENT_SIGNIFICANCE,
+            hexCoords: locNode?.properties?.hexCol != null
+              ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }
+              : undefined,
           });
         }
       }
