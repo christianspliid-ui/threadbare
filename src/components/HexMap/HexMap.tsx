@@ -232,7 +232,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
                 const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
                 const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
-                const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+                const hexVis = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row));
+                const visibility = hexVis?.state ?? 'visible';
                 const coordKey = `${tile.coord.col},${tile.coord.row}`;
                 const locSubtype = locationOverlays?.get(coordKey);
                 return (
@@ -244,6 +245,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                     isAvatarHex={isAvatar}
                     sphereColor={sphereColor}
                     locationSubtype={locSubtype}
+                    snapshot={hexVis?.snapshot}
                     onHexClick={onHexClick}
                     onHexHover={onHexHover}
                   />
@@ -268,7 +270,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 Only rendered for visible water; non-visible water is fully fogged below. */}
             {tiles.map((tile) => {
               if (!isWaterTerrain(tile.terrain)) return null;
-              const visibility = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
+              const hexVis = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row));
+              const visibility = hexVis?.state ?? 'visible';
               // Skip non-visible water entirely — fog covers the coastline colors beneath
               if (visibility !== 'visible') return null;
               const { x, y } = hexToPixel(tile.coord, hexSize);
@@ -286,6 +289,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                   isAvatarHex={isAvatar}
                   sphereColor={sphereColor}
                   locationSubtype={locSubtype}
+                  snapshot={hexVis?.snapshot}
                   onHexClick={onHexClick}
                   onHexHover={onHexHover}
                 />
