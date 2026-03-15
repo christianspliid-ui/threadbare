@@ -109,6 +109,13 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
     }
 
     if (shouldDie) {
+      // Capture location before removing edges
+      const locEdges = graph.getOutgoingEdges(actor.id, 'located_at');
+      const deathLocNode = locEdges.length > 0 ? graph.getNode(locEdges[0].target) : undefined;
+      const deathHexCoords = deathLocNode?.properties?.hexCol != null
+        ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
+        : undefined;
+
       // Remove all edges connected to this actor
       const allEdges = graph.getAllEdgesForNode(actor.id);
       for (const edge of allEdges) {
@@ -123,6 +130,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         message: `${actor.name} has departed from the world.`,
         significance: 0.7,
         notification: { channel: 'toast' },
+        hexCoords: deathHexCoords,
       });
 
       deathOccurred = true;
@@ -261,6 +269,9 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
           message: `${name} has emerged in ${locNode?.name ?? 'the world'}.`,
           significance: 0.5,
           notification: { channel: 'toast' },
+          hexCoords: locNode?.properties?.hexCol != null
+            ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }
+            : undefined,
         });
 
         break; // At most one birth per tick
