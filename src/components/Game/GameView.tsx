@@ -40,6 +40,10 @@ import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
 import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
+import { ToastStack } from './ToastStack';
+import { AlertBar } from './AlertBar';
+import { EventPopup } from './EventPopup';
+import { useNotifications } from './hooks/useNotifications';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -56,7 +60,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const {
     gameState, setGameState, tiles, running, speed,
     harvestResult, doTick, handleBeginNextCycle, handleToggleRunning,
-    setSpeed, seasonName, year, maxEssence, COLS, ROWS,
+    setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState });
 
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
@@ -128,6 +132,20 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setGameState,
     archetype,
     onOpenScry: handleOpenScry,
+  });
+
+  // ── Notification system hook ──
+  const {
+    notificationState,
+    currentPopup,
+    handleDismissToast,
+    handleDismissAlert,
+    handleDismissPopup,
+    handlePopupChoice,
+  } = useNotifications({
+    tickEvents: gameState.tickEvents,
+    running,
+    setRunning,
   });
 
   // ── Hex zoom derived data ──
@@ -238,6 +256,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             </div>
           </>
         )}
+        <AlertBar
+          alerts={notificationState.alerts}
+          onDismiss={handleDismissAlert}
+        />
         <button
           data-testid="debug-toggle"
           onClick={handleToggleDebug}
@@ -322,6 +344,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           <div className="flex-1 flex items-center justify-center overflow-hidden relative">
             {/* NarrativeLog overlay */}
             <NarrativeLog events={gameState.recentEvents} />
+            {/* Toast notifications */}
+            <ToastStack toasts={notificationState.toasts} onDismiss={handleDismissToast} />
             {viewLevel === 'world' && (
               <>
                 <HexMap
@@ -584,6 +608,14 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           />
         )}
       </AnimateMount>
+
+      {/* Event popup overlay */}
+      <EventPopup
+        popup={currentPopup}
+        queueLength={notificationState.popupQueue.length}
+        onDismiss={handleDismissPopup}
+        onChoice={handlePopupChoice}
+      />
     </div>
     </GameErrorBoundary>
   );
