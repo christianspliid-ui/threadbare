@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { generateHistoricalCultures } from '../historicalCulture';
-import type { CosmologyProfile } from '../../types';
+import { generateHistoricalCultures, assignHistoricalTerritories } from '../historicalCulture';
+import type { CosmologyProfile, HexTile, TerrainType } from '../../types';
 import { SPHERE_NAMES } from '../../types';
+import type { RegionCluster } from '../regionDetection';
 
 function makeCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -70,5 +71,68 @@ describe('generateHistoricalCultures', () => {
       expect(node.properties.ruinDescriptors).toBeDefined();
       expect(node.properties.legacyFlavor).toBeTruthy();
     }
+  });
+});
+
+describe('assignHistoricalTerritories', () => {
+  it('assigns belongs_to edges with cultureLayer: historical', () => {
+    const graph = new WorldGraph();
+    const rng = mulberry32(42);
+    const cultureIds = generateHistoricalCultures(graph, makeCosmology(), rng);
+
+    for (let i = 0; i < 5; i++) {
+      graph.addNode({
+        id: `region_${i}`,
+        type: 'region',
+        name: `Region ${i}`,
+        properties: { featureType: 'plains', hexCount: 10, centerCol: i * 3, centerRow: 0 },
+      });
+    }
+
+    const clusters: RegionCluster[] = Array.from({ length: 5 }, (_, i) => ({
+      featureType: 'plains' as const,
+      hexes: [{ col: i * 3, row: 0 }],
+      centerCol: i * 3,
+      centerRow: 0,
+    }));
+
+    assignHistoricalTerritories(graph, cultureIds, clusters, rng);
+
+    const belongsEdges = graph.getEdgesByType('belongs_to')
+      .filter(e => e.properties.cultureLayer === 'historical');
+    expect(belongsEdges.length).toBeGreaterThanOrEqual(3);
+    for (const edge of belongsEdges) {
+      expect(cultureIds).toContain(edge.target);
+    }
+  });
+
+  it('leaves some regions unclaimed as wilderness', () => {
+    const graph = new WorldGraph();
+    const rng = mulberry32(42);
+    const cultureIds = generateHistoricalCultures(graph, makeCosmology(), rng);
+
+    for (let i = 0; i < 20; i++) {
+      graph.addNode({
+        id: `region_${i}`,
+        type: 'region',
+        name: `Region ${i}`,
+        properties: { featureType: 'plains', hexCount: 10, centerCol: i % 5, centerRow: Math.floor(i / 5) },
+      });
+    }
+
+    const clusters: RegionCluster[] = Array.from({ length: 20 }, (_, i) => ({
+      featureType: 'plains' as const,
+      hexes: [{ col: i % 5, row: Math.floor(i / 5) }],
+      centerCol: i % 5,
+      centerRow: Math.floor(i / 5),
+    }));
+
+    assignHistoricalTerritories(graph, cultureIds, clusters, rng);
+
+    const belongsEdges = graph.getEdgesByType('belongs_to')
+      .filter(e => e.properties.cultureLayer === 'historical');
+    const claimedRegionIds = new Set(belongsEdges.map(e => e.source));
+    expect(claimedRegionIds.size).toBeLessThan(20);
+    expect(claimedRegionIds.size).toBeGreaterThanOrEqual(15);
   });
 });

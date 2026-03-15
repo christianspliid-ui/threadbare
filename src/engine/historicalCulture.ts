@@ -15,8 +15,11 @@ import { generateCultureFlag } from './cultureFlag';
 import {
   HISTORICAL_CULTURE_TEMPLATES,
   HISTORICAL_CULTURE_COUNT,
+  HISTORICAL_TERRITORY_COVERAGE,
   type HistoricalCultureTemplate,
 } from '../data/historical-culture-content';
+import { hexNeighbors } from '../lib/hexMath';
+import type { RegionCluster } from './regionDetection';
 
 /** Pick a random element */
 function pick<T>(rng: () => number, arr: readonly T[]): T {
@@ -91,4 +94,123 @@ export function generateHistoricalCultures(
   }
 
   return ids;
+}
+
+/**
+ * Assign historical culture territories via greedy round-robin expansion.
+ * Each culture starts from a seed region and expands to adjacent unclaimed regions,
+ * preferring biome-matching regions, until coverage target is met.
+ *
+ * Creates belongs_to edges from region nodes to culture nodes with cultureLayer: 'historical'.
+ */
+export function assignHistoricalTerritories(
+  graph: WorldGraph,
+  historicalCultureIds: string[],
+  clusters: RegionCluster[],
+  rng: () => number,
+): void {
+  if (historicalCultureIds.length === 0 || clusters.length === 0) return;
+
+  const regionIds = clusters.map((_, i) => `region_${i}`);
+  const targetClaimed = Math.ceil(regionIds.length * HISTORICAL_TERRITORY_COVERAGE);
+
+  // Build region adjacency: two regions are adjacent if any of their hexes are neighbors
+  const regionAdj = new Map<number, Set<number>>();
+  const hexToRegionIdx = new Map<string, number>();
+  for (let ri = 0; ri < clusters.length; ri++) {
+    regionAdj.set(ri, new Set());
+    for (const h of clusters[ri].hexes) {
+      hexToRegionIdx.set(`${h.col},${h.row}`, ri);
+    }
+  }
+  for (let ri = 0; ri < clusters.length; ri++) {
+    for (const h of clusters[ri].hexes) {
+      for (const n of hexNeighbors(h)) {
+        const nri = hexToRegionIdx.get(`${n.col},${n.row}`);
+        if (nri !== undefined && nri !== ri) {
+          regionAdj.get(ri)!.add(nri);
+        }
+      }
+    }
+  }
+
+  // Pick seed regions for each culture (spread evenly via horizontal sectors)
+  const claimed = new Map<number, string>(); // regionIdx → cultureId
+  const cultureTerritories = new Map<string, Set<number>>();
+  for (const cId of historicalCultureIds) {
+    cultureTerritories.set(cId, new Set());
+  }
+
+  const sortedByCol = clusters.map((c, i) => ({ idx: i, col: c.centerCol }))
+    .sort((a, b) => a.col - b.col);
+  const sectorSize = Math.max(1, Math.floor(sortedByCol.length / historicalCultureIds.length));
+
+  for (let ci = 0; ci < historicalCultureIds.length; ci++) {
+    const sectorStart = ci * sectorSize;
+    const sectorEnd = ci === historicalCultureIds.length - 1
+      ? sortedByCol.length
+      : (ci + 1) * sectorSize;
+    const candidates = sortedByCol.slice(sectorStart, sectorEnd);
+    if (candidates.length === 0) continue;
+
+    const picked = candidates[Math.floor(rng() * candidates.length)];
+    const cId = historicalCultureIds[ci];
+    claimed.set(picked.idx, cId);
+    cultureTerritories.get(cId)!.add(picked.idx);
+  }
+
+  // Greedy round-robin expansion
+  let claimedCount = claimed.size;
+  let staleRounds = 0;
+
+  while (claimedCount < targetClaimed && staleRounds < historicalCultureIds.length) {
+    let anyExpanded = false;
+
+    for (const cId of historicalCultureIds) {
+      if (claimedCount >= targetClaimed) break;
+
+      const territory = cultureTerritories.get(cId)!;
+      const frontier: number[] = [];
+      for (const ri of territory) {
+        for (const adj of regionAdj.get(ri) ?? []) {
+          if (!claimed.has(adj)) frontier.push(adj);
+        }
+      }
+
+      if (frontier.length === 0) continue;
+
+      const unique = [...new Set(frontier)];
+
+      // Score: randomness (could add biome match bonus later)
+      let bestIdx = unique[0];
+      let bestScore = -1;
+      for (const ri of unique) {
+        const score = rng();
+        if (score > bestScore) {
+          bestScore = score;
+          bestIdx = ri;
+        }
+      }
+
+      claimed.set(bestIdx, cId);
+      territory.add(bestIdx);
+      claimedCount++;
+      anyExpanded = true;
+    }
+
+    if (!anyExpanded) staleRounds++;
+    else staleRounds = 0;
+  }
+
+  // Create belongs_to edges
+  for (const [ri, cId] of claimed) {
+    const regionId = regionIds[ri];
+    graph.addEdge({
+      id: `edge_hist_territory_${regionId}_${cId}`,
+      source: regionId,
+      target: cId,
+      type: 'belongs_to',
+      properties: { culturalStrength: 1.0, cultureLayer: 'historical' },
+    });
+  }
 }
