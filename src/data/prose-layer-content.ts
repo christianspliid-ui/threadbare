@@ -587,3 +587,39 @@ export const POPULATION_PROSE_TEMPLATES: string[] = [
   '{agent} trades in the market like anyone else, but the stall-keepers give them slightly better cuts and slightly quicker service. No one discusses why.',
   'The older residents remember when {agent} first came and how the location was different before. They speak of the change without judgment, the way one speaks of weather.',
 ];
+
+// ─── Historical Culture Prose ───────────────────────────────────────────────
+// Describes ruins and remnants of civilizations that preceded current inhabitants.
+// Uses foundation bias to modulate tone: order = precision, chaos = ambition, etc.
+
+export const HISTORICAL_CULTURE_PROSE: Record<string, string[]> = {
+  order: [
+    'Before the current inhabitants, this land was shaped by {histCulture} — builders of precision and devotion whose {ruinDescriptor} still stand in silent testimony to an age of meticulous craft.',
+    'The {histCulture} once held this territory, their ordered ways visible in the {ruinDescriptor} that dot the landscape — remnants too well-made to crumble entirely.',
+  ],
+  chaos: [
+    'Before the current people came, {histCulture} claimed this land — a people of restless ambition whose {ruinDescriptor} remain as monuments to brilliance that could not sustain itself.',
+    'This was once the domain of {histCulture}, whose chaotic genius left behind {ruinDescriptor} — structures that even in ruin seem to defy expectation.',
+  ],
+  light: [
+    '{histCulture} once illuminated this region, their open ways preserved in the {ruinDescriptor} that remain — built to be seen, to welcome, to endure as testament.',
+    'The land remembers {histCulture}, whose devotion to revelation left behind {ruinDescriptor} — places that still seem to wait for congregations that will never return.',
+  ],
+  darkness: [
+    '{histCulture} once held this territory in secret, their hidden ways preserved in the {ruinDescriptor} that lie half-buried — places designed to conceal as much as they sheltered.',
+    'Before the current age, {histCulture} claimed this land. Their {ruinDescriptor} endure in shadowed hollows, built to keep their mysteries even in abandonment.',
+  ],
+  unknown: [
+    'A vanished people once shaped this land. Their {ruinDescriptor} endure — monuments to a civilization that left no name the current inhabitants remember.',
+  ],
+};
+
+// ─── Region Etymology Prose ─────────────────────────────────────────────────
+// Explains why a region has its current name, linking it to historical culture.
+
+export const REGION_ETYMOLOGY_PROSE: string[] = [
+  'The locals call this expanse {regionName} — a name that echoes {histCulture} speech, though few remember the original tongue.',
+  'This territory is known as {regionName}, a name that has outlived the {histCulture} who first spoke it, worn smooth by generations of mispronunciation.',
+  '{regionName} — the name itself is a fossil, a {histCulture} phrase that survived the culture that coined it.',
+  "The region's name, {regionName}, derives from {histCulture} cartography — their maps outlasted their mapmakers.",
+];

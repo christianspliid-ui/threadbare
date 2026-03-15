@@ -18,6 +18,8 @@ import {
   POPULATION_PROSE_TEMPLATES,
   ARCHETYPE_PROSE,
   DISPOSITION_PROSE,
+  HISTORICAL_CULTURE_PROSE,
+  REGION_ETYMOLOGY_PROSE,
 } from '../data/prose-layer-content';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -449,6 +451,104 @@ export function dispositionResolver(nodeId: string, graph: WorldGraph, seed: num
       priority: 60,
       category: 'character',
       source: 'dispositionResolver',
+    },
+  ];
+}
+
+// ─── Regional History Resolvers ────────────────────────────────────────────
+
+/**
+ * historicalCultureResolver — historical culture ruins prose for a region.
+ * Priority: 30 (history layer)
+ * Category: 'history'
+ *
+ * Takes a regionId and walks: region → belongs_to (historical) → culture
+ * Extracts culture name and ruin descriptors from properties.
+ * Picks template based on foundationBias from culture's cultureIdentity.
+ *
+ * Note: This resolver is called directly by HexChronicle with regionId,
+ * not through the standard LOCATION_RESOLVERS pipeline.
+ */
+export function historicalCultureResolver(regionId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const regionNode = graph.getNode(regionId);
+  if (!regionNode || regionNode.type !== 'region') return [];
+
+  // Walk region → belongs_to edges looking for historical culture
+  const outEdges = graph.getOutgoingEdges(regionId, 'belongs_to');
+  const histEdge = outEdges.find((e) => e.properties?.cultureLayer === 'historical');
+  if (!histEdge) return [];
+
+  const histNode = graph.getNode(histEdge.target);
+  if (!histNode) return [];
+
+  // Extract culture identity to determine bias (order/chaos/light/darkness/unknown)
+  const hProps = histNode.properties ?? {};
+  const identity = hProps.cultureIdentity as { foundationBias?: string } | undefined;
+  const bias = identity?.foundationBias ?? 'unknown';
+  const ruinDescs = (hProps.ruinDescriptors as string[]) ?? [];
+
+  // Pick template based on bias
+  const templates = HISTORICAL_CULTURE_PROSE[bias] ?? HISTORICAL_CULTURE_PROSE.unknown;
+  const template = pickTemplate(templates, seed);
+  if (!template) return [];
+
+  // Select a ruin descriptor if available
+  const ruinDesc =
+    ruinDescs.length > 0
+      ? ruinDescs[Math.floor(mulberry32(seed + 1)() * ruinDescs.length)]
+      : 'weathered ruins';
+
+  // Replace placeholders
+  let text = replacePlaceholder(template, 'histCulture', histNode.name);
+  text = replacePlaceholder(text, 'ruinDescriptor', ruinDesc);
+
+  return [
+    {
+      text,
+      priority: 30,
+      category: 'history',
+      source: 'historicalCultureResolver',
+    },
+  ];
+}
+
+/**
+ * regionEtymologyResolver — explains region name origin linked to historical culture.
+ * Priority: 25 (history layer, after main culture prose)
+ * Category: 'history'
+ *
+ * Takes a regionId and walks: region → belongs_to (historical) → culture
+ * Picks template from REGION_ETYMOLOGY_PROSE and replaces {regionName} and {histCulture}.
+ *
+ * Note: This resolver is called directly by HexChronicle with regionId,
+ * not through the standard LOCATION_RESOLVERS pipeline.
+ */
+export function regionEtymologyResolver(regionId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const regionNode = graph.getNode(regionId);
+  if (!regionNode || regionNode.type !== 'region') return [];
+
+  // Walk region → belongs_to edges looking for historical culture
+  const outEdges = graph.getOutgoingEdges(regionId, 'belongs_to');
+  const histEdge = outEdges.find((e) => e.properties?.cultureLayer === 'historical');
+  if (!histEdge) return [];
+
+  const histNode = graph.getNode(histEdge.target);
+  if (!histNode) return [];
+
+  // Pick template
+  const template = pickTemplate(REGION_ETYMOLOGY_PROSE, seed + 7);
+  if (!template) return [];
+
+  // Replace placeholders
+  let text = replacePlaceholder(template, 'regionName', regionNode.name);
+  text = replacePlaceholder(text, 'histCulture', histNode.name);
+
+  return [
+    {
+      text,
+      priority: 25,
+      category: 'history',
+      source: 'regionEtymologyResolver',
     },
   ];
 }
