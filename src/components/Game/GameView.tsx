@@ -146,6 +146,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     tickEvents: gameState.tickEvents,
     running,
     setRunning,
+    visibilityMap: gameState.visibilityMap,
   });
 
   // ── Hex zoom derived data ──
