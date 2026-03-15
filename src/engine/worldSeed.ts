@@ -25,6 +25,9 @@ import {
   grantBehavioralTraits,
 } from './culturalTraits';
 import type { CultureIdentity } from '../types/culture';
+import { detectRegions } from './regionDetection';
+import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
+import { generateRegionName } from './regionNaming';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -121,6 +124,8 @@ export interface SeedResult {
   locationIds: string[];
   artifactIds: string[];
   cultureIds: string[];
+  regionIds: string[];
+  historicalCultureIds: string[];
 }
 
 // ─── Location Subtype Selection ──────────────────────────────────────
@@ -186,6 +191,63 @@ export function seedWorld(
   const artifactIds: string[] = [];
   const cultureIds: string[] = [];
 
+  // ── Regions & Historical Cultures (before locations) ──────
+  const regionIds: string[] = [];
+  const historicalCultureIds: string[] = [];
+
+  // Detect geographic regions via flood-fill
+  const clusters = detectRegions(tiles);
+
+  // Create region nodes (unnamed for now)
+  for (let i = 0; i < clusters.length; i++) {
+    const id = `region_${i}`;
+    graph.addNode({
+      id,
+      type: 'region',
+      name: '', // will be named after territory assignment
+      properties: {
+        featureType: clusters[i].featureType,
+        hexCount: clusters[i].hexes.length,
+        centerCol: clusters[i].centerCol,
+        centerRow: clusters[i].centerRow,
+      },
+    });
+    regionIds.push(id);
+
+    // Set regionId on each hex tile
+    for (const h of clusters[i].hexes) {
+      const tile = tiles.find(t => t.coord.col === h.col && t.coord.row === h.row);
+      if (tile) tile.regionId = id;
+    }
+  }
+
+  // Generate historical cultures
+  const histCultureRng = mulberry32(seed + 13331); // separate PRNG stream
+  const histIds = generateHistoricalCultures(graph, cosmology, histCultureRng);
+  historicalCultureIds.push(...histIds);
+
+  // Assign historical territories
+  assignHistoricalTerritories(graph, histIds, clusters, histCultureRng);
+
+  // Name regions based on historical culture ownership
+  const usedRegionNames = new Set<string>();
+  for (let i = 0; i < clusters.length; i++) {
+    const regionId = regionIds[i];
+    const ownerEdge = graph.getEdgesByType('belongs_to')
+      .find(e => e.source === regionId && e.properties.cultureLayer === 'historical');
+    const ownerCultureId = ownerEdge?.target;
+
+    const name = generateRegionName(
+      clusters[i].featureType,
+      ownerCultureId,
+      graph,
+      histCultureRng,
+      usedRegionNames,
+    );
+    usedRegionNames.add(name);
+    graph.updateNode(regionId, { name });
+  }
+
   // ── Locations ────────────────────────────────────────────
   const locCount = randomInRange(rng, LOCATION_COUNT.min, LOCATION_COUNT.max);
   const usedNameIndices = new Set<number>();
@@ -241,6 +303,24 @@ export function seedWorld(
       type: 'adjacent',
       properties: {},
     });
+  }
+
+  // ── Region → Location contains edges ────────────────────
+  for (const locId of locationIds) {
+    const locNode = graph.getNode(locId);
+    if (!locNode) continue;
+    const hexCol = locNode.properties.hexCol as number;
+    const hexRow = locNode.properties.hexRow as number;
+    const tile = tiles.find(t => t.coord.col === hexCol && t.coord.row === hexRow);
+    if (tile?.regionId) {
+      graph.addEdge({
+        id: `edge_region_contains_${tile.regionId}_${locId}`,
+        source: tile.regionId,
+        target: locId,
+        type: 'contains',
+        properties: {},
+      });
+    }
   }
 
   // ── Cultures ──────────────────────────────────────────────
@@ -452,5 +532,5 @@ export function seedWorld(
     }
   }
 
-  return { graph, individualIds, factionIds, locationIds, artifactIds, cultureIds };
+  return { graph, individualIds, factionIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
