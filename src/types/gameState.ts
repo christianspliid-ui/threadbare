@@ -33,7 +33,7 @@ export interface TickEvent {
   id: string;
   tick: number;
   type: 'agent_action' | 'agent_action_resolved' | 'doom_escalation' | 'rival_action'
-    | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert' | 'dilemma_resolved' | 'intervention_effect';
+    | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert' | 'dilemma_resolved' | 'intervention_effect' | 'sublocation_dissolved' | 'agent_movement' | 'agent_encounter';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -108,8 +108,8 @@ export const MAX_RECENT_EVENTS = 100;
 /** Stealth exposure decay per tick (natural forgetting) */
 export const STEALTH_DECAY_PER_TICK = 0.01;
 
-/** Default doom clock length in ticks (120 = playable run) */
-export const DEFAULT_DOOM_TICKS = 120;
+/** Default doom clock length in ticks (200 = longer game cycle) */
+export const DEFAULT_DOOM_TICKS = 200;
 
 /** Doom archetypes available for selection */
 export const DOOM_ARCHETYPES: DoomClockArchetype[] = [

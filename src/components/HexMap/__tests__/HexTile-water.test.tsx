@@ -84,14 +84,14 @@ describe('HexTile water rendering with coastline integration', () => {
       const polygons = container.querySelectorAll('polygon');
       expect(polygons.length).toBeGreaterThan(0);
       const fills = Array.from(polygons).map(p => p.getAttribute('fill'));
-      expect(fills).toContain('#1e1b2e');
+      expect(fills).toContain('#0a0a0c');
     });
 
     it('unexplored coastal_shallows hex renders dark', () => {
       const { container } = renderTile('coastal_shallows', 'unexplored');
       const polygons = container.querySelectorAll('polygon');
       const fills = Array.from(polygons).map(p => p.getAttribute('fill'));
-      expect(fills).toContain('#1e1b2e');
+      expect(fills).toContain('#0a0a0c');
     });
 
     it('unexplored water hex has border stroke', () => {

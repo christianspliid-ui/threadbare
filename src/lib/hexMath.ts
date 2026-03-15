@@ -54,10 +54,10 @@ export function hexDistance(a: HexCoord, b: HexCoord): number {
 }
 
 export function hexToPixel(hex: HexCoord, size: number): { x: number; y: number } {
-  // Flat-top: horizontal spacing = 1.5 * size, vertical spacing = √3 * size
+  // Flat-top: horizontal spacing = HEX_SCALE_X * size, vertical spacing = HEX_SCALE_Y * size
   // Odd columns shift down by half the vertical spacing
-  const x = hex.col * size * 1.5;
-  const y = hex.row * Math.sqrt(3) * size + (hex.col % 2 === 1 ? Math.sqrt(3) * size / 2 : 0);
+  const x = hex.col * size * HEX_SCALE_X;
+  const y = hex.row * HEX_SCALE_Y * size + (hex.col % 2 === 1 ? HEX_SCALE_Y * size / 2 : 0);
   return { x, y };
 }
 

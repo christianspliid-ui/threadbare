@@ -60,6 +60,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.deep_descent',
     name: 'The Deep Descent',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining'],
+    sublocationTypes: ['sublocation-type.dungeon'],
     reachPrimary: 'iron',
     reachSecondary: 'shadow',
     encounterType: 'explore',
@@ -119,6 +120,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.trial_of_flame',
     name: 'Trial of Flame',
     locationTypes: ['mining', 'fort', 'camp'],
+    sublocationTypes: ['sublocation-type.temple-quarter', 'sublocation-type.barracks'],
     reachPrimary: 'iron',
     reachSecondary: 'stone',
     encounterType: 'create',
@@ -473,6 +475,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.healers_oath',
     name: 'The Healer\'s Oath',
     locationTypes: ['temple', 'shrine'],
+    sublocationTypes: ['sublocation-type.temple-quarter'],
     reachPrimary: 'flesh',
     reachSecondary: 'heart',
     encounterType: 'assist',
@@ -532,6 +535,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.diplomats_maze',
     name: 'The Diplomat\'s Maze',
     locationTypes: ['capital', 'city', 'town'],
+    sublocationTypes: ['sublocation-type.throne-room'],
     reachPrimary: 'heart',
     reachSecondary: 'gold',
     encounterType: 'lead',
@@ -591,6 +595,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.starborn_vigil',
     name: 'The Starborn Vigil',
     locationTypes: ['tower', 'fort', 'castle', 'camp'],
+    sublocationTypes: ['sublocation-type.temple-quarter'],
     reachPrimary: 'star',
     reachSecondary: 'veil',
     encounterType: 'explore',
@@ -653,6 +658,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.market_haggle',
     name: 'The Market Haggle',
     locationTypes: ['town', 'city', 'capital', 'oasis'],
+    sublocationTypes: ['sublocation-type.market-district'],
     reachPrimary: 'gold',
     reachSecondary: 'heart',
     encounterType: 'acquire',
@@ -712,6 +718,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.relic_hunt',
     name: 'The Relic Hunt',
     locationTypes: ['ruins', 'ruined_tower', 'ruined_city'],
+    sublocationTypes: ['sublocation-type.dungeon', 'sublocation-type.library'],
     reachPrimary: 'eye',
     reachSecondary: 'shadow',
     encounterType: 'acquire',
@@ -889,6 +896,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     id: 'encounter.war_trophy',
     name: 'The War Trophy',
     locationTypes: ['battleground', 'fort', 'castle'],
+    sublocationTypes: ['sublocation-type.barracks'],
     reachPrimary: 'iron',
     reachSecondary: 'shadow',
     encounterType: 'acquire',
@@ -4138,6 +4146,24 @@ export function getEncountersByLocationType(locationType: string): EncounterTemp
   return ENCOUNTER_TEMPLATES.filter(encounter =>
     encounter.locationTypes.includes(locationType)
   );
+}
+
+/**
+ * Get encounter templates that match a sublocation's type.
+ * Templates with `sublocationTypes` field are matched against the sublocation type ID.
+ * Templates without `sublocationTypes` are included as fallback (matched via locationTypes).
+ */
+export function getEncountersBySublocationAndLocation(
+  sublocationTypeId: string,
+  locationType: string,
+): EncounterTemplate[] {
+  return ENCOUNTER_TEMPLATES.filter(t => {
+    if (t.sublocationTypes && t.sublocationTypes.length > 0) {
+      return t.sublocationTypes.includes(sublocationTypeId);
+    }
+    // Fallback: templates without sublocationTypes use locationTypes
+    return t.locationTypes.includes(locationType);
+  });
 }
 
 /**

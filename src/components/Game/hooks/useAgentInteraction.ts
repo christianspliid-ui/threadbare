@@ -128,10 +128,6 @@ export function useAgentInteraction({
       const slot = wheelSlots?.find(s => s.id === slotId);
       if (!slot?.interventionType || !slot.available) return;
 
-      if (slot.interventionType === 'dream') {
-        return;
-      }
-
       // Generate agendas for this intervention
       const targetNode = gameState.graph.getNode(selectedAgentId!);
       const profile = targetNode?.properties?.axiologicalProfile as any;

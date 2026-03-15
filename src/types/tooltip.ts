@@ -46,5 +46,7 @@ export const TOOLTIP_OFFSET = 8;
 /** Maximum depth for linked tooltip chains. */
 export const TOOLTIP_MAX_CHAIN_DEPTH = 2;
 
-/** Regex to match {{concept.id}} markers in tooltip descriptions. */
+/** Regex source to match {{concept.id}} markers in tooltip descriptions.
+ * Consumers MUST create a fresh RegExp or use matchAll() — never reuse a global instance.
+ * RC-015: was a module-level /g regex causing mutable lastIndex across concurrent renders. */
 export const TOOLTIP_LINK_PATTERN = /\{\{([a-z_]+\.[a-z0-9_.]+)\}\}/g;

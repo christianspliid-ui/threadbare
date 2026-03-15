@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Visibility — Three Approaches</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0e0c14;
+    color: #c4b99a;
+    font-family: 'Georgia', serif;
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: #8b7d5e;
+    margin-bottom: 2rem;
+    font-weight: 400;
+  }
+  .grid {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .panel {
+    background: #15121e;
+    border: 1px solid #2a2438;
+    border-radius: 4px;
+    padding: 1.2rem;
+    width: 380px;
+  }
+  .panel h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b5f4a;
+    margin-bottom: 0.3rem;
+    font-weight: 400;
+  }
+  .panel p {
+    font-size: 0.75rem;
+    color: #5a5347;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  svg { display: block; margin: 0 auto; }
+
+  /* Animations */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1.0; }
+  }
+  @keyframes trail-fade {
+    0% { opacity: 0.6; }
+    100% { opacity: 0.08; }
+  }
+  .agent-dot-pulse {
+    animation: breathe 2.5s ease-in-out infinite;
+  }
+  .trail-segment {
+    animation: trail-fade 4s ease-out forwards;
+  }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.35; }
+  }
+  .hex-glow {
+    animation: glow-pulse 3s ease-in-out infinite;
+  }
+
+  .zoom-label {
+    font-size: 0.65rem;
+    color: #3d3730;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+
+  /* Zoomed inset */
+  .inset-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.8rem;
+    justify-content: center;
+  }
+  .inset-label {
+    font-size: 0.6rem;
+    color: #4a4338;
+    text-align: center;
+    margin-bottom: 0.3rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>DES-009 · Agent Visibility on Hex Map</h1>
+
+<div class="grid">
+
+<!-- OPTION A: Dots at world zoom, tokens when zoomed -->
+<div class="panel">
+  <h2>A — Dots → Tokens on Zoom</h2>
+  <p>Small colored dots at world view. Zoom in (d3 4×) to see tokens with initials. Trails as fading ink lines.</p>
+
+  <!-- World zoom -->
+  <svg width="350" height="260" viewBox="0 0 350 260">
+    <defs>
+      <clipPath id="hex-clip-a">
+        <polygon points="175,10 320,85 320,175 175,250 30,175 30,85"/>
+      </clipPath>
+    </defs>
+
+    <!-- Dark terrain hexes -->
+    <g opacity="0.5">
+      <!-- Row of hexes approximated -->
+      <polygon points="60,40 100,20 140,40 140,80 100,100 60,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,40 180,20 220,40 220,80 180,100 140,80" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,40 260,20 300,40 300,80 260,100 220,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="20,100 60,80 100,100 100,140 60,160 20,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="100,100 140,80 180,100 180,140 140,160 100,140" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="180,100 220,80 260,100 260,140 220,160 180,140" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="260,100 300,80 340,100 340,140 300,160 260,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="60,160 100,140 140,160 140,200 100,220 60,200" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,160 180,140 220,160 220,200 180,220 140,200" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,160 260,140 300,160 300,200 260,220 220,200" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+    </g>
+
+    <!-- Settlement icons (small squares) -->
+    <rect x="96" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="176" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="256" y="126" width="6" height="6" fill="#332d24" rx="1"/>
+
+    <!-- TRAILS: fading ink lines -->
+    <path d="M102,92 L140,120 L180,92" stroke="#6b5f4a" stroke-width="1" fill="none" opacity="0.12" stroke-dasharray="2,2"/>
+    <path d="M260,130 L220,160 L180,140" stroke="#6b5f4a" stroke-width="1" fill="none" opacity="0.08" stroke-dasharray="2,2"/>
+    <path d="M100,120 L60,160 L100,180" stroke="#8b6040" stroke-width="1" fill="none" opacity="0.15" stroke-dasharray="2,2"/>
+
+    <!-- AGENT DOTS: tiny colored pips -->
+    <!-- 3 agents at settlement hex -->
+    <circle cx="98" cy="88" r="2.5" fill="#c4956a" class="agent-dot-pulse"/>
+    <circle cx="104" cy="92" r="2.5" fill="#7a9e6b" class="agent-dot-pulse" style="animation-delay: 0.8s"/>
+    <circle cx="96" cy="95" r="2" fill="#6b7a9e" class="agent-dot-pulse" style="animation-delay: 1.5s"/>
+
+    <!-- 1 agent traveling -->
+    <circle cx="140" cy="120" r="2.5" fill="#c4956a" class="agent-dot-pulse" style="animation-delay: 0.3s"/>
+
+    <!-- 2 agents at another settlement -->
+    <circle cx="178" cy="88" r="2.5" fill="#9e6b7a" class="agent-dot-pulse" style="animation-delay: 1.2s"/>
+    <circle cx="184" cy="91" r="2" fill="#6b9e8a" class="agent-dot-pulse" style="animation-delay: 0.5s"/>
+
+    <!-- lone wanderer -->
+    <circle cx="260" cy="170" r="2" fill="#9e916b" class="agent-dot-pulse" style="animation-delay: 2s"/>
+  </svg>
+  <div class="zoom-label">World zoom — dots + fading ink trails</div>
+
+  <!-- Zoomed inset -->
+  <div class="inset-row">
+    <div>
+      <div class="inset-label">Zoomed 4× into settlement</div>
+      <svg width="160" height="120" viewBox="0 0 160 120">
+        <rect width="160" height="120" fill="#15121e"/>
+        <polygon points="80,5 150,40 150,80 80,115 10,80 10,40" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+        <!-- Settlement icon larger -->
+        <rect x="68" y="48" width="24" height="20" fill="#3d3428" rx="2"/>
+        <!-- Agent tokens with initials -->
+        <circle cx="55" cy="42" r="9" fill="#1a1826" stroke="#c4956a" stroke-width="1.5"/>
+        <text x="55" y="46" fill="#c4956a" font-size="9" text-anchor="middle" font-family="Georgia">K</text>
+        <circle cx="105" cy="50" r="9" fill="#1a1826" stroke="#7a9e6b" stroke-width="1.5"/>
+        <text x="105" y="54" fill="#7a9e6b" font-size="9" text-anchor="middle" font-family="Georgia">T</text>
+        <circle cx="65" cy="78" r="8" fill="#1a1826" stroke="#6b7a9e" stroke-width="1"/>
+        <text x="65" y="82" fill="#6b7a9e" font-size="8" text-anchor="middle" font-family="Georgia">m</text>
+        <!-- Trail visible -->
+        <path d="M55,42 L30,20" stroke="#c4956a" stroke-width="1.5" fill="none" opacity="0.25" stroke-dasharray="3,3"/>
+        <path d="M105,50 L130,30" stroke="#7a9e6b" stroke-width="1.5" fill="none" opacity="0.15" stroke-dasharray="3,3"/>
+      </svg>
+    </div>
+  </div>
+</div>
+
+<!-- OPTION B: Always tokens -->
+<div class="panel">
+  <h2>B — Always Tokens</h2>
+  <p>Small but distinct tokens even at world view. Each agent has a visible initial. More information, more clutter.</p>
+
+  <svg width="350" height="260" viewBox="0 0 350 260">
+    <!-- Same hex grid -->
+    <g opacity="0.5">
+      <polygon points="60,40 100,20 140,40 140,80 100,100 60,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,40 180,20 220,40 220,80 180,100 140,80" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,40 260,20 300,40 300,80 260,100 220,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="20,100 60,80 100,100 100,140 60,160 20,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="100,100 140,80 180,100 180,140 140,160 100,140" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="180,100 220,80 260,100 260,140 220,160 180,140" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="260,100 300,80 340,100 340,140 300,160 260,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="60,160 100,140 140,160 140,200 100,220 60,200" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,160 180,140 220,160 220,200 180,220 140,200" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,160 260,140 300,160 300,200 260,220 220,200" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+    </g>
+
+    <!-- Settlements -->
+    <rect x="96" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="176" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="256" y="126" width="6" height="6" fill="#332d24" rx="1"/>
+
+    <!-- Trails -->
+    <path d="M102,92 L140,120 L180,92" stroke="#6b5f4a" stroke-width="1" fill="none" opacity="0.12" stroke-dasharray="2,2"/>
+    <path d="M260,130 L220,160 L180,140" stroke="#6b5f4a" stroke-width="1" fill="none" opacity="0.08" stroke-dasharray="2,2"/>
+
+    <!-- AGENT TOKENS: always visible initials -->
+    <!-- Cluster at settlement 1 — getting crowded -->
+    <circle cx="88" cy="82" r="6" fill="#1a1826" stroke="#c4956a" stroke-width="1"/>
+    <text x="88" y="85" fill="#c4956a" font-size="7" text-anchor="middle" font-family="Georgia">K</text>
+    <circle cx="102" cy="78" r="6" fill="#1a1826" stroke="#7a9e6b" stroke-width="1"/>
+    <text x="102" y="81" fill="#7a9e6b" font-size="7" text-anchor="middle" font-family="Georgia">T</text>
+    <circle cx="110" cy="90" r="5" fill="#1a1826" stroke="#6b7a9e" stroke-width="0.8"/>
+    <text x="110" y="93" fill="#6b7a9e" font-size="6" text-anchor="middle" font-family="Georgia">m</text>
+
+    <!-- Traveler -->
+    <circle cx="140" cy="120" r="6" fill="#1a1826" stroke="#c4956a" stroke-width="1"/>
+    <text x="140" y="123" fill="#c4956a" font-size="7" text-anchor="middle" font-family="Georgia">K</text>
+
+    <!-- Cluster at settlement 2 -->
+    <circle cx="172" cy="84" r="6" fill="#1a1826" stroke="#9e6b7a" stroke-width="1"/>
+    <text x="172" y="87" fill="#9e6b7a" font-size="7" text-anchor="middle" font-family="Georgia">A</text>
+    <circle cx="186" cy="88" r="5" fill="#1a1826" stroke="#6b9e8a" stroke-width="0.8"/>
+    <text x="186" y="91" fill="#6b9e8a" font-size="6" text-anchor="middle" font-family="Georgia">r</text>
+
+    <!-- More agents scattered — starts feeling busy -->
+    <circle cx="60" cy="120" r="5" fill="#1a1826" stroke="#9e916b" stroke-width="0.8"/>
+    <text x="60" y="123" fill="#9e916b" font-size="6" text-anchor="middle" font-family="Georgia">V</text>
+    <circle cx="260" cy="170" r="5" fill="#1a1826" stroke="#9e916b" stroke-width="0.8"/>
+    <text x="260" y="173" fill="#9e916b" font-size="6" text-anchor="middle" font-family="Georgia">B</text>
+    <circle cx="140" cy="180" r="5" fill="#1a1826" stroke="#7a6b9e" stroke-width="0.8"/>
+    <text x="140" y="183" fill="#7a6b9e" font-size="6" text-anchor="middle" font-family="Georgia">S</text>
+    <circle cx="220" cy="120" r="5" fill="#1a1826" stroke="#6b8a9e" stroke-width="0.8"/>
+    <text x="220" y="123" fill="#6b8a9e" font-size="6" text-anchor="middle" font-family="Georgia">D</text>
+  </svg>
+  <div class="zoom-label">World zoom — always tokens, busier but readable</div>
+</div>
+
+<!-- OPTION C: Heat/glow only at world zoom -->
+<div class="panel">
+  <h2>C — Activity Glow</h2>
+  <p>No individual agents at world zoom. Hexes with more agents glow warmer. Zoom in to see individuals. Cleanest map.</p>
+
+  <svg width="350" height="260" viewBox="0 0 350 260">
+    <defs>
+      <radialGradient id="glow-warm" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#c4956a" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#c4956a" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glow-cool" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#6b7a9e" stop-opacity="0.25"/>
+        <stop offset="100%" stop-color="#6b7a9e" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="glow-faint" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#9e916b" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#9e916b" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+
+    <!-- Same hex grid -->
+    <g opacity="0.5">
+      <polygon points="60,40 100,20 140,40 140,80 100,100 60,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,40 180,20 220,40 220,80 180,100 140,80" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,40 260,20 300,40 300,80 260,100 220,80" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="20,100 60,80 100,100 100,140 60,160 20,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="100,100 140,80 180,100 180,140 140,160 100,140" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="180,100 220,80 260,100 260,140 220,160 180,140" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="260,100 300,80 340,100 340,140 300,160 260,140" fill="#1c1928" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="60,160 100,140 140,160 140,200 100,220 60,200" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="140,160 180,140 220,160 220,200 180,220 140,200" fill="#1a1826" stroke="#2a2438" stroke-width="0.5"/>
+      <polygon points="220,160 260,140 300,160 300,200 260,220 220,200" fill="#1e1c2a" stroke="#2a2438" stroke-width="0.5"/>
+    </g>
+
+    <!-- Settlements -->
+    <rect x="96" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="176" y="86" width="8" height="8" fill="#3d3428" rx="1"/>
+    <rect x="256" y="126" width="6" height="6" fill="#332d24" rx="1"/>
+
+    <!-- ACTIVITY GLOWS: warm radial gradients -->
+    <!-- Hot hex: 3 agents -->
+    <circle cx="100" cy="70" r="35" fill="url(#glow-warm)" class="hex-glow"/>
+    <!-- Medium hex: 2 agents -->
+    <circle cx="180" cy="70" r="28" fill="url(#glow-cool)" class="hex-glow" style="animation-delay: 1s"/>
+    <!-- Faint hex: 1 agent passing through -->
+    <circle cx="140" cy="120" r="20" fill="url(#glow-faint)" class="hex-glow" style="animation-delay: 0.5s"/>
+    <!-- Lone wanderer -->
+    <circle cx="260" cy="170" r="18" fill="url(#glow-faint)" class="hex-glow" style="animation-delay: 1.5s"/>
+    <!-- Faint activity -->
+    <circle cx="60" cy="120" r="16" fill="url(#glow-faint)" class="hex-glow" style="animation-delay: 2s"/>
+  </svg>
+  <div class="zoom-label">World zoom — warm glow = more agents, cool = fewer</div>
+
+  <!-- Zoomed inset showing individuals appear -->
+  <div class="inset-row">
+    <div>
+      <div class="inset-label">Zoomed 4× — agents resolve</div>
+      <svg width="160" height="120" viewBox="0 0 160 120">
+        <rect width="160" height="120" fill="#15121e"/>
+        <polygon points="80,5 150,40 150,80 80,115 10,80 10,40" fill="#1e1a28" stroke="#2a2438" stroke-width="0.5"/>
+        <!-- Glow still visible but fainter -->
+        <circle cx="80" cy="55" r="40" fill="url(#glow-warm)" opacity="0.3"/>
+        <!-- Settlement -->
+        <rect x="68" y="48" width="24" height="20" fill="#3d3428" rx="2"/>
+        <!-- Agents now visible -->
+        <circle cx="55" cy="42" r="9" fill="#1a1826" stroke="#c4956a" stroke-width="1.5"/>
+        <text x="55" y="46" fill="#c4956a" font-size="9" text-anchor="middle" font-family="Georgia">K</text>
+        <circle cx="105" cy="50" r="9" fill="#1a1826" stroke="#7a9e6b" stroke-width="1.5"/>
+        <text x="105" y="54" fill="#7a9e6b" font-size="9" text-anchor="middle" font-family="Georgia">T</text>
+        <circle cx="65" cy="78" r="8" fill="#1a1826" stroke="#6b7a9e" stroke-width="1"/>
+        <text x="65" y="82" fill="#6b7a9e" font-size="8" text-anchor="middle" font-family="Georgia">m</text>
+      </svg>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div style="text-align:center; margin-top:2rem; font-size:0.7rem; color:#3d3730; letter-spacing:0.1em">
+  Mockup · Threadbare palette · Not final art direction
+</div>
+
+</body>
+</html>

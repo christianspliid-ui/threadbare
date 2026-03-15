@@ -8,6 +8,7 @@ import {
   decelerateDoomClock,
 } from '../doomClock';
 import type { DoomClockArchetype } from '../../types/doomClock';
+import { DEFAULT_DOOM_TICKS } from '../../types/gameState';
 
 describe('doom clock generator', () => {
   it('generates a doom clock with 5 stages for any archetype', () => {
@@ -16,15 +17,15 @@ describe('doom clock generator', () => {
       'failing', 'ascension', 'reckoning',
     ];
     for (const archetype of archetypes) {
-      const clock = generateDoomClock(archetype, 120, 42);
+      const clock = generateDoomClock(archetype, DEFAULT_DOOM_TICKS, 42);
       expect(clock.stages.length).toBe(5);
       expect(clock.archetype).toBe(archetype);
-      expect(clock.totalTicks).toBe(120);
+      expect(clock.totalTicks).toBe(DEFAULT_DOOM_TICKS);
     }
   });
 
   it('stage thresholds increase monotonically to 1.0', () => {
-    const clock = generateDoomClock('breach', 120, 42);
+    const clock = generateDoomClock('breach', DEFAULT_DOOM_TICKS, 42);
     for (let i = 1; i < clock.stages.length; i++) {
       expect(clock.stages[i].tickThreshold).toBeGreaterThan(
         clock.stages[i - 1].tickThreshold,
@@ -36,7 +37,7 @@ describe('doom clock generator', () => {
 
 describe('doom clock state machine', () => {
   it('createDoomClockState returns initial state at stage 1', () => {
-    const state = createDoomClockState('breach', 120);
+    const state = createDoomClockState('breach', DEFAULT_DOOM_TICKS);
     expect(state.currentStage).toBe(1);
     expect(state.currentTick).toBe(0);
     expect(state.progress).toBe(0);
@@ -93,11 +94,11 @@ describe('doom clock state machine', () => {
     expect(state.tickModifier).toBeCloseTo(0.1);
   });
 
-  it('all 5 stages are reachable within 120 ticks', () => {
-    let state = createDoomClockState('breach', 120);
+  it('all 5 stages are reachable within DEFAULT_DOOM_TICKS', () => {
+    let state = createDoomClockState('breach', DEFAULT_DOOM_TICKS);
     const stagesReached = new Set<number>([state.currentStage]);
 
-    for (let i = 0; i < 120; i++) {
+    for (let i = 0; i < DEFAULT_DOOM_TICKS; i++) {
       state = advanceDoomClock(state);
       stagesReached.add(state.currentStage);
     }

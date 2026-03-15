@@ -62,6 +62,8 @@ export interface HexTile {
   coord: HexCoord;
   geoParams: GeoParams;
   terrain: TerrainType;
+  hasRiver?: boolean;      // set by river generation pass
+  regionId?: string;       // set by region naming pass (Phase 2)
 }
 
 /** Force overlay display modes */
@@ -72,3 +74,14 @@ export interface GridSize {
   cols: number;
   rows: number;
 }
+
+// ── Re-exports: Sublocation System ──────────────────────────
+
+export type {
+  SublocationPersistence,
+  SublocationProperties,
+  TemporalTrigger,
+  DivineOrigin,
+  DivinePurpose,
+} from './sublocation';
+export { DIVINE_PURPOSES } from './sublocation';

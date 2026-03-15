@@ -426,6 +426,186 @@ Minimum requirements for all interactive elements:
 
 ---
 
+## 12. Mount/Unmount Animations (AnimateMount)
+
+React instantly removes elements when their `show` condition becomes false — no window for exit animations. `AnimateMount` delays DOM removal long enough for a CSS exit animation to play.
+
+### Where it appears
+
+- ScryOverlay (`anim-fade`)
+- HarvestScreen (`anim-fade`)
+- AgentProfileModal (`anim-fade-up`)
+- StrandView (`anim-fade`)
+- AgendaPicker (`anim-fade`)
+- MandateTracker popover (`anim-fade-down`)
+
+### Implementation pattern
+
+```tsx
+<AnimateMount show={isOpen} animation="anim-fade-up" duration={200}>
+  <MyOverlay />
+</AnimateMount>
+```
+
+### CSS animation naming convention
+
+- `anim-*` prefix for mount/unmount animations (e.g., `anim-fade-enter`, `anim-fade-exit`)
+- `pulse-*` prefix for one-shot value feedback (e.g., `pulse-gold`, `pulse-doom`)
+- `animate-breathe` for idle ambient effects (empty states)
+- Timing tokens: `--anim-fast: 150ms`, `--anim-normal: 200ms`, `--anim-slow: 400ms`
+- Easing: `ease-out` for enters (responsive feel), `ease-in` for exits (gets out of the way)
+
+### Rules
+
+- Wrap conditional overlays in `AnimateMount` — never use bare conditional rendering for overlays
+- Animation class prefix must have matching `-enter` and `-exit` CSS classes in `index.css`
+- `duration` prop is a safety timeout — CSS `animationend` fires first if animations are working
+- When adding tests for animated components, use `vi.useFakeTimers()` + `vi.advanceTimersByTime()` to account for exit animation delay
+
+---
+
+## 13. Value Feedback Animations
+
+In-place visual feedback when game values change, so the UI feels alive rather than static.
+
+### Where it appears
+
+| Component | Trigger | Effect |
+|-----------|---------|--------|
+| EssencePanel bars | Essence value changes between ticks | `pulse-gold` class for 600ms |
+| DoomBar progress | Doom value increases | `pulse-doom` class for 600ms |
+| NarrativeLog entries | New entry added | `anim-fade-up-enter` class on first render |
+
+### Implementation pattern (pulse)
+
+```tsx
+const prevRef = useRef(currentValue);
+const [isPulsing, setIsPulsing] = useState(false);
+
+useEffect(() => {
+  if (currentValue !== prevRef.current) {
+    setIsPulsing(true);
+    const timer = setTimeout(() => setIsPulsing(false), 600);
+    prevRef.current = currentValue;
+    return () => clearTimeout(timer);
+  }
+}, [currentValue]);
+
+<div className={isPulsing ? 'pulse-gold' : ''}>...</div>
+```
+
+### Rules
+
+- One-shot pulses use `setTimeout` to remove the class — not `animationend` (simpler, more reliable for non-AnimateMount cases)
+- Duration matches the keyframe length (600ms for pulses)
+- Pulse classes stack with existing styles — they only add box-shadow, not change layout
+
+---
+
+## 14. Empty States
+
+Themed empty states that stay in the game fiction. Muted, italic, with a slow breathing animation.
+
+### Where it appears
+
+| Component | Empty state text |
+|-----------|-----------------|
+| RetinuePanel | "The threads of fate lie still. No souls yet attend your court." |
+| LocationView (no selection) | "Select a hex to peer into the world below." |
+| LocationView agents | "This place lies quiet — for now." |
+| LocationView encounters | "The stillness here is unbroken." |
+| NarrativeLog | "Awaiting the first whispers of fate..." |
+
+### Implementation pattern
+
+```tsx
+<p
+  className="text-center italic animate-breathe"
+  style={{ color: 'var(--text-tertiary)', padding: 'var(--panel-padding)' }}
+>
+  {message}
+</p>
+```
+
+### Rules
+
+- Use `var(--text-tertiary)` — present but not demanding attention
+- Always italic
+- Apply `animate-breathe` (slow opacity pulse from existing `breathe` keyframe)
+- Keep copy thematic — the game world speaks, not the UI framework
+
+---
+
+## 15. ARIA Live Regions
+
+Screen reader announcements for dynamic game content.
+
+| Component | Attribute | Why |
+|-----------|-----------|-----|
+| NarrativeLog | `aria-live="polite"` | Events are important but not urgent |
+| EventLog | `aria-live="polite"` | Background event stream |
+| MandateTracker | `aria-live="polite"` | Progress is informational |
+| DoomBar | `aria-live="assertive"` (sr-only span, stage changes only) | Doom stage changes are critical |
+
+### Rules
+
+- `polite` for informational updates — screen reader waits for a pause
+- `assertive` only for critical state changes — interrupts immediately
+- DoomBar uses a visually-hidden `<span className="sr-only">` that only updates text on stage transitions (not every tick) to prevent announcement spam
+- Always pair `aria-live` with `aria-label` on the container
+
+---
+
+## 16. GameErrorBoundary
+
+A React class component wrapping the main game area in GameView. Catches render errors and shows a themed fallback instead of a white screen.
+
+### Placement
+
+Wraps the game area content, NOT the entire app — shell/nav survives if the game area crashes.
+
+### Fallback UI
+
+- Themed to Dark Tapestry aesthetic (uses CSS custom properties)
+- Text: "The threads of reality fray here. The world endures."
+- "Restore" button retries rendering
+- "Copy error details" button copies error + component stack to clipboard
+
+### Rules
+
+- Error boundaries must be class components (React limitation)
+- Don't wrap the entire app — only the content area that can safely re-render
+- Provide both a retry action and a way to export error details
+
+---
+
+## 17. Disabled Action Feedback (Shake-No)
+
+**Problem:** Unavailable action cards (wrong tier, not enough essence, out of range) looked dimmed but gave zero feedback on click — felt like a broken button.
+
+**Solution:** Quick horizontal shake animation + `aria-disabled` attribute.
+
+**Implementation:**
+
+- CSS class `anim-shake-no` (keyframe: `shakeNo`, duration: `--anim-slow` 400ms). Small ±4px horizontal oscillation.
+- React `useState` tracks `shaking` boolean. On disabled card click: set true → setTimeout 400ms → set false.
+- `aria-disabled="true"` on unavailable cards, `undefined` (omitted) on available/playing.
+- Disabled cards remain focusable (`tabIndex={0}`) so keyboard users can Tab to them and read the lock reason text.
+- Keyboard Enter/Space on disabled card triggers shake (same as click) — does NOT fire `onClick`.
+
+**Rules:**
+
+1. Use `anim-shake-no` for any "you can't do that" rejection feedback — not just action cards.
+2. Always pair with a visible explanation text (lock reason, tooltip, etc.) so the user knows *why*.
+3. Playing cards (`playing={true}`) are neither available nor disabled — they get `tabIndex={-1}` and no `aria-disabled`.
+4. Shake timer must be cleaned up (clearTimeout on re-click) to prevent overlapping animations.
+
+**Files:** `src/index.css` (keyframe), `src/components/Game/ActionCard.tsx`
+
+---
+
 ## Changelog
 
 *(2026-03-09 — Created. 11 numbered interaction patterns + 3 cross-cutting sections (panel styling, accessibility, performance). Sourced from codebase audit of 15+ component/hook files.)*
+*(2026-03-10 — Added sections 12-16: AnimateMount, value feedback, empty states, ARIA live regions, GameErrorBoundary. FE Polish Sprint #1.)*
+*(2026-03-10 — Added section 17: Disabled Action Feedback (Shake-No). FE-16.)*

@@ -74,9 +74,18 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
 
   return (
     <div className="flex-1 min-w-0 relative" aria-live="polite" aria-label="Mandate progress">
-      {/* Compact Bar */}
+      {/* Compact Bar — IX-001: Added role, aria-expanded, keyboard support */}
       <div
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
         onClick={handleToggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            handleToggle();
+          }
+        }}
         className="cursor-pointer px-4 py-2 border-b transition-colors relative z-50"
         style={{
           backgroundColor: 'var(--bg-surface)',
@@ -114,9 +123,11 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         <ProgressBar progress={state.progress} color={color} glow={true} />
       </div>
 
-      {/* Expanded Popover */}
+      {/* Expanded Popover — IX-001: Added role="dialog" */}
       <AnimateMount show={isExpanded} animation="anim-fade-down">
         <div
+          role="dialog"
+          aria-label={`${definition.name} mandate details`}
           className="absolute top-full left-0 right-0 mt-1 border rounded shadow-lg p-4 z-50 max-w-md"
           style={{
             backgroundColor: 'var(--bg-surface)',

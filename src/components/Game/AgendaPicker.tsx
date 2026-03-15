@@ -1,17 +1,7 @@
 import { useEffect } from 'react';
 import type { AgendaTemplate } from '../../data/agenda-content';
 import type { SphereName } from '../../types';
-
-const SPHERE_COLORS: Record<string, string> = {
-  force: '#cc3333',
-  matter: '#8b7355',
-  energy: '#ff6600',
-  life: '#33aa33',
-  mind: '#6699cc',
-  spirit: '#cc99ff',
-  time: '#ff9933',
-  entropy: '#666666',
-};
+import { getSphereColor } from '../../data/sphereIcons';
 
 interface AgendaPickerProps {
   agendas: AgendaTemplate[];
@@ -21,7 +11,7 @@ interface AgendaPickerProps {
 }
 
 export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPickerProps) {
-  const sphereColor = SPHERE_COLORS[sphere] ?? '#d4a574';
+  const sphereColor = getSphereColor(sphere);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,28 +29,45 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
       {/* Backdrop */}
       <div
         data-testid="agenda-picker-backdrop"
-        className="absolute inset-0 bg-black/50"
+        className="absolute inset-0 bg-black/60"
         onClick={onCancel}
       />
 
-      {/* Panel */}
+      {/* Panel — widened from w-80 to max-w-md for readability */}
       <div
-        className="relative border rounded-lg p-4 w-80 shadow-2xl"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+        className="relative border rounded-xl shadow-2xl overflow-hidden"
+        style={{
+          backgroundColor: 'var(--bg-surface)',
+          borderColor: 'var(--border-subtle)',
+          width: 'min(28rem, 90vw)',
+        }}
       >
-        <h3
-          className="text-sm font-bold mb-3 text-center"
-          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+        {/* Header strip */}
+        <div
+          className="px-6 pt-5 pb-4"
+          style={{
+            borderBottom: `2px solid ${sphereColor}30`,
+          }}
         >
-          Choose Your Agenda
-        </h3>
+          <h3
+            className="font-bold text-center"
+            style={{
+              fontFamily: 'var(--font-display)',
+              color: 'var(--text-primary)',
+              fontSize: 'var(--text-xl)',
+            }}
+          >
+            Choose Your Agenda
+          </h3>
+        </div>
 
-        <div className="space-y-2">
+        {/* Agenda list */}
+        <div className="px-6 py-4 space-y-3">
           {agendas.map((agenda) => (
             <button
               key={agenda.id}
               onClick={() => onSelect(agenda)}
-              className="w-full text-left p-3 rounded border transition-all duration-150 group"
+              className="w-full text-left p-4 rounded-lg border transition-all duration-150 group"
               style={{
                 backgroundColor: 'var(--bg-raised)',
                 borderColor: 'var(--border-subtle)',
@@ -74,23 +81,47 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
                 e.currentTarget.style.borderColor = 'var(--border-subtle)';
               }}
             >
-              <div className="flex items-center gap-2 mb-1">
+              <div className="flex items-center gap-2.5 mb-1.5">
                 <span
-                  className="w-2 h-2 rounded-full flex-shrink-0"
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
                   style={{ backgroundColor: sphereColor }}
                 />
-                <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                <span
+                  className="font-bold"
+                  style={{
+                    color: 'var(--text-primary)',
+                    fontSize: 'var(--text-base)',
+                  }}
+                >
                   {agenda.name}
                 </span>
               </div>
-              <p className="italic leading-relaxed pl-4" style={{ color: 'var(--text-secondary)', fontSize: 'var(--text-xs)' }}>
+              <p
+                className="italic leading-relaxed pl-5"
+                style={{
+                  color: 'var(--text-secondary)',
+                  fontSize: 'var(--text-sm)',
+                }}
+              >
                 {agenda.narrativeHook}
               </p>
-              <div className="flex items-center gap-3 mt-1.5 pl-4">
-                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+              <div className="flex items-center gap-4 mt-2 pl-5">
+                <span
+                  className="font-semibold"
+                  style={{
+                    color: 'var(--text-muted)',
+                    fontSize: 'var(--text-sm)',
+                  }}
+                >
                   {agenda.reachBoost.reach} +{Math.round(agenda.reachBoost.bonus * 100)}%
                 </span>
-                <span style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)' }}>
+                <span
+                  className="font-semibold"
+                  style={{
+                    color: 'var(--text-muted)',
+                    fontSize: 'var(--text-sm)',
+                  }}
+                >
                   {agenda.behaviorTag}
                 </span>
               </div>

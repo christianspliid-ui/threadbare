@@ -54,6 +54,6 @@ export const COASTLINE_DEFAULTS: CoastlineConfig = {
   colors: {
     deepWater: '#12243a',
     shallows: '#1e4858',
-    coastEdge: '#e3d08a',
+    coastEdge: '#5a4a28', // VS-002: darkened from #e3d08a (~55%L) to ~25%L — within STYLE.md 40% world surface ceiling
   },
 };

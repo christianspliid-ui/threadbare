@@ -48,10 +48,11 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
 
   // Generate prose for agent (memoized)
+  // RC-004: Fixed card.agentId → card.id (agentId doesn't exist on AgentInfoCardData)
   const agentProse = useMemo(() => {
     if (!graph || seed === undefined) return '';
-    return generateEntityProse(card.agentId, graph, seed, 'summary');
-  }, [card.agentId, graph, seed]);
+    return generateEntityProse(card.id, graph, seed, 'summary');
+  }, [card.id, graph, seed]);
 
   return (
     <div
