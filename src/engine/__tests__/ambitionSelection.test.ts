@@ -1,10 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import {
-  filterByCapability,
-  scoreByContext,
+  passesEligibility,
+  scoreDesirability,
   selectAmbitions,
-  SPHERE_MATCH_BONUS,
-  TRAIT_BOOST_BONUS,
   type AmbitionAgentSnapshot,
 } from '../ambitionSelection';
 import type { AmbitionTemplate } from '../../types/ambition';
@@ -92,24 +90,32 @@ function makeAgent(overrides: Partial<AmbitionAgentSnapshot> = {}): AmbitionAgen
   };
 }
 
-// --- filterByCapability ---
+// Helper: seeded PRNG matching the module's implementation
+function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
-describe('filterByCapability', () => {
+// --- passesEligibility (Filter 1: "Can I?") ---
+
+describe('passesEligibility', () => {
   it('passes when agent meets all reach floors', () => {
     const agent = makeAgent({
       domainCapabilities: { ...ZERO_CAPABILITIES, gold: 5, shadow: 2 },
     });
-    const result = filterByCapability([tradeTemplate], agent);
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('amb-trade-dominion');
+    expect(passesEligibility(tradeTemplate, agent)).toBe(true);
   });
 
   it('rejects when agent fails a reach floor', () => {
     const agent = makeAgent({
       domainCapabilities: { ...ZERO_CAPABILITIES, gold: 2, shadow: 2 },
     });
-    const result = filterByCapability([tradeTemplate], agent);
-    expect(result).toHaveLength(0);
+    expect(passesEligibility(tradeTemplate, agent)).toBe(false);
   });
 
   it('rejects when agent lacks a required trait', () => {
@@ -117,8 +123,7 @@ describe('filterByCapability', () => {
       domainCapabilities: { ...ZERO_CAPABILITIES, iron: 5 },
       traits: [],
     });
-    const result = filterByCapability([forgeTemplate], agent);
-    expect(result).toHaveLength(0);
+    expect(passesEligibility(forgeTemplate, agent)).toBe(false);
   });
 
   it('passes when agent has all required traits', () => {
@@ -126,9 +131,7 @@ describe('filterByCapability', () => {
       domainCapabilities: { ...ZERO_CAPABILITIES, iron: 5 },
       traits: ['smith'],
     });
-    const result = filterByCapability([forgeTemplate], agent);
-    expect(result).toHaveLength(1);
-    expect(result[0].id).toBe('amb-forge-mastery');
+    expect(passesEligibility(forgeTemplate, agent)).toBe(true);
   });
 
   it('rejects when agent has a blocking trait', () => {
@@ -136,41 +139,43 @@ describe('filterByCapability', () => {
       domainCapabilities: { ...ZERO_CAPABILITIES, gold: 5, shadow: 2 },
       traits: ['recluse'],
     });
-    const result = filterByCapability([tradeTemplate], agent);
-    expect(result).toHaveLength(0);
+    expect(passesEligibility(tradeTemplate, agent)).toBe(false);
   });
 
-  it('returns empty when nothing qualifies', () => {
+  it('rejects all when nothing qualifies', () => {
     const agent = makeAgent();
-    const result = filterByCapability(ALL_TEMPLATES, agent);
-    expect(result).toHaveLength(0);
+    const passing = ALL_TEMPLATES.filter(t => passesEligibility(t, agent));
+    expect(passing).toHaveLength(0);
   });
 });
 
-// --- scoreByContext ---
+// --- scoreDesirability (Filter 2: "Should I?") ---
 
-describe('scoreByContext', () => {
+describe('scoreDesirability', () => {
   it('higher score when sphere affinities match', () => {
     const agent = makeAgent({ culturalSpheres: ['matter'] });
-    const [trade] = scoreByContext([tradeTemplate], agent);
-    const [forge] = scoreByContext([forgeTemplate], agent);
-    expect(trade.score).toBeGreaterThan(forge.score);
-    expect(trade.score).toBeCloseTo(SPHERE_MATCH_BONUS);
-    expect(forge.score).toBe(0);
+    const rng = mulberry32(42);
+    const tradeScore = scoreDesirability(tradeTemplate, agent, rng);
+    const forgeScore = scoreDesirability(forgeTemplate, agent, mulberry32(42));
+    expect(tradeScore).toBeGreaterThan(forgeScore);
   });
 
-  it('higher score when bonds match', () => {
+  it('positive score for matching bonds', () => {
     const agent = makeAgent({
       bonds: [{ bondType: 'merchant_partner' }, { bondType: 'merchant_partner' }],
     });
-    const [trade] = scoreByContext([tradeTemplate], agent);
-    expect(trade.score).toBeCloseTo(1.0);
+    const rng = mulberry32(42);
+    const score = scoreDesirability(tradeTemplate, agent, rng);
+    // 2 bonds * 0.5 modifier = 1.0 + reach affinity overlap + jitter
+    expect(score).toBeGreaterThan(0.9);
   });
 
-  it('higher score when boosting traits match', () => {
+  it('positive score for matching boosting traits', () => {
     const agent = makeAgent({ traits: ['ambitious'] });
-    const [trade] = scoreByContext([tradeTemplate], agent);
-    expect(trade.score).toBeCloseTo(TRAIT_BOOST_BONUS);
+    const rng = mulberry32(42);
+    const score = scoreDesirability(tradeTemplate, agent, rng);
+    // 0.15 for trait + jitter
+    expect(score).toBeGreaterThan(0.1);
   });
 
   it('accumulates all three signals', () => {
@@ -179,13 +184,14 @@ describe('scoreByContext', () => {
       bonds: [{ bondType: 'vassal' }],
       traits: ['ambitious', 'determined'],
     });
-    const [conquer] = scoreByContext([conquerTemplate], agent);
-    const expected = 2 * SPHERE_MATCH_BONUS + 0.6 + 2 * TRAIT_BOOST_BONUS;
-    expect(conquer.score).toBeCloseTo(expected);
+    const rng = mulberry32(42);
+    const score = scoreDesirability(conquerTemplate, agent, rng);
+    // 2 spheres * 0.2 + 1 bond * 0.6 + 2 traits * 0.15 + reach affinity + jitter
+    expect(score).toBeGreaterThan(1.0);
   });
 });
 
-// --- selectAmbitions ---
+// --- selectAmbitions (full pipeline) ---
 
 describe('selectAmbitions', () => {
   const qualifiedAgent = makeAgent({
