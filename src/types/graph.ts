@@ -24,7 +24,8 @@ export type NodeType =
   | 'action_template' // CRUD action definitions
   | 'event'           // resolved action records
   | 'cosmology'       // sphere/foundation nodes (imported from taxonomy)
-  | 'region';         // geographic region clusters (terrain gen Phase 2)
+  | 'region'          // geographic region clusters (terrain gen Phase 2)
+  | 'ambition';       // ambition template definitions
 
 /** Actor subtypes stored in properties.actorType */
 export type ActorType = 'god' | 'ascendant' | 'faction' | 'culture' | 'group' | 'individual';
@@ -54,6 +55,7 @@ export type EdgeType =
   | 'member_of'        // individual is member of group/faction
   | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'worships'         // actor worships god/ascendant
+  | 'pursues'          // actor pursues ambition (priority, status, milestones)
   // Enchantment
   | 'enchanted'        // caster → target enchantment
   | 'warded'           // ritual site → location ward
