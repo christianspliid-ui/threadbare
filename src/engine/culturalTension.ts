@@ -11,6 +11,8 @@
  */
 
 import type { WorldGraph } from './graph';
+import type { CultureIdentity } from '../types/culture';
+import { culturalGravity, extractCultureSignature } from './culturalGravity';
 
 // ─── Types ──────────────────────────────────────────────────────
 
@@ -51,6 +53,59 @@ function getLocationCultureIds(graph: WorldGraph, locationId: string, layer?: 'h
       return true;
     })
     .map(e => e.target);
+}
+
+// ─── Gravity Helpers ───────────────────────────────────────────
+
+/**
+ * Retrieve CultureIdentity from a culture node's properties, if present.
+ * Returns undefined when identity is missing (fail-soft).
+ */
+function getCultureIdentity(graph: WorldGraph, cultureNodeId: string): CultureIdentity | undefined {
+  const node = graph.getNode(cultureNodeId);
+  if (!node) return undefined;
+  return (node.properties as any)?.identity as CultureIdentity | undefined;
+}
+
+/**
+ * Compute the average pairwise gravity between two sets of culture IDs.
+ * Returns undefined if any identity is missing (fail-soft: caller uses base severity).
+ */
+function computeAverageCulturalGravity(
+  graph: WorldGraph,
+  cultureIdsA: string[],
+  cultureIdsB: string[],
+): number | undefined {
+  if (cultureIdsA.length === 0 || cultureIdsB.length === 0) return undefined;
+
+  const identitiesA = cultureIdsA.map(id => getCultureIdentity(graph, id));
+  const identitiesB = cultureIdsB.map(id => getCultureIdentity(graph, id));
+
+  // If any identity is missing, fall back
+  if (identitiesA.some(i => i == null) || identitiesB.some(i => i == null)) return undefined;
+
+  let totalGravity = 0;
+  let pairs = 0;
+
+  for (const idA of identitiesA) {
+    for (const idB of identitiesB) {
+      const sigA = extractCultureSignature(idA!);
+      const sigB = extractCultureSignature(idB!);
+      totalGravity += culturalGravity(sigA, sigB);
+      pairs++;
+    }
+  }
+
+  return pairs > 0 ? totalGravity / pairs : undefined;
+}
+
+/**
+ * Modulate severity by gravity: severity * (1 - gravity).
+ * gravity -1 → 2x severity, gravity 0 → 1x, gravity 1 → 0x.
+ */
+function modulateSeverity(baseSeverity: number, gravity: number | undefined): number {
+  if (gravity == null) return baseSeverity;
+  return baseSeverity * (1 - gravity);
 }
 
 // ─── Detection Functions ────────────────────────────────────────
@@ -182,7 +237,17 @@ export function computeCulturalTensionScore(
   const tensions: CulturalTension[] = [];
 
   const mismatch = detectCulturalMismatch(graph, actorId);
-  if (mismatch) tensions.push(mismatch);
+  if (mismatch) {
+    // Modulate mismatch severity by gravity between actor cultures and location cultures
+    const actorCultureIds = getActorCultureEdges(graph, actorId).map(e => e.target);
+    const locEdgesForMismatch = graph.getOutgoingEdges(actorId, 'located_at');
+    if (locEdgesForMismatch.length > 0) {
+      const locationCultureIds = getLocationCultureIds(graph, locEdgesForMismatch[0].target, 'current');
+      const gravity = computeAverageCulturalGravity(graph, actorCultureIds, locationCultureIds);
+      mismatch.severity = modulateSeverity(mismatch.severity, gravity);
+    }
+    tensions.push(mismatch);
+  }
 
   const dual = detectDualCultureTension(graph, actorId);
   if (dual) tensions.push(dual);
@@ -195,8 +260,16 @@ export function computeCulturalTensionScore(
   // Check location conquest tension
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
   if (locEdges.length > 0) {
-    const conquest = detectConquestTension(graph, locEdges[0].target);
-    if (conquest) tensions.push(conquest);
+    const locationId = locEdges[0].target;
+    const conquest = detectConquestTension(graph, locationId);
+    if (conquest) {
+      // Modulate conquest severity by gravity between historical and current cultures
+      const historicalIds = getLocationCultureIds(graph, locationId, 'historical');
+      const currentIds = getLocationCultureIds(graph, locationId, 'current');
+      const gravity = computeAverageCulturalGravity(graph, historicalIds, currentIds);
+      conquest.severity = modulateSeverity(conquest.severity, gravity);
+      tensions.push(conquest);
+    }
   }
 
   const score = tensions.reduce((sum, t) => sum + t.severity, 0);
