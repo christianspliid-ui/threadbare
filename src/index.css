@@ -520,3 +520,162 @@
   font-size: 0.65rem;
   color: var(--text-tertiary);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHRONICLE — Hex detail narrative styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Chronicle layer fade-in */
+@keyframes chronicle-fade-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.chronicle-layer {
+  animation: chronicle-fade-in 0.4s ease both;
+}
+.chronicle-layer:nth-child(1) { animation-delay: 0.05s; }
+.chronicle-layer:nth-child(2) { animation-delay: 0.15s; }
+.chronicle-layer:nth-child(3) { animation-delay: 0.25s; }
+.chronicle-layer:nth-child(4) { animation-delay: 0.35s; }
+
+/* Chronicle section markers (The Land, The Soul, etc.) */
+.chronicle-marker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.chronicle-marker::before,
+.chronicle-marker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+.chronicle-marker span {
+  font-family: var(--font-display);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* Chronicle prose paragraphs */
+.chronicle-prose {
+  font-family: var(--font-prose);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin: 0 0 12px;
+}
+.chronicle-prose em {
+  color: var(--text-primary);
+  font-style: italic;
+}
+
+/* Exploration hook diamond glyph */
+.exploration-hook {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+  font-family: var(--font-prose);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  font-style: italic;
+  line-height: 1.6;
+}
+.exploration-hook::before {
+  content: '⟐';
+  color: var(--accent-gold);
+  font-style: normal;
+  flex-shrink: 0;
+}
+
+/* Epitaph centered quote styling */
+.epitaph-text {
+  text-align: center;
+  position: relative;
+  padding: 16px 24px;
+  font-family: var(--font-prose);
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  line-height: 1.7;
+}
+.epitaph-text::before,
+.epitaph-text::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0 auto 12px;
+}
+.epitaph-text::after {
+  margin: 12px auto 0;
+}
+
+/* Chronicle hero section */
+.chronicle-hero {
+  padding: 24px 0 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+}
+.chronicle-hero h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  color: var(--accent-gold);
+  letter-spacing: 0.06em;
+  margin: 0 0 4px;
+}
+.chronicle-hero .chronicle-subtitle {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* Inline card hover effects */
+.chronicle-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.chronicle-card:hover {
+  border-color: var(--accent-gold-dim);
+  box-shadow: 0 0 12px var(--accent-gold-glow);
+}
+
+/* Sphere pill (small inline badge) */
+.sphere-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-family: var(--font-body);
+  font-size: calc(var(--text-xs) - 1px);
+  color: var(--text-tertiary);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-subtle);
+}
+.sphere-pill .sphere-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Sidebar collapse transition */
+.hex-sidebar {
+  transition: width 0.3s ease, opacity 0.3s ease;
+  overflow: hidden;
+}
+.hex-sidebar.collapsed {
+  width: 40px;
+}
+.hex-sidebar.expanded {
+  width: 220px;
+}
