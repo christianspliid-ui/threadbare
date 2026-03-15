@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { WorldGraph } from '../../../types/graph';
+import type { HexTile } from '../../../types';
 import {
   getLocationsInHex,
   getAgentsAtLocation,
@@ -10,12 +11,15 @@ import {
   getHexFactions,
 } from '../../../engine/hexZoom';
 import type { HexCultureSummary, HexFactionSummary } from '../../../engine/hexZoom';
+import { getHexRegionData } from '../../../engine/hexRegion';
+import type { HexRegionData } from '../../../engine/hexRegion';
 
 export interface UseHexZoomDataParams {
   graph: WorldGraph;
   ascendantId: string;
   focusedHex: { col: number; row: number } | null;
   focusedLocationId: string | null;
+  tiles: HexTile[];
 }
 
 export interface UseHexZoomDataReturn {
@@ -27,6 +31,7 @@ export interface UseHexZoomDataReturn {
   hexTotalAgents: number;
   hexCultures: HexCultureSummary[];
   hexFactions: HexFactionSummary[];
+  hexRegionData: HexRegionData | null;
   focusedLocation: ReturnType<typeof graph.getNode> | null;
   focusedLocationAgents: ReturnType<typeof getAgentsAtLocation>;
 }
@@ -40,6 +45,7 @@ export function useHexZoomData({
   ascendantId,
   focusedHex,
   focusedLocationId,
+  tiles,
 }: UseHexZoomDataParams): UseHexZoomDataReturn {
   const hexLocations = useMemo(() => {
     if (!focusedHex) return [];
@@ -92,6 +98,17 @@ export function useHexZoomData({
     return getAgentsAtLocation(graph, focusedLocationId);
   }, [graph, focusedLocationId]);
 
+  const regionId = useMemo(() => {
+    if (!focusedHex) return undefined;
+    const tile = tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row);
+    return tile?.regionId;
+  }, [tiles, focusedHex]);
+
+  const hexRegionData = useMemo(() => {
+    if (!regionId || !graph) return null;
+    return getHexRegionData(graph, regionId);
+  }, [graph, regionId]);
+
   return {
     hexLocations,
     hexAgentsByLocation,
@@ -101,6 +118,7 @@ export function useHexZoomData({
     hexTotalAgents,
     hexCultures,
     hexFactions,
+    hexRegionData,
     focusedLocation,
     focusedLocationAgents,
   };

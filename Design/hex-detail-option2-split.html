@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Detail — Option 2: The Split</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&display=swap');
+
+  :root {
+    --bg-abyss: #08080c;
+    --bg-deep: #0e0e14;
+    --bg-surface: #16161e;
+    --bg-raised: #1e1e28;
+    --bg-hover: #26263a;
+    --border-subtle: #2a2520;
+    --border-dim: #1a1815;
+    --text-primary: #e8dcc8;
+    --text-secondary: #b8a890;
+    --text-tertiary: #7a7068;
+    --text-muted: #5a5450;
+    --accent-gold: #d4af37;
+    --accent-gold-dim: #a08428;
+    --accent-gold-faint: #d4af3720;
+    --font-display: 'Cinzel', serif;
+    --font-body: 'Cormorant Garamond', serif;
+    --font-prose: 'EB Garamond', serif;
+    --sphere-energy: #ffd700;
+    --sphere-time: #ff9933;
+    --sphere-force: #ff4444;
+    --sphere-matter: #8b6b4a;
+    --sphere-life: #00cc55;
+    --sphere-mind: #2288ff;
+    --sphere-spirit: #aa44dd;
+    --sphere-entropy: #5a8a7a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg-abyss);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── Breadcrumb ──────────────────────────────────────── */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-deep);
+    height: 52px;
+  }
+  .back {
+    color: var(--accent-gold);
+    font-size: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+  .breadcrumb .region-name {
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.04em;
+  }
+  .breadcrumb .subtitle {
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .breadcrumb .meta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .stat { font-size: 11px; color: var(--text-tertiary); }
+  .sight-badge {
+    font-size: 11px;
+    color: var(--accent-gold);
+    border: 1px solid var(--accent-gold);
+    padding: 2px 8px;
+    border-radius: 3px;
+  }
+
+  /* ── Three-column layout ─────────────────────────────── */
+  .page {
+    display: grid;
+    grid-template-columns: 240px 1fr 240px;
+    height: calc(100vh - 52px);
+    overflow: hidden;
+  }
+
+  /* ── Left Panel: Layered Narrative ───────────────────── */
+  .left-panel {
+    border-right: 1px solid var(--border-subtle);
+    background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss));
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-subtle) transparent;
+  }
+
+  .layer {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+
+  .layer-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .layer-icon {
+    font-size: 12px;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .layer-title {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent-gold-dim);
+  }
+
+  .layer-vignette {
+    font-family: var(--font-prose);
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--text-secondary);
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .layer-vignette:last-child { margin-bottom: 0; }
+  .layer-vignette strong {
+    font-style: normal;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  /* Resources */
+  .resources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .resource {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    background: var(--bg-raised);
+    border: 1px solid var(--border-dim);
+    padding: 2px 7px;
+    border-radius: 2px;
+  }
+
+  /* Sphere pills */
+  .sphere-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .sphere-pill {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid;
+  }
+  .sphere-pill .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+
+  /* Exploration hooks */
+  .hook-item {
+    font-family: var(--font-prose);
+    font-size: 13px;
+    color: var(--accent-gold-dim);
+    font-style: italic;
+    padding: 6px 0 6px 12px;
+    border-left: 2px solid var(--accent-gold-faint);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ── Center: Hex SVG ─────────────────────────────────── */
+  .center-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse at center, #1a150e08 0%, var(--bg-abyss) 70%);
+    position: relative;
+  }
+
+  .center-panel svg {
+    width: 100%;
+    max-width: 560px;
+    height: auto;
+  }
+
+  /* ── Right Panel: POI + Souls ────────────────────────── */
+  .right-panel {
+    border-left: 1px solid var(--border-subtle);
+    background: linear-gradient(180deg, var(--bg-deep), var(--bg-abyss));
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-subtle) transparent;
+  }
+
+  .right-section {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border-dim);
+  }
+  .right-section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: var(--font-display);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .poi-card {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-dim);
+    cursor: pointer;
+  }
+  .poi-card:last-child { border-bottom: none; }
+
+  .poi-icon-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .poi-icon {
+    font-size: 14px;
+  }
+  .poi-name {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.02em;
+  }
+  .poi-type {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+  .poi-flavor {
+    font-family: var(--font-prose);
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .soul-item {
+    display: flex;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-dim);
+    cursor: pointer;
+  }
+  .soul-item:last-child { border-bottom: none; }
+
+  .soul-pip {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .soul-name {
+    font-family: var(--font-display);
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .soul-loc {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 1px;
+  }
+  .soul-flavor {
+    font-family: var(--font-prose);
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+
+  .event-teaser {
+    font-family: var(--font-prose);
+    font-size: 12.5px;
+    color: var(--text-tertiary);
+    font-style: italic;
+    line-height: 1.55;
+  }
+
+  /* Sphere row in sidebar */
+  .sphere-row {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 3px 0;
+  }
+  .sphere-row .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .sphere-row .name {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .sphere-row .level {
+    margin-left: auto;
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+  <button class="back">←</button>
+  <div>
+    <div class="region-name">The Storm-Born Reach</div>
+    <div class="subtitle">Plateau at 8, 6 · Children of the Shifting Dry Canyons · The Iron Covenant</div>
+  </div>
+  <div class="meta">
+    <span class="stat">1 loc · 1 soul</span>
+    <span class="sight-badge">Full Sight</span>
+  </div>
+</div>
+
+<!-- Three columns -->
+<div class="page">
+
+  <!-- ── LEFT: Layered narrative ───────────────────────── -->
+  <div class="left-panel">
+
+    <!-- THE LAND -->
+    <div class="layer">
+      <div class="layer-header">
+        <span class="layer-icon">⛰</span>
+        <span class="layer-title">The Land</span>
+      </div>
+      <p class="layer-vignette">
+        A high flat expanse above the world, wind-scoured and remote. The plateau drops away into dry canyons whose walls show the strata of ages. The air is thin, carrying dust from the east and silence from everywhere else.
+      </p>
+      <div class="resources">
+        <span class="resource">Stone</span>
+        <span class="resource">Wind</span>
+        <span class="resource">Sparse grazing</span>
+        <span class="resource">Gorge water</span>
+        <span class="resource">Lichen</span>
+      </div>
+    </div>
+
+    <!-- THE SOUL -->
+    <div class="layer">
+      <div class="layer-header">
+        <span class="layer-icon" style="color: var(--sphere-energy);">✦</span>
+        <span class="layer-title">The Soul</span>
+      </div>
+      <p class="layer-vignette">
+        <strong style="color: var(--sphere-energy);">Energy</strong> crackles through the high stone — static charge building before storms, lightning strikes frequent enough that the canyon-folk say the rock remembers each bolt. At dusk, thin golden threads pulse in exposed quartz veins.
+      </p>
+      <p class="layer-vignette">
+        Beneath the charge, faint <strong style="color: var(--sphere-time);">Time</strong> pools in canyon depths — the strata glow orange at certain hours, temporal residue from an age when something here measured the turning of the heavens.
+      </p>
+      <div class="sphere-pills">
+        <span class="sphere-pill" style="color: var(--sphere-energy); border-color: #ffd70040;">
+          <span class="dot" style="background: var(--sphere-energy)"></span> Energy
+        </span>
+        <span class="sphere-pill" style="color: var(--sphere-time); border-color: #ff993340;">
+          <span class="dot" style="background: var(--sphere-time)"></span> Time
+        </span>
+        <span class="sphere-pill" style="color: var(--sphere-force); border-color: #ff444420; opacity: 0.5;">
+          <span class="dot" style="background: var(--sphere-force)"></span> Force
+        </span>
+      </div>
+    </div>
+
+    <!-- THE PEOPLE -->
+    <div class="layer">
+      <div class="layer-header">
+        <span class="layer-icon">⚑</span>
+        <span class="layer-title">The People</span>
+      </div>
+      <p class="layer-vignette">
+        The <strong>Children of the Shifting Dry Canyons</strong> claim this height — shaped by patience and territorial pride, marking boundaries in hammered iron and bone. Fluid hierarchies, personal honor over written law.
+      </p>
+      <p class="layer-vignette">
+        <strong>The Iron Covenant</strong> holds the gates. Their banners mark every approach to the Forge of Sorrow. The Covenant's grip is administrative — they tax the pass roads and maintain a garrison — but the people's loyalties run deeper than any banner.
+      </p>
+      <p class="layer-vignette">
+        At the Forge, <strong>the Hollow King</strong> operates on careful reciprocity. What he receives, he returns in kind, and nothing more.
+      </p>
+    </div>
+
+    <!-- THE RUINS -->
+    <div class="layer">
+      <div class="layer-header">
+        <span class="layer-icon" style="opacity: 0.6;">◇</span>
+        <span class="layer-title">The Ruins</span>
+      </div>
+      <p class="layer-vignette">
+        Before the Canyon people, the <strong>Star-Readers</strong> charted the heavens from this vantage. Their name survives in the region: <strong>the Storm-Born Reach</strong> — a corruption of a Star-Reader phrase meaning "where sky touches stone."
+      </p>
+      <p class="layer-vignette">
+        Shattered observatories dot the eastern edge. Star-charts etched in stone floors still glow faintly when Time-residue aligns — a dead culture's instruments measuring a sky that has moved on.
+      </p>
+      <p class="layer-vignette" style="color: var(--text-muted); font-size: 13px;">
+        They read the heavens until the heavens read them back.
+      </p>
+      <div class="hook-item">
+        The eastern observatories have not been fully explored. Something in the lowest level still draws power.
+      </div>
+      <div class="hook-item">
+        A reconstructed star-chart might reveal patterns the current sky no longer shows.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CENTER: Hex visualization ─────────────────────── -->
+  <div class="center-panel">
+    <svg viewBox="0 0 800 700" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <clipPath id="hex-clip2">
+          <polygon points="400,40 700,213 700,487 400,660 100,487 100,213" />
+        </clipPath>
+        <radialGradient id="hex-bg" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#4a4028" />
+          <stop offset="40%" stop-color="#3a3020" />
+          <stop offset="100%" stop-color="#1a1510" />
+        </radialGradient>
+        <!-- Subtle energy thread glow -->
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+
+      <!-- Hex outline -->
+      <polygon points="400,40 700,213 700,487 400,660 100,487 100,213"
+               fill="url(#hex-bg)" stroke="#d4a040" stroke-width="2" stroke-opacity="0.3" />
+
+      <!-- Subtle energy threads in the terrain -->
+      <g clip-path="url(#hex-clip2)" opacity="0.12" filter="url(#glow)">
+        <line x1="200" y1="500" x2="350" y2="380" stroke="#ffd700" stroke-width="1"/>
+        <line x1="350" y1="380" x2="500" y2="420" stroke="#ffd700" stroke-width="0.8"/>
+        <line x1="500" y1="420" x2="620" y2="350" stroke="#ffd700" stroke-width="0.6"/>
+        <circle cx="350" cy="380" r="3" fill="#ffd700"/>
+        <circle cx="500" cy="420" r="2" fill="#ffd700"/>
+        <!-- Time threads -->
+        <line x1="300" y1="550" x2="400" y2="500" stroke="#ff9933" stroke-width="0.7"/>
+        <circle cx="400" cy="500" r="2" fill="#ff9933"/>
+      </g>
+
+      <!-- Location: The Forge of Sorrow -->
+      <g>
+        <circle cx="400" cy="340" r="44" fill="#1a1a1f" stroke="#2a2520" stroke-width="1.5" />
+        <text x="400" y="348" text-anchor="middle" fill="#b8a890" font-size="28">🏚</text>
+
+        <!-- Agent count badge -->
+        <circle cx="434" cy="306" r="10" fill="#d4af37" />
+        <text x="434" y="310" text-anchor="middle" fill="#0a0a0e" font-size="11" font-weight="600">1</text>
+
+        <!-- Town indicator -->
+        <rect x="383" y="290" width="16" height="16" rx="3" fill="#00cc5580" />
+        <text x="391" y="302" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">T</text>
+
+        <!-- Location label -->
+        <text x="400" y="405" text-anchor="middle"
+              fill="#e8dcc8" font-family="'Cinzel', serif"
+              font-size="14" font-weight="600" letter-spacing="2">THE FORGE OF SORROW</text>
+        <text x="400" y="424" text-anchor="middle"
+              fill="#b8a890" font-size="13" font-family="'Cormorant Garamond', serif">Town</text>
+      </g>
+    </svg>
+  </div>
+
+  <!-- ── RIGHT: POIs, Souls, Events ────────────────────── -->
+  <div class="right-panel">
+
+    <!-- Locations -->
+    <div class="right-section">
+      <div class="section-label">Locations (1)</div>
+      <div class="poi-card">
+        <div class="poi-icon-row">
+          <span class="poi-icon">🏚</span>
+          <div>
+            <div class="poi-name">The Forge of Sorrow</div>
+            <div class="poi-type">Town · 1 soul</div>
+          </div>
+        </div>
+        <div class="poi-flavor">A settlement built around necessity — chimneys black with use, streets worn into grooves by generations of heavy boots.</div>
+      </div>
+    </div>
+
+    <!-- Souls -->
+    <div class="right-section">
+      <div class="section-label">Souls (1)</div>
+      <div class="soul-item">
+        <div class="soul-pip" style="background: var(--sphere-life)"></div>
+        <div>
+          <div class="soul-name">The Hollow King</div>
+          <div class="soul-loc">at The Forge of Sorrow</div>
+          <div class="soul-flavor">Returns what is given and nothing more — watchful, measured, waiting for a debt worth collecting.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events -->
+    <div class="right-section">
+      <div class="section-label">Stirrings</div>
+      <div class="event-teaser">
+        A dispute over forge-rights simmers at the Forge of Sorrow. The Hollow King has not yet chosen a side.
+      </div>
+    </div>
+
+    <!-- Sphere presence -->
+    <div class="right-section">
+      <div class="section-label">Sphere Presence</div>
+      <div class="sphere-row">
+        <div class="dot" style="background: var(--sphere-energy)"></div>
+        <span class="name">Energy</span>
+        <span class="level">strong</span>
+      </div>
+      <div class="sphere-row">
+        <div class="dot" style="background: var(--sphere-time)"></div>
+        <span class="name" style="color: var(--text-tertiary)">Time</span>
+        <span class="level">faint</span>
+      </div>
+      <div class="sphere-row">
+        <div class="dot" style="background: var(--sphere-force)"></div>
+        <span class="name" style="color: var(--text-tertiary)">Force</span>
+        <span class="level">trace</span>
+      </div>
+    </div>
+
+    <!-- Region context -->
+    <div class="right-section">
+      <div class="section-label">Region</div>
+      <div style="font-size: 13px; color: var(--text-secondary); font-family: var(--font-display); margin-bottom: 4px;">
+        The Storm-Born Reach
+      </div>
+      <div style="font-size: 11px; color: var(--text-tertiary); line-height: 1.5;">
+        Plateau territory · 14 hexes<br>
+        Historical claim: The Star-Readers
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>

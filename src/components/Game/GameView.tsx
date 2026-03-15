@@ -140,6 +140,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     hexTotalAgents,
     hexCultures,
     hexFactions,
+    hexRegionData,
     focusedLocation,
     focusedLocationAgents,
   } = useHexZoomData({
@@ -147,6 +148,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     ascendantId: gameState.ascendantId,
     focusedHex,
     focusedLocationId,
+    tiles,
   });
 
   // ── Location encounter data (available + active) ──
