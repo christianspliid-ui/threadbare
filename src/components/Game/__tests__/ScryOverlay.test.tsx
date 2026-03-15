@@ -3,8 +3,9 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { ScryOverlay } from '../ScryOverlay';
 import { ScryProvider } from '../contexts/ScryContext';
-import { createScryState, initializeCourt } from '../../../engine/scry';
+import { createScryState, initializeCourt, assignAgentToPosition } from '../../../engine/scry';
 import type { RetinueAgent } from '../../../engine/retinue';
+import type { Title } from '../../../types/scry';
 import { SPHERE_NAMES } from '../../../types/index';
 import type { EssencePool } from '../../../types/influence';
 
@@ -107,7 +108,7 @@ describe('ScryOverlay', () => {
 
   it('renders close button with aria-label', () => {
     renderWithContext();
-    const closeBtn = screen.getByLabelText('Close Ascendant Scry');
+    const closeBtn = screen.getByLabelText('Close Divine Court');
     expect(closeBtn).toBeInTheDocument();
   });
 
@@ -115,7 +116,7 @@ describe('ScryOverlay', () => {
     const onClose = vi.fn();
     const context = { ...baseContextValue, onClose };
     renderWithContext(context);
-    const closeBtn = screen.getByLabelText('Close Ascendant Scry');
+    const closeBtn = screen.getByLabelText('Close Divine Court');
     fireEvent.click(closeBtn);
     expect(onClose).toHaveBeenCalled();
   });
@@ -284,6 +285,43 @@ describe('ScryOverlay', () => {
 
     // Cost should be displayed
     expect(screen.getByText(/Cost:/i)).toBeInTheDocument();
+  });
+
+  it('agent picker excludes agents already assigned to a court position', () => {
+    // Assign Kalam to the apex position
+    const baseState = initializeCourt(createScryState(), 'high_house');
+    const apexPosition = baseState.positions.find(p => p.rank === 'apex')!;
+    const mockTitle: Title = {
+      id: 'title.test',
+      name: 'The Iron Sovereign',
+      rank: 'apex',
+      sphereAffinity: 'force',
+      domainAffinity: 'iron',
+      bonuses: [],
+      weaknesses: [],
+      flavorText: 'Test title',
+      generationSeed: {},
+    };
+    const stateWithKalamAssigned = assignAgentToPosition(
+      baseState, apexPosition.id, 'agent.1', mockTitle, 30, 1
+    );
+
+    const context = {
+      ...baseContextValue,
+      scryState: stateWithKalamAssigned,
+    };
+
+    renderWithContext(context);
+
+    // Click an empty inner position (tier 2 minimum — both agents eligible by tier)
+    const emptySlots = screen.getAllByText(/Empty/i);
+    fireEvent.click(emptySlots[0]);
+
+    expect(screen.getByText('Choose Agent')).toBeInTheDocument();
+    // Tattersail has no position — should appear
+    expect(screen.getByText('Tattersail')).toBeInTheDocument();
+    // Kalam is already in apex — must NOT appear
+    expect(screen.queryByText('Kalam')).not.toBeInTheDocument();
   });
 
   it('title picker shows insufficient essence message if needed', () => {
