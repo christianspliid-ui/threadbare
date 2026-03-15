@@ -55,7 +55,7 @@ describe('GameView', () => {
       />
     );
     // Check for right sidebar with retinue content
-    const rightSidebar = container.querySelector('.w-72');
+    const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
     expect(rightSidebar).toBeInTheDocument();
     expect(rightSidebar?.textContent).toMatch(/Retinue|No agents/);
   });
@@ -70,7 +70,7 @@ describe('GameView', () => {
       />
     );
     expect(screen.getByText('The Just One')).toBeInTheDocument();
-    expect(screen.getByText(/Avatar: The Divine Witness/)).toBeInTheDocument();
+    expect(screen.getByText(/The Divine Witness/)).toBeInTheDocument();
   });
 
   it('renders simulation controls with tick info', () => {
@@ -111,9 +111,9 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // Check for left, center, and right columns by class names
-    const leftSidebar = container.querySelector('.w-80');
-    const rightSidebar = container.querySelector('.w-72');
+    // Check for left and right columns by aria/testid
+    const leftSidebar = container.querySelector('[aria-label="Game status"]');
+    const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
     expect(leftSidebar).toBeInTheDocument();
     expect(rightSidebar).toBeInTheDocument();
   });

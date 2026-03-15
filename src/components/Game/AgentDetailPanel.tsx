@@ -4,8 +4,18 @@ import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 
+/** Activity summary for unified action display */
+export interface ActivitySummary {
+  actionName: string;
+  stepLabel: string; // e.g. "Step 2/3" or "3/5 ticks"
+  progressFraction: number; // 0-1 for progress bar
+  isContested: boolean;
+  opponentName?: string;
+}
+
 interface AgentDetailPanelProps {
   detail: AgentDetail;
+  activity?: ActivitySummary | null;
   onBack: () => void;
   onViewPsyche: () => void;
   onIntervene: () => void;
@@ -43,6 +53,7 @@ const DOMAINS_GRID: ReachDomain[][] = [
 
 export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   detail,
+  activity,
   onBack,
   onViewPsyche,
   onIntervene,
@@ -338,6 +349,35 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </button>
         </div>
       </div>
+
+      {/* Activity Section */}
+      {activity && (
+        <div className="px-4 py-2 border-t border-amber-900/20">
+          <div className="text-xs text-amber-400/50 mb-1">Activity</div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-amber-100 font-medium truncate flex-1">
+              {activity.actionName}
+            </span>
+            <span className="text-xs text-amber-400/60 whitespace-nowrap">
+              {activity.stepLabel}
+            </span>
+          </div>
+          <div className="mt-1 h-1 bg-stone-700 rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-300"
+              style={{
+                width: `${Math.round(activity.progressFraction * 100)}%`,
+                backgroundColor: activity.isContested ? '#dc2626' : '#d97706',
+              }}
+            />
+          </div>
+          {activity.isContested && activity.opponentName && (
+            <div className="text-xs text-red-400/70 mt-0.5">
+              Contested by {activity.opponentName}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Action Row Footer */}
       <div className="flex gap-2 px-4 py-3 bg-stone-800/50 border-t border-amber-900/30 flex-shrink-0">

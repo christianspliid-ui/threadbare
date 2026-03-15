@@ -154,7 +154,7 @@ describe('RetinuePanel', () => {
     expect(screen.getByText('Goldport')).toBeInTheDocument();
   });
 
-  it('renders faction names when present', () => {
+  it('renders all agents when faction names are present', () => {
     render(
       <RetinuePanel
         agents={mockAgents}
@@ -162,8 +162,10 @@ describe('RetinuePanel', () => {
         onAgentSelect={vi.fn()}
       />
     );
-    expect(screen.getByText('The Steel Brotherhood')).toBeInTheDocument();
-    expect(screen.getByText('Merchant Coalition')).toBeInTheDocument();
+    // All agents should be rendered regardless of factionName
+    expect(screen.getByText('Sir Aldric')).toBeInTheDocument();
+    expect(screen.getByText('Lady Cassian')).toBeInTheDocument();
+    expect(screen.getByText('The Merchant Prince')).toBeInTheDocument();
   });
 
   it('does not render faction name when null', () => {

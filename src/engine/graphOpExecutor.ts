@@ -106,6 +106,9 @@ function executeSingleOp(
       case 'update_edge':
         return executeUpdateEdge(graph, op);
 
+      case 'apply_influence':
+        return executeApplyInfluence(graph, op, ctx);
+
       default:
         return {
           op,
@@ -313,4 +316,38 @@ function executeUpdateEdge(graph: WorldGraph, op: GraphOp): GraphOpResult {
     op,
     success: true,
   };
+}
+
+/**
+ * Apply a decaying divine influence entry to a target actor node.
+ * Appends to any existing divineInfluences without replacing them.
+ * Fail-soft: returns error result if target node doesn't exist.
+ */
+function executeApplyInfluence(
+  graph: WorldGraph,
+  op: GraphOp,
+  ctx: GraphOpContext,
+): GraphOpResult {
+  if (!op.influence) {
+    return { op, success: false, error: 'apply_influence op missing influence payload' };
+  }
+
+  const targetId = resolveRef(op.target ?? '$target', ctx);
+  const node = graph.getNode(targetId);
+  if (!node) {
+    return { op, success: false, error: `Target node ${targetId} not found` };
+  }
+
+  const existing: unknown[] = (node.properties?.divineInfluences as unknown[]) ?? [];
+  const entry = {
+    id: `influence-${++opCounter}`,
+    ...op.influence,
+    tickApplied: ctx.tick ?? 0,
+  };
+
+  graph.updateNode(targetId, {
+    properties: { divineInfluences: [...existing, entry] },
+  });
+
+  return { op, success: true };
 }

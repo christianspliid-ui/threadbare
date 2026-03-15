@@ -54,7 +54,7 @@ describe('GameView Progressive Disclosure (AgentInfoCard + AgentProfileModal)', 
 
   it('renders retinue panel by default (no agent selected)', () => {
     const { container } = render(<GameView {...props} />);
-    const rightSidebar = container.querySelector('.w-72');
+    const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
     expect(rightSidebar).toBeInTheDocument();
     // Should show retinue panel or "No agents" message initially
     expect(rightSidebar?.textContent).toMatch(/Retinue|No agents/);

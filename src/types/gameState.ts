@@ -13,6 +13,7 @@ import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
+import type { UnifiedAction } from './unifiedAction';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -87,11 +88,14 @@ export interface GameState {
   familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
   culturalInsightMap: Map<string, number>;  // culture ID -> insight score (0.0-1.0)
 
-  // Encounters (agent growth narratives)
+  /** @deprecated Replaced by unifiedActions. Kept for backward compatibility with existing tests. */
   encounterProgress: EncounterProgress[];
 
-  // CRUD Actions (unified with encounters)
+  /** @deprecated Replaced by unifiedActions. Kept for backward compatibility with existing tests. */
   actionsInProgress: ActionInProgress[];
+
+  // Unified Actions (replaces actionsInProgress + encounterProgress)
+  unifiedActions: UnifiedAction[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

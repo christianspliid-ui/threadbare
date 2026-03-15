@@ -108,7 +108,7 @@ describe('Tooltip linked chains', () => {
     act(() => { vi.advanceTimersByTime(200); });
 
     const link = screen.getByRole('tooltip').querySelector('[data-tooltip-link]');
-    expect(link).toHaveStyle('color: #fbbf24');
+    expect(link).toHaveStyle('color: var(--accent-gold)');
     expect(link).toHaveStyle('text-decoration: underline');
     expect(link).toHaveStyle('cursor: pointer');
   });
