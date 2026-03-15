@@ -12,6 +12,8 @@
 import type { SphereName, TerrainType, CosmologyProfile } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { CultureIdentity } from '../types/culture';
+import type { ReachDomain } from '../types/traits';
+import { REACH_DOMAINS } from '../types/traits';
 import {
   CULTURE_COUNT,
   CULTURE_STRENGTH_INDIVIDUAL,
@@ -94,6 +96,26 @@ function selectSpheres(rng: () => number, cosmology: CosmologyProfile): SphereNa
 }
 
 /**
+ * Compose reach preferences by summing reachWeights from foundation, sphere, and biome modifiers,
+ * then clamping each domain to [-1, 1].
+ */
+function composeReachPreferences(
+  foundation: ReturnType<typeof getFoundationModifier>,
+  spheres: ReturnType<typeof getCreationSphereModifier>[],
+  biome: ReturnType<typeof getBiomeModifier>,
+): Record<ReachDomain, number> {
+  const result = {} as Record<ReachDomain, number>;
+  for (const domain of REACH_DOMAINS) {
+    const sum =
+      (foundation?.reachWeights[domain] ?? 0) +
+      spheres.reduce((acc, s) => acc + (s?.reachWeights[domain] ?? 0), 0) +
+      (biome?.reachWeights[domain] ?? 0);
+    result[domain] = Math.max(-1, Math.min(1, sum));
+  }
+  return result;
+}
+
+/**
  * Compose a culture identity from foundation + creation sphere + biome modifiers.
  * Merges keyword pools, material vocabulary, metaphor palettes, and trait seed IDs.
  */
@@ -133,6 +155,7 @@ export function composeCultureIdentity(
     metaphorPalette: mergeUnique(foundationMetaphors, biomeMetaphors),
     formativeTraitSeedIds: mergeUnique(sphereFormative),
     behavioralTraitSeedIds: mergeUnique(sphereBehavioral),
+    reachPreferences: composeReachPreferences(foundation, sphereMods, biomeMod),
   };
 }
 
