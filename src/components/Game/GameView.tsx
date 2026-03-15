@@ -35,6 +35,8 @@ import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
 import { HexFlavorPanel } from './HexFlavorPanel';
 import { HexPoiPanel } from './HexPoiPanel';
+import { HexSidebar } from './HexSidebar';
+import { HexChronicle } from './HexChronicle';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
@@ -410,49 +412,43 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                     sphereInfluence={hexSphereInfluence}
                     cultures={hexCultures}
                     factions={hexFactions}
+                    regionName={hexRegionData?.regionName}
                     onBack={handleBackToWorld}
                     data-testid="hex-breadcrumb"
                   />
                   <div className="flex-1 flex overflow-hidden">
-                    {/* Left: Flavor text */}
-                    <div className="flex-shrink-0 overflow-hidden" style={{ width: '220px' }}>
-                      <HexFlavorPanel
-                        terrain={hexTerrain}
-                        lineOfSight={hexLineOfSight}
-                        sphereInfluence={hexSphereInfluence}
-                        cultures={hexCultures}
-                        factions={hexFactions}
-                        locationCount={hexLocations.length}
-                        agentCount={hexTotalAgents}
-                      />
-                    </div>
+                    {/* Left: Collapsible stats sidebar */}
+                    <HexSidebar
+                      terrain={hexTerrain}
+                      hexCol={focusedHex.col}
+                      hexRow={focusedHex.row}
+                      sphereInfluence={hexSphereInfluence}
+                      regionData={hexRegionData}
+                      locations={hexLocations}
+                      agentsByLocation={hexAgentsByLocation}
+                      lineOfSight={hexLineOfSight}
+                      cultures={hexCultures}
+                      factions={hexFactions}
+                    />
 
-                    {/* Center: Hex zoom SVG */}
-                    <div className="flex-1 flex items-center justify-center overflow-hidden">
-                      <HexZoomView
-                        locations={hexLocations}
-                        agentsByLocation={hexAgentsByLocation}
-                        connections={hexConnections}
-                        lineOfSight={hexLineOfSight}
-                        terrain={hexTerrain}
-                        cultures={hexCultures}
-                        factions={hexFactions}
-                        onLocationClick={handleLocationClick}
-                        onLocationDoubleClick={handleLocationDoubleClickWithClose}
-                        data-testid="hex-zoom-view"
-                      />
-                    </div>
-
-                    {/* Right: Points of interest list */}
-                    <div className="flex-shrink-0 overflow-hidden" style={{ width: '220px' }}>
-                      <HexPoiPanel
-                        locations={hexLocations}
-                        agentsByLocation={hexAgentsByLocation}
-                        lineOfSight={hexLineOfSight}
-                        onLocationClick={handleLocationClick}
-                        onLocationDoubleClick={handleLocationDoubleClickWithClose}
-                      />
-                    </div>
+                    {/* Main: Narrative chronicle */}
+                    <HexChronicle
+                      terrain={hexTerrain}
+                      hexCol={focusedHex.col}
+                      hexRow={focusedHex.row}
+                      lineOfSight={hexLineOfSight}
+                      sphereInfluence={hexSphereInfluence}
+                      cultures={hexCultures}
+                      factions={hexFactions}
+                      locations={hexLocations}
+                      agentsByLocation={hexAgentsByLocation}
+                      regionData={hexRegionData}
+                      onLocationClick={handleLocationClick}
+                      onLocationDoubleClick={handleLocationDoubleClickWithClose}
+                      onAgentClick={handleAgentSelect}
+                      graph={gameState.graph}
+                      seed={gameState.seed}
+                    />
                   </div>
                 </div>
               );
