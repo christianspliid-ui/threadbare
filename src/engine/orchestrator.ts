@@ -7,6 +7,7 @@
  * returns partial updates out. The orchestrator merges updates.
  */
 import type { GameState, TickEvent } from '../types/gameState';
+import type { WorldGraph } from './graph';
 import { STEALTH_DECAY_PER_TICK } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
@@ -65,6 +66,7 @@ import { phaseColocationDetection } from './phaseColocationDetection';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
+import { phaseAmbitionProgress } from './ambitionTick';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -106,6 +108,13 @@ export function phaseDoom(state: GameState): Partial<GameState> {
       type: 'doom_escalation',
       message: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
       significance: 0.9,
+      notification: {
+        channel: 'popup',
+        popup: {
+          title: stageName,
+          body: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
+        },
+      },
     });
   }
 
@@ -125,6 +134,14 @@ const CRUD_ACTION_CHANCE = 0.35;
 
 /** Notable action interval — every N ticks, force one high-significance event */
 const NOTABLE_ACTION_INTERVAL = 5;
+
+function getActorHexCoords(graph: WorldGraph, actorId: string): { col: number; row: number } | undefined {
+  const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
+  if (locEdges.length === 0) return undefined;
+  const locNode = graph.getNode(locEdges[0].target);
+  if (!locNode?.properties?.hexCol) return undefined;
+  return { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number };
+}
 
 /** @deprecated Replaced by phaseIdleSelection + phaseUnifiedActionProgress. No longer called in the tick pipeline. */
 export function phaseAgentActions(state: GameState): Partial<GameState> {
@@ -176,6 +193,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
               message: `${actor.name} begins ${template.name} at ${locationName}.`,
               sphere: template.sphereAffinity ?? (SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName),
               significance: 0.7,
+              hexCoords: getActorHexCoords(state.graph, actor.id),
             });
           }
         } catch {
@@ -257,6 +275,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
                 message: `${actor.name} begins ${template.name} at ${locationName}.`,
                 sphere: (SPHERE_NAMES.includes(template.reach as any) ? template.reach : SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)]) as SphereName,
                 significance: 0.5,
+                hexCoords: getActorHexCoords(state.graph, actor.id),
               });
             }
           } catch {
@@ -286,6 +305,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
         message: prose.text,
         sphere,
         significance,
+        hexCoords: getActorHexCoords(state.graph, actor.id),
       });
 
       // Sphere influence
@@ -320,6 +340,7 @@ export function phaseAgentActions(state: GameState): Partial<GameState> {
       message: prose.text,
       sphere,
       significance: 0.85,
+      hexCoords: getActorHexCoords(state.graph, notableActor.id),
     });
   }
 
@@ -466,6 +487,7 @@ export function phaseActionProgress(state: GameState): Partial<GameState> {
         message: `${actorNode?.name ?? 'An agent'} ${isSuccess ? 'completed' : 'failed'} ${templateNode?.name ?? 'an action'}.`,
         sphere: SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName,
         significance: isSuccess ? 0.6 : 0.4,
+        hexCoords: getActorHexCoords(state.graph, updated.actorId),
       });
     }
 
@@ -735,6 +757,7 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         type: 'rival_action',
         message: actionDesc,
         significance: 0.7,
+        notification: { channel: 'toast' },
       });
     }
   }
@@ -934,6 +957,10 @@ export function phaseMandate(state: GameState): Partial<GameState> {
       type: 'mandate_progress',
       message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
       significance: 1.0,
+      notification: {
+        channel: 'alert',
+        icon: 'mandate',
+      },
     });
   }
 
@@ -955,6 +982,13 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
         type: 'phase_change',
         message: 'The Unmaking begins. The world trembles.',
         significance: 1.0,
+        notification: {
+          channel: 'popup',
+          popup: {
+            title: 'The Unmaking',
+            body: 'The Unmaking begins. The world trembles.',
+          },
+        },
       }],
     };
   }
@@ -1077,6 +1111,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.6: Divine Influence Decay
   s = { ...s, ...phaseDivineInfluenceDecay(s) };
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
+  s = { ...s, ...phaseAmbitionProgress(s) };
+  phaseEventCounts['ambition_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
