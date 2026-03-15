@@ -1,0 +1,299 @@
+/**
+ * Unified Action Resolution — progress, collect, resolve, and execute
+ * unified actions during the tick pipeline.
+ *
+ * These functions implement Phases 1-6 of the unified action pipeline:
+ *   Phase 1: Progress all active actions (+1 stepProgress)
+ *   Phase 2: Collect actions whose current step completed this tick
+ *   Phase 3: Contestation detection and resolution (Sprint 4)
+ *   Phase 4+5: Resolve and execute GraphOps
+ *   Phase 6: Advance completed steps or mark action resolved
+ *
+ * Phase 7 (idle selection) is in a separate module (Sprint 3E).
+ *
+ * All functions are pure or take explicit state — no hidden globals.
+ */
+
+import type { GameState, TickEvent } from '../types/gameState';
+import type {
+  UnifiedAction,
+  UnifiedActionTemplate,
+  StepOutcome,
+} from '../types/unifiedAction';
+import type { GraphOp } from '../types/graphOp';
+import {
+  progressUnifiedAction,
+  isStepComplete,
+  advanceStep,
+  sortByPriority,
+} from './unifiedActionLifecycle';
+import { computeCapability } from './domainCapability';
+import { resolveAction } from './resolution';
+import { executeGraphOps } from './graphOpExecutor';
+import { emitTrace } from './traceBuffer';
+import {
+  detectContestations,
+  resolveContestationPair,
+} from './contestation';
+
+// ─── Phase 1: Progress ──────────────────────────────────────────
+
+/**
+ * Increment stepProgress by 1 for all active (unresolved) unified actions.
+ * Returns a new array — no mutation.
+ */
+export function progressAllActions(
+  actions: readonly UnifiedAction[],
+): UnifiedAction[] {
+  return actions.map((a) => progressUnifiedAction(a));
+}
+
+// ─── Phase 2: Collect Completions ───────────────────────────────
+
+/**
+ * Find all actions whose current step completed this tick
+ * (stepProgress >= stepDuration after progression).
+ */
+export function collectCompletions(
+  actions: readonly UnifiedAction[],
+): UnifiedAction[] {
+  return actions.filter((a) => !a.resolved && isStepComplete(a));
+}
+
+// ─── Phase 4+5: Resolve and Execute ─────────────────────────────
+
+/**
+ * Resolve a single uncontested action step.
+ *
+ * Uses the existing resolution system: computes domain capability
+ * for the step's reach, then resolves via sigmoid → d100.
+ *
+ * Returns the step outcome and which GraphOps to execute.
+ */
+export function resolveUncontestedStep(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  state: GameState,
+  rng: () => number,
+): { outcome: StepOutcome; opsToExecute: readonly GraphOp[] } {
+  const step = template.steps[action.currentStep];
+  if (!step) {
+    // Defensive — should never happen if template is valid
+    return { outcome: 'failure', opsToExecute: [] };
+  }
+
+  // Divine actions (difficulty 0) always succeed
+  if (step.difficulty === 0) {
+    return { outcome: 'success', opsToExecute: step.onSuccess };
+  }
+
+  // Compute actor's domain capability for this step's reach
+  const capability = computeCapability(state.graph, action.actorId, step.reach);
+
+  // Sphere factor: small bonus if actor's location has sphere influence
+  // (simplified — full implementation would check location sphere influence)
+  const sphereFactor = 0;
+
+  // Compute probability and resolve
+  const probability = Math.min(0.95, Math.max(0.05,
+    capability + sphereFactor - step.difficulty,
+  ));
+
+  // Use seeded RNG for the d100 roll (1-100 range)
+  const roll = Math.floor(rng() * 100) + 1;
+  const result = resolveAction(probability, roll);
+
+  const isSuccess = result.outcome === 'success' || result.outcome === 'critical_success';
+  const outcome: StepOutcome = isSuccess ? 'success' : 'failure';
+  const ops = isSuccess ? step.onSuccess : step.onFailure;
+
+  return { outcome, opsToExecute: ops };
+}
+
+/**
+ * Execute the resolution result for a completed step:
+ * 1. Execute the step's GraphOps
+ * 2. Advance the action to the next step or mark resolved
+ * 3. Generate tick events and traces
+ *
+ * Returns the updated action and any events generated.
+ */
+export function executeStepResult(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  outcome: StepOutcome,
+  ops: readonly GraphOp[],
+  state: GameState,
+  rng: () => number,
+  tick: number,
+): { updatedAction: UnifiedAction; events: TickEvent[] } {
+  const events: TickEvent[] = [];
+
+  // Execute GraphOps (fail-soft)
+  if (ops.length > 0) {
+    const ctx = {
+      actorId: action.actorId,
+      targetId: action.targetId,
+      locationId: action.targetId, // default — caller can override
+      tick,
+    };
+
+    try {
+      executeGraphOps(state.graph, [...ops], ctx);
+    } catch {
+      // Fail-soft: log but don't crash
+    }
+  }
+
+  // Advance step or complete action
+  const updatedAction = advanceStep(action, outcome, template, rng);
+
+  // Emit trace
+  emitTrace({
+    id: 0,
+    category: 'action_execution',
+    tick,
+    timestamp: Date.now(),
+    summary: `${template.name} step ${action.currentStep} ${outcome}`,
+    agentId: action.actorId,
+    templateId: action.templateId,
+    actorId: action.actorId,
+    outcome,
+    opsApplied: outcome === 'success' ? ops.length : 0,
+    opsFailed: outcome === 'failure' ? ops.length : 0,
+    duration: action.stepDuration,
+  } as any);
+
+  // Generate tick event
+  const actorNode = state.graph.getNode(action.actorId);
+  const actorName = actorNode?.name ?? 'An agent';
+
+  if (updatedAction.resolved) {
+    events.push({
+      id: `ua_${action.actionId}_resolved`,
+      tick,
+      type: 'agent_action_resolved',
+      message: `${actorName} ${updatedAction.outcome === 'success' ? 'completed' : 'failed'} ${template.name}.`,
+      significance: updatedAction.outcome === 'success' ? 0.6 : 0.4,
+    });
+  } else {
+    // Multi-step: report step progression
+    const stepNum = action.currentStep + 1;
+    const totalSteps = template.steps.length;
+    events.push({
+      id: `ua_${action.actionId}_step${stepNum}`,
+      tick,
+      type: 'agent_action_resolved',
+      message: `${actorName} ${outcome === 'success' ? 'progresses' : 'stumbles'} in ${template.name} (step ${stepNum}/${totalSteps}).`,
+      significance: 0.5,
+    });
+  }
+
+  return { updatedAction, events };
+}
+
+// ─── Orchestrator Phase: Unified Action Progress ────────────────
+
+/**
+ * Combined orchestrator phase that replaces phaseActionProgress and
+ * phaseEncounterProgression for actions in state.unifiedActions.
+ *
+ * Executes Phases 1-6 of the unified pipeline:
+ * 1. Progress all active actions
+ * 2. Collect completing actions
+ * 3. Sort by priority (scale → FIFO)
+ * 4-5. Resolve and execute each
+ * 6. Advance or complete
+ *
+ * Returns partial GameState with updated unifiedActions and tickEvents.
+ */
+export function phaseUnifiedActionProgress(
+  state: GameState,
+  templates: readonly UnifiedActionTemplate[],
+  rng: () => number,
+): Partial<GameState> {
+  const events: TickEvent[] = [];
+
+  // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
+  let actions = progressAllActions(state.unifiedActions ?? []);
+
+  // Phase 2: Collect completions
+  const completing = collectCompletions(actions);
+
+  // Phase 3: Contestation detection and resolution
+  const contestPairs = detectContestations(completing, templates);
+  const contestedIds = new Set<string>();
+
+  for (const pair of contestPairs) {
+    const attacker = actions.find((a) => a.actionId === pair.attackerActionId);
+    const defender = actions.find((a) => a.actionId === pair.defenderActionId);
+    if (!attacker || !defender) continue;
+
+    const atkTemplate = templates.find((t) => t.id === attacker.templateId);
+    const defTemplate = templates.find((t) => t.id === defender.templateId);
+    if (!atkTemplate || !defTemplate) continue;
+
+    const contestResult = resolveContestationPair(
+      attacker, defender, atkTemplate, defTemplate, state, rng,
+    );
+
+    // Apply attacker outcome
+    const atkOps = contestResult.attackerOutcome === 'success'
+      ? (atkTemplate.steps[attacker.currentStep]?.onSuccess ?? [])
+      : (atkTemplate.steps[attacker.currentStep]?.onFailure ?? []);
+    const { updatedAction: updAtk, events: atkEvents } = executeStepResult(
+      attacker, atkTemplate, contestResult.attackerOutcome, atkOps, state, rng, state.tick,
+    );
+
+    // Apply defender outcome
+    const defOps = contestResult.defenderOutcome === 'success'
+      ? (defTemplate.steps[defender.currentStep]?.onSuccess ?? [])
+      : (defTemplate.steps[defender.currentStep]?.onFailure ?? []);
+    const { updatedAction: updDef, events: defEvents } = executeStepResult(
+      defender, defTemplate, contestResult.defenderOutcome, defOps, state, rng, state.tick,
+    );
+
+    // Replace in actions array
+    actions = actions.map((a) => {
+      if (a.actionId === updAtk.actionId) return updAtk;
+      if (a.actionId === updDef.actionId) return updDef;
+      return a;
+    });
+
+    events.push(...atkEvents, ...defEvents);
+    contestedIds.add(pair.attackerActionId);
+    contestedIds.add(pair.defenderActionId);
+  }
+
+  // Phase 3b: Sort remaining (uncontested) completions by priority
+  const uncontested = completing.filter((a) => !contestedIds.has(a.actionId));
+  const sorted = sortByPriority(uncontested);
+
+  // Phase 4-6: Resolve and execute uncontested actions
+  for (const completing_action of sorted) {
+    const template = templates.find((t) => t.id === completing_action.templateId);
+    if (!template) continue; // fail-soft: skip unknown template
+
+    // Resolve step
+    const { outcome, opsToExecute } = resolveUncontestedStep(
+      completing_action, template, state, rng,
+    );
+
+    // Execute and advance
+    const { updatedAction, events: stepEvents } = executeStepResult(
+      completing_action, template, outcome, opsToExecute, state, rng, state.tick,
+    );
+
+    // Replace action in array
+    actions = actions.map((a) =>
+      a.actionId === updatedAction.actionId ? updatedAction : a,
+    );
+
+    events.push(...stepEvents);
+  }
+
+  return {
+    unifiedActions: actions,
+    tickEvents: [...state.tickEvents, ...events],
+  };
+}

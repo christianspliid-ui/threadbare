@@ -217,7 +217,8 @@ describe('buildValueOverlay', () => {
       },
     ];
     const overlay = buildValueOverlay(baseProfile, influences);
-    expect(overlay.courage_prudence).toBeCloseTo(0.42);
+    // dream initialStrength=0.5; 0.3 + 0.12*0.5 = 0.36
+    expect(overlay.courage_prudence).toBeCloseTo(0.36);
     expect(overlay.ambition_contentment).toBe(0.5);
   });
 
@@ -280,7 +281,8 @@ describe('buildValueOverlay', () => {
       },
     ];
     const overlay = buildValueOverlay(baseProfile, influences);
-    expect(overlay.courage_prudence).toBeCloseTo(0.25);
+    // dream initialStrength=0.5: 0.1*0.5=0.05; persuade initialStrength=0.7: 0.15*0.7=0.105; total=0.155
+    expect(overlay.courage_prudence).toBeCloseTo(0.155);
   });
 
   it('does not mutate original profile', () => {

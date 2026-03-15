@@ -12,8 +12,8 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 9 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(9);
+  it('TRACE_CATEGORIES has 10 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(10);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');
@@ -22,6 +22,7 @@ describe('TraceEntry types', () => {
     expect(TRACE_CATEGORIES).toContain('encounter_resolution');
     expect(TRACE_CATEGORIES).toContain('familiarity_change');
     expect(TRACE_CATEGORIES).toContain('intervention_effect');
+    expect(TRACE_CATEGORIES).toContain('action_execution');
     expect(TRACE_CATEGORIES).toContain('modifier_resolution');
   });
 
