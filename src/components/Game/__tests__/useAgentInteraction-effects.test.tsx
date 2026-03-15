@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useAgentInteraction } from '../hooks/useAgentInteraction';
 import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
@@ -55,7 +56,7 @@ const createMockGameState = (): GameState => {
 
 describe('useAgentInteraction - Effects Integration', () => {
   let mockGameState: GameState;
-  let setGameState: ReturnType<typeof vi.fn>;
+  let setGameState: Dispatch<SetStateAction<GameState>>;
   let mockArchetype: AscendantArchetype;
 
   beforeEach(() => {
