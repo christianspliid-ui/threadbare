@@ -17,22 +17,37 @@
 
 import type { WorldGraph } from './graph';
 import type { ActionCandidate } from '../types/agent';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { UnifiedAction, UnifiedActionTemplate } from '../types/unifiedAction';
+
+// ─── Constants ──────────────────────────────────────────────────
+
+/**
+ * Score bonus applied to defensive candidates when a hostile action
+ * targets the agent's location. Substantial but not guaranteed to win
+ * selection — the axiological profile still drives the final choice.
+ */
+export const THREAT_REACTION_BONUS = 0.5;
 
 // ─── Public API ─────────────────────────────────────────────────
 
 /**
  * Generate ActionCandidates from unified action templates for an agent at a location.
  *
- * Returns candidates with score=0 — the selection pipeline fills scores.
+ * Returns candidates with score=0 (or boosted if threat-reactive).
  * Cosmic and regional scale templates are skipped for agent-source actions
  * (those are player/divine only).
+ *
+ * Threat-reactive scoring: if any active (unresolved) action by another
+ * actor targets this location, and a candidate template declares
+ * `contestsWith` that action's template, the candidate gets a score
+ * bonus of THREAT_REACTION_BONUS.
  */
 export function generateUnifiedCandidates(
   graph: WorldGraph,
   actorId: string,
   locationId: string,
   templates: readonly UnifiedActionTemplate[],
+  activeActions: readonly UnifiedAction[] = [],
 ): ActionCandidate[] {
   const actorNode = graph.getNode(actorId);
   if (!actorNode) return [];
@@ -42,6 +57,14 @@ export function generateUnifiedCandidates(
 
   const actorType = actorNode.properties.actorType as string | undefined;
   const subtype = (locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined;
+
+  // Collect template IDs of active hostile actions at this location (by other actors)
+  const threatTemplateIds = new Set<string>();
+  for (const action of activeActions) {
+    if (!action.resolved && action.actorId !== actorId && action.targetId === locationId) {
+      threatTemplateIds.add(action.templateId);
+    }
+  }
 
   const candidates: ActionCandidate[] = [];
 
@@ -65,13 +88,24 @@ export function generateUnifiedCandidates(
       }
     }
 
+    // Threat-reactive bonus: if this template contestsWith any active threat
+    let bonus = 0;
+    if (template.contestsWith && threatTemplateIds.size > 0) {
+      for (const threatId of threatTemplateIds) {
+        if (template.contestsWith.includes(threatId)) {
+          bonus = THREAT_REACTION_BONUS;
+          break;
+        }
+      }
+    }
+
     // Create candidate — target is always the location
     // (Social targeting for encounter-derived templates is deferred to Sprint 5)
     candidates.push({
       templateId: template.id,
       targetId: locationId,
       domain: template.reach,
-      score: 0,
+      score: bonus,
       motivations: template.motivations,
     });
   }

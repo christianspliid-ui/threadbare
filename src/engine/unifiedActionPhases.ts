@@ -94,6 +94,7 @@ export function phaseIdleSelection(
     if (roll < ACTION_ATTEMPT_CHANCE) {
       const candidates = generateUnifiedCandidates(
         state.graph, actor.id, locationId, UNIFIED_ACTION_TEMPLATES,
+        state.unifiedActions ?? [],
       );
 
       if (candidates.length > 0) {

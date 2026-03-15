@@ -5,8 +5,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { generateUnifiedCandidates } from '../unifiedCandidates';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import { generateUnifiedCandidates, THREAT_REACTION_BONUS } from '../unifiedCandidates';
+import type { UnifiedAction, UnifiedActionTemplate } from '../../types/unifiedAction';
 import { WorldGraph } from '../graph';
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -201,5 +201,116 @@ describe('generateUnifiedCandidates', () => {
 
     const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
     expect(result).toHaveLength(1);
+  });
+});
+
+// ─── Threat-Reactive Scoring Tests ──────────────────────────────
+
+function makeThreatAction(overrides: Partial<UnifiedAction> = {}): UnifiedAction {
+  return {
+    actionId: 'threat-1',
+    actorId: 'actor-enemy',
+    templateId: 'siege.attack',
+    targetId: 'loc-1',
+    scale: 'local',
+    source: 'agent',
+    startTick: 5,
+    currentStep: 0,
+    stepProgress: 1,
+    stepDuration: 3,
+    resolved: false,
+    stepOutcomes: [],
+    ...overrides,
+  };
+}
+
+describe('threat-reactive candidate scoring', () => {
+  it('no active threats → all candidates scored 0', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+      makeTemplate({ id: 'trade.buy' }),
+    ];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, []);
+    expect(result).toHaveLength(2);
+    expect(result[0].score).toBe(0);
+    expect(result[1].score).toBe(0);
+  });
+
+  it('active siege at location → defensive candidate gets bonus', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+      makeTemplate({ id: 'trade.buy' }),
+    ];
+
+    const activeActions = [makeThreatAction()];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, activeActions);
+    expect(result).toHaveLength(2);
+
+    const defend = result.find(c => c.templateId === 'defend.garrison')!;
+    const trade = result.find(c => c.templateId === 'trade.buy')!;
+
+    expect(defend.score).toBe(THREAT_REACTION_BONUS);
+    expect(trade.score).toBe(0);
+  });
+
+  it('bonus does not apply to unrelated actions', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+      makeTemplate({ id: 'counter.spy', contestsWith: ['espionage.infiltrate'] }),
+    ];
+
+    // Threat is siege.attack, not espionage.infiltrate
+    const activeActions = [makeThreatAction({ templateId: 'siege.attack' })];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, activeActions);
+    const defend = result.find(c => c.templateId === 'defend.garrison')!;
+    const counter = result.find(c => c.templateId === 'counter.spy')!;
+
+    expect(defend.score).toBe(THREAT_REACTION_BONUS);
+    expect(counter.score).toBe(0); // doesn't contest siege.attack
+  });
+
+  it('threat at different location → no bonus', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+    ];
+
+    // Threat targets loc-2, not loc-1
+    const activeActions = [makeThreatAction({ targetId: 'loc-2' })];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, activeActions);
+    expect(result[0].score).toBe(0);
+  });
+
+  it('resolved threat → no bonus', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+    ];
+
+    // Threat is resolved (already completed)
+    const activeActions = [makeThreatAction({ resolved: true })];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, activeActions);
+    expect(result[0].score).toBe(0);
+  });
+
+  it('own action does not count as threat', () => {
+    const graph = makeGraph();
+    const templates = [
+      makeTemplate({ id: 'defend.garrison', contestsWith: ['siege.attack'] }),
+    ];
+
+    // The threat is by actor-1 themselves — should not self-threaten
+    const activeActions = [makeThreatAction({ actorId: 'actor-1' })];
+
+    const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates, activeActions);
+    expect(result[0].score).toBe(0);
   });
 });
