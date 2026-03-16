@@ -5,9 +5,11 @@ import { hexToPixel } from '../../lib/hexMath';
 import { visKey } from '../../types/visibility';
 
 // Tunable constants (NFP #1: Tunability)
-export const REGION_LABEL_FADE_START = 1.5;
-export const REGION_LABEL_FADE_END = 2.5;
+export const REGION_LABEL_FADE_START = 2.5;
+export const REGION_LABEL_FADE_END = 3.5;
 const REGION_LABEL_FONT_SCALE = 0.6; // font size relative to hexSize
+const REGION_LABEL_FILL = 'rgba(45, 35, 25, 0.7)';
+const REGION_LABEL_LETTER_SPACING = '0.2em';
 
 interface RegionLabel {
   regionId: string;
@@ -86,7 +88,7 @@ export const RegionLabels: React.FC<RegionLabelsProps> = ({
     <g
       className="region-labels-layer"
       opacity={String(opacity)}
-      style={{ pointerEvents: opacity === 0 ? 'none' : 'auto' }}
+      style={{ pointerEvents: 'none' }}
     >
       {labels
         .filter(l => isRegionVisible(l.memberHexes, visibilityMap))
@@ -97,13 +99,14 @@ export const RegionLabels: React.FC<RegionLabelsProps> = ({
             y={l.cy}
             textAnchor="middle"
             dominantBaseline="central"
+            filter="url(#region-label-halo)"
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
               fontSize: `${fontSize}px`,
               fontWeight: 400,
-              letterSpacing: '0.2em',
+              letterSpacing: REGION_LABEL_LETTER_SPACING,
               textTransform: 'uppercase' as const,
-              fill: 'rgba(45, 35, 25, 0.7)',
+              fill: REGION_LABEL_FILL,
               pointerEvents: 'none',
             }}
           >
