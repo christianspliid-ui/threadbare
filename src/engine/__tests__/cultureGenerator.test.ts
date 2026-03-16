@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
 import type { CultureIdentity, CultureEdgeProperties } from '../../types/culture';
+import { REACH_DOMAINS } from '../../types/traits';
 import {
   CULTURE_COUNT,
   CULTURE_STRENGTH_INDIVIDUAL,
@@ -49,6 +50,7 @@ describe('culture types', () => {
       metaphorPalette: ['the unbroken wave'],
       formativeTraitSeedIds: ['weapon_mastery'],
       behavioralTraitSeedIds: ['challenge_compulsion'],
+      reachPreferences: { iron: 0, gold: 0, shadow: 0, veil: 0, heart: 0, eye: 0, stone: 0, star: 0, flesh: 0 },
     };
     expect(identity.foundationBias).toBe('chaos');
     expect(identity.veneratedSpheres).toHaveLength(1);
@@ -352,5 +354,34 @@ describe('assignCulturesToActors', () => {
         expect(e.properties.culturalStrength).toBeLessThanOrEqual(CULTURE_STRENGTH_INDIVIDUAL.max);
       }
     }
+  });
+});
+
+describe('composeCultureIdentity reachPreferences', () => {
+  it('produces reachPreferences from modifier weights', () => {
+    const identity = composeCultureIdentity('chaos', ['force'], 'mountains');
+    expect(identity.reachPreferences).toBeDefined();
+    // Should have all 9 reach domains
+    for (const domain of REACH_DOMAINS) {
+      expect(typeof identity.reachPreferences[domain]).toBe('number');
+    }
+    // Iron should be high (chaos +0.1, force +0.6, mountains +0.3 = 1.0, clamped)
+    expect(identity.reachPreferences.iron).toBeGreaterThan(0.5);
+    // Heart should be low (chaos -0.2)
+    expect(identity.reachPreferences.heart).toBeLessThan(0);
+  });
+
+  it('clamps reachPreferences to [-1, 1]', () => {
+    const identity = composeCultureIdentity('order', ['matter', 'force'], 'mountains');
+    for (const domain of REACH_DOMAINS) {
+      expect(identity.reachPreferences[domain]).toBeGreaterThanOrEqual(-1);
+      expect(identity.reachPreferences[domain]).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('is deterministic — same inputs produce same reachPreferences', () => {
+    const a = composeCultureIdentity('light', ['spirit'], 'grassland');
+    const b = composeCultureIdentity('light', ['spirit'], 'grassland');
+    expect(a.reachPreferences).toEqual(b.reachPreferences);
   });
 });

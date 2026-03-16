@@ -12,6 +12,7 @@ import type { WorldGraph } from './graph';
 import type { CultureIdentity } from '../types/culture';
 import type { InsiderBeat } from '../data/culture-content';
 import { getBeatsForCultureTags } from '../data/culture-content';
+import type { ReachDomain } from '../types/traits';
 
 /**
  * Extract culture tags (sphere names + biome) from a CultureIdentity.
@@ -65,10 +66,20 @@ export function getAvailableInsiderBeats(
 
     for (const beat of matchingBeats) {
       if (seenBeatIds.has(beat.id)) continue;
-      if (culturalStrength >= beat.minStrength) {
-        availableBeats.push(beat);
-        seenBeatIds.add(beat.id);
+      if (culturalStrength < beat.minStrength) continue;
+
+      // Reach-gate: if beat specifies reachRequirements, culture must meet all thresholds.
+      // Fail-soft: missing reachPreferences treats all reaches as 0.
+      if (beat.reachRequirements) {
+        const cultureReaches = identity.reachPreferences;
+        const meetsReach = Object.entries(beat.reachRequirements).every(
+          ([domain, threshold]) => (cultureReaches?.[domain as ReachDomain] ?? 0) >= (threshold as number)
+        );
+        if (!meetsReach) continue;
       }
+
+      availableBeats.push(beat);
+      seenBeatIds.add(beat.id);
     }
   }
 

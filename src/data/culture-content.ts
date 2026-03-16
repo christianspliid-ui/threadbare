@@ -20,31 +20,34 @@ import type { SphereName, TerrainType, ReachDomain } from '../types/index';
 // ─── Foundation Modifier Interface ────────────────────────────────
 
 export interface FoundationModifier {
-  id: string;
-  socialStructure: string;
-  accountability: string;
-  behavioralKeywords: string[];
-  metaphorSeeds: string[];
+  readonly id: string;
+  readonly socialStructure: string;
+  readonly accountability: string;
+  readonly behavioralKeywords: string[];
+  readonly metaphorSeeds: string[];
+  readonly reachWeights: Partial<Record<ReachDomain, number>>;
 }
 
 // ─── Creation Sphere Modifier Interface ───────────────────────────
 
 export interface CreationSphereModifier {
-  sphere: SphereName;
-  behavioralColoring: string;
-  behavioralKeywords: string[];
-  materialVocabulary: string[];
-  formativeTraitSeeds: string[];
-  behavioralTraitSeeds: string[];
+  readonly sphere: SphereName;
+  readonly behavioralColoring: string;
+  readonly behavioralKeywords: string[];
+  readonly materialVocabulary: string[];
+  readonly formativeTraitSeeds: string[];
+  readonly behavioralTraitSeeds: string[];
+  readonly reachWeights: Partial<Record<ReachDomain, number>>;
 }
 
 // ─── Biome Modifier Interface ─────────────────────────────────────
 
 export interface BiomeModifier {
-  terrain: TerrainType;
-  survivalTraitKeywords: string[];
-  materialCulture: string[];
-  metaphorPalette: string[];
+  readonly terrain: TerrainType;
+  readonly survivalTraitKeywords: string[];
+  readonly materialCulture: string[];
+  readonly metaphorPalette: string[];
+  readonly reachWeights: Partial<Record<ReachDomain, number>>;
 }
 
 // ─── Cultural Prose Palette Interface ──────────────────────────────
@@ -66,6 +69,7 @@ export const FOUNDATION_MODIFIERS: FoundationModifier[] = [
     accountability: 'Personal honor; challenges determine status',
     behavioralKeywords: ['shifting', 'storm-born', 'untamed', 'rebellious', 'spontaneous', 'defiant'],
     metaphorSeeds: ['the unbroken wave', 'fire that chooses its own path', 'a flock without a shepherd'],
+    reachWeights: { iron: 0.1, gold: -0.3, shadow: 0.4, veil: 0.2, heart: -0.2, eye: 0.1, star: 0.1 },
   },
   {
     id: 'order',
@@ -73,6 +77,7 @@ export const FOUNDATION_MODIFIERS: FoundationModifier[] = [
     accountability: 'Institutional justice; laws bind all equally',
     behavioralKeywords: ['stone-set', 'the old way', 'by the book', 'codified', 'precedent', 'unshakable'],
     metaphorSeeds: ['pillars that hold the sky', 'chains that bind willingly', 'the measured step'],
+    reachWeights: { iron: 0.2, gold: 0.4, shadow: -0.2, veil: -0.1, heart: 0.2, eye: 0.1, stone: 0.3 },
   },
   {
     id: 'light',
@@ -80,6 +85,7 @@ export const FOUNDATION_MODIFIERS: FoundationModifier[] = [
     accountability: 'Shame-based; transgressions exposed to witness',
     behavioralKeywords: ['sun-sworn', 'nothing hidden', 'in the open', 'transparent', 'witnessed', 'luminous'],
     metaphorSeeds: ['the eye that never blinks', 'roots growing toward the sun', 'glass that shows all'],
+    reachWeights: { gold: 0.1, shadow: -0.3, veil: 0.3, heart: 0.3, eye: 0.2, star: 0.3 },
   },
   {
     id: 'darkness',
@@ -87,6 +93,7 @@ export const FOUNDATION_MODIFIERS: FoundationModifier[] = [
     accountability: 'Secret tribunals; justice hidden from the profane',
     behavioralKeywords: ['veiled', 'shadow-kept', 'the inner circle', 'whispered', 'oath-bound', 'occult'],
     metaphorSeeds: ['the door behind the door', 'ink that drinks the light', 'a web only the spider sees'],
+    reachWeights: { iron: 0.2, gold: 0.1, shadow: 0.4, veil: 0.2, heart: -0.3, eye: -0.1, star: -0.1, flesh: 0.2 },
   },
 ];
 
@@ -100,6 +107,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['heavy metals', 'war trophies', 'scarred wood', 'battle standards', 'tempered steel', 'trophy racks'],
     formativeTraitSeeds: ['weapon_mastery', 'battle_tactics'],
     behavioralTraitSeeds: ['challenge_compulsion', 'glory_seeking'],
+    reachWeights: { iron: 0.6, flesh: 0.3, shadow: 0.2 },
   },
   {
     sphere: 'matter',
@@ -108,6 +116,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['stone', 'worked metal', 'carved bone', 'kiln-fired clay', 'hammered copper', 'polished granite'],
     formativeTraitSeeds: ['craft_expertise', 'material_lore'],
     behavioralTraitSeeds: ['material_obsession', 'craft_pride'],
+    reachWeights: { stone: 0.5, gold: 0.4, iron: 0.2 },
   },
   {
     sphere: 'energy',
@@ -116,6 +125,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['light materials', 'flame imagery', 'woven silk', 'molten glass', 'ember-cloth', 'lantern oil'],
     formativeTraitSeeds: ['endurance_training', 'energy_channeling'],
     behavioralTraitSeeds: ['restlessness', 'thrill_seeking'],
+    reachWeights: { iron: 0.3, flesh: 0.4, star: 0.2 },
   },
   {
     sphere: 'life',
@@ -124,6 +134,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['living materials', 'garden cities', 'woven vines', 'pressed flowers', 'seed-pearl', 'root-wood'],
     formativeTraitSeeds: ['herbalism', 'midwifery'],
     behavioralTraitSeeds: ['birth_death_reverence', 'nature_communion'],
+    reachWeights: { flesh: 0.5, heart: 0.3, eye: 0.2 },
   },
   {
     sphere: 'mind',
@@ -132,6 +143,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['paper', 'ink', 'glass', 'quartz lenses', 'bound vellum', 'clockwork'],
     formativeTraitSeeds: ['literacy', 'analytical_thinking'],
     behavioralTraitSeeds: ['knowledge_hoarding', 'debate_obsession'],
+    reachWeights: { eye: 0.5, veil: 0.3, shadow: 0.2 },
   },
   {
     sphere: 'spirit',
@@ -140,6 +152,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['incense', 'crystal', 'prayer beads', 'spirit masks', 'blessed water', 'dream-catchers'],
     formativeTraitSeeds: ['meditation', 'spirit_sight'],
     behavioralTraitSeeds: ['spirit_sensitivity', 'ritual_devotion'],
+    reachWeights: { star: 0.5, heart: 0.3, veil: 0.3 },
   },
   {
     sphere: 'time',
@@ -148,6 +161,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['astronomical instruments', 'calendars', 'hourglasses', 'sundials', 'aged wood', 'patina bronze'],
     formativeTraitSeeds: ['calendar_mastery', 'prophecy_reading'],
     behavioralTraitSeeds: ['patience_fatalism', 'ancestor_reverence'],
+    reachWeights: { eye: 0.4, star: 0.4, veil: 0.2 },
   },
   {
     sphere: 'entropy',
@@ -156,6 +170,7 @@ export const CREATION_SPHERE_MODIFIERS: CreationSphereModifier[] = [
     materialVocabulary: ['bone', 'ash', 'corroded metal', 'grave dust', 'tarnished silver', 'cracked obsidian'],
     formativeTraitSeeds: ['decay_reading', 'corpse_preparation'],
     behavioralTraitSeeds: ['death_acceptance', 'dissolution_fascination'],
+    reachWeights: { shadow: 0.5, veil: 0.4, iron: 0.2 },
   },
 ];
 
@@ -168,24 +183,28 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['seafaring', 'navigation', 'storm-reading', 'saltwater-wise', 'depth-sensing'],
     materialCulture: ['driftwood', 'shell', 'coral', 'sail-cloth', 'whale-bone', 'kelp-rope'],
     metaphorPalette: ['the deep that swallows', 'tides that remember', 'the horizon\'s promise'],
+    reachWeights: { eye: 0.3, flesh: 0.3, heart: 0.2, star: 0.2 },
   },
   {
     terrain: 'coastal_shallows',
     survivalTraitKeywords: ['tide-walking', 'net-weaving', 'pearl-diving', 'shallow-reading', 'beach-knowing'],
     materialCulture: ['woven nets', 'beach glass', 'salt-cured leather', 'tidal stone', 'crab shell'],
     metaphorPalette: ['the shore between worlds', 'sand that shifts beneath', 'pools that hold secrets'],
+    reachWeights: { gold: 0.3, eye: 0.2, heart: 0.2 },
   },
   {
     terrain: 'lake',
     survivalTraitKeywords: ['fishing', 'reed-craft', 'still-water reading', 'freshwater-wise', 'reflection-sense'],
     materialCulture: ['reed-woven baskets', 'lake clay', 'freshwater pearl', 'birch bark', 'lily pads'],
     metaphorPalette: ['the mirror that thinks', 'depths that hold their breath', 'calm that deceives'],
+    reachWeights: { heart: 0.3, eye: 0.2, veil: 0.2 },
   },
   {
     terrain: 'river',
     survivalTraitKeywords: ['current-reading', 'bridge-building', 'flood-sense', 'water-craft', 'rapids-knowing'],
     materialCulture: ['river stone', 'otter pelt', 'rush matting', 'ferry ropes', 'water-smoothed wood'],
     metaphorPalette: ['the path that carves itself', 'the current\'s memory', 'water finding its level'],
+    reachWeights: { gold: 0.3, eye: 0.2, stone: 0.2 },
   },
 
   // Lowlands (4)
@@ -194,24 +213,28 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['herding', 'weather-sense', 'endurance riding', 'grass-reading', 'horizon-sight'],
     materialCulture: ['horsehair', 'dried grass', 'leather', 'bone needles', 'felt'],
     metaphorPalette: ['the sea of grass', 'winds that carry whispers', 'the horizon\'s edge'],
+    reachWeights: { heart: 0.2, flesh: 0.2, eye: 0.2 },
   },
   {
     terrain: 'farmland',
     survivalTraitKeywords: ['crop-tending', 'seasonal wisdom', 'irrigation', 'soil-lore', 'harvest-timing'],
     materialCulture: ['grain sheaves', 'woven straw', 'clay pots', 'iron plows', 'sun-dried brick'],
     metaphorPalette: ['the seed that remembers', 'furrows like written lines', 'the patient harvest'],
+    reachWeights: { stone: 0.3, heart: 0.3, gold: 0.2 },
   },
   {
     terrain: 'savanna',
     survivalTraitKeywords: ['tracking', 'fire-management', 'drought-endurance', 'herd-reading', 'dry-craft'],
     materialCulture: ['thorned wood', 'sun-bleached bone', 'woven grass', 'ochre pigment', 'acacia bark'],
     metaphorPalette: ['the golden silence', 'heat that shimmers like memory', 'the watering hole\'s truce'],
+    reachWeights: { flesh: 0.3, eye: 0.3, iron: 0.2 },
   },
   {
     terrain: 'steppe',
     survivalTraitKeywords: ['mounted archery', 'wind-reading', 'nomadic packing', 'vast-sense', 'swift-riding'],
     materialCulture: ['yurt felt', 'horsehide', 'fermented milk vessels', 'wind-chimes', 'sinew cord'],
     metaphorPalette: ['the wind\'s verdict', 'dust that buries empires', 'the endless ride'],
+    reachWeights: { iron: 0.3, flesh: 0.3, eye: 0.2 },
   },
 
   // Forest (4)
@@ -220,24 +243,28 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['foraging', 'tree-climbing', 'seasonal tracking', 'canopy-reading', 'leaf-craft'],
     materialCulture: ['hardwood', 'acorn flour', 'maple syrup', 'bark cloth', 'mushroom leather'],
     metaphorPalette: ['the canopy\'s counsel', 'roots that whisper', 'leaves that fall like pages'],
+    reachWeights: { flesh: 0.3, eye: 0.2, veil: 0.2, heart: 0.2 },
   },
   {
     terrain: 'dense_forest',
     survivalTraitKeywords: ['shadow-stalking', 'vine-weaving', 'canopy navigation', 'darkness-comfort', 'thick-wise'],
     materialCulture: ['dark heartwood', 'moss', 'spider silk', 'phosphor fungi', 'hanging vine'],
     metaphorPalette: ['the green darkness', 'paths that close behind you', 'the forest\'s memory'],
+    reachWeights: { veil: 0.3, flesh: 0.3, eye: 0.2 },
   },
   {
     terrain: 'boreal_forest',
     survivalTraitKeywords: ['cold-endurance', 'trapping', 'resin-craft', 'winter-wise', 'silence-hearing'],
     materialCulture: ['pine resin', 'fur pelts', 'frozen amber', 'snowshoe frames', 'smoked fish'],
     metaphorPalette: ['the endless white', 'trees bent by patience', 'silence that cracks like ice'],
+    reachWeights: { flesh: 0.4, stone: 0.2, veil: 0.2 },
   },
   {
     terrain: 'jungle',
     survivalTraitKeywords: ['poison-lore', 'vine-swinging', 'humidity survival', 'rot-wisdom', 'tangle-navigation'],
     materialCulture: ['bright feathers', 'rubber sap', 'orchid dye', 'bamboo', 'poison-dart frogs'],
     metaphorPalette: ['the green cathedral', 'vines that strangle slowly', 'heat that breathes'],
+    reachWeights: { flesh: 0.4, shadow: 0.3, veil: 0.2 },
   },
 
   // Wet (2)
@@ -246,12 +273,14 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['mud-navigation', 'toxin-tolerance', 'stilted-building', 'bog-craft', 'stilt-wise'],
     materialCulture: ['peat', 'cypress knee', 'alligator hide', 'bog iron', 'cattail fiber'],
     metaphorPalette: ['the ground that drinks', 'mist that thinks', 'waters that remember the dead'],
+    reachWeights: { veil: 0.3, flesh: 0.3, shadow: 0.2 },
   },
   {
     terrain: 'marsh',
     survivalTraitKeywords: ['preservation-lore', 'sphagnum-craft', 'sinking-avoidance', 'peat-wise', 'time-keeper'],
     materialCulture: ['bog butter', 'preserved wood', 'peat bricks', 'cranberry dye', 'sphagnum bandages'],
     metaphorPalette: ['the earth that swallows whole', 'time trapped in amber', 'the false path'],
+    reachWeights: { veil: 0.3, eye: 0.2, shadow: 0.2 },
   },
 
   // Elevated (4)
@@ -260,24 +289,28 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['terracing', 'mining', 'wind-harnessing', 'slope-wise', 'ridge-craft'],
     materialCulture: ['slate', 'copper ore', 'heather', 'limestone', 'hill marble'],
     metaphorPalette: ['the fold that hides', 'the vantage that reveals', 'the climb without a summit'],
+    reachWeights: { stone: 0.3, iron: 0.2, eye: 0.2 },
   },
   {
     terrain: 'mountains',
     survivalTraitKeywords: ['cliff-dwelling', 'altitude endurance', 'avalanche-reading', 'peak-craft', 'high-sight'],
     materialCulture: ['granite', 'ice crystal', 'mountain goat hide', 'obsidian', 'eagle feather'],
     metaphorPalette: ['the peak\'s judgment', 'stone that touches sky', 'the path that tests'],
+    reachWeights: { stone: 0.5, iron: 0.3, flesh: 0.2 },
   },
   {
     terrain: 'plateau',
     survivalTraitKeywords: ['wind-farming', 'long-sight', 'mesa-building', 'flat-wide sense', 'horizon-reading'],
     materialCulture: ['sandstone', 'wind-carved stone', 'turquoise', 'sun-baked adobe', 'dried sage'],
     metaphorPalette: ['the flat that sees forever', 'winds that never rest', 'the table of the gods'],
+    reachWeights: { eye: 0.3, stone: 0.3, star: 0.2 },
   },
   {
     terrain: 'badlands',
     survivalTraitKeywords: ['canyon-navigation', 'flash-flood sense', 'mineral-finding', 'maze-craft', 'layer-reading'],
     materialCulture: ['layered sediment', 'fossil bone', 'red clay', 'sulfur crystal', 'wind-sculpted stone'],
     metaphorPalette: ['the earth\'s broken teeth', 'colors bleeding from stone', 'the maze that shifts'],
+    reachWeights: { stone: 0.4, eye: 0.3, flesh: 0.2 },
   },
 
   // Extreme (4)
@@ -286,24 +319,28 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['water-finding', 'heat-endurance', 'sand-navigation', 'dune-craft', 'oasis-sense'],
     materialCulture: ['sandstone', 'cactus fiber', 'bleached bone', 'copper wire', 'indigo dye'],
     metaphorPalette: ['the forge that shapes the worthy', 'sand that buries all', 'oasis mirage'],
+    reachWeights: { flesh: 0.4, eye: 0.3, star: 0.2 },
   },
   {
     terrain: 'tundra',
     survivalTraitKeywords: ['cold-survival', 'ice-building', 'aurora-reading', 'white-sense', 'permafrost-wise'],
     materialCulture: ['walrus ivory', 'caribou hide', 'permafrost clay', 'lichen dye', 'ice-crystal'],
     metaphorPalette: ['the frozen breath', 'the white silence', 'light that dances without warmth'],
+    reachWeights: { flesh: 0.5, heart: 0.2, star: 0.2 },
   },
   {
     terrain: 'glacier',
     survivalTraitKeywords: ['crevasse-sensing', 'ice-carving', 'glacial patience', 'flow-reading', 'freeze-craft'],
     materialCulture: ['compacted ice', 'moraine gravel', 'glacial silt', 'frozen quartz', 'permafrost bone'],
     metaphorPalette: ['the river of ice', 'the grinding patience', 'cold that preserves'],
+    reachWeights: { stone: 0.4, flesh: 0.3, eye: 0.2 },
   },
   {
     terrain: 'volcano',
     survivalTraitKeywords: ['heat-resistance', 'lava-reading', 'obsidian-craft', 'ash-navigation', 'magma-sense'],
     materialCulture: ['basalt', 'volcanic glass', 'pumice', 'sulfur', 'obsidian blades'],
     metaphorPalette: ['the mountain\'s anger', 'fire that builds as it destroys', 'the forge of the earth'],
+    reachWeights: { iron: 0.4, stone: 0.3, flesh: 0.3 },
   },
   // New terrain types
   {
@@ -311,102 +348,119 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['pressure-endurance', 'bioluminescence-reading', 'depth-navigation', 'cold-tolerance', 'current-mapping'],
     materialCulture: ['abyssal-shell', 'pressure-glass', 'deep-coral', 'whale-fall-bone', 'vent-mineral', 'brine-crystal'],
     metaphorPalette: ['crushing depth', 'lightless truth', 'pressure shapes', 'abyssal patience', 'surface forgotten'],
+    reachWeights: { shadow: 0.4, flesh: 0.3, veil: 0.3 },
   },
   {
     terrain: 'tropical_ocean',
     survivalTraitKeywords: ['reef-navigation', 'storm-prediction', 'warm-current-riding', 'pearl-diving', 'tide-reading'],
     materialCulture: ['pearl', 'tropical-wood', 'palm-fiber', 'bright-coral', 'turtle-shell', 'sea-glass'],
     metaphorPalette: ['warm deception', 'beautiful danger', 'current beneath calm', 'colour hiding teeth', 'sun-bright cruelty'],
+    reachWeights: { gold: 0.3, eye: 0.3, heart: 0.2 },
   },
   {
     terrain: 'coast',
     survivalTraitKeywords: ['tidal-awareness', 'salt-foraging', 'storm-shelter', 'cliff-scaling', 'wave-reading'],
     materialCulture: ['driftwood', 'sea-salt', 'beach-stone', 'rope-grass', 'bleached-bone', 'tide-iron'],
     metaphorPalette: ['edge of certainty', 'tide-marked patience', 'salt-worn endurance', 'between worlds', 'erosion as truth'],
+    reachWeights: { gold: 0.3, eye: 0.2, heart: 0.2 },
   },
   {
     terrain: 'reef',
     survivalTraitKeywords: ['shallow-navigation', 'coral-reading', 'spearfishing', 'current-sense', 'hull-patching'],
     materialCulture: ['coral-fragment', 'reef-stone', 'shell-blade', 'sea-sponge', 'pearl-dust', 'fish-leather'],
     metaphorPalette: ['hidden architecture', 'patience of accretion', 'sharp beneath beauty', 'colony over self', 'slow construction'],
+    reachWeights: { eye: 0.3, heart: 0.3, gold: 0.2 },
   },
   {
     terrain: 'floodplain',
     survivalTraitKeywords: ['flood-prediction', 'silt-farming', 'levee-building', 'water-storage', 'seasonal-migration'],
     materialCulture: ['river-clay', 'woven-reed', 'flood-timber', 'silt-brick', 'irrigation-stone', 'rush-mat'],
     metaphorPalette: ['generous destruction', 'seasonal drowning', 'fertility from violence', 'the river remembers', 'borrowed ground'],
+    reachWeights: { stone: 0.3, heart: 0.2, gold: 0.2, eye: 0.2 },
   },
   {
     terrain: 'tropical_forest',
     survivalTraitKeywords: ['canopy-climbing', 'venom-knowledge', 'humidity-endurance', 'fruit-foraging', 'insect-navigation'],
     materialCulture: ['hardwood', 'vine-rope', 'broad-leaf', 'tree-resin', 'feather-work', 'bark-cloth'],
     metaphorPalette: ['green machinery', 'rot and renewal', 'canopy politics', 'growth as violence', 'humidity of intent'],
+    reachWeights: { flesh: 0.4, veil: 0.3, shadow: 0.2 },
   },
   {
     terrain: 'evergreen_forest',
     survivalTraitKeywords: ['needle-craft', 'resin-tapping', 'winter-foraging', 'snowshoe-travel', 'pine-medicine'],
     materialCulture: ['pine-resin', 'needle-mat', 'spruce-bark', 'cone-seed', 'evergreen-timber', 'pitch-tar'],
     metaphorPalette: ['year-round shadow', 'stubborn green', 'needle patience', 'resin-sealed memory', 'muffled permanence'],
+    reachWeights: { flesh: 0.3, stone: 0.2, veil: 0.2 },
   },
   {
     terrain: 'light_forest',
     survivalTraitKeywords: ['herb-gathering', 'game-tracking', 'sun-reading', 'path-finding', 'shelter-building'],
     materialCulture: ['light-timber', 'wildflower', 'berry-leather', 'thin-bark', 'meadow-grass', 'sapling-pole'],
     metaphorPalette: ['generous canopy', 'dappled truth', 'space between trees', 'almost welcoming', 'false safety'],
+    reachWeights: { heart: 0.3, eye: 0.2, flesh: 0.2 },
   },
   {
     terrain: 'dead_forest',
     survivalTraitKeywords: ['deadfall-awareness', 'fungus-knowledge', 'ash-reading', 'charcoal-craft', 'ghost-sense'],
     materialCulture: ['charcoal', 'dead-wood', 'fungus', 'ash-powder', 'hollow-trunk', 'grey-bark'],
     metaphorPalette: ['standing death', 'grey accusation', 'aftermath as landscape', 'silence of absence', 'testimony of loss'],
+    reachWeights: { shadow: 0.4, veil: 0.3, eye: 0.2 },
   },
   {
     terrain: 'moor_bog',
     survivalTraitKeywords: ['peat-cutting', 'safe-path-finding', 'bog-iron-smelting', 'weather-reading', 'heather-craft'],
     materialCulture: ['peat', 'heather-bundle', 'bog-iron', 'moss-packing', 'wicker', 'turf-brick'],
     metaphorPalette: ['false ground', 'slow drowning', 'preservation in darkness', 'the moor keeps', 'waterlogged memory'],
+    reachWeights: { veil: 0.3, shadow: 0.3, iron: 0.2 },
   },
   {
     terrain: 'high_mountains',
     survivalTraitKeywords: ['altitude-endurance', 'ice-climbing', 'thin-air-breathing', 'avalanche-sense', 'crevasse-reading'],
     materialCulture: ['granite', 'ice-crystal', 'mountain-goat-hide', 'wind-stone', 'lichen-dye', 'peak-iron'],
     metaphorPalette: ['above mercy', 'thin-air truth', 'stone indifference', 'killing height', 'permanence of peaks'],
+    reachWeights: { stone: 0.5, flesh: 0.4, iron: 0.2 },
   },
   {
     terrain: 'mountain_pass',
     survivalTraitKeywords: ['pass-navigation', 'wind-resistance', 'rockfall-awareness', 'altitude-crossing', 'supply-rationing'],
     materialCulture: ['cairn-stone', 'pass-rope', 'wind-cloth', 'trail-marker', 'goat-leather', 'shelter-rock'],
     metaphorPalette: ['reluctant compromise', 'narrow mercy', 'funneled force', 'the only way through', 'passage as wound'],
+    reachWeights: { iron: 0.3, stone: 0.3, gold: 0.2 },
   },
   {
     terrain: 'oasis',
     survivalTraitKeywords: ['water-finding', 'shade-craft', 'date-farming', 'well-digging', 'sand-navigation'],
     materialCulture: ['palm-wood', 'date-fruit', 'well-stone', 'shade-cloth', 'spring-water', 'oasis-clay'],
     metaphorPalette: ['promise rarely kept', 'green wound', 'water table truth', 'generosity with limits', 'surrounded abundance'],
+    reachWeights: { heart: 0.3, gold: 0.3, eye: 0.2 },
   },
   {
     terrain: 'rocky_desert',
     survivalTraitKeywords: ['heat-endurance', 'shade-finding', 'stone-shelter', 'dry-foraging', 'sun-navigation'],
     materialCulture: ['desert-stone', 'heat-glass', 'cactus-fiber', 'sun-bleached-bone', 'sandstone', 'dry-clay'],
     metaphorPalette: ['stone patience', 'baked indifference', 'erosion as artist', 'crack survival', 'heat-hammered truth'],
+    reachWeights: { stone: 0.4, flesh: 0.3, eye: 0.2 },
   },
   {
     terrain: 'sand_dunes',
     survivalTraitKeywords: ['dune-navigation', 'sand-swimming', 'wind-prediction', 'water-caching', 'star-navigation'],
     materialCulture: ['sand-glass', 'dune-silk', 'wind-veil', 'sand-brick', 'buried-cache', 'sun-shade'],
     metaphorPalette: ['shifting truth', 'path-erasing patience', 'landscape in motion', 'memory burial', 'wind-written law'],
+    reachWeights: { flesh: 0.4, star: 0.3, eye: 0.2 },
   },
   {
     terrain: 'arctic',
     survivalTraitKeywords: ['ice-navigation', 'blubber-craft', 'darkness-endurance', 'snow-shelter', 'aurora-reading'],
     materialCulture: ['ice-block', 'whale-blubber', 'seal-hide', 'bone-needle', 'snow-crystal', 'polar-fur'],
     metaphorPalette: ['frozen indifference', 'darkness shared', 'ice as law', 'survival measured in hours', 'warmth as memory'],
+    reachWeights: { flesh: 0.5, heart: 0.3, iron: 0.2 },
   },
   {
     terrain: 'snow_fields',
     survivalTraitKeywords: ['snowshoe-travel', 'igloo-building', 'frost-bite-prevention', 'cache-location', 'white-out-navigation'],
     materialCulture: ['packed-snow', 'ice-lens', 'fur-wrap', 'frozen-hide', 'snow-brick', 'drift-wood'],
     metaphorPalette: ['white silence', 'burial without witness', 'muffled world', 'depth deception', 'erased distinction'],
+    reachWeights: { flesh: 0.4, eye: 0.3, veil: 0.2 },
   },
   // Gap terrains (referenced elsewhere but previously missing from BIOME_MODIFIERS)
   {
@@ -414,18 +468,21 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     survivalTraitKeywords: ['hill-climbing', 'forest-foraging', 'valley-shelter', 'slope-farming', 'timber-craft'],
     materialCulture: ['hill-timber', 'slope-stone', 'valley-clay', 'ridge-iron', 'canopy-leaf', 'root-fiber'],
     metaphorPalette: ['sheltered ascent', 'hidden valleys', 'canopy over contour', 'green elevation', 'rooted rising'],
+    reachWeights: { stone: 0.3, flesh: 0.2, veil: 0.2, eye: 0.2 },
   },
   {
     terrain: 'great_home_trees',
     survivalTraitKeywords: ['canopy-dwelling', 'trunk-climbing', 'aerial-foraging', 'branch-building', 'root-navigation'],
     materialCulture: ['great-bark', 'living-wood', 'canopy-silk', 'trunk-resin', 'root-stone', 'leaf-weave'],
     metaphorPalette: ['monuments to life', 'vertical world', 'root memory', 'growth beyond scale', 'sheltered enormity'],
+    reachWeights: { heart: 0.4, flesh: 0.3, star: 0.2 },
   },
   {
     terrain: 'broken_lands',
     survivalTraitKeywords: ['reality-sense', 'fracture-navigation', 'anomaly-avoidance', 'twisted-foraging', 'instability-endurance'],
     materialCulture: ['reality-shard', 'twisted-stone', 'fracture-glass', 'anomaly-crystal', 'void-touched-metal', 'broken-earth'],
     metaphorPalette: ['shattered order', 'defiance of nature', 'fracture as truth', 'wrongness made terrain', 'reality-wound'],
+    reachWeights: { veil: 0.4, shadow: 0.3, star: 0.3 },
   },
 ];
 
@@ -439,6 +496,7 @@ export interface InsiderBeat {
   trigger: string;                // human-readable trigger condition
   proseSeeds: string[];           // template sentences for narrative generation
   archetypeAffinity?: string[];   // archetype ids that amplify this beat
+  readonly reachRequirements?: Partial<Record<ReachDomain, number>>;  // min reach thresholds the culture must meet
 }
 
 // ─── Insider Beats (~25 entries) ──────────────────────────────────
@@ -454,6 +512,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'Steel sang as {actor} drew blade against {target}, invoking the ancient rite of blood oath.',
       'The challenge echoed across the settlement — no force culture refuses a blood oath.',
     ],
+    reachRequirements: { iron: 0.3 },
   },
   {
     id: 'trial_by_element',
@@ -476,6 +535,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'In the sacred grove, {actor} knelt to hear the whispers of those who came before.',
       'The ancestor spirits stirred as {actor} sought their counsel on the matter.',
     ],
+    reachRequirements: { veil: 0.3 },
   },
   {
     id: 'name_day_tournament',
@@ -498,6 +558,7 @@ export const INSIDER_BEATS: InsiderBeat[] = [
       'In the veiled bazaar, {actor} traded in things that light-sworn cultures would burn.',
       'The shadow market opened its doors — here, secrets are the truest currency.',
     ],
+    reachRequirements: { shadow: 0.3 },
   },
   {
     id: 'dream_walk',
