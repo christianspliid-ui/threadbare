@@ -148,12 +148,22 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   const tileBaseTransform = `translate(${padding + hexSize}, ${padding + hexSize * 0.8})`;
   const hexClipId = `hex-clip-${hexSize}`;
 
+  // RC-223: Split tiles into land/water once so render loops and fog layers skip redundant isWaterTerrain checks
+  const { landTiles, waterTiles } = useMemo(() => {
+    const land: HexTile[] = [];
+    const water: HexTile[] = [];
+    for (const tile of tiles) {
+      if (isWaterTerrain(tile.terrain)) water.push(tile);
+      else land.push(tile);
+    }
+    return { landTiles: land, waterTiles: water };
+  }, [tiles]);
+
   // RC-210: Memoize fog recover polygons — only recompute when visibility changes, not on hover
   const landFogPolygons = useMemo(() => {
     if (!visibilityMap) return [];
     const result: { key: string; points: string; opacity: number }[] = [];
-    for (const tile of tiles) {
-      if (isWaterTerrain(tile.terrain)) continue;
+    for (const tile of landTiles) {
       const vis = visibilityMap.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
       if (vis === 'visible') continue;
       const { x, y } = hexToPixel(tile.coord, hexSize);
@@ -164,13 +174,12 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
       });
     }
     return result;
-  }, [tiles, visibilityMap, hexSize]);
+  }, [landTiles, visibilityMap, hexSize]);
 
   const waterFogPolygons = useMemo(() => {
     if (!visibilityMap) return [];
     const result: { key: string; points: string; opacity: number }[] = [];
-    for (const tile of tiles) {
-      if (!isWaterTerrain(tile.terrain)) continue;
+    for (const tile of waterTiles) {
       const vis = visibilityMap.get(visKey(tile.coord.col, tile.coord.row))?.state ?? 'visible';
       if (vis === 'visible') continue;
       const { x, y } = hexToPixel(tile.coord, hexSize);
@@ -181,7 +190,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
       });
     }
     return result;
-  }, [tiles, visibilityMap, hexSize]);
+  }, [waterTiles, visibilityMap, hexSize]);
 
   // Compute location positions for agent rendering
   const locationPositions = useMemo(() => {
@@ -241,8 +250,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
             <CoastlineOverlay data={coastlineData} svgWidth={width} svgHeight={height} colors={COASTLINE_DEFAULTS.colors} />
             {/* Layer 2: Land hex tiles — clipped to the organic contour shape */}
             <g clipPath={landPathD ? `url(#${landClipId})` : undefined}>
-              {tiles.map((tile) => {
-                if (isWaterTerrain(tile.terrain)) return null;
+              {landTiles.map((tile) => {
                 const { x, y } = hexToPixel(tile.coord, hexSize);
                 const isHovered = hoveredHex?.col === tile.coord.col && hoveredHex?.row === tile.coord.row;
                 const isSelected = selectedHex?.col === tile.coord.col && selectedHex?.row === tile.coord.row;
@@ -283,8 +291,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
             )}
             {/* Layer 3: Water hex tiles — unclipped (transparent hit areas for interaction).
                 Only rendered for visible water; non-visible water is fully fogged below. */}
-            {tiles.map((tile) => {
-              if (!isWaterTerrain(tile.terrain)) return null;
+            {waterTiles.map((tile) => {
               const hexVis = visibilityMap?.get(visKey(tile.coord.col, tile.coord.row));
               const visibility = hexVis?.state ?? 'visible';
               // Skip non-visible water entirely — fog covers the coastline colors beneath
