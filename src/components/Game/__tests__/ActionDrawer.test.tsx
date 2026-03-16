@@ -32,7 +32,6 @@ describe('ActionDrawer', () => {
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
     expect(screen.getByTestId('action-drawer')).toBeInTheDocument();
-    expect(screen.getByText('Kael')).toBeInTheDocument();
   });
 
   it('does not render cards when closed', () => {

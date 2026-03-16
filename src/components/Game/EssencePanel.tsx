@@ -10,10 +10,11 @@ interface EssencePanelProps {
   maxEssence: number;
   primarySphere: SphereName;
   secondarySphere: SphereName;
+  income?: EssencePool;
   compact?: boolean;
 }
 
-export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere, compact }: EssencePanelProps) {
+export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere, income, compact }: EssencePanelProps) {
   const totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
 
   // RC-050: Memoize sphere sorting to avoid recomputing on every render
@@ -46,56 +47,53 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
 
   if (compact) {
     return (
-      <div className="flex items-center gap-3 flex-shrink-0">
-        <Tooltip id="ui.essence_panel">
-          <span
-            className="font-bold uppercase tracking-widest flex-shrink-0"
-            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-display)' }}
-          >
-            Essence
-          </span>
-        </Tooltip>
-        <div className="flex items-center gap-2.5">
+      <Tooltip
+        id="ui.essence_panel"
+        label={`Total: ${totalEssence.toFixed(1)} / ${(maxEssence * 8).toFixed(0)}`}
+      >
+        <div className="flex items-center gap-2">
           {sorted.map((sphere) => {
             const value = pool[sphere];
             const isPrimary = sphere === primarySphere;
             const isSecondary = sphere === secondarySphere;
             if (value < 0.5 && !isPrimary && !isSecondary) return null;
+
             const color = getSphereColor(sphere);
-            const pct = Math.min((value / maxEssence) * 100, 100);
+            const net = income?.[sphere] ?? null;
+            const incomeSign = net !== null && Math.abs(net) >= 0.05 ? (net >= 0 ? '+' : '−') : null;
+            const incomeAbs = net !== null ? Math.abs(net).toFixed(1) : null;
+
             return (
-              <div key={sphere} className="flex items-center gap-1">
-                <SphereIcon sphereName={sphere} size="0.875rem" className="w-4 text-center" />
-                <div className="w-10 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-raised)' }}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-500${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
-                    style={{
-                      width: `${pct}%`,
-                      background: `linear-gradient(90deg, ${color}cc, ${color})`,
-                      boxShadow: isPrimary ? `0 0 6px ${color}80` : 'none',
-                    }}
-                  />
-                </div>
-                <span
-                  className="font-mono"
-                  style={{
-                    fontSize: 'var(--text-xs)',
-                    color,
-                    opacity: isPrimary ? 1 : isSecondary ? 0.85 : 0.6,
-                    minWidth: '2.2rem',
-                    textAlign: 'right',
-                  }}
-                >
+              <div
+                key={sphere}
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
+                style={{
+                  background: 'var(--bg-raised)',
+                  border: `1px solid ${isPrimary ? `${color}40` : 'transparent'}`,
+                  opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
+                }}
+              >
+                <SphereIcon sphereName={sphere} size="0.8rem" className="w-3.5 text-center" />
+                <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
                   {value.toFixed(1)}
                 </span>
+                {incomeSign && (
+                  <span
+                    className="font-mono"
+                    style={{
+                      fontSize: '0.65rem',
+                      color: net! >= 0 ? '#4ade80' : '#f87171',
+                      lineHeight: 1,
+                    }}
+                  >
+                    {incomeSign}{incomeAbs}
+                  </span>
+                )}
               </div>
             );
           })}
         </div>
-        <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-          {totalEssence.toFixed(0)}/{(maxEssence * 8).toFixed(0)}
-        </span>
-      </div>
+      </Tooltip>
     );
   }
 

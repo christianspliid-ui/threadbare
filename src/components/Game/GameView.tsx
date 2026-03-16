@@ -41,8 +41,11 @@ import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { RivalsButton } from './RivalsButton';
+import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
 import { useNotifications } from './hooks/useNotifications';
+import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
+import { computeEssenceIncome } from '../../engine/essenceIncome';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -152,6 +155,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     visibilityMap: gameState.visibilityMap,
   });
 
+  // ── Keyboard hotkeys ──
+  useTopBarHotkeys({
+    running,
+    speed,
+    onToggle: handleToggleRunning,
+    onSpeedChange: setSpeed,
+    onStep: doTick,
+  });
+
+  // ── Essence income (view-layer, pure computation) ──
+  const essenceIncome = useMemo(
+    () => computeEssenceIncome(gameState.graph, gameState.ascendantId),
+    [gameState.graph, gameState.ascendantId, gameState.tick],
+  );
+
   // ── Hex zoom derived data ──
   const {
     hexLocations,
@@ -224,13 +242,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     }
   }, [gameState.graph, handleHexClick]);
 
-  // Zoom to the ascendant's current hex from AvatarHUD eye icon
-  const handleAvatarZoomToLocation = useCallback(() => {
-    if (avatarPos) {
-      handleHexClick({ col: avatarPos.col, row: avatarPos.row });
-    }
-  }, [avatarPos, handleHexClick]);
-
   // IX-013: Wrapped location double-click closes drawer before drilling down
   const handleLocationDoubleClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
@@ -240,34 +251,27 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   return (
     <GameErrorBoundary>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
-      {/* ═══ Top bar — Stellaris-style: identity + time + essence | doom + mandate + alerts + rivals + debug ═══ */}
+      {/* ═══ Top bar — Stellaris-style: identity + time + essence ║ doom + mandate + alerts + rivals + debug ═══ */}
       <div
-        className="w-full px-4 py-2 flex items-center gap-3 relative z-30 flex-shrink-0"
+        className="w-full px-4 flex items-center gap-3 relative z-30 flex-shrink-0 overflow-x-auto"
         style={{
           background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
-          borderBottom: '1px solid var(--border-subtle)',
-          minHeight: '48px',
+          borderBottom: `1px solid rgba(var(--accent-gold-rgb, 212,175,55), 0.3)`,
+          height: '44px',
+          minHeight: '44px',
         }}
       >
         {/* LEFT GROUP: identity · time · essence */}
-        <div className="flex items-center gap-3 flex-shrink-0 min-w-0">
-          {/* Ascendant identity */}
-          <div className="flex-shrink-0">
-            <span
-              style={{
-                fontFamily: 'var(--font-display)',
-                fontSize: 'var(--text-sm)',
-                fontWeight: 700,
-                color: 'var(--text-primary)',
-                letterSpacing: '0.06em',
-              }}
-            >
-              {archetype.title}
-            </span>
-            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>
-              Cycle {gameState.cycle}
-            </span>
-          </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          {/* Identity chip — avatar name + archetype, click to center */}
+          <IdentityChip
+            avatarName={avatarName}
+            archetypeTitle={archetype.title}
+            cycle={gameState.cycle}
+            sphereColor={sphereColor}
+            primarySphere={archetype.sphereAlignment.primary}
+            onClick={handleCenterOnAvatar}
+          />
 
           <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
 
@@ -286,25 +290,30 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
           <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
 
-          {/* Essence resources */}
+          {/* Essence resource chips */}
           <EssencePanel
             pool={gameState.essencePool}
             maxEssence={maxEssence}
             primarySphere={archetype.sphereAlignment.primary}
             secondarySphere={archetype.sphereAlignment.secondary}
+            income={essenceIncome}
             compact
           />
         </div>
 
+        {/* Group divider */}
+        <div
+          className="w-px self-stretch ml-auto flex-shrink-0"
+          style={{ background: 'rgba(212,175,55,0.4)' }}
+        />
+
         {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug */}
-        <div className="flex items-center gap-3 ml-auto flex-shrink-0">
-          <div className="min-w-0" style={{ maxWidth: '220px' }}>
-            <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
-          </div>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div className="min-w-0" style={{ maxWidth: '180px' }}>
+              <div style={{ maxWidth: '180px' }}>
                 <MandateTracker
                   definition={gameState.mandateDefinition}
                   state={gameState.mandateState}
@@ -323,21 +332,16 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           <button
             data-testid="debug-toggle"
             onClick={handleToggleDebug}
-            className="px-2.5 py-1 rounded flex items-center gap-1.5 flex-shrink-0 transition-colors"
+            className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-colors"
             style={{
-              fontSize: 'var(--text-xs)',
-              fontFamily: 'var(--font-body)',
-              fontWeight: 500,
+              fontSize: 'var(--text-sm)',
               color: debugPanelOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
               background: debugPanelOpen ? 'var(--accent-gold-glow)' : 'transparent',
               border: `1px solid ${debugPanelOpen ? 'var(--accent-gold-dim)' : 'var(--border-subtle)'}`,
             }}
             title="Toggle debug trace panel (`)"
           >
-            {debugPanelOpen && (
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-gold)' }} />
-            )}
-            Debug
+            ⚙
           </button>
         </div>
       </div>
@@ -380,13 +384,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 />
 
                 <AvatarHUD
-                  avatarName={avatarName}
                   sphereColor={sphereColor}
-                  onCenterOnAvatar={handleCenterOnAvatar}
                   onMoveClick={handleAvatarMoveClick}
                   onWheelClick={handleAvatarActionClick}
                   onScryClick={handleScryWithMutex}
-                  onZoomToLocation={handleAvatarZoomToLocation}
                   moveMode={moveMode}
                 />
 

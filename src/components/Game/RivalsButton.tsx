@@ -32,23 +32,36 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
     <div ref={ref} className="relative flex-shrink-0">
       <button
         onClick={() => setOpen(o => !o)}
-        className="flex items-center gap-1.5 px-2.5 py-1 rounded transition-colors"
+        className="relative flex items-center justify-center px-2 py-1 rounded transition-colors"
         style={{
-          fontSize: 'var(--text-xs)',
+          fontSize: 'var(--text-sm)',
           fontFamily: 'var(--font-body)',
-          fontWeight: 500,
-          color: open ? 'var(--text-primary)' : 'var(--text-secondary)',
+          color: open ? 'var(--text-primary)' : hostilityColor,
           background: open ? 'var(--bg-raised)' : 'transparent',
           border: `1px solid ${open ? 'var(--border-subtle)' : 'transparent'}`,
+          minWidth: '2rem',
         }}
-        title="Rival Gods"
+        title={`${definitions.length} Rival God${definitions.length !== 1 ? 's' : ''}${maxHostility > 0 ? ` (highest hostility: ${Math.round(maxHostility * 100)}%)` : ''}`}
       >
-        <span style={{ color: hostilityColor }}>⚔</span>
-        <span>{definitions.length > 0 ? `${definitions.length} Rival${definitions.length !== 1 ? 's' : ''}` : 'Rivals'}</span>
+        <span>⚔</span>
+        {definitions.length > 0 && (
+          <span
+            className="absolute font-mono"
+            style={{
+              fontSize: '0.6rem',
+              top: '0.1rem',
+              right: '0.15rem',
+              color: hostilityColor,
+              lineHeight: 1,
+            }}
+          >
+            {definitions.length}
+          </span>
+        )}
         {maxHostility > 0.5 && (
           <span
-            className="w-1.5 h-1.5 rounded-full animate-pulse"
-            style={{ backgroundColor: hostilityColor }}
+            className="absolute w-1 h-1 rounded-full animate-pulse"
+            style={{ backgroundColor: hostilityColor, bottom: '0.1rem', right: '0.1rem' }}
           />
         )}
       </button>
