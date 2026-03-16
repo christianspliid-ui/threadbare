@@ -21,6 +21,9 @@ import {
   HISTORICAL_CULTURE_PROSE,
   REGION_ETYMOLOGY_PROSE,
 } from '../data/prose-layer-content';
+import { RESOURCE_PROSE } from '../data/resource-content';
+import type { ResourceInstance } from '../types/resource';
+import { getAbundanceLabel } from '../types/resource';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -549,6 +552,55 @@ export function regionEtymologyResolver(regionId: string, graph: WorldGraph, see
       priority: 25,
       category: 'history',
       source: 'regionEtymologyResolver',
+    },
+  ];
+}
+
+// ─── Resource Resolver ────────────────────────────────────────────
+
+/**
+ * Resource Resolver — generates prose about a location's natural resources.
+ *
+ * Reads the `resources` property from the location node,
+ * finds the most abundant resource, and picks a template
+ * (abundant or scarce variant) from RESOURCE_PROSE.
+ *
+ * Priority 65 — between atmosphere and origin.
+ * Category: 'resources'.
+ */
+export function resourcesResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node || node.type !== 'location') return [];
+
+  const resources = node.properties?.resources as Record<string, ResourceInstance> | undefined;
+  if (!resources) return [];
+
+  // Find the most abundant resource
+  const entries = Object.entries(resources)
+    .filter(([, inst]) => inst.quantity > 0)
+    .sort((a, b) => b[1].quantity - a[1].quantity);
+
+  if (entries.length === 0) return [];
+
+  const [topType, topInstance] = entries[0];
+  const proseSet = RESOURCE_PROSE[topType];
+  if (!proseSet) return [];
+
+  // Pick abundance or scarcity variant
+  const abundance = getAbundanceLabel(topInstance.quantity);
+  const templates = abundance === 'abundant' || abundance === 'moderate'
+    ? proseSet.abundant
+    : proseSet.scarce;
+
+  const template = pickTemplate([...templates], seed + 500);
+  if (!template) return [];
+
+  return [
+    {
+      text: template,
+      priority: 65,
+      category: 'resources',
+      source: 'resourcesResolver',
     },
   ];
 }
