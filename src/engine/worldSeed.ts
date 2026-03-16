@@ -29,6 +29,7 @@ import { detectRegions } from './regionDetection';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
+import { seedAttachments } from './seedAttachments';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -536,6 +537,9 @@ export function seedWorld(
       }
     }
   }
+
+  // ── Starter attachments ──────────────────────────────────
+  seedAttachments(graph);
 
   return { graph, individualIds, factionIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
