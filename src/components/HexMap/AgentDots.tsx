@@ -1,5 +1,6 @@
 import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
+import { Tooltip } from '../shared/Tooltip';
 import {
   ZOOM_TOKEN_THRESHOLD,
   MAX_RING_AGENTS,
@@ -23,6 +24,12 @@ interface AgentDotsProps {
   onAgentHover?: (agentId: string | null) => void;
 }
 
+/** Map domain key to human-friendly label */
+const DOMAIN_LABELS: Record<string, string> = {
+  iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
+  heart: 'Heart', eye: 'Eye', stone: 'Stone', star: 'Star', flesh: 'Flesh',
+};
+
 function getAgentColor(domainCapabilities: Record<string, number> | undefined): string {
   if (!domainCapabilities) return DEFAULT_AGENT_COLOR;
   let bestDomain = '';
@@ -34,6 +41,20 @@ function getAgentColor(domainCapabilities: Record<string, number> | undefined): 
     }
   }
   return DOMAIN_COLORS[bestDomain] ?? DEFAULT_AGENT_COLOR;
+}
+
+/** Get human-friendly primary domain name */
+function getPrimaryDomain(domainCapabilities: Record<string, number> | undefined): string {
+  if (!domainCapabilities) return 'Unknown';
+  let bestDomain = '';
+  let bestValue = -1;
+  for (const [domain, value] of Object.entries(domainCapabilities)) {
+    if (value > bestValue) {
+      bestValue = value;
+      bestDomain = domain;
+    }
+  }
+  return DOMAIN_LABELS[bestDomain] ?? bestDomain;
 }
 
 /** Collect all individual agents at a location via both `contains` and `located_at` edges. */
@@ -54,6 +75,20 @@ function getAgentsAtLocation(graph: WorldGraph, locationId: string) {
   }
 
   return agents;
+}
+
+/** Build tooltip label + desc for an agent dot */
+function buildAgentTooltip(
+  agent: NonNullable<ReturnType<WorldGraph['getNode']>>,
+  isAvatar: boolean,
+): { label: string; desc: string } {
+  const name = agent.name ?? 'Unknown';
+  const domain = getPrimaryDomain(agent.properties?.domainCapabilities as Record<string, number>);
+  const archetype = agent.properties?.narrativeArchetype as string | undefined;
+  const label = isAvatar ? `${name} (Avatar)` : name;
+  const parts: string[] = [`Domain: ${domain}`];
+  if (archetype) parts.push(`Archetype: ${archetype}`);
+  return { label, desc: parts.join('\n') };
 }
 
 export const AgentDots: React.FC<AgentDotsProps> = ({
@@ -83,44 +118,39 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
             {visibleAgents.map((agent, i) => {
               if (!agent) return null;
               const isAvatar = agent.id === avatarId;
-              // DES-009 §1.2: Ring arrangement — agents always position in ring slots,
-              // even when solo (single agent gets slot 0 = top of hex)
+              // DES-009 §1.2: Ring arrangement — agents always position in ring slots
               const angle = (2 * Math.PI * i) / Math.max(visibleAgents.length, 1) - Math.PI / 2;
               const dx = Math.cos(angle) * AGENT_RING_RADIUS;
               const dy = Math.sin(angle) * AGENT_RING_RADIUS;
               const color = isAvatar && sphereColor
                 ? sphereColor
                 : getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
+              const tooltip = buildAgentTooltip(agent, isAvatar);
 
               return (
-                <g
+                <Tooltip
                   key={agent.id}
-                  transform={`translate(${cx + dx}, ${cy + dy})`}
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => onAgentClick?.(agent.id)}
-                  onMouseEnter={() => onAgentHover?.(agent.id)}
-                  onMouseLeave={() => onAgentHover?.(null)}
+                  as="g"
+                  label={tooltip.label}
+                  desc={tooltip.desc}
+                  id={`agent.${agent.id}`}
                 >
-                  <circle
-                    r={radius}
-                    fill={color}
-                    stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
-                    strokeWidth={isAvatar ? 1.5 : 0.5}
-                    className={isAvatar ? 'avatar-pulse' : undefined}
-                  />
-                  {isTokenZoom && (
-                    <text
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      fontSize={radius * 0.9}
-                      fill="#fff"
-                      fontWeight="bold"
-                      style={{ pointerEvents: 'none' }}
-                    >
-                      {(agent.name ?? '?').slice(0, 2).toUpperCase()}
-                    </text>
-                  )}
-                </g>
+                  <g
+                    transform={`translate(${cx + dx}, ${cy + dy})`}
+                    style={{ cursor: 'pointer' }}
+                    onClick={() => onAgentClick?.(agent.id)}
+                    onMouseEnter={() => onAgentHover?.(agent.id)}
+                    onMouseLeave={() => onAgentHover?.(null)}
+                  >
+                    <circle
+                      r={radius}
+                      fill={color}
+                      stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
+                      strokeWidth={isAvatar ? 1.5 : 0.5}
+                      className={isAvatar ? 'avatar-pulse' : undefined}
+                    />
+                  </g>
+                </Tooltip>
               );
             })}
             {overflow > 0 && (

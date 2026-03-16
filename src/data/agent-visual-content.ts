@@ -11,10 +11,10 @@ export const ZOOM_TOKEN_THRESHOLD = 2.5;
 export const MAX_RING_AGENTS = 6;
 
 /** Radius of agent dot at default zoom */
-export const AGENT_DOT_RADIUS = 3;
+export const AGENT_DOT_RADIUS = 2.5;
 
-/** Radius of agent dot at token zoom */
-export const AGENT_TOKEN_RADIUS = 8;
+/** Radius of agent dot at token zoom (kept small to avoid overlapping location icons) */
+export const AGENT_TOKEN_RADIUS = 4;
 
 /** Agent domain-to-color mapping for dot rendering */
 export const DOMAIN_COLORS: Record<string, string> = {
@@ -32,8 +32,8 @@ export const DOMAIN_COLORS: Record<string, string> = {
 /** Default agent dot color when domain is unknown */
 export const DEFAULT_AGENT_COLOR = '#555555';
 
-/** Ring distance from hex center for agent positioning */
-export const AGENT_RING_RADIUS = 12;
+/** Ring distance from hex center for agent positioning — large enough to orbit outside location icons */
+export const AGENT_RING_RADIUS = 18;
 
 // --- Movement Trail Constants ---
 
