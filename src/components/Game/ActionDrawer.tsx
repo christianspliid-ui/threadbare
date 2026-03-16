@@ -83,104 +83,81 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
     return (
       <div
         data-testid="action-drawer"
-        className="fixed bottom-0 left-0 right-0 shadow-2xl backdrop-blur-sm"
+        className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none"
         style={{
-          backgroundColor: 'var(--bg-deep)',
-          borderTop: '1px solid var(--border-medium)',
-          height: `${DRAWER_CONFIG.HEIGHT_PERCENT}%`,
           transition: `all ${DRAWER_CONFIG.TRANSITION_MS}ms ease-out`,
           transform: open ? 'translateY(0)' : `translateY(100%)`,
           zIndex: 40,
+          paddingBottom: '1.5rem',
         }}
       >
-        {/* Header bar */}
-        <div
-          className="flex items-center justify-between px-4 py-3"
+        {/* Close button — floating above cards */}
+        <button
+          data-testid="action-drawer-close"
+          onClick={onClose}
+          className="absolute top-0 right-4 transition-colors text-lg rounded-full pointer-events-auto"
           style={{
-            backgroundColor: 'var(--bg-surface)',
-            borderBottom: '1px solid var(--border-subtle)',
+            color: 'var(--text-tertiary)',
+            backgroundColor: 'rgba(10, 10, 14, 0.6)',
+            width: '28px',
+            height: '28px',
+            lineHeight: '28px',
+            textAlign: 'center',
           }}
+          aria-label="Close action drawer"
         >
-          {/* FE-TT-13: Agent name and tier with tooltip */}
-          <Tooltip label="Target Agent" desc="The agent this action wheel is open for. Actions affect this agent based on their reach, tier, and current state.">
-            <div className="flex flex-col cursor-help">
-              <div
-                style={{
-                  fontSize: 'var(--text-lg)',
-                  fontFamily: 'var(--font-display)',
-                  color: 'var(--text-primary)',
-                }}
-              >
-                {agentName}
-              </div>
-              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                {agentTier}
-              </div>
-            </div>
-          </Tooltip>
+          ×
+        </button>
 
-          {/* Close button */}
-          <button
-            data-testid="action-drawer-close"
-            onClick={onClose}
-            className="transition-colors text-2xl"
-            style={{ color: 'var(--text-tertiary)' }}
-            aria-label="Close action drawer"
-          >
-            ×
-          </button>
-        </div>
-
-        {/* Card area — onTouchMove stops propagation to prevent momentum scroll from closing drawer */}
+        {/* Card hand — centered, no background */}
         <div
-          className="flex-1 overflow-x-auto overflow-y-hidden px-4 py-3"
+          className="flex items-end gap-3 pointer-events-auto"
           onTouchMove={(e) => e.stopPropagation()}
           onWheel={(e) => e.stopPropagation()}
         >
-          <div className="flex gap-3">
-            {availableSlots.map(slot => (
-              <div key={slot.id} className="flex-shrink-0">
-                <ActionCard
-                  slot={slot}
-                  onClick={onSlotClick}
-                  playing={slot.id === playingCardId}
-                />
-              </div>
-            ))}
+          {availableSlots.map(slot => (
+            <div key={slot.id} className="flex-shrink-0">
+              <ActionCard
+                slot={slot}
+                onClick={onSlotClick}
+                playing={slot.id === playingCardId}
+              />
+            </div>
+          ))}
 
-            {/* IA-003: Locked actions collapsible section */}
-            {lockedSlots.length > 0 && (
-              <>
-                <div className="flex-shrink-0 flex items-center">
-                  <Tooltip id="ui.action_locked">
-                    <button
-                      onClick={() => setShowLocked(!showLocked)}
-                      className="px-3 py-2 rounded transition-colors whitespace-nowrap"
-                      style={{
-                        fontSize: 'var(--text-xs)',
-                        color: 'var(--text-muted)',
-                        border: '1px solid var(--border-subtle)',
-                        backgroundColor: 'var(--bg-surface)',
-                      }}
-                      aria-expanded={showLocked}
-                      aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
-                    >
-                      {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
-                    </button>
-                  </Tooltip>
+          {/* IA-003: Locked actions collapsible section */}
+          {lockedSlots.length > 0 && (
+            <>
+              <div className="flex-shrink-0 flex items-center">
+                <Tooltip id="ui.action_locked">
+                  <button
+                    onClick={() => setShowLocked(!showLocked)}
+                    className="px-3 py-2 rounded transition-colors whitespace-nowrap"
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: 'var(--text-muted)',
+                      border: '1px solid var(--border-subtle)',
+                      backgroundColor: 'rgba(10, 10, 14, 0.6)',
+                      backdropFilter: 'blur(4px)',
+                    }}
+                    aria-expanded={showLocked}
+                    aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
+                  >
+                    {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
+                  </button>
+                </Tooltip>
+              </div>
+              {showLocked && lockedSlots.map(slot => (
+                <div key={slot.id} className="flex-shrink-0">
+                  <ActionCard
+                    slot={slot}
+                    onClick={onSlotClick}
+                    playing={slot.id === playingCardId}
+                  />
                 </div>
-                {showLocked && lockedSlots.map(slot => (
-                  <div key={slot.id} className="flex-shrink-0">
-                    <ActionCard
-                      slot={slot}
-                      onClick={onSlotClick}
-                      playing={slot.id === playingCardId}
-                    />
-                  </div>
-                ))}
-              </>
-            )}
-          </div>
+              ))}
+            </>
+          )}
         </div>
       </div>
     );

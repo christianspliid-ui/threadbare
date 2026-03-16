@@ -9,12 +9,23 @@ interface DoomBarProps {
   state: DoomClockState;
 }
 
+const DOOM_ARCHETYPE_GLYPHS: Record<string, string> = {
+  breach: '◈',
+  convergence: '⬡',
+  changing: '∿',
+  sundering: '⚡',
+  failing: '◇',
+  ascension: '✦',
+  reckoning: '⚔',
+};
+
 export function DoomBar({ definition, state }: DoomBarProps) {
   const color = DOOM_ARCHETYPE_COLORS[definition.archetype] ?? DOOM_ARCHETYPE_COLORS.breach;
   const pct = Math.round(state.progress * 100);
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
   const stageName = currentStageDef?.name ?? 'Unknown';
+  const glyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
 
   // Track doom progress and trigger pulse on increase
   const prevProgressRef = useRef(state.progress);
@@ -40,22 +51,20 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   }, [state.currentStage, stageName]);
 
   return (
-    <Tooltip id="ui.doom_bar">
-      <div className="flex-1 min-w-0">
+    <Tooltip
+      id="ui.doom_bar"
+      label={`${definition.archetype} — Stage ${state.currentStage}: ${stageName}`}
+    >
+      <div className="min-w-0" style={{ minWidth: '140px' }}>
         <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2">
-            <span
-              className="font-bold uppercase tracking-wider"
-              style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
-            >
-              {definition.archetype}
-            </span>
+          <div className="flex items-center gap-1.5">
+            <span style={{ fontSize: 'var(--text-sm)', color, fontWeight: 700 }}>{glyph}</span>
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
-              Stage {state.currentStage}: {stageName}
+              {stageName}
             </span>
           </div>
-          <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color }}>
-            {state.expired ? 'THE UNMAKING' : `${pct}%`}
+          <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color }}>
+            {state.expired ? 'UNMADE' : `${pct}%`}
           </span>
         </div>
         <div className={isPulsing ? 'pulse-doom' : ''}>
