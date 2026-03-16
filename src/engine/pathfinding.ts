@@ -10,6 +10,10 @@
 
 import { WorldGraph } from './graph';
 import { computeEdgeCost } from './movementCost';
+import type { HexCoord, HexTile } from '../types';
+import { hexNeighbors, hexDistance } from '../lib/hexMath';
+import { getTerrainTax } from '../data/movement-content';
+import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 
 export interface PathResult {
   /** Node IDs to visit (excludes start) */
@@ -162,4 +166,132 @@ function reconstructPath(
     path,
     totalCost,
   };
+}
+
+// ─── Hex-Grid A* Pathfinder ────────────────────────────────────────────────
+
+export interface HexPathResult {
+  /** Hex coordinates to visit (excludes start) */
+  path: HexCoord[];
+  /** Total accumulated movement cost */
+  totalCost: number;
+}
+
+/**
+ * Find the shortest path between two hex coordinates using A* on the hex grid.
+ *
+ * Uses actual hex-grid adjacency (6 neighbors per hex) instead of graph edges,
+ * so it works for arbitrary hexes — not just those with location nodes.
+ *
+ * @param tiles — the hex tile array (for terrain lookup)
+ * @param from — starting hex coordinate
+ * @param to — destination hex coordinate
+ * @param cols — grid column count (for bounds checking)
+ * @param rows — grid row count (for bounds checking)
+ * @returns HexPathResult with hex path and total cost, or null if unreachable
+ */
+export function findHexPath(
+  tiles: HexTile[],
+  from: HexCoord,
+  to: HexCoord,
+  cols: number,
+  rows: number,
+): HexPathResult | null {
+  if (from.col === to.col && from.row === to.row) {
+    return { path: [], totalCost: 0 };
+  }
+
+  // Build a fast terrain lookup: "col,row" → TerrainType
+  const terrainMap = new Map<string, string>();
+  for (const tile of tiles) {
+    terrainMap.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+  }
+
+  const key = (c: HexCoord) => `${c.col},${c.row}`;
+
+  // Check destination is passable
+  const destTerrain = terrainMap.get(key(to));
+  if (!destTerrain || getTerrainTax(destTerrain as import('../types').TerrainType) === Infinity) {
+    return null;
+  }
+
+  // A* open/closed sets
+  const gScore = new Map<string, number>();
+  const fScore = new Map<string, number>();
+  const cameFrom = new Map<string, HexCoord>();
+  const openSet = new Set<string>();
+  const closedSet = new Set<string>();
+
+  const startKey = key(from);
+  gScore.set(startKey, 0);
+  fScore.set(startKey, hexDistance(from, to));
+  openSet.add(startKey);
+
+  // Store coord for each key to avoid re-parsing
+  const coordMap = new Map<string, HexCoord>();
+  coordMap.set(startKey, from);
+
+  while (openSet.size > 0) {
+    // Find open node with lowest fScore
+    let currentKey: string | null = null;
+    let bestF = Infinity;
+    for (const k of openSet) {
+      const f = fScore.get(k) ?? Infinity;
+      if (f < bestF) {
+        bestF = f;
+        currentKey = k;
+      }
+    }
+
+    if (currentKey === null) break;
+
+    const current = coordMap.get(currentKey)!;
+    const toKey = key(to);
+
+    if (currentKey === toKey) {
+      // Reconstruct path
+      const path: HexCoord[] = [];
+      let walk: HexCoord | undefined = to;
+      while (walk && !(walk.col === from.col && walk.row === from.row)) {
+        path.unshift(walk);
+        const wk = key(walk);
+        walk = cameFrom.get(wk);
+      }
+      return { path, totalCost: gScore.get(toKey)! };
+    }
+
+    openSet.delete(currentKey);
+    closedSet.add(currentKey);
+
+    const currentG = gScore.get(currentKey)!;
+
+    for (const neighbor of hexNeighbors(current)) {
+      // Bounds check
+      if (neighbor.col < 0 || neighbor.col >= cols || neighbor.row < 0 || neighbor.row >= rows) {
+        continue;
+      }
+
+      const nk = key(neighbor);
+      if (closedSet.has(nk)) continue;
+
+      const terrain = terrainMap.get(nk);
+      if (!terrain) continue;
+
+      const tax = getTerrainTax(terrain as import('../types').TerrainType);
+      if (tax === Infinity) continue; // Impassable
+
+      const edgeCost = BASE_EDGE_TRAVERSAL_COST + tax;
+      const tentativeG = currentG + edgeCost;
+
+      if (tentativeG < (gScore.get(nk) ?? Infinity)) {
+        coordMap.set(nk, neighbor);
+        cameFrom.set(nk, current);
+        gScore.set(nk, tentativeG);
+        fScore.set(nk, tentativeG + hexDistance(neighbor, to));
+        openSet.add(nk);
+      }
+    }
+  }
+
+  return null; // No path found
 }

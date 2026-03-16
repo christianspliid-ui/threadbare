@@ -4,16 +4,17 @@
  * Sets up a MovementState on the avatar node so the tick loop can advance
  * the avatar like any other agent. Does NOT teleport — no edge changes.
  *
- * Uses pathfinding + movementCost to build a proper MovementState, then
- * stores it on the avatar node's properties.
+ * Uses hex-grid A* pathfinding to find a route through the tile grid,
+ * then ensures location nodes exist along the path for the movement system.
  */
 
 import type { WorldGraph } from './graph';
-import type { HexCoord } from '../types';
+import type { HexCoord, HexTile, TerrainType } from '../types';
 import type { MovementState } from '../types/movement';
-import { findShortestPath } from './pathfinding';
+import { findHexPath } from './pathfinding';
 import { initMovementState } from './movementExecution';
-import { computeEdgeCost } from './movementCost';
+import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
+import { getTerrainTax } from '../data/movement-content';
 
 /**
  * Resolve the avatar node ID from an ascendant ID.
@@ -26,41 +27,51 @@ function resolveAvatarId(graph: WorldGraph, ascendantId: string): string | null 
 }
 
 /**
- * Find the avatar's current location node ID.
- * Returns null if the avatar has no located_at edge.
+ * Find the avatar's current hex coordinate from its located_at edge.
+ * Returns null if the avatar has no location.
  */
-function resolveAvatarLocationId(graph: WorldGraph, avatarId: string): string | null {
+function resolveAvatarHex(graph: WorldGraph, avatarId: string): HexCoord | null {
   const locEdges = graph.getOutgoingEdges(avatarId, 'located_at');
   if (locEdges.length === 0) return null;
-  return locEdges[0].target;
+  const locNode = graph.getNode(locEdges[0].target);
+  if (!locNode) return null;
+  const col = locNode.properties.hexCol as number | undefined;
+  const row = locNode.properties.hexRow as number | undefined;
+  if (col == null || row == null) return null;
+  return { col, row };
 }
 
 /**
  * Find an existing location node at the given hex, or create a transient one.
- * Returns the location node ID.
+ * Sets terrain on transient locations so movementCost can compute taxes.
  */
-function findOrCreateLocationAtHex(graph: WorldGraph, targetHex: HexCoord): string {
+function findOrCreateLocationAtHex(
+  graph: WorldGraph,
+  hex: HexCoord,
+  terrain?: TerrainType,
+): string {
   // Search existing locations
   const allLocations = graph.getNodesByType('location');
   for (const loc of allLocations) {
     const hexCol = loc.properties.hexCol as number | undefined;
     const hexRow = loc.properties.hexRow as number | undefined;
-    if (hexCol === targetHex.col && hexRow === targetHex.row) {
+    if (hexCol === hex.col && hexRow === hex.row) {
       return loc.id;
     }
   }
 
   // Create transient location
-  const transientId = `loc.transient.${targetHex.col}.${targetHex.row}`;
+  const transientId = `loc.transient.${hex.col}.${hex.row}`;
   if (!graph.getNode(transientId)) {
     graph.addNode({
       id: transientId,
       type: 'location',
-      name: `Wilderness (${targetHex.col}, ${targetHex.row})`,
+      name: `Wilderness (${hex.col}, ${hex.row})`,
       properties: {
-        hexCol: targetHex.col,
-        hexRow: targetHex.row,
+        hexCol: hex.col,
+        hexRow: hex.row,
         locationType: 'wilderness',
+        ...(terrain ? { terrain } : {}),
       },
     });
   }
@@ -70,14 +81,16 @@ function findOrCreateLocationAtHex(graph: WorldGraph, targetHex: HexCoord): stri
 /**
  * Set up tick-based movement for the avatar toward a target hex.
  *
- * Finds the path via Dijkstra's algorithm, computes the first edge cost,
- * and stores a MovementState on the avatar node. Does NOT move the avatar
- * (no located_at edge changes).
+ * Uses hex-grid A* pathfinding to find a route through the tile grid,
+ * then creates location nodes along the path for the movement system.
  *
  * @param graph — the world graph
  * @param ascendantId — the ascendant (god) whose avatar should move
  * @param targetHex — the target hex coordinate
  * @param currentTick — the current world tick
+ * @param tiles — the hex tile array (for pathfinding terrain lookup)
+ * @param cols — grid column count
+ * @param rows — grid row count
  * @returns true if a path was found and movement was initiated, false otherwise
  */
 export function moveAvatarToHex(
@@ -85,32 +98,49 @@ export function moveAvatarToHex(
   ascendantId: string,
   targetHex: HexCoord,
   currentTick: number,
+  tiles: HexTile[],
+  cols: number,
+  rows: number,
 ): boolean {
   const avatarId = resolveAvatarId(graph, ascendantId);
   if (!avatarId) return false;
 
-  const currentLocationId = resolveAvatarLocationId(graph, avatarId);
-  if (!currentLocationId) return false;
+  const avatarHex = resolveAvatarHex(graph, avatarId);
+  if (!avatarHex) return false;
 
-  // Find or create the target location
-  const targetLocId = findOrCreateLocationAtHex(graph, targetHex);
+  // Already at destination
+  if (avatarHex.col === targetHex.col && avatarHex.row === targetHex.row) return false;
 
-  // Already at destination — no movement planned
-  if (currentLocationId === targetLocId) return false;
+  // Find hex-grid path via A*
+  const hexPath = findHexPath(tiles, avatarHex, targetHex, cols, rows);
+  if (!hexPath || hexPath.path.length === 0) return false;
 
-  // Find path from current location to target
-  const pathResult = findShortestPath(graph, avatarId, currentLocationId, targetLocId);
-  if (!pathResult || pathResult.path.length === 0) return false;
+  // Build terrain lookup for creating location nodes
+  const terrainByHex = new Map<string, TerrainType>();
+  for (const tile of tiles) {
+    terrainByHex.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+  }
 
-  // Compute first edge cost
-  const firstStepId = pathResult.path[0];
-  const firstEdgeCost = computeEdgeCost(graph, avatarId, currentLocationId, firstStepId);
+  // Ensure location nodes exist for each hex in the path
+  const locationIds: string[] = [];
+  for (const hex of hexPath.path) {
+    const terrain = terrainByHex.get(`${hex.col},${hex.row}`);
+    const locId = findOrCreateLocationAtHex(graph, hex, terrain);
+    locationIds.push(locId);
+  }
+
+  // Compute first edge cost from avatar's current location
+  const firstLocId = locationIds[0];
+  const firstLocNode = graph.getNode(firstLocId);
+  const firstTerrain = firstLocNode?.properties.terrain as TerrainType | undefined;
+  const firstEdgeCost = BASE_EDGE_TRAVERSAL_COST + (firstTerrain ? getTerrainTax(firstTerrain) : 0);
 
   // Build movement state
+  const destinationId = locationIds[locationIds.length - 1];
   const movementState = initMovementState(
-    targetLocId,
-    pathResult.path,
-    firstEdgeCost.totalCost,
+    destinationId,
+    locationIds,
+    firstEdgeCost,
     currentTick,
   );
 
@@ -162,10 +192,6 @@ export function clearAvatarMovement(
 
   if (avatar.properties.movementState === undefined) return;
 
-  // updateNode merges via spread: { ...existing.properties, ...updates.properties }.
-  // Passing the full properties object (without movementState) as the complete replacement
-  // still merges, so we pass movementState: undefined which leaves the key present but
-  // with value undefined — functionally equivalent for all consumers that check the value.
   const { movementState: _, ...cleanProperties } = avatar.properties;
   graph.updateNode(avatarId, {
     properties: { ...cleanProperties, movementState: undefined },

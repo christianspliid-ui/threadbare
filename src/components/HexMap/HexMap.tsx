@@ -373,9 +373,9 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
               <GhostDots ghosts={ghostDotsProp} hexSize={hexSize} currentTick={currentTick} />
             )}
             {/* Layer 5: Route polyline — marching dots from avatar to target hex */}
-            {avatarRoute && avatarRoute.length > 1 && avatarHex && sphereColor && (
+            {avatarRoute && avatarRoute.length >= 1 && avatarHex && sphereColor && (
               <polyline
-                points={[avatarHex, ...avatarRoute.slice(0, -1)]
+                points={[avatarHex, ...avatarRoute]
                   .map(h => {
                     const p = hexToPixel(h, hexSize);
                     return `${p.x},${p.y}`;

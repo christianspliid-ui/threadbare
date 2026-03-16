@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { GameState } from '../../../types/gameState';
+import type { HexTile } from '../../../types';
 import type { HexMapHandle } from '../../HexMap/HexMap';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
 import type { ScryState } from '../../../types/scry';
@@ -11,6 +12,7 @@ interface UseViewNavigationParams {
   gameState: GameState;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   avatarPixelPos: { x: number; y: number } | null;
+  tiles: HexTile[];
   COLS: number;
   ROWS: number;
   scryState: ScryState;
@@ -39,8 +41,9 @@ export function useViewNavigation({
   gameState,
   setGameState,
   avatarPixelPos,
-  COLS: _COLS,
-  ROWS: _ROWS,
+  tiles,
+  COLS,
+  ROWS,
   scryState: _scryState,
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
@@ -111,7 +114,10 @@ export function useViewNavigation({
 
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
     if (moveMode) {
-      const pathFound = moveAvatarToHex(gameState.graph, gameState.ascendantId, coord, gameState.tick);
+      const pathFound = moveAvatarToHex(
+        gameState.graph, gameState.ascendantId, coord, gameState.tick,
+        tiles, COLS, ROWS,
+      );
       if (pathFound) {
         // Force re-render so route visualization appears — visibility recalc
         // happens later when the avatar actually moves during tick processing.
@@ -121,7 +127,7 @@ export function useViewNavigation({
     } else {
       handleHexClick(coord);
     }
-  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, handleHexClick, setGameState]);
+  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, tiles, COLS, ROWS, handleHexClick, setGameState]);
 
   return {
     hoveredHex,
