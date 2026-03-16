@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import type { AgendaTemplate } from '../../data/agenda-content';
 import type { SphereName } from '../../types';
 import { getSphereColor } from '../../data/sphereIcons';
+import { Tooltip } from '../shared/Tooltip';
 
 interface AgendaPickerProps {
   agendas: AgendaTemplate[];
@@ -49,16 +50,18 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
             borderBottom: `2px solid ${sphereColor}30`,
           }}
         >
-          <h3
-            className="font-bold text-center"
-            style={{
-              fontFamily: 'var(--font-display)',
-              color: 'var(--text-primary)',
-              fontSize: 'var(--text-xl)',
-            }}
-          >
-            Choose Your Agenda
-          </h3>
+          <Tooltip id="ui.agenda_template">
+            <h3
+              className="font-bold text-center cursor-help"
+              style={{
+                fontFamily: 'var(--font-display)',
+                color: 'var(--text-primary)',
+                fontSize: 'var(--text-xl)',
+              }}
+            >
+              Choose Your Agenda
+            </h3>
+          </Tooltip>
         </div>
 
         {/* Agenda list */}
