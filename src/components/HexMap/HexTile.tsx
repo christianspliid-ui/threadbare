@@ -128,6 +128,8 @@ interface HexTileProps {
   locationSubtype?: LocationSubtype;
   /** Stale snapshot from fog-of-war — present on remembered hexes with prior LOS. */
   snapshot?: StaleSnapshot;
+  /** Target hex indicator — dashed ring + translucent fill on destination hex */
+  isTargetHex?: boolean;
   /** RC-201: Stable callback refs — HexTile binds its own coord internally */
   onHexClick?: (coord: HexCoord) => void;
   onHexHover?: (coord: HexCoord | null) => void;
@@ -137,7 +139,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   tile, cx, cy, size, hexClipId,
   isHovered = false, isSelected = false,
   visibility = 'visible', isAvatarHex = false, sphereColor,
-  locationSubtype, snapshot,
+  locationSubtype, snapshot, isTargetHex = false,
   onHexClick, onHexHover,
 }: HexTileProps) {
   // RC-201: Stable handlers — only re-create when callback ref or coord changes, not on hover
@@ -195,6 +197,12 @@ export const HexTileComponent = memo(function HexTileComponent({
           {isAvatarHex && sphereColor && (
             <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={AVATAR_PULSE_WIDTH} className="avatar-pulse" />
           )}
+          {isTargetHex && sphereColor && (
+            <>
+              <polygon points={points} fill={sphereColor} opacity={0.12} />
+              <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={2.5} strokeDasharray="8,4" className="target-dash" />
+            </>
+          )}
         </g>
       </Tooltip>
     );
@@ -210,6 +218,12 @@ export const HexTileComponent = memo(function HexTileComponent({
           </g>
           {isAvatarHex && sphereColor && (
             <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={AVATAR_PULSE_WIDTH} className="avatar-pulse" />
+          )}
+          {isTargetHex && sphereColor && (
+            <>
+              <polygon points={points} fill={sphereColor} opacity={0.12} />
+              <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={2.5} strokeDasharray="8,4" className="target-dash" />
+            </>
           )}
         </g>
       </Tooltip>
@@ -266,6 +280,12 @@ export const HexTileComponent = memo(function HexTileComponent({
           <g opacity="0.4">
             {tileContent}
           </g>
+          {isTargetHex && sphereColor && (
+            <>
+              <polygon points={points} fill={sphereColor} opacity={0.12} />
+              <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={2.5} strokeDasharray="8,4" className="target-dash" />
+            </>
+          )}
         </g>
       </Tooltip>
     );
@@ -289,6 +309,12 @@ export const HexTileComponent = memo(function HexTileComponent({
             strokeWidth={3}
             className="avatar-pulse"
           />
+        )}
+        {isTargetHex && sphereColor && (
+          <>
+            <polygon points={points} fill={sphereColor} opacity={0.12} />
+            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={2.5} strokeDasharray="8,4" className="target-dash" />
+          </>
         )}
       </g>
     </Tooltip>

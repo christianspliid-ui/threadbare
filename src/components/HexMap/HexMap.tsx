@@ -44,6 +44,8 @@ interface HexMapProps {
   initialScale?: number;
   graph?: WorldGraph;
   currentTick?: number;
+  avatarRoute?: { col: number; row: number }[];
+  avatarTargetHex?: { col: number; row: number };
   ghostDots?: GhostDotEntry[];
   onZoomChange?: (transform: d3.ZoomTransform) => void;
   onHexClick: (coord: HexCoord) => void;
@@ -61,6 +63,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   initialCenter, initialScale,
   graph,
   currentTick,
+  avatarRoute,
+  avatarTargetHex,
   ghostDots: ghostDotsProp,
   onZoomChange,
   onHexClick, onHexHover,
@@ -208,6 +212,18 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         .avatar-pulse {
           animation: avatar-breathe 3s ease-in-out infinite;
         }
+        @keyframes target-march {
+          to { stroke-dashoffset: -16; }
+        }
+        @keyframes route-march {
+          to { stroke-dashoffset: -12; }
+        }
+        .target-dash {
+          animation: target-march 1.5s linear infinite;
+        }
+        .route-dots {
+          animation: route-march 0.8s linear infinite;
+        }
       `}</style>
       <svg
         ref={svgRef}
@@ -251,6 +267,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 const visibility = hexVis?.state ?? 'visible';
                 const coordKey = `${tile.coord.col},${tile.coord.row}`;
                 const locSubtype = locationOverlays?.get(coordKey);
+                const isTarget = avatarTargetHex?.col === tile.coord.col && avatarTargetHex?.row === tile.coord.row;
                 return (
                   <HexTileComponent
                     key={`${tile.coord.col}-${tile.coord.row}`}
@@ -258,6 +275,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                     isHovered={isHovered} isSelected={isSelected}
                     visibility={visibility}
                     isAvatarHex={isAvatar}
+                    isTargetHex={isTarget}
                     sphereColor={sphereColor}
                     locationSubtype={locSubtype}
                     snapshot={hexVis?.snapshot}
@@ -295,6 +313,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
               const isAvatar = avatarHex?.col === tile.coord.col && avatarHex?.row === tile.coord.row;
               const coordKey = `${tile.coord.col},${tile.coord.row}`;
               const locSubtype = locationOverlays?.get(coordKey);
+              const isTarget = avatarTargetHex?.col === tile.coord.col && avatarTargetHex?.row === tile.coord.row;
               return (
                 <HexTileComponent
                   key={`${tile.coord.col}-${tile.coord.row}`}
@@ -302,6 +321,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                   isHovered={isHovered} isSelected={isSelected}
                   visibility={visibility}
                   isAvatarHex={isAvatar}
+                  isTargetHex={isTarget}
                   sphereColor={sphereColor}
                   locationSubtype={locSubtype}
                   snapshot={hexVis?.snapshot}
@@ -344,6 +364,25 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
             {/* Layer 4.5: Ghost dots — fading agents that left LOS */}
             {ghostDotsProp && ghostDotsProp.length > 0 && currentTick != null && (
               <GhostDots ghosts={ghostDotsProp} hexSize={hexSize} currentTick={currentTick} />
+            )}
+            {/* Layer 5: Route polyline — marching dots from avatar to target hex */}
+            {avatarRoute && avatarRoute.length > 1 && avatarHex && sphereColor && (
+              <polyline
+                points={[avatarHex, ...avatarRoute.slice(0, -1)]
+                  .map(h => {
+                    const p = hexToPixel(h, hexSize);
+                    return `${p.x},${p.y}`;
+                  })
+                  .join(' ')}
+                fill="none"
+                stroke={sphereColor}
+                strokeWidth={2}
+                strokeDasharray="4,6"
+                strokeLinecap="round"
+                className="route-dots"
+                opacity={0.5}
+                style={{ pointerEvents: 'none' }}
+              />
             )}
           </g>
         </g>
