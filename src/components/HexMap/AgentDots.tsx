@@ -21,6 +21,7 @@ interface AgentDotsProps {
   /** Sphere color for the avatar dot */
   sphereColor?: string;
   onAgentClick?: (agentId: string) => void;
+  onAgentDoubleClick?: (agentId: string) => void;
   onAgentHover?: (agentId: string | null) => void;
 }
 
@@ -98,6 +99,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   avatarId,
   sphereColor,
   onAgentClick,
+  onAgentDoubleClick,
   onAgentHover,
 }) => {
   const isTokenZoom = zoomScale >= ZOOM_TOKEN_THRESHOLD;
@@ -139,6 +141,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
                     transform={`translate(${cx + dx}, ${cy + dy})`}
                     style={{ cursor: 'pointer' }}
                     onClick={() => onAgentClick?.(agent.id)}
+                    onDoubleClick={() => onAgentDoubleClick?.(agent.id)}
                     onMouseEnter={() => onAgentHover?.(agent.id)}
                     onMouseLeave={() => onAgentHover?.(null)}
                   >
