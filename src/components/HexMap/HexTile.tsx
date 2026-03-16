@@ -91,7 +91,7 @@ function buildTooltipProps(
   snapshot: StaleSnapshot | undefined,
 ): { label: string; desc: string } {
   const { terrain, geoParams } = tile;
-  const desc = buildHexTooltipProse(
+  const prose = buildHexTooltipProse(
     terrain,
     geoParams.elevation,
     geoParams.temperature,
@@ -100,6 +100,12 @@ function buildTooltipProps(
     locationSubtype,
     snapshot,
   );
+
+  // IX-202: Append geo stats to visible hex tooltips
+  const geoLine = visibility === 'visible'
+    ? `\nElev ${Math.round(geoParams.elevation * 100)}% · Temp ${Math.round(geoParams.temperature * 100)}% · Moist ${Math.round(geoParams.moisture * 100)}%`
+    : '';
+  const desc = prose + geoLine;
 
   // Visible hex with a recognisable overlay — promote the location type to label
   if (visibility === 'visible' && locationSubtype && locationSubtype !== 'wilderness') {
