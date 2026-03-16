@@ -3,10 +3,10 @@
 > Updated 2026-03-12. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-Agent Ambition System complete. PROD-01 Vertical Slice Contract — define the current player loop, in-scope systems, out-of-scope systems, and next milestone success criteria.
+PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
 ## Up Next
-STRUCT-01 Repo Boundary Cleanup — move loose screenshots, stale markdown, and temp artifacts from repo root into proper locations.
+Triage candidate tasks from the PROD-01 contract against the 10 polish criteria. Then STRUCT-01 Repo Boundary Cleanup.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
