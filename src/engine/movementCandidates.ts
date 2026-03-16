@@ -103,9 +103,9 @@ function computeBasePull(
   const node = graph.getNode(locationId);
   if (!node) return { pull: 0, bestTemplateId: '' };
 
-  // Skip non-hex-center locations (agents move hex-to-hex)
+  // Only consider location nodes (skip sublocations, regions, etc.)
   const locType = node.properties?.locationType;
-  if (locType !== 'hex_center') return { pull: 0, bestTemplateId: '' };
+  if (!locType || locType === 'sublocation') return { pull: 0, bestTemplateId: '' };
 
   // Base pull from P0 heuristic (always computed)
   const ambitionBonus = Math.max(0, profile.ambition_contentment) * P0_AMBITION_WEIGHT;
