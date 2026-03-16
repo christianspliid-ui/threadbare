@@ -954,6 +954,70 @@ describe('culture-content', () => {
     });
   });
 
+  // ─── Reach Weights Tests ─────────────────────────────────────────
+
+  describe('reachWeights on modifier interfaces', () => {
+    it('each foundation modifier has reachWeights defined', () => {
+      for (const mod of FOUNDATION_MODIFIERS) {
+        expect(mod.reachWeights).toBeDefined();
+        expect(typeof mod.reachWeights).toBe('object');
+      }
+    });
+
+    it('each creation sphere modifier has reachWeights with at least one non-zero value', () => {
+      for (const mod of CREATION_SPHERE_MODIFIERS) {
+        expect(mod.reachWeights).toBeDefined();
+        expect(typeof mod.reachWeights).toBe('object');
+        const values = Object.values(mod.reachWeights);
+        expect(values.length).toBeGreaterThanOrEqual(1);
+        expect(values.some(v => v !== 0)).toBe(true);
+      }
+    });
+
+    it('each biome modifier has reachWeights defined', () => {
+      for (const mod of BIOME_MODIFIERS) {
+        expect(mod.reachWeights).toBeDefined();
+        expect(typeof mod.reachWeights).toBe('object');
+      }
+    });
+
+    it('all reach weight values are in [-1, 1]', () => {
+      const allModifiers = [
+        ...FOUNDATION_MODIFIERS.map(m => ({ label: `foundation:${m.id}`, weights: m.reachWeights })),
+        ...CREATION_SPHERE_MODIFIERS.map(m => ({ label: `sphere:${m.sphere}`, weights: m.reachWeights })),
+        ...BIOME_MODIFIERS.map(m => ({ label: `biome:${m.terrain}`, weights: m.reachWeights })),
+      ];
+      for (const { label, weights } of allModifiers) {
+        for (const [domain, value] of Object.entries(weights)) {
+          expect((REACH_DOMAINS as string[]).includes(domain)).toBe(true);
+          expect(value, `${label}.${domain} = ${value} should be in [-1, 1]`).toBeGreaterThanOrEqual(-1);
+          expect(value, `${label}.${domain} = ${value} should be in [-1, 1]`).toBeLessThanOrEqual(1);
+        }
+      }
+    });
+
+    it('all reach weight keys are valid ReachDomain values', () => {
+      const allWeights = [
+        ...FOUNDATION_MODIFIERS.map(m => m.reachWeights),
+        ...CREATION_SPHERE_MODIFIERS.map(m => m.reachWeights),
+        ...BIOME_MODIFIERS.map(m => m.reachWeights),
+      ];
+      for (const weights of allWeights) {
+        for (const key of Object.keys(weights)) {
+          expect((REACH_DOMAINS as string[]).includes(key)).toBe(true);
+        }
+      }
+    });
+
+    it('each biome modifier has at least one non-zero reach weight', () => {
+      for (const mod of BIOME_MODIFIERS) {
+        const values = Object.values(mod.reachWeights);
+        expect(values.length, `biome:${mod.terrain} should have at least one reach weight`).toBeGreaterThanOrEqual(1);
+        expect(values.some(v => v !== 0), `biome:${mod.terrain} should have at least one non-zero weight`).toBe(true);
+      }
+    });
+  });
+
   // ─── Cultural Prose Palettes Tests ────────────────────────────────
 
   describe('CULTURAL_PROSE_PALETTES', () => {

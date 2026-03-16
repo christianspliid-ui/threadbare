@@ -1,4 +1,5 @@
 import type { SphereName, TerrainType } from './index';
+import type { ReachDomain } from './traits';
 
 /**
  * Composed culture identity — merged from foundation + creation sphere + biome modifiers.
@@ -15,6 +16,7 @@ export interface CultureIdentity {
   metaphorPalette: string[];
   formativeTraitSeedIds: string[];
   behavioralTraitSeedIds: string[];
+  readonly reachPreferences: Record<ReachDomain, number>;
 }
 
 /**
