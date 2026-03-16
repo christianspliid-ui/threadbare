@@ -3,7 +3,7 @@
 > Updated 2026-03-12. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-PROD-01 Vertical Slice Contract — define the current player loop, in-scope systems, out-of-scope systems, and next milestone success criteria.
+Agent Ambition System complete. PROD-01 Vertical Slice Contract — define the current player loop, in-scope systems, out-of-scope systems, and next milestone success criteria.
 
 ## Up Next
 STRUCT-01 Repo Boundary Cleanup — move loose screenshots, stale markdown, and temp artifacts from repo root into proper locations.
