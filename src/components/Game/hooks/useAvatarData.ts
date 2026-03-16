@@ -3,6 +3,7 @@ import type { AscendantArchetype } from '../../../types/influence';
 import type { WorldGraph } from '../../../types/graph';
 import type { LocationSubtype } from '../../../types';
 import { getAvatarHexPosition } from '../../../engine/visibility';
+import { getAvatarMovementState } from '../../../engine/avatarMove';
 import { hexToPixel } from '../../../lib/hexMath';
 import { enableTracing, disableTracing } from '../../../engine/traceBuffer';
 import { getSphereColor } from '../../../data/sphereIcons';
@@ -18,6 +19,8 @@ export interface UseAvatarDataReturn {
   sphereColor: string;
   locationOverlays: Map<string, LocationSubtype>;
   avatarPixelPos: { x: number; y: number } | null;
+  avatarRoute: { col: number; row: number }[] | null;
+  avatarTargetHex: { col: number; row: number } | null;
   debugPanelOpen: boolean;
   handleToggleDebug: () => void;
 }
@@ -68,6 +71,22 @@ export function useAvatarData({
     return overlayMap;
   })();
 
+  // Route visualization — extract hex coords from movement queue
+  const avatarMovementState = getAvatarMovementState(graph, ascendantId);
+  const avatarRoute = useMemo(() => {
+    if (!avatarMovementState || avatarMovementState.movementQueue.length === 0) return null;
+    const routeHexes: { col: number; row: number }[] = [];
+    for (const nodeId of avatarMovementState.movementQueue) {
+      const node = graph.getNode(nodeId);
+      if (node && node.properties.hexCol != null && node.properties.hexRow != null) {
+        routeHexes.push({ col: node.properties.hexCol as number, row: node.properties.hexRow as number });
+      }
+    }
+    return routeHexes.length > 0 ? routeHexes : null;
+  }, [avatarMovementState, graph]);
+
+  const avatarTargetHex = avatarRoute ? avatarRoute[avatarRoute.length - 1] : null;
+
   // Avatar pixel position for initial zoom
   const avatarPixelPos = useMemo(() => {
     if (!avatarPos) return null;
@@ -101,6 +120,8 @@ export function useAvatarData({
     sphereColor,
     locationOverlays,
     avatarPixelPos,
+    avatarRoute,
+    avatarTargetHex,
     debugPanelOpen,
     handleToggleDebug,
   };

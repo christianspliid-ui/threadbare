@@ -69,6 +69,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     sphereColor,
     locationOverlays,
     avatarPixelPos,
+    avatarRoute,
+    avatarTargetHex,
     debugPanelOpen,
     handleToggleDebug,
   } = useAvatarData({
@@ -362,6 +364,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   locationOverlays={locationOverlays}
                   avatarHex={avatarPos ?? undefined}
                   sphereColor={sphereColor}
+                  avatarRoute={avatarRoute ?? undefined}
+                  avatarTargetHex={avatarTargetHex ?? undefined}
                   initialCenter={avatarPixelPos ?? undefined}
                   initialScale={3.0}
                   onHexClick={handleHexClickMove}
