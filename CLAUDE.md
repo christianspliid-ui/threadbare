@@ -77,13 +77,25 @@ When modifying Notion pages or Obsidian vault notes:
 - **In the document:** Dated inline note near the change (date, what, why — one line).
 - **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
 
+## Definition of Done
+
+When implementation is complete and tests pass, **do all of these automatically — do not ask which option the user wants:**
+
+1. **Commit** all changes
+2. **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
+3. **Merge** feature branches into main immediately — don't leave branches waiting
+4. **Deploy** to Vercel production
+5. **Document** — use the `gamedocumenter` skill for Notion/Obsidian/changelog/project-status updates
+
+This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
+
 ## Session Workflow
 
 1. Read this file for orientation
 2. Read Obsidian `Index.md` via MCP, follow links to the relevant system
 3. Check Notion backlog for current phase and next tasks
 4. Read relevant design doc in `Docs/plans/` before writing code
-5. After completing work, **use the `gamedocumenter` skill** for documentation updates (Notion, Obsidian, changelog, project-status/project-history, backlogs). Non-negotiable — same session, not "later."
+5. After completing work, follow the **Definition of Done** above
 
 ## Domain Skills
 
