@@ -11,6 +11,7 @@ import { CoastlineOverlay } from './CoastlineOverlay';
 import { RiverOverlay } from './RiverOverlay';
 import { AgentDots } from './AgentDots';
 import { MovementTrails } from './MovementTrails';
+import { RegionLabels } from './RegionLabels';
 import { GhostDots } from './GhostDots';
 import type { GhostDotEntry } from '../../engine/ghostDots';
 import { useCoastline } from './useCoastline';
@@ -215,6 +216,17 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         style={{ background: HEX_MAP_BACKGROUND }}
       >
         <HexDefs size={hexSize} />
+        <defs>
+          <filter id="region-label-halo" x="-10%" y="-10%" width="120%" height="120%">
+            <feFlood floodColor="rgba(255,250,240,0.6)" result="bg" />
+            <feComposite in="bg" in2="SourceGraphic" operator="in" result="mask" />
+            <feGaussianBlur in="mask" stdDeviation="2" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
         <g ref={gRef} className="zoom-group">
           <g transform={tileBaseTransform}>
             {/* Land contour clip path definition */}
@@ -307,6 +319,15 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                   <polygon key={p.key} points={p.points} fill={HEX_MAP_BACKGROUND} opacity={p.opacity} style={{ pointerEvents: 'none' }} />
                 ))}
               </g>
+            )}
+            {/* Layer 3.7: Region name labels — visible when zoomed out, fade on zoom in */}
+            {graph && (
+              <RegionLabels
+                graph={graph}
+                hexSize={hexSize}
+                zoomScale={currentZoomScale}
+                visibilityMap={visibilityMap}
+              />
             )}
             {/* Layer 3.8: Movement trails — under agents but over fog */}
             {graph && currentTick != null && (
