@@ -1,168 +1,100 @@
+// src/engine/ambitionLifecycle.ts
+// Pure evaluators for ambition milestone completion, abandonment detection,
+// and overall progress assessment. No side effects — reads graph state, returns results.
+
+import type { AmbitionTemplate, ActiveAmbition, AmbitionStatus } from '../types/ambition';
+import type { ConditionGraph } from './graphConditions';
+import { evaluateGraphCondition } from './graphConditions';
+
+// ─── Result type ─────────────────────────────────────────────────
+
+export interface AmbitionProgressResult {
+  status: AmbitionStatus;
+  newMilestones: string[];
+  allCompletedMilestones: string[];
+}
+
+// ─── Milestone checking ──────────────────────────────────────────
+
 /**
- * Ambition Lifecycle — evaluates milestone progress, completion, and abandonment.
- *
- * Pure evaluation functions: reads graph state and returns updated ambition status.
- * Does not modify graph — callers are responsible for applying changes.
+ * Evaluate each milestone in the template that hasn't already been completed.
+ * Returns an array of newly completed milestone IDs.
  */
-import type { AmbitionTemplate, ActiveAmbition, AmbitionStatus, GraphCondition } from '../types/ambition';
-import type { WorldGraph } from './graph';
-import type { ReachDomain } from '../types/traits';
+export function checkMilestones(
+  template: AmbitionTemplate,
+  graph: ConditionGraph,
+  agentId: string,
+  alreadyCompleted: readonly string[],
+): string[] {
+  const completedSet = new Set(alreadyCompleted);
+  const newlyCompleted: string[] = [];
 
-// ─── Graph Condition Evaluation ──────────────────────────────────
-
-/**
- * Evaluate a single graph condition against the current graph state for an actor.
- * Returns true if the condition is met.
- */
-export function evaluateGraphCondition(
-  condition: GraphCondition,
-  graph: WorldGraph,
-  actorId: string,
-): boolean {
-  const actor = graph.getNode(actorId);
-  if (!actor) return false;
-
-  switch (condition.type) {
-    case 'agent_reach_above': {
-      const caps = actor.properties.domainCapabilities as Record<ReachDomain, number> | undefined;
-      const value = caps?.[condition.reach] ?? 0;
-      return value >= condition.threshold;
-    }
-
-    case 'agent_reach_below': {
-      const caps = actor.properties.domainCapabilities as Record<ReachDomain, number> | undefined;
-      const value = caps?.[condition.reach] ?? 0;
-      return value <= condition.threshold;
-    }
-
-    case 'agent_has_bonds': {
-      const edges = graph.getOutgoingEdges(actorId, 'relates_to');
-      const matchCount = edges.filter(
-        e => (e.properties.basis as string) === condition.basis,
-      ).length;
-      return matchCount >= condition.minCount;
-    }
-
-    case 'agent_controls_location': {
-      const controlEdges = graph.getOutgoingEdges(actorId, 'controls');
-      return controlEdges.some(e => {
-        const targetNode = graph.getNode(e.target);
-        return targetNode?.properties.locationType === condition.locationType;
-      });
-    }
-
-    case 'agent_has_trait': {
-      const traitEdges = graph.getOutgoingEdges(actorId, 'has_trait');
-      return traitEdges.some(e => {
-        const traitNode = graph.getNode(e.target);
-        return traitNode?.name === condition.trait || traitNode?.id === condition.trait;
-      });
-    }
-
-    case 'agent_lacks_trait': {
-      const traitEdges = graph.getOutgoingEdges(actorId, 'has_trait');
-      return !traitEdges.some(e => {
-        const traitNode = graph.getNode(e.target);
-        return traitNode?.name === condition.trait || traitNode?.id === condition.trait;
-      });
-    }
-
-    case 'target_agent_eliminated': {
-      // $-prefixed refs are symbolic — not evaluable without event context
-      if (condition.targetRef.startsWith('$')) return false;
-      const targetNode = graph.getNode(condition.targetRef);
-      return !targetNode; // eliminated if node doesn't exist
-    }
-
-    case 'agent_in_region': {
-      const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
-      if (locEdges.length === 0) return false;
-      const locNode = graph.getNode(locEdges[0].target);
-      if (!locNode) return false;
-      // Check if location is contained by the named region
-      const regionEdges = graph.getIncomingEdges(locNode.id, 'contains');
-      return regionEdges.some(e => {
-        const regionNode = graph.getNode(e.source);
-        return regionNode?.name === condition.region || regionNode?.properties.regionTag === condition.region;
-      });
-    }
-
-    case 'agent_not_in_region': {
-      const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
-      if (locEdges.length === 0) return true; // not in any region
-      const locNode = graph.getNode(locEdges[0].target);
-      if (!locNode) return true;
-      const regionEdges = graph.getIncomingEdges(locNode.id, 'contains');
-      return !regionEdges.some(e => {
-        const regionNode = graph.getNode(e.source);
-        return regionNode?.name === condition.region || regionNode?.properties.regionTag === condition.region;
-      });
+  for (const milestone of template.milestones) {
+    if (completedSet.has(milestone.id)) continue;
+    if (evaluateGraphCondition(milestone.condition, graph, agentId)) {
+      newlyCompleted.push(milestone.id);
     }
   }
+
+  return newlyCompleted;
 }
 
-// ─── Ambition Progress Evaluation ────────────────────────────────
-
-export interface AmbitionEvaluationResult {
-  readonly status: AmbitionStatus;
-  readonly completedMilestones: readonly string[];
-  readonly resolvedTick?: number;
-}
+// ─── Abandonment checking ────────────────────────────────────────
 
 /**
- * Evaluate an active ambition's progress against the current graph state.
- *
- * Checks:
- * 1. Abandonment triggers — if any fire, status becomes 'abandoned'
- * 2. Milestone conditions — newly completed milestones are added
- * 3. Completion rule — if enough milestones met, status becomes 'completed'
- *
- * Returns the updated status and milestone list (does not mutate anything).
+ * Evaluate each abandonment trigger in the template.
+ * Returns true if ANY trigger fires.
+ */
+export function checkAbandonment(
+  template: AmbitionTemplate,
+  graph: ConditionGraph,
+  agentId: string,
+): boolean {
+  for (const trigger of template.abandonmentTriggers) {
+    if (evaluateGraphCondition(trigger.condition, graph, agentId)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+// ─── Overall progress evaluation ─────────────────────────────────
+
+/**
+ * Evaluate an active ambition's progress: check abandonment first (takes priority),
+ * then milestones, then completion threshold.
  */
 export function evaluateAmbitionProgress(
   template: AmbitionTemplate,
   active: ActiveAmbition,
-  graph: WorldGraph,
-  actorId: string,
-  currentTick?: number,
-): AmbitionEvaluationResult {
-  // 1. Check abandonment triggers first
-  for (const trigger of template.abandonmentTriggers) {
-    if (evaluateGraphCondition(trigger.condition, graph, actorId)) {
-      return {
-        status: 'abandoned',
-        completedMilestones: active.completedMilestones,
-        resolvedTick: currentTick,
-      };
-    }
+  graph: ConditionGraph,
+  agentId: string,
+): AmbitionProgressResult {
+  // Abandonment takes priority
+  if (checkAbandonment(template, graph, agentId)) {
+    return {
+      status: 'abandoned',
+      newMilestones: [],
+      allCompletedMilestones: [...active.completedMilestones],
+    };
   }
 
-  // 2. Evaluate milestones
-  const completedMilestones = [...active.completedMilestones];
-  for (const milestone of template.milestones) {
-    if (completedMilestones.includes(milestone.id)) continue;
-    if (evaluateGraphCondition(milestone.condition, graph, actorId)) {
-      completedMilestones.push(milestone.id);
-    }
-  }
+  // Check for new milestones
+  const newMilestones = checkMilestones(template, graph, agentId, active.completedMilestones);
+  const allCompletedMilestones = [...active.completedMilestones, ...newMilestones];
 
-  // 3. Check completion rule
-  const { requires, of: total } = template.completion;
-  // Count how many of the template's milestones are completed
-  const completedCount = template.milestones.filter(
-    m => completedMilestones.includes(m.id),
-  ).length;
-
-  if (completedCount >= requires) {
+  // Check completion threshold
+  if (allCompletedMilestones.length >= template.completion.requires) {
     return {
       status: 'completed',
-      completedMilestones,
-      resolvedTick: currentTick,
+      newMilestones,
+      allCompletedMilestones,
     };
   }
 
   return {
     status: 'active',
-    completedMilestones,
+    newMilestones,
+    allCompletedMilestones,
   };
 }
