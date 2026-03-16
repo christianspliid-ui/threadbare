@@ -16,6 +16,7 @@ interface UseAvatarDataParams {
 
 export interface UseAvatarDataReturn {
   avatarPos: { col: number; row: number } | null;
+  avatarNodeId: string | null;
   sphereColor: string;
   locationOverlays: Map<string, LocationSubtype>;
   avatarPixelPos: { x: number; y: number } | null;
@@ -45,6 +46,12 @@ export function useAvatarData({
   // Avatar position — no useMemo because the graph is mutable (same reference after
   // moveAvatarToHex); recalculating on every render is trivially cheap (2 edge hops).
   const avatarPos = getAvatarHexPosition(graph, ascendantId);
+
+  // Derive avatar actor node ID from graph (ascendant ← avatar_of ← avatar)
+  const avatarNodeId = (() => {
+    const edges = graph.getIncomingEdges(ascendantId, 'avatar_of');
+    return edges.length > 0 ? edges[0].source : null;
+  })();
 
   // Sphere color based on primary creation sphere
   const sphereColor = useMemo(
@@ -117,6 +124,7 @@ export function useAvatarData({
 
   return {
     avatarPos,
+    avatarNodeId,
     sphereColor,
     locationOverlays,
     avatarPixelPos,
