@@ -2,6 +2,7 @@ import { memo } from 'react';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { resolveEncounterNarrative } from '../../data/encounter-content';
+import { Tooltip } from '../shared/Tooltip';
 
 interface EncounterLogProps {
   progress: EncounterProgress;
@@ -52,17 +53,19 @@ export const EncounterLog = memo(function EncounterLog({
           </h4>
         </div>
 
-        {/* Threat rating badge */}
-        <div
-          className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap border"
-          style={{
-            backgroundColor: 'var(--bg-deep)',
-            color: threatColor,
-            borderColor: threatColor,
-          }}
-        >
-          {template.threatRating}
-        </div>
+        {/* FE-TT-19: Threat rating badge with tooltip */}
+        <Tooltip label="Threat Rating" desc="How dangerous this encounter is. Higher threats demand stronger agents and reward greater narrative weight.">
+          <div
+            className="flex-shrink-0 px-2 py-0.5 rounded text-xs font-semibold whitespace-nowrap border cursor-help"
+            style={{
+              backgroundColor: 'var(--bg-deep)',
+              color: threatColor,
+              borderColor: threatColor,
+            }}
+          >
+            {template.threatRating}
+          </div>
+        </Tooltip>
 
         {/* Status indicator */}
         <div className="flex-shrink-0">
@@ -75,12 +78,13 @@ export const EncounterLog = memo(function EncounterLog({
         </div>
       </div>
 
-      {/* Step progress indicators (dots) */}
-      <div
-        className="flex gap-1 mb-3"
-        role="group"
-        aria-label={`Encounter progress: step ${progress.currentEncounterIndex + 1} of ${template.steps.length}`}
-      >
+      {/* FE-TT-19: Step progress indicators with tooltip */}
+      <Tooltip id="ui.encounter_progress">
+        <div
+          className="flex gap-1 mb-3 cursor-help"
+          role="group"
+          aria-label={`Encounter progress: step ${progress.currentEncounterIndex + 1} of ${template.steps.length}`}
+        >
         {template.steps.map((step, idx) => {
           const isCurrentOrPassed = idx <= progress.currentEncounterIndex;
           const isCurrent = idx === progress.currentEncounterIndex;
@@ -100,19 +104,22 @@ export const EncounterLog = memo(function EncounterLog({
             />
           );
         })}
-      </div>
+        </div>
+      </Tooltip>
 
       {/* Current step narrative */}
       {currentStep && (
         <div>
-          <p
-            className="text-xs font-semibold mb-2 uppercase tracking-wider"
-            style={{
-              color: 'var(--text-secondary)',
-            }}
-          >
-            {currentStep.name}
-          </p>
+          <Tooltip id="ui.encounter_step">
+            <p
+              className="text-xs font-semibold mb-2 uppercase tracking-wider cursor-help"
+              style={{
+                color: 'var(--text-secondary)',
+              }}
+            >
+              {currentStep.name}
+            </p>
+          </Tooltip>
           <p
             className="text-xs leading-relaxed"
             style={{
