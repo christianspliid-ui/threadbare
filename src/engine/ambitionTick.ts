@@ -78,8 +78,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         completedMilestones: (edge.properties.completedMilestones as string[]) ?? [],
       };
 
-      const previousMilestones = [...active.completedMilestones];
-      const result = evaluateAmbitionProgress(template, active, graph, actor.id, tick);
+      const result = evaluateAmbitionProgress(template, active, graph, actor.id);
 
       // ── Status changed: completion or abandonment ──
       if (result.status !== 'active') {
@@ -87,7 +86,7 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           properties: {
             ...edge.properties,
             status: result.status,
-            completedMilestones: [...result.completedMilestones],
+            completedMilestones: [...result.allCompletedMilestones],
             resolvedTick: tick,
           },
         });
@@ -103,37 +102,33 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
         newEvents.push({
           id: nextAmbitionEventId(),
           tick,
-          type: eventType as TickEvent['type'],
+          type: eventType,
           message: prose,
           significance: result.status === 'completed' ? 0.8 : 0.5,
         });
 
         emitTrace({
           tick,
-          category: 'ambition_progress' as any,
+          category: 'ambition_progress',
           actorId: actor.id,
           templateId,
           result: result.status,
-          milestones: result.completedMilestones,
+          milestones: result.allCompletedMilestones,
         });
 
         continue; // Don't check milestones for resolved ambitions
       }
 
       // ── New milestones completed (still active) ──
-      const newMilestones = result.completedMilestones.filter(
-        m => !previousMilestones.includes(m),
-      );
-
-      if (newMilestones.length > 0) {
+      if (result.newMilestones.length > 0) {
         graph.updateEdge(edge.id, {
           properties: {
             ...edge.properties,
-            completedMilestones: [...result.completedMilestones],
+            completedMilestones: [...result.allCompletedMilestones],
           },
         });
 
-        for (const milestoneId of newMilestones) {
+        for (const milestoneId of result.newMilestones) {
           const milestone = template.milestones.find(m => m.id === milestoneId);
           const prose = milestone?.prose[0]
             ?? `${actor.name} progressed toward: ${template.displayName}`;
@@ -141,14 +136,14 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           newEvents.push({
             id: nextAmbitionEventId(),
             tick,
-            type: 'ambition_milestone' as TickEvent['type'],
+            type: 'ambition_milestone',
             message: prose,
             significance: 0.6,
           });
 
           emitTrace({
             tick,
-            category: 'ambition_progress' as any,
+            category: 'ambition_progress',
             actorId: actor.id,
             templateId,
             result: 'milestone',
@@ -215,14 +210,23 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           const assignments = assignInitialAmbitions(availableTemplates, agentSnapshot, seed);
 
           for (const assignment of assignments.slice(0, slotsNeeded)) {
-            // Create ambition node
-            const ambitionNodeId = `ambition_${actor.id}_${assignment.templateId}_${tick}`;
-            graph.addNode({
-              id: ambitionNodeId,
-              type: 'ambition',
-              name: assignment.templateId,
-              properties: { templateId: assignment.templateId },
-            });
+            // Find or create shared ambition template node
+            const ambitionNodeId = `ambition.${assignment.templateId}`;
+            if (!graph.getNode(ambitionNodeId)) {
+              const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
+              graph.addNode({
+                id: ambitionNodeId,
+                type: 'ambition',
+                name: tmpl?.displayName ?? assignment.templateId,
+                properties: {
+                  templateId: assignment.templateId,
+                  displayName: tmpl?.displayName ?? assignment.templateId,
+                  category: tmpl?.category ?? 'survival',
+                  reachAffinity: tmpl?.reachAffinity ?? {},
+                  totalMilestones: tmpl?.milestones.length ?? 0,
+                },
+              });
+            }
 
             // Create pursues edge
             const edgeId = `pursues_${actor.id}_${ambitionNodeId}`;
@@ -246,14 +250,14 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             newEvents.push({
               id: nextAmbitionEventId(),
               tick,
-              type: 'ambition_assigned' as TickEvent['type'],
+              type: 'ambition_assigned',
               message: prose,
               significance: 0.5,
             });
 
             emitTrace({
               tick,
-              category: 'ambition_progress' as any,
+              category: 'ambition_progress',
               actorId: actor.id,
               templateId: assignment.templateId,
               result: 'assigned',
