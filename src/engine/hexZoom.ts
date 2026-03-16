@@ -45,8 +45,8 @@ export function getAgentsAtLocation(graph: WorldGraph, locationId: string): Grap
 }
 
 /**
- * Aggregated sphere biases from all locations in the hex.
- * Sums sphereBiases from each location's properties.
+ * Aggregated sphere influence from all locations in the hex.
+ * Reads sphereInfluence (always populated) with sphereBiases as fallback.
  */
 export function getHexSphereInfluence(graph: WorldGraph, col: number, row: number): SphereInfluence {
   const influence = {} as SphereInfluence;
@@ -54,10 +54,11 @@ export function getHexSphereInfluence(graph: WorldGraph, col: number, row: numbe
 
   const locations = getLocationsInHex(graph, col, row);
   for (const loc of locations) {
-    const biases = (loc.properties as Record<string, unknown>).sphereBiases as Record<string, number> | undefined;
-    if (biases) {
+    const props = loc.properties as Record<string, unknown>;
+    const sphereData = (props.sphereInfluence ?? props.sphereBiases) as Record<string, number> | undefined;
+    if (sphereData) {
       for (const s of SPHERE_NAMES) {
-        influence[s] += biases[s] ?? 0;
+        influence[s] += sphereData[s] ?? 0;
       }
     }
   }

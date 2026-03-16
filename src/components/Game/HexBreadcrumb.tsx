@@ -57,6 +57,7 @@ interface HexBreadcrumbProps {
   sphereInfluence: SphereInfluence;
   cultures: HexCultureSummary[];
   factions: HexFactionSummary[];
+  regionName?: string;
   onBack: () => void;
 }
 
@@ -70,6 +71,7 @@ export function HexBreadcrumb({
   sphereInfluence,
   cultures,
   factions,
+  regionName,
   onBack,
 }: HexBreadcrumbProps) {
   const isHidden = lineOfSight === 'none';
@@ -120,22 +122,20 @@ export function HexBreadcrumb({
             fontFamily: 'var(--font-display)',
           }}
         >
-          {terrainLabel} ({hexCol}, {hexRow})
+          {regionName || `${terrainLabel} (${hexCol}, ${hexRow})`}
         </h2>
-        {/* Culture / Faction sub-line */}
-        {(dominantCulture || dominantFaction) && (
-          <span
-            className="truncate"
-            style={{
-              fontSize: 'var(--text-xs)',
-              color: 'var(--text-tertiary)',
-            }}
-          >
-            {dominantCulture && dominantCulture.cultureName}
-            {dominantCulture && dominantFaction && ' · '}
-            {dominantFaction && dominantFaction.factionName}
-          </span>
-        )}
+        {/* Terrain + culture subtitle */}
+        <span
+          className="truncate"
+          style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-tertiary)',
+          }}
+        >
+          {regionName ? `${terrainLabel} at ${hexCol}, ${hexRow}` : ''}
+          {dominantCulture && (regionName ? ' · ' : '') + dominantCulture.cultureName}
+          {dominantFaction && ' · ' + dominantFaction.factionName}
+        </span>
       </div>
 
       {/* Sphere influence dots */}

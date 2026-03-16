@@ -18,12 +18,14 @@ import type { SphereAlignment } from '../types/influence';
 import type { MandateTemplate } from '../data/mandate-content';
 import { MANDATE_TEMPLATES } from '../data/mandate-content';
 
-// ─── Constants ───────────────────────────────────────────────────────────
+// ─── Constants (from central config) ─────────────────────────────────────
 
-const PRIMARY_WEIGHT = 3;
-const SECONDARY_WEIGHT = 2;
-const BASE_WEIGHT = 1;
-const SIMULATION_ACHIEVABLE_MULTIPLIER = 2;
+import {
+  MANDATE_PRIMARY_WEIGHT as PRIMARY_WEIGHT,
+  MANDATE_SECONDARY_WEIGHT as SECONDARY_WEIGHT,
+  MANDATE_BASE_WEIGHT as BASE_WEIGHT,
+  MANDATE_ACHIEVABLE_MULTIPLIER as SIMULATION_ACHIEVABLE_MULTIPLIER,
+} from '../data/game-config';
 
 // ─── Seeded PRNG (same as orchestrator.ts) ────────────────────────────────
 

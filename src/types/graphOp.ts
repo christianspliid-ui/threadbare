@@ -90,7 +90,9 @@ export interface InfluencePayload {
   readonly reachBoost?: { readonly reach: string; readonly bonus: number };
   readonly behaviorTag?: string;
   readonly traitId?: string;
+  readonly personalityBoost?: number;
   readonly strategyOverride?: string;
+  readonly agendaId?: string;
 }
 
 /**
