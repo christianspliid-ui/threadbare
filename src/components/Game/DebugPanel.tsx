@@ -673,14 +673,20 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
 
-  // Auto-switch to agent-follow mode when followAgentId changes
+  // FE-17: Auto-switch to agent-follow only when followAgentId itself changes,
+  // not when the user manually switches tabs. Previous version had viewMode in deps,
+  // creating a feedback loop that snapped back to agent-follow on every tab switch.
+  const prevFollowAgentId = useRef(followAgentId);
   useEffect(() => {
-    if (followAgentId) {
-      setViewMode('agent-follow');
-    } else if (viewMode === 'agent-follow') {
-      setViewMode('feed');
+    if (followAgentId !== prevFollowAgentId.current) {
+      prevFollowAgentId.current = followAgentId;
+      if (followAgentId) {
+        setViewMode('agent-follow');
+      } else {
+        setViewMode((prev) => prev === 'agent-follow' ? 'feed' : prev);
+      }
     }
-  }, [followAgentId, viewMode]);
+  }, [followAgentId]);
 
   // DEF-008: Deduplicate traces by id — React StrictMode double-executes effects,
   // causing duplicate entries in the trace buffer during development.
