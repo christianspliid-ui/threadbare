@@ -14,6 +14,8 @@ import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { HexRegionData } from '../../engine/hexRegion';
 import { getSphereColor } from '../../data/sphereIcons';
+import { getHexTileUrl } from '../../data/hex-tile-assets';
+import { hexPolygonPoints } from '../../lib/hexMath';
 
 export interface HexSidebarProps {
   terrain: TerrainType;
@@ -43,6 +45,13 @@ function getIntensityLabel(value: number): string {
 function terrainLabel(terrain: TerrainType): string {
   return terrain.replace(/_/g, ' ');
 }
+
+// ── Hex image preview constants ────────────────────────────────────
+const HEX_PREVIEW_RADIUS = 80;
+const HEX_PREVIEW_SIZE = HEX_PREVIEW_RADIUS * 2 + 8; // viewBox padding
+const HEX_PREVIEW_CENTER = HEX_PREVIEW_SIZE / 2;
+const HEX_PREVIEW_IMG_SCALE = 2.4;
+const HEX_PREVIEW_POINTS = hexPolygonPoints(HEX_PREVIEW_CENTER, HEX_PREVIEW_CENTER, HEX_PREVIEW_RADIUS);
 
 export const HexSidebar = React.memo((props: HexSidebarProps) => {
   const [isExpanded, setIsExpanded] = useState(true);
@@ -105,6 +114,46 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
 
       {isExpanded ? (
         <>
+          {/* Hex Terrain Image Preview */}
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            <svg
+              viewBox={`0 0 ${HEX_PREVIEW_SIZE} ${HEX_PREVIEW_SIZE}`}
+              width="100%"
+              style={{ maxWidth: `${HEX_PREVIEW_SIZE}px` }}
+            >
+              <defs>
+                <clipPath id="hex-sidebar-clip">
+                  <polygon points={HEX_PREVIEW_POINTS} />
+                </clipPath>
+              </defs>
+              <polygon
+                points={HEX_PREVIEW_POINTS}
+                fill="var(--bg-abyss)"
+                stroke="var(--accent-gold)"
+                strokeWidth="1.5"
+                strokeOpacity={0.3}
+              />
+              <g clipPath="url(#hex-sidebar-clip)">
+                <image
+                  href={getHexTileUrl(props.terrain)}
+                  x={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
+                  y={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
+                  width={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
+                  height={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
+                  preserveAspectRatio="xMidYMid slice"
+                  opacity={props.lineOfSight === 'none' ? 0.08 : props.lineOfSight === 'partial' ? 0.4 : 0.85}
+                />
+              </g>
+              <polygon
+                points={HEX_PREVIEW_POINTS}
+                fill="none"
+                stroke="var(--accent-gold)"
+                strokeWidth="1.5"
+                strokeOpacity={0.3}
+              />
+            </svg>
+          </div>
+
           {/* Region Section */}
           {props.regionData ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>

@@ -30,7 +30,6 @@ import { InterventionConfirm } from './InterventionConfirm';
 import { AgendaPicker } from './AgendaPicker';
 import { ScryOverlay } from './ScryOverlay';
 import { ScryProvider } from './contexts/ScryContext';
-import { HexZoomView } from './HexZoomView';
 import { LocationView } from './LocationView';
 import { HexBreadcrumb } from './HexBreadcrumb';
 import { HexSidebar } from './HexSidebar';
