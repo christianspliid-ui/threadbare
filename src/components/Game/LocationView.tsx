@@ -9,6 +9,7 @@ import { getSubLocations, getActorsAtLocation } from '../../engine/viewLevel';
 import { ensureSublocations } from '../../engine/sublocation';
 import { EncounterLog } from './EncounterLog';
 import { generateEntityProse } from '../../engine/proseGenerator';
+import { Tooltip } from '../shared/Tooltip';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -111,18 +112,20 @@ const SublocationCard = memo(function SublocationCard({
           {sublocation.name}
         </h4>
         <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          <span
-            className="text-xs px-2 py-1 rounded font-semibold whitespace-nowrap"
-            style={{
-              color: badgeColor,
-              backgroundColor: badgeBg,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px',
-              fontSize: '0.65rem',
-            }}
-          >
-            {badgeText}
-          </span>
+          <Tooltip label="Sublocation Type" desc="The kind of place this is — shrine, ruin, settlement, or wilderness. Each type attracts different encounters and agent behaviors.">
+            <span
+              className="text-xs px-2 py-1 rounded font-semibold whitespace-nowrap cursor-help"
+              style={{
+                color: badgeColor,
+                backgroundColor: badgeBg,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                fontSize: '0.65rem',
+              }}
+            >
+              {badgeText}
+            </span>
+          </Tooltip>
           <span
             style={{
               color: 'var(--text-tertiary)',
@@ -177,18 +180,20 @@ const SublocationCard = memo(function SublocationCard({
         </div>
       )}
 
-      {/* Divine hint */}
+      {/* FE-TT-18: Divine hint with tooltip */}
       {isDivine && (
-        <div
-          className="px-3.5 py-1.5 text-xs"
-          style={{
-            color: 'var(--badge-divine)',
-            fontStyle: 'italic',
-            fontSize: 'var(--text-xs)',
-          }}
-        >
-          Dissolves when encounter completes
-        </div>
+        <Tooltip label="Divine Origin" desc="This sublocation was created by a divine intervention. It is temporary and will dissolve when its purpose is fulfilled.">
+          <div
+            className="px-3.5 py-1.5 text-xs cursor-help"
+            style={{
+              color: 'var(--badge-divine)',
+              fontStyle: 'italic',
+              fontSize: 'var(--text-xs)',
+            }}
+          >
+            Dissolves when encounter completes
+          </div>
+        </Tooltip>
       )}
     </div>
   );
