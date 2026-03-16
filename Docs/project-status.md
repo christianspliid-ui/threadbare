@@ -5,6 +5,8 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
+**Latest:** Attachment Detail Card UI complete (2026-03-16) — three display modes (inline/tooltip/expanded), graph-walking aggregator, integrated into AgentDetailPanel (Tier 2) and AgentProfileModal (Tier 3). 55 new tests.
+
 ## Up Next
 Triage candidate tasks from the PROD-01 contract against the 10 polish criteria. Then STRUCT-01 Repo Boundary Cleanup.
 
