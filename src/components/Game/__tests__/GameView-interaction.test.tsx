@@ -102,7 +102,7 @@ describe('GameView', () => {
     expect(screen.getByText('breach')).toBeInTheDocument();
   });
 
-  it('renders three-column layout with right sidebar', () => {
+  it('renders layout with top bar and right sidebar', () => {
     const { container } = render(
       <GameView
         archetype={mockArchetype}
@@ -111,10 +111,8 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // Check for left and right columns by aria/testid
-    const leftSidebar = container.querySelector('[aria-label="Game status"]');
+    // Left sidebar removed — content moved to top bar
     const rightSidebar = container.querySelector('[data-testid="right-sidebar"]');
-    expect(leftSidebar).toBeInTheDocument();
     expect(rightSidebar).toBeInTheDocument();
   });
 });

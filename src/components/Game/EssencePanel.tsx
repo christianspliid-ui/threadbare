@@ -10,9 +10,10 @@ interface EssencePanelProps {
   maxEssence: number;
   primarySphere: SphereName;
   secondarySphere: SphereName;
+  compact?: boolean;
 }
 
-export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere }: EssencePanelProps) {
+export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere, compact }: EssencePanelProps) {
   const totalEssence = SPHERE_NAMES.reduce((sum, s) => sum + pool[s], 0);
 
   // RC-050: Memoize sphere sorting to avoid recomputing on every render
@@ -42,6 +43,61 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere 
       return () => clearTimeout(timer);
     }
   }, [pool]);
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <Tooltip id="ui.essence_panel">
+          <span
+            className="font-bold uppercase tracking-widest flex-shrink-0"
+            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', fontFamily: 'var(--font-display)' }}
+          >
+            Essence
+          </span>
+        </Tooltip>
+        <div className="flex items-center gap-2.5">
+          {sorted.map((sphere) => {
+            const value = pool[sphere];
+            const isPrimary = sphere === primarySphere;
+            const isSecondary = sphere === secondarySphere;
+            if (value < 0.5 && !isPrimary && !isSecondary) return null;
+            const color = getSphereColor(sphere);
+            const pct = Math.min((value / maxEssence) * 100, 100);
+            return (
+              <div key={sphere} className="flex items-center gap-1">
+                <SphereIcon sphereName={sphere} size="0.875rem" className="w-4 text-center" />
+                <div className="w-10 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-raised)' }}>
+                  <div
+                    className={`h-full rounded-full transition-all duration-500${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
+                    style={{
+                      width: `${pct}%`,
+                      background: `linear-gradient(90deg, ${color}cc, ${color})`,
+                      boxShadow: isPrimary ? `0 0 6px ${color}80` : 'none',
+                    }}
+                  />
+                </div>
+                <span
+                  className="font-mono"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color,
+                    opacity: isPrimary ? 1 : isSecondary ? 0.85 : 0.6,
+                    minWidth: '2.2rem',
+                    textAlign: 'right',
+                  }}
+                >
+                  {value.toFixed(1)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <span className="font-mono flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+          {totalEssence.toFixed(0)}/{(maxEssence * 8).toFixed(0)}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div className="panel-glass space-y-2" style={{ padding: 'var(--panel-padding)' }}>
