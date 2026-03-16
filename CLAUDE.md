@@ -1,5 +1,11 @@
 This folder contains The Fantasy World Simulator — a systemic god-game/rogue-lite narrative simulation built in React + TypeScript + Vite.
 
+## Cowork vs Claude Code — Read This First
+
+**If you are running in Cowork mode:** You must NOT write code, modify tracked files, or run git commands. Read `Docs/cowork-ways-of-working.md` for the full rules. Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
+
+**If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
+
 ## Running the Prototype
 
 **Prerequisites:** Node.js 22+ and npm 10+.
