@@ -223,4 +223,54 @@ describe('EntityCard', () => {
     );
     expect(screen.getByText('Founded')).toBeTruthy();
   });
+
+  it('renders trigger structured data', () => {
+    const sections: EntitySection[] = [{
+      id: 'triggers',
+      title: 'Triggers',
+      insightTier: 'known',
+      proseVoice: 'chronicle',
+      prose: 'On-use effects:',
+      structuredData: {
+        type: 'trigger',
+        triggers: [{
+          condition: 'Critical failure',
+          probability: 0.10,
+          narrativeTemplate: 'The blade shatters against the shield...',
+          effectSummary: 'Lose possession, gain "Thrown" (5 ticks)',
+        }],
+      },
+    }];
+    render(
+      <EntityCard header={mockHeader} sections={sections} onBack={() => {}} onViewCodex={() => {}} />
+    );
+    expect(screen.getByTestId('trigger-block')).toBeTruthy();
+    expect(screen.getByText(/Critical failure/)).toBeTruthy();
+    expect(screen.getByText(/10%/)).toBeTruthy();
+    expect(screen.getByText('The blade shatters against the shield...')).toBeTruthy();
+    expect(screen.getByText(/Lose possession/)).toBeTruthy();
+  });
+
+  it('renders trigger without narrative template', () => {
+    const sections: EntitySection[] = [{
+      id: 'triggers',
+      title: 'Triggers',
+      insightTier: 'known',
+      proseVoice: 'chronicle',
+      prose: 'Effects:',
+      structuredData: {
+        type: 'trigger',
+        triggers: [{
+          condition: 'Any use',
+          probability: 1.0,
+          effectSummary: 'Consumed on use',
+        }],
+      },
+    }];
+    render(
+      <EntityCard header={mockHeader} sections={sections} onBack={() => {}} onViewCodex={() => {}} />
+    );
+    expect(screen.getByText(/Any use/)).toBeTruthy();
+    expect(screen.getByText(/100%/)).toBeTruthy();
+  });
 });

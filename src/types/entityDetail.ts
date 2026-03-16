@@ -39,6 +39,13 @@ export interface EntityBadge {
 
 // ─── Structured Block (discriminated union) ───────────────────────
 
+export interface TriggerEntry {
+  condition: string;
+  probability: number;
+  narrativeTemplate?: string;
+  effectSummary: string;
+}
+
 export type StructuredBlock =
   | { type: 'member_list'; members: MemberEntry[] }
   | { type: 'trait_grid'; traits: TraitEntry[] }
@@ -46,7 +53,8 @@ export type StructuredBlock =
   | { type: 'keyword_cloud'; keywords: string[]; accent: string }
   | { type: 'bond_list'; bonds: { name: string; sentiment: string; strength: string }[] }
   | { type: 'domain_grid'; domains: { domain: string; word: string }[] }
-  | { type: 'timeline'; events: TimelineEntry[] };
+  | { type: 'timeline'; events: TimelineEntry[] }
+  | { type: 'trigger'; triggers: TriggerEntry[] };
 
 // ─── Entity Section ───────────────────────────────────────────────
 

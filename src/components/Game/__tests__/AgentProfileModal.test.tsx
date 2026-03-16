@@ -246,4 +246,92 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Emissary of None')).toBeTruthy();
     expect(screen.getByText('The Void')).toBeTruthy();
   });
+
+  it('renders possessions section at intimate level', () => {
+    const cardWithPossessions: AgentInfoCardData = {
+      ...intimateCard,
+      possessions: [{
+        id: 'item.1',
+        name: "Ashenmane's Fang",
+        subcategory: 'arms',
+        tier: 2,
+        mechanicalSummary: '+Iron in open terrain',
+        flavorText: 'Won in a border raid.',
+        tags: ['weapon', 'iron'],
+        lossCondition: 'breakable',
+      }],
+    };
+    render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.getByTestId('modal-possessions')).toBeTruthy();
+    // Name is inside glyph+name span wrapped by Tooltip — use regex to match partial text
+    expect(screen.getByText(/Ashenmane's Fang/)).toBeTruthy();
+    expect(screen.getByText('Won in a border raid.')).toBeTruthy();
+  });
+
+  it('renders afflictions section at recognised level', () => {
+    const cardWithAfflictions: AgentInfoCardData = {
+      ...recognisedCard,
+      afflictions: [{
+        id: 'cond.1',
+        name: 'Bruised Ribs',
+        subcategory: 'wound',
+        tier: 1,
+        mechanicalSummary: '-Iron (minor)',
+        tags: ['wound'],
+        ticksRemaining: 8,
+        totalTicks: 20,
+      }],
+    };
+    render(<AgentProfileModal card={cardWithAfflictions} profile={undefined} onClose={vi.fn()} />);
+    expect(screen.getByTestId('modal-afflictions')).toBeTruthy();
+    expect(screen.getByText(/Bruised Ribs/)).toBeTruthy();
+  });
+
+  it('renders gifts & burdens section at intimate level', () => {
+    const cardWithGifts: AgentInfoCardData = {
+      ...intimateCard,
+      giftsAndBurdens: [{
+        id: 'power.1',
+        name: 'Turn Undead',
+        subcategory: 'bestowed_power',
+        tier: 2,
+        mechanicalSummary: '+Star, sense undead',
+        tags: ['divine'],
+        grantedBy: 'Solhaven',
+      }],
+    };
+    render(<AgentProfileModal card={cardWithGifts} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.getByTestId('modal-gifts-burdens')).toBeTruthy();
+    expect(screen.getByText(/Turn Undead/)).toBeTruthy();
+    expect(screen.getByText(/Granted by Solhaven/)).toBeTruthy();
+  });
+
+  it('opens attachment detail overlay when vignette is clicked', () => {
+    const cardWithPossessions: AgentInfoCardData = {
+      ...intimateCard,
+      possessions: [{
+        id: 'item.1',
+        name: "Ashenmane's Fang",
+        subcategory: 'arms',
+        tier: 2,
+        mechanicalSummary: '+Iron in open terrain',
+        tags: ['weapon'],
+      }],
+    };
+    render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
+    // Click on the vignette container (role="button")
+    const possessionsSection = screen.getByTestId('modal-possessions');
+    const vignette = possessionsSection.querySelector('[role="button"]');
+    expect(vignette).toBeTruthy();
+    fireEvent.click(vignette!);
+    expect(screen.getByTestId('attachment-detail-overlay')).toBeTruthy();
+    expect(screen.getByTestId('attachment-detail-view')).toBeTruthy();
+  });
+
+  it('does not show attachment sections when no attachments', () => {
+    render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.queryByTestId('modal-possessions')).toBeNull();
+    expect(screen.queryByTestId('modal-afflictions')).toBeNull();
+    expect(screen.queryByTestId('modal-gifts-burdens')).toBeNull();
+  });
 });
