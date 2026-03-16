@@ -52,6 +52,9 @@ export function phaseMovement(state: GameState): Partial<GameState> {
   for (const actor of agents) {
     const actorId = actor.id;
 
+    // Detect if this actor is the player's avatar (has outgoing avatar_of edge)
+    const isAvatar = state.graph.getOutgoingEdges(actorId, 'avatar_of').length > 0;
+
     // Get current movement state (or undefined if not started)
     const movementState = actor.properties?.movementState as MovementState | undefined;
 
@@ -64,8 +67,8 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         properties: { ...actor.properties, movementState: result.updatedState },
       });
 
-      // Emit event on movement transition
-      if (result.moved) {
+      // Emit event on movement transition (skip for avatar — player controls avatar)
+      if (result.moved && !isAvatar) {
         const destNode = state.graph.getNode(result.newLocationId!);
         events.push({
           id: nextEventId(),
@@ -79,9 +82,9 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         });
       }
 
-      // --- Mid-path re-evaluation ---
-      // Check if enough ticks have elapsed since last decision
-      if (result.updatedState.movementQueue.length > 0 &&
+      // --- Mid-path re-evaluation (skip for avatar — player controls destination) ---
+      if (!isAvatar &&
+          result.updatedState.movementQueue.length > 0 &&
           (state.tick - (result.updatedState.lastDecisionTick ?? 0) >= DECISION_REEVALUATION_TICKS)) {
         // Get current location for re-evaluation
         const currentLocEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
@@ -145,6 +148,9 @@ export function phaseMovement(state: GameState): Partial<GameState> {
     }
 
     // --- Case 2: Agent arrived or has no movement yet ---
+    // Avatar: skip autonomous re-evaluation — player controls destination
+    if (isAvatar) continue;
+
     // Check if it's time to re-evaluate
     const lastDecisionTick = movementState?.lastDecisionTick ?? -Infinity;
     const shouldReevaluate = (state.tick - lastDecisionTick >= DECISION_REEVALUATION_TICKS) || state.tick === 0;
