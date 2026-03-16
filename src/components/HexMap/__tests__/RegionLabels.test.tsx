@@ -61,7 +61,7 @@ describe('RegionLabels', () => {
   it('sets opacity to 0 when zoomScale >= FADE_END', () => {
     const graph = makeGraphWithRegion();
     const { container } = renderInSvg(
-      <RegionLabels graph={graph} hexSize={30} zoomScale={3.0} />
+      <RegionLabels graph={graph} hexSize={30} zoomScale={4.0} />
     );
     const g = container.querySelector('.region-labels-layer');
     expect(g?.getAttribute('opacity')).toBe('0');
@@ -70,7 +70,7 @@ describe('RegionLabels', () => {
   it('sets intermediate opacity during fade range', () => {
     const graph = makeGraphWithRegion();
     const { container } = renderInSvg(
-      <RegionLabels graph={graph} hexSize={30} zoomScale={2.0} />
+      <RegionLabels graph={graph} hexSize={30} zoomScale={3.0} />
     );
     const g = container.querySelector('.region-labels-layer');
     const opacity = Number(g?.getAttribute('opacity'));

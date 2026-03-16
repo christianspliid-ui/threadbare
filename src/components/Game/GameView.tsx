@@ -370,6 +370,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   avatarTargetHex={avatarTargetHex ?? undefined}
                   initialCenter={avatarPixelPos ?? undefined}
                   initialScale={3.0}
+                  graph={gameState.graph}
+                  currentTick={gameState.tick}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
                 />
