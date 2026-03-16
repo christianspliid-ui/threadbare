@@ -71,7 +71,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
 
       {/* Modal Content */}
       <div
-        className="relative border rounded-lg max-w-2xl w-full h-[90vh] flex flex-col shadow-2xl"
+        className="relative border rounded-lg max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl mx-4"
         style={{ pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
         onClick={e => e.stopPropagation()}
       >
