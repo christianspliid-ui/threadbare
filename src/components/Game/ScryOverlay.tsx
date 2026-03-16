@@ -19,6 +19,7 @@ import {
 import type { TitleGenerationParams } from '../../engine/scry';
 import { getSphereColor } from '../../data/sphereIcons';
 import { useScryContext } from './contexts/ScryContext';
+import { Tooltip } from '../shared/Tooltip';
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
@@ -43,7 +44,9 @@ const PositionSlot = memo(function PositionSlot(
           borderColor: 'var(--border-subtle)',
         }}
       >
-        <div className="text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        <Tooltip id={`ui.scry_rank_${position.rank === 'apex' ? 'champion' : position.rank === 'inner' ? 'steward' : 'herald'}`}>
+          <div className="text-xs font-bold mb-1 cursor-help" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        </Tooltip>
         <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
         <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Empty</div>
       </button>
@@ -65,7 +68,9 @@ const PositionSlot = memo(function PositionSlot(
           borderLeftWidth: '4px',
         }}
       >
-        <div className="text-xs font-bold mb-1" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        <Tooltip id={`ui.scry_rank_${position.rank === 'apex' ? 'champion' : position.rank === 'inner' ? 'steward' : 'herald'}`}>
+          <div className="text-xs font-bold mb-1 cursor-help" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+        </Tooltip>
         <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
         {title && (
           <div>
@@ -135,7 +140,9 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
         style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Choose Agent</h3>
+          <Tooltip id="ui.scry_assign">
+            <h3 className="text-lg font-bold cursor-help" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Choose Agent</h3>
+          </Tooltip>
           <button
             onClick={onClose}
             aria-label="Close Agent Picker"
@@ -537,11 +544,13 @@ export function ScryOverlay() {
             borderColor: 'var(--border-subtle)',
           }}
         >
-          {/* Apex */}
+          {/* FE-TT-15: Apex with tooltip */}
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Apex
-            </h2>
+            <Tooltip id="ui.scry_rank_champion">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+                Apex
+              </h2>
+            </Tooltip>
             <div className="flex gap-4 justify-center">
               {apexPositions.map(pos => (
                 <div key={pos.id} className="w-32">
@@ -557,11 +566,13 @@ export function ScryOverlay() {
             </div>
           </div>
 
-          {/* Inner */}
+          {/* FE-TT-15: Inner with tooltip */}
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Inner Circle
-            </h2>
+            <Tooltip id="ui.scry_rank_steward">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+                Inner Circle
+              </h2>
+            </Tooltip>
             <div className="grid grid-cols-3 gap-4">
               {innerPositions.map(pos => (
                 <div key={pos.id}>
@@ -577,11 +588,13 @@ export function ScryOverlay() {
             </div>
           </div>
 
-          {/* Outer */}
+          {/* FE-TT-15: Outer with tooltip */}
           <div>
-            <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
-              Outer Reaches
-            </h2>
+            <Tooltip id="ui.scry_rank_herald">
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+                Outer Reaches
+              </h2>
+            </Tooltip>
             <div className="grid grid-cols-6 gap-2">
               {outerPositions.map(pos => (
                 <div key={pos.id}>
