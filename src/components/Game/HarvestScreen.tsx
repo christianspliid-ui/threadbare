@@ -1,5 +1,6 @@
 import type { HarvestResult, HarvestEchoCandidate } from '../../engine/cycleEnd';
 import type { HarvestType } from '../../types/worldSoul';
+import { Tooltip } from '../shared/Tooltip';
 
 interface HarvestScreenProps {
   harvest: HarvestResult;
@@ -43,15 +44,19 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
       <div className={`max-w-2xl w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}>
         <div className="text-center mb-6">
-          <p className="text-xs text-amber-200/40 uppercase tracking-widest mb-1">
-            Cycle {cycle} Complete
-          </p>
-          <h2
-            className="text-2xl font-bold tracking-wide"
-            style={{ color: style.color, fontFamily: 'Cinzel, serif' }}
-          >
-            {style.title}
-          </h2>
+          <Tooltip id="ui.harvest_cycle">
+            <p className="text-xs text-amber-200/40 uppercase tracking-widest mb-1 cursor-help">
+              Cycle {cycle} Complete
+            </p>
+          </Tooltip>
+          <Tooltip id="ui.harvest_type">
+            <h2
+              className="text-2xl font-bold tracking-wide cursor-help"
+              style={{ color: style.color, fontFamily: 'Cinzel, serif' }}
+            >
+              {style.title}
+            </h2>
+          </Tooltip>
         </div>
 
         <p className="text-sm text-amber-200/60 text-center italic mb-6 leading-relaxed">
@@ -60,9 +65,11 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
 
         {harvest.cosmicEchoCandidates.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-xs font-bold text-amber-100/50 uppercase tracking-wider mb-3">
-              Echoes Preserved ({harvest.cosmicEchoCandidates.length} cosmic)
-            </h3>
+            <Tooltip id="ui.harvest_echo">
+              <h3 className="text-xs font-bold text-amber-100/50 uppercase tracking-wider mb-3 cursor-help">
+                Echoes Preserved ({harvest.cosmicEchoCandidates.length} cosmic)
+              </h3>
+            </Tooltip>
             <div className="flex gap-3 overflow-x-auto pb-2">
               {harvest.cosmicEchoCandidates.map(c => (
                 <EchoCard key={c.echoDefinition.id} candidate={c} />
