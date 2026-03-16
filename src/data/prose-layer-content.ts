@@ -316,6 +316,30 @@ export const SPHERE_LOCATION_PROSE: Record<string, string[]> = {
     'Rust blooms on every iron surface like an orange flower. Wood softens, stone powders, and the people here have learned to build with the expectation of loss rather than against it.',
     'The settlement does not fight its own dissolution. Roofs sag, foundations shift, and the inhabitants patch what they can with the calm resignation of people who understand that mending is temporary.',
   ],
+  chaos: [
+    'Chaos reigns here — nothing stays in its place for long. Streets shift, buildings lean at improbable angles, and the locals have stopped trying to impose order on a place that refuses it.',
+    'The settlement thrums with restless, unpredictable energy. Markets erupt and vanish overnight, alliances shift with the wind, and the only constant is constant change.',
+    'Disorder is not a failing here but a philosophy. The people have learned to thrive in turbulence, reading opportunity in confusion the way farmers read weather.',
+    'Wild magic saturates the air — doors open onto different rooms each morning, and the townspeople navigate by instinct rather than habit.',
+  ],
+  order: [
+    'Everything here has its place, its schedule, its regulation. The settlement runs with mechanical precision, and deviation from routine draws sharp attention.',
+    'Perfect symmetry governs the layout — streets at right angles, buildings of uniform height, gardens trimmed to geometric exactness. The order is beautiful and slightly unnerving.',
+    'Law is not merely enforced here but woven into the fabric of daily life. Even the market stalls are arranged by an ancient and exacting protocol that no one questions.',
+    'The settlement operates like a single organism. Each person knows their role, each structure serves its purpose, and the whole hums with quiet, coordinated efficiency.',
+  ],
+  light: [
+    'Light lingers here longer than it should — dawn comes early, dusk arrives late, and even moonless nights carry a faint luminance that seems to rise from the earth itself.',
+    'The settlement glows with an inner warmth. Kindness is currency here, honesty is reflex, and strangers are greeted with a trust that borders on recklessness.',
+    'Truth is inescapable in this place. Lies wither on the tongue, shadows refuse to hide what they contain, and every secret eventually finds its way into the open.',
+    'Radiance suffuses the architecture — pale stone that catches and holds sunlight, windows designed to flood every room with clarity. There are no dark corners here.',
+  ],
+  darkness: [
+    'Shadow clings to this place like a second skin. Even at midday the light feels muted, filtered through something that turns warmth to coolness and brightness to grey.',
+    'Secrets are the true currency here. Everyone carries them, everyone trades in them, and the settlement thrives on what remains unspoken and unseen.',
+    'The darkness here is not hostile — it is sheltering. It hides those who need hiding, obscures what should not be seen, and offers a velvet silence that some find more honest than light.',
+    'Night is the natural state. The inhabitants have adapted — they see clearly in dimness, speak softly, and understand that some truths are better discovered by touch than by sight.',
+  ],
 };
 
 // ─── Subtype Establishing Prose ──────────────────────────────────────────────
@@ -586,4 +610,40 @@ export const POPULATION_PROSE_TEMPLATES: string[] = [
   'When {agent} is absent, the location feels lighter — not better, but thinner, as if a weight that gave the place its particular shape has been temporarily removed.',
   '{agent} trades in the market like anyone else, but the stall-keepers give them slightly better cuts and slightly quicker service. No one discusses why.',
   'The older residents remember when {agent} first came and how the location was different before. They speak of the change without judgment, the way one speaks of weather.',
+];
+
+// ─── Historical Culture Prose ───────────────────────────────────────────────
+// Describes ruins and remnants of civilizations that preceded current inhabitants.
+// Uses foundation bias to modulate tone: order = precision, chaos = ambition, etc.
+
+export const HISTORICAL_CULTURE_PROSE: Record<string, string[]> = {
+  order: [
+    'Before the current inhabitants, this land was shaped by {histCulture} — builders of precision and devotion whose {ruinDescriptor} still stand in silent testimony to an age of meticulous craft.',
+    'The {histCulture} once held this territory, their ordered ways visible in the {ruinDescriptor} that dot the landscape — remnants too well-made to crumble entirely.',
+  ],
+  chaos: [
+    'Before the current people came, {histCulture} claimed this land — a people of restless ambition whose {ruinDescriptor} remain as monuments to brilliance that could not sustain itself.',
+    'This was once the domain of {histCulture}, whose chaotic genius left behind {ruinDescriptor} — structures that even in ruin seem to defy expectation.',
+  ],
+  light: [
+    '{histCulture} once illuminated this region, their open ways preserved in the {ruinDescriptor} that remain — built to be seen, to welcome, to endure as testament.',
+    'The land remembers {histCulture}, whose devotion to revelation left behind {ruinDescriptor} — places that still seem to wait for congregations that will never return.',
+  ],
+  darkness: [
+    '{histCulture} once held this territory in secret, their hidden ways preserved in the {ruinDescriptor} that lie half-buried — places designed to conceal as much as they sheltered.',
+    'Before the current age, {histCulture} claimed this land. Their {ruinDescriptor} endure in shadowed hollows, built to keep their mysteries even in abandonment.',
+  ],
+  unknown: [
+    'A vanished people once shaped this land. Their {ruinDescriptor} endure — monuments to a civilization that left no name the current inhabitants remember.',
+  ],
+};
+
+// ─── Region Etymology Prose ─────────────────────────────────────────────────
+// Explains why a region has its current name, linking it to historical culture.
+
+export const REGION_ETYMOLOGY_PROSE: string[] = [
+  'The locals call this expanse {regionName} — a name that echoes {histCulture} speech, though few remember the original tongue.',
+  'This territory is known as {regionName}, a name that has outlived the {histCulture} who first spoke it, worn smooth by generations of mispronunciation.',
+  '{regionName} — the name itself is a fossil, a {histCulture} phrase that survived the culture that coined it.',
+  "The region's name, {regionName}, derives from {histCulture} cartography — their maps outlasted their mapmakers.",
 ];

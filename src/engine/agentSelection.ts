@@ -17,6 +17,8 @@ import { DEFAULT_REPUTATION } from '../types/disposition';
 import { emitTrace } from './traceBuffer';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import type { DivineInfluenceEntry } from '../types/dream';
+import { applyAmbitionBoost, type ActiveAmbitionForScoring } from './ambitionBoost';
+import type { ReachDomain } from '../types/traits';
 
 /**
  * Score candidates based on alignment with the actor's axiological profile.
@@ -45,10 +47,13 @@ export function scoreByGoalAlignment(
  */
 export function applyPersonalityWeights(
   candidates: ActionCandidate[],
+  ambitions: readonly ActiveAmbitionForScoring[] = [],
   _traitBiases?: Record<string, number>,
 ): ActionCandidate[] {
+  // Apply ambition boost
+  let result = applyAmbitionBoost(candidates, ambitions);
   // Future: walk trait biases and adjust scores
-  return candidates;
+  return result;
 }
 
 /**
@@ -111,6 +116,31 @@ export function probabilisticSelect(
 
   // Fallback to last candidate (floating point edge case)
   return candidates[candidates.length - 1];
+}
+
+/**
+ * Extract active ambitions from the graph for scoring purposes.
+ * Looks for 'pursues' edges from the actor to ambition nodes.
+ */
+function getActiveAmbitionsForScoring(
+  graph: WorldGraph,
+  actorId: string,
+): ActiveAmbitionForScoring[] {
+  const pursuesEdges = graph.getOutgoingEdges(actorId, 'pursues');
+  const ambitions: ActiveAmbitionForScoring[] = [];
+
+  for (const edge of pursuesEdges) {
+    if (edge.properties?.status !== 'active') continue;
+    const ambitionNode = graph.getNode(edge.target);
+    if (!ambitionNode) continue;
+
+    ambitions.push({
+      reachAffinity: (ambitionNode.properties.reachAffinity ?? {}) as Partial<Record<ReachDomain, number>>,
+      priority: (edge.properties.priority as 'primary' | 'secondary') ?? 'secondary',
+    });
+  }
+
+  return ambitions;
 }
 
 /**
@@ -215,12 +245,14 @@ export function runSelectionPipeline(
   });
 
   // Step 3: Apply personality weights (extension point)
-  scored = applyPersonalityWeights(scored);
+  const activeAmbitions = getActiveAmbitionsForScoring(graph, actorId);
+  scored = applyPersonalityWeights(scored, activeAmbitions);
 
   stages.push({
     stageName: 'personality_weights',
     candidateIds: scored.map((c) => c.templateId),
     scores: scored.map((c) => c.score),
+    notes: activeAmbitions.length > 0 ? `${activeAmbitions.length} active ambition(s)` : undefined,
   });
 
   // Step 4: Select top-N

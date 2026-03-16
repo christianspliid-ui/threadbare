@@ -13,6 +13,8 @@ This skill guides the creation of **attachments** — anything that connects to 
 
 **Also load the `prose-resolver` skill** if you are writing narrative templates or flavor text — it contains the Threadbare aesthetic guidelines and prose conventions.
 
+**For a complete map of every tweakable content file** (pacing constants, prose tables, JSON schemas, validation commands), see the [Content Creator Cheat Sheet](https://www.notion.so/3202b241dfb081e0a00efe83b0426256) in Notion. Game pacing lives in `src/data/game-config.ts`.
+
 ## Core Principle
 
 **Every attachment must tell a story.** If it doesn't change what the agent can do, unlock a new encounter, or create a narrative beat, it should not exist. There are no generic items, no filler conditions, no mechanical-only effects. A "+0.10 Iron" modifier should feel like a *story*, not a spreadsheet entry.

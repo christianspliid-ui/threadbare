@@ -35,7 +35,14 @@
       "Bash(jq \".nodes[] | select\\(.id | startswith\\(\"\"foundation.\"\"\\) or startswith\\(\"\"creation.\"\"\\) or startswith\\(\"\"reach.\"\"\\) or startswith\\(\"\"terrain.\"\"\\)\\) | {id, name}\" /c/Users/chris/TheFantasyWorldSimulator/src/data/world-model.json)",
       "Bash(grep -rh 'id={`\\\\|id=\"\"\"\"' /c/Users/chris/TheFantasyWorldSimulator/src/components --include=\"*.tsx\")",
       "Bash(grep -o '\\\\$\\\\{[^}]*\\\\}\\\\|\"\"\"\"[a-z_]*\\\\.[^\"\"\"\"]*')",
-      "mcp__paper__get_screenshot"
+      "mcp__paper__get_screenshot",
+      "WebFetch(domain:project-cs56r.vercel.app)",
+      "Bash(python3 -c \"import sys,json; data=json.loads\\(sys.stdin.read\\(\\)\\); print\\(data[0][''''text'''']\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
+      "Bash(xargs wc:*)",
+      "Bash(xargs grep:*)",
+      "Bash(ls -la /c/Users/chris/TheFantasyWorldSimulator/Design/*.html)"
     ]
   }
 }
