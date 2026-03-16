@@ -39,6 +39,7 @@ interface HexMapProps {
   visibilityMap?: VisibilityMap;
   locationOverlays?: Map<string, LocationSubtype>;
   avatarHex?: HexCoord;
+  avatarId?: string;
   sphereColor?: string;
   initialCenter?: { x: number; y: number };
   initialScale?: number;
@@ -59,7 +60,7 @@ export interface HexMapHandle {
 const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   tiles, cols, rows, hexSize = 30, seed,
   hoveredHex, selectedHex, overlayMode,
-  visibilityMap, locationOverlays, avatarHex, sphereColor,
+  visibilityMap, locationOverlays, avatarHex, avatarId, sphereColor,
   initialCenter, initialScale,
   graph,
   currentTick,
@@ -366,6 +367,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 graph={graph}
                 locationPositions={locationPositions}
                 zoomScale={currentZoomScale}
+                avatarId={avatarId}
+                sphereColor={sphereColor}
               />
             )}
             {/* Layer 4.5: Ghost dots — fading agents that left LOS */}

@@ -65,6 +65,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
   const {
     avatarPos,
+    avatarNodeId,
     sphereColor,
     locationOverlays,
     avatarPixelPos,
@@ -364,6 +365,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   visibilityMap={gameState.visibilityMap}
                   locationOverlays={locationOverlays}
                   avatarHex={avatarPos ?? undefined}
+                  avatarId={avatarNodeId ?? undefined}
                   sphereColor={sphereColor}
                   avatarRoute={avatarRoute ?? undefined}
                   avatarTargetHex={avatarTargetHex ?? undefined}

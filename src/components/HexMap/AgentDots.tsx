@@ -15,6 +15,10 @@ interface AgentDotsProps {
   /** Array of { locationId, x, y } positions where agents may be */
   locationPositions: Array<{ locationId: string; x: number; y: number }>;
   zoomScale: number;
+  /** Avatar actor node ID — renders with sphere color + breathing pulse */
+  avatarId?: string;
+  /** Sphere color for the avatar dot */
+  sphereColor?: string;
   onAgentClick?: (agentId: string) => void;
   onAgentHover?: (agentId: string | null) => void;
 }
@@ -32,10 +36,32 @@ function getAgentColor(domainCapabilities: Record<string, number> | undefined): 
   return DOMAIN_COLORS[bestDomain] ?? DEFAULT_AGENT_COLOR;
 }
 
+/** Collect all individual agents at a location via both `contains` and `located_at` edges. */
+function getAgentsAtLocation(graph: WorldGraph, locationId: string) {
+  const seen = new Set<string>();
+  const agents: ReturnType<WorldGraph['getNode']>[] = [];
+
+  for (const edgeType of ['contains', 'located_at'] as const) {
+    const edges = graph.getIncomingEdges(locationId, edgeType);
+    for (const e of edges) {
+      if (seen.has(e.source)) continue;
+      const node = graph.getNode(e.source);
+      if (node && node.properties?.actorType === 'individual') {
+        seen.add(e.source);
+        agents.push(node);
+      }
+    }
+  }
+
+  return agents;
+}
+
 export const AgentDots: React.FC<AgentDotsProps> = ({
   graph,
   locationPositions,
   zoomScale,
+  avatarId,
+  sphereColor,
   onAgentClick,
   onAgentHover,
 }) => {
@@ -45,10 +71,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   return (
     <g className="agent-dots-layer" style={{ pointerEvents: 'auto' }}>
       {locationPositions.map(({ locationId, x: cx, y: cy }) => {
-        const locEdges = graph.getIncomingEdges(locationId, 'located_at');
-        const agents = locEdges
-          .map(e => graph.getNode(e.source))
-          .filter(n => n && n.properties?.actorType === 'individual');
+        const agents = getAgentsAtLocation(graph, locationId);
 
         if (agents.length === 0) return null;
 
@@ -59,10 +82,15 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
           <g key={locationId}>
             {visibleAgents.map((agent, i) => {
               if (!agent) return null;
+              const isAvatar = agent.id === avatarId;
+              // DES-009 §1.2: Ring arrangement — agents always position in ring slots,
+              // even when solo (single agent gets slot 0 = top of hex)
               const angle = (2 * Math.PI * i) / Math.max(visibleAgents.length, 1) - Math.PI / 2;
-              const dx = visibleAgents.length === 1 ? 0 : Math.cos(angle) * AGENT_RING_RADIUS;
-              const dy = visibleAgents.length === 1 ? 0 : Math.sin(angle) * AGENT_RING_RADIUS;
-              const color = getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
+              const dx = Math.cos(angle) * AGENT_RING_RADIUS;
+              const dy = Math.sin(angle) * AGENT_RING_RADIUS;
+              const color = isAvatar && sphereColor
+                ? sphereColor
+                : getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
 
               return (
                 <g
@@ -73,7 +101,13 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
                   onMouseEnter={() => onAgentHover?.(agent.id)}
                   onMouseLeave={() => onAgentHover?.(null)}
                 >
-                  <circle r={radius} fill={color} stroke="#000" strokeWidth={0.5} />
+                  <circle
+                    r={radius}
+                    fill={color}
+                    stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
+                    strokeWidth={isAvatar ? 1.5 : 0.5}
+                    className={isAvatar ? 'avatar-pulse' : undefined}
+                  />
                   {isTokenZoom && (
                     <text
                       textAnchor="middle"
