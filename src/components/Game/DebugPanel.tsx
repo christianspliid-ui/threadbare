@@ -682,7 +682,20 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
     }
   }, [followAgentId, viewMode]);
 
-  const allTraces = useMemo(() => [...getTraces()], [currentTick]);
+  // DEF-008: Deduplicate traces by id — React StrictMode double-executes effects,
+  // causing duplicate entries in the trace buffer during development.
+  const allTraces = useMemo(() => {
+    const raw = getTraces();
+    const seen = new Set<number>();
+    const deduped: typeof raw = [];
+    for (const t of raw) {
+      if (!seen.has(t.id)) {
+        seen.add(t.id);
+        deduped.push(t);
+      }
+    }
+    return deduped;
+  }, [currentTick]);
 
   const displayTraces = useMemo(() => {
     let traces = Array.from(allTraces).reverse(); // Newest first
