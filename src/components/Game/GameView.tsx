@@ -85,7 +85,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleHexClick, handleLocationDoubleClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
-  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, COLS, ROWS, scryState });
+  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState });
 
   // ── Scry hook ──
   const {

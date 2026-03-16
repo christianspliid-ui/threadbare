@@ -167,7 +167,7 @@ export const HexTileComponent = memo(function HexTileComponent({
   // Build contextual tooltip label + prose description
   const tooltipProps = buildTooltipProps(tile, visibility, locationSubtype, snapshot);
 
-  // Unexplored: only render dark fill, no content
+  // Unexplored: only render dark fill, no content (except target hex indicator)
   if (visibility === 'unexplored') {
     return (
       <g {...dataAttrs} onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} style={{ cursor: 'pointer' }}>
@@ -177,6 +177,12 @@ export const HexTileComponent = memo(function HexTileComponent({
           stroke={HEX_BORDER_COLOR}
           strokeWidth={0.6}
         />
+        {isTargetHex && sphereColor && (
+          <>
+            <polygon points={points} fill={sphereColor} opacity={0.12} />
+            <polygon points={points} fill="none" stroke={sphereColor} strokeWidth={2.5} strokeDasharray="8,4" className="target-dash" />
+          </>
+        )}
       </g>
     );
   }

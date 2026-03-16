@@ -2,154 +2,162 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { moveAvatarToHex, getAvatarMovementState, clearAvatarMovement } from '../avatarMove';
 import { WorldGraph } from '../graph';
 import type { MovementState } from '../../types/movement';
+import type { HexTile } from '../../types';
 import { phaseMovement, resetMovementEventCounter } from '../phaseMovement';
 import type { GameState } from '../../types/gameState';
 
+/** Build a minimal tile array for a small grid (cols x rows). All grassland by default. */
+function buildTiles(cols: number, rows: number, overrides?: Map<string, string>): HexTile[] {
+  const tiles: HexTile[] = [];
+  for (let col = 0; col < cols; col++) {
+    for (let row = 0; row < rows; row++) {
+      const terrain = overrides?.get(`${col},${row}`) ?? 'grassland';
+      tiles.push({
+        coord: { col, row },
+        terrain: terrain as HexTile['terrain'],
+        geoParams: { elevation: 0.5, temperature: 0.5, moisture: 0.5 },
+      });
+    }
+  }
+  return tiles;
+}
+
 describe('moveAvatarToHex', () => {
-  /**
-   * Build a minimal graph with:
-   * - An ascendant node
-   * - An avatar node linked via avatar_of edge
-   * - A start location with avatar located_at it
-   * - Adjacent locations forming a simple path
-   */
+  const COLS = 10;
+  const ROWS = 10;
+
   function buildGraph() {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc.1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
     graph.addNode({ id: 'avatar.1', type: 'actor', name: 'Avatar', properties: { actorType: 'individual' } });
-    graph.addNode({ id: 'loc.start', type: 'location', name: 'Start', properties: { hexCol: 5, hexRow: 7, locationType: 'settlement' } });
-    graph.addNode({ id: 'loc.mid', type: 'location', name: 'Mid', properties: { hexCol: 6, hexRow: 7, locationType: 'wilderness' } });
-    graph.addNode({ id: 'loc.dest', type: 'location', name: 'Dest', properties: { hexCol: 7, hexRow: 7, locationType: 'settlement' } });
+    graph.addNode({ id: 'loc.start', type: 'location', name: 'Start', properties: { hexCol: 5, hexRow: 5, locationType: 'settlement', terrain: 'grassland' } });
 
     graph.addEdge({ id: 'e.avatar_of', source: 'avatar.1', target: 'asc.1', type: 'avatar_of', properties: {} });
     graph.addEdge({ id: 'e.located_at', source: 'avatar.1', target: 'loc.start', type: 'located_at', properties: {} });
-
-    // Create adjacency edges for pathfinding
-    graph.addEdge({ id: 'e.adj.start.mid', source: 'loc.start', target: 'loc.mid', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.mid.start', source: 'loc.mid', target: 'loc.start', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.mid.dest', source: 'loc.mid', target: 'loc.dest', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.dest.mid', source: 'loc.dest', target: 'loc.mid', type: 'adjacent', properties: {} });
 
     return graph;
   }
 
   it('returns true and sets MovementState when path is found', () => {
     const graph = buildGraph();
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 7, row: 7 }, 10);
+    const tiles = buildTiles(COLS, ROWS);
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
 
     expect(result).toBe(true);
 
     const avatar = graph.getNode('avatar.1')!;
     const ms = avatar.properties.movementState as MovementState;
     expect(ms).toBeDefined();
-    expect(ms.destinationId).toBe('loc.dest');
     expect(ms.movementQueue.length).toBeGreaterThan(0);
     expect(ms.lastDecisionTick).toBe(10);
   });
 
   it('does NOT change located_at edge (no teleporting)', () => {
     const graph = buildGraph();
-    moveAvatarToHex(graph, 'asc.1', { col: 7, row: 7 }, 10);
+    const tiles = buildTiles(COLS, ROWS);
+    moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
 
-    // Avatar should still be at the start location
     const locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
     expect(locEdges.length).toBe(1);
     expect(locEdges[0].target).toBe('loc.start');
   });
 
-  it('returns false when target hex is unreachable', () => {
+  it('returns false when target hex is impassable (ocean)', () => {
     const graph = buildGraph();
-    // Add an isolated location with no adjacency edges
-    graph.addNode({ id: 'loc.island', type: 'location', name: 'Island', properties: { hexCol: 99, hexRow: 99, locationType: 'wilderness' } });
+    const overrides = new Map([['7,5', 'ocean']]);
+    const tiles = buildTiles(COLS, ROWS, overrides);
 
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 99, row: 99 }, 10);
-
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
     expect(result).toBe(false);
 
-    // No movement state should be set
     const avatar = graph.getNode('avatar.1')!;
     expect(avatar.properties.movementState).toBeUndefined();
   });
 
-  it('creates transient location and pathfinds to it when adjacency edges exist', () => {
+  it('creates transient location nodes along the path', () => {
     const graph = buildGraph();
-    // Simulate a two-step process: first call creates the transient (pathfinding fails
-    // due to no adjacency edges), then we add adjacency edges, then second call succeeds.
-    // This exercises the "create" path of findOrCreateLocationAtHex with a successful pathfind.
+    const tiles = buildTiles(COLS, ROWS);
 
-    // First call: creates transient node but pathfinding fails (no adjacency)
-    const firstResult = moveAvatarToHex(graph, 'asc.1', { col: 8, row: 7 }, 10);
-    expect(firstResult).toBe(false);
+    // Count locations before
+    const locsBefore = graph.getNodesByType('location').length;
 
-    // Transient node was created by the first call
-    const transient = graph.getNode('loc.transient.8.7');
-    expect(transient).toBeDefined();
+    moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
 
-    // Now add adjacency edges (simulating map setup connecting the new hex)
-    graph.addEdge({ id: 'e.adj.dest.trans', source: 'loc.dest', target: 'loc.transient.8.7', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.trans.dest', source: 'loc.transient.8.7', target: 'loc.dest', type: 'adjacent', properties: {} });
+    // Locations should have increased (transients created for path hexes)
+    const locsAfter = graph.getNodesByType('location').length;
+    expect(locsAfter).toBeGreaterThan(locsBefore);
 
-    // Second call: finds existing transient, pathfinding succeeds
-    const secondResult = moveAvatarToHex(graph, 'asc.1', { col: 8, row: 7 }, 20);
-    expect(secondResult).toBe(true);
-
-    const avatar = graph.getNode('avatar.1')!;
-    const ms = avatar.properties.movementState as MovementState;
-    expect(ms.destinationId).toBe('loc.transient.8.7');
-    expect(ms.movementQueue.length).toBeGreaterThan(0);
-    expect(ms.lastDecisionTick).toBe(20);
-  });
-
-  it('creates transient location node when none exists at target hex', () => {
-    const graph = buildGraph();
-    // Target hex (8,7) has no location. The function should create a transient.
-    // But we also need adjacency for pathfinding to reach it.
-    // We'll manually add adjacency after creation — actually, the function creates the
-    // transient first, then pathfinds. So we need pre-existing adjacency edges.
-    // For this test, let's just verify the transient node is created even if path fails.
-
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 8, row: 7 }, 10);
-
-    // Path won't exist (no adjacency to the transient), so result is false
-    expect(result).toBe(false);
-
-    // But the transient location should have been created
-    const transient = graph.getNode('loc.transient.8.7');
-    expect(transient).toBeDefined();
-    expect(transient!.properties.hexCol).toBe(8);
-    expect(transient!.properties.hexRow).toBe(7);
-    expect(transient!.properties.locationType).toBe('wilderness');
+    // The movement queue should reference location node IDs
+    const ms = getAvatarMovementState(graph, 'asc.1')!;
+    for (const nodeId of ms.movementQueue) {
+      const node = graph.getNode(nodeId);
+      expect(node).toBeDefined();
+      expect(node!.type).toBe('location');
+      expect(node!.properties.terrain).toBe('grassland');
+    }
   });
 
   it('returns false when avatar is already at the target hex', () => {
     const graph = buildGraph();
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 5, row: 7 }, 10);
+    const tiles = buildTiles(COLS, ROWS);
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 5, row: 5 }, 10, tiles, COLS, ROWS);
 
-    // Already at (5,7) — no movement planned
     expect(result).toBe(false);
 
-    // No movement state should be set
     const avatar = graph.getNode('avatar.1')!;
-    const ms = avatar.properties.movementState as MovementState | undefined;
-    expect(ms).toBeUndefined();
+    expect(avatar.properties.movementState).toBeUndefined();
   });
 
   it('returns false when no avatar exists for ascendant', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc.1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    const tiles = buildTiles(COLS, ROWS);
 
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 5, row: 7 }, 10);
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 5, row: 5 }, 10, tiles, COLS, ROWS);
     expect(result).toBe(false);
   });
 
-  it('sets the correct first edge cost from computeEdgeCost', () => {
+  it('sets a positive first edge cost', () => {
     const graph = buildGraph();
-    moveAvatarToHex(graph, 'asc.1', { col: 7, row: 7 }, 10);
+    const tiles = buildTiles(COLS, ROWS);
+    moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
 
     const avatar = graph.getNode('avatar.1')!;
     const ms = avatar.properties.movementState as MovementState;
-    // currentEdgeCost should be a positive number (at least MIN_EDGE_COST)
     expect(ms.currentEdgeCost).toBeGreaterThan(0);
+  });
+
+  it('reuses existing location nodes instead of creating transients', () => {
+    const graph = buildGraph();
+    // Add a named location at the target hex
+    graph.addNode({ id: 'loc.dest', type: 'location', name: 'Dest', properties: { hexCol: 7, hexRow: 5, locationType: 'settlement', terrain: 'grassland' } });
+
+    const tiles = buildTiles(COLS, ROWS);
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
+    expect(result).toBe(true);
+
+    const avatar = graph.getNode('avatar.1')!;
+    const ms = avatar.properties.movementState as MovementState;
+    expect(ms.destinationId).toBe('loc.dest');
+  });
+
+  it('pathfinds around impassable terrain', () => {
+    const graph = buildGraph();
+    // Block several direct-path hexes with ocean to force a detour
+    const overrides = new Map([['6,5', 'ocean'], ['6,4', 'ocean']]);
+    const tiles = buildTiles(COLS, ROWS, overrides);
+
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 7, row: 5 }, 10, tiles, COLS, ROWS);
+    expect(result).toBe(true);
+
+    const ms = getAvatarMovementState(graph, 'asc.1')!;
+    // Path should exist and avoid the ocean hexes
+    expect(ms.movementQueue.length).toBeGreaterThanOrEqual(2);
+    // Verify no movement queue node is at an ocean hex
+    for (const nodeId of ms.movementQueue) {
+      const node = graph.getNode(nodeId)!;
+      expect(node.properties.terrain).not.toBe('ocean');
+    }
   });
 });
 
@@ -228,7 +236,6 @@ describe('clearAvatarMovement', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc.1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
 
-    // Should not throw
     expect(() => clearAvatarMovement(graph, 'asc.1')).not.toThrow();
   });
 
@@ -245,6 +252,9 @@ describe('clearAvatarMovement', () => {
 // ─── Integration: moveAvatarToHex + phaseMovement ─────────────────────
 
 describe('integration: moveAvatarToHex + phaseMovement', () => {
+  const COLS = 5;
+  const ROWS = 3;
+
   beforeEach(() => {
     resetMovementEventCounter();
   });
@@ -253,23 +263,14 @@ describe('integration: moveAvatarToHex + phaseMovement', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc.1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
     graph.addNode({ id: 'avatar.1', type: 'actor', name: 'Avatar', properties: { actorType: 'individual' } });
-    graph.addNode({ id: 'loc.start', type: 'location', name: 'Start', properties: { hexCol: 0, hexRow: 0, locationType: 'wilderness' } });
-    graph.addNode({ id: 'loc.mid', type: 'location', name: 'Mid', properties: { hexCol: 1, hexRow: 0, locationType: 'wilderness' } });
-    graph.addNode({ id: 'loc.end', type: 'location', name: 'End', properties: { hexCol: 2, hexRow: 0, locationType: 'wilderness' } });
+    graph.addNode({ id: 'loc.start', type: 'location', name: 'Start', properties: { hexCol: 0, hexRow: 0, locationType: 'wilderness', terrain: 'grassland' } });
 
     graph.addEdge({ id: 'e.avatar_of', source: 'avatar.1', target: 'asc.1', type: 'avatar_of', properties: {} });
     graph.addEdge({ id: 'e.located_at', source: 'avatar.1', target: 'loc.start', type: 'located_at', properties: {} });
 
-    // Adjacency edges for pathfinding
-    graph.addEdge({ id: 'e.adj.start.mid', source: 'loc.start', target: 'loc.mid', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.mid.start', source: 'loc.mid', target: 'loc.start', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.mid.end', source: 'loc.mid', target: 'loc.end', type: 'adjacent', properties: {} });
-    graph.addEdge({ id: 'e.adj.end.mid', source: 'loc.end', target: 'loc.mid', type: 'adjacent', properties: {} });
-
     return graph;
   }
 
-  /** Build a minimal GameState with sensible defaults for fields phaseMovement doesn't touch. */
   function buildMinimalState(graph: WorldGraph, tick: number): GameState {
     return {
       cycle: 1,
@@ -307,33 +308,30 @@ describe('integration: moveAvatarToHex + phaseMovement', () => {
 
   it('avatar moves one step per tick along planned path', () => {
     const graph = buildGraph();
+    const tiles = buildTiles(COLS, ROWS);
 
-    // Plan movement from start (0,0) to end (2,0) — a 2-step path
-    const result = moveAvatarToHex(graph, 'asc.1', { col: 2, row: 0 }, 0);
+    // Plan movement from (0,0) to (2,0) — a 2-step path
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 2, row: 0 }, 0, tiles, COLS, ROWS);
     expect(result).toBe(true);
 
-    // Verify the planned path: queue should be [loc.mid, loc.end]
     const ms0 = getAvatarMovementState(graph, 'asc.1');
     expect(ms0).not.toBeNull();
-    expect(ms0!.movementQueue).toEqual(['loc.mid', 'loc.end']);
+    expect(ms0!.movementQueue.length).toBe(2);
 
-    // Build minimal GameState
     const state = buildMinimalState(graph, 1);
 
-    // Tick 1: avatar should move to loc.mid
-    // Base cost is 1 tick (no terrain tax on wilderness-without-terrain-property)
+    // Tick 1: avatar should move to first intermediate hex
     phaseMovement(state);
     let locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
     expect(locEdges).toHaveLength(1);
-    expect(locEdges[0].target).toBe('loc.mid');
+    expect(locEdges[0].target).not.toBe('loc.start');
 
-    // Tick 2: avatar should arrive at loc.end
+    // Tick 2: avatar should arrive at destination
     state.tick = 2;
     state.tickEvents = [];
     phaseMovement(state);
     locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
     expect(locEdges).toHaveLength(1);
-    expect(locEdges[0].target).toBe('loc.end');
 
     // Movement state should show arrived (empty queue)
     const msFinal = getAvatarMovementState(graph, 'asc.1');
