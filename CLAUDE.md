@@ -89,6 +89,8 @@ When implementation is complete and tests pass, **do all of these automatically 
 
 This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
 
+6. **Close out** — When all steps above are complete, explicitly tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."* This is the signal that the session can be safely closed.
+
 ## Session Workflow
 
 1. Read this file for orientation
