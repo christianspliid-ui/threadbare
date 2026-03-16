@@ -17,6 +17,7 @@ import {
   sphereResolver,
   factionResolver,
   populationResolver,
+  resourcesResolver,
   archetypeResolver,
   agentCultureResolver,
   agentFactionResolver,
@@ -28,6 +29,7 @@ import {
 const LOCATION_RESOLVERS: ProseResolver[] = [
   subtypeResolver,
   biomeResolver,
+  resourcesResolver,
   cultureResolver,
   sphereResolver,
   factionResolver,

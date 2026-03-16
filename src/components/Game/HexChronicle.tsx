@@ -15,6 +15,9 @@ import {
   CULTURE_LOCATION_PROSE,
   FACTION_CONTROL_PROSE,
 } from '../../data/prose-layer-content';
+import type { ResourceInstance } from '../../types/resource';
+import { getAbundanceLabel, RESOURCE_ICONS } from '../../types/resource';
+import { RESOURCE_PROSE } from '../../data/resource-content';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -117,6 +120,39 @@ export const HexChronicle = memo(function HexChronicle({
     if (!templates || templates.length === 0) return [FALLBACK_TERRAIN_PROSE, undefined];
     return pickTwoFromArray(templates, hexSeed);
   }, [terrain, hexSeed]);
+
+  // ── LAND: Aggregate resources from all locations in hex ────────
+
+  const hexResources = useMemo(() => {
+    const aggregated: Record<string, { quantity: number; renewable: boolean }> = {};
+    for (const loc of locations) {
+      const resources = loc.properties?.resources as Record<string, ResourceInstance> | undefined;
+      if (!resources) continue;
+      for (const [type, inst] of Object.entries(resources)) {
+        if (inst.quantity <= 0) continue;
+        if (!aggregated[type]) {
+          aggregated[type] = { quantity: inst.quantity, renewable: inst.renewable };
+        } else {
+          // Take max quantity across locations for this resource type
+          aggregated[type].quantity = Math.max(aggregated[type].quantity, inst.quantity);
+        }
+      }
+    }
+    return Object.entries(aggregated)
+      .sort((a, b) => b[1].quantity - a[1].quantity);
+  }, [locations]);
+
+  const resourceProse = useMemo(() => {
+    if (hexResources.length === 0) return null;
+    const [topType, topInst] = hexResources[0];
+    const proseSet = RESOURCE_PROSE[topType];
+    if (!proseSet) return null;
+    const abundance = getAbundanceLabel(topInst.quantity);
+    const templates = abundance === 'abundant' || abundance === 'moderate'
+      ? proseSet.abundant
+      : proseSet.scarce;
+    return pickFromArray([...templates], hexSeed + 300);
+  }, [hexResources, hexSeed]);
 
   // ── SOUL: Rich sphere prose + strength labels ──────────────────
 
@@ -340,6 +376,51 @@ export const HexChronicle = memo(function HexChronicle({
           <p className="chronicle-prose" style={proseStyle}>
             {landProse2}
           </p>
+        )}
+
+        {/* Resource prose */}
+        {resourceProse && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {resourceProse}
+          </p>
+        )}
+
+        {/* Resource tags */}
+        {hexResources.length > 0 && (
+          <div style={{
+            display: 'flex',
+            gap: '6px',
+            flexWrap: 'wrap',
+            margin: '8px 0 0 0',
+          }}>
+            {hexResources.map(([type, inst]) => {
+              const icon = RESOURCE_ICONS[type] ?? '◆';
+              const label = getAbundanceLabel(inst.quantity);
+              return (
+                <div
+                  key={type}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    background: 'var(--bg-surface)',
+                    border: '1px solid var(--border-subtle)',
+                    borderRadius: '10px',
+                    padding: '3px 8px',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-secondary)',
+                    fontFamily: 'var(--font-body)',
+                    textTransform: 'capitalize',
+                    opacity: label === 'scarce' ? 0.6 : 1,
+                  }}
+                >
+                  <span>{icon}</span>
+                  <span>{type}</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: '0.7rem' }}>· {label}</span>
+                </div>
+              );
+            })}
+          </div>
         )}
       </div>
 

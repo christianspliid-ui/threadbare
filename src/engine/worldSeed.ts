@@ -28,6 +28,7 @@ import type { CultureIdentity } from '../types/culture';
 import { detectRegions } from './regionDetection';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
+import { seedLocationResources } from './resourceSeeding';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -322,6 +323,10 @@ export function seedWorld(
       });
     }
   }
+
+  // ── Resources ────────────────────────────────────────────
+  const resourceRng = mulberry32(seed + 22091); // separate PRNG stream
+  seedLocationResources(graph, locationIds, cosmology, resourceRng);
 
   // ── Cultures ──────────────────────────────────────────────
   const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, foundations);
