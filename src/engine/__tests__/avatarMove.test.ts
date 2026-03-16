@@ -1,7 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { moveAvatarToHex, getAvatarMovementState, clearAvatarMovement } from '../avatarMove';
 import { WorldGraph } from '../graph';
 import type { MovementState } from '../../types/movement';
+import { phaseMovement, resetMovementEventCounter } from '../phaseMovement';
+import type { GameState } from '../../types/gameState';
 
 describe('moveAvatarToHex', () => {
   /**
@@ -237,5 +239,105 @@ describe('clearAvatarMovement', () => {
     graph.addEdge({ id: 'e.avatar_of', source: 'avatar.1', target: 'asc.1', type: 'avatar_of', properties: {} });
 
     expect(() => clearAvatarMovement(graph, 'asc.1')).not.toThrow();
+  });
+});
+
+// ─── Integration: moveAvatarToHex + phaseMovement ─────────────────────
+
+describe('integration: moveAvatarToHex + phaseMovement', () => {
+  beforeEach(() => {
+    resetMovementEventCounter();
+  });
+
+  function buildGraph() {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'asc.1', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
+    graph.addNode({ id: 'avatar.1', type: 'actor', name: 'Avatar', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'loc.start', type: 'location', name: 'Start', properties: { hexCol: 0, hexRow: 0, locationType: 'wilderness' } });
+    graph.addNode({ id: 'loc.mid', type: 'location', name: 'Mid', properties: { hexCol: 1, hexRow: 0, locationType: 'wilderness' } });
+    graph.addNode({ id: 'loc.end', type: 'location', name: 'End', properties: { hexCol: 2, hexRow: 0, locationType: 'wilderness' } });
+
+    graph.addEdge({ id: 'e.avatar_of', source: 'avatar.1', target: 'asc.1', type: 'avatar_of', properties: {} });
+    graph.addEdge({ id: 'e.located_at', source: 'avatar.1', target: 'loc.start', type: 'located_at', properties: {} });
+
+    // Adjacency edges for pathfinding
+    graph.addEdge({ id: 'e.adj.start.mid', source: 'loc.start', target: 'loc.mid', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'e.adj.mid.start', source: 'loc.mid', target: 'loc.start', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'e.adj.mid.end', source: 'loc.mid', target: 'loc.end', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'e.adj.end.mid', source: 'loc.end', target: 'loc.mid', type: 'adjacent', properties: {} });
+
+    return graph;
+  }
+
+  /** Build a minimal GameState with sensible defaults for fields phaseMovement doesn't touch. */
+  function buildMinimalState(graph: WorldGraph, tick: number): GameState {
+    return {
+      cycle: 1,
+      tick,
+      phase: 'playing',
+      seed: 42,
+      graph,
+      cosmology: { spheres: [] } as unknown as GameState['cosmology'],
+      tiles: [],
+      clock: { tick: 0, maxTick: 200, paused: false } as unknown as GameState['clock'],
+      ascendantId: 'asc.1',
+      essencePool: { current: 0, max: 100, regenRate: 0 } as unknown as GameState['essencePool'],
+      mandateDefinition: null,
+      mandateState: null,
+      rivalDefinitions: [],
+      rivalStates: [],
+      doomDefinition: { archetype: 'breach', name: 'Doom', totalTicks: 200, stages: [] } as unknown as GameState['doomDefinition'],
+      doomClock: { currentTick: 0, stage: 0, escalations: [] } as unknown as GameState['doomClock'],
+      tickEvents: [],
+      recentEvents: [],
+      chronicleEntries: [],
+      stealthExposure: 0,
+      visibilityMap: new Map() as unknown as GameState['visibilityMap'],
+      familiarityMap: new Map() as unknown as GameState['familiarityMap'],
+      culturalInsightMap: new Map(),
+      encounterProgress: [],
+      actionsInProgress: [],
+      unifiedActions: [],
+      worldSoul: { themes: [], pressure: 0 } as unknown as GameState['worldSoul'],
+      echoDefinitions: [],
+      echoStates: [],
+      chronicle: { volumes: [], echoThreads: [] },
+    };
+  }
+
+  it('avatar moves one step per tick along planned path', () => {
+    const graph = buildGraph();
+
+    // Plan movement from start (0,0) to end (2,0) — a 2-step path
+    const result = moveAvatarToHex(graph, 'asc.1', { col: 2, row: 0 }, 0);
+    expect(result).toBe(true);
+
+    // Verify the planned path: queue should be [loc.mid, loc.end]
+    const ms0 = getAvatarMovementState(graph, 'asc.1');
+    expect(ms0).not.toBeNull();
+    expect(ms0!.movementQueue).toEqual(['loc.mid', 'loc.end']);
+
+    // Build minimal GameState
+    const state = buildMinimalState(graph, 1);
+
+    // Tick 1: avatar should move to loc.mid
+    // Base cost is 1 tick (no terrain tax on wilderness-without-terrain-property)
+    phaseMovement(state);
+    let locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
+    expect(locEdges).toHaveLength(1);
+    expect(locEdges[0].target).toBe('loc.mid');
+
+    // Tick 2: avatar should arrive at loc.end
+    state.tick = 2;
+    state.tickEvents = [];
+    phaseMovement(state);
+    locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
+    expect(locEdges).toHaveLength(1);
+    expect(locEdges[0].target).toBe('loc.end');
+
+    // Movement state should show arrived (empty queue)
+    const msFinal = getAvatarMovementState(graph, 'asc.1');
+    expect(msFinal).not.toBeNull();
+    expect(msFinal!.movementQueue).toEqual([]);
   });
 });
