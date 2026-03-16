@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
+import { Tooltip } from '../shared/Tooltip';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -100,21 +101,23 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             borderBottom: '1px solid var(--border-subtle)',
           }}
         >
-          {/* Agent name and tier */}
-          <div className="flex flex-col">
-            <div
-              style={{
-                fontSize: 'var(--text-lg)',
-                fontFamily: 'var(--font-display)',
-                color: 'var(--text-primary)',
-              }}
-            >
-              {agentName}
+          {/* FE-TT-13: Agent name and tier with tooltip */}
+          <Tooltip label="Target Agent" desc="The agent this action wheel is open for. Actions affect this agent based on their reach, tier, and current state.">
+            <div className="flex flex-col cursor-help">
+              <div
+                style={{
+                  fontSize: 'var(--text-lg)',
+                  fontFamily: 'var(--font-display)',
+                  color: 'var(--text-primary)',
+                }}
+              >
+                {agentName}
+              </div>
+              <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                {agentTier}
+              </div>
             </div>
-            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-              {agentTier}
-            </div>
-          </div>
+          </Tooltip>
 
           {/* Close button */}
           <button
@@ -149,20 +152,22 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             {lockedSlots.length > 0 && (
               <>
                 <div className="flex-shrink-0 flex items-center">
-                  <button
-                    onClick={() => setShowLocked(!showLocked)}
-                    className="px-3 py-2 rounded transition-colors whitespace-nowrap"
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--text-muted)',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'var(--bg-surface)',
-                    }}
-                    aria-expanded={showLocked}
-                    aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
-                  >
-                    {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
-                  </button>
+                  <Tooltip id="ui.action_locked">
+                    <button
+                      onClick={() => setShowLocked(!showLocked)}
+                      className="px-3 py-2 rounded transition-colors whitespace-nowrap"
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border-subtle)',
+                        backgroundColor: 'var(--bg-surface)',
+                      }}
+                      aria-expanded={showLocked}
+                      aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
+                    >
+                      {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
+                    </button>
+                  </Tooltip>
                 </div>
                 {showLocked && lockedSlots.map(slot => (
                   <div key={slot.id} className="flex-shrink-0">
