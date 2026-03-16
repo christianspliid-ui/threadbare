@@ -2,7 +2,6 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexMapHandle } from '../../HexMap/HexMap';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
-import { recalcVisibility, collectLOSSources, getScryTargetHexes } from '../../../engine/visibility';
 import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
 
@@ -40,9 +39,9 @@ export function useViewNavigation({
   gameState,
   setGameState,
   avatarPixelPos,
-  COLS,
-  ROWS,
-  scryState,
+  COLS: _COLS,
+  ROWS: _ROWS,
+  scryState: _scryState,
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
@@ -94,7 +93,7 @@ export function useViewNavigation({
     setMoveMode(true);
   }, []);
 
-  // IX-009: Escape key cancels move mode; auto-timeout after 10s
+  // IX-009: Escape key cancels move mode (no timeout — player needs time to plan route)
   useEffect(() => {
     if (!moveMode) return;
 
@@ -105,29 +104,24 @@ export function useViewNavigation({
     };
     document.addEventListener('keydown', handleKeyDown);
 
-    const timeout = setTimeout(() => setMoveMode(false), 10_000);
-
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
-      clearTimeout(timeout);
     };
   }, [moveMode]);
 
   const handleHexClickMove = useCallback((coord: { col: number; row: number }) => {
     if (moveMode) {
-      moveAvatarToHex(gameState.graph, gameState.ascendantId, coord);
-      const scryTargets = getScryTargetHexes(scryState, gameState.graph);
-      const losSources = collectLOSSources(gameState.graph, gameState.ascendantId, scryTargets);
-      const newVisibilityMap = recalcVisibility(gameState.visibilityMap, losSources, gameState.graph, gameState.tick, COLS, ROWS);
-      setGameState(prev => ({
-        ...prev,
-        visibilityMap: newVisibilityMap,
-      }));
+      const pathFound = moveAvatarToHex(gameState.graph, gameState.ascendantId, coord, gameState.tick);
+      if (pathFound) {
+        // Force re-render so route visualization appears — visibility recalc
+        // happens later when the avatar actually moves during tick processing.
+        setGameState(prev => ({ ...prev }));
+      }
       setMoveMode(false);
     } else {
       handleHexClick(coord);
     }
-  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.visibilityMap, gameState.tick, handleHexClick, COLS, ROWS, setGameState, scryState]);
+  }, [moveMode, gameState.graph, gameState.ascendantId, gameState.tick, handleHexClick, setGameState]);
 
   return {
     hoveredHex,
