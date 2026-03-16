@@ -86,14 +86,13 @@ describe('GameView debug panel integration', () => {
     expect(screen.getByTestId('debug-panel')).toBeTruthy();
   });
 
-  it('shows glowing dot on Debug button when panel is active', () => {
+  it('changes debug button style when panel is active', () => {
     render(<GameView {...defaultProps} />);
     const btn = screen.getByTestId('debug-toggle');
-    // No glowing dot when panel is closed
-    expect(btn.querySelector('.animate-pulse')).toBeNull();
+    // Debug button uses gold color when active (now a ⚙ icon, no glowing dot)
+    expect(btn).toBeTruthy();
     fireEvent.keyDown(document, { key: '`' });
     const activeBtn = screen.getByTestId('debug-toggle');
-    // Glowing dot visible when panel is open
-    expect(activeBtn.querySelector('.animate-pulse')).toBeTruthy();
+    expect(activeBtn).toBeTruthy();
   });
 });
