@@ -141,4 +141,71 @@ describe('AgentDetailPanel', () => {
     expect(screen.getByText('t10')).toBeTruthy();
     expect(screen.getByText('t7')).toBeTruthy();
   });
+
+  it('renders possessions section when possessions exist', () => {
+    const withPossessions = {
+      ...mockDetail,
+      possessions: [
+        { id: 'item.1', name: "Ashenmane's Fang", subcategory: 'arms', tier: 2 as const, mechanicalSummary: '+Iron' },
+      ],
+    };
+    render(<AgentDetailPanel detail={withPossessions} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText('Possessions')).toBeTruthy();
+    expect(screen.getByText("Ashenmane's Fang")).toBeTruthy();
+  });
+
+  it('renders conditions section when conditions exist', () => {
+    const withConditions = {
+      ...mockDetail,
+      conditions: [
+        { id: 'cond.1', name: 'Bruised Ribs', subcategory: 'wound', tier: 1 as const, mechanicalSummary: '-Iron (minor)', ticksRemaining: 8, totalTicks: 20 },
+      ],
+    };
+    render(<AgentDetailPanel detail={withConditions} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText('Conditions')).toBeTruthy();
+    expect(screen.getByText('Bruised Ribs')).toBeTruthy();
+  });
+
+  it('renders powers & agreements section', () => {
+    const withPowers = {
+      ...mockDetail,
+      powersAndAgreements: [
+        { id: 'power.1', name: 'Turn Undead', subcategory: 'bestowed_power', tier: 2 as const, mechanicalSummary: '+Star' },
+      ],
+    };
+    render(<AgentDetailPanel detail={withPowers} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText('Powers & Agreements')).toBeTruthy();
+    expect(screen.getByText('Turn Undead')).toBeTruthy();
+  });
+
+  it('shows overflow text when more than 5 possessions', () => {
+    const manyPossessions = {
+      ...mockDetail,
+      possessions: Array.from({ length: 7 }, (_, i) => ({
+        id: `item.${i}`, name: `Item ${i}`, subcategory: 'arms', tier: 1 as const, mechanicalSummary: 'test',
+      })),
+    };
+    render(<AgentDetailPanel detail={manyPossessions} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.getByText(/and 2 more/)).toBeTruthy();
+  });
+
+  it('calls onAttachmentClick when attachment row clicked', () => {
+    const onAttachmentClick = vi.fn();
+    const withPossessions = {
+      ...mockDetail,
+      possessions: [
+        { id: 'item.1', name: "Ashenmane's Fang", subcategory: 'arms', tier: 2 as const, mechanicalSummary: '+Iron' },
+      ],
+    };
+    render(<AgentDetailPanel detail={withPossessions} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} onAttachmentClick={onAttachmentClick} />);
+    fireEvent.click(screen.getByText("Ashenmane's Fang"));
+    expect(onAttachmentClick).toHaveBeenCalledWith('item.1');
+  });
+
+  it('does not render attachment sections when no attachments', () => {
+    render(<AgentDetailPanel detail={mockDetail} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    expect(screen.queryByText('Possessions')).toBeNull();
+    expect(screen.queryByText('Conditions')).toBeNull();
+    expect(screen.queryByText('Powers & Agreements')).toBeNull();
+  });
 });

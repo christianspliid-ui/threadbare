@@ -10,6 +10,7 @@
 
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import { getAgentAttachments, type AttachmentSummary, type AttachmentFullEntry } from './agentAttachments';
 import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
@@ -77,6 +78,10 @@ export interface AgentDetail {
   cooperationStrategy: CooperationStrategy | null;
   reputationScore: number;
   recentInteractions: InteractionRecord[];
+  /** Attachment data — populated by getAgentAttachments() when available */
+  possessions?: import('./agentAttachments').AttachmentSummary[];
+  conditions?: import('./agentAttachments').AttachmentSummary[];
+  powersAndAgreements?: import('./agentAttachments').AttachmentSummary[];
 }
 
 // ─── Familiarity-gated Info Card (Tier 2) ──────────────────────────
@@ -100,6 +105,10 @@ export interface AgentInfoCardData {
   allTraits?: string[];
   backstoryParagraph1?: string;
   knowledgeLevel: KnowledgeLevel;
+  /** Attachment data for Tier 3 modal (intimate+ knowledge) */
+  possessions?: AttachmentFullEntry[];
+  afflictions?: AttachmentFullEntry[];
+  giftsAndBurdens?: AttachmentFullEntry[];
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -206,6 +215,27 @@ export function getAgentDetail(
   allInteractions.sort((a, b) => b.tick - a.tick);
   const recentInteractions = allInteractions.slice(0, 3);
 
+  // ─── Attachment data ────────────────────────────────────────────
+  const attachments = getAgentAttachments(graph, agentId);
+
+  const toSummary = (e: AttachmentFullEntry): AttachmentSummary => ({
+    id: e.id,
+    name: e.name,
+    subcategory: e.subcategory,
+    tier: e.tier,
+    mechanicalSummary: e.mechanicalSummary,
+    ticksRemaining: e.ticksRemaining,
+    totalTicks: e.totalTicks,
+    durationLabel: e.durationLabel,
+  });
+
+  const possessions = attachments.possessions.map(toSummary);
+  const conditions = attachments.conditions.map(toSummary);
+  const powersAndAgreements = [
+    ...attachments.powers.map(toSummary),
+    ...attachments.agreements.map(toSummary),
+  ];
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -222,6 +252,9 @@ export function getAgentDetail(
     cooperationStrategy,
     reputationScore,
     recentInteractions,
+    possessions: possessions.length > 0 ? possessions : undefined,
+    conditions: conditions.length > 0 ? conditions : undefined,
+    powersAndAgreements: powersAndAgreements.length > 0 ? powersAndAgreements : undefined,
   };
 }
 
@@ -409,6 +442,19 @@ export function getAgentInfoCard(
 
     const paragraphs = backstory.split('\n\n');
     card.backstoryParagraph1 = paragraphs[0];
+
+    // Attachment data (intimate+)
+    const attachments = getAgentAttachments(graph, agentId);
+    if (attachments.possessions.length > 0) {
+      card.possessions = attachments.possessions;
+    }
+    if (attachments.conditions.length > 0) {
+      card.afflictions = attachments.conditions;
+    }
+    const giftsAndBurdens = [...attachments.powers, ...attachments.agreements];
+    if (giftsAndBurdens.length > 0) {
+      card.giftsAndBurdens = giftsAndBurdens;
+    }
   }
 
   return card;

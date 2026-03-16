@@ -3,6 +3,10 @@ import type { AgentDetail } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
+import { AttachmentRow } from './AttachmentRow';
+
+/** Max attachment rows shown per section before overflow */
+const MAX_ATTACHMENT_ROWS = 5;
 
 /** Activity summary for unified action display */
 export interface ActivitySummary {
@@ -20,6 +24,7 @@ interface AgentDetailPanelProps {
   onViewPsyche: () => void;
   onIntervene: () => void;
   onLocationClick: (locationId: string) => void;
+  onAttachmentClick?: (attachmentId: string) => void;
 }
 
 // Domain display names
@@ -58,6 +63,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
   onViewPsyche,
   onIntervene,
   onLocationClick,
+  onAttachmentClick,
 }: AgentDetailPanelProps) {
   const tierColor = TIER_COLORS[detail.tier] || '#78716c';
   const archetypeReaches = detail.archetype?.reachAffinities || [];
@@ -259,6 +265,113 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             </div>
           )}
         </div>
+
+        {/* Possessions Section */}
+        {detail.possessions && detail.possessions.length > 0 && (
+          <div>
+            <h3
+              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
+              style={{ fontFamily: 'Cinzel, serif' }}
+            >
+              Possessions
+            </h3>
+            <div className="space-y-1.5">
+              {detail.possessions.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
+                <AttachmentRow
+                  key={att.id}
+                  name={att.name}
+                  subcategory={att.subcategory}
+                  tier={att.tier}
+                  mechanicalSummary={att.mechanicalSummary}
+                  ticksRemaining={att.ticksRemaining}
+                  totalTicks={att.totalTicks}
+                  durationLabel={att.durationLabel}
+                  onClick={onAttachmentClick ? () => onAttachmentClick(att.id) : undefined}
+                />
+              ))}
+              {detail.possessions.length > MAX_ATTACHMENT_ROWS && (
+                <p className="text-amber-400/30 text-xs italic">
+                  and {detail.possessions.length - MAX_ATTACHMENT_ROWS} more…
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+        {detail.possessions != null && detail.possessions.length === 0 && (
+          <div>
+            <h3
+              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
+              style={{ fontFamily: 'Cinzel, serif' }}
+            >
+              Possessions
+            </h3>
+            <p className="text-amber-400/30 text-xs italic animate-breathe">They carry nothing of note.</p>
+          </div>
+        )}
+
+        {/* Conditions Section */}
+        {detail.conditions && detail.conditions.length > 0 && (
+          <div>
+            <h3
+              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
+              style={{ fontFamily: 'Cinzel, serif' }}
+            >
+              Conditions
+            </h3>
+            <div className="space-y-1.5">
+              {detail.conditions.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
+                <AttachmentRow
+                  key={att.id}
+                  name={att.name}
+                  subcategory={att.subcategory}
+                  tier={att.tier}
+                  mechanicalSummary={att.mechanicalSummary}
+                  ticksRemaining={att.ticksRemaining}
+                  totalTicks={att.totalTicks}
+                  durationLabel={att.durationLabel}
+                  onClick={onAttachmentClick ? () => onAttachmentClick(att.id) : undefined}
+                />
+              ))}
+              {detail.conditions.length > MAX_ATTACHMENT_ROWS && (
+                <p className="text-amber-400/30 text-xs italic">
+                  and {detail.conditions.length - MAX_ATTACHMENT_ROWS} more…
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Powers & Agreements Section */}
+        {detail.powersAndAgreements && detail.powersAndAgreements.length > 0 && (
+          <div>
+            <h3
+              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
+              style={{ fontFamily: 'Cinzel, serif' }}
+            >
+              Powers & Agreements
+            </h3>
+            <div className="space-y-1.5">
+              {detail.powersAndAgreements.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
+                <AttachmentRow
+                  key={att.id}
+                  name={att.name}
+                  subcategory={att.subcategory}
+                  tier={att.tier}
+                  mechanicalSummary={att.mechanicalSummary}
+                  ticksRemaining={att.ticksRemaining}
+                  totalTicks={att.totalTicks}
+                  durationLabel={att.durationLabel}
+                  onClick={onAttachmentClick ? () => onAttachmentClick(att.id) : undefined}
+                />
+              ))}
+              {detail.powersAndAgreements.length > MAX_ATTACHMENT_ROWS && (
+                <p className="text-amber-400/30 text-xs italic">
+                  and {detail.powersAndAgreements.length - MAX_ATTACHMENT_ROWS} more…
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Strategy Section */}
         <div>

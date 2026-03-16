@@ -1,8 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import { getSphereColor } from '../../data/sphereIcons';
 import { Tooltip } from '../shared/Tooltip';
+import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
+import type { AttachmentTier } from '../../types/attachments';
+import { getAttachmentGlyph } from './attachmentGlyphs';
+import { ProgressBar } from '../shared/ProgressBar';
+import { AttachmentDetailView } from './AttachmentDetailView';
+import type { AttachmentDetailData } from './AttachmentDetailView';
+import type { AttachmentFullEntry } from '../../engine/agentAttachments';
+import { resolveAttachmentTooltip } from '../../engine/attachmentTooltip';
 
 export interface AgentProfileModalProps {
   card: AgentInfoCardData;
@@ -38,14 +47,112 @@ function hasKnowledge(level: string, minimum: string): boolean {
 }
 
 export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalProps) {
+  const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
+
   // Escape key handler
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (selectedAttachment) {
+        setSelectedAttachment(null);
+      } else {
+        onClose();
+      }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose]);
+  }, [onClose, selectedAttachment]);
+
+  /** Convert an AttachmentFullEntry to AttachmentDetailData for the detail view */
+  const toDetailData = (entry: AttachmentFullEntry): AttachmentDetailData => ({
+    id: entry.id,
+    name: entry.name,
+    subcategory: entry.subcategory,
+    tier: entry.tier as AttachmentTier,
+    mechanicalSummary: entry.mechanicalSummary,
+    flavorText: entry.flavorText,
+    tags: entry.tags,
+    lossCondition: entry.lossCondition,
+    grantedBy: entry.grantedBy,
+    agreementType: entry.agreementType,
+    source: entry.source,
+    image: entry.image,
+    ticksRemaining: entry.ticksRemaining,
+    totalTicks: entry.totalTicks,
+    onUseTriggers: entry.onUseTriggers,
+  });
+
+  /** Render a prose vignette for an attachment in the modal */
+  const renderVignette = (entry: AttachmentFullEntry) => {
+    const tierColor = ATTACHMENT_TIER_COLORS[entry.tier as AttachmentTier];
+    const tierName = ATTACHMENT_TIER_NAMES[entry.tier as AttachmentTier];
+    const glyph = getAttachmentGlyph(entry.subcategory);
+    const tooltip = resolveAttachmentTooltip({
+      name: entry.name,
+      subcategory: entry.subcategory,
+      tier: entry.tier as AttachmentTier,
+      mechanicalSummary: entry.mechanicalSummary,
+      lossCondition: entry.lossCondition,
+      onUseTriggers: entry.onUseTriggers,
+      ticksRemaining: entry.ticksRemaining,
+      totalTicks: entry.totalTicks,
+    });
+
+    return (
+      <div
+        key={entry.id}
+        className="cursor-pointer transition-opacity hover:opacity-80 py-2"
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+        onClick={() => setSelectedAttachment(toDetailData(entry))}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setSelectedAttachment(toDetailData(entry));
+          }
+        }}
+      >
+        <div className="flex items-center justify-between mb-1">
+          <Tooltip label={tooltip.label} desc={tooltip.desc}>
+            <span
+              className="text-sm font-semibold underline decoration-transparent hover:decoration-current cursor-pointer"
+              style={{ color: tierColor }}
+            >
+              {glyph} {entry.name}
+            </span>
+          </Tooltip>
+          <span className="text-xs uppercase tracking-wider" style={{ color: `${tierColor}99` }}>
+            {tierName}
+          </span>
+        </div>
+        {entry.flavorText && (
+          <p className="text-sm italic mb-1" style={{ color: 'var(--text-secondary)' }}>
+            {entry.flavorText}
+          </p>
+        )}
+        {entry.grantedBy && (
+          <p className="text-xs mb-1" style={{ color: 'var(--text-tertiary)' }}>
+            {entry.agreementType ? `Bound to ${entry.grantedBy}` : `Granted by ${entry.grantedBy}`}
+          </p>
+        )}
+        <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+          {entry.mechanicalSummary}
+          {entry.lossCondition ? ` \u00B7 ${entry.lossCondition}` : ''}
+          {entry.tags.length > 0 ? ` \u00B7 ${entry.tags.join(', ')}` : ''}
+        </p>
+        {entry.ticksRemaining != null && entry.totalTicks != null && entry.totalTicks > 0 && (
+          <div className="flex items-center gap-2 mt-1">
+            <div style={{ width: '200px' }}>
+              <ProgressBar progress={entry.ticksRemaining / entry.totalTicks} color={tierColor} className="h-1.5" glow={false} />
+            </div>
+            <span className="text-xs" style={{ color: 'var(--text-tertiary)' }}>
+              {entry.ticksRemaining} ticks remaining
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Format cooperation strategy (tit-for-tat → Tit-for-Tat)
   const formatStrategy = (strategy: string): string => {
@@ -55,7 +162,7 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
       .join('-');
   };
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-label={`Profile: ${card.name}`}
@@ -75,6 +182,17 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
         style={{ pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Close × button */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 z-10 transition-colors text-xl leading-none rounded-full"
+          style={{ color: 'var(--text-tertiary)', width: '28px', height: '28px', textAlign: 'center' }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-tertiary)')}
+          aria-label={`Close profile for ${card.name}`}
+        >
+          ×
+        </button>
         {/* Header Zone */}
         <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="flex gap-4 mb-3">
@@ -256,6 +374,45 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
             </section>
           )}
 
+          {/* Possessions Section (intimate+) */}
+          {hasKnowledge(card.knowledgeLevel, 'intimate') && card.possessions && card.possessions.length > 0 && (
+            <section data-testid="modal-possessions">
+              <h2
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+              >
+                Possessions
+              </h2>
+              {card.possessions.map(renderVignette)}
+            </section>
+          )}
+
+          {/* Afflictions Section (recognised+) */}
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && card.afflictions && card.afflictions.length > 0 && (
+            <section data-testid="modal-afflictions">
+              <h2
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+              >
+                Afflictions
+              </h2>
+              {card.afflictions.map(renderVignette)}
+            </section>
+          )}
+
+          {/* Gifts & Burdens Section (intimate+) */}
+          {hasKnowledge(card.knowledgeLevel, 'intimate') && card.giftsAndBurdens && card.giftsAndBurdens.length > 0 && (
+            <section data-testid="modal-gifts-burdens">
+              <h2
+                className="font-bold mb-3"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+              >
+                Gifts & Burdens
+              </h2>
+              {card.giftsAndBurdens.map(renderVignette)}
+            </section>
+          )}
+
           {/* Backstory Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.backstoryParagraph1 && (
             <section>
@@ -364,6 +521,20 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           )}
         </div>
 
+        {/* Attachment Detail Overlay (slide-in within modal) */}
+        {selectedAttachment && (
+          <div
+            className="absolute inset-0 z-20 overflow-y-auto"
+            style={{ backgroundColor: 'var(--bg-surface)' }}
+            data-testid="attachment-detail-overlay"
+          >
+            <AttachmentDetailView
+              attachment={selectedAttachment}
+              onBack={() => setSelectedAttachment(null)}
+            />
+          </div>
+        )}
+
         {/* Close Button */}
         <div className="border-t p-4 flex justify-end" style={{ borderColor: 'var(--border-subtle)' }}>
           <button
@@ -378,7 +549,8 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

@@ -189,6 +189,27 @@ export const EntityCard = React.memo(function EntityCard({
           </div>
         );
 
+      case 'trigger':
+        return (
+          <div className="space-y-2" data-testid="trigger-block">
+            {block.triggers.map((trigger, idx) => (
+              <div key={idx} style={{ fontSize: 'var(--text-xs)' }}>
+                <div style={{ color: 'var(--text-primary)' }}>
+                  {'\u26A1'} {trigger.condition} ({Math.round(trigger.probability * 100)}%)
+                </div>
+                {trigger.narrativeTemplate && (
+                  <div className="italic" style={{ color: 'var(--text-tertiary)' }}>
+                    {trigger.narrativeTemplate}
+                  </div>
+                )}
+                <div style={{ color: 'var(--text-secondary)' }}>
+                  → {trigger.effectSummary}
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
       default:
         return null;
     }
