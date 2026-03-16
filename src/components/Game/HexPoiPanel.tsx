@@ -231,7 +231,7 @@ export const HexPoiPanel = memo(function HexPoiPanel({
                     border: '1px solid rgba(0,0,0,0.3)',
                   }}
                 >
-                  <span style={{ fontSize: '9px', color: 'white', fontWeight: 'bold', lineHeight: 1 }}>
+                  <span style={{ fontSize: '11px', color: 'white', fontWeight: 'bold', lineHeight: 1 }}>
                     {agent.name.charAt(0)}
                   </span>
                 </div>
@@ -250,7 +250,7 @@ export const HexPoiPanel = memo(function HexPoiPanel({
                   </span>
                   <span
                     style={{
-                      fontSize: '11px',
+                      fontSize: 'var(--text-xs)',
                       color: 'var(--text-tertiary)',
                     }}
                   >
