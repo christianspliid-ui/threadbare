@@ -353,6 +353,14 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId]);
 
+  /** DES-009: Double-click agent dot → open full profile modal directly */
+  const handleAgentDoubleClick = useCallback((agentId: string) => {
+    setSelectedAgentId(agentId);
+    setStrandViewAgent(null);
+    setDrawerOpen(false);
+    setProfileModalAgentId(agentId);
+  }, []);
+
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
   }, []);
@@ -397,6 +405,7 @@ export function useAgentInteraction({
     handleOpenDrawer,
     handleAvatarActionClick,
     handleViewProfile,
+    handleAgentDoubleClick,
     handleCloseProfile,
     closeAllAgentOverlays,
   };

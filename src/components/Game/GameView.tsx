@@ -127,6 +127,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleOpenDrawer,
     handleAvatarActionClick,
     handleViewProfile,
+    handleAgentDoubleClick,
     handleCloseProfile,
     closeAllAgentOverlays,
   } = useAgentInteraction({
@@ -375,6 +376,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   currentTick={gameState.tick}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
+                  onAgentClick={handleAgentSelect}
+                  onAgentDoubleClick={handleAgentDoubleClick}
                 />
 
                 <AvatarHUD
