@@ -30,6 +30,9 @@ import { generateHistoricalCultures, assignHistoricalTerritories } from './histo
 import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments } from './seedAttachments';
+import { assignInitialAmbitions } from './ambitionAssignment';
+import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import type { AmbitionAgentSnapshot } from './ambitionSelection';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -296,12 +299,19 @@ export function seedWorld(
     locationIds.push(id);
   }
 
-  // Add adjacency edges between locations
+  // Add bidirectional adjacency edges between locations
   for (let i = 0; i < locationIds.length - 1; i++) {
     graph.addEdge({
-      id: `edge_adj_${i}`,
+      id: `edge_adj_${i}_fwd`,
       source: locationIds[i],
       target: locationIds[i + 1],
+      type: 'adjacent',
+      properties: {},
+    });
+    graph.addEdge({
+      id: `edge_adj_${i}_rev`,
+      source: locationIds[i + 1],
+      target: locationIds[i],
       type: 'adjacent',
       properties: {},
     });
@@ -485,6 +495,61 @@ export function seedWorld(
 
       grantFormativeTraits(graph, edge.source, formativeIds, 0);
       grantBehavioralTraits(graph, edge.source, behavioralIds, 0);
+    }
+  }
+
+  // ── Initial Ambitions ──────────────────────────────────────
+  for (const indId of individualIds) {
+    const actorNode = graph.getNode(indId);
+    if (!actorNode) continue;
+
+    const caps = (actorNode.properties.domainCapabilities as Record<ReachDomain, number>) ?? {} as Record<ReachDomain, number>;
+    const traitEdges = graph.getOutgoingEdges(indId, 'has_trait');
+    const traits = traitEdges
+      .map(e => graph.getNode(e.target)?.name ?? e.target)
+      .filter(Boolean);
+
+    const snapshot: AmbitionAgentSnapshot = {
+      domainCapabilities: caps,
+      traits,
+      culturalSpheres: [],
+      bonds: [],
+    };
+
+    // Derive a stable per-agent seed from the agent's index
+    const agentIndex = parseInt(indId.replace('ind_', ''), 10) || 0;
+    const assignments = assignInitialAmbitions(AMBITION_TEMPLATES, snapshot, seed + 29173 + agentIndex * 97);
+
+    for (const assignment of assignments) {
+      const ambitionNodeId = `ambition.${assignment.templateId}`;
+      if (!graph.getNode(ambitionNodeId)) {
+        const tmpl = AMBITION_TEMPLATES.find(t => t.id === assignment.templateId);
+        graph.addNode({
+          id: ambitionNodeId,
+          type: 'ambition',
+          name: tmpl?.displayName ?? assignment.templateId,
+          properties: {
+            templateId: assignment.templateId,
+            displayName: tmpl?.displayName ?? assignment.templateId,
+            category: tmpl?.category ?? 'survival',
+            reachAffinity: tmpl?.reachAffinity ?? {},
+            totalMilestones: tmpl?.milestones.length ?? 0,
+          },
+        });
+      }
+
+      graph.addEdge({
+        id: `pursues_${indId}_${ambitionNodeId}`,
+        source: indId,
+        target: ambitionNodeId,
+        type: 'pursues',
+        properties: {
+          priority: assignment.priority,
+          status: 'active',
+          assignedTick: 0,
+          completedMilestones: [],
+        },
+      });
     }
   }
 
