@@ -9,6 +9,7 @@ interface SimulationControlsProps {
   onToggle: () => void;
   onStep: () => void;
   onSpeedChange: (speed: number) => void;
+  compact?: boolean;
 }
 
 const SEASON_ICONS: Record<string, string> = {
@@ -17,8 +18,75 @@ const SEASON_ICONS: Record<string, string> = {
 
 export function SimulationControls({
   tick, season, year, running, speed,
-  onToggle, onStep, onSpeedChange,
+  onToggle, onStep, onSpeedChange, compact,
 }: SimulationControlsProps) {
+  if (compact) {
+    return (
+      <div className="flex items-center gap-2.5">
+        {/* Season + date */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          <span style={{ fontSize: '1rem', lineHeight: 1 }}>{SEASON_ICONS[season] ?? '🌍'}</span>
+          <div className="flex items-center gap-1">
+            <span className="capitalize font-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
+              {season}
+            </span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+              Yr {year}
+            </span>
+            <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+              · T{tick}
+            </span>
+          </div>
+        </div>
+
+        {/* Play / Step */}
+        <div className="flex items-center gap-1">
+          <Tooltip id="ui.sim_play_pause">
+            <button
+              onClick={onToggle}
+              className="px-2 py-0.5 rounded font-semibold transition-colors"
+              style={{
+                fontSize: 'var(--text-xs)',
+                background: running ? 'var(--accent-gold)' : 'var(--bg-raised)',
+                color: running ? 'var(--bg-abyss)' : 'var(--text-primary)',
+                border: '1px solid var(--border-subtle)',
+              }}
+            >
+              {running ? '⏸' : '▶'}
+            </button>
+          </Tooltip>
+          <button
+            onClick={onStep}
+            disabled={running}
+            className="px-2 py-0.5 rounded font-semibold transition-colors disabled:opacity-30"
+            style={{ fontSize: 'var(--text-xs)', background: 'var(--bg-raised)', color: 'var(--text-primary)', border: '1px solid var(--border-subtle)' }}
+          >
+            ⏭
+          </button>
+        </div>
+
+        {/* Speed */}
+        <Tooltip id="ui.sim_speed">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="range"
+              min={1}
+              max={20}
+              value={speed}
+              onChange={(e) => onSpeedChange(parseInt(e.target.value))}
+              className="w-20 h-1 rounded-lg appearance-none cursor-pointer"
+              style={{
+                accentColor: 'var(--accent-gold)',
+                background: `linear-gradient(to right, var(--accent-gold) ${(speed / 20) * 100}%, var(--bg-raised) ${(speed / 20) * 100}%)`,
+              }}
+            />
+            <span className="font-mono w-5 text-right" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{speed}×</span>
+          </div>
+        </Tooltip>
+      </div>
+    );
+  }
+
   return (
     <div className="panel-glass space-y-3" style={{ padding: 'var(--panel-padding)' }}>
       <div className="flex items-center justify-between">

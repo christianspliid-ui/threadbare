@@ -20,7 +20,6 @@ import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
 import { ActionDrawer } from './ActionDrawer';
 import { NarrativeLog } from './NarrativeLog';
-import { RivalPanel } from './RivalPanel';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
@@ -41,6 +40,7 @@ import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
+import { RivalsButton } from './RivalsButton';
 import { EventPopup } from './EventPopup';
 import { useNotifications } from './hooks/useNotifications';
 
@@ -240,87 +240,38 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   return (
     <GameErrorBoundary>
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
-      {/* ═══ Top status bar — Doom + Mandate ═══ */}
+      {/* ═══ Top bar — Stellaris-style: identity + time + essence | doom + mandate + alerts + rivals + debug ═══ */}
       <div
-        className="w-full px-5 py-2.5 flex gap-4 items-center relative z-30 flex-shrink-0"
+        className="w-full px-4 py-2 flex items-center gap-3 relative z-30 flex-shrink-0"
         style={{
           background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
           borderBottom: '1px solid var(--border-subtle)',
+          minHeight: '48px',
         }}
       >
-        <div className="flex-[2] min-w-0">
-          <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
-        </div>
-        {gameState.mandateDefinition && gameState.mandateState && (
-          <>
-            <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-            <div className="flex-[1] min-w-0">
-              <MandateTracker
-                definition={gameState.mandateDefinition}
-                state={gameState.mandateState}
-              />
-            </div>
-          </>
-        )}
-        <AlertBar
-          alerts={notificationState.alerts}
-          onDismiss={handleDismissAlert}
-        />
-        <button
-          data-testid="debug-toggle"
-          onClick={handleToggleDebug}
-          className="ml-auto px-2.5 py-1 rounded flex items-center gap-1.5 flex-shrink-0 transition-colors"
-          style={{
-            fontSize: 'var(--text-xs)',
-            fontFamily: 'var(--font-body)',
-            fontWeight: 500,
-            color: debugPanelOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
-            background: debugPanelOpen ? 'var(--accent-gold-glow)' : 'transparent',
-            border: `1px solid ${debugPanelOpen ? 'var(--accent-gold-dim)' : 'var(--border-subtle)'}`,
-          }}
-          title="Toggle debug trace panel (`)"
-        >
-          {debugPanelOpen && (
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-gold)' }} />
-          )}
-          Debug
-        </button>
-      </div>
-
-      {/* ═══ Main content area ═══ */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* ── Left sidebar ── */}
-        <nav
-          aria-label="Game status"
-          className="flex-shrink-0 flex flex-col overflow-y-auto"
-          style={{
-            width: 'var(--sidebar-width)',
-            background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-            borderRight: '1px solid var(--border-subtle)',
-            padding: 'var(--panel-padding)',
-            gap: '0.75rem',
-          }}
-        >
+        {/* LEFT GROUP: identity · time · essence */}
+        <div className="flex items-center gap-3 flex-shrink-0 min-w-0">
           {/* Ascendant identity */}
-          <div className="text-center py-2">
-            <h1
+          <div className="flex-shrink-0">
+            <span
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 'var(--text-lg)',
+                fontSize: 'var(--text-sm)',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 letterSpacing: '0.06em',
               }}
             >
               {archetype.title}
-            </h1>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+            </span>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginLeft: '0.5rem' }}>
               Cycle {gameState.cycle}
-            </p>
+            </span>
           </div>
 
-          <div className="divider-gold" />
+          <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
 
+          {/* Time controls */}
           <SimulationControls
             tick={gameState.tick}
             season={seasonName}
@@ -330,21 +281,69 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             onToggle={handleToggleRunning}
             onStep={doTick}
             onSpeedChange={setSpeed}
+            compact
           />
 
+          <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+
+          {/* Essence resources */}
           <EssencePanel
             pool={gameState.essencePool}
             maxEssence={maxEssence}
             primarySphere={archetype.sphereAlignment.primary}
             secondarySphere={archetype.sphereAlignment.secondary}
+            compact
           />
+        </div>
 
-          <RivalPanel
+        {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug */}
+        <div className="flex items-center gap-3 ml-auto flex-shrink-0">
+          <div className="min-w-0" style={{ maxWidth: '220px' }}>
+            <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+          </div>
+          {gameState.mandateDefinition && gameState.mandateState && (
+            <>
+              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+              <div className="min-w-0" style={{ maxWidth: '180px' }}>
+                <MandateTracker
+                  definition={gameState.mandateDefinition}
+                  state={gameState.mandateState}
+                />
+              </div>
+            </>
+          )}
+          <AlertBar
+            alerts={notificationState.alerts}
+            onDismiss={handleDismissAlert}
+          />
+          <RivalsButton
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
-        </nav>
+          <button
+            data-testid="debug-toggle"
+            onClick={handleToggleDebug}
+            className="px-2.5 py-1 rounded flex items-center gap-1.5 flex-shrink-0 transition-colors"
+            style={{
+              fontSize: 'var(--text-xs)',
+              fontFamily: 'var(--font-body)',
+              fontWeight: 500,
+              color: debugPanelOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
+              background: debugPanelOpen ? 'var(--accent-gold-glow)' : 'transparent',
+              border: `1px solid ${debugPanelOpen ? 'var(--accent-gold-dim)' : 'var(--border-subtle)'}`,
+            }}
+            title="Toggle debug trace panel (`)"
+          >
+            {debugPanelOpen && (
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: 'var(--accent-gold)' }} />
+            )}
+            Debug
+          </button>
+        </div>
+      </div>
 
+      {/* ═══ Main content area ═══ */}
+      <div className="flex flex-1 overflow-hidden">
         {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 flex items-center justify-center overflow-hidden relative">
