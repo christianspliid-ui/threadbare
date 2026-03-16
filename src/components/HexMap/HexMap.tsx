@@ -1,4 +1,4 @@
-import { useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
+import { useState, useMemo, useRef, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import * as d3 from 'd3';
 import type { HexTile, HexCoord, OverlayMode, LocationSubtype } from '../../types';
 import type { VisibilityMap } from '../../types/visibility';
@@ -64,6 +64,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   onZoomChange,
   onHexClick, onHexHover,
 }, ref) => {
+  const [currentZoomScale, setCurrentZoomScale] = useState(DEFAULT_ZOOM_SCALE);
+
   const { width, height } = useMemo(() => {
     // Flat-top hex layout: horizontal spacing = HEX_SCALE_X * size, vertical spacing = HEX_SCALE_Y * size
     const w = cols * hexSize * HEX_SCALE_X + hexSize * 0.5;
@@ -97,6 +99,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         if (gRef.current) {
           gRef.current.setAttribute('transform', event.transform.toString());
         }
+        setCurrentZoomScale(event.transform.k);
         onZoomChangeRef.current?.(event.transform);
       });
 
@@ -314,7 +317,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
               <AgentDots
                 graph={graph}
                 locationPositions={locationPositions}
-                zoomScale={DEFAULT_ZOOM_SCALE}
+                zoomScale={currentZoomScale}
               />
             )}
             {/* Layer 4.5: Ghost dots — fading agents that left LOS */}
