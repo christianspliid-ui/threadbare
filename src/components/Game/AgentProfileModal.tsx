@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import { IntentSection } from './IntentSection';
 import { getSphereColor } from '../../data/sphereIcons';
+import { BACKSTORY_CONSTANTS } from '../../types/prose';
 import { Tooltip } from '../shared/Tooltip';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
 import type { AttachmentTier } from '../../types/attachments';
@@ -18,6 +19,8 @@ export interface AgentProfileModalProps {
   card: AgentInfoCardData;
   profile?: AgentFullProfileData;
   onClose: () => void;
+  /** When true, auto-scroll to the backstory section on open (e.g. from a revelation alert) */
+  scrollToNewStrata?: boolean;
 }
 
 // Domain name mapping
@@ -47,8 +50,18 @@ function hasKnowledge(level: string, minimum: string): boolean {
   return (KNOWLEDGE_RANK[level] ?? 0) >= (KNOWLEDGE_RANK[minimum] ?? 0);
 }
 
-export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalProps) {
+// Stratum locked-tier placeholder text
+const LOCKED_TEXT: Record<2 | 3 | 4, string> = {
+  2: 'There are stories {name} shares only with those who have proven their devotion.',
+  3: 'The fears and contradictions within {name} are visible only to a true champion of the divine.',
+  4: 'Only when {name} becomes an aspect of the divine can the full truth be read in their threads.',
+};
+
+export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }: AgentProfileModalProps) {
   const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
+  const backstorySectionRef = useRef<HTMLDivElement>(null);
+  // Track which strata badges have faded (badge fades after NEW_BADGE_FADE_MS)
+  const [fadedStrata, setFadedStrata] = useState<Set<number>>(new Set());
 
   // Escape key handler
   useEffect(() => {
@@ -62,6 +75,23 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
   }, [onClose, selectedAttachment]);
+
+  // Auto-scroll to backstory section when opened from revelation alert
+  useEffect(() => {
+    if (scrollToNewStrata && backstorySectionRef.current) {
+      backstorySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [scrollToNewStrata]);
+
+  // Fade New badges after NEW_BADGE_FADE_MS
+  useEffect(() => {
+    const newStrata = card.backstory?.strata.filter(s => s.isNew).map(s => s.tier) ?? [];
+    if (newStrata.length === 0) return;
+    const timer = setTimeout(() => {
+      setFadedStrata(new Set(newStrata));
+    }, BACKSTORY_CONSTANTS.NEW_BADGE_FADE_MS);
+    return () => clearTimeout(timer);
+  }, [card.backstory]);
 
   /** Convert an AttachmentFullEntry to AttachmentDetailData for the detail view */
   const toDetailData = (entry: AttachmentFullEntry): AttachmentDetailData => ({
@@ -446,6 +476,92 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
                   </p>
                 ))}
               </div>
+            </section>
+          )}
+
+          {/* Their Story Section — gated on recognised+ knowledge */}
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.backstory || (card.influenceTier !== undefined && card.influenceTier === 0)) && (
+            <section ref={backstorySectionRef} data-testid="their-story-section">
+              <h2
+                className="font-bold mb-1"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+              >
+                Their Story
+                <span
+                  className="ml-2 text-xs font-normal opacity-30"
+                  style={{ color: 'var(--text-tertiary)' }}
+                >
+                  ✦ ─ ✦
+                </span>
+              </h2>
+
+              {/* Tier 0 locked placeholder */}
+              {(!card.backstory || card.backstory.strata.length === 0) && card.influenceTier === 0 && (
+                <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                  You sense there is more to {card.name}&apos;s story, but the threads between you are too thin to read it.
+                </p>
+              )}
+
+              {/* Unlocked strata */}
+              {card.backstory && card.backstory.strata.length > 0 && (
+                <div className="space-y-5 mt-3">
+                  {card.backstory.strata.map((stratum) => {
+                    const sphereColor = card.primarySphere ? getSphereColor(card.primarySphere) : 'var(--accent-gold)';
+                    const isFaded = fadedStrata.has(stratum.tier);
+                    return (
+                      <div key={stratum.tier}>
+                        {/* Stratum divider */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="h-px flex-1" style={{ backgroundColor: sphereColor, opacity: 0.25 }} />
+                          <span
+                            className="text-xs font-semibold uppercase tracking-widest"
+                            style={{ color: sphereColor, opacity: 0.8 }}
+                          >
+                            {stratum.title}
+                          </span>
+                          {stratum.isNew && (
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded font-semibold transition-opacity duration-1000"
+                              style={{
+                                backgroundColor: sphereColor + '33',
+                                color: sphereColor,
+                                opacity: isFaded ? 0 : 1,
+                              }}
+                            >
+                              ✦ New
+                            </span>
+                          )}
+                          <div className="h-px flex-1" style={{ backgroundColor: sphereColor, opacity: 0.25 }} />
+                        </div>
+                        <p className="text-xs italic mb-1" style={{ color: sphereColor, opacity: 0.5 }}>
+                          {stratum.subtitle}
+                        </p>
+                        <div className="text-sm leading-relaxed space-y-3" style={{ color: 'var(--text-secondary)' }}>
+                          {stratum.text.split('\n\n').map((para, idx) => (
+                            <p key={idx}>{para}</p>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Locked future strata placeholders */}
+                  {([2, 3, 4] as const).filter(tier => tier > card.backstory!.maxStratum).map(tier => (
+                    <div key={`locked-${tier}`} className="opacity-40">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="h-px flex-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
+                        <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-tertiary)' }}>
+                          ◈ Locked
+                        </span>
+                        <div className="h-px flex-1" style={{ backgroundColor: 'var(--border-subtle)' }} />
+                      </div>
+                      <p className="text-sm italic leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                        {LOCKED_TEXT[tier].replace('{name}', card.name)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </section>
           )}
 

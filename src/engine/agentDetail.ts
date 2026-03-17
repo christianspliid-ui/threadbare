@@ -21,6 +21,8 @@ import type { KnowledgeLevel } from '../types/familiarity';
 import { getDomainWord, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { generateQuotes, generateBackstory } from './profileGenerator';
 import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
+import { generateTieredBackstory } from './backstoryGenerator';
+import type { BackstoryResult } from '../types/prose';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -127,6 +129,10 @@ export interface AgentInfoCardData {
   allTraits?: string[];
   backstoryParagraph1?: string;
   knowledgeLevel: KnowledgeLevel;
+  /** Influence tier (0-4) for this agent — set when knowledge >= 'recognised' */
+  influenceTier?: InfluenceTier;
+  /** Tiered backstory — set when knowledge >= 'recognised' AND influenceTier >= 1 */
+  backstory?: BackstoryResult;
   /** Attachment data for Tier 3 modal (intimate+ knowledge) */
   possessions?: AttachmentFullEntry[];
   afflictions?: AttachmentFullEntry[];
@@ -387,6 +393,7 @@ export function getAgentInfoCard(
   agentId: string,
   ascendantId: string,
   knowledgeLevel: KnowledgeLevel,
+  seed = 0,
 ): AgentInfoCardData | null {
   const detail = getAgentDetail(graph, agentId, ascendantId);
   if (!detail) return null;
@@ -419,6 +426,18 @@ export function getAgentInfoCard(
         displayName: primary.displayName,
         category: primary.category,
       };
+    }
+  }
+
+  // Recognised+: expose influence tier; gate backstory on tier >= 1
+  if (knowledgeLevel !== 'stranger') {
+    card.influenceTier = detail.tier;
+    if (detail.tier >= 1) {
+      // Read readBackstoryTier from the worships edge
+      const worshipsEdges = graph.getOutgoingEdges(agentId, 'worships');
+      const worshipEdge = worshipsEdges.find(e => e.target === ascendantId);
+      const readBackstoryTier = ((worshipEdge?.properties as Record<string, unknown>)?.readBackstoryTier as number) ?? 0;
+      card.backstory = generateTieredBackstory(agentId, graph, seed, detail.tier, readBackstoryTier as 0 | 1 | 2 | 3 | 4);
     }
   }
 
