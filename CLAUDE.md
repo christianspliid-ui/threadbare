@@ -46,6 +46,10 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 - Visual style tile: `Design/style-tile.html`
 - UI patterns: `Docs/ui-patterns.md`
 - Consolidated discovery design: `Docs/plans/2026-03-04-high-level-discovery-pass.md`
+- Spheres and Reaches relationship: Obsidian MCP → `TheFantasyWorldSimulator/Cosmology/Spheres and Reaches.md`
+- Generalized Action Targeting: `Docs/plans/2026-03-17-generalized-action-targeting-design.md`
+- Mutable hex state + hex actions: `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`
+- Hex action brainstorm (control mechanic, prerequisites): `brainstorm-hex-actions-and-control-mechanic.md`
 
 ## Non-Functional Priorities (in order)
 
@@ -95,8 +99,8 @@ If an older plan in `Docs/plans/` lacks inline NFP compliance, add it before bui
 Settled. Do not revisit.
 
 - **Everything is a graph node/edge.** No separate relational tables.
-
-
+- **Reaches and Spheres are orthogonal axes.** Reaches = what you do (activity categories). Spheres = what fuels it (cosmic energies). They combine freely — same Reach at different Sphere alignments produces different action flavors. Neither subsumes the other.
+- **Ascendants use the same prerequisite system as agents.** Domain Capability tiers + sphere alignment checks apply equally. Ascendants are powerful former mortals, not a special-cased entity type. Power level is tunable, not structurally different.
 
 
 ## Rejected Approaches (do not reintroduce)
@@ -106,6 +110,8 @@ Settled. Do not revisit.
 - ❌ Old 5-force cosmology — replaced by Foundation + Creation Sphere model
 - ❌ Pure template-based prose — replaced by hybrid layered engine
 - ❌ Pure LLM-generated content — replaced by generated-within-constraints with player iteration
+- ❌ Intervention wheel (AgentWheel) — replaced by ActionDrawer with context-filtered cards via Generalized Action Targeting
+- ❌ Fixed action count / capped action slots — replaced by open-ended, data-driven template pool filtered per target context
 
 ## Change Audit Trail
 
@@ -138,16 +144,16 @@ This is non-negotiable. Work is not "done" until it is deployed and documented. 
 
 ## Domain Skills
 
-Context for specific problem types lives in on-demand skills, not in this file. Load the relevant skill before starting domain-specific work.
+Context for specific problem types lives in on-demand skills. **Always load `state-of-game-design` first** — it provides the foundational cosmology, action system, and architectural context that all other skills depend on.
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
+| **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
-| Content systems & worldbuilding | `content-worldbuilding` | Cosmology, spheres, reaches, content packages, graph data |
+| Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
-| Creative prose | `prose-resolver` (platform) | Writing prose content, implementing resolvers |
-| Attachment content | `content-authoring` (project) | Creating items, conditions, spells, powers, agreements, retainers |
+| Creative prose & content | `cw-*` (platform) | `cw-brainstorming` for ideas, `cw-prose-writing` for drafts, `cw-official-docs` for wiki, `cw-story-critique` for review |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
@@ -160,6 +166,6 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
-- Current phase: **Attachment System complete** — check Notion backlog for next priority
+- Current phase: **Hex Actions & Control Mechanic** (design) — check Notion backlog for next priority
 - Engine: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
 - Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
