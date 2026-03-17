@@ -98,8 +98,8 @@ export function useAgentInteraction({
     if (!selectedAgentId) return null;
     const familiarity = getFamiliarity(gameState.familiarityMap, selectedAgentId);
     const knowledgeLevel = getKnowledgeLevel(familiarity);
-    return getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel);
-  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap]);
+    return getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed);
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed]);
 
   const agentFullProfile = useMemo(() => {
     if (!profileModalAgentId) return undefined;
@@ -350,8 +350,23 @@ export function useAgentInteraction({
       setStrandViewAgent(null);
       setDrawerOpen(false);
       setProfileModalAgentId(selectedAgentId);
+
+      // Update readBackstoryTier on the worships edge to clear New badges
+      const worshipsEdges = gameState.graph.getOutgoingEdges(selectedAgentId, 'worships');
+      const worshipEdge = worshipsEdges.find(e => e.target === gameState.ascendantId);
+      if (worshipEdge) {
+        const tier = (worshipEdge.properties as Record<string, unknown>).tier as number ?? 0;
+        const currentRead = (worshipEdge.properties as Record<string, unknown>).readBackstoryTier as number ?? 0;
+        if (tier > currentRead) {
+          gameState.graph.updateEdge(worshipEdge.id, {
+            properties: { ...worshipEdge.properties, readBackstoryTier: tier },
+          });
+          // Trigger re-render so isNew badges clear on next agentInfoCard recompute
+          setGameState(s => ({ ...s }));
+        }
+      }
     }
-  }, [selectedAgentId]);
+  }, [selectedAgentId, gameState, setGameState]);
 
   /** DES-009: Double-click agent dot → open full profile modal directly */
   const handleAgentDoubleClick = useCallback((agentId: string) => {

@@ -9,14 +9,15 @@ interface AlertBarProps {
 }
 
 const ALERT_GLYPHS: Record<AlertIcon, string> = {
-  death:     '✝',
-  birth:     '✦',
-  doom:      '◈',
-  mandate:   '⬡',
-  discovery: '◎',
-  rival:     '⚔',
-  dilemma:   '⚖',
-  harvest:   '⟡',
+  death:      '✝',
+  birth:      '✦',
+  doom:       '◈',
+  mandate:    '⬡',
+  discovery:  '◎',
+  rival:      '⚔',
+  dilemma:    '⚖',
+  harvest:    '⟡',
+  revelation: '📖',
 };
 
 function getGlyph(icon: AlertIcon): string {
