@@ -21,12 +21,14 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
+import type { ChronicleChapter } from '../types/chronicle';
 import { emitTrace } from './traceBuffer';
 import {
   SETTLEMENT_PROMOTION_PROSPERITY,
   SETTLEMENT_PROMOTION_SUSTAIN_TICKS,
   SETTLEMENT_DEMOTION_PROSPERITY,
 } from './phaseProsperity';
+import { resolveEconomicChronicle } from './economicChronicle';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -55,8 +57,9 @@ const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
  * Mutates graph node properties in place.
  */
 export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
-  const { graph, tick } = state;
+  const { graph, tick, seed } = state;
   const events: TickEvent[] = [];
+  const chapters: ChronicleChapter[] = [];
   const locations = graph.getNodesByType('location');
 
   for (const loc of locations) {
@@ -111,13 +114,34 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
         prosperity,
       });
 
-      events.push({
-        id: `evt_tier_${loc.id}_${tick}`,
+      const promotionEntry = resolveEconomicChronicle(
+        'settlement_promotion',
+        {
+          settlement: loc.name,
+          oldType: subtype,
+          newType: promotionTarget,
+          locationId: loc.id,
+          hexCoords: typeof loc.properties?.hexCol === 'number' && typeof loc.properties?.hexRow === 'number'
+            ? { col: loc.properties.hexCol as number, row: loc.properties.hexRow as number }
+            : undefined,
+        },
         tick,
-        type: 'settlement_tier_change' as any,
-        message: `The ${subtype} of ${loc.name} has grown into a proper ${promotionTarget}.`,
-        significance: 0.9,
-      });
+        seed + loc.id.charCodeAt(0),
+      );
+
+      if (promotionEntry) {
+        events.push(promotionEntry.tickEvent);
+        chapters.push(promotionEntry.chronicleChapter);
+      } else {
+        // Fail-soft fallback if template resolution fails
+        events.push({
+          id: `evt_tier_${loc.id}_${tick}`,
+          tick,
+          type: 'settlement_tier_change',
+          message: `The ${subtype} of ${loc.name} has grown into a proper ${promotionTarget}.`,
+          significance: 0.9,
+        });
+      }
       continue;
     }
 
@@ -142,13 +166,33 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
         prosperity,
       });
 
-      events.push({
-        id: `evt_tier_${loc.id}_${tick}`,
+      const demotionEntry = resolveEconomicChronicle(
+        'settlement_demotion',
+        {
+          settlement: loc.name,
+          oldType: subtype,
+          newType: demotionTarget,
+          locationId: loc.id,
+          hexCoords: typeof loc.properties?.hexCol === 'number' && typeof loc.properties?.hexRow === 'number'
+            ? { col: loc.properties.hexCol as number, row: loc.properties.hexRow as number }
+            : undefined,
+        },
         tick,
-        type: 'settlement_tier_change' as any,
-        message: `${loc.name} has fallen on hard times — the ${subtype} shrinks to a ${demotionTarget}.`,
-        significance: 0.9,
-      });
+        seed + loc.id.charCodeAt(0),
+      );
+
+      if (demotionEntry) {
+        events.push(demotionEntry.tickEvent);
+        chapters.push(demotionEntry.chronicleChapter);
+      } else {
+        events.push({
+          id: `evt_tier_${loc.id}_${tick}`,
+          tick,
+          type: 'settlement_tier_change',
+          message: `${loc.name} has fallen on hard times — the ${subtype} shrinks to a ${demotionTarget}.`,
+          significance: 0.9,
+        });
+      }
       continue;
     }
 
@@ -159,5 +203,20 @@ export function phaseSettlementPromotion(state: GameState): Partial<GameState> {
 
   return {
     tickEvents: [...state.tickEvents, ...events],
+    chronicleEntries: chapters.length > 0
+      ? [...state.chronicleEntries, ...chapters.map(ch => ({
+          id: ch.id,
+          tier: 'chronicle' as const,
+          title: ch.title,
+          prose: ch.prose,
+          promptContext: {
+            actors: ch.actorIds,
+            location: '',
+            sphere: (ch.spheres[0] ?? 'gold') as import('../types/index').SphereName,
+            mood: 'economic',
+          },
+          tick: ch.tick,
+        }))]
+      : state.chronicleEntries,
   };
 }

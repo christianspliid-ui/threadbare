@@ -10,7 +10,7 @@
  * NFP priorities: Tunability, Inspectability, Determinism, Fail-soft
  */
 
-import type { GameState } from '../types/gameState';
+import type { GameState, TickEvent } from '../types/gameState';
 import {
   TRADE_ROUTE_DECAY_RATE,
   TRADE_ROUTE_FRESHNESS_WINDOW,
@@ -18,6 +18,7 @@ import {
   isRouteStale,
 } from './tradeRoute';
 import { emitTrace } from './traceBuffer';
+import { resolveEconomicChronicle } from './economicChronicle';
 
 // ─── Phase function ───────────────────────────────────────────────────────
 
@@ -36,7 +37,9 @@ import { emitTrace } from './traceBuffer';
  * Fail-soft: missing edge node references → skip, no crash.
  */
 export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
-  const { graph, tick } = state;
+  const { graph, tick, seed } = state;
+  const events: TickEvent[] = [];
+  const chronicleEntries: typeof state.chronicleEntries = [];
 
   // Collect all trades_with edges
   const tradeEdges = graph.getEdgesByType('trades_with');
@@ -90,6 +93,37 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
         totalTicksActive: Math.max(0, totalTicksActive),
         causeOfDeath: 'decay',
       });
+
+      // Generate chronicle entry for trade route death
+      const routeDeathEntry = resolveEconomicChronicle(
+        'trade_route_died',
+        {
+          actor: sourceNode.name,
+          actorId: sourceNode.id,
+          target: targetNode.name,
+          targetId: targetNode.id,
+          ticksAgo: Math.max(0, totalTicksActive),
+        },
+        tick,
+        seed + edge.id.charCodeAt(0),
+      );
+
+      if (routeDeathEntry) {
+        events.push(routeDeathEntry.tickEvent);
+        chronicleEntries.push({
+          id: routeDeathEntry.chronicleChapter.id,
+          tier: 'chronicle',
+          title: routeDeathEntry.chronicleChapter.title,
+          prose: routeDeathEntry.chronicleChapter.prose,
+          promptContext: {
+            actors: routeDeathEntry.chronicleChapter.actorIds,
+            location: '',
+            sphere: 'gold',
+            mood: 'economic',
+          },
+          tick,
+        });
+      }
     } else {
       // Decay volume — update properties in place
       (edge.properties as Record<string, unknown>).volume = newVolume;
@@ -108,6 +142,9 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
     }
   }
 
-  // No GameState fields mutated directly; graph is mutated in place
-  return {};
+  // Return accumulated events and chronicle entries
+  return {
+    ...(events.length > 0 ? { tickEvents: [...state.tickEvents, ...events] } : {}),
+    ...(chronicleEntries.length > 0 ? { chronicleEntries: [...state.chronicleEntries, ...chronicleEntries] } : {}),
+  };
 }
