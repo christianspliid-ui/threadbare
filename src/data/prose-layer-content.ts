@@ -638,6 +638,43 @@ export const HISTORICAL_CULTURE_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Prosperity Prose ────────────────────────────────────────────────────────
+// Prose fragments keyed by prosperity tier label.
+// Used by prosperityResolver to inject economic flavor into settlement descriptions.
+
+export const PROSPERITY_PROSE: Record<string, string[]> = {
+  Flourishing: [
+    'The streets overflow with merchants hawking silks no one needs, and the coins change hands so fast they never cool.',
+    'Wealth here is an ambient pressure — it presses in through every door, perfumes the air with spice and ambition.',
+    'The markets never fully close. Someone is always selling, always buying, always arguing the price into the small hours.',
+    'A place gorged on its own success. The granaries are full, the warehouses creak, and the guilds have started arguing over precedence.',
+  ],
+  Prosperous: [
+    'Honest trade keeps the granaries full and the taverns loud. People here have enough, which is rarer than it sounds.',
+    'The market square hums with the low-level argument of commerce — not urgent, not desperate, just the daily negotiation of getting and giving.',
+    'Carts come and carts go. The tolls are paid without too much complaint. Life here runs on the reliable machinery of exchange.',
+    'A settlement that knows what it has and trades it shrewdly. No one is getting rich overnight, but no one is going hungry either.',
+  ],
+  Modest: [
+    'People get by. The market has what you need, rarely what you want, and the prices have been the same since before anyone can remember.',
+    'There is enough commerce to keep things moving, and not enough to cause trouble. The stalls are plain, the goods are basic, the deals are small.',
+    'A careful place that watches its stores and haggles over every coin. Prosperity is possible here, with patience.',
+    'The economy breathes — shallow but steady. The market square is thin but functional, the trade routes infrequent but reliable.',
+  ],
+  Struggling: [
+    'Half the stalls stand empty. Children eye travelers\' packs with the flat assessment of hunger.',
+    'The market has contracted to a core of necessities. Luxury goods left with the merchants who sold them; what remains is survival commerce.',
+    'There is a smell of abandonment here — not yet ruin, but the precursor. Shops that were not shuttered have been stripped down to essentials.',
+    'Debts are owed everywhere, to everyone. The currency of the struggling settlement is not coin but obligation.',
+  ],
+  Destitute: [
+    'The settlement is a husk. Those who can leave, have. What remains is need wearing the shape of a community.',
+    'Trade collapsed here and left a silence. The market square is an empty gesture — the stalls gone, the merchants long since moved on.',
+    'People scavenge what the departure left behind. The economy is not in recession; it has ceased to exist.',
+    'Even hope is rationed here. The settlement endures because enduring is what people do when they have nowhere else to go.',
+  ],
+};
+
 // ─── Region Etymology Prose ─────────────────────────────────────────────────
 // Explains why a region has its current name, linking it to historical culture.
 

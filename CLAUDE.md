@@ -59,6 +59,37 @@ When in tension, higher priorities win.
 6. **Additive over destructive changes** — Add new fields/functions; only refactor when old shape blocks progress.
 7. **Performance budget, not premature optimization** — Profile before optimizing. Lean on the spotlight tier system.
 
+## Design Governance
+
+Every design proposal — whether a new system, a significant extension to an existing system, or a new content pipeline — **must be architecturally compliant before the user ever sees it.**
+
+### The design workflow (internal, not user-facing)
+
+1. **Draft** the system design
+2. **Audit** the draft against all 7 NFPs, load-bearing decisions, and the rejected approaches list
+3. **Revise** the design to integrate every remediation directly into the system descriptions — constants tables, trace schemas, fail-soft tables, PRNG callouts all go inline where the system is described, not in a separate appendix
+4. **Summarize** the NFP compliance as a verdict table at the end (PASS / PASS with note per priority)
+5. **Present** the finished, compliant design to the user
+
+Steps 1–4 happen in a single pass. The user should never see a design that hasn't been through this cycle. If the audit reveals a fundamental conflict with an NFP (not just a missing constant, but a structural problem), flag it as a trade-off for the user to weigh in on — don't silently ship a non-compliant design.
+
+### Required sections in every system description
+
+Each system within a design document must include these inline (not as a separate audit section):
+
+- **Constants table** — every tunable number named, with default and purpose (NFP #1)
+- **Tracing** — what trace types the system emits, with TypeScript interface definitions (NFP #2)
+- **Fail-soft** — table of failure cases and fallback behavior (NFP #4)
+- **PRNG callouts** — where seeded randomness is needed, called out at the point of use (NFP #3)
+
+### Required summary at end of design document
+
+An NFP Compliance Summary table with one row per priority showing PASS / PASS with note. If any row shows a genuine trade-off (not just "needs tuning"), explain it so the user can make the call.
+
+### When reviewing an existing design
+
+If an older plan in `Docs/plans/` lacks inline NFP compliance, add it before building from it.
+
 ## Load-Bearing Architectural Decisions
 
 Settled. Do not revisit.
