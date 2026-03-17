@@ -25,8 +25,8 @@ export interface WheelSlot {
   id: string;
   /** Display label (e.g., "Dream", "Scry") */
   label: string;
-  /** Type of slot: observation (non-interventionist), intervention (costs essence), or info (center) */
-  type: 'observation' | 'intervention' | 'info';
+  /** Type of slot: observation (non-interventionist), intervention (costs essence), info (center), or target_action (player-sourced UnifiedAction) */
+  type: 'observation' | 'intervention' | 'info' | 'target_action';
   /** Clock position (0 = 12 o'clock, clockwise). -1 for center. */
   angleDeg: number;
   /** Whether this slot is currently available */
