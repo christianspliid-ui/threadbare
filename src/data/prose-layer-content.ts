@@ -675,6 +675,162 @@ export const PROSPERITY_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Terrain-Specific Prosperity Prose ──────────────────────────────────────
+// Terrain-keyed variants for prosperity descriptions. The prosperityResolver
+// prefers these when the settlement's terrain matches a known category,
+// falling back to generic PROSPERITY_PROSE for unknown or unmapped terrains.
+// Outer key: terrain category. Inner key: prosperity tier.
+
+/** Maps individual TerrainType values to broad terrain categories for prose lookup. */
+export const TERRAIN_PROSPERITY_CATEGORY: Record<string, string> = {
+  // Coastal
+  coast: 'coastal',
+  coastal_shallows: 'coastal',
+  reef: 'coastal',
+  // Mountain
+  mountains: 'mountain',
+  high_mountains: 'mountain',
+  mountain_pass: 'mountain',
+  hills: 'mountain',
+  plateau: 'mountain',
+  badlands: 'mountain',
+  // Farmland
+  farmland: 'farmland',
+  grassland: 'farmland',
+  floodplain: 'farmland',
+  savanna: 'farmland',
+  steppe: 'farmland',
+  // Forest
+  temperate_forest: 'forest',
+  dense_forest: 'forest',
+  boreal_forest: 'forest',
+  jungle: 'forest',
+  tropical_forest: 'forest',
+  evergreen_forest: 'forest',
+  light_forest: 'forest',
+  dead_forest: 'forest',
+  forested_hills: 'forest',
+  great_home_trees: 'forest',
+};
+
+export const PROSPERITY_TERRAIN_PROSE: Record<string, Record<string, string[]>> = {
+  // ── Coastal ───────────────────────────────────────────────────────────────
+  coastal: {
+    Flourishing: [
+      'Ships crowd the harbour three-deep, their flags from ports no one here can name. The dockworkers have stopped counting cargoes and started counting coins.',
+      'The harbour never sleeps. Lanterns bob on the water all night, and the tide brings in wealth with the regularity of breathing.',
+      'Salt air and money — the two scents that define this place. Warehouses line the quay like teeth, and every one is full.',
+    ],
+    Prosperous: [
+      'The fishing fleet comes in heavy most mornings, and the chandlers do brisk trade in rope and tar. A harbour town that knows the sea is generous to those who respect it.',
+      'Trade ships call here on the regular routes. The harbour master keeps a clean ledger, the pilots know the shoals, and the merchants complain about tariffs — which means the tariffs are working.',
+      'Nets dry in the sun alongside bolts of traded cloth. The sea provides, and the harbour converts that provision into a comfortable living.',
+    ],
+    Modest: [
+      'A few boats go out each morning and come back with enough. The harbour is too small for the big trading vessels, so what commerce exists is local and careful.',
+      'The salt trade keeps things moving, barely. Fishermen mend nets with the patience of people who have learned not to expect windfalls from the water.',
+      'The quay handles what it can. Smaller vessels dock here between the real ports, and the settlement skims what trade it can from their passing.',
+    ],
+    Struggling: [
+      'The harbour silts up a little more each season. The boats that remain are patched beyond dignity, and the catch shrinks with the shoals.',
+      'Half the moorings stand empty, ropes fraying in the salt wind. The fishermen who remain eye the horizon with the flat patience of people waiting for something that may not come.',
+      'Trade ships pass this port now. The lighthouse still burns, but it marks a place merchants have learned to avoid.',
+    ],
+    Destitute: [
+      'The fishing boats rot at their moorings. The sea gives, and the sea has stopped giving.',
+      'The harbour is a graveyard of keels and ambition. What the storms did not take, the creditors did. The tide comes in over bare sand where warehouses stood.',
+      'Salt crusts everything — the boats, the docks, the faces of the people who sit watching the water as though it owes them something. It does.',
+    ],
+  },
+
+  // ── Mountain ──────────────────────────────────────────────────────────────
+  mountain: {
+    Flourishing: [
+      'The mines run day and night; lantern light leaks from every shaft like veins of gold in the dark rock. The smelters have not cooled in living memory.',
+      'Ore carts rattle down the switchbacks in an endless procession. The settlement has grown fat on what the mountain yields, and the mountain has not yet grown tired of yielding.',
+      'Stone wealth built this place — carved it right into the cliff face, terrace upon terrace, each one richer than the last. The masons here work in marble the way lowlanders work in wood.',
+    ],
+    Prosperous: [
+      'The mines produce steadily, and the smiths keep the forges lit. Mountain trade is slow but heavy — what comes down the pass is worth the climb.',
+      'Goat herds and mineral veins sustain the place in equal measure. The passes are kept clear because the merchants pay to keep them clear, and that says enough.',
+      'The settlement clings to the mountainside with the tenacity of something that has earned its purchase. The stone is good, the seams are deep, and the people are careful with both.',
+    ],
+    Modest: [
+      'The mines still produce, but the easy seams are worked through. What comes out now requires more effort for less reward, and the settlement has adjusted its expectations accordingly.',
+      'Thin soil, thin herds, thin trade. The mountain gives just enough to justify staying, and the people here have made an art of sufficiency.',
+      'The pass brings through a trickle of trade — enough to supplement what the goats and the shallow mines provide. Life at altitude is a negotiation with scarcity.',
+    ],
+    Struggling: [
+      'The best seams are exhausted. Miners probe deeper into stone that gives back dust and disappointment, and the settlement shrinks with each family that descends to the lowlands.',
+      'Rockfalls have closed two of the three passes, and the merchants who used to come this way have found other routes. The mountain is keeping its wealth now.',
+      'The terraces are crumbling. Repairs cost more than the settlement can spare, and each winter takes a little more of what the summers built.',
+    ],
+    Destitute: [
+      'The mountain swallowed their fortune. Now it swallows their hope. Empty shafts gape like mouths that have said everything they had to say.',
+      'Stone and silence. The settlement is a series of abandoned ledges, the forges cold, the passes unmaintained. Those who remain do so because the descent is harder than the enduring.',
+      'The wind through the empty mine shafts makes a sound like breathing. The mountain is alive; the settlement on its face is not.',
+    ],
+  },
+
+  // ── Farmland ──────────────────────────────────────────────────────────────
+  farmland: {
+    Flourishing: [
+      'Granaries overflow and children grow fat on butter and idleness. The harvest came in so heavy this year that the carts broke under the weight of it.',
+      'The fields stretch to the horizon in ordered abundance — wheat, barley, flax, each in its season, each in surplus. This soil has never betrayed the people who work it.',
+      'Fat cattle, full barns, and the particular smugness of a community that knows it feeds the cities. The grain merchants come to them now, not the other way around.',
+    ],
+    Prosperous: [
+      'The harvest is reliable and the rotation well-managed. Farmers here have the weathered contentment of people whose gamble with the seasons has paid off more often than not.',
+      'Good soil, good water, good planning. The fields are not spectacular, but they produce with a consistency that the flashier settlements envy quietly.',
+      'Market day brings in buyers from three directions. The surplus is modest but real, and the root cellars are deep enough to ride out a bad year.',
+    ],
+    Modest: [
+      'The fields produce what they must. No surplus to speak of, but no famine either — a balance maintained through labour and the careful hoarding of seed.',
+      'Subsistence with dignity. The farmers here know every inch of their soil and coax from it exactly what it can give, which is enough and no more.',
+      'The irrigation ditches are maintained with religious discipline. In country like this, water is the difference between getting by and going under.',
+    ],
+    Struggling: [
+      'The fields lie half-fallow — not by choice but by exhaustion. The soil gives diminishing returns, and the farmers\' faces mirror the land.',
+      'Blight took the last good harvest, and the one before that was thin. The seed stores are low, and the conversations in the evening have turned to where else one might go.',
+      'The scarecrows outnumber the crows now. The fields that still produce are tended with the desperate attention of people who know what happens when the last crop fails.',
+    ],
+    Destitute: [
+      'The fields lie fallow. Even the crows have moved on.',
+      'Cracked earth and dead furrows. The farmers who remain scratch at the ground out of habit, not hope. What the drought did not kill, the locusts finished.',
+      'The granaries echo. Children pick through stubble for fallen grain, and the adults watch them with the particular stillness of people who have stopped making plans.',
+    ],
+  },
+
+  // ── Forest ────────────────────────────────────────────────────────────────
+  forest: {
+    Flourishing: [
+      'Timber wealth has built this place twice over; the sawmills never rest. The river runs brown with bark dust, and the lumber yards stretch wider than the settlement itself.',
+      'The forest gives and gives — charcoal, timber, game, truffles, pelts. The settlement has learned to harvest without killing, and the canopy repays that patience with abundance.',
+      'Woodsmoke and prosperity. The carpenters here build from green wood that sings under the adze, and the furniture trade alone could sustain a place twice this size.',
+    ],
+    Prosperous: [
+      'The foresters manage their stands with care, and the timber comes down the log-roads in a steady, sustainable flow. The settlement smells of sawdust and contentment.',
+      'Charcoal, game, and a modest timber trade keep the place comfortable. The forest is generous to those who take from it thoughtfully, and these people are thoughtful.',
+      'Mushroom harvests, coppiced wood, and the occasional trapper bringing in pelts — the forest economy is diverse enough to weather a bad season in any one trade.',
+    ],
+    Modest: [
+      'The forest provides, but grudgingly. Firewood is plentiful, game is thin, and the timber worth hauling out requires going deeper each year.',
+      'A settlement that lives in the forest\'s margins — taking what the canopy allows, building from what falls, hunting what strays close enough. Enough to survive on, carefully.',
+      'The charcoal burners work their clearings in rotation, and the smoke rises from the canopy in thin columns. The economy is measured in cords and carcasses.',
+    ],
+    Struggling: [
+      'The good timber is gone — cut too fast, hauled out too greedily. What remains is scrub and second growth, and the sawmill stands idle more days than it runs.',
+      'The game has thinned. Trappers come back empty-handed with increasing frequency, and the forest that once felt generous now feels indifferent.',
+      'They cut deeper into the old growth each season, and each season the forest closes in behind them as though reclaiming what was taken. The settlement is losing a slow negotiation.',
+    ],
+    Destitute: [
+      'They cut the last good tree a season ago. Now they burn green wood and cough.',
+      'The stumps outnumber the standing trees. The settlement sits in a clearing it made by consuming its own future, and the mud where the canopy used to hold the rain is ankle-deep.',
+      'The forest has withdrawn. Where there were game trails there is bracken; where there was timber there is rot. The settlement persists in a landscape that has finished with it.',
+    ],
+  },
+};
+
 // ─── Agent Wealth Prose ─────────────────────────────────────────────────────
 // Economic standing descriptions keyed by WealthTier. Fires for any actor
 // with a wealth property. Threadbare aesthetic: wealth is visible, poverty is felt.
