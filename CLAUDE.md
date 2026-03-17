@@ -121,8 +121,8 @@ When implementation is complete and tests pass, **do all of these automatically 
 1. **Commit** all changes
 2. **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 3. **Merge** feature branches into main immediately — don't leave branches waiting
-4. **Deploy** to Vercel production
-5. **Document** — use the `gamedocumenter` skill for Notion/Obsidian/changelog/project-status updates
+4. **Deploy** to Vercel production — Vercel auto-deploys from GitHub on push to `main`. No manual deploy step needed; just ensure the push succeeded.
+5. **Document** — update Notion backlog (mark phases ✅), update `Docs/project-status.md` and `Docs/changelog.md`
 
 This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
 
