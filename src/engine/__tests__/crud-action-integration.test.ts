@@ -245,9 +245,9 @@ describe('CRUD action integration', () => {
     }
   });
 
-  it('all 43 action templates are selectable across varied agents/locations', () => {
+  it('all 44 action templates are selectable across varied agents/locations', () => {
     // Verify that at least we can look up and iterate all templates
-    expect(ACTION_TEMPLATES.length).toBe(43);
+    expect(ACTION_TEMPLATES.length).toBe(44);
 
     const reachCounts = new Map<string, number>();
     const crudCounts = new Map<string, number>();
@@ -275,7 +275,7 @@ describe('CRUD action integration', () => {
     // Verify: 9 reaches (gold has 11, others have 4)
     expect(reachCounts.size).toBe(9);
     const expectedReachCounts: Record<string, number> = {
-      gold: 11, iron: 4, shadow: 4, veil: 4, heart: 4, eye: 4, stone: 4, star: 4, flesh: 4,
+      gold: 12, iron: 4, shadow: 4, veil: 4, heart: 4, eye: 4, stone: 4, star: 4, flesh: 4,
     };
     for (const [reach, count] of reachCounts) {
       expect(count).toBe(expectedReachCounts[reach] ?? 4, `Reach ${reach} unexpected count`);
@@ -283,7 +283,7 @@ describe('CRUD action integration', () => {
 
     // Verify: CRUD type counts (gold added 3 create, 2 update, 2 delete)
     expect(crudCounts.size).toBe(4);
-    const expectedCrudCounts: Record<string, number> = { create: 12, read: 9, update: 11, delete: 11 };
+    const expectedCrudCounts: Record<string, number> = { create: 13, read: 9, update: 11, delete: 11 };
     for (const [crud, count] of crudCounts) {
       expect(count).toBe(expectedCrudCounts[crud], `CRUD type ${crud} unexpected count`);
     }

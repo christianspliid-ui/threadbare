@@ -186,6 +186,18 @@ export interface TradeRouteDissolvedTrace extends TraceBase {
   causeOfDeath: 'decay';
 }
 
+/** Trace: settlement changes tier (hamlet↔town↔city) via sustained prosperity */
+export interface SettlementTierChangeTrace extends TraceBase {
+  category: 'settlement_tier_change';
+  locationId: string;
+  locationName: string;
+  previousSubtype: string;
+  newSubtype: string;
+  direction: 'promotion' | 'demotion';
+  sustainedTicks: number;
+  prosperity: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -201,7 +213,8 @@ export type TraceEntry =
   | ProsperityTickTrace
   | WealthDeltaTrace
   | TradeRouteVolumeChangeTrace
-  | TradeRouteDissolvedTrace;
+  | TradeRouteDissolvedTrace
+  | SettlementTierChangeTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -219,6 +232,7 @@ export const TRACE_CATEGORIES = [
   'wealth_delta',
   'trade_route_volume_change',
   'trade_route_dissolved',
+  'settlement_tier_change',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
