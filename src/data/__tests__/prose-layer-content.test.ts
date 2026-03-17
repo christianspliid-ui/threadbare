@@ -13,6 +13,7 @@ import {
   DISPOSITION_PROSE,
   POPULATION_PROSE_TEMPLATES,
   WEALTH_PROSE,
+  GUILD_IDENTITY_PROSE,
 } from '../prose-layer-content';
 
 describe('Prose Layer Content', () => {
@@ -305,6 +306,59 @@ describe('Prose Layer Content', () => {
         t.includes('{archetype}')
       );
       expect(hasArchetype).toBe(true);
+    });
+  });
+
+  describe('GUILD_IDENTITY_PROSE', () => {
+    const requiredGuildTypes = ['miners', 'artisans', 'traders', 'bankers', 'merchants'];
+
+    test('has entries for all 5 guild types', () => {
+      requiredGuildTypes.forEach((guildType) => {
+        expect(GUILD_IDENTITY_PROSE[guildType]).toBeDefined();
+      });
+    });
+
+    test('each guild type has at least 3 fragments', () => {
+      requiredGuildTypes.forEach((guildType) => {
+        expect(GUILD_IDENTITY_PROSE[guildType].length).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    test('each fragment is substantive (>20 characters)', () => {
+      requiredGuildTypes.forEach((guildType) => {
+        GUILD_IDENTITY_PROSE[guildType].forEach((entry) => {
+          expect(entry.length).toBeGreaterThan(20);
+        });
+      });
+    });
+
+    test('fragments have no placeholders (self-contained)', () => {
+      requiredGuildTypes.forEach((guildType) => {
+        GUILD_IDENTITY_PROSE[guildType].forEach((entry) => {
+          expect(entry).not.toMatch(/\{[a-z]+\}/);
+        });
+      });
+    });
+
+    test('each guild type has distinct voice (no shared fragments)', () => {
+      const allFragments = new Map<string, string>();
+      requiredGuildTypes.forEach((guildType) => {
+        GUILD_IDENTITY_PROSE[guildType].forEach((entry) => {
+          expect(allFragments.has(entry)).toBe(false);
+          allFragments.set(entry, guildType);
+        });
+      });
+    });
+
+    test('prose avoids generic fantasy clichés', () => {
+      const clichés = ['eldritch', 'arcane', 'mystical', 'ethereal', 'ancient evil'];
+      requiredGuildTypes.forEach((guildType) => {
+        GUILD_IDENTITY_PROSE[guildType].forEach((entry) => {
+          clichés.forEach((cliché) => {
+            expect(entry.toLowerCase()).not.toContain(cliché.toLowerCase());
+          });
+        });
+      });
     });
   });
 
