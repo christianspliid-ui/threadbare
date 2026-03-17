@@ -22,6 +22,22 @@ For animation work also load:
 For React interaction patterns (overlays, portals, mutual exclusion) also load:
 - `Docs/ui-patterns.md`
 
+## UI Primitives — Use These, Don't Reinvent
+
+All shared primitives live in `src/components/shared/`. Spec: `Docs/design-system/primitives.md`.
+
+| Primitive | When to use |
+|-----------|-------------|
+| `SectionHeading` | Any panel/section label |
+| `Button` | All clickable actions (primary, secondary, ghost, danger variants) |
+| `IconButton` | 28–32px icon-only buttons (toolbars, close, toggle) |
+| `ListRow` | Any interactive list row (with `ListRow.Title`, `.Subtitle`, `.Leading`) |
+| `Card` | Panel wrapper with optional `Card.Header`, `.Body`, `.Footer` |
+| `Modal` | Overlay dialogs — portals to body, handles escape/backdrop/animation |
+| `Dropdown` | Portal-positioned popover menus — trigger + panel with outside-click |
+
+**Do not write one-off button, card, modal, or list implementations.** Use the primitives. If a primitive doesn't fit, extend it — don't bypass it.
+
 ## Ground Rules
 
 - **Target resolution is 1920×1080.** Design at this size. Anything that looks good at 1280px but breaks at 1920px is wrong.
@@ -53,5 +69,6 @@ Use `preview_eval` to check element positions, z-indices, and computed styles �
 | Interaction states | `Docs/design-system/interactions.md` |
 | React patterns | `Docs/ui-patterns.md` |
 | Art/image direction | `STYLE.md` |
+| UI primitives spec | `Docs/design-system/primitives.md` |
 | CSS tokens (source of truth) | `src/index.css` |
 | Style tile (visual) | `Design/style-tile.html` |
