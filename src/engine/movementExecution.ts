@@ -107,10 +107,14 @@ export function tickMovement(
     // Update located_at edge
     updateLocatedAt(graph, agentId, nextNodeId);
 
-    // Record history entry (newest first)
+    // Record history entry (newest first), enriched with hex coordinates for trail rendering
+    const nextNode = graph.getNode(nextNodeId);
+    const hexCol = nextNode?.properties?.hexCol as number | undefined;
+    const hexRow = nextNode?.properties?.hexRow as number | undefined;
     const newHistoryEntry: MovementHistoryEntry = {
       nodeId: nextNodeId,
       tick: currentTick,
+      ...(hexCol != null && hexRow != null ? { hexCol, hexRow } : {}),
     };
     const newHistory = [newHistoryEntry, ...state.movementHistory].slice(
       0,
