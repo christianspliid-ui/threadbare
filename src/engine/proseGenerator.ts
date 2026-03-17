@@ -22,6 +22,7 @@ import {
   agentCultureResolver,
   agentFactionResolver,
   dispositionResolver,
+  wealthResolver,
 } from './proseResolvers';
 
 // ─── Resolver Registry ──────────────────────────────────────────────
@@ -40,6 +41,7 @@ const ACTOR_RESOLVERS: ProseResolver[] = [
   archetypeResolver,
   agentCultureResolver,
   agentFactionResolver,
+  wealthResolver,
   dispositionResolver,
 ];
 
