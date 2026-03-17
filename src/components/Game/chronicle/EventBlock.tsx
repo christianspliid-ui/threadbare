@@ -18,7 +18,7 @@ export const EventBlock = memo(function EventBlock({ label, text }: EventBlockPr
     >
       <div
         style={{
-          fontSize: '0.7rem',
+          fontSize: 'var(--text-xs)',
           textTransform: 'uppercase',
           color: 'var(--accent-gold)',
           letterSpacing: '0.08em',

@@ -81,7 +81,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
                   <span
                     className="font-mono"
                     style={{
-                      fontSize: '0.65rem',
+                      fontSize: 'var(--text-xs)',
                       color: net! >= 0 ? '#4ade80' : '#f87171',
                       lineHeight: 1,
                     }}

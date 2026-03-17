@@ -67,7 +67,7 @@ export const SoulCard = memo(function SoulCard({
             style={{
               fontFamily: 'var(--font-body)',
               color: 'var(--text-muted)',
-              fontSize: '0.7rem',
+              fontSize: 'var(--text-xs)',
               textTransform: 'uppercase',
               letterSpacing: '0.06em',
               marginLeft: 'auto',
@@ -82,7 +82,7 @@ export const SoulCard = memo(function SoulCard({
           style={{
             fontFamily: 'var(--font-prose)',
             color: 'var(--text-secondary)',
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             fontStyle: 'italic',
             lineHeight: 1.6,
             margin: '3px 0 0 0',
@@ -93,7 +93,7 @@ export const SoulCard = memo(function SoulCard({
       )}
       <div
         style={{
-          fontSize: '0.7rem',
+          fontSize: 'var(--text-xs)',
           color: 'var(--text-tertiary)',
           marginTop: '3px',
         }}

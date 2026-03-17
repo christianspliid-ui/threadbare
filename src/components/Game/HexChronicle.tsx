@@ -334,9 +334,10 @@ export const HexChronicle = memo(function HexChronicle({
       className="flex-1 overflow-y-auto"
       style={{
         background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-        padding: '24px 24px 24px 24px',
+        padding: '24px',
       }}
     >
+    <div style={{ maxWidth: '860px', margin: '0 auto' }}>
       {/* ─── HERO SECTION ─────────────────────────────────────────────────── */}
       <div className="chronicle-hero" style={{ marginBottom: '32px' }}>
         <h2 style={{
@@ -416,7 +417,7 @@ export const HexChronicle = memo(function HexChronicle({
                 >
                   <span>{icon}</span>
                   <span>{type}</span>
-                  <span style={{ color: 'var(--text-tertiary)', fontSize: '0.7rem' }}>· {label}</span>
+                  <span style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-xs)' }}>· {label}</span>
                 </div>
               );
             })}
@@ -629,6 +630,7 @@ export const HexChronicle = memo(function HexChronicle({
           )}
         </div>
       )}
+    </div>
     </div>
   );
 });
