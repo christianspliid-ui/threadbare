@@ -69,7 +69,9 @@ export type EdgeType =
   | 'aligned_with'     // actor/location → sphere alignment
   | 'sphere_influence' // location/actor → sphere influence (weight/dominance tracking)
   // Ambition
-  | 'pursues';         // actor → ambition (priority, status, milestones)
+  | 'pursues'          // actor → ambition (priority, status, milestones)
+  // Economic
+  | 'trades_with';     // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

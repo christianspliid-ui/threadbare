@@ -684,3 +684,77 @@ export const REGION_ETYMOLOGY_PROSE: string[] = [
   '{regionName} — the name itself is a fossil, a {histCulture} phrase that survived the culture that coined it.',
   "The region's name, {regionName}, derives from {histCulture} cartography — their maps outlasted their mapmakers.",
 ];
+
+// ─── Trade Route Prose ──────────────────────────────────────────────────────
+// Prose fragments for trade routes connected to a location.
+// Composed by tradeRouteResolver: volume tier + goods type + status modifier.
+
+/** Volume tier thresholds */
+export const TRADE_ROUTE_HIGH_VOLUME_THRESHOLD = 7;
+export const TRADE_ROUTE_MEDIUM_VOLUME_THRESHOLD = 4;
+export const TRADE_ROUTE_CROSSROADS_THRESHOLD = 2;
+
+/** Volume tier fragments — the core sentence describing trade activity */
+export const TRADE_ROUTE_VOLUME_PROSE: Record<string, string[]> = {
+  high: [
+    'Caravans arrive before the last ones leave, the road a breathing thing of dust and commerce.',
+    'The road is rutted deep by merchant wheels, worn into grooves that guide the next cart forward without need of a driver\'s eye.',
+    'Trade here is not an activity but a weather pattern — constant, directional, and indifferent to the lives it shapes.',
+  ],
+  medium: [
+    'A steady flow of trade goods changes hands each week, enough to keep the merchants fed and the prices honest.',
+    'Carts arrive with a regularity that borders on ritual, their drivers knowing every rut and inn along the route.',
+    'Commerce moves through here like a pulse — not urgent, but reliable enough that its absence would be noticed within days.',
+  ],
+  low: [
+    'A thin trickle of commerce connects this place to the wider world, each arrival a small event.',
+    'Trade comes seldom and is remembered when it does — the creak of a laden cart draws faces to windows.',
+    'What commerce exists here moves slowly, carried by merchants who know their few customers by name.',
+  ],
+};
+
+/** Goods type color fragments — noun phrases joined to volume with em-dash */
+export const TRADE_ROUTE_GOODS_PROSE: Record<string, string[]> = {
+  ore: [
+    'ore carts heavy enough to crack the flagstones',
+    'iron-heavy wagons that groan on every hill',
+  ],
+  timber: [
+    'lumber trains trailing the scent of sap and sawdust',
+    'the smell of fresh-cut pine on every passing cart',
+  ],
+  grain: [
+    'grain barges riding low in the water',
+    'flour-dusted merchants who leave white footprints on the cobbles',
+  ],
+  fish: [
+    'salt-packed crates stacked head-high at every dock',
+    'a harbour that reeks of prosperity and brine',
+  ],
+  stone: [
+    'quarry blocks dragged on slow oxen that stop traffic for an hour',
+    'stone wagons moving at the pace of geology',
+  ],
+};
+
+/** Route status modifier fragments — trailing clauses appended with comma */
+export const TRADE_ROUTE_STATUS_PROSE: Record<string, string[]> = {
+  threatened: [
+    'though bandits have grown bold along the road',
+    'though armed escorts have become the cost of doing business',
+  ],
+  controlled: [
+    'under the watchful eye of {controller}',
+    'with {controller} taking their cut of every load',
+  ],
+  decaying: [
+    'though fewer carts make the journey each season',
+    'though the route grows quieter with each passing month',
+  ],
+};
+
+/** Crossroads summary for locations with 2+ trade routes */
+export const TRADE_ROUTE_CROSSROADS_PROSE: string[] = [
+  'A crossroads of commerce where routes converge and coin changes hands in every direction.',
+  'Trade flows in from {count} directions, making this a knot in the wider web of commerce.',
+];
