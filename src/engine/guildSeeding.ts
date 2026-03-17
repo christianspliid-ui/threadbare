@@ -255,9 +255,11 @@ export function seedGuilds(
       guildIndex++;
 
       // Build guild name: "The {LocationName} {suffix}"
+      // Strip leading "The " to avoid "The The X" constructions
       const suffixes = GUILD_NAME_SUFFIXES[guildType];
       const suffix = suffixes[Math.floor(rng() * suffixes.length)];
-      const guildName = `The ${location.name} ${suffix}`;
+      const strippedName = location.name.replace(/^The\s+/i, '');
+      const guildName = `The ${strippedName} ${suffix}`;
 
       const profile = generateGuildAxiologicalProfile(guildType, rng);
       const caps = generateGuildDomainCapabilities(guildType, rng);

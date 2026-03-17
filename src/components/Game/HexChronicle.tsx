@@ -5,7 +5,7 @@ import type { HexRegionData } from '../../engine/hexRegion';
 import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
-import { LocationCard, SoulCard, EventBlock, ExplorationHook } from './chronicle';
+import { LocationCard, SoulCard, AgentEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { mulberry32 } from '../../lib/prng';
@@ -222,6 +222,28 @@ export const HexChronicle = memo(function HexChronicle({
     return result;
   }, [locations, graph, seed]);
 
+  // ── Separate parent locations from sublocations ─────────────
+  const { parentLocations, sublocationsByParent, orphanSublocations } = useMemo(() => {
+    const parents: GraphNode[] = [];
+    const subsByParent: Record<string, GraphNode[]> = {};
+    const orphans: GraphNode[] = [];
+    const locationIds = new Set(locations.map(l => l.id));
+
+    for (const loc of locations) {
+      const parentId = (loc.properties as Record<string, unknown>)?.parentLocationId as string | undefined;
+      if (parentId && locationIds.has(parentId)) {
+        if (!subsByParent[parentId]) subsByParent[parentId] = [];
+        subsByParent[parentId].push(loc);
+      } else if (parentId && !locationIds.has(parentId)) {
+        // Parent not in this hex — show as orphan sublocation at top level
+        orphans.push(loc);
+      } else {
+        parents.push(loc);
+      }
+    }
+    return { parentLocations: parents, sublocationsByParent: subsByParent, orphanSublocations: orphans };
+  }, [locations]);
+
   const allAgents = useMemo(() => {
     return Object.entries(agentsByLocation).flatMap(([locId, agents]) =>
       agents.map(a => ({ ...a, locationId: locId }))
@@ -334,7 +356,7 @@ export const HexChronicle = memo(function HexChronicle({
       className="flex-1 overflow-y-auto"
       style={{
         background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-        padding: '24px',
+        padding: '24px 24px 160px 24px',
       }}
     >
     <div style={{ maxWidth: '860px', margin: '0 auto' }}>
@@ -526,14 +548,94 @@ export const HexChronicle = memo(function HexChronicle({
           </p>
         )}
 
-        {/* Location cards with prose flavor text */}
-        {locations.length > 0 && (
+        {/* Location cards with nested sublocations and inline agents */}
+        {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
           <div style={{ marginBottom: '16px' }}>
-            {locations.map(loc => {
+            {parentLocations.map(loc => {
               const agentsHere = agentsByLocation[loc.id] || [];
               const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
               const flavorText = locationProse[loc.id] ?? '';
+              const subs = sublocationsByParent[loc.id] || [];
+              // Total agent count includes sublocation agents
+              const subAgentCount = subs.reduce(
+                (sum, sub) => sum + (agentsByLocation[sub.id]?.length ?? 0), 0
+              );
+              const totalAgents = agentsHere.length + subAgentCount;
 
+              return (
+                <LocationCard
+                  key={loc.id}
+                  name={loc.name}
+                  subtype={subtype}
+                  agentCount={totalAgents}
+                  flavorText={flavorText}
+                  onClick={() => onLocationClick(loc.id)}
+                  onDoubleClick={() => onLocationDoubleClick(loc.id)}
+                >
+                  {/* Agents directly at this location */}
+                  {agentsHere.length > 0 && (
+                    <div style={{ paddingLeft: '26px', marginTop: '6px' }}>
+                      {agentsHere.map(agent => {
+                        const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                        const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                        const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                        return (
+                          <AgentEntry
+                            key={agent.id}
+                            name={agent.name}
+                            sphereColor={sphereColor}
+                            archetypeName={archetypeName}
+                            onClick={() => onAgentClick(agent.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* Nested sublocations */}
+                  {subs.length > 0 && (
+                    <div style={{ paddingLeft: '26px', marginTop: '8px' }}>
+                      {subs.map(sub => {
+                        const subAgents = agentsByLocation[sub.id] || [];
+                        const subFlavor = locationProse[sub.id] ?? '';
+                        return (
+                          <SubLocationEntry
+                            key={sub.id}
+                            name={sub.name}
+                            flavorText={subFlavor}
+                            onClick={() => onLocationClick(sub.id)}
+                            onDoubleClick={() => onLocationDoubleClick(sub.id)}
+                          >
+                            {subAgents.length > 0 && (
+                              <div style={{ marginTop: '4px' }}>
+                                {subAgents.map(agent => {
+                                  const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                                  const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                                  const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                                  return (
+                                    <AgentEntry
+                                      key={agent.id}
+                                      name={agent.name}
+                                      sphereColor={sphereColor}
+                                      archetypeName={archetypeName}
+                                      onClick={() => onAgentClick(agent.id)}
+                                    />
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </SubLocationEntry>
+                        );
+                      })}
+                    </div>
+                  )}
+                </LocationCard>
+              );
+            })}
+            {/* Orphan sublocations (parent not in this hex) shown at top level */}
+            {orphanSublocations.map(loc => {
+              const agentsHere = agentsByLocation[loc.id] || [];
+              const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
+              const flavorText = locationProse[loc.id] ?? '';
               return (
                 <LocationCard
                   key={loc.id}
@@ -543,33 +645,26 @@ export const HexChronicle = memo(function HexChronicle({
                   flavorText={flavorText}
                   onClick={() => onLocationClick(loc.id)}
                   onDoubleClick={() => onLocationDoubleClick(loc.id)}
-                />
-              );
-            })}
-          </div>
-        )}
-
-        {/* Soul cards with prose flavor text */}
-        {allAgents.length > 0 && (
-          <div style={{ marginBottom: '16px' }}>
-            {allAgents.map(agent => {
-              const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-              const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-              const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-              const locationNode = locations.find(l => l.id === agent.locationId);
-              const locationName = locationNode?.name ?? 'Unknown';
-              const flavorText = agentProse[agent.id] ?? '';
-
-              return (
-                <SoulCard
-                  key={agent.id}
-                  name={agent.name}
-                  locationName={locationName}
-                  sphereColor={sphereColor}
-                  archetypeName={archetypeName}
-                  flavorText={flavorText}
-                  onClick={() => onAgentClick(agent.id)}
-                />
+                >
+                  {agentsHere.length > 0 && (
+                    <div style={{ paddingLeft: '26px', marginTop: '6px' }}>
+                      {agentsHere.map(agent => {
+                        const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                        const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                        const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                        return (
+                          <AgentEntry
+                            key={agent.id}
+                            name={agent.name}
+                            sphereColor={sphereColor}
+                            archetypeName={archetypeName}
+                            onClick={() => onAgentClick(agent.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </LocationCard>
               );
             })}
           </div>

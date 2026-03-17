@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import type { ReactNode } from 'react';
 
 interface LocationCardProps {
   name: string;
@@ -7,6 +8,8 @@ interface LocationCardProps {
   flavorText: string;
   onClick: () => void;
   onDoubleClick: () => void;
+  /** Nested content: sublocation cards, inline agent entries */
+  children?: ReactNode;
 }
 
 const SUBTYPE_GLYPHS: Record<string, string> = {
@@ -15,11 +18,12 @@ const SUBTYPE_GLYPHS: Record<string, string> = {
   ruin: '🏚',
   shrine: '⛩',
   crossing: '🌉',
+  city: '◆',
   default: '◆',
 };
 
 export const LocationCard = memo(function LocationCard({
-  name, subtype, agentCount, flavorText, onClick, onDoubleClick,
+  name, subtype, agentCount, flavorText, onClick, onDoubleClick, children,
 }: LocationCardProps) {
   const glyph = SUBTYPE_GLYPHS[subtype] || SUBTYPE_GLYPHS.default;
 
@@ -32,52 +36,63 @@ export const LocationCard = memo(function LocationCard({
 
   return (
     <div
-      onClick={onClick}
-      onDoubleClick={onDoubleClick}
-      onKeyDown={handleKeyDown}
-      role="button"
-      tabIndex={0}
-      aria-label={`Location: ${name}`}
       style={{
         background: 'var(--bg-raised)',
         border: '1px solid var(--border-subtle)',
         borderRadius: '6px',
         padding: '10px 14px',
-        cursor: 'pointer',
         transition: 'border-color 0.2s ease',
         margin: '8px 0',
       }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--accent-gold-dim)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-subtle)';
-      }}
     >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '1.1em' }}>{glyph}</span>
-        <span
-          style={{
-            fontFamily: 'var(--font-display)',
-            color: 'var(--text-primary)',
-            fontSize: '0.95rem',
-            fontWeight: 600,
-          }}
-        >
-          {name}
-        </span>
-        <span
-          style={{
-            fontFamily: 'var(--font-body)',
-            color: 'var(--text-muted)',
-            fontSize: 'var(--text-xs)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.06em',
-            marginLeft: 'auto',
-          }}
-        >
-          {subtype}
-        </span>
+      {/* Clickable header row */}
+      <div
+        onClick={onClick}
+        onDoubleClick={onDoubleClick}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`Location: ${name}`}
+        style={{ cursor: 'pointer' }}
+        onMouseEnter={(e) => {
+          const target = e.currentTarget.querySelector('[data-loc-name]') as HTMLElement | null;
+          if (target) target.style.color = 'var(--accent-gold)';
+        }}
+        onMouseLeave={(e) => {
+          const target = e.currentTarget.querySelector('[data-loc-name]') as HTMLElement | null;
+          if (target) target.style.color = 'var(--text-primary)';
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '1.1em' }}>{glyph}</span>
+          <span
+            data-loc-name
+            style={{
+              fontFamily: 'var(--font-display)',
+              color: 'var(--text-primary)',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              textDecoration: 'underline',
+              textDecorationColor: 'var(--border-subtle)',
+              textUnderlineOffset: '3px',
+              transition: 'color 0.15s ease',
+            }}
+          >
+            {name}
+          </span>
+          <span
+            style={{
+              fontFamily: 'var(--font-body)',
+              color: 'var(--text-muted)',
+              fontSize: 'var(--text-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.06em',
+              marginLeft: 'auto',
+            }}
+          >
+            {subtype}
+          </span>
+        </div>
       </div>
       {flavorText && (
         <p
@@ -106,6 +121,8 @@ export const LocationCard = memo(function LocationCard({
           {agentCount} soul{agentCount !== 1 ? 's' : ''} present
         </div>
       )}
+      {/* Nested children: sublocations and agents */}
+      {children}
     </div>
   );
 });
