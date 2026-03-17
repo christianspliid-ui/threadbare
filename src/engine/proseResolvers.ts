@@ -21,6 +21,8 @@ import {
   HISTORICAL_CULTURE_PROSE,
   REGION_ETYMOLOGY_PROSE,
   PROSPERITY_PROSE,
+  PROSPERITY_TERRAIN_PROSE,
+  TERRAIN_PROSPERITY_CATEGORY,
   WEALTH_PROSE,
 } from '../data/prose-layer-content';
 import { getProsperityTier } from './phaseProsperity';
@@ -615,8 +617,11 @@ export function resourcesResolver(nodeId: string, graph: WorldGraph, seed: numbe
  * Category: 'atmosphere' (economic mood of the place)
  *
  * Reads the `prosperity` property and maps it to a tier prose fragment.
+ * Prefers terrain-specific fragments when the location has a recognized terrain;
+ * falls back to generic PROSPERITY_PROSE for unknown or unmapped terrains.
  * Only fires for settlement-subtype locations that have a prosperity value.
  * Fail-soft: no prosperity property → returns empty (resolver silently skips).
+ * PRNG: seed + 700, deterministic selection from terrain or generic pool.
  */
 export function prosperityResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
   const node = graph.getNode(nodeId);
@@ -633,7 +638,18 @@ export function prosperityResolver(nodeId: string, graph: WorldGraph, seed: numb
   if (typeof prosperity !== 'number') return [];
 
   const tier = getProsperityTier(prosperity);
-  const templates = PROSPERITY_PROSE[tier];
+
+  // Prefer terrain-specific fragments when available
+  const terrain = node.properties?.terrain as string | undefined;
+  const terrainCategory = terrain ? TERRAIN_PROSPERITY_CATEGORY[terrain] : undefined;
+  const terrainTemplates = terrainCategory
+    ? PROSPERITY_TERRAIN_PROSE[terrainCategory]?.[tier]
+    : undefined;
+
+  // Fall back to generic if no terrain-specific pool exists
+  const templates = (terrainTemplates && terrainTemplates.length > 0)
+    ? terrainTemplates
+    : PROSPERITY_PROSE[tier];
   if (!templates || templates.length === 0) return [];
 
   const template = pickTemplate(templates, seed + 700);
