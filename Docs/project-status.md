@@ -1,11 +1,11 @@
 # Project Status
 
-> Updated 2026-03-12. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
+> Updated 2026-03-17. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** Attachment Detail Card UI complete (2026-03-16) — three display modes (inline/tooltip/expanded), graph-walking aggregator, integrated into AgentDetailPanel (Tier 2) and AgentProfileModal (Tier 3). 55 new tests.
+**Latest:** Intent visibility complete (2026-03-17) — agent ambitions surface in character sheet modal (Intent section between Nature and Prowess), AgentDetailPanel sidebar (above Character), and AgentInfoCard compact card (primary intent line). Notification tap-through: ambition events now carry actorId; clicking an alert/toast navigates to the agent. ambition_abandoned promoted to alert/dilemma. 5 new test files, 8764 total tests passing.
 
 ## Up Next
 Triage candidate tasks from the PROD-01 contract against the 10 polish criteria. Then STRUCT-01 Repo Boundary Cleanup.
