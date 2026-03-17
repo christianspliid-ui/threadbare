@@ -22,6 +22,7 @@ import {
   REGION_ETYMOLOGY_PROSE,
   PROSPERITY_PROSE,
   WEALTH_PROSE,
+  GUILD_IDENTITY_PROSE,
 } from '../data/prose-layer-content';
 import { getProsperityTier } from './phaseProsperity';
 import { getWealthTier } from './wealth';
@@ -681,6 +682,102 @@ export function wealthResolver(nodeId: string, graph: WorldGraph, seed: number):
       priority: 65,
       category: 'economic',
       source: 'wealthResolver',
+    },
+  ];
+}
+
+// ─── Guild Identity Resolvers ──────────────────────────────────────────
+
+/**
+ * guildIdentityResolver — guild-type-specific prose for locations containing guild halls.
+ * Priority: 55 (character — between faction control at 60 and population at 50)
+ * Category: 'character'
+ *
+ * Location -> contains -> Sublocation (guild_hall) -> guildId property -> Guild actor -> guildType
+ * Fail-soft: missing guildType → uses 'merchants' fragments as fallback.
+ */
+export function guildIdentityResolver(
+  nodeId: string,
+  graph: WorldGraph,
+  seed: number,
+): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  // Walk contains edges to find guild_hall sublocations
+  const containsEdges = graph.getOutgoingEdges(nodeId, 'contains');
+  if (containsEdges.length === 0) return [];
+
+  // Find first guild hall sublocation
+  let guildType: string | undefined;
+  for (const edge of containsEdges) {
+    const sublocNode = graph.getNode(edge.target);
+    if (!sublocNode) continue;
+    const sublocationTypeId = sublocNode.properties?.sublocationTypeId as string | undefined;
+    if (sublocationTypeId !== 'sublocation-type.guild-hall') continue;
+
+    // Found a guild hall — get the guild actor via guildId
+    const guildId = sublocNode.properties?.guildId as string | undefined;
+    if (!guildId) continue;
+
+    const guildNode = graph.getNode(guildId);
+    if (!guildNode) continue;
+
+    guildType = guildNode.properties?.guildType as string | undefined;
+    break;
+  }
+
+  if (!guildType) return [];
+
+  // Fail-soft: unknown guildType → merchants fallback
+  const templates = GUILD_IDENTITY_PROSE[guildType] ?? GUILD_IDENTITY_PROSE.merchants;
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 850);
+  if (!template) return [];
+
+  return [
+    {
+      text: template,
+      priority: 55,
+      category: 'character',
+      source: 'guildIdentityResolver',
+    },
+  ];
+}
+
+/**
+ * guildFactionIdentityResolver — guild-type-specific prose for guild faction actors.
+ * Priority: 100 (origin — defines what kind of faction this is)
+ * Category: 'origin'
+ *
+ * Reads guildType directly from actor node properties.
+ * Fail-soft: missing guildType → returns empty. Unknown guildType → merchants fallback.
+ */
+export function guildFactionIdentityResolver(
+  nodeId: string,
+  graph: WorldGraph,
+  seed: number,
+): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  const guildType = node.properties?.guildType as string | undefined;
+  if (!guildType) return [];
+
+  // Fail-soft: unknown guildType → merchants fallback
+  const templates = GUILD_IDENTITY_PROSE[guildType] ?? GUILD_IDENTITY_PROSE.merchants;
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 900);
+  if (!template) return [];
+
+  return [
+    {
+      text: template,
+      priority: 100,
+      category: 'origin',
+      source: 'guildFactionIdentityResolver',
     },
   ];
 }

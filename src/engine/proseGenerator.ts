@@ -23,6 +23,8 @@ import {
   agentFactionResolver,
   dispositionResolver,
   wealthResolver,
+  guildIdentityResolver,
+  guildFactionIdentityResolver,
 } from './proseResolvers';
 
 // ─── Resolver Registry ──────────────────────────────────────────────
@@ -34,6 +36,7 @@ const LOCATION_RESOLVERS: ProseResolver[] = [
   cultureResolver,
   sphereResolver,
   factionResolver,
+  guildIdentityResolver,
   populationResolver,
 ];
 
@@ -43,6 +46,10 @@ const ACTOR_RESOLVERS: ProseResolver[] = [
   agentFactionResolver,
   wealthResolver,
   dispositionResolver,
+];
+
+const FACTION_RESOLVERS: ProseResolver[] = [
+  guildFactionIdentityResolver,
 ];
 
 const RESOLVER_REGISTRY: Record<string, ProseResolver[]> = {
@@ -69,14 +76,20 @@ export function generateEntityProse(
   const node = graph.getNode(nodeId);
   if (!node) return '';
 
-  const resolvers = RESOLVER_REGISTRY[node.type];
-  if (!resolvers) return '';
+  let resolvers: ProseResolver[] | undefined;
 
-  // For actors, only resolve individuals (not factions, cultures, gods yet)
   if (node.type === 'actor') {
     const actorType = node.properties?.actorType as string | undefined;
-    if (actorType !== 'individual') return '';
+    if (actorType === 'individual') {
+      resolvers = RESOLVER_REGISTRY.actor;
+    } else if (actorType === 'faction' && node.properties?.guildType) {
+      resolvers = FACTION_RESOLVERS;
+    }
+  } else {
+    resolvers = RESOLVER_REGISTRY[node.type];
   }
+
+  if (!resolvers) return '';
 
   // Hash nodeId into a per-entity seed offset
   let idHash = 0;
