@@ -5,7 +5,9 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** Movement trails fully working (2026-03-17) — Two fixes: (1) `tickMovement()` now enriches `MovementHistoryEntry` with `hexCol`/`hexRow` from the destination node; (2) `MovementTrails` component switched from tick-age-based opacity filter (which discarded all entries) to index-based fade (newest=0.6 opacity, oldest=0.05). Verified: avatar 4-hex movement produces 3 dark ink `<line>` segments with correct fading opacity. 3 new tests. 5,111 tests pass.
+**Latest:** Organic movement trails (2026-03-17) — `MovementTrails.tsx` rewritten from straight `<line>` segments to organic ink-wash style: quadratic bezier `<path>` curves with perpendicular wobble (deterministic hash per agent+segment, `WOBBLE_FACTOR=0.12`), small waypoint `<circle>` dots (`TRAIL_DOT_RADIUS=1.5`), newest point offset toward arrival direction by `AGENT_RING_RADIUS` so trail connects to agent dot position. Dots and stroke width taper toward tail. Verified: 6 bezier path segments + 7 waypoint dots rendered with correct fading opacity. 5,111 tests pass.
+
+**Previous:** Movement trails fully working (2026-03-17) — Two fixes: (1) `tickMovement()` now enriches `MovementHistoryEntry` with `hexCol`/`hexRow` from the destination node; (2) `MovementTrails` component switched from tick-age-based opacity filter (which discarded all entries) to index-based fade (newest=0.6 opacity, oldest=0.05). 3 new tests.
 
 **Previous:** Agent portrait system complete (2026-03-17) — archetype-based portrait registry mapping 19 archetypes to portrait images (3 initial: tragic_hero, trickster, old_power). `portraitUrl` field added to `AgentDetail`, `AgentInfoCardData`, `AgentFullProfileData`. AgentProfileModal shows conditional portrait (stranger=gradient, recognised+ with portrait=image, without=gradient fallback). AgentDetailPanel shows 32×40px thumbnail in header. Knowledge-gated: strangers always see silhouette. 11 new tests. 5,109 tests pass.
 
