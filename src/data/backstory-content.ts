@@ -477,110 +477,130 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What {name} will never admit — even to those closest to them — is that {value} is not a direction but a flight from the {fear} that effort alone cannot prevent.',
     'Beneath the {value} that organizes {name}\'s life is the specific dread of {fear}: that all the striving could reach its natural end and still not be enough.',
     'The {value} in {name} is not simply orientation toward achievement. It is a specific response to the {fear} that nothing left to accomplish means nothing left to avoid — that stillness and disappearance might not be different states.',
+    '{name} fills every silence with a plan. The {fear} is loudest in the gaps between tasks — so {name} has arranged a life where there are no gaps, and calls this {value}.',
   ],
   ambition_contentment_negative: [
     'What {name} will never admit is that behind the {value} they display is the {fear} of being forced to want more — of peace being taken from them and replaced with demands they did not agree to.',
     'The {value} in {name} is partly resistance: the {fear} of endless striving makes stillness feel like safety rather than simply comfort.',
     'Beneath the {value} that {name} maintains is the {fear} that ambition, once permitted, does not stop at reasonable limits — that the hunger is larger than any goal can satisfy, and that opening the door means losing the room.',
+    '{name} declines every offer of advancement with the same calm refusal, and the calm is manufactured. The {fear} is not of failure but of appetite — that wanting, once started, will consume the {value} they have built their life inside.',
   ],
   // courage_prudence
   courage_prudence_positive: [
     'What {name} will never admit is that {value} is maintained partly against the {fear} of exposure — the moment when the strength they project would be revealed as calculation in disguise.',
     'Beneath the {value} in {name} is a {fear} they do not name: that the courage they display would, under sufficient pressure, reveal itself as performed rather than real.',
     'The {value} that {name} projects has behind it the {fear} of what they would discover about themselves if the projection were dropped — not cowardice, but something more specific: that the {value} is maintenance, not identity.',
+    '{name} volunteers first for every danger and sleeps poorly afterward. The {fear} is not of the danger. It is of the night they hesitate — and what the hesitation would confirm about the distance between {value} and performance.',
   ],
   courage_prudence_negative: [
     'What {name} will never admit is that their {value} is partly about the {fear} of their own recklessness — the conviction that without careful calculation, something catastrophic would result.',
     'The {value} in {name} sits over a {fear} of what happens when calculation fails and impulse takes over. The discipline is as much protection against themselves as against the world.',
     'The specific fear inside {name}\'s {value} is not of external danger but of internal failure: the moment when the calculation fails and the instinct takes over, and the instinct turns out to have been wrong about what it understood.',
+    'People close to {name} notice the lists, the contingencies, the plans within plans. What they do not see is the {fear} that the plans are for: one reckless moment undoing everything {value} has carefully kept intact.',
   ],
   // cruelty_compassion
   cruelty_compassion_positive: [
     'What {name} will never admit is that the {value} they are capable of is partly a defense against the {fear} of being made vulnerable — hurt before being hurt.',
     'Beneath the capacity for {value} in {name} is a {fear} they do not examine: that softness, shown once, would be found and used against them.',
     'The {fear} behind {name}\'s {value} is not of being harmed by another but of becoming the instrument of their own undoing — of the hardness they have built becoming the thing that destroys what they were trying to protect.',
+    '{name} was gentle once, with someone specific, and the outcome taught them the cost. The {fear} is not of gentleness — it is of the specific wound that follows when {value} drops its guard and the world does not reciprocate.',
   ],
   cruelty_compassion_negative: [
     'What {name} will never admit is that their {value} contains within it the {fear} of discovering they are capable of worse — that the hardness is in there, only waiting for the right provocation.',
     'The {value} in {name} sits next to a {fear} they rarely name: that kindness will be mistaken for weakness, and that the mistake will cost someone else.',
     'The {fear} that lives inside {name}\'s {value} is not that others will take advantage of their softness. It is that the softness will not be enough — that it will prove insufficient at the specific moment it is most needed.',
+    '{name} flinches at their own sharp tone and apologizes too quickly. The {fear} is that one day the sharpness will feel natural — that the {value} is a dam, and the dam is not as thick as it looks.',
   ],
   // cunning_honesty
   cunning_honesty_positive: [
     'What {name} will never admit is that behind the {value} they practice is the {fear} of being outwitted — found by someone better at the same game, aimed in the other direction.',
     'The {value} in {name} is maintained partly against the {fear} that the deception, if discovered, will define everything that came before it. The fear makes the practice more careful and no less present.',
     'The specific {fear} beneath {name}\'s {value} is erosion: the question of whether the practice, maintained long enough, has made them into something that cannot return to the alternative even when the alternative becomes necessary.',
+    '{name} keeps no journal, writes no letters, avoids being alone with people who ask direct questions. The {fear} is not of enemies knowing the truth. It is of anyone knowing — because {value}, practiced long enough, has left {name} uncertain which version is the original.',
   ],
   cunning_honesty_negative: [
     'What {name} will never admit is that their {value} sits next to a {fear} that circumstances will require deception and that they will be visibly bad at it.',
     'Beneath the {value} in {name} is a {fear} of what it would cost them to lie in a situation that demanded it — not moral cost, but the simpler fear of the lie being seen.',
     '{name}\'s {value} contains a quiet, specific {fear}: that the world will present a situation where {value} is not sufficient and deception would have been, and that in that moment they will be unable to deploy it in time.',
+    '{name} watches the cunning prosper and says nothing. The {fear} is not that {value} is wrong. It is that {value} is expensive — and that the invoice arrives in the form of people they could have protected if they had been willing to lie.',
   ],
   // devotion_independence
   devotion_independence_positive: [
     'What {name} will never admit is that {value} contains within it the {fear} of abandonment by what they are devoted to — the discovery that the thing they organized around was unworthy.',
     'The {value} in {name} protects against, but cannot eliminate, the {fear} that what they have given themselves to will eventually require something they cannot give.',
     'The {fear} that lives inside {name}\'s {value} is not of its object failing them. It is of {value} itself — the suspicion that what they call devotion is dependency wearing a more respectable name.',
+    '{name} tends the object of their {value} the way a gardener tends a plant in drought — too much water, too much attention, checking the roots when the leaves look fine. The {fear} is visible in the excess of care.',
   ],
   devotion_independence_negative: [
     'What {name} will never admit is that the {value} they protect is maintained against the {fear} of obligation so total it leaves no remainder of themselves.',
     'Beneath the {value} in {name} is a {fear} of being consumed by a commitment they did not fully choose, of finding that belonging has closed around them.',
     'What the {value} in {name} protects against is not external constraint but the {fear} of their own need — the possibility that the independence is elaborate avoidance of the vulnerability that connection requires.',
+    '{name} leaves before being asked to stay. The {fear} has a rhythm to it — closeness building to a threshold, then departure, then the specific relief of a door closing behind them. They call this {value}. It is also flight.',
   ],
   // loyalty_treachery
   loyalty_treachery_positive: [
     'What {name} will never admit is that {value} lives next to a {fear} that is specific and named: betrayal by those they have trusted most. Not hypothetical. Already experienced, and still feared.',
     'Beneath the {value} in {name} is the {fear} that the people and causes they have bound themselves to will, when tested, prove to have been bound to something else all along.',
     'The {fear} at the center of {name}\'s {value} is not abstract. It has a history: the specific memory of having given it fully and had the giving made into a liability. The {value} continues; the {fear} is present at the foundation of it.',
+    '{name} tests the people closest to them — small betrayals staged to see who notices, who stays, who leaves. They hate themselves for the testing. The {fear} is that without it, {value} is just a bet placed blind.',
   ],
   loyalty_treachery_negative: [
     'What {name} will never admit is that behind every turn they make is the {fear} of being bound by a {value} they did not choose — loyalty as chain rather than bond.',
     'The {value} in {name} is partly a response to the {fear} of being owned by commitments, of discovery that the cost of keeping faith exceeds any benefit.',
     'Behind the {value} that {name} practices is not coldness but a {fear} with a specific shape: the discovery that their defection, in the wrong circumstance, will be toward something they value less than what they abandoned.',
+    '{name} has never kept a promise longer than it was useful and has never stopped counting the cost. The {fear} is not of obligation but of the door it closes — the specific future where {value} has been traded for a cage, and the key handed to someone who does not deserve it.',
   ],
   // tradition_innovation
   tradition_innovation_positive: [
     'What {name} will never admit is that behind {value} is the {fear} of loss — that the old ways are irreplaceable, and that their abandonment would mean losing something that cannot be rebuilt once gone.',
     'The {value} in {name} is maintained against the {fear} that what has been accumulated over time will be discarded by people who do not understand what it cost.',
     'The {fear} beneath {name}\'s {value} is not of change itself but of dissolution — the specific loss that comes when accumulated investment is let go by people who did not pay the cost and cannot feel what is leaving.',
+    '{name} keeps objects that no longer serve a purpose and tends rituals that no one else remembers. The {fear} is in the keeping — that if they stop, the last thread connecting what was to what is will break, and no one else is holding the other end.',
   ],
   tradition_innovation_negative: [
     'What {name} will never admit is that behind the {value} is a {fear} — the fear of stagnation, of the same answer applied to every new problem, of arriving at a future that is simply the past with different furniture.',
     'The {value} in {name} sits over a {fear} of being fixed in place: of finding that adaptation is no longer possible, that the old solutions are the only ones, that the world has moved and they have not.',
     'What the {value} in {name} is defending against is not the past but the {fear} of meeting its own limit — of pushing into new territory and discovering that innovation runs out before it arrives somewhere stable.',
+    '{name} dismantles things that still work and builds replacements that are not always better. The {fear} is not of the past catching them — it is of turning around and discovering they have built something that will outlive its purpose and become the very weight they were running from.',
   ],
   // dominance_humility
   dominance_humility_positive: [
     'What {name} will never admit is that the {value} they exercise is maintained partly against the {fear} of losing it — that control, once relinquished, cannot be recovered.',
     'Beneath the {value} in {name} is the {fear} that things without direction will not simply stall but collapse — that the absence of their intervention is not neutrality but catastrophe.',
     'The {fear} behind {name}\'s {value} is visible in its emergency form: the quality of attention given to situations that might escape management — not tyranny, but the specific anxiety of believing that without intervention, things collapse in unrecoverable ways.',
+    '{name} cannot delegate without checking. Cannot leave a room without arranging it. Cannot sleep without knowing what happens next. The {fear} is not of others failing — it is of the chaos that {value} keeps at bay being real, and permanent, and patient.',
   ],
   dominance_humility_negative: [
     'What {name} will never admit is that the {value} they display contains the {fear} of being forced into dominance — of authority arriving like a sentence rather than a choice.',
     'The {value} in {name} is maintained against the {fear} that if they occupied more space, they would do damage they could not take back. The restraint is not only principle.',
     'The {fear} at the center of {name}\'s {value} is not of responsibility avoided. It is of what responsibility reveals — the possibility that the capacity they are withholding, exercised, would confirm something about themselves they cannot currently claim is absent.',
+    '{name} speaks last in every council and sits nearest the door. The {fear} is of being looked at — truly looked at — and found to contain something large enough to require the room. The {value} is a practiced smallness that costs more than it appears.',
   ],
   // wrath_patience
   wrath_patience_positive: [
     'What {name} will never admit is that behind the {value} is the {fear} of powerlessness — of having reason for anger and finding that the anger accomplishes nothing.',
     'The {value} in {name} is maintained against the {fear} that beneath the restraint is something that, once released, would not stop at the appropriate moment.',
     'The {fear} beneath {name}\'s {value} is not of powerlessness exactly. It is of a specific combination: powerlessness without the capacity for anger to make it bearable. The {value} is held partly because the alternative is only grief.',
+    '{name} breaks things when alone — small things, replaceable things, in rooms where no one can hear. The {fear} is not of the anger. It is of the day the anger finds a person instead of an object, and the {value} finally arrives at what it has been building toward.',
   ],
   wrath_patience_negative: [
     'What {name} will never admit is that the {value} they display contains within it the {fear} of what happens when it runs out — the moment when the patience finally exhausts itself in an unrecoverable way.',
     'Beneath the {value} in {name} is a {fear} of their own anger: not that it doesn\'t exist, but that it is larger than they have admitted, and that one day the occasion for it will arrive.',
     'What the {value} in {name} covers is not simply anger but the {fear} of its own extinction — the possibility that the patience, held long enough, will finally exhaust itself and leave a person who cannot feel it anymore.',
+    'People praise {name}\'s calm and {name} accepts the praise and does not mention what the calm is sitting on. The {fear} is geological — something buried deep enough that no one measures it, building pressure on a timeline longer than the conversations about it.',
   ],
   // greed_generosity
   greed_generosity_positive: [
     'What {name} will never admit is that behind the {value} is the {fear} of scarcity — not merely material want but the hollow interior state that scarcity produces, the knowledge of not-enough applied to everything.',
     'The {value} in {name} sits over a {fear} that is older than reason: that it will run out, that there will not be enough, that the margin between sufficient and insufficient is thinner than it looks.',
     'The {fear} beneath {name}\'s {value} is not about objects. It is about the interior state of not-enough: the specific quality of hunger that does not know how to recognize satisfaction and so continues past the point where a different person would stop.',
+    '{name} counts things — coins, stores, alliances, debts owed. The counting is a ritual against the {fear}. The number is never large enough because the {fear} is not a number. It is a feeling, and feelings do not respond to arithmetic.',
   ],
   greed_generosity_negative: [
     'What {name} will never admit is that behind the {value} they practice is the {fear} of discovering it was conditional — that the generosity will eventually reach a limit and the limit will say something about who they actually are.',
     'The {value} in {name} contains the {fear} of its own dissolution: that the conditions that make it possible will be removed, and what will emerge is not what they have shown the world.',
     'What the {value} in {name} sits on top of is not virtue but {fear}: the discovery that at some depth, the same calculus operates that they most dislike in others — that the generosity is generous partly because they are afraid of what they are when it is absent.',
+    '{name} gives until it hurts and then gives past the hurting. The {fear} is of the moment they stop — not because stopping is wrong, but because stopping would require them to sit with who they are when they are not giving. And they have not met that person yet.',
   ],
 };
 
