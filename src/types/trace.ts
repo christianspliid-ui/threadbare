@@ -198,6 +198,22 @@ export interface SettlementTierChangeTrace extends TraceBase {
   prosperity: number;
 }
 
+/** Trace: player target-action filter cascade (emitted once per getTargetActionSlots call) */
+export interface TargetActionFilterTrace extends TraceBase {
+  category: 'target_action_filter';
+  targetNodeId: string;
+  targetNodeType: string;
+  targetSubtype: string | null;
+  templatesConsidered: number;
+  filteredByNodeType: number;
+  filteredBySubtype: number;
+  filteredByTraits: number;
+  filteredBySphere: number;
+  filteredByEssence: number;
+  filteredByRange: number;
+  slotsGenerated: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -214,7 +230,8 @@ export type TraceEntry =
   | WealthDeltaTrace
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
-  | SettlementTierChangeTrace;
+  | SettlementTierChangeTrace
+  | TargetActionFilterTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -233,6 +250,7 @@ export const TRACE_CATEGORIES = [
   'trade_route_volume_change',
   'trade_route_dissolved',
   'settlement_tier_change',
+  'target_action_filter',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
