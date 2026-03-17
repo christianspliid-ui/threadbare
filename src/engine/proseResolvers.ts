@@ -22,9 +22,18 @@ import {
   REGION_ETYMOLOGY_PROSE,
   PROSPERITY_PROSE,
   WEALTH_PROSE,
+  GUILD_IDENTITY_PROSE,
+  TRADE_ROUTE_VOLUME_PROSE,
+  TRADE_ROUTE_GOODS_PROSE,
+  TRADE_ROUTE_STATUS_PROSE,
+  TRADE_ROUTE_CROSSROADS_PROSE,
+  TRADE_ROUTE_HIGH_VOLUME_THRESHOLD,
+  TRADE_ROUTE_MEDIUM_VOLUME_THRESHOLD,
+  TRADE_ROUTE_CROSSROADS_THRESHOLD,
 } from '../data/prose-layer-content';
 import { getProsperityTier } from './phaseProsperity';
 import { getWealthTier } from './wealth';
+import { readTradeRouteProps } from './tradeRoute';
 import { RESOURCE_PROSE } from '../data/resource-content';
 import type { ResourceInstance } from '../types/resource';
 import { getAbundanceLabel } from '../types/resource';
@@ -681,6 +690,147 @@ export function wealthResolver(nodeId: string, graph: WorldGraph, seed: number):
       priority: 65,
       category: 'economic',
       source: 'wealthResolver',
+    },
+  ];
+}
+
+// ─── Trade Route Resolver ────────────────────────────────────────────
+
+/**
+ * tradeRouteResolver — trade route prose for a location.
+ * Priority: 45 (tension)
+ * Category: 'tension'
+ *
+ * Walks actors at this location via incoming located_at edges,
+ * then collects all trades_with edges (both directions) from those actors.
+ * Picks the highest-volume route and composes a sentence from
+ * volume tier + goods type color + status modifier fragments.
+ * For 2+ routes, appends a crossroads summary line.
+ *
+ * Fail-soft: no trade routes → skip.
+ * PRNG: seeded selection for all fragment picks.
+ */
+export function tradeRouteResolver(
+  nodeId: string,
+  graph: WorldGraph,
+  seed: number,
+): ProseLayer[] {
+  // 1. Get the location node — fail soft
+  const node = graph.getNode(nodeId);
+  if (!node || node.type !== 'location') return [];
+
+  // 2. Find actors at this location via incoming located_at edges
+  const locatedEdges = graph.getIncomingEdges(nodeId, 'located_at');
+  if (locatedEdges.length === 0) return [];
+
+  // 3. Collect all unique trades_with edges from actors here (both directions)
+  const seen = new Set<string>();
+  const tradeEdges: { id: string; properties: Record<string, unknown> }[] = [];
+
+  for (const locEdge of locatedEdges) {
+    const actorId = locEdge.source;
+    for (const edge of graph.getOutgoingEdges(actorId, 'trades_with')) {
+      if (!seen.has(edge.id)) {
+        seen.add(edge.id);
+        tradeEdges.push(edge);
+      }
+    }
+    for (const edge of graph.getIncomingEdges(actorId, 'trades_with')) {
+      if (!seen.has(edge.id)) {
+        seen.add(edge.id);
+        tradeEdges.push(edge);
+      }
+    }
+  }
+
+  if (tradeEdges.length === 0) return [];
+
+  // 4. Read enriched properties, find highest-volume route
+  const routeData = tradeEdges.map((e) => ({
+    edge: e,
+    props: readTradeRouteProps(e.properties ?? {}),
+  }));
+  routeData.sort((a, b) => b.props.volume - a.props.volume);
+  const top = routeData[0];
+
+  // 5. Determine volume tier
+  const volumeTier =
+    top.props.volume >= TRADE_ROUTE_HIGH_VOLUME_THRESHOLD
+      ? 'high'
+      : top.props.volume >= TRADE_ROUTE_MEDIUM_VOLUME_THRESHOLD
+        ? 'medium'
+        : 'low';
+
+  // 6. Pick volume fragment via seeded PRNG — fail soft
+  const volumeTemplates = TRADE_ROUTE_VOLUME_PROSE[volumeTier];
+  if (!volumeTemplates || volumeTemplates.length === 0) return [];
+
+  const rng = mulberry32(seed + 300);
+  const volumeText = volumeTemplates[Math.floor(rng() * volumeTemplates.length)];
+  if (!volumeText) return [];
+
+  // 7. Compose: start with volume text (strip trailing period for appending)
+  let text = volumeText;
+
+  // 8. Add goods type color if available
+  const goodsType = top.props.goodsType;
+  if (goodsType && goodsType !== 'unknown') {
+    const goodsTemplates = TRADE_ROUTE_GOODS_PROSE[goodsType];
+    if (goodsTemplates && goodsTemplates.length > 0) {
+      const goodsFrag = goodsTemplates[Math.floor(rng() * goodsTemplates.length)];
+      // Strip trailing period from volume text, append goods with em-dash
+      if (text.endsWith('.')) {
+        text = text.slice(0, -1);
+      }
+      text += ' \u2014 ' + goodsFrag + '.';
+    }
+  }
+
+  // 9. Add status modifier (priority: threatened > controlled > decaying)
+  let statusKey: string | undefined;
+  if (top.props.threatened) {
+    statusKey = 'threatened';
+  } else if (top.props.controlledBy) {
+    statusKey = 'controlled';
+  } else if (volumeTier === 'low') {
+    statusKey = 'decaying';
+  }
+
+  if (statusKey) {
+    const statusTemplates = TRADE_ROUTE_STATUS_PROSE[statusKey];
+    if (statusTemplates && statusTemplates.length > 0) {
+      let statusFrag = statusTemplates[Math.floor(rng() * statusTemplates.length)];
+      // Replace {controller} placeholder for controlled status
+      if (statusKey === 'controlled' && top.props.controlledBy) {
+        const controllerNode = graph.getNode(top.props.controlledBy);
+        const controllerName = controllerNode?.name ?? 'an unknown power';
+        statusFrag = replacePlaceholder(statusFrag, 'controller', controllerName);
+      }
+      // Strip trailing period, append status clause with comma
+      if (text.endsWith('.')) {
+        text = text.slice(0, -1);
+      }
+      text += ', ' + statusFrag + '.';
+    }
+  }
+
+  // 10. Add crossroads summary for 2+ routes
+  if (tradeEdges.length >= TRADE_ROUTE_CROSSROADS_THRESHOLD) {
+    const crossTemplates = TRADE_ROUTE_CROSSROADS_PROSE;
+    if (crossTemplates.length > 0) {
+      let crossFrag = crossTemplates[Math.floor(rng() * crossTemplates.length)];
+      crossFrag = replacePlaceholder(crossFrag, 'count', String(tradeEdges.length));
+      text += ' ' + crossFrag;
+    }
+  }
+
+  // 11. Return ProseLayer with correct priority and category
+  return [
+    {
+      text,
+      priority: 45,
+      category: 'tension',
+      source: 'tradeRouteResolver',
     },
   ];
 }
