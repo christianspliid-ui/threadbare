@@ -47,11 +47,28 @@ export interface BackstoryLayer extends ProseLayer {
   stratum: BackstoryStratum;
 }
 
-/** Aggregated result of backstory generation for an agent */
+/** A composed stratum block for UI rendering (one per unlocked tier). */
+export interface BackstoryStratumBlock {
+  /** Stratum tier number (1-4). */
+  tier: BackstoryStratum;
+  /** Display title for this stratum (e.g. "What They Say"). */
+  title: string;
+  /** Subtitle for tooltip display. */
+  subtitle: string;
+  /** Composed prose text for this stratum (paragraphs joined with \n\n). */
+  text: string;
+  /** True if this stratum was unlocked more recently than the player has read. */
+  isNew: boolean;
+}
+
+/** Result returned by generateTieredBackstory(). */
 export interface BackstoryResult {
-  layers: BackstoryLayer[];
-  /** How many tiers the player has unlocked for this agent (0–4) */
-  tiersUnlocked: number;
+  /** Full composed text (all strata joined with section breaks). */
+  text: string;
+  /** Individual strata blocks for UI rendering. */
+  strata: BackstoryStratumBlock[];
+  /** Highest unlocked stratum number (1-4), or 0 if none. */
+  maxStratum: number;
 }
 
 /** Tuneable constants for the backstory generation system */
