@@ -67,6 +67,7 @@ import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
+import { checkTierPromotion } from './influence';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -928,6 +929,41 @@ export function phaseDivineInfluenceDecay(state: GameState): Partial<GameState> 
   return {};
 }
 
+// ─── Phase 6.63: Influence Tier Promotion ─────────────────────────
+
+export function phaseInfluenceTierPromotion(
+  state: GameState,
+): Partial<GameState> {
+  const promoted = checkTierPromotion(state.graph, state.ascendantId);
+  if (promoted.length === 0) return {};
+
+  // Look up ascendant's primary sphere for event coloring
+  const ascendantNode = state.graph.getNode(state.ascendantId);
+  const primarySphere = (ascendantNode?.properties?.sphereAlignment?.primary ?? undefined) as SphereName | undefined;
+
+  const events: TickEvent[] = promoted.map(agentId => {
+    const agentNode = state.graph.getNode(agentId);
+    const agentName = agentNode?.name ?? agentId;
+    return {
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'backstory_unlock' as const,
+      message: `${agentName}'s story deepens`,
+      significance: 0.6,
+      sphere: primarySphere,
+      actorId: agentId,
+      notification: {
+        channel: 'alert' as const,
+        icon: 'revelation' as const,
+      },
+    };
+  });
+
+  return {
+    tickEvents: [...state.tickEvents, ...events],
+  };
+}
+
 // ─── Phase 7: Mandate Check ───────────────────────────────────────
 
 export function phaseMandate(state: GameState): Partial<GameState> {
@@ -1111,6 +1147,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.6: Divine Influence Decay
   s = { ...s, ...phaseDivineInfluenceDecay(s) };
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.63: Influence Tier Promotion (backstory unlock events)
+  s = { ...s, ...phaseInfluenceTierPromotion(s) };
+  phaseEventCounts['influence_tier_promotion'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
