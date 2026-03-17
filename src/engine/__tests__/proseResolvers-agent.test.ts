@@ -12,6 +12,7 @@ import {
   agentCultureResolver,
   agentFactionResolver,
   dispositionResolver,
+  wealthResolver,
 } from '../proseResolvers';
 
 function buildAgentTestGraph(): { graph: WorldGraph; agentId: string } {
@@ -394,32 +395,139 @@ describe('Prose Resolvers (Agent)', () => {
     });
   });
 
+  describe('wealthResolver', () => {
+    it('returns economic layer with priority 65 for agent with wealth', () => {
+      const { graph, agentId } = buildAgentTestGraph();
+      graph.getNode(agentId)!.properties.wealth = 85;
+
+      const layers = wealthResolver(agentId, graph, testSeed);
+
+      expect(layers.length).toBeGreaterThan(0);
+      const layer = layers[0];
+      expect(layer.priority).toBe(65);
+      expect(layer.category).toBe('economic');
+      expect(layer.source).toBe('wealthResolver');
+      expect(layer.text).toContain('Kael');
+      expect(layer.text.length).toBeGreaterThan(0);
+    });
+
+    it('replaces {name} placeholder with agent name', () => {
+      const { graph, agentId } = buildAgentTestGraph();
+      graph.getNode(agentId)!.properties.wealth = 50;
+
+      const layers = wealthResolver(agentId, graph, testSeed);
+
+      expect(layers.length).toBeGreaterThan(0);
+      expect(layers[0].text).toContain('Kael');
+      expect(layers[0].text).not.toContain('{name}');
+    });
+
+    it('returns empty array when node missing', () => {
+      const { graph } = buildAgentTestGraph();
+      expect(wealthResolver('nonexistent', graph, testSeed)).toEqual([]);
+    });
+
+    it('returns empty array when wealth property missing', () => {
+      const { graph, agentId } = buildAgentTestGraph();
+      // No wealth property set on agent
+      expect(wealthResolver(agentId, graph, testSeed)).toEqual([]);
+    });
+
+    it('returns empty array when wealth is not a number', () => {
+      const { graph, agentId } = buildAgentTestGraph();
+      graph.getNode(agentId)!.properties.wealth = 'rich' as any;
+      expect(wealthResolver(agentId, graph, testSeed)).toEqual([]);
+    });
+
+    it('handles all 5 wealth tiers', () => {
+      const tierValues: [string, number][] = [
+        ['Magnate', 85],
+        ['Wealthy', 65],
+        ['Comfortable', 45],
+        ['Getting by', 25],
+        ['Destitute', 5],
+      ];
+
+      for (const [_tier, wealth] of tierValues) {
+        const graph = new WorldGraph();
+        const agent: GraphNode = {
+          id: 'ind_wealth',
+          type: 'actor',
+          name: 'Merchant',
+          properties: {
+            actorType: 'individual',
+            wealth,
+          },
+        };
+        graph.addNode(agent);
+
+        const layers = wealthResolver('ind_wealth', graph, testSeed);
+        expect(layers.length).toBeGreaterThan(0);
+        expect(layers[0].text).toContain('Merchant');
+      }
+    });
+
+    it('handles boundary values correctly', () => {
+      const boundaries: [string, number][] = [
+        ['Magnate', 80],
+        ['Wealthy', 60],
+        ['Comfortable', 40],
+        ['Getting by', 20],
+        ['Destitute', 0],
+        ['Destitute', 19],
+      ];
+
+      for (const [_tier, wealth] of boundaries) {
+        const graph = new WorldGraph();
+        const agent: GraphNode = {
+          id: 'ind_boundary',
+          type: 'actor',
+          name: 'Boundary',
+          properties: {
+            actorType: 'individual',
+            wealth,
+          },
+        };
+        graph.addNode(agent);
+
+        const layers = wealthResolver('ind_boundary', graph, testSeed);
+        expect(layers.length).toBeGreaterThan(0);
+        expect(layers[0].category).toBe('economic');
+      }
+    });
+  });
+
   describe('all agent resolvers together', () => {
     it('all return properly prioritized layers for complete agent', () => {
       const { graph, agentId } = buildAgentTestGraph();
+      graph.getNode(agentId)!.properties.wealth = 50;
 
       const archLayers = archetypeResolver(agentId, graph, testSeed);
       const cultLayers = agentCultureResolver(agentId, graph, testSeed);
       const factLayers = agentFactionResolver(agentId, graph, testSeed);
+      const wealthLayers = wealthResolver(agentId, graph, testSeed);
       const dispLayers = dispositionResolver(agentId, graph, testSeed);
 
       // All should return valid layers
       expect(archLayers.length).toBeGreaterThan(0);
       expect(cultLayers.length).toBeGreaterThan(0);
       expect(factLayers.length).toBeGreaterThan(0);
+      expect(wealthLayers.length).toBeGreaterThan(0);
       expect(dispLayers.length).toBeGreaterThan(0);
 
       // Priorities should be in correct order
       expect(archLayers[0].priority).toBe(100);
       expect(cultLayers[0].priority).toBe(90);
       expect(factLayers[0].priority).toBe(70);
+      expect(wealthLayers[0].priority).toBe(65);
       expect(dispLayers[0].priority).toBe(60);
 
-      // All should have 'character' or 'origin' category
-      expect(['origin', 'character']).toContain(archLayers[0].category);
-      expect(['origin', 'character']).toContain(cultLayers[0].category);
-      expect(['origin', 'character']).toContain(factLayers[0].category);
-      expect(['origin', 'character']).toContain(dispLayers[0].category);
+      // Categories
+      expect(archLayers[0].category).toBe('origin');
+      expect(cultLayers[0].category).toBe('character');
+      expect(factLayers[0].category).toBe('character');
+      expect(wealthLayers[0].category).toBe('economic');
+      expect(dispLayers[0].category).toBe('character');
     });
   });
 });

@@ -21,8 +21,10 @@ import {
   HISTORICAL_CULTURE_PROSE,
   REGION_ETYMOLOGY_PROSE,
   PROSPERITY_PROSE,
+  WEALTH_PROSE,
 } from '../data/prose-layer-content';
 import { getProsperityTier } from './phaseProsperity';
+import { getWealthTier } from './wealth';
 import { RESOURCE_PROSE } from '../data/resource-content';
 import type { ResourceInstance } from '../types/resource';
 import { getAbundanceLabel } from '../types/resource';
@@ -643,6 +645,42 @@ export function prosperityResolver(nodeId: string, graph: WorldGraph, seed: numb
       priority: 70,
       category: 'atmosphere',
       source: 'prosperityResolver',
+    },
+  ];
+}
+
+/**
+ * wealthResolver — agent economic standing prose.
+ * Priority: 65 (after identity/culture at 90–100, before faction/disposition at 60–70)
+ * Category: 'economic' (dedicated slot — won't compete with character layers)
+ *
+ * Reads the `wealth` property from agent nodes and maps it to a tier prose fragment.
+ * Only fires for actors with a numeric wealth property.
+ * Fail-soft: no wealth property → returns empty (resolver silently skips).
+ */
+export function wealthResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  // Fail-soft: no wealth property → skip silently
+  const wealth = node.properties?.wealth;
+  if (typeof wealth !== 'number') return [];
+
+  const tier = getWealthTier(wealth);
+  const templates = WEALTH_PROSE[tier];
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 800);
+  if (!template) return [];
+
+  const text = replacePlaceholder(template, 'name', node.name);
+
+  return [
+    {
+      text,
+      priority: 65,
+      category: 'economic',
+      source: 'wealthResolver',
     },
   ];
 }

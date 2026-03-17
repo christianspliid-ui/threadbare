@@ -12,6 +12,7 @@ import {
   ARCHETYPE_PROSE,
   DISPOSITION_PROSE,
   POPULATION_PROSE_TEMPLATES,
+  WEALTH_PROSE,
 } from '../prose-layer-content';
 
 describe('Prose Layer Content', () => {
@@ -389,6 +390,38 @@ describe('Prose Layer Content', () => {
           expect(entry.toLowerCase()).not.toContain(cliché.toLowerCase());
         });
       });
+    });
+  });
+
+  describe('WEALTH_PROSE', () => {
+    const WEALTH_TIERS = ['Magnate', 'Wealthy', 'Comfortable', 'Getting by', 'Destitute'];
+
+    it('has entries for all 5 wealth tiers', () => {
+      for (const tier of WEALTH_TIERS) {
+        expect(WEALTH_PROSE[tier]).toBeDefined();
+        expect(WEALTH_PROSE[tier].length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    it('has no empty strings', () => {
+      for (const tier of WEALTH_TIERS) {
+        for (const template of WEALTH_PROSE[tier]) {
+          expect(template.trim().length).toBeGreaterThan(0);
+        }
+      }
+    });
+
+    it('all templates contain {name} placeholder', () => {
+      for (const tier of WEALTH_TIERS) {
+        for (const template of WEALTH_PROSE[tier]) {
+          expect(template).toContain('{name}');
+        }
+      }
+    });
+
+    it('has no keys outside the 5 canonical tiers', () => {
+      const keys = Object.keys(WEALTH_PROSE);
+      expect(keys.sort()).toEqual([...WEALTH_TIERS].sort());
     });
   });
 });
