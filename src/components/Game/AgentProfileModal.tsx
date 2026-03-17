@@ -10,6 +10,7 @@ import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attac
 import type { AttachmentTier } from '../../types/attachments';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { ProgressBar } from '../shared/ProgressBar';
+import { IconButton } from '../shared/IconButton';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import type { AttachmentDetailData } from './AttachmentDetailView';
 import type { AttachmentFullEntry } from '../../engine/agentAttachments';
@@ -214,16 +215,14 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
         onClick={e => e.stopPropagation()}
       >
         {/* Close × button */}
-        <button
+        <IconButton
+          icon={<span>×</span>}
+          variant="close"
+          size="sm"
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 transition-colors text-xl leading-none rounded-full"
-          style={{ color: 'var(--text-tertiary)', width: '28px', height: '28px', textAlign: 'center' }}
-          onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}
-          onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-tertiary)')}
           aria-label={`Close profile for ${card.name}`}
-        >
-          ×
-        </button>
+          className="absolute top-3 right-3 z-10"
+        />
         {/* Header Zone */}
         <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="flex gap-4 mb-3">
