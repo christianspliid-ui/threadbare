@@ -213,6 +213,41 @@ export interface TargetActionFilterTrace extends TraceBase {
   slotsGenerated: number;
 }
 
+/** Trace: hex tile state ticked (decay or terrain transformation) */
+export interface HexStateTickTrace extends TraceBase {
+  category: 'hex_state';
+  col: number;
+  row: number;
+  prevDivineInfluence: number;
+  newDivineInfluence: number;
+  prevCorruption: number;
+  newCorruption: number;
+  terrainChanged: boolean;
+  prevTerrain?: string;
+  newTerrain?: string;
+}
+
+/** Trace: unrest ticked for a settlement location */
+export interface UnrestTickTrace extends TraceBase {
+  category: 'unrest_tick';
+  locationId: string;
+  locationName: string;
+  prevUnrest: number;
+  newUnrest: number;
+  decayApplied: number;
+  prosperityDamper: number;
+  thresholdsCrossed: string[];
+}
+
+/** Trace: magical saturation ticked for a location */
+export interface MagicalSaturationTickTrace extends TraceBase {
+  category: 'saturation_tick';
+  locationId: string;
+  prevSaturation: number;
+  newSaturation: number;
+  decayApplied: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -230,7 +265,10 @@ export type TraceEntry =
   | TradeRouteVolumeChangeTrace
   | TradeRouteDissolvedTrace
   | SettlementTierChangeTrace
-  | TargetActionFilterTrace;
+  | TargetActionFilterTrace
+  | HexStateTickTrace
+  | UnrestTickTrace
+  | MagicalSaturationTickTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -250,6 +288,9 @@ export const TRACE_CATEGORIES = [
   'trade_route_dissolved',
   'settlement_tier_change',
   'target_action_filter',
+  'hex_state',
+  'unrest_tick',
+  'saturation_tick',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

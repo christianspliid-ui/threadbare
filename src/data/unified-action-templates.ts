@@ -434,7 +434,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'rune',
       duration: { min: 2, max: 4 },
       difficulty: 0.25,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: { magicalSaturation: '+0.15' } },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -460,7 +462,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'rune',
       duration: { min: 3, max: 5 },
       difficulty: 0.35,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: { magicalSaturation: '+0.30' } },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -485,7 +489,9 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       reach: 'shadow',
       duration: { min: 2, max: 3 },
       difficulty: 0.30,
-      onSuccess: [],
+      onSuccess: [
+        { op: 'update_node', nodeId: '$target', changes: { unrest: '+20' } },
+      ],
       onFailure: [],
       failBehavior: 'fail_action',
     }],
@@ -727,6 +733,122 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
 ];
 
+// ─── Hex Action Templates ──────────────────────────────────────────
+//
+// Divine actions targeting hex tiles directly.
+// targetCategories: ['hex'] — only appears when a hex tile is focused.
+// Resolution: hexActionBridge converts these into HexMutation[] (not GraphOps)
+// because hexes are not graph nodes.
+
+const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'hex.bless_land',
+    name: 'Bless the Land',
+    reach: 'star',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'star',
+      duration: { min: 2, max: 4 },
+      difficulty: 0.30,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['hex'],
+    motivations: ['tradition_innovation', 'devotion_independence'],
+    narrativeTemplates: {
+      initiation: 'extends divine favor over this land',
+      success: 'the earth drinks in the blessing — life stirs beneath the soil',
+      failure: 'the land resists the divine touch; the blessing scatters',
+    },
+  },
+  {
+    id: 'hex.corrupt_land',
+    name: 'Corrupt the Land',
+    reach: 'veil',
+    crudType: 'delete',
+    scale: 'regional',
+    steps: [{
+      reach: 'veil',
+      duration: { min: 3, max: 5 },
+      difficulty: 0.40,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'entropy',
+    targetCategories: ['hex'],
+    motivations: ['cruelty_compassion', 'dominance_humility'],
+    narrativeTemplates: {
+      initiation: 'reaches into the foundations of this land with corrupting intent',
+      success: 'darkness seeps into the soil — the land begins to wither',
+      failure: 'the land holds firm against the corruption',
+    },
+  },
+  {
+    id: 'hex.survey',
+    name: 'Survey Territory',
+    reach: 'eye',
+    crudType: 'read',
+    scale: 'local',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.10,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+    }],
+    apCost: 1,
+    essenceCost: 0,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['hex'],
+    motivations: ['courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'casts divine sight across this territory',
+      success: 'the land reveals its secrets — features, resources, and dwellers become clear',
+      failure: 'the land is shrouded; divine sight gains only fragments',
+    },
+  },
+  {
+    id: 'hex.seed_life',
+    name: 'Seed Life',
+    reach: 'flesh',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'flesh',
+      duration: { min: 4, max: 8 },
+      difficulty: 0.50,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 6,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'life',
+    targetCategories: ['hex'],
+    targetSubtypes: [
+      'desert', 'rocky_desert', 'tundra', 'badlands', 'dead_forest',
+      'broken_lands', 'sand_dunes', 'moor_bog',
+    ],
+    motivations: ['cruelty_compassion', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'pours vital essence into this barren ground',
+      success: 'life takes root where none grew before — green tendrils pierce dead earth',
+      failure: 'the land is too far gone; the seeds of life cannot find purchase',
+    },
+  },
+];
+
 // ─── Unified Template Registry ────────────────────────────────────
 
 /**
@@ -740,6 +862,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...LOCATION_ACTION_TEMPLATES,
   ...ATTACHMENT_ACTION_TEMPLATES,
   ...SUBLOCATION_ACTION_TEMPLATES,
+  ...HEX_ACTION_TEMPLATES,
 ];
 
 /**
