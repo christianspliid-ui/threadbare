@@ -46,6 +46,13 @@ import { EventPopup } from './EventPopup';
 import { useNotifications } from './hooks/useNotifications';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
+import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
+import { useTargetActions } from './hooks/useTargetActions';
+import { templateIdFromSlotId } from '../../engine/targetActions';
+import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
+import { mulberry32 } from '../../lib/prng';
+import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -169,6 +176,106 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     () => computeEssenceIncome(gameState.graph, gameState.ascendantId),
     [gameState.graph, gameState.ascendantId, gameState.tick],
   );
+
+  // ── Non-agent target context (hex-zoom and location views) ──
+  const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
+
+  // Build a TargetContext for the currently focused hex or location
+  const nonAgentTargetContext = useMemo(() => {
+    if (viewLevel === 'hex-zoom' && focusedHex) {
+      const tile = tiles.find(t => t.col === focusedHex.col && t.row === focusedHex.row);
+      return buildHexTargetContext({
+        col: focusedHex.col,
+        row: focusedHex.row,
+        terrain: tile?.terrain ?? 'plains',
+        properties: tile ? { terrain: tile.terrain } : {},
+      });
+    }
+    if (viewLevel === 'location' && focusedLocationId) {
+      return buildLocationTargetContext(focusedLocationId, gameState.graph);
+    }
+    return null;
+  }, [viewLevel, focusedHex, focusedLocationId, tiles, gameState.graph]);
+
+  // Open non-agent drawer when entering a detail view; close on world return
+  useMemo(() => {
+    if (viewLevel === 'hex-zoom' || viewLevel === 'location') {
+      setNonAgentDrawerOpen(true);
+    } else {
+      setNonAgentDrawerOpen(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewLevel]);
+
+  const nonAgentSlots = useTargetActions({
+    target: nonAgentTargetContext,
+    gameState,
+    archetype,
+    drawerOpen: nonAgentDrawerOpen,
+  });
+
+  // Handle target_action slot clicks from non-agent detail views (Phase 5)
+  const handleNonAgentSlotClick = useCallback((slotId: string) => {
+    if (!nonAgentTargetContext) return;
+
+    const templateId = templateIdFromSlotId(slotId);
+    if (!templateId) return;
+
+    const template = getUnifiedTemplateById(templateId);
+    if (!template) {
+      console.warn(`[targetAction] template not found: ${templateId}`);
+      return;
+    }
+
+    try {
+      const essenceCost = template.essenceCost ?? 0;
+      const sphere = template.sphereAffinity ?? archetype.sphereAlignment.primary;
+
+      const rng = mulberry32(gameState.seed + gameState.tick * 43);
+      const action = createUnifiedAction({
+        actorId: gameState.ascendantId,
+        templateId,
+        targetId: nonAgentTargetContext.nodeId,
+        scale: template.scale,
+        source: 'player',
+        tick: gameState.tick,
+        template,
+        rng,
+        essencePaid: essenceCost,
+      });
+
+      setGameState(prev => {
+        const newPool = { ...prev.essencePool };
+        if (essenceCost > 0) {
+          newPool[sphere] = Math.max(0, (newPool[sphere] ?? 0) - essenceCost);
+        }
+        return {
+          ...prev,
+          essencePool: newPool,
+          unifiedActions: [...(prev.unifiedActions ?? []), action],
+          recentEvents: [
+            ...prev.recentEvents.slice(-99),
+            {
+              id: `evt_target_action_${prev.tick}_${Date.now()}`,
+              tick: prev.tick,
+              type: 'narrative' as const,
+              message: `The Ascendant ${template.narrativeTemplates.initiation}.`,
+              significance: 0.5,
+              sphere,
+              isInterventionBeat: false,
+            },
+          ],
+        };
+      });
+
+      // Briefly show the "playing" state then close
+      setTimeout(() => {
+        setNonAgentDrawerOpen(false);
+      }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
+    } catch (err) {
+      console.warn('[targetAction] failed to create action:', err);
+    }
+  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState]);
 
   // ── Hex zoom derived data ──
   const {
@@ -506,16 +613,29 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             )}
           </div>
 
-          {/* ActionDrawer overlay */}
+          {/* ActionDrawer overlay — agent (intervention) path */}
           {wheelSlots && drawerOpen && selectedAgentId && (
             <ActionDrawer
               open={drawerOpen}
               slots={wheelSlots}
-              agentName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
-              agentTier={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+              targetName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
+              targetLabel={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
               onClose={handleDrawerClose}
+            />
+          )}
+
+          {/* ActionDrawer overlay — non-agent (hex / location) path */}
+          {nonAgentSlots && nonAgentSlots.length > 0 && nonAgentDrawerOpen && !selectedAgentId && (
+            <ActionDrawer
+              open={nonAgentDrawerOpen}
+              slots={nonAgentSlots}
+              targetName={nonAgentTargetContext?.displayName ?? ''}
+              targetLabel={nonAgentTargetContext?.displayLabel ?? ''}
+              playingCardId={null}
+              onSlotClick={handleNonAgentSlotClick}
+              onClose={() => setNonAgentDrawerOpen(false)}
             />
           )}
         </div>

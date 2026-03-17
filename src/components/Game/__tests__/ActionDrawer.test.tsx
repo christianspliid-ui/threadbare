@@ -28,7 +28,7 @@ const mockSlots: WheelSlot[] = [
 describe('ActionDrawer', () => {
   it('renders when open', () => {
     render(
-      <ActionDrawer open={true} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
     expect(screen.getByTestId('action-drawer')).toBeInTheDocument();
@@ -36,7 +36,7 @@ describe('ActionDrawer', () => {
 
   it('does not render cards when closed', () => {
     render(
-      <ActionDrawer open={false} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={false} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
     expect(screen.queryByText('Dream')).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe('ActionDrawer', () => {
 
   it('renders action cards for non-center slots', () => {
     render(
-      <ActionDrawer open={true} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
     expect(screen.getByText('Scry')).toBeInTheDocument();
@@ -55,7 +55,7 @@ describe('ActionDrawer', () => {
   it('calls onClose when close button is clicked', () => {
     const onClose = vi.fn();
     render(
-      <ActionDrawer open={true} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={onClose} />
     );
     fireEvent.click(screen.getByTestId('action-drawer-close'));
@@ -65,7 +65,7 @@ describe('ActionDrawer', () => {
   it('calls onSlotClick when an action card is clicked', () => {
     const onSlotClick = vi.fn();
     render(
-      <ActionDrawer open={true} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={onSlotClick} onClose={vi.fn()} />
     );
     fireEvent.click(screen.getByTestId('action-card-dream'));
@@ -75,7 +75,7 @@ describe('ActionDrawer', () => {
   it('closes on Escape key', () => {
     const onClose = vi.fn();
     render(
-      <ActionDrawer open={true} slots={mockSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={onClose} />
     );
     fireEvent.keyDown(document, { key: 'Escape' });
@@ -95,7 +95,7 @@ describe('ActionDrawer', () => {
       mockSlots[2],
     ];
     render(
-      <ActionDrawer open={true} slots={mixedSlots} agentName="Kael" agentTier="Tier 2 Zealot"
+      <ActionDrawer open={true} slots={mixedSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={vi.fn()} />
     );
     // Available cards are visible immediately
