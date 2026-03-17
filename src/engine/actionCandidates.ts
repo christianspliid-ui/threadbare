@@ -43,8 +43,11 @@ export function generateActionCandidates(
   // Extract subtype from location (prefer locationSubtype, fall back to locationType)
   const subtype = (locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined;
 
-  // Extract actor type
+  // Extract actor type and wealth for economic gating
   const actorType = actorNode.properties.actorType as string | undefined;
+  const actorWealth = typeof actorNode.properties.wealth === 'number'
+    ? actorNode.properties.wealth
+    : 0;
 
   const candidates: ActionCandidate[] = [];
 
@@ -62,6 +65,11 @@ export function generateActionCandidates(
       if (!actorType || !template.actorAffinities.includes(actorType as any)) {
         continue;
       }
+    }
+
+    // Filter by wealth requirement (economic AI gate: only wealthy agents pick expensive actions)
+    if (template.minWealthRequired !== undefined && actorWealth < template.minWealthRequired) {
+      continue;
     }
 
     // Create candidate
