@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { ghostDotOpacity, updateGhostDots, type GhostDotEntry } from '../ghostDots';
 import { GHOST_DOT_DECAY_TICKS, GHOST_DOT_INITIAL_OPACITY } from '../../data/agent-visual-content';
 import { TRAIL_HISTORY_TICKS } from '../../types/movement';
+import { WorldGraph } from '../graph';
+import { initMovementState, tickMovement } from '../movementExecution';
 
 describe('P2 integration', () => {
   it('ghost dot opacity decays linearly to zero', () => {
@@ -35,6 +37,37 @@ describe('P2 integration', () => {
 
   it('ghost dot decay ticks matches design spec', () => {
     expect(GHOST_DOT_DECAY_TICKS).toBe(28);
+  });
+
+  it('movement history entries include hex coordinates for trail rendering', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'hex_a', type: 'location', name: 'A', properties: { terrain: 'grassland', hexCol: 0, hexRow: 0 } });
+    graph.addNode({ id: 'hex_b', type: 'location', name: 'B', properties: { terrain: 'grassland', hexCol: 1, hexRow: 0 } });
+    graph.addNode({ id: 'hex_c', type: 'location', name: 'C', properties: { terrain: 'grassland', hexCol: 2, hexRow: 0 } });
+    graph.addNode({ id: 'agent_1', type: 'actor', name: 'Agent', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'a_adj_b', source: 'hex_a', target: 'hex_b', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'b_adj_c', source: 'hex_b', target: 'hex_c', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'agent_1_at', source: 'agent_1', target: 'hex_a', type: 'located_at', properties: {} });
+
+    let state = initMovementState('hex_c', ['hex_b', 'hex_c'], 1, 0);
+
+    // Tick 1: move to hex_b
+    const r1 = tickMovement(graph, 'agent_1', state, 1);
+    expect(r1.moved).toBe(true);
+    expect(r1.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_b', tick: 1, hexCol: 1, hexRow: 0 });
+    state = r1.updatedState;
+
+    // Tick 2: move to hex_c
+    const r2 = tickMovement(graph, 'agent_1', state, 2);
+    expect(r2.moved).toBe(true);
+    expect(r2.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_c', tick: 2, hexCol: 2, hexRow: 0 });
+    expect(r2.updatedState.movementHistory).toHaveLength(2);
+
+    // Both entries have hex coords — trail renderer can draw lines
+    for (const entry of r2.updatedState.movementHistory) {
+      expect(entry.hexCol).toBeDefined();
+      expect(entry.hexRow).toBeDefined();
+    }
   });
 
   it('ghost dot opacity never goes negative', () => {

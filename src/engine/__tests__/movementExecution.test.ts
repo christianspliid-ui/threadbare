@@ -47,13 +47,13 @@ describe('Movement Execution', () => {
         id: 'hex_a',
         type: 'location',
         name: 'Hex A',
-        properties: { terrain: 'grassland' },
+        properties: { terrain: 'grassland', hexCol: 0, hexRow: 0 },
       };
       const hexB: GraphNode = {
         id: 'hex_b',
         type: 'location',
         name: 'Hex B',
-        properties: { terrain: 'grassland' },
+        properties: { terrain: 'grassland', hexCol: 1, hexRow: 0 },
       };
       const agent: GraphNode = {
         id: 'agent_1',
@@ -161,6 +161,8 @@ describe('Movement Execution', () => {
       const entry = result.updatedState.movementHistory[0];
       expect(entry.nodeId).toBe('hex_b');
       expect(entry.tick).toBe(50);
+      expect(entry.hexCol).toBe(1);
+      expect(entry.hexRow).toBe(0);
     });
 
     it('caps movement history at TRAIL_HISTORY_TICKS', () => {
@@ -183,10 +185,12 @@ describe('Movement Execution', () => {
       const result = tickMovement(graph, 'agent_1', state, 12);
 
       expect(result.updatedState.movementHistory).toHaveLength(12);
-      // Newest entry should be hex_b at tick 12
+      // Newest entry should be hex_b at tick 12 with hex coordinates
       expect(result.updatedState.movementHistory[0]).toEqual({
         nodeId: 'hex_b',
         tick: 12,
+        hexCol: 1,
+        hexRow: 0,
       });
       // Oldest entry (hex_0 at tick 0) should be removed from the back
       expect(result.updatedState.movementHistory).not.toContainEqual({
@@ -235,6 +239,40 @@ describe('Movement Execution', () => {
 
       expect(result.arrivedAtDestination).toBe(true);
       expect(result.updatedState.movementQueue).toEqual([]);
+    });
+
+    it('omits hex coordinates when destination node lacks them', () => {
+      // Add a sublocation node without hexCol/hexRow
+      graph.addNode({
+        id: 'subloc_1',
+        type: 'location',
+        name: 'Market',
+        properties: { locationType: 'sublocation', terrain: 'grassland' },
+      });
+      graph.addEdge({
+        id: 'hex_a_to_subloc_1',
+        source: 'hex_a',
+        target: 'subloc_1',
+        type: 'contains',
+        properties: {},
+      });
+
+      const state: MovementState = {
+        destinationId: 'subloc_1',
+        movementQueue: ['subloc_1'],
+        ticksAccumulated: 0,
+        currentEdgeCost: 1,
+        lastDecisionTick: 0,
+        movementHistory: [],
+      };
+
+      const result = tickMovement(graph, 'agent_1', state, 20);
+
+      expect(result.moved).toBe(true);
+      const entry = result.updatedState.movementHistory[0];
+      expect(entry.nodeId).toBe('subloc_1');
+      expect(entry.hexCol).toBeUndefined();
+      expect(entry.hexRow).toBeUndefined();
     });
 
     it('computes next edge cost if more in queue', () => {
