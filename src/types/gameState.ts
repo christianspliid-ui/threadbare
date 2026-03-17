@@ -47,6 +47,8 @@ export interface TickEvent {
   notification?: NotificationDirective;
   /** Hex coordinates where this event occurred — absent for global events */
   hexCoords?: { col: number; row: number };
+  /** Agent ID associated with this event — enables click-to-select on notifications */
+  actorId?: string;
 }
 
 // ─── Game State ─────────────────────────────────────────────────

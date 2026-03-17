@@ -105,6 +105,10 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
           type: eventType,
           message: prose,
           significance: result.status === 'completed' ? 0.8 : 0.5,
+          actorId: actor.id,
+          notification: result.status === 'completed'
+            ? { channel: 'alert', icon: 'discovery' }
+            : { channel: 'alert', icon: 'dilemma' },
         });
 
         emitTrace({
@@ -139,6 +143,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
             type: 'ambition_milestone',
             message: prose,
             significance: 0.6,
+            actorId: actor.id,
+            notification: { channel: 'toast' },
           });
 
           emitTrace({
@@ -253,6 +259,8 @@ export function phaseAmbitionProgress(state: GameState): Partial<GameState> {
               type: 'ambition_assigned',
               message: prose,
               significance: 0.5,
+              actorId: actor.id,
+              notification: { channel: 'toast' },
             });
 
             emitTrace({

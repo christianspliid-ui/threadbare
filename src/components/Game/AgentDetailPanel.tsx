@@ -4,6 +4,7 @@ import type { ReachDomain } from '../../types/traits';
 import type { CooperationStrategy } from '../../types/disposition';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 import { AttachmentRow } from './AttachmentRow';
+import { IntentSection } from './IntentSection';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -188,6 +189,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             ))}
           </div>
         </div>
+
+        {/* Intent Section — always visible in prototype */}
+        <IntentSection intents={detail.intents ?? []} variant="panel" />
 
         {/* Values Section */}
         <div>
