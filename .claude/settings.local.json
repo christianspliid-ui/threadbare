@@ -42,7 +42,16 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx\\)$\")",
       "Bash(xargs wc:*)",
       "Bash(xargs grep:*)",
-      "Bash(ls -la /c/Users/chris/TheFantasyWorldSimulator/Design/*.html)"
+      "Bash(ls -la /c/Users/chris/TheFantasyWorldSimulator/Design/*.html)",
+      "Bash(git remote:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx tsc:*)",
+      "Bash(grep -E \"\\\\.png$\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(grep -r \"locationId\\\\|sublocationId\\\\|destination\\\\|currentPosition\" /c/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/types/*.ts)",
+      "Bash(npm test:*)"
     ]
   }
 }

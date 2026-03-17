@@ -20,7 +20,9 @@ import {
   DISPOSITION_PROSE,
   HISTORICAL_CULTURE_PROSE,
   REGION_ETYMOLOGY_PROSE,
+  PROSPERITY_PROSE,
 } from '../data/prose-layer-content';
+import { getProsperityTier } from './phaseProsperity';
 import { RESOURCE_PROSE } from '../data/resource-content';
 import type { ResourceInstance } from '../types/resource';
 import { getAbundanceLabel } from '../types/resource';
@@ -601,6 +603,46 @@ export function resourcesResolver(nodeId: string, graph: WorldGraph, seed: numbe
       priority: 65,
       category: 'resources',
       source: 'resourcesResolver',
+    },
+  ];
+}
+
+/**
+ * prosperityResolver — settlement economic vitality prose.
+ * Priority: 70 (between culture at 80 and resources at 65)
+ * Category: 'atmosphere' (economic mood of the place)
+ *
+ * Reads the `prosperity` property and maps it to a tier prose fragment.
+ * Only fires for settlement-subtype locations that have a prosperity value.
+ * Fail-soft: no prosperity property → returns empty (resolver silently skips).
+ */
+export function prosperityResolver(nodeId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node) return [];
+
+  // Only fire for settlement-type locations
+  const subtype = node.properties?.locationSubtype as string | undefined;
+  if (!subtype) return [];
+  const SETTLEMENT_SUBTYPES = new Set(['hamlet', 'town', 'city', 'capital']);
+  if (!SETTLEMENT_SUBTYPES.has(subtype)) return [];
+
+  // Fail-soft: no prosperity property → skip silently
+  const prosperity = node.properties?.prosperity;
+  if (typeof prosperity !== 'number') return [];
+
+  const tier = getProsperityTier(prosperity);
+  const templates = PROSPERITY_PROSE[tier];
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 700);
+  if (!template) return [];
+
+  return [
+    {
+      text: template,
+      priority: 70,
+      category: 'atmosphere',
+      source: 'prosperityResolver',
     },
   ];
 }

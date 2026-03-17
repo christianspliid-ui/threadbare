@@ -131,6 +131,49 @@ export interface ActionExecutionTrace extends TraceBase {
   duration: number;
 }
 
+/** Trace: prosperity ticked for a settlement location */
+export interface ProsperityTickTrace extends TraceBase {
+  category: 'prosperity_tick';
+  locationId: string;
+  baseIncome: number;
+  tradeBonus: number;
+  disruptionPenalty: number;
+  netDelta: number;
+  previousProsperity: number;
+  newProsperity: number;
+  previousTier: string;
+  newTier: string;
+  tierChanged: boolean;
+}
+
+/** Trace: wealth delta applied to an actor */
+export interface WealthDeltaTrace extends TraceBase {
+  category: 'wealth_delta';
+  actorId: string;
+  previousWealth: number;
+  delta: number;
+  newWealth: number;
+  reason: 'trade_success' | 'trade_failure' | 'route_control' | 'sublocation_income'
+         | 'prosperous_home' | 'disruption' | 'agreement_broken'
+         | 'mercenary_hire' | 'assassination_commission' | 'influence_purchase'
+         | 'construction' | 'monopoly';
+  sourceActionId?: string;
+  sourceActorId?: string;
+}
+
+/** Trace: trade route volume changed */
+export interface TradeRouteVolumeChangeTrace extends TraceBase {
+  category: 'trade_route_volume_change';
+  edgeId: string;
+  sourceId: string;
+  targetId: string;
+  previousVolume: number;
+  newVolume: number;
+  cause: 'established' | 'expanded' | 'decayed' | 'disrupted' | 'taxed';
+  causingActorId?: string;
+  causingActionId?: string;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -142,7 +185,10 @@ export type TraceEntry =
   | FamiliarityChangeTrace
   | InterventionEffectTrace
   | ActionExecutionTrace
-  | ModifierResolutionTrace;
+  | ModifierResolutionTrace
+  | ProsperityTickTrace
+  | WealthDeltaTrace
+  | TradeRouteVolumeChangeTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -156,6 +202,9 @@ export const TRACE_CATEGORIES = [
   'intervention_effect',
   'action_execution',
   'modifier_resolution',
+  'prosperity_tick',
+  'wealth_delta',
+  'trade_route_volume_change',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
