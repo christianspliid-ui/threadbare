@@ -7,23 +7,24 @@ import {
 } from '../action-template-content';
 
 describe('action-template-content', () => {
-  it('should export exactly 36 action templates', () => {
-    expect(ACTION_TEMPLATES).toHaveLength(36);
+  it('should export exactly 43 action templates', () => {
+    expect(ACTION_TEMPLATES).toHaveLength(43);
   });
 
-  it('should have 4 templates per reach', () => {
-    const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
-    for (const reach of reaches) {
+  it('should have correct templates per reach (gold has 11, others have 4)', () => {
+    const standardReaches = ['iron', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+    for (const reach of standardReaches) {
       const templates = getActionsByReach(reach);
       expect(templates).toHaveLength(4);
     }
+    expect(getActionsByReach('gold')).toHaveLength(11);
   });
 
-  it('should have 9 templates per CRUD type', () => {
-    for (const crud of ['create', 'read', 'update', 'delete'] as const) {
-      const templates = getActionsByCrudType(crud);
-      expect(templates).toHaveLength(9);
-    }
+  it('should have correct templates per CRUD type', () => {
+    expect(getActionsByCrudType('create')).toHaveLength(12);
+    expect(getActionsByCrudType('read')).toHaveLength(9);
+    expect(getActionsByCrudType('update')).toHaveLength(11);
+    expect(getActionsByCrudType('delete')).toHaveLength(11);
   });
 
   it('should have IDs matching world-model.json pattern', () => {

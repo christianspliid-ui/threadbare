@@ -110,6 +110,11 @@ describe('seedWorld', () => {
     expect(typeof avg).toBe('number');
   });
 
+  it('SeedResult includes guildIds array', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    expect(Array.isArray(result.guildIds)).toBe(true);
+  });
+
   it('assigns a narrative archetype to each individual agent', () => {
     const result = seedWorld(balancedCosmology(), mockTiles(), 42);
     expect(result.individualIds.length).toBeGreaterThan(0);
