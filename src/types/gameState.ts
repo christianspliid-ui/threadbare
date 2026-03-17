@@ -38,7 +38,9 @@ export interface TickEvent {
   type: 'agent_action' | 'agent_action_resolved' | 'doom_escalation' | 'rival_action'
     | 'essence_gain' | 'mandate_progress' | 'narrative' | 'phase_change' | 'stealth_alert' | 'dilemma_resolved' | 'intervention_effect' | 'sublocation_dissolved' | 'agent_movement' | 'agent_encounter'
     | 'ambition_completed' | 'ambition_abandoned' | 'ambition_milestone' | 'ambition_assigned'
-    | 'backstory_unlock';
+    | 'backstory_unlock'
+    | 'settlement_tier_change'
+    | 'economic_chronicle';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
