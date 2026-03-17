@@ -462,3 +462,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 | 2026-03-12 | Docs/documentation-ownership.md | Updated references to reflect two-file split; added project-history.md to quick-reference table | DOC-01 source-of-truth reset |
 | 2026-03-16 | src/engine/seedAttachments.ts | Wire starter attachments to seed agents — add all STARTER_POSSESSIONS + STARTER_CONDITIONS as graph nodes; create possesses/bonded_to/has_trait edges for ind_0–ind_4 | Let attachment UI be exercised in the running game before building the detail card |
 | 2026-03-17 | Docs/plans/2026-03-17-intent-visibility.md | Implemented intent visibility: IntentSection component, agentDetail intents, notification actorId plumbing, ambition events promoted to alerts | Plan 2026-03-17-intent-visibility.md |
+| 2026-03-17 | src/components/Game/AgentProfileModal.tsx | Added "Their Story" section — 4 stratum blocks with sphere-colored titles, ✦ New badges (3 s fade), locked placeholders for unavailable tiers, auto-scroll to new strata | Tiered Backstory Phase 5 |
+| 2026-03-17 | src/components/Game/AgentInfoCard.tsx | Added BackstoryTeaser component — first-sentence teaser from stratum 1, ✦ indicator if new, "Read more →" link | Tiered Backstory Phase 5 |
+| 2026-03-17 | src/engine/agentDetail.ts | Wire backstory into AgentInfoCardData — influenceTier and backstory fields; calls generateTieredBackstory when tier >= 1 | Tiered Backstory Phase 5 |
+| 2026-03-17 | src/components/Game/hooks/useAgentInteraction.ts | Pass seed to getAgentInfoCard; update readBackstoryTier on worships edge when profile modal opens | Tiered Backstory Phase 5 |
+| 2026-03-17 | src/components/Game/AlertBar.tsx | Added revelation alert icon (📖) | Tiered Backstory Phase 5 |
