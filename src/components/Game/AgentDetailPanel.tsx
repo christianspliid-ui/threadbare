@@ -78,6 +78,18 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       <div className="flex items-center gap-3 px-4 py-3 bg-stone-800/90 border-b border-amber-900/30 flex-shrink-0">
         <IconButton icon={<span>←</span>} size="sm" aria-label="back" onClick={onBack} />
 
+        {/* Portrait thumbnail */}
+        {detail.portraitUrl && (
+          <div className="w-8 h-10 rounded overflow-hidden flex-shrink-0">
+            <img
+              src={detail.portraitUrl}
+              alt=""
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        )}
+
         {/* Agent name and tier */}
         <div className="flex-1">
           <h2

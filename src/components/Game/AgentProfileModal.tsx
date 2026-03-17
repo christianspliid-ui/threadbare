@@ -227,7 +227,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
         {/* Header Zone */}
         <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
           <div className="flex gap-4 mb-3">
-            {/* Portrait Placeholder */}
+            {/* Portrait */}
             <div
               data-testid="portrait-silhouette"
               className="w-20 h-24 rounded overflow-hidden flex-shrink-0"
@@ -235,9 +235,20 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
                 background:
                   card.knowledgeLevel === 'stranger'
                     ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
-                    : 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)',
+                    : !card.portraitUrl
+                      ? 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)'
+                      : undefined,
               }}
-            />
+            >
+              {card.knowledgeLevel !== 'stranger' && card.portraitUrl && (
+                <img
+                  src={card.portraitUrl}
+                  alt={`Portrait of ${card.name}`}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              )}
+            </div>
 
             {/* Header Text */}
             <div className="flex-1">
