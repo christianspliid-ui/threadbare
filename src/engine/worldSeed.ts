@@ -30,6 +30,7 @@ import { generateHistoricalCultures, assignHistoricalTerritories } from './histo
 import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments } from './seedAttachments';
+import { seedGuilds } from './guildSeeding';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
@@ -126,6 +127,7 @@ export interface SeedResult {
   graph: WorldGraph;
   individualIds: string[];
   factionIds: string[];
+  guildIds: string[];
   locationIds: string[];
   artifactIds: string[];
   cultureIds: string[];
@@ -606,5 +608,11 @@ export function seedWorld(
   // ── Starter attachments ──────────────────────────────────
   seedAttachments(graph);
 
-  return { graph, individualIds, factionIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
+  // ── Guilds (System 3) ────────────────────────────────────
+  // Separate PRNG stream (seed + 31337) — avoids collision with other streams.
+  // Guilds are spawned after resources are seeded (guild type depends on resources)
+  // and after factions/individuals exist (for graph integrity).
+  const guildIds = seedGuilds(graph, locationIds, seed + 31337);
+
+  return { graph, individualIds, factionIds, guildIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
