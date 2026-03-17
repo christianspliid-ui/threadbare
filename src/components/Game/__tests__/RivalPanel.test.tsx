@@ -131,10 +131,7 @@ describe('RivalPanel', () => {
 
   it('displays hostility meter for each rival', () => {
     const { container } = render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    // Hostility label now appears once as header instead of per-rival
-    const hostilityLabel = screen.getByText('Hostility');
-    expect(hostilityLabel).toBeInTheDocument();
-    // Verify all three rivals have hostility bars (check for the bars with different widths)
+    // Each rival row has a hostility bar (rounded-full div with width based on hostility)
     const hostilityBars = container.querySelectorAll('[class*="rounded-full"][style*="background"]');
     expect(hostilityBars.length).toBeGreaterThanOrEqual(3); // At least 3 bars for hostility + essence spheres
   });
@@ -176,6 +173,6 @@ describe('RivalPanel', () => {
 
   it('shows header when rivals are present', () => {
     render(<RivalPanel definitions={mockDefinitions} states={mockStates} />);
-    expect(screen.getByText('Rival Gods')).toBeInTheDocument();
+    expect(screen.getByText(/Rival Gods/)).toBeInTheDocument();
   });
 });

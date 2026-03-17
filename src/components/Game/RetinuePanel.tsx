@@ -1,6 +1,7 @@
 import React from 'react';
 import type { RetinueAgent } from '../../engine/retinue';
 import { Tooltip } from '../shared/Tooltip';
+import { SectionHeading } from '../shared/SectionHeading';
 
 interface RetinuePanelProps {
   agents: RetinueAgent[];
@@ -38,16 +39,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
 
   return (
     <div className="space-y-2">
-      <h3
-        className="font-bold uppercase tracking-wider"
-        style={{
-          fontSize: 'var(--text-xs)',
-          color: 'var(--text-tertiary)',
-          fontFamily: 'var(--font-display)',
-        }}
-      >
-        Retinue ({agents.length})
-      </h3>
+      <SectionHeading count={agents.length}>Retinue</SectionHeading>
       {/* IX-015: removed max-h — parent sidebar handles overflow scrolling */}
       <div className="space-y-1.5" role="list">
         {agents.map((agent) => {

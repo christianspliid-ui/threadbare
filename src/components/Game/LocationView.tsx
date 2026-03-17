@@ -585,16 +585,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
 
         {/* Right: Encounters */}
         <div className="flex-1 min-w-0 overflow-y-auto">
-          <h3
-            className="section-heading mb-3"
-            style={{
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              fontFamily: 'var(--font-display)',
-            }}
-          >
-            Encounters
-          </h3>
+          <SectionHeading>Encounters</SectionHeading>
 
           {/* Active encounters */}
           {activeEncounters.length > 0 && (
@@ -965,16 +956,7 @@ export const LocationView = memo(function LocationView({
       {sublocationData.sublocations.length > 0 ? (
         // ──── SUBLOCATION VIEW ────
         <div className="flex-1 flex flex-col overflow-y-auto px-6 py-6">
-          <h3
-            className="section-heading mb-4"
-            style={{
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              fontFamily: 'var(--font-display)',
-            }}
-          >
-            Sublocations
-          </h3>
+          <SectionHeading>Sublocations</SectionHeading>
 
           <div className="space-y-3 flex-1 overflow-y-auto pr-2">
             {sublocationData.sublocations.map(sublocation => {
@@ -1025,16 +1007,7 @@ export const LocationView = memo(function LocationView({
         <div className="flex-1 flex gap-6 p-6 min-h-0">
           {/* Left: Agents Present */}
           <div className="flex-1 min-w-0">
-            <h3
-              className="section-heading mb-3"
-              style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
-            >
-              Agents Present
-            </h3>
+            <SectionHeading>Agents Present</SectionHeading>
 
             {agents.length === 0 ? (
               <p
@@ -1111,16 +1084,7 @@ export const LocationView = memo(function LocationView({
 
           {/* Right: Encounters (active and available) */}
           <div className="flex-1 min-w-0 overflow-y-auto">
-            <h3
-              className="section-heading mb-3"
-              style={{
-                fontSize: 'var(--text-sm)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
-            >
-              Encounters
-            </h3>
+            <SectionHeading>Encounters</SectionHeading>
 
             {/* Active encounters section */}
             {activeEncounters.length > 0 && (

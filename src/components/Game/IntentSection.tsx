@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ActiveIntent } from '../../engine/agentDetail';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS, CATEGORY_LABELS } from '../../data/ambition-categories';
+import { SectionHeading } from '../shared/SectionHeading';
 
 interface IntentSectionProps {
   intents: ActiveIntent[];
@@ -54,12 +55,7 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
   if (variant === 'modal') {
     return (
       <section>
-        <h2
-          className="font-bold mb-3"
-          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-        >
-          Intent
-        </h2>
+        <SectionHeading as="h2">Intent</SectionHeading>
 
         {intents.length === 0 ? (
           <p className="text-sm italic" style={{ color: 'var(--text-tertiary)' }}>
