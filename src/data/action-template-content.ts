@@ -45,6 +45,10 @@ export interface ActionTemplateData {
   locationSubtypes?: string[];
   actorAffinities?: ActorType[];
   sphereAffinity?: string;
+
+  // Economic gate: actor must have wealth >= this value to select the action.
+  // Wealth is on 0–100 scale. Fail-soft: agents with insufficient wealth skip this action.
+  minWealthRequired?: number;
 }
 
 // ─── 36 Action Templates (4 per reach × 9 reaches) ───────────────
@@ -338,6 +342,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
     motivations: ['greed_generosity', 'courage_prudence', 'ambition_contentment'],
+    minWealthRequired: 10, // WEALTH_MERCENARY_COST
     onSuccess: [
       {
         op: 'add_node',
@@ -372,6 +377,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
     motivations: ['greed_generosity', 'cunning_honesty', 'loyalty_treachery'],
+    minWealthRequired: 15, // WEALTH_ASSASSINATION_COST
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
       // WEALTH_ASSASSINATION_COST = 15 (represented as 0.15)
@@ -394,6 +400,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 1, max: 3 },
     motivations: ['greed_generosity', 'cunning_honesty', 'dominance_humility'],
+    minWealthRequired: 8, // WEALTH_INFLUENCE_COST
     onSuccess: [
       {
         op: 'update_edge',
@@ -422,6 +429,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
     motivations: ['ambition_contentment', 'greed_generosity', 'tradition_innovation'],
+    minWealthRequired: 12, // WEALTH_CONSTRUCTION_COST
     onSuccess: [
       {
         op: 'add_node',
@@ -446,6 +454,34 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
       initiation: '{{actor}} pours gold into foundations, commissioning a new structure to cement {{their}} grip on {{the-location}}.',
       success: 'The structure rises. {{actor}}\'s investment reshapes {{the-location}}, drawing commerce and curiosity alike.',
       failure: 'The construction founders. Contractors pocket the coin and vanish; only half-built walls remain.',
+    },
+  },
+
+  {
+    id: 'action.gold.establish-monopoly',
+    name: 'Establish Monopoly',
+    crudType: 'create',
+    reach: 'gold',
+    durationRange: { min: 4, max: 6 },
+    motivations: ['greed_generosity', 'dominance_humility', 'ambition_contentment'],
+    minWealthRequired: 25, // WEALTH_MONOPOLY_COST
+    onSuccess: [
+      // Mark the target location as monopoly-controlled by this actor
+      { op: 'update_node', nodeId: '$location', changes: { monopolyControlledBy: '$actor', prosperityDelta: -10 } },
+      // Negative sentiment ripple — other factions feel the squeeze
+      { op: 'update_edge', edgeType: 'relates_to', source: '$target', target: '$actor', changes: { sentiment: -0.25 } },
+      // WEALTH_MONOPOLY_COST = 25 (represented as 0.25)
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.25 } },
+    ],
+    onFailure: [
+      // Failed attempt damages reputation and still costs some wealth
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.20, wealth: -0.10 } },
+    ],
+    difficulty: 0.65,
+    narrativeTemplates: {
+      initiation: '{{actor}} begins quietly buying out rivals, consolidating grip on the supply. The market grows uneasy.',
+      success: '{{actor}} tightens its hold on the trade. Prices rise. Other merchants speak in whispers of what has been taken from them.',
+      failure: '{{actor}}\'s attempt to corner the market fails — rivals coordinate, the guild council intervenes, and word of the scheme spreads.',
     },
   },
 
