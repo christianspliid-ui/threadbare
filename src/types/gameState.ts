@@ -14,6 +14,7 @@ import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
 import type { UnifiedAction } from './unifiedAction';
+import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 
 export type { ChronicleEntry };
@@ -104,6 +105,9 @@ export interface GameState {
 
   // Unified Actions (replaces actionsInProgress + encounterProgress)
   unifiedActions: UnifiedAction[];
+
+  // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
+  pendingHexMutations?: HexMutation[];
 
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;

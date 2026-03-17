@@ -35,6 +35,8 @@ import {
   detectContestations,
   resolveContestationPair,
 } from './contestation';
+import { resolveHexAction, isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import type { HexMutation } from '../types/hexMutation';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -213,6 +215,7 @@ export function phaseUnifiedActionProgress(
   rng: () => number,
 ): Partial<GameState> {
   const events: TickEvent[] = [];
+  const hexMutations: HexMutation[] = [];
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
   let actions = progressAllActions(state.unifiedActions ?? []);
@@ -284,6 +287,26 @@ export function phaseUnifiedActionProgress(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
     );
 
+    // If this action targets a hex, route through hexActionBridge to get mutations
+    if (
+      completing_action.targetId &&
+      isHexTargetId(completing_action.targetId) &&
+      updatedAction.resolved
+    ) {
+      const coords = parseHexTargetId(completing_action.targetId);
+      if (coords) {
+        const finalOutcome = updatedAction.outcome === 'success' ? 'success' : 'failure';
+        const mutations = resolveHexAction(
+          completing_action.templateId,
+          coords.col,
+          coords.row,
+          finalOutcome,
+          state.tick,
+        );
+        hexMutations.push(...mutations);
+      }
+    }
+
     // Replace action in array
     actions = actions.map((a) =>
       a.actionId === updatedAction.actionId ? updatedAction : a,
@@ -295,5 +318,9 @@ export function phaseUnifiedActionProgress(
   return {
     unifiedActions: actions,
     tickEvents: [...state.tickEvents, ...events],
+    pendingHexMutations: [
+      ...(state.pendingHexMutations ?? []),
+      ...hexMutations,
+    ],
   };
 }

@@ -183,12 +183,16 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   // Build a TargetContext for the currently focused hex or location
   const nonAgentTargetContext = useMemo(() => {
     if (viewLevel === 'hex-zoom' && focusedHex) {
-      const tile = tiles.find(t => t.col === focusedHex.col && t.row === focusedHex.row);
+      // Use gameState.tiles for live mutable state (divineInfluence, corruption)
+      const liveTile = gameState.tiles.find(
+        t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row,
+      );
       return buildHexTargetContext({
         col: focusedHex.col,
         row: focusedHex.row,
-        terrain: tile?.terrain ?? 'plains',
-        properties: tile ? { terrain: tile.terrain } : {},
+        terrain: liveTile?.terrain ?? 'plains',
+        divineInfluence: liveTile?.divineInfluence,
+        corruption: liveTile?.corruption,
       });
     }
     if (viewLevel === 'location' && focusedLocationId) {

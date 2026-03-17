@@ -108,15 +108,18 @@ export function buildSublocationTargetContext(
 /**
  * Build a TargetContext for a hex tile.
  * Hexes are location-type nodes with subtype = terrain type.
+ * Pass divineInfluence and corruption to expose mutable state to action filtering.
  */
 export function buildHexTargetContext(params: {
   col: number;
   row: number;
   terrain: string;
   nodeId?: string;
+  divineInfluence?: number;
+  corruption?: number;
   properties?: Record<string, unknown>;
 }): TargetContext {
-  const { col, row, terrain, nodeId, properties } = params;
+  const { col, row, terrain, nodeId, divineInfluence, corruption, properties } = params;
   return {
     nodeId: nodeId ?? `hex_${col}_${row}`,
     nodeType: 'location',
@@ -126,7 +129,12 @@ export function buildHexTargetContext(params: {
     traitIds: [],
     sphereAffinity: null,
     position: { col, row },
-    properties: properties ?? {},
+    properties: {
+      ...properties,
+      terrain,
+      divineInfluence: divineInfluence ?? 0,
+      corruption: corruption ?? 0,
+    },
   };
 }
 
