@@ -20,7 +20,7 @@ import {
 import { hexToPixel } from '../../lib/hexMath';
 
 /** Radius of small dots at trail waypoints */
-const TRAIL_DOT_RADIUS = 1.5;
+const TRAIL_DOT_RADIUS = 1.0;
 
 /** Wobble magnitude as fraction of hex size */
 const WOBBLE_FACTOR = 0.12;
@@ -97,9 +97,10 @@ export const MovementTrails: React.FC<MovementTrailsProps> = ({
                   key={`seg-${i}`}
                   d={`M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`}
                   stroke={TRAIL_LINE_COLOR}
-                  strokeWidth={TRAIL_LINE_WIDTH - t * 0.5}
+                  strokeWidth={TRAIL_LINE_WIDTH - t * 0.3}
                   opacity={Math.max(TRAIL_OPACITY_MIN, opacity)}
                   strokeLinecap="round"
+                  strokeDasharray="3 4"
                   fill="none"
                 />
               );
