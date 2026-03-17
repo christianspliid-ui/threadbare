@@ -72,6 +72,9 @@ import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
+import { phaseHexState } from './phaseHexState';
+import { phaseUnrest } from './phaseUnrest';
+import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1166,6 +1169,21 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
   s = { ...s, ...phaseSettlementPromotion(s) };
   phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.636: Hex State (divine influence + corruption decay, terrain transformation)
+  s = { ...s, ...phaseHexState(s, s.pendingHexMutations ?? []), pendingHexMutations: [] };
+  phaseEventCounts['hex_state'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.637: Unrest (decay, prosperity damper, threshold events)
+  s = { ...s, ...phaseUnrest(s) };
+  phaseEventCounts['unrest'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.638: Magical Saturation (decay)
+  s = { ...s, ...phaseMagicalSaturation(s) };
+  phaseEventCounts['magical_saturation'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.64: Influence Tier Promotion (backstory unlock events)
