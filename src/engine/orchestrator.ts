@@ -72,6 +72,7 @@ import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
+import { phaseEconomicChronicle } from './phaseEconomicChronicle';
 import { phaseHexState } from './phaseHexState';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
@@ -1200,6 +1201,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.65: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
   s = { ...s, ...phaseSublocations(s) };
   phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.66: Economic Chronicle (generate chronicle entries for economic state changes)
+  s = { ...s, ...phaseEconomicChronicle(s) };
+  phaseEventCounts['economic_chronicle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
