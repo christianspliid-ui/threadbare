@@ -47,6 +47,8 @@ export interface InfluenceRelationshipProperties {
   totalEssenceSpent: number;
   /** Whether maintenance was paid this tick. */
   maintenanceCurrent: boolean;
+  /** How many backstory tiers the player has read for this worshipper. Default 0. */
+  readBackstoryTier: 0 | 1 | 2 | 3 | 4;
 }
 
 // ─── Ascendant ───────────────────────────────────────────────────────
