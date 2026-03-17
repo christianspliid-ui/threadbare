@@ -70,7 +70,7 @@ export const LocationCard = memo(function LocationCard({
           style={{
             fontFamily: 'var(--font-body)',
             color: 'var(--text-muted)',
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             textTransform: 'uppercase',
             letterSpacing: '0.06em',
             marginLeft: 'auto',
@@ -97,7 +97,7 @@ export const LocationCard = memo(function LocationCard({
       {agentCount > 0 && (
         <div
           style={{
-            fontSize: '0.75rem',
+            fontSize: 'var(--text-xs)',
             color: 'var(--text-tertiary)',
             textAlign: 'right',
             marginTop: '4px',

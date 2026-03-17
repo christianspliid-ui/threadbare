@@ -364,16 +364,19 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       <div className="h-screen flex flex-col overflow-hidden relative grain" style={{ backgroundColor: 'var(--bg-abyss)' }}>
       {/* ═══ Top bar — Stellaris-style: identity + time + essence ║ doom + mandate + alerts + rivals + debug ═══ */}
       <div
-        className="w-full px-4 flex items-center gap-3 relative z-30 flex-shrink-0 overflow-x-auto"
+        className="w-full flex items-center relative z-30 flex-shrink-0"
         style={{
           background: 'linear-gradient(180deg, rgba(17,17,20,0.98), rgba(10,10,14,0.95))',
           borderBottom: `1px solid rgba(var(--accent-gold-rgb, 212,175,55), 0.3)`,
-          height: '44px',
-          minHeight: '44px',
+          height: 'var(--topbar-height)',
+          minHeight: 'var(--topbar-height)',
+          paddingLeft: 'var(--topbar-padding-x)',
+          paddingRight: 'var(--topbar-padding-x)',
+          gap: 'var(--topbar-gap)',
         }}
       >
         {/* LEFT GROUP: identity · time · essence */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--topbar-gap)' }}>
           {/* Identity chip — avatar name + archetype, click to center */}
           <IdentityChip
             avatarName={avatarName}
@@ -419,7 +422,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         />
 
         {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug */}
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--topbar-gap)' }}>
           <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
           {gameState.mandateDefinition && gameState.mandateState && (
             <>

@@ -121,7 +121,7 @@ const SublocationCard = memo(function SublocationCard({
                 backgroundColor: badgeBg,
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px',
-                fontSize: '0.65rem',
+                fontSize: 'var(--text-xs)',
               }}
             >
               {badgeText}
@@ -371,7 +371,7 @@ const AvailableEncountersHint = memo(function AvailableEncountersHint({
             }}
           >
             <span>{encounter.name}</span>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
               {encounter.threatRating}
             </span>
           </p>
@@ -480,7 +480,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
             backgroundColor: badgeBg,
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
-            fontSize: '0.65rem',
+            fontSize: 'var(--text-xs)',
           }}
         >
           {badgeText}
