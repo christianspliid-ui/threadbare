@@ -11,6 +11,7 @@ import type { AttachmentTier } from '../../types/attachments';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { ProgressBar } from '../shared/ProgressBar';
 import { IconButton } from '../shared/IconButton';
+import { SectionHeading } from '../shared/SectionHeading';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import type { AttachmentDetailData } from './AttachmentDetailView';
 import type { AttachmentFullEntry } from '../../engine/agentAttachments';
@@ -297,12 +298,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Quotes Section (known+) */}
           {hasKnowledge(card.knowledgeLevel, 'known') && card.quotes && card.quotes.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Words
-              </h2>
+              <SectionHeading as="h2">Words</SectionHeading>
               <div className="space-y-3">
                 {card.quotes.map((quote, idx) => (
                   <div
@@ -320,12 +316,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Values Section (recognised+) */}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && card.topValues && card.topValues.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Nature
-              </h2>
+              <SectionHeading as="h2">Nature</SectionHeading>
               <div className="space-y-2">
                 {card.topValues.map((val, idx) => (
                   <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -342,12 +333,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Prowess Section (recognised+) */}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && card.domains && card.domains.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Prowess
-              </h2>
+              <SectionHeading as="h2">Prowess</SectionHeading>
               <p className="text-sm space-x-1" style={{ color: 'var(--text-secondary)' }}>
                 {card.domains.map((dom, idx) => (
                   <span key={idx}>
@@ -364,12 +350,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Bonds Section (known+) */}
           {hasKnowledge(card.knowledgeLevel, 'known') && card.topBonds && card.topBonds.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Bonds
-              </h2>
+              <SectionHeading as="h2">Bonds</SectionHeading>
               <div className="space-y-2">
                 {card.topBonds.map((bond, idx) => (
                   <p key={idx} className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -387,12 +368,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Traits Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.allTraits && card.allTraits.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Traits
-              </h2>
+              <SectionHeading as="h2">Traits</SectionHeading>
               <div className="flex flex-wrap gap-2">
                 {card.allTraits.map((trait, idx) => (
                   <span
@@ -410,12 +386,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Possessions Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.possessions && card.possessions.length > 0 && (
             <section data-testid="modal-possessions">
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Possessions
-              </h2>
+              <SectionHeading as="h2">Possessions</SectionHeading>
               {card.possessions.map(renderVignette)}
             </section>
           )}
@@ -423,12 +394,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Afflictions Section (recognised+) */}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && card.afflictions && card.afflictions.length > 0 && (
             <section data-testid="modal-afflictions">
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Afflictions
-              </h2>
+              <SectionHeading as="h2">Afflictions</SectionHeading>
               {card.afflictions.map(renderVignette)}
             </section>
           )}
@@ -436,12 +402,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Gifts & Burdens Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.giftsAndBurdens && card.giftsAndBurdens.length > 0 && (
             <section data-testid="modal-gifts-burdens">
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Gifts & Burdens
-              </h2>
+              <SectionHeading as="h2">Gifts & Burdens</SectionHeading>
               {card.giftsAndBurdens.map(renderVignette)}
             </section>
           )}
@@ -449,12 +410,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Backstory Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.backstoryParagraph1 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Origin
-              </h2>
+              <SectionHeading as="h2">Origin</SectionHeading>
               <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{card.backstoryParagraph1}</p>
             </section>
           )}
@@ -462,12 +418,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Full Backstory (transparent only) — RC-022: defensive optional chaining */}
           {card.knowledgeLevel === 'transparent' && profile?.fullBackstory && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Full Account
-              </h2>
+              <SectionHeading as="h2">Full Account</SectionHeading>
               <div className="text-sm space-y-3" style={{ color: 'var(--text-secondary)' }}>
                 {profile?.fullBackstory?.split('\n\n').map((para, idx) => (
                   <p key={idx} className="leading-relaxed">
@@ -567,12 +518,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Disposition Section (intimate+) */}
           {hasKnowledge(card.knowledgeLevel, 'intimate') && card.cooperationStrategy && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Disposition
-              </h2>
+              <SectionHeading as="h2">Disposition</SectionHeading>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>Strategy</span>
@@ -593,12 +539,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* History Timeline (transparent only) — RC-022: defensive optional chaining */}
           {card.knowledgeLevel === 'transparent' && profile?.historyTimeline && profile?.historyTimeline.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                History
-              </h2>
+              <SectionHeading as="h2">History</SectionHeading>
               <div className="space-y-2">
                 {profile?.historyTimeline?.map((entry, idx) => (
                   <div key={idx} className="text-xs" style={{ color: 'var(--text-secondary)' }}>
@@ -614,12 +555,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           {/* Disposition Record (transparent only) — RC-022: defensive optional chaining */}
           {card.knowledgeLevel === 'transparent' && profile?.dispositionRecord && profile?.dispositionRecord.length > 0 && (
             <section>
-              <h2
-                className="font-bold mb-3"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                Interaction Record
-              </h2>
+              <SectionHeading as="h2">Interaction Record</SectionHeading>
               <div className="space-y-2">
                 {profile?.dispositionRecord?.map((record, idx) => (
                   <div key={idx} className="text-xs p-2 rounded" style={{ backgroundColor: 'var(--bg-raised)', color: 'var(--text-secondary)' }}>

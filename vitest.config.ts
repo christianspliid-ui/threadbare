@@ -12,6 +12,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/.worktrees/**',
+      '**/.claude/worktrees/**',
       '**/preview/**',
       '**/preview-build/**',
     ],

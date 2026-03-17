@@ -7,6 +7,7 @@ import { AttachmentRow } from './AttachmentRow';
 import { IntentSection } from './IntentSection';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
+import { SectionHeading } from '../shared/SectionHeading';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -146,12 +147,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Domain Grid */}
         <div>
-          <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-            style={{ fontFamily: 'Cinzel, serif' }}
-          >
+          <SectionHeading>
             Domains
-          </h3>
+          </SectionHeading>
           <div className="space-y-2">
             {DOMAINS_GRID.map((row, rowIdx) => (
               <div key={rowIdx} className="grid grid-cols-3 gap-2">
@@ -191,12 +189,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Values Section */}
         <div>
-          <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-            style={{ fontFamily: 'Cinzel, serif' }}
-          >
+          <SectionHeading>
             Character
-          </h3>
+          </SectionHeading>
           <div className="space-y-1.5">
             {detail.topValues.map(val => {
               const absValue = Math.abs(val.value);
@@ -221,12 +216,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Bonds Section */}
         <div>
-          <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-            style={{ fontFamily: 'Cinzel, serif' }}
-          >
+          <SectionHeading>
             Bonds
-          </h3>
+          </SectionHeading>
 
           {detail.topBonds.length === 0 ? (
             <p className="text-amber-400/30 text-xs italic">No known bonds</p>
@@ -269,12 +261,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Possessions Section */}
         {detail.possessions && detail.possessions.length > 0 && (
           <div>
-            <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
-            >
+            <SectionHeading>
               Possessions
-            </h3>
+            </SectionHeading>
             <div className="space-y-1.5">
               {detail.possessions.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
                 <AttachmentRow
@@ -299,12 +288,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         )}
         {detail.possessions != null && detail.possessions.length === 0 && (
           <div>
-            <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
-            >
+            <SectionHeading>
               Possessions
-            </h3>
+            </SectionHeading>
             <p className="text-amber-400/30 text-xs italic animate-breathe">They carry nothing of note.</p>
           </div>
         )}
@@ -312,12 +298,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Conditions Section */}
         {detail.conditions && detail.conditions.length > 0 && (
           <div>
-            <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
-            >
+            <SectionHeading>
               Conditions
-            </h3>
+            </SectionHeading>
             <div className="space-y-1.5">
               {detail.conditions.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
                 <AttachmentRow
@@ -344,12 +327,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Powers & Agreements Section */}
         {detail.powersAndAgreements && detail.powersAndAgreements.length > 0 && (
           <div>
-            <h3
-              className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-              style={{ fontFamily: 'Cinzel, serif' }}
-            >
+            <SectionHeading>
               Powers & Agreements
-            </h3>
+            </SectionHeading>
             <div className="space-y-1.5">
               {detail.powersAndAgreements.slice(0, MAX_ATTACHMENT_ROWS).map(att => (
                 <AttachmentRow
@@ -375,12 +355,9 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Strategy Section */}
         <div>
-          <h3
-            className="text-amber-200/80 text-xs font-semibold tracking-wider uppercase mb-2.5"
-            style={{ fontFamily: 'Cinzel, serif' }}
-          >
+          <SectionHeading>
             Disposition
-          </h3>
+          </SectionHeading>
 
           {detail.cooperationStrategy == null ? (
             <p className="text-amber-400/30 text-xs italic">No known strategy</p>

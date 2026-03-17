@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
+import { IconButton } from '../shared/IconButton';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -92,22 +93,15 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
         }}
       >
         {/* Close button — floating above cards */}
-        <button
+        <IconButton
+          icon={<span>×</span>}
+          variant="close"
+          size="sm"
           data-testid="action-drawer-close"
           onClick={onClose}
-          className="absolute top-0 right-4 transition-colors text-lg rounded-full pointer-events-auto"
-          style={{
-            color: 'var(--text-tertiary)',
-            backgroundColor: 'rgba(10, 10, 14, 0.6)',
-            width: '28px',
-            height: '28px',
-            lineHeight: '28px',
-            textAlign: 'center',
-          }}
+          className="absolute top-0 right-4 pointer-events-auto"
           aria-label="Close action drawer"
-        >
-          ×
-        </button>
+        />
 
         {/* Card hand — centered, no background */}
         <div
