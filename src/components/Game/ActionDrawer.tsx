@@ -17,10 +17,10 @@ export interface ActionDrawerProps {
   open: boolean;
   /** Wheel slots to display */
   slots: WheelSlot[];
-  /** Agent name to display in header */
-  agentName: string;
-  /** Agent tier to display in header */
-  agentTier: string;
+  /** Target display name (agent name, location name, hex label, etc.) */
+  targetName: string;
+  /** Target label (tier name, location subtype, item tier, etc.) */
+  targetLabel: string;
   /** Called when a slot is clicked */
   onSlotClick: (slotId: string) => void;
   /** Called when the drawer closes */
@@ -39,7 +39,7 @@ export interface ActionDrawerProps {
  * locked last. Filters out center slot.
  */
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
-  ({ open, slots, agentName, agentTier, onSlotClick, onClose, playingCardId }) => {
+  ({ open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose, playingCardId }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
     const [showLocked, setShowLocked] = useState(false);
 

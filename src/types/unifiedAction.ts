@@ -4,6 +4,7 @@ import type { SphereName } from './index';
 import type { ActorType } from './graph';
 import type { ValuePair } from './agent';
 import type { GraphOp } from './graphOp';
+import type { TargetCategory } from './targetContext';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -40,6 +41,28 @@ export interface UnifiedActionTemplate {
   readonly actorAffinities: readonly ActorType[];
   readonly locationSubtypes?: readonly string[];
   readonly sphereAffinity?: SphereName;
+
+  // ── Target filtering ──────────────────────────────────────────────
+
+  /**
+   * Which node categories this template can target.
+   * Omit or empty → defaults to ['actor'] for backward compatibility.
+   */
+  readonly targetCategories?: readonly TargetCategory[];
+
+  /**
+   * Subtypes of the target node this template applies to.
+   * Checked against TargetContext.subtype.
+   * Omit or empty → no subtype restriction.
+   */
+  readonly targetSubtypes?: readonly string[];
+
+  /**
+   * Trait IDs that must be present on the target node.
+   * All listed traits must be present (AND logic).
+   * Omit or empty → no trait restriction.
+   */
+  readonly requiredTargetTraits?: readonly string[];
 
   // Contestation
   readonly contestsWith?: readonly string[];

@@ -418,6 +418,315 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
 ];
 
+// ─── Location Action Templates ────────────────────────────────────
+//
+// Divine actions targeting location nodes (keeps, markets, shrines, etc.).
+// targetCategories: ['location'] — only appears when a location is focused.
+
+const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'loc.ward',
+    name: 'Ward',
+    reach: 'rune',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'rune',
+      duration: { min: 2, max: 4 },
+      difficulty: 0.25,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'order',
+    targetCategories: ['location'],
+    motivations: ['courage_prudence', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'weaves protective runes into the foundations of this place',
+      success: 'the ward takes hold — unseen forces now guard this site',
+      failure: 'the runes fray before setting; the ward does not hold',
+    },
+  },
+  {
+    id: 'loc.place_of_power',
+    name: 'Place of Power',
+    reach: 'rune',
+    crudType: 'create',
+    scale: 'regional',
+    steps: [{
+      reach: 'rune',
+      duration: { min: 3, max: 5 },
+      difficulty: 0.35,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['location'],
+    motivations: ['ambition_contentment', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'channels divine essence into the ley lines beneath this location',
+      success: 'a place of power awakens — essence flows freely here',
+      failure: 'the ley lines resist; the consecration fades',
+    },
+  },
+  {
+    id: 'loc.incite_unrest',
+    name: 'Incite Unrest',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.30,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'chaos',
+    targetCategories: ['location'],
+    motivations: ['cruelty_compassion', 'dominance_humility'],
+    narrativeTemplates: {
+      initiation: 'stirs whispers of grievance through this settlement',
+      success: 'tensions rise; the people begin to question their rulers',
+      failure: 'the whispers are dismissed; order holds',
+    },
+  },
+  {
+    id: 'loc.fortify',
+    name: 'Fortify',
+    reach: 'iron',
+    crudType: 'update',
+    scale: 'regional',
+    steps: [{
+      reach: 'iron',
+      duration: { min: 2, max: 4 },
+      difficulty: 0.30,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'force',
+    targetCategories: ['location'],
+    targetSubtypes: ['keep', 'fortress', 'stronghold', 'watchtower', 'garrison'],
+    motivations: ['courage_prudence', 'dominance_humility'],
+    narrativeTemplates: {
+      initiation: 'breathes martial purpose into the walls of this fortification',
+      success: 'the defenses are strengthened by divine will',
+      failure: 'the blessing dissipates; the stones remain unchanged',
+    },
+  },
+];
+
+// ─── Attachment Action Templates ───────────────────────────────────
+//
+// Divine actions targeting artifact nodes (items, relics, etc.).
+// targetCategories: ['artifact'] or ['artifact_legendary'].
+
+const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'artifact.enchant',
+    name: 'Enchant',
+    reach: 'rune',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'rune',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.30,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['artifact'],
+    motivations: ['ambition_contentment', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'traces runes of power upon this artifact',
+      success: 'the enchantment sets — power flows through the object',
+      failure: 'the runes fade before they can bind',
+    },
+  },
+  {
+    id: 'artifact.attune',
+    name: 'Attune',
+    reach: 'heart',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.20,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['artifact'],
+    motivations: ['ambition_contentment', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'harmonizes this artifact with the divine sphere',
+      success: 'the artifact resonates with new alignment',
+      failure: 'the attunement fails; the artifact resists',
+    },
+  },
+  {
+    id: 'artifact.nullify',
+    name: 'Nullify',
+    reach: 'void',
+    crudType: 'delete',
+    scale: 'local',
+    steps: [{
+      reach: 'void',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.25,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'void',
+    targetCategories: ['artifact', 'artifact_legendary'],
+    motivations: ['tradition_innovation', 'courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'unravels the enchantments bound to this artifact',
+      success: 'the magic drains away; the artifact is mundane once more',
+      failure: 'the enchantments hold against the nullification',
+    },
+  },
+  {
+    id: 'artifact.curse',
+    name: 'Curse',
+    reach: 'shadow',
+    crudType: 'update',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 3 },
+      difficulty: 0.35,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 3,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'chaos',
+    targetCategories: ['artifact', 'artifact_legendary'],
+    motivations: ['cruelty_compassion', 'dominance_humility'],
+    narrativeTemplates: {
+      initiation: 'binds a curse of misfortune to this object',
+      success: 'the curse takes hold — ill fate clings to whoever carries it',
+      failure: 'the curse fails to bind; the object remains unchanged',
+    },
+  },
+];
+
+// ─── Sublocation Action Templates ─────────────────────────────────
+//
+// Divine actions targeting sublocation nodes (shrines, ruins, etc.).
+// Note: sublocations use nodeType 'location' with a sublocationCategory subtype.
+
+const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'sub.sanctify',
+    name: 'Sanctify',
+    reach: 'rune',
+    crudType: 'create',
+    scale: 'local',
+    steps: [{
+      reach: 'rune',
+      duration: { min: 2, max: 3 },
+      difficulty: 0.25,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 4,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'spirit',
+    targetCategories: ['sublocation'],
+    targetSubtypes: ['shrine', 'temple', 'ruin', 'cave'],
+    motivations: ['tradition_innovation', 'ambition_contentment'],
+    narrativeTemplates: {
+      initiation: 'consecrates this ground to divine purpose',
+      success: 'the site is sanctified — the divine presence is felt here',
+      failure: 'the consecration fails; the ground remains inert',
+    },
+  },
+  {
+    id: 'sub.trap',
+    name: 'Trap',
+    reach: 'shadow',
+    crudType: 'create',
+    scale: 'local',
+    steps: [{
+      reach: 'shadow',
+      duration: { min: 1, max: 2 },
+      difficulty: 0.30,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 2,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'chaos',
+    targetCategories: ['sublocation'],
+    motivations: ['cruelty_compassion', 'courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'lays a divine snare within this place',
+      success: 'the trap is set — unseen and patient',
+      failure: 'the snare unravels before it can be anchored',
+    },
+  },
+  {
+    id: 'sub.vision',
+    name: 'Vision',
+    reach: 'heart',
+    crudType: 'read',
+    scale: 'local',
+    steps: [{
+      reach: 'heart',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.15,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 1,
+    actorAffinities: ['ascendant'],
+    sphereAffinity: 'mind',
+    targetCategories: ['sublocation'],
+    motivations: ['ambition_contentment', 'tradition_innovation'],
+    narrativeTemplates: {
+      initiation: 'casts divine sight into the hidden depths of this place',
+      success: 'the vision opens — secrets are revealed',
+      failure: 'the place resists divine scrutiny; it remains opaque',
+    },
+  },
+];
+
 // ─── Unified Template Registry ────────────────────────────────────
 
 /**
@@ -428,6 +737,9 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ACTION_TEMPLATES.map(migrateActionTemplate),
   ...ENCOUNTER_TEMPLATES.map(migrateEncounterTemplate),
   ...DIVINE_ACTION_TEMPLATES,
+  ...LOCATION_ACTION_TEMPLATES,
+  ...ATTACHMENT_ACTION_TEMPLATES,
+  ...SUBLOCATION_ACTION_TEMPLATES,
 ];
 
 /**
