@@ -18,6 +18,7 @@ import {
   factionResolver,
   populationResolver,
   resourcesResolver,
+  tradeRouteResolver,
   archetypeResolver,
   agentCultureResolver,
   agentFactionResolver,
@@ -35,6 +36,7 @@ const LOCATION_RESOLVERS: ProseResolver[] = [
   sphereResolver,
   factionResolver,
   populationResolver,
+  tradeRouteResolver,
 ];
 
 const ACTOR_RESOLVERS: ProseResolver[] = [
