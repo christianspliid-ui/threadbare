@@ -197,7 +197,6 @@ export interface SettlementTierChangeTrace extends TraceBase {
   sustainedTicks: number;
   prosperity: number;
 }
-
 /** Trace: player target-action filter cascade (emitted once per getTargetActionSlots call) */
 export interface TargetActionFilterTrace extends TraceBase {
   category: 'target_action_filter';
