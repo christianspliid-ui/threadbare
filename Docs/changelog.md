@@ -6,6 +6,7 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Where | What changed | Why |
 |------|-------|-------------|-----|
+| 2026-03-17 | src/engine/backstoryGenerator.ts (new), src/engine/orchestrator.ts, src/types/gameState.ts | Phase 3: generateTieredBackstory() — runs all 10 backstory resolvers, filters by influenceTier, groups into BackstoryStratumBlocks ({tier, title, subtitle, text, isNew}); titles: "What They Say"/"What They Lived"/"What They Hide"/"What They Are". isNew = stratum.tier > readBackstoryTier. Fail-soft for tier 0 or missing agent. Phase 4: phaseInfluenceTierPromotion (Phase 6.64) wired into orchestrator between phaseProsperity and phaseAmbitionProgress; emits backstory_unlock TickEvent per promoted agent ({message: "agent's story deepens", icon: 'revelation'}). 'backstory_unlock' added to TickEvent.type union. 17 new tests. | Tiered backstory generation Phases 3–4 — generator and tick integration |
 | 2026-03-17 | src/types/prose.ts | Added BackstoryLayer, BackstoryResult, BackstoryStratum types + BACKSTORY_CONSTANTS (thresholds, brackets, fade timing) | Tiered backstory system Phase 1 |
 | 2026-03-17 | src/types/notification.ts | Added 'revelation' to AlertIcon union | Backstory unlock notification support |
 | 2026-03-17 | src/types/influence.ts | Added readBackstoryTier: 0\|1\|2\|3\|4 to InfluenceRelationshipProperties | Track which backstory strata the player has read |
