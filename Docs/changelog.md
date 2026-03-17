@@ -469,3 +469,4 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 | 2026-03-17 | src/engine/agentDetail.ts | Wire backstory into AgentInfoCardData — influenceTier and backstory fields; calls generateTieredBackstory when tier >= 1 | Tiered Backstory Phase 5 |
 | 2026-03-17 | src/components/Game/hooks/useAgentInteraction.ts | Pass seed to getAgentInfoCard; update readBackstoryTier on worships edge when profile modal opens | Tiered Backstory Phase 5 |
 | 2026-03-17 | src/components/Game/AlertBar.tsx | Added revelation alert icon (📖) | Tiered Backstory Phase 5 |
+| 2026-03-17 | src/data/backstory-content.ts | Phase 6 content enrichment: 127 new prose templates across 9 tables, total ~385. SURFACE_ORIGIN (2→3/key), SURFACE_SPHERE (2→4), BOND_HISTORY/NEGATIVE (2→4 each), CONTRADICTION (2→3), FEAR (2→3), HIDDEN_MOTIVE (2→4), STORY_ARC (2→3), DECISIVE_NATURE (4→5 flat). Per-stratum voice enforced throughout. | Tiered Backstory Phase 6 |
