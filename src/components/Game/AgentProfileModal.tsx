@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
+import { IntentSection } from './IntentSection';
 import { getSphereColor } from '../../data/sphereIcons';
 import { Tooltip } from '../shared/Tooltip';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
@@ -305,6 +306,9 @@ export function AgentProfileModal({ card, profile, onClose }: AgentProfileModalP
               </div>
             </section>
           )}
+
+          {/* Intent Section — always visible in prototype */}
+          <IntentSection intents={card.intents ?? []} variant="modal" />
 
           {/* Prowess Section (recognised+) */}
           {hasKnowledge(card.knowledgeLevel, 'recognised') && card.domains && card.domains.length > 0 && (

@@ -30,6 +30,8 @@ export interface ToastItem {
   count: number;
   createdTick: number;
   expiresAt: number;
+  /** Agent ID — if set, clicking the toast selects this agent on the map */
+  actorId?: string;
 }
 
 export interface AlertItem {
@@ -39,6 +41,8 @@ export interface AlertItem {
   sphere?: SphereName;
   sourceEventId: string;
   tick: number;
+  /** Agent ID — if set, clicking the alert selects this agent on the map */
+  actorId?: string;
 }
 
 export interface PopupItem {

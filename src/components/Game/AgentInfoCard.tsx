@@ -4,6 +4,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { ReachDomain } from '../../types/traits';
 import { Tooltip } from '../shared/Tooltip';
 import { generateEntityProse } from '../../engine/proseGenerator';
+import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
 
 interface AgentInfoCardProps {
   card: AgentInfoCardData;
@@ -209,6 +210,19 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
             {card.cultureName && (
               <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
                 Culture: <span style={{ color: 'var(--text-primary)' }}>{card.cultureName}</span>
+              </div>
+            )}
+
+            {/* Primary intent — single line: glyph + name */}
+            {card.primaryIntentSummary && (
+              <div
+                style={{
+                  fontSize: 'var(--text-xs)',
+                  color: CATEGORY_COLORS[card.primaryIntentSummary.category],
+                }}
+              >
+                {CATEGORY_GLYPHS[card.primaryIntentSummary.category]}{' '}
+                {card.primaryIntentSummary.displayName}
               </div>
             )}
           </>

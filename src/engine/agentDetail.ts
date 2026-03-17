@@ -20,6 +20,8 @@ import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { KnowledgeLevel } from '../types/familiarity';
 import { getDomainWord, getValueWord, getReputationWord, getBondStrengthWord } from '../data/domain-words';
 import { generateQuotes, generateBackstory } from './profileGenerator';
+import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambition';
+import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -47,6 +49,24 @@ const VALUE_LABELS: Record<ValuePair, [string, string]> = {
   wrath_patience: ['Wrathful', 'Patient'],
   greed_generosity: ['Greedy', 'Generous'],
 };
+
+// ─── Prototype flag ──────────────────────────────────────────────
+/** Set to false to gate intent visibility by familiarity tier */
+export const PROTOTYPE_INTENT_VISIBLE = true;
+
+// ─── Active Intent (aggregated for display) ───────────────────────
+
+export interface ActiveIntent {
+  templateId: string;
+  displayName: string;
+  category: AmbitionCategory;
+  priority: 'primary' | 'secondary';
+  completedMilestones: number;
+  requiredMilestones: number;
+  milestoneDescriptions?: string[];
+  reachAffinity: Partial<Record<ReachDomain, number>>;
+  reactiveTrigger?: string;
+}
 
 export interface TopValue {
   pair: ValuePair;
@@ -82,6 +102,8 @@ export interface AgentDetail {
   possessions?: import('./agentAttachments').AttachmentSummary[];
   conditions?: import('./agentAttachments').AttachmentSummary[];
   powersAndAgreements?: import('./agentAttachments').AttachmentSummary[];
+  /** Active ambitions sorted primary-first. Always populated in prototype. */
+  intents?: ActiveIntent[];
 }
 
 // ─── Familiarity-gated Info Card (Tier 2) ──────────────────────────
@@ -109,6 +131,10 @@ export interface AgentInfoCardData {
   possessions?: AttachmentFullEntry[];
   afflictions?: AttachmentFullEntry[];
   giftsAndBurdens?: AttachmentFullEntry[];
+  /** Full intent list for the character sheet modal (prototype: always visible) */
+  intents?: ActiveIntent[];
+  /** Primary intent summary for compact AgentInfoCard (prototype: always visible) */
+  primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -236,6 +262,9 @@ export function getAgentDetail(
     ...attachments.agreements.map(toSummary),
   ];
 
+  // ─── Intent data ─────────────────────────────────────────────────
+  const intents = getAgentIntents(graph, agentId);
+
   return {
     id: agentId,
     name: agentNode.name,
@@ -255,6 +284,7 @@ export function getAgentDetail(
     possessions: possessions.length > 0 ? possessions : undefined,
     conditions: conditions.length > 0 ? conditions : undefined,
     powersAndAgreements: powersAndAgreements.length > 0 ? powersAndAgreements : undefined,
+    intents: intents.length > 0 ? intents : undefined,
   };
 }
 
@@ -295,6 +325,60 @@ function getAgentCultureName(graph: WorldGraph, agentId: string): string | undef
 }
 
 /**
+ * Aggregate active ambitions into display-ready ActiveIntent objects.
+ * Sorted primary-first. Always populated in prototype (PROTOTYPE_INTENT_VISIBLE = true).
+ * @private
+ */
+function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
+  const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
+  const activeEdges = pursuesEdges.filter(
+    e => (e.properties.status as string) === 'active',
+  );
+
+  // TODO: gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
+  const intents: ActiveIntent[] = [];
+
+  for (const edge of activeEdges) {
+    const ambitionNode = graph.getNode(edge.target);
+    if (!ambitionNode) continue; // fail-soft
+
+    const templateId = ambitionNode.properties.templateId as string;
+    if (!templateId) continue; // fail-soft
+
+    const template = AMBITION_TEMPLATES.find(t => t.id === templateId);
+    if (!template) continue; // fail-soft
+
+    const completedMilestoneIds = (edge.properties.completedMilestones as string[]) ?? [];
+    const priority = (edge.properties.priority as 'primary' | 'secondary') ?? 'secondary';
+
+    // Detect reactive templates by presence of triggerEvent field
+    const isReactive = 'triggerEvent' in template;
+
+    intents.push({
+      templateId,
+      displayName: template.displayName,
+      category: template.category,
+      priority,
+      completedMilestones: completedMilestoneIds.length,
+      requiredMilestones: template.completion.requires,
+      reachAffinity: { ...template.reachAffinity },
+      reactiveTrigger: isReactive
+        ? (template as ReactiveAmbitionTemplate).triggerEvent
+        : undefined,
+    });
+  }
+
+  // Sort: primary first, then secondary
+  intents.sort((a, b) => {
+    if (a.priority === 'primary' && b.priority !== 'primary') return -1;
+    if (a.priority !== 'primary' && b.priority === 'primary') return 1;
+    return 0;
+  });
+
+  return intents;
+}
+
+/**
  * Get info card data for an agent, filtered by knowledge level.
  * Returns null if agent not found or has no worships edge to ascendant.
  */
@@ -324,6 +408,19 @@ export function getAgentInfoCard(
     cultureName,
     knowledgeLevel,
   };
+
+  // Intent data — always visible in prototype
+  // TODO: gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
+  if (detail.intents && detail.intents.length > 0) {
+    card.intents = detail.intents;
+    const primary = detail.intents.find(i => i.priority === 'primary');
+    if (primary) {
+      card.primaryIntentSummary = {
+        displayName: primary.displayName,
+        category: primary.category,
+      };
+    }
+  }
 
   // Recognised+: archetype, faction, culture, 1 domain (vague), 1 value
   if (knowledgeLevel !== 'stranger') {

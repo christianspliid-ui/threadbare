@@ -33,6 +33,7 @@ export function routeNotifications(
             count: 1,
             createdTick: event.tick,
             expiresAt: now + TOAST_DURATION_MS,
+            actorId: event.actorId,
           };
           newToasts.push(toast);
           toastByMessage.set(event.message, toast);
@@ -47,6 +48,7 @@ export function routeNotifications(
             ...newAlerts[existingIdx],
             message: event.message,
             sourceEventId: event.id,
+            actorId: event.actorId,
           };
         } else {
           const alert: AlertItem = {
@@ -56,6 +58,7 @@ export function routeNotifications(
             sphere: event.sphere,
             sourceEventId: event.id,
             tick: event.tick,
+            actorId: event.actorId,
           };
           alertByIconTick.set(dedupKey, newAlerts.length);
           newAlerts.push(alert);

@@ -5,6 +5,8 @@ import { getSphereColor } from '../../data/sphereIcons';
 interface ToastStackProps {
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
+  /** Called when a toast with actorId is clicked — navigates to that agent */
+  onSelectAgent?: (agentId: string) => void;
 }
 
 function formatCount(count: number): string {
@@ -17,7 +19,7 @@ function filterActive(toasts: ToastItem[], now: number): ToastItem[] {
 
 export const toastStackTestHelpers = { formatCount, filterActive };
 
-export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
+export function ToastStack({ toasts, onDismiss, onSelectAgent }: ToastStackProps) {
   return (
     <div
       className="fixed bottom-20 right-4 z-50 flex flex-col-reverse gap-2 pointer-events-none"
@@ -27,6 +29,7 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
     >
       {toasts.map(toast => {
         const accentColor = toast.sphere ? getSphereColor(toast.sphere) : 'var(--accent-gold-dim)';
+        const isAgentLinked = Boolean(toast.actorId && onSelectAgent);
         return (
           <AnimateMount key={toast.id} show={true} animation="anim-fade-up" duration={300}>
             <div
@@ -38,8 +41,14 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
                 borderRight: '1px solid var(--border-subtle)',
                 borderBottom: '1px solid var(--border-subtle)',
               }}
-              onClick={() => onDismiss(toast.id)}
+              onClick={() => {
+                if (isAgentLinked) {
+                  onSelectAgent!(toast.actorId!);
+                }
+                onDismiss(toast.id);
+              }}
               role="status"
+              aria-label={isAgentLinked ? `${toast.message} — click to view agent` : toast.message}
             >
               <span
                 className="flex-1 leading-snug"
@@ -61,6 +70,15 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
                   }}
                 >
                   {formatCount(toast.count)}
+                </span>
+              )}
+              {isAgentLinked && (
+                <span
+                  className="flex-shrink-0"
+                  style={{ fontSize: '10px', color: accentColor, opacity: 0.7 }}
+                  aria-hidden="true"
+                >
+                  →
                 </span>
               )}
             </div>
