@@ -41,10 +41,10 @@ export const AGENT_RING_RADIUS = 18;
 export const TRAIL_LINE_COLOR = '#1a1a1a';
 
 /** Trail line stroke width in SVG units */
-export const TRAIL_LINE_WIDTH = 1.5;
+export const TRAIL_LINE_WIDTH = 0.75;
 
 /** Maximum trail opacity (current position end) */
-export const TRAIL_OPACITY_MAX = 0.6;
+export const TRAIL_OPACITY_MAX = 0.35;
 
 /** Minimum trail opacity (oldest position end) */
 export const TRAIL_OPACITY_MIN = 0.05;
