@@ -64,6 +64,16 @@ export interface HexTile {
   terrain: TerrainType;
   hasRiver?: boolean;      // set by river generation pass
   regionId?: string;       // set by region naming pass (Phase 2)
+
+  // ── Mutable hex state (set by player actions + tick decay) ──────────────
+  /** Divine influence level (0.0–1.0). Decays per tick. Default 0. */
+  divineInfluence?: number;
+  /** Corruption level (0.0–1.0). Decays per tick (slower). Default 0. */
+  corruption?: number;
+  /** Original terrain before any transformation (for recovery). */
+  baseTerrain?: TerrainType;
+  /** Tick when terrain was last transformed (cooldown guard). */
+  terrainTransformedTick?: number;
 }
 
 /** Force overlay display modes */

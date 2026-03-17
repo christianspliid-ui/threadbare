@@ -216,13 +216,45 @@ function executeUpdateNode(graph: WorldGraph, op: GraphOp, ctx: GraphOpContext):
 
   const updates = op.changes ?? op.properties;
   if (updates) {
-    graph.updateNode(nodeId, { properties: updates });
+    graph.updateNode(nodeId, { properties: applyNodeChanges(node.properties, updates) });
   }
 
   return {
     op,
     success: true,
   };
+}
+
+/**
+ * Apply a changes object to existing node properties.
+ *
+ * Supports relative changes: string values starting with '+' or '-' are
+ * parsed as numeric deltas and added to the current value.
+ *   e.g. { unrest: '+20' } → adds 20 to current unrest
+ *        { magicalSaturation: '+0.15' } → adds 0.15 to current saturation
+ * All other values are direct replacements (existing behavior).
+ *
+ * Fail-soft: strings that parse as NaN are skipped with a console.warn.
+ */
+function applyNodeChanges(
+  current: Record<string, unknown>,
+  changes: Record<string, unknown>,
+): Record<string, unknown> {
+  const result = { ...current };
+  for (const [key, value] of Object.entries(changes)) {
+    if (typeof value === 'string' && (value.startsWith('+') || value.startsWith('-'))) {
+      const delta = parseFloat(value);
+      if (isNaN(delta)) {
+        console.warn(`[graphOpExecutor] applyNodeChanges: non-numeric relative change "${value}" for key "${key}" — skipped`);
+        continue;
+      }
+      const prev = typeof result[key] === 'number' ? (result[key] as number) : 0;
+      result[key] = prev + delta;
+    } else {
+      result[key] = value;
+    }
+  }
+  return result;
 }
 
 /**
