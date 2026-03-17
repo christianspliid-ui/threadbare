@@ -5,7 +5,9 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** Agent portrait system complete (2026-03-17) — archetype-based portrait registry mapping 19 archetypes to portrait images (3 initial: tragic_hero, trickster, old_power). `portraitUrl` field added to `AgentDetail`, `AgentInfoCardData`, `AgentFullProfileData`. AgentProfileModal shows conditional portrait (stranger=gradient, recognised+ with portrait=image, without=gradient fallback). AgentDetailPanel shows 32×40px thumbnail in header. Knowledge-gated: strangers always see silhouette. 11 new tests. 5,109 tests pass.
+**Latest:** Movement trails fix (2026-03-17) — `tickMovement()` now enriches `MovementHistoryEntry` with `hexCol`/`hexRow` from the destination node. The `MovementTrails` component was already fully implemented but rendered nothing because history entries lacked hex coordinates. 3 new tests. 5,114 tests pass.
+
+**Previous:** Agent portrait system complete (2026-03-17) — archetype-based portrait registry mapping 19 archetypes to portrait images (3 initial: tragic_hero, trickster, old_power). `portraitUrl` field added to `AgentDetail`, `AgentInfoCardData`, `AgentFullProfileData`. AgentProfileModal shows conditional portrait (stranger=gradient, recognised+ with portrait=image, without=gradient fallback). AgentDetailPanel shows 32×40px thumbnail in header. Knowledge-gated: strangers always see silhouette. 11 new tests. 5,109 tests pass.
 
 **Previous:** UI primitive adoption sweep complete (2026-03-17) — 17+ raw section headings replaced with `SectionHeading` component across AgentProfileModal (13), LocationView (4), IntentSection, RetinuePanel. ActionDrawer close button → `IconButton`. RivalPanel test updated. Worktree exclusion added to vitest config. Net -143 lines of duplicated styling. 5,097 tests pass.
 
