@@ -5,7 +5,9 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** Responsive design system implemented (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px): sidebar width scaling (280→420px), top bar height (44→52px), panel padding, top bar gap. All sub-16px font sizes fixed to `var(--text-xs)`. HexChronicle prose column capped at 860px. Top bar dead zone (Option A/B/C) still needs design decision.
+**Latest:** SURFACE_ORIGIN_PROSE expanded to 4/archetype (2026-03-17) — 19 new Stratum 1 templates, one per archetype. Each approaches the archetype from a different narrative angle (rumored deeds, bystander reactions, observed habits) to reduce repetition during early Scry. Total: 76 surface origin templates. Combined with HIDDEN_MOTIVE_PROSE rewrite (20 templates, confessor/psychologist voice), backstory content fix 2 of 3 complete.
+
+**Previous:** Responsive design system implemented (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px): sidebar width scaling (280→420px), top bar height (44→52px), panel padding, top bar gap. All sub-16px font sizes fixed to `var(--text-xs)`. HexChronicle prose column capped at 860px. Top bar dead zone (Option A/B/C) still needs design decision.
 
 **Previous:** Terrain-aware prosperity prose complete (2026-03-17) — expanded from 20 generic fragments to 80 total (60 terrain-specific + 20 generic fallback). 4 terrain categories (coastal, mountain, farmland, forest), 3 fragments per tier per terrain. `TERRAIN_PROSPERITY_CATEGORY` maps 25 terrain types to categories. `prosperityResolver` prefers terrain pool, falls back to generic for unmapped terrains. 21 new tests. Settlements now describe their economic state through the lens of their geography.
 
