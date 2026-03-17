@@ -24,6 +24,7 @@ import type { AmbitionCategory, ReactiveAmbitionTemplate } from '../types/ambiti
 import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { getPortraitUrl } from '../data/portrait-assets';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -106,6 +107,8 @@ export interface AgentDetail {
   powersAndAgreements?: import('./agentAttachments').AttachmentSummary[];
   /** Active ambitions sorted primary-first. Always populated in prototype. */
   intents?: ActiveIntent[];
+  /** Archetype-based portrait image path, or null if no portrait available */
+  portraitUrl: string | null;
 }
 
 // ─── Familiarity-gated Info Card (Tier 2) ──────────────────────────
@@ -141,6 +144,8 @@ export interface AgentInfoCardData {
   intents?: ActiveIntent[];
   /** Primary intent summary for compact AgentInfoCard (prototype: always visible) */
   primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
+  /** Portrait URL — only present if knowledge >= recognised */
+  portraitUrl?: string;
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -152,6 +157,8 @@ export interface AgentFullProfileData {
   historyTimeline?: { tick: number; event: string }[];
   allTraits?: string[];
   dispositionRecord?: InteractionRecord[];
+  /** Portrait URL — always present at intimate+ knowledge */
+  portraitUrl?: string;
 }
 
 function intensityPrefix(absVal: number): string {
@@ -194,6 +201,7 @@ export function getAgentDetail(
 
   const archetypeId = props.narrativeArchetype as string | undefined;
   const archetype = archetypeId ? getArchetype(archetypeId) ?? null : null;
+  const portraitUrl = getPortraitUrl(archetypeId);
 
   const valuePairs = Object.keys(profile) as ValuePair[];
   const sortedValues = valuePairs
@@ -291,6 +299,7 @@ export function getAgentDetail(
     conditions: conditions.length > 0 ? conditions : undefined,
     powersAndAgreements: powersAndAgreements.length > 0 ? powersAndAgreements : undefined,
     intents: intents.length > 0 ? intents : undefined,
+    portraitUrl,
   };
 }
 
@@ -441,11 +450,14 @@ export function getAgentInfoCard(
     }
   }
 
-  // Recognised+: archetype, faction, culture, 1 domain (vague), 1 value
+  // Recognised+: archetype, faction, culture, 1 domain (vague), 1 value, portrait
   if (knowledgeLevel !== 'stranger') {
     if (detail.archetype) {
       card.archetypeId = detail.archetype.id;
       card.archetypeLabel = detail.archetype.name;
+    }
+    if (detail.portraitUrl) {
+      card.portraitUrl = detail.portraitUrl;
     }
     if (detail.factionName) {
       card.factionName = detail.factionName;

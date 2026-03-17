@@ -42,6 +42,7 @@ const mockDetail: AgentDetail = {
     { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },
     { tick: 7, actorMove: 'cooperate', targetMove: 'defect', context: 'war', stakes: 'high' },
   ],
+  portraitUrl: null,
 };
 
 describe('AgentDetailPanel', () => {
@@ -207,5 +208,21 @@ describe('AgentDetailPanel', () => {
     expect(screen.queryByText('Possessions')).toBeNull();
     expect(screen.queryByText('Conditions')).toBeNull();
     expect(screen.queryByText('Powers & Agreements')).toBeNull();
+  });
+
+  // ─── Portrait Tests ─────────────────────────────────────────────────
+
+  it('renders portrait thumbnail in header when portraitUrl present', () => {
+    const detailWithPortrait = { ...mockDetail, portraitUrl: '/portraits/tragic-hero.png' };
+    const { container } = render(<AgentDetailPanel detail={detailWithPortrait} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    const img = container.querySelector('img[src="/portraits/tragic-hero.png"]');
+    expect(img).toBeTruthy();
+  });
+
+  it('does not render portrait thumbnail when portraitUrl is null', () => {
+    const detailNoPortrait = { ...mockDetail, portraitUrl: null };
+    const { container } = render(<AgentDetailPanel detail={detailNoPortrait} onBack={vi.fn()} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
+    const imgs = container.querySelectorAll('img');
+    expect(imgs.length).toBe(0);
   });
 });

@@ -334,4 +334,43 @@ describe('AgentProfileModal', () => {
     expect(screen.queryByTestId('modal-afflictions')).toBeNull();
     expect(screen.queryByTestId('modal-gifts-burdens')).toBeNull();
   });
+
+  // ─── Portrait Tests ─────────────────────────────────────────────────
+
+  it('renders gradient silhouette with no img for stranger agents', () => {
+    render(<AgentProfileModal card={strangerCard} profile={undefined} onClose={vi.fn()} />);
+    const portrait = screen.getByTestId('portrait-silhouette');
+    expect(portrait.querySelector('img')).toBeNull();
+  });
+
+  it('renders portrait image for recognised+ agents with portraitUrl', () => {
+    const cardWithPortrait: AgentInfoCardData = {
+      ...recognisedCard,
+      portraitUrl: '/portraits/tragic-hero.png',
+    };
+    render(<AgentProfileModal card={cardWithPortrait} profile={undefined} onClose={vi.fn()} />);
+    const portrait = screen.getByTestId('portrait-silhouette');
+    const img = portrait.querySelector('img');
+    expect(img).toBeTruthy();
+    expect(img!.getAttribute('src')).toBe('/portraits/tragic-hero.png');
+    expect(img!.getAttribute('alt')).toBe('Portrait of Kael the Scorned');
+  });
+
+  it('renders gradient fallback for recognised+ agents without portraitUrl', () => {
+    render(<AgentProfileModal card={recognisedCard} profile={undefined} onClose={vi.fn()} />);
+    const portrait = screen.getByTestId('portrait-silhouette');
+    expect(portrait.querySelector('img')).toBeNull();
+    expect(portrait.style.background).toContain('linear-gradient');
+  });
+
+  it('does not render portrait image for stranger even if portraitUrl present', () => {
+    const strangerWithPortrait: AgentInfoCardData = {
+      ...strangerCard,
+      portraitUrl: '/portraits/tragic-hero.png',
+      knowledgeLevel: 'stranger',
+    };
+    render(<AgentProfileModal card={strangerWithPortrait} profile={undefined} onClose={vi.fn()} />);
+    const portrait = screen.getByTestId('portrait-silhouette');
+    expect(portrait.querySelector('img')).toBeNull();
+  });
 });
