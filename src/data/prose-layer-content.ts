@@ -675,6 +675,41 @@ export const PROSPERITY_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Agent Wealth Prose ─────────────────────────────────────────────────────
+// Economic standing descriptions keyed by WealthTier. Fires for any actor
+// with a wealth property. Threadbare aesthetic: wealth is visible, poverty is felt.
+
+export const WEALTH_PROSE: Record<string, string[]> = {
+  Magnate: [
+    '{name} wears wealth the way others wear skin — it is not decoration but architecture, load-bearing and impossible to remove.',
+    'Gold follows {name} like a scent. The silk is obvious; the real currency is the silence that falls when they enter a room.',
+    'There is a gravity to {name} that has nothing to do with mass. Merchants orbit, debts align, and even the local lord measures their words carefully.',
+    'Every thread on {name} was chosen by someone paid to choose threads. The opulence is not vulgar — it is structural, woven into posture and expectation.',
+  ],
+  Wealthy: [
+    '{name} eats well and sleeps warm, which in this age passes for triumph. The retinue is fed, the cloak is lined, and there is always a second horse.',
+    'Comfort sits on {name} like good tailoring — not ostentatious, but unmistakable to anyone who has gone without.',
+    '{name} has the particular ease of someone who does not count coins at the end of the day. Not rich enough to forget money exists, but rich enough not to think about it before breakfast.',
+  ],
+  Comfortable: [
+    '{name} keeps clean hands and a clean ledger, which is more than most can manage. The merchant class recognizes its own.',
+    'There is a careful solidity to {name} — bills paid, stores counted, one eye always on the margins. Comfort here is a verb, not a state.',
+    '{name} is neither hungry nor sated. The cloak is serviceable, the boots are resoled but not worn through, and the purse has weight enough to negotiate.',
+  ],
+  'Getting by': [
+    '{name} has the watchful look of someone who knows exactly how many coins are left and what each one must buy.',
+    'The cloak is patched, the boots are thin, and {name} walks with the careful economy of a person one bad season from real trouble.',
+    '{name} counts in copper. Every purchase is a negotiation with tomorrow — what can be deferred, what cannot, and what might not matter if the winter is hard enough.',
+    'There is a thinness to {name} that is not quite hunger but remembers its shape. Meals are planned, luxuries are stories, and charity is received with the stiff dignity of the almost-poor.',
+  ],
+  Destitute: [
+    '{name} is threadbare in the literal sense — the economy chewed them up and left the fibers. What remains is need wearing a name.',
+    'Hollow-eyed and careful, {name} moves through the market like a ghost through a feast. Everything is for sale because nothing is left to keep.',
+    'Poverty has stripped {name} to function. The gaze is flat, the hands are quick, and dignity is a luxury that was sold three seasons ago.',
+    '{name} carries the particular desperation of someone who once had more. The fall is written in their posture — shoulders that remember standing straight.',
+  ],
+};
+
 // ─── Region Etymology Prose ─────────────────────────────────────────────────
 // Explains why a region has its current name, linking it to historical culture.
 

@@ -18,9 +18,10 @@ describe('Prose types', () => {
     expect(PROSE_CATEGORIES).toContain('origin');
     expect(PROSE_CATEGORIES).toContain('atmosphere');
     expect(PROSE_CATEGORIES).toContain('character');
+    expect(PROSE_CATEGORIES).toContain('economic');
     expect(PROSE_CATEGORIES).toContain('tension');
     expect(PROSE_CATEGORIES).toContain('history');
-    expect(PROSE_CATEGORIES.length).toBe(5);
+    expect(PROSE_CATEGORIES.length).toBe(6);
   });
 
   it('ProseLayer shape is usable', () => {

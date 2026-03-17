@@ -14,9 +14,9 @@ export interface ProseLayer {
 }
 
 /** Grouping categories for prose layers (max 2 per category in composed output) */
-export type ProseCategory = 'origin' | 'atmosphere' | 'character' | 'tension' | 'history';
+export type ProseCategory = 'origin' | 'atmosphere' | 'character' | 'economic' | 'tension' | 'history';
 
-export const PROSE_CATEGORIES: ProseCategory[] = ['origin', 'atmosphere', 'character', 'tension', 'history'];
+export const PROSE_CATEGORIES: ProseCategory[] = ['origin', 'atmosphere', 'character', 'economic', 'tension', 'history'];
 
 /** Output mode */
 export type ProseMode = 'summary' | 'full';
