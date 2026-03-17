@@ -71,6 +71,7 @@ import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
 import { phaseSublocations } from './phaseSublocations';
+import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1160,6 +1161,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.63: Settlement Prosperity (economic pulse for all settlements)
   s = { ...s, ...phaseProsperity(s) };
   phaseEventCounts['prosperity'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
+  s = { ...s, ...phaseSettlementPromotion(s) };
+  phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.64: Influence Tier Promotion (backstory unlock events)

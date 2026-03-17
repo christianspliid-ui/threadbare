@@ -151,9 +151,9 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
     }
   });
 
-  it('all 43 action templates are present', () => {
+  it('all 44 action templates are present', () => {
     const actionCount = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('action.')).length;
-    expect(actionCount).toBe(43);
+    expect(actionCount).toBe(44);
   });
 
   it('all encounter templates are present', () => {

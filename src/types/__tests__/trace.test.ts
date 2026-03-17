@@ -12,8 +12,8 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 14 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(14);
+  it('TRACE_CATEGORIES has 15 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(15);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');
@@ -28,6 +28,7 @@ describe('TraceEntry types', () => {
     expect(TRACE_CATEGORIES).toContain('wealth_delta');
     expect(TRACE_CATEGORIES).toContain('trade_route_volume_change');
     expect(TRACE_CATEGORIES).toContain('trade_route_dissolved');
+    expect(TRACE_CATEGORIES).toContain('settlement_tier_change');
   });
 
   it('ActionSelectionTrace satisfies TraceEntry union', () => {
