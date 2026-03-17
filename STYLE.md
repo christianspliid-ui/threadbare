@@ -118,6 +118,30 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 
 ---
 
+## Target Resolution & Layout
+
+**Primary target: 1920×1080 (1080p, 16:9)**
+
+All UI layout decisions — panel widths, font sizes, top bar density, sidebar proportions — are designed and QA'd at 1920×1080. This is the most common PC gaming resolution and matches the Stellaris-style reference game.
+
+| Context | Resolution | Notes |
+|---------|-----------|-------|
+| **Primary target** | 1920×1080 | All layout QA done here |
+| Acceptable minimum | 1280×720 | Must not break, may scroll |
+| Preview tool QA | `preview_resize(1920, 1080)` | Always set before taking screenshots |
+
+**Layout constants (from `src/index.css`):**
+
+| Variable | Value | Notes |
+|----------|-------|-------|
+| `--sidebar-width` | 280px | Right panel — appropriate at 1080p |
+| Top bar height | 44px | Fixed chrome; scales with font only |
+| Map area | fills remaining width | ~1360px at 1080p with sidebar open |
+
+**Design principle:** At 1080p the map is the dominant element. Panels are chrome — they should feel narrow relative to the map, not compete with it. If a layout choice feels cramped at 1280px, optimize for 1920px first and treat 1280px as graceful degradation.
+
+---
+
 ## Aspect Ratios
 
 | Use case | Ratio |
