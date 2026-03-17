@@ -75,6 +75,7 @@ import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 import { phaseHexState } from './phaseHexState';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
+import { phaseEconomicTraits } from './phaseEconomicTraits';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1164,6 +1165,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.63: Settlement Prosperity (economic pulse for all settlements)
   s = { ...s, ...phaseProsperity(s) };
   phaseEventCounts['prosperity'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.632: Economic Traits (mastery/reputation/scar/condition traits from economic activity)
+  s = { ...s, ...phaseEconomicTraits(s) };
+  phaseEventCounts['economic_traits'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
