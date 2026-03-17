@@ -612,6 +612,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             card={agentInfoCard}
             profile={agentFullProfile}
             onClose={handleCloseProfile}
+            scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
           />
         )}
       </AnimateMount>

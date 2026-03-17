@@ -1,10 +1,12 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import type { AgentInfoCardData } from '../../engine/agentDetail';
 import type { WorldGraph } from '../../engine/graph';
 import type { ReachDomain } from '../../types/traits';
 import { Tooltip } from '../shared/Tooltip';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { CATEGORY_GLYPHS, CATEGORY_COLORS } from '../../data/ambition-categories';
+import { getSphereColor } from '../../data/sphereIcons';
+import { BACKSTORY_CONSTANTS } from '../../types/prose';
 
 interface AgentInfoCardProps {
   card: AgentInfoCardData;
@@ -390,6 +392,11 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
             </p>
           </div>
         )}
+
+        {/* Their Story teaser (Recognised+ knowledge, Tier 1+ influence) */}
+        {card.backstory && card.backstory.strata.length > 0 && (
+          <BackstoryTeaser card={card} onViewProfile={onViewProfile} />
+        )}
       </div>
 
       {/* Footer: prominent View Profile button */}
@@ -421,3 +428,66 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
 });
 
 AgentInfoCard.displayName = 'AgentInfoCard';
+
+/** Compact backstory teaser for the sidebar — shows one sentence from stratum 1 */
+function BackstoryTeaser({
+  card,
+  onViewProfile,
+}: {
+  card: import('../../engine/agentDetail').AgentInfoCardData;
+  onViewProfile: () => void;
+}) {
+  const backstory = card.backstory!;
+  const stratum1 = backstory.strata.find(s => s.tier === 1);
+  const hasNew = backstory.strata.some(s => s.isNew);
+  const [faded, setFaded] = useState(false);
+
+  useEffect(() => {
+    if (!hasNew) return;
+    const timer = setTimeout(() => setFaded(true), BACKSTORY_CONSTANTS.NEW_BADGE_FADE_MS);
+    return () => clearTimeout(timer);
+  }, [hasNew]);
+
+  const sphereColor = card.primarySphere ? getSphereColor(card.primarySphere) : 'var(--accent-gold)';
+  // First sentence of stratum 1
+  const teaser = stratum1
+    ? (stratum1.text.split('.')[0] + '.').trim()
+    : '';
+
+  return (
+    <div>
+      <h3
+        className="font-semibold tracking-wider uppercase mb-1.5 flex items-center gap-1.5"
+        style={{
+          fontSize: 'var(--text-xs)',
+          color: 'var(--text-secondary)',
+          fontFamily: 'var(--font-display)',
+        }}
+      >
+        Their Story
+        {hasNew && (
+          <span
+            className="transition-opacity duration-1000"
+            style={{ color: sphereColor, opacity: faded ? 0 : 1 }}
+          >
+            ✦
+          </span>
+        )}
+      </h3>
+      {teaser && (
+        <p className="leading-relaxed mb-1.5" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
+          {teaser}
+        </p>
+      )}
+      <button
+        onClick={onViewProfile}
+        className="transition-colors"
+        style={{ fontSize: 'var(--text-xs)', color: sphereColor, opacity: 0.8 }}
+        onMouseEnter={(e) => { e.currentTarget.style.opacity = '1'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.opacity = '0.8'; }}
+      >
+        Read more →
+      </button>
+    </div>
+  );
+}
