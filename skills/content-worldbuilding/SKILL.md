@@ -81,3 +81,39 @@ Generated, not fixed. 2-4 per run, derived from:
 - Obsidian vault (`TheFantasyWorldSimulator/`) — system specs with wikilinks, read `Index.md` first
 - `Docs/plans/` — design rationale documents
 - `src/engine/` — content generation and constraint system code
+
+## Design Assessment for Content & Systems
+
+New game systems, content pipelines, or world-model extensions must pass an architectural assessment before implementation. This applies to economy, faction behavior, encounter sets, resource pipelines, new Reach mechanics, and any system that agents interact with.
+
+### Content-specific NFP checklist
+
+| NFP | What to verify for content/system work |
+|-----|---------------------------------------|
+| Tunability | Spawn thresholds, tier boundaries, probability weights, cost tables — all named constants. If a designer might want to tweak it, it's a constant. |
+| Inspectability | New systems that modify agent state (wealth, reputation, traits) must emit traces showing the cause. "Why did this agent become wealthy?" must be answerable from traces alone. |
+| Determinism | World seeding additions (new faction types, resource assignment, guild generation) use the seeded PRNG. Content selection at runtime (encounter choice, sublocation spawn) uses PRNG. |
+| Fail-soft | Missing content gracefully skips — no content package should be able to crash the tick loop. Missing resources → 0 income. Missing faction → skip guild check. |
+| Narrative > mechanical | Systems exist to generate stories. If a system produces mechanically correct but narratively boring outcomes, redesign the system. Encounters should read as interesting, not optimal. |
+| Additive | New node properties, new edge properties, new action templates, new encounter templates — all additive. Don't remove or rename existing content that other systems reference. |
+| Graph compliance | All new state lives on graph nodes (properties) or edges (properties). No parallel data structures, no separate lookup tables. The graph is the single source of truth. |
+
+### Design document template for new game systems
+
+When proposing a new system, include these sections **per system** (NFP compliance is inline, not a separate appendix):
+
+1. **What it is** — plain language, one paragraph
+2. **Graph representation** — which nodes, edges, properties
+3. **Constants** — every tunable number named with default and purpose (NFP #1)
+4. **Tick behavior** — what happens each tick (if anything)
+5. **Tracing** — TypeScript trace interfaces for all emitted traces (NFP #2)
+6. **Fail-soft** — table of failure cases and fallback behavior (NFP #4)
+7. **Actions** — what agents can do (CRUD mapping), with PRNG callouts where needed (NFP #3)
+8. **Player visibility** — how the player experiences it (prose, encounters, location changes)
+
+At the **end of the full design document**, include:
+
+9. **NFP Compliance Summary** — one-row-per-priority verdict table (PASS / PASS with note)
+10. **Implementation phases** — ordered by dependency, each phase delivers visible value
+
+The design is not ready to present until the compliance summary shows all PASS. If a genuine trade-off exists, flag it explicitly for the user to decide.
