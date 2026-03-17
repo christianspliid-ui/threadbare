@@ -248,6 +248,15 @@ export interface MagicalSaturationTickTrace extends TraceBase {
   decayApplied: number;
 }
 
+/** Trace: economic chronicle entry generated */
+export interface EconomicChronicleTrace extends TraceBase {
+  category: 'economic_chronicle';
+  trigger: string;
+  templateIndex: number;
+  significance: number;
+  actorIds: string[];
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -268,7 +277,8 @@ export type TraceEntry =
   | TargetActionFilterTrace
   | HexStateTickTrace
   | UnrestTickTrace
-  | MagicalSaturationTickTrace;
+  | MagicalSaturationTickTrace
+  | EconomicChronicleTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -291,6 +301,7 @@ export const TRACE_CATEGORIES = [
   'hex_state',
   'unrest_tick',
   'saturation_tick',
+  'economic_chronicle',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
