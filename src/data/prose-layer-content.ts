@@ -710,6 +710,44 @@ export const WEALTH_PROSE: Record<string, string[]> = {
   ],
 };
 
+// ─── Guild Identity Prose ───────────────────────────────────────────────────
+// Each guild type has distinct narrative fragments used when describing a location
+// that contains a guild hall or when describing the guild faction itself.
+// Key: GuildType ('miners' | 'artisans' | 'traders' | 'bankers' | 'merchants')
+
+export const GUILD_IDENTITY_PROSE: Record<string, string[]> = {
+  miners: [
+    'The Miners\' Guild keeps its own counsel, emerging from the shafts with ore and silence.',
+    'Their hall smells of stone dust and tallow. The floor is worn smooth by heavy boots that never quite lose the underground.',
+    'They measure wealth in veins, not coins. The guild ledger records seams and depths, not prices.',
+    'Miners speak in short sentences and trust the dark more than daylight. Their handshakes are crushing and brief.',
+  ],
+  artisans: [
+    'Every surface in the Artisans\' Hall bears the mark of someone\'s best work — and the scratches where someone else tried to improve it.',
+    'They argue about grain direction the way soldiers argue about sword technique. The stakes, to them, are identical.',
+    'Apprentices sweep the floors for years before touching raw material. The guild believes patience is the first craft.',
+    'The smell of lacquer and sawdust hangs permanent in the air. Tools are racked with a precision that borders on devotion.',
+  ],
+  traders: [
+    'The Traders\' Guild hall is never quiet — someone is always arriving or departing, and half of them are lying about where they\'ve been.',
+    'They speak three languages badly and haggle in all of them. Fluency, they say, is bad for business.',
+    'Maps cover every wall, routes marked in red for profit and black for loss. The black lines outnumber the red.',
+    'A trader\'s loyalty extends exactly as far as the current deal. The guild considers this a virtue.',
+  ],
+  bankers: [
+    'The counting house is the quietest building in town, and somehow the most frightening.',
+    'They lend with a smile that never reaches their eyes. Interest accrues in the silence between sentences.',
+    'Debts are recorded in ink that doesn\'t fade. The ledgers are older than some of the buildings they finance.',
+    'The bankers\' guild operates on the principle that money is patient. It can wait longer than pride, longer than hunger, longer than grief.',
+  ],
+  merchants: [
+    'The Merchants\' Guild sits at the centre of town life, funding festivals and collecting favours in equal measure.',
+    'They know everyone\'s name and everyone\'s price. The two are filed separately but cross-referenced.',
+    'The guild master attends every council meeting uninvited and leaves having shaped every decision.',
+    'Merchant influence is the water table of the settlement — invisible, pervasive, and the first thing you notice when it drops.',
+  ],
+};
+
 // ─── Region Etymology Prose ─────────────────────────────────────────────────
 // Explains why a region has its current name, linking it to historical culture.
 
