@@ -2,14 +2,14 @@
  * Renders movement trail lines for agents on the hex map.
  *
  * Thin dark ink lines connecting an agent's recent hex positions.
- * Opacity fades linearly from current position to oldest entry.
- * Trail length controlled by TRAIL_HISTORY_TICKS.
+ * Opacity fades linearly from current position (newest) to oldest entry.
+ * History is already capped to TRAIL_HISTORY_TICKS entries by movementExecution,
+ * so we render all entries and use index-based opacity fade.
  */
 
 import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import type { MovementHistoryEntry } from '../../types/movement';
-import { TRAIL_HISTORY_TICKS } from '../../data/movement-content';
 import {
   TRAIL_LINE_COLOR,
   TRAIL_LINE_WIDTH,
@@ -27,7 +27,6 @@ interface MovementTrailsProps {
 export const MovementTrails: React.FC<MovementTrailsProps> = ({
   graph,
   hexSize,
-  currentTick,
 }) => {
   const agents = graph.getNodesByType('actor')
     .filter(a => a.properties?.actorType === 'individual');
@@ -39,30 +38,24 @@ export const MovementTrails: React.FC<MovementTrailsProps> = ({
         const history = movementState?.movementHistory;
         if (!history || history.length < 2) return null;
 
-        // Only show entries within TRAIL_HISTORY_TICKS
-        const recentHistory = history.filter(
-          entry => currentTick - entry.tick <= TRAIL_HISTORY_TICKS
-        );
-        if (recentHistory.length < 2) return null;
-
-        // Convert to pixel positions
-        const points = recentHistory
+        // Convert to pixel positions (history is newest-first, already capped by movementExecution)
+        const points = history
           .filter(entry => entry.hexCol != null && entry.hexRow != null)
           .map(entry => {
             const { x, y } = hexToPixel({ col: entry.hexCol!, row: entry.hexRow! }, hexSize);
-            return { x, y, tick: entry.tick };
+            return { x, y };
           });
 
         if (points.length < 2) return null;
 
-        // Render line segments with fading opacity
+        // Render line segments with index-based fading opacity (newest = full, oldest = min)
         return (
           <g key={`trail-${agent.id}`}>
             {points.slice(1).map((point, i) => {
               const prev = points[i];
-              const age = currentTick - point.tick;
-              const maxAge = TRAIL_HISTORY_TICKS;
-              const opacity = TRAIL_OPACITY_MAX - (age / maxAge) * (TRAIL_OPACITY_MAX - TRAIL_OPACITY_MIN);
+              // i=0 is the newest segment, points.length-2 is the oldest
+              const t = i / (points.length - 1);
+              const opacity = TRAIL_OPACITY_MAX - t * (TRAIL_OPACITY_MAX - TRAIL_OPACITY_MIN);
 
               return (
                 <line
