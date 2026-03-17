@@ -2,6 +2,8 @@ import React from 'react';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalIcon } from '../shared/RivalIcon';
 import { Tooltip } from '../shared/Tooltip';
+import { SectionHeading } from '../shared/SectionHeading';
+import { ListRow } from '../shared/ListRow';
 
 interface RivalPanelProps {
   definitions: RivalDefinition[];
@@ -35,16 +37,8 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
     <div className="space-y-2">
       <div>
         <Tooltip id="ui.rival_panel">
-          <h2
-            className="font-bold uppercase tracking-wider"
-            style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontFamily: 'var(--font-display)' }}
-          >
-            Rival Gods
-          </h2>
+          <SectionHeading as="h2" count={definitions.length}>Rival Gods</SectionHeading>
         </Tooltip>
-        <div className="mt-2 flex items-center gap-1.5">
-          <span className="uppercase tracking-wider font-semibold" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>Hostility</span>
-        </div>
       </div>
       {definitions.map((def) => {
         const rivalState = states.find(s => s.rivalId === def.id);
@@ -58,38 +52,38 @@ export const RivalPanel = React.memo(function RivalPanel({ definitions, states }
         if (def.secondarySphere) spheres.push(def.secondarySphere);
 
         return (
-          <div key={def.id} className="rounded px-2 py-1.5" style={{ backgroundColor: 'var(--bg-raised)', border: `1px solid var(--border-subtle)` }}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5">
-                {spheres.length > 0 ? (
-                  <RivalIcon spheres={spheres} size="1.2rem" title={`${def.name}'s sphere affinities`} />
-                ) : (
-                  <span className="text-sm" style={{ color }}>{icon}</span>
-                )}
-                <span className="font-medium truncate max-w-[140px]" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)', opacity: 0.8 }}>
-                  {def.name}
-                </span>
-              </div>
+          <ListRow
+            key={def.id}
+            accentColor={color}
+            trailing={
               <span className="uppercase tracking-wider" style={{ fontSize: 'var(--text-xs)', color }}>
                 {def.behavior}
               </span>
+            }
+          >
+            <ListRow.Leading>
+              {spheres.length > 0 ? (
+                <RivalIcon spheres={spheres} size="1.2rem" title={`${def.name}'s sphere affinities`} />
+              ) : (
+                <span style={{ fontSize: 'var(--text-sm)', color }}>{icon}</span>
+              )}
+            </ListRow.Leading>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <ListRow.Title>{def.name}</ListRow.Title>
+              <div className="mt-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-300"
+                  style={{
+                    width: `${hostility * 100}%`,
+                    backgroundColor: `rgb(${Math.round(hostility * 220)}, ${Math.round((1 - hostility) * 120)}, 50)`,
+                  }}
+                />
+              </div>
+              {rivalState?.lastAction && (
+                <ListRow.Subtitle>Last: {rivalState.lastAction}</ListRow.Subtitle>
+              )}
             </div>
-            <div className="mt-1 flex-1 h-1 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--bg-surface)' }}>
-              <div
-                className="h-full rounded-full transition-all duration-300"
-                style={{
-                  width: `${hostility * 100}%`,
-                  backgroundColor: `rgb(${Math.round(hostility * 220)}, ${Math.round((1 - hostility) * 120)}, 50)`,
-                }}
-              />
-            </div>
-            {/* IA-010: Show last action for actionable context */}
-            {rivalState?.lastAction && (
-              <p className="mt-1 truncate italic" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
-                Last: {rivalState.lastAction}
-              </p>
-            )}
-          </div>
+          </ListRow>
         );
       })}
     </div>

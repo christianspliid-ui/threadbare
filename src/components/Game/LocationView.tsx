@@ -10,6 +10,7 @@ import { ensureSublocations } from '../../engine/sublocation';
 import { EncounterLog } from './EncounterLog';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { Tooltip } from '../shared/Tooltip';
+import { SectionHeading } from '../shared/SectionHeading';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -548,16 +549,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
       <div className="flex-1 flex gap-6 p-6 min-h-0">
         {/* Left: Agents Present */}
         <div className="flex-1 min-w-0">
-          <h3
-            className="section-heading mb-3"
-            style={{
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-secondary)',
-              fontFamily: 'var(--font-display)',
-            }}
-          >
-            Agents Present
-          </h3>
+          <SectionHeading count={agents.length}>Agents Present</SectionHeading>
 
           {agents.length === 0 ? (
             <p

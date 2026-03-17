@@ -5,6 +5,8 @@ import type { CooperationStrategy } from '../../types/disposition';
 import { TIER_COLORS, ARCHETYPE_DOT_COLOR, FACTION_TAG_COLOR, FACTION_TAG_BACKGROUND, FACTION_TAG_BORDER, SENTIMENT_GREEN, SENTIMENT_RED } from '../../data/uiColorPalette';
 import { AttachmentRow } from './AttachmentRow';
 import { IntentSection } from './IntentSection';
+import { Button } from '../shared/Button';
+import { IconButton } from '../shared/IconButton';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -73,13 +75,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
     <div className="flex flex-col h-full bg-stone-900 overflow-y-auto">
       {/* Header Bar */}
       <div className="flex items-center gap-3 px-4 py-3 bg-stone-800/90 border-b border-amber-900/30 flex-shrink-0">
-        <button
-          onClick={onBack}
-          aria-label="back"
-          className="text-amber-400 hover:text-amber-200 transition-colors text-lg px-1"
-        >
-          ←
-        </button>
+        <IconButton icon={<span>←</span>} size="sm" aria-label="back" onClick={onBack} />
 
         {/* Agent name and tier */}
         <div className="flex-1">
@@ -498,18 +494,12 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
       {/* Action Row Footer */}
       <div className="flex gap-2 px-4 py-3 bg-stone-800/50 border-t border-amber-900/30 flex-shrink-0">
-        <button
-          onClick={onViewPsyche}
-          className="flex-1 px-3 py-2 bg-stone-800/80 hover:bg-stone-700/80 text-amber-100 text-xs font-medium rounded transition-colors border border-amber-900/30"
-        >
+        <Button variant="secondary" size="sm" fullWidth onClick={onViewPsyche}>
           View Psyche
-        </button>
-        <button
-          onClick={onIntervene}
-          className="flex-1 px-3 py-2 bg-amber-900/40 hover:bg-amber-800/50 text-amber-100 text-xs font-medium rounded transition-colors border border-amber-700/50"
-        >
+        </Button>
+        <Button variant="primary" size="sm" fullWidth onClick={onIntervene}>
           Intervene
-        </button>
+        </Button>
       </div>
     </div>
   );
