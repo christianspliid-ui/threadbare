@@ -247,6 +247,208 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     },
   },
 
+  // Gold (trade) — Phase 3 extensions: Negotiate Agreement, Tax Trade Route, Break Agreement,
+  //                Hire Mercenaries, Commission Assassination, Buy Influence, Fund Construction
+  {
+    id: 'action.gold.negotiate-agreement',
+    name: 'Negotiate Agreement',
+    crudType: 'create',
+    reach: 'gold',
+    durationRange: { min: 2, max: 4 },
+    motivations: ['greed_generosity', 'cunning_honesty', 'loyalty_treachery'],
+    onSuccess: [
+      {
+        op: 'add_node',
+        nodeType: 'attachment',
+        nodeName: 'Trade Agreement',
+        properties: {
+          category: 'agreement',
+          subcategory: 'treaty',
+          terms: 'Mutual trade terms formalized between parties',
+          parties: ['$actor', '$target'],
+          source: 'action.gold.negotiate-agreement',
+          tier: 1,
+        },
+      },
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: 0.02 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.05 } },
+    ],
+    difficulty: 0.50,
+    narrativeTemplates: {
+      initiation: '{{actor}} opens formal negotiations with {{the-target}}, seeking to bind trade terms in ink and coin.',
+      success: 'The agreement is sealed. {{actor}} and {{the-target}} shake hands over terms that suit them both.',
+      failure: '{{actor}}\'s negotiations founder. {{the-target}} rejects the terms, and the deal collapses.',
+    },
+  },
+  {
+    id: 'action.gold.tax-trade-route',
+    name: 'Tax Trade Route',
+    crudType: 'update',
+    reach: 'gold',
+    durationRange: { min: 2, max: 3 },
+    motivations: ['greed_generosity', 'dominance_humility'],
+    onSuccess: [
+      {
+        op: 'update_edge',
+        edgeType: 'trades_with',
+        source: '$actor',
+        target: '$target',
+        changes: { controlledBy: '$actor', taxRate: 0.1 },
+      },
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: 0.05 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.08 } },
+    ],
+    difficulty: 0.55,
+    narrativeTemplates: {
+      initiation: '{{actor}} moves to assert control over the route to {{the-target}}, stationing collectors at every junction.',
+      success: 'The route bends to {{actor}}\'s will. Coin flows in, though merchants grumble at the toll.',
+      failure: '{{actor}}\'s tax collectors are driven off. {{the-target}} will not yield the route so easily.',
+    },
+  },
+  {
+    id: 'action.gold.break-agreement',
+    name: 'Break Agreement',
+    crudType: 'delete',
+    reach: 'gold',
+    durationRange: { min: 1, max: 2 },
+    motivations: ['loyalty_treachery', 'greed_generosity', 'cunning_honesty'],
+    onSuccess: [
+      { op: 'remove_edge', edgeType: 'party_to', source: '$actor', target: '$target' },
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.15 } },
+      { op: 'update_node', nodeId: '$target', changes: { wealth: -0.10 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.08 } },
+    ],
+    difficulty: 0.30,
+    narrativeTemplates: {
+      initiation: '{{actor}} moves to renege on terms with {{the-target}}, calculating that betrayal costs less than compliance.',
+      success: '{{actor}} walks away from the agreement. {{the-target}} is left holding nothing but broken promises.',
+      failure: '{{actor}}\'s attempted breach is blocked. The terms hold, though {{actor}}\'s intent is now known.',
+    },
+  },
+  {
+    id: 'action.gold.hire-mercenaries',
+    name: 'Hire Mercenaries',
+    crudType: 'create',
+    reach: 'gold',
+    durationRange: { min: 2, max: 3 },
+    motivations: ['greed_generosity', 'courage_prudence', 'ambition_contentment'],
+    onSuccess: [
+      {
+        op: 'add_node',
+        nodeType: 'attachment',
+        nodeName: 'Mercenary Band',
+        properties: {
+          category: 'retainer',
+          ironCapability: 30,
+          source: 'action.gold.hire-mercenaries',
+          hiredBy: '$actor',
+          durationTicks: 10,
+          tier: 1,
+        },
+      },
+      // WEALTH_MERCENARY_COST = 10 (represented as 0.10 on 0–100 scale)
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.10 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.03 } },
+    ],
+    difficulty: 0.45,
+    narrativeTemplates: {
+      initiation: '{{actor}} seeks sellswords, coin in hand, looking for blades that ask no questions.',
+      success: 'A company of mercenaries answers {{actor}}\'s call. Their loyalty lasts as long as the gold does.',
+      failure: '{{actor}}\'s coin draws only unreliable sorts. The mercenaries melt away before the first order.',
+    },
+  },
+  {
+    id: 'action.gold.commission-assassination',
+    name: 'Commission Assassination',
+    crudType: 'delete',
+    reach: 'gold',
+    durationRange: { min: 3, max: 5 },
+    motivations: ['greed_generosity', 'cunning_honesty', 'loyalty_treachery'],
+    onSuccess: [
+      { op: 'remove_node', nodeId: '$target' },
+      // WEALTH_ASSASSINATION_COST = 15 (represented as 0.15)
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.15 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.25, wealth: -0.08 } },
+    ],
+    difficulty: 0.65,
+    narrativeTemplates: {
+      initiation: '{{actor}} pays handsomely for a shadow to fall on {{the-target}}, keeping {{their}} own hands clean.',
+      success: '{{the-target}} does not survive the night. {{actor}} receives only a nod from the shadows.',
+      failure: '{{actor}}\'s plot unravels. The assassin is caught, and {{actor}}\'s name is on the confession.',
+    },
+  },
+  {
+    id: 'action.gold.buy-influence',
+    name: 'Buy Influence',
+    crudType: 'update',
+    reach: 'gold',
+    durationRange: { min: 1, max: 3 },
+    motivations: ['greed_generosity', 'cunning_honesty', 'dominance_humility'],
+    onSuccess: [
+      {
+        op: 'update_edge',
+        edgeType: 'relates_to',
+        source: '$actor',
+        target: '$target',
+        changes: { sentiment: 0.20 },
+      },
+      // WEALTH_INFLUENCE_COST = 8 (represented as 0.08)
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.08 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.08, wealth: -0.04 } },
+    ],
+    difficulty: 0.50,
+    narrativeTemplates: {
+      initiation: '{{actor}} spreads coin quietly, buying smiles and open doors where walls stood before.',
+      success: '{{the-target}} warms to {{actor}}\'s cause. Money, as ever, makes friends faster than words.',
+      failure: '{{the-target}} pockets {{actor}}\'s gift and gives nothing in return. {{actor}} has been played.',
+    },
+  },
+  {
+    id: 'action.gold.fund-construction',
+    name: 'Fund Construction',
+    crudType: 'create',
+    reach: 'gold',
+    durationRange: { min: 3, max: 5 },
+    motivations: ['ambition_contentment', 'greed_generosity', 'tradition_innovation'],
+    onSuccess: [
+      {
+        op: 'add_node',
+        nodeType: 'location',
+        nodeName: 'New Construction',
+        properties: {
+          sublocationTypeId: 'sublocation-type.market-district',
+          parentLocationId: '$location',
+          persistence: { type: 'permanent' },
+          source: 'action.gold.fund-construction',
+          fundedBy: '$actor',
+        },
+      },
+      // WEALTH_CONSTRUCTION_COST = 12 (represented as 0.12)
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.12 } },
+    ],
+    onFailure: [
+      { op: 'update_node', nodeId: '$actor', changes: { wealth: -0.06 } },
+    ],
+    difficulty: 0.55,
+    narrativeTemplates: {
+      initiation: '{{actor}} pours gold into foundations, commissioning a new structure to cement {{their}} grip on {{the-location}}.',
+      success: 'The structure rises. {{actor}}\'s investment reshapes {{the-location}}, drawing commerce and curiosity alike.',
+      failure: 'The construction founders. Contractors pocket the coin and vanish; only half-built walls remain.',
+    },
+  },
+
   // Shadow (stealth) — create, read, update, delete
   {
     id: 'action.shadow.establish-network',
