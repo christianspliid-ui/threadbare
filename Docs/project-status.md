@@ -5,7 +5,9 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** SURFACE_ORIGIN_PROSE expanded to 4/archetype (2026-03-17) — 19 new Stratum 1 templates, one per archetype. Each approaches the archetype from a different narrative angle (rumored deeds, bystander reactions, observed habits) to reduce repetition during early Scry. Total: 76 surface origin templates. Combined with HIDDEN_MOTIVE_PROSE rewrite (20 templates, confessor/psychologist voice), backstory content fix 2 of 3 complete.
+**Latest:** Guild identity prose complete (2026-03-17) — `GUILD_IDENTITY_PROSE` table with 20 fragments across 5 guild types (miners, artisans, traders, bankers, merchants) × 4 fragments each. `guildIdentityResolver` surfaces guild-specific prose for locations that have a Guild Hall sublocation. `guildFactionIdentityResolver` colors faction actor descriptions based on guild type. `FACTION_RESOLVERS` pipeline added to `proseGenerator`. Each guild type now has a distinct narrative voice in both location and faction descriptions.
+
+**Previous:** SURFACE_ORIGIN_PROSE expanded to 4/archetype (2026-03-17) — 19 new Stratum 1 templates, one per archetype. Each approaches the archetype from a different narrative angle (rumored deeds, bystander reactions, observed habits) to reduce repetition during early Scry. Total: 76 surface origin templates. Combined with HIDDEN_MOTIVE_PROSE rewrite (20 templates, confessor/psychologist voice), backstory content fix 2 of 3 complete.
 
 **Previous:** Responsive design system implemented (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px): sidebar width scaling (280→420px), top bar height (44→52px), panel padding, top bar gap. All sub-16px font sizes fixed to `var(--text-xs)`. HexChronicle prose column capped at 860px. Top bar dead zone (Option A/B/C) still needs design decision.
 
