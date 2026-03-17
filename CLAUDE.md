@@ -143,7 +143,7 @@ Context for specific problem types lives in on-demand skills, not in this file. 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
-| Frontend & UI | `frontend-ui` | Building components, styling, accessibility, debug panel |
+| Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
 | Content systems & worldbuilding | `content-worldbuilding` | Cosmology, spheres, reaches, content packages, graph data |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Creative prose | `prose-resolver` (platform) | Writing prose content, implementing resolvers |
