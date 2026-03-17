@@ -6,6 +6,21 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
 | Date | Where | What changed | Why |
 |------|-------|-------------|-----|
+| 2026-03-17 | src/types/prose.ts | Added BackstoryLayer, BackstoryResult, BackstoryStratum types + BACKSTORY_CONSTANTS (thresholds, brackets, fade timing) | Tiered backstory system Phase 1 |
+| 2026-03-17 | src/types/notification.ts | Added 'revelation' to AlertIcon union | Backstory unlock notification support |
+| 2026-03-17 | src/types/influence.ts | Added readBackstoryTier: 0\|1\|2\|3\|4 to InfluenceRelationshipProperties | Track which backstory strata the player has read |
+| 2026-03-17 | src/data/backstory-content.ts | NEW — 12 content tables with 200+ Threadbare-tone prose templates for tiered backstory generation | Tiered backstory system Phase 1 |
+| 2026-03-17 | src/engine/backstoryResolvers.ts | NEW — 10 backstory resolvers (surfaceOriginResolver, surfaceSphereResolver, bondHistoryResolver, traitOriginResolver, turningPointResolver, contradictionResolver, fearResolver, hiddenMotiveResolver, storyArcResolver, divineTransformationResolver) | Tiered backstory system Phase 2 — resolver layer |
+| 2026-03-17 | src/engine/phaseProsperity.ts | NEW — settlement prosperity phase with baseIncome, trade bonuses, population trend, ProsperityTickTrace | Gold Reach Phase 1 |
+| 2026-03-17 | src/engine/wealth.ts | NEW — actor wealth system (0–100, 5 tiers, 15 constants, helpers) | Gold Reach Phase 1 |
+| 2026-03-17 | src/engine/tradeRoute.ts | NEW — enriched trades_with schema (goodsType, established, lastTraded, controlledBy, threatened) + helpers | Gold Reach Phase 1 |
+| 2026-03-17 | src/types/trace.ts | Added ProsperityTickTrace, WealthDeltaTrace, TradeRouteVolumeChangeTrace; TRACE_CATEGORIES 10→13 | Gold Reach Phase 1 |
+| 2026-03-17 | src/engine/proseResolvers.ts | Added prosperityResolver (priority 70, atmosphere) | Gold Reach Phase 1 |
+| 2026-03-17 | src/data/prose-layer-content.ts | Added PROSPERITY_PROSE (5 tiers × 4 templates, Threadbare aesthetic) | Gold Reach Phase 1 |
+| 2026-03-17 | src/engine/orchestrator.ts | Wired phaseProsperity at Phase 6.63 | Gold Reach Phase 1 |
+| 2026-03-17 | CLAUDE.md | Added Design Governance section (NFP audit mandate, required design doc sections) | governance |
+| 2026-03-17 | skills/engine-architecture/SKILL.md | Added Design Assessment section | governance |
+| 2026-03-17 | skills/content-worldbuilding/SKILL.md | Added Design Assessment section | governance |
 | 2026-03-17 | src/components/Game/GameView.tsx, SimulationControls.tsx, EssencePanel.tsx, DoomBar.tsx, RivalsButton.tsx, AvatarHUD.tsx, IdentityChip.tsx (new), hooks/useTopBarHotkeys.ts (new), engine/essenceIncome.ts (new) | Top bar redesign (all 6 phases): identity merged into IdentityChip (avatar name + archetype + sphere accent, click-to-center); time controls replace speed slider with ◀ N× ▶ steps; essence becomes icon+value+income chips (no bars); DoomBar icon-ified (archetype glyph, no "Stage N:" prefix); RivalsButton → icon+superscript badge; debug → ⚙ gear icon; keyboard hotkeys (Space/+/-/.) via useTopBarHotkeys; left sidebar removed entirely; gold group divider and border; 44px bar height | Plan: Docs/plans/2026-03-17-topbar-redesign.md — top bar was cluttered, text-heavy, and visually flat |
 | 2026-03-17 | src/components/Game/GameView.tsx, RivalsButton.tsx (new) | Stellaris-style layout pass: moved timer/time, resources (EssencePanel), and identity from left sidebar to top bar; rival gods moved to ⚔ dropdown button (RivalsButton); left sidebar removed entirely | Left sidebar blocked map space; resources and time controls belong in the top bar like Stellaris |
 | 2026-03-17 | src/components/Game/ActionDrawer.tsx, ActionDrawer.test.tsx, AgentProfileModal.tsx | UI polish: ActionDrawer reworked from opaque bottom panel to floating centered card hand (removed background bar and header). AgentProfileModal portaled to document.body for true centering (was constrained by parent overflow:hidden), added × close button. | Player feedback: action bar background obscured map, profile modal wasn't centered and lacked visible close button |
