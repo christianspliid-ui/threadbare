@@ -542,9 +542,16 @@ export function checkDissolutions(
         }
       }
     } else if (persistence.type === 'conditional') {
-      // TODO: Implement conditional dissolution (predicate evaluation)
-      // For now, skip conditional sublocations
-      continue;
+      // Evaluate predicate — dissolve when predicate returns FALSE
+      const predicateHolds = evaluateConditionalPredicate(
+        persistence.predicate,
+        parentLocationId ?? sublocation.id,
+        graph
+      );
+      if (!predicateHolds) {
+        shouldDissolve = true;
+        reason = `conditional predicate false: ${persistence.predicate}`;
+      }
     }
 
     if (shouldDissolve && parentLocationId) {
@@ -674,4 +681,116 @@ export function createDivineSublocation(
     // fail-soft: if node creation fails, return undefined
     return undefined;
   }
+}
+
+// ── Task 7: Conditional Predicate Evaluator ───────────────────────────────
+
+/**
+ * Evaluate a conditional sublocation predicate against a location node.
+ *
+ * Predicate DSL (single clause, or clauses joined by '||' for OR):
+ *   "prosperity >= N"        — location.properties.prosperity >= N
+ *   "prosperity < N"         — location.properties.prosperity < N
+ *   "has_resource:TYPE"      — location has resource TYPE with quantity > 0
+ *   "is_coastal"             — location.properties.coastal === true
+ *   "guild_wealth >= N"      — any guild actor at location has wealth >= N
+ *   "trade_route_present"    — any actor at location has an outgoing trades_with edge
+ *
+ * Fail-soft: unknown predicate or missing property → returns false, no error.
+ *
+ * @param predicate Predicate string (supports '||' for OR)
+ * @param locationId ID of the location to evaluate against
+ * @param graph WorldGraph instance
+ * @returns true if predicate holds, false otherwise
+ */
+export function evaluateConditionalPredicate(
+  predicate: string,
+  locationId: string,
+  graph: WorldGraph
+): boolean {
+  // Support OR: any clause being true is enough
+  const clauses = predicate.split('||').map(p => p.trim());
+  return clauses.some(clause => evaluateSingleClause(clause, locationId, graph));
+}
+
+function evaluateSingleClause(clause: string, locationId: string, graph: WorldGraph): boolean {
+  const loc = graph.getNode(locationId);
+  if (!loc) return false; // fail-soft: missing location
+
+  // "prosperity >= N"
+  if (clause.startsWith('prosperity >= ')) {
+    const threshold = parseFloat(clause.slice('prosperity >= '.length));
+    if (isNaN(threshold)) return false;
+    const prosperity = typeof loc.properties.prosperity === 'number' ? loc.properties.prosperity : 0;
+    return prosperity >= threshold;
+  }
+
+  // "prosperity < N"
+  if (clause.startsWith('prosperity < ')) {
+    const threshold = parseFloat(clause.slice('prosperity < '.length));
+    if (isNaN(threshold)) return false;
+    const prosperity = typeof loc.properties.prosperity === 'number' ? loc.properties.prosperity : 0;
+    return prosperity < threshold;
+  }
+
+  // "has_resource:TYPE"
+  if (clause.startsWith('has_resource:')) {
+    const resourceType = clause.slice('has_resource:'.length).trim();
+    const resources = loc.properties.resources as Record<string, { quantity: number }> | undefined;
+    if (!resources) return false;
+    const res = resources[resourceType];
+    return res !== undefined && typeof res.quantity === 'number' && res.quantity > 0;
+  }
+
+  // "is_coastal"
+  if (clause === 'is_coastal') {
+    return loc.properties.coastal === true;
+  }
+
+  // "guild_wealth >= N"
+  if (clause.startsWith('guild_wealth >= ')) {
+    const threshold = parseFloat(clause.slice('guild_wealth >= '.length));
+    if (isNaN(threshold)) return false;
+    return checkGuildWealthAtLocation(locationId, graph, threshold);
+  }
+
+  // "trade_route_present"
+  if (clause === 'trade_route_present') {
+    return checkTradeRoutePresentAtLocation(locationId, graph);
+  }
+
+  // Unknown predicate → fail-soft: return false
+  return false;
+}
+
+/**
+ * Returns true if any actor at the given location belongs to a guild and has wealth >= threshold.
+ * Actors are found via incoming located_at edges. Guild actors have a `guildType` property.
+ */
+function checkGuildWealthAtLocation(locationId: string, graph: WorldGraph, threshold: number): boolean {
+  const locatedEdges = graph.getIncomingEdges(locationId, 'located_at');
+  for (const edge of locatedEdges) {
+    const actor = graph.getNode(edge.source);
+    if (!actor) continue;
+    if (typeof actor.properties.guildType !== 'string') continue;
+    const wealth = typeof actor.properties.wealth === 'number' ? actor.properties.wealth : 0;
+    if (wealth >= threshold) return true;
+  }
+  return false;
+}
+
+/**
+ * Returns true if any actor at the given location has at least one trades_with edge.
+ */
+function checkTradeRoutePresentAtLocation(locationId: string, graph: WorldGraph): boolean {
+  const locatedEdges = graph.getIncomingEdges(locationId, 'located_at');
+  for (const edge of locatedEdges) {
+    const actorId = edge.source;
+    const tradeEdges = graph.getOutgoingEdges(actorId, 'trades_with');
+    if (tradeEdges.length > 0) return true;
+    // Also check incoming trades_with (trade routes can be in either direction)
+    const incomingTradeEdges = graph.getIncomingEdges(actorId, 'trades_with');
+    if (incomingTradeEdges.length > 0) return true;
+  }
+  return false;
 }

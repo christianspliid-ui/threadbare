@@ -68,6 +68,8 @@ import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
 import { phaseProsperity } from './phaseProsperity';
+import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
+import { phaseSublocations } from './phaseSublocations';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -1114,9 +1116,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 6.62: Trade Route Decay (stale routes lose volume; dead routes removed)
+  s = { ...s, ...phaseTradeRouteDecay(s) };
+  phaseEventCounts['trade_route_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
   // Phase 6.63: Settlement Prosperity (economic pulse for all settlements)
   s = { ...s, ...phaseProsperity(s) };
   phaseEventCounts['prosperity'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.64: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
+  s = { ...s, ...phaseSublocations(s) };
+  phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Ambition Progress (milestones, completion, abandonment, re-evaluation)
