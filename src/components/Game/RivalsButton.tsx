@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { RivalDefinition, RivalState } from '../../types/rival';
 import { RivalPanel } from './RivalPanel';
 
@@ -10,9 +11,20 @@ interface RivalsButtonProps {
 export function RivalsButton({ definitions, states }: RivalsButtonProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
 
   useEffect(() => {
     if (!open) return;
+    if (buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        right: window.innerWidth - rect.right,
+        zIndex: 9999,
+      });
+    }
     function handleOutsideClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
@@ -31,6 +43,7 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
   return (
     <div ref={ref} className="relative flex-shrink-0">
       <button
+        ref={buttonRef}
         onClick={() => setOpen(o => !o)}
         className="relative flex items-center justify-center px-2 py-1 rounded transition-colors"
         style={{
@@ -66,10 +79,11 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
         )}
       </button>
 
-      {open && (
+      {open && createPortal(
         <div
-          className="absolute right-0 top-full mt-1 z-50 rounded-lg overflow-hidden"
+          className="rounded-lg overflow-hidden"
           style={{
+            ...dropdownStyle,
             width: '260px',
             background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
             border: '1px solid var(--border-subtle)',
@@ -78,7 +92,8 @@ export function RivalsButton({ definitions, states }: RivalsButtonProps) {
           }}
         >
           <RivalPanel definitions={definitions} states={states} />
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
