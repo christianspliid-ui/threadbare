@@ -174,6 +174,18 @@ export interface TradeRouteVolumeChangeTrace extends TraceBase {
   causingActionId?: string;
 }
 
+/** Trace: trade route removed after volume decayed to 0 */
+export interface TradeRouteDissolvedTrace extends TraceBase {
+  category: 'trade_route_dissolved';
+  edgeId: string;
+  sourceId: string;
+  targetId: string;
+  establishedTick: number;
+  peakVolume: number;
+  totalTicksActive: number;
+  causeOfDeath: 'decay';
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -188,7 +200,8 @@ export type TraceEntry =
   | ModifierResolutionTrace
   | ProsperityTickTrace
   | WealthDeltaTrace
-  | TradeRouteVolumeChangeTrace;
+  | TradeRouteVolumeChangeTrace
+  | TradeRouteDissolvedTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -205,6 +218,7 @@ export const TRACE_CATEGORIES = [
   'prosperity_tick',
   'wealth_delta',
   'trade_route_volume_change',
+  'trade_route_dissolved',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
