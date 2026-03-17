@@ -5,7 +5,9 @@
 ## Current Focus
 PROD-01 Vertical Slice Contract complete. Next milestone: **Playtest-Ready Polish** — 10 measurable success criteria defined in `Docs/plans/2026-03-16-prod-01-vertical-slice-contract.md`.
 
-**Latest:** Responsive design system implemented (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px): sidebar width scaling (280→420px), top bar height (44→52px), panel padding, top bar gap. All sub-16px font sizes fixed to `var(--text-xs)`. HexChronicle prose column capped at 860px. Top bar dead zone (Option A/B/C) still needs design decision.
+**Latest:** Economic Chronicle system complete (2026-03-17) — 48 templates across 12 economic trigger types fire permanent chronicle entries on significant state changes. Triggers: settlement promotion/demotion, trade route create/death, guild founding, monopoly established/broken, mercenary hire, assassination commission, agreement breaking, wealth tier changes. `economicChronicle.ts` resolver with PRNG variant selection and fail-soft name resolution. `phaseEconomicChronicle` (Phase 6.66) scans action outcomes and wealth tier deltas. Wired into `phaseSettlementPromotion` and `phaseTradeRouteDecay`. `EconomicChronicleTrace` + `economic_chronicle` TickEvent type. 27 tests. 5,073 tests pass.
+
+**Previous:** Responsive design system implemented (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px): sidebar width scaling (280→420px), top bar height (44→52px), panel padding, top bar gap. All sub-16px font sizes fixed to `var(--text-xs)`. HexChronicle prose column capped at 860px. Top bar dead zone (Option A/B/C) still needs design decision.
 
 **Previous:** Terrain-aware prosperity prose complete (2026-03-17) — expanded from 20 generic fragments to 80 total (60 terrain-specific + 20 generic fallback). 4 terrain categories (coastal, mountain, farmland, forest), 3 fragments per tier per terrain. `TERRAIN_PROSPERITY_CATEGORY` maps 25 terrain types to categories. `prosperityResolver` prefers terrain pool, falls back to generic for unmapped terrains. 21 new tests. Settlements now describe their economic state through the lens of their geography.
 
