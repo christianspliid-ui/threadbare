@@ -44,7 +44,7 @@ export const TRAIL_LINE_COLOR = '#1a1a1a';
 export const TRAIL_LINE_WIDTH = 0.75;
 
 /** Maximum trail opacity (current position end) */
-export const TRAIL_OPACITY_MAX = 0.35;
+export const TRAIL_OPACITY_MAX = 0.8;
 
 /** Minimum trail opacity (oldest position end) */
 export const TRAIL_OPACITY_MIN = 0.05;

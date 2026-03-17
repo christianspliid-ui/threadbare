@@ -22,8 +22,11 @@ import { hexToPixel } from '../../lib/hexMath';
 /** Radius of small dots at trail waypoints */
 const TRAIL_DOT_RADIUS = 1.0;
 
-/** Wobble magnitude as fraction of hex size */
-const WOBBLE_FACTOR = 0.12;
+/** Wobble magnitude as fraction of hex size (bezier control point offset) */
+const WOBBLE_FACTOR = 0.5;
+
+/** Waypoint jitter as fraction of hex size (offsets points from hex center) */
+const WAYPOINT_JITTER = 0.6;
 
 interface MovementTrailsProps {
   graph: WorldGraph;
@@ -54,20 +57,40 @@ export const MovementTrails: React.FC<MovementTrailsProps> = ({
         const history = movementState?.movementHistory;
         if (!history || history.length < 2) return null;
 
-        // Convert to pixel positions (history is newest-first)
+        // Convert to pixel positions (history is newest-first), jittered off hex center
         const rawPoints = history
           .filter(entry => entry.hexCol != null && entry.hexRow != null)
-          .map(entry => hexToPixel({ col: entry.hexCol!, row: entry.hexRow! }, hexSize));
+          .map((entry, idx) => {
+            const center = hexToPixel({ col: entry.hexCol!, row: entry.hexRow! }, hexSize);
+            // Deterministic jitter so waypoints don't sit on hex center
+            const h = wobbleHash(agent.id, idx + 100);
+            const h2 = wobbleHash(agent.id, idx + 200);
+            const jx = hexSize * WAYPOINT_JITTER * (((h & 0xff) / 255) * 2 - 1);
+            const jy = hexSize * WAYPOINT_JITTER * (((h2 & 0xff) / 255) * 2 - 1);
+            return { x: center.x + jx, y: center.y + jy };
+          });
 
         if (rawPoints.length < 2) return null;
 
+        // Interpolate a jittered midpoint between each pair for denser trail
+        const densified: { x: number; y: number }[] = [rawPoints[0]];
+        for (let k = 0; k < rawPoints.length - 1; k++) {
+          const a = rawPoints[k], b = rawPoints[k + 1];
+          const mh = wobbleHash(agent.id, k + 300);
+          const mh2 = wobbleHash(agent.id, k + 400);
+          const mjx = hexSize * WAYPOINT_JITTER * 0.5 * (((mh & 0xff) / 255) * 2 - 1);
+          const mjy = hexSize * WAYPOINT_JITTER * 0.5 * (((mh2 & 0xff) / 255) * 2 - 1);
+          densified.push({ x: (a.x + b.x) / 2 + mjx, y: (a.y + b.y) / 2 + mjy });
+          densified.push(b);
+        }
+
         // Offset the newest point toward the arrival direction (matches agent ring position)
-        const newest = rawPoints[0];
-        const prevHex = rawPoints[1];
+        const newest = densified[0];
+        const prevHex = densified[1];
         const arrivalAngle = Math.atan2(prevHex.y - newest.y, prevHex.x - newest.x);
         const points = [
           { x: newest.x + Math.cos(arrivalAngle) * AGENT_RING_RADIUS, y: newest.y + Math.sin(arrivalAngle) * AGENT_RING_RADIUS },
-          ...rawPoints.slice(1),
+          ...densified.slice(1),
         ];
 
         const totalSegs = points.length - 1;
@@ -100,7 +123,7 @@ export const MovementTrails: React.FC<MovementTrailsProps> = ({
                   strokeWidth={TRAIL_LINE_WIDTH - t * 0.3}
                   opacity={Math.max(TRAIL_OPACITY_MIN, opacity)}
                   strokeLinecap="round"
-                  strokeDasharray="3 4"
+                  strokeDasharray="1 2"
                   fill="none"
                 />
               );
