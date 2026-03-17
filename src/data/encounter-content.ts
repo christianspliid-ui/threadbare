@@ -28,6 +28,23 @@ export interface EncounterDifficultyTier {
 const DIFFICULTY_BASE = 35;
 const DIFFICULTY_STEP = 10;
 
+// ─── System 6 Constants (Economic Encounters) ────────────────────────
+
+/** Prosperity gain applied to the host settlement from Market Day Festival */
+export const MARKET_FESTIVAL_PROSPERITY_BOOST = 5;
+
+/**
+ * PRNG probability of a new relates_to edge forming between each pair of
+ * agents present at Market Day Festival. Seeded roll per pair per tick.
+ */
+export const MARKET_FESTIVAL_RELATIONSHIP_CHANCE = 0.3;
+
+/** Resource quantity bonus on a successful Rich Vein discovery */
+export const RICH_VEIN_RESOURCE_BONUS = 20;
+
+/** Resource quantity penalty (and injury condition) on a Rich Vein collapse */
+export const RICH_VEIN_COLLAPSE_PENALTY = 10;
+
 // ─── 3 Difficulty Tiers ─────────────────────────────────────────
 
 /**
@@ -3863,6 +3880,613 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onFailure: {
           narrative: '{actor}\'s {adj} establishment {verb}s {adj}. The settlement {verb}s {adj}, {adj} and {adj} fragile.',
           reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  // ────────────────────────────────────────────────────────────────────
+  // GOLD SUBLOCATION ENCOUNTERS (System 6 — 12 templates)
+  // ────────────────────────────────────────────────────────────────────
+
+  // ── Market District (2) ──────────────────────────────────────────
+  {
+    id: 'encounter.the_haggle',
+    name: 'The Haggle',
+    locationTypes: ['hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.market-district'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'trade',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    steps: [
+      {
+        id: 'the_haggle.opening',
+        name: 'The Opening Bid',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: '{actor} squares off against a {adj} merchant in the market square. The first price named is a barb — too high by half, as any fool could see.',
+        onSuccess: {
+          narrative: '{actor} names a counter with {adj} precision. The merchant blinks, recalculates, and the dance begins in earnest.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: '{actor} hesitates a beat too long. The merchant {verb}s, scenting weakness, and doubles down on the {adj} price.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'the_haggle.pressure',
+        name: 'The Pressure',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Stalls around them fall quiet. {actor} must read the merchant\'s resolve — break it with words, or yield ground to save the deal.',
+        onSuccess: {
+          narrative: '{actor} finds the {adj} angle: a past debt, a future favour, a word that lands like a coin on stone. The merchant folds.',
+          reputationDelta: 0.07,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s words {verb} past the merchant\'s guard. The deal stalls, and the crowd loses interest.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'the_haggle.close',
+        name: 'The Close',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        narrative: 'One price remains between profit and insult. {actor} must close the gap without breaking what goodwill remains.',
+        onSuccess: {
+          narrative: 'Hands clasp. The deal is struck at {actor}\'s terms — not all of them, but enough. Both walk away {adj} richer for the sparring.',
+          reputationDelta: 0.12,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The merchant pulls back at the last. {actor} leaves the stall {adj}-handed, the deal dead in the dust.',
+          reputationDelta: -0.06,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.market_day_festival',
+    name: 'Market Day Festival',
+    locationTypes: ['hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.market-district'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'trade',
+    threatRating: 'trivial',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    steps: [
+      {
+        id: 'market_day_festival.celebration',
+        name: 'The Celebration',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'The whole settlement floods the market square. Banners fly, prices drop, and strangers share tables. {actor} moves through the {adj} crowd, coin and conversation flowing freely.',
+        onSuccess: {
+          narrative: '{actor} works the festival {adj}ly — a word here, a purchase there. By dusk, new faces have become familiar ones.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} misreads the {adj} mood, stepping on toes they didn\'t see. The festival carries on without them.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'market_day_festival.connections',
+        name: 'The Connections',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'As the fires are lit and the crowd thins, {actor} has a chance to {verb} on the acquaintances the day has made — follow up, leave a mark, or let the moment pass.',
+        onSuccess: {
+          narrative: '{actor} {verb}s the right words at the right moment. A stranger becomes a contact; a contact becomes something more.',
+          reputationDelta: 0.09,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} {verb}s too {adj}ly and the connection {verb}s into awkward silence. The festival ends without its promise kept.',
+          reputationDelta: -0.03,
+        },
+      },
+    ],
+  },
+
+  // ── Mine (2) ────────────────────────────────────────────────────
+  {
+    id: 'encounter.the_rich_vein',
+    name: 'The Rich Vein',
+    locationTypes: ['mining', 'hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.mine'],
+    reachPrimary: 'gold',
+    reachSecondary: 'stone',
+    encounterType: 'acquire',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.acquire,
+    steps: [
+      {
+        id: 'the_rich_vein.survey',
+        name: 'The Survey',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE,
+        narrative: '{actor} descends into the shaft where a seam of ore {verb}s deep in the {adj} rock, far richer than the ledgers suggest.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} eye reads the stone correctly — the vein is real, running {adj} and wide. The foreman scratches his beard in {adj} disbelief.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor} misjudges the depth. The vein twists away into {adj} rock, unreachable with current tools.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'the_rich_vein.extraction',
+        name: 'The Extraction',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: '{actor} must fund and organise the {adj} extraction effort before word spreads and rivals move in.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} organisation holds. Carts of ore roll out, and the settlement\'s resources swell.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s planning {verb}s under the weight of {adj} logistics. The opportunity slips by.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'the_rich_vein.collapse',
+        name: 'The Risk',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        narrative: 'The shaft groans. {actor} must decide — press on into the {adj} unstable seam, or pull back and lose the haul.',
+        onSuccess: {
+          narrative: '{actor} reads the rock\'s {adj} warning and braces the shaft in time. The ore comes out, and everyone comes out with it.',
+          reputationDelta: 0.14,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The shaft {verb}s with terrible finality. {actor} escapes, but the ore is buried and {they} carry a {adj} injury for their boldness.',
+          reputationDelta: -0.10,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.labor_dispute',
+    name: 'Labor Dispute',
+    locationTypes: ['mining', 'hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.mine'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'lead',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+    steps: [
+      {
+        id: 'labor_dispute.grievance',
+        name: 'The Grievance',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'The miners have downed tools. A {adj} foreman presents their list of grievances to {actor}, whose {adj} authority over the mine is now on trial.',
+        onSuccess: {
+          narrative: '{actor} listens without flinching. The miners\'s litany is {adj} — some of it fair, some of it {adj} embellishment. {actor} separates the two.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor}\'s attention {verb}s dismissively. The foreman\'s jaw tightens. This is going to cost more than it should.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'labor_dispute.resolution',
+        name: 'The Resolution',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: '{actor} must choose: pay the miners fairly and accept the cost, or squeeze them and risk a harder fight later.',
+        onSuccess: {
+          narrative: '{actor} offers {adj} terms — not generous, but {adj} honest. The tools go back to work. Word spreads that {actor} is fair.',
+          reputationDelta: 0.12,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} lowballs the settlement. The miners return to work {adj}ly, nursing {adj} resentment the mine will feel for seasons.',
+          reputationDelta: -0.06,
+        },
+      },
+    ],
+  },
+
+  // ── Harbor (2) ─────────────────────────────────────────────────
+  {
+    id: 'encounter.foreign_trader',
+    name: 'Foreign Trader',
+    locationTypes: ['town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.harbor'],
+    reachPrimary: 'gold',
+    reachSecondary: 'eye',
+    encounterType: 'trade',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    steps: [
+      {
+        id: 'foreign_trader.appraisal',
+        name: 'The Appraisal',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'A foreign vessel has docked. The {adj} captain spreads exotic wares across the quay, and {actor} must determine what is genuinely rare and what is {adj} dockside theatre.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} eye cuts through the {adj} display. Two items are genuine; the rest is clever staging. {actor} knows which is which.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor}\'s appraisal {verb}s somewhere in the {adj} middle. The captain {verb}s, sensing opportunity.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'foreign_trader.negotiation',
+        name: 'The Negotiation',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'The captain\'s price is {adj}. {actor} must negotiate across a language barrier and a {adj} cultural gulf.',
+        onSuccess: {
+          narrative: '{actor} bridges the {adj} gap with {adj} gold and a trader\'s instinct. The goods change hands at {adj} fair terms.',
+          reputationDelta: 0.10,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Something {verb}s in translation. {actor} overpays, or misses what the captain was actually offering. The goods are {adj}, but the price is worse.',
+          reputationDelta: -0.05,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.pirate_raid',
+    name: 'Pirate Raid',
+    locationTypes: ['town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.harbor'],
+    reachPrimary: 'iron',
+    reachSecondary: 'gold',
+    encounterType: 'duel',
+    threatRating: 'hard',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
+    steps: [
+      {
+        id: 'pirate_raid.warning',
+        name: 'The Warning',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'Sails on the horizon, wrong colours. {actor} has minutes to rally the harbor guards and coordinate a {adj} defence before the raiders make land.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} organisation pays off — harbor chains drawn, archers in position. The raiders {verb} the {adj} wall of readiness.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor}\'s orders {verb} in the {adj} chaos. The docks are unprepared when the first hull scrapes stone.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'pirate_raid.repel',
+        name: 'The Repel',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Raiders pour across the gangplanks. {actor} is in the thick of it — defend the cargo sheds or let them burn.',
+        onSuccess: {
+          narrative: '{actor} holds the line with {adj} resolve. The raiders {verb}, taking too many losses for the prize. They pull back.',
+          reputationDelta: 0.09,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} is pushed back. The sheds burn. Cargo is lost, and the harbor bears {adj} scars long after the ships depart.',
+          reputationDelta: -0.07,
+        },
+      },
+      {
+        id: 'pirate_raid.aftermath',
+        name: 'The Aftermath',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        narrative: 'The raiders are rallying for a second push. {actor} must lead the counterattack before they regroup.',
+        onSuccess: {
+          narrative: '{actor} drives them into the water with {adj} fury. The harbor will not be struck again this season.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The {adj} second wave crashes over the defences. {actor} survives, but the raid leaves the harbor {adj} gutted.',
+          reputationDelta: -0.12,
+        },
+      },
+    ],
+  },
+
+  // ── Counting House (2) ─────────────────────────────────────────
+  {
+    id: 'encounter.the_loan',
+    name: 'The Loan',
+    locationTypes: ['town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.counting-house'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'assist',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    steps: [
+      {
+        id: 'the_loan.proposal',
+        name: 'The Proposal',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'Across a {adj} ledger, a choice. {actor} can extend a loan to a desperate borrower — terms to be set, risk to be weighed. No sword needed. Only judgment.',
+        onSuccess: {
+          narrative: '{actor} draws up {adj} terms: fair interest, a {adj} schedule, and a clause that protects both parties. The borrower considers.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor}\'s terms {verb} too far in one direction. The borrower balks, or the house extends more than wisdom {verb}s. The ledger {verb}s {adj} exposed.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'the_loan.binding',
+        name: 'The Binding',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: '{actor} must read the borrower\'s true intent before ink touches parchment. A {adj} lender and a {adj} debtor — the agreement must hold both.',
+        onSuccess: {
+          narrative: 'The agreement is struck. Both parties sign with {adj} purpose, and the debt is recorded as what it is: a {adj} obligation freely made.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s judgment {verb}s. The borrower signs, but the {adj} terms breed resentment before the ink is dry.',
+          reputationDelta: -0.04,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.debt_collection',
+    name: 'Debt Collection',
+    locationTypes: ['town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.counting-house'],
+    reachPrimary: 'gold',
+    reachSecondary: 'iron',
+    encounterType: 'hire',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
+    steps: [
+      {
+        id: 'debt_collection.demand',
+        name: 'The Demand',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'The agreement is past due. {actor} presents the ledger to the debtor, who {verb}s a {adj} excuse and {adj} stalling. Every word is a delay.',
+        onSuccess: {
+          narrative: '{actor} lays out the terms without {adj} apology. The debtor {verb}s under the {adj} clarity and begins to negotiate in good faith.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor}\'s approach {verb}s too {adj}. The debtor takes it as weakness and {verb}s the debt further into dispute.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'debt_collection.enforcement',
+        name: 'The Enforcement',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Words have failed. {actor} must enforce the agreement — not with violence, but with the {adj} authority of consequence.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} resolve closes the matter. Payment arrives, and the agreement is honoured, if {adj}ly.',
+          reputationDelta: 0.10,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The debtor walks. {actor} is left holding a {adj} broken agreement and a lesson in the limits of paper contracts.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ── Smuggler's Den (2) ─────────────────────────────────────────
+  {
+    id: 'encounter.black_market_deal',
+    name: 'Black Market Deal',
+    locationTypes: ['hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.smugglers-den'],
+    reachPrimary: 'gold',
+    reachSecondary: 'shadow',
+    encounterType: 'steal',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
+    steps: [
+      {
+        id: 'black_market_deal.contact',
+        name: 'The Contact',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE,
+        narrative: '{actor} follows {adj} directions to a {adj} room that smells of tallow and secrets. The broker is there. So, perhaps, is a watcher.',
+        onSuccess: {
+          narrative: '{actor} arrives {adj}ly, reads the room, and signals in the right way. The broker {verb}s the goods out from under the table.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: '{actor} {verb}s too {adj} conspicuously. Eyes {verb} in the room. The broker packs up and leaves without a word.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'black_market_deal.purchase',
+        name: 'The Purchase',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'The goods are real. The risk is real. {actor} must buy quickly, pay without haggling, and leave before the situation {verb}s complicated.',
+        onSuccess: {
+          narrative: '{actor} completes the exchange with {adj} economy of movement. No names. No receipts. The goods are worth the {adj} risk.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Something {verb}s wrong. The goods are seized, or {actor} is marked as a buyer. The {adj} exposure will cost more than coin.',
+          reputationDelta: -0.10,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.the_fence',
+    name: 'The Fence',
+    locationTypes: ['hamlet', 'town', 'city', 'capital'],
+    sublocationTypes: ['sublocation-type.smugglers-den'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'gold',
+    encounterType: 'steal',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.steal,
+    steps: [
+      {
+        id: 'the_fence.transaction',
+        name: 'The Transaction',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE,
+        narrative: '{actor} has goods that cannot be sold honestly. The fence names a price — {adj}, naturally. {actor} must take it, or try {their} luck elsewhere in this {adj} quarter.',
+        onSuccess: {
+          narrative: 'The exchange is made in {adj} silence. {actor} walks out lighter and richer, no record left behind.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: 'The fence {verb}s the goods as {adj} too hot and waves {actor} off. Word {verb}s — the original owner is asking questions.',
+          reputationDelta: -0.08,
+        },
+      },
+      {
+        id: 'the_fence.clean_exit',
+        name: 'The Clean Exit',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Coin in hand, {actor} must leave the {adj} quarter without attracting the wrong kind of interest. The streets here {verb} with {adj} memory.',
+        onSuccess: {
+          narrative: '{actor} {verb}s {adj}ly through the {adj} alleys and back into the light. No footprints. No witnesses.',
+          reputationDelta: 0.07,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s departure {verb}s. A constable {verb}s a {adj} glance; a neighbour {verb}s {their} face. The coin was earned — the attention was not.',
+          reputationDelta: -0.06,
+        },
+      },
+    ],
+  },
+
+  // ── Caravan Rest (2) ──────────────────────────────────────────
+  {
+    id: 'encounter.toll_bridge',
+    name: 'Toll Bridge',
+    locationTypes: ['hamlet', 'town', 'city', 'capital', 'camp'],
+    sublocationTypes: ['sublocation-type.caravan-rest'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'lead',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+    steps: [
+      {
+        id: 'toll_bridge.control',
+        name: 'The Control',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: '{actor} holds the only crossing for a day\'s ride. Merchants must pass or go around. The toll — how much is {adj} enough? How much is {adj} too much?',
+        onSuccess: {
+          narrative: '{actor} sets a {adj} toll that merchants can bear without real complaint. Coin flows. Nobody loses a day.',
+          reputationDelta: 0.04,
+        },
+        onFailure: {
+          narrative: '{actor}\'s toll is {adj} too steep. One merchant turns back; another {verb}s a shortcut. The crossing earns {adj} less than it should.',
+          reputationDelta: -0.04,
+        },
+      },
+      {
+        id: 'toll_bridge.reputation',
+        name: 'The Reputation',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Word of the toll {verb}s up and down the road. {actor} has a chance to shape what is said: {adj} fair tax, or {adj} bandit with a gate.',
+        onSuccess: {
+          narrative: 'Caravans speak of {actor}\'s toll as {adj} reasonable — expensive but {adj} honest. The road stays open and the coin keeps flowing.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The stories {verb} {adj} in the wrong direction. Merchants begin to find other routes, and the toll {verb}s less and less each week.',
+          reputationDelta: -0.06,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.caravan_guard',
+    name: 'Caravan Guard',
+    locationTypes: ['hamlet', 'town', 'city', 'capital', 'camp'],
+    sublocationTypes: ['sublocation-type.caravan-rest'],
+    reachPrimary: 'iron',
+    reachSecondary: 'gold',
+    encounterType: 'hire',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
+    steps: [
+      {
+        id: 'caravan_guard.contract',
+        name: 'The Contract',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        narrative: 'A merchant needs {adj} swords for a {adj} route known to attract attention. {actor} negotiates the rate and terms before the caravan leaves.',
+        onSuccess: {
+          narrative: '{actor} agrees {adj} terms: fair pay, clear expectations, and a bonus if the goods arrive {adj} intact. The merchant {verb}s with relief.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: '{actor}\'s terms {verb} badly. The merchant {verb}s away for cheaper swords, and the {adj} coin goes with them.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'caravan_guard.escort',
+        name: 'The Escort',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        narrative: 'Three days on the road. On the second, riders {verb} on the horizon. {actor} must position the guards and read whether this is {adj} threat or {adj} coincidence.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} positioning {verb}s. The riders veer off, unwilling to test a {adj} prepared escort. The caravan arrives {adj} whole.',
+          reputationDelta: 0.10,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s guard is {adj} caught flat. The ambush strips the caravan of a {adj} portion of its cargo. The merchant {verb}s in {adj} fury.',
+          reputationDelta: -0.08,
+        },
+      },
+      {
+        id: 'caravan_guard.delivery',
+        name: 'The Delivery',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        narrative: 'The road\'s last stretch is the {adj} hardest. Rumour of a second ambush {verb}s the merchants\' nerves. {actor} must hold the guard together.',
+        onSuccess: {
+          narrative: '{actor}\'s {adj} steadiness {verb} through to the gates. The bonus is paid; the merchant {verb}s a name worth remembering.',
+          reputationDelta: 0.14,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The {adj} final stretch costs too much. Cargo lost, guards shaken. {actor} delivers what {they} can, but the contract {verb}s in failure.',
+          reputationDelta: -0.10,
         },
       },
     ],
