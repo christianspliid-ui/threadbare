@@ -196,7 +196,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
   };
 
   return (
-    <Modal open={true} onClose={onClose} maxWidth={768}>
+    <Modal open={true} onClose={onClose} maxWidth={960}>
       {/* Header Zone */}
       <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex gap-4 mb-3">
