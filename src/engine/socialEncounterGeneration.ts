@@ -43,34 +43,30 @@ import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 
-// ─── Constants ───────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  STRONG_BOND_THRESHOLD,
+  HOSTILE_BOND_THRESHOLD,
+  COOPERATIVE_BOND_BOOST,
+  RIVAL_BOND_BOOST,
+  STRANGER_MODIFIER,
+  STRANGER_CURIOSITY_THRESHOLD,
+  STRANGER_CURIOSITY_BONUS,
+  MAX_SOCIAL_CANDIDATES_PER_AGENT,
+  VISIBLE_AGENT_MAX_HOPS,
+} from '../data/agent-behavior-constants';
 
-/** Trust above this → cooperative bond boost */
-export const STRONG_BOND_THRESHOLD = 0.6;
-
-/** Trust below this → hostile bond boost */
-export const HOSTILE_BOND_THRESHOLD = -0.3;
-
-/** Score boost applied to cooperative social encounters with strong bonds */
-export const COOPERATIVE_BOND_BOOST = 0.4;
-
-/** Score boost applied to destructive social encounters with hostile bonds */
-export const RIVAL_BOND_BOOST = 0.3;
-
-/** Score penalty for encounters with unknown agents */
-export const STRANGER_MODIFIER = -0.1;
-
-/** Eye capability threshold above which the agent gets a curiosity bonus */
-export const STRANGER_CURIOSITY_THRESHOLD = 0.3;
-
-/** Curiosity bonus for perceptive agents encountering strangers */
-export const STRANGER_CURIOSITY_BONUS = 0.15;
-
-/** Maximum social encounter templates generated per target agent */
-export const MAX_SOCIAL_CANDIDATES_PER_AGENT = 3;
-
-/** Maximum adjacency hops for "visible" agents */
-const VISIBLE_AGENT_MAX_HOPS = 2;
+import {
+  STRONG_BOND_THRESHOLD,
+  HOSTILE_BOND_THRESHOLD,
+  COOPERATIVE_BOND_BOOST,
+  RIVAL_BOND_BOOST,
+  STRANGER_MODIFIER,
+  STRANGER_CURIOSITY_THRESHOLD,
+  STRANGER_CURIOSITY_BONUS,
+  MAX_SOCIAL_CANDIDATES_PER_AGENT,
+  VISIBLE_AGENT_MAX_HOPS,
+} from '../data/agent-behavior-constants';
 
 // ─── Cooperative/Destructive encounter type classification ───
 

@@ -42,31 +42,32 @@ import type { SphereName } from '../types/index';
 import { SPHERE_OPPOSITIONS } from './cosmology';
 import { getDivineAttention } from './divineAttention';
 
-// ─── Constants ───────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  SPHERE_ALIGNMENT_BONUS,
+  SPHERE_OPPOSITION_PENALTY,
+  EQUIPMENT_MODIFIER_CAP,
+  EQUIPMENT_PER_ITEM_CAP,
+  TERRAIN_MODIFIER_CAP,
+  FACTION_CONTROL_BONUS,
+  HOSTILE_TERRITORY_PENALTY,
+  TRAIT_BONUS_CAP,
+  TRAIT_PER_BONUS_CAP,
+  TERRAIN_RESOLUTION_MODIFIERS,
+} from '../data/agent-behavior-constants';
 
-export const SPHERE_ALIGNMENT_BONUS = 0.10;
-export const SPHERE_OPPOSITION_PENALTY = -0.10;
-export const EQUIPMENT_MODIFIER_CAP = 0.15;
-export const EQUIPMENT_PER_ITEM_CAP = 0.08;
-export const TERRAIN_MODIFIER_CAP = 0.10;
-export const FACTION_CONTROL_BONUS = 0.05;
-export const HOSTILE_TERRITORY_PENALTY = -0.05;
-export const TRAIT_BONUS_CAP = 0.10;
-export const TRAIT_PER_BONUS_CAP = 0.05;
-
-/** Terrain resolution modifiers by terrain type */
-export const TERRAIN_RESOLUTION_MODIFIERS: Record<string, number> = {
-  mountains: 0.05,
-  hills: 0.03,
-  dense_forest: -0.03,
-  swamp: -0.05,
-  desert: -0.03,
-  plains: 0.0,
-  coast: 0.0,
-  tundra: -0.03,
-  volcanic: -0.05,
-  ruins: 0.03,
-};
+import {
+  SPHERE_ALIGNMENT_BONUS,
+  SPHERE_OPPOSITION_PENALTY,
+  EQUIPMENT_MODIFIER_CAP,
+  EQUIPMENT_PER_ITEM_CAP,
+  TERRAIN_MODIFIER_CAP,
+  FACTION_CONTROL_BONUS,
+  HOSTILE_TERRITORY_PENALTY,
+  TRAIT_BONUS_CAP,
+  TRAIT_PER_BONUS_CAP,
+  TERRAIN_RESOLUTION_MODIFIERS,
+} from '../data/agent-behavior-constants';
 
 // ─── Types ───────────────────────────────────────────────────────
 

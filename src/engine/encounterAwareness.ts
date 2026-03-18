@@ -38,22 +38,22 @@ import type { EncounterCacheEntry } from './encounterCache';
 import { computeCapability } from './domainCapability';
 import { getDistance } from './distanceMatrix';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  AWARENESS_THRESHOLD,
+  BASE_AWARENESS_HOPS,
+  CAPABILITY_PER_HOP,
+  MAX_AWARENESS_HOPS,
+  FLESH_MAX_HOPS,
+} from '../data/agent-behavior-constants';
 
-/** Minimum capability to perceive encounters at all (below → 0 hops) */
-export const AWARENESS_THRESHOLD = 0.05;
-
-/** Base hops granted to any agent above the threshold */
-export const BASE_AWARENESS_HOPS = 1;
-
-/** Capability points needed per additional hop beyond base */
-export const CAPABILITY_PER_HOP = 0.15;
-
-/** Hard cap on awareness range for all reaches except flesh */
-export const MAX_AWARENESS_HOPS = 5;
-
-/** Flesh reach hard cap — physical encounters are inherently local */
-export const FLESH_MAX_HOPS = 1;
+import {
+  AWARENESS_THRESHOLD,
+  BASE_AWARENESS_HOPS,
+  CAPABILITY_PER_HOP,
+  MAX_AWARENESS_HOPS,
+  FLESH_MAX_HOPS,
+} from '../data/agent-behavior-constants';
 
 // ─── Public API ─────────────────────────────────────────────────
 

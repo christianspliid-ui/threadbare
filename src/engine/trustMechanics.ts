@@ -29,16 +29,18 @@
 import type { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 
-// ─── Constants ───────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  TRUST_COOPERATE_DELTA,
+  TRUST_DEFECT_DELTA,
+  TRUST_DECAY_PER_TICK,
+} from '../data/agent-behavior-constants';
 
-/** Trust gain from a cooperative interaction */
-export const TRUST_COOPERATE_DELTA = 0.03;
-
-/** Trust loss from a defective interaction (asymmetric — betrayal hurts more) */
-export const TRUST_DEFECT_DELTA = -0.08;
-
-/** Trust decay toward 0 per tick */
-export const TRUST_DECAY_PER_TICK = 0.002;
+import {
+  TRUST_COOPERATE_DELTA,
+  TRUST_DEFECT_DELTA,
+  TRUST_DECAY_PER_TICK,
+} from '../data/agent-behavior-constants';
 
 // ─── Core Functions ──────────────────────────────────────────
 

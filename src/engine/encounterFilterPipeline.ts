@@ -45,16 +45,18 @@ import {
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  MAX_SCORED_CANDIDATES,
+  MIN_DIVERSITY_SLOTS,
+  THREAT_FLOOR_FILTER,
+} from '../data/agent-behavior-constants';
 
-/** Hard cap on candidates forwarded to the scoring stage */
-export const MAX_SCORED_CANDIDATES = 40;
-
-/** Minimum entries preserved per encounter type during cap stage */
-export const MIN_DIVERSITY_SLOTS = 1;
-
-/** Whether the threat-tolerance stage is active */
-export const THREAT_FLOOR_FILTER = true;
+import {
+  MAX_SCORED_CANDIDATES,
+  MIN_DIVERSITY_SLOTS,
+  THREAT_FLOOR_FILTER,
+} from '../data/agent-behavior-constants';
 
 /** Ordered threat tiers for index-based comparison */
 const THREAT_ORDER: ThreatRating[] = ['trivial', 'easy', 'moderate', 'hard', 'deadly'];

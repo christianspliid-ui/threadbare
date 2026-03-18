@@ -25,12 +25,20 @@
 
 import type { WorldGraph } from './graph';
 
-// --- Constants ---
+// --- Constants (re-exported from central tuning file) ---
+export {
+  ATTUNE_COST_DISCOUNT,
+  SCRY_DURATION_TICKS,
+  FOCUS_DURATION_TICKS,
+  FOCUS_EFFICIENCY_BOOST,
+} from '../data/agent-behavior-constants';
 
-export const ATTUNE_COST_DISCOUNT = 0.3;
-export const SCRY_DURATION_TICKS = 10;
-export const FOCUS_DURATION_TICKS = 3;
-export const FOCUS_EFFICIENCY_BOOST = 0.4;
+import {
+  ATTUNE_COST_DISCOUNT,
+  SCRY_DURATION_TICKS,
+  FOCUS_DURATION_TICKS,
+  FOCUS_EFFICIENCY_BOOST,
+} from '../data/agent-behavior-constants';
 
 // --- Types ---
 
