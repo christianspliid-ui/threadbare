@@ -34,6 +34,13 @@ const BUTTONS_ROW_STYLE = {
   gap: 'var(--space-2)',
 };
 
+// Move button active state: sphere-colored accent when moveMode is on
+const MOVE_ACTIVE_STYLE: React.CSSProperties = {
+  backgroundColor: 'var(--accent-gold-glow)',
+  borderColor: 'var(--accent-gold-dim)',
+  color: 'var(--text-primary)',
+};
+
 export function AvatarHUD({
   sphereColor,
   onMoveClick,
@@ -41,11 +48,12 @@ export function AvatarHUD({
   onScryClick,
   moveMode = false,
 }: AvatarHUDProps) {
-  const moveStyle = useMemo(
+  // Sphere-colored active state for Move button — only computed when moveMode or color changes
+  const moveActiveStyle = useMemo<React.CSSProperties | undefined>(
     () => moveMode ? {
-      opacity: 1,
       backgroundColor: `${sphereColor}40`,
       borderLeft: `2px solid ${sphereColor}`,
+      color: 'var(--text-primary)',
     } : undefined,
     [moveMode, sphereColor]
   );
@@ -55,17 +63,22 @@ export function AvatarHUD({
       {/* Action Buttons Row */}
       <div style={BUTTONS_ROW_STYLE}>
         <Tooltip id="ui.avatar_move">
-          <Button variant="ghost" size="sm" onClick={onMoveClick} style={moveStyle}>
+          <Button
+            variant={moveMode ? 'secondary' : 'ghost'}
+            size="sm"
+            onClick={onMoveClick}
+            style={moveActiveStyle}
+          >
             Move
           </Button>
         </Tooltip>
         <Tooltip id="ui.avatar_actions">
-          <Button variant="ghost" size="sm" onClick={onWheelClick} style={{ opacity: 0.7 }}>
+          <Button variant="ghost" size="sm" onClick={onWheelClick}>
             Actions
           </Button>
         </Tooltip>
         <Tooltip id="ui.avatar_scry">
-          <Button variant="ghost" size="sm" onClick={onScryClick} style={{ opacity: 0.7 }}>
+          <Button variant="ghost" size="sm" onClick={onScryClick}>
             Investiture
           </Button>
         </Tooltip>

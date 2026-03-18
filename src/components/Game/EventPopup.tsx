@@ -80,21 +80,20 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
           >
             {interactive ? (
               popup.choices!.map(choice => (
-                <button
+                <Button
                   key={choice.effect}
+                  variant="secondary"
+                  size="sm"
                   onClick={() => onChoice?.(choice.effect)}
-                  className="px-4 py-2 rounded font-medium transition-colors"
+                  title={choice.tooltip}
                   style={{
-                    fontSize: 'var(--text-sm)',
-                    fontFamily: 'var(--font-body)',
                     backgroundColor: accentColor + '22',
                     color: accentColor,
-                    border: `1px solid ${accentColor}55`,
+                    borderColor: accentColor + '55',
                   }}
-                  title={choice.tooltip}
                 >
                   {choice.label}
-                </button>
+                </Button>
               ))
             ) : (
               <Button variant="secondary" size="sm" onClick={onDismiss}>
