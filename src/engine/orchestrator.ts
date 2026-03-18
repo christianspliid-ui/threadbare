@@ -386,10 +386,23 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
     // Skip resolution if agent is still occupied (multi-tick step in progress)
     if (isEncounterOccupied(progress, state.tick)) continue;
 
-    // Resolve current step
+    // Resolve current step (includes capability growth + tier promotion)
     const result = resolveEncounter(state, progress);
     // Advance encounter (mutates progress)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // Emit tier promotion event if a tier was crossed
+    if (result.growth?.tierCrossed && result.promotion?.traitGranted) {
+      const actorNode = state.graph.getNode(progress.actorId);
+      const agentName = actorNode?.name ?? 'An agent';
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'tier_promotion',
+        message: `${agentName} reached ${result.growth.domain} tier ${result.growth.newTier}: "${result.promotion.traitGranted}"`,
+        significance: 0.8,
+      });
+    }
 
     // Generate event based on outcome
     const eventType = result.success ? 'encounter_step_success' : 'encounter_step_failure';
