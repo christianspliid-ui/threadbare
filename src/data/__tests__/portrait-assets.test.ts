@@ -8,9 +8,10 @@ describe('portrait-assets', () => {
     expect(getPortraitUrl('old_power')).toBe('/portraits/old-power.png');
   });
 
-  it('returns null for archetypes without portraits', () => {
-    expect(getPortraitUrl('wanderer')).toBeNull();
-    expect(getPortraitUrl('schemer')).toBeNull();
+  it('returns URL for all 19 archetypes (full portrait set)', () => {
+    // All archetypes now have portraits (complete set since 2026-03-18)
+    expect(getPortraitUrl('wanderer')).toBe('/portraits/wanderer.png');
+    expect(getPortraitUrl('schemer')).toBe('/portraits/schemer.png');
   });
 
   it('returns null for undefined/unknown archetype', () => {
