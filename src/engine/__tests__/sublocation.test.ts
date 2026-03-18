@@ -118,6 +118,26 @@ describe('ensureSublocations', () => {
     expect(containsEdges.length).toBe(3);
   });
 
+  it('copies parent hexCol/hexRow onto sublocation nodes', () => {
+    // Recreate location with hex coordinates
+    graph.removeNode(locationId);
+    graph.addNode({
+      id: locationId,
+      type: 'location',
+      name: 'Test City',
+      properties: { locationType: 'hex', locationSubtype: 'city', hexCol: 8, hexRow: 6 },
+    });
+
+    const result = ensureSublocations(graph, locationId, 42);
+    expect(result.length).toBeGreaterThan(0);
+
+    for (const sub of result) {
+      const props = sub.properties as Record<string, unknown>;
+      expect(props.hexCol).toBe(8);
+      expect(props.hexRow).toBe(6);
+    }
+  });
+
   it('creates sublocation instances via legacy edge path (Path B)', () => {
     // Use a subtype NOT in the map, forcing Path B (legacy edge-based lookup)
     graph.removeNode(locationId);
@@ -990,5 +1010,29 @@ describe('createDivineSublocation', () => {
       persistence: { type: 'permanent' },
     });
     expect(result2?.name).toBe('Divine sublocation-type.temple');
+  });
+
+  it('copies parent hexCol/hexRow onto divine sublocation nodes', () => {
+    // Create a location with hex coordinates
+    graph.addNode({
+      id: 'loc-with-hex',
+      type: 'location',
+      name: 'Hex Location',
+      properties: { hexCol: 3, hexRow: 7 },
+    });
+
+    const result = createDivineSublocation(graph, {
+      locationId: 'loc-with-hex',
+      sublocationTypeId: 'sublocation-type.temple',
+      godId: 'god-1',
+      purpose: 'test',
+      tick: 1,
+      persistence: { type: 'permanent' },
+    });
+
+    expect(result).toBeDefined();
+    const props = result!.properties as Record<string, unknown>;
+    expect(props.hexCol).toBe(3);
+    expect(props.hexRow).toBe(7);
   });
 });
