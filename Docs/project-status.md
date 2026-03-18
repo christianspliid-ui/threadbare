@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Retinue Encounter Notifications (2026-03-18) — toast notifications when retinue agents complete/fail encounters, showing encounter name + reward/penalty details.
 - ✅ Content Browser CMS (2026-03-18) — browsable content explorer at `?view=cms`. Registry-driven: 48 datasets, ~786 items, 10 categories, 5 viewer types. Lazy-loaded (81KB separate chunk).
 - ✅ Sublocation Visibility Fix (2026-03-18) — sublocations now inherit parent hexCol/hexRow so they appear in hex chronicle under their parent LocationCard.
 - ✅ Encounter Progression Fix (2026-03-18) — wired phaseEncounterProgressionV2 into tick pipeline. Encounters now resolve and advance through steps instead of getting stuck on step 0.
