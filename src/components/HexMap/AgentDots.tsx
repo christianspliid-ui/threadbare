@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import { Tooltip } from '../shared/Tooltip';
 import {
@@ -9,6 +9,7 @@ import {
   DOMAIN_COLORS,
   DEFAULT_AGENT_COLOR,
   AGENT_RING_RADIUS,
+  AGENT_ARRIVE_FLASH_MS,
 } from '../../data/agent-visual-content';
 
 interface AgentDotsProps {
@@ -92,6 +93,20 @@ function buildAgentTooltip(
   return { label, desc: parts.join('\n') };
 }
 
+interface FlatAgent {
+  agent: NonNullable<ReturnType<WorldGraph['getNode']>>;
+  locationId: string;
+  x: number;
+  y: number;
+}
+
+interface OverflowEntry {
+  locationId: string;
+  cx: number;
+  cy: number;
+  count: number;
+}
+
 export const AgentDots: React.FC<AgentDotsProps> = ({
   graph,
   locationPositions,
@@ -105,65 +120,116 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   const isTokenZoom = zoomScale >= ZOOM_TOKEN_THRESHOLD;
   const radius = isTokenZoom ? AGENT_TOKEN_RADIUS : AGENT_DOT_RADIUS;
 
+  // Step 1: Collect ALL agents with absolute pixel positions (flat list)
+  const { allAgents, overflows } = useMemo(() => {
+    const agents: FlatAgent[] = [];
+    const ovf: OverflowEntry[] = [];
+
+    for (const { locationId, x: cx, y: cy } of locationPositions) {
+      const locAgents = getAgentsAtLocation(graph, locationId);
+      if (locAgents.length === 0) continue;
+
+      const visible = locAgents.slice(0, MAX_RING_AGENTS);
+      const overflow = locAgents.length - MAX_RING_AGENTS;
+
+      for (let i = 0; i < visible.length; i++) {
+        const agent = visible[i];
+        if (!agent) continue;
+        const angle = (2 * Math.PI * i) / Math.max(visible.length, 1) - Math.PI / 2;
+        const dx = Math.cos(angle) * AGENT_RING_RADIUS;
+        const dy = Math.sin(angle) * AGENT_RING_RADIUS;
+        agents.push({ agent, locationId, x: cx + dx, y: cy + dy });
+      }
+
+      if (overflow > 0) {
+        ovf.push({ locationId, cx, cy, count: overflow });
+      }
+    }
+
+    return { allAgents: agents, overflows: ovf };
+  }, [graph, locationPositions]);
+
+  // Step 2: Track previous locations for arrival flash detection
+  const prevLocations = useRef<Map<string, string>>(new Map());
+  const [arrivingAgents, setArrivingAgents] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const arriving = new Set<string>();
+    const newMap = new Map<string, string>();
+
+    for (const { agent, locationId } of allAgents) {
+      const prev = prevLocations.current.get(agent.id);
+      // Agent moved if we had a previous location and it differs
+      if (prev && prev !== locationId) {
+        arriving.add(agent.id);
+      }
+      newMap.set(agent.id, locationId);
+    }
+
+    prevLocations.current = newMap;
+
+    if (arriving.size > 0) {
+      setArrivingAgents(arriving);
+      const timer = setTimeout(() => setArrivingAgents(new Set()), AGENT_ARRIVE_FLASH_MS);
+      return () => clearTimeout(timer);
+    }
+  }, [allAgents]);
+
+  // Step 3: Render flat list — stable keys enable CSS transitions
   return (
     <g className="agent-dots-layer" style={{ pointerEvents: 'auto' }}>
-      {locationPositions.map(({ locationId, x: cx, y: cy }) => {
-        const agents = getAgentsAtLocation(graph, locationId);
-
-        if (agents.length === 0) return null;
-
-        const visibleAgents = agents.slice(0, MAX_RING_AGENTS);
-        const overflow = agents.length - MAX_RING_AGENTS;
+      {allAgents.map(({ agent, x, y }) => {
+        const isAvatar = agent.id === avatarId;
+        const color = isAvatar && sphereColor
+          ? sphereColor
+          : getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
+        const tooltip = buildAgentTooltip(agent, isAvatar);
+        const isArriving = arrivingAgents.has(agent.id);
 
         return (
-          <g key={locationId}>
-            {visibleAgents.map((agent, i) => {
-              if (!agent) return null;
-              const isAvatar = agent.id === avatarId;
-              // DES-009 §1.2: Ring arrangement — agents always position in ring slots
-              const angle = (2 * Math.PI * i) / Math.max(visibleAgents.length, 1) - Math.PI / 2;
-              const dx = Math.cos(angle) * AGENT_RING_RADIUS;
-              const dy = Math.sin(angle) * AGENT_RING_RADIUS;
-              const color = isAvatar && sphereColor
-                ? sphereColor
-                : getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
-              const tooltip = buildAgentTooltip(agent, isAvatar);
-
-              return (
-                <Tooltip
-                  key={agent.id}
-                  as="g"
-                  label={tooltip.label}
-                  desc={tooltip.desc}
-                  id={`agent.${agent.id}`}
-                >
-                  <g
-                    transform={`translate(${cx + dx}, ${cy + dy})`}
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => onAgentClick?.(agent.id)}
-                    onDoubleClick={() => onAgentDoubleClick?.(agent.id)}
-                    onMouseEnter={() => onAgentHover?.(agent.id)}
-                    onMouseLeave={() => onAgentHover?.(null)}
-                  >
-                    <circle
-                      r={radius}
-                      fill={color}
-                      stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
-                      strokeWidth={isAvatar ? 1.5 : 0.5}
-                      className={isAvatar ? 'avatar-pulse' : undefined}
-                    />
-                  </g>
-                </Tooltip>
-              );
-            })}
-            {overflow > 0 && (
-              <text x={cx} y={cy + AGENT_RING_RADIUS + 8} textAnchor="middle" fontSize={6} fill="#333">
-                +{overflow}
-              </text>
-            )}
-          </g>
+          <Tooltip
+            key={agent.id}
+            as="g"
+            label={tooltip.label}
+            desc={tooltip.desc}
+            id={`agent.${agent.id}`}
+          >
+            <g
+              className="agent-dot-group"
+              style={{ transform: `translate(${x}px, ${y}px)` }}
+              onClick={() => onAgentClick?.(agent.id)}
+              onDoubleClick={() => onAgentDoubleClick?.(agent.id)}
+              onMouseEnter={() => onAgentHover?.(agent.id)}
+              onMouseLeave={() => onAgentHover?.(null)}
+              cursor="pointer"
+            >
+              <circle
+                r={radius}
+                fill={color}
+                stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
+                strokeWidth={isAvatar ? 1.5 : 0.5}
+                className={[
+                  isAvatar ? 'avatar-pulse' : undefined,
+                  isArriving ? 'agent-arriving' : undefined,
+                ].filter(Boolean).join(' ') || undefined}
+              />
+            </g>
+          </Tooltip>
         );
       })}
+      {/* Overflow badges — still keyed by location */}
+      {overflows.map(({ locationId, cx, cy, count }) => (
+        <text
+          key={`overflow-${locationId}`}
+          x={cx}
+          y={cy + AGENT_RING_RADIUS + 8}
+          textAnchor="middle"
+          fontSize={6}
+          fill="#333"
+        >
+          +{count}
+        </text>
+      ))}
     </g>
   );
 };

@@ -237,6 +237,17 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
         .route-dots {
           animation: route-march 0.8s linear infinite;
         }
+        .agent-dot-group {
+          transition: transform 600ms ease-in-out;
+        }
+        @keyframes agent-arrive {
+          0% { transform: scale(1); filter: brightness(1); }
+          30% { transform: scale(2.2); filter: brightness(1.8); }
+          100% { transform: scale(1); filter: brightness(1); }
+        }
+        .agent-arriving {
+          animation: agent-arrive 500ms ease-out;
+        }
       `}</style>
       <svg
         ref={svgRef}

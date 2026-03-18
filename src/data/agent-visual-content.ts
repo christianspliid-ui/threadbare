@@ -49,6 +49,14 @@ export const TRAIL_OPACITY_MAX = 0.8;
 /** Minimum trail opacity (oldest position end) */
 export const TRAIL_OPACITY_MIN = 0.05;
 
+// --- Movement Animation Constants ---
+
+/** Duration of smooth glide transition when agent moves between hexes (ms) */
+export const AGENT_MOVE_TRANSITION_MS = 600;
+
+/** Duration of arrival flash animation when agent reaches a new hex (ms) */
+export const AGENT_ARRIVE_FLASH_MS = 500;
+
 // --- Ghost Dot Constants ---
 
 /** Initial opacity for ghost dots when agent leaves LOS */
