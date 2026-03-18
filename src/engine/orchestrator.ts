@@ -462,6 +462,76 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
   };
 }
 
+// ─── Phase 2a.5: Encounter Progression (v2 — progression only, no initiation) ───
+
+/**
+ * Advances active encounters whose current step has elapsed.
+ * Resolves the step, advances to the next (or completes/abandons), and emits events.
+ * Initiation is handled separately by phaseAgentDecision.
+ */
+export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
+  const events: TickEvent[] = [];
+  let updatedProgress = [...state.encounterProgress];
+
+  const activeEncounters = updatedProgress.filter(p => p.status === 'active');
+  for (const progress of activeEncounters) {
+    // Skip if agent is still occupied (multi-tick step in progress)
+    if (isEncounterOccupied(progress, state.tick)) continue;
+
+    // Resolve current step (includes capability growth + tier promotion)
+    const result = resolveEncounter(state, progress);
+    // Advance encounter (mutates progress in place)
+    advanceEncounter(state, progress, result.success, state.tick);
+
+    // Emit tier promotion event if a tier was crossed
+    if (result.growth?.tierCrossed && result.promotion?.traitGranted) {
+      const actorNode = state.graph.getNode(progress.actorId);
+      const agentName = actorNode?.name ?? 'An agent';
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'tier_promotion',
+        message: `${agentName} reached ${result.growth.domain} tier ${result.growth.newTier}: "${result.promotion.traitGranted}"`,
+        significance: 0.8,
+      });
+    }
+
+    // Generate event based on outcome
+    const actorNode = state.graph.getNode(progress.actorId);
+    const agentName = actorNode?.name ?? 'An agent';
+    if (progress.status === 'completed') {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'encounter_completed',
+        message: `${agentName} has completed their encounter.`,
+        significance: 0.8,
+      });
+    } else if (progress.status === 'abandoned') {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: 'encounter_step_failure',
+        message: `${agentName} failed their encounter step.`,
+        significance: 0.5,
+      });
+    } else {
+      events.push({
+        id: nextEventId(),
+        tick: state.tick,
+        type: result.success ? 'encounter_step_success' : 'encounter_step_failure',
+        message: `${agentName} ${result.success ? 'succeeded' : 'struggled'} in their encounter.`,
+        significance: 0.6,
+      });
+    }
+  }
+
+  return {
+    tickEvents: [...state.tickEvents, ...events],
+    encounterProgress: updatedProgress,
+  };
+}
+
 // ─── Phase 2.3: Action Progress ────────────────────────────────────────
 
 /** @deprecated Replaced by phaseUnifiedActionProgress. No longer called in the tick pipeline. */
@@ -1109,6 +1179,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   const uaRng = mulberry32(state.seed + state.tick * 31);
   s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng) };
   phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
+  s = { ...s, ...phaseEncounterProgressionV2(s) };
+  phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
