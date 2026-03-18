@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
 import type { CosmologyProfile, HexCoord, HexTile, OverlayMode } from './types';
 import type { AscendantArchetype } from './types/influence';
 import { createBalancedCosmology } from './engine/cosmology';
@@ -9,6 +9,8 @@ import { InfoPanel } from './components/UI/InfoPanel';
 import { AscendantSelection } from './components/Ascendant/AscendantSelection';
 import { GameView } from './components/Game/GameView';
 import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
+
+const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 
 type GamePhase =
   | { phase: 'worldgen' }
@@ -22,6 +24,7 @@ function App() {
   // Dev views via URL param: ?view=glow
   const viewParam = new URLSearchParams(window.location.search).get('view');
   if (viewParam === 'glow') return <MagicGlowTiles />;
+  if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
 
   const [gamePhase, setGamePhase] = useState<GamePhase>({ phase: 'worldgen' });
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());

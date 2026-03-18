@@ -76,7 +76,7 @@ const ARTIFACT_NAMES = [
   'The Soulweaver', 'Voidthorn', 'The Lantern of Stars',
 ];
 
-const LOCATION_NAMES = [
+export const LOCATION_NAMES = [
   'Ardenmor Keep', 'The Shattered Sanctum', 'Thornhaven', 'The Sunken Library',
   'Wraithwood', 'The Forge of Sorrow', 'Crystalspire', 'The Bone Coast',
 ];
@@ -135,7 +135,7 @@ export interface SeedResult {
 // ─── Location Subtype Selection ──────────────────────────────────────
 
 /** Terrain → eligible settlement subtypes (weighted) */
-const TERRAIN_SETTLEMENT_WEIGHTS: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
+export const TERRAIN_SETTLEMENT_WEIGHTS: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
   desert:     [['oasis', 3], ['camp', 4], ['ruins', 2], ['hamlet', 1]],
   mountains:  [['mining', 3], ['fort', 2], ['shrine', 2], ['tower', 1], ['ruins', 1]],
   hills:      [['hamlet', 3], ['town', 2], ['mining', 2], ['fort', 1], ['ruins', 1]],
