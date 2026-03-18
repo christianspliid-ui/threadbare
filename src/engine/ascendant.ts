@@ -35,16 +35,16 @@ function mulberry32(seed: number): () => number {
 }
 
 const VALUE_PAIRS: ValuePair[] = [
-  'ambition_contentment',
+  'mercy_ruthlessness',
+  'asceticism_extravagance',
+  'honesty_cunning',
+  'tradition_novelty',
+  'loyalty_ambition',
+  'frankness_propriety',
+  'humility_pride',
+  'sacrifice_survival',
+  'stoicism_passion',
   'courage_prudence',
-  'cruelty_compassion',
-  'cunning_honesty',
-  'devotion_independence',
-  'loyalty_treachery',
-  'tradition_innovation',
-  'dominance_humility',
-  'wrath_patience',
-  'greed_generosity',
 ];
 
 // ─── Archetype Generation ────────────────────────────────────────────

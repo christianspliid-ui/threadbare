@@ -8,7 +8,7 @@ const mockAgendas: AgendaTemplate[] = [
   {
     id: 'test_1',
     name: 'Whisper Ambition',
-    valuePair: 'ambition_contentment',
+    valuePair: 'loyalty_ambition',
     valueDirection: 'left',
     narrativeHook: 'golden visions of conquest',
     behaviorTag: 'glory-seeking',
@@ -18,7 +18,7 @@ const mockAgendas: AgendaTemplate[] = [
   {
     id: 'test_2',
     name: 'Stir Compassion',
-    valuePair: 'cruelty_compassion',
+    valuePair: 'mercy_ruthlessness',
     valueDirection: 'right',
     narrativeHook: 'the suffering of the innocent',
     behaviorTag: 'mercy-seeking',

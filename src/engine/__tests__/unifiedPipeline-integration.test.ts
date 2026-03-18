@@ -51,10 +51,10 @@ function createIntegrationState(): GameState {
 
   // 4 actors with axiological profiles
   const profiles = [
-    { courage_prudence: 0.4, ambition_contentment: 0.3, mercy_justice: -0.2, tradition_innovation: 0.1, autonomy_community: 0.0 },
-    { courage_prudence: -0.3, ambition_contentment: 0.5, mercy_justice: 0.4, tradition_innovation: -0.1, autonomy_community: 0.2 },
-    { courage_prudence: 0.1, ambition_contentment: -0.2, mercy_justice: 0.0, tradition_innovation: 0.5, autonomy_community: -0.3 },
-    { courage_prudence: 0.0, ambition_contentment: 0.0, mercy_justice: 0.1, tradition_innovation: 0.0, autonomy_community: 0.4 },
+    { courage_prudence: 0.4, loyalty_ambition: 0.3, mercy_justice: -0.2, tradition_novelty: 0.1, autonomy_community: 0.0 },
+    { courage_prudence: -0.3, loyalty_ambition: 0.5, mercy_justice: 0.4, tradition_novelty: -0.1, autonomy_community: 0.2 },
+    { courage_prudence: 0.1, loyalty_ambition: -0.2, mercy_justice: 0.0, tradition_novelty: 0.5, autonomy_community: -0.3 },
+    { courage_prudence: 0.0, loyalty_ambition: 0.0, mercy_justice: 0.1, tradition_novelty: 0.0, autonomy_community: 0.4 },
   ];
   const names = ['Alice', 'Bob', 'Carol', 'Dave'];
 

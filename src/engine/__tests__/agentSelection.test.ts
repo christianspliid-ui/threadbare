@@ -12,24 +12,24 @@ describe('Agent Action Selection', () => {
   let graph: WorldGraph;
 
   const defaultProfile: AxiologicalProfile = {
-    ambition_contentment: 0.7,
+    mercy_ruthlessness: -0.5,
+    asceticism_extravagance: -0.4,
+    honesty_cunning: 0.1,
+    tradition_novelty: 0.0,
+    loyalty_ambition: 0.7,
+    frankness_propriety: 0,
+    humility_pride: 0.4,
+    sacrifice_survival: -0.2,
+    stoicism_passion: 0,
     courage_prudence: 0.3,
-    cruelty_compassion: -0.5,
-    cunning_honesty: 0.1,
-    devotion_independence: -0.2,
-    loyalty_treachery: -0.6,
-    tradition_innovation: 0.0,
-    dominance_humility: 0.4,
-    wrath_patience: -0.3,
-    greed_generosity: -0.4,
   };
 
   const mockCandidates: ActionCandidate[] = [
-    { templateId: 'march', targetId: 'fort', domain: 'iron', score: 0, motivations: ['ambition_contentment', 'courage_prudence'] },
-    { templateId: 'trade', targetId: 'market', domain: 'gold', score: 0, motivations: ['greed_generosity'] },
-    { templateId: 'spy', targetId: 'rival', domain: 'shadow', score: 0, motivations: ['cunning_honesty'] },
-    { templateId: 'pray', targetId: 'shrine', domain: 'star', score: 0, motivations: ['devotion_independence'] },
-    { templateId: 'build', targetId: 'wall', domain: 'stone', score: 0, motivations: ['tradition_innovation'] },
+    { templateId: 'march', targetId: 'fort', domain: 'iron', score: 0, motivations: ['loyalty_ambition', 'courage_prudence'] },
+    { templateId: 'trade', targetId: 'market', domain: 'gold', score: 0, motivations: ['asceticism_extravagance'] },
+    { templateId: 'spy', targetId: 'rival', domain: 'shadow', score: 0, motivations: ['honesty_cunning'] },
+    { templateId: 'pray', targetId: 'shrine', domain: 'star', score: 0, motivations: ['sacrifice_survival'] },
+    { templateId: 'build', targetId: 'wall', domain: 'stone', score: 0, motivations: ['tradition_novelty'] },
   ];
 
   beforeEach(() => {

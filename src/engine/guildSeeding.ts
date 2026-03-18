@@ -20,7 +20,8 @@
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
-import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import type { AxiologicalProfile } from '../types/agent';
+import { VALUE_PAIRS } from '../types/agent';
 
 // ─── Constants (System 3) ─────────────────────────────────────────────────
 
@@ -79,12 +80,7 @@ const GUILD_NAME_SUFFIXES: Record<GuildType, string[]> = {
   bankers: ['Banking Consortium', 'Counting Masters', 'Golden Ledger Society'],
 };
 
-/** All value pairs (mirrors worldSeed.ts internal list) */
-const VALUE_PAIRS: ValuePair[] = [
-  'ambition_contentment', 'courage_prudence', 'cruelty_compassion',
-  'cunning_honesty', 'devotion_independence', 'loyalty_treachery',
-  'tradition_innovation', 'dominance_humility', 'wrath_patience', 'greed_generosity',
-];
+// VALUE_PAIRS imported from types/agent.ts
 
 // ─── PRNG ─────────────────────────────────────────────────────────────────
 
@@ -188,7 +184,7 @@ export function generateGuildDomainCapabilities(
 
 /**
  * Generate a guild's axiological profile, biased toward greed, cunning, ambition.
- * Miners' guilds get a tradition bias instead (heavy tradition_innovation lean).
+ * Miners' guilds get a tradition bias instead (heavy tradition_novelty lean).
  */
 export function generateGuildAxiologicalProfile(
   guildType: GuildType,
@@ -200,14 +196,14 @@ export function generateGuildAxiologicalProfile(
     profile[pair] = (rng() * 1.6) - 0.8;
   }
 
-  // All guilds: bias toward greed, cunning, ambition
-  profile.greed_generosity = Math.min(1, profile.greed_generosity + 0.5);
-  profile.cunning_honesty = Math.min(1, profile.cunning_honesty + 0.3);
-  profile.ambition_contentment = Math.min(1, profile.ambition_contentment + 0.3);
+  // All guilds: bias toward extravagance, cunning, ambition (flaw poles)
+  profile.asceticism_extravagance = Math.max(-1, profile.asceticism_extravagance - 0.5);
+  profile.honesty_cunning = Math.max(-1, profile.honesty_cunning - 0.3);
+  profile.loyalty_ambition = Math.max(-1, profile.loyalty_ambition - 0.3);
 
-  // Miners' guild exception: tradition-heavy
+  // Miners' guild exception: tradition-heavy (tradition is virtue at +1, no sign flip)
   if (guildType === 'miners') {
-    profile.tradition_innovation = Math.max(-1, profile.tradition_innovation - 0.4);
+    profile.tradition_novelty = Math.max(-1, profile.tradition_novelty - 0.4);
   }
 
   return profile;

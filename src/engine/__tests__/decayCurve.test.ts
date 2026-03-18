@@ -75,16 +75,16 @@ describe('DECAY_CONSTANTS', () => {
 
 describe('buildValueOverlay with decay', () => {
   const baseProfile: AxiologicalProfile = {
-    ambition_contentment: 0.0,
+    loyalty_ambition: 0.0,
     courage_prudence: 0.0,
-    cruelty_compassion: 0.0,
-    cunning_honesty: 0.0,
-    devotion_independence: 0.0,
-    loyalty_treachery: 0.0,
-    tradition_innovation: 0.0,
-    dominance_humility: 0.0,
-    wrath_patience: 0.0,
-    greed_generosity: 0.0,
+    mercy_ruthlessness: 0.0,
+    honesty_cunning: 0.0,
+    sacrifice_survival: 0.0,
+    loyalty_ambition: 0.0,
+    tradition_novelty: 0.0,
+    humility_pride: 0.0,
+    mercy_ruthlessness: 0.0,
+    asceticism_extravagance: 0.0,
   };
 
   it('applies full drift at tick 0', () => {
@@ -97,11 +97,11 @@ describe('buildValueOverlay with decay', () => {
       decayRate: 0.10,
       minimumStrength: 0.05,
       maxDuration: 30,
-      valueDrifts: { greed_generosity: 0.20 },
+      valueDrifts: { asceticism_extravagance: 0.20 },
     };
     const overlay = buildValueOverlay(baseProfile, [influence], 0);
     // At tick 0: strength = 0.70, drift = 0.20 * 0.70 = 0.14
-    expect(overlay.greed_generosity).toBeCloseTo(0.14, 2);
+    expect(overlay.asceticism_extravagance).toBeCloseTo(0.14, 2);
   });
 
   it('applies decayed drift at later ticks', () => {
@@ -114,12 +114,12 @@ describe('buildValueOverlay with decay', () => {
       decayRate: 0.10,
       minimumStrength: 0.05,
       maxDuration: 30,
-      valueDrifts: { greed_generosity: 0.20 },
+      valueDrifts: { asceticism_extravagance: 0.20 },
     };
     const overlay0 = buildValueOverlay(baseProfile, [influence], 0);
     const overlay10 = buildValueOverlay(baseProfile, [influence], 10);
-    expect(overlay10.greed_generosity).toBeLessThan(overlay0.greed_generosity);
-    expect(overlay10.greed_generosity).toBeGreaterThan(0);
+    expect(overlay10.asceticism_extravagance).toBeLessThan(overlay0.asceticism_extravagance);
+    expect(overlay10.asceticism_extravagance).toBeGreaterThan(0);
   });
 
   it('returns 0 drift after maxDuration (expired)', () => {
@@ -132,9 +132,9 @@ describe('buildValueOverlay with decay', () => {
       decayRate: 0.10,
       minimumStrength: 0.05,
       maxDuration: 30,
-      valueDrifts: { greed_generosity: 0.20 },
+      valueDrifts: { asceticism_extravagance: 0.20 },
     };
     const overlay = buildValueOverlay(baseProfile, [influence], 31);
-    expect(overlay.greed_generosity).toBe(0);
+    expect(overlay.asceticism_extravagance).toBe(0);
   });
 });

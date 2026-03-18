@@ -23,9 +23,9 @@ import type { AxiologicalProfile } from '../../types/agent';
 
 function makeProfile(overrides: Partial<AxiologicalProfile> = {}): AxiologicalProfile {
   const base: AxiologicalProfile = {
-    ambition_contentment: 0, courage_prudence: 0, cruelty_compassion: 0,
-    cunning_honesty: 0, devotion_independence: 0, loyalty_treachery: 0,
-    tradition_innovation: 0, dominance_humility: 0, wrath_patience: 0, greed_generosity: 0,
+    loyalty_ambition: 0, courage_prudence: 0, mercy_ruthlessness: 0,
+    honesty_cunning: 0, sacrifice_survival: 0, loyalty_ambition: 0,
+    tradition_novelty: 0, humility_pride: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
   };
   return { ...base, ...overrides };
 }
@@ -49,7 +49,7 @@ function buildTestWorld(): WorldGraph {
     id: 'agent.kael', type: 'actor', name: 'Kael',
     properties: {
       actorType: 'individual',
-      axiologicalProfile: makeProfile({ courage_prudence: 0.7, loyalty_treachery: 0.5 }),
+      axiologicalProfile: makeProfile({ courage_prudence: 0.7, loyalty_ambition: 0.5 }),
       domainCapabilities: makeDomainCaps(),
       locationId: 'loc.1',
       cooperationStrategy: 'tit-for-tat',
@@ -61,7 +61,7 @@ function buildTestWorld(): WorldGraph {
     id: 'agent.mara', type: 'actor', name: 'Mara',
     properties: {
       actorType: 'individual',
-      axiologicalProfile: makeProfile({ cunning_honesty: -0.8, cruelty_compassion: -0.3 }),
+      axiologicalProfile: makeProfile({ honesty_cunning: -0.8, mercy_ruthlessness: -0.3 }),
       domainCapabilities: makeDomainCaps(),
       locationId: 'loc.1',
       cooperationStrategy: 'always-defect',

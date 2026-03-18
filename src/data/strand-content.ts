@@ -23,16 +23,16 @@ import type { ValuePair } from '../types/agent';
  * Used for high-level trait descriptions and progress indicators.
  */
 export const VALUE_LABELS: Record<ValuePair, [string, string]> = {
-  ambition_contentment: ['Ambitious', 'Content'],
+  mercy_ruthlessness: ['Merciful', 'Ruthless'],
+  asceticism_extravagance: ['Ascetic', 'Extravagant'],
+  honesty_cunning: ['Honest', 'Cunning'],
+  tradition_novelty: ['Traditional', 'Innovative'],
+  loyalty_ambition: ['Loyal', 'Ambitious'],
+  frankness_propriety: ['Frank', 'Proper'],
+  humility_pride: ['Humble', 'Proud'],
+  sacrifice_survival: ['Self-Sacrificing', 'Self-Preserving'],
+  stoicism_passion: ['Stoic', 'Passionate'],
   courage_prudence: ['Courageous', 'Prudent'],
-  cruelty_compassion: ['Cruel', 'Compassionate'],
-  cunning_honesty: ['Cunning', 'Honest'],
-  devotion_independence: ['Devoted', 'Independent'],
-  loyalty_treachery: ['Loyal', 'Treacherous'],
-  tradition_innovation: ['Traditional', 'Innovative'],
-  dominance_humility: ['Dominant', 'Humble'],
-  wrath_patience: ['Wrathful', 'Patient'],
-  greed_generosity: ['Greedy', 'Generous'],
 };
 
 // ============================================================================
@@ -52,55 +52,55 @@ export const INTENSITY_VALUE_LABELS: Record<
   ValuePair,
   { weak: [string, string]; moderate: [string, string]; strong: [string, string] }
 > = {
-  ambition_contentment: {
-    weak: ['inclined toward striving', 'content with quiet life'],
-    moderate: ['driven to prove themselves', 'content to let others lead'],
-    strong: ['consumed by endless ambition', 'wholly withdrawn from desire'],
+  mercy_ruthlessness: {
+    weak: ['inclined to spare the weak', 'tends toward harsh judgment'],
+    moderate: ['moved by others\' suffering', 'capable of deliberate harm'],
+    strong: ['cannot bear to cause hurt', 'relishes inflicting pain'],
+  },
+  asceticism_extravagance: {
+    weak: ['inclined toward restraint', 'inclined to indulge'],
+    moderate: ['practises deliberate austerity', 'hoards against scarcity'],
+    strong: ['denies all comfort gladly', 'enslaved by appetite for more'],
+  },
+  honesty_cunning: {
+    weak: ['prefers directness', 'inclined to bend the truth'],
+    moderate: ['averse to deception', 'skilled in subterfuge'],
+    strong: ['cannot utter falsehood', 'pathologically deceitful'],
+  },
+  tradition_novelty: {
+    weak: ['drawn to the old ways', 'inclined toward the new'],
+    moderate: ['guardian of tradition', 'seeker of untried methods'],
+    strong: ['enslaved to how things were', 'consumed by creation of the novel'],
+  },
+  loyalty_ambition: {
+    weak: ['inclined to honor bonds', 'inclined toward striving'],
+    moderate: ['steadfast in allegiance', 'driven to prove themselves'],
+    strong: ['bound eternal to their compact', 'consumed by endless ambition'],
+  },
+  frankness_propriety: {
+    weak: ['tends toward blunt speech', 'tends toward tactful restraint'],
+    moderate: ['speaks truth regardless of cost', 'chooses careful diplomacy'],
+    strong: ['incapable of holding silence', 'will never break decorum'],
+  },
+  humility_pride: {
+    weak: ['tends to defer to others', 'tends to assert themselves'],
+    moderate: ['content in lesser station', 'commands respect naturally'],
+    strong: ['serves gladly beneath all others', 'must rule all around them'],
+  },
+  sacrifice_survival: {
+    weak: ['somewhat bound to their cause', 'somewhat resistant to ties'],
+    moderate: ['devoted to a higher order', 'fiercely self-directed'],
+    strong: ['enslaved by their devotion', 'entirely unto themselves'],
+  },
+  stoicism_passion: {
+    weak: ['tends toward composure', 'tends toward strong feeling'],
+    moderate: ['practises deliberate calm', 'feels everything deeply'],
+    strong: ['impervious to all sensation', 'consumed by every emotion'],
   },
   courage_prudence: {
     weak: ['drawn to face challenges', 'cautious of rash action'],
     moderate: ['willing to meet danger', 'careful weighing of risk'],
     strong: ['fearless unto recklessness', 'paralyzed by overdue care'],
-  },
-  cruelty_compassion: {
-    weak: ['tends toward harsh judgment', 'quick to spare the weak'],
-    moderate: ['capable of deliberate harm', 'moved by others\' suffering'],
-    strong: ['relishes inflicting pain', 'cannot bear to cause hurt'],
-  },
-  cunning_honesty: {
-    weak: ['inclined to bend the truth', 'prefers directness'],
-    moderate: ['skilled in subterfuge', 'averse to deception'],
-    strong: ['pathologically deceiveful', 'cannot utter falsehood'],
-  },
-  devotion_independence: {
-    weak: ['somewhat bound to their cause', 'somewhat resistant to ties'],
-    moderate: ['devoted to a higher order', 'fiercely self-directed'],
-    strong: ['enslaved by their devotion', 'entirely unto themselves'],
-  },
-  loyalty_treachery: {
-    weak: ['inclined to honor bonds', 'tempted by betrayal'],
-    moderate: ['steadfast in allegiance', 'prone to turning on allies'],
-    strong: ['bound eternal to their compact', 'betray even the beloved'],
-  },
-  tradition_innovation: {
-    weak: ['drawn to the old ways', 'inclined toward the new'],
-    moderate: ['guardian of tradition', 'seeker of untried methods'],
-    strong: ['enslaved to how things were', 'consumed by creation of the novel'],
-  },
-  dominance_humility: {
-    weak: ['tends to lead quietly', 'tends to follow others'],
-    moderate: ['commands respect naturally', 'content in lesser station'],
-    strong: ['must rule all around them', 'serves gladly beneath all others'],
-  },
-  wrath_patience: {
-    weak: ['quick to irritation', 'slow to anger'],
-    moderate: ['prone to violent outburst', 'steady in forbearance'],
-    strong: ['rage consumes their every moment', 'patience infinite as stone'],
-  },
-  greed_generosity: {
-    weak: ['inclined to gather wealth', 'inclined to share freely'],
-    moderate: ['hoards against scarcity', 'gives without counting cost'],
-    strong: ['enslaved by appetite for more', 'gives until they have nothing'],
   },
 };
 
@@ -122,43 +122,28 @@ export const INTENSITY_VALUE_LABELS: Record<
  * All prose: terse, evocative, haunted tone.
  */
 export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
-  // Axiological fears
-  ambition_contentment: [
-    'Fears irrelevance and failure',
-    'Fears being forced into endless striving',
-  ],
+  // Axiological fears — [virtue-extreme fear, flaw-extreme fear]
+  mercy_ruthlessness: ['Fears vulnerability from showing mercy', 'Fears becoming heartless'],
+  asceticism_extravagance: ['Fears poverty and scarcity', 'Fears becoming selfish'],
+  honesty_cunning: ['Fears being outwitted', 'Fears having to deceive'],
+  tradition_novelty: ['Fears the loss of the old ways', 'Fears stagnation'],
+  loyalty_ambition: ['Fears betrayal by those they trust', 'Fears irrelevance and failure'],
+  frankness_propriety: ['Fears causing harm through bluntness', 'Fears losing their authentic voice'],
+  humility_pride: ['Fears being overlooked', 'Fears losing control through arrogance'],
+  sacrifice_survival: ['Fears abandonment by their cause', 'Fears losing freedom'],
+  stoicism_passion: ['Fears becoming emotionally numb', 'Fears being consumed by feeling'],
   courage_prudence: ['Fears showing weakness', 'Fears reckless consequences'],
-  cruelty_compassion: ['Fears vulnerability', 'Fears becoming heartless'],
-  cunning_honesty: ['Fears being outwitted', 'Fears having to deceive'],
-  devotion_independence: [
-    'Fears abandonment by their cause',
-    'Fears losing freedom',
-  ],
-  loyalty_treachery: [
-    'Fears betrayal by those they trust',
-    'Fears being bound by loyalty',
-  ],
-  tradition_innovation: [
-    'Fears the loss of the old ways',
-    'Fears stagnation',
-  ],
-  dominance_humility: ['Fears losing control', 'Fears being forced to dominate'],
-  wrath_patience: ['Fears being powerless to act', 'Fears losing their temper'],
-  greed_generosity: [
-    'Fears poverty and scarcity',
-    'Fears becoming selfish',
-  ],
 
   // Reach-based fears (primordial terrors from Nine Reaches)
   // Note: These are embedded into existing pairs for structural compatibility.
-  // Iron (warfare/violence): integrated into courage_prudence (recklessness) + wrath_patience (powerlessness)
-  // Gold (trade/poverty): integrated into greed_generosity (poverty)
-  // Shadow (stealth/exposure): integrated into cunning_honesty (outwitted) + cruelty_compassion (vulnerability)
+  // Iron (warfare/violence): integrated into courage_prudence (recklessness) + mercy_ruthlessness (powerlessness)
+  // Gold (trade/poverty): integrated into asceticism_extravagance (poverty)
+  // Shadow (stealth/exposure): integrated into honesty_cunning (outwitted) + mercy_ruthlessness (vulnerability)
   // Veil (magic/lost magic): can be added as variant fears when magic strength is assessed
-  // Heart (social/isolation): integrated into devotion_independence (abandonment) + loyalty_treachery (betrayal)
-  // Eye (knowledge/ignorance): integrated into cunning_honesty (sharper mind)
-  // Stone (construction/collapse): integrated into dominance_humility (losing control)
-  // Star (navigation/being lost): integrated into ambition_contentment (irrelevance)
+  // Heart (social/isolation): integrated into sacrifice_survival (abandonment) + loyalty_ambition (betrayal)
+  // Eye (knowledge/ignorance): integrated into honesty_cunning (sharper mind)
+  // Stone (construction/collapse): integrated into humility_pride (losing control)
+  // Star (navigation/being lost): integrated into loyalty_ambition (irrelevance)
   // Flesh (biology/decay): implicit in all aging/mortality themes
 };
 

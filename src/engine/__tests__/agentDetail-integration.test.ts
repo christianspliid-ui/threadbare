@@ -15,16 +15,16 @@ describe('agent detail integration', () => {
     graph.addNode({ id: 'fac.1', type: 'actor', name: 'Seekers of the Veil', properties: { actorType: 'faction' } });
 
     const profile: AxiologicalProfile = {
-      ambition_contentment: 0.9,
+      mercy_ruthlessness: -0.7,
+      asceticism_extravagance: 0.2,
+      honesty_cunning: 0.3,
+      tradition_novelty: -0.2,
+      loyalty_ambition: 0.9,
+      frankness_propriety: 0,
+      humility_pride: 0.4,
+      sacrifice_survival: 0.6,
+      stoicism_passion: 0,
       courage_prudence: -0.4,
-      cruelty_compassion: -0.7,
-      cunning_honesty: 0.3,
-      devotion_independence: 0.6,
-      loyalty_treachery: 0.1,
-      tradition_innovation: -0.2,
-      dominance_humility: 0.4,
-      wrath_patience: -0.1,
-      greed_generosity: 0.2,
     };
     const domainCaps: Record<ReachDomain, number> = {
       iron: 3,
@@ -82,9 +82,9 @@ describe('agent detail integration', () => {
     expect(detail!.archetype!.reachAffinities).toContain('eye');
 
     // 4. Top values sorted by |value|
-    expect(detail!.topValues[0].pair).toBe('ambition_contentment');
-    expect(detail!.topValues[1].pair).toBe('cruelty_compassion');
-    expect(detail!.topValues[2].pair).toBe('devotion_independence');
+    expect(detail!.topValues[0].pair).toBe('loyalty_ambition');
+    expect(detail!.topValues[1].pair).toBe('mercy_ruthlessness');
+    expect(detail!.topValues[2].pair).toBe('sacrifice_survival');
 
     // 5. Bond included
     expect(detail!.topBonds).toHaveLength(1);
@@ -106,16 +106,16 @@ describe('agent detail integration', () => {
         properties: {
           actorType: 'individual',
           axiologicalProfile: {
-            ambition_contentment: 0,
+            mercy_ruthlessness: 0,
+            asceticism_extravagance: 0,
+            honesty_cunning: 0,
+            tradition_novelty: 0,
+            loyalty_ambition: 0,
+            frankness_propriety: 0,
+            humility_pride: 0,
+            sacrifice_survival: 0,
+            stoicism_passion: 0,
             courage_prudence: 0,
-            cruelty_compassion: 0,
-            cunning_honesty: 0,
-            devotion_independence: 0,
-            loyalty_treachery: 0,
-            tradition_innovation: 0,
-            dominance_humility: 0,
-            wrath_patience: 0,
-            greed_generosity: 0,
           },
           domainCapabilities: {
             iron: 0,

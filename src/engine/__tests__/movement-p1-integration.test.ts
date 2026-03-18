@@ -7,16 +7,16 @@ import { phaseColocationDetection, resetColocationEventCounter } from '../phaseC
 import type { AxiologicalProfile } from '../../types/agent';
 
 const DEFAULT_PROFILE: AxiologicalProfile = {
-  ambition_contentment: 0.5,
+  loyalty_ambition: 0.5,
   courage_prudence: 0,
-  cruelty_compassion: 0,
-  cunning_honesty: 0,
-  devotion_independence: 0,
-  loyalty_treachery: 0,
-  tradition_innovation: 0,
-  dominance_humility: 0,
-  wrath_patience: 0,
-  greed_generosity: 0,
+  mercy_ruthlessness: 0,
+  honesty_cunning: 0,
+  sacrifice_survival: 0,
+  loyalty_ambition: 0,
+  tradition_novelty: 0,
+  humility_pride: 0,
+  mercy_ruthlessness: 0,
+  asceticism_extravagance: 0,
 };
 
 describe('P1 integration', () => {

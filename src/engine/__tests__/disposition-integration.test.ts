@@ -206,9 +206,9 @@ describe('disposition integration — Phase A', () => {
     // Set up a grudger agent
     const rng = mulberry32(99);
     const profile: AxiologicalProfile = {
-      loyalty_treachery: 0.5, // Not nudged by low values
-      cruelty_compassion: 0.5,
-      cunning_honesty: 0.5,
+      loyalty_ambition: 0.5, // Not nudged by low values
+      mercy_ruthlessness: 0.5,
+      honesty_cunning: 0.5,
       chaos_order: 0.0,
       light_darkness: 0.0,
     };

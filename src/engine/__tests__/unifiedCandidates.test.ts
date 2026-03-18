@@ -155,7 +155,7 @@ describe('generateUnifiedCandidates', () => {
     const templates = [makeTemplate({
       id: 'test.struct',
       reach: 'gold',
-      motivations: ['ambition_contentment', 'courage_prudence'],
+      motivations: ['loyalty_ambition', 'courage_prudence'],
     })];
 
     const result = generateUnifiedCandidates(graph, 'actor-1', 'loc-1', templates);
@@ -165,7 +165,7 @@ describe('generateUnifiedCandidates', () => {
       targetId: 'loc-1',
       domain: 'gold',
       score: 0,
-      motivations: ['ambition_contentment', 'courage_prudence'],
+      motivations: ['loyalty_ambition', 'courage_prudence'],
     });
   });
 

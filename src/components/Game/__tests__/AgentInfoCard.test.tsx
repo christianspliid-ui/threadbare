@@ -24,7 +24,7 @@ const recognisedCard: AgentInfoCardData = {
   archetypeLabel: 'Sage',
   factionName: 'The Circle',
   topValues: [
-    { pair: 'cunning_honesty', word: 'Cunning' },
+    { pair: 'honesty_cunning', word: 'Cunning' },
   ],
   domains: [
     { domain: 'eye', word: 'Perceptive' },
@@ -42,9 +42,9 @@ const knownCard: AgentInfoCardData = {
   factionName: 'Iron Brotherhood',
   cultureName: 'The Forgeborn',
   topValues: [
-    { pair: 'ambition_contentment', word: 'Deeply Ambitious' },
+    { pair: 'loyalty_ambition', word: 'Deeply Ambitious' },
     { pair: 'courage_prudence', word: 'Courageous' },
-    { pair: 'cruelty_compassion', word: 'Cruel' },
+    { pair: 'mercy_ruthlessness', word: 'Cruel' },
   ],
   domains: [
     { domain: 'iron', word: 'Fearsome' },
@@ -69,9 +69,9 @@ const intimateCard: AgentInfoCardData = {
   factionName: 'The Seekers',
   cultureName: 'The Starborn',
   topValues: [
-    { pair: 'ambition_contentment', word: 'Deeply Ambitious' },
+    { pair: 'loyalty_ambition', word: 'Deeply Ambitious' },
     { pair: 'courage_prudence', word: 'Prudent' },
-    { pair: 'cruelty_compassion', word: 'Compassionate' },
+    { pair: 'mercy_ruthlessness', word: 'Compassionate' },
   ],
   domains: [
     { domain: 'veil', word: 'Mystical' },

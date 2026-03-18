@@ -73,22 +73,22 @@ import { createEmptyEssencePool } from '../influence';
 
 describe('computeAlignmentFactor', () => {
   const profile: AxiologicalProfile = {
-    ambition_contentment: 0.8,
+    loyalty_ambition: 0.8,
     courage_prudence: 0.6,
-    cruelty_compassion: -0.5,
-    cunning_honesty: -0.3,
-    devotion_independence: 0.2,
-    loyalty_treachery: 0.4,
-    tradition_innovation: -0.1,
-    dominance_humility: 0.3,
-    wrath_patience: -0.2,
-    greed_generosity: -0.4,
+    mercy_ruthlessness: -0.5,
+    honesty_cunning: -0.3,
+    sacrifice_survival: 0.2,
+    loyalty_ambition: 0.4,
+    tradition_novelty: -0.1,
+    humility_pride: 0.3,
+    mercy_ruthlessness: -0.2,
+    asceticism_extravagance: -0.4,
   };
 
   it('returns aligned (1.0) when action motivations match actor values', () => {
     const factor = computeAlignmentFactor(
       profile,
-      ['ambition_contentment', 'courage_prudence'],
+      ['loyalty_ambition', 'courage_prudence'],
     );
     expect(factor.label).toBe('aligned');
     expect(factor.value).toBeCloseTo(1.0, 1);
@@ -97,7 +97,7 @@ describe('computeAlignmentFactor', () => {
   it('returns neutral (2.0) when motivations are weakly held', () => {
     const factor = computeAlignmentFactor(
       profile,
-      ['tradition_innovation'],
+      ['tradition_novelty'],
     );
     expect(factor.label).toBe('neutral');
     expect(factor.value).toBeCloseTo(2.0, 0);
@@ -106,7 +106,7 @@ describe('computeAlignmentFactor', () => {
   it('returns against (3.0-5.0) when action opposes actor values', () => {
     const factor = computeAlignmentFactor(
       profile,
-      ['greed_generosity', 'cruelty_compassion'],
+      ['asceticism_extravagance', 'mercy_ruthlessness'],
     );
     expect(factor.label).toBe('against');
     expect(factor.value).toBeGreaterThanOrEqual(3.0);
@@ -174,9 +174,9 @@ describe('validateManipulation', () => {
 describe('applyDreamManipulations', () => {
   function makeCandidates(): ActionCandidate[] {
     return [
-      { templateId: 'march', targetId: 'loc_1', domain: 'iron', score: 10, motivations: ['ambition_contentment', 'courage_prudence'], probability: 0.60 },
-      { templateId: 'ally', targetId: 'actor_2', domain: 'heart', score: 5, motivations: ['loyalty_treachery'], probability: 0.25 },
-      { templateId: 'train', targetId: 'loc_1', domain: 'iron', score: 3, motivations: ['tradition_innovation'], probability: 0.15 },
+      { templateId: 'march', targetId: 'loc_1', domain: 'iron', score: 10, motivations: ['loyalty_ambition', 'courage_prudence'], probability: 0.60 },
+      { templateId: 'ally', targetId: 'actor_2', domain: 'heart', score: 5, motivations: ['loyalty_ambition'], probability: 0.25 },
+      { templateId: 'train', targetId: 'loc_1', domain: 'iron', score: 3, motivations: ['tradition_novelty'], probability: 0.15 },
     ];
   }
 
@@ -236,7 +236,7 @@ describe('applyDreamManipulations', () => {
     const candidates = makeCandidates();
     const newCandidate: ActionCandidate = {
       templateId: 'pray', targetId: 'loc_1', domain: 'veil',
-      score: 0, motivations: ['devotion_independence'], probability: 0,
+      score: 0, motivations: ['sacrifice_survival'], probability: 0,
     };
     const manipulation: DreamManipulation = {
       type: 'implant',
@@ -257,7 +257,7 @@ describe('applyDreamManipulations', () => {
     const candidates = makeCandidates();
     const variant: ActionCandidate = {
       templateId: 'march_negotiate', targetId: 'loc_1', domain: 'heart',
-      score: 10, motivations: ['ambition_contentment', 'cunning_honesty'], probability: 0,
+      score: 10, motivations: ['loyalty_ambition', 'honesty_cunning'], probability: 0,
     };
     const manipulation: DreamManipulation = {
       type: 'reshape',

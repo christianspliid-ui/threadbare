@@ -28,16 +28,16 @@ describe('Dream Interface + Agent Selection integration', () => {
     });
 
     const profile: AxiologicalProfile = {
-      ambition_contentment: 0.7,
+      loyalty_ambition: 0.7,
       courage_prudence: 0.6,
-      cruelty_compassion: -0.3,
-      cunning_honesty: 0.1,
-      devotion_independence: 0.4,
-      loyalty_treachery: 0.5,
-      tradition_innovation: -0.2,
-      dominance_humility: 0.5,
-      wrath_patience: 0.2,
-      greed_generosity: -0.1,
+      mercy_ruthlessness: -0.3,
+      honesty_cunning: 0.1,
+      sacrifice_survival: 0.4,
+      loyalty_ambition: 0.5,
+      tradition_novelty: -0.2,
+      humility_pride: 0.5,
+      mercy_ruthlessness: 0.2,
+      asceticism_extravagance: -0.1,
     };
 
     graph.addNode({
@@ -70,11 +70,11 @@ describe('Dream Interface + Agent Selection integration', () => {
 
     const candidates: ActionCandidate[] = [
       { templateId: 'march_fortress', targetId: 'loc_1', domain: 'iron', score: 10,
-        motivations: ['ambition_contentment', 'courage_prudence'], probability: 0.60 },
+        motivations: ['loyalty_ambition', 'courage_prudence'], probability: 0.60 },
       { templateId: 'strengthen_alliance', targetId: 'actor_2', domain: 'heart', score: 5,
-        motivations: ['loyalty_treachery', 'tradition_innovation'], probability: 0.25 },
+        motivations: ['loyalty_ambition', 'tradition_novelty'], probability: 0.25 },
       { templateId: 'train_recruits', targetId: 'loc_1', domain: 'iron', score: 3,
-        motivations: ['tradition_innovation'], probability: 0.15 },
+        motivations: ['tradition_novelty'], probability: 0.15 },
     ];
 
     // 1. Validate: can we use "inspire" at tier 2?
@@ -84,7 +84,7 @@ describe('Dream Interface + Agent Selection integration', () => {
     // 2. Compute alignment cost for boosting "strengthen_alliance"
     const alignment = computeAlignmentFactor(
       profile,
-      ['loyalty_treachery', 'tradition_innovation'],
+      ['loyalty_ambition', 'tradition_novelty'],
     );
     // avg = (0.5 + (-0.2)) / 2 = 0.15 → below 0.3 threshold → neutral
     expect(alignment.label).toBe('neutral');
@@ -141,9 +141,9 @@ describe('Dream Interface + Agent Selection integration', () => {
 
   it('command overrides selection to force a specific action', () => {
     const candidates: ActionCandidate[] = [
-      { templateId: 'march', targetId: 'loc_1', domain: 'iron', score: 10, motivations: ['ambition_contentment'], probability: 0.70 },
+      { templateId: 'march', targetId: 'loc_1', domain: 'iron', score: 10, motivations: ['loyalty_ambition'], probability: 0.70 },
       { templateId: 'retreat', targetId: 'loc_2', domain: 'iron', score: 2, motivations: ['courage_prudence'], probability: 0.20 },
-      { templateId: 'pray', targetId: 'loc_1', domain: 'veil', score: 1, motivations: ['devotion_independence'], probability: 0.10 },
+      { templateId: 'pray', targetId: 'loc_1', domain: 'veil', score: 1, motivations: ['sacrifice_survival'], probability: 0.10 },
     ];
 
     const commandManip: DreamManipulation = {

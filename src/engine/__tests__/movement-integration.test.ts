@@ -22,16 +22,16 @@ import type { AxiologicalProfile } from '../../types/agent';
  */
 function createTestProfile(ambition: number = 0.8): AxiologicalProfile {
   return {
-    ambition_contentment: ambition,
+    loyalty_ambition: ambition,
     courage_prudence: 0.5,
-    cruelty_compassion: 0,
-    cunning_honesty: 0,
-    devotion_independence: 0,
-    loyalty_treachery: 0,
-    tradition_innovation: 0,
-    dominance_humility: 0,
-    wrath_patience: 0,
-    greed_generosity: 0,
+    mercy_ruthlessness: 0,
+    honesty_cunning: 0,
+    sacrifice_survival: 0,
+    loyalty_ambition: 0,
+    tradition_novelty: 0,
+    humility_pride: 0,
+    mercy_ruthlessness: 0,
+    asceticism_extravagance: 0,
   };
 }
 

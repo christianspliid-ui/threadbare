@@ -270,16 +270,16 @@ export function scoreSublocations(
 ): ScoredSublocation[] {
   const agentNode = graph.getNode(agentId);
   const agentProfile: AxiologicalProfile = {
-    ambition_contentment: 0,
+    mercy_ruthlessness: 0,
+    asceticism_extravagance: 0,
+    honesty_cunning: 0,
+    tradition_novelty: 0,
+    loyalty_ambition: 0,
+    frankness_propriety: 0,
+    humility_pride: 0,
+    sacrifice_survival: 0,
+    stoicism_passion: 0,
     courage_prudence: 0,
-    cruelty_compassion: 0,
-    cunning_honesty: 0,
-    devotion_independence: 0,
-    loyalty_treachery: 0,
-    tradition_innovation: 0,
-    dominance_humility: 0,
-    wrath_patience: 0,
-    greed_generosity: 0,
   };
 
   if (agentNode && agentNode.properties.axiologicalProfile) {
@@ -377,17 +377,26 @@ export function scoreSublocations(
  */
 function findValuePairForMotivation(left: string, right: string): ValuePair | undefined {
   const pairs: Record<string, ValuePair> = {
-    // Normalize to lowercase for matching
-    ambition_contentment: 'ambition_contentment',
+    // Canonical pair names
+    mercy_ruthlessness: 'mercy_ruthlessness',
+    asceticism_extravagance: 'asceticism_extravagance',
+    honesty_cunning: 'honesty_cunning',
+    tradition_novelty: 'tradition_novelty',
+    loyalty_ambition: 'loyalty_ambition',
+    frankness_propriety: 'frankness_propriety',
+    humility_pride: 'humility_pride',
+    sacrifice_survival: 'sacrifice_survival',
+    stoicism_passion: 'stoicism_passion',
     courage_prudence: 'courage_prudence',
-    cruelty_compassion: 'cruelty_compassion',
-    cunning_honesty: 'cunning_honesty',
-    devotion_independence: 'devotion_independence',
-    loyalty_treachery: 'loyalty_treachery',
-    tradition_innovation: 'tradition_innovation',
-    dominance_humility: 'dominance_humility',
-    wrath_patience: 'wrath_patience',
-    greed_generosity: 'greed_generosity',
+    // Motivation label aliases used in sublocation type data
+    devotion_independence: 'sacrifice_survival',
+    greed_generosity: 'asceticism_extravagance',
+    cunning_honesty: 'honesty_cunning',
+    cruelty_mercy: 'mercy_ruthlessness',
+    duty_freedom: 'loyalty_ambition',
+    authority_rebellion: 'humility_pride',
+    knowledge_ignorance: 'frankness_propriety',
+    order_chaos: 'tradition_novelty',
   };
 
   const key = `${left.toLowerCase()}_${right.toLowerCase()}`;

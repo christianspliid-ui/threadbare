@@ -334,7 +334,7 @@ describe('resolveTooltip', () => {
                 properties: {
                   narrativeArchetype: 'tragic_hero',
                   domainCapabilities: { iron: 0.5, gold: 0.3 },
-                  axiologicalProfile: { ambition_contentment: 0.7 },
+                  axiologicalProfile: { loyalty_ambition: 0.7 },
                 },
               } as any;
             }

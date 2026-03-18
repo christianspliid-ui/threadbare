@@ -108,7 +108,7 @@ function computeBasePull(
   if (!locType || locType === 'sublocation') return { pull: 0, bestTemplateId: '' };
 
   // Base pull from P0 heuristic (always computed)
-  const ambitionBonus = Math.max(0, profile.ambition_contentment) * P0_AMBITION_WEIGHT;
+  const ambitionBonus = Math.max(0, profile.loyalty_ambition) * P0_AMBITION_WEIGHT;
   const baseHeuristicPull = P0_BASE_MOTIVATION_PULL + ambitionBonus;
 
   // Check for encounter templates at this location

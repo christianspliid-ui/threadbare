@@ -25,16 +25,16 @@ describe('Strand Data Extractors', () => {
 
     // Create agent node with axiological profile
     const axiologicalProfile: AxiologicalProfile = {
-      ambition_contentment: 0.7,
+      mercy_ruthlessness: 0.6,
+      asceticism_extravagance: -0.1,
+      honesty_cunning: -0.2,
+      tradition_novelty: 0.8,
+      loyalty_ambition: -0.7,
+      frankness_propriety: 0,
+      humility_pride: -0.6,
+      sacrifice_survival: 0.5,
+      stoicism_passion: 0,
       courage_prudence: 0.4,
-      cruelty_compassion: -0.6,
-      cunning_honesty: 0.2,
-      devotion_independence: 0.5,
-      loyalty_treachery: -0.3,
-      tradition_innovation: 0.8,
-      dominance_humility: 0.6,
-      wrath_patience: -0.5,
-      greed_generosity: 0.1,
     };
 
     const domainCapabilities = {
@@ -77,16 +77,16 @@ describe('Strand Data Extractors', () => {
       properties: {
         actorType: 'individual',
         axiologicalProfile: {
-          ambition_contentment: 0.3,
+          mercy_ruthlessness: 0.5,
+          asceticism_extravagance: 0.4,
+          honesty_cunning: 0.2,
+          tradition_novelty: 0.1,
+          loyalty_ambition: 0.3,
+          frankness_propriety: 0,
+          humility_pride: 0.2,
+          sacrifice_survival: 0.1,
+          stoicism_passion: 0,
           courage_prudence: 0.4,
-          cruelty_compassion: 0.5,
-          cunning_honesty: 0.2,
-          devotion_independence: 0.1,
-          loyalty_treachery: 0.2,
-          tradition_innovation: 0.1,
-          dominance_humility: 0.2,
-          wrath_patience: 0.3,
-          greed_generosity: 0.4,
         },
         domainCapabilities: {
           iron: 0.4,
@@ -196,16 +196,16 @@ describe('Strand Data Extractors', () => {
         properties: {
           actorType: 'individual',
           axiologicalProfile: {
-            ambition_contentment: 0,
+            mercy_ruthlessness: 0,
+            asceticism_extravagance: 0,
+            honesty_cunning: 0,
+            tradition_novelty: 0,
+            loyalty_ambition: 0,
+            frankness_propriety: 0,
+            humility_pride: 0,
+            sacrifice_survival: 0,
+            stoicism_passion: 0,
             courage_prudence: 0,
-            cruelty_compassion: 0,
-            cunning_honesty: 0,
-            devotion_independence: 0,
-            loyalty_treachery: 0,
-            tradition_innovation: 0,
-            dominance_humility: 0,
-            wrath_patience: 0,
-            greed_generosity: 0,
           },
           domainCapabilities: { iron: 0.5, gold: 0.5, shadow: 0.5, veil: 0.5, heart: 0.5, eye: 0.5, stone: 0.5, star: 0.5, flesh: 0.5 },
           locationId: 'missing.location',
@@ -225,19 +225,19 @@ describe('Strand Data Extractors', () => {
       expect(strand.strandName).toBe('Desires');
       expect(strand.insights.length).toBeGreaterThan(0);
 
-      // Find greed_generosity insight (value: 0.1)
-      const greedInsight = strand.insights.find(i => i.valuePair === 'greed_generosity');
+      // Find asceticism_extravagance insight (value: -0.1)
+      const greedInsight = strand.insights.find(i => i.valuePair === 'asceticism_extravagance');
       expect(greedInsight).toBeDefined();
-      expect(greedInsight!.value).toBe(0.1);
-      expect(greedInsight!.label).toBe('Greedy'); // positive pole (left)
-      expect(greedInsight!.description).toBe('Slightly greedy');
+      expect(greedInsight!.value).toBe(-0.1);
+      expect(greedInsight!.label).toBe('Extravagant'); // negative pole (right)
+      expect(greedInsight!.description).toBe('Slightly extravagant');
 
-      // Find cruelty_compassion insight (value: -0.6)
-      const crueltyInsight = strand.insights.find(i => i.valuePair === 'cruelty_compassion');
+      // Find mercy_ruthlessness insight (value: 0.6)
+      const crueltyInsight = strand.insights.find(i => i.valuePair === 'mercy_ruthlessness');
       expect(crueltyInsight).toBeDefined();
-      expect(crueltyInsight!.value).toBe(-0.6);
-      expect(crueltyInsight!.label).toBe('Compassionate'); // negative pole
-      expect(crueltyInsight!.description).toBe('Notably compassionate');
+      expect(crueltyInsight!.value).toBe(0.6);
+      expect(crueltyInsight!.label).toBe('Merciful'); // positive pole
+      expect(crueltyInsight!.description).toBe('Notably merciful');
     });
 
     it('sorts insights by absolute value descending', () => {
@@ -277,11 +277,11 @@ describe('Strand Data Extractors', () => {
 
       expect(strand.insights.length).toBeGreaterThan(0);
 
-      // Check loyalty_treachery is present
-      const loyaltyInsight = strand.insights.find(i => i.valuePair === 'loyalty_treachery');
+      // Check loyalty_ambition is present
+      const loyaltyInsight = strand.insights.find(i => i.valuePair === 'loyalty_ambition');
       expect(loyaltyInsight).toBeDefined();
-      expect(loyaltyInsight!.value).toBe(-0.3);
-      expect(loyaltyInsight!.label).toBe('Treacherous');
+      expect(loyaltyInsight!.value).toBe(-0.7);
+      expect(loyaltyInsight!.label).toBe('Ambitious');
     });
   });
 
@@ -292,18 +292,18 @@ describe('Strand Data Extractors', () => {
       expect(strand.strandName).toBe('Ambitions');
       expect(strand.insights.length).toBe(3);
 
-      // Check ambition_contentment
-      const ambitionInsight = strand.insights.find(i => i.valuePair === 'ambition_contentment');
+      // Check loyalty_ambition
+      const ambitionInsight = strand.insights.find(i => i.valuePair === 'loyalty_ambition');
       expect(ambitionInsight).toBeDefined();
-      expect(ambitionInsight!.value).toBe(0.7);
+      expect(ambitionInsight!.value).toBe(-0.7);
       expect(ambitionInsight!.label).toBe('Ambitious');
       expect(ambitionInsight!.description).toBe('Notably ambitious');
 
-      // Check dominance_humility
-      const dominanceInsight = strand.insights.find(i => i.valuePair === 'dominance_humility');
+      // Check humility_pride
+      const dominanceInsight = strand.insights.find(i => i.valuePair === 'humility_pride');
       expect(dominanceInsight).toBeDefined();
-      expect(dominanceInsight!.value).toBe(0.6);
-      expect(dominanceInsight!.label).toBe('Dominant');
+      expect(dominanceInsight!.value).toBe(-0.6);
+      expect(dominanceInsight!.label).toBe('Proud');
 
       // Check courage_prudence
       const courageInsight = strand.insights.find(i => i.valuePair === 'courage_prudence');
@@ -320,24 +320,24 @@ describe('Strand Data Extractors', () => {
       expect(strand.strandName).toBe('Beliefs');
       expect(strand.insights.length).toBe(3);
 
-      // Check tradition_innovation
-      const traditionInsight = strand.insights.find(i => i.valuePair === 'tradition_innovation');
+      // Check tradition_novelty
+      const traditionInsight = strand.insights.find(i => i.valuePair === 'tradition_novelty');
       expect(traditionInsight).toBeDefined();
       expect(traditionInsight!.value).toBe(0.8);
       expect(traditionInsight!.label).toBe('Traditional');
       expect(traditionInsight!.description).toBe('Deeply traditional');
 
-      // Check cunning_honesty
-      const cunningInsight = strand.insights.find(i => i.valuePair === 'cunning_honesty');
+      // Check honesty_cunning
+      const cunningInsight = strand.insights.find(i => i.valuePair === 'honesty_cunning');
       expect(cunningInsight).toBeDefined();
-      expect(cunningInsight!.value).toBe(0.2);
+      expect(cunningInsight!.value).toBe(-0.2);
       expect(cunningInsight!.label).toBe('Cunning');
 
-      // Check devotion_independence
-      const devotionInsight = strand.insights.find(i => i.valuePair === 'devotion_independence');
+      // Check sacrifice_survival
+      const devotionInsight = strand.insights.find(i => i.valuePair === 'sacrifice_survival');
       expect(devotionInsight).toBeDefined();
       expect(devotionInsight!.value).toBe(0.5);
-      expect(devotionInsight!.label).toBe('Devoted');
+      expect(devotionInsight!.label).toBe('Self-Sacrificing');
     });
   });
 
@@ -348,38 +348,38 @@ describe('Strand Data Extractors', () => {
       expect(strand.strandName).toBe('Fears');
       expect(strand.insights.length).toBeGreaterThan(0);
 
-      // ambition_contentment: 0.7 > 0.3, should include fear
-      const ambitionFear = strand.insights.find(i => i.valuePair === 'ambition_contentment');
+      // loyalty_ambition: 0.7 > 0.3, should include fear
+      const ambitionFear = strand.insights.find(i => i.valuePair === 'loyalty_ambition');
       expect(ambitionFear).toBeDefined();
       expect(ambitionFear!.description).toContain('Fears');
 
-      // tradition_innovation: 0.8 > 0.3, should include fear
-      const traditionFear = strand.insights.find(i => i.valuePair === 'tradition_innovation');
+      // tradition_novelty: 0.8 > 0.3, should include fear
+      const traditionFear = strand.insights.find(i => i.valuePair === 'tradition_novelty');
       expect(traditionFear).toBeDefined();
     });
 
     it('excludes weak values (|v| <= 0.3)', () => {
       const strand = getFearsStrand(graph, agentId);
 
-      // cunning_honesty: 0.2, should NOT be included
-      const cunningFear = strand.insights.find(i => i.valuePair === 'cunning_honesty');
+      // honesty_cunning: 0.2, should NOT be included
+      const cunningFear = strand.insights.find(i => i.valuePair === 'honesty_cunning');
       expect(cunningFear).toBeUndefined();
 
-      // greed_generosity: 0.1, should NOT be included
-      const greedFear = strand.insights.find(i => i.valuePair === 'greed_generosity');
+      // asceticism_extravagance: 0.1, should NOT be included
+      const greedFear = strand.insights.find(i => i.valuePair === 'asceticism_extravagance');
       expect(greedFear).toBeUndefined();
     });
 
     it('uses correct fear description based on pole', () => {
       const strand = getFearsStrand(graph, agentId);
 
-      // cruelty_compassion: -0.6, negative pole, should use second fear
-      const crueltyFear = strand.insights.find(i => i.valuePair === 'cruelty_compassion');
+      // mercy_ruthlessness: 0.6, positive pole, should use first fear
+      const crueltyFear = strand.insights.find(i => i.valuePair === 'mercy_ruthlessness');
       expect(crueltyFear).toBeDefined();
-      expect(crueltyFear!.description).toBe('Fears becoming heartless');
+      expect(crueltyFear!.description).toBe('Fears vulnerability from showing mercy');
 
-      // ambition_contentment: 0.7, positive pole, should use first fear
-      const ambitionFear = strand.insights.find(i => i.valuePair === 'ambition_contentment');
+      // loyalty_ambition: -0.7, negative pole, should use second fear
+      const ambitionFear = strand.insights.find(i => i.valuePair === 'loyalty_ambition');
       expect(ambitionFear).toBeDefined();
       expect(ambitionFear!.description).toBe('Fears irrelevance and failure');
     });

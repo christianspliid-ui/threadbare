@@ -46,7 +46,7 @@ describe('echo types', () => {
         injectionType: 'cultural_template',
         description: 'Seeds myths of a unifying champion and descendant lineages with inherited devotion traits.',
         sphereBiases: { life: 0.05, spirit: 0.03 },
-        traitTendencies: ['devotion_independence', 'courage_prudence'],
+        traitTendencies: ['sacrifice_survival', 'courage_prudence'],
       },
     };
     expect(echo.echoType).toBe('legacy');
@@ -88,7 +88,7 @@ describe('echo types', () => {
         injectionType: 'quest_seed',
         description: 'Seeds a discoverable artifact with modified trait graph and associated myths.',
         sphereBiases: { force: 0.03, entropy: 0.02 },
-        traitTendencies: ['wrath_patience'],
+        traitTendencies: ['mercy_ruthlessness'],
       },
     };
     expect(echo.echoType).toBe('relic');

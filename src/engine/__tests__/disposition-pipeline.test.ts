@@ -9,16 +9,16 @@ describe('Disposition modifier pipeline integration', () => {
   let graph: WorldGraph;
 
   const defaultProfile: AxiologicalProfile = {
-    ambition_contentment: 0.7,
+    mercy_ruthlessness: -0.5,
+    asceticism_extravagance: -0.4,
+    honesty_cunning: 0.1,
+    tradition_novelty: 0.0,
+    loyalty_ambition: 0.7,
+    frankness_propriety: 0,
+    humility_pride: 0.4,
+    sacrifice_survival: -0.2,
+    stoicism_passion: 0,
     courage_prudence: 0.3,
-    cruelty_compassion: -0.5,
-    cunning_honesty: 0.1,
-    devotion_independence: -0.2,
-    loyalty_treachery: -0.6,
-    tradition_innovation: 0.0,
-    dominance_humility: 0.4,
-    wrath_patience: -0.3,
-    greed_generosity: -0.4,
   };
 
   beforeEach(() => {
@@ -79,7 +79,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.trustworthy',
           domain: 'heart',
           score: 0,
-          motivations: ['greed_generosity'],
+          motivations: ['asceticism_extravagance'],
           socialOrientation: 'cooperative',
         },
         {
@@ -87,7 +87,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.trustworthy',
           domain: 'shadow',
           score: 0,
-          motivations: ['cunning_honesty'],
+          motivations: ['honesty_cunning'],
           socialOrientation: 'defective',
         },
       ];
@@ -146,7 +146,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.other',
           domain: 'iron',
           score: 0,
-          motivations: ['ambition_contentment'],
+          motivations: ['loyalty_ambition'],
           socialOrientation: 'cooperative',
         },
       ];
@@ -184,14 +184,14 @@ describe('Disposition modifier pipeline integration', () => {
       });
 
       // Candidates with neutral orientation (no socialOrientation field)
-      // tradition_innovation: 0.0 in defaultProfile, so initial score = 0
+      // tradition_novelty: 0.0 in defaultProfile, so initial score = 0
       const candidates: ActionCandidate[] = [
         {
           templateId: 'neutral_action',
           targetId: 'actor.neutral',
           domain: 'stone',
           score: 0,
-          motivations: ['tradition_innovation'],
+          motivations: ['tradition_novelty'],
           // No socialOrientation
         },
       ];
@@ -202,7 +202,7 @@ describe('Disposition modifier pipeline integration', () => {
       });
 
       // Score should remain at 0 (not modified by disposition since no socialOrientation)
-      // After scoreByGoalAlignment: tradition_innovation (0.0) → score 0
+      // After scoreByGoalAlignment: tradition_novelty (0.0) → score 0
       // After disposition stage: no socialOrientation, so passed through unchanged
       // After applyPersonalityWeights: no change (extension point)
       // After assignProbabilities: score may be adjusted, but we check the candidate before selectTopN
@@ -243,14 +243,14 @@ describe('Disposition modifier pipeline integration', () => {
       // finalDisposition = 1 + 0 = 1
 
       // Use motivations with positive scores in defaultProfile:
-      // ambition_contentment: 0.7, courage_prudence: 0.3
+      // loyalty_ambition: 0.7, courage_prudence: 0.3
       const candidates: ActionCandidate[] = [
         {
           templateId: 'cooperate_action',
           targetId: 'actor.stranger',
           domain: 'heart',
           score: 0,
-          motivations: ['ambition_contentment'], // 0.7
+          motivations: ['loyalty_ambition'], // 0.7
           socialOrientation: 'cooperative',
         },
         {
@@ -276,7 +276,7 @@ describe('Disposition modifier pipeline integration', () => {
       );
 
       // Initial scores from axiological alignment:
-      // cooperate: 0.7 (ambition_contentment)
+      // cooperate: 0.7 (loyalty_ambition)
       // defect: 0.3 (courage_prudence)
       //
       // After disposition modifier (disposition +1):
@@ -318,7 +318,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.innocent',
           domain: 'heart',
           score: 0,
-          motivations: ['greed_generosity'],
+          motivations: ['asceticism_extravagance'],
           socialOrientation: 'cooperative',
         },
         {
@@ -326,7 +326,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.innocent',
           domain: 'shadow',
           score: 0,
-          motivations: ['cunning_honesty'],
+          motivations: ['honesty_cunning'],
           socialOrientation: 'defective',
         },
       ];
@@ -406,7 +406,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.b',
           domain: 'gold',
           score: 0,
-          motivations: ['greed_generosity'],
+          motivations: ['asceticism_extravagance'],
           socialOrientation: 'cooperative',
         },
       ];
@@ -471,7 +471,7 @@ describe('Disposition modifier pipeline integration', () => {
           targetId: 'actor.y',
           domain: 'shadow',
           score: 0,
-          motivations: ['loyalty_treachery'],
+          motivations: ['loyalty_ambition'],
           socialOrientation: 'defective',
         },
       ];

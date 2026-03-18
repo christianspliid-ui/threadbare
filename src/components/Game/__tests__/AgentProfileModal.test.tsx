@@ -25,7 +25,7 @@ const recognisedCard: AgentInfoCardData = {
   factionName: 'Iron Brotherhood',
   cultureName: 'Valdor',
   knowledgeLevel: 'recognised',
-  topValues: [{ pair: 'ambition_contentment', word: 'Ambitious' }],
+  topValues: [{ pair: 'loyalty_ambition', word: 'Ambitious' }],
   domains: [{ domain: 'iron', word: 'Fearsome' }],
 };
 
@@ -33,9 +33,9 @@ const knownCard: AgentInfoCardData = {
   ...recognisedCard,
   knowledgeLevel: 'known',
   topValues: [
-    { pair: 'ambition_contentment', word: 'Ambitious' },
-    { pair: 'cruelty_compassion', word: 'Compassionate' },
-    { pair: 'devotion_independence', word: 'Devoted' },
+    { pair: 'loyalty_ambition', word: 'Ambitious' },
+    { pair: 'mercy_ruthlessness', word: 'Compassionate' },
+    { pair: 'sacrifice_survival', word: 'Devoted' },
   ],
   domains: [
     { domain: 'iron', word: 'Fearsome' },

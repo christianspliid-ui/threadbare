@@ -54,7 +54,7 @@ describe('UnifiedAction types', () => {
       ],
       apCost: 1,
       actorAffinities: ['individual'],
-      motivations: ['ambition_contentment'],
+      motivations: ['loyalty_ambition'],
       narrativeTemplates: {
         initiation: 'approaches the caravan',
         success: 'seizes the goods',

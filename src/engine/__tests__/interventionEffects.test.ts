@@ -23,16 +23,16 @@ describe('applyInterventionEffects', () => {
       properties: {
         actorType: 'individual',
         axiologicalProfile: {
-          ambition_contentment: 0.5,
+          mercy_ruthlessness: -0.4,
+          asceticism_extravagance: 0.3,
+          honesty_cunning: 0.1,
+          tradition_novelty: -0.1,
+          loyalty_ambition: 0.5,
+          frankness_propriety: 0,
+          humility_pride: 0.0,
+          sacrifice_survival: 0.2,
+          stoicism_passion: 0,
           courage_prudence: 0.3,
-          cruelty_compassion: -0.4,
-          cunning_honesty: 0.1,
-          devotion_independence: 0.2,
-          loyalty_treachery: 0.6,
-          tradition_innovation: -0.1,
-          dominance_humility: 0.0,
-          wrath_patience: -0.2,
-          greed_generosity: 0.3,
         },
         cooperationStrategy: 'tit-for-tat',
         reputationScore: 0.5,
@@ -195,16 +195,16 @@ describe('applyInterventionEffects', () => {
 describe('buildValueOverlay', () => {
   it('returns modified profile copy with drift applied', () => {
     const baseProfile: AxiologicalProfile = {
-      ambition_contentment: 0.5,
+      mercy_ruthlessness: -0.4,
+      asceticism_extravagance: 0.3,
+      honesty_cunning: 0.1,
+      tradition_novelty: -0.1,
+      loyalty_ambition: 0.5,
+      frankness_propriety: 0,
+      humility_pride: 0.0,
+      sacrifice_survival: 0.2,
+      stoicism_passion: 0,
       courage_prudence: 0.3,
-      cruelty_compassion: -0.4,
-      cunning_honesty: 0.1,
-      devotion_independence: 0.2,
-      loyalty_treachery: 0.6,
-      tradition_innovation: -0.1,
-      dominance_humility: 0.0,
-      wrath_patience: -0.2,
-      greed_generosity: 0.3,
     };
     const influences: DivineInfluenceEntry[] = [
       {
@@ -219,21 +219,21 @@ describe('buildValueOverlay', () => {
     const overlay = buildValueOverlay(baseProfile, influences);
     // dream initialStrength=0.5; 0.3 + 0.12*0.5 = 0.36
     expect(overlay.courage_prudence).toBeCloseTo(0.36);
-    expect(overlay.ambition_contentment).toBe(0.5);
+    expect(overlay.loyalty_ambition).toBe(0.5);
   });
 
   it('clamps values to [-1, 1]', () => {
     const baseProfile: AxiologicalProfile = {
-      ambition_contentment: 0.95,
+      mercy_ruthlessness: -0.4,
+      asceticism_extravagance: 0.3,
+      honesty_cunning: 0.1,
+      tradition_novelty: -0.1,
+      loyalty_ambition: 0.95,
+      frankness_propriety: 0,
+      humility_pride: 0.0,
+      sacrifice_survival: 0.2,
+      stoicism_passion: 0,
       courage_prudence: 0.3,
-      cruelty_compassion: -0.4,
-      cunning_honesty: 0.1,
-      devotion_independence: 0.2,
-      loyalty_treachery: 0.6,
-      tradition_innovation: -0.1,
-      dominance_humility: 0.0,
-      wrath_patience: -0.2,
-      greed_generosity: 0.3,
     };
     const influences: DivineInfluenceEntry[] = [
       {
@@ -242,25 +242,25 @@ describe('buildValueOverlay', () => {
         sphere: 'spirit',
         tickApplied: 1,
         ...DECAY_CONSTANTS.persuade,
-        valueDrifts: { ambition_contentment: 0.2 },
+        valueDrifts: { loyalty_ambition: 0.2 },
       },
     ];
     const overlay = buildValueOverlay(baseProfile, influences);
-    expect(overlay.ambition_contentment).toBe(1.0);
+    expect(overlay.loyalty_ambition).toBe(1.0);
   });
 
   it('stacks multiple influences', () => {
     const baseProfile: AxiologicalProfile = {
-      ambition_contentment: 0.0,
+      mercy_ruthlessness: 0.0,
+      asceticism_extravagance: 0.0,
+      honesty_cunning: 0.0,
+      tradition_novelty: 0.0,
+      loyalty_ambition: 0.0,
+      frankness_propriety: 0.0,
+      humility_pride: 0.0,
+      sacrifice_survival: 0.0,
+      stoicism_passion: 0.0,
       courage_prudence: 0.0,
-      cruelty_compassion: 0.0,
-      cunning_honesty: 0.0,
-      devotion_independence: 0.0,
-      loyalty_treachery: 0.0,
-      tradition_innovation: 0.0,
-      dominance_humility: 0.0,
-      wrath_patience: 0.0,
-      greed_generosity: 0.0,
     };
     const influences: DivineInfluenceEntry[] = [
       {
@@ -287,16 +287,16 @@ describe('buildValueOverlay', () => {
 
   it('does not mutate original profile', () => {
     const baseProfile: AxiologicalProfile = {
-      ambition_contentment: 0.5,
+      mercy_ruthlessness: -0.4,
+      asceticism_extravagance: 0.3,
+      honesty_cunning: 0.1,
+      tradition_novelty: -0.1,
+      loyalty_ambition: 0.5,
+      frankness_propriety: 0,
+      humility_pride: 0.0,
+      sacrifice_survival: 0.2,
+      stoicism_passion: 0,
       courage_prudence: 0.3,
-      cruelty_compassion: -0.4,
-      cunning_honesty: 0.1,
-      devotion_independence: 0.2,
-      loyalty_treachery: 0.6,
-      tradition_innovation: -0.1,
-      dominance_humility: 0.0,
-      wrath_patience: -0.2,
-      greed_generosity: 0.3,
     };
     const originalCourage = baseProfile.courage_prudence;
     const influences: DivineInfluenceEntry[] = [

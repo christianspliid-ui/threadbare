@@ -31,13 +31,13 @@ describe('StrandView', () => {
     strandName: 'Desires',
     insights: [
       {
-        valuePair: 'greed_generosity',
+        valuePair: 'asceticism_extravagance',
         value: 0.6,
         label: 'Greedy',
         description: 'Notably greedy',
       },
       {
-        valuePair: 'cruelty_compassion',
+        valuePair: 'mercy_ruthlessness',
         value: -0.4,
         label: 'Compassionate',
         description: 'Notably compassionate',
@@ -65,7 +65,7 @@ describe('StrandView', () => {
     ],
     insights: [
       {
-        valuePair: 'loyalty_treachery',
+        valuePair: 'loyalty_ambition',
         value: 0.7,
         label: 'Loyal',
         description: 'Deeply loyal',
@@ -77,7 +77,7 @@ describe('StrandView', () => {
     strandName: 'Ambitions',
     insights: [
       {
-        valuePair: 'ambition_contentment',
+        valuePair: 'loyalty_ambition',
         value: 0.8,
         label: 'Ambitious',
         description: 'Deeply ambitious',
@@ -89,7 +89,7 @@ describe('StrandView', () => {
     strandName: 'Beliefs',
     insights: [
       {
-        valuePair: 'tradition_innovation',
+        valuePair: 'tradition_novelty',
         value: -0.5,
         label: 'Innovative',
         description: 'Notably innovative',
@@ -101,7 +101,7 @@ describe('StrandView', () => {
     strandName: 'Fears',
     insights: [
       {
-        valuePair: 'ambition_contentment',
+        valuePair: 'loyalty_ambition',
         value: 0.8,
         label: 'Fear',
         description: 'Fears irrelevance and failure',

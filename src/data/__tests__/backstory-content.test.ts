@@ -38,9 +38,9 @@ const ALL_BOND_BASES = ['friendship', 'rivalry', 'loyalty', 'alliance', 'trade',
 const ALL_TRAIT_CATEGORIES = ['innate', 'mastery', 'reputation', 'scar', 'condition', 'destiny'];
 
 const ALL_VALUE_PAIRS = [
-  'ambition_contentment', 'courage_prudence', 'cruelty_compassion', 'cunning_honesty',
-  'devotion_independence', 'loyalty_treachery', 'tradition_innovation', 'dominance_humility',
-  'wrath_patience', 'greed_generosity',
+  'loyalty_ambition', 'courage_prudence', 'mercy_ruthlessness', 'honesty_cunning',
+  'sacrifice_survival', 'loyalty_ambition', 'tradition_novelty', 'humility_pride',
+  'mercy_ruthlessness', 'asceticism_extravagance',
 ];
 
 const ALL_FEAR_KEYS = ALL_VALUE_PAIRS.flatMap((pair) => [`${pair}_positive`, `${pair}_negative`]);

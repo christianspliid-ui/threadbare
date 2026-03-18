@@ -3,16 +3,16 @@ import { generateAgendas, type GenerateAgendasInput } from '../agendaGenerator';
 import type { AxiologicalProfile } from '../../types/agent';
 
 const defaultProfile: AxiologicalProfile = {
-  ambition_contentment: 0.2,
+  loyalty_ambition: 0.2,
   courage_prudence: 0.0,
-  cruelty_compassion: -0.3,
-  cunning_honesty: 0.1,
-  devotion_independence: 0.0,
-  loyalty_treachery: 0.3,
-  tradition_innovation: 0.0,
-  dominance_humility: 0.0,
-  wrath_patience: 0.0,
-  greed_generosity: 0.0,
+  mercy_ruthlessness: -0.3,
+  honesty_cunning: 0.1,
+  sacrifice_survival: 0.0,
+  loyalty_ambition: 0.3,
+  tradition_novelty: 0.0,
+  humility_pride: 0.0,
+  mercy_ruthlessness: 0.0,
+  asceticism_extravagance: 0.0,
 };
 
 describe('generateAgendas', () => {
@@ -31,7 +31,7 @@ describe('generateAgendas', () => {
   it('filters out agendas for values already maxed', () => {
     const maxedProfile: AxiologicalProfile = {
       ...defaultProfile,
-      ambition_contentment: 0.95, // nearly maxed left
+      loyalty_ambition: 0.95, // nearly maxed left
     };
     const agendas = generateAgendas({
       interventionType: 'persuade',
@@ -40,8 +40,8 @@ describe('generateAgendas', () => {
       playerPrimarySphere: 'force',
       seed: 42,
     });
-    // Should not offer ambition (left pole of ambition_contentment) since it's already 0.95
-    const ambitionAgenda = agendas.find(a => a.valuePair === 'ambition_contentment' && a.valueDirection === 'left');
+    // Should not offer ambition (left pole of loyalty_ambition) since it's already 0.95
+    const ambitionAgenda = agendas.find(a => a.valuePair === 'loyalty_ambition' && a.valueDirection === 'left');
     expect(ambitionAgenda).toBeUndefined();
   });
 

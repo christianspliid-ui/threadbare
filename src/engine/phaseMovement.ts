@@ -91,16 +91,16 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         if (currentLocEdges.length > 0) {
           const currentLocId = currentLocEdges[0].target;
           const profile = (actor.properties?.axiologicalProfile as AxiologicalProfile) || {
-            ambition_contentment: 0,
+            mercy_ruthlessness: 0,
+            asceticism_extravagance: 0,
+            honesty_cunning: 0,
+            tradition_novelty: 0,
+            loyalty_ambition: 0,
+            frankness_propriety: 0,
+            humility_pride: 0,
+            sacrifice_survival: 0,
+            stoicism_passion: 0,
             courage_prudence: 0,
-            cruelty_compassion: 0,
-            cunning_honesty: 0,
-            devotion_independence: 0,
-            loyalty_treachery: 0,
-            tradition_innovation: 0,
-            dominance_humility: 0,
-            wrath_patience: 0,
-            greed_generosity: 0,
           };
           const newCandidates = generateMovementCandidates(state.graph, actorId, currentLocId, profile);
 
@@ -169,16 +169,16 @@ export function phaseMovement(state: GameState): Partial<GameState> {
 
     // Get axiological profile, default to all-zeros
     const axiologicalProfile = (actor.properties?.axiologicalProfile as AxiologicalProfile) || {
-      ambition_contentment: 0,
+      mercy_ruthlessness: 0,
+      asceticism_extravagance: 0,
+      honesty_cunning: 0,
+      tradition_novelty: 0,
+      loyalty_ambition: 0,
+      frankness_propriety: 0,
+      humility_pride: 0,
+      sacrifice_survival: 0,
+      stoicism_passion: 0,
       courage_prudence: 0,
-      cruelty_compassion: 0,
-      cunning_honesty: 0,
-      devotion_independence: 0,
-      loyalty_treachery: 0,
-      tradition_innovation: 0,
-      dominance_humility: 0,
-      wrath_patience: 0,
-      greed_generosity: 0,
     };
 
     // Generate candidates

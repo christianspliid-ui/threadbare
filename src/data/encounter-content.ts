@@ -82,7 +82,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'shadow',
     encounterType: 'explore',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'deep_descent.entrance',
@@ -142,7 +142,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'create',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'trial_of_flame.ignition',
@@ -201,7 +201,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'explore',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'spirit_walk.threshold',
@@ -260,7 +260,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'eye',
     encounterType: 'trade',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'merchants_gambit.negotiation',
@@ -319,7 +319,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'star',
     encounterType: 'steal',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'shadow_hunt.stalk',
@@ -378,7 +378,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'knowledge_test.archives',
@@ -437,7 +437,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'stone',
     encounterType: 'duel',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'warlords_crucible.duel',
@@ -497,7 +497,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'heart',
     encounterType: 'assist',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'healers_oath.diagnosis',
@@ -557,7 +557,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'gold',
     encounterType: 'lead',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'diplomats_maze.audience',
@@ -617,7 +617,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     reachSecondary: 'veil',
     encounterType: 'explore',
     threatRating: 'moderate',
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     steps: [
       {
         id: 'starborn_vigil.vigil',

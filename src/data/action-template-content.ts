@@ -61,7 +61,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'iron',
     durationRange: { min: 2, max: 4 },
-    motivations: ['courage_prudence', 'ambition_contentment'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     onSuccess: [
       {
         op: 'add_node',
@@ -91,7 +91,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'iron',
     durationRange: { min: 1, max: 2 },
-    motivations: ['courage_prudence', 'cunning_honesty'],
+    motivations: ['courage_prudence', 'honesty_cunning'],
     onSuccess: [
       {
         op: 'update_node',
@@ -119,7 +119,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'iron',
     durationRange: { min: 2, max: 3 },
-    motivations: ['dominance_humility', 'courage_prudence'],
+    motivations: ['humility_pride', 'courage_prudence'],
     onSuccess: [
       {
         op: 'update_node',
@@ -147,7 +147,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'iron',
     durationRange: { min: 3, max: 5 },
-    motivations: ['dominance_humility', 'wrath_patience'],
+    motivations: ['humility_pride', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
       { op: 'add_edge', edgeType: 'controls', source: '$actor', target: '$location' },
@@ -174,7 +174,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 4 },
-    motivations: ['greed_generosity', 'cunning_honesty', 'ambition_contentment'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'trades_with', source: '$actor', target: '$target' },
       { op: 'update_node', nodeId: '$actor', changes: { wealth: 0.15 } },
@@ -195,7 +195,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'gold',
     durationRange: { min: 1, max: 2 },
-    motivations: ['cunning_honesty', 'ambition_contentment'],
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
       { op: 'update_node', nodeId: '$location', changes: { resourcesKnown: true } },
     ],
@@ -215,7 +215,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
-    motivations: ['greed_generosity', 'cunning_honesty'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning'],
     onSuccess: [
       { op: 'update_edge', edgeType: 'trades_with', source: '$actor', target: '$target', changes: { volume: 1 } },
     ],
@@ -235,7 +235,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
-    motivations: ['greed_generosity', 'loyalty_treachery'],
+    motivations: ['asceticism_extravagance', 'loyalty_ambition'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'trades_with', source: '$actor', target: '$target' },
       { op: 'update_node', nodeId: '$target', changes: { wealth: -0.20 } },
@@ -259,7 +259,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 4 },
-    motivations: ['greed_generosity', 'cunning_honesty', 'loyalty_treachery'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
       {
         op: 'add_node',
@@ -292,7 +292,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
-    motivations: ['greed_generosity', 'dominance_humility'],
+    motivations: ['asceticism_extravagance', 'humility_pride'],
     onSuccess: [
       {
         op: 'update_edge',
@@ -319,7 +319,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 1, max: 2 },
-    motivations: ['loyalty_treachery', 'greed_generosity', 'cunning_honesty'],
+    motivations: ['loyalty_ambition', 'asceticism_extravagance', 'honesty_cunning'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'party_to', source: '$actor', target: '$target' },
       { op: 'update_node', nodeId: '$actor', changes: { reputation: -0.15 } },
@@ -341,7 +341,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
-    motivations: ['greed_generosity', 'courage_prudence', 'ambition_contentment'],
+    motivations: ['asceticism_extravagance', 'courage_prudence', 'loyalty_ambition'],
     minWealthRequired: 10, // WEALTH_MERCENARY_COST
     onSuccess: [
       {
@@ -376,7 +376,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
-    motivations: ['greed_generosity', 'cunning_honesty', 'loyalty_treachery'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition'],
     minWealthRequired: 15, // WEALTH_ASSASSINATION_COST
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
@@ -399,7 +399,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 1, max: 3 },
-    motivations: ['greed_generosity', 'cunning_honesty', 'dominance_humility'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning', 'humility_pride'],
     minWealthRequired: 8, // WEALTH_INFLUENCE_COST
     onSuccess: [
       {
@@ -428,7 +428,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
-    motivations: ['ambition_contentment', 'greed_generosity', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'asceticism_extravagance', 'tradition_novelty'],
     minWealthRequired: 12, // WEALTH_CONSTRUCTION_COST
     onSuccess: [
       {
@@ -463,7 +463,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 4, max: 6 },
-    motivations: ['greed_generosity', 'dominance_humility', 'ambition_contentment'],
+    motivations: ['asceticism_extravagance', 'humility_pride', 'loyalty_ambition'],
     minWealthRequired: 25, // WEALTH_MONOPOLY_COST
     onSuccess: [
       // Mark the target location as monopoly-controlled by this actor
@@ -492,7 +492,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'shadow',
     durationRange: { min: 2, max: 4 },
-    motivations: ['cunning_honesty', 'courage_prudence', 'loyalty_treachery'],
+    motivations: ['honesty_cunning', 'courage_prudence', 'loyalty_ambition'],
     onSuccess: [
       {
         op: 'add_node',
@@ -518,7 +518,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'shadow',
     durationRange: { min: 1, max: 2 },
-    motivations: ['cunning_honesty', 'courage_prudence'],
+    motivations: ['honesty_cunning', 'courage_prudence'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { secret: 'revealed' } },
     ],
@@ -538,7 +538,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'shadow',
     durationRange: { min: 2, max: 3 },
-    motivations: ['loyalty_treachery', 'cunning_honesty'],
+    motivations: ['loyalty_ambition', 'honesty_cunning'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'serves', source: '$target', target: '$actor', properties: { secret: true } },
     ],
@@ -558,7 +558,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'shadow',
     durationRange: { min: 3, max: 5 },
-    motivations: ['loyalty_treachery', 'wrath_patience'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
     ],
@@ -580,7 +580,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'veil',
     durationRange: { min: 2, max: 4 },
-    motivations: ['tradition_innovation', 'devotion_independence'],
+    motivations: ['tradition_novelty', 'sacrifice_survival'],
     onSuccess: [
       {
         op: 'add_edge',
@@ -606,7 +606,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'veil',
     durationRange: { min: 1, max: 2 },
-    motivations: ['tradition_innovation', 'cunning_honesty'],
+    motivations: ['tradition_novelty', 'honesty_cunning'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { magicRevealed: true } },
     ],
@@ -626,7 +626,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'veil',
     durationRange: { min: 2, max: 3 },
-    motivations: ['tradition_innovation', 'devotion_independence'],
+    motivations: ['tradition_novelty', 'sacrifice_survival'],
     onSuccess: [
       {
         op: 'update_edge',
@@ -652,7 +652,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'veil',
     durationRange: { min: 3, max: 5 },
-    motivations: ['tradition_innovation', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'enchanted_by', source: '$actor', target: '$target' },
     ],
@@ -674,7 +674,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'heart',
     durationRange: { min: 2, max: 4 },
-    motivations: ['loyalty_treachery', 'cruelty_compassion', 'dominance_humility'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness', 'humility_pride'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'allied_with', source: '$actor', target: '$target' },
     ],
@@ -694,7 +694,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'heart',
     durationRange: { min: 1, max: 2 },
-    motivations: ['loyalty_treachery', 'cruelty_compassion'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { loyaltyKnown: true } },
     ],
@@ -714,7 +714,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'heart',
     durationRange: { min: 2, max: 3 },
-    motivations: ['dominance_humility', 'cruelty_compassion'],
+    motivations: ['humility_pride', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { morale: 0.15 } },
       { op: 'add_edge', edgeType: 'inspired_by', source: '$actor', target: '$target' },
@@ -735,7 +735,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'heart',
     durationRange: { min: 3, max: 5 },
-    motivations: ['loyalty_treachery', 'dominance_humility'],
+    motivations: ['loyalty_ambition', 'humility_pride'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'allied_with', source: '$actor', target: '$target' },
       { op: 'update_node', nodeId: '$target', changes: { morale: -0.20 } },
@@ -758,7 +758,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'eye',
     durationRange: { min: 2, max: 4 },
-    motivations: ['cunning_honesty', 'ambition_contentment', 'tradition_innovation'],
+    motivations: ['honesty_cunning', 'loyalty_ambition', 'tradition_novelty'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'investigates', source: '$actor', target: '$target', properties: { depth: 'deep' } },
     ],
@@ -778,7 +778,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'eye',
     durationRange: { min: 1, max: 2 },
-    motivations: ['cunning_honesty', 'ambition_contentment'],
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { investigated: true } },
     ],
@@ -798,7 +798,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'eye',
     durationRange: { min: 2, max: 3 },
-    motivations: ['ambition_contentment', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
     onSuccess: [
       { op: 'update_edge', edgeType: 'investigates', source: '$actor', target: '$target', changes: { depth: 'deeper' } },
     ],
@@ -818,7 +818,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'eye',
     durationRange: { min: 3, max: 5 },
-    motivations: ['cunning_honesty', 'loyalty_treachery'],
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'investigates', source: '$actor', target: '$target' },
     ],
@@ -840,7 +840,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'stone',
     durationRange: { min: 2, max: 4 },
-    motivations: ['tradition_innovation', 'ambition_contentment', 'devotion_independence'],
+    motivations: ['tradition_novelty', 'loyalty_ambition', 'sacrifice_survival'],
     onSuccess: [
       {
         op: 'add_node',
@@ -865,7 +865,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'stone',
     durationRange: { min: 1, max: 2 },
-    motivations: ['tradition_innovation', 'ambition_contentment'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { assessed: true } },
     ],
@@ -885,7 +885,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'stone',
     durationRange: { min: 2, max: 3 },
-    motivations: ['devotion_independence', 'ambition_contentment'],
+    motivations: ['sacrifice_survival', 'loyalty_ambition'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { integrity: 0.20 } },
     ],
@@ -905,7 +905,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'stone',
     durationRange: { min: 3, max: 5 },
-    motivations: ['ambition_contentment', 'devotion_independence'],
+    motivations: ['loyalty_ambition', 'sacrifice_survival'],
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
     ],
@@ -927,7 +927,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'star',
     durationRange: { min: 2, max: 4 },
-    motivations: ['devotion_independence', 'tradition_innovation', 'courage_prudence'],
+    motivations: ['sacrifice_survival', 'tradition_novelty', 'courage_prudence'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'blessed_by', source: '$actor', target: '$target', properties: { sacred: true } },
     ],
@@ -947,7 +947,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'star',
     durationRange: { min: 1, max: 2 },
-    motivations: ['devotion_independence', 'tradition_innovation'],
+    motivations: ['sacrifice_survival', 'tradition_novelty'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { divined: true } },
     ],
@@ -967,7 +967,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'star',
     durationRange: { min: 2, max: 3 },
-    motivations: ['devotion_independence', 'courage_prudence'],
+    motivations: ['sacrifice_survival', 'courage_prudence'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { faith: 0.15 } },
     ],
@@ -987,7 +987,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'star',
     durationRange: { min: 3, max: 5 },
-    motivations: ['courage_prudence', 'loyalty_treachery'],
+    motivations: ['courage_prudence', 'loyalty_ambition'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'blessed_by', source: '$actor', target: '$target' },
     ],
@@ -1009,7 +1009,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'flesh',
     durationRange: { min: 2, max: 4 },
-    motivations: ['cruelty_compassion', 'devotion_independence', 'courage_prudence'],
+    motivations: ['mercy_ruthlessness', 'sacrifice_survival', 'courage_prudence'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { health: 0.20 } },
     ],
@@ -1029,7 +1029,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'read',
     reach: 'flesh',
     durationRange: { min: 1, max: 2 },
-    motivations: ['cruelty_compassion', 'cunning_honesty'],
+    motivations: ['mercy_ruthlessness', 'honesty_cunning'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { ailmentKnown: true } },
     ],
@@ -1049,7 +1049,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'flesh',
     durationRange: { min: 2, max: 3 },
-    motivations: ['devotion_independence', 'cruelty_compassion'],
+    motivations: ['sacrifice_survival', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { vitality: 0.15 } },
     ],
@@ -1069,7 +1069,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'flesh',
     durationRange: { min: 3, max: 5 },
-    motivations: ['cruelty_compassion', 'wrath_patience'],
+    motivations: ['mercy_ruthlessness', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { health: -0.50 } },
     ],

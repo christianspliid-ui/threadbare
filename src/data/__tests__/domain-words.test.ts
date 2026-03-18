@@ -178,20 +178,21 @@ describe('VALUE_WORD_MAP', () => {
     }
   });
 
-  it('has correct labels for ambition_contentment', () => {
-    expect(VALUE_WORD_MAP.ambition_contentment).toEqual(['Ambitious', 'Content']);
+  it('has correct labels for loyalty_ambition', () => {
+    expect(VALUE_WORD_MAP.loyalty_ambition).toEqual(['Loyal', 'Ambitious']);
   });
 
   it('has correct labels for all 10 pairs', () => {
     expect(VALUE_WORD_MAP.courage_prudence).toEqual(['Courageous', 'Prudent']);
-    expect(VALUE_WORD_MAP.cruelty_compassion).toEqual(['Cruel', 'Compassionate']);
-    expect(VALUE_WORD_MAP.cunning_honesty).toEqual(['Cunning', 'Honest']);
-    expect(VALUE_WORD_MAP.devotion_independence).toEqual(['Devoted', 'Independent']);
-    expect(VALUE_WORD_MAP.loyalty_treachery).toEqual(['Loyal', 'Treacherous']);
-    expect(VALUE_WORD_MAP.tradition_innovation).toEqual(['Traditional', 'Innovative']);
-    expect(VALUE_WORD_MAP.dominance_humility).toEqual(['Dominant', 'Humble']);
-    expect(VALUE_WORD_MAP.wrath_patience).toEqual(['Wrathful', 'Patient']);
-    expect(VALUE_WORD_MAP.greed_generosity).toEqual(['Greedy', 'Generous']);
+    expect(VALUE_WORD_MAP.mercy_ruthlessness).toEqual(['Merciful', 'Ruthless']);
+    expect(VALUE_WORD_MAP.honesty_cunning).toEqual(['Honest', 'Cunning']);
+    expect(VALUE_WORD_MAP.sacrifice_survival).toEqual(['Self-Sacrificing', 'Self-Preserving']);
+    expect(VALUE_WORD_MAP.loyalty_ambition).toEqual(['Loyal', 'Ambitious']);
+    expect(VALUE_WORD_MAP.tradition_novelty).toEqual(['Traditional', 'Innovative']);
+    expect(VALUE_WORD_MAP.humility_pride).toEqual(['Humble', 'Proud']);
+    expect(VALUE_WORD_MAP.asceticism_extravagance).toEqual(['Ascetic', 'Extravagant']);
+    expect(VALUE_WORD_MAP.frankness_propriety).toEqual(['Frank', 'Proper']);
+    expect(VALUE_WORD_MAP.stoicism_passion).toEqual(['Stoic', 'Passionate']);
   });
 });
 

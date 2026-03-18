@@ -14,6 +14,7 @@
  */
 
 import type { WorldGraph } from './graph';
+import { VALUE_PAIRS } from '../types/agent';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import { VALUE_LABELS, FEAR_DESCRIPTIONS } from '../data/strand-content';
@@ -58,24 +59,24 @@ export interface PresenceStrandData {
 
 export interface DesiresStrandData {
   strandName: 'Desires';
-  insights: ValueInsight[]; // from greed_generosity, cruelty_compassion, wrath_patience
+  insights: ValueInsight[]; // from asceticism_extravagance, mercy_ruthlessness
 }
 
 export interface BondsStrandData {
   strandName: 'Bonds';
   relationships: RelationshipInfo[]; // from relates_to edges
   factions: FactionInfo[]; // from member_of edges
-  insights: ValueInsight[]; // from loyalty_treachery, devotion_independence
+  insights: ValueInsight[]; // from loyalty_ambition, sacrifice_survival
 }
 
 export interface AmbitionsStrandData {
   strandName: 'Ambitions';
-  insights: ValueInsight[]; // from ambition_contentment, dominance_humility, courage_prudence
+  insights: ValueInsight[]; // from loyalty_ambition, humility_pride, courage_prudence
 }
 
 export interface BeliefsStrandData {
   strandName: 'Beliefs';
-  insights: ValueInsight[]; // from tradition_innovation, cunning_honesty, devotion_independence
+  insights: ValueInsight[]; // from tradition_novelty, honesty_cunning, sacrifice_survival
 }
 
 export interface FearsStrandData {
@@ -99,23 +100,22 @@ export type StrandData =
 
 // Strand categorizations
 const DESIRES_PAIRS: ValuePair[] = [
-  'greed_generosity',
-  'cruelty_compassion',
-  'wrath_patience',
+  'asceticism_extravagance',
+  'mercy_ruthlessness',
 ];
 
-const BONDS_PAIRS: ValuePair[] = ['loyalty_treachery', 'devotion_independence'];
+const BONDS_PAIRS: ValuePair[] = ['loyalty_ambition', 'sacrifice_survival'];
 
 const AMBITIONS_PAIRS: ValuePair[] = [
-  'ambition_contentment',
-  'dominance_humility',
+  'loyalty_ambition',
+  'humility_pride',
   'courage_prudence',
 ];
 
 const BELIEFS_PAIRS: ValuePair[] = [
-  'tradition_innovation',
-  'cunning_honesty',
-  'devotion_independence',
+  'tradition_novelty',
+  'honesty_cunning',
+  'sacrifice_survival',
 ];
 
 // ============================================================================
@@ -170,32 +170,32 @@ function getAxiologicalProfile(graph: WorldGraph, agentId: string): AxiologicalP
   const agent = graph.getNode(agentId);
   if (!agent) {
     return {
-      ambition_contentment: 0,
+      mercy_ruthlessness: 0,
+      asceticism_extravagance: 0,
+      honesty_cunning: 0,
+      tradition_novelty: 0,
+      loyalty_ambition: 0,
+      frankness_propriety: 0,
+      humility_pride: 0,
+      sacrifice_survival: 0,
+      stoicism_passion: 0,
       courage_prudence: 0,
-      cruelty_compassion: 0,
-      cunning_honesty: 0,
-      devotion_independence: 0,
-      loyalty_treachery: 0,
-      tradition_innovation: 0,
-      dominance_humility: 0,
-      wrath_patience: 0,
-      greed_generosity: 0,
     };
   }
 
   const profile = agent.properties.axiologicalProfile as AxiologicalProfile | undefined;
   return (
     profile || {
-      ambition_contentment: 0,
+      mercy_ruthlessness: 0,
+      asceticism_extravagance: 0,
+      honesty_cunning: 0,
+      tradition_novelty: 0,
+      loyalty_ambition: 0,
+      frankness_propriety: 0,
+      humility_pride: 0,
+      sacrifice_survival: 0,
+      stoicism_passion: 0,
       courage_prudence: 0,
-      cruelty_compassion: 0,
-      cunning_honesty: 0,
-      devotion_independence: 0,
-      loyalty_treachery: 0,
-      tradition_innovation: 0,
-      dominance_humility: 0,
-      wrath_patience: 0,
-      greed_generosity: 0,
     }
   );
 }
@@ -369,18 +369,7 @@ export function getFearsStrand(graph: WorldGraph, agentId: string): FearsStrandD
   const insights: ValueInsight[] = [];
 
   // Check all value pairs
-  const allPairs: ValuePair[] = [
-    'ambition_contentment',
-    'courage_prudence',
-    'cruelty_compassion',
-    'cunning_honesty',
-    'devotion_independence',
-    'loyalty_treachery',
-    'tradition_innovation',
-    'dominance_humility',
-    'wrath_patience',
-    'greed_generosity',
-  ];
+  const allPairs = VALUE_PAIRS;
 
   for (const valuePair of allPairs) {
     const value = profile[valuePair];

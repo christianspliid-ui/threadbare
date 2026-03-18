@@ -22,7 +22,7 @@ function addAgent(
     properties: {
       actorType: 'individual',
       domainCapabilities: { iron: 5, gold: 3, shadow: 2, veil: 1, heart: 1, eye: 1, stone: 1, star: 1, flesh: 1 },
-      axiologicalProfile: { ambition_contentment: 0.7 },
+      axiologicalProfile: { loyalty_ambition: 0.7 },
     },
   });
   graph.addNode({ id: ascendantId, type: 'actor', name: 'Ascendant', properties: { actorType: 'individual' } });

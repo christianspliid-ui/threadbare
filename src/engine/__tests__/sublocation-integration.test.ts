@@ -122,16 +122,16 @@ describe('Integration Test 1: Full pipeline (arrival → creation → selection 
 
     // Build agent with axiological profile
     const axiologicalProfile: AxiologicalProfile = {
-      ambition_contentment: 0.5,
+      loyalty_ambition: 0.5,
       courage_prudence: 0.5,
-      cruelty_compassion: 0.3,
-      cunning_honesty: 0.4,
-      devotion_independence: 0.8, // strong devotion → temple quarter preference
-      loyalty_treachery: 0.5,
-      tradition_innovation: 0.5,
-      dominance_humility: 0.5,
-      wrath_patience: 0.5,
-      greed_generosity: -0.2, // slightly greedy → weak market square preference
+      mercy_ruthlessness: 0.3,
+      honesty_cunning: 0.4,
+      sacrifice_survival: 0.8, // strong devotion → temple quarter preference
+      loyalty_ambition: 0.5,
+      tradition_novelty: 0.5,
+      humility_pride: 0.5,
+      mercy_ruthlessness: 0.5,
+      asceticism_extravagance: -0.2, // slightly greedy → weak market square preference
     };
 
     const agent: GraphNode = {
