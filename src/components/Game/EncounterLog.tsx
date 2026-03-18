@@ -8,6 +8,7 @@ interface EncounterLogProps {
   progress: EncounterProgress;
   template: EncounterTemplate;
   agentName: string;
+  onClick?: () => void;
 }
 
 /**
@@ -18,6 +19,7 @@ export const EncounterLog = memo(function EncounterLog({
   progress,
   template,
   agentName,
+  onClick,
 }: EncounterLogProps) {
   const currentStep = template.steps[progress.currentEncounterIndex];
 
@@ -31,11 +33,16 @@ export const EncounterLog = memo(function EncounterLog({
   return (
     <div
       className="relative rounded-lg border p-4 mb-4 transition-opacity"
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
       style={{
         backgroundColor: 'var(--bg-raised)',
         borderColor: isActive ? 'var(--accent-gold)' : 'var(--border-subtle)',
         borderWidth: isActive ? '2px' : '1px',
         opacity: isAbandoned ? 0.6 : 1,
+        cursor: onClick ? 'pointer' : undefined,
       }}
     >
       {/* Title bar with status */}

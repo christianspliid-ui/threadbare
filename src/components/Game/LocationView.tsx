@@ -11,6 +11,7 @@ import { EncounterLog } from './EncounterLog';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
+import { StepDots } from '../shared/StepDots';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -25,6 +26,8 @@ interface LocationViewProps {
   activeEncounters: EncounterProgress[];
   getAgentName: (id: string) => string;
   getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
+  // Click-to-open encounter vignette
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
@@ -44,6 +47,7 @@ interface SublocationCardProps {
   getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
   getAgentName: (id: string) => string;
   onAgentClick: (agentId: string) => void;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
   onEnter: (sublocationId: string) => void;
 }
 
@@ -60,6 +64,7 @@ const SublocationCard = memo(function SublocationCard({
   getEncounterTemplate,
   getAgentName,
   onAgentClick,
+  onEncounterClick,
   onEnter,
 }: SublocationCardProps) {
   // Determine divine styling
@@ -156,6 +161,7 @@ const SublocationCard = memo(function SublocationCard({
                 encounters={agentEncounters}
                 getEncounterTemplate={getEncounterTemplate}
                 onAgentClick={onAgentClick}
+                onEncounterClick={onEncounterClick}
               />
             );
           })}
@@ -207,6 +213,7 @@ interface AgentRowProps {
   encounters: EncounterProgress[];
   getEncounterTemplate: (id: string) => EncounterTemplate | undefined;
   onAgentClick: (agentId: string) => void;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
 }
 
 const AgentRow = memo(function AgentRow({
@@ -215,6 +222,7 @@ const AgentRow = memo(function AgentRow({
   encounters,
   getEncounterTemplate,
   onAgentClick,
+  onEncounterClick,
 }: AgentRowProps) {
   return (
     <button
@@ -259,78 +267,50 @@ const AgentRow = memo(function AgentRow({
             color: 'var(--text-tertiary)',
           }}
         >
-          {encounters.length > 0 ? (
-            <>
-              <span style={{ color: 'var(--accent-gold)' }}>
-                {getEncounterTemplate(encounters[0].encounterId)?.name || 'Unknown Encounter'}
+          {encounters.length > 0 ? (() => {
+            const tmpl = getEncounterTemplate(encounters[0].encounterId);
+            return (
+              <span
+                role="button"
+                tabIndex={0}
+                style={{ cursor: onEncounterClick ? 'pointer' : undefined }}
+                onClick={(e) => {
+                  if (!onEncounterClick || !tmpl) return;
+                  e.stopPropagation();
+                  onEncounterClick(agent.id, encounters[0], tmpl);
+                }}
+                onKeyDown={(e) => {
+                  if ((e.key === 'Enter' || e.key === ' ') && onEncounterClick && tmpl) {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    onEncounterClick(agent.id, encounters[0], tmpl);
+                  }
+                }}
+              >
+                <span style={{ color: 'var(--accent-gold)' }}>
+                  {tmpl?.name || 'Unknown Encounter'}
+                </span>
+                <span style={{ color: 'var(--text-tertiary)' }}> · </span>
+                <span>step {encounters[0].currentEncounterIndex + 1}</span>
               </span>
-              <span style={{ color: 'var(--text-tertiary)' }}> · </span>
-              <span>step {encounters[0].currentStepIndex + 1}</span>
-            </>
-          ) : (
-            <>
-              <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>idle</span>
-            </>
+            );
+          })() : (
+            <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>idle</span>
           )}
         </p>
       </div>
 
       {/* Step dots */}
-      {encounters.length > 0 && (
-        <StepDots
-          progress={encounters[0]}
-          template={getEncounterTemplate(encounters[0].encounterId)}
-        />
-      )}
-    </button>
-  );
-});
-
-// ──── Sub-component: Step Dots ────
-interface StepDotsProps {
-  progress: EncounterProgress;
-  template?: EncounterTemplate;
-}
-
-const StepDots = memo(function StepDots({ progress, template }: StepDotsProps) {
-  if (!template) return null;
-
-  const totalSteps = template.steps.length;
-  const currentStep = progress.currentStepIndex;
-
-  return (
-    <div
-      className="flex gap-1.5 flex-shrink-0"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-      }}
-    >
-      {Array.from({ length: totalSteps }).map((_, idx) => {
-        let dotColor = 'var(--step-pending)';
-        let glow = 'none';
-
-        if (idx < currentStep) {
-          dotColor = 'var(--step-completed)';
-        } else if (idx === currentStep) {
-          dotColor = 'var(--step-current)';
-          glow = '0 0 6px var(--step-current-glow)';
-        }
-
-        return (
-          <div
-            key={idx}
-            style={{
-              width: '5px',
-              height: '5px',
-              borderRadius: '50%',
-              backgroundColor: dotColor,
-              boxShadow: glow,
-            }}
+      {encounters.length > 0 && (() => {
+        const tmpl = getEncounterTemplate(encounters[0].encounterId);
+        return tmpl ? (
+          <StepDots
+            totalSteps={tmpl.steps.length}
+            currentStepIndex={encounters[0].currentEncounterIndex}
           />
-        );
-      })}
-    </div>
+        ) : null;
+      })()}
+    </button>
   );
 });
 
@@ -576,6 +556,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
                     encounters={agentEncounters}
                     getEncounterTemplate={getEncounterTemplate}
                     onAgentClick={onAgentClick}
+                    onEncounterClick={onEncounterClick}
                   />
                 );
               })}
@@ -608,6 +589,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
                         progress={progress}
                         template={template}
                         agentName={agentName}
+                        onClick={onEncounterClick ? () => onEncounterClick(progress.actorId, progress, template) : undefined}
                       />
                     );
                   })}
@@ -706,6 +688,7 @@ export const LocationView = memo(function LocationView({
   availableEncounters,
   activeEncounters,
   getAgentName,
+  onEncounterClick,
   getEncounterTemplate,
   graph,
   seed,
@@ -1005,6 +988,7 @@ export const LocationView = memo(function LocationView({
                   getEncounterTemplate={getEncounterTemplate}
                   getAgentName={getAgentName}
                   onAgentClick={onAgentClick}
+                  onEncounterClick={onEncounterClick}
                   onEnter={handleEnterSublocation}
                 />
               );

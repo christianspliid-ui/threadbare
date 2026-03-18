@@ -4,6 +4,7 @@ import type { AscendantArchetype } from '../../types/influence';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
+import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
 import { getEncountersByLocationType, getEncounterById } from '../../data/encounter-content';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
@@ -44,6 +45,7 @@ import { AlertBar } from './AlertBar';
 import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
+import { EncounterVignetteModal } from './EncounterVignetteModal';
 import { useNotifications } from './hooks/useNotifications';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -354,6 +356,37 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     }
   }, [gameState.graph, handleHexClick]);
 
+  // ── Encounter vignette modal ──
+  const [vignetteEncounter, setVignetteEncounter] = useState<{
+    progress: EncounterProgress;
+    template: EncounterTemplate;
+    agentId: string;
+    agentName: string;
+  } | null>(null);
+
+  const retinueActiveEncounters = useMemo(() => {
+    const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
+    for (const p of gameState.encounterProgress) {
+      if (p.status !== 'active') continue;
+      const tmpl = getEncounterById(p.encounterId);
+      if (tmpl) map.set(p.actorId, { progress: p, template: tmpl });
+    }
+    return map;
+  }, [gameState.encounterProgress]);
+
+  const handleEncounterClick = useCallback((
+    agentId: string,
+    progress: EncounterProgress,
+    template: EncounterTemplate,
+  ) => {
+    const agentName = gameState.graph.getNode(agentId)?.name ?? 'Unknown';
+    setVignetteEncounter({ progress, template, agentId, agentName });
+  }, [gameState.graph]);
+
+  const handleVignetteClose = useCallback(() => {
+    setVignetteEncounter(null);
+  }, []);
+
   // IX-013: Wrapped location click/double-click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
@@ -620,6 +653,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 availableEncounters={locationEncounters.available}
                 activeEncounters={locationEncounters.active}
                 getAgentName={getAgentName}
+                onEncounterClick={handleEncounterClick}
                 getEncounterTemplate={getEncounterById}
                 graph={gameState.graph}
                 seed={gameState.seed}
@@ -687,6 +721,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   selectedAgentId={selectedAgentId}
                   onAgentSelect={handleAgentSelect}
                   onZoomToLocation={handleZoomToLocation}
+                  activeEncounters={retinueActiveEncounters}
+                  onEncounterClick={handleEncounterClick}
                 />
               </div>
             ) : (
@@ -751,6 +787,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           />
         )}
       </AnimateMount>
+
+      {/* Encounter vignette modal */}
+      {vignetteEncounter && (
+        <EncounterVignetteModal
+          open={true}
+          onClose={handleVignetteClose}
+          progress={vignetteEncounter.progress}
+          template={vignetteEncounter.template}
+          agentName={vignetteEncounter.agentName}
+          agentId={vignetteEncounter.agentId}
+          graph={gameState.graph}
+          ascendantSphere={archetype.sphereAlignment.primary}
+          seed={gameState.seed}
+        />
+      )}
 
       {/* Event popup overlay */}
       <EventPopup
