@@ -30,13 +30,16 @@
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  FACTION_RANK_PER_PROMOTION,
+  FACTION_RANK_SECONDARY_FRACTION,
+} from '../data/agent-behavior-constants';
 
-/** Rank bump for factions whose primary reach matches the promoted domain */
-export const FACTION_RANK_PER_PROMOTION = 0.1;
-
-/** Rank bump for factions whose secondary reach matches the promoted domain */
-export const FACTION_RANK_SECONDARY_FRACTION = 0.05;
+import {
+  FACTION_RANK_PER_PROMOTION,
+  FACTION_RANK_SECONDARY_FRACTION,
+} from '../data/agent-behavior-constants';
 
 // ─── Promotion Trait Table ──────────────────────────────────────
 

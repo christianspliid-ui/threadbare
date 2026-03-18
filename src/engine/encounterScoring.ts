@@ -42,19 +42,22 @@ import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  MINIMUM_DESIRE,
+  GROWTH_REWARD_WEIGHT,
+  IDLE_SCORE_THRESHOLD,
+  AMBITION_REACH_BOOST,
+  STEP_PROBABILITY_OFFSET,
+} from '../data/agent-behavior-constants';
 
-/** Floor for desire multiplier — prevents zero scores for neutral encounters */
-export const MINIMUM_DESIRE = 0.1;
-
-/** Weight for tier growth value */
-export const GROWTH_REWARD_WEIGHT = 0.4;
-
-/** Below this finalScore, the agent idles instead of acting */
-export const IDLE_SCORE_THRESHOLD = 0.001;
-
-/** Flat boost when an active ambition's reach matches the encounter's primary reach */
-export const AMBITION_REACH_BOOST = 0.2;
+import {
+  MINIMUM_DESIRE,
+  GROWTH_REWARD_WEIGHT,
+  IDLE_SCORE_THRESHOLD,
+  AMBITION_REACH_BOOST,
+  STEP_PROBABILITY_OFFSET,
+} from '../data/agent-behavior-constants';
 
 // ─── Result Types ───────────────────────────────────────────────
 
@@ -95,10 +98,10 @@ export function estimateStepProbability(
   difficulty: number,
   modifierTotal?: number,
 ): number {
-  // Base 0.6 offset ensures agents with moderate capability (~0.2) have ~45% per step,
+  // Offset ensures agents with moderate capability (~0.2) have ~45% per step,
   // making 3-step encounters viable (~0.09 chain). The old +0.5 made chain probabilities
   // too low for agents to ever score above IDLE_SCORE_THRESHOLD.
-  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + 0.6;
+  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + STEP_PROBABILITY_OFFSET;
   return Math.max(0.05, Math.min(0.95, raw));
 }
 

@@ -35,25 +35,24 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain, DomainContributions } from '../types/traits';
 import { computeCapability, computeTier } from './domainCapability';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  BASE_ENCOUNTER_GROWTH,
+  PROMOTION_ELIGIBLE_MULTIPLIER,
+  DIMINISHING_RETURNS_FACTOR,
+  FAILURE_GROWTH_FRACTION,
+  CRITICAL_SUCCESS_MULTIPLIER,
+  CRITICAL_FAILURE_GROWTH,
+} from '../data/agent-behavior-constants';
 
-/** Base growth per encounter step completion */
-export const BASE_ENCOUNTER_GROWTH = 0.5;
-
-/** Multiplier when the step's outcome has tierPromotionEligible */
-export const PROMOTION_ELIGIBLE_MULTIPLIER = 2.0;
-
-/** Controls how much high capability reduces growth (0–1) */
-export const DIMINISHING_RETURNS_FACTOR = 0.7;
-
-/** Fraction of base growth awarded on failure */
-export const FAILURE_GROWTH_FRACTION = 0.2;
-
-/** Reserved: multiplier for critical success outcomes */
-export const CRITICAL_SUCCESS_MULTIPLIER = 1.5;
-
-/** Reserved: growth on critical failure */
-export const CRITICAL_FAILURE_GROWTH = 0.0;
+import {
+  BASE_ENCOUNTER_GROWTH,
+  PROMOTION_ELIGIBLE_MULTIPLIER,
+  DIMINISHING_RETURNS_FACTOR,
+  FAILURE_GROWTH_FRACTION,
+  CRITICAL_SUCCESS_MULTIPLIER,
+  CRITICAL_FAILURE_GROWTH,
+} from '../data/agent-behavior-constants';
 
 // ─── Result Types ───────────────────────────────────────────────
 

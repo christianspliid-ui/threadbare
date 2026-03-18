@@ -35,22 +35,22 @@ import { findAllPaths } from './graphUtils';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
 
-// ─── Constants ───────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  REPUTATION_MAX_HOPS,
+  UNKNOWN_REPUTATION,
+  SHADOW_DISTORTION_FACTOR,
+  HEART_TRUST_FACTOR,
+  FACTION_RANK_TRUST_BONUS,
+} from '../data/agent-behavior-constants';
 
-/** Maximum hops for indirect reputation walks */
-export const REPUTATION_MAX_HOPS = 4;
-
-/** Default reputation when no path exists between agents */
-export const UNKNOWN_REPUTATION = 0.0;
-
-/** Multiplier for Shadow capability distortion by intermediaries */
-export const SHADOW_DISTORTION_FACTOR = 0.15;
-
-/** Multiplier for Heart capability trust resistance by the perceiver */
-export const HEART_TRUST_FACTOR = 0.3;
-
-/** Trust bonus per intermediary sharing a faction with the source */
-export const FACTION_RANK_TRUST_BONUS = 0.1;
+import {
+  REPUTATION_MAX_HOPS,
+  UNKNOWN_REPUTATION,
+  SHADOW_DISTORTION_FACTOR,
+  HEART_TRUST_FACTOR,
+  FACTION_RANK_TRUST_BONUS,
+} from '../data/agent-behavior-constants';
 
 // ─── Core Function ───────────────────────────────────────────
 

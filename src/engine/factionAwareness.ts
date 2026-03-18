@@ -37,22 +37,22 @@ import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  FACTION_NETWORK_AWARENESS,
+  FACTION_NETWORK_MAX_ENTRIES,
+  FACTION_SECONDARY_THRESHOLD,
+  FACTION_MIN_RANK_FOR_INTEL,
+  FACTION_DEFAULT_RANK,
+} from '../data/agent-behavior-constants';
 
-/** Global toggle for faction network intelligence */
-export const FACTION_NETWORK_AWARENESS = true;
-
-/** Maximum entries visible per faction at rank 1.0 */
-export const FACTION_NETWORK_MAX_ENTRIES = 20;
-
-/** Minimum reach weight to count as a secondary reach */
-export const FACTION_SECONDARY_THRESHOLD = 0.3;
-
-/** Minimum rank required to receive any faction intel */
-export const FACTION_MIN_RANK_FOR_INTEL = 0.05;
-
-/** Default rank when edge properties lack a rank field */
-export const FACTION_DEFAULT_RANK = 0.1;
+import {
+  FACTION_NETWORK_AWARENESS,
+  FACTION_NETWORK_MAX_ENTRIES,
+  FACTION_SECONDARY_THRESHOLD,
+  FACTION_MIN_RANK_FOR_INTEL,
+  FACTION_DEFAULT_RANK,
+} from '../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
 

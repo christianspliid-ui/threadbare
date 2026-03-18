@@ -38,20 +38,23 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import { getDistance } from './distanceMatrix';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  AMBITION_DRIFT_THRESHOLD,
+  IDLE_DRIFT_SPEED,
+  IDLE_TRIVIAL_PREFERENCE,
+  IDLE_MAX_AWARENESS_HOPS,
+} from '../data/agent-behavior-constants';
 
-/** Minimum ambition magnitude to trigger drift behavior.
- *  Agent drifts when loyalty_ambition < -AMBITION_DRIFT_THRESHOLD. */
-export const AMBITION_DRIFT_THRESHOLD = 0.2;
+import {
+  AMBITION_DRIFT_THRESHOLD,
+  IDLE_DRIFT_SPEED,
+  IDLE_TRIVIAL_PREFERENCE,
+  IDLE_MAX_AWARENESS_HOPS,
+} from '../data/agent-behavior-constants';
 
-/** Number of hops an idle agent moves per tick when drifting. */
-export const IDLE_DRIFT_SPEED = 1;
-
-/** Probability a loyal/neutral agent picks a trivial local encounter. */
-export const IDLE_TRIVIAL_PREFERENCE = 0.8;
-
-/** Maximum hops to consider when searching for drift targets. */
-export const MAX_AWARENESS_HOPS = 5;
+/** @deprecated Use IDLE_MAX_AWARENESS_HOPS instead */
+export const MAX_AWARENESS_HOPS = IDLE_MAX_AWARENESS_HOPS;
 
 // ─── Types ──────────────────────────────────────────────────────
 

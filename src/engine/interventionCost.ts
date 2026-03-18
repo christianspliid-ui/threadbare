@@ -29,20 +29,20 @@ import type { SphereName } from '../types/index';
 import { SPHERE_OPPOSITIONS } from './cosmology';
 import type { DivineAttention } from './divineAttention';
 
-// --- Constants ---
+// --- Constants (re-exported from central tuning file) ---
+export {
+  INTERVENTION_MAX_BONUS,
+  OPPOSING_SPHERE_COST_MULTIPLIER,
+  NEUTRAL_SPHERE_COST_MULTIPLIER,
+  BOND_EFFICIENCY,
+} from '../data/agent-behavior-constants';
 
-export const INTERVENTION_MAX_BONUS = 0.20;
-export const OPPOSING_SPHERE_COST_MULTIPLIER = 3.0;
-export const NEUTRAL_SPHERE_COST_MULTIPLIER = 1.5;
-
-/** Bond efficiency by influence tier */
-export const BOND_EFFICIENCY: Record<number, number> = {
-  0: 0.2,   // unbonded
-  1: 0.4,   // touched
-  2: 0.6,   // drawn
-  3: 0.8,   // devoted
-  4: 0.95,  // exalted
-};
+import {
+  INTERVENTION_MAX_BONUS,
+  OPPOSING_SPHERE_COST_MULTIPLIER,
+  NEUTRAL_SPHERE_COST_MULTIPLIER,
+  BOND_EFFICIENCY,
+} from '../data/agent-behavior-constants';
 
 // --- Types ---
 

@@ -28,11 +28,18 @@ import type { ThreatRating } from '../types/encounter';
 import type { DivineAttention } from './divineAttention';
 import { getDivineAttention } from './divineAttention';
 
-// --- Constants ---
+// --- Constants (re-exported from central tuning file) ---
+export {
+  VIGNETTE_MAX_PER_TICK,
+  VIGNETTE_THREAT_THRESHOLD,
+  VIGNETTE_QUEST_PRIORITY_THRESHOLD,
+} from '../data/agent-behavior-constants';
 
-export const VIGNETTE_MAX_PER_TICK = 3;
-export const VIGNETTE_THREAT_THRESHOLD: ThreatRating = 'hard';
-export const VIGNETTE_QUEST_PRIORITY_THRESHOLD = 2.0;
+import {
+  VIGNETTE_MAX_PER_TICK,
+  VIGNETTE_THREAT_THRESHOLD,
+  VIGNETTE_QUEST_PRIORITY_THRESHOLD,
+} from '../data/agent-behavior-constants';
 
 /** Threat rating severity order for comparisons */
 const THREAT_ORDER: Record<ThreatRating, number> = {

@@ -27,19 +27,20 @@ import type { SphereName } from '../types/index';
 import type { WorldGraph } from './graph';
 import { getEncountersByLocationType } from '../data/encounter-content';
 
-// ─── Constants ──────────────────────────────────────────────────
+// ─── Constants (re-exported from central tuning file) ───────────
+export {
+  CACHE_REBUILD_THRESHOLD,
+  REPUTATION_REWARD_WEIGHT,
+  LOOT_REWARD_WEIGHT,
+  DOMAIN_EXERCISE_WEIGHT,
+} from '../data/agent-behavior-constants';
 
-/** When dirty-entry count exceeds this, a full rebuild is cheaper than patching */
-export const CACHE_REBUILD_THRESHOLD = 50;
-
-/** Weight of reputation deltas in reward estimate */
-export const REPUTATION_REWARD_WEIGHT = 1.0;
-
-/** Weight of loot availability in reward estimate */
-export const LOOT_REWARD_WEIGHT = 0.5;
-
-/** Base weight for domain exercise opportunity */
-export const DOMAIN_EXERCISE_WEIGHT = 0.3;
+import {
+  CACHE_REBUILD_THRESHOLD,
+  REPUTATION_REWARD_WEIGHT,
+  LOOT_REWARD_WEIGHT,
+  DOMAIN_EXERCISE_WEIGHT,
+} from '../data/agent-behavior-constants';
 
 // ─── Cache Entry ────────────────────────────────────────────────
 
