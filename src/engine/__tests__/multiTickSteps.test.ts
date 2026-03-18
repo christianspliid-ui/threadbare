@@ -94,6 +94,7 @@ function buildTestState(): { state: GameState; actorId: string } {
   });
 
   // Give actor high capability so resolution succeeds with mid-range rolls
+  // Contribution of 20 → sigmoid(20) ≈ 0.98, well above difficulty thresholds
   graph.addNode({
     id: 'trait.mt_iron',
     type: 'trait',
@@ -101,8 +102,8 @@ function buildTestState(): { state: GameState; actorId: string } {
     properties: {
       category: 'test',
       domainContributions: {
-        iron: 10, shadow: 0, gold: 0, eye: 0, veil: 0,
-        heart: 10, stone: 0, star: 0, flesh: 0,
+        iron: 20, shadow: 0, gold: 0, eye: 0, veil: 0,
+        heart: 20, stone: 0, star: 0, flesh: 0,
       },
     },
   });
