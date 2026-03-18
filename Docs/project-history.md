@@ -133,3 +133,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - Content stats: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
 
 - UI Design Audit Phase 1: ✅ Complete (centralized color palette, Dark Tapestry pre-game theming, RivalPanel a11y, topbar hierarchy)
+
+- Agent Behavior Constants Centralization: ✅ Complete (2026-03-18) — 56 tunable constants from 15 engine modules consolidated into src/data/agent-behavior-constants.ts. Extracted STEP_PROBABILITY_OFFSET (hardcoded 0.6) and TERRAIN_RESOLUTION_MODIFIERS table as named constants. All source files re-export for backward compatibility. NFP #1 (Tunability) compliance.
