@@ -1,4 +1,6 @@
 import type { SphereName } from './index';
+import type { ReachDomain } from './traits';
+import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
 
 /** Base shape for all trace entries */
@@ -257,6 +259,68 @@ export interface EconomicChronicleTrace extends TraceBase {
   actorIds: string[];
 }
 
+/** Trace: per-reach encounter awareness computation */
+export interface EncounterAwarenessTrace extends TraceBase {
+  category: 'encounter_awareness';
+  agentId: string;
+  reach: ReachDomain;
+  capability: number;
+  hopsGranted: number;
+  encountersVisible: number;
+}
+
+/** Trace: faction network intelligence added encounters */
+export interface FactionAwarenessTrace extends TraceBase {
+  category: 'faction_awareness';
+  agentId: string;
+  factionId: string;
+  factionPrimaryReach: ReachDomain;
+  agentRank: number;
+  maxEntries: number;
+  entriesAdded: number;
+}
+
+/** Trace: encounter cache update event */
+export interface CacheUpdateTrace extends TraceBase {
+  category: 'encounter_cache';
+  event: string;
+  locationId?: string;
+  entriesAdded: number;
+  entriesRemoved: number;
+  totalEntries: number;
+}
+
+/** Trace: 5-stage filter pipeline results */
+export interface FilterPipelineTrace extends TraceBase {
+  category: 'encounter_filter';
+  agentId: string;
+  cacheSize: number;
+  afterAwareness: number;
+  afterVisibility: number;
+  afterPrerequisites: number;
+  afterThreat: number;
+  afterCap: number;
+}
+
+/** Trace: encounter scoring and selection */
+export interface ScoringTrace extends TraceBase {
+  category: 'encounter_scoring';
+  agentId: string;
+  topCandidates: Array<{
+    templateId: string;
+    locationId: string;
+    isLocal: boolean;
+    valuePerTick: number;
+    desireMultiplier: number;
+    finalScore: number;
+    travelCost: number;
+    completionProb: number;
+  }>;
+  selectedTemplateId: string | null;
+  selectedLocationId: string | null;
+  action: 'start_local' | 'queue_movement' | 'attempt_remote' | 'idle';
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -278,7 +342,12 @@ export type TraceEntry =
   | HexStateTickTrace
   | UnrestTickTrace
   | MagicalSaturationTickTrace
-  | EconomicChronicleTrace;
+  | EconomicChronicleTrace
+  | EncounterAwarenessTrace
+  | FactionAwarenessTrace
+  | CacheUpdateTrace
+  | FilterPipelineTrace
+  | ScoringTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -302,6 +371,11 @@ export const TRACE_CATEGORIES = [
   'unrest_tick',
   'saturation_tick',
   'economic_chronicle',
+  'encounter_awareness',
+  'faction_awareness',
+  'encounter_cache',
+  'encounter_filter',
+  'encounter_scoring',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

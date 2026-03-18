@@ -1,12 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { initializeGameState } from '../gameInit';
-import { runTick } from '../orchestrator';
+import { runTick, resetDecisionCache } from '../orchestrator';
 import { ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import { ROUTINE_TEMPLATES, LIFECYCLE_TEMPLATES } from '../../data/narrative-content';
 import { DOOM_VOCABULARY } from '../../data/doom-content';
 import type { AscendantArchetype, CosmologyProfile } from '../../types';
 
 describe('Layer 1 content integration', () => {
+  // Reset module-level encounter cache between tests to avoid cross-contamination
+  beforeEach(() => {
+    resetDecisionCache();
+  });
+
   const testArchetype: AscendantArchetype = {
     id: 'arch.test',
     title: 'The Wanderer',
@@ -199,16 +204,24 @@ describe('Layer 1 content integration', () => {
     let current42 = state42;
     let current7 = state7;
 
+    // Collect event types across ALL ticks (not just the last tick)
+    const allEvents42: string[] = [];
+    const allEvents7: string[] = [];
+
     for (let i = 0; i < 50; i++) {
+      resetDecisionCache(); // Reset between seed switches
       current42 = runTick(current42);
+      allEvents42.push(...current42.tickEvents.map(e => e.type));
+
+      resetDecisionCache();
       current7 = runTick(current7);
+      allEvents7.push(...current7.tickEvents.map(e => e.type));
     }
 
-    // Seeds 42 and 7 should produce different event sequences
-    const events42 = current42.tickEvents.map(e => e.type).join('|');
-    const events7 = current7.tickEvents.map(e => e.type).join('|');
-
-    // Different seeds should produce different event sequences
+    // Different seeds should produce different cumulative event sequences
+    // (deterministic pipeline produces different worlds from different seeds)
+    const events42 = allEvents42.join('|');
+    const events7 = allEvents7.join('|');
     expect(events42).not.toBe(events7);
   });
 

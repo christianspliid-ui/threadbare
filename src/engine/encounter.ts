@@ -89,6 +89,7 @@ export function initiateEncounter(
   tick: number,
 ): EncounterProgress {
   const encounter = getEncounterById(encounterId);
+  const firstStepDuration = encounter?.steps[0]?.duration ?? 1;
   const progress: EncounterProgress = {
     encounterId,
     actorId,
@@ -96,6 +97,7 @@ export function initiateEncounter(
     history: [],
     status: 'active',
     startedTick: tick,
+    occupiedUntilTick: tick + firstStepDuration,
   };
 
   state.encounterProgress.push(progress);
@@ -225,13 +227,19 @@ export function advanceEncounter(
     if (progress.currentEncounterIndex < encounter.steps.length - 1) {
       // Move to next step
       progress.currentEncounterIndex++;
+      // Set occupiedUntilTick for the new step
+      const nextStep = encounter.steps[progress.currentEncounterIndex];
+      const nextDuration = nextStep?.duration ?? 1;
+      progress.occupiedUntilTick = tick + nextDuration;
     } else {
       // Final step succeeded: completed
       progress.status = 'completed';
+      progress.occupiedUntilTick = undefined;
     }
   } else {
     // Failure: abandon the encounter
     progress.status = 'abandoned';
+    progress.occupiedUntilTick = undefined;
   }
 
   const trace: Omit<EncounterResolutionTrace, 'id' | 'timestamp'> = {
@@ -256,12 +264,22 @@ export function advanceEncounter(
 }
 
 /**
+ * Check if an encounter's current step is still in progress (agent is occupied).
+ * Fail-soft: if occupiedUntilTick is undefined, treat as immediately resolvable.
+ */
+export function isEncounterOccupied(progress: EncounterProgress, currentTick: number): boolean {
+  if (progress.occupiedUntilTick === undefined) return false;
+  return progress.occupiedUntilTick > currentTick;
+}
+
+/**
  * Abandon an encounter.
  * Sets status to 'abandoned' without affecting history.
  * Used when player manually abandons or as a consequence of failure (via advanceEncounter).
  */
 export function abandonEncounter(progress: EncounterProgress): void {
   progress.status = 'abandoned';
+  progress.occupiedUntilTick = undefined;
 }
 
 /**
