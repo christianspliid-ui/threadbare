@@ -189,11 +189,15 @@ export function ensureSublocations(
 
     // Create sublocation instance node
     const persistence: SublocationPersistence = { type: 'permanent' };
-    const properties: SublocationProperties = {
+    const properties: SublocationProperties & Record<string, unknown> = {
       sublocationTypeId: def.id,
       parentLocationId: locationId,
       persistence,
     };
+
+    // Copy parent's hex coordinates so getLocationsInHex() finds sublocations
+    if (locProps.hexCol !== undefined) properties.hexCol = locProps.hexCol;
+    if (locProps.hexRow !== undefined) properties.hexRow = locProps.hexRow;
 
     const instanceNode: GraphNode = {
       id: instanceId,
@@ -658,12 +662,17 @@ export function createDivineSublocation(
     createdAtTick: tick,
   };
 
-  const properties: SublocationProperties = {
+  const locProps = (location.properties ?? {}) as Record<string, unknown>;
+  const properties: SublocationProperties & Record<string, unknown> = {
     sublocationTypeId,
     parentLocationId: locationId,
     persistence,
     divineOrigin,
   };
+
+  // Copy parent's hex coordinates so getLocationsInHex() finds sublocations
+  if (locProps.hexCol !== undefined) properties.hexCol = locProps.hexCol;
+  if (locProps.hexRow !== undefined) properties.hexRow = locProps.hexRow;
 
   const sublocationNode: GraphNode = {
     id: sublocationId,
