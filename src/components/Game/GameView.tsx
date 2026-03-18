@@ -13,6 +13,7 @@ import { useViewNavigation } from './hooks/useViewNavigation';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
+import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
 import { HexMap } from '../HexMap/HexMap';
 import { EssencePanel } from './EssencePanel';
@@ -353,7 +354,12 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     }
   }, [gameState.graph, handleHexClick]);
 
-  // IX-013: Wrapped location double-click closes drawer before drilling down
+  // IX-013: Wrapped location click/double-click closes drawer before drilling down
+  const handleLocationClickWithClose = useCallback((locationId: string) => {
+    handleDrawerClose();
+    handleLocationClick(locationId);
+  }, [handleDrawerClose, handleLocationClick]);
+
   const handleLocationDoubleClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
     handleLocationDoubleClick(locationId);
@@ -443,20 +449,14 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
-          <button
+          <IconButton
             data-testid="debug-toggle"
+            icon={<span>⚙</span>}
+            active={debugPanelOpen}
             onClick={handleToggleDebug}
-            className="w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-colors"
-            style={{
-              fontSize: 'var(--text-sm)',
-              color: debugPanelOpen ? 'var(--accent-gold)' : 'var(--text-muted)',
-              background: debugPanelOpen ? 'var(--accent-gold-glow)' : 'transparent',
-              border: `1px solid ${debugPanelOpen ? 'var(--accent-gold-dim)' : 'var(--border-subtle)'}`,
-            }}
             title="Toggle debug trace panel (`)"
-          >
-            ⚙
-          </button>
+            aria-label="Toggle debug trace panel"
+          />
         </div>
       </div>
 
@@ -590,7 +590,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                       locations={hexLocations}
                       agentsByLocation={hexAgentsByLocation}
                       regionData={hexRegionData}
-                      onLocationClick={handleLocationClick}
+                      onLocationClick={handleLocationClickWithClose}
                       onLocationDoubleClick={handleLocationDoubleClickWithClose}
                       onAgentClick={handleAgentSelect}
                       graph={gameState.graph}
