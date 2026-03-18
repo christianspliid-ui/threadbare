@@ -1,18 +1,24 @@
 import React from 'react';
 import type { RetinueAgent } from '../../engine/retinue';
+import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
+import { StepDots } from '../shared/StepDots';
 import { TIER_COLORS, TIER_COLOR_DEFAULT } from '../../data/uiColorPalette';
+
+const ENCOUNTER_BADGE_ICON = '⚔';
 
 interface RetinuePanelProps {
   agents: RetinueAgent[];
   selectedAgentId: string | null;
   onAgentSelect: (agentId: string) => void;
   onZoomToLocation?: (locationId: string) => void;
+  activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
+  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
 }
 
-export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onZoomToLocation }: RetinuePanelProps) {
+export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onZoomToLocation, activeEncounters, onEncounterClick }: RetinuePanelProps) {
   if (agents.length === 0) {
     return (
       <div
@@ -119,6 +125,42 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 >
                   {agent.activityLabel}
                 </div>
+
+                {/* Encounter badge (fourth line — only when active encounter exists) */}
+                {(() => {
+                  const enc = activeEncounters?.get(agent.id);
+                  if (!enc) return null;
+                  return (
+                    <button
+                      className="flex items-center gap-1.5 mt-0.5 w-full text-left rounded px-1 py-0.5 transition-colors"
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--accent-gold)',
+                        backgroundColor: 'transparent',
+                        cursor: 'pointer',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEncounterClick?.(agent.id, enc.progress, enc.template);
+                      }}
+                      aria-label={`View encounter: ${enc.template.name}`}
+                    >
+                      <span>{ENCOUNTER_BADGE_ICON}</span>
+                      <span className="truncate flex-1">{enc.template.name}</span>
+                      <StepDots
+                        totalSteps={enc.template.steps.length}
+                        currentStepIndex={enc.progress.currentEncounterIndex}
+                        size={4}
+                      />
+                    </button>
+                  );
+                })()}
               </div>
             </Tooltip>
           );
