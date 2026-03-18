@@ -3,9 +3,28 @@
 > Updated 2026-03-17. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Hex Actions & Control Mechanic** (design phase). Design docs: `Docs/plans/2026-03-17-generalized-action-targeting-design.md`, `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`, `brainstorm-hex-actions-and-control-mechanic.md`. Previous milestone: PROD-01 Vertical Slice Contract complete.
+**Agent Decision System & Connected Designs** (design complete, pending implementation). Five interconnected design docs + one UI spec produced 2026-03-18:
 
-**Latest:** Organic movement trails (2026-03-17) — `MovementTrails.tsx` rewritten from straight `<line>` segments to organic ink-wash style: quadratic bezier `<path>` curves with perpendicular wobble (deterministic hash per agent+segment, `WOBBLE_FACTOR=0.12`), small waypoint `<circle>` dots (`TRAIL_DOT_RADIUS=1.5`), newest point offset toward arrival direction by `AGENT_RING_RADIUS` so trail connects to agent dot position. Dots and stroke width taper toward tail. Verified: 6 bezier path segments + 7 waypoint dots rendered with correct fading opacity. 5,111 tests pass.
+1. **Agent Decision & Encounter Awareness** (`Docs/plans/2026-03-18-agent-decision-and-encounter-awareness-design.md`) — Unified decision phase, per-reach awareness (primary+secondary), rank-gated faction intelligence, remote encounters, encounter cache with event-based invalidation, five-stage filter pipeline, value-per-tick scoring. Replaces P0 movement heuristic.
+2. **Encounter Resolution & Divine Intervention** (`Docs/plans/2026-03-18-encounter-resolution-and-divine-intervention-design.md`) — Real modifier pipeline (sphere/equipment/terrain/traits/divine), significance-gated vignettes with divine attention actions (Attune/Scry/Focus), exponential essence cost with bond efficiency scaling, ascendant sphere lens prose, Meet The First integration.
+3. **Tier Promotion & Capability Growth** (`Docs/plans/2026-03-18-tier-promotion-and-capability-growth-design.md`) — Encounter-driven trait accumulation, tier crossing narrative events + visible signifiers, growth-aware payoff estimation.
+4. **Social Fabric & Faction Formation** (`Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`) — Social encounter templates (CRUD applied to agents), graph-walked reputation (Shadow distortion + Heart resistance + faction rank credibility), trust as separate edge property, faction formation as agent-initiated encounter, social awareness with bond-bypass.
+5. **Social Fabric Visibility Spec** (`Docs/plans/2026-03-18-social-fabric-visibility-spec.md`) — Player layer (knowledge-gated relationships, chronicle social events, 8 social notification types, map faction presence) + Dev layer (relationship graph, reputation walk inspector, decision breakdown, faction inspector, 5 map overlays, constants tuning panel).
+
+**Implementation prerequisites** (content authoring, can be handed to Claude Code):
+- Step tick duration backfill on 64 encounter templates (Priority: High)
+- Axiological vocabulary alignment — migrate encounter motivations to canonical pairs (Priority: Medium)
+- Attachment `reachBonus` and trait `resolutionBonus` backfill (Priority: Medium)
+- Sphere opposition table creation (Priority: High)
+- 14 social encounter templates authoring (Priority: High — blocks social fabric)
+- Shortest-path utility for reputation walks (Priority: Medium)
+- Deprecated global `reputationScore` migration (Priority: Medium)
+
+**Previous focus:** Hex Actions & Control Mechanic (design phase). Design docs: `Docs/plans/2026-03-17-generalized-action-targeting-design.md`, `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`, `brainstorm-hex-actions-and-control-mechanic.md`. Previous milestone: PROD-01 Vertical Slice Contract complete.
+
+**Latest implementation:** UI primitive migration (2026-03-18) — Phase 1: EventPopup and AgentProfileModal migrated to shared Modal primitive (removed duplicate portal/backdrop/escape). Phase 2: Buttons migrated across 10 files (AvatarHUD, SimulationControls, HarvestScreen, ActionDrawer, InterventionConfirm, HexSidebar, RetinuePanel, GameView, AgentDetailPanel) to Button/IconButton primitives. Phases 3–4 (Cards, ListRows) evaluated and skipped — specialized components don't benefit from generic primitives. Migration plan: `Docs/plans/2026-03-18-ui-primitive-migration-plan.md`. 5,111 tests pass.
+
+**Previous:** Organic movement trails (2026-03-17) — `MovementTrails.tsx` rewritten from straight `<line>` segments to organic ink-wash style: quadratic bezier `<path>` curves with perpendicular wobble (deterministic hash per agent+segment, `WOBBLE_FACTOR=0.12`), small waypoint `<circle>` dots (`TRAIL_DOT_RADIUS=1.5`), newest point offset toward arrival direction by `AGENT_RING_RADIUS` so trail connects to agent dot position. Dots and stroke width taper toward tail. Verified: 6 bezier path segments + 7 waypoint dots rendered with correct fading opacity. 5,111 tests pass.
 
 **Previous:** Movement trails fully working (2026-03-17) — Two fixes: (1) `tickMovement()` now enriches `MovementHistoryEntry` with `hexCol`/`hexRow` from the destination node; (2) `MovementTrails` component switched from tick-age-based opacity filter (which discarded all entries) to index-based fade (newest=0.6 opacity, oldest=0.05). 3 new tests.
 
