@@ -53,6 +53,65 @@ export interface DilemmaEvent {
   context: string; // action template ID
 }
 
+// ─── Edge Property Interfaces ───────────────────────────────────
+
+/**
+ * Typed properties for 'relates_to' edges (inter-actor relationships).
+ * Stored on GraphEdge.properties for edges of type 'relates_to'.
+ */
+export interface RelatesToEdgeProperties {
+  /** Relationship polarity: -1 (hatred) to 1 (devotion) */
+  sentiment: number;
+  /** Bond intensity: 0 (stranger) to 1 (lifelong) */
+  strength: number;
+  /** Relationship basis category */
+  basis: string;
+  /** History of cooperation/defection moves */
+  interactionLog?: InteractionRecord[];
+  /**
+   * Trust score: -1 (deep distrust) to 1 (absolute trust).
+   * Evolves via cooperative (+0.03) / defective (-0.08) interactions.
+   * Decays toward 0 per tick. Used by reputation walks and social scoring.
+   */
+  trust: number;
+}
+
+/**
+ * Typed properties for 'member_of' edges (actor → faction/group membership).
+ * Stored on GraphEdge.properties for edges of type 'member_of'.
+ */
+export interface MemberOfEdgeProperties {
+  /** Membership role (e.g., 'member', 'adept', 'leader') */
+  role: string;
+  /**
+   * Rank within the faction: 0 (recruit) to 1 (leader).
+   * Used for faction intelligence gating and social scoring.
+   */
+  rank: number;
+  /**
+   * Tick when this membership was established.
+   * Used for seniority calculations.
+   */
+  joinedTick: number;
+}
+
+// ─── Trust Constants ────────────────────────────────────────────
+
+/** Trust gain per cooperative interaction */
+export const TRUST_COOPERATE_DELTA = 0.03;
+
+/** Trust loss per defective interaction */
+export const TRUST_DEFECT_DELTA = -0.08;
+
+/** Trust decay toward 0 per tick (absolute, applied to |trust|) */
+export const TRUST_DECAY_PER_TICK = 0.002;
+
+/** Default trust for new relationships */
+export const DEFAULT_TRUST = 0;
+
+/** Default rank for backfilled member_of edges */
+export const DEFAULT_MEMBER_RANK = 0.3;
+
 // ─── Tunable Constants ───────────────────────────────────────────
 
 /** Bonus to disposition when agent cooperates (paradoxical: rewards agents for being nice) */

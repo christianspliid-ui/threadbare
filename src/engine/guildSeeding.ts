@@ -151,6 +151,24 @@ export function determineGuildType(
   return dominant[Math.floor(rng() * dominant.length)].type;
 }
 
+// ─── Reach Preferences ──────────────────────────────────────────────────
+
+/**
+ * Derive faction reach preferences from domain capabilities.
+ * Normalizes capabilities to 0-1 scale where 1 = strongest preference.
+ * Used by the decision pipeline for faction intelligence (encounter filtering).
+ */
+export function deriveReachPreferences(
+  capabilities: Record<ReachDomain, number>,
+): Record<ReachDomain, number> {
+  const max = Math.max(...REACH_DOMAINS.map(d => capabilities[d]), 1);
+  const prefs = {} as Record<ReachDomain, number>;
+  for (const domain of REACH_DOMAINS) {
+    prefs[domain] = capabilities[domain] / max;
+  }
+  return prefs;
+}
+
 // ─── Domain Capabilities ─────────────────────────────────────────────────
 
 /**
@@ -259,6 +277,7 @@ export function seedGuilds(
 
       const profile = generateGuildAxiologicalProfile(guildType, rng);
       const caps = generateGuildDomainCapabilities(guildType, rng);
+      const reachPrefs = deriveReachPreferences(caps);
 
       // ── Create guild faction node ──────────────────────────────
       graph.addNode({
@@ -270,6 +289,7 @@ export function seedGuilds(
           guildType,
           axiologicalProfile: profile,
           domainCapabilities: caps,
+          reachPreferences: reachPrefs,
           homeLocationId: locId,
           wealth: 0,
           displaced: false,
