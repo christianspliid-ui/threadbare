@@ -142,7 +142,7 @@ describe('LocationView', () => {
     expect(screen.getByText('Quest 3')).toBeTruthy();
   });
 
-  it('renders available encounters with "+N more" when > 5', () => {
+  it('renders all available encounters in scrollable list', () => {
     const encounters = Array.from({ length: 7 }, (_, i) => ({
       ...mockEncounterTemplate,
       id: `encounter.${i}`,
@@ -156,8 +156,9 @@ describe('LocationView', () => {
     );
     expect(screen.getByText('Quest 1')).toBeTruthy();
     expect(screen.getByText('Quest 5')).toBeTruthy();
-    expect(screen.queryByText('Quest 6')).toBeFalsy();
-    expect(screen.getByText(/\+2 more available/)).toBeTruthy();
+    expect(screen.getByText('Quest 6')).toBeTruthy();
+    expect(screen.getByText('Quest 7')).toBeTruthy();
+    expect(screen.queryByText(/more available/)).toBeFalsy();
   });
 
   it('renders active encounter with EncounterLog', () => {
