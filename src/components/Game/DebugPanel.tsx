@@ -1,17 +1,25 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace, ActionExecutionTrace } from '../../types/trace';
 import type { ModifierResolutionTrace } from '../../types/modifiers';
+import type { WorldGraph } from '../../engine/graph';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
+import { DecisionBreakdown } from './debug/DecisionBreakdown';
+import { RelationshipGraph } from './debug/RelationshipGraph';
 
 interface DebugPanelProps {
   currentTick: number;
   followAgentId?: string;
+  graph?: WorldGraph;
   onClose?: () => void;
+  /** Callback to toggle bond overlay on the hex map */
+  onToggleBonds?: (enabled: boolean) => void;
+  /** Callback to toggle decision vector overlay on the hex map */
+  onToggleDecisionVectors?: (enabled: boolean) => void;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -665,13 +673,131 @@ const FallbackDetail = React.memo(function FallbackDetail({ trace }: { trace: Tr
   );
 });
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, onClose }: DebugPanelProps) {
+// ─── Social Tab (inline sub-component for the Social debug view) ──────────
+
+const OVERLAY_TOGGLE_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '4px 8px',
+  fontSize: '11px',
+  color: 'var(--text-primary)',
+  cursor: 'pointer',
+  userSelect: 'none',
+};
+
+const SOCIAL_SECTION_HEADER_STYLE: React.CSSProperties = {
+  fontSize: '12px',
+  fontWeight: 600,
+  color: 'var(--accent-gold)',
+  padding: '8px 0 4px',
+  borderBottom: '1px solid var(--border-subtle)',
+  marginBottom: '8px',
+  cursor: 'pointer',
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+};
+
+interface SocialTabContentProps {
+  followAgentId?: string;
+  graph?: WorldGraph;
+  traces: TraceEntry[];
+  showBonds: boolean;
+  showDecisionVectors: boolean;
+  onToggleBonds: (enabled: boolean) => void;
+  onToggleDecisionVectors: (enabled: boolean) => void;
+}
+
+const SocialTabContent = React.memo(function SocialTabContent({
+  followAgentId,
+  graph,
+  traces,
+  showBonds,
+  showDecisionVectors,
+  onToggleBonds,
+  onToggleDecisionVectors,
+}: SocialTabContentProps) {
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['decision', 'relationships', 'overlays']));
+
+  const toggleSection = useCallback((section: string) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+      if (next.has(section)) next.delete(section);
+      else next.add(section);
+      return next;
+    });
+  }, []);
+
+  if (!followAgentId) {
+    return (
+      <div style={EMPTY_STATE_STYLE}>
+        Select an agent to view social debug info.
+      </div>
+    );
+  }
+
+  return (
+    <div data-testid="social-tab-content">
+      {/* Map Overlay Toggles */}
+      <div style={SOCIAL_SECTION_HEADER_STYLE} onClick={() => toggleSection('overlays')}>
+        <span>Map Overlays</span>
+        <span>{expandedSections.has('overlays') ? '\u25BC' : '\u25B6'}</span>
+      </div>
+      {expandedSections.has('overlays') && (
+        <div style={{ marginBottom: '12px' }}>
+          <label style={OVERLAY_TOGGLE_STYLE}>
+            <input
+              type="checkbox"
+              checked={showBonds}
+              onChange={(e) => onToggleBonds(e.target.checked)}
+            />
+            Bond Lines (relates_to edges)
+          </label>
+          <label style={OVERLAY_TOGGLE_STYLE}>
+            <input
+              type="checkbox"
+              checked={showDecisionVectors}
+              onChange={(e) => onToggleDecisionVectors(e.target.checked)}
+            />
+            Decision Vectors (movement targets)
+          </label>
+        </div>
+      )}
+
+      {/* Decision Breakdown */}
+      <div style={SOCIAL_SECTION_HEADER_STYLE} onClick={() => toggleSection('decision')}>
+        <span>Decision Breakdown</span>
+        <span>{expandedSections.has('decision') ? '\u25BC' : '\u25B6'}</span>
+      </div>
+      {expandedSections.has('decision') && (
+        <DecisionBreakdown agentId={followAgentId} traces={traces} />
+      )}
+
+      {/* Relationship Graph */}
+      <div style={SOCIAL_SECTION_HEADER_STYLE} onClick={() => toggleSection('relationships')}>
+        <span>Relationships</span>
+        <span>{expandedSections.has('relationships') ? '\u25BC' : '\u25B6'}</span>
+      </div>
+      {expandedSections.has('relationships') && graph && (
+        <RelationshipGraph agentId={followAgentId} graph={graph} />
+      )}
+      {expandedSections.has('relationships') && !graph && (
+        <div style={EMPTY_STATE_STYLE}>No graph available.</div>
+      )}
+    </div>
+  );
+});
+
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
   const [selectedTick, setSelectedTick] = useState(currentTick);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isScrolledUp, setIsScrolledUp] = useState(false);
+  const [showBonds, setShowBonds] = useState(false);
+  const [showDecisionVectors, setShowDecisionVectors] = useState(false);
 
   // FE-17: Auto-switch to agent-follow only when followAgentId itself changes,
   // not when the user manually switches tabs. Previous version had viewMode in deps,
@@ -794,6 +920,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'tick-inspector')} onClick={() => setViewMode('tick-inspector')}>
           Tick
         </button>
+        <button style={getTabButtonStyle(viewMode === 'social')} onClick={() => setViewMode('social')}>
+          Social
+        </button>
       </div>
 
       {/* Agent Follow Header */}
@@ -848,7 +977,17 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
 
       {/* Scroll Area */}
       <div ref={scrollRef} style={SCROLL_AREA_STYLE} onScroll={handleScroll}>
-        {displayTraces.length === 0 ? (
+        {viewMode === 'social' ? (
+          <SocialTabContent
+            followAgentId={followAgentId}
+            graph={graph}
+            traces={allTraces as TraceEntry[]}
+            showBonds={showBonds}
+            showDecisionVectors={showDecisionVectors}
+            onToggleBonds={(v) => { setShowBonds(v); onToggleBonds?.(v); }}
+            onToggleDecisionVectors={(v) => { setShowDecisionVectors(v); onToggleDecisionVectors?.(v); }}
+          />
+        ) : displayTraces.length === 0 ? (
           <div style={EMPTY_STATE_STYLE}>No traces yet. Enable tracing in code.</div>
         ) : (
           displayTraces.map((trace) => (

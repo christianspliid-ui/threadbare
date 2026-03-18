@@ -41,7 +41,10 @@ export interface TickEvent {
     | 'backstory_unlock'
     | 'settlement_tier_change'
     | 'economic_chronicle'
-    | 'tier_promotion';
+    | 'tier_promotion'
+    // Social fabric events
+    | 'faction_founded' | 'faction_dissolved' | 'trust_shattered' | 'trust_deepened'
+    | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;

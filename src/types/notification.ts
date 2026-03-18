@@ -4,7 +4,8 @@ export type NotificationChannel = 'toast' | 'popup' | 'alert';
 
 export type AlertIcon =
   | 'death' | 'birth' | 'doom' | 'mandate'
-  | 'discovery' | 'rival' | 'dilemma' | 'harvest' | 'revelation';
+  | 'discovery' | 'rival' | 'dilemma' | 'harvest' | 'revelation'
+  | 'social' | 'faction' | 'trust';
 
 export interface PopupChoice {
   label: string;
