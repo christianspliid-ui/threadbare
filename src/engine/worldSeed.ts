@@ -286,7 +286,7 @@ export function seedWorld(
       type: 'location',
       name: LOCATION_NAMES[nameIdx],
       properties: {
-        locationType: 'location',
+        locationType: locationSubtype,
         locationSubtype,
         hexCol: tile.coord.col,
         hexRow: tile.coord.row,

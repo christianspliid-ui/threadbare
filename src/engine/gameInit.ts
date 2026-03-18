@@ -107,7 +107,7 @@ export function initializeGameState(
       type: 'location',
       name: 'Sacred Grove',
       properties: {
-        locationType: 'location',
+        locationType: 'shrine',
         locationSubtype: 'shrine',
         hexCol: startTile.coord.col,
         hexRow: startTile.coord.row,
