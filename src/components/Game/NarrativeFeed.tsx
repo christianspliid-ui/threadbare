@@ -1,21 +1,12 @@
 import { useEffect, useRef, useMemo } from 'react';
 import type { TickEvent } from '../../types/gameState';
+import { TICK_EVENT_COLORS } from '../../data/uiColorPalette';
 
 interface NarrativeFeedProps {
   events: TickEvent[];
 }
 
-const TYPE_COLORS: Record<TickEvent['type'], string> = {
-  agent_action: '#d4a574',
-  agent_action_resolved: '#c4956a',
-  doom_escalation: '#dc2626',
-  rival_action: '#7c3aed',
-  essence_gain: '#b8860b',
-  mandate_progress: '#059669',
-  narrative: '#9c27b0',
-  phase_change: '#eab308',
-  stealth_alert: '#6b7280',
-};
+const TYPE_COLORS = TICK_EVENT_COLORS;
 
 interface AggregatedEvent {
   event: TickEvent;

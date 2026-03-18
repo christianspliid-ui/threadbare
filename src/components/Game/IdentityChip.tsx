@@ -41,7 +41,7 @@ export function IdentityChip({
             <span
               style={{
                 fontFamily: 'var(--font-display)',
-                fontSize: 'var(--text-sm)',
+                fontSize: 'var(--text-base)',
                 fontWeight: 700,
                 color: 'var(--text-primary)',
                 letterSpacing: '0.04em',

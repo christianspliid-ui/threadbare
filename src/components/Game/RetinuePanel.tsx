@@ -3,6 +3,7 @@ import type { RetinueAgent } from '../../engine/retinue';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
+import { TIER_COLORS, TIER_COLOR_DEFAULT } from '../../data/uiColorPalette';
 
 interface RetinuePanelProps {
   agents: RetinueAgent[];
@@ -10,14 +11,6 @@ interface RetinuePanelProps {
   onAgentSelect: (agentId: string) => void;
   onZoomToLocation?: (locationId: string) => void;
 }
-
-// Tier colors: 1=gray, 2=purple, 3=gold, 4=red
-const TIER_COLORS: Record<number, string> = {
-  1: '#6b7280', // gray
-  2: '#a78bfa', // purple
-  3: '#eab308', // gold
-  4: '#ef4444', // red
-};
 
 export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onZoomToLocation }: RetinuePanelProps) {
   if (agents.length === 0) {
@@ -44,7 +37,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
       {/* IX-015: removed max-h — parent sidebar handles overflow scrolling */}
       <div className="space-y-1.5" role="list">
         {agents.map((agent) => {
-          const tierColor = TIER_COLORS[agent.tier] || '#78716c';
+          const tierColor = TIER_COLORS[agent.tier] || TIER_COLOR_DEFAULT;
           const isSelected = agent.id === selectedAgentId;
 
           return (

@@ -4,6 +4,8 @@
  * All named constants follow camelCase convention and are tunable.
  */
 
+import type { TickEvent } from '../types';
+
 // ============================================================================
 // Strand Colors (StrandView)
 // ============================================================================
@@ -97,3 +99,88 @@ export const AVATAR_HUD_ICON_ACTIVE = '#fef3c7';     // amber-100
 // ============================================================================
 export const PROGRESS_BAR_BACKGROUND = '#57534e';    // stone-600
 export const PROGRESS_BAR_GLOW_OPACITY = '80';       // hex opacity for glows (0x80 = 128 decimal)
+
+// ============================================================================
+// Rival Behavior Colors & Icons
+// ============================================================================
+export const BEHAVIOR_COLORS: Record<string, string> = {
+  aggressive: '#dc2626',
+  subtle: '#7c3aed',
+  territorial: '#ea580c',
+  expansionist: '#059669',
+};
+
+export const BEHAVIOR_COLOR_DEFAULT = '#78716c';
+
+export const BEHAVIOR_ICONS: Record<string, string> = {
+  aggressive: '⚔',
+  subtle: '◇',
+  territorial: '▪',
+  expansionist: '⬆',
+};
+
+// ============================================================================
+// Tick Event Type Colors (NarrativeLog, NarrativeFeed)
+// ============================================================================
+export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
+  agent_action: '#d4a574',
+  agent_action_resolved: '#c4956a',
+  doom_escalation: '#dc2626',
+  rival_action: '#7c3aed',
+  essence_gain: '#b8860b',
+  mandate_progress: '#059669',
+  narrative: '#9c27b0',
+  phase_change: '#eab308',
+  stealth_alert: '#6b7280',
+  dilemma_resolved: '#44aaff',
+};
+
+// ============================================================================
+// Event Log Category Colors (broader categories, not tick event types)
+// ============================================================================
+export const EVENT_CATEGORY_COLORS: Record<string, string> = {
+  essence: '#b8860b',
+  influence: '#7cb342',
+  narrative: '#9c27b0',
+  system: '#78716c',
+};
+
+// ============================================================================
+// Hostility Color Scale (replaces raw RGB calc in RivalPanel)
+// ============================================================================
+export function getHostilityColor(hostility: number): string {
+  const clamped = Math.max(0, Math.min(1, hostility));
+  if (clamped < 0.5) {
+    const t = clamped * 2;
+    const r = Math.round(80 + t * 160);
+    const g = Math.round(180 - t * 60);
+    return `rgb(${r}, ${g}, 50)`;
+  }
+  const t = (clamped - 0.5) * 2;
+  const r = 240;
+  const g = Math.round(120 - t * 90);
+  const b = Math.round(50 - t * 20);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// ============================================================================
+// HexZoomView SVG Colors
+// ============================================================================
+export const HEX_ZOOM_COLORS = {
+  HEX_FILL: '#0a0a0e',             // --bg-abyss
+  HEX_BORDER: '#d4a040',           // --accent-gold
+  LOCATION_FILL: '#1a1a1f',        // --bg-surface
+  LOCATION_FILL_HIDDEN: '#15131e',
+  LOCATION_BORDER: '#2a2520',      // --border-subtle
+  LOCATION_NAME: '#e8dcc8',        // --text-primary
+  LOCATION_NAME_HIDDEN: '#555',
+  SUBTYPE_TEXT: '#b8a890',          // --text-secondary (close)
+  TRAVEL_LINE: '#d4a04050',        // --accent-gold @ 50%
+  AGENT_COUNT_BG: '#d4a040',       // --accent-gold
+  AGENT_COUNT_TEXT: '#0a0a0e',     // --bg-abyss
+} as const;
+
+// ============================================================================
+// Tier Color Default (fallback)
+// ============================================================================
+export const TIER_COLOR_DEFAULT = '#78716c';

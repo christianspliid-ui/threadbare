@@ -428,7 +428,14 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         />
 
         {/* RIGHT GROUP: doom · mandate · alerts · rivals · debug */}
-        <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--topbar-gap)' }}>
+        <div
+          className="flex items-center flex-shrink-0 rounded"
+          style={{
+            gap: 'var(--topbar-gap)',
+            padding: '0 var(--space-2)',
+            backgroundColor: 'rgba(10, 10, 14, 0.4)',
+          }}
+        >
           <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
           {gameState.mandateDefinition && gameState.mandateState && (
             <>

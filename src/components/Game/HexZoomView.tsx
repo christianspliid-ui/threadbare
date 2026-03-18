@@ -24,19 +24,8 @@ const LAYOUT = {
 } as const;
 
 // ── Visual constants ──────────────────────────────────────────────────
-const COLORS = {
-  HEX_FILL: '#0a0a0e',                 // --bg-abyss: dark world foundation
-  HEX_BORDER: '#d4a040',               // --accent-gold: warm thread highlight
-  LOCATION_FILL: '#1a1a1f',            // --bg-surface: raised location circles
-  LOCATION_FILL_HIDDEN: '#15131e',     // Slightly lighter for hidden/unrevealed
-  LOCATION_BORDER: '#2a2520',          // --border-subtle: muted location edges
-  LOCATION_NAME: '#e8dcc8',            // --text-primary: gold-ish for readability over dark
-  LOCATION_NAME_HIDDEN: '#555',        // Dim text for hidden/unrevealed
-  SUBTYPE_TEXT: '#b8a890',             // --text-secondary: warm muted text
-  TRAVEL_LINE: '#d4a04050',            // --accent-gold with 50% transparency
-  AGENT_COUNT_BG: '#d4a040',           // --accent-gold: bright badge
-  AGENT_COUNT_TEXT: '#0a0a0e',         // --bg-abyss: dark text on gold
-} as const;
+import { HEX_ZOOM_COLORS } from '../../data/uiColorPalette';
+const COLORS = HEX_ZOOM_COLORS;
 
 const OPACITY = {
   HEX_BORDER: 0.35,

@@ -75,14 +75,14 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
               >
                 <SphereIcon sphereName={sphere} size="0.8rem" className="w-3.5 text-center" />
                 <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
-                  {value.toFixed(1)}
+                  {value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}
                 </span>
                 {incomeSign && (
                   <span
                     className="font-mono"
                     style={{
                       fontSize: 'var(--text-xs)',
-                      color: net! >= 0 ? '#4ade80' : '#f87171',
+                      color: net! >= 0 ? 'var(--positive)' : 'var(--negative)',
                       lineHeight: 1,
                     }}
                   >
