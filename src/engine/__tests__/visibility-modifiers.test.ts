@@ -54,8 +54,8 @@ describe('visibility modifier integration', () => {
     graph.addEdge({ id: 'e2', source: agentId, target: 'trait1', type: 'has_trait', properties: { modifiers: { los_range: 1 } } });
 
     const modifiedRange = getModifiedValue(graph, agentId, 'los_range', AGENT_SIGHT_RANGE);
-    // Base 0 + trait +1 + mountains +2 = 3
-    expect(modifiedRange).toBe(3);
+    // Base 1 + trait +1 + mountains +2 = 4
+    expect(modifiedRange).toBe(4);
   });
 
   // --- collectLOSSources integration tests ---
