@@ -118,7 +118,13 @@
     }
   }
 
-  /* Base styles */
+  /* Base styles — viewport-locked: game fills exactly one screen, no scroll */
+  html, body, #root {
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport height for mobile browsers */
+    overflow: hidden;
+  }
+
   html {
     background-color: var(--bg-abyss);
     color: var(--text-primary);

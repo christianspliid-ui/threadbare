@@ -57,6 +57,7 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 - Meet The First brainstorm: Obsidian MCP → `TheFantasyWorldSimulator/Brainstorms/brainstorm-meet-the-first.md`
 - Social Fabric & Faction Formation: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
 - Social Fabric Visibility Spec: `Docs/plans/2026-03-18-social-fabric-visibility-spec.md`
+- Implementation Ordering Guide: `Docs/plans/2026-03-18-implementation-ordering-guide.md`
 
 ## Non-Functional Priorities (in order)
 
@@ -69,6 +70,16 @@ When in tension, higher priorities win.
 5. **Narrative over mechanical perfection** — When mechanics and story diverge, lean toward the story.
 6. **Additive over destructive changes** — Add new fields/functions; only refactor when old shape blocks progress.
 7. **Performance budget, not premature optimization** — Profile before optimizing. Lean on the spotlight tier system.
+
+## Viewport Contract (1920×1080)
+
+The game fills exactly one viewport. **Nothing scrolls. Nothing renders below the fold.**
+
+- **CSS enforcement:** `html, body, #root` have `height: 100dvh; overflow: hidden` in `index.css`. Never remove this.
+- **Layout rule:** Every full-screen layout must use `h-screen flex flex-col overflow-hidden`. Child panels use `flex-1 overflow-y-auto` for internal scroll.
+- **Preview verification:** Always run `preview_resize` to 1920×1080 (or the user's specified resolution) **before** taking screenshots. The default Playwright/preview viewport is not 1920×1080 — it can be any size.
+- **Modal/overlay rule:** Modals use `max-height: 85vh` (already in Modal primitive). Absolute-positioned overlays (InterventionConfirm, AgendaPicker) must use `inset: 0` within their parent, never exceed the parent's bounds.
+- **Test for it:** If a component renders off-screen at 1920×1080, that's a bug — same severity as a broken interaction.
 
 ## Design Governance
 
@@ -135,7 +146,10 @@ When implementation is complete and tests pass, **do all of these automatically 
 2. **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 3. **Merge** feature branches into main immediately — don't leave branches waiting
 4. **Deploy** to Vercel production — Vercel auto-deploys from GitHub on push to `main`. No manual deploy step needed; just ensure the push succeeded.
-5. **Document** — update Notion backlog (mark phases ✅), update `Docs/project-status.md` and `Docs/changelog.md`
+5. **Document** — update Notion backlog (mark phases ✅), update `Docs/project-status.md` and `Docs/changelog.md` and `Docs/project-history.md`
+   - `project-history.md`: Append a one-line `✅ Complete` entry for each completed feature/system
+   - `project-status.md`: Keep this file compact (current focus + recent completions only). Move any "Previous:" entries older than the current session into `project-history.md`. This file should never exceed ~60 lines.
+   - `changelog.md`: Append row(s) as usual
 
 This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
 
