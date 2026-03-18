@@ -53,6 +53,7 @@ import { getAvatarHexPosition } from './visibility';
 import { generateEncounterCandidates } from './encounterCandidates';
 import { runSelectionPipeline } from './agentSelection';
 import { getEncounterById } from '../data/encounter-content';
+import type { EncounterOutcome } from '../types/encounter';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
@@ -462,6 +463,27 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
   };
 }
 
+/**
+ * Build a short suffix describing encounter outcome rewards/penalties.
+ * Returns empty string if nothing notable, or " — gained X, learned Y" etc.
+ */
+function summarizeOutcome(outcome: EncounterOutcome, success: boolean): string {
+  const parts: string[] = [];
+  if (outcome.reputationDelta && outcome.reputationDelta !== 0) {
+    parts.push(outcome.reputationDelta > 0 ? 'gained reputation' : 'lost reputation');
+  }
+  if (outcome.traitChanges && outcome.traitChanges.length > 0) {
+    parts.push(outcome.traitChanges.join(', '));
+  }
+  if (outcome.rewardPool) {
+    parts.push(success ? 'earned a reward' : 'lost equipment');
+  }
+  if (outcome.tierPromotionEligible) {
+    parts.push('eligible for promotion');
+  }
+  return parts.length > 0 ? ` — ${parts.join(', ')}` : '';
+}
+
 // ─── Phase 2a.5: Encounter Progression (v2 — progression only, no initiation) ───
 
 /**
@@ -499,21 +521,42 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     // Generate event based on outcome
     const actorNode = state.graph.getNode(progress.actorId);
     const agentName = actorNode?.name ?? 'An agent';
+    const encounter = getEncounterById(progress.encounterId);
+    const encounterName = encounter?.name ?? 'an encounter';
+
+    // Check if actor is in the player's retinue (worships the ascendant)
+    const isRetinue = state.graph.getOutgoingEdges(progress.actorId, 'worships')
+      .some(e => e.target === state.ascendantId);
+
     if (progress.status === 'completed') {
+      const details = summarizeOutcome(result.outcome, true);
       events.push({
         id: nextEventId(),
         tick: state.tick,
         type: 'encounter_completed',
-        message: `${agentName} has completed their encounter.`,
+        message: isRetinue
+          ? `${agentName} completed '${encounterName}'${details}`
+          : `${agentName} has completed their encounter.`,
         significance: 0.8,
+        ...(isRetinue && {
+          actorId: progress.actorId,
+          notification: { channel: 'toast' as const },
+        }),
       });
     } else if (progress.status === 'abandoned') {
+      const details = summarizeOutcome(result.outcome, false);
       events.push({
         id: nextEventId(),
         tick: state.tick,
         type: 'encounter_step_failure',
-        message: `${agentName} failed their encounter step.`,
+        message: isRetinue
+          ? `${agentName} failed '${encounterName}'${details}`
+          : `${agentName} failed their encounter step.`,
         significance: 0.5,
+        ...(isRetinue && {
+          actorId: progress.actorId,
+          notification: { channel: 'toast' as const },
+        }),
       });
     } else {
       events.push({
