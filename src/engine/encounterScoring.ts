@@ -41,6 +41,7 @@ import { computeCapability, computeTier } from './domainCapability';
 import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
+import { computeBondModifier } from './socialEncounterGeneration';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -299,11 +300,16 @@ export function scoreAndSelect(
       entry.reachPrimary,
     );
 
-    // 9. Desire multiplier
-    const desireMultiplier = Math.max(
+    // 9. Desire multiplier (with social bond modifier for agent-targeting encounters)
+    let desireMultiplier = Math.max(
       axiologicalScore + ambitionBoost,
       MINIMUM_DESIRE,
     );
+
+    if (entry.targetAgentId) {
+      const bondMod = computeBondModifier(graph, agentId, entry.targetAgentId);
+      desireMultiplier *= (1.0 + bondMod);
+    }
 
     // 10. Final score
     const finalScore = valuePerTick * desireMultiplier;
