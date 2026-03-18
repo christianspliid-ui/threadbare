@@ -103,6 +103,11 @@ export interface EncounterStep {
   reach: ReachDomain;
   /** Difficulty (0-100 scale, feeds into sigmoid) */
   difficulty: number;
+  /**
+   * Duration in ticks. Quick actions = 1, multi-day = 3-5, sieges/rituals = 5-10.
+   * Defaults to 1 if omitted (backward compatible).
+   */
+  duration?: number;
   /** What happens on success */
   onSuccess: EncounterOutcome;
   /** What happens on failure */
@@ -137,6 +142,11 @@ export interface EncounterTemplate {
   /** Optional cultural affinity for filtering */
   culturalAffinity?: string;
   /**
+   * Whether this encounter can be attempted remotely (without being at the location).
+   * Used for faction-scale or divine encounters. Defaults to false if omitted.
+   */
+  remoteAttempt?: boolean;
+  /**
    * Visibility filter — which agents/factions can see this encounter.
    * Format: 'faction:<id>', 'agent:<id>', 'archetype:<id>', 'culture:<id>', or 'all'.
    * Undefined = visible to all (backward compatible).
@@ -169,4 +179,10 @@ export interface EncounterProgress {
   status: 'active' | 'abandoned' | 'completed';
   /** Tick when the encounter started */
   startedTick: number;
+  /**
+   * Tick at which the current step finishes and can be resolved.
+   * Agent is occupied (skipped in decision phase) until this tick.
+   * Undefined = not currently occupied (step resolves immediately).
+   */
+  occupiedUntilTick?: number;
 }

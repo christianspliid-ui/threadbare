@@ -89,6 +89,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Entrance',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The mouth of the deep yawns before {actor}. Darkness coils within, and the first step demands resolve.',
         onSuccess: {
           narrative: '{actor} descends with {adj} purpose, the weight of stone parting before their footfalls.',
@@ -104,6 +105,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Labyrinth',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The passages twist and fork endlessly. {actor} navigates the {adj} maze, shadows shifting with every choice.',
         onSuccess: {
           narrative: '{actor} reads the stone\'s whisper, finding the true path through the labyrinth\'s heart.',
@@ -120,6 +122,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Abyss',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The descent ends at a chasm that {verb} with ancient hunger. {actor} stands at the precipice of ruin.',
         onSuccess: {
           narrative: '{actor} crosses the abyss with {adj} determination, claiming the artifact that rests in shadow below.',
@@ -149,6 +152,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Ignition',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: 'The forge roars to life before {actor}, heat warping the air into {adj} shimmer. The first metal waits.',
         onSuccess: {
           narrative: '{actor} strikes the anvil with {adj} precision, shape flowing from {action}.',
@@ -164,6 +168,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Tempering',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: 'The forge demands submission. {actor} must plunge the {adj} blade into ice, testing will against instinct.',
         onSuccess: {
           narrative: '{actor} emerges with a weapon tempered in wisdom, {adj} and true.',
@@ -180,6 +185,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transformation',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: 'The master smith arrives. {actor} must remake a legendary weapon from a {adj} ruin of metal and myth.',
         onSuccess: {
           narrative: '{actor} transforms base material into legend, and the master nods in {adj} approval.',
@@ -208,6 +214,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Threshold',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The veil thins here. {actor} feels {adj} presences gathering, watching from the other side.',
         onSuccess: {
           narrative: '{actor} centers their breath and {verb}s past the watchers into communion.',
@@ -223,6 +230,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Communion',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} meets a {adj} spirit — ancient, protective, testing the depth of their faith.',
         onSuccess: {
           narrative: '{actor} offers {their} heart to the spirit\'s knowing gaze and receives a {adj} blessing.',
@@ -239,6 +247,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transcendence',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The veil parts entirely. {actor} glimpses the unmaking and remaking of worlds in {adj} flux.',
         onSuccess: {
           narrative: '{actor} touches infinity and returns {adj}, forever changed, carrying the weight of eternity.',
@@ -267,6 +276,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The market roars with {adj} voices. {actor} must broker a deal between two {adj} merchants on the edge of violence.',
         onSuccess: {
           narrative: '{actor} finds the {adj} middle ground. Both parties walk away satisfied, grudging respect in their eyes.',
@@ -282,6 +292,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Deception',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'A {adj} buyer arrives with false goods. {actor} must detect the fraud and expose it without breaking trust.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye catches the flaw, and they expose it with grace. The buyer admits defeat {adj}ly.',
@@ -298,6 +309,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Fortune',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'A {adj} opportunity arrives: a shipment of contraband at {adj} prices. {actor} must decide between profit and principle.',
         onSuccess: {
           narrative: '{actor} refuses the gambit with {adj} rhetoric, earning the market\'s respect for integrity.',
@@ -326,6 +338,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Stalk',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} pursues {their} quarry through {adj} terrain, every step a whisper against discovery.',
         onSuccess: {
           narrative: '{actor} glides through shadow like water, {adj} and unseen, tracking the prey to ground.',
@@ -341,6 +354,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Patience',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must wait in {adj} stillness while the target passes by. Hours compress into heartbeats.',
         onSuccess: {
           narrative: '{actor} remains {adj} as stone until the moment is right, then strikes with {adj} precision.',
@@ -357,6 +371,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Convergence',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor}\'s prey reaches a {adj} stronghold. {They} must infiltrate, strike, and vanish like smoke.',
         onSuccess: {
           narrative: '{actor} becomes shadow itself, {adj} and deadly, claiming {their} prize and leaving no trace.',
@@ -385,6 +400,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Archives',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} stands before a {adj} library. {They} must find a single answer hidden in {adj} volumes.',
         onSuccess: {
           narrative: '{actor}\'s intellect {verb}s through the stacks, finding the truth in a {adj} margin.',
@@ -400,6 +416,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Riddle',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'A {adj} scholar poses a riddle that has confounded seekers for ages. {actor} must solve it.',
         onSuccess: {
           narrative: '{actor} unravels the {adj} knot of language and meaning, and the scholar nods with {adj} respect.',
@@ -416,6 +433,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Synthesis',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: '{actor} must weave together {adj} theories into a coherent whole, creating new understanding from chaos.',
         onSuccess: {
           narrative: '{actor} achieves a {adj} insight that reshapes the academy\'s understanding of reality itself.',
@@ -444,6 +462,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Duel',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} faces a {adj} opponent in single combat. The fortress watches, breath held.',
         onSuccess: {
           narrative: '{actor} defeats {their} foe with {adj} skill, and the crowd erupts in {adj} acclaim.',
@@ -459,6 +478,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Command',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must lead a {adj} garrison against a {adj} siege. The fort\'s survival rests on {their} choices.',
         onSuccess: {
           narrative: '{actor} orchestrates a {adj} defense. The enemy breaks against walls, and morale soars.',
@@ -475,6 +495,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Ascension',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The warlord arrives in {adj} fury. {actor} must defeat {them} to claim the fortress and title.',
         onSuccess: {
           narrative: '{actor} stands victorious over the {adj} warlord, the fortress now {their} own, {adj} and glorious.',
@@ -504,6 +525,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Diagnosis',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} examines a {adj} patient whose ailment is {adj} and obscure. The healing must begin with understanding.',
         onSuccess: {
           narrative: '{actor}\'s touch reveals the truth of the sickness, and a {adj} remedy becomes clear.',
@@ -519,6 +541,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Remedy',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must craft a {adj} remedy from {adj} herbs and will, asking the patient\'s body to answer.',
         onSuccess: {
           narrative: '{actor} channels {adj} intention through {their} medicine, and the patient opens {their} eyes in gratitude.',
@@ -535,6 +558,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Sacrifice',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: 'A {adj} plague spreads. {actor} must tend {their} own wounds while {they} heal the {adj} masses.',
         onSuccess: {
           narrative: '{actor} stands {adj} at the end, having pulled the city back from the brink through {adj} devotion.',
@@ -564,6 +588,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Audience',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} kneels before a {adj} ruler whose favor could reshape kingdoms. {They} must make a {adj} first impression.',
         onSuccess: {
           narrative: '{actor}\'s words {verb} through the throne room, and the ruler\'s eyes gleam with {adj} interest.',
@@ -579,6 +604,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Bargain',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: 'The ruler names {their} price. {actor} must negotiate a {adj} accord that satisfies both sides.',
         onSuccess: {
           narrative: '{actor} crafts an accord that {verb}s through both parties, {adj} and binding, sealing {their} triumph.',
@@ -595,6 +621,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Alliance',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: 'The ruler\'s enemies await. {actor} must forge an {adj} alliance that transforms {their} position.',
         onSuccess: {
           narrative: '{actor} unites the {adj} factions, and the ruler becomes {adj} with power, gratefully binding themselves to {actor}.',
@@ -624,6 +651,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Vigil',
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} climbs to {adj} heights to witness the stars align. {They} must remain {adj} through the long night.',
         onSuccess: {
           narrative: '{actor}\'s patience is rewarded. The constellations {verb} and speak, and {actor} receives a {adj} sign.',
@@ -639,6 +667,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Revelation',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The stars reveal {actor}\'s fate. {They} must confront a {adj} truth about {their} future.',
         onSuccess: {
           narrative: '{actor} accepts the {adj} revelation and {verb}s to fulfill the stars\' design with {adj} purpose.',
@@ -655,6 +684,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transcendence',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The stars open a {adj} door. {actor} stands between worlds, and must choose which path to walk.',
         onSuccess: {
           narrative: '{actor} steps through the {adj} door, transformed and {adj}, bearing the stars\' blessing.',
@@ -687,6 +717,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Entrance',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The marketplace seethes with {adj} commerce. {actor} spots a {adj} merchant with goods they desire.',
         onSuccess: {
           narrative: '{actor} approaches with {adj} confidence, catching the merchant\'s eye immediately.',
@@ -702,6 +733,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Exchange',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must navigate the {adj} dance of value and desire, matching the merchant\'s wit.',
         onSuccess: {
           narrative: '{actor} finds the {adj} middle ground—both parties smile, the deal sealed with {adj} satisfaction.',
@@ -718,6 +750,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Closing',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'A {adj} rival appears, offering more for the same goods. {actor} must secure the prize or lose all.',
         onSuccess: {
           narrative: '{actor} outbids {their} rival with a {adj} flourish. The merchant {verb}s the goods to {actor} with {adj} respect.',
@@ -747,6 +780,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Discovery',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'Ancient ruins sprawl before {actor}. Somewhere in the {adj} depths lies a relic of {adj} power.',
         onSuccess: {
           narrative: '{actor}\'s {adj} gaze pierces through debris and shadow, spotting the relic\'s faint gleam.',
@@ -762,6 +796,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Retrieval',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The path to the relic is {adj} and perilous—guarded by ancient traps or {adj} spirits.',
         onSuccess: {
           narrative: '{actor} moves with {adj} stealth, unmaking traps and appeasing guardians. The relic is {their}s.',
@@ -778,6 +813,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Escape',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The ruins are collapsing. {actor} clutches the relic and must navigate the {adj} chaos to escape.',
         onSuccess: {
           narrative: '{actor} races through the crumbling stone, the relic {adj} in {their} grasp, and emerges triumphant.',
@@ -806,6 +842,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Gathering',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} stands in a {adj} field heavy with ripe bounty. The harvest calls.',
         onSuccess: {
           narrative: '{actor} works the {adj} earth, gathering the finest fruits and grains with practiced ease.',
@@ -821,6 +858,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Preservation',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must prepare the bounty for storage—a {adj} task requiring knowledge of seasons and preservation.',
         onSuccess: {
           narrative: '{actor} stores the harvest with {adj} wisdom, ensuring nothing is lost to rot or pest.',
@@ -837,6 +875,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Surplus',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: '{actor} discovers a {adj} surplus hidden in the fields—a fortune for those who claim it.',
         onSuccess: {
           narrative: '{actor} discovers and secures the {adj} surplus, blessing the settlement and {their} own wealth.',
@@ -865,6 +904,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Petition',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks out a {adj} mage or priest, hoping to bargain for a spell of {adj} power.',
         onSuccess: {
           narrative: '{actor} makes a {adj} impression with {their} request. The mage leans forward with {adj} interest.',
@@ -880,6 +920,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The mage names {their} price—{adj} and steep. {actor} must find a way to bridge the gap.',
         onSuccess: {
           narrative: '{actor} {verb}s a {adj} bargain, offering something the mage cannot refuse. The spell is {their}s.',
@@ -896,6 +937,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Binding',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The mage begins the ritual, binding the spell to {actor}\'s will. {actor} must endure the {adj} flow of magic.',
         onSuccess: {
           narrative: '{actor} accepts the spell\'s power with {adj} grace. The binding completes, and {they} emerge {adj} transformed.',
@@ -925,6 +967,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Claim',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} stands over the {adj} spoils of war. A legendary trophy lies within reach, but others covet it.',
         onSuccess: {
           narrative: '{actor} seizes the trophy with {adj} authority. Those present step back, acknowledging {their} claim.',
@@ -940,6 +983,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Contest',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The rival will not yield. {actor} must outmaneuver {them} through {adj} tactics and cunning.',
         onSuccess: {
           narrative: '{actor} {verb}s the rival\'s defenses with {adj} precision, claiming victory and the trophy.',
@@ -956,6 +1000,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Possession',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The trophy is {adj} with ancient power. {actor} must hold it against those who would reclaim it.',
         onSuccess: {
           narrative: '{actor} stands {adj} with the trophy in {their} grip, all challengers cowed by {their} {adj} aura.',
@@ -984,6 +1029,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Preparation',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} prepares an offering for a {adj} spirit or saint—something that reflects {their} devotion.',
         onSuccess: {
           narrative: '{actor} selects the {adj} offering with care and reverence. The spirit stirs, sensing {their} intent.',
@@ -999,6 +1045,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Ritual',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must perform the {adj} ritual with {adj} sincerity, speaking words that matter.',
         onSuccess: {
           narrative: '{actor}\'s ritual {verb}s true. The spirit {verb}s down and accepts the offering with {adj} grace.',
@@ -1015,6 +1062,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Blessing',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The spirit grants a {adj} blessing—but it comes with a price only {actor} can pay.',
         onSuccess: {
           narrative: '{actor} accepts the {adj} price with {adj} courage. The blessing flows through {them}, transforming {their} fate.',
@@ -1043,6 +1091,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Search',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} hunts for {adj} ore or material in a {adj} location. Legend says it can be found here.',
         onSuccess: {
           narrative: '{actor}\'s search {verb}s true. {They} spot the {adj} glint of rare material among the stone.',
@@ -1058,6 +1107,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Extraction',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'Extracting the material is {adj} and requires both {adj} technique and negotiation with {adj} locals.',
         onSuccess: {
           narrative: '{actor} {verb}s a {adj} deal with locals and extracts the material with {adj} skill.',
@@ -1074,6 +1124,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transport',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: '{actor} must transport the {adj} material through {adj} terrain without it being stolen or damaged.',
         onSuccess: {
           narrative: '{actor} {verb}s the material safely to market, claiming a {adj} fortune for {their} prize.',
@@ -1102,6 +1153,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Location',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} is hunting a {adj} tome said to hold {adj} secrets. {They} must find where it is kept.',
         onSuccess: {
           narrative: '{actor}\'s {adj} intellect uncovers the tome\'s location. The path is {adj}, but visible.',
@@ -1117,6 +1169,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Infiltration',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The tome is guarded by {adj} magic and {adj} servants. {actor} must slip past {their} protections.',
         onSuccess: {
           narrative: '{actor} navigates the {adj} defenses with {adj} cunning, reaching the tome\'s resting place.',
@@ -1133,6 +1186,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Claiming',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The tome is {adj} and seems to resist being held. {actor} must claim it and escape before discovery.',
         onSuccess: {
           narrative: '{actor} {verb}s the tome\'s resistance and {verb}s free with the {adj} prize, knowledge itself now {their}s.',
@@ -1164,6 +1218,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Gathering',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: '{actor} must gather {adj} ingredients for a {adj} potion—herbs that only grow in {adj} places.',
         onSuccess: {
           narrative: '{actor} forages with {adj} skill, finding the {adj} ingredients needed.',
@@ -1179,6 +1234,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Brewing',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must blend the ingredients with {adj} intent, asking the magic to answer {their} will.',
         onSuccess: {
           narrative: '{actor} stirs the cauldron with {adj} precision. The potion {verb}s with {adj} power.',
@@ -1195,6 +1251,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Distillation',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: 'The potion must be distilled to {adj} potency. {actor} must refine it without losing the magic.',
         onSuccess: {
           narrative: '{actor} bottles a {adj} potion, {adj} and alive with power, a masterwork of the brewer\'s art.',
@@ -1223,6 +1280,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Knowledge',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: '{actor} seeks to inscribe a {adj} protective ward. {They} must first learn its {adj} design from ancient texts.',
         onSuccess: {
           narrative: '{actor}\'s study {verb}s with {adj} revelation. The ward\'s design becomes {adj} clear.',
@@ -1238,6 +1296,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Inscription',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must inscribe the ward with {adj} precision, every symbol {adj} and exact.',
         onSuccess: {
           narrative: '{actor}\'s hand {verb}s with {adj} control. The ward {verb}s to life, {adj} and complete.',
@@ -1254,6 +1313,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Activation',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must activate the {adj} ward with a {adj} ritual, binding it to the place\'s very essence.',
         onSuccess: {
           narrative: '{actor}\'s ritual {verb}s and the ward {verb}s {adj} and eternal, protection secured.',
@@ -1282,6 +1342,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Inspiration',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: '{actor} seeks to compose a {adj} saga that will move hearts. First, {they} must find {adj} inspiration.',
         onSuccess: {
           narrative: '{actor}\'s heart {verb}s with {adj} inspiration. The story\'s shape becomes {adj} clear.',
@@ -1297,6 +1358,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Composition',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must weave the inspiration into a {adj} narrative, crafting every word with {adj} care.',
         onSuccess: {
           narrative: '{actor}\'s pen {verb}s across parchment, the saga {verb}s into {adj} being.',
@@ -1313,6 +1375,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Performance',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must perform the saga before a {adj} crowd. Can {their} words move hearts?',
         onSuccess: {
           narrative: '{actor}\'s voice {verb}s through the crowd. The saga becomes {adj} legend, and the people {verb} in tears.',
@@ -1341,6 +1404,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Communion',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: '{actor} seeks to craft a {adj} talisman. First, {they} must commune with the spirit that will inhabit it.',
         onSuccess: {
           narrative: '{actor}\'s spirit {verb}s with the other. The communion is {adj} and true.',
@@ -1356,6 +1420,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Creation',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must shape the talisman\'s material form, binding the spirit into {adj} reality.',
         onSuccess: {
           narrative: '{actor}\'s hands {verb} with {adj} precision. The talisman takes shape, the spirit {adj} within.',
@@ -1372,6 +1437,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Binding',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must complete the binding, sealing the spirit into the talisman with a {adj} oath.',
         onSuccess: {
           narrative: '{actor}\'s oath {verb}s and the talisman becomes {adj} and alive, ready to serve.',
@@ -1400,6 +1466,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Design',
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
+        duration: 3,
         narrative: '{actor} must design a {adj} monument to {adj} significance. The design must be {adj} and lasting.',
         onSuccess: {
           narrative: '{actor}\'s vision {verb}s {adj} and eternal. The design is {adj} and inspiring.',
@@ -1415,6 +1482,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Construction',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must oversee the construction, gathering {adj} workers and {adj} materials.',
         onSuccess: {
           narrative: '{actor}\'s leadership {verb}s {adj} completion. The monument {verb}s {adj} toward the sky.',
@@ -1431,6 +1499,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Dedication',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must dedicate the {adj} monument before a {adj} crowd, binding it to memory and myth.',
         onSuccess: {
           narrative: '{actor}\'s dedication {verb}s true. The monument becomes {adj} legend, standing against time itself.',
@@ -1462,6 +1531,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Selection',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks to recruit {adj} fighters for a militia. {They} must identify who has {adj} potential.',
         onSuccess: {
           narrative: '{actor} spots {adj} candidates with {adj} promise. The selection begins with {adj} enthusiasm.',
@@ -1477,6 +1547,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Training',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must train the {adj} recruits into {adj} fighters, pushing them beyond {their} limits.',
         onSuccess: {
           narrative: '{actor}\'s training {verb}s the recruits into {adj} warriors. They move with {adj} discipline.',
@@ -1493,6 +1564,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Commitment',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must secure the militia\'s commitment to {adj} purpose. Will they follow unto {adj} battle?',
         onSuccess: {
           narrative: '{actor}\'s oath {verb}s {adj} and true. The militia kneel, {their} loyalty now {adj} and absolute.',
@@ -1521,6 +1593,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Approach',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks a {adj} mercenary band. {They} must approach with the {adj} offer.',
         onSuccess: {
           narrative: '{actor}\'s offer catches {their} interest. The captain leans forward with {adj} curiosity.',
@@ -1536,6 +1609,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate with the {adj} captain, proving {their} worth and {their} cause.',
         onSuccess: {
           narrative: '{actor} {verb}s the captain\'s doubts. The mercenaries agree to serve, {adj} and willing.',
@@ -1552,6 +1626,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Loyalty',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must ensure the mercenaries\' loyalty will hold through {adj} trials. Will {they} betray?',
         onSuccess: {
           narrative: '{actor} seals the pact with {adj} payment and {adj} purpose. The mercenaries are {their}s, {adj} and true.',
@@ -1580,6 +1655,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Presentation',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} must present {themselves} to a {adj} noble and make a {adj} first impression.',
         onSuccess: {
           narrative: '{actor}\'s presentation is {adj}. The noble\'s eyes glimmer with {adj} interest.',
@@ -1595,6 +1671,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Demonstration',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must demonstrate {their} worth to the noble, {adj} and without doubt.',
         onSuccess: {
           narrative: '{actor}\'s demonstration {verb}s the noble\'s {adj} expectations. {They} nod with {adj} approval.',
@@ -1611,6 +1688,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Service',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The noble offers {actor} a {adj} position, but at a {adj} price. Will {actor} accept {their} terms?',
         onSuccess: {
           narrative: '{actor} accepts the position with {adj} grace. The noble binds {them} to service, {adj} and honored.',
@@ -1639,6 +1717,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Summoning',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks to summon a {adj} spirit and bind it to {their} service. The ritual begins.',
         onSuccess: {
           narrative: '{actor}\'s summoning {verb}s {adj} through the veil. A spirit answers, {adj} and present.',
@@ -1654,6 +1733,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate with the {adj} spirit, offering what it desires in exchange for service.',
         onSuccess: {
           narrative: '{actor}\'s offer {verb}s the spirit\'s {adj} heart. It agrees to serve with {adj} binding words.',
@@ -1670,6 +1750,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Binding',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must seal the binding with a {adj} oath, tying the spirit to {their} will.',
         onSuccess: {
           narrative: '{actor}\'s oath {verb}s eternal. The spirit is bound, {adj} and obedient, forever in {actor}\'s service.',
@@ -1698,6 +1779,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Preaching',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} preaches to the {adj} faithful, stirring {their} {adj} hearts.',
         onSuccess: {
           narrative: '{actor}\'s sermon {verb}s {adj} and true. The faithful rise, {their} faith {adj} and absolute.',
@@ -1713,6 +1795,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Organization',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must organize the faithful into {adj} followers, giving {their} fervor {adj} direction.',
         onSuccess: {
           narrative: '{actor}\'s organization {verb}s the faithful into {adj} unity. They move as one, {adj} and devoted.',
@@ -1729,6 +1812,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Mission',
         reach: 'spirit',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must send the faithful on a {adj} mission. Will {they} follow unto {adj} trials?',
         onSuccess: {
           narrative: '{actor}\'s mission {verb}s {adj} devotion. The faithful march, {their} faith {adj} and unbreakable.',
@@ -1757,6 +1841,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Search',
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks a {adj} guide who knows the {adj} terrain. {They} must find someone {adj} and trustworthy.',
         onSuccess: {
           narrative: '{actor} finds a {adj} guide with {adj} knowledge. {They} agree to meet.',
@@ -1772,6 +1857,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate a {adj} price with the guide. Both parties must find {adj} terms.',
         onSuccess: {
           narrative: '{actor} negotiates {adj} deal. The guide agrees to serve with {adj} enthusiasm.',
@@ -1788,6 +1874,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Journey',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} travels with the guide through {adj} terrain. Will {they} stay the course?',
         onSuccess: {
           narrative: '{actor}\'s journey {verb}s {adj}. The guide proves {adj} and {their} knowledge {adj}.',
@@ -1819,6 +1906,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Provocation',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'A {adj} drunk at the tavern insults {actor} with {adj} words. A fight looms.',
         onSuccess: {
           narrative: '{actor} stands with {adj} presence. The drunk shrinks back, {their} friends uncertain.',
@@ -1834,6 +1922,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Fighting',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must fight the {adj} drunk and {their} {adj} friends in the tavern\'s {adj} chaos.',
         onSuccess: {
           narrative: '{actor}\'s fists {verb} {adj} and {adj}. {They} leave the drunk and friends on the floor, {adj} but victorious.',
@@ -1850,6 +1939,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Aftermath',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The tavern keeper appears, {adj} with rage. {actor} must face {adj} consequences.',
         onSuccess: {
           narrative: '{actor} {verb}s the tavern keeper\'s anger with {adj} words. {They} pay for damages and leave {adj} and respected.',
@@ -1878,6 +1968,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Challenge',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'A {adj} mage challenges {actor} to a {adj} duel of magic. {actor} must accept or lose face.',
         onSuccess: {
           narrative: '{actor} accepts the challenge with {adj} grace. The mage nods, seeing {adj} confidence.',
@@ -1893,6 +1984,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Casting',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} and the mage {verb} spells against each other. Each {adj} spell tests will and wit.',
         onSuccess: {
           narrative: '{actor}\'s spells {verb} {adj} and true. The mage {verb}s back, struggling against {actor}\'s {adj} power.',
@@ -1909,6 +2001,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Victory',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'One final spell will decide the duel. {actor} must cast {their} {adj} power against the mage\'s last defense.',
         onSuccess: {
           narrative: '{actor}\'s final spell {verb}s {adj} and unstoppable. The mage {verb}s defeated, acknowledging {actor}\'s {adj} mastery.',
@@ -1937,6 +2030,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Entry',
         reach: 'star',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} enters the {adj} arena. A {adj} crowd watches, hungry for blood and glory.',
         onSuccess: {
           narrative: '{actor} strides in with {adj} bearing. The crowd {verb}s in approval, sensing {adj} destiny.',
@@ -1952,6 +2046,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Combat',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} faces {adj} opponents in the {adj} arena. Victory must be {adj} and decisive.',
         onSuccess: {
           narrative: '{actor}\'s blades {verb} {adj} and true. Opponents {verb} {adj} before {their} might.',
@@ -1968,6 +2063,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Triumph',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} stands alone, {adj} amid the arena\'s blood and dust. The crowd roars—will {they} celebrate or condemn?',
         onSuccess: {
           narrative: '{actor} raises {their} arms {adj} in victory. The crowd {verb}s in {adj} celebration—a legend is born.',
@@ -1996,6 +2092,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Detection',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} senses {adj} movement in the shadows. An assassin stalks {them} with {adj} intent.',
         onSuccess: {
           narrative: '{actor}\'s {adj} awareness {verb}s the killer\'s presence. {They} turn to face {their} foe.',
@@ -2011,6 +2108,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Combat',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} duels the {adj} assassin in {adj} combat. {Their} blades {verb} in the shadows.',
         onSuccess: {
           narrative: '{actor}\'s {adj} blades {verb} true. The assassin {verb}s away {adj} and wounded.',
@@ -2027,6 +2125,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Pursuit',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} pursues the {adj} assassin into {adj} shadows. Will {they} catch {their} foe?',
         onSuccess: {
           narrative: '{actor}\'s {adj} pursuit {verb}s the assassin {adj} to ground. {They} emerge {adj} and victorious.',
@@ -2055,6 +2154,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Accusation',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} is accused of {adj} crime. Trial by combat is {their} only defense.',
         onSuccess: {
           narrative: '{actor}\'s {adj} response to the accusation {verb}s the court\'s {adj} attention.',
@@ -2070,6 +2170,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Combat',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} faces {their} {adj} accuser in {adj} mortal combat. The court watches {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} skill {verb}s the accuser {adj} to the ground. Victory {verb}s {actor}\'s innocence.',
@@ -2086,6 +2187,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Judgment',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The court must {adj} rule on {actor}\'s fate. Is {their} {adj} victory enough?',
         onSuccess: {
           narrative: '{actor}\'s {adj} victory {verb}s the court\'s {adj} judgment. {They} are declared innocent and {adj} freed.',
@@ -2114,6 +2216,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Insult',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'A {adj} noble insults {actor}\'s {adj} honor. A duel is {adj} demanded.',
         onSuccess: {
           narrative: '{actor}\'s {adj} response to the insult {verb}s the court {adj}. {They} accept the duel with {adj} dignity.',
@@ -2129,6 +2232,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Preparation',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} prepares for the {adj} duel against the {adj} noble. {Their} seconds ensure {adj} readiness.',
         onSuccess: {
           narrative: '{actor} prepares with {adj} discipline. {Their} weapons are {adj} and {their} mind is {adj}.',
@@ -2145,6 +2249,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Engagement',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} and the {adj} noble {verb} in {adj} duel before {adj} witnesses. {Their} honor rests on {adj} outcome.',
         onSuccess: {
           narrative: '{actor}\'s {adj} skill {verb}s the noble {adj} down. {Their} honor is {adj} restored, and {the} court {verb}s in {adj} approval.',
@@ -2176,6 +2281,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Selection',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} hunts for a {adj} mark in the {adj} marketplace. Someone carries what {actor} needs.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye spots the {adj} target, laden with wealth and distracted.',
@@ -2191,6 +2297,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Approach',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must slip through the {adj} crowd and position {themselves} beside the {adj} mark.',
         onSuccess: {
           narrative: '{actor} {verb}s {adj} through the crowd, positioning {themselves} {adj} beside the mark.',
@@ -2207,6 +2314,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Extraction',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must extract the prize with {adj} fingers, leaving no trace of {their} presence.',
         onSuccess: {
           narrative: '{actor}\'s fingers {verb} {adj} and {adj}. The prize is {their}s, and the mark {verb}s nothing.',
@@ -2235,6 +2343,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Planning',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must plan the {adj} heist of a heavily {adj} vault. Knowledge is the key.',
         onSuccess: {
           narrative: '{actor}\'s {adj} mind {verb}s the vault\'s secrets. A {adj} plan forms.',
@@ -2250,6 +2359,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Infiltration',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must slip past {adj} guards and {adj} wards to reach the vault\'s heart.',
         onSuccess: {
           narrative: '{actor} {verb}s the {adj} defenses with {adj} precision. The vault {verb}s before {them}.',
@@ -2266,6 +2376,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Escape',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} claims the prize but must escape through {adj} territory with {adj} pursuers on {their} heels.',
         onSuccess: {
           narrative: '{actor} {verb}s the {adj} guards and {verb}s into the {adj} night with the prize {adj} in {their} hands.',
@@ -2294,6 +2405,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Location',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} seeks a {adj} grave rumored to hold {adj} treasures. {They} must find it.',
         onSuccess: {
           narrative: '{actor}\'s {adj} search {verb}s the {adj} grave, hidden beneath {adj} earth and stone.',
@@ -2309,6 +2421,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Opening',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must open the {adj} grave without disturbing {adj} spirits that might guard it.',
         onSuccess: {
           narrative: '{actor} opens the grave with {adj} care. The spirits remain {adj} and placid.',
@@ -2325,6 +2438,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Claiming',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must claim the treasures and flee before the grave\'s curse {verb}s them.',
         onSuccess: {
           narrative: '{actor} seizes the treasures and {verb}s from the grave {adj}, escaping {their} curses.',
@@ -2353,6 +2467,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Acquisition',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must acquire {adj} goods on the {adj} black market without alerting authorities.',
         onSuccess: {
           narrative: '{actor} finds {adj} goods at {adj} prices. A {adj} deal is struck.',
@@ -2368,6 +2483,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transportation',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must transport the {adj} goods through {adj} checkpoints without discovery.',
         onSuccess: {
           narrative: '{actor} {verb}s the {adj} checkpoints with {adj} stealth. The goods remain {adj} hidden.',
@@ -2384,6 +2500,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Delivery',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must deliver the {adj} goods to the {adj} buyer without ambush or betrayal.',
         onSuccess: {
           narrative: '{actor} completes the {adj} delivery with {adj} precision. The payment is {adj} received.',
@@ -2412,6 +2529,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Infiltration',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must slip into a {adj} palace or tower to steal {adj} secrets.',
         onSuccess: {
           narrative: '{actor} {verb}s inside with {adj} stealth. The palace\'s secrets lie within reach.',
@@ -2427,6 +2545,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Discovery',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: '{actor} must find the {adj} chamber where secrets are kept and interpret {their} meaning.',
         onSuccess: {
           narrative: '{actor}\'s {adj} intellect uncovers the secret\'s {adj} hiding place. {They} memorize {their} contents.',
@@ -2443,6 +2562,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Exfiltration',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must escape the {adj} palace with {adj} knowledge burning in {their} mind, pursued by {adj} guards.',
         onSuccess: {
           narrative: '{actor} {verb}s the palace {adj} and {adj}, the secrets {adj} in {their} grasp.',
@@ -2474,6 +2594,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Meeting',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} encounters a {adj} caravan leader and proposes a {adj} trade arrangement.',
         onSuccess: {
           narrative: '{actor}\'s proposal catches the leader\'s {adj} attention. {They} agree to hear more.',
@@ -2489,6 +2610,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'star',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate a {adj} deal that benefits both parties and honors {their} {adj} route.',
         onSuccess: {
           narrative: '{actor} {verb}s a {adj} arrangement. The caravan leader {verb}s with {adj} satisfaction.',
@@ -2505,6 +2627,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Exchange',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} and the caravan {verb} their trade. Goods {verb} hands, and trust is tested.',
         onSuccess: {
           narrative: '{actor}\'s {adj} exchange {verb}s flawlessly. Both parties benefit, and a {adj} partnership {verb}s.',
@@ -2533,6 +2656,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Audience',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} seeks an audience with a {adj} guild master to {verb} a {adj} contract.',
         onSuccess: {
           narrative: '{actor} gains the {adj} audience. The guild master listens with {adj} interest.',
@@ -2548,6 +2672,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Proposal',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must present a {adj} proposal that serves the guild\'s {adj} interests.',
         onSuccess: {
           narrative: '{actor}\'s proposal {verb}s the guild master {adj}. {They} nod with {adj} consideration.',
@@ -2564,6 +2689,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Contract',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must seal a {adj} contract that binds both parties to {their} {adj} terms.',
         onSuccess: {
           narrative: '{actor}\'s contract {verb}s {adj} and {adj}. The guild master {verb}s with {adj} respect.',
@@ -2592,6 +2718,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Contact',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} must contact a {adj} smuggler and {verb} {their} interest in {adj} trade.',
         onSuccess: {
           narrative: '{actor}\'s contact {verb}s {adj}. The smuggler emerges from the shadows {adj} and curious.',
@@ -2607,6 +2734,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate {adj} terms with the {adj} smuggler, each testing the other\'s {adj} commitment.',
         onSuccess: {
           narrative: '{actor}\'s {adj} negotiation {verb}s the smuggler\'s trust. {They} {verb} {adj} terms.',
@@ -2623,6 +2751,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Binding',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must bind {their} {adj} pact with {adj} oaths that honor both {their} {adj} codes.',
         onSuccess: {
           narrative: '{actor}\'s pact {verb}s {adj} and eternal. The smuggler and {actor} are now {adj} partners.',
@@ -2651,6 +2780,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Presentation',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} presents {adj} tribute to a {adj} ruler, hoping to strike a {adj} bargain.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presentation {verb}s the ruler\'s {adj} gaze. {They} are impressed.',
@@ -2666,6 +2796,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must negotiate {adj} terms with a {adj} ruler whose {adj} demands are {adj} and steep.',
         onSuccess: {
           narrative: '{actor} {verb}s {adj} terms that both {can} accept. The ruler {verb}s with {adj} satisfaction.',
@@ -2682,6 +2813,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Commitment',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must seal {their} commitment to {adj} tribute payments or receive {adj} rewards.',
         onSuccess: {
           narrative: '{actor}\'s {adj} commitment {verb}s {adj} and {adj}. The ruler {verb}s {their} blessing {adj}.',
@@ -2710,6 +2842,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Hunt',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} hunts or gathers {adj} goods in the {adj} wilderness to barter for {their} survival.',
         onSuccess: {
           narrative: '{actor}\'s {adj} hunting {verb}s {adj} results. {Their} stores {verb} {adj} and full.',
@@ -2725,6 +2858,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Trade',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must trade {their} {adj} goods for {adj} supplies needed for {their} {adj} journey.',
         onSuccess: {
           narrative: '{actor}\'s {adj} trade {verb}s {adj} and mutually {adj}. {Their} supplies {verb} {adj}.',
@@ -2741,6 +2875,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Sustenance',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} must eke out {adj} sustenance from {their} {adj} supplies to {verb} the {adj} wilderness.',
         onSuccess: {
           narrative: '{actor}\'s {adj} resourcefulness {verb}s {them} through. {They} emerge {adj} but {adj} alive.',
@@ -2769,6 +2904,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Offering',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} brings {adj} offerings to a {adj} mystic, hoping to trade for {adj} blessings.',
         onSuccess: {
           narrative: '{actor}\'s {adj} offerings {verb} the mystic\'s {adj} gaze. {They} are {adj} accepted.',
@@ -2784,6 +2920,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must {verb} {adj} terms with a {adj} mystic whose {adj} blessings are {adj} and {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} negotiation {verb}s the mystic\'s favor. {They} agree to {adj} terms.',
@@ -2800,6 +2937,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Blessing',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: '{actor} receives {adj} blessings from the {adj} mystic. {Their} power {verb}s {adj} and {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} blessings {verb} {them} {adj} and {adj}. {They} {verb} {adj} transformed.',
@@ -2831,6 +2969,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Recognition',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} finds {adj} refugees seeking shelter. {They} are {adj} and desperate, their need {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} compassion sees their plight. {They} know they can {verb} aid here.',
@@ -2846,6 +2985,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Shelter',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must gather {adj} materials to build {adj} shelter before the {adj} night falls.',
         onSuccess: {
           narrative: '{actor}\'s {adj} ingenuity creates {adj} refuge. The refugees {verb} with gratitude.',
@@ -2862,6 +3002,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Sustenance',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: '{actor} {verb}s {adj} food and water to {adj} refugees whose {adj} bodies {verb} from hunger.',
         onSuccess: {
           narrative: '{actor}\'s {adj} efforts {verb} the refugees {adj}. {They} {verb} renewed, {adj} grateful.',
@@ -2890,6 +3031,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Diagnosis',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} tends to {adj} sick who {verb} from {adj} ailments. Understanding their {adj} suffering {verb}s the path forward.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye sees the {adj} sickness. {They} know how to {verb} aid.',
@@ -2905,6 +3047,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Treatment',
         reach: 'flesh',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must apply {adj} medicines and {adj} remedies to {adj} patients seeking recovery.',
         onSuccess: {
           narrative: '{actor}\'s {adj} touch {verb}s {adj}. The sick {verb} {adj} and restored.',
@@ -2921,6 +3064,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Recovery',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: '{actor} must maintain {adj} vigil as the {adj} patients fight for {adj} life. {Their} will to survive {verb}s {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presence {verb}s the patients {adj} through. {They} {verb} alive, {adj} grateful.',
@@ -2949,6 +3093,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Assessment',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} surveys {adj} militia struggling against {adj} threats. Their need is {adj} and dire.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye assesses the situation. {They} see how to {verb} victory.',
@@ -2964,6 +3109,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Coordination',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must organize {adj} militia forces into {adj} formations to meet {adj} opposition.',
         onSuccess: {
           narrative: '{actor}\'s {adj} commands {verb} the militia {adj}. {They} move as {adj} one.',
@@ -2980,6 +3126,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Battle',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: '{actor} fights {adj} alongside the militia against {adj} enemies. Victory {verb}s uncertain and {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} valor {verb}s the militia {adj}. {They} {verb} the {adj} foe.',
@@ -3008,6 +3155,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Discovery',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} finds {adj} scholars seeking to preserve {adj} knowledge before {adj} destruction claims it.',
         onSuccess: {
           narrative: '{actor}\'s {adj} understanding sees the value. {They} know how to {verb} preservation.',
@@ -3023,6 +3171,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Organization',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must organize {adj} texts and {adj} documents into {adj} order before time {verb}s out.',
         onSuccess: {
           narrative: '{actor}\'s {adj} method {verb}s the scholars {adj}. Knowledge {verb} {adj} and safe.',
@@ -3039,6 +3188,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transcription',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: '{actor} must transcribe {adj} knowledge to {adj} mediums before {adj} originals {verb} away.',
         onSuccess: {
           narrative: '{actor}\'s {adj} diligence {verb}s the knowledge {adj}. It {verb}s eternal, {adj} preserved.',
@@ -3067,6 +3217,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Crisis',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} discovers {adj} guild facing {adj} financial ruin. {Their} need is {adj} and urgent.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye sees the {adj} solution. {They} know how to {verb} aid.',
@@ -3082,6 +3233,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must negotiate {adj} terms with {adj} creditors seeking {adj} payment from the {adj} guild.',
         onSuccess: {
           narrative: '{actor}\'s {adj} words {verb} the creditors {adj}. {They} agree to {adj} terms.',
@@ -3098,6 +3250,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Restoration',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 4,
         narrative: '{actor} must restore {adj} trade networks and {adj} reputation to save the {adj} guild.',
         onSuccess: {
           narrative: '{actor}\'s {adj} efforts {verb} the guild {adj}. {They} {verb} {adj} and thriving.',
@@ -3129,6 +3282,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Design',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} must design {adj} forge capable of withstanding {adj} heat and {adj} work.',
         onSuccess: {
           narrative: '{actor}\'s {adj} design {verb}s the smiths {adj}. {They} see {adj} genius in the plan.',
@@ -3144,6 +3298,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Excavation',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must oversee {adj} excavation of {adj} foundation for the {adj} forge.',
         onSuccess: {
           narrative: '{actor}\'s {adj} supervision {verb}s the work {adj}. The foundation {verb}s {adj} and true.',
@@ -3160,6 +3315,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Assembly',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must {verb} together {adj} stones and {adj} metals to {verb} the {adj} forge alive.',
         onSuccess: {
           narrative: '{actor}\'s {adj} work {verb}s the forge {adj}. It {verb}s alive, {adj} and {adj} perfect.',
@@ -3188,6 +3344,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Assessment',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} surveys {adj} ruins of {adj} tower, its {adj} walls {verb}ing to {adj} decay.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye sees how to {verb} the tower. {They} know {adj} restoration is {adj}.',
@@ -3203,6 +3360,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Reconstruction',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must gather {adj} materials and direct {adj} workers to rebuild {adj} sections of the {adj} tower.',
         onSuccess: {
           narrative: '{actor}\'s {adj} efforts {verb} the tower {adj}. Its {adj} walls {verb} {adj} and restored.',
@@ -3219,6 +3377,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Completion',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must finish {adj} tower with {adj} craftsmanship, making it {adj} and {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} final touches {verb} the tower {adj}. It {verb}s {adj}, a {adj} monument.',
@@ -3247,6 +3406,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Planning',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} must plan {adj} bridge across {adj} chasm that {verb}s wide and {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} plan {verb}s {adj}. The engineers see it {verb}s {adj} and viable.',
@@ -3262,6 +3422,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Construction',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must oversee construction of {adj} supports and {adj} span for the {adj} bridge.',
         onSuccess: {
           narrative: '{actor}\'s {adj} oversight {verb}s the bridge {adj}. It {verb}s {adj} and {adj} strong.',
@@ -3278,6 +3439,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Testing',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must test the {adj} bridge against {adj} weights and {adj} storms.',
         onSuccess: {
           narrative: '{actor}\'s {adj} tests {verb} the bridge {adj}. It {verb}s {adj}, ready for {adj} travel.',
@@ -3306,6 +3468,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Consecration',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} must consecrate {adj} ground where {adj} expansion will {verb}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} ritual {verb}s the ground {adj}. The spirits {verb} {adj} approval.',
@@ -3321,6 +3484,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Raising',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must raise {adj} walls and {adj} pillars for the {adj} temple expansion.',
         onSuccess: {
           narrative: '{actor}\'s {adj} construction {verb}s the walls {adj}. {They} {verb} toward the {adj} sky.',
@@ -3337,6 +3501,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Sanctification',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must sanctify {adj} temple with {adj} presence and {adj} devotion.',
         onSuccess: {
           narrative: '{actor}\'s {adj} devotion {verb}s the temple {adj}. It {verb}s {adj}, a {adj} sacred space.',
@@ -3365,6 +3530,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Survey',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} must survey {adj} coastline to find {adj} location for {adj} harbor.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye finds {adj} perfect spot. The merchants {verb} in {adj} delight.',
@@ -3380,6 +3546,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Dredging',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must oversee {adj} dredging to deepen {adj} waters for {adj} ships.',
         onSuccess: {
           narrative: '{actor}\'s {adj} oversight {verb}s the waters {adj}. Ships can now {verb} safely through.',
@@ -3396,6 +3563,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Wharves',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must build {adj} wharves and {adj} docks for {adj} mercantile trade.',
         onSuccess: {
           narrative: '{actor}\'s {adj} wharves {verb} {adj} and {adj}. Trade {verb}s, {adj} and profitable.',
@@ -3427,6 +3595,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Gathering',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must gather {adj} companions for {adj} expedition into {adj} wilderness.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presence {verb}s {adj} companions. {They} are {adj} eager to follow.',
@@ -3442,6 +3611,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Navigation',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must navigate {adj} paths through {adj} terrain toward {adj} objective.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the group {adj}. {They} {verb} on the {adj} path.',
@@ -3458,6 +3628,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Triumph',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must lead {adj} companions through {adj} perils and {adj} challenges to {adj} victory.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the group {adj}. {They} {verb} {adj} and {adj} triumphant.',
@@ -3486,6 +3657,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Assembly',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must assemble {adj} council members to address {adj} disputes.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presence {verb}s the council. {They} gather {adj} and attentive.',
@@ -3501,6 +3673,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Hearing',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must hear {adj} grievances from {adj} factions seeking {adj} resolution.',
         onSuccess: {
           narrative: '{actor}\'s {adj} listening {verb}s the council {adj}. {They} find {adj} common ground.',
@@ -3517,6 +3690,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Judgment',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must render {adj} judgment that {verb}s {adj} and satisfies {adj} all.',
         onSuccess: {
           narrative: '{actor}\'s {adj} judgment {verb}s {adj}. All {verb} in {adj} acceptance.',
@@ -3545,6 +3719,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Organization',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must organize {adj} merchants and {adj} goods for {adj} caravan journey.',
         onSuccess: {
           narrative: '{actor}\'s {adj} organization {verb}s the merchants {adj}. {They} are {adj} ready.',
@@ -3560,6 +3735,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Route',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must chart {adj} route through {adj} lands to {adj} destinations.',
         onSuccess: {
           narrative: '{actor}\'s {adj} route {verb}s {adj} and {adj}. The caravan {verb}s safely.',
@@ -3576,6 +3752,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Profit',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must lead the caravan to {adj} markets and negotiate {adj} sales.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the caravan {adj}. Profits {verb}, {adj} and {adj} abundant.',
@@ -3604,6 +3781,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Coalition',
         reach: 'dominance',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must bring {adj} factions together against {adj} common threat.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presence {verb}s the factions {adj}. {They} see {adj} unity is {adj}.',
@@ -3619,6 +3797,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must negotiate {adj} terms that satisfy {adj} all factions.',
         onSuccess: {
           narrative: '{actor}\'s {adj} negotiation {verb}s the factions {adj}. {They} agree to united action.',
@@ -3635,6 +3814,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Victory',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must lead {adj} unified factions to {adj} victory against {adj} overwhelming odds.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the factions {adj}. {They} {verb} {adj} and triumphant.',
@@ -3663,6 +3843,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Discovery',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} discovers {adj} cavern that {verb}s with {adj} potential.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye sees the {adj} sanctuary within. {They} know this place {verb}s {adj}.',
@@ -3678,6 +3859,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Carving',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must carve {adj} chambers and {adj} halls from {adj} rock.',
         onSuccess: {
           narrative: '{actor}\'s {adj} carving {verb}s the chambers {adj}. {They} are {adj} and vast.',
@@ -3694,6 +3876,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Consecration',
         reach: 'veil',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must consecrate {adj} sanctuary as {adj} refuge from {adj} world.',
         onSuccess: {
           narrative: '{actor}\'s {adj} consecration {verb}s the sanctuary {adj}. It {verb}s {adj}, {adj} and safe.',
@@ -3722,6 +3905,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Acquisition',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} must acquire {adj} texts and {adj} scrolls for {adj} expanding library.',
         onSuccess: {
           narrative: '{actor}\'s {adj} gathering {verb}s {adj} knowledge. The texts {verb} {adj} and {adj} rare.',
@@ -3737,6 +3921,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Organization',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must organize {adj} knowledge into {adj} system for {adj} scholars.',
         onSuccess: {
           narrative: '{actor}\'s {adj} system {verb}s the scholars {adj}. {They} find knowledge {adj} and {adj} swift.',
@@ -3753,6 +3938,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Preservation',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must build {adj} archive and {adj} vaults to preserve {adj} knowledge.',
         onSuccess: {
           narrative: '{actor}\'s {adj} preservation {verb}s the knowledge {adj} and {adj} eternal. It {verb}s {adj} safe.',
@@ -3781,6 +3967,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Assembly',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} must assemble {adj} warband of {adj} fighters seeking {adj} purpose.',
         onSuccess: {
           narrative: '{actor}\'s {adj} presence {verb}s the fighters {adj}. {They} are {adj} eager.',
@@ -3796,6 +3983,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Discipline',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must train {adj} fighters in {adj} discipline and {adj} tactics.',
         onSuccess: {
           narrative: '{actor}\'s {adj} training {verb}s the fighters {adj}. {They} become {adj} and {adj} deadly.',
@@ -3812,6 +4000,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Campaign',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 5,
         narrative: '{actor} must lead {adj} warband on {adj} campaign against {adj} enemies.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the warband {adj}. {They} {verb} {adj} and {adj} victorious.',
@@ -3840,6 +4029,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Survey',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 5,
         narrative: '{actor} surveys {adj} frontier lands to find {adj} location for {adj} settlement.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye finds {adj} perfect spot. The land {verb}s {adj} and {adj} promising.',
@@ -3855,6 +4045,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Construction',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 7,
         narrative: '{actor} must oversee {adj} construction of {adj} buildings and {adj} fortifications.',
         onSuccess: {
           narrative: '{actor}\'s {adj} oversight {verb}s the settlement {adj}. It {verb}s {adj} and {adj} strong.',
@@ -3871,6 +4062,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Establishment',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 8,
         narrative: '{actor} must establish {adj} community bonds and {adj} governance to {verb} the settlement {adj}.',
         onSuccess: {
           narrative: '{actor}\'s {adj} leadership {verb}s the settlement {adj}. It {verb}s {adj}, {adj} and {adj} thriving.',
@@ -3905,6 +4097,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Opening Bid',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} squares off against a {adj} merchant in the market square. The first price named is a barb — too high by half, as any fool could see.',
         onSuccess: {
           narrative: '{actor} names a counter with {adj} precision. The merchant blinks, recalculates, and the dance begins in earnest.',
@@ -3920,6 +4113,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Pressure',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'Stalls around them fall quiet. {actor} must read the merchant\'s resolve — break it with words, or yield ground to save the deal.',
         onSuccess: {
           narrative: '{actor} finds the {adj} angle: a past debt, a future favour, a word that lands like a coin on stone. The merchant folds.',
@@ -3936,6 +4130,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Close',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'One price remains between profit and insult. {actor} must close the gap without breaking what goodwill remains.',
         onSuccess: {
           narrative: 'Hands clasp. The deal is struck at {actor}\'s terms — not all of them, but enough. Both walk away {adj} richer for the sparring.',
@@ -3965,6 +4160,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Celebration',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The whole settlement floods the market square. Banners fly, prices drop, and strangers share tables. {actor} moves through the {adj} crowd, coin and conversation flowing freely.',
         onSuccess: {
           narrative: '{actor} works the festival {adj}ly — a word here, a purchase there. By dusk, new faces have become familiar ones.',
@@ -3980,6 +4176,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Connections',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'As the fires are lit and the crowd thins, {actor} has a chance to {verb} on the acquaintances the day has made — follow up, leave a mark, or let the moment pass.',
         onSuccess: {
           narrative: '{actor} {verb}s the right words at the right moment. A stranger becomes a contact; a contact becomes something more.',
@@ -4011,6 +4208,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Survey',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: '{actor} descends into the shaft where a seam of ore {verb}s deep in the {adj} rock, far richer than the ledgers suggest.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye reads the stone correctly — the vein is real, running {adj} and wide. The foreman scratches his beard in {adj} disbelief.',
@@ -4026,6 +4224,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Extraction',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: '{actor} must fund and organise the {adj} extraction effort before word spreads and rivals move in.',
         onSuccess: {
           narrative: '{actor}\'s {adj} organisation holds. Carts of ore roll out, and the settlement\'s resources swell.',
@@ -4042,6 +4241,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Risk',
         reach: 'stone',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
         narrative: 'The shaft groans. {actor} must decide — press on into the {adj} unstable seam, or pull back and lose the haul.',
         onSuccess: {
           narrative: '{actor} reads the rock\'s {adj} warning and braces the shaft in time. The ore comes out, and everyone comes out with it.',
@@ -4071,6 +4271,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Grievance',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: 'The miners have downed tools. A {adj} foreman presents their list of grievances to {actor}, whose {adj} authority over the mine is now on trial.',
         onSuccess: {
           narrative: '{actor} listens without flinching. The miners\'s litany is {adj} — some of it fair, some of it {adj} embellishment. {actor} separates the two.',
@@ -4086,6 +4287,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Resolution',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: '{actor} must choose: pay the miners fairly and accept the cost, or squeeze them and risk a harder fight later.',
         onSuccess: {
           narrative: '{actor} offers {adj} terms — not generous, but {adj} honest. The tools go back to work. Word spreads that {actor} is fair.',
@@ -4117,6 +4319,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Appraisal',
         reach: 'eye',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'A foreign vessel has docked. The {adj} captain spreads exotic wares across the quay, and {actor} must determine what is genuinely rare and what is {adj} dockside theatre.',
         onSuccess: {
           narrative: '{actor}\'s {adj} eye cuts through the {adj} display. Two items are genuine; the rest is clever staging. {actor} knows which is which.',
@@ -4132,6 +4335,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Negotiation',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'The captain\'s price is {adj}. {actor} must negotiate across a language barrier and a {adj} cultural gulf.',
         onSuccess: {
           narrative: '{actor} bridges the {adj} gap with {adj} gold and a trader\'s instinct. The goods change hands at {adj} fair terms.',
@@ -4161,6 +4365,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Warning',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'Sails on the horizon, wrong colours. {actor} has minutes to rally the harbor guards and coordinate a {adj} defence before the raiders make land.',
         onSuccess: {
           narrative: '{actor}\'s {adj} organisation pays off — harbor chains drawn, archers in position. The raiders {verb} the {adj} wall of readiness.',
@@ -4176,6 +4381,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Repel',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: 'Raiders pour across the gangplanks. {actor} is in the thick of it — defend the cargo sheds or let them burn.',
         onSuccess: {
           narrative: '{actor} holds the line with {adj} resolve. The raiders {verb}, taking too many losses for the prize. They pull back.',
@@ -4192,6 +4398,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Aftermath',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The raiders are rallying for a second push. {actor} must lead the counterattack before they regroup.',
         onSuccess: {
           narrative: '{actor} drives them into the water with {adj} fury. The harbor will not be struck again this season.',
@@ -4223,6 +4430,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Proposal',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'Across a {adj} ledger, a choice. {actor} can extend a loan to a desperate borrower — terms to be set, risk to be weighed. No sword needed. Only judgment.',
         onSuccess: {
           narrative: '{actor} draws up {adj} terms: fair interest, a {adj} schedule, and a clause that protects both parties. The borrower considers.',
@@ -4238,6 +4446,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Binding',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
         narrative: '{actor} must read the borrower\'s true intent before ink touches parchment. A {adj} lender and a {adj} debtor — the agreement must hold both.',
         onSuccess: {
           narrative: 'The agreement is struck. Both parties sign with {adj} purpose, and the debt is recorded as what it is: a {adj} obligation freely made.',
@@ -4267,6 +4476,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Demand',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'The agreement is past due. {actor} presents the ledger to the debtor, who {verb}s a {adj} excuse and {adj} stalling. Every word is a delay.',
         onSuccess: {
           narrative: '{actor} lays out the terms without {adj} apology. The debtor {verb}s under the {adj} clarity and begins to negotiate in good faith.',
@@ -4282,6 +4492,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Enforcement',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'Words have failed. {actor} must enforce the agreement — not with violence, but with the {adj} authority of consequence.',
         onSuccess: {
           narrative: '{actor}\'s {adj} resolve closes the matter. Payment arrives, and the agreement is honoured, if {adj}ly.',
@@ -4313,6 +4524,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Contact',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} follows {adj} directions to a {adj} room that smells of tallow and secrets. The broker is there. So, perhaps, is a watcher.',
         onSuccess: {
           narrative: '{actor} arrives {adj}ly, reads the room, and signals in the right way. The broker {verb}s the goods out from under the table.',
@@ -4328,6 +4540,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Purchase',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: 'The goods are real. The risk is real. {actor} must buy quickly, pay without haggling, and leave before the situation {verb}s complicated.',
         onSuccess: {
           narrative: '{actor} completes the exchange with {adj} economy of movement. No names. No receipts. The goods are worth the {adj} risk.',
@@ -4357,6 +4570,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Transaction',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} has goods that cannot be sold honestly. The fence names a price — {adj}, naturally. {actor} must take it, or try {their} luck elsewhere in this {adj} quarter.',
         onSuccess: {
           narrative: 'The exchange is made in {adj} silence. {actor} walks out lighter and richer, no record left behind.',
@@ -4372,6 +4586,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Clean Exit',
         reach: 'shadow',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
         narrative: 'Coin in hand, {actor} must leave the {adj} quarter without attracting the wrong kind of interest. The streets here {verb} with {adj} memory.',
         onSuccess: {
           narrative: '{actor} {verb}s {adj}ly through the {adj} alleys and back into the light. No footprints. No witnesses.',
@@ -4403,6 +4618,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Control',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 2,
         narrative: '{actor} holds the only crossing for a day\'s ride. Merchants must pass or go around. The toll — how much is {adj} enough? How much is {adj} too much?',
         onSuccess: {
           narrative: '{actor} sets a {adj} toll that merchants can bear without real complaint. Coin flows. Nobody loses a day.',
@@ -4418,6 +4634,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Reputation',
         reach: 'heart',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 4,
         narrative: 'Word of the toll {verb}s up and down the road. {actor} has a chance to shape what is said: {adj} fair tax, or {adj} bandit with a gate.',
         onSuccess: {
           narrative: 'Caravans speak of {actor}\'s toll as {adj} reasonable — expensive but {adj} honest. The road stays open and the coin keeps flowing.',
@@ -4447,6 +4664,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Contract',
         reach: 'gold',
         difficulty: DIFFICULTY_BASE,
+        duration: 1,
         narrative: 'A merchant needs {adj} swords for a {adj} route known to attract attention. {actor} negotiates the rate and terms before the caravan leaves.',
         onSuccess: {
           narrative: '{actor} agrees {adj} terms: fair pay, clear expectations, and a bonus if the goods arrive {adj} intact. The merchant {verb}s with relief.',
@@ -4462,6 +4680,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Escort',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
         narrative: 'Three days on the road. On the second, riders {verb} on the horizon. {actor} must position the guards and read whether this is {adj} threat or {adj} coincidence.',
         onSuccess: {
           narrative: '{actor}\'s {adj} positioning {verb}s. The riders veer off, unwilling to test a {adj} prepared escort. The caravan arrives {adj} whole.',
@@ -4478,6 +4697,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         name: 'The Delivery',
         reach: 'iron',
         difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
         narrative: 'The road\'s last stretch is the {adj} hardest. Rumour of a second ambush {verb}s the merchants\' nerves. {actor} must hold the guard together.',
         onSuccess: {
           narrative: '{actor}\'s {adj} steadiness {verb} through to the gates. The bonus is paid; the merchant {verb}s a name worth remembering.',

@@ -59,6 +59,22 @@ export const SPHERE_OPPOSITES: Record<SphereName, SphereName | null> = {
   entropy: 'life',
 };
 
+/**
+ * Sphere opposition lookup — symmetric pairs for resolution modifier pipeline.
+ * Used by encounter resolution to compute sphere alignment bonus/penalty.
+ * Guaranteed non-null for all 8 creation spheres.
+ */
+export const SPHERE_OPPOSITIONS: Record<SphereName, SphereName> = {
+  force: 'energy',
+  matter: 'spirit',
+  energy: 'force',
+  life: 'entropy',
+  mind: 'time',
+  spirit: 'matter',
+  time: 'mind',
+  entropy: 'life',
+};
+
 export const COSMOLOGY_PRESETS: Record<string, CosmologyProfile> = {
   balanced: {
     force: 0.125,

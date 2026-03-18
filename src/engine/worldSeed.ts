@@ -456,7 +456,11 @@ export function seedWorld(
         source: id,
         target: factionId,
         type: 'member_of',
-        properties: { role: 'member' },
+        properties: {
+          role: 'member',
+          rank: 0.3,       // Default rank for seeded members (Phase 0f)
+          joinedTick: 0,    // World creation tick
+        },
       });
     }
 
@@ -596,6 +600,7 @@ export function seedWorld(
             sentiment,
             strength: 0.3 + rng() * 0.5,
             basis: sentiment > 0 ? 'friendship' : 'rivalry',
+            trust: sentiment * 0.5, // Initialize trust from sentiment (Phase 0e)
           },
         });
       }
