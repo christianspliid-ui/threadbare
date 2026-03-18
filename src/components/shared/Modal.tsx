@@ -1,6 +1,5 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimateMount } from './AnimateMount';
 import { IconButton } from './IconButton';
 
 interface ModalProps {
@@ -11,7 +10,19 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
+/**
+ * Modal — portal-based dialog.
+ *
+ * Does NOT use AnimateMount because the wrapper div it creates breaks
+ * `position: fixed` when animation keyframes use `transform` (creates
+ * a new containing block). Instead, the backdrop div handles its own
+ * mount/unmount lifecycle and applies animation classes directly.
+ */
 function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', children }: ModalProps) {
+  const [shouldRender, setShouldRender] = useState(open);
+  const [animClass, setAnimClass] = useState('');
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -25,14 +36,38 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     return () => document.removeEventListener('keydown', handleEscape);
   }, [open, handleEscape]);
 
+  // Mount/unmount with animation — inline to avoid AnimateMount wrapper div
+  useEffect(() => {
+    if (timeoutRef.current !== null) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    if (open) {
+      setShouldRender(true);
+      requestAnimationFrame(() => setAnimClass(`${animation}-enter`));
+    } else if (shouldRender) {
+      setAnimClass(`${animation}-exit`);
+      timeoutRef.current = setTimeout(() => {
+        setShouldRender(false);
+        setAnimClass('');
+      }, 200);
+    }
+    return () => {
+      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
+    };
+  }, [open, animation, shouldRender]);
+
+  if (!shouldRender) return null;
+
   const backdrop: React.CSSProperties = {
     position: 'fixed',
     inset: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     zIndex: 60,
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
+    paddingTop: '5vh',
   };
 
   const panel: React.CSSProperties = {
@@ -42,24 +77,23 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
     maxWidth: `${maxWidth}px`,
     width: '90%',
-    maxHeight: '85vh',
+    maxHeight: '75vh',
     display: 'flex',
     flexDirection: 'column',
   };
 
   return createPortal(
-    <AnimateMount show={open} animation={animation}>
-      <div
-        style={backdrop}
-        onClick={onClose}
-        role="dialog"
-        aria-modal="true"
-      >
-        <div style={panel} onClick={(e) => e.stopPropagation()}>
-          {children}
-        </div>
+    <div
+      className={animClass}
+      style={backdrop}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div style={panel} onClick={(e) => e.stopPropagation()}>
+        {children}
       </div>
-    </AnimateMount>,
+    </div>,
     document.body,
   );
 }
