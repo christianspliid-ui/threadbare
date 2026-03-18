@@ -80,7 +80,7 @@ export function phaseAgentDecision(
       if (locEdges.length > 0) locationId = locEdges[0].target;
       else if (outContains.length > 0) locationId = outContains[0].target;
 
-      if (!locationId) continue; // no location, skip
+      if (!locationId) continue;
 
       // Run filter pipeline
       const { candidates } = runFilterPipeline(

@@ -51,7 +51,7 @@ export const MINIMUM_DESIRE = 0.1;
 export const GROWTH_REWARD_WEIGHT = 0.4;
 
 /** Below this finalScore, the agent idles instead of acting */
-export const IDLE_SCORE_THRESHOLD = 0.05;
+export const IDLE_SCORE_THRESHOLD = 0.001;
 
 /** Flat boost when an active ambition's reach matches the encounter's primary reach */
 export const AMBITION_REACH_BOOST = 0.2;
@@ -95,7 +95,10 @@ export function estimateStepProbability(
   difficulty: number,
   modifierTotal?: number,
 ): number {
-  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + 0.5;
+  // Base 0.6 offset ensures agents with moderate capability (~0.2) have ~45% per step,
+  // making 3-step encounters viable (~0.09 chain). The old +0.5 made chain probabilities
+  // too low for agents to ever score above IDLE_SCORE_THRESHOLD.
+  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + 0.6;
   return Math.max(0.05, Math.min(0.95, raw));
 }
 
@@ -332,6 +335,7 @@ export function scoreAndSelect(
 
   const top5 = scored.slice(0, 5);
   const best = scored[0];
+
   const selected = best.finalScore >= IDLE_SCORE_THRESHOLD ? best : null;
 
   return {
