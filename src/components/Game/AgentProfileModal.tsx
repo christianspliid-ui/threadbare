@@ -200,11 +200,14 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
       {/* Header Zone */}
       <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex gap-4 mb-3">
-          {/* Portrait */}
+          {/* Portrait — 3:4 aspect ratio matching source images */}
           <div
             data-testid="portrait-silhouette"
-            className="w-20 h-24 rounded overflow-hidden flex-shrink-0"
+            className="rounded overflow-hidden flex-shrink-0"
             style={{
+              width: '120px',
+              minWidth: '120px',
+              height: '160px',
               background:
                 card.knowledgeLevel === 'stranger'
                   ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
