@@ -11,13 +11,12 @@
 4. **Social Fabric & Faction Formation** (`Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`) — Social encounter templates (CRUD applied to agents), graph-walked reputation (Shadow distortion + Heart resistance + faction rank credibility), trust as separate edge property, faction formation as agent-initiated encounter, social awareness with bond-bypass.
 5. **Social Fabric Visibility Spec** (`Docs/plans/2026-03-18-social-fabric-visibility-spec.md`) — Player layer (knowledge-gated relationships, chronicle social events, 8 social notification types, map faction presence) + Dev layer (relationship graph, reputation walk inspector, decision breakdown, faction inspector, 5 map overlays, constants tuning panel).
 
-**Implementation prerequisites** (content authoring, can be handed to Claude Code):
-- Step tick duration backfill on 64 encounter templates (Priority: High)
-- ~~Axiological vocabulary alignment~~ — ✅ Done (encounter motivations migrated to canonical pairs)
+**Phase 0 prerequisites:** ✅ Complete (2026-03-18) — step duration backfill (220 steps), EncounterStep.duration/EncounterTemplate.remoteAttempt/EncounterProgress.occupiedUntilTick types, SPHERE_OPPOSITIONS lookup, RelatesToEdgeProperties with trust, MemberOfEdgeProperties with rank/joinedTick, faction reachPreferences, findAllPaths graph utility.
+
+**Remaining implementation prerequisites:**
+- ~~Axiological vocabulary alignment~~ — ✅ Done
 - Attachment `reachBonus` and trait `resolutionBonus` backfill (Priority: Medium)
-- Sphere opposition table creation (Priority: High)
-- 14 social encounter templates authoring (Priority: High — blocks social fabric)
-- Shortest-path utility for reputation walks (Priority: Medium)
+- 14 social encounter templates authoring (Priority: High — blocks Phase 4)
 - Deprecated global `reputationScore` migration (Priority: Medium)
 
 **Previous focus:** Hex Actions & Control Mechanic (design phase). Design docs: `Docs/plans/2026-03-17-generalized-action-targeting-design.md`, `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`, `brainstorm-hex-actions-and-control-mechanic.md`. Previous milestone: PROD-01 Vertical Slice Contract complete.

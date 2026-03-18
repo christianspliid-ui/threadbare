@@ -66,8 +66,52 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - Agent Ambition System: ✅ Complete — two-filter selection pipeline (eligibility + desirability scoring), graph-native lifecycle (ambition nodes + pursues edges), 9 GraphCondition types with separated evaluator module, milestone/completion/abandonment evaluation, tick-driven progress checking (every 15 ticks) + empty slot re-evaluation (every 25 ticks), deterministic PRNG scoring, 3 ambition templates. 7 new files (graphConditions.ts, ambitionSelection.ts, ambitionLifecycle.ts, ambitionAssignment.ts, ambitionTick.ts, ambition-templates.ts, ambition.ts types), 36 ambition tests across 5 test files
 
+- Agent Behavior Phase 0 Prerequisites: ✅ Complete (2026-03-18) — 9 tasks preparing for unified decision pipeline. Type extensions: EncounterStep.duration (tick cost per step), EncounterTemplate.remoteAttempt (faction-scale encounters), EncounterProgress.occupiedUntilTick (multi-tick occupation). Data: SPHERE_OPPOSITIONS lookup (8 symmetric pairs), duration backfill on 220 encounter steps (quick=1, multi-day=3-5, siege=5-10). Social infrastructure: RelatesToEdgeProperties with trust field (init from sentiment×0.5), MemberOfEdgeProperties with rank+joinedTick, faction reachPreferences (normalized from domainCapabilities). Graph utility: findAllPaths bounded DFS (max hops + 100-node safety cap) for reputation walks. 11 new tests. Unblocks Phase 1 (encounter cache + decision pipeline).
+
 - Tiered Backstory Generation (all 5 phases): ✅ Complete (2026-03-17) — Graph-walking backstory with four strata (What They Say / What They Lived / What They Hide / What They Are) unlocked by Influence Tier. Phase 1: types, content tables (200+ prose templates), revelation notification type. Phase 2: 10 backstory resolvers across 4 strata. Phase 3: generateTieredBackstory() generator with isNew tracking (stratum.tier > readBackstoryTier). Phase 4: phaseInfluenceTierPromotion (Phase 6.64) orchestrator wiring + backstory_unlock TickEvent. Phase 5: AgentProfileModal "Their Story" section (sphere-colored titles, ✦ New badge 3s fade, locked placeholders, auto-scroll), BackstoryTeaser in AgentInfoCard (one-sentence teaser, Read more→), revelation 📖 icon in AlertBar, readBackstoryTier tracking on worships edge. Key files: src/engine/backstoryGenerator.ts, src/engine/backstoryResolvers.ts, src/engine/agentDetail.ts, src/components/Game/AgentProfileModal.tsx, src/components/Game/AgentInfoCard.tsx. Design doc: Docs/plans/2026-03-17-tiered-backstory-generation-design.md. ~21 new tests.
 
-- Current phase: **Agent Ambition System complete** — check Notion backlog for next priority
-- Engine stats: ~252 modules, ~53,000+ lines, ~2,790+ engine/data tests across 302+ test files
-- Content stats: 244 graph nodes, 371 typed edges, 18 categories (+ sublocation category with 7 sublocation types), 203 generated Obsidian vault notes, 19 content packages (action-template-content.ts = 36 enriched templates, encounter-content.ts = 3,844 lines / 64 templates, archetype-content.ts fully enriched, culture-content.ts = 1,789+ lines / 591+ tests, prose-layer-content.ts = ~413 lines / 34 tests, opposition-content.ts = 112 lines / 22 tests, ui-content.ts = 11 tooltip entries, agenda-content.ts = 40 templates, agenda-consequence-templates.ts = 240 templates, terrain-modifiers.ts + trait-modifiers.ts, starter-attachments.ts = 8 possessions + 4 conditions, ambition-templates.ts = 3 templates), 12 mandate JSON files + 8 doom JSON files (loaders with 31 tests), 975+ data tests across 24 content test files
+- Hex Detail Chronicle Redesign: ✅ Complete (2026-03-15/16) — Replaced three-panel hex detail layout (HexFlavorPanel | HexZoomView | HexPoiPanel) with two-panel narrative design. HexChronicle: scrollable four-layer view (The Land, The Soul, The People, The Ruins) with staggered fade-in animations, epitaph formatting, exploration hooks. HexSidebar: collapsible left panel with sphere influence bars, region info, hex minimap. Engine: getHexRegionData() for region + historical culture queries. Prose: historicalCultureResolver + regionEtymologyResolver. Inline components: LocationCard, SoulCard, EventBlock, ExplorationHook, AgentEntry, SubLocationEntry. Exceeded design scope by including resource integration early. 12 tasks, ~10 commits. Design doc: Docs/plans/2026-03-15-hex-detail-chronicle-redesign.md
+
+- Resources System: ✅ Complete (2026-03-16) — Location-based resource system with 8 resource types (timber, stone, ore, water, fish, grazing, grain, peat), terrain-based seeding (42 terrains mapped), cosmology sphere bonuses, PRNG quantity variation. resourcesResolver at priority 65 generates abundance-aware prose. HexChronicle Land layer shows resource pills with emoji + abundance labels. Resources feed into phaseProsperity (base income from renewal rates) and economic trait system. 6 tasks, 28 tests across 3 test files. Design doc: Docs/plans/2026-03-16-resources-system-design.md
+
+- Region Labels on Hex Map: ✅ Complete (2026-03-16) — SVG text labels at region centroids inside zoom-transformed group. Zoom-driven opacity (fade 2.5–3.5 scale range). Fog-of-war filtering (centroid proxy). Cartographic styling: Georgia serif, wide letter-spacing, uppercase, muted warm tone, SVG halo filter. RegionLabels.tsx component + HexMap integration + 7 tests. Design doc: Docs/plans/2026-03-16-region-labels-on-hex-map-design.md
+
+- Notification Visibility Filter: ✅ Complete (2026-03-16) — Design doc: Docs/plans/2026-03-16-notification-visibility-filter-design.md
+
+- Agent Portrait System: ✅ Complete (2026-03-17) — Archetype-based portrait registry (19 archetypes, 3 initial portraits). portraitUrl field on AgentDetail/AgentInfoCardData/AgentFullProfileData. Knowledge-gated: strangers see gradient silhouette. 11 tests
+
+- Intent Visibility: ✅ Complete (2026-03-17) — Agent ambitions surface in AgentProfileModal, AgentDetailPanel sidebar, AgentInfoCard. Notification tap-through with actorId. ambition_abandoned promoted to alert/dilemma. 5 test files. Design doc: Docs/plans/2026-03-17-intent-visibility.md
+
+- Topbar Redesign: ✅ Complete (2026-03-17) — Stellaris-style resource bar overhaul across 6 phases. Phase 1: useTopBarHotkeys (Space/+/-/./`). Phase 2: SimulationControls compact mode (◀ N× ▶ buttons replacing slider). Phase 3: EssencePanel resource chips (icon + value + income rate via computeEssenceIncome). Phase 4: IdentityChip (avatar name + archetype, sphere accent, clickable). Phase 5: DoomBar glyph, RivalsButton badge, debug gear icon. Phase 6: gold divider + polish. New files: useTopBarHotkeys.ts, essenceIncome.ts, IdentityChip.tsx. Design doc: Docs/plans/2026-03-17-topbar-redesign.md
+
+- UI Primitives Library: ✅ Complete (2026-03-17) — 7 shared components (SectionHeading, Button, IconButton, ListRow, Card, Modal, Dropdown), 73 tests. Spec: Docs/design-system/primitives.md
+
+- UI Primitive Adoption Sweep: ✅ Complete (2026-03-17) — 17+ raw section headings replaced with SectionHeading across AgentProfileModal, LocationView, IntentSection, RetinuePanel. ActionDrawer close button → IconButton. Net -143 lines
+
+- Generalized Action Targeting: ✅ Complete (2026-03-17) — ActionDrawer target-agnostic. TargetContext universal descriptor, 6-step filter cascade, 6 targetContextBuilders, useTargetActions hook, 11 new action templates. Design doc: Docs/plans/2026-03-17-generalized-action-targeting-design.md
+
+- Mutable World State + Hex Actions: ✅ Complete (2026-03-17) — Per-hex divineInfluence/corruption, phaseHexState/phaseUnrest/phaseMagicalSaturation, hexActionBridge, relative GraphOp delta syntax, 4 hex action templates. 39 tests. Design doc: Docs/plans/2026-03-17-world-state-and-hex-actions-design.md
+
+- Gold Reach Economic Systems (Phases 1–4): ✅ Complete (2026-03-17) — Trade routes, prosperity, guilds, monopolies, wealth-spending crossover actions, settlement promotion/demotion, economic AI wealth gates. 44 action templates. Design doc: Docs/plans/2026-03-17-gold-reach-economic-systems-design.md
+
+- Economic Trait System: ✅ Complete (2026-03-17) — 8 economic traits with domain contributions, auto-clear conditions, 52 tests
+
+- Trade Route Prose Resolver: ✅ Complete (2026-03-17) — Volume tier + goods color + status modifier + crossroads prose. 22 tests
+
+- Wealth Resolver: ✅ Complete (2026-03-17) — 5 wealth tiers, new 'economic' ProseCategory, priority 65
+
+- Economic Chronicle System: ✅ Complete (2026-03-17) — 48 templates across 12 economic trigger types, permanent chronicle entries, 27 tests
+
+- Responsive Design System: ✅ Complete (2026-03-17) — CSS media queries for 4 breakpoints (1280/1920/2560/3440px)
+
+- Backstory Content Fixes 1–3: ✅ Complete (2026-03-17) — ~425 total backstory templates, all Stratum tables at 4 entries per key
+
+- Organic Movement Trails: ✅ Complete (2026-03-17) — Quadratic bezier paths with perpendicular wobble, waypoint dots, tapered opacity
+
+- Attachment Detail Card: ✅ Complete (2026-03-18) — 8-task TDD. Glyph lookup (20+ subcategories), compact inline rows, EntityCard-based detail view, knowledge-gated. ~51 tests. Design doc: Docs/plans/2026-03-16-attachment-detail-card-design.md
+
+- UI Primitive Migration: ✅ Complete (2026-03-18) — EventPopup/AgentProfileModal to Modal primitive, buttons migrated across 10 files. Phases 3–4 skipped (specialized components). Design doc: Docs/plans/2026-03-18-ui-primitive-migration-plan.md
+
+- Current phase: **Agent Decision System & Connected Designs** (design complete, pending implementation)
+- Engine stats: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
+- Content stats: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
