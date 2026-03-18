@@ -16,6 +16,7 @@ import type { HexRegionData } from '../../engine/hexRegion';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getHexTileUrl } from '../../data/hex-tile-assets';
 import { hexPolygonPoints } from '../../lib/hexMath';
+import { IconButton } from '../shared/IconButton';
 
 export interface HexSidebarProps {
   terrain: TerrainType;
@@ -88,29 +89,14 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
       }}
     >
       {/* Toggle Button */}
-      <button
+      <IconButton
+        icon={<span>{isExpanded ? '◀' : '▶'}</span>}
+        size="sm"
         onClick={() => setIsExpanded(!isExpanded)}
         aria-label="Toggle sidebar"
         aria-expanded={isExpanded}
-        style={{
-          background: 'transparent',
-          border: '1px solid var(--border-subtle)',
-          color: 'var(--text-secondary)',
-          cursor: 'pointer',
-          padding: '6px 4px',
-          fontSize: '12px',
-          transition: 'color 0.2s',
-          alignSelf: 'flex-start',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.color = 'var(--text-primary)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.color = 'var(--text-secondary)';
-        }}
-      >
-        {isExpanded ? '◀' : '▶'}
-      </button>
+        style={{ alignSelf: 'flex-start' }}
+      />
 
       {isExpanded ? (
         <>

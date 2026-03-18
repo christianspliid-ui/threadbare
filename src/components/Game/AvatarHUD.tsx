@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Tooltip } from '../shared/Tooltip';
+import { Button } from '../shared/Button';
 
 interface AvatarHUDProps {
   avatarName?: string;
@@ -11,22 +12,6 @@ interface AvatarHUDProps {
   onZoomToLocation?: () => void;
   moveMode?: boolean;
 }
-
-// Base style for all buttons
-const BUTTON_BASE_STYLE = {
-  padding: 'var(--space-2) var(--space-3)',
-  fontSize: 'var(--text-xs)',
-  fontWeight: 'bold',
-  border: 'none',
-  cursor: 'pointer',
-  backgroundColor: 'rgba(var(--bg-abyss-rgb), 0.6)',
-  color: 'var(--accent-gold)',
-  borderRadius: '0.25rem',
-  transition: 'all 0.2s ease-out',
-  fontFamily: 'var(--font-display)',
-  textTransform: 'uppercase' as const,
-  letterSpacing: '0.05em',
-} as const;
 
 // Container background and border style — using CSS var with fallback
 const CONTAINER_STYLE = {
@@ -49,12 +34,6 @@ const BUTTONS_ROW_STYLE = {
   gap: 'var(--space-2)',
 };
 
-// Other button style (Wheel, Scry)
-const OTHER_BUTTON_STYLE = {
-  ...BUTTON_BASE_STYLE,
-  opacity: 0.7,
-};
-
 export function AvatarHUD({
   sphereColor,
   onMoveClick,
@@ -62,13 +41,12 @@ export function AvatarHUD({
   onScryClick,
   moveMode = false,
 }: AvatarHUDProps) {
-  const moveButtonStyle = useMemo(
-    () => ({
-      ...BUTTON_BASE_STYLE,
-      opacity: moveMode ? 1 : 0.6,
-      backgroundColor: moveMode ? `${sphereColor}40` : 'rgba(10, 10, 14, 0.6)',
-      borderLeft: moveMode ? `2px solid ${sphereColor}` : 'none',
-    }),
+  const moveStyle = useMemo(
+    () => moveMode ? {
+      opacity: 1,
+      backgroundColor: `${sphereColor}40`,
+      borderLeft: `2px solid ${sphereColor}`,
+    } : undefined,
     [moveMode, sphereColor]
   );
 
@@ -77,19 +55,19 @@ export function AvatarHUD({
       {/* Action Buttons Row */}
       <div style={BUTTONS_ROW_STYLE}>
         <Tooltip id="ui.avatar_move">
-          <button onClick={onMoveClick} style={moveButtonStyle}>
+          <Button variant="ghost" size="sm" onClick={onMoveClick} style={moveStyle}>
             Move
-          </button>
+          </Button>
         </Tooltip>
         <Tooltip id="ui.avatar_actions">
-          <button onClick={onWheelClick} style={OTHER_BUTTON_STYLE}>
+          <Button variant="ghost" size="sm" onClick={onWheelClick} style={{ opacity: 0.7 }}>
             Actions
-          </button>
+          </Button>
         </Tooltip>
         <Tooltip id="ui.avatar_scry">
-          <button onClick={onScryClick} style={OTHER_BUTTON_STYLE}>
+          <Button variant="ghost" size="sm" onClick={onScryClick} style={{ opacity: 0.7 }}>
             Investiture
-          </button>
+          </Button>
         </Tooltip>
       </div>
     </div>

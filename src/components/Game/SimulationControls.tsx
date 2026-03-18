@@ -1,4 +1,6 @@
 import { Tooltip } from '../shared/Tooltip';
+import { Button } from '../shared/Button';
+import { IconButton } from '../shared/IconButton';
 
 interface SimulationControlsProps {
   tick: number;
@@ -53,32 +55,25 @@ export function SimulationControls({
 
           {/* Play/Pause */}
           <Tooltip id="ui.sim_play_pause">
-            <button
+            <IconButton
+              icon={<span>{running ? '⏸' : '⏵'}</span>}
+              size="sm"
+              active={running}
               onClick={onToggle}
-              className="px-2 py-0.5 rounded font-semibold transition-all duration-200"
-              style={{
-                fontSize: 'var(--text-sm)',
-                background: running ? 'var(--accent-gold)' : 'var(--bg-raised)',
-                color: running ? 'var(--bg-abyss)' : 'var(--text-primary)',
-                border: '1px solid var(--border-subtle)',
-                boxShadow: running ? '0 0 8px var(--accent-gold-dim)' : 'none',
-              }}
-            >
-              {running ? '⏸' : '⏵'}
-            </button>
+              aria-label={running ? 'Pause simulation' : 'Play simulation'}
+            />
           </Tooltip>
 
           {/* Speed ◀ N× ▶ */}
           <Tooltip id="ui.sim_speed">
             <div className="flex items-center gap-1">
-              <button
+              <IconButton
+                icon={<span>◀</span>}
+                size="sm"
                 onClick={speedDown}
                 disabled={speed === SPEED_STEPS[0]}
-                className="px-1.5 py-0.5 rounded transition-colors disabled:opacity-30"
-                style={{ fontSize: 'var(--text-xs)', background: 'var(--bg-raised)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
-              >
-                ◀
-              </button>
+                aria-label="Decrease speed"
+              />
               <span
                 className="font-mono text-center"
                 style={{
@@ -89,14 +84,13 @@ export function SimulationControls({
               >
                 {speed}×
               </span>
-              <button
+              <IconButton
+                icon={<span>▶</span>}
+                size="sm"
                 onClick={speedUp}
                 disabled={speed === SPEED_STEPS[SPEED_STEPS.length - 1]}
-                className="px-1.5 py-0.5 rounded transition-colors disabled:opacity-30"
-                style={{ fontSize: 'var(--text-xs)', background: 'var(--bg-raised)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}
-              >
-                ▶
-              </button>
+                aria-label="Increase speed"
+              />
             </div>
           </Tooltip>
         </div>
@@ -130,26 +124,21 @@ export function SimulationControls({
       {/* Controls */}
       <div className="flex items-center gap-2">
         <Tooltip id="ui.sim_play_pause">
-          <button
+          <Button
+            variant={running ? 'primary' : 'secondary'}
+            fullWidth
             onClick={onToggle}
-            className="flex-1 py-2 rounded-lg font-semibold transition-colors"
-            style={{
-              fontSize: 'var(--text-sm)',
-              background: running ? 'var(--accent-gold)' : 'var(--bg-raised)',
-              color: running ? 'var(--bg-abyss)' : 'var(--text-primary)',
-            }}
           >
             {running ? '⏸ Pause' : '▶ Play'}
-          </button>
+          </Button>
         </Tooltip>
-        <button
+        <Button
+          variant="secondary"
           onClick={onStep}
           disabled={running}
-          className="px-4 py-2 rounded-lg font-semibold transition-colors disabled:opacity-30"
-          style={{ fontSize: 'var(--text-sm)', background: 'var(--bg-raised)', color: 'var(--text-primary)' }}
         >
           ⏭ Step
-        </button>
+        </Button>
       </div>
 
       {/* Speed */}
@@ -157,23 +146,21 @@ export function SimulationControls({
         <div className="flex items-center gap-3">
           <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>Speed</span>
           <div className="flex items-center gap-2 flex-1">
-            <button
+            <IconButton
+              icon={<span>◀</span>}
+              size="sm"
               onClick={speedDown}
               disabled={speed === SPEED_STEPS[0]}
-              className="px-2 py-1 rounded transition-colors disabled:opacity-30"
-              style={{ fontSize: 'var(--text-xs)', background: 'var(--bg-raised)', color: 'var(--text-secondary)' }}
-            >
-              ◀
-            </button>
+              aria-label="Decrease speed"
+            />
             <span className="flex-1 text-center font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>{speed}×</span>
-            <button
+            <IconButton
+              icon={<span>▶</span>}
+              size="sm"
               onClick={speedUp}
               disabled={speed === SPEED_STEPS[SPEED_STEPS.length - 1]}
-              className="px-2 py-1 rounded transition-colors disabled:opacity-30"
-              style={{ fontSize: 'var(--text-xs)', background: 'var(--bg-raised)', color: 'var(--text-secondary)' }}
-            >
-              ▶
-            </button>
+              aria-label="Increase speed"
+            />
           </div>
         </div>
       </Tooltip>

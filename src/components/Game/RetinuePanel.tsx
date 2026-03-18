@@ -2,6 +2,7 @@ import React from 'react';
 import type { RetinueAgent } from '../../engine/retinue';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
+import { IconButton } from '../shared/IconButton';
 
 interface RetinuePanelProps {
   agents: RetinueAgent[];
@@ -101,15 +102,14 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 <div className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
                   <span className="truncate">{agent.locationName}</span>
                   {onZoomToLocation && (
-                    <button
+                    <IconButton
+                      icon={<span>&#x1F441;</span>}
+                      size="sm"
                       onClick={(e) => { e.stopPropagation(); onZoomToLocation(agent.locationId); }}
                       aria-label={`Zoom to ${agent.locationName}`}
-                      className="flex-shrink-0 transition-opacity hover:opacity-70"
-                      style={{ color: 'var(--accent-gold-dim)', fontSize: 'var(--text-xs)', lineHeight: 1 }}
                       title={`Zoom to ${agent.locationName}`}
-                    >
-                      &#x1F441;
-                    </button>
+                      style={{ border: 'none', width: 'auto', height: 'auto', padding: 0 }}
+                    />
                   )}
                 </div>
               </div>

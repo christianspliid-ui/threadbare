@@ -443,12 +443,14 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Location Link */}
         <div className="text-xs">
           <span className="text-amber-400/50">Location: </span>
-          <button
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => onLocationClick(detail.locationId)}
-            className="text-amber-100 hover:text-amber-200 underline transition-colors"
+            style={{ textDecoration: 'underline', padding: 0, height: 'auto', display: 'inline' }}
           >
             {detail.locationName}
-          </button>
+          </Button>
         </div>
       </div>
 

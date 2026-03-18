@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { ReachDomain } from '../../types/traits';
 import { IntentSection } from './IntentSection';
@@ -10,8 +9,9 @@ import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attac
 import type { AttachmentTier } from '../../types/attachments';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 import { ProgressBar } from '../shared/ProgressBar';
-import { IconButton } from '../shared/IconButton';
 import { SectionHeading } from '../shared/SectionHeading';
+import { Modal } from '../shared/Modal';
+import { Button } from '../shared/Button';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import type { AttachmentDetailData } from './AttachmentDetailView';
 import type { AttachmentFullEntry } from '../../engine/agentAttachments';
@@ -65,18 +65,18 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
   // Track which strata badges have faded (badge fades after NEW_BADGE_FADE_MS)
   const [fadedStrata, setFadedStrata] = useState<Set<number>>(new Set());
 
-  // Escape key handler
+  // Custom escape: close attachment overlay first, then modal
   useEffect(() => {
+    if (!selectedAttachment) return;
     const handleEscape = (e: KeyboardEvent) => {
-      if (selectedAttachment) {
+      if (e.key === 'Escape') {
+        e.stopPropagation(); // prevent Modal's own escape handler
         setSelectedAttachment(null);
-      } else {
-        onClose();
       }
     };
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [onClose, selectedAttachment]);
+  }, [selectedAttachment]);
 
   // Auto-scroll to backstory section when opened from revelation alert
   useEffect(() => {
@@ -195,117 +195,90 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
       .join('-');
   };
 
-  return createPortal(
-    <div
-      role="dialog"
-      aria-label={`Profile: ${card.name}`}
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ pointerEvents: 'auto' }}
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        onClick={onClose}
-        style={{ pointerEvents: 'auto', backgroundColor: 'rgba(10, 10, 14, 0.9)' }}
-      />
-
-      {/* Modal Content */}
-      <div
-        className="relative border rounded-lg max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl mx-4"
-        style={{ pointerEvents: 'auto', backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Close × button */}
-        <IconButton
-          icon={<span>×</span>}
-          variant="close"
-          size="sm"
-          onClick={onClose}
-          aria-label={`Close profile for ${card.name}`}
-          className="absolute top-3 right-3 z-10"
-        />
-        {/* Header Zone */}
-        <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div className="flex gap-4 mb-3">
-            {/* Portrait */}
-            <div
-              data-testid="portrait-silhouette"
-              className="w-20 h-24 rounded overflow-hidden flex-shrink-0"
-              style={{
-                background:
-                  card.knowledgeLevel === 'stranger'
-                    ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
-                    : !card.portraitUrl
-                      ? 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)'
-                      : undefined,
-              }}
-            >
-              {card.knowledgeLevel !== 'stranger' && card.portraitUrl && (
-                <img
-                  src={card.portraitUrl}
-                  alt={`Portrait of ${card.name}`}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-              )}
-            </div>
-
-            {/* Header Text */}
-            <div className="flex-1">
-              <h1
-                className="text-2xl font-bold mb-1"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                {card.name}
-              </h1>
-
-              {/* Knowledge level badge */}
-              <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
-                <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
-                  {card.knowledgeLevel}
-                </div>
-              </Tooltip>
-
-              {/* Metadata */}
-              <div className="space-y-1">
-                {card.locationName && (
-                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>
-                )}
-                {hasKnowledge(card.knowledgeLevel, 'recognised') && card.archetypeLabel && (
-                  <p className="text-sm italic" style={{ color: 'var(--accent-gold)' }}>
-                    {card.archetypeId ? (
-                      <Tooltip id={`archetype.${card.archetypeId}`}><span className="underline decoration-dotted cursor-help">{card.archetypeLabel}</span></Tooltip>
-                    ) : card.archetypeLabel}
-                  </p>
-                )}
-                {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.cultureName) && (
-                  <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    {[card.factionName, card.cultureName].filter(Boolean).join(' · ')}
-                  </p>
-                )}
-              </div>
-            </div>
+  return (
+    <Modal open={true} onClose={onClose} maxWidth={768}>
+      {/* Header Zone */}
+      <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="flex gap-4 mb-3">
+          {/* Portrait */}
+          <div
+            data-testid="portrait-silhouette"
+            className="w-20 h-24 rounded overflow-hidden flex-shrink-0"
+            style={{
+              background:
+                card.knowledgeLevel === 'stranger'
+                  ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
+                  : !card.portraitUrl
+                    ? 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)'
+                    : undefined,
+            }}
+          >
+            {card.knowledgeLevel !== 'stranger' && card.portraitUrl && (
+              <img
+                src={card.portraitUrl}
+                alt={`Portrait of ${card.name}`}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            )}
           </div>
 
-          {/* Primary Sphere Indicator */}
-          {card.primarySphere && (
-            <div className="flex gap-2 items-center pt-2">
-              <span className="text-xs" style={{ color: 'var(--accent-gold)' }}>Attuned to</span>
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{
-                  backgroundColor: getSphereColor(card.primarySphere),
-                }}
-              />
-              <Tooltip id={`sphere.${card.primarySphere}`}>
-                <span className="text-xs capitalize underline decoration-dotted cursor-help" style={{ color: 'var(--text-secondary)' }}>{card.primarySphere}</span>
-              </Tooltip>
+          {/* Header Text */}
+          <div className="flex-1">
+            <h1
+              className="text-2xl font-bold mb-1"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+            >
+              {card.name}
+            </h1>
+
+            {/* Knowledge level badge */}
+            <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
+              <div className="inline-block px-2 py-0.5 rounded text-xs mb-2 underline decoration-dotted cursor-help" style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--accent-gold)' }}>
+                {card.knowledgeLevel}
+              </div>
+            </Tooltip>
+
+            {/* Metadata */}
+            <div className="space-y-1">
+              {card.locationName && (
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>
+              )}
+              {hasKnowledge(card.knowledgeLevel, 'recognised') && card.archetypeLabel && (
+                <p className="text-sm italic" style={{ color: 'var(--accent-gold)' }}>
+                  {card.archetypeId ? (
+                    <Tooltip id={`archetype.${card.archetypeId}`}><span className="underline decoration-dotted cursor-help">{card.archetypeLabel}</span></Tooltip>
+                  ) : card.archetypeLabel}
+                </p>
+              )}
+              {hasKnowledge(card.knowledgeLevel, 'recognised') && (card.factionName || card.cultureName) && (
+                <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                  {[card.factionName, card.cultureName].filter(Boolean).join(' · ')}
+                </p>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        {/* Primary Sphere Indicator */}
+        {card.primarySphere && (
+          <div className="flex gap-2 items-center pt-2">
+            <span className="text-xs" style={{ color: 'var(--accent-gold)' }}>Attuned to</span>
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{
+                backgroundColor: getSphereColor(card.primarySphere),
+              }}
+            />
+            <Tooltip id={`sphere.${card.primarySphere}`}>
+              <span className="text-xs capitalize underline decoration-dotted cursor-help" style={{ color: 'var(--text-secondary)' }}>{card.primarySphere}</span>
+            </Tooltip>
+          </div>
+        )}
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Quotes Section (known+) */}
           {hasKnowledge(card.knowledgeLevel, 'known') && card.quotes && card.quotes.length > 0 && (
             <section>
@@ -587,36 +560,31 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
           )}
         </div>
 
-        {/* Attachment Detail Overlay (slide-in within modal) */}
-        {selectedAttachment && (
-          <div
-            className="absolute inset-0 z-20 overflow-y-auto"
-            style={{ backgroundColor: 'var(--bg-surface)' }}
-            data-testid="attachment-detail-overlay"
-          >
-            <AttachmentDetailView
-              attachment={selectedAttachment}
-              onBack={() => setSelectedAttachment(null)}
-            />
-          </div>
-        )}
-
-        {/* Close Button */}
-        <div className="border-t p-4 flex justify-end" style={{ borderColor: 'var(--border-subtle)' }}>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 rounded text-sm transition-colors"
-            style={{ backgroundColor: 'var(--border-subtle)', color: 'var(--text-primary)' }}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--border-subtle)')}
-            aria-label={`Close profile for ${card.name}`}
-          >
-            Close
-          </button>
+      {/* Attachment Detail Overlay (slide-in within modal) */}
+      {selectedAttachment && (
+        <div
+          className="absolute inset-0 z-20 overflow-y-auto"
+          style={{ backgroundColor: 'var(--bg-surface)' }}
+          data-testid="attachment-detail-overlay"
+        >
+          <AttachmentDetailView
+            attachment={selectedAttachment}
+            onBack={() => setSelectedAttachment(null)}
+          />
         </div>
-      </div>
-    </div>,
-    document.body
+      )}
+
+      {/* Close Button */}
+      <Modal.Footer>
+        <Button
+          variant="secondary"
+          onClick={onClose}
+          aria-label={`Close profile for ${card.name}`}
+        >
+          Close
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 

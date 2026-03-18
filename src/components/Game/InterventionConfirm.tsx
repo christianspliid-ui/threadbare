@@ -1,6 +1,7 @@
 import type { InterventionType, DeliveryMode, LocalEncounterMode } from '../../types/dream';
 import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
+import { Button } from '../shared/Button';
 
 export interface InterventionConfirmProps {
   interventionType: InterventionType;
@@ -208,88 +209,29 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             </div>
           )}
 
-          {/* Actions — bigger buttons */}
+          {/* Actions */}
           <div className="flex gap-3">
             {isOutOfRange ? (
-              <button
-                className="flex-1 px-4 py-2.5 rounded-lg font-bold"
-                style={{
-                  backgroundColor: 'var(--bg-surface)',
-                  color: 'var(--text-secondary)',
-                  fontSize: 'var(--text-base)',
-                }}
-                onClick={onCancel}
-                aria-label="Cancel"
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
-              >
+              <Button variant="secondary" fullWidth onClick={onCancel} aria-label="Cancel">
                 Cancel
-              </button>
+              </Button>
             ) : isLocal ? (
               <>
-                <button
-                  className="flex-1 px-4 py-2.5 rounded-lg font-bold"
-                  style={{
-                    backgroundColor: canAfford ? 'var(--accent-gold-dim)' : 'var(--bg-surface)',
-                    color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
-                    cursor: canAfford ? 'pointer' : 'not-allowed',
-                    fontSize: 'var(--text-base)',
-                  }}
-                  onClick={() => canAfford && onConfirm('visit')}
-                  disabled={!canAfford}
-                  onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold)')}
-                  onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold-dim)')}
-                >
+                <Button variant="primary" fullWidth onClick={() => onConfirm('visit')} disabled={!canAfford}>
                   Go to Them (+15%)
-                </button>
-                <button
-                  className="flex-1 px-4 py-2.5 rounded-lg font-bold"
-                  style={{
-                    backgroundColor: canAfford ? 'var(--bg-surface)' : 'var(--bg-deep)',
-                    color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
-                    cursor: canAfford ? 'pointer' : 'not-allowed',
-                    fontSize: 'var(--text-base)',
-                  }}
-                  onClick={() => canAfford && onConfirm('summon')}
-                  disabled={!canAfford}
-                  onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-                  onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
-                >
+                </Button>
+                <Button variant="secondary" fullWidth onClick={() => onConfirm('summon')} disabled={!canAfford}>
                   Summon (+1 ess)
-                </button>
+                </Button>
               </>
             ) : (
               <>
-                <button
-                  className="flex-1 px-4 py-2.5 rounded-lg font-bold"
-                  style={{
-                    backgroundColor: canAfford ? 'var(--accent-gold-dim)' : 'var(--bg-surface)',
-                    color: canAfford ? 'var(--text-primary)' : 'var(--text-muted)',
-                    cursor: canAfford ? 'pointer' : 'not-allowed',
-                    fontSize: 'var(--text-base)',
-                  }}
-                  onClick={() => canAfford && onConfirm()}
-                  disabled={!canAfford}
-                  aria-label="Confirm"
-                  onMouseEnter={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold)')}
-                  onMouseLeave={(e) => canAfford && (e.currentTarget.style.backgroundColor = 'var(--accent-gold-dim)')}
-                >
+                <Button variant="primary" fullWidth onClick={() => onConfirm()} disabled={!canAfford} aria-label="Confirm">
                   Confirm
-                </button>
-                <button
-                  className="flex-1 px-4 py-2.5 rounded-lg font-bold"
-                  style={{
-                    backgroundColor: 'var(--bg-surface)',
-                    color: 'var(--text-secondary)',
-                    fontSize: 'var(--text-base)',
-                  }}
-                  onClick={onCancel}
-                  aria-label="Cancel"
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-surface)')}
-                >
+                </Button>
+                <Button variant="secondary" fullWidth onClick={onCancel} aria-label="Cancel">
                   Cancel
-                </button>
+                </Button>
               </>
             )}
           </div>

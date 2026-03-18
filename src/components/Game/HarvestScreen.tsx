@@ -1,6 +1,7 @@
 import type { HarvestResult, HarvestEchoCandidate } from '../../engine/cycleEnd';
 import type { HarvestType } from '../../types/worldSoul';
 import { Tooltip } from '../shared/Tooltip';
+import { Button } from '../shared/Button';
 
 interface HarvestScreenProps {
   harvest: HarvestResult;
@@ -86,9 +87,10 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
         )}
 
         <div className="text-center">
-          <button
+          <Button
+            variant="primary"
+            size="lg"
             onClick={onBeginNextCycle}
-            className="px-6 py-2.5 rounded-lg text-sm font-bold tracking-wide transition-all duration-200 hover:scale-105"
             style={{
               backgroundColor: style.color,
               color: '#1c1917',
@@ -97,7 +99,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
             }}
           >
             Begin Next Cycle
-          </button>
+          </Button>
         </div>
       </div>
     </div>

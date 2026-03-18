@@ -3,6 +3,7 @@ import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
+import { Button } from '../shared/Button';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -124,21 +125,16 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             <>
               <div className="flex-shrink-0 flex items-center">
                 <Tooltip id="ui.action_locked">
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setShowLocked(!showLocked)}
-                    className="px-3 py-2 rounded transition-colors whitespace-nowrap"
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      color: 'var(--text-muted)',
-                      border: '1px solid var(--border-subtle)',
-                      backgroundColor: 'rgba(10, 10, 14, 0.6)',
-                      backdropFilter: 'blur(4px)',
-                    }}
                     aria-expanded={showLocked}
                     aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
+                    style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
                   >
                     {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
-                  </button>
+                  </Button>
                 </Tooltip>
               </div>
               {showLocked && lockedSlots.map(slot => (
