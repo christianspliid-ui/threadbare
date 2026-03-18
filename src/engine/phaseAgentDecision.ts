@@ -24,6 +24,8 @@ import { scoreAndSelect } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getEncounterById } from '../data/encounter-content';
+import { getSocialEncounterById } from '../data/social-encounter-content';
+import { generateSocialCandidates } from './socialEncounterGeneration';
 import { findShortestPath } from './pathfinding';
 
 export function phaseAgentDecision(
@@ -82,9 +84,22 @@ export function phaseAgentDecision(
 
       if (!locationId) continue;
 
+      // Generate social encounter candidates (agent-to-agent)
+      const socialEntries = generateSocialCandidates(
+        graph,
+        agentId,
+        locationId,
+        distanceMatrix,
+      );
+
+      // Merge static cache entries with dynamic social entries
+      const mergedEntries = socialEntries.length > 0
+        ? [...allEntries, ...socialEntries]
+        : allEntries;
+
       // Run filter pipeline
       const { candidates } = runFilterPipeline(
-        allEntries,
+        mergedEntries,
         agentId,
         locationId,
         graph,
@@ -107,7 +122,8 @@ export function phaseAgentDecision(
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
           // Start the encounter — create EncounterProgress
-          const template = getEncounterById(sel.entry.templateId);
+          const template = getEncounterById(sel.entry.templateId)
+            ?? getSocialEncounterById(sel.entry.templateId);
           if (template) {
             const firstStepDuration = template.steps[0]?.duration ?? 1;
             const progress: EncounterProgress = {

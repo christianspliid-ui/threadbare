@@ -121,6 +121,7 @@ export function generateSocialCandidates(
       candidates.push({
         templateId: tmpl.id,
         locationId: targetLocationId,
+        targetAgentId,
         reachPrimary: tmpl.reachPrimary,
         reachSecondary: tmpl.reachSecondary,
         threatRating: tmpl.threatRating,

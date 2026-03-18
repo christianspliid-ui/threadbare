@@ -58,6 +58,8 @@ export interface EncounterCacheEntry {
   remoteMaxRange?: number;
   sphereAffinity?: SphereName;
   questPriority: number;
+  /** Target agent ID for social encounters (agent-to-agent). Undefined for location encounters. */
+  targetAgentId?: string;
   // Pre-computed for scoring:
   totalTickCost: number;
   successRewardEstimate: number;

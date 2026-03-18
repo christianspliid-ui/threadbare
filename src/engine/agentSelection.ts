@@ -14,6 +14,7 @@ import type {
 } from '../types/agent';
 import { applyDispositionModifier } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
+import { perceiveReputation } from './reputationWalk';
 import { emitTrace } from './traceBuffer';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import type { DivineInfluenceEntry } from '../types/dream';
@@ -218,8 +219,11 @@ export function runSelectionPipeline(
       }
 
       const history = relationship?.properties?.interactionLog ?? [];
-      const targetReputation =
-        (targetNode.properties?.reputationScore as number) ?? DEFAULT_REPUTATION;
+      // Graph-walked reputation: perceive through intermediaries, distortion, and faction rank.
+      // Returns [-1, 1]. Remap to [0, 1] for applyDispositionModifier (which expects that range).
+      // Falls back to UNKNOWN_REPUTATION (0) → 0.5 in the remapped range — same as DEFAULT_REPUTATION.
+      const rawReputation = perceiveReputation(graph, actorId, targetId);
+      const targetReputation = (rawReputation + 1) / 2;
 
       // Apply modifier to these candidates
       const modified = applyDispositionModifier(

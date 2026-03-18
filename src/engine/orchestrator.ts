@@ -81,6 +81,7 @@ import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { EncounterCacheManager } from './encounterCache';
+import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
 import type { DistanceMatrix } from './distanceMatrix';
 
@@ -1021,7 +1022,7 @@ export function phaseEssence(state: GameState): Partial<GameState> {
 export function phaseReputationDecay(state: GameState): Partial<GameState> {
   const graph = state.graph;
 
-  // Iterate all individual actors
+  // Iterate all individual actors — decay legacy reputationScore
   const actors = graph.getNodesByType('actor')
     .filter(node => node.properties?.actorType === 'individual');
 
@@ -1030,6 +1031,9 @@ export function phaseReputationDecay(state: GameState): Partial<GameState> {
     const decayedRep = decayReputation(currentRep);
     actor.properties.reputationScore = decayedRep;
   }
+
+  // Decay trust on all relates_to edges (social fabric)
+  decayAllTrust(graph);
 
   return {};
 }
