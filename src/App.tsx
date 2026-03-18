@@ -78,9 +78,28 @@ function App() {
 
   // ── World generation screen (default) ──
   return (
-    <div className="min-h-screen bg-amber-50 text-amber-950 flex">
-      <div className="w-80 flex-shrink-0 p-4 space-y-4 overflow-y-auto border-r border-amber-200 bg-stone-800">
-        <h1 className="text-xl font-bold tracking-wide text-center text-amber-100">✧ Fantasy World Simulator ✧</h1>
+    <div className="h-screen flex overflow-hidden grain" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-primary)' }}>
+      <div
+        className="w-80 flex-shrink-0 overflow-y-auto"
+        style={{
+          padding: 'var(--panel-padding)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 'var(--space-4)',
+          background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+          borderRight: '1px solid var(--border-subtle)',
+        }}
+      >
+        <h1
+          className="text-center tracking-wide"
+          style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-xl)',
+            color: 'var(--text-primary)',
+          }}
+        >
+          Fantasy World Simulator
+        </h1>
         <CosmologyPanel
           cosmology={cosmology}
           seed={seed}
@@ -93,18 +112,20 @@ function App() {
         {/* Proceed to ascendant selection */}
         <button
           onClick={handleProceedToSelection}
-          className="w-full py-3 rounded-lg font-semibold text-sm transition-all duration-300"
+          className="w-full py-3 rounded-lg font-semibold transition-all duration-300"
           style={{
-            fontFamily: 'Cinzel, serif',
-            background: 'linear-gradient(135deg, #b8860b 0%, #8b6914 100%)',
-            color: '#fef3c7',
-            boxShadow: '0 4px 15px rgba(184, 134, 11, 0.3)',
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-sm)',
+            background: 'linear-gradient(135deg, var(--accent-gold) 0%, #8b6914 100%)',
+            color: 'var(--bg-abyss)',
+            boxShadow: '0 4px 15px rgba(212, 160, 64, 0.25)',
+            letterSpacing: '0.05em',
           }}
         >
-          ✧ Shape Your Divinity ✧
+          Shape Your Divinity
         </button>
       </div>
-      <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-abyss)' }}>
         <HexMap
           tiles={tiles}
           cols={DEFAULT_COLS}

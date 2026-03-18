@@ -58,7 +58,10 @@ interface InfoPanelProps {
 export function InfoPanel({ tile }: InfoPanelProps) {
   if (!tile) {
     return (
-      <div className="bg-stone-700 border border-amber-700 rounded-xl p-5 text-amber-300 text-sm italic">
+      <div
+        className="panel-glass-raised italic text-center animate-breathe"
+        style={{ padding: 'var(--panel-padding)', fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}
+      >
         Hover over a hex to see details
       </div>
     );
@@ -72,15 +75,19 @@ export function InfoPanel({ tile }: InfoPanelProps) {
   );
 
   return (
-    <div className="bg-stone-700 border border-amber-700 rounded-xl p-5 space-y-3">
+    <div className="panel-glass-raised" style={{ padding: 'var(--panel-padding)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
       <div>
-        <p className="text-xs text-amber-200 uppercase tracking-widest">Terrain</p>
-        <p className="text-base font-bold text-amber-100">{TERRAIN_DISPLAY[tile.terrain] || tile.terrain}</p>
-        <p className="text-xs text-amber-300 font-mono">Hex ({tile.coord.col}, {tile.coord.row})</p>
+        <p className="section-heading">Terrain</p>
+        <p style={{ fontSize: 'var(--text-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
+          {TERRAIN_DISPLAY[tile.terrain] || tile.terrain}
+        </p>
+        <p className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+          Hex ({tile.coord.col}, {tile.coord.row})
+        </p>
       </div>
       <div>
-        <p className="text-xs text-amber-200 uppercase tracking-widest mb-2">Geography</p>
-        <p className="text-xs text-amber-300 leading-relaxed">{desc}</p>
+        <p className="section-heading" style={{ marginBottom: 'var(--space-2)' }}>Geography</p>
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', lineHeight: 1.6 }}>{desc}</p>
       </div>
       <div className="grid grid-cols-3 gap-2 text-center">
         {[
@@ -88,9 +95,9 @@ export function InfoPanel({ tile }: InfoPanelProps) {
           { label: 'Temperature', value: tile.geoParams.temperature },
           { label: 'Moisture', value: tile.geoParams.moisture },
         ].map(({ label, value }) => (
-          <div key={label} className="bg-stone-600 rounded-lg p-2">
-            <p className="text-xs text-amber-300">{label}</p>
-            <p className="text-sm font-bold text-amber-100">{(value * 100).toFixed(0)}%</p>
+          <div key={label} className="rounded-lg" style={{ padding: 'var(--space-2)', backgroundColor: 'var(--bg-raised)' }}>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{label}</p>
+            <p style={{ fontSize: 'var(--text-sm)', fontWeight: 700, color: 'var(--text-primary)' }}>{(value * 100).toFixed(0)}%</p>
           </div>
         ))}
       </div>

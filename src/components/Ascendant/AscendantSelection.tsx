@@ -29,34 +29,34 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
   };
 
   return (
-    <div className="min-h-screen bg-stone-900 flex flex-col items-center justify-center p-8">
+    <div className="h-screen flex flex-col items-center justify-center overflow-hidden grain" style={{ backgroundColor: 'var(--bg-abyss)', padding: 'var(--space-8)' }}>
       {/* Ambient glow */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at 50% 30%, rgba(180, 130, 60, 0.08) 0%, transparent 70%)',
+          background: 'radial-gradient(ellipse at 50% 30%, rgba(212, 160, 64, 0.06) 0%, transparent 70%)',
         }}
       />
 
       {/* Title */}
-      <div className="text-center mb-10 relative">
-        <p className="text-amber-600/60 text-xs uppercase tracking-[0.4em] mb-3">
+      <div className="text-center relative" style={{ marginBottom: 'var(--space-8)' }}>
+        <p className="uppercase" style={{ color: 'var(--text-muted)', fontSize: 'var(--text-xs)', letterSpacing: '0.4em', marginBottom: 'var(--space-3)' }}>
           The cosmos stirs. A new divinity awakens.
         </p>
         <h1
-          className="text-4xl font-bold text-amber-100 tracking-wide"
-          style={{ fontFamily: 'Cinzel, serif' }}
+          className="font-bold tracking-wide"
+          style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl)', color: 'var(--text-primary)' }}
         >
           Choose Your Ascendant
         </h1>
-        <p className="text-amber-400/50 text-sm mt-3 max-w-xl mx-auto">
+        <p style={{ color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)', marginTop: 'var(--space-3)', maxWidth: '36rem', marginLeft: 'auto', marginRight: 'auto' }}>
           Each archetype shapes your divine nature — the spheres you command,
           the domains you influence, and the personality of your mortal avatar.
         </p>
       </div>
 
       {/* Archetype grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl w-full mb-8 relative">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl w-full relative" style={{ marginBottom: 'var(--space-8)' }}>
         {archetypes.map((arch, i) => (
           <ArchetypeCard
             key={arch.id}
@@ -69,14 +69,15 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
 
       {/* Avatar name + confirm */}
       <div
-        className="max-w-md w-full space-y-4 transition-all duration-500 relative"
+        className="max-w-md w-full transition-all duration-500 relative"
         style={{
+          display: 'flex', flexDirection: 'column', gap: 'var(--space-4)',
           opacity: selectedIdx !== null ? 1 : 0.3,
           pointerEvents: selectedIdx !== null ? 'auto' : 'none',
         }}
       >
         <div>
-          <label className="block text-xs text-amber-400/60 uppercase tracking-widest mb-2">
+          <label className="block uppercase" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', letterSpacing: '0.15em', marginBottom: 'var(--space-2)' }}>
             Name your avatar (or leave blank for a random name)
           </label>
           <input
@@ -84,26 +85,34 @@ export function AscendantSelection({ seed, onSelect }: AscendantSelectionProps) 
             value={avatarName}
             onChange={(e) => setAvatarName(e.target.value)}
             placeholder={AVATAR_NAMES[0]}
-            className="w-full bg-stone-800 border border-amber-700/30 rounded-lg px-4 py-3 text-amber-100 placeholder-amber-800/50 focus:outline-none focus:border-amber-600/60 transition-colors"
-            style={{ fontFamily: 'Cinzel, serif' }}
+            className="w-full rounded-lg px-4 py-3 transition-colors focus:outline-none"
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-base)',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              color: 'var(--text-primary)',
+            }}
           />
         </div>
         <button
           onClick={handleBegin}
           disabled={selectedIdx === null}
-          className="w-full py-3.5 rounded-lg font-semibold text-sm transition-all duration-300 disabled:opacity-30"
+          className="w-full py-3.5 rounded-lg font-semibold transition-all duration-300 disabled:opacity-30"
           style={{
-            fontFamily: 'Cinzel, serif',
+            fontFamily: 'var(--font-display)',
+            fontSize: 'var(--text-sm)',
+            letterSpacing: '0.05em',
             background: selectedIdx !== null
-              ? 'linear-gradient(135deg, #b8860b 0%, #8b6914 100%)'
-              : '#3a3020',
-            color: '#fef3c7',
+              ? 'linear-gradient(135deg, var(--accent-gold) 0%, #8b6914 100%)'
+              : 'var(--bg-raised)',
+            color: selectedIdx !== null ? 'var(--bg-abyss)' : 'var(--text-muted)',
             boxShadow: selectedIdx !== null
-              ? '0 4px 15px rgba(184, 134, 11, 0.3)'
+              ? '0 4px 15px rgba(212, 160, 64, 0.25)'
               : 'none',
           }}
         >
-          ✧ Ascend ✧
+          Ascend
         </button>
       </div>
     </div>

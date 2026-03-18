@@ -23,7 +23,7 @@ export function SphereSlider({ sphere, value, onChange }: SphereSliderProps) {
   return (
     <div className="flex items-center gap-3 py-1.5">
       <span className="text-lg w-6 text-center" style={{ color }}>{getSphereSymbol(sphere)}</span>
-      <span className="text-sm font-medium w-16 text-amber-100" style={{ color }}>
+      <span className="font-medium w-16" style={{ fontSize: 'var(--text-xs)', color }}>
         {SPHERE_LABELS[sphere]}
       </span>
       <input
@@ -38,7 +38,7 @@ export function SphereSlider({ sphere, value, onChange }: SphereSliderProps) {
           background: `linear-gradient(to right, ${color} ${value * 100}%, #5a4a3a ${value * 100}%)`,
         }}
       />
-      <span className="text-xs text-amber-200 w-10 text-right font-mono">{(value * 100).toFixed(0)}%</span>
+      <span className="w-10 text-right font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>{(value * 100).toFixed(0)}%</span>
     </div>
   );
 }

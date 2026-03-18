@@ -33,8 +33,8 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
       style={{
         background: selected
           ? `linear-gradient(135deg, ${primaryColor}22 0%, ${secondaryColor}22 100%)`
-          : 'rgba(68, 60, 48, 0.8)',
-        borderColor: selected ? primaryColor : 'rgba(120, 100, 70, 0.3)',
+          : 'var(--bg-raised)',
+        borderColor: selected ? primaryColor : 'var(--border-subtle)',
         boxShadow: selected
           ? `0 0 20px ${primaryColor}44, 0 0 40px ${primaryColor}22`
           : 'none',
@@ -51,15 +51,15 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
 
       {/* Sphere alignment */}
       <div className="flex items-center gap-3 mb-3">
-        <span className="flex items-center gap-1.5 text-sm">
-          <span className="text-base" style={{ color: primaryColor }}>{getSphereSymbol(primary)}</span>
+        <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)' }}>
+          <span style={{ fontSize: 'var(--text-base)', color: primaryColor }}>{getSphereSymbol(primary)}</span>
           <span style={{ color: primaryColor }} className="font-semibold">
             {SPHERE_LABELS[primary]}
           </span>
         </span>
-        <span className="text-amber-600 text-xs">+</span>
-        <span className="flex items-center gap-1.5 text-sm">
-          <span className="text-base" style={{ color: secondaryColor }}>{getSphereSymbol(secondary)}</span>
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>+</span>
+        <span className="flex items-center gap-1.5" style={{ fontSize: 'var(--text-sm)' }}>
+          <span style={{ fontSize: 'var(--text-base)', color: secondaryColor }}>{getSphereSymbol(secondary)}</span>
           <span style={{ color: secondaryColor }} className="font-medium">
             {SPHERE_LABELS[secondary]}
           </span>
@@ -67,13 +67,13 @@ export function ArchetypeCard({ archetype, selected, onClick }: ArchetypeCardPro
       </div>
 
       {/* Flavor text */}
-      <p className="text-sm text-amber-300/80 italic mb-4 leading-relaxed">
+      <p className="italic mb-4 leading-relaxed" style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
         {archetype.flavorText}
       </p>
 
       {/* Domain affinities */}
       <div className="space-y-1.5">
-        <p className="text-xs text-amber-400/60 uppercase tracking-widest">Domain Affinities</p>
+        <p className="section-heading">Domain Affinities</p>
         <div className="flex flex-wrap gap-1.5">
           {domains.map(([domain, score]) => (
             <span

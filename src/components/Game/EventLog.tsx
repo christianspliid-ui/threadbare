@@ -8,12 +8,9 @@ interface EventLogProps {
   entries: LogEntry[];
 }
 
-const TYPE_COLORS: Record<string, string> = {
-  essence: '#b8860b',
-  influence: '#7cb342',
-  narrative: '#9c27b0',
-  system: '#78716c',
-};
+import { EVENT_CATEGORY_COLORS } from '../../data/uiColorPalette';
+
+const TYPE_COLORS = EVENT_CATEGORY_COLORS;
 
 export type { LogEntry };
 

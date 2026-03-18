@@ -18,35 +18,72 @@ export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChang
   const handleRandomSeed = () => { onSeedChange(Math.floor(Math.random() * 999999)); };
 
   return (
-    <div className="bg-stone-700 border border-amber-700 rounded-xl p-5 space-y-5">
-      <h2 className="text-lg font-bold text-amber-100 tracking-wide">✧ Creation Spheres</h2>
-      <div className="space-y-1">
+    <div className="panel-glass-raised" style={{ padding: 'var(--panel-padding)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+      <h2 className="section-heading">Creation Spheres</h2>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
         {SPHERE_NAMES.map(sphere => (
           <SphereSlider key={sphere} sphere={sphere} value={cosmology[sphere]} onChange={handleSphereChange} />
         ))}
       </div>
       <div>
-        <p className="text-xs text-amber-200 uppercase tracking-widest mb-2">Presets</p>
+        <p className="section-heading" style={{ marginBottom: 'var(--space-2)' }}>Presets</p>
         <div className="flex flex-wrap gap-2">
           {Object.keys(COSMOLOGY_PRESETS).map(name => (
             <button key={name} onClick={() => handlePreset(name)}
-              className="px-3 py-1 text-xs rounded-full bg-stone-600 text-amber-200 hover:bg-stone-500 hover:text-amber-100 transition-colors border border-stone-500">
+              className="px-3 py-1 rounded-full transition-colors"
+              style={{
+                fontSize: 'var(--text-xs)',
+                backgroundColor: 'var(--bg-raised)',
+                color: 'var(--text-secondary)',
+                border: '1px solid var(--border-subtle)',
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-raised)';
+                (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+              }}
+            >
               {name.replace(/_/g, ' ')}
             </button>
           ))}
         </div>
       </div>
       <div className="flex items-center gap-2">
-        <label className="text-xs text-amber-200 uppercase tracking-widest">Seed</label>
+        <label className="section-heading">Seed</label>
         <input type="number" value={seed} onChange={(e) => onSeedChange(parseInt(e.target.value) || 0)}
-          className="flex-1 bg-stone-600 border border-stone-500 rounded px-3 py-1.5 text-sm text-amber-50 font-mono" />
+          className="flex-1 rounded px-3 py-1.5 font-mono"
+          style={{
+            fontSize: 'var(--text-sm)',
+            backgroundColor: 'var(--bg-raised)',
+            border: '1px solid var(--border-subtle)',
+            color: 'var(--text-primary)',
+          }} />
         <button onClick={handleRandomSeed}
-          className="px-3 py-1.5 text-xs rounded bg-stone-600 text-amber-200 hover:bg-stone-500 border border-stone-500" title="Random seed">
+          className="px-3 py-1.5 rounded transition-colors"
+          style={{
+            fontSize: 'var(--text-xs)',
+            backgroundColor: 'var(--bg-raised)',
+            color: 'var(--text-secondary)',
+            border: '1px solid var(--border-subtle)',
+          }}
+          title="Random seed">
           🎲
         </button>
       </div>
       <button onClick={onGenerate}
-        className="w-full py-2.5 rounded-lg bg-amber-700 hover:bg-amber-600 text-amber-50 font-semibold text-sm transition-colors">
+        className="w-full py-2.5 rounded-lg font-semibold transition-colors"
+        style={{
+          fontSize: 'var(--text-sm)',
+          backgroundColor: 'var(--bg-hover)',
+          color: 'var(--text-primary)',
+          border: '1px solid var(--border-medium)',
+        }}
+        onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent-gold-dim)'; }}
+        onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-medium)'; }}
+      >
         Generate World
       </button>
     </div>
