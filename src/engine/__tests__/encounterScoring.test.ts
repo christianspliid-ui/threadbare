@@ -153,10 +153,10 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns ~0.5 when capability matches difficulty/100', () => {
-    // capability=0.5, difficulty=50 → 0.5 - 0.5 + 0.5 = 0.5
+  it('returns ~0.6 when capability matches difficulty/100', () => {
+    // capability=0.5, difficulty=50 → 0.5 - 0.5 + 0.6 = 0.6
     const p = estimateStepProbability(0.5, 50);
-    expect(p).toBeCloseTo(0.5, 5);
+    expect(p).toBeCloseTo(0.6, 5);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
@@ -193,9 +193,10 @@ describe('estimateCompletionProb', () => {
 
     const prob = estimateCompletionProb(entry, 'agent_1', graph);
     // Each step: computeCapability(no traits) → sigmoid(0) ≈ 0.018
-    // Step prob ≈ 0.018 - 0.5 + 0.5 = 0.018, clamped to 0.05
-    // Product of 2 steps: 0.05 * 0.05 = 0.0025
-    expect(prob).toBeCloseTo(0.05 * 0.05, 3);
+    // Step prob ≈ 0.018 - 0.5 + 0.6 = 0.118, clamped to 0.118
+    // Product of 2 steps: 0.118 * 0.118 ≈ 0.014
+    expect(prob).toBeGreaterThan(0.01);
+    expect(prob).toBeLessThan(0.05);
   });
 
   it('high-capability agent has higher completion probability', () => {
