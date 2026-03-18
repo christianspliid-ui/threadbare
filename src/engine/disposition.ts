@@ -39,8 +39,10 @@ import {
 } from '../types/disposition';
 import type { ActionCandidate, AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
+import type { WorldGraph } from './graph';
 import { getStrategyWeights } from '../data/game-theory-content';
 import { emitTrace } from './traceBuffer';
+import { applyTrustChange } from './trustMechanics';
 
 // ─── GROUP 1: assignCooperationStrategy ───────────────────────────────────
 
@@ -360,6 +362,7 @@ export function resolveDilemma(
   tick: number,
   context: string,
   stakes: number,
+  graph?: WorldGraph,
 ): DilemmaEvent {
   // Evaluate strategies to get disposition values
   const actorDisposition = evaluateStrategy(actorStrategy, actorHistory);
@@ -395,6 +398,14 @@ export function resolveDilemma(
   // ─── Trace instrumentation ──────────────────────────────────────────
 
   const effects = applyDilemmaEffects(outcome);
+
+  // ─── Trust update (Phase 4: Social Fabric) ────────────────────────
+  // Update trust on relates_to edges based on cooperation/defection.
+  // Graph parameter is optional for backward compatibility.
+  if (graph) {
+    applyTrustChange(graph, actorId, targetId, actorMove === 'cooperate');
+    applyTrustChange(graph, targetId, actorId, targetMove === 'cooperate');
+  }
 
   emitTrace({
     tick,
