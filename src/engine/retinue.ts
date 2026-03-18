@@ -51,6 +51,9 @@ export interface RetinueAgent {
 
   /** Agent's primary domain (highest capability) for visual coloring */
   primaryDomain: ReachDomain | null;
+
+  /** Current activity label for sidebar display (e.g., "Idling", "Going to Thornwall", "Explore (2/3)") */
+  activityLabel: string;
 }
 
 /**
@@ -135,6 +138,7 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       archetypeId,
       portraitUrl,
       primaryDomain,
+      activityLabel: 'Idling',
     });
   }
 

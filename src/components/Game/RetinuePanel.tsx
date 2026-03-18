@@ -105,6 +105,20 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                     />
                   )}
                 </div>
+
+                {/* Activity status on third line */}
+                <div
+                  className="truncate italic"
+                  style={{
+                    fontSize: 'var(--text-xs)',
+                    color: agent.activityLabel === 'Idling'
+                      ? 'var(--text-quaternary, var(--text-tertiary))'
+                      : 'var(--text-secondary)',
+                    opacity: agent.activityLabel === 'Idling' ? 0.6 : 0.85,
+                  }}
+                >
+                  {agent.activityLabel}
+                </div>
               </div>
             </Tooltip>
           );

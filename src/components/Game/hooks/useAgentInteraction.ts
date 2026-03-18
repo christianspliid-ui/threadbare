@@ -5,6 +5,7 @@ import type { LocalEncounterMode, InterventionType } from '../../../types/dream'
 import type { AgendaTemplate } from '../../../data/agenda-content';
 import { INTERVENTION_DEFINITIONS } from '../../../types/dream';
 import { getRetinueAgents } from '../../../engine/retinue';
+import { enrichRetinueWithActivity } from '../../../engine/agentActivity';
 import { getAgentDetail, getAgentInfoCard, getAgentFullProfile } from '../../../engine/agentDetail';
 import { getAgentWheelSlots } from '../../../engine/wheel';
 import { executeIntervention } from '../../../engine/dream';
@@ -58,8 +59,13 @@ export function useAgentInteraction({
 
   // ── Computed values ──
   const retinueAgents = useMemo(
-    () => getRetinueAgents(gameState.graph, gameState.ascendantId),
-    [gameState.graph, gameState.ascendantId]
+    () => enrichRetinueWithActivity(
+      getRetinueAgents(gameState.graph, gameState.ascendantId),
+      gameState.graph,
+      gameState.unifiedActions,
+      gameState.encounterProgress,
+    ),
+    [gameState.graph, gameState.ascendantId, gameState.unifiedActions, gameState.encounterProgress]
   );
 
   const agentDetail = useMemo(() => {
