@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Encounter Progression Fix (2026-03-18) — wired phaseEncounterProgressionV2 into tick pipeline. Encounters now resolve and advance through steps instead of getting stuck on step 0.
 - ✅ Agent Movement Animation (2026-03-18) — smooth glide transitions (600ms) + arrival flash for agent dots on hex map. Flattened AgentDots rendering for stable DOM keys.
 - ✅ Retinue Activity Status (2026-03-18) — activity label under each agent in right sidebar: Idling, Going to \<location\>, or \<encounter\> (step/total).
 - ✅ Agent Behavior Constants Centralization (2026-03-18) — 56 tunable constants from 15 engine modules consolidated into `src/data/agent-behavior-constants.ts`. NFP #1 compliance.
