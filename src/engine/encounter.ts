@@ -18,18 +18,13 @@ import {
   getEncounterById,
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
-import { computeProbability, resolveAction } from './resolution';
+import { resolveAction } from './resolution';
+import { computeResolutionModifiers } from './resolutionModifiers';
 import { emitTrace } from './traceBuffer';
-
-// ────────────────────────────────────────────────────────────────────────
-// CONSTANTS
-// ────────────────────────────────────────────────────────────────────────
-
-/** Sphere factor for encounter resolution (accounts for cosmic bias) */
-const ENCOUNTER_SPHERE_FACTOR = 0.1;
-
-/** Difficulty modifier for encounters (standard 0.5) */
-const ENCOUNTER_DIFFICULTY_MODIFIER = 0.5;
+import { applyEncounterGrowth } from './capabilityGrowth';
+import { handleTierPromotion } from './tierPromotion';
+import type { GrowthResult } from './capabilityGrowth';
+import type { PromotionResult } from './tierPromotion';
 
 // ────────────────────────────────────────────────────────────────────────
 // PUBLIC API
@@ -135,7 +130,7 @@ export function resolveEncounter(
   state: GameState,
   progress: EncounterProgress,
   deterministicRoll?: number,
-): { success: boolean; outcome: EncounterOutcome } {
+): { success: boolean; outcome: EncounterOutcome; growth?: GrowthResult; promotion?: PromotionResult } {
   const encounter = getEncounterById(progress.encounterId);
   if (!encounter) {
     // Graceful fallback: failed encounter with placeholder outcome
@@ -156,14 +151,23 @@ export function resolveEncounter(
   // Compute actor's capability in the step's reach domain
   const capability = computeCapability(state.graph, progress.actorId, step.reach);
 
-  // Compute final probability
-  const difficulty = step.difficulty / 100; // Normalize to 0-1 range
-  const probability = computeProbability(
-    capability,
-    ENCOUNTER_SPHERE_FACTOR,
-    difficulty,
-    ENCOUNTER_DIFFICULTY_MODIFIER,
+  // Resolve actor's location for terrain modifiers
+  const locEdges = state.graph.getOutgoingEdges(progress.actorId, 'located_at');
+  const locationId = locEdges.length > 0 ? locEdges[0].target : '';
+
+  // Compute resolution modifiers from full pipeline
+  const modifiers = computeResolutionModifiers(
+    state.graph,
+    progress.actorId,
+    locationId,
+    step.reach,
+    encounter.sphereAffinity,
   );
+
+  // Compute final probability: capability + modifiers - normalized difficulty, clamped
+  const probability = Math.max(0.05, Math.min(0.95,
+    capability + modifiers.totalModifier - step.difficulty / 100,
+  ));
 
   // Roll and resolve
   const resolution = resolveAction(probability, deterministicRoll);
@@ -193,7 +197,29 @@ export function resolveEncounter(
 
   emitTrace(trace);
 
-  return { success, outcome };
+  // Apply capability growth from encounter step resolution
+  const tierPromotionEligible = (success && outcome.tierPromotionEligible) ?? false;
+  const growth = applyEncounterGrowth(
+    state.graph,
+    progress.actorId,
+    step.reach,
+    step.difficulty,
+    success,
+    tierPromotionEligible,
+  );
+
+  // Handle tier promotion if crossed
+  let promotion: PromotionResult | undefined;
+  if (growth.tierCrossed) {
+    promotion = handleTierPromotion(
+      state.graph,
+      progress.actorId,
+      step.reach,
+      growth.newTier,
+    );
+  }
+
+  return { success, outcome, growth, promotion };
 }
 
 /**

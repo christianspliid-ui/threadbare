@@ -270,14 +270,14 @@ describe('Encounter Engine', () => {
 
       // Location is 'market', so first encounter is Merchant's Gambit
       // First encounter is 'Negotiation' with reach: 'gold'
-      // Give actor high capability in gold
-      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
+      // Give actor very high capability in gold (sigmoid(20) ≈ 0.98)
+      addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 20);
 
       const encounters = getAvailableEncounters(state, actorId);
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // With high capability, even a mid-range roll should pass
-      const result = resolveEncounter(state, progress, 50); // Mid roll with high capability → success
+      // With very high capability, a mid-range roll should pass
+      const result = resolveEncounter(state, progress, 50); // capability ~0.98 - 0.35 = 0.63 → threshold 63
 
       expect(result.success).toBe(true);
     });
@@ -300,7 +300,7 @@ describe('Encounter Engine', () => {
       const encounters = getAvailableEncounters(state, actorId);
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 30); // Success
+      const result = resolveEncounter(state, progress, 5); // Low roll → success
 
       expect(result.outcome).toBeDefined();
       expect(result.outcome.narrative).toBeDefined();
@@ -317,8 +317,8 @@ describe('Encounter Engine', () => {
       const encounters = getAvailableEncounters(state, actorId);
       const progress1 = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // With high trait, mid-range roll should pass
-      const result1 = resolveEncounter(state, progress1, 60);
+      // With high trait, low roll should pass
+      const result1 = resolveEncounter(state, progress1, 5);
       expect(result1.success).toBe(true);
     });
 
@@ -346,7 +346,7 @@ describe('Encounter Engine', () => {
       const encounters = getAvailableEncounters(state, actorId);
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 50);
+      const result = resolveEncounter(state, progress, 5);
       advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.history.length).toBe(1);
@@ -364,7 +364,7 @@ describe('Encounter Engine', () => {
       const encounters = getAvailableEncounters(state, actorId);
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 50);
+      const result = resolveEncounter(state, progress, 5);
       const initialIdx = progress.currentEncounterIndex;
       advanceEncounter(state, progress, result.success, 1);
 
@@ -385,7 +385,7 @@ describe('Encounter Engine', () => {
       const encounter = encounters[0];
       for (let i = 0; i < encounter.steps.length; i++) {
         progress.currentEncounterIndex = i;
-        const result = resolveEncounter(state, progress, 50); // Mid-range roll with high capability
+        const result = resolveEncounter(state, progress, 5); // Low roll with high capability → success
         advanceEncounter(state, progress, result.success, i + 1);
       }
 

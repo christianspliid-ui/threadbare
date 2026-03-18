@@ -30,6 +30,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#iron', '#weapon', '#melee'],
       mechanicalSummary: '+0.10 Iron reach',
+      reachBonus: { iron: 0.05 },
       lossCondition: 'breakable',
       flavorText: 'A well-worn blade of folded steel, simple and reliable.',
       onUseTriggers: [
@@ -53,6 +54,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 2,
       tags: ['#iron', '#weapon', '#legendary_beast'],
       mechanicalSummary: '+0.15 Iron, +0.05 Fang reach',
+      reachBonus: { iron: 0.08 },
       lossCondition: 'permanent',
       flavorText:
         'Pulled from the jaw of the beast that terrorized the Ashen Vale for three generations.',
@@ -69,6 +71,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 1,
       tags: ['#beast', '#mount', '#travel'],
       mechanicalSummary: '+movement_speed',
+      reachBonus: { gold: 0.03 },
       lossCondition: 'stealable',
       flavorText: 'A stubborn creature with strong legs and stronger opinions.',
     } as PossessionNodeProperties,
@@ -128,6 +131,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
       tier: 3,
       tags: ['#eye', '#cursed', '#supernatural'],
       mechanicalSummary: '+0.20 Eye reach, −0.10 Heart reach',
+      reachBonus: { eye: 0.08, heart: -0.04 },
       lossCondition: 'cursed',
       flavorText: 'It sees what you cannot. It shows what you must not know.',
       onUseTriggers: [

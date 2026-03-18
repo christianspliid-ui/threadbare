@@ -37,16 +37,17 @@ import type { ScoringTrace } from '../types/trace';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
-import { computeCapability } from './domainCapability';
+import { computeCapability, computeTier } from './domainCapability';
 import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
+import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 
 // ─── Constants ──────────────────────────────────────────────────
 
 /** Floor for desire multiplier — prevents zero scores for neutral encounters */
 export const MINIMUM_DESIRE = 0.1;
 
-/** Weight for tier growth value (stub — Tier Promotion not yet built) */
+/** Weight for tier growth value */
 export const GROWTH_REWARD_WEIGHT = 0.4;
 
 /** Below this finalScore, the agent idles instead of acting */
@@ -92,8 +93,9 @@ export interface DecisionResult {
 export function estimateStepProbability(
   capability: number,
   difficulty: number,
+  modifierTotal?: number,
 ): number {
-  const raw = capability - difficulty / 100 + 0.5;
+  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + 0.5;
   return Math.max(0.05, Math.min(0.95, raw));
 }
 
@@ -240,8 +242,23 @@ export function scoreAndSelect(
       completionProb *= 1 - entry.remotePenalty;
     }
 
-    // 2. Growth value (stub)
-    const growthValue = 0;
+    // 2. Growth value — estimate how much tier progress this encounter offers
+    const avgDifficulty = entry.stepDifficulties.reduce((s, d) => s + d, 0) / Math.max(entry.stepCount, 1);
+    const hasPromotionStep = false; // Encounter cache doesn't track per-step promotion eligibility
+    const estimatedGrowth = BASE_ENCOUNTER_GROWTH * difficultyScaling(avgDifficulty) *
+      (hasPromotionStep ? PROMOTION_ELIGIBLE_MULTIPLIER : 1.0);
+    let currentCap: number;
+    try {
+      currentCap = computeCapability(graph, agentId, entry.reachPrimary);
+    } catch {
+      currentCap = 0.5;
+    }
+    const currentTier = computeTier(currentCap);
+    const nextTierBoundary = currentTier / 10;
+    const distanceToNext = nextTierBoundary - currentCap;
+    const tierWidth = 0.1;
+    const proximityToNextTier = Math.max(0, 1.0 - (distanceToNext / tierWidth));
+    const growthValue = estimatedGrowth * proximityToNextTier * GROWTH_REWARD_WEIGHT;
 
     // 3. Expected reward
     const expectedReward =
