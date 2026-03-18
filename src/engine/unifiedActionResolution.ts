@@ -37,6 +37,8 @@ import {
 } from './contestation';
 import { resolveHexAction, isHexTargetId, parseHexTargetId } from './hexActionBridge';
 import type { HexMutation } from '../types/hexMutation';
+import { applyEncounterGrowth } from './capabilityGrowth';
+import { handleTierPromotion } from './tierPromotion';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -144,6 +146,44 @@ export function executeStepResult(
       executeGraphOps(state.graph, [...ops], ctx);
     } catch {
       // Fail-soft: log but don't crash
+    }
+  }
+
+  // Apply capability growth from step resolution
+  const step = template.steps[action.currentStep];
+  if (step) {
+    // Unified action difficulty is 0-1; scale to 0-100 for growth computation
+    const difficultyScaled = step.difficulty * 100;
+    const isSuccess = outcome === 'success';
+    const growthResult = applyEncounterGrowth(
+      state.graph,
+      action.actorId,
+      step.reach,
+      difficultyScaled,
+      isSuccess,
+      false, // Unified actions don't have tierPromotionEligible yet
+    );
+
+    // Handle tier promotion if crossed
+    if (growthResult.tierCrossed) {
+      const promotion = handleTierPromotion(
+        state.graph,
+        action.actorId,
+        step.reach,
+        growthResult.newTier,
+      );
+
+      const actorNode = state.graph.getNode(action.actorId);
+      const agentName = actorNode?.name ?? 'An agent';
+      if (promotion.traitGranted) {
+        events.push({
+          id: `ua_${action.actionId}_promotion`,
+          tick,
+          type: 'tier_promotion',
+          message: `${agentName} reached ${step.reach} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,
+          significance: 0.8,
+        });
+      }
     }
   }
 

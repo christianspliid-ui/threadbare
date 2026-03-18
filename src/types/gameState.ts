@@ -40,7 +40,8 @@ export interface TickEvent {
     | 'ambition_completed' | 'ambition_abandoned' | 'ambition_milestone' | 'ambition_assigned'
     | 'backstory_unlock'
     | 'settlement_tier_change'
-    | 'economic_chronicle';
+    | 'economic_chronicle'
+    | 'tier_promotion';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
