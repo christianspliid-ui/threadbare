@@ -40,6 +40,7 @@ import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import { SPHERE_OPPOSITIONS } from './cosmology';
+import { getDivineAttention } from './divineAttention';
 
 // ─── Constants ───────────────────────────────────────────────────
 
@@ -268,6 +269,39 @@ export function computeTraitBonus(
   return Math.min(total, TRAIT_BONUS_CAP);
 }
 
+/**
+ * Compute divine intervention modifier by reading active intervention bonus
+ * from the agent's divine attention state and intervention history.
+ *
+ * The modifier is the effectiveBonus from the most recent intervention
+ * on this agent (stored as `activeInterventionBonus` on the agent node).
+ * This property is set by the UI/action layer when the player commits essence.
+ *
+ * Fail-soft: returns 0 if no active intervention or agent not found.
+ */
+export function computeDivineInterventionModifier(
+  graph: WorldGraph,
+  agentId: string,
+): number {
+  const node = graph.getNode(agentId);
+  if (!node) return 0;
+
+  // Check for active intervention bonus (set by player action)
+  const activeBonus = node.properties.activeInterventionBonus as number | undefined;
+  if (activeBonus && typeof activeBonus === 'number' && activeBonus > 0) {
+    return activeBonus;
+  }
+
+  // Check divine attention for passive bonus
+  const attention = getDivineAttention(graph, agentId);
+  if (attention.level === 'focused') {
+    // Focused agents get a small passive bonus
+    return 0.02;
+  }
+
+  return 0;
+}
+
 // ─── Main Pipeline ───────────────────────────────────────────────
 
 /**
@@ -285,7 +319,7 @@ export function computeResolutionModifiers(
   const equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
   const terrainModifier = computeTerrainModifier(graph, agentId, locationId);
   const traitBonus = computeTraitBonus(graph, agentId, stepReach);
-  const divineInterventionModifier = 0; // Stub — will be implemented in Phase 3
+  const divineInterventionModifier = computeDivineInterventionModifier(graph, agentId);
 
   const totalModifier =
     sphereAlignmentBonus +
