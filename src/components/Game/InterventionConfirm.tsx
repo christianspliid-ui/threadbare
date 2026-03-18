@@ -212,24 +212,24 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           {/* Actions */}
           <div className="flex gap-3">
             {isOutOfRange ? (
-              <Button variant="secondary" fullWidth onClick={onCancel} aria-label="Cancel">
+              <Button variant="secondary" size="lg" fullWidth onClick={onCancel} aria-label="Cancel">
                 Cancel
               </Button>
             ) : isLocal ? (
               <>
-                <Button variant="primary" fullWidth onClick={() => onConfirm('visit')} disabled={!canAfford}>
+                <Button variant="primary" size="lg" fullWidth onClick={() => onConfirm('visit')} disabled={!canAfford}>
                   Go to Them (+15%)
                 </Button>
-                <Button variant="secondary" fullWidth onClick={() => onConfirm('summon')} disabled={!canAfford}>
+                <Button variant="secondary" size="lg" fullWidth onClick={() => onConfirm('summon')} disabled={!canAfford}>
                   Summon (+1 ess)
                 </Button>
               </>
             ) : (
               <>
-                <Button variant="primary" fullWidth onClick={() => onConfirm()} disabled={!canAfford} aria-label="Confirm">
+                <Button variant="primary" size="lg" fullWidth onClick={() => onConfirm()} disabled={!canAfford} aria-label="Confirm">
                   Confirm
                 </Button>
-                <Button variant="secondary" fullWidth onClick={onCancel} aria-label="Cancel">
+                <Button variant="secondary" size="lg" fullWidth onClick={onCancel} aria-label="Cancel">
                   Cancel
                 </Button>
               </>
