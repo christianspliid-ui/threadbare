@@ -18,7 +18,15 @@ export function CosmologyPanel({ cosmology, seed, onCosmologyChange, onSeedChang
   const handleRandomSeed = () => { onSeedChange(Math.floor(Math.random() * 999999)); };
 
   return (
-    <div className="panel-glass-raised" style={{ padding: 'var(--panel-padding)', display: 'flex', flexDirection: 'column', gap: 'var(--space-5)' }}>
+    <div style={{
+      padding: 'var(--panel-padding)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 'var(--space-5)',
+      background: 'linear-gradient(145deg, rgba(34, 34, 40, 0.95), rgba(26, 26, 31, 0.98))',
+      border: '1px solid var(--border-medium)',
+      borderRadius: 'var(--panel-radius)',
+    }}>
       <h2 className="section-heading">Creation Spheres</h2>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-1)' }}>
         {SPHERE_NAMES.map(sphere => (

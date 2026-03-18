@@ -59,8 +59,15 @@ export function InfoPanel({ tile }: InfoPanelProps) {
   if (!tile) {
     return (
       <div
-        className="panel-glass-raised italic text-center animate-breathe"
-        style={{ padding: 'var(--panel-padding)', fontSize: 'var(--text-sm)', color: 'var(--text-tertiary)' }}
+        className="italic text-center animate-breathe"
+        style={{
+          padding: 'var(--panel-padding)',
+          fontSize: 'var(--text-sm)',
+          color: 'var(--text-tertiary)',
+          background: 'linear-gradient(145deg, rgba(34, 34, 40, 0.95), rgba(26, 26, 31, 0.98))',
+          border: '1px solid var(--border-medium)',
+          borderRadius: 'var(--panel-radius)',
+        }}
       >
         Hover over a hex to see details
       </div>
@@ -75,7 +82,15 @@ export function InfoPanel({ tile }: InfoPanelProps) {
   );
 
   return (
-    <div className="panel-glass-raised" style={{ padding: 'var(--panel-padding)', display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
+    <div style={{
+      padding: 'var(--panel-padding)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 'var(--space-3)',
+      background: 'linear-gradient(145deg, rgba(34, 34, 40, 0.95), rgba(26, 26, 31, 0.98))',
+      border: '1px solid var(--border-medium)',
+      borderRadius: 'var(--panel-radius)',
+    }}>
       <div>
         <p className="section-heading">Terrain</p>
         <p style={{ fontSize: 'var(--text-base)', fontWeight: 700, fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
