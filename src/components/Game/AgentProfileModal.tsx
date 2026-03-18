@@ -61,6 +61,7 @@ const LOCKED_TEXT: Record<2 | 3 | 4, string> = {
 
 export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }: AgentProfileModalProps) {
   const [selectedAttachment, setSelectedAttachment] = useState<AttachmentDetailData | null>(null);
+  const [portraitExpanded, setPortraitExpanded] = useState(false);
   const backstorySectionRef = useRef<HTMLDivElement>(null);
   // Track which strata badges have faded (badge fades after NEW_BADGE_FADE_MS)
   const [fadedStrata, setFadedStrata] = useState<Set<number>>(new Set());
@@ -200,7 +201,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
       {/* Header Zone */}
       <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex gap-4 mb-3">
-          {/* Portrait — 3:4 aspect ratio matching source images */}
+          {/* Portrait — 3:4 aspect ratio, click to expand */}
           <div
             data-testid="portrait-silhouette"
             className="rounded overflow-hidden flex-shrink-0"
@@ -208,6 +209,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
               width: '120px',
               minWidth: '120px',
               height: '160px',
+              cursor: card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 'pointer' : undefined,
               background:
                 card.knowledgeLevel === 'stranger'
                   ? 'linear-gradient(135deg, rgba(0,0,0,0.8) 0%, rgba(51,51,51,0.6) 100%)'
@@ -215,6 +217,18 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
                     ? 'linear-gradient(135deg, rgba(120,53,15,0.4) 0%, rgba(30,27,46,0.8) 100%)'
                     : undefined,
             }}
+            onClick={() => {
+              if (card.portraitUrl && card.knowledgeLevel !== 'stranger') setPortraitExpanded(true);
+            }}
+            role={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 'button' : undefined}
+            tabIndex={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? 0 : undefined}
+            onKeyDown={(e) => {
+              if ((e.key === 'Enter' || e.key === ' ') && card.portraitUrl && card.knowledgeLevel !== 'stranger') {
+                e.preventDefault();
+                setPortraitExpanded(true);
+              }
+            }}
+            aria-label={card.portraitUrl && card.knowledgeLevel !== 'stranger' ? `View full portrait of ${card.name}` : undefined}
           >
             {card.knowledgeLevel !== 'stranger' && card.portraitUrl && (
               <img
@@ -562,6 +576,31 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
             </section>
           )}
         </div>
+
+      {/* Portrait Lightbox */}
+      {portraitExpanded && card.portraitUrl && (
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.85)' }}
+          onClick={() => setPortraitExpanded(false)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => { if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') setPortraitExpanded(false); }}
+          aria-label="Close portrait"
+        >
+          <img
+            src={card.portraitUrl}
+            alt={`Full portrait of ${card.name}`}
+            style={{
+              maxHeight: '90%',
+              maxWidth: '90%',
+              objectFit: 'contain',
+              borderRadius: '8px',
+              boxShadow: '0 8px 48px rgba(0, 0, 0, 0.8)',
+            }}
+          />
+        </div>
+      )}
 
       {/* Attachment Detail Overlay (slide-in within modal) */}
       {selectedAttachment && (
