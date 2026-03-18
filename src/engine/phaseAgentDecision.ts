@@ -5,16 +5,6 @@
  * runs the filter pipeline → scoring → action selection (start_local,
  * queue_movement, attempt_remote) or falls back to idle behavior (drift/stay).
  *
- * ─── Constants ──────────────────────────────────────────────────
- * | Name                       | Default | Purpose                                       |
- * |----------------------------|---------|-----------------------------------------------|
- * | (none — delegates to sub-modules for all tunable values)      |
- *
- * ─── Tracing ────────────────────────────────────────────────────
- * Delegates to encounterFilterPipeline (FilterPipelineTrace) and
- * encounterScoring (ScoringTrace). This phase itself emits TickEvents
- * for UI display of agent decisions.
- *
  * ─── Fail-soft ──────────────────────────────────────────────────
  * | Failure case                    | Fallback                              |
  * |---------------------------------|---------------------------------------|
@@ -22,19 +12,18 @@
  * | Filter pipeline throws          | Caught per-agent, agent stays idle    |
  * | Scoring throws                  | Caught per-agent, agent stays idle    |
  * | Pathfinding returns null        | Skip movement, agent stays            |
- * | Graph.updateNode throws         | Caught per-agent, continue            |
- *
- * ─── PRNG ───────────────────────────────────────────────────────
- * `rng` parameter passed to resolveIdleBehavior for tie-breaking.
+ * | initiateEncounter throws        | Caught per-agent, continue            |
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
 import type { EncounterCacheManager } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
+import type { EncounterProgress } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
 import { scoreAndSelect } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
+import { getEncounterById } from '../data/encounter-content';
 import { findShortestPath } from './pathfinding';
 
 export function phaseAgentDecision(
@@ -46,7 +35,7 @@ export function phaseAgentDecision(
   const graph = state.graph;
   const allEntries = encounterCache.getAllEntries();
   const newEvents: TickEvent[] = [];
-  const encounterProgress = [...state.encounterProgress];
+  const newEncounterProgress: EncounterProgress[] = [];
 
   // Get all individual actors
   const actors = graph.getNodesByType('actor').filter(
@@ -62,13 +51,17 @@ export function phaseAgentDecision(
         continue;
       }
 
-      // Skip if occupied in encounter
-      const activeEncounter = encounterProgress.find(
+      // Skip if occupied in encounter (check both existing and newly started)
+      const activeEncounter = state.encounterProgress.find(
+        (ep) => ep.actorId === agentId && ep.status === 'active',
+      ) ?? newEncounterProgress.find(
         (ep) => ep.actorId === agentId && ep.status === 'active',
       );
       if (activeEncounter && isEncounterOccupied(activeEncounter, state.tick)) {
         continue;
       }
+      // Also skip if agent already has ANY active encounter (not just occupied ones)
+      if (activeEncounter) continue;
 
       // Skip if moving
       const movementState = actor.properties?.movementState as
@@ -78,13 +71,14 @@ export function phaseAgentDecision(
         continue;
       }
 
-      // Get agent location — check both located_at outgoing and contains incoming
+      // Get agent location — check located_at outgoing, then contains outgoing
+      // (worldSeed uses contains: source=agent, target=location)
       const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-      const inContains = graph.getIncomingEdges(agentId, 'contains');
+      const outContains = graph.getOutgoingEdges(agentId, 'contains');
 
       let locationId: string | undefined;
       if (locEdges.length > 0) locationId = locEdges[0].target;
-      else if (inContains.length > 0) locationId = inContains[0].source;
+      else if (outContains.length > 0) locationId = outContains[0].target;
 
       if (!locationId) continue; // no location, skip
 
@@ -111,15 +105,31 @@ export function phaseAgentDecision(
       if (decision.selected) {
         const sel = decision.selected;
 
-        if (sel.action === 'start_local') {
-          // Start local encounter
-          newEvents.push({
-            id: `decision_${agentId}_${state.tick}`,
-            tick: state.tick,
-            type: 'agent_encounter',
-            message: `${actor.name} begins ${sel.entry.templateId.replace('encounter.', '')}`,
-            significance: 0.4,
-          });
+        if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
+          // Start the encounter — create EncounterProgress
+          const template = getEncounterById(sel.entry.templateId);
+          if (template) {
+            const firstStepDuration = template.steps[0]?.duration ?? 1;
+            const progress: EncounterProgress = {
+              encounterId: sel.entry.templateId,
+              actorId: agentId,
+              currentEncounterIndex: 0,
+              history: [],
+              status: 'active',
+              startedTick: state.tick,
+              occupiedUntilTick: state.tick + firstStepDuration,
+            };
+            newEncounterProgress.push(progress);
+
+            const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
+            newEvents.push({
+              id: `decision_${agentId}_${state.tick}`,
+              tick: state.tick,
+              type: 'agent_encounter',
+              message: `${actor.name} ${prefix} ${template.name}`,
+              significance: 0.4,
+            });
+          }
         } else if (sel.action === 'queue_movement') {
           // Queue movement toward the encounter's location
           const pathResult = findShortestPath(
@@ -140,22 +150,17 @@ export function phaseAgentDecision(
                 },
               },
             });
+            // Get location name for better message
+            const destNode = graph.getNode(sel.entry.locationId);
+            const destName = destNode?.name ?? sel.entry.locationId;
             newEvents.push({
               id: `decision_move_${agentId}_${state.tick}`,
               tick: state.tick,
               type: 'agent_movement',
-              message: `${actor.name} sets out toward ${sel.entry.locationId}`,
+              message: `${actor.name} sets out toward ${destName}`,
               significance: 0.3,
             });
           }
-        } else if (sel.action === 'attempt_remote') {
-          newEvents.push({
-            id: `decision_remote_${agentId}_${state.tick}`,
-            tick: state.tick,
-            type: 'agent_encounter',
-            message: `${actor.name} remotely attempts ${sel.entry.templateId.replace('encounter.', '')}`,
-            significance: 0.4,
-          });
         }
       } else {
         // Idle behavior
@@ -198,6 +203,6 @@ export function phaseAgentDecision(
 
   return {
     tickEvents: [...state.tickEvents, ...newEvents],
-    encounterProgress,
+    encounterProgress: [...state.encounterProgress, ...newEncounterProgress],
   };
 }

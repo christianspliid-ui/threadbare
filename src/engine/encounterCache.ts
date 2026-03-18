@@ -147,7 +147,12 @@ function getLocationType(
   const node = graph.getNode(locationId);
   if (!node) return undefined;
   const props = node.properties as Record<string, unknown>;
-  return (props.locationType as string) ?? undefined;
+  // Check locationType first, fall back to locationSubtype (worldSeed uses both)
+  const locType = props.locationType as string | undefined;
+  const locSubtype = props.locationSubtype as string | undefined;
+  // Skip generic 'location' — it doesn't match any encounter template
+  if (locType && locType !== 'location') return locType;
+  return locSubtype ?? undefined;
 }
 
 // ─── Cache Manager ──────────────────────────────────────────────

@@ -148,101 +148,15 @@ export function phaseMovement(state: GameState): Partial<GameState> {
     }
 
     // --- Case 2: Agent arrived or has no movement yet ---
-    // Avatar: skip autonomous re-evaluation — player controls destination
-    if (isAvatar) continue;
-
-    // Check if it's time to re-evaluate
-    const lastDecisionTick = movementState?.lastDecisionTick ?? -Infinity;
-    const shouldReevaluate = (state.tick - lastDecisionTick >= DECISION_REEVALUATION_TICKS) || state.tick === 0;
-
-    if (!shouldReevaluate) {
-      continue; // Not time to re-evaluate yet
+    // @deprecated — destination-picking is now handled by phaseAgentDecision.
+    // This phase only executes existing movement queues (Case 1 above).
+    // Skip agents with no active movement queue.
+    {
+      continue;
     }
 
-    // Get current location
-    const locatedAtEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
-    if (locatedAtEdges.length === 0) {
-      continue; // Agent has no location, skip
-    }
-
-    const currentLocationId = locatedAtEdges[0].target; // Should be exactly one located_at edge
-
-    // Get axiological profile, default to all-zeros
-    const axiologicalProfile = (actor.properties?.axiologicalProfile as AxiologicalProfile) || {
-      mercy_ruthlessness: 0,
-      asceticism_extravagance: 0,
-      honesty_cunning: 0,
-      tradition_novelty: 0,
-      loyalty_ambition: 0,
-      frankness_propriety: 0,
-      humility_pride: 0,
-      sacrifice_survival: 0,
-      stoicism_passion: 0,
-      courage_prudence: 0,
-    };
-
-    // Generate candidates
-    const candidates = generateMovementCandidates(
-      state.graph,
-      actorId,
-      currentLocationId,
-      axiologicalProfile,
-    );
-
-    // Find best candidate
-    const bestCandidate = candidates.length > 0 ? candidates[0] : null;
-
-    if (bestCandidate && bestCandidate.score >= MOVEMENT_SCORE_THRESHOLD) {
-      // --- Start movement to this destination ---
-      const path = bestCandidate.path;
-
-      if (path.length > 0) {
-        // Compute cost of first edge
-        const firstEdgeCost = computeEdgeCost(
-          state.graph,
-          actorId,
-          currentLocationId,
-          path[0],
-        ).totalCost;
-
-        // Initialize movement state
-        const newMovementState = initMovementState(
-          bestCandidate.destinationId,
-          path,
-          firstEdgeCost,
-          state.tick,
-        );
-
-        // Update actor
-        state.graph.updateNode(actorId, {
-          properties: { ...actor.properties, movementState: newMovementState },
-        });
-      }
-    } else {
-      // --- No good candidate, just update lastDecisionTick ---
-      if (movementState) {
-        const updatedState: MovementState = {
-          ...movementState,
-          lastDecisionTick: state.tick,
-        };
-        state.graph.updateNode(actorId, {
-          properties: { ...actor.properties, movementState: updatedState },
-        });
-      } else {
-        // Create a fresh movement state with empty queue
-        const freshState: MovementState = {
-          destinationId: currentLocationId,
-          movementQueue: [],
-          ticksAccumulated: 0,
-          currentEdgeCost: 0,
-          lastDecisionTick: state.tick,
-          movementHistory: [],
-        };
-        state.graph.updateNode(actorId, {
-          properties: { ...actor.properties, movementState: freshState },
-        });
-      }
-    }
+    // Legacy destination-picking (generateMovementCandidates + computeBasePull)
+    // removed — replaced by encounter-driven scoring in phaseAgentDecision.
   }
 
   return {
