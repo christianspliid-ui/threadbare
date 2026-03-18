@@ -42,6 +42,8 @@ export interface TickEvent {
     | 'settlement_tier_change'
     | 'economic_chronicle'
     | 'tier_promotion'
+    // Encounter events
+    | 'encounter_completed' | 'encounter_step_success' | 'encounter_step_failure'
     // Social fabric events
     | 'faction_founded' | 'faction_dissolved' | 'trust_shattered' | 'trust_deepened'
     | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social';

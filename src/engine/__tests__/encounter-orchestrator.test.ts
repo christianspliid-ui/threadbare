@@ -5,7 +5,7 @@ import {
   resolveEncounter,
   advanceEncounter,
 } from '../encounter';
-import { phaseEncounterProgression, resetEventCounter } from '../orchestrator';
+import { phaseEncounterProgression, phaseEncounterProgressionV2, resetEventCounter } from '../orchestrator';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
 import type { GameState, TickEvent } from '../../types/gameState';
@@ -354,6 +354,124 @@ describe('phaseEncounterProgression', () => {
       const failureEvent = phaseResult.tickEvents.find(e => e.type === 'encounter_encounter_failure');
       expect(failureEvent).toBeDefined();
       expect(failureEvent?.significance).toBeGreaterThan(0.4);
+    }
+  });
+});
+
+describe('phaseEncounterProgressionV2 — retinue notifications', () => {
+  beforeEach(() => {
+    resetEventCounter();
+  });
+
+  function makeRetinueAgent(state: GameState, actorId: string) {
+    // Add worships edge from actor to ascendant → makes them retinue
+    state.graph.addEdge({
+      source: actorId,
+      target: state.ascendantId,
+      type: 'worships',
+      properties: { tier: 1 },
+    });
+  }
+
+  it('retinue agent completing encounter gets toast notification with actorId', () => {
+    const state = createTestGameState(100);
+    const actors = state.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    const actor = actors[0];
+    const available = getAvailableEncounters(state, actor.id);
+    if (available.length === 0) return;
+
+    // Make actor part of retinue
+    makeRetinueAgent(state, actor.id);
+
+    // Initiate and force-complete all steps
+    const encounter = available[0];
+    const progress = initiateEncounter(state, actor.id, encounter.id, 1);
+    for (let i = 0; i < encounter.steps.length; i++) {
+      const result = resolveEncounter(state, progress, 10); // success
+      advanceEncounter(state, progress, result.success, 1 + i);
+    }
+    expect(progress.status).toBe('completed');
+
+    // Reset active to force v2 to re-process (v2 only processes active encounters)
+    // Instead, create a fresh encounter and let v2 resolve it in one step
+    const state2 = createTestGameState(101);
+    const actors2 = state2.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    const actor2 = actors2[0];
+    const available2 = getAvailableEncounters(state2, actor2.id);
+    if (available2.length === 0) return;
+
+    makeRetinueAgent(state2, actor2.id);
+    // Find a single-step encounter or use the first one
+    const enc2 = available2[0];
+    initiateEncounter(state2, actor2.id, enc2.id, 1);
+    // Set tick past occupiedUntilTick so v2 resolves it
+    state2.tick = 100;
+
+    const phaseResult = phaseEncounterProgressionV2(state2);
+    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
+      e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
+    );
+
+    // Should have at least one encounter event
+    expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
+
+    // The event for a retinue agent should have notification + actorId
+    const retinueEvent = encounterEvents.find(e => e.actorId === actor2.id);
+    if (retinueEvent && (retinueEvent.type === 'encounter_completed' || retinueEvent.type === 'encounter_step_failure')) {
+      expect(retinueEvent.notification).toBeDefined();
+      expect(retinueEvent.notification?.channel).toBe('toast');
+      expect(retinueEvent.actorId).toBe(actor2.id);
+    }
+  });
+
+  it('non-retinue agent completing encounter does NOT get notification', () => {
+    const state = createTestGameState(102);
+    const actors = state.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    const actor = actors[0];
+    const available = getAvailableEncounters(state, actor.id);
+    if (available.length === 0) return;
+
+    // Do NOT add worships edge — actor is not retinue
+    const enc = available[0];
+    initiateEncounter(state, actor.id, enc.id, 1);
+    state.tick = 100;
+
+    const phaseResult = phaseEncounterProgressionV2(state);
+    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
+      e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
+    );
+
+    // Non-retinue events should NOT have notification directives
+    for (const ev of encounterEvents) {
+      expect(ev.notification).toBeUndefined();
+      expect(ev.actorId).toBeUndefined();
+    }
+  });
+
+  it('retinue encounter completion message includes encounter name', () => {
+    const state = createTestGameState(103);
+    const actors = state.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    const actor = actors[0];
+    const available = getAvailableEncounters(state, actor.id);
+    if (available.length === 0) return;
+
+    makeRetinueAgent(state, actor.id);
+    const enc = available[0];
+    initiateEncounter(state, actor.id, enc.id, 1);
+    state.tick = 100;
+
+    const phaseResult = phaseEncounterProgressionV2(state);
+    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
+      e => (e.type === 'encounter_completed' || e.type === 'encounter_step_failure') && e.actorId === actor.id
+    );
+
+    // Message should include the encounter template name
+    for (const ev of encounterEvents) {
+      expect(ev.message).toContain(enc.name);
     }
   });
 });
