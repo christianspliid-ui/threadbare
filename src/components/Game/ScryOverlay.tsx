@@ -4,6 +4,11 @@
  * Displays the player's court structure with position slots (Apex/Inner/Outer),
  * sacred site and artifact holdings. Supports agent assignment via a three-step
  * picker (position → agent → title), title proposal viewing, and position demotion.
+ *
+ * Visual features:
+ * - Sphere-themed background art based on ascendant's primary sphere
+ * - SVG thread connections between court positions in secondary sphere color
+ * - Agent portraits in filled slots with domain-colored frames
  */
 
 import { useState, useCallback, useEffect, useMemo, memo } from 'react';
@@ -18,28 +23,52 @@ import {
 } from '../../engine/scry';
 import type { TitleGenerationParams } from '../../engine/scry';
 import { getSphereColor } from '../../data/sphereIcons';
+import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-content';
 import { useScryContext } from './contexts/ScryContext';
 import { Tooltip } from '../shared/Tooltip';
 
 type PickerMode = 'closed' | 'agent' | 'title';
 
+/** Court background image paths by sphere */
+const COURT_BACKGROUNDS: Record<SphereName, string> = {
+  force: '/backgrounds/court/force.png',
+  matter: '/backgrounds/court/matter.png',
+  energy: '/backgrounds/court/energy.png',
+  life: '/backgrounds/court/life.png',
+  mind: '/backgrounds/court/mind.png',
+  spirit: '/backgrounds/court/spirit.png',
+  time: '/backgrounds/court/time.png',
+  entropy: '/backgrounds/court/entropy.png',
+};
+
+/** Slot size constants by rank */
+const SLOT_SIZES = {
+  apex: { width: 160, height: 224 },
+  inner: { width: 128, height: 176 },
+  outer: { width: 96, height: 128 },
+} as const;
+
 interface PositionSlotProps {
   position: Position;
   onSelect: () => void;
+  retinueAgents: RetinueAgent[];
 }
 
 const PositionSlot = memo(function PositionSlot(
-  { position, onSelect }: PositionSlotProps
+  { position, onSelect, retinueAgents }: PositionSlotProps
 ) {
   const rankLabel = position.rank.charAt(0).toUpperCase() + position.rank.slice(1);
+  const size = SLOT_SIZES[position.rank];
 
   if (!position.activeTitle) {
     // Empty slot
     return (
       <button
         onClick={onSelect}
-        className="w-full p-3 rounded-lg border transition-all hover:scale-105"
+        className="rounded-lg border transition-all hover:scale-105 flex flex-col items-center justify-center"
         style={{
+          width: size.width,
+          height: size.height,
           backgroundColor: 'var(--bg-surface)',
           borderColor: 'var(--border-subtle)',
         }}
@@ -47,42 +76,146 @@ const PositionSlot = memo(function PositionSlot(
         <Tooltip id={`ui.scry_rank_${position.rank === 'apex' ? 'champion' : position.rank === 'inner' ? 'steward' : 'herald'}`}>
           <div className="text-xs font-bold mb-1 cursor-help" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
         </Tooltip>
-        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
+        <div className="text-sm px-2 text-center" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
         <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>Empty</div>
       </button>
     );
   }
 
-  // Filled slot — non-interactive (one-way investiture)
-  if (position.activeTitle) {
-    const title = position.activeTitle;
-    const sphereColor = title ? getSphereColor(title.sphereAffinity) : '#b4a078';
+  // Filled slot — show portrait with domain-colored frame
+  const title = position.activeTitle;
+  const agent = retinueAgents.find(a => a.id === position.assignedAgentId);
+  const frameColor = agent?.primaryDomain
+    ? (DOMAIN_COLORS[agent.primaryDomain] ?? DEFAULT_AGENT_COLOR)
+    : DEFAULT_AGENT_COLOR;
 
-    return (
+  return (
+    <div
+      className="rounded-lg overflow-hidden relative"
+      style={{
+        width: size.width,
+        height: size.height,
+        border: `3px solid ${frameColor}`,
+        boxShadow: `0 0 8px ${frameColor}40`,
+      }}
+    >
+      {/* Portrait image or gradient fallback */}
+      {agent?.portraitUrl ? (
+        <img
+          src={agent.portraitUrl}
+          alt={agent.name}
+          className="absolute inset-0 w-full h-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `linear-gradient(135deg, ${frameColor}30, ${frameColor}10, #0a0a0e)`,
+          }}
+        />
+      )}
+
+      {/* Dark gradient scrim at bottom for text readability */}
       <div
-        className="w-full p-3 rounded-lg border text-left"
+        className="absolute bottom-0 left-0 right-0 p-2"
         style={{
-          backgroundColor: 'var(--bg-raised)',
-          borderColor: 'var(--border-subtle)',
-          borderLeftColor: sphereColor,
-          borderLeftWidth: '4px',
+          background: 'linear-gradient(transparent, rgba(10, 10, 14, 0.85) 40%)',
         }}
       >
         <Tooltip id={`ui.scry_rank_${position.rank === 'apex' ? 'champion' : position.rank === 'inner' ? 'steward' : 'herald'}`}>
-          <div className="text-xs font-bold mb-1 cursor-help" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
+          <div className="text-xs font-bold cursor-help" style={{ color: 'var(--text-secondary)' }}>{rankLabel}</div>
         </Tooltip>
-        <div className="text-sm" style={{ color: 'var(--text-primary)' }}>{position.archetype}</div>
         {title && (
-          <div>
-            <div className="text-xs mt-1 line-clamp-2" style={{ color: 'var(--text-secondary)' }}>{title.name}</div>
+          <div
+            className="text-xs mt-0.5 line-clamp-2 font-bold"
+            style={{ color: frameColor }}
+          >
+            {title.name}
+          </div>
+        )}
+        {agent && (
+          <div className="text-xs mt-0.5 truncate" style={{ color: 'var(--text-tertiary)' }}>
+            {agent.name}
           </div>
         )}
       </div>
-    );
+    </div>
+  );
+});
+
+/**
+ * SVG thread connections between court positions — tree hierarchy.
+ * Draws curved bezier paths from Apex → Inner → Outer.
+ */
+function CourtThreads({ threadColor }: { threadColor: string }) {
+  // Layout constants matching the grid layout
+  // Apex: 1 slot centered
+  // Inner: 3 slots evenly spaced
+  // Outer: 6 slots evenly spaced
+  const containerWidth = 800;
+
+  // Vertical positions (approximate center of each row)
+  const apexY = 112;
+  const innerY = 300;
+  const outerY = 470;
+
+  // Horizontal positions
+  const apexX = containerWidth / 2;
+  const innerXs = [containerWidth * 0.2, containerWidth * 0.5, containerWidth * 0.8];
+  const outerXs = Array.from({ length: 6 }, (_, i) => containerWidth * ((i + 0.5) / 6));
+
+  const paths: string[] = [];
+
+  // Apex → Inner connections
+  for (const ix of innerXs) {
+    const cp1y = apexY + (innerY - apexY) * 0.4;
+    const cp2y = apexY + (innerY - apexY) * 0.6;
+    paths.push(`M ${apexX} ${apexY} C ${apexX} ${cp1y}, ${ix} ${cp2y}, ${ix} ${innerY}`);
   }
 
-  return null;
-});
+  // Inner → Outer connections (each inner connects to 2 outer)
+  for (let i = 0; i < 3; i++) {
+    const ix = innerXs[i];
+    const o1 = outerXs[i * 2];
+    const o2 = outerXs[i * 2 + 1];
+    const cp1y = innerY + (outerY - innerY) * 0.4;
+    const cp2y = innerY + (outerY - innerY) * 0.6;
+    paths.push(`M ${ix} ${innerY} C ${ix} ${cp1y}, ${o1} ${cp2y}, ${o1} ${outerY}`);
+    paths.push(`M ${ix} ${innerY} C ${ix} ${cp1y}, ${o2} ${cp2y}, ${o2} ${outerY}`);
+  }
+
+  return (
+    <svg
+      className="absolute inset-0 pointer-events-none"
+      viewBox={`0 0 ${containerWidth} 560`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: '100%', height: '100%', opacity: 0.5 }}
+    >
+      <defs>
+        <filter id="thread-glow">
+          <feGaussianBlur stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {paths.map((d, i) => (
+        <path
+          key={i}
+          d={d}
+          fill="none"
+          stroke={threadColor}
+          strokeWidth="1.5"
+          strokeDasharray="4 4"
+          filter="url(#thread-glow)"
+          opacity="0.6"
+        />
+      ))}
+    </svg>
+  );
+}
 
 interface ContextMenuProps {
   onDemote: () => void;
@@ -165,27 +298,47 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {eligible.map(agent => (
-              <button
-                key={agent.id}
-                onClick={() => onSelectAgent(agent)}
-                className="w-full text-left p-3 rounded-lg border transition-all"
-                style={{
-                  backgroundColor: 'var(--bg-raised)',
-                  borderColor: 'var(--border-subtle)',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-raised)')}
-              >
-                <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{agent.name}</div>
-                <div className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-                  {agent.tierName} • {agent.locationName}
-                </div>
-                <div className="text-xs mt-1" style={{ color: 'var(--text-tertiary)' }}>
-                  Top domain: <span className="capitalize">{agent.id.split('.')[0]}</span>
-                </div>
-              </button>
-            ))}
+            {eligible.map(agent => {
+              const domainColor = agent.primaryDomain
+                ? (DOMAIN_COLORS[agent.primaryDomain] ?? DEFAULT_AGENT_COLOR)
+                : DEFAULT_AGENT_COLOR;
+              return (
+                <button
+                  key={agent.id}
+                  onClick={() => onSelectAgent(agent)}
+                  className="w-full text-left p-3 rounded-lg border transition-all flex gap-3 items-center"
+                  style={{
+                    backgroundColor: 'var(--bg-raised)',
+                    borderColor: 'var(--border-subtle)',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-raised)')}
+                >
+                  {/* Mini portrait */}
+                  <div
+                    className="w-10 h-14 rounded overflow-hidden flex-shrink-0"
+                    style={{ border: `2px solid ${domainColor}` }}
+                  >
+                    {agent.portraitUrl ? (
+                      <img src={agent.portraitUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    ) : (
+                      <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${domainColor}30, #0a0a0e)` }} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{agent.name}</div>
+                    <div className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
+                      {agent.tierName} • {agent.locationName}
+                    </div>
+                    {agent.primaryDomain && (
+                      <div className="text-xs mt-0.5 capitalize" style={{ color: domainColor }}>
+                        {agent.primaryDomain}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
@@ -199,6 +352,7 @@ interface PositionSlotWithMenuProps {
   onSelect: () => void;
   onDemote: () => void;
   onCloseMenu: () => void;
+  retinueAgents: RetinueAgent[];
 }
 
 const PositionSlotWithMenu = memo(
@@ -208,10 +362,11 @@ const PositionSlotWithMenu = memo(
     onSelect,
     onDemote,
     onCloseMenu,
+    retinueAgents,
   }: PositionSlotWithMenuProps) {
     return (
       <div>
-        <PositionSlot position={position} onSelect={onSelect} />
+        <PositionSlot position={position} onSelect={onSelect} retinueAgents={retinueAgents} />
         {contextMenuOpen && (
           <ContextMenu onDemote={onDemote} onClose={onCloseMenu} />
         )}
@@ -219,7 +374,6 @@ const PositionSlotWithMenu = memo(
     );
   },
   (prevProps, nextProps) => {
-    // Return true if props are equal (no re-render needed)
     return (
       prevProps.position.id === nextProps.position.id &&
       prevProps.position.assignedAgentId === nextProps.position.assignedAgentId &&
@@ -227,7 +381,8 @@ const PositionSlotWithMenu = memo(
       prevProps.contextMenuOpen === nextProps.contextMenuOpen &&
       prevProps.onSelect === nextProps.onSelect &&
       prevProps.onDemote === nextProps.onDemote &&
-      prevProps.onCloseMenu === nextProps.onCloseMenu
+      prevProps.onCloseMenu === nextProps.onCloseMenu &&
+      prevProps.retinueAgents === nextProps.retinueAgents
     );
   }
 );
@@ -246,6 +401,7 @@ interface PositionSlotRowProps {
   onPositionClick: (positionId: string) => void;
   onDemote: () => void;
   onCloseMenu: () => void;
+  retinueAgents: RetinueAgent[];
 }
 
 const PositionSlotRow = memo(function PositionSlotRow({
@@ -254,6 +410,7 @@ const PositionSlotRow = memo(function PositionSlotRow({
   onPositionClick,
   onDemote,
   onCloseMenu,
+  retinueAgents,
 }: PositionSlotRowProps) {
   const handleSelect = useCallback(() => {
     onPositionClick(position.id);
@@ -266,6 +423,7 @@ const PositionSlotRow = memo(function PositionSlotRow({
       onSelect={handleSelect}
       onDemote={onDemote}
       onCloseMenu={onCloseMenu}
+      retinueAgents={retinueAgents}
     />
   );
 });
@@ -361,6 +519,7 @@ export function ScryOverlay() {
     retinueAgents,
     essencePool,
     primarySphere,
+    secondarySphere,
     seed,
     onAssign,
     onDemote,
@@ -497,9 +656,14 @@ export function ScryOverlay() {
     [scryState.positions]
   );
 
+  // Thread color from secondary sphere
+  const threadColor = getSphereColor(secondarySphere);
+
+  // Background image from primary sphere
+  const bgImage = COURT_BACKGROUNDS[primarySphere];
+
   // IX-012: Backdrop click handler — close overlay when clicking outside content
   const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    // Only close if clicking the backdrop itself, not child content
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -515,7 +679,16 @@ export function ScryOverlay() {
       }}
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-4xl mx-4 py-8" onClick={(e) => e.stopPropagation()}>
+      {/* Sphere-themed background image */}
+      <img
+        src={bgImage}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+        style={{ opacity: 0.15, mixBlendMode: 'screen' }}
+        loading="eager"
+      />
+
+      <div className="w-full max-w-4xl mx-4 py-8 relative" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between mb-6 px-6">
           <div>
@@ -538,28 +711,32 @@ export function ScryOverlay() {
         </div>
 
         <div
-          className="rounded-lg border p-6 space-y-6"
+          className="rounded-lg border p-6 space-y-6 relative"
           style={{
-            backgroundColor: 'var(--bg-raised)',
+            backgroundColor: 'rgba(20, 18, 15, 0.85)',
             borderColor: 'var(--border-subtle)',
           }}
         >
+          {/* SVG thread connections behind position slots */}
+          <CourtThreads threadColor={threadColor} />
+
           {/* FE-TT-15: Apex with tooltip */}
-          <div>
+          <div className="relative z-10">
             <Tooltip id="ui.scry_rank_champion">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
                 Apex
               </h2>
             </Tooltip>
             <div className="flex gap-4 justify-center">
               {apexPositions.map(pos => (
-                <div key={pos.id} className="w-32">
+                <div key={pos.id}>
                   <PositionSlotRow
                     position={pos}
                     contextMenuOpen={contextMenuPositionId === pos.id}
                     onPositionClick={handlePositionClick}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
+                    retinueAgents={retinueAgents}
                   />
                 </div>
               ))}
@@ -567,13 +744,13 @@ export function ScryOverlay() {
           </div>
 
           {/* FE-TT-15: Inner with tooltip */}
-          <div>
+          <div className="relative z-10">
             <Tooltip id="ui.scry_rank_steward">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
                 Inner Circle
               </h2>
             </Tooltip>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="flex gap-4 justify-center">
               {innerPositions.map(pos => (
                 <div key={pos.id}>
                   <PositionSlotRow
@@ -582,6 +759,7 @@ export function ScryOverlay() {
                     onPositionClick={handlePositionClick}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
+                    retinueAgents={retinueAgents}
                   />
                 </div>
               ))}
@@ -589,13 +767,13 @@ export function ScryOverlay() {
           </div>
 
           {/* FE-TT-15: Outer with tooltip */}
-          <div>
+          <div className="relative z-10">
             <Tooltip id="ui.scry_rank_herald">
-              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help" style={{ color: 'var(--text-secondary)' }}>
+              <h2 className="text-sm font-bold uppercase tracking-wider mb-3 cursor-help text-center" style={{ color: 'var(--text-secondary)' }}>
                 Outer Reaches
               </h2>
             </Tooltip>
-            <div className="grid grid-cols-6 gap-2">
+            <div className="flex gap-3 justify-center flex-wrap">
               {outerPositions.map(pos => (
                 <div key={pos.id}>
                   <PositionSlotRow
@@ -604,6 +782,7 @@ export function ScryOverlay() {
                     onPositionClick={handlePositionClick}
                     onDemote={handleDemote}
                     onCloseMenu={handleCloseContextMenu}
+                    retinueAgents={retinueAgents}
                   />
                 </div>
               ))}
@@ -611,7 +790,7 @@ export function ScryOverlay() {
           </div>
 
           {/* Sacred Sites & Artifacts */}
-          <div className="grid grid-cols-2 gap-6 mt-8">
+          <div className="grid grid-cols-2 gap-6 mt-8 relative z-10">
             <div>
               <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--text-secondary)' }}>
                 Sacred Sites
@@ -659,7 +838,7 @@ export function ScryOverlay() {
 
           {/* Structure Bonus */}
           <div
-            className="p-3 rounded-lg text-xs italic"
+            className="p-3 rounded-lg text-xs italic relative z-10"
             style={{
               backgroundColor: 'var(--bg-surface)',
               borderColor: 'var(--border-subtle)',

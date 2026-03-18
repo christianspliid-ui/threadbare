@@ -10,6 +10,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { InfluenceTier, InfluenceRelationshipProperties } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
+import { getPortraitUrl } from '../data/portrait-assets';
 
 /**
  * A single agent in the ascendant's retinue, with extracted data ready for UI rendering.
@@ -41,6 +42,15 @@ export interface RetinueAgent {
 
   /** Faction name if agent is a faction member, null otherwise */
   factionName: string | null;
+
+  /** Agent's narrative archetype ID (e.g., 'tragic_hero', 'seeker') */
+  archetypeId: string | null;
+
+  /** Portrait image URL resolved from archetype, or null */
+  portraitUrl: string | null;
+
+  /** Agent's primary domain (highest capability) for visual coloring */
+  primaryDomain: ReachDomain | null;
 }
 
 /**
@@ -96,6 +106,22 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       }
     }
 
+    // Extract archetype and portrait
+    const archetypeId = (agentProps.archetypeId as string) ?? null;
+    const portraitUrl = getPortraitUrl(archetypeId ?? undefined);
+
+    // Derive primary domain from highest capability
+    let primaryDomain: ReachDomain | null = null;
+    if (domainCapabilities) {
+      let bestValue = -1;
+      for (const [domain, value] of Object.entries(domainCapabilities)) {
+        if (value > bestValue) {
+          bestValue = value;
+          primaryDomain = domain as ReachDomain;
+        }
+      }
+    }
+
     retinueAgents.push({
       id: agentId,
       name: agentNode.name,
@@ -106,6 +132,9 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       profile,
       domainCapabilities,
       factionName,
+      archetypeId,
+      portraitUrl,
+      primaryDomain,
     });
   }
 
