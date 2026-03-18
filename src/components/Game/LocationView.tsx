@@ -799,12 +799,18 @@ export const LocationView = memo(function LocationView({
     const subAgentIds = new Set(subAgents.map(a => a.id));
     const subActiveEncounters = activeEncounters.filter(ep => subAgentIds.has(ep.actorId));
 
+    // Filter available encounters to those matching this sublocation's type
+    const subTypeId = subProps.sublocationTypeId as string | undefined;
+    const subAvailableEncounters = subTypeId
+      ? availableEncounters.filter(e => e.sublocationTypes?.includes(subTypeId))
+      : availableEncounters;
+
     return (
       <SublocationDetailView
         sublocation={selectedSublocation}
         parentLocationName={location.name}
         agents={subAgents}
-        availableEncounters={availableEncounters}
+        availableEncounters={subAvailableEncounters}
         activeEncounters={subActiveEncounters}
         getEncounterTemplate={getEncounterTemplate}
         getAgentName={getAgentName}
@@ -978,6 +984,12 @@ export const LocationView = memo(function LocationView({
                 badgeText = 'Temporal';
               }
 
+              // Filter encounters to those matching this sublocation's type
+              const subTypeId = subProps.sublocationTypeId as string | undefined;
+              const filteredEncounters = subTypeId
+                ? availableEncounters.filter(e => e.sublocationTypes?.includes(subTypeId))
+                : availableEncounters;
+
               return (
                 <SublocationCard
                   key={sublocation.id}
@@ -988,7 +1000,7 @@ export const LocationView = memo(function LocationView({
                   badgeBg={badgeBg}
                   badgeText={badgeText}
                   divineOrigin={divineOrigin}
-                  availableEncounters={availableEncounters}
+                  availableEncounters={filteredEncounters}
                   activeEncounters={activeEncounters}
                   getEncounterTemplate={getEncounterTemplate}
                   getAgentName={getAgentName}
