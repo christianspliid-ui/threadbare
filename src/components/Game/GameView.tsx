@@ -710,6 +710,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             retinueAgents,
             essencePool: gameState.essencePool,
             primarySphere: archetype.sphereAlignment.primary,
+            secondarySphere: archetype.sphereAlignment.secondary,
             tick: gameState.tick,
             seed: gameState.seed + gameState.tick,
             onAssign: handleScryAssign,

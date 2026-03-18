@@ -17,6 +17,7 @@ interface ScryContextValue {
   retinueAgents: RetinueAgent[];
   essencePool: EssencePool;
   primarySphere: SphereName;
+  secondarySphere: SphereName;
   tick: number;
   seed: number;
 

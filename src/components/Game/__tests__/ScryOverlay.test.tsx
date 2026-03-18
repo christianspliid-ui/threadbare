@@ -317,11 +317,19 @@ describe('ScryOverlay', () => {
     const emptySlots = screen.getAllByText(/Empty/i);
     fireEvent.click(emptySlots[0]);
 
-    expect(screen.getByText('Choose Agent')).toBeInTheDocument();
-    // Tattersail has no position — should appear
+    const pickerHeading = screen.getByText('Choose Agent');
+    expect(pickerHeading).toBeInTheDocument();
+    // Tattersail has no position — should appear in picker
     expect(screen.getByText('Tattersail')).toBeInTheDocument();
-    // Kalam is already in apex — must NOT appear
-    expect(screen.queryByText('Kalam')).not.toBeInTheDocument();
+    // Kalam is already in apex — must NOT appear in the picker agent list
+    // (Kalam's name may appear in the filled slot, so scope to picker)
+    const pickerPanel = pickerHeading.closest('[class*="absolute"]');
+    const kalamInPicker = pickerPanel?.querySelector?.('button')
+      ? Array.from(pickerPanel.querySelectorAll('button')).some(
+          btn => btn.textContent?.includes('Kalam')
+        )
+      : false;
+    expect(kalamInPicker).toBe(false);
   });
 
   it('title picker shows insufficient essence message if needed', () => {
