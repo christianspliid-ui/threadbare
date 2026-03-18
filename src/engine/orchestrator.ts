@@ -47,6 +47,7 @@ import {
   initiateEncounter,
   resolveEncounter,
   advanceEncounter,
+  isEncounterOccupied,
 } from './encounter';
 import { getAvatarHexPosition } from './visibility';
 import { generateEncounterCandidates } from './encounterCandidates';
@@ -77,6 +78,21 @@ import { phaseHexState } from './phaseHexState';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
+import { phaseAgentDecision } from './phaseAgentDecision';
+import { EncounterCacheManager } from './encounterCache';
+import { buildDistanceMatrix } from './distanceMatrix';
+import type { DistanceMatrix } from './distanceMatrix';
+
+// ─── Decision Cache (lazy-initialized) ────────────────────────────
+
+let encounterCache: EncounterCacheManager | null = null;
+let distanceMatrix: DistanceMatrix | null = null;
+
+/** Reset the encounter cache and distance matrix (useful for game restart). */
+export function resetDecisionCache(): void {
+  encounterCache = null;
+  distanceMatrix = null;
+}
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -367,6 +383,9 @@ export function phaseEncounterProgression(state: GameState): Partial<GameState> 
   // 1. Progress active encounters
   const activeEncounters = state.encounterProgress.filter(p => p.status === 'active');
   for (const progress of activeEncounters) {
+    // Skip resolution if agent is still occupied (multi-tick step in progress)
+    if (isEncounterOccupied(progress, state.tick)) continue;
+
     // Resolve current step
     const result = resolveEncounter(state, progress);
     // Advance encounter (mutates progress)
@@ -1046,6 +1065,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [] };
 
+  // Lazy-init encounter cache and distance matrix
+  if (!encounterCache) {
+    encounterCache = new EncounterCacheManager();
+    encounterCache.buildFullCache(s.graph);
+  }
+  if (!distanceMatrix) {
+    distanceMatrix = buildDistanceMatrix(s.graph);
+  }
+
   // Advance clock
   const newSeason = Math.floor(s.tick / 90) % 4;
   const newYear = Math.floor(s.tick / 360);
@@ -1070,12 +1098,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 2b: Idle selection — agents pick new unified actions (Phase 7 of unified pipeline)
-  const idleRng = mulberry32(state.seed + state.tick * 37);
-  s = { ...s, ...phaseIdleSelection(s, idleRng) };
-  const idleSelectionEvents = s.tickEvents.length - prevEventCount;
-  phaseEventCounts['idle_selection'] = idleSelectionEvents;
-  agentsProcessed += idleSelectionEvents;
+  // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
+  // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
+  const decisionRng = mulberry32(state.seed + state.tick * 37);
+  s = { ...s, ...phaseAgentDecision(s, encounterCache!, distanceMatrix!, decisionRng) };
+  const decisionEvents = s.tickEvents.length - prevEventCount;
+  phaseEventCounts['agent_decision'] = decisionEvents;
+  agentsProcessed += decisionEvents;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.35: Agent Movement (goal-directed pathfinding)
