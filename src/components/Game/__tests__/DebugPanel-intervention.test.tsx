@@ -162,7 +162,7 @@ describe('DebugPanel — intervention_effect renderer', () => {
       targetAgentId: 'actor.dvorth-shadow',
       targetAgentName: "D'Vorth's Shadow",
       sphere: 'shadow',
-      effects: ["greed_generosity -0.08 for 5 ticks (D'Vorth's burden)"],
+      effects: ["asceticism_extravagance -0.08 for 5 ticks (D'Vorth's burden)"],
       consequenceMessage: "The god's whisper echoes: 'Release thy grip.'",
       initialStrength: 0.50,
       maxDuration: 20,

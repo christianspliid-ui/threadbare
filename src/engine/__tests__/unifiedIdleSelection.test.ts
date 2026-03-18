@@ -42,9 +42,9 @@ function createTestState(): GameState {
       actorType: 'individual',
       axiologicalProfile: {
         courage_prudence: 0.1,
-        ambition_contentment: 0.2,
+        loyalty_ambition: 0.2,
         mercy_justice: -0.1,
-        tradition_innovation: 0.0,
+        tradition_novelty: 0.0,
         autonomy_community: 0.3,
       },
       cooperationStrategy: 'tit_for_tat',
@@ -62,9 +62,9 @@ function createTestState(): GameState {
       actorType: 'individual',
       axiologicalProfile: {
         courage_prudence: -0.2,
-        ambition_contentment: 0.5,
+        loyalty_ambition: 0.5,
         mercy_justice: 0.3,
-        tradition_innovation: -0.1,
+        tradition_novelty: -0.1,
         autonomy_community: 0.0,
       },
       cooperationStrategy: 'tit_for_tat',

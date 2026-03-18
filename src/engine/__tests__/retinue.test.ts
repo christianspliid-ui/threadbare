@@ -419,16 +419,16 @@ describe('getRetinueAgents', () => {
 
 function createTestProfile(): AxiologicalProfile {
   return {
-    ambition_contentment: 0.2,
+    loyalty_ambition: 0.2,
     courage_prudence: -0.1,
-    cruelty_compassion: 0.3,
-    cunning_honesty: -0.5,
-    devotion_independence: 0.7,
-    loyalty_treachery: 0.9,
-    tradition_innovation: 0.1,
-    dominance_humility: -0.2,
-    wrath_patience: 0.4,
-    greed_generosity: -0.3,
+    mercy_ruthlessness: 0.3,
+    honesty_cunning: -0.5,
+    sacrifice_survival: 0.7,
+    loyalty_ambition: 0.9,
+    tradition_novelty: 0.1,
+    humility_pride: -0.2,
+    mercy_ruthlessness: 0.4,
+    asceticism_extravagance: -0.3,
   };
 }
 

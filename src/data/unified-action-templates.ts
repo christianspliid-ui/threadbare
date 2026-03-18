@@ -445,7 +445,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'order',
     targetCategories: ['location'],
-    motivations: ['courage_prudence', 'tradition_innovation'],
+    motivations: ['courage_prudence', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'weaves protective runes into the foundations of this place',
       success: 'the ward takes hold — unseen forces now guard this site',
@@ -472,7 +472,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 5,
     actorAffinities: ['ascendant'],
     targetCategories: ['location'],
-    motivations: ['ambition_contentment', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'channels divine essence into the ley lines beneath this location',
       success: 'a place of power awakens — essence flows freely here',
@@ -500,7 +500,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'chaos',
     targetCategories: ['location'],
-    motivations: ['cruelty_compassion', 'dominance_humility'],
+    motivations: ['mercy_ruthlessness', 'humility_pride'],
     narrativeTemplates: {
       initiation: 'stirs whispers of grievance through this settlement',
       success: 'tensions rise; the people begin to question their rulers',
@@ -527,7 +527,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'force',
     targetCategories: ['location'],
     targetSubtypes: ['keep', 'fortress', 'stronghold', 'watchtower', 'garrison'],
-    motivations: ['courage_prudence', 'dominance_humility'],
+    motivations: ['courage_prudence', 'humility_pride'],
     narrativeTemplates: {
       initiation: 'breathes martial purpose into the walls of this fortification',
       success: 'the defenses are strengthened by divine will',
@@ -560,7 +560,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 4,
     actorAffinities: ['ascendant'],
     targetCategories: ['artifact'],
-    motivations: ['ambition_contentment', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'traces runes of power upon this artifact',
       success: 'the enchantment sets — power flows through the object',
@@ -585,7 +585,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 2,
     actorAffinities: ['ascendant'],
     targetCategories: ['artifact'],
-    motivations: ['ambition_contentment', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'harmonizes this artifact with the divine sphere',
       success: 'the artifact resonates with new alignment',
@@ -611,7 +611,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'void',
     targetCategories: ['artifact', 'artifact_legendary'],
-    motivations: ['tradition_innovation', 'courage_prudence'],
+    motivations: ['tradition_novelty', 'courage_prudence'],
     narrativeTemplates: {
       initiation: 'unravels the enchantments bound to this artifact',
       success: 'the magic drains away; the artifact is mundane once more',
@@ -637,7 +637,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'chaos',
     targetCategories: ['artifact', 'artifact_legendary'],
-    motivations: ['cruelty_compassion', 'dominance_humility'],
+    motivations: ['mercy_ruthlessness', 'humility_pride'],
     narrativeTemplates: {
       initiation: 'binds a curse of misfortune to this object',
       success: 'the curse takes hold — ill fate clings to whoever carries it',
@@ -672,7 +672,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'spirit',
     targetCategories: ['sublocation'],
     targetSubtypes: ['shrine', 'temple', 'ruin', 'cave'],
-    motivations: ['tradition_innovation', 'ambition_contentment'],
+    motivations: ['tradition_novelty', 'loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'consecrates this ground to divine purpose',
       success: 'the site is sanctified — the divine presence is felt here',
@@ -698,7 +698,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'chaos',
     targetCategories: ['sublocation'],
-    motivations: ['cruelty_compassion', 'courage_prudence'],
+    motivations: ['mercy_ruthlessness', 'courage_prudence'],
     narrativeTemplates: {
       initiation: 'lays a divine snare within this place',
       success: 'the trap is set — unseen and patient',
@@ -724,7 +724,7 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'mind',
     targetCategories: ['sublocation'],
-    motivations: ['ambition_contentment', 'tradition_innovation'],
+    motivations: ['loyalty_ambition', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'casts divine sight into the hidden depths of this place',
       success: 'the vision opens — secrets are revealed',
@@ -759,7 +759,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 3,
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
-    motivations: ['tradition_innovation', 'devotion_independence'],
+    motivations: ['tradition_novelty', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'extends divine favor over this land',
       success: 'the earth drinks in the blessing — life stirs beneath the soil',
@@ -785,7 +785,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'entropy',
     targetCategories: ['hex'],
-    motivations: ['cruelty_compassion', 'dominance_humility'],
+    motivations: ['mercy_ruthlessness', 'humility_pride'],
     narrativeTemplates: {
       initiation: 'reaches into the foundations of this land with corrupting intent',
       success: 'darkness seeps into the soil — the land begins to wither',
@@ -840,7 +840,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
       'desert', 'rocky_desert', 'tundra', 'badlands', 'dead_forest',
       'broken_lands', 'sand_dunes', 'moor_bog',
     ],
-    motivations: ['cruelty_compassion', 'tradition_innovation'],
+    motivations: ['mercy_ruthlessness', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'pours vital essence into this barren ground',
       success: 'life takes root where none grew before — green tendrils pierce dead earth',

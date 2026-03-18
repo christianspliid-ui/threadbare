@@ -369,16 +369,14 @@ export const LIFECYCLE_TEMPLATES: Record<string, string[]> = {
  * Each value pair maps to one or more short phrases that can be inserted into prose.
  */
 export const VALUE_FLAVORS: Partial<Record<ValuePair, string[]>> = {
-  ambition_contentment: ['driven by ambition', 'fueled by relentless desire'],
+  mercy_ruthlessness: ['tempered by compassion', 'with patient deliberation', 'with a gentle hand'],
+  asceticism_extravagance: ['with open-handed generosity', 'sharing freely'],
+  honesty_cunning: ['with cunning precision', 'through shrewd calculation'],
+  tradition_novelty: ['embracing new paths', 'breaking with the old ways'],
+  loyalty_ambition: ['loyal to the last', 'driven by ambition', 'with unwavering fidelity'],
+  humility_pride: ['commanding all before them', 'asserting dominion'],
+  sacrifice_survival: ['bound by devotion', 'answering a higher call'],
   courage_prudence: ['with fearless resolve', 'bold beyond measure'],
-  cruelty_compassion: ['tempered by compassion', 'with a gentle hand'],
-  cunning_honesty: ['with cunning precision', 'through shrewd calculation'],
-  devotion_independence: ['bound by devotion', 'answering a higher call'],
-  loyalty_treachery: ['loyal to the last', 'with unwavering fidelity'],
-  tradition_innovation: ['embracing new paths', 'breaking with the old ways'],
-  dominance_humility: ['commanding all before them', 'asserting dominion'],
-  wrath_patience: ['with patient deliberation', 'measured and calm'],
-  greed_generosity: ['with open-handed generosity', 'sharing freely'],
 };
 
 // ═══════════════════════════════════════════════════════════════════

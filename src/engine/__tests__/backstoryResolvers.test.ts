@@ -39,16 +39,16 @@ function makeAgent(overrides: Record<string, unknown> = {}): GraphNode {
       primarySphere: 'force',
       cooperationStrategy: 'tit-for-tat',
       axiologicalProfile: {
-        ambition_contentment: 0.7,     // strong positive → fear from positive pole
+        loyalty_ambition: 0.7,     // strong positive → fear from positive pole
         courage_prudence: 0.1,         // near-zero → contradiction candidate
-        cruelty_compassion: -0.5,
-        cunning_honesty: 0.05,         // near-zero → contradiction candidate
-        devotion_independence: -0.2,
-        loyalty_treachery: 0.4,
-        tradition_innovation: -0.1,
-        dominance_humility: 0.0,
-        wrath_patience: 0.3,
-        greed_generosity: -0.6,
+        mercy_ruthlessness: -0.5,
+        honesty_cunning: 0.05,         // near-zero → contradiction candidate
+        sacrifice_survival: -0.2,
+        loyalty_ambition: 0.4,
+        tradition_novelty: -0.1,
+        humility_pride: 0.0,
+        mercy_ruthlessness: 0.3,
+        asceticism_extravagance: -0.6,
       },
       ...overrides,
     },
@@ -410,7 +410,7 @@ describe('turningPointResolver', () => {
   });
 
   it('uses the value pair with highest absolute magnitude', () => {
-    // greed_generosity = -0.6 is highest abs in default agent
+    // asceticism_extravagance = -0.6 is highest abs in default agent
     const { graph, agentId } = buildBaseGraph();
     const layers = turningPointResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
@@ -452,7 +452,7 @@ describe('contradictionResolver', () => {
   });
 
   it('uses CONTRADICTION_PROSE for pairs near zero (|value| < 0.15)', () => {
-    // cunning_honesty = 0.05 is near zero → contradiction
+    // honesty_cunning = 0.05 is near zero → contradiction
     const { graph, agentId } = buildBaseGraph();
     const layers = contradictionResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
@@ -463,16 +463,16 @@ describe('contradictionResolver', () => {
     const graph = new WorldGraph();
     graph.addNode(makeAgent({
       axiologicalProfile: {
-        ambition_contentment: 0.9,
+        loyalty_ambition: 0.9,
         courage_prudence: 0.8,
-        cruelty_compassion: -0.7,
-        cunning_honesty: 0.6,
-        devotion_independence: -0.8,
-        loyalty_treachery: 0.7,
-        tradition_innovation: -0.6,
-        dominance_humility: 0.5,
-        wrath_patience: 0.9,
-        greed_generosity: -0.8,
+        mercy_ruthlessness: -0.7,
+        honesty_cunning: 0.6,
+        sacrifice_survival: -0.8,
+        loyalty_ambition: 0.7,
+        tradition_novelty: -0.6,
+        humility_pride: 0.5,
+        mercy_ruthlessness: 0.9,
+        asceticism_extravagance: -0.8,
       },
     }));
     const layers = contradictionResolver('agent_0', graph, 42);
@@ -516,7 +516,7 @@ describe('fearResolver', () => {
   });
 
   it('derives fear from the strongest value pair', () => {
-    // greed_generosity = -0.6 is strongest in default agent (negative pole → _negative key)
+    // asceticism_extravagance = -0.6 is strongest in default agent (negative pole → _negative key)
     const { graph, agentId } = buildBaseGraph();
     const layers = fearResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);

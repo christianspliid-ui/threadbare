@@ -42,16 +42,16 @@ export const THREAT_PRUDENCE_THRESHOLD = -0.3;
 
 /** Maps encounter type to value pairs that drive agent preference */
 export const ENCOUNTER_TYPE_MOTIVATIONS: Record<EncounterType, ValuePair[]> = {
-  explore:  ['courage_prudence', 'ambition_contentment'],
-  acquire:  ['greed_generosity', 'ambition_contentment'],
-  create:   ['tradition_innovation', 'devotion_independence'],
-  hire:     ['dominance_humility', 'loyalty_treachery'],
-  duel:     ['wrath_patience', 'courage_prudence'],
-  steal:    ['cunning_honesty', 'greed_generosity'],
-  trade:    ['greed_generosity', 'cunning_honesty'],
-  assist:   ['cruelty_compassion', 'loyalty_treachery'],
-  build:    ['tradition_innovation', 'devotion_independence'],
-  lead:     ['dominance_humility', 'ambition_contentment'],
+  explore:  ['courage_prudence', 'loyalty_ambition'],
+  acquire:  ['asceticism_extravagance', 'loyalty_ambition'],
+  create:   ['tradition_novelty', 'sacrifice_survival'],
+  hire:     ['humility_pride', 'loyalty_ambition'],
+  duel:     ['mercy_ruthlessness', 'courage_prudence'],
+  steal:    ['honesty_cunning', 'asceticism_extravagance'],
+  trade:    ['asceticism_extravagance', 'honesty_cunning'],
+  assist:   ['mercy_ruthlessness', 'loyalty_ambition'],
+  build:    ['tradition_novelty', 'sacrifice_survival'],
+  lead:     ['humility_pride', 'loyalty_ambition'],
 };
 
 // ─── Tunable Constants ──────────────────────────────────────────

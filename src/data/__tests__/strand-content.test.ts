@@ -28,16 +28,16 @@ describe('Strand Content', () => {
 
     it('covers all 10 standard value axes', () => {
       const expectedAxes = [
-        'ambition_contentment',
+        'loyalty_ambition',
         'courage_prudence',
-        'cruelty_compassion',
-        'cunning_honesty',
-        'devotion_independence',
-        'loyalty_treachery',
-        'tradition_innovation',
-        'dominance_humility',
-        'wrath_patience',
-        'greed_generosity',
+        'mercy_ruthlessness',
+        'honesty_cunning',
+        'sacrifice_survival',
+        'loyalty_ambition',
+        'tradition_novelty',
+        'humility_pride',
+        'mercy_ruthlessness',
+        'asceticism_extravagance',
       ];
 
       for (const axis of expectedAxes) {
@@ -153,16 +153,16 @@ describe('Strand Content', () => {
 
     it('covers all standard value axes', () => {
       const expectedAxes = [
-        'ambition_contentment',
+        'loyalty_ambition',
         'courage_prudence',
-        'cruelty_compassion',
-        'cunning_honesty',
-        'devotion_independence',
-        'loyalty_treachery',
-        'tradition_innovation',
-        'dominance_humility',
-        'wrath_patience',
-        'greed_generosity',
+        'mercy_ruthlessness',
+        'honesty_cunning',
+        'sacrifice_survival',
+        'loyalty_ambition',
+        'tradition_novelty',
+        'humility_pride',
+        'mercy_ruthlessness',
+        'asceticism_extravagance',
       ];
 
       for (const axis of expectedAxes) {

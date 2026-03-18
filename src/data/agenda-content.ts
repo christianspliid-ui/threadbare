@@ -33,7 +33,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'dream_ambition',
       name: 'Visions of Glory',
-      valuePair: 'ambition_contentment',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'left',
       narrativeHook: 'golden visions of conquest and dominion',
       behaviorTag: 'glory-seeking',
@@ -43,7 +43,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'dream_contentment',
       name: 'Dreams of Peace',
-      valuePair: 'ambition_contentment',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'right',
       narrativeHook: 'serene meadows and quiet hearths',
       behaviorTag: 'peace-seeking',
@@ -53,7 +53,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'dream_greed',
       name: 'Glimpses of Wealth',
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'left',
       narrativeHook: 'mountains of gold and jeweled crowns',
       behaviorTag: 'wealth-seeking',
@@ -63,7 +63,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'dream_devotion',
       name: 'Whispers of Faith',
-      valuePair: 'devotion_independence',
+      valuePair: 'sacrifice_survival',
       valueDirection: 'left',
       narrativeHook: 'radiant temples and chanting multitudes',
       behaviorTag: 'devotion-seeking',
@@ -85,7 +85,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_ambition',
       name: 'Whisper Ambition',
-      valuePair: 'ambition_contentment',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'left',
       narrativeHook: 'the glory that awaits those who reach higher',
       behaviorTag: 'glory-seeking',
@@ -95,7 +95,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_compassion',
       name: 'Stir Compassion',
-      valuePair: 'cruelty_compassion',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'right',
       narrativeHook: 'the suffering of the innocent and the power of mercy',
       behaviorTag: 'mercy-seeking',
@@ -105,7 +105,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_innovation',
       name: 'Kindle Innovation',
-      valuePair: 'tradition_innovation',
+      valuePair: 'tradition_novelty',
       valueDirection: 'right',
       narrativeHook: 'the promise of new methods and untried paths',
       behaviorTag: 'innovation-seeking',
@@ -115,7 +115,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_loyalty',
       name: 'Bind Loyalty',
-      valuePair: 'loyalty_treachery',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'left',
       narrativeHook: 'the bonds of fellowship and shared purpose',
       behaviorTag: 'loyalty-seeking',
@@ -125,7 +125,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_greed',
       name: 'Promise Riches',
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'left',
       narrativeHook: 'wealth beyond measure and the power it brings',
       behaviorTag: 'wealth-seeking',
@@ -135,7 +135,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_dominance',
       name: 'Urge Command',
-      valuePair: 'dominance_humility',
+      valuePair: 'humility_pride',
       valueDirection: 'left',
       narrativeHook: 'the rightful authority of the strong over the weak',
       behaviorTag: 'dominance-seeking',
@@ -147,7 +147,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'deceive_treachery',
       name: 'Sow Distrust',
-      valuePair: 'loyalty_treachery',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'right',
       narrativeHook: 'whispered betrayals and imagined slights',
       behaviorTag: 'distrust-spreading',
@@ -157,7 +157,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'deceive_cunning',
       name: 'False Counsel',
-      valuePair: 'cunning_honesty',
+      valuePair: 'honesty_cunning',
       valueDirection: 'left',
       narrativeHook: 'a web of clever misdirection and half-truths',
       behaviorTag: 'scheming',
@@ -177,7 +177,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'deceive_greed',
       name: "Fool's Gold",
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'left',
       narrativeHook: 'illusory riches and false promises of fortune',
       behaviorTag: 'greed-exploiting',
@@ -187,7 +187,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'deceive_independence',
       name: 'Seeds of Rebellion',
-      valuePair: 'devotion_independence',
+      valuePair: 'sacrifice_survival',
       valueDirection: 'right',
       narrativeHook: 'doubts about authority and the allure of freedom',
       behaviorTag: 'rebellion-seeding',
@@ -199,7 +199,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'intimidate_submission',
       name: 'Crush Will',
-      valuePair: 'dominance_humility',
+      valuePair: 'humility_pride',
       valueDirection: 'right',
       narrativeHook: 'the overwhelming weight of divine wrath',
       behaviorTag: 'submission-seeking',
@@ -219,7 +219,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'intimidate_obedience',
       name: 'Demand Obedience',
-      valuePair: 'devotion_independence',
+      valuePair: 'sacrifice_survival',
       valueDirection: 'left',
       narrativeHook: 'terrible visions of divine punishment for disobedience',
       behaviorTag: 'obedience-seeking',
@@ -229,7 +229,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'intimidate_patience',
       name: 'Still the Wrathful',
-      valuePair: 'wrath_patience',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'right',
       narrativeHook: 'visions of ruin that follow rash action',
       behaviorTag: 'restraint-seeking',
@@ -239,7 +239,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'intimidate_tradition',
       name: 'Enforce Tradition',
-      valuePair: 'tradition_innovation',
+      valuePair: 'tradition_novelty',
       valueDirection: 'left',
       narrativeHook: 'the ancestral spirits who punish deviation',
       behaviorTag: 'tradition-enforcing',
@@ -261,7 +261,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'inspire_generosity',
       name: 'Open Hearts',
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'right',
       narrativeHook: 'the joy of giving and the wealth of shared fortune',
       behaviorTag: 'generosity-spreading',
@@ -271,7 +271,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'inspire_ambition',
       name: 'Fan the Flame',
-      valuePair: 'ambition_contentment',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'left',
       narrativeHook: 'divine fire that burns away doubt and hesitation',
       behaviorTag: 'ambition-burning',
@@ -281,7 +281,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'inspire_honesty',
       name: 'Illuminate Truth',
-      valuePair: 'cunning_honesty',
+      valuePair: 'honesty_cunning',
       valueDirection: 'right',
       narrativeHook: 'a clarity that cuts through all deception',
       behaviorTag: 'truth-seeking',
@@ -291,7 +291,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'inspire_innovation',
       name: 'Spark Genius',
-      valuePair: 'tradition_innovation',
+      valuePair: 'tradition_novelty',
       valueDirection: 'right',
       narrativeHook: 'a flash of insight that reveals undreamed possibilities',
       behaviorTag: 'genius-seeking',
@@ -303,7 +303,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_wealth',
       name: "Fortune's Turn",
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'left',
       narrativeHook: 'a found treasure or lucky windfall',
       behaviorTag: 'fortune-blessed',
@@ -313,7 +313,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_meeting',
       name: 'Fated Crossing',
-      valuePair: 'loyalty_treachery',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'left',
       narrativeHook: 'an unlikely meeting that forges new bonds',
       behaviorTag: 'bond-forming',
@@ -323,7 +323,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_discovery',
       name: 'Hidden Knowledge',
-      valuePair: 'cunning_honesty',
+      valuePair: 'honesty_cunning',
       valueDirection: 'left',
       narrativeHook: 'a forgotten scroll or overheard secret',
       behaviorTag: 'knowledge-gaining',
@@ -333,7 +333,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_conflict',
       name: 'Spark of Strife',
-      valuePair: 'wrath_patience',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'left',
       narrativeHook: 'an insult delivered at the worst possible moment',
       behaviorTag: 'conflict-starting',
@@ -353,7 +353,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_lost_found',
       name: 'What Was Buried',
-      valuePair: 'cunning_honesty',
+      valuePair: 'honesty_cunning',
       valueDirection: 'left',
       narrativeHook: 'an object unearthed that rewrites what everyone believed',
       behaviorTag: 'secret-revealing',
@@ -363,7 +363,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_witness',
       name: 'The Right Eyes',
-      valuePair: 'loyalty_treachery',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'right',
       narrativeHook: 'a witness in the wrong place at the wrong time',
       behaviorTag: 'truth-forcing',
@@ -373,7 +373,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'coincidence_kindness',
       name: 'Unlooked-For Grace',
-      valuePair: 'cruelty_compassion',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'right',
       narrativeHook: 'generosity repaid tenfold by the turning of the world',
       behaviorTag: 'compassion-rewarding',
@@ -395,7 +395,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_prosperity',
       name: 'Harvest Promise',
-      valuePair: 'ambition_contentment',
+      valuePair: 'loyalty_ambition',
       valueDirection: 'right',
       narrativeHook: 'signs of abundance and lasting peace',
       behaviorTag: 'prosperity-seeking',
@@ -405,7 +405,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_war',
       name: 'War Drums',
-      valuePair: 'wrath_patience',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'left',
       narrativeHook: 'thunder on a cloudless day and ravens circling',
       behaviorTag: 'war-anticipating',
@@ -415,7 +415,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_change',
       name: 'Shifting Stars',
-      valuePair: 'tradition_innovation',
+      valuePair: 'tradition_novelty',
       valueDirection: 'right',
       narrativeHook: 'the stars rearranging in unfamiliar patterns',
       behaviorTag: 'change-embracing',
@@ -425,7 +425,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_devotion',
       name: 'Divine Mark',
-      valuePair: 'devotion_independence',
+      valuePair: 'sacrifice_survival',
       valueDirection: 'left',
       narrativeHook: 'a miraculous sign that demands worship',
       behaviorTag: 'faith-deepening',
@@ -435,7 +435,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_plague',
       name: 'Fevered Earth',
-      valuePair: 'cruelty_compassion',
+      valuePair: 'mercy_ruthlessness',
       valueDirection: 'right',
       narrativeHook: 'the land itself sickens, wells turn bitter, animals behave strangely',
       behaviorTag: 'plague-fearing',
@@ -445,7 +445,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'omen_treasure',
       name: 'Glint Beneath',
-      valuePair: 'greed_generosity',
+      valuePair: 'asceticism_extravagance',
       valueDirection: 'left',
       narrativeHook: 'ancient wealth surfaces — a vein of gold, a buried hoard, a trade route revealed',
       behaviorTag: 'wealth-drawn',
@@ -477,7 +477,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'bless_wisdom',
       name: 'Touch of Insight',
-      valuePair: 'cunning_honesty',
+      valuePair: 'honesty_cunning',
       valueDirection: 'right',
       narrativeHook: 'a clarity of thought that transcends mortal limits',
       behaviorTag: 'wisdom-blessed',
@@ -497,7 +497,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'afflict_doubt',
       name: 'Seed of Doubt',
-      valuePair: 'devotion_independence',
+      valuePair: 'sacrifice_survival',
       valueDirection: 'right',
       narrativeHook: 'a gnawing uncertainty that undermines all conviction',
       behaviorTag: 'doubt-cursed',
@@ -507,7 +507,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'bless_charisma',
       name: 'Mantle of Authority',
-      valuePair: 'dominance_humility',
+      valuePair: 'humility_pride',
       valueDirection: 'left',
       narrativeHook: 'an aura of command that makes others bend the knee',
       behaviorTag: 'authority-blessed',

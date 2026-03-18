@@ -312,7 +312,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'gold',
         score: 10,
-        motivations: ['ambition_contentment'],
+        motivations: ['loyalty_ambition'],
         socialOrientation: 'neutral',
       },
     ];
@@ -378,7 +378,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'eye',
         score: 8,
-        motivations: ['tradition_innovation'],
+        motivations: ['tradition_novelty'],
         socialOrientation: 'neutral',
       },
     ];
@@ -448,7 +448,7 @@ describe('applyDispositionModifier', () => {
         targetId: 'actor.2',
         domain: 'eye',
         score: 8,
-        motivations: ['tradition_innovation'],
+        motivations: ['tradition_novelty'],
         socialOrientation: 'neutral',
       },
     ];

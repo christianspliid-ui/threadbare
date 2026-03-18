@@ -17,6 +17,7 @@
 import { WorldGraph } from './graph';
 import { emitTrace } from './traceBuffer';
 import type { DivineInfluenceEntry, InterventionType } from '../types/dream';
+import { VALUE_PAIRS } from '../types/agent';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { SphereName } from '../types';
 import type { AgendaTemplate } from '../data/agenda-content';
@@ -45,18 +46,7 @@ export interface ApplyInterventionEffectsResult {
 
 // ─── Value Pair Selection (Seeded PRNG) ──────────────────────────
 
-const VALUE_PAIRS: ValuePair[] = [
-  'ambition_contentment',
-  'courage_prudence',
-  'cruelty_compassion',
-  'cunning_honesty',
-  'devotion_independence',
-  'loyalty_treachery',
-  'tradition_innovation',
-  'dominance_humility',
-  'wrath_patience',
-  'greed_generosity',
-];
+// VALUE_PAIRS imported from types/agent.ts above
 
 /**
  * Select N random value pairs using seeded selection.
@@ -159,16 +149,16 @@ function generateInfluenceId(): string {
  */
 function getValueDirection(pair: ValuePair, seed: number): string {
   const polesMap: Record<ValuePair, [string, string]> = {
-    ambition_contentment: ['ambition', 'contentment'],
+    mercy_ruthlessness: ['mercy', 'ruthlessness'],
+    asceticism_extravagance: ['asceticism', 'extravagance'],
+    honesty_cunning: ['honesty', 'cunning'],
+    tradition_novelty: ['tradition', 'novelty'],
+    loyalty_ambition: ['loyalty', 'ambition'],
+    frankness_propriety: ['frankness', 'propriety'],
+    humility_pride: ['humility', 'pride'],
+    sacrifice_survival: ['sacrifice', 'survival'],
+    stoicism_passion: ['stoicism', 'passion'],
     courage_prudence: ['courage', 'prudence'],
-    cruelty_compassion: ['cruelty', 'compassion'],
-    cunning_honesty: ['cunning', 'honesty'],
-    devotion_independence: ['devotion', 'independence'],
-    loyalty_treachery: ['loyalty', 'treachery'],
-    tradition_innovation: ['tradition', 'innovation'],
-    dominance_humility: ['dominance', 'humility'],
-    wrath_patience: ['wrath', 'patience'],
-    greed_generosity: ['greed', 'generosity'],
   };
 
   const [left, right] = polesMap[pair];
@@ -191,16 +181,16 @@ function getDomainLabel(seed: number): string {
  */
 function getAgendaCategory(pair: ValuePair): AgendaConsequenceCategory {
   const polesMap: Record<ValuePair, AgendaConsequenceCategory> = {
-    ambition_contentment: 'ambition',
+    mercy_ruthlessness: 'compassion',
+    asceticism_extravagance: 'greed',
+    honesty_cunning: 'cunning',
+    tradition_novelty: 'tradition',
+    loyalty_ambition: 'loyalty',
+    frankness_propriety: 'loyalty',
+    humility_pride: 'dominance',
+    sacrifice_survival: 'devotion',
+    stoicism_passion: 'devotion',
     courage_prudence: 'courage',
-    cruelty_compassion: 'compassion',
-    cunning_honesty: 'cunning',
-    devotion_independence: 'devotion',
-    loyalty_treachery: 'loyalty',
-    tradition_innovation: 'tradition',
-    dominance_humility: 'dominance',
-    wrath_patience: 'wrath',
-    greed_generosity: 'greed',
   };
   return polesMap[pair];
 }
@@ -845,9 +835,9 @@ function handleOmen(
 
   // Simplified: apply to target agent only (not all agents at location)
   const valueDrifts: Partial<Record<ValuePair, number>> = {
-    wrath_patience: -moodDrift,
+    mercy_ruthlessness: -moodDrift,
   };
-  effectsSummary.push(`wrath → patience mood drift (omen)`);
+  effectsSummary.push(`mercy ← ruthlessness mood drift (omen)`);
 
   const influence: DivineInfluenceEntry = {
     id: generateInfluenceId(),

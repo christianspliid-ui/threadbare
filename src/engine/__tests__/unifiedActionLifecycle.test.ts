@@ -64,7 +64,7 @@ function make3StepTemplate(overrides: Partial<UnifiedActionTemplate> = {}): Unif
     ],
     apCost: 1,
     actorAffinities: ['individual'],
-    motivations: ['ambition_contentment'],
+    motivations: ['loyalty_ambition'],
     narrativeTemplates: {
       initiation: 'begins encounter',
       success: 'completes encounter',

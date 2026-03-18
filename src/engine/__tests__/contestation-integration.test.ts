@@ -34,7 +34,7 @@ const SIEGE_TEMPLATE: UnifiedActionTemplate = {
   apCost: 1,
   actorAffinities: ['individual', 'faction'],
   contestsWith: ['warfare.defend_city'],
-  motivations: ['ambition_contentment'],
+  motivations: ['loyalty_ambition'],
   narrativeTemplates: {
     initiation: 'lays siege to the city',
     success: 'breaches the walls',
@@ -85,7 +85,7 @@ const TRADE_TEMPLATE: UnifiedActionTemplate = {
   }],
   apCost: 1,
   actorAffinities: ['individual'],
-  motivations: ['ambition_contentment'],
+  motivations: ['loyalty_ambition'],
   narrativeTemplates: {
     initiation: 'begins trading',
     success: 'profits from trade',

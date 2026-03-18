@@ -391,8 +391,8 @@ describe('generateGuildAxiologicalProfile', () => {
     const rng = () => 0.5;
     const profile = generateGuildAxiologicalProfile('merchants', rng);
     const requiredPairs = [
-      'greed_generosity', 'cunning_honesty', 'ambition_contentment',
-      'loyalty_treachery', 'tradition_innovation', 'courage_prudence',
+      'asceticism_extravagance', 'honesty_cunning', 'loyalty_ambition',
+      'loyalty_ambition', 'tradition_novelty', 'courage_prudence',
     ];
     for (const pair of requiredPairs) {
       expect(profile[pair as keyof typeof profile]).toBeDefined();
@@ -408,12 +408,12 @@ describe('generateGuildAxiologicalProfile', () => {
     }
   });
 
-  it('miners guild has tradition_innovation bias (more negative)', () => {
+  it('miners guild has tradition_novelty bias (more negative)', () => {
     const rng = () => 0.5; // controlled rng
     const minerProfile = generateGuildAxiologicalProfile('miners', rng);
     const merchantProfile = generateGuildAxiologicalProfile('merchants', rng);
-    // miners have -0.4 applied to tradition_innovation
-    expect(minerProfile.tradition_innovation).toBeLessThan(merchantProfile.tradition_innovation);
+    // miners have -0.4 applied to tradition_novelty
+    expect(minerProfile.tradition_novelty).toBeLessThan(merchantProfile.tradition_novelty);
   });
 });
 

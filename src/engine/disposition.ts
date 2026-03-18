@@ -50,9 +50,9 @@ import { emitTrace } from './traceBuffer';
  * Process:
  * 1. Get base strategy weights from archetype
  * 2. Apply axiological nudges:
- *    - loyalty_treachery < -0.3: always-defect ×1.5, always-cooperate ×0.5
- *    - cruelty_compassion < -0.3: grudger ×1.3
- *    - cunning_honesty < -0.3: tit-for-tat ×0.7, always-defect ×1.2
+ *    - loyalty_ambition < -0.3: always-defect ×1.5, always-cooperate ×0.5
+ *    - mercy_ruthlessness < -0.3: grudger ×1.3
+ *    - honesty_cunning < -0.3: tit-for-tat ×0.7, always-defect ×1.2
  * 3. Normalize weights to sum to 1.0
  * 4. Weighted random selection using seeded RNG
  *
@@ -70,17 +70,17 @@ export function assignCooperationStrategy(
   const baseWeights = getStrategyWeights(archetypeId);
   const weights = { ...baseWeights };
 
-  // Apply axiological nudges
-  if (profile.loyalty_treachery < -0.3) {
+  // Apply axiological nudges (< -0.3 = toward the flaw pole)
+  if (profile.loyalty_ambition < -0.3) {
     weights['always-defect'] *= 1.5;
     weights['always-cooperate'] *= 0.5;
   }
 
-  if (profile.cruelty_compassion < -0.3) {
+  if (profile.mercy_ruthlessness < -0.3) {
     weights.grudger *= 1.3;
   }
 
-  if (profile.cunning_honesty < -0.3) {
+  if (profile.honesty_cunning < -0.3) {
     weights['tit-for-tat'] *= 0.7;
     weights['always-defect'] *= 1.2;
   }

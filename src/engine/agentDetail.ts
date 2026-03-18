@@ -41,16 +41,16 @@ function mulberry32(seed: number): () => number {
 // ─── Value Label Lookup ───────────────────────────────────────────
 
 const VALUE_LABELS: Record<ValuePair, [string, string]> = {
-  ambition_contentment: ['Ambitious', 'Content'],
+  mercy_ruthlessness: ['Merciful', 'Ruthless'],
+  asceticism_extravagance: ['Ascetic', 'Extravagant'],
+  honesty_cunning: ['Honest', 'Cunning'],
+  tradition_novelty: ['Traditional', 'Innovative'],
+  loyalty_ambition: ['Loyal', 'Ambitious'],
+  frankness_propriety: ['Frank', 'Proper'],
+  humility_pride: ['Humble', 'Proud'],
+  sacrifice_survival: ['Self-Sacrificing', 'Self-Preserving'],
+  stoicism_passion: ['Stoic', 'Passionate'],
   courage_prudence: ['Courageous', 'Prudent'],
-  cruelty_compassion: ['Cruel', 'Compassionate'],
-  cunning_honesty: ['Cunning', 'Honest'],
-  devotion_independence: ['Devoted', 'Independent'],
-  loyalty_treachery: ['Loyal', 'Treacherous'],
-  tradition_innovation: ['Traditional', 'Innovative'],
-  dominance_humility: ['Dominant', 'Humble'],
-  wrath_patience: ['Wrathful', 'Patient'],
-  greed_generosity: ['Greedy', 'Generous'],
 };
 
 // ─── Prototype flag ──────────────────────────────────────────────

@@ -12,7 +12,7 @@ describe('quest encounter fields', () => {
       reachSecondary: 'heart',
       encounterType: 'explore',
       threatRating: 'moderate',
-      motivations: ['ambition_contentment'],
+      motivations: ['loyalty_ambition'],
       visibleTo: ['faction:ironPact', 'agent:shadow_thief_42'],
       questPriority: 5.0,
     } as EncounterTemplate;

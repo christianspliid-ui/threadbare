@@ -22,7 +22,7 @@ describe('ambitionBoost', () => {
     targetId: 'market',
     domain: 'gold',
     score: 0.5,
-    motivations: ['greed_generosity'],
+    motivations: ['asceticism_extravagance'],
   };
 
   const shadowCandidate: ActionCandidate = {
@@ -30,7 +30,7 @@ describe('ambitionBoost', () => {
     targetId: 'rival',
     domain: 'shadow',
     score: 0.8,
-    motivations: ['cunning_honesty'],
+    motivations: ['honesty_cunning'],
   };
 
   describe('computeAmbitionBoost', () => {

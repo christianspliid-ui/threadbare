@@ -22,37 +22,37 @@ function mulberry32(seed: number): () => number {
 
 function balancedProfile(): AxiologicalProfile {
   return {
-    ambition_contentment: 0,
+    loyalty_ambition: 0,
     courage_prudence: 0,
-    cruelty_compassion: 0,
-    cunning_honesty: 0,
-    devotion_independence: 0,
-    loyalty_treachery: 0,
-    tradition_innovation: 0,
-    dominance_humility: 0,
-    wrath_patience: 0,
-    greed_generosity: 0,
+    mercy_ruthlessness: 0,
+    honesty_cunning: 0,
+    sacrifice_survival: 0,
+    loyalty_ambition: 0,
+    tradition_novelty: 0,
+    humility_pride: 0,
+    mercy_ruthlessness: 0,
+    asceticism_extravagance: 0,
   };
 }
 
 function treacherousProfile(): AxiologicalProfile {
   return {
     ...balancedProfile(),
-    loyalty_treachery: -0.4, // Strong treachery
+    loyalty_ambition: -0.4, // Strong treachery
   };
 }
 
 function cruelProfile(): AxiologicalProfile {
   return {
     ...balancedProfile(),
-    cruelty_compassion: -0.4, // Strong cruelty
+    mercy_ruthlessness: -0.4, // Strong cruelty
   };
 }
 
 function cunningProfile(): AxiologicalProfile {
   return {
     ...balancedProfile(),
-    cunning_honesty: -0.4, // Strong cunning
+    honesty_cunning: -0.4, // Strong cunning
   };
 }
 
@@ -185,7 +185,7 @@ describe('assignCooperationStrategy', () => {
   });
 
   describe('applies axiological nudges', () => {
-    it('loyalty_treachery < -0.3 boosts always-defect and penalizes always-cooperate', () => {
+    it('loyalty_ambition < -0.3 boosts always-defect and penalizes always-cooperate', () => {
       const profile = treacherousProfile();
       const strategiesWithTreachery: CooperationStrategy[] = [];
       const strategiesWithoutTreachery: CooperationStrategy[] = [];
@@ -207,7 +207,7 @@ describe('assignCooperationStrategy', () => {
       expect(defectCountWithTreachery).toBeGreaterThan(defectCountWithoutTreachery);
     });
 
-    it('cruelty_compassion < -0.3 boosts grudger', () => {
+    it('mercy_ruthlessness < -0.3 boosts grudger', () => {
       const profile = cruelProfile();
       const strategies: CooperationStrategy[] = [];
 
@@ -222,7 +222,7 @@ describe('assignCooperationStrategy', () => {
       expect(grudgerCount).toBeGreaterThan(25);
     });
 
-    it('cunning_honesty < -0.3 penalizes tit-for-tat and boosts always-defect', () => {
+    it('honesty_cunning < -0.3 penalizes tit-for-tat and boosts always-defect', () => {
       const profile = cunningProfile();
       const strategiesWithCunning: CooperationStrategy[] = [];
       const strategiesWithoutCunning: CooperationStrategy[] = [];

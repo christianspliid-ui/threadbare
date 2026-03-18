@@ -260,16 +260,16 @@ describe('scoreSublocations', () => {
 
     // Create an agent with axiological profile
     const axiologicalProfile: AxiologicalProfile = {
-      ambition_contentment: 0.7, // leans toward ambition
+      mercy_ruthlessness: -0.5,
+      asceticism_extravagance: -0.4,
+      honesty_cunning: 0.6,
+      tradition_novelty: 0.4,
+      loyalty_ambition: 0.7,
+      frankness_propriety: 0,
+      humility_pride: -0.3,
+      sacrifice_survival: 0.8, // strong devotion
+      stoicism_passion: 0,
       courage_prudence: 0.3,
-      cruelty_compassion: -0.5, // leans toward cruelty
-      cunning_honesty: 0.6,
-      devotion_independence: 0.8, // strong devotion
-      loyalty_treachery: 0.2,
-      tradition_innovation: 0.4,
-      dominance_humility: -0.3,
-      wrath_patience: -0.6, // wrathful
-      greed_generosity: -0.4, // greedy
     };
 
     agent = {
@@ -300,9 +300,9 @@ describe('scoreSublocations', () => {
   it('higher motivation alignment results in higher score', () => {
     const scores = scoreSublocations(graph, sublocations, agent.id);
 
-    // Temple Quarter has devotion_independence=0.8, and agent has +0.8 devotion
+    // Temple Quarter has sacrifice_survival=0.8, and agent has +0.8 devotion
     // Should score high
-    // Market Square has greed_generosity, and agent has -0.4 (leaning greedy)
+    // Market Square has asceticism_extravagance, and agent has -0.4 (leaning greedy)
     // Should score lower
 
     const templeScore = scores.find(s => s.sublocationId === 'sublocation-1')?.score ?? 0;
@@ -409,16 +409,16 @@ describe('selectSublocation', () => {
     sublocations = [sub1, sub2];
 
     const axiologicalProfile: AxiologicalProfile = {
-      ambition_contentment: 0.5,
+      mercy_ruthlessness: 0.5,
+      asceticism_extravagance: -0.5,
+      honesty_cunning: 0.5,
+      tradition_novelty: 0.5,
+      loyalty_ambition: 0.5,
+      frankness_propriety: 0,
+      humility_pride: 0.5,
+      sacrifice_survival: 0.9, // strong devotion
+      stoicism_passion: 0,
       courage_prudence: 0.5,
-      cruelty_compassion: 0.5,
-      cunning_honesty: 0.5,
-      devotion_independence: 0.9, // strong devotion
-      loyalty_treachery: 0.5,
-      tradition_innovation: 0.5,
-      dominance_humility: 0.5,
-      wrath_patience: 0.5,
-      greed_generosity: -0.5, // greedy
     };
 
     agent = {

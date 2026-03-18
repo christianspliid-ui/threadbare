@@ -10,9 +10,9 @@ const ALL_DOMAINS: ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', '
 
 function makeProfile(overrides: Partial<AxiologicalProfile> = {}): AxiologicalProfile {
   const base: AxiologicalProfile = {
-    ambition_contentment: 0, courage_prudence: 0, cruelty_compassion: 0,
-    cunning_honesty: 0, devotion_independence: 0, loyalty_treachery: 0,
-    tradition_innovation: 0, dominance_humility: 0, wrath_patience: 0, greed_generosity: 0,
+    loyalty_ambition: 0, courage_prudence: 0, mercy_ruthlessness: 0,
+    honesty_cunning: 0, sacrifice_survival: 0, loyalty_ambition: 0,
+    tradition_novelty: 0, humility_pride: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
   };
   return { ...base, ...overrides };
 }
@@ -36,7 +36,7 @@ describe('getAgentDetail', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8, mercy_ruthlessness: -0.6 }),
         domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -61,7 +61,7 @@ describe('getAgentDetail', () => {
       id: 'agent.1', type: 'actor', name: 'Test',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.9, cruelty_compassion: -0.7, devotion_independence: 0.5, wrath_patience: 0.2 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.9, mercy_ruthlessness: -0.7, sacrifice_survival: 0.5, mercy_ruthlessness: 0.2 }),
         domainCapabilities: makeDomainCaps(),
         locationId: 'loc.1',
       },
@@ -219,7 +219,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8 }),
         domainCapabilities: makeDomainCaps({ iron: 7 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -248,7 +248,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8, mercy_ruthlessness: -0.6 }),
         domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -277,7 +277,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6, devotion_independence: 0.5 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8, mercy_ruthlessness: -0.6, sacrifice_survival: 0.5 }),
         domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -307,7 +307,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8, cruelty_compassion: -0.6 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8, mercy_ruthlessness: -0.6 }),
         domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3, veil: 2, gold: 1, eye: 4, stone: 2, star: 3, flesh: 2 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -345,7 +345,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8 }),
         domainCapabilities: makeDomainCaps({ iron: 7 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -388,7 +388,7 @@ describe('getAgentFullProfile (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8 }),
         domainCapabilities: makeDomainCaps({ iron: 7 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
@@ -412,7 +412,7 @@ describe('getAgentFullProfile (familiarity-gated)', () => {
       id: 'agent.1', type: 'actor', name: 'Kael',
       properties: {
         actorType: 'individual',
-        axiologicalProfile: makeProfile({ ambition_contentment: 0.8 }),
+        axiologicalProfile: makeProfile({ loyalty_ambition: 0.8 }),
         domainCapabilities: makeDomainCaps({ iron: 7 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',

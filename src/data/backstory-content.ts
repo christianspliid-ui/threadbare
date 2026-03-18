@@ -343,55 +343,54 @@ export const TRAIT_ORIGIN_PROSE: Record<string, string[]> = {
 // Tone: Pivotal moment. "Something shifted in {name} the day they chose {value}..."
 
 export const TURNING_POINT_PROSE: Record<string, string[]> = {
-  ambition_contentment: [
+  mercy_ruthlessness: [
+    'Something shifted in {name} when they chose {value} in a situation where the other option was genuinely available. The choice revealed a hierarchy that has been consistent since.',
+    'The day {name} committed to {value} came through an encounter with suffering — their own or someone else\'s — that made the question immediate rather than philosophical.',
+    '{name}\'s relationship with {value} was shaped by a circumstance in which the cost of it was visible and they paid it anyway. That payment established a precedent.',
+    'Something shifted in {name} when {value} was tested against a provocation significant enough that the alternative would have been understood. They chose {value}. The choice had consequences.',
+  ],
+  asceticism_extravagance: [
+    'Something shifted in {name} the day they chose {value} in a circumstance where scarcity or abundance made the choice real rather than abstract.',
+    'The moment {name} settled into {value} as an operating principle came through a specific event that made the alternative visible and, ultimately, insufficient.',
+    '{name}\'s relationship with {value} was established through a situation that required it to be enacted rather than merely believed. The enactment has been consistent since.',
+  ],
+  honesty_cunning: [
+    'Something shifted in {name} when {value} became the operating principle rather than the occasional tactic — a moment when it moved from behavior to character.',
+    'The turn toward {value} for {name} came through a situation where the alternative was possible and declined. The decline was a statement about the kind of person they intended to be.',
+    '{name}\'s commitment to {value} was tested once in a specific way, and the test was passed at a cost. The cost has been consistent with having a principle.',
+  ],
+  tradition_novelty: [
+    'Something shifted in {name} when they chose {value} in a situation where the alternative was not only available but recommended by people they respected. The choice was a declaration.',
+    'The turn toward {value} arrived for {name} through a moment when the past and the future were both live options. What they chose in that moment has been their orientation since.',
+    '{name}\'s relationship with {value} was forged in circumstances that made the choice between inheritance and change consequential and irreversible.',
+  ],
+  loyalty_ambition: [
     'Something shifted in {name} the day they chose {value} over its opposite — a decision that set a direction they have been traveling in since, further than they can see back to the origin.',
     '{name}\'s relationship with {value} was not always settled. There was a moment when the alternative was genuinely available, and the choice made then has been the organizing fact since.',
-    'The turn toward {value} happened in a circumstance that made the stakes undeniable for {name}. What was chosen in that moment has functioned as a template for every similar choice since.',
+    'Something shifted in {name} when {value} was tested against something that made it genuinely costly. The test was passed. The passing left a mark.',
+  ],
+  frankness_propriety: [
+    'Something shifted in {name} when {value} became a reflex rather than a choice — the moment when speaking or withholding became character rather than tactic.',
+    '{name}\'s commitment to {value} was tested in a conversation that could not be taken back. What was said or unsaid in that moment has been the template since.',
+  ],
+  humility_pride: [
+    'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
+    'The moment {name} settled into {value} came through a circumstance that offered them a different kind of power than they chose. The declining was the declaration.',
+    '{name}\'s commitment to {value} was established through a situation in which the alternative would have been satisfying in the short term and damaging in the long. They chose correctly.',
+  ],
+  sacrifice_survival: [
+    'Something shifted in {name} the day they chose {value} — a declaration about where their allegiance finally resided that has not been revised since.',
+    'The turn toward {value} arrived for {name} in circumstances that forced the question from abstract to immediate. What they chose in that moment was not a statement about belief but about self.',
+    '{name}\'s relationship with {value} was established through an event that made the alternative not just undesirable but impossible — a choice that was also a discovery.',
+  ],
+  stoicism_passion: [
+    'Something shifted in {name} when {value} stopped being temperament and became discipline — the moment emotion was either mastered or surrendered to deliberately.',
+    '{name}\'s relationship with {value} was forged in a crisis that demanded either feeling everything or feeling nothing. What they chose has been their weather since.',
   ],
   courage_prudence: [
     'Something shifted in {name} the day they chose {value} — not dramatically, but definitively, in a circumstance that required the thing to be named.',
     '{name}\'s relationship with {value} was forged in a situation that made the alternative visible and rejected it. The rejection was a declaration.',
     'The moment {name} settled into {value} arrived through a test that was not abstract. What it cost them to choose it is part of why the choice has held.',
-  ],
-  cruelty_compassion: [
-    'Something shifted in {name} when they chose {value} in a situation where the other option was genuinely available. The choice revealed a hierarchy that has been consistent since.',
-    'The day {name} committed to {value} came through an encounter with suffering — their own or someone else\'s — that made the question immediate rather than philosophical.',
-    '{name}\'s relationship with {value} was shaped by a circumstance in which the cost of it was visible and they paid it anyway. That payment established a precedent.',
-  ],
-  cunning_honesty: [
-    'Something shifted in {name} when {value} became the operating principle rather than the occasional tactic — a moment when it moved from behavior to character.',
-    'The turn toward {value} for {name} came through a situation where the alternative was possible and declined. The decline was a statement about the kind of person they intended to be.',
-    '{name}\'s commitment to {value} was tested once in a specific way, and the test was passed at a cost. The cost has been consistent with having a principle.',
-  ],
-  devotion_independence: [
-    'Something shifted in {name} the day they chose {value} — a declaration about where their allegiance finally resided that has not been revised since.',
-    'The turn toward {value} arrived for {name} in circumstances that forced the question from abstract to immediate. What they chose in that moment was not a statement about belief but about self.',
-    '{name}\'s relationship with {value} was established through an event that made the alternative not just undesirable but impossible — a choice that was also a discovery.',
-  ],
-  loyalty_treachery: [
-    'Something shifted in {name} when {value} was tested against something that made it genuinely costly. The test was passed. The passing left a mark.',
-    'The moment {name} settled into {value} came through a situation where the alternative would have been easier, more profitable, and probably wiser. They chose {value} anyway.',
-    '{name}\'s commitment to {value} was established through the specific experience of choosing it when it hurt — which is the only test of whether a commitment is real.',
-  ],
-  tradition_innovation: [
-    'Something shifted in {name} when they chose {value} in a situation where the alternative was not only available but recommended by people they respected. The choice was a declaration.',
-    'The turn toward {value} arrived for {name} through a moment when the past and the future were both live options. What they chose in that moment has been their orientation since.',
-    '{name}\'s relationship with {value} was forged in circumstances that made the choice between inheritance and change consequential and irreversible.',
-  ],
-  dominance_humility: [
-    'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
-    'The moment {name} settled into {value} came through a circumstance that offered them a different kind of power than they chose. The declining was the declaration.',
-    '{name}\'s commitment to {value} was established through a situation in which the alternative would have been satisfying in the short term and damaging in the long. They chose correctly.',
-  ],
-  wrath_patience: [
-    'Something shifted in {name} when {value} was tested against a provocation significant enough that the alternative would have been understood. They chose {value}. The choice had consequences.',
-    'The turn toward {value} arrived through the specific experience of holding it in circumstances that made holding it difficult — which is where all real commitments are established.',
-    '{name}\'s relationship with {value} was shaped by a moment when they discovered what it cost them, and paid it, and found that the cost was worth what it bought.',
-  ],
-  greed_generosity: [
-    'Something shifted in {name} the day they chose {value} in a circumstance where scarcity or abundance made the choice real rather than abstract.',
-    'The moment {name} settled into {value} as an operating principle came through a specific event that made the alternative visible and, ultimately, insufficient.',
-    '{name}\'s relationship with {value} was established through a situation that required it to be enacted rather than merely believed. The enactment has been consistent since.',
   ],
 };
 
@@ -401,55 +400,53 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
 // Tone: Psychological exposure. "{name} is both {left_pole} and {right_pole} — not in balance, but in war..."
 
 export const CONTRADICTION_PROSE: Record<string, string[]> = {
-  ambition_contentment: [
+  mercy_ruthlessness: [
+    '{name} holds {left_pole} and {right_pole} in approximately equal measure — both are genuine, neither is settled, and the question of which operates depends on circumstances they do not always control.',
+    'The hardness and the softness in {name} have not resolved into a hierarchy. {left_pole} and {right_pole} coexist, each active in the circumstances that call for it.',
+    'The balance of {left_pole} and {right_pole} in {name} produces something that looks like calm but is more accurately described as held tension. The patience is real; what it contains is also real.',
+  ],
+  asceticism_extravagance: [
+    '{name} holds both {left_pole} and {right_pole} in near-equal measure — they are often in direct competition, and the winner is situational.',
+    'The {left_pole} part of {name} and the {right_pole} part are close enough in strength that the outcome is often a compromise neither fully satisfies.',
+    'What the near-equal {left_pole} and {right_pole} produces in {name} is a person who experiences abundance and scarcity simultaneously — who can give in one moment and calculate the cost of giving in the next, and find both responses genuine.',
+  ],
+  honesty_cunning: [
+    '{name} is pulled toward both {left_pole} and {right_pole} with equal force — the honest part and the strategic part are in ongoing negotiation that neither wins.',
+    'The contradiction between {left_pole} and {right_pole} in {name} has not simplified. They are sometimes more open than useful and sometimes more closed than comfortable.',
+    'The war in {name} between {left_pole} and {right_pole} is not ethical. It is practical. Both work; which works better in a given circumstance is not always clear until after. This is what sustains the argument between them.',
+  ],
+  tradition_novelty: [
+    '{name} is equally drawn to {left_pole} and {right_pole} — the appeal of each is partly the critique it offers of the other, a loop without obvious exit.',
+    'The {left_pole} and the {right_pole} in {name} are matched forces. They respect inheritance and resist it in approximately equal measure.',
+    'What {name}\'s equal {left_pole} and {right_pole} produces is a specific restlessness: the sense that both the inherited and the invented are inadequate, that what is needed has no name yet.',
+  ],
+  loyalty_ambition: [
     '{name} is both {left_pole} and {right_pole} — not in balance, but in war. The desire to achieve and the desire to stop achieving cancel each other in cycles that have become weather rather than choice.',
-    'The war between {left_pole} and {right_pole} in {name} has no winner. They move toward each in turn, arriving at neither, finding the movement itself the only honest position.',
-    'The specific form of {name}\'s {left_pole} and {right_pole} war is a recurring sabotage: they build toward something, feel the approach of satisfaction, and find it intolerable — then begin again. Neither arriving nor resting is fully available.',
+    '{name} is neither reliably {left_pole} nor reliably {right_pole} — the near-equal weight of both makes every significant relationship a variable outcome.',
+    'The {left_pole} and {right_pole} in {name} are not in conflict so much as in ongoing negotiation about what any given relationship actually merits.',
+  ],
+  frankness_propriety: [
+    '{name}\'s {left_pole} and {right_pole} wage constant war — the urge to speak plain and the instinct to smooth things over alternate without resolution.',
+    'The contradiction between {left_pole} and {right_pole} in {name} surfaces in every conversation that matters. They say too much and then too little, and neither feels like the right amount.',
+  ],
+  humility_pride: [
+    '{name} navigates between {left_pole} and {right_pole} without having resolved which is more natural. Both are genuine; neither is settled.',
+    'The part of {name} that needs to be in charge and the part that needs to not be responsible are in approximate balance, making every situation of authority slightly uncomfortable.',
+    '{name}\'s {left_pole} and {right_pole} produce the specific discomfort of someone who is always aware of both options — who cannot take authority without questioning it, and cannot decline it without questioning that too.',
+  ],
+  sacrifice_survival: [
+    '{name}\'s pull toward {left_pole} and pull toward {right_pole} have reached suspended tension — they cannot fully give themselves over and cannot fully withdraw.',
+    'Every bond {name} forms contains the implicit negotiation between {left_pole} and {right_pole} — an internal argument that has not concluded and may not.',
+    'What the equal pull of {left_pole} and {right_pole} produces in {name} is a person who enters commitments while holding the exit in view — not intending to use it, but unable to stop keeping it available.',
+  ],
+  stoicism_passion: [
+    '{name}\'s {left_pole} and {right_pole} are locked in a war that produces unpredictable weather — long calms interrupted by sudden storms, and neither state feels entirely chosen.',
+    'The contradiction between {left_pole} and {right_pole} in {name} means they feel everything but show nothing, or show everything and later wish they hadn\'t. There is no middle.',
   ],
   courage_prudence: [
     '{name} is pulled equally toward {left_pole} and {right_pole} — the part that faces danger and the part that calculates it are of equal influence, producing a person who acts and second-guesses with equal facility.',
     'The tension between {left_pole} and {right_pole} runs through every significant decision {name} makes. Neither wins cleanly. Both leave marks.',
     'What the balance of {left_pole} and {right_pole} produces in {name} is a person who acts and then second-guesses the action with equal investment. The doubt is not weakness; it is the other half of them, with equal claim.',
-  ],
-  cruelty_compassion: [
-    '{name} holds {left_pole} and {right_pole} in approximately equal measure — both are genuine, neither is settled, and the question of which operates depends on circumstances they do not always control.',
-    'The hardness and the softness in {name} have not resolved into a hierarchy. {left_pole} and {right_pole} coexist, each active in the circumstances that call for it.',
-    '{name}\'s {left_pole} and {right_pole} are not sequential — they do not take turns. They are simultaneously present, and which operates is determined not by will but by circumstance, which is a condition that provides neither comfort nor predictability.',
-  ],
-  cunning_honesty: [
-    '{name} is pulled toward both {left_pole} and {right_pole} with equal force — the honest part and the strategic part are in ongoing negotiation that neither wins.',
-    'The contradiction between {left_pole} and {right_pole} in {name} has not simplified. They are sometimes more open than useful and sometimes more closed than comfortable.',
-    'The war in {name} between {left_pole} and {right_pole} is not ethical. It is practical. Both work; which works better in a given circumstance is not always clear until after. This is what sustains the argument between them.',
-  ],
-  devotion_independence: [
-    '{name}\'s pull toward {left_pole} and pull toward {right_pole} have reached suspended tension — they cannot fully give themselves over and cannot fully withdraw.',
-    'Every bond {name} forms contains the implicit negotiation between {left_pole} and {right_pole} — an internal argument that has not concluded and may not.',
-    'What the equal pull of {left_pole} and {right_pole} produces in {name} is a person who enters commitments while holding the exit in view — not intending to use it, but unable to stop keeping it available.',
-  ],
-  loyalty_treachery: [
-    '{name} is neither reliably {left_pole} nor reliably {right_pole} — the near-equal weight of both makes every significant relationship a variable outcome.',
-    'The {left_pole} part of {name} and the {right_pole} part have reached an unstable equilibrium that shifts based on what is at stake and who is watching.',
-    'The {left_pole} and {right_pole} in {name} are not in conflict so much as in ongoing negotiation about what any given relationship actually merits. The negotiation is private and the outcome is not always predictable.',
-  ],
-  tradition_innovation: [
-    '{name} is equally drawn to {left_pole} and {right_pole} — the appeal of each is partly the critique it offers of the other, a loop without obvious exit.',
-    'The {left_pole} and the {right_pole} in {name} are matched forces. They respect inheritance and resist it in approximately equal measure.',
-    'What {name}\'s equal {left_pole} and {right_pole} produces is a specific restlessness: the sense that both the inherited and the invented are inadequate, that what is needed has no name yet.',
-  ],
-  dominance_humility: [
-    '{name} navigates between {left_pole} and {right_pole} without having resolved which is more natural. Both are genuine; neither is settled.',
-    'The part of {name} that needs to be in charge and the part that needs to not be responsible are in approximate balance, making every situation of authority slightly uncomfortable.',
-    '{name}\'s {left_pole} and {right_pole} produce the specific discomfort of someone who is always aware of both options — who cannot take authority without questioning it, and cannot decline it without questioning that too.',
-  ],
-  wrath_patience: [
-    '{name}\'s {left_pole} and their {right_pole} are of roughly equal force — slow to ignite, fast to exhaust their own patience once ignited.',
-    'The line between {name}\'s {left_pole} and their {right_pole} is not reliably drawn. They can hold one a long time and shift to the other suddenly.',
-    'The balance of {left_pole} and {right_pole} in {name} produces something that looks like calm but is more accurately described as held tension. The patience is real; what it contains is also real.',
-  ],
-  greed_generosity: [
-    '{name} holds both {left_pole} and {right_pole} in near-equal measure — they are often in direct competition, and the winner is situational.',
-    'The {left_pole} part of {name} and the {right_pole} part are close enough in strength that the outcome is often a compromise neither fully satisfies.',
-    'What the near-equal {left_pole} and {right_pole} produces in {name} is a person who experiences abundance and scarcity simultaneously — who can give in one moment and calculate the cost of giving in the next, and find both responses genuine.',
   ],
 };
 
@@ -472,20 +469,7 @@ export const DECISIVE_NATURE_PROSE: string[] = [
 // Tone: Vulnerability exposed. "What {name} will never admit..."
 
 export const FEAR_PROSE: Record<string, string[]> = {
-  // ambition_contentment
-  ambition_contentment_positive: [
-    'What {name} will never admit — even to those closest to them — is that {value} is not a direction but a flight from the {fear} that effort alone cannot prevent.',
-    'Beneath the {value} that organizes {name}\'s life is the specific dread of {fear}: that all the striving could reach its natural end and still not be enough.',
-    'The {value} in {name} is not simply orientation toward achievement. It is a specific response to the {fear} that nothing left to accomplish means nothing left to avoid — that stillness and disappearance might not be different states.',
-    '{name} fills every silence with a plan. The {fear} is loudest in the gaps between tasks — so {name} has arranged a life where there are no gaps, and calls this {value}.',
-  ],
-  ambition_contentment_negative: [
-    'What {name} will never admit is that behind the {value} they display is the {fear} of being forced to want more — of peace being taken from them and replaced with demands they did not agree to.',
-    'The {value} in {name} is partly resistance: the {fear} of endless striving makes stillness feel like safety rather than simply comfort.',
-    'Beneath the {value} that {name} maintains is the {fear} that ambition, once permitted, does not stop at reasonable limits — that the hunger is larger than any goal can satisfy, and that opening the door means losing the room.',
-    '{name} declines every offer of advancement with the same calm refusal, and the calm is manufactured. The {fear} is not of failure but of appetite — that wanting, once started, will consume the {value} they have built their life inside.',
-  ],
-  // courage_prudence
+  // mercy_ruthlessness
   courage_prudence_positive: [
     'What {name} will never admit is that {value} is maintained partly against the {fear} of exposure — the moment when the strength they project would be revealed as calculation in disguise.',
     'Beneath the {value} in {name} is a {fear} they do not name: that the courage they display would, under sufficient pressure, reveal itself as performed rather than real.',
@@ -498,109 +482,114 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'The specific fear inside {name}\'s {value} is not of external danger but of internal failure: the moment when the calculation fails and the instinct takes over, and the instinct turns out to have been wrong about what it understood.',
     'People close to {name} notice the lists, the contingencies, the plans within plans. What they do not see is the {fear} that the plans are for: one reckless moment undoing everything {value} has carefully kept intact.',
   ],
-  // cruelty_compassion
-  cruelty_compassion_positive: [
-    'What {name} will never admit is that the {value} they are capable of is partly a defense against the {fear} of being made vulnerable — hurt before being hurt.',
-    'Beneath the capacity for {value} in {name} is a {fear} they do not examine: that softness, shown once, would be found and used against them.',
-    'The {fear} behind {name}\'s {value} is not of being harmed by another but of becoming the instrument of their own undoing — of the hardness they have built becoming the thing that destroys what they were trying to protect.',
-    '{name} was gentle once, with someone specific, and the outcome taught them the cost. The {fear} is not of gentleness — it is of the specific wound that follows when {value} drops its guard and the world does not reciprocate.',
-  ],
-  cruelty_compassion_negative: [
-    'What {name} will never admit is that their {value} contains within it the {fear} of discovering they are capable of worse — that the hardness is in there, only waiting for the right provocation.',
-    'The {value} in {name} sits next to a {fear} they rarely name: that kindness will be mistaken for weakness, and that the mistake will cost someone else.',
-    'The {fear} that lives inside {name}\'s {value} is not that others will take advantage of their softness. It is that the softness will not be enough — that it will prove insufficient at the specific moment it is most needed.',
-    '{name} flinches at their own sharp tone and apologizes too quickly. The {fear} is that one day the sharpness will feel natural — that the {value} is a dam, and the dam is not as thick as it looks.',
-  ],
-  // cunning_honesty
-  cunning_honesty_positive: [
+  // honesty_cunning
+  honesty_cunning_positive: [
     'What {name} will never admit is that behind the {value} they practice is the {fear} of being outwitted — found by someone better at the same game, aimed in the other direction.',
     'The {value} in {name} is maintained partly against the {fear} that the deception, if discovered, will define everything that came before it. The fear makes the practice more careful and no less present.',
     'The specific {fear} beneath {name}\'s {value} is erosion: the question of whether the practice, maintained long enough, has made them into something that cannot return to the alternative even when the alternative becomes necessary.',
     '{name} keeps no journal, writes no letters, avoids being alone with people who ask direct questions. The {fear} is not of enemies knowing the truth. It is of anyone knowing — because {value}, practiced long enough, has left {name} uncertain which version is the original.',
   ],
-  cunning_honesty_negative: [
+  honesty_cunning_negative: [
     'What {name} will never admit is that their {value} sits next to a {fear} that circumstances will require deception and that they will be visibly bad at it.',
     'Beneath the {value} in {name} is a {fear} of what it would cost them to lie in a situation that demanded it — not moral cost, but the simpler fear of the lie being seen.',
     '{name}\'s {value} contains a quiet, specific {fear}: that the world will present a situation where {value} is not sufficient and deception would have been, and that in that moment they will be unable to deploy it in time.',
     '{name} watches the cunning prosper and says nothing. The {fear} is not that {value} is wrong. It is that {value} is expensive — and that the invoice arrives in the form of people they could have protected if they had been willing to lie.',
   ],
-  // devotion_independence
-  devotion_independence_positive: [
+  // sacrifice_survival
+  sacrifice_survival_positive: [
     'What {name} will never admit is that {value} contains within it the {fear} of abandonment by what they are devoted to — the discovery that the thing they organized around was unworthy.',
     'The {value} in {name} protects against, but cannot eliminate, the {fear} that what they have given themselves to will eventually require something they cannot give.',
     'The {fear} that lives inside {name}\'s {value} is not of its object failing them. It is of {value} itself — the suspicion that what they call devotion is dependency wearing a more respectable name.',
     '{name} tends the object of their {value} the way a gardener tends a plant in drought — too much water, too much attention, checking the roots when the leaves look fine. The {fear} is visible in the excess of care.',
   ],
-  devotion_independence_negative: [
+  sacrifice_survival_negative: [
     'What {name} will never admit is that the {value} they protect is maintained against the {fear} of obligation so total it leaves no remainder of themselves.',
     'Beneath the {value} in {name} is a {fear} of being consumed by a commitment they did not fully choose, of finding that belonging has closed around them.',
     'What the {value} in {name} protects against is not external constraint but the {fear} of their own need — the possibility that the independence is elaborate avoidance of the vulnerability that connection requires.',
     '{name} leaves before being asked to stay. The {fear} has a rhythm to it — closeness building to a threshold, then departure, then the specific relief of a door closing behind them. They call this {value}. It is also flight.',
   ],
-  // loyalty_treachery
-  loyalty_treachery_positive: [
+  // loyalty_ambition
+  loyalty_ambition_positive: [
     'What {name} will never admit is that {value} lives next to a {fear} that is specific and named: betrayal by those they have trusted most. Not hypothetical. Already experienced, and still feared.',
     'Beneath the {value} in {name} is the {fear} that the people and causes they have bound themselves to will, when tested, prove to have been bound to something else all along.',
     'The {fear} at the center of {name}\'s {value} is not abstract. It has a history: the specific memory of having given it fully and had the giving made into a liability. The {value} continues; the {fear} is present at the foundation of it.',
     '{name} tests the people closest to them — small betrayals staged to see who notices, who stays, who leaves. They hate themselves for the testing. The {fear} is that without it, {value} is just a bet placed blind.',
   ],
-  loyalty_treachery_negative: [
+  loyalty_ambition_negative: [
     'What {name} will never admit is that behind every turn they make is the {fear} of being bound by a {value} they did not choose — loyalty as chain rather than bond.',
     'The {value} in {name} is partly a response to the {fear} of being owned by commitments, of discovery that the cost of keeping faith exceeds any benefit.',
     'Behind the {value} that {name} practices is not coldness but a {fear} with a specific shape: the discovery that their defection, in the wrong circumstance, will be toward something they value less than what they abandoned.',
     '{name} has never kept a promise longer than it was useful and has never stopped counting the cost. The {fear} is not of obligation but of the door it closes — the specific future where {value} has been traded for a cage, and the key handed to someone who does not deserve it.',
   ],
-  // tradition_innovation
-  tradition_innovation_positive: [
+  // tradition_novelty
+  tradition_novelty_positive: [
     'What {name} will never admit is that behind {value} is the {fear} of loss — that the old ways are irreplaceable, and that their abandonment would mean losing something that cannot be rebuilt once gone.',
     'The {value} in {name} is maintained against the {fear} that what has been accumulated over time will be discarded by people who do not understand what it cost.',
     'The {fear} beneath {name}\'s {value} is not of change itself but of dissolution — the specific loss that comes when accumulated investment is let go by people who did not pay the cost and cannot feel what is leaving.',
     '{name} keeps objects that no longer serve a purpose and tends rituals that no one else remembers. The {fear} is in the keeping — that if they stop, the last thread connecting what was to what is will break, and no one else is holding the other end.',
   ],
-  tradition_innovation_negative: [
+  tradition_novelty_negative: [
     'What {name} will never admit is that behind the {value} is a {fear} — the fear of stagnation, of the same answer applied to every new problem, of arriving at a future that is simply the past with different furniture.',
     'The {value} in {name} sits over a {fear} of being fixed in place: of finding that adaptation is no longer possible, that the old solutions are the only ones, that the world has moved and they have not.',
     'What the {value} in {name} is defending against is not the past but the {fear} of meeting its own limit — of pushing into new territory and discovering that innovation runs out before it arrives somewhere stable.',
     '{name} dismantles things that still work and builds replacements that are not always better. The {fear} is not of the past catching them — it is of turning around and discovering they have built something that will outlive its purpose and become the very weight they were running from.',
   ],
-  // dominance_humility
-  dominance_humility_positive: [
+  // humility_pride
+  humility_pride_positive: [
     'What {name} will never admit is that the {value} they exercise is maintained partly against the {fear} of losing it — that control, once relinquished, cannot be recovered.',
     'Beneath the {value} in {name} is the {fear} that things without direction will not simply stall but collapse — that the absence of their intervention is not neutrality but catastrophe.',
     'The {fear} behind {name}\'s {value} is visible in its emergency form: the quality of attention given to situations that might escape management — not tyranny, but the specific anxiety of believing that without intervention, things collapse in unrecoverable ways.',
     '{name} cannot delegate without checking. Cannot leave a room without arranging it. Cannot sleep without knowing what happens next. The {fear} is not of others failing — it is of the chaos that {value} keeps at bay being real, and permanent, and patient.',
   ],
-  dominance_humility_negative: [
+  humility_pride_negative: [
     'What {name} will never admit is that the {value} they display contains the {fear} of being forced into dominance — of authority arriving like a sentence rather than a choice.',
     'The {value} in {name} is maintained against the {fear} that if they occupied more space, they would do damage they could not take back. The restraint is not only principle.',
     'The {fear} at the center of {name}\'s {value} is not of responsibility avoided. It is of what responsibility reveals — the possibility that the capacity they are withholding, exercised, would confirm something about themselves they cannot currently claim is absent.',
     '{name} speaks last in every council and sits nearest the door. The {fear} is of being looked at — truly looked at — and found to contain something large enough to require the room. The {value} is a practiced smallness that costs more than it appears.',
   ],
-  // wrath_patience
-  wrath_patience_positive: [
+  // mercy_ruthlessness
+  mercy_ruthlessness_positive: [
     'What {name} will never admit is that behind the {value} is the {fear} of powerlessness — of having reason for anger and finding that the anger accomplishes nothing.',
     'The {value} in {name} is maintained against the {fear} that beneath the restraint is something that, once released, would not stop at the appropriate moment.',
     'The {fear} beneath {name}\'s {value} is not of powerlessness exactly. It is of a specific combination: powerlessness without the capacity for anger to make it bearable. The {value} is held partly because the alternative is only grief.',
     '{name} breaks things when alone — small things, replaceable things, in rooms where no one can hear. The {fear} is not of the anger. It is of the day the anger finds a person instead of an object, and the {value} finally arrives at what it has been building toward.',
   ],
-  wrath_patience_negative: [
+  mercy_ruthlessness_negative: [
     'What {name} will never admit is that the {value} they display contains within it the {fear} of what happens when it runs out — the moment when the patience finally exhausts itself in an unrecoverable way.',
     'Beneath the {value} in {name} is a {fear} of their own anger: not that it doesn\'t exist, but that it is larger than they have admitted, and that one day the occasion for it will arrive.',
     'What the {value} in {name} covers is not simply anger but the {fear} of its own extinction — the possibility that the patience, held long enough, will finally exhaust itself and leave a person who cannot feel it anymore.',
     'People praise {name}\'s calm and {name} accepts the praise and does not mention what the calm is sitting on. The {fear} is geological — something buried deep enough that no one measures it, building pressure on a timeline longer than the conversations about it.',
   ],
-  // greed_generosity
-  greed_generosity_positive: [
+  // asceticism_extravagance
+  asceticism_extravagance_positive: [
     'What {name} will never admit is that behind the {value} is the {fear} of scarcity — not merely material want but the hollow interior state that scarcity produces, the knowledge of not-enough applied to everything.',
     'The {value} in {name} sits over a {fear} that is older than reason: that it will run out, that there will not be enough, that the margin between sufficient and insufficient is thinner than it looks.',
     'The {fear} beneath {name}\'s {value} is not about objects. It is about the interior state of not-enough: the specific quality of hunger that does not know how to recognize satisfaction and so continues past the point where a different person would stop.',
     '{name} counts things — coins, stores, alliances, debts owed. The counting is a ritual against the {fear}. The number is never large enough because the {fear} is not a number. It is a feeling, and feelings do not respond to arithmetic.',
   ],
-  greed_generosity_negative: [
+  asceticism_extravagance_negative: [
     'What {name} will never admit is that behind the {value} they practice is the {fear} of discovering it was conditional — that the generosity will eventually reach a limit and the limit will say something about who they actually are.',
     'The {value} in {name} contains the {fear} of its own dissolution: that the conditions that make it possible will be removed, and what will emerge is not what they have shown the world.',
     'What the {value} in {name} sits on top of is not virtue but {fear}: the discovery that at some depth, the same calculus operates that they most dislike in others — that the generosity is generous partly because they are afraid of what they are when it is absent.',
     '{name} gives until it hurts and then gives past the hurting. The {fear} is of the moment they stop — not because stopping is wrong, but because stopping would require them to sit with who they are when they are not giving. And they have not met that person yet.',
+  ],
+  // frankness_propriety
+  frankness_propriety_positive: [
+    'What {name} will never admit is that their {value} is maintained against the {fear} of being silenced — of learning that the truth, spoken plainly, costs more than the silence it replaces.',
+    'Beneath the {value} in {name} is the {fear} that bluntness, in the wrong moment, will do damage that diplomacy could have prevented. The {value} continues; the {fear} shapes every word.',
+  ],
+  frankness_propriety_negative: [
+    'What {name} will never admit is that behind the {value} they practise is the {fear} of exposure — of having the raw, unpolished self seen by someone who matters.',
+    'The {value} in {name} sits over the {fear} that without the mask of courtesy, something unacceptable would be visible. The propriety is armour; the {fear} is of going without it.',
+  ],
+  // stoicism_passion
+  stoicism_passion_positive: [
+    'What {name} will never admit is that their {value} is maintained against the {fear} of feeling — the specific dread that emotion, once permitted, would not stop at appropriate limits.',
+    'Beneath the {value} in {name} is the {fear} that the calm is not strength but numbness — that one day they will try to feel and discover the mechanism is broken.',
+  ],
+  stoicism_passion_negative: [
+    'What {name} will never admit is that their {value} contains the {fear} of emptiness — that without the intensity, there is nothing underneath worth finding.',
+    'The {value} in {name} sits over the {fear} that feeling everything is also a way of drowning — that the passion is not chosen but compulsive, and that the silence, when it finally comes, will be permanent.',
   ],
 };
 

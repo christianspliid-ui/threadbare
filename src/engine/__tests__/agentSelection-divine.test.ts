@@ -18,16 +18,16 @@ describe('runSelectionPipeline with divine influences', () => {
       properties: {
         actorType: 'individual',
         axiologicalProfile: {
-          ambition_contentment: 0.0,
+          loyalty_ambition: 0.0,
           courage_prudence: 0.0,
-          cruelty_compassion: 0.0,
-          cunning_honesty: 0.0,
-          devotion_independence: 0.0,
-          loyalty_treachery: 0.0,
-          tradition_innovation: 0.0,
-          dominance_humility: 0.0,
-          wrath_patience: 0.0,
-          greed_generosity: 0.0,
+          mercy_ruthlessness: 0.0,
+          honesty_cunning: 0.0,
+          sacrifice_survival: 0.0,
+          loyalty_ambition: 0.0,
+          tradition_novelty: 0.0,
+          humility_pride: 0.0,
+          mercy_ruthlessness: 0.0,
+          asceticism_extravagance: 0.0,
         },
         divineInfluences: [],
       },
@@ -37,7 +37,7 @@ describe('runSelectionPipeline with divine influences', () => {
   it('without divine influence, all-zero profile gives equal scores', () => {
     const candidates: ActionCandidate[] = [
       { templateId: 'a1', targetId: 't1', domain: 'iron', score: 0, motivations: ['courage_prudence'] },
-      { templateId: 'a2', targetId: 't1', domain: 'gold', score: 0, motivations: ['greed_generosity'] },
+      { templateId: 'a2', targetId: 't1', domain: 'gold', score: 0, motivations: ['asceticism_extravagance'] },
     ];
     const result = runSelectionPipeline(graph, actorId, candidates, config, 1, 0.5);
     expect(result.candidates.length).toBe(2);
@@ -56,7 +56,7 @@ describe('runSelectionPipeline with divine influences', () => {
 
     const candidates: ActionCandidate[] = [
       { templateId: 'brave_action', targetId: 't1', domain: 'iron', score: 0, motivations: ['courage_prudence'] },
-      { templateId: 'greedy_action', targetId: 't1', domain: 'gold', score: 0, motivations: ['greed_generosity'] },
+      { templateId: 'greedy_action', targetId: 't1', domain: 'gold', score: 0, motivations: ['asceticism_extravagance'] },
     ];
     const result = runSelectionPipeline(graph, actorId, candidates, config, 1, 0.1);
     const brave = result.candidates.find(c => c.templateId === 'brave_action');
@@ -72,11 +72,11 @@ describe('runSelectionPipeline with divine influences', () => {
       sphere: 'spirit',
       tickApplied: 1,
       ...DECAY_CONSTANTS.persuade,
-      valueDrifts: { loyalty_treachery: 0.20 },
+      valueDrifts: { loyalty_ambition: 0.20 },
     }];
 
     const candidates: ActionCandidate[] = [
-      { templateId: 'a1', targetId: 't1', domain: 'heart', score: 0, motivations: ['loyalty_treachery'] },
+      { templateId: 'a1', targetId: 't1', domain: 'heart', score: 0, motivations: ['loyalty_ambition'] },
     ];
     const result = runSelectionPipeline(graph, actorId, candidates, config, 1, 0.5);
     expect(result.selected).toBeDefined();

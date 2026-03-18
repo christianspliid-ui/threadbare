@@ -27,16 +27,16 @@ function makeFullGraph(): { graph: WorldGraph; agentId: string } {
       primarySphere: 'force',
       cooperationStrategy: 'tit-for-tat',
       axiologicalProfile: {
-        ambition_contentment: 0.7,
+        loyalty_ambition: 0.7,
         courage_prudence: 0.05,   // near-zero → contradiction
-        cruelty_compassion: -0.5,
-        cunning_honesty: 0.05,    // near-zero → contradiction
-        devotion_independence: -0.2,
-        loyalty_treachery: 0.4,
-        tradition_innovation: -0.1,
-        dominance_humility: 0.0,
-        wrath_patience: 0.3,
-        greed_generosity: -0.6,
+        mercy_ruthlessness: -0.5,
+        honesty_cunning: 0.05,    // near-zero → contradiction
+        sacrifice_survival: -0.2,
+        loyalty_ambition: 0.4,
+        tradition_novelty: -0.1,
+        humility_pride: 0.0,
+        mercy_ruthlessness: 0.3,
+        asceticism_extravagance: -0.6,
       },
     },
   } as GraphNode);

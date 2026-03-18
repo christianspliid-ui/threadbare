@@ -20,17 +20,17 @@ const mockDetail: AgentDetail = {
     reachAffinities: ['iron', 'veil', 'heart'],
   },
   profile: {
-    ambition_contentment: 0.8, courage_prudence: 0.3, cruelty_compassion: -0.6,
-    cunning_honesty: 0.1, devotion_independence: 0.5, loyalty_treachery: -0.2,
-    tradition_innovation: 0.0, dominance_humility: 0.4, wrath_patience: -0.3, greed_generosity: 0.1,
+    loyalty_ambition: 0.8, courage_prudence: 0.3, mercy_ruthlessness: -0.6,
+    honesty_cunning: 0.1, sacrifice_survival: 0.5, loyalty_ambition: -0.2,
+    tradition_novelty: 0.0, humility_pride: 0.4, mercy_ruthlessness: -0.3, asceticism_extravagance: 0.1,
   },
   domainCapabilities: {
     iron: 7, gold: 2, shadow: 5, veil: 3, heart: 4, eye: 1, stone: 3, star: 2, flesh: 1,
   },
   topValues: [
-    { pair: 'ambition_contentment', value: 0.8, label: 'Deeply Ambitious' },
-    { pair: 'cruelty_compassion', value: -0.6, label: 'Compassionate' },
-    { pair: 'devotion_independence', value: 0.5, label: 'Devoted' },
+    { pair: 'loyalty_ambition', value: 0.8, label: 'Deeply Ambitious' },
+    { pair: 'mercy_ruthlessness', value: -0.6, label: 'Compassionate' },
+    { pair: 'sacrifice_survival', value: 0.5, label: 'Devoted' },
   ],
   topBonds: [
     { targetId: 'agent.2', targetName: 'Lyra', sentiment: 0.7, strength: 0.8, basis: 'friendship' },

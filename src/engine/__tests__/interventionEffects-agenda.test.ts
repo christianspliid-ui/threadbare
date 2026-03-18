@@ -10,16 +10,16 @@ function createTestGraph(): WorldGraph {
     name: 'Test Actor',
     properties: {
       axiologicalProfile: {
-        ambition_contentment: 0.0,
+        loyalty_ambition: 0.0,
         courage_prudence: 0.0,
-        cruelty_compassion: 0.0,
-        cunning_honesty: 0.0,
-        devotion_independence: 0.0,
-        loyalty_treachery: 0.0,
-        tradition_innovation: 0.0,
-        dominance_humility: 0.0,
-        wrath_patience: 0.0,
-        greed_generosity: 0.0,
+        mercy_ruthlessness: 0.0,
+        honesty_cunning: 0.0,
+        sacrifice_survival: 0.0,
+        loyalty_ambition: 0.0,
+        tradition_novelty: 0.0,
+        humility_pride: 0.0,
+        mercy_ruthlessness: 0.0,
+        asceticism_extravagance: 0.0,
       },
       narrativeArchetype: 'conqueror',
       locationId: 'loc.test',
@@ -42,7 +42,7 @@ describe('applyInterventionEffects with agenda', () => {
       agenda: {
         id: 'persuade_greed',
         name: 'Promise Riches',
-        valuePair: 'greed_generosity',
+        valuePair: 'asceticism_extravagance',
         valueDirection: 'left',
         narrativeHook: 'wealth beyond measure',
         behaviorTag: 'wealth-seeking',
@@ -54,7 +54,7 @@ describe('applyInterventionEffects with agenda', () => {
     expect(result.success).toBe(true);
     const influences = getDivineInfluences(graph, 'actor.test');
     expect(influences.length).toBe(1);
-    expect(influences[0].valueDrifts?.greed_generosity).toBeDefined();
+    expect(influences[0].valueDrifts?.asceticism_extravagance).toBeDefined();
     expect(influences[0].agendaId).toBe('persuade_greed');
   });
 
@@ -88,7 +88,7 @@ describe('applyInterventionEffects with agenda', () => {
       agenda: {
         id: 'persuade_greed',
         name: 'Promise Riches',
-        valuePair: 'greed_generosity',
+        valuePair: 'asceticism_extravagance',
         valueDirection: 'left',
         narrativeHook: 'wealth',
         behaviorTag: 'wealth-seeking',
@@ -116,7 +116,7 @@ describe('applyInterventionEffects with agenda', () => {
       agenda: {
         id: 'dream_greed',
         name: 'Visions of Wealth',
-        valuePair: 'greed_generosity',
+        valuePair: 'asceticism_extravagance',
         valueDirection: 'left',
         narrativeHook: 'riches',
         behaviorTag: 'wealth-driven',
@@ -127,7 +127,7 @@ describe('applyInterventionEffects with agenda', () => {
 
     const influences = getDivineInfluences(graph, 'actor.test');
     expect(influences.length).toBeGreaterThan(0);
-    const greedDrift = influences[0].valueDrifts?.greed_generosity;
+    const greedDrift = influences[0].valueDrifts?.asceticism_extravagance;
     expect(greedDrift).toBeDefined();
   });
 
@@ -143,7 +143,7 @@ describe('applyInterventionEffects with agenda', () => {
       agenda: {
         id: 'coincidence_timing',
         name: 'Fortuitous Meeting',
-        valuePair: 'ambition_contentment',
+        valuePair: 'loyalty_ambition',
         valueDirection: 'left',
         narrativeHook: 'chance encounter',
         behaviorTag: 'opportunity-seeker',

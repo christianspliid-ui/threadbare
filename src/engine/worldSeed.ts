@@ -9,7 +9,8 @@
 import { WorldGraph } from './graph';
 import type { CosmologyProfile, SphereName, HexTile, TerrainType, LocationSubtype } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
-import type { AxiologicalProfile, ValuePair } from '../types/agent';
+import type { AxiologicalProfile } from '../types/agent';
+import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { EchoDefinition } from '../types/echo';
 import type { ActiveInjection } from './echo';
@@ -54,11 +55,7 @@ export const FACTION_COUNT = { min: 2, max: 3 };
 export const LOCATION_COUNT = { min: 4, max: 6 };
 export const ARTIFACT_COUNT = { min: 1, max: 2 };
 
-const VALUE_PAIRS: ValuePair[] = [
-  'ambition_contentment', 'courage_prudence', 'cruelty_compassion',
-  'cunning_honesty', 'devotion_independence', 'loyalty_treachery',
-  'tradition_innovation', 'dominance_humility', 'wrath_patience', 'greed_generosity',
-];
+// VALUE_PAIRS imported from types/agent.ts
 
 const REACH_DOMAINS: ReachDomain[] = [
   'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh',
@@ -100,7 +97,7 @@ function generateAxiologicalProfile(rng: () => number, cosmology: CosmologyProfi
 
   for (const pair of VALUE_PAIRS) {
     const base = (rng() * 1.6) - 0.8;
-    const bias = pair === 'tradition_innovation' ? chaosBias : 0;
+    const bias = pair === 'tradition_novelty' ? chaosBias : 0;
     profile[pair] = Math.max(-1, Math.min(1, base + bias));
   }
   return profile;

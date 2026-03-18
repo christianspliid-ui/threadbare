@@ -23,16 +23,16 @@ describe('Integration: Headless Simulation Loop', () => {
     graph.addNode({ id: 'actor.thorin', type: 'actor', name: 'Thorin', properties: {
       actorType: 'individual',
       axiologicalProfile: {
-        ambition_contentment: 0.7,
+        loyalty_ambition: 0.7,
         courage_prudence: 0.5,
-        cruelty_compassion: -0.3,
-        cunning_honesty: 0.0,
-        devotion_independence: -0.1,
-        loyalty_treachery: -0.5,
-        tradition_innovation: 0.2,
-        dominance_humility: 0.4,
-        wrath_patience: 0.1,
-        greed_generosity: -0.2,
+        mercy_ruthlessness: -0.3,
+        honesty_cunning: 0.0,
+        sacrifice_survival: -0.1,
+        loyalty_ambition: -0.5,
+        tradition_novelty: 0.2,
+        humility_pride: 0.4,
+        mercy_ruthlessness: 0.1,
+        asceticism_extravagance: -0.2,
       } satisfies AxiologicalProfile,
     }});
     graph.addEdge({ id: 'e.thorin.loc', source: 'actor.thorin', target: 'loc.fortress', type: 'located_at', properties: {} });
@@ -91,8 +91,8 @@ describe('Integration: Headless Simulation Loop', () => {
     // 6. Run selection pipeline for next action
     const nextCandidates: ActionCandidate[] = [
       { templateId: 'patrol', targetId: 'region.north', domain: 'iron', score: 0, motivations: ['courage_prudence'] },
-      { templateId: 'trade', targetId: 'loc.fortress', domain: 'gold', score: 0, motivations: ['greed_generosity'] },
-      { templateId: 'recruit', targetId: 'loc.fortress', domain: 'heart', score: 0, motivations: ['ambition_contentment', 'dominance_humility'] },
+      { templateId: 'trade', targetId: 'loc.fortress', domain: 'gold', score: 0, motivations: ['asceticism_extravagance'] },
+      { templateId: 'recruit', targetId: 'loc.fortress', domain: 'heart', score: 0, motivations: ['loyalty_ambition', 'humility_pride'] },
     ];
 
     const selectionResult = runSelectionPipeline(

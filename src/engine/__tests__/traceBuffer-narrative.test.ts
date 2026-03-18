@@ -114,7 +114,7 @@ describe('narrative generation tracing', () => {
       const context: ProseContext = {
         actorName: 'The Cunning Fox',
         sphere: 'mind',
-        dominantValues: ['cunning_honesty'],
+        dominantValues: ['honesty_cunning'],
       };
 
       generateNotableProse('trait_acquired', context, 42);

@@ -117,7 +117,7 @@ describe('notable prose generation (tier 2)', () => {
       actorName: 'Champion Arven',
       targetName: 'the Crystal Spire',
       sphere: 'energy',
-      dominantValues: ['courage_prudence', 'devotion_independence'],
+      dominantValues: ['courage_prudence', 'sacrifice_survival'],
     };
     const prose = generateNotableProse('action_critical', context, 42);
     expect(prose.text.length).toBeGreaterThan(50);
@@ -128,7 +128,7 @@ describe('notable prose generation (tier 2)', () => {
     const context: ProseContext = {
       actorName: 'The Cunning Fox',
       sphere: 'mind',
-      dominantValues: ['cunning_honesty'],
+      dominantValues: ['honesty_cunning'],
     };
     const prose = generateNotableProse('trait_acquired', context, 42);
     expect(prose.text.length).toBeGreaterThan(30);
