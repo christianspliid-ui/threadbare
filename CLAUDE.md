@@ -50,6 +50,13 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 - Generalized Action Targeting: `Docs/plans/2026-03-17-generalized-action-targeting-design.md`
 - Mutable hex state + hex actions: `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md`
 - Hex action brainstorm (control mechanic, prerequisites): `brainstorm-hex-actions-and-control-mechanic.md`
+- Agent Decision & Encounter Awareness: `Docs/plans/2026-03-18-agent-decision-and-encounter-awareness-design.md`
+- Encounter Resolution & Divine Intervention: `Docs/plans/2026-03-18-encounter-resolution-and-divine-intervention-design.md`
+- Tier Promotion & Capability Growth: `Docs/plans/2026-03-18-tier-promotion-and-capability-growth-design.md`
+- Axiological Pairs (canonical): Obsidian MCP → `TheFantasyWorldSimulator/Domains/Axiological Pairs.md`
+- Meet The First brainstorm: Obsidian MCP → `TheFantasyWorldSimulator/Brainstorms/brainstorm-meet-the-first.md`
+- Social Fabric & Faction Formation: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
+- Social Fabric Visibility Spec: `Docs/plans/2026-03-18-social-fabric-visibility-spec.md`
 
 ## Non-Functional Priorities (in order)
 
@@ -167,5 +174,5 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
 - Current phase: **Hex Actions & Control Mechanic** (design) — check Notion backlog for next priority
-- Engine: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
+- Engine: ~323 modules, ~70,600+ lines, ~5,111+ tests across 351+ test files
 - Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
