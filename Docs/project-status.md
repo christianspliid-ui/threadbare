@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Encounter Vignette Modal (2026-03-18) — click-to-open narrative vignette from RetinuePanel badges, LocationView agent rows, and EncounterLog cards. Wires vignetteProse engine (scene/lens/stakes/forecast) to UI. Shared StepDots component. Fixed currentStepIndex bug.
 - ✅ Retinue Encounter Notifications (2026-03-18) — toast notifications when retinue agents complete/fail encounters, showing encounter name + reward/penalty details.
 - ✅ Content Browser CMS (2026-03-18) — browsable content explorer at `?view=cms`. Registry-driven: 48 datasets, ~786 items, 10 categories, 5 viewer types. Lazy-loaded (81KB separate chunk).
 - ✅ Sublocation Visibility Fix (2026-03-18) — sublocations now inherit parent hexCol/hexRow so they appear in hex chronicle under their parent LocationCard.
