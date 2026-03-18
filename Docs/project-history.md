@@ -118,6 +118,12 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - UI Primitive Migration: ✅ Complete (2026-03-18) — EventPopup/AgentProfileModal to Modal primitive, buttons migrated across 10 files. Phases 3–4 skipped (specialized components). Design doc: Docs/plans/2026-03-18-ui-primitive-migration-plan.md
 
-- Current phase: **Agent Decision System & Connected Designs** (design complete, pending implementation)
-- Engine stats: ~214 modules, ~49,200+ lines, ~2,680+ tests across 239+ test files
+- Axiological Vocabulary Alignment: ✅ Complete (2026-03-18) — 10 value pairs migrated to canonical names, 6 axes sign-flipped, 2 pairs merged, 2 new pairs added. 91 files updated.
+
+- Agent Behavior Phase 2 — Resolution Modifier Pipeline: ✅ Complete (2026-03-18) — resolutionModifiers.ts with 5-stage modifier pipeline (sphere alignment, equipment reachBonus, terrain, traits, divine intervention stub). 30 tests.
+
+- Agent Behavior Phase 4 — Social Fabric & Faction Formation: ✅ Complete (2026-03-18) — 4 new modules: trustMechanics.ts (edge-level trust tracking, cooperative +0.03 / defective -0.08, per-tick decay 0.002), reputationWalk.ts (graph-walked reputation via findAllPaths, Shadow distortion, Heart resistance, faction rank bonus), social-encounter-content.ts (14 social encounter templates at settlements), socialEncounterGeneration.ts (visible-agent scanning + bond modifiers). disposition.ts wired with trust updates on dilemma resolution. 38 new tests across 3 test files. Design doc: Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md.
+
+- Current phase: **Agent Decision System & Connected Designs** (Phases 0-4 complete, Phase 5+6 pending)
+- Engine stats: ~323 modules, ~70,600+ lines, ~5,111+ tests across 351+ test files
 - Content stats: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
