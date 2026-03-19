@@ -11,6 +11,7 @@ import type { EncounterProgress, EncounterTemplate, EncounterOutcome } from '../
 import type { EncounterResolutionTrace } from '../types/trace';
 import {
   ENCOUNTER_ABANDON_COOLDOWN,
+  ENCOUNTER_COMPLETION_COOLDOWN,
 } from '../types/encounter';
 import {
   ENCOUNTER_TEMPLATES,
@@ -66,8 +67,15 @@ export function getAvailableEncounters(state: GameState, actorId: string): Encou
       return ticksSinceAbandoned > ENCOUNTER_ABANDON_COOLDOWN;
     }
 
-    // Completed encounters can be retaken
-    if (progress.status === 'completed') return true;
+    if (progress.status === 'completed') {
+      // Check completion cooldown using last history entry tick
+      const lastStep = progress.history[progress.history.length - 1];
+      if (lastStep) {
+        const ticksSinceCompleted = state.tick - lastStep.tick;
+        return ticksSinceCompleted > ENCOUNTER_COMPLETION_COOLDOWN;
+      }
+      return true; // No history (shouldn't happen) — allow retry
+    }
 
     return true;
   });
