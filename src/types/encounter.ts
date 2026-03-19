@@ -68,6 +68,9 @@ export const ENCOUNTER_DIFFICULTY_ESCALATION = 10;
 /** Ticks before an agent can reattempt an abandoned encounter */
 export const ENCOUNTER_ABANDON_COOLDOWN = 20;
 
+/** Ticks before an agent can reattempt a completed encounter */
+export const ENCOUNTER_COMPLETION_COOLDOWN = 8;
+
 /** Minimum Maslow tier required to pursue encounters (self-actualization = 5) */
 export const ENCOUNTER_MASLOW_TIER = 5;
 
