@@ -15,6 +15,32 @@ export const GREAT_LAKE_SIZE_MAX = 12;
 export const GREAT_LAKE_COUNT = 1;
 export const LAKE_BLOB_RADIUS_FACTOR = 0.6;
 
+// ─── Depression filling constants ────────────────────────────────
+/** Tiny elevation bump per filled hex for strict downhill ordering */
+export const DRAIN_EPSILON = 0.0001;
+/** Min filled-hex cluster size to become a lake when a river flows through */
+export const DEPRESSION_LAKE_MIN_SIZE = 2;
+
+// ─── Coastal continuation constants ─────────────────────────────
+/** Max shallows hexes a river traverses before giving up */
+export const RIVER_COASTAL_MAX_STEPS = 6;
+
+// ─── Lake outflow constants ─────────────────────────────────────
+/** Min outflow river length to keep (prevents trivial stubs) */
+export const LAKE_OUTFLOW_MIN_LENGTH = 2;
+
+// ─── River forking constants ────────────────────────────────────
+/** Probability a river forks when entering coastal shallows */
+export const RIVER_FORK_COASTAL_CHANCE = 0.4;
+/** Max number of forks a single river can produce */
+export const RIVER_FORK_MAX_PER_RIVER = 2;
+/** Min remaining path length before a fork is allowed */
+export const RIVER_FORK_MIN_REMAINING_LENGTH = 3;
+
+// ─── River merging constants ────────────────────────────────────
+/** When routing, if an adjacent hex has a river, bias toward merging into it */
+export const RIVER_MERGE_PROXIMITY_BIAS = 0.15;
+
 // ─── Types ───────────────────────────────────────────────────────
 
 export interface RiverPath {
@@ -35,6 +61,11 @@ export interface WorldGenData {
   hasRiver: Uint8Array;
   riverPaths: RiverPath[];
   lakeIds: Int16Array;
+
+  /** Filled elevation surface for river routing (computed by fillDepressions) */
+  drainageElevation: Float32Array;
+  /** Per-hex fill depth: drainageElevation - elevation (computed by fillDepressions) */
+  filledDepth: Float32Array;
 }
 
 // ─── Factory ─────────────────────────────────────────────────────
@@ -54,6 +85,8 @@ export function createWorldGenData(
   const terrain: TerrainType[] = new Array(total);
   const hasRiver = new Uint8Array(total);
   const lakeIds = new Int16Array(total).fill(-1);
+  const drainageElevation = new Float32Array(total);
+  const filledDepth = new Float32Array(total);
 
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
@@ -78,6 +111,8 @@ export function createWorldGenData(
     terrain, hasRiver,
     riverPaths: [],
     lakeIds,
+    drainageElevation,
+    filledDepth,
   };
 }
 

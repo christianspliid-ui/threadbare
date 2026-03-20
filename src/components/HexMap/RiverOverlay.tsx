@@ -227,9 +227,13 @@ export const RiverOverlay = memo(function RiverOverlay({
     <g className="river-overlay">
       {paths.map(({ id, d, hexCount }) => {
         if (!d) return null;
+        // Fork rivers and lake outflows are thinner distributaries
+        const isFork = id.includes('fork');
+        const isOutflow = id.includes('outflow');
+        const widthScale = isFork ? 0.6 : isOutflow ? 0.8 : 1.0;
         // Width increases from source to mouth
-        const strokeWidth = RIVER_WIDTH_SOURCE +
-          (RIVER_WIDTH_MOUTH - RIVER_WIDTH_SOURCE) * Math.min(1, hexCount / 10);
+        const strokeWidth = (RIVER_WIDTH_SOURCE +
+          (RIVER_WIDTH_MOUTH - RIVER_WIDTH_SOURCE) * Math.min(1, hexCount / 10)) * widthScale;
         return (
           <path
             key={id}
