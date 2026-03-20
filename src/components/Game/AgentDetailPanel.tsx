@@ -103,7 +103,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               className="w-2 h-2 rounded-full flex-shrink-0"
               style={{ backgroundColor: tierColor }}
             />
-            <span className="text-xs text-amber-400/70">{detail.tierName}</span>
+            <span className="text-xs text-amber-400/80">{detail.tierName}</span>
           </div>
         </div>
       </div>
@@ -119,7 +119,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             >
               {detail.archetype.name}
             </h3>
-            <p className="text-amber-400/60 text-xs italic mt-1">
+            <p className="text-amber-400/80 text-xs italic mt-1">
               {detail.archetype.storyShape}
             </p>
 
@@ -173,8 +173,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                   return (
                     <div key={domain} className="flex flex-col">
                       <span
-                        className={`text-[11px] font-medium mb-1 ${
-                          isAffinity ? 'text-amber-100' : 'text-amber-400/50'
+                        className={`text-xs font-medium mb-1 ${
+                          isAffinity ? 'text-amber-100' : 'text-amber-400/70'
                         }`}
                       >
                         {DOMAIN_NAMES[domain]}
@@ -185,7 +185,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-amber-400/40 mt-0.5">
+                      <span className="text-xs text-amber-400/70 mt-0.5">
                         {score}
                       </span>
                     </div>
@@ -233,7 +233,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </SectionHeading>
 
           {detail.topBonds.length === 0 ? (
-            <p className="text-amber-400/30 text-xs italic">No known bonds</p>
+            <p className="text-amber-400/60 text-xs italic">No known bonds</p>
           ) : (
             <div className="space-y-1.5">
               {detail.topBonds.map(bond => {
@@ -249,7 +249,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                       <span className="text-xs text-amber-100 flex-1 truncate">
                         {bond.targetName}
                       </span>
-                      <span className="text-[10px] text-amber-400/50">
+                      <span className="text-xs text-amber-400/70">
                         {bond.basis}
                       </span>
                     </div>
@@ -291,7 +291,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 />
               ))}
               {detail.possessions.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/30 text-xs italic">
+                <p className="text-amber-400/60 text-xs italic">
                   and {detail.possessions.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -303,7 +303,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <SectionHeading>
               Possessions
             </SectionHeading>
-            <p className="text-amber-400/30 text-xs italic animate-breathe">They carry nothing of note.</p>
+            <p className="text-amber-400/60 text-xs italic animate-breathe">They carry nothing of note.</p>
           </div>
         )}
 
@@ -328,7 +328,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 />
               ))}
               {detail.conditions.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/30 text-xs italic">
+                <p className="text-amber-400/60 text-xs italic">
                   and {detail.conditions.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -357,7 +357,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
                 />
               ))}
               {detail.powersAndAgreements.length > MAX_ATTACHMENT_ROWS && (
-                <p className="text-amber-400/30 text-xs italic">
+                <p className="text-amber-400/60 text-xs italic">
                   and {detail.powersAndAgreements.length - MAX_ATTACHMENT_ROWS} more…
                 </p>
               )}
@@ -372,12 +372,12 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </SectionHeading>
 
           {detail.cooperationStrategy == null ? (
-            <p className="text-amber-400/30 text-xs italic">No known strategy</p>
+            <p className="text-amber-400/60 text-xs italic">No known strategy</p>
           ) : (
             <div className="space-y-2.5">
               {/* Strategy name */}
               <div className="flex items-center gap-2">
-                <span className="text-xs text-amber-400/50">Strategy:</span>
+                <span className="text-xs text-amber-400/70">Strategy:</span>
                 <span className="text-xs text-amber-100">
                   {STRATEGY_DISPLAY[detail.cooperationStrategy]}
                 </span>
@@ -386,8 +386,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               {/* Reputation bar */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-amber-400/50">Reputation</span>
-                  <span className="text-[10px] text-amber-400/40">
+                  <span className="text-xs text-amber-400/70">Reputation</span>
+                  <span className="text-xs text-amber-400/70">
                     {detail.reputationScore.toFixed(2)}
                   </span>
                 </div>
@@ -411,25 +411,25 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
               {/* Recent interactions */}
               {detail.recentInteractions.length > 0 && (
                 <div className="space-y-1">
-                  <span className="text-[10px] text-amber-400/40 uppercase tracking-wider">
+                  <span className="text-xs text-amber-400/70 uppercase tracking-wider">
                     Recent
                   </span>
                   {detail.recentInteractions.map((ir, idx) => (
                     <div
                       key={`${ir.tick}-${idx}`}
-                      className="flex items-center gap-2 text-[11px]"
+                      className="flex items-center gap-2 text-xs"
                     >
-                      <span className="text-amber-400/30 w-8 text-right flex-shrink-0">
+                      <span className="text-amber-400/60 w-8 text-right flex-shrink-0">
                         t{ir.tick}
                       </span>
                       <span title={`Actor: ${ir.actorMove}`}>
                         {ir.actorMove === 'cooperate' ? '✓' : '✗'}
                       </span>
-                      <span className="text-amber-400/20">vs</span>
+                      <span className="text-amber-400/70">vs</span>
                       <span title={`Target: ${ir.targetMove}`}>
                         {ir.targetMove === 'cooperate' ? '✓' : '✗'}
                       </span>
-                      <span className="text-amber-400/30 flex-1 truncate">
+                      <span className="text-amber-400/60 flex-1 truncate">
                         {ir.stakes === 'high' ? '✦' : ''} {ir.context}
                       </span>
                     </div>
@@ -442,7 +442,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
 
         {/* Location Link */}
         <div className="text-xs">
-          <span className="text-amber-400/50">Location: </span>
+          <span className="text-amber-400/70">Location: </span>
           <button
             onClick={() => onLocationClick(detail.locationId)}
             className="text-amber-100 hover:text-amber-200 underline transition-colors"
@@ -455,7 +455,7 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
       {/* Activity Section */}
       {activity && (
         <div className="px-4 py-2 border-t border-amber-900/20">
-          <div className="text-xs text-amber-400/50 mb-1">Activity</div>
+          <div className="text-xs text-amber-400/70 mb-1">Activity</div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-amber-100 font-medium truncate flex-1">
               {activity.actionName}

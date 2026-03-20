@@ -23,15 +23,15 @@ function EchoCard({ candidate }: { candidate: HarvestEchoCandidate }) {
         <div className="w-2 h-2 rounded-full bg-amber-400" />
         <span className="text-xs font-bold text-amber-100/90 truncate">{def.name}</span>
       </div>
-      <p className="text-[10px] text-amber-200/50 leading-relaxed mb-2">{def.summary}</p>
+      <p className="text-xs text-amber-200/70 leading-relaxed mb-2">{def.summary}</p>
       <div className="flex gap-1">
         {def.sphereAffinities.map(s => (
-          <span key={s} className="text-[9px] px-1.5 py-0.5 bg-stone-600/50 rounded text-amber-200/60">
+          <span key={s} className="text-xs px-1.5 py-0.5 bg-stone-600/50 rounded text-amber-200/70">
             {s}
           </span>
         ))}
       </div>
-      <div className="mt-1 text-[10px] text-amber-200/30">
+      <div className="mt-1 text-xs text-amber-200/60">
         Significance: {(candidate.score * 100).toFixed(0)}%
       </div>
     </div>
@@ -46,7 +46,7 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
       <div className={`max-w-2xl w-full mx-4 bg-gradient-to-b ${style.bg} to-stone-900 border border-amber-900/30 rounded-xl p-8`}>
         <div className="text-center mb-6">
           <Tooltip id="ui.harvest_cycle">
-            <p className="text-xs text-amber-200/40 uppercase tracking-widest mb-1 cursor-help">
+            <p className="text-xs text-amber-200/70 uppercase tracking-widest mb-1 cursor-help">
               Cycle {cycle} Complete
             </p>
           </Tooltip>
@@ -60,14 +60,14 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
           </Tooltip>
         </div>
 
-        <p className="text-sm text-amber-200/60 text-center italic mb-6 leading-relaxed">
+        <p className="text-sm text-amber-200/80 text-center italic mb-6 leading-relaxed">
           {harvest.chronicleSummary}
         </p>
 
         {harvest.cosmicEchoCandidates.length > 0 && (
           <div className="mb-6">
             <Tooltip id="ui.harvest_echo">
-              <h3 className="text-xs font-bold text-amber-100/50 uppercase tracking-wider mb-3 cursor-help">
+              <h3 className="text-xs font-bold text-amber-100/80 uppercase tracking-wider mb-3 cursor-help">
                 Echoes Preserved ({harvest.cosmicEchoCandidates.length} cosmic)
               </h3>
             </Tooltip>
@@ -80,9 +80,9 @@ export function HarvestScreen({ harvest, cycle, onBeginNextCycle }: HarvestScree
         )}
 
         {harvest.divineEchoSlots > 0 && (
-          <p className="text-xs text-amber-200/40 text-center mb-6">
+          <p className="text-xs text-amber-200/70 text-center mb-6">
             {harvest.divineEchoSlots} divine echo slot{harvest.divineEchoSlots > 1 ? 's' : ''} available
-            <span className="text-amber-200/20 ml-1">(selection coming in a future update)</span>
+            <span className="text-amber-200/50 ml-1">(selection coming in a future update)</span>
           </p>
         )}
 

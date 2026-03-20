@@ -95,7 +95,6 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
                       style={{
                         color: categoryColor,
                         backgroundColor: `${categoryColor}22`,
-                        fontSize: '10px',
                       }}
                     >
                       {intent.priority}
@@ -154,7 +153,7 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
       </h3>
 
       {intents.length === 0 ? (
-        <p className="text-amber-400/30 text-xs italic">No discernible intent</p>
+        <p className="text-amber-400/60 text-xs italic">No discernible intent</p>
       ) : (
         <div className="space-y-2">
           {intents.map(intent => {
@@ -174,14 +173,14 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
               >
                 {/* Row 1: glyph + name + priority */}
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[11px] text-amber-100 font-medium truncate flex-1 mr-2">
+                  <span className="text-xs text-amber-100 font-medium truncate flex-1 mr-2">
                     <span style={{ color: categoryColor, marginRight: '4px' }}>
                       {CATEGORY_GLYPHS[intent.category]}
                     </span>
                     {intent.displayName}
                   </span>
                   <span
-                    className="text-[9px] uppercase tracking-wider flex-shrink-0"
+                    className="text-xs uppercase tracking-wider flex-shrink-0"
                     style={{ color: `${categoryColor}cc` }}
                   >
                     {intent.priority}
@@ -207,7 +206,7 @@ export function IntentSection({ intents, variant = 'modal' }: IntentSectionProps
 
                 {/* Row 4: reactive trigger */}
                 {intent.reactiveTrigger && (
-                  <div className="text-[9px] italic mt-1" style={{ color: `${categoryColor}99` }}>
+                  <div className="text-xs italic mt-1" style={{ color: `${categoryColor}bb` }}>
                     ↳ {intent.reactiveTrigger.replace(/_/g, ' ')}
                   </div>
                 )}
