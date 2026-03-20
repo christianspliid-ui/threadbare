@@ -432,7 +432,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
         }}
       >
         {/* LEFT GROUP: identity · time · essence */}
-        <div className="flex items-center flex-shrink-0" style={{ gap: 'var(--topbar-gap)' }}>
+        <div className="flex items-center flex-1 min-w-0" style={{ gap: 'var(--topbar-gap)' }}>
           {/* Identity chip — avatar name + archetype, click to center */}
           <IdentityChip
             avatarName={avatarName}
@@ -506,22 +506,24 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
-          <IconButton
-            data-testid="fog-toggle"
-            icon={<span>{fogDisabled ? '☀' : '🌫'}</span>}
-            active={fogDisabled}
-            onClick={() => setFogDisabled(v => !v)}
-            title="Toggle fog of war (debug)"
-            aria-label="Toggle fog of war"
-          />
-          <IconButton
-            data-testid="debug-toggle"
-            icon={<span>⚙</span>}
-            active={debugPanelOpen}
-            onClick={handleToggleDebug}
-            title="Toggle debug trace panel (`)"
-            aria-label="Toggle debug trace panel"
-          />
+          <div className="flex items-center gap-1">
+            <IconButton
+              data-testid="fog-toggle"
+              icon={<span>{fogDisabled ? '☀' : '🌫'}</span>}
+              active={fogDisabled}
+              onClick={() => setFogDisabled(v => !v)}
+              title="Toggle fog of war (debug)"
+              aria-label="Toggle fog of war"
+            />
+            <IconButton
+              data-testid="debug-toggle"
+              icon={<span>⚙</span>}
+              active={debugPanelOpen}
+              onClick={handleToggleDebug}
+              title="Toggle debug trace panel (`)"
+              aria-label="Toggle debug trace panel"
+            />
+          </div>
         </div>
       </div>
 
