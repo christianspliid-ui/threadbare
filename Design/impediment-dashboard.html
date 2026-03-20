@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impediment Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #1a1a2e; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+  .muted { color: #94a3b8; }
+  a { color: #60a5fa; }
+
+  /* Header */
+  .header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1.5rem; }
+  .header h1 { font-size: 1.75rem; font-weight: 600; }
+  .header-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
+  .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-top: 0.25rem; }
+  .stat-value.danger { color: #e94560; }
+  .stat-value.warning { color: #f59e0b; }
+  .stat-value.ok { color: #10b981; }
+
+  /* Alerts */
+  .alert-section { margin-bottom: 2rem; }
+  .alert { padding: 1rem 1.25rem; border-radius: 0.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+  .alert-danger { background: #e9456020; border: 1px solid #e94560; }
+  .alert-warning { background: #f59e0b18; border: 1px solid #f59e0b80; }
+  .alert-danger .alert-count { color: #e94560; font-weight: 700; font-size: 1.25rem; }
+  .alert-warning .alert-count { color: #f59e0b; font-weight: 700; font-size: 1.25rem; }
+  .alert-desc { flex: 1; margin: 0 1rem; }
+  .alert-cat { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; background: #334155; padding: 0.15rem 0.5rem; border-radius: 999px; }
+
+  /* Grid layout */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  /* Cards */
+  .card { background: #16213e; border-radius: 0.75rem; padding: 1.25rem; }
+  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; }
+  .card.full-width { grid-column: 1 / -1; }
+
+  /* Bar chart */
+  .bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+  .bar-label { width: 140px; font-size: 0.8rem; text-align: right; flex-shrink: 0; }
+  .bar-track { flex: 1; height: 24px; background: #1a1a2e; border-radius: 4px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 2px; }
+  .bar-count { width: 40px; font-size: 0.85rem; font-weight: 600; text-align: right; flex-shrink: 0; }
+  .cat-tool-failure .bar-fill { background: #e94560; }
+  .cat-api-quirk .bar-fill { background: #f59e0b; }
+  .cat-permission .bar-fill { background: #8b5cf6; }
+  .cat-environment .bar-fill { background: #06b6d4; }
+  .cat-skill-gap .bar-fill { background: #ec4899; }
+  .cat-process-friction .bar-fill { background: #f97316; }
+  .cat-dependency .bar-fill { background: #14b8a6; }
+  .cat-unclear-requirements .bar-fill { background: #a78bfa; }
+  .cat-flaky-test .bar-fill { background: #fbbf24; }
+  .cat-other .bar-fill { background: #64748b; }
+
+  /* Impact pills */
+  .impact-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .impact-pill { display: flex; flex-direction: column; align-items: center; padding: 0.75rem 1.5rem; border-radius: 0.5rem; background: #1a1a2e; min-width: 80px; }
+  .impact-pill .pill-value { font-size: 1.5rem; font-weight: 700; }
+  .impact-pill .pill-label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; margin-top: 0.25rem; }
+  .impact-S .pill-value { color: #10b981; }
+  .impact-M .pill-value { color: #f59e0b; }
+  .impact-L .pill-value { color: #f97316; }
+  .impact-Blocked .pill-value { color: #e94560; }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 2px solid #334155; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { color: #e2e8f0; }
+  th.sorted-asc::after { content: ' ▲'; }
+  th.sorted-desc::after { content: ' ▼'; }
+  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
+  tr:hover td { background: #1e293b; }
+  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
+  .badge-S { background: #10b98130; color: #10b981; }
+  .badge-M { background: #f59e0b25; color: #f59e0b; }
+  .badge-L { background: #f9731625; color: #f97316; }
+  .badge-Blocked { background: #e9456025; color: #e94560; }
+  .badge-yes { background: #10b98125; color: #10b981; }
+  .badge-no { background: #e9456020; color: #e94560; }
+  .count-hot { color: #e94560; font-weight: 700; }
+  .count-warm { color: #f59e0b; font-weight: 700; }
+
+  /* Unresolved */
+  .unresolved-item { padding: 0.75rem 1rem; background: #e9456010; border-left: 3px solid #e94560; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 0.5rem; }
+  .unresolved-item .imp-num { color: #e94560; font-weight: 700; margin-right: 0.5rem; }
+
+  /* Empty state */
+  .empty { text-align: center; padding: 4rem 2rem; color: #64748b; }
+  .empty h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #94a3b8; }
+
+  /* Retro banner */
+  .retro-banner { background: linear-gradient(135deg, #e9456030, #f59e0b15); border: 1px solid #e94560; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem; display: none; }
+  .retro-banner.show { display: flex; align-items: center; gap: 1rem; }
+  .retro-banner .icon { font-size: 1.5rem; }
+  .retro-banner .msg { flex: 1; }
+  .retro-banner .msg strong { color: #e94560; }
+  .retro-banner code { background: #1a1a2e; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
+
+  .footer { text-align: center; color: #475569; font-size: 0.75rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #1e293b; }
+</style>
+</head>
+<body>
+
+<script>
+// ── Impediment data (regenerated by /impediments skill) ──
+const DATA = [];
+// ── End data ──
+</script>
+
+<div id="app"></div>
+
+<script>
+(function() {
+  const app = document.getElementById('app');
+
+  if (!DATA.length) {
+    app.innerHTML = `
+      <div class="header"><h1>Impediment Dashboard</h1></div>
+      <div class="empty">
+        <h2>No impediments logged yet</h2>
+        <p>When agents encounter blockers, they'll appear here.<br>Run <code>/impediments</code> after some sessions to see the data.</p>
+      </div>
+      <div class="footer">Generated by /impediments &mdash; The Fantasy World Simulator</div>
+    `;
+    return;
+  }
+
+  // Compute stats
+  const total = DATA.length;
+  const totalOccurrences = DATA.reduce((s, d) => s + d.count, 0);
+  const timeLookup = { S: 1, M: 8, L: 20, Blocked: 30 };
+  const estMinutes = DATA.reduce((s, d) => s + (timeLookup[d.impact] || 0) * d.count, 0);
+  const estH = Math.floor(estMinutes / 60);
+  const estM = estMinutes % 60;
+  const hotItems = DATA.filter(d => d.count > 5);
+  const warmItems = DATA.filter(d => d.count > 3 && d.count <= 5);
+  const unresolved = DATA.filter(d => !d.workaroundFound);
+  const needsRetro = hotItems.length > 0;
+
+  // Category counts
+  const catMap = {};
+  DATA.forEach(d => {
+    if (!catMap[d.category]) catMap[d.category] = { items: 0, occurrences: 0 };
+    catMap[d.category].items++;
+    catMap[d.category].occurrences += d.count;
+  });
+  const catEntries = Object.entries(catMap).sort((a, b) => b[1].occurrences - a[1].occurrences);
+  const maxCatOcc = catEntries.length ? catEntries[0][1].occurrences : 1;
+
+  // Impact counts
+  const impactMap = {};
+  DATA.forEach(d => {
+    impactMap[d.impact] = (impactMap[d.impact] || 0) + d.count;
+  });
+
+  // Retro banner
+  const retroBanner = needsRetro ? `
+    <div class="retro-banner show">
+      <div class="icon">&#9888;</div>
+      <div class="msg">
+        <strong>${hotItems.length} impediment${hotItems.length > 1 ? 's' : ''} above retro threshold (count&gt;5).</strong>
+        Run <code>/retrospective</code> to analyze and fix recurring friction.
+      </div>
+    </div>
+  ` : '';
+
+  // Alerts
+  let alertsHtml = '';
+  if (hotItems.length || warmItems.length) {
+    alertsHtml = '<div class="alert-section">';
+    hotItems.sort((a, b) => b.count - a.count).forEach(d => {
+      alertsHtml += `<div class="alert alert-danger"><span class="alert-count">&times;${d.count}</span><span class="alert-desc">${esc(d.description)}</span><span class="alert-cat">${esc(d.category)}</span></div>`;
+    });
+    warmItems.sort((a, b) => b.count - a.count).forEach(d => {
+      alertsHtml += `<div class="alert alert-warning"><span class="alert-count">&times;${d.count}</span><span class="alert-desc">${esc(d.description)}</span><span class="alert-cat">${esc(d.category)}</span></div>`;
+    });
+    alertsHtml += '</div>';
+  }
+
+  // Bar chart
+  let barsHtml = catEntries.map(([cat, v]) => {
+    const pct = (v.occurrences / maxCatOcc) * 100;
+    const cls = 'cat-' + cat.replace(/[^a-z]/g, '-');
+    return `<div class="bar-row ${cls}"><span class="bar-label">${esc(cat)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-count">${v.occurrences}</span></div>`;
+  }).join('');
+
+  // Impact pills
+  const impactOrder = ['S', 'M', 'L', 'Blocked'];
+  let impactHtml = '<div class="impact-row">' + impactOrder.map(imp => {
+    const v = impactMap[imp] || 0;
+    return `<div class="impact-pill impact-${imp}"><span class="pill-value">${v}</span><span class="pill-label">${imp === 'Blocked' ? 'Blocked' : imp + ' impact'}</span></div>`;
+  }).join('') + '</div>';
+
+  // Unresolved
+  let unresolvedHtml = '';
+  if (unresolved.length) {
+    unresolvedHtml = unresolved.map(d =>
+      `<div class="unresolved-item"><span class="imp-num">#${d.num}</span>${esc(d.description)} <span class="muted">(${esc(d.category)}, ${d.impact})</span></div>`
+    ).join('');
+  } else {
+    unresolvedHtml = '<p class="muted">All impediments have workarounds.</p>';
+  }
+
+  // Table
+  let tableRows = DATA.map(d => {
+    const countCls = d.count > 5 ? 'count-hot' : d.count > 3 ? 'count-warm' : '';
+    return `<tr>
+      <td>${d.num}</td>
+      <td class="${countCls}">${d.count}</td>
+      <td>${esc(d.date)}</td>
+      <td>${esc(d.category)}</td>
+      <td>${esc(d.description)}</td>
+      <td><span class="badge badge-${d.impact}">${d.impact}</span></td>
+      <td><span class="badge badge-${d.workaroundFound ? 'yes' : 'no'}">${d.workaroundFound ? 'Yes' : 'No'}</span></td>
+      <td>${esc(d.workaround)}</td>
+      <td class="muted">${esc(d.session)}</td>
+    </tr>`;
+  }).join('');
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>Impediment Dashboard</h1>
+      <div class="header-stats">
+        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Unique items</div></div>
+        <div class="stat"><div class="stat-value">${totalOccurrences}</div><div class="stat-label">Total occurrences</div></div>
+        <div class="stat"><div class="stat-value ${estMinutes > 120 ? 'danger' : estMinutes > 60 ? 'warning' : 'ok'}">${estH}h ${estM}m</div><div class="stat-label">Est. time lost</div></div>
+        <div class="stat"><div class="stat-value ${unresolved.length ? 'danger' : 'ok'}">${unresolved.length}</div><div class="stat-label">Unresolved</div></div>
+      </div>
+    </div>
+
+    ${retroBanner}
+    ${alertsHtml}
+
+    <div class="grid">
+      <div class="card">
+        <h2>By Category</h2>
+        ${barsHtml || '<p class="muted">No data</p>'}
+      </div>
+      <div class="card">
+        <h2>Impact Distribution</h2>
+        ${impactHtml}
+        <p class="muted" style="margin-top:0.75rem;font-size:0.8rem">Estimates: S=1m, M=8m, L=20m, Blocked=30m per occurrence</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card full-width">
+        <h2>Unresolved</h2>
+        ${unresolvedHtml}
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:2rem">
+      <h2>All Impediments</h2>
+      <div class="table-wrap">
+        <table id="imp-table">
+          <thead><tr>
+            <th data-col="num">#</th>
+            <th data-col="count">Count</th>
+            <th data-col="date">Date</th>
+            <th data-col="category">Category</th>
+            <th data-col="description">Description</th>
+            <th data-col="impact">Impact</th>
+            <th data-col="workaroundFound">Workaround?</th>
+            <th>Workaround</th>
+            <th>Session</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">Generated by <code>/impediments</code> &mdash; The Fantasy World Simulator</div>
+  `;
+
+  // Sorting
+  let sortCol = null, sortDir = 'asc';
+  document.querySelectorAll('#imp-table th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortCol = col; sortDir = 'asc'; }
+      document.querySelectorAll('#imp-table th').forEach(t => t.classList.remove('sorted-asc', 'sorted-desc'));
+      th.classList.add('sorted-' + sortDir);
+      const sorted = [...DATA].sort((a, b) => {
+        let va = a[col], vb = b[col];
+        if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+        va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
+        return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      });
+      const tbody = document.querySelector('#imp-table tbody');
+      tbody.innerHTML = sorted.map(d => {
+        const countCls = d.count > 5 ? 'count-hot' : d.count > 3 ? 'count-warm' : '';
+        return `<tr>
+          <td>${d.num}</td>
+          <td class="${countCls}">${d.count}</td>
+          <td>${esc(d.date)}</td>
+          <td>${esc(d.category)}</td>
+          <td>${esc(d.description)}</td>
+          <td><span class="badge badge-${d.impact}">${d.impact}</span></td>
+          <td><span class="badge badge-${d.workaroundFound ? 'yes' : 'no'}">${d.workaroundFound ? 'Yes' : 'No'}</span></td>
+          <td>${esc(d.workaround)}</td>
+          <td class="muted">${esc(d.session)}</td>
+        </tr>`;
+      }).join('');
+    });
+  });
+
+  function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+})();
+</script>
+</body>
+</html>
