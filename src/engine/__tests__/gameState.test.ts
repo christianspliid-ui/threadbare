@@ -21,7 +21,7 @@ describe('GameState types', () => {
   });
 
   it('exports DEFAULT_DOOM_TICKS constant', () => {
-    expect(DEFAULT_DOOM_TICKS).toBe(200);
+    expect(DEFAULT_DOOM_TICKS).toBe(20_000);
   });
 
   it('exports all 7 doom archetypes', () => {

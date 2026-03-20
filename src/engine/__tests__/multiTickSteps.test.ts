@@ -158,8 +158,8 @@ function buildTestState(): { state: GameState; actorId: string } {
 describe('Multi-Tick Encounter Steps', () => {
   beforeEach(() => {
     enableTracing();
-    // Mock getEncounterById to return our test template
-    vi.spyOn(encounterContent, 'getEncounterById').mockImplementation((id: string) => {
+    // Mock getAnyEncounterById to return our test template
+    vi.spyOn(encounterContent, 'getAnyEncounterById').mockImplementation((id: string) => {
       if (id === MULTI_TICK_TEMPLATE.id) return MULTI_TICK_TEMPLATE;
       return undefined;
     });

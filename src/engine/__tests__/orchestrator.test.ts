@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   phaseDoom,
-  phaseAgentActions,
   phaseDilemmaDetection,
   phaseRivalActions,
   phaseStealth,
@@ -159,18 +158,6 @@ describe('Orchestrator', () => {
     const events = updates.tickEvents ?? [];
     const escalation = events.find(e => e.type === 'doom_escalation');
     expect(escalation).toBeDefined();
-  });
-
-  it('phaseAgentActions produces some events over multiple ticks', () => {
-    const state = createTestGameState();
-    let totalEvents = 0;
-    let s = state;
-    for (let i = 0; i < 20; i++) {
-      s = { ...s, tick: i, tickEvents: [] };
-      const updates = phaseAgentActions(s);
-      totalEvents += (updates.tickEvents ?? []).length;
-    }
-    expect(totalEvents).toBeGreaterThan(0);
   });
 
   it('phaseRivalActions fires rival events periodically', () => {

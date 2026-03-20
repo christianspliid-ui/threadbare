@@ -8,7 +8,7 @@ import type { MovementState } from '../types/movement';
 import type { EncounterProgress } from '../types/encounter';
 import type { UnifiedAction } from '../types/unifiedAction';
 import type { RetinueAgent } from './retinue';
-import { getEncounterById } from '../data/encounter-content';
+import { getAnyEncounterById } from '../data/encounter-content';
 import { getUnifiedTemplateById } from '../data/unified-action-templates';
 
 /** Derive a display label for what an agent is currently doing. */
@@ -37,7 +37,7 @@ export function getAgentActivityLabel(
     p => p.actorId === agentId && p.status === 'active',
   );
   if (activeEncounter) {
-    const encounter = getEncounterById(activeEncounter.encounterId);
+    const encounter = getAnyEncounterById(activeEncounter.encounterId);
     const name = encounter?.name ?? 'Encounter';
     const totalSteps = encounter?.steps.length ?? 1;
     return `${name} (${activeEncounter.currentEncounterIndex + 1}/${totalSteps})`;

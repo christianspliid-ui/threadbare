@@ -5,7 +5,7 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
-import { getEncountersByLocationType, getEncounterById } from '../../data/encounter-content';
+import { getEncountersByLocationType, getAnyEncounterById } from '../../data/encounter-content';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
@@ -403,7 +403,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {
       if (p.status !== 'active') continue;
-      const tmpl = getEncounterById(p.encounterId);
+      const tmpl = getAnyEncounterById(p.encounterId);
       if (tmpl) map.set(p.actorId, { progress: p, template: tmpl });
     }
     return map;
@@ -699,7 +699,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                 activeEncounters={locationEncounters.active}
                 getAgentName={getAgentName}
                 onEncounterClick={handleEncounterClick}
-                getEncounterTemplate={getEncounterById}
+                getEncounterTemplate={getAnyEncounterById}
                 graph={gameState.graph}
                 seed={gameState.seed}
               />
