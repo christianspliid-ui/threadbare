@@ -135,3 +135,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - UI Design Audit Phase 1: ✅ Complete (centralized color palette, Dark Tapestry pre-game theming, RivalPanel a11y, topbar hierarchy)
 
 - Agent Behavior Constants Centralization: ✅ Complete (2026-03-18) — 56 tunable constants from 15 engine modules consolidated into src/data/agent-behavior-constants.ts. Extracted STEP_PROBABILITY_OFFSET (hardcoded 0.6) and TERRAIN_RESOLUTION_MODIFIERS table as named constants. All source files re-export for backward compatibility. NFP #1 (Tunability) compliance.
+
+- ✅ Complete — fix: encounter resolution for social encounters + cooldown in new pipeline (2026-03-20)
