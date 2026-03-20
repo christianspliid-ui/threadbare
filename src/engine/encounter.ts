@@ -62,8 +62,11 @@ export function getAvailableEncounters(state: GameState, actorId: string): Encou
     if (progress.status === 'active') return false; // Active, not available
 
     if (progress.status === 'abandoned') {
-      // Check cooldown
-      const ticksSinceAbandoned = state.tick - progress.startedTick;
+      // Check cooldown from when the encounter was actually abandoned (last history tick),
+      // not from when it started — otherwise long-running encounters bypass cooldown
+      const lastStep = progress.history[progress.history.length - 1];
+      const abandonedAt = lastStep?.tick ?? progress.startedTick;
+      const ticksSinceAbandoned = state.tick - abandonedAt;
       return ticksSinceAbandoned > ENCOUNTER_ABANDON_COOLDOWN;
     }
 
