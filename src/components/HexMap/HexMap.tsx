@@ -382,6 +382,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 graph={graph}
                 locationPositions={locationPositions}
                 zoomScale={currentZoomScale}
+                hexSize={hexSize}
                 currentTick={currentTick}
                 avatarId={avatarId}
                 sphereColor={sphereColor}
