@@ -86,7 +86,7 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             handleToggle();
           }
         }}
-        className="cursor-pointer px-4 py-2 border-b transition-colors relative z-50"
+        className="cursor-pointer px-4 py-2 border-b transition-colors relative"
         style={{
           backgroundColor: 'var(--bg-surface)',
           borderColor: 'var(--border-subtle)',
