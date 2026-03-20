@@ -1,6 +1,7 @@
 /**
  * Animated water plane for ocean/lake/river hexes.
- * Renders a translucent mesh at a fixed Y level with animated wave displacement.
+ * Uses a custom shader for gentle wave animation and color variation.
+ * Flat diorama style — no specular, just animated color ripples.
  */
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
@@ -15,19 +16,25 @@ import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 const WATER_Y = -0.08;
 
 /** Wave amplitude in world units */
-const WAVE_AMPLITUDE = 0.03;
+const WAVE_AMPLITUDE = 0.02;
 
 /** Wave frequency (higher = more waves per hex) */
-const WAVE_FREQUENCY = 3.0;
+const WAVE_FREQUENCY = 2.5;
 
 /** Wave animation speed */
-const WAVE_SPEED = 0.4;
+const WAVE_SPEED = 0.3;
 
-/** Water color */
-const WATER_COLOR = '#1a3a5a';
+/** Water base color — rich blue for diorama */
+const WATER_COLOR = new THREE.Color('#2a5a7a');
+
+/** Water highlight color — lighter ripple peaks */
+const WATER_HIGHLIGHT = new THREE.Color('#4a8aaa');
+
+/** Deep water tint */
+const WATER_DEEP = new THREE.Color('#1a3858');
 
 /** Water opacity */
-const WATER_OPACITY = 0.75;
+const WATER_OPACITY = 0.8;
 
 /** Hex outer radius for water tiles (slightly smaller than terrain to show edges) */
 const WATER_HEX_RADIUS = 0.92;
@@ -44,8 +51,67 @@ interface WaterLayerProps {
   tiles: HexTile[];
 }
 
+// ── Water shader ─────────────────────────────────────────────────────────
+
+const waterVertexShader = /* glsl */ `
+  uniform float uTime;
+  uniform float uWaveAmplitude;
+  uniform float uWaveFrequency;
+  varying vec2 vWorldXZ;
+  varying float vDepth;
+
+  attribute float aDepth;
+
+  void main() {
+    vec3 pos = position;
+
+    // Gentle wave displacement
+    float wave1 = sin(pos.x * uWaveFrequency + uTime) * cos(pos.z * uWaveFrequency * 0.7 + uTime * 0.8);
+    float wave2 = sin(pos.x * uWaveFrequency * 1.3 - uTime * 0.6) * cos(pos.z * uWaveFrequency * 0.5 + uTime * 1.1);
+    pos.y += (wave1 + wave2 * 0.5) * uWaveAmplitude;
+
+    vWorldXZ = pos.xz;
+    vDepth = aDepth;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+  }
+`;
+
+const waterFragmentShader = /* glsl */ `
+  uniform float uTime;
+  uniform vec3 uBaseColor;
+  uniform vec3 uHighlightColor;
+  uniform vec3 uDeepColor;
+  uniform float uOpacity;
+  uniform vec3 fogColor;
+  uniform float fogNear;
+  uniform float fogFar;
+
+  varying vec2 vWorldXZ;
+  varying float vDepth;
+
+  void main() {
+    // Animated ripple pattern — two scales for natural look
+    float ripple1 = sin(vWorldXZ.x * 4.0 + uTime * 0.8) * sin(vWorldXZ.y * 3.5 - uTime * 0.6);
+    float ripple2 = sin(vWorldXZ.x * 7.0 - uTime * 1.2) * sin(vWorldXZ.y * 6.0 + uTime * 0.9);
+    float ripple = ripple1 * 0.6 + ripple2 * 0.4;
+
+    // Blend between base and highlight based on ripple
+    vec3 color = mix(uBaseColor, uHighlightColor, ripple * 0.3 + 0.15);
+
+    // Tint toward deep color for deep water hexes
+    color = mix(color, uDeepColor, vDepth * 0.6);
+
+    // Scene fog
+    float fogFactor = smoothstep(fogNear, fogFar, gl_FragCoord.z / gl_FragCoord.w);
+    color = mix(color, fogColor, fogFactor);
+
+    gl_FragColor = vec4(color, uOpacity);
+  }
+`;
+
 export function WaterLayer({ tiles }: WaterLayerProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
 
   const waterTiles = useMemo(
     () => tiles.filter(t => WATER_TERRAINS.has(t.terrain)),
@@ -59,7 +125,7 @@ export function WaterLayer({ tiles }: WaterLayerProps) {
     const vertsPerHex = 18; // 6 triangles × 3 vertices
     const totalVerts = waterTiles.length * vertsPerHex;
     const positions = new Float32Array(totalVerts * 3);
-    const uvs = new Float32Array(totalVerts * 2);
+    const depths = new Float32Array(totalVerts);
     let vi = 0;
 
     // Pre-compute hex corners
@@ -72,89 +138,86 @@ export function WaterLayer({ tiles }: WaterLayerProps) {
       ]);
     }
 
+    const DEEP_TERRAINS = new Set(['deep_ocean', 'ocean']);
+
     for (const tile of waterTiles) {
       const { col, row } = tile.coord;
       const cx = col * HEX_SCALE_X;
       const cz = row * HEX_SCALE_Y + (col % 2 === 1 ? HEX_SCALE_Y / 2 : 0);
 
-      // Deeper water sits lower
       const depthOffset = tile.terrain === 'deep_ocean' ? -0.04 : 0;
+      const depthVal = DEEP_TERRAINS.has(tile.terrain) ? 1.0 : 0.0;
 
       for (let i = 0; i < 6; i++) {
         const [c0x, c0z] = corners[i];
         const [c1x, c1z] = corners[(i + 1) % 6];
-        const idx = vi * 3;
-        const uvIdx = vi * 2;
 
         // Center vertex
+        const idx = vi * 3;
         positions[idx] = cx;
         positions[idx + 1] = WATER_Y + depthOffset;
         positions[idx + 2] = cz;
-        uvs[uvIdx] = cx * 0.5;
-        uvs[uvIdx + 1] = cz * 0.5;
+        depths[vi] = depthVal;
         vi++;
 
         // Corner 0
         const i1 = vi * 3;
-        const u1 = vi * 2;
         positions[i1] = cx + c0x;
         positions[i1 + 1] = WATER_Y + depthOffset;
         positions[i1 + 2] = cz + c0z;
-        uvs[u1] = (cx + c0x) * 0.5;
-        uvs[u1 + 1] = (cz + c0z) * 0.5;
+        depths[vi] = depthVal;
         vi++;
 
         // Corner 1
         const i2 = vi * 3;
-        const u2 = vi * 2;
         positions[i2] = cx + c1x;
         positions[i2 + 1] = WATER_Y + depthOffset;
         positions[i2 + 2] = cz + c1z;
-        uvs[u2] = (cx + c1x) * 0.5;
-        uvs[u2 + 1] = (cz + c1z) * 0.5;
+        depths[vi] = depthVal;
         vi++;
       }
     }
 
     const geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    geo.setAttribute('aDepth', new THREE.BufferAttribute(depths, 1));
     geo.computeVertexNormals();
     return geo;
   }, [waterTiles]);
 
-  // Animate wave displacement
+  // Custom water shader material
+  const material = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      vertexShader: waterVertexShader,
+      fragmentShader: waterFragmentShader,
+      transparent: true,
+      side: THREE.DoubleSide,
+      fog: true,
+      uniforms: {
+        uTime: { value: 0 },
+        uWaveAmplitude: { value: WAVE_AMPLITUDE },
+        uWaveFrequency: { value: WAVE_FREQUENCY },
+        uBaseColor: { value: WATER_COLOR },
+        uHighlightColor: { value: WATER_HIGHLIGHT },
+        uDeepColor: { value: WATER_DEEP },
+        uOpacity: { value: WATER_OPACITY },
+        fogColor: { value: new THREE.Color('#0a0a0c') },
+        fogNear: { value: 60 },
+        fogFar: { value: 120 },
+      },
+    });
+  }, []);
+
+  // Animate
   useFrame(({ clock }) => {
-    if (!meshRef.current || waterTiles.length === 0) return;
-    const geo = meshRef.current.geometry;
-    const pos = geo.getAttribute('position');
-    if (!pos) return;
-
-    const t = clock.getElapsedTime() * WAVE_SPEED;
-
-    for (let i = 0; i < pos.count; i++) {
-      const x = pos.getX(i);
-      const z = pos.getZ(i);
-      // Two overlapping sine waves for organic motion
-      const wave = Math.sin(x * WAVE_FREQUENCY + t) * Math.cos(z * WAVE_FREQUENCY * 0.7 + t * 0.8);
-      pos.setY(i, WATER_Y + wave * WAVE_AMPLITUDE);
+    if (material) {
+      material.uniforms.uTime.value = clock.getElapsedTime() * WAVE_SPEED;
     }
-    pos.needsUpdate = true;
-    geo.computeVertexNormals();
   });
 
   if (waterTiles.length === 0) return null;
 
   return (
-    <mesh ref={meshRef} geometry={geometry}>
-      <meshPhongMaterial
-        color={WATER_COLOR}
-        transparent
-        opacity={WATER_OPACITY}
-        side={THREE.DoubleSide}
-        shininess={60}
-        specular={new THREE.Color('#4a6a8a')}
-      />
-    </mesh>
+    <mesh ref={meshRef} geometry={geometry} material={material} />
   );
 }
