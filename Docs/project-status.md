@@ -9,7 +9,7 @@
 - ✅ Location & Sublocation Concept Art (2026-03-20) — themed placeholder concept art for 17 parent location types and 11 sublocation types. Unique gradients, glyphs, and accent colors across all location views.
 - ✅ Readability Audit (2026-03-20) — WCAG AA contrast fixes across 8 files: raised --text-muted, lightened ambition colors, fixed mandate purple, eliminated sub-12px fonts, raised 40+ ghost-opacity modifiers. 102/105 elements pass.
 - ✅ Fog-of-War Debug Toggle (2026-03-20) — topbar button disables fog of war for development. Reveals all hexes, unlocks hex click navigation, shows all notifications.
-- ✅ Agent Movement Animation (2026-03-20) — fixed stale useMemo + added inter-hex interpolation. Agent dots now advance smoothly along their path each tick (lerp by progress fraction), with 600ms CSS transitions and arrival flash.
+- ✅ Unified Bezier Movement System (2026-03-20) — shared getSegmentBezier() for both AgentDots and MovementTrails. rAF-driven 800ms bezier hop animation, 150ms settle tweens, sorted-ID ring slots (no overlaps at rest), arc-length reparametrization for constant speed.
 - ✅ Encounter Vignette Reach Badge (2026-03-20) — color-coded reach domain badge with icon and narrative prose in encounter vignette modal step section.
 - ✅ Encounter Abandon Cooldown Fix (2026-03-20) — cooldown now measured from failure tick, not start tick. Prevents agents from re-attempting failed encounters every tick.
 - ✅ Social Encounter System Integration (2026-03-18) — wired 14 social encounter templates into tick loop. Agents now pursue agent-to-agent encounters (forge alliance, spy, negotiate, duel, etc.) alongside location encounters. Bond modifier in scoring, trust decay per tick, graph-walked reputation replaces flat score.
