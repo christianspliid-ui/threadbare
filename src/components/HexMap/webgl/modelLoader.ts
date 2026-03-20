@@ -66,6 +66,30 @@ export const MODEL_CATALOG = {
   crate: 'crate_A_big',
   target: 'target',
   weaponrack: 'weaponrack',
+
+  // ── Hex tiles ─────────────────────────────────────
+  hex_grass: 'hex_grass',
+  hex_grass_bottom: 'hex_grass_bottom',
+  hex_grass_sloped_low: 'hex_grass_sloped_low',
+  hex_grass_sloped_high: 'hex_grass_sloped_high',
+  hex_water: 'hex_water',
+  hex_coast_A: 'hex_coast_A',
+  hex_coast_B: 'hex_coast_B',
+  hex_coast_C: 'hex_coast_C',
+  hex_coast_D: 'hex_coast_D',
+  hex_coast_E: 'hex_coast_E',
+  hex_river_A: 'hex_river_A',
+  hex_river_B: 'hex_river_B',
+  hex_river_C: 'hex_river_C',
+  hex_river_D: 'hex_river_D',
+  hex_river_E: 'hex_river_E',
+  hex_river_F: 'hex_river_F',
+  hex_road_A: 'hex_road_A',
+  hex_road_B: 'hex_road_B',
+  hex_road_C: 'hex_road_C',
+  hex_road_D: 'hex_road_D',
+  hex_road_E: 'hex_road_E',
+  hex_road_F: 'hex_road_F',
 } as const;
 
 export type ModelId = keyof typeof MODEL_CATALOG;
