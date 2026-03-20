@@ -32,6 +32,32 @@ interface AgentDotsProps {
   onAgentHover?: (agentId: string | null) => void;
 }
 
+/** Deterministic hash for consistent wobble per agent+segment — matches MovementTrails */
+function wobbleHash(agentId: string, index: number): number {
+  let h = index * 2654435761;
+  for (let i = 0; i < agentId.length; i++) {
+    h = ((h << 5) - h + agentId.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
+/** Wobble magnitude as fraction of hex size (matches MovementTrails.WOBBLE_FACTOR) */
+const WOBBLE_FACTOR = 0.5;
+
+/** Evaluate quadratic bezier B(t) = (1-t)²·P0 + 2(1-t)t·P1 + t²·P2 */
+function evalQuadBezier(
+  p0: { x: number; y: number },
+  p1: { x: number; y: number },
+  p2: { x: number; y: number },
+  t: number,
+): { x: number; y: number } {
+  const u = 1 - t;
+  return {
+    x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+    y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
+  };
+}
+
 /** Map domain key to human-friendly label */
 const DOMAIN_LABELS: Record<string, string> = {
   iron: 'Iron', gold: 'Gold', shadow: 'Shadow', veil: 'Veil',
@@ -153,7 +179,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
         let ax = cx + dx;
         let ay = cy + dy;
 
-        // Interpolate toward next hex if agent is mid-movement
+        // Interpolate along a wobbled bezier toward next hex (matches trail style)
         const ms = agent.properties?.movementState as MovementState | undefined;
         if (ms && ms.movementQueue.length > 0 && ms.currentEdgeCost > 0) {
           const nextLocId = ms.movementQueue[0];
@@ -163,9 +189,24 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
           if (nextCol != null && nextRow != null) {
             const nextPixel = hexToPixel({ col: nextCol, row: nextRow }, hexSize);
             const t = ms.ticksAccumulated / ms.currentEdgeCost;
-            // Lerp from current hex center toward next hex center, then add ring offset
-            ax = cx + (nextPixel.x - cx) * t + dx;
-            ay = cy + (nextPixel.y - cy) * t + dy;
+
+            // Compute perpendicular wobble for bezier control point (same as trail)
+            const segDx = nextPixel.x - cx;
+            const segDy = nextPixel.y - cy;
+            const segLen = Math.sqrt(segDx * segDx + segDy * segDy) || 1;
+            const perpX = -segDy / segLen;
+            const perpY = segDx / segLen;
+            const hash = wobbleHash(agent.id, ms.movementHistory?.length ?? 0);
+            const wobbleMag = hexSize * WOBBLE_FACTOR * (((hash & 0xff) / 255) * 2 - 1);
+
+            const p0 = { x: cx, y: cy };
+            const p1 = { x: (cx + nextPixel.x) / 2 + perpX * wobbleMag,
+                         y: (cy + nextPixel.y) / 2 + perpY * wobbleMag };
+            const p2 = { x: nextPixel.x, y: nextPixel.y };
+
+            const bezierPos = evalQuadBezier(p0, p1, p2, t);
+            ax = bezierPos.x + dx;
+            ay = bezierPos.y + dy;
           }
         }
 
