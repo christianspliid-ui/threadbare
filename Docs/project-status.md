@@ -6,7 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
-- ✅ Sublocation Concept Art (2026-03-20) — themed placeholder concept art for all 11 sublocation types. Unique gradients, glyphs, and accent colors on SublocationCard and detail view.
+- ✅ Location & Sublocation Concept Art (2026-03-20) — themed placeholder concept art for 17 parent location types and 11 sublocation types. Unique gradients, glyphs, and accent colors across all location views.
 - ✅ Readability Audit (2026-03-20) — WCAG AA contrast fixes across 8 files: raised --text-muted, lightened ambition colors, fixed mandate purple, eliminated sub-12px fonts, raised 40+ ghost-opacity modifiers. 102/105 elements pass.
 - ✅ Fog-of-War Debug Toggle (2026-03-20) — topbar button disables fog of war for development. Reveals all hexes, unlocks hex click navigation, shows all notifications.
 - ✅ Agent Movement Animation (2026-03-20) — fixed stale useMemo + added inter-hex interpolation. Agent dots now advance smoothly along their path each tick (lerp by progress fraction), with 600ms CSS transitions and arrival flash.
@@ -28,7 +28,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** Sublocation Concept Art (2026-03-20) — themed placeholder concept art banners for all 11 sublocation types with unique gradients, glyphs, and accent colors.
+**Latest implementation:** Location & Sublocation Concept Art (2026-03-20) — themed placeholder concept art for 17 location types and 11 sublocation types with unique gradients, glyphs, and accent colors.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
