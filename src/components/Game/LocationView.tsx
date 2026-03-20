@@ -12,7 +12,7 @@ import { generateEntityProse } from '../../engine/proseGenerator';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { StepDots } from '../shared/StepDots';
-import { getSublocationConceptArt } from '../../data/sublocation-concept-art';
+import { getSublocationConceptArt, getLocationConceptArt } from '../../data/sublocation-concept-art';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -757,6 +757,8 @@ export const LocationView = memo(function LocationView({
   // RC-041: Safe property access with type guard
   const locProps = (location.properties ?? {}) as Record<string, unknown>;
   const locType = typeof locProps.locationType === 'string' ? locProps.locationType : 'location';
+  const locationSubtype = typeof locProps.locationSubtype === 'string' ? locProps.locationSubtype : locType;
+  const locationArt = getLocationConceptArt(locationSubtype);
 
   // ── Sublocation drill-down state ──
   const [selectedSublocationId, setSelectedSublocationId] = useState<string | null>(null);
@@ -944,56 +946,83 @@ export const LocationView = memo(function LocationView({
               ))}
             </div>
           </div>
-          {/* Concept art placeholder */}
+          {/* Concept art placeholder — themed per location type */}
           <div
-            className="rounded-lg border flex items-center justify-center"
+            className="rounded-lg border overflow-hidden flex items-center justify-center"
             style={{
               width: '40%',
               flexShrink: 0,
-              backgroundColor: 'var(--bg-raised)',
+              background: locationArt.gradient,
               borderColor: 'var(--border-subtle)',
+              position: 'relative',
             }}
           >
-            <div className="flex flex-col items-center gap-2" style={{ opacity: 0.4 }}>
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: 'var(--text-muted)' }}>
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-              <span
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  fontFamily: 'var(--font-display)',
-                  letterSpacing: '1.5px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Concept Art
-              </span>
-            </div>
+            <span
+              style={{
+                fontSize: '56px',
+                color: locationArt.glyphColor,
+                opacity: 0.45,
+                filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
+                userSelect: 'none',
+              }}
+              aria-hidden="true"
+            >
+              {locationArt.glyph}
+            </span>
+            <span
+              style={{
+                position: 'absolute',
+                bottom: '6px',
+                right: '10px',
+                fontSize: 'var(--text-xs)',
+                color: locationArt.glyphColor,
+                opacity: 0.35,
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Concept Art
+            </span>
           </div>
         </div>
       ) : (
         <div
-          className="mx-6 mt-5 rounded-lg border flex items-center justify-center"
+          className="mx-6 mt-5 rounded-lg border overflow-hidden flex items-center justify-center"
           style={{
             aspectRatio: '21/9',
             minHeight: '180px',
-            backgroundColor: 'var(--bg-raised)',
+            background: locationArt.gradient,
             borderColor: 'var(--border-subtle)',
+            position: 'relative',
           }}
         >
           <span
             style={{
-              fontSize: 'var(--text-base)',
-              color: 'var(--text-muted)',
+              fontSize: '64px',
+              color: locationArt.glyphColor,
+              opacity: 0.35,
+              filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.6))',
+              userSelect: 'none',
+            }}
+            aria-hidden="true"
+          >
+            {locationArt.glyph}
+          </span>
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '8px',
+              right: '12px',
+              fontSize: 'var(--text-xs)',
+              color: locationArt.glyphColor,
+              opacity: 0.3,
               fontFamily: 'var(--font-display)',
-              letterSpacing: '2px',
+              letterSpacing: '1.5px',
               textTransform: 'uppercase',
             }}
           >
-            — select a hex to peer into the world below —
+            Concept Art
           </span>
         </div>
       )}
