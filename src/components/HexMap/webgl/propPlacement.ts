@@ -8,10 +8,20 @@ import type { HexTile } from '../../../types';
 import type { TerrainType } from '../../../types';
 import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { MAX_ELEVATION_HEIGHT, MIN_ELEVATION_HEIGHT } from './hexMeshGeometry';
+import type { ModelId } from './modelLoader';
 
 // ── Prop types ──────────────────────────────────────────────────────────────
 
 export type PropType = 'conifer' | 'deciduous' | 'rock' | 'boulder' | 'grass';
+
+/** Map each abstract prop type to one or more GLTF model IDs for variety */
+export const PROP_MODEL_VARIANTS: Record<PropType, ModelId[]> = {
+  conifer: ['tree_single_A', 'tree_single_B', 'trees_A_small', 'trees_B_small'],
+  deciduous: ['trees_A_medium', 'trees_B_medium', 'trees_A_small', 'trees_B_small'],
+  rock: ['rock_single_A', 'rock_single_B', 'rock_single_C', 'rock_single_D', 'rock_single_E'],
+  boulder: ['rock_single_A', 'rock_single_B', 'hill_single_A', 'hill_single_B', 'hill_single_C'],
+  grass: ['trees_A_small', 'trees_B_small'], // small clusters as grass stand-in
+};
 
 /** Placement recipe per terrain type: which props to scatter and how many */
 interface PlacementRecipe {
@@ -110,6 +120,9 @@ export interface PropInstances {
   grass: THREE.Matrix4[];
 }
 
+/** Instances grouped by specific GLTF model ID for rendering */
+export type ModelInstances = Map<ModelId, THREE.Matrix4[]>;
+
 /**
  * Generate instance transform matrices for all props across the hex grid.
  * Each matrix encodes position, rotation, and scale for one prop instance.
@@ -171,4 +184,35 @@ export function generatePropInstances(
   }
 
   return instances;
+}
+
+/**
+ * Convert abstract prop instances into model-specific instance groups.
+ * Each prop instance is assigned a random GLTF model variant for variety.
+ */
+export function groupByModel(
+  instances: PropInstances,
+  seed: number = 42,
+): ModelInstances {
+  const rng = seededRandom(seed + 999);
+  const result: ModelInstances = new Map();
+
+  for (const [propType, matrices] of Object.entries(instances) as [PropType, THREE.Matrix4[]][]) {
+    const variants = PROP_MODEL_VARIANTS[propType];
+    if (!variants || variants.length === 0) continue;
+
+    for (const matrix of matrices) {
+      const variantIdx = Math.floor(rng() * variants.length);
+      const modelId = variants[variantIdx];
+
+      let arr = result.get(modelId);
+      if (!arr) {
+        arr = [];
+        result.set(modelId, arr);
+      }
+      arr.push(matrix);
+    }
+  }
+
+  return result;
 }
