@@ -1,11 +1,12 @@
 # Project Status
 
-> Updated 2026-03-18. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
+> Updated 2026-03-20. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Encounter Abandon Cooldown Fix (2026-03-20) — cooldown now measured from failure tick, not start tick. Prevents agents from re-attempting failed encounters every tick.
 - ✅ Social Encounter System Integration (2026-03-18) — wired 14 social encounter templates into tick loop. Agents now pursue agent-to-agent encounters (forge alliance, spy, negotiate, duel, etc.) alongside location encounters. Bond modifier in scoring, trust decay per tick, graph-walked reputation replaces flat score.
 - ✅ Encounter Vignette Modal (2026-03-18) — click-to-open narrative vignette from RetinuePanel badges, LocationView agent rows, and EncounterLog cards. Wires vignetteProse engine (scene/lens/stakes/forecast) to UI. Shared StepDots component. Fixed currentStepIndex bug.
 - ✅ Retinue Encounter Notifications (2026-03-18) — toast notifications when retinue agents complete/fail encounters, showing encounter name + reward/penalty details.
@@ -22,7 +23,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** UI Design Audit Phase 1 (2026-03-18) — Centralized 6 scattered color records into uiColorPalette.ts. Restyled worldgen screen from bright amber to Dark Tapestry. Migrated ascendant selection to CSS variables. Added role/aria-label/meter to RivalPanel. Improved topbar visual hierarchy (identity chip prominence, integer essence values, right-group background).
+**Latest implementation:** Encounter Abandon Cooldown Fix (2026-03-20) — `getAvailableEncounters` now uses the last history entry tick (actual abandon time) instead of `startedTick` for cooldown calculation.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
