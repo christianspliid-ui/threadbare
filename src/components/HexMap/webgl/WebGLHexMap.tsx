@@ -20,6 +20,7 @@ import { CliffLayer } from './CliffLayer';
 import { GodRayLayer } from './GodRayLayer';
 import { ShorelineLayer } from './ShorelineLayer';
 import { CloudShadowLayer } from './CloudShadowLayer';
+import { HexTileLayer } from './HexTileLayer';
 import { TiltShift } from './TiltShiftEffect';
 import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import type { LocationSubtype } from '../../../types';
@@ -214,6 +215,7 @@ function HexMeshScene({
       <lineSegments geometry={outlineGeometry}>
         <lineBasicMaterial color={HEX_OUTLINE_COLOR} transparent opacity={HEX_OUTLINE_OPACITY} fog />
       </lineSegments>
+      <HexTileLayer tiles={tiles} />
       <CliffLayer tiles={tiles} seed={seed ?? 42} />
       <WaterLayer tiles={tiles} />
       <ShorelineLayer tiles={tiles} />
