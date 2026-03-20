@@ -1,15 +1,18 @@
 /**
- * Renders organic movement trail lines for agents on the hex map.
+ * MovementTrails — Renders ink-wash trails behind moving agents.
  *
- * Ink-wash style trails with slight bezier wobble and small waypoint dots.
- * The newest point is offset toward the agent's ring position (arrival direction)
- * so the trail visually connects to the agent dot rather than the hex center.
- * Opacity fades from newest to oldest. History is already capped by movementExecution.
+ * Uses the same getSegmentBezier() as AgentDots so the trail exactly matches
+ * the path the dot animated along. Each consecutive pair of hexes in
+ * movementHistory produces one bezier curve segment drawn with fading opacity.
  */
 
 import React from 'react';
 import type { WorldGraph } from '../../engine/graph';
 import type { MovementHistoryEntry } from '../../types/movement';
+import {
+  getSegmentBezier,
+  evalQuadBezier,
+} from '../../lib/movementPath';
 import {
   TRAIL_LINE_COLOR,
   TRAIL_LINE_WIDTH,
@@ -17,16 +20,13 @@ import {
   TRAIL_OPACITY_MIN,
   AGENT_RING_RADIUS,
 } from '../../data/agent-visual-content';
-import { hexToPixel } from '../../lib/hexMath';
+import { getRingSlotOffset } from '../../lib/movementPath';
 
 /** Radius of small dots at trail waypoints */
 const TRAIL_DOT_RADIUS = 1.0;
 
-/** Wobble magnitude as fraction of hex size (bezier control point offset) */
-const WOBBLE_FACTOR = 0.5;
-
-/** Waypoint jitter as fraction of hex size (offsets points from hex center) */
-const WAYPOINT_JITTER = 0.6;
+/** Number of sample points per bezier segment for polyline rendering */
+const SAMPLES_PER_SEGMENT = 8;
 
 interface MovementTrailsProps {
   graph: WorldGraph;
@@ -34,13 +34,47 @@ interface MovementTrailsProps {
   currentTick: number;
 }
 
-/** Deterministic hash for consistent wobble per agent+segment */
-function wobbleHash(agentId: string, index: number): number {
-  let h = index * 2654435761;
-  for (let i = 0; i < agentId.length; i++) {
-    h = ((h << 5) - h + agentId.charCodeAt(i)) | 0;
+/**
+ * Get ring offset for an agent at a specific hex.
+ * Looks up all agents at the hex, sorts by ID, finds the agent's index.
+ */
+function getAgentRingOffset(
+  graph: WorldGraph,
+  agentId: string,
+  hexCol: number,
+  hexRow: number,
+): { x: number; y: number } {
+  // Find the location node at this hex
+  const locations = graph.getNodesByType('location');
+  let locId: string | null = null;
+  for (const loc of locations) {
+    if (loc.properties?.hexCol === hexCol && loc.properties?.hexRow === hexRow) {
+      locId = loc.id;
+      break;
+    }
   }
-  return h;
+
+  if (!locId) return { x: 0, y: 0 };
+
+  // Get all agents at this location, sorted by ID
+  const agentIds: string[] = [];
+  for (const edgeType of ['contains', 'located_at'] as const) {
+    for (const e of graph.getIncomingEdges(locId, edgeType)) {
+      const node = graph.getNode(e.source);
+      if (node && node.properties?.actorType === 'individual' && !agentIds.includes(e.source)) {
+        agentIds.push(e.source);
+      }
+    }
+  }
+  agentIds.sort();
+
+  const index = agentIds.indexOf(agentId);
+  if (index === -1) {
+    // Agent is no longer at this hex (already moved on) — use center
+    return { x: 0, y: 0 };
+  }
+
+  return getRingSlotOffset(index, agentIds.length, AGENT_RING_RADIUS);
 }
 
 export const MovementTrails: React.FC<MovementTrailsProps> = ({
@@ -53,94 +87,109 @@ export const MovementTrails: React.FC<MovementTrailsProps> = ({
   return (
     <g className="movement-trails-layer" style={{ pointerEvents: 'none' }}>
       {agents.map(agent => {
-        const movementState = agent.properties?.movementState as { movementHistory?: MovementHistoryEntry[] } | undefined;
+        const movementState = agent.properties?.movementState as
+          { movementHistory?: MovementHistoryEntry[] } | undefined;
         const history = movementState?.movementHistory;
         if (!history || history.length < 2) return null;
 
-        // Convert to pixel positions (history is newest-first), jittered off hex center
-        const rawPoints = history
-          .filter(entry => entry.hexCol != null && entry.hexRow != null)
-          .map((entry, idx) => {
-            const center = hexToPixel({ col: entry.hexCol!, row: entry.hexRow! }, hexSize);
-            // Deterministic jitter so waypoints don't sit on hex center
-            const h = wobbleHash(agent.id, idx + 100);
-            const h2 = wobbleHash(agent.id, idx + 200);
-            const jx = hexSize * WAYPOINT_JITTER * (((h & 0xff) / 255) * 2 - 1);
-            const jy = hexSize * WAYPOINT_JITTER * (((h2 & 0xff) / 255) * 2 - 1);
-            return { x: center.x + jx, y: center.y + jy };
-          });
+        // Filter to entries with valid hex coords
+        const entries = history.filter(
+          (e): e is MovementHistoryEntry & { hexCol: number; hexRow: number } =>
+            e.hexCol != null && e.hexRow != null,
+        );
+        if (entries.length < 2) return null;
 
-        if (rawPoints.length < 2) return null;
+        const totalSegments = entries.length - 1;
 
-        // Interpolate a jittered midpoint between each pair for denser trail
-        const densified: { x: number; y: number }[] = [rawPoints[0]];
-        for (let k = 0; k < rawPoints.length - 1; k++) {
-          const a = rawPoints[k], b = rawPoints[k + 1];
-          const mh = wobbleHash(agent.id, k + 300);
-          const mh2 = wobbleHash(agent.id, k + 400);
-          const mjx = hexSize * WAYPOINT_JITTER * 0.5 * (((mh & 0xff) / 255) * 2 - 1);
-          const mjy = hexSize * WAYPOINT_JITTER * 0.5 * (((mh2 & 0xff) / 255) * 2 - 1);
-          densified.push({ x: (a.x + b.x) / 2 + mjx, y: (a.y + b.y) / 2 + mjy });
-          densified.push(b);
+        // Build bezier segments between consecutive history entries
+        // History is newest-first, so entries[0] is current, entries[1] is previous, etc.
+        const segments: Array<{
+          bezier: ReturnType<typeof getSegmentBezier>;
+          opacity: number;
+          strokeWidth: number;
+        }> = [];
+
+        for (let i = 0; i < totalSegments; i++) {
+          const from = entries[i + 1]; // older
+          const to = entries[i];       // newer
+
+          const fromHex = { col: from.hexCol, row: from.hexRow };
+          const toHex = { col: to.hexCol, row: to.hexRow };
+
+          // For the newest point (i === 0), use the agent's current ring offset
+          // For older points, use zero offset (they've already left those hexes)
+          const toOffset = i === 0
+            ? getAgentRingOffset(graph, agent.id, to.hexCol, to.hexRow)
+            : { x: 0, y: 0 };
+          const fromOffset = { x: 0, y: 0 };
+
+          const bezier = getSegmentBezier(
+            agent.id,
+            fromHex,
+            toHex,
+            hexSize,
+            fromOffset,
+            toOffset,
+          );
+
+          const t = i / Math.max(totalSegments, 1);
+          const opacity = TRAIL_OPACITY_MAX - t * (TRAIL_OPACITY_MAX - TRAIL_OPACITY_MIN);
+          const strokeWidth = TRAIL_LINE_WIDTH - t * 0.3;
+
+          segments.push({ bezier, opacity, strokeWidth });
         }
-
-        // Offset the newest point toward the arrival direction (matches agent ring position)
-        const newest = densified[0];
-        const prevHex = densified[1];
-        const arrivalAngle = Math.atan2(prevHex.y - newest.y, prevHex.x - newest.x);
-        const points = [
-          { x: newest.x + Math.cos(arrivalAngle) * AGENT_RING_RADIUS, y: newest.y + Math.sin(arrivalAngle) * AGENT_RING_RADIUS },
-          ...densified.slice(1),
-        ];
-
-        const totalSegs = points.length - 1;
 
         return (
           <g key={`trail-${agent.id}`}>
-            {/* Curved path segments with fading opacity */}
-            {points.slice(1).map((to, i) => {
-              const from = points[i];
-              // Perpendicular wobble for organic feel
-              const hash = wobbleHash(agent.id, i);
-              const segDx = to.x - from.x;
-              const segDy = to.y - from.y;
-              const segLen = Math.sqrt(segDx * segDx + segDy * segDy) || 1;
-              // Perpendicular direction
-              const perpX = -segDy / segLen;
-              const perpY = segDx / segLen;
-              const wobbleMag = hexSize * WOBBLE_FACTOR * (((hash & 0xff) / 255) * 2 - 1);
-              const mx = (from.x + to.x) / 2 + perpX * wobbleMag;
-              const my = (from.y + to.y) / 2 + perpY * wobbleMag;
-
-              const t = i / Math.max(totalSegs, 1);
-              const opacity = TRAIL_OPACITY_MAX - t * (TRAIL_OPACITY_MAX - TRAIL_OPACITY_MIN);
+            {segments.map(({ bezier, opacity, strokeWidth }, i) => {
+              // Sample bezier into polyline points for SVG path
+              const points: string[] = [];
+              for (let s = 0; s <= SAMPLES_PER_SEGMENT; s++) {
+                const t = s / SAMPLES_PER_SEGMENT;
+                const pt = evalQuadBezier(bezier.p0, bezier.ctrl, bezier.p2, t);
+                points.push(`${pt.x},${pt.y}`);
+              }
 
               return (
-                <path
+                <polyline
                   key={`seg-${i}`}
-                  d={`M ${from.x} ${from.y} Q ${mx} ${my} ${to.x} ${to.y}`}
+                  points={points.join(' ')}
                   stroke={TRAIL_LINE_COLOR}
-                  strokeWidth={TRAIL_LINE_WIDTH - t * 0.3}
+                  strokeWidth={Math.max(0.3, strokeWidth)}
                   opacity={Math.max(TRAIL_OPACITY_MIN, opacity)}
                   strokeLinecap="round"
+                  strokeLinejoin="round"
                   strokeDasharray="1 2"
                   fill="none"
                 />
               );
             })}
 
-            {/* Small dots at each waypoint */}
-            {points.map((pt, i) => {
-              const t = i / Math.max(points.length - 1, 1);
+            {/* Small dots at segment boundaries */}
+            {entries.map((entry, i) => {
+              const t = i / Math.max(entries.length - 1, 1);
               const opacity = TRAIL_OPACITY_MAX - t * (TRAIL_OPACITY_MAX - TRAIL_OPACITY_MIN);
-              // Dots shrink slightly toward the tail
               const r = TRAIL_DOT_RADIUS * (1 - t * 0.4);
+
+              // Use the segment bezier endpoints for dot positions
+              let px: number, py: number;
+              if (i === 0 && segments.length > 0) {
+                // Newest point — use the "to" end of the first segment
+                px = segments[0].bezier.p2.x;
+                py = segments[0].bezier.p2.y;
+              } else if (i > 0 && i - 1 < segments.length) {
+                // Use the "from" end of the corresponding segment
+                px = segments[i - 1].bezier.p0.x;
+                py = segments[i - 1].bezier.p0.y;
+              } else {
+                return null;
+              }
 
               return (
                 <circle
                   key={`dot-${i}`}
-                  cx={pt.x}
-                  cy={pt.y}
+                  cx={px}
+                  cy={py}
                   r={r}
                   fill={TRAIL_LINE_COLOR}
                   opacity={Math.max(TRAIL_OPACITY_MIN, opacity)}
