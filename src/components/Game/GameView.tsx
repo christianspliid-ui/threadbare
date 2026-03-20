@@ -11,6 +11,7 @@ import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
+import { hexToPixel } from '../../lib/hexMath';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
@@ -93,7 +94,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   });
 
   // ── Debug: fog-of-war toggle ──
-  const [fogDisabled, setFogDisabled] = useState(false);
+  const [fogDisabled, setFogDisabled] = useState(
+    () => !new URLSearchParams(window.location.search).has('fog')
+  );
 
   // ── View navigation hook ──
   const {
@@ -320,6 +323,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     focusedHex,
     focusedLocationId,
     tiles,
+    fogDisabled,
   });
 
   // ── Location encounter data (available + active) ──
@@ -372,6 +376,20 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       handleHexClick({ col, row });
     }
   }, [gameState.graph, handleHexClick]);
+
+  // Center the map on an agent's hex without changing view level
+  const handleCenterOnHex = useCallback((locationId: string) => {
+    const locNode = gameState.graph.getNode(locationId);
+    if (!locNode) return;
+    const props = (locNode.properties ?? {}) as Record<string, unknown>;
+    const col = typeof props.hexCol === 'number' ? props.hexCol : undefined;
+    const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
+    if (col !== undefined && row !== undefined && hexMapRef.current) {
+      const HEX_SIZE = 30; // matches HexMap default
+      const px = hexToPixel({ col, row }, HEX_SIZE);
+      hexMapRef.current.centerOn(px.x, px.y);
+    }
+  }, [gameState.graph, hexMapRef]);
 
   // ── Encounter vignette modal ──
   const [vignetteEncounter, setVignetteEncounter] = useState<{
@@ -490,7 +508,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div style={{ maxWidth: '180px' }}>
+              <div style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden' }}>
                 <MandateTracker
                   definition={gameState.mandateDefinition}
                   state={gameState.mandateState}
@@ -747,6 +765,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   agents={retinueAgents}
                   selectedAgentId={selectedAgentId}
                   onAgentSelect={handleAgentSelect}
+                  onCenterOnHex={handleCenterOnHex}
                   onZoomToLocation={handleZoomToLocation}
                   activeEncounters={retinueActiveEncounters}
                   onEncounterClick={handleEncounterClick}
