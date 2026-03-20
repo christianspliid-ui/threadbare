@@ -239,7 +239,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
           animation: route-march 0.8s linear infinite;
         }
         .agent-dot-group {
-          transition: transform 600ms ease-in-out;
+          /* No CSS transition — JS requestAnimationFrame handles bezier animation */
         }
         @keyframes agent-arrive {
           0% { transform: scale(1); filter: brightness(1); }
