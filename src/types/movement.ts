@@ -24,6 +24,10 @@ export interface MovementState {
   movementHistory: MovementHistoryEntry[];
   /** Original motivation pull for the current destination path (used in mid-path re-evaluation) */
   motivationPull?: number;
+  /** Sublocation to enter on arrival at destination (set by encounter-level cache decision) */
+  targetSublocationId?: string;
+  /** Encounter template the agent intends to attempt on arrival */
+  targetEncounterId?: string;
 }
 
 /** One entry in the movement trail history */

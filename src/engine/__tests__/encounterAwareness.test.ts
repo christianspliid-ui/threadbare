@@ -35,6 +35,8 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
   return {
     templateId: 'tmpl.test',
     locationId: 'loc-target',
+    sublocationId: null,
+    sublocationTypeId: null,
     reachPrimary: 'iron' as ReachDomain,
     reachSecondary: 'gold' as ReachDomain,
     threatRating: 'moderate',

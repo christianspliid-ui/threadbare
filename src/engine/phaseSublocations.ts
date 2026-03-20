@@ -26,6 +26,7 @@ import type { WorldGraph } from './graph';
 import type { SublocationProperties } from '../types/sublocation';
 import { evaluateConditionalPredicate, checkDissolutions } from './sublocation';
 import { mulberry32 } from '../lib/prng';
+import type { EncounterCacheManager } from './encounterCache';
 
 // ─── Constants (System 5) ──────────────────────────────────────────────────
 
@@ -184,13 +185,23 @@ const SETTLEMENT_SUBTYPES = new Set([
  * Idempotent: re-running on same state produces same result.
  * Fail-soft: missing node/property → skip, never throw.
  */
-export function phaseSublocations(state: GameState): Partial<GameState> {
+export function phaseSublocations(
+  state: GameState,
+  encounterCache?: EncounterCacheManager | null,
+): Partial<GameState> {
   const { graph, tick, encounterProgress } = state;
 
   // ── Pass 1: Dissolution ─────────────────────────────────────────────────
   // checkDissolutions now evaluates conditional predicates and removes nodes
   // whose predicate evaluates to false.
-  checkDissolutions(graph, tick, encounterProgress);
+  const dissolutions = checkDissolutions(graph, tick, encounterProgress);
+
+  // Update encounter cache for dissolved sublocations
+  if (encounterCache && dissolutions.length > 0) {
+    for (const d of dissolutions) {
+      encounterCache.onSublocationDestroyed(d.sublocationId, d.parentLocationId);
+    }
+  }
 
   // ── Pass 2: Spawn ───────────────────────────────────────────────────────
   const allLocations = graph.getNodesByType('location');
@@ -213,7 +224,12 @@ export function phaseSublocations(state: GameState): Partial<GameState> {
       if (!shouldSpawn) continue;
 
       // Create the conditional sublocation
-      spawnConditionalSublocation(loc, spec, tick, graph);
+      const instanceId = spawnConditionalSublocation(loc, spec, tick, graph);
+
+      // Update encounter cache for newly spawned sublocation
+      if (encounterCache && instanceId) {
+        encounterCache.onSublocationCreated(graph, instanceId, loc.id);
+      }
     }
   }
 
@@ -240,21 +256,22 @@ function hasSublocationType(loc: GraphNode, sublocationTypeId: string, graph: Wo
 
 /**
  * Spawns a conditional sublocation node at the given location.
- * Fail-soft: any error → no-op.
+ * Returns the instance ID on success, undefined on failure.
+ * Fail-soft: any error → no-op, returns undefined.
  */
 function spawnConditionalSublocation(
   loc: GraphNode,
   spec: ConditionalSublocationSpec,
   tick: number,
   graph: WorldGraph
-): void {
+): string | undefined {
   // Generate deterministic instance ID from location + type + tick
   const rng = mulberry32(hashString(loc.id + spec.sublocationTypeId + tick));
   const instanceSuffix = Math.floor(rng() * 1000000).toString(36);
   const instanceId = `${spec.sublocationTypeId}-instance-${instanceSuffix}`;
 
   // Defensive: skip if already exists (race condition guard)
-  if (graph.getNode(instanceId)) return;
+  if (graph.getNode(instanceId)) return undefined;
 
   const properties: SublocationProperties = {
     sublocationTypeId: spec.sublocationTypeId,
@@ -283,8 +300,11 @@ function spawnConditionalSublocation(
       type: 'contains',
       properties: {},
     });
+
+    return instanceId;
   } catch {
     // fail-soft: creation failed, continue
+    return undefined;
   }
 }
 

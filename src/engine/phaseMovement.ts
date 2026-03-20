@@ -82,6 +82,32 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         });
       }
 
+      // --- Sublocation entry on arrival ---
+      if (result.arrivedAtDestination && result.updatedState.targetSublocationId) {
+        const sublocationId = result.updatedState.targetSublocationId;
+        const sublocation = state.graph.getNode(sublocationId);
+        // Verify sublocation still exists and belongs to the destination
+        if (sublocation && sublocation.type === 'location') {
+          const subProps = sublocation.properties as Record<string, unknown>;
+          if (subProps.parentLocationId === result.updatedState.destinationId) {
+            // Move agent's located_at to the sublocation
+            const oldEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
+            for (const edge of oldEdges) {
+              state.graph.removeEdge(edge.id);
+            }
+            state.graph.addEdge({
+              id: `${actorId}_located_at_${sublocationId}`,
+              source: actorId,
+              target: sublocationId,
+              type: 'located_at',
+              properties: {},
+            });
+          }
+        }
+        // Clear targetSublocationId regardless (fail-soft: if sublocation dissolved, stay at parent)
+        result.updatedState.targetSublocationId = undefined;
+      }
+
       // --- Mid-path re-evaluation (skip for avatar — player controls destination) ---
       if (!isAvatar &&
           result.updatedState.movementQueue.length > 0 &&
