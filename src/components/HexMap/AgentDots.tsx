@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import type { WorldGraph } from '../../engine/graph';
+import type { MovementState } from '../../types/movement';
 import { Tooltip } from '../shared/Tooltip';
+import { hexToPixel } from '../../lib/hexMath';
 import {
   ZOOM_TOKEN_THRESHOLD,
   MAX_RING_AGENTS,
@@ -17,6 +19,8 @@ interface AgentDotsProps {
   /** Array of { locationId, x, y } positions where agents may be */
   locationPositions: Array<{ locationId: string; x: number; y: number }>;
   zoomScale: number;
+  /** Hex tile size in pixels — needed for interpolating positions toward next hex */
+  hexSize: number;
   /** Current tick — used to bust memo cache since graph is a mutable class */
   currentTick?: number;
   /** Avatar actor node ID — renders with sphere color + breathing pulse */
@@ -113,6 +117,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   graph,
   locationPositions,
   zoomScale,
+  hexSize,
   currentTick,
   avatarId,
   sphereColor,
@@ -124,9 +129,11 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   const radius = isTokenZoom ? AGENT_TOKEN_RADIUS : AGENT_DOT_RADIUS;
 
   // Step 1: Collect ALL agents with absolute pixel positions (flat list)
+  // Agents with active movement interpolate between current and next hex.
   const { allAgents, overflows } = useMemo(() => {
     const agents: FlatAgent[] = [];
     const ovf: OverflowEntry[] = [];
+    const seen = new Set<string>(); // prevent duplicate entries for interpolated agents
 
     for (const { locationId, x: cx, y: cy } of locationPositions) {
       const locAgents = getAgentsAtLocation(graph, locationId);
@@ -137,11 +144,32 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
 
       for (let i = 0; i < visible.length; i++) {
         const agent = visible[i];
-        if (!agent) continue;
+        if (!agent || seen.has(agent.id)) continue;
+        seen.add(agent.id);
+
         const angle = (2 * Math.PI * i) / Math.max(visible.length, 1) - Math.PI / 2;
         const dx = Math.cos(angle) * AGENT_RING_RADIUS;
         const dy = Math.sin(angle) * AGENT_RING_RADIUS;
-        agents.push({ agent, locationId, x: cx + dx, y: cy + dy });
+        let ax = cx + dx;
+        let ay = cy + dy;
+
+        // Interpolate toward next hex if agent is mid-movement
+        const ms = agent.properties?.movementState as MovementState | undefined;
+        if (ms && ms.movementQueue.length > 0 && ms.currentEdgeCost > 0) {
+          const nextLocId = ms.movementQueue[0];
+          const nextLocNode = graph.getNode(nextLocId);
+          const nextCol = nextLocNode?.properties?.hexCol as number | undefined;
+          const nextRow = nextLocNode?.properties?.hexRow as number | undefined;
+          if (nextCol != null && nextRow != null) {
+            const nextPixel = hexToPixel({ col: nextCol, row: nextRow }, hexSize);
+            const t = ms.ticksAccumulated / ms.currentEdgeCost;
+            // Lerp from current hex center toward next hex center, then add ring offset
+            ax = cx + (nextPixel.x - cx) * t + dx;
+            ay = cy + (nextPixel.y - cy) * t + dy;
+          }
+        }
+
+        agents.push({ agent, locationId, x: ax, y: ay });
       }
 
       if (overflow > 0) {
@@ -151,7 +179,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
 
     return { allAgents: agents, overflows: ovf };
     // currentTick busts the cache — graph is mutable, reference never changes
-  }, [graph, locationPositions, currentTick]);
+  }, [graph, locationPositions, currentTick, hexSize]);
 
   // Step 2: Track previous locations for arrival flash detection
   const prevLocations = useRef<Map<string, string>>(new Map());
