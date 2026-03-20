@@ -61,6 +61,8 @@ function GLTFPropGroup({
       ref={meshRef}
       args={[model.geometry, material, instances.length]}
       frustumCulled={false}
+      castShadow
+      receiveShadow
     />
   );
 }
