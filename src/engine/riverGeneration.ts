@@ -1,12 +1,13 @@
 import type { HexCoord } from '../types';
 import type { WorldGenData } from './worldGenData';
-import { hexNeighbors } from '../lib/hexMath';
+import { hexNeighbors, hexDistance } from '../lib/hexMath';
 import { mulberry32 } from '../lib/prng';
 import {
   RIVER_SOURCE_COUNT_MIN,
   RIVER_SOURCE_COUNT_MAX,
   RIVER_MIN_LENGTH,
   RIVER_SOURCE_ELEVATION_THRESHOLD,
+  RIVER_SOURCE_MIN_DISTANCE,
   RIVER_COASTAL_MAX_STEPS,
   RIVER_MERGE_PROXIMITY_BIAS,
   RIVER_FORK_COASTAL_CHANCE,
@@ -93,10 +94,13 @@ function routeRiver(
       const nIdx = n.row * cols + n.col;
       let score = elev[nIdx];
 
-      // Proximity merge bias: if this neighbor is adjacent to an existing river hex
-      // (but isn't itself a river hex), reduce its score slightly to attract the river
-      // toward existing rivers for natural-looking confluence
-      if (hasRiver[nIdx] === 0) {
+      // Direct confluence bonus: stepping onto an existing river hex is strongly
+      // preferred — this IS the merge point, so give it a large score reduction
+      if (hasRiver[nIdx] === 1) {
+        score -= RIVER_MERGE_PROXIMITY_BIAS * 2;
+      } else {
+        // Proximity merge bias: if this neighbor is adjacent to an existing river hex,
+        // reduce its score to attract the river toward confluence
         const nNeighbors = hexNeighbors(n).filter(nn => inBounds(nn.col, nn.row, cols, rows));
         for (const nn of nNeighbors) {
           const nnKey = `${nn.col},${nn.row}`;
@@ -189,11 +193,21 @@ export function generateRivers(data: WorldGenData): void {
     RIVER_SOURCE_COUNT_MIN + Math.floor(rng() * (RIVER_SOURCE_COUNT_MAX - RIVER_SOURCE_COUNT_MIN + 1))
   );
 
+  // Filter candidates to enforce minimum distance between springs
+  const selectedSources: { col: number; row: number; elev: number }[] = [];
+  for (let s = 0; s < candidates.length && selectedSources.length < sourceCount; s++) {
+    const c = candidates[s];
+    const tooClose = selectedSources.some(
+      sel => hexDistance({ col: c.col, row: c.row }, { col: sel.col, row: sel.row }) < RIVER_SOURCE_MIN_DISTANCE,
+    );
+    if (!tooClose) selectedSources.push(c);
+  }
+
   // 2. Route each river via steepest descent
   let nextRiverId = 0;
 
-  for (let s = 0; s < sourceCount; s++) {
-    const source = candidates[s];
+  for (let s = 0; s < selectedSources.length; s++) {
+    const source = selectedSources[s];
     if (!source) continue;
 
     const path = routeRiver(data, source.col, source.row, null, rng);
@@ -250,4 +264,168 @@ export function generateRivers(data: WorldGenData): void {
       forksCreated++;
     }
   }
+
+  // 4. Guarantee at least one river reaches the sea.
+  // Without this, all rivers could merge into each other via confluence
+  // termination, creating a landlocked river tree with no ocean outlet.
+  ensureSeaOutlet(data, candidates, rng);
+}
+
+/**
+ * Check if any river reaches open ocean, coastal shallows, or grid edge.
+ * If none do, re-route the longest river with confluence termination disabled
+ * so it must push through to the sea.
+ */
+function ensureSeaOutlet(
+  data: WorldGenData,
+  candidates: { col: number; row: number; elev: number }[],
+  rng: () => number,
+): void {
+  const { cols, rows, terrain, hasRiver } = data;
+
+  const reachesSea = (path: HexCoord[]): boolean => {
+    const last = path[path.length - 1];
+    const idx = last.row * cols + last.col;
+    const t = terrain[idx];
+    if (isOpenOcean(t) || t === 'coastal_shallows') return true;
+    if (isEdgeHex(last.col, last.row, cols, rows) && path.length > 1) return true;
+    return false;
+  };
+
+  // If any river already reaches the sea, nothing to do
+  if (data.riverPaths.some(rp => reachesSea(rp.hexes))) return;
+
+  // Find the longest existing primary river (best candidate to extend)
+  let longestIdx = -1;
+  let longestLen = 0;
+  for (let i = 0; i < data.riverPaths.length; i++) {
+    const rp = data.riverPaths[i];
+    if (rp.id.includes('fork')) continue;
+    if (rp.hexes.length > longestLen) {
+      longestLen = rp.hexes.length;
+      longestIdx = i;
+    }
+  }
+
+  // If no rivers exist at all, pick the best candidate source and route
+  // without confluence termination
+  const sourceCol = longestIdx >= 0
+    ? data.riverPaths[longestIdx].hexes[0].col
+    : candidates[0]?.col;
+  const sourceRow = longestIdx >= 0
+    ? data.riverPaths[longestIdx].hexes[0].row
+    : candidates[0]?.row;
+
+  if (sourceCol === undefined || sourceRow === undefined) return;
+
+  // Clear hasRiver for the old longest path (we'll re-route it)
+  if (longestIdx >= 0) {
+    for (const hex of data.riverPaths[longestIdx].hexes) {
+      hasRiver[hex.row * cols + hex.col] = 0;
+    }
+  }
+
+  // Route without confluence termination — river must find ocean/edge/lake or get stuck
+  const path = routeRiverNoConfluence(data, sourceCol, sourceRow, rng);
+
+  if (path.length >= RIVER_MIN_LENGTH) {
+    for (const hex of path) {
+      hasRiver[hex.row * cols + hex.col] = 1;
+    }
+    if (longestIdx >= 0) {
+      data.riverPaths[longestIdx] = { id: data.riverPaths[longestIdx].id, hexes: path };
+    } else {
+      data.riverPaths.push({ id: 'river-sea-outlet', hexes: path });
+    }
+  } else if (longestIdx >= 0) {
+    // Re-route failed, restore original
+    for (const hex of data.riverPaths[longestIdx].hexes) {
+      hasRiver[hex.row * cols + hex.col] = 1;
+    }
+  }
+}
+
+/**
+ * Route a river like routeRiver but WITHOUT terminating at confluence.
+ * The river must reach ocean, edge, lake, or truly get stuck.
+ * This prevents all rivers from merging into a landlocked network.
+ */
+function routeRiverNoConfluence(
+  data: WorldGenData,
+  startCol: number,
+  startRow: number,
+  rng: () => number,
+): HexCoord[] {
+  const { cols, rows, terrain, drainageElevation, elevation } = data;
+
+  const useDrainage = drainageElevation.some((v, i) => v !== 0 || elevation[i] === 0);
+  const elev = useDrainage ? drainageElevation : elevation;
+
+  const path: HexCoord[] = [{ col: startCol, row: startRow }];
+  const visited = new Set<string>();
+  visited.add(`${startCol},${startRow}`);
+
+  let currentCol = startCol;
+  let currentRow = startRow;
+  let coastalSteps = 0;
+  let inCoastal = false;
+  let safety = 0;
+
+  while (safety++ < 500) {
+    const currentIdx = currentRow * cols + currentCol;
+    const currentElev = elev[currentIdx];
+    const currentTerrain = terrain[currentIdx];
+
+    if (currentTerrain === 'coastal_shallows') {
+      if (!inCoastal) inCoastal = true;
+      coastalSteps++;
+      if (coastalSteps > RIVER_COASTAL_MAX_STEPS) break;
+    }
+
+    if (isEdgeHex(currentCol, currentRow, cols, rows) && path.length > 1) break;
+
+    const neighbors = hexNeighbors({ col: currentCol, row: currentRow })
+      .filter(n => inBounds(n.col, n.row, cols, rows));
+
+    let bestNeighbor: HexCoord | null = null;
+    let bestScore = Infinity;
+
+    for (const n of neighbors) {
+      const key = `${n.col},${n.row}`;
+      if (visited.has(key)) continue;
+      const nIdx = n.row * cols + n.col;
+      const score = elev[nIdx];
+      if (score < bestScore) {
+        bestScore = score;
+        bestNeighbor = n;
+      }
+    }
+
+    if (!bestNeighbor || bestScore >= currentElev) {
+      for (const n of neighbors) {
+        const key = `${n.col},${n.row}`;
+        if (visited.has(key)) continue;
+        const nIdx = n.row * cols + n.col;
+        if (elev[nIdx] <= currentElev + 0.01) {
+          bestNeighbor = n;
+          break;
+        }
+      }
+    }
+
+    if (!bestNeighbor) break;
+
+    path.push(bestNeighbor);
+    visited.add(`${bestNeighbor.col},${bestNeighbor.row}`);
+    currentCol = bestNeighbor.col;
+    currentRow = bestNeighbor.row;
+
+    const nIdx = currentRow * cols + currentCol;
+    const nTerrain = terrain[nIdx];
+
+    if (isOpenOcean(nTerrain)) break;
+    // NOTE: No confluence or lake check — we must reach the sea
+  }
+
+  return path;
 }

@@ -3,7 +3,8 @@ import { generateRivers } from '../riverGeneration';
 import { createWorldGenData } from '../worldGenData';
 import { generateLakes } from '../lakeGeneration';
 import { fillDepressions } from '../depressionFilling';
-import { RIVER_MIN_LENGTH } from '../worldGenData';
+import { hexDistance } from '../../lib/hexMath';
+import { RIVER_MIN_LENGTH, RIVER_SOURCE_MIN_DISTANCE } from '../worldGenData';
 
 describe('generateRivers', () => {
   it('generates at least 1 river on a 20x15 grid', () => {
@@ -100,6 +101,51 @@ describe('generateRivers', () => {
       }
     }
     expect(foundFork).toBe(true);
+  });
+});
+
+describe('river sea outlet guarantee', () => {
+  it('at least one river reaches the sea across 10 seeds', () => {
+    for (let seed = 1; seed <= 10; seed++) {
+      const data = createWorldGenData(20, 15, seed);
+      generateLakes(data);
+      fillDepressions(data);
+      generateRivers(data);
+
+      const reachesSea = data.riverPaths.some(rp => {
+        const last = rp.hexes[rp.hexes.length - 1];
+        const idx = last.row * data.cols + last.col;
+        const t = data.terrain[idx];
+        const isWater = t === 'ocean' || t === 'deep_ocean' || t === 'tropical_ocean' || t === 'coastal_shallows';
+        const isEdge = last.col === 0 || last.col === data.cols - 1 ||
+          last.row === 0 || last.row === data.rows - 1;
+        return isWater || isEdge;
+      });
+
+      expect(reachesSea).toBe(true);
+    }
+  });
+});
+
+describe('river spring minimum distance', () => {
+  it('no two primary river sources are closer than RIVER_SOURCE_MIN_DISTANCE', () => {
+    for (let seed = 1; seed <= 5; seed++) {
+      const data = createWorldGenData(20, 15, seed);
+      generateLakes(data);
+      fillDepressions(data);
+      generateRivers(data);
+
+      const primarySources = data.riverPaths
+        .filter(rp => !rp.id.includes('fork') && !rp.id.includes('lake-outflow'))
+        .map(rp => rp.hexes[0]);
+
+      for (let i = 0; i < primarySources.length; i++) {
+        for (let j = i + 1; j < primarySources.length; j++) {
+          const dist = hexDistance(primarySources[i], primarySources[j]);
+          expect(dist).toBeGreaterThanOrEqual(RIVER_SOURCE_MIN_DISTANCE);
+        }
+      }
+    }
   });
 });
 

@@ -8,6 +8,8 @@ export const RIVER_SOURCE_COUNT_MIN = 4;
 export const RIVER_SOURCE_COUNT_MAX = 8;
 export const RIVER_MIN_LENGTH = 4;
 export const RIVER_SOURCE_ELEVATION_THRESHOLD = 0.7;
+/** Min hex distance between river spring sources (prevents parallel rivers) */
+export const RIVER_SOURCE_MIN_DISTANCE = 3;
 
 export const LAKE_SIZE_MIN = 1;
 export const LAKE_SIZE_MAX = 5;
@@ -39,7 +41,7 @@ export const RIVER_FORK_MIN_REMAINING_LENGTH = 3;
 
 // ─── River merging constants ────────────────────────────────────
 /** When routing, if an adjacent hex has a river, bias toward merging into it */
-export const RIVER_MERGE_PROXIMITY_BIAS = 0.15;
+export const RIVER_MERGE_PROXIMITY_BIAS = 0.4;
 
 // ─── Types ───────────────────────────────────────────────────────
 
