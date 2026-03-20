@@ -213,7 +213,8 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
       positions.push({ locationId: loc.id, x, y });
     }
     return positions;
-  }, [graph, hexSize]);
+    // currentTick busts the cache — graph is a mutable class whose reference never changes
+  }, [graph, hexSize, currentTick]);
 
   return (
     <>
@@ -381,6 +382,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 graph={graph}
                 locationPositions={locationPositions}
                 zoomScale={currentZoomScale}
+                currentTick={currentTick}
                 avatarId={avatarId}
                 sphereColor={sphereColor}
                 onAgentClick={onAgentClick}
