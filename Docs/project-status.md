@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ River Completion (2026-03-20) — depression filling, coastal routing, lake outflow, delta forking, proximity merging. Rivers no longer dead-end on inland terrain.
 - ✅ fix: encounter resolution bugs (social encounter stuck, missing cooldown) (2026-03-20)
 - ✅ Location & Sublocation Concept Art (2026-03-20) — themed placeholder concept art for 17 parent location types and 11 sublocation types. Unique gradients, glyphs, and accent colors across all location views.
 - ✅ Readability Audit (2026-03-20) — WCAG AA contrast fixes across 8 files: raised --text-muted, lightened ambition colors, fixed mandate purple, eliminated sub-12px fonts, raised 40+ ghost-opacity modifiers. 102/105 elements pass.
