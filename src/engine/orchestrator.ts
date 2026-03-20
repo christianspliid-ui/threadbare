@@ -87,6 +87,11 @@ export function resetDecisionCache(): void {
   distanceMatrix = null;
 }
 
+/** Read-only access to the current encounter cache (for debug tooling). */
+export function getEncounterCacheManager(): EncounterCacheManager | null {
+  return encounterCache;
+}
+
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
 function mulberry32(seed: number): () => number {
