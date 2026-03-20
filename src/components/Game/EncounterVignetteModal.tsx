@@ -52,17 +52,17 @@ const REACH_DISPLAY_NAMES: Record<ReachDomain, string> = {
   flesh: 'Flesh',
 };
 
-/** Narrative prose describing what each reach tests — inserted as "{name}'s {prose}" */
-const REACH_TEST_PROSE: Record<ReachDomain, string> = {
-  iron: 'strength of arms is tested',
-  gold: 'shrewdness with coin is tested',
-  shadow: 'gift for deception is tested',
-  veil: 'command of hidden arts is tested',
-  heart: 'force of will is tested',
-  eye: 'clarity of sight is tested',
-  stone: 'endurance is tested',
-  star: 'attunement to the divine is tested',
-  flesh: 'resilience of body is tested',
+/** Short domain descriptors — complement, don't compete with, encounter narrative */
+const REACH_SHORT_DESC: Record<ReachDomain, string> = {
+  iron: 'martial prowess',
+  gold: 'commerce & wealth',
+  shadow: 'stealth & cunning',
+  veil: 'arcane arts',
+  heart: 'inner conviction',
+  eye: 'perception & lore',
+  stone: 'endurance & craft',
+  star: 'divine attunement',
+  flesh: 'bodily resilience',
 };
 
 /** Reach domain icons — thematic glyphs for each domain */
@@ -191,7 +191,7 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
                 >
                   {currentStep.name}
                 </p>
-                <ReachBadge reach={currentStep.reach} agentName={agentName} />
+                <ReachBadge reach={currentStep.reach} />
               </>
             ) : (
               <p
@@ -272,12 +272,11 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
 
 // ── Helper sub-component ───────────────────────────────────────
 
-function ReachBadge({ reach, agentName }: { reach: ReachDomain; agentName: string }) {
+function ReachBadge({ reach }: { reach: ReachDomain }) {
   const color = DOMAIN_COLORS[reach] ?? DEFAULT_AGENT_COLOR;
   const icon = REACH_ICONS[reach] ?? '●';
   const displayName = REACH_DISPLAY_NAMES[reach] ?? reach;
-  const prose = REACH_TEST_PROSE[reach] ?? 'resolve is tested';
-  const firstName = agentName.split(' ')[0];
+  const desc = REACH_SHORT_DESC[reach] ?? reach;
 
   return (
     <div className="flex items-center gap-2 mt-1.5">
@@ -296,7 +295,7 @@ function ReachBadge({ reach, agentName }: { reach: ReachDomain; agentName: strin
         className="text-xs italic"
         style={{ color: 'var(--text-secondary)' }}
       >
-        {firstName}'s {prose}
+        {desc}
       </span>
     </div>
   );
