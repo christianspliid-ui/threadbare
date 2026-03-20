@@ -327,7 +327,8 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
             <g
               ref={el => setAgentRef(agent.id, el)}
               className="agent-dot-group"
-              style={{ transform: `translate(${x}px, ${y}px)` }}
+              data-target-x={x}
+              data-target-y={y}
               onClick={() => onAgentClick?.(agent.id)}
               onDoubleClick={() => onAgentDoubleClick?.(agent.id)}
               onMouseEnter={() => onAgentHover?.(agent.id)}
