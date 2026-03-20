@@ -86,41 +86,29 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
             handleToggle();
           }
         }}
-        className="cursor-pointer px-4 py-2 border-b transition-colors relative"
+        className="cursor-pointer px-2 py-1 rounded border transition-colors relative flex items-center gap-1.5 min-w-0"
         style={{
-          backgroundColor: 'var(--bg-surface)',
-          borderColor: 'var(--border-subtle)',
+          backgroundColor: `${color}15`,
+          borderColor: `${color}40`,
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+          e.currentTarget.style.backgroundColor = `${color}25`;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'var(--bg-surface)';
+          e.currentTarget.style.backgroundColor = `${color}15`;
         }}
       >
-        <div className="flex items-center justify-between mb-1">
-          <div className="flex items-center gap-2 min-w-0">
-            <Tooltip id="ui.mandate_tracker">
-              <span
-                className="font-bold uppercase tracking-wider truncate"
-                style={{ fontSize: 'var(--text-xs)', color, fontFamily: 'var(--font-display)' }}
-              >
-                {definition.name}
-              </span>
-            </Tooltip>
-            <div className="flex gap-1 flex-shrink-0">
-              {STAGE_ORDER.map(stage => (
-                <div key={stage}>
-                  {renderStagePip(getStagePipStatus(stage, state.currentStage, state.completed))}
-                </div>
-              ))}
-            </div>
-          </div>
-          <span className="font-mono ml-2 flex-shrink-0" style={{ fontSize: 'var(--text-xs)', color }}>
-            {displayText}
+        <Tooltip id="ui.mandate_tracker">
+          <span
+            className="font-bold uppercase truncate"
+            style={{ fontSize: '10px', color, fontFamily: 'var(--font-display)' }}
+          >
+            {definition.name}
           </span>
-        </div>
-        <ProgressBar progress={state.progress} color={color} glow={true} />
+        </Tooltip>
+        <span className="font-mono flex-shrink-0" style={{ fontSize: '10px', color }}>
+          {displayText}
+        </span>
       </div>
 
       {/* Expanded Popover — IX-001: Added role="dialog" */}

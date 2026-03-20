@@ -508,7 +508,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden' }}>
+              <div style={{ maxWidth: '120px', minWidth: 0, overflow: 'hidden' }}>
                 <MandateTracker
                   definition={gameState.mandateDefinition}
                   state={gameState.mandateState}
