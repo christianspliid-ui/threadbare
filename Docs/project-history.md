@@ -137,3 +137,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - Agent Behavior Constants Centralization: ✅ Complete (2026-03-18) — 56 tunable constants from 15 engine modules consolidated into src/data/agent-behavior-constants.ts. Extracted STEP_PROBABILITY_OFFSET (hardcoded 0.6) and TERRAIN_RESOLUTION_MODIFIERS table as named constants. All source files re-export for backward compatibility. NFP #1 (Tunability) compliance.
 
 - ✅ Complete — fix: encounter resolution for social encounters + cooldown in new pipeline (2026-03-20)
+
+- Encounter-Level Cache & Sublocation-Aware Decisions: ✅ Complete (2026-03-20) — agents target specific encounters at specific sublocations. Eager sublocation creation at worldgen, encounter cache entries carry sublocationId/sublocationTypeId, sublocation-aware pathfinding/arrival, return-to-parent on encounter completion, cache lifecycle hooks for conditional sublocation spawn/dissolve, dead code removal (encounterCandidates.ts). Determinism audit findings documented for follow-up.
