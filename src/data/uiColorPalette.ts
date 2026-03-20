@@ -33,7 +33,7 @@ export const SENTIMENT_RED = '#ef4444';      // brighter red
 export const MANDATE_TYPE_COLORS: Record<string, string> = {
   graph_state: '#d4a574',       // warm amber (matches Presence strand)
   sphere_dominance: '#5c6bc0',  // indigo (matches Bonds strand)
-  narrative: '#9c27b0',         // purple
+  narrative: '#c084fc',         // light purple (WCAG AA on dark surfaces)
 };
 
 // ============================================================================

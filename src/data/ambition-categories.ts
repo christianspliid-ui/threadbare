@@ -18,13 +18,13 @@ export const CATEGORY_GLYPHS: Record<AmbitionCategory, string> = {
   devotion:  '✦',
 };
 
-/** Accent colors drawn from domain palette */
+/** Accent colors drawn from domain palette (WCAG AA on --bg-surface) */
 export const CATEGORY_COLORS: Record<AmbitionCategory, string> = {
-  dominion:  '#8b4513',
-  mastery:   '#7b68ee',
-  vengeance: '#4f4f4f',
+  dominion:  '#c4763a',
+  mastery:   '#9b8aff',
+  vengeance: '#8a8a8a',
   legacy:    '#daa520',
-  survival:  '#808080',
+  survival:  '#a0a0a0',
   discovery: '#20b2aa',
   devotion:  '#f0e68c',
 };

@@ -63,7 +63,7 @@ export function DoomBar({ definition, state }: DoomBarProps) {
               {stageName}
             </span>
           </div>
-          <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color }}>
+          <span className="font-mono ml-2" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
             {state.expired ? 'UNMADE' : `${pct}%`}
           </span>
         </div>
