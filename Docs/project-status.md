@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Encounter-Level Cache & Sublocation-Aware Decisions (2026-03-20) — agents target specific encounters at specific sublocations. Eager sublocation creation, cache lifecycle hooks, sublocation-aware pathfinding/arrival, dead code cleanup. Determinism audit findings documented.
 - ✅ River Completion (2026-03-20) — depression filling, coastal routing, lake outflow, delta forking, proximity merging. Rivers no longer dead-end on inland terrain.
 - ✅ Encounter Cache Debug Tab (2026-03-20) — new "Encounters" tab in debug panel showing cache stats, active encounters, cooldowns, and per-location cache entries.
 - ✅ fix: encounter resolution bugs (social encounter stuck, missing cooldown) (2026-03-20)
@@ -31,7 +32,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** Location & Sublocation Concept Art (2026-03-20) — themed placeholder concept art for 17 location types and 11 sublocation types with unique gradients, glyphs, and accent colors.
+**Latest implementation:** Encounter-Level Cache & Sublocation-Aware Decisions (2026-03-20) — agents now target specific encounters at specific sublocations, not location-level approximations.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
