@@ -30,11 +30,11 @@ import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
-import { findShortestPath } from './pathfinding';
 import { initMovementState } from './movementExecution';
-import { computeEdgeCost } from './movementCost';
+import { buildHexMovementPath } from './hexMovementPath';
 import { emitTrace } from './traceBuffer';
-import type { TraceEntry } from '../types/trace';
+import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
+import { IDLE_SCORE_THRESHOLD } from '../data/agent-behavior-constants';
 
 /**
  * Filter out candidates whose encounter template is on cooldown for this agent.
@@ -140,7 +140,7 @@ export function phaseAgentDecision(
         : allEntries;
 
       // Run filter pipeline
-      const { candidates: rawCandidates } = runFilterPipeline(
+      const filterResult = runFilterPipeline(
         mergedEntries,
         agentId,
         locationId,
@@ -148,6 +148,10 @@ export function phaseAgentDecision(
         distanceMatrix,
         state.tick,
       );
+      const rawCandidates = filterResult.candidates;
+
+      // Emit filter pipeline trace
+      emitTrace(filterResult.trace as TraceEntry);
 
       // Filter out encounters on cooldown (abandoned/completed recently)
       const candidates = filterByCooldown(
@@ -166,6 +170,9 @@ export function phaseAgentDecision(
         distanceMatrix,
         state.tick,
       );
+
+      // Emit scoring trace
+      emitTrace(decision.trace as TraceEntry);
 
       if (decision.selected) {
         const sel = decision.selected;
@@ -196,19 +203,18 @@ export function phaseAgentDecision(
             });
           }
         } else if (sel.action === 'queue_movement') {
-          // Queue movement toward the encounter's location
-          const pathResult = findShortestPath(
+          // Queue movement toward the encounter's location (hex-by-hex A*)
+          const hexPath = buildHexMovementPath(
             graph,
-            agentId,
             locationId,
             sel.entry.locationId,
+            state.tiles,
           );
-          if (pathResult && pathResult.path.length > 0) {
-            const firstEdgeCost = computeEdgeCost(graph, agentId, locationId, pathResult.path[0]).totalCost;
+          if (hexPath) {
             const movState = initMovementState(
-              sel.entry.locationId,
-              pathResult.path,
-              firstEdgeCost,
+              hexPath.destinationId,
+              hexPath.locationIds,
+              hexPath.firstEdgeCost,
               state.tick,
             );
             // Attach encounter targeting fields
@@ -247,13 +253,22 @@ export function phaseAgentDecision(
               sublocationId: sel.entry.sublocationId ?? undefined,
               sublocationName: sublocNode?.name ?? undefined,
               encounterId: sel.entry.templateId,
-              queueLength: pathResult.path.length,
-              summary: `${actor.name} departs for ${destName} (${pathResult.path.length} hops, encounter: ${sel.entry.templateId})`,
+              queueLength: hexPath.locationIds.length,
+              summary: `${actor.name} departs for ${destName} (${hexPath.locationIds.length} hops, encounter: ${sel.entry.templateId})`,
             } as TraceEntry);
           }
         }
       } else {
-        // Idle behavior
+        // Idle behavior — determine reason for idling
+        let idleReason: IdleDecisionTrace['reason'];
+        if (filterResult.candidates.length === 0) {
+          idleReason = 'no_candidates_after_filter';
+        } else if (candidates.length === 0) {
+          idleReason = 'no_candidates_after_cooldown';
+        } else {
+          idleReason = 'below_score_threshold';
+        }
+
         const localEntries = allEntries.filter((e) => e.locationId === locationId);
         const idle = resolveIdleBehavior(
           agentId,
@@ -264,19 +279,51 @@ export function phaseAgentDecision(
           rng,
         );
 
+        // Emit idle decision trace
+        const ft = filterResult.trace;
+        const bestScore = decision.topCandidates.length > 0
+          ? decision.topCandidates[0].finalScore
+          : null;
+        const driftTargetNode = idle.targetLocationId ? graph.getNode(idle.targetLocationId) : null;
+
+        emitTrace({
+          category: 'idle_decision',
+          tick: state.tick,
+          agentId,
+          agentName: actor.name,
+          locationId,
+          reason: idleReason,
+          filterPipeline: {
+            cacheSize: ft.cacheSize,
+            afterAwareness: ft.afterAwareness,
+            afterVisibility: ft.afterVisibility,
+            afterPrerequisites: ft.afterPrerequisites,
+            afterThreat: ft.afterThreat,
+            afterCap: ft.afterCap,
+          },
+          candidatesBeforeCooldown: rawCandidates.length,
+          candidatesAfterCooldown: candidates.length,
+          bestScore,
+          scoreThreshold: IDLE_SCORE_THRESHOLD,
+          idleAction: idle.action,
+          driftTargetId: idle.targetLocationId,
+          driftTargetName: driftTargetNode?.name ?? undefined,
+          summary: `${actor.name} idles (${idleReason}): ${idle.action}${idle.targetLocationId ? ` → ${driftTargetNode?.name ?? idle.targetLocationId}` : ''}${bestScore !== null ? ` [best=${bestScore.toFixed(3)}, threshold=${IDLE_SCORE_THRESHOLD}]` : ''}`,
+        } as TraceEntry);
+
         if (idle.action === 'drift' && idle.targetLocationId) {
-          const pathResult = findShortestPath(
+          // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
+          const hexPath = buildHexMovementPath(
             graph,
-            agentId,
             locationId,
             idle.targetLocationId,
+            state.tiles,
           );
-          if (pathResult && pathResult.path.length > 0) {
-            const firstEdgeCost = computeEdgeCost(graph, agentId, locationId, pathResult.path[0]).totalCost;
+          if (hexPath) {
             const driftState = initMovementState(
-              idle.targetLocationId,
-              pathResult.path,
-              firstEdgeCost,
+              hexPath.destinationId,
+              hexPath.locationIds,
+              hexPath.firstEdgeCost,
               state.tick,
             );
             graph.updateNode(agentId, {

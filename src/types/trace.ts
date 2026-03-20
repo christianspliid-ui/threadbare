@@ -323,6 +323,37 @@ export interface MovementTrace extends TraceBase {
   oldDestinationName?: string;
 }
 
+/** Trace: agent chose to idle — explains why no encounter was selected */
+export interface IdleDecisionTrace extends TraceBase {
+  category: 'idle_decision';
+  agentId: string;
+  agentName: string;
+  locationId: string;
+  /** Why the agent idled instead of acting */
+  reason: 'no_candidates_after_filter' | 'no_candidates_after_cooldown' | 'below_score_threshold';
+  /** Filter pipeline counts — how candidates were eliminated */
+  filterPipeline: {
+    cacheSize: number;
+    afterAwareness: number;
+    afterVisibility: number;
+    afterPrerequisites: number;
+    afterThreat: number;
+    afterCap: number;
+  };
+  /** Candidates surviving filter but eliminated by cooldown */
+  candidatesBeforeCooldown: number;
+  candidatesAfterCooldown: number;
+  /** Best score among surviving candidates (null if none survived) */
+  bestScore: number | null;
+  /** Threshold that bestScore failed to meet */
+  scoreThreshold: number;
+  /** What the agent chose to do while idle */
+  idleAction: 'drift' | 'trivial_local' | 'stay';
+  /** Drift target location (if idleAction === 'drift') */
+  driftTargetId?: string;
+  driftTargetName?: string;
+}
+
 /** Trace: encounter scoring and selection */
 export interface ScoringTrace extends TraceBase {
   category: 'encounter_scoring';
@@ -369,7 +400,8 @@ export type TraceEntry =
   | CacheUpdateTrace
   | FilterPipelineTrace
   | ScoringTrace
-  | MovementTrace;
+  | MovementTrace
+  | IdleDecisionTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -399,6 +431,7 @@ export const TRACE_CATEGORIES = [
   'encounter_filter',
   'encounter_scoring',
   'movement',
+  'idle_decision',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
