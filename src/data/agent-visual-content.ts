@@ -51,8 +51,8 @@ export const TRAIL_OPACITY_MIN = 0.05;
 
 // --- Movement Animation Constants ---
 
-/** Duration of smooth glide transition when agent moves between hexes (ms) */
-export const AGENT_MOVE_TRANSITION_MS = 600;
+/** Duration of bezier animation when agent moves between hexes (ms) */
+export const AGENT_MOVE_TRANSITION_MS = 800;
 
 /** Duration of arrival flash animation when agent reaches a new hex (ms) */
 export const AGENT_ARRIVE_FLASH_MS = 500;
