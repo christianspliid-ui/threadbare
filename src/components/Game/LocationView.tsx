@@ -12,6 +12,7 @@ import { generateEntityProse } from '../../engine/proseGenerator';
 import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { StepDots } from '../shared/StepDots';
+import { getSublocationConceptArt } from '../../data/sublocation-concept-art';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -67,6 +68,10 @@ const SublocationCard = memo(function SublocationCard({
   onEncounterClick,
   onEnter,
 }: SublocationCardProps) {
+  // Concept art for this sublocation type
+  const subProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
+  const conceptArt = getSublocationConceptArt(subProps.sublocationTypeId ?? '');
+
   // Determine divine styling
   const isDivine = divineOrigin !== undefined;
   const cardStyle: React.CSSProperties = isDivine
@@ -100,6 +105,47 @@ const SublocationCard = memo(function SublocationCard({
       }}
       aria-label={`Enter ${sublocation.name}`}
     >
+      {/* Concept Art Banner */}
+      <div
+        style={{
+          background: conceptArt.gradient,
+          height: '56px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <span
+          style={{
+            fontSize: '28px',
+            color: conceptArt.glyphColor,
+            opacity: 0.6,
+            filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
+            userSelect: 'none',
+          }}
+          aria-hidden="true"
+        >
+          {conceptArt.glyph}
+        </span>
+        <span
+          style={{
+            position: 'absolute',
+            bottom: '4px',
+            right: '8px',
+            fontSize: '9px',
+            color: conceptArt.glyphColor,
+            opacity: 0.35,
+            fontFamily: 'var(--font-display)',
+            letterSpacing: '1.5px',
+            textTransform: 'uppercase',
+          }}
+        >
+          Concept Art
+        </span>
+      </div>
+
       {/* Card Header */}
       <div
         className="flex items-center justify-between px-3.5 py-2.5 border-b"
@@ -395,6 +441,10 @@ const SublocationDetailView = memo(function SublocationDetailView({
   graph,
   seed,
 }: SublocationDetailViewProps) {
+  // Concept art for this sublocation type
+  const detailSubProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
+  const conceptArt = getSublocationConceptArt(detailSubProps.sublocationTypeId ?? '');
+
   // Generate prose for sublocation
   const sublocationProse = useMemo(() => {
     if (!graph || seed === undefined) return '';
@@ -493,34 +543,44 @@ const SublocationDetailView = memo(function SublocationDetailView({
               ))}
             </div>
           </div>
-          {/* Concept art placeholder */}
+          {/* Concept art placeholder — themed per sublocation type */}
           <div
-            className="rounded-lg border flex items-center justify-center"
+            className="rounded-lg border overflow-hidden flex items-center justify-center"
             style={{
               width: '40%',
               flexShrink: 0,
-              backgroundColor: 'var(--bg-raised)',
+              background: conceptArt.gradient,
               borderColor: 'var(--border-subtle)',
+              position: 'relative',
             }}
           >
-            <div className="flex flex-col items-center gap-2" style={{ opacity: 0.4 }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: 'var(--text-muted)' }}>
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <circle cx="8.5" cy="8.5" r="1.5" />
-                <path d="M21 15l-5-5L5 21" />
-              </svg>
-              <span
-                style={{
-                  fontSize: 'var(--text-xs)',
-                  color: 'var(--text-muted)',
-                  fontFamily: 'var(--font-display)',
-                  letterSpacing: '1.5px',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Concept Art
-              </span>
-            </div>
+            <span
+              style={{
+                fontSize: '48px',
+                color: conceptArt.glyphColor,
+                opacity: 0.5,
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+                userSelect: 'none',
+              }}
+              aria-hidden="true"
+            >
+              {conceptArt.glyph}
+            </span>
+            <span
+              style={{
+                position: 'absolute',
+                bottom: '6px',
+                right: '10px',
+                fontSize: 'var(--text-xs)',
+                color: conceptArt.glyphColor,
+                opacity: 0.35,
+                fontFamily: 'var(--font-display)',
+                letterSpacing: '1.5px',
+                textTransform: 'uppercase',
+              }}
+            >
+              Concept Art
+            </span>
           </div>
         </div>
       )}
@@ -860,7 +920,7 @@ export const LocationView = memo(function LocationView({
 
       {/* Prose + concept art placeholder */}
       {locationProse ? (
-        <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '160px', maxHeight: '220px' }}>
+        <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '160px', maxHeight: '220px', maxWidth: '820px' }}>
           {/* Prose column */}
           <div
             className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto"
@@ -944,7 +1004,7 @@ export const LocationView = memo(function LocationView({
         <div className="flex-1 flex flex-col overflow-y-auto px-6 py-6">
           <SectionHeading>Sublocations</SectionHeading>
 
-          <div className="space-y-3 flex-1 overflow-y-auto pr-2">
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2" style={{ maxWidth: '820px' }}>
             {sublocationData.sublocations.map(sublocation => {
               const subAgents = sublocationData.groupedAgents.get(sublocation.id) ?? [];
               const hasAgents = subAgents.length > 0;
