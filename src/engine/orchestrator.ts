@@ -41,6 +41,7 @@ import {
 } from '../data/narrative-content';
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 import {
   resolveEncounter,
   advanceEncounter,
@@ -214,6 +215,22 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               type: 'located_at',
               properties: {},
             });
+
+            // Trace: return to parent after encounter
+            const parentLoc = state.graph.getNode(locProps.parentLocationId as string);
+            const actorForTrace = state.graph.getNode(progress.actorId);
+            emitTrace({
+              category: 'movement',
+              tick: state.tick,
+              agentId: progress.actorId,
+              agentName: actorForTrace?.name ?? '?',
+              event: 'sublocation_return',
+              fromLocationId: currentLoc.id,
+              fromLocationName: currentLoc.name,
+              toLocationId: locProps.parentLocationId as string,
+              toLocationName: parentLoc?.name ?? '?',
+              summary: `${actorForTrace?.name ?? '?'} returns from ${currentLoc.name} to ${parentLoc?.name ?? '?'} (encounter ${progress.status})`,
+            } as TraceEntry);
           }
         }
       }

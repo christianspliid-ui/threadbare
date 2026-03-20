@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
-import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace, ActionExecutionTrace } from '../../types/trace';
+import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace, ActionExecutionTrace, MovementTrace } from '../../types/trace';
 import type { ModifierResolutionTrace } from '../../types/modifiers';
 import type { WorldGraph } from '../../engine/graph';
 import { TRACE_CATEGORIES } from '../../types/trace';
@@ -24,6 +24,8 @@ interface DebugPanelProps {
   cacheEntries?: readonly EncounterCacheEntry[];
   /** Current encounter progress records */
   encounterProgress?: readonly EncounterProgress[];
+  /** Callback to zoom the map to a location's hex */
+  onZoomToLocation?: (locationId: string) => void;
 }
 
 type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters';
@@ -254,6 +256,8 @@ const TraceDetailRenderer = React.memo(function TraceDetailRenderer({ trace }: T
       return <ActionExecutionDetail trace={trace as ActionExecutionTrace} />;
     case 'modifier_resolution':
       return <ModifierResolutionDetail trace={trace as ModifierResolutionTrace} />;
+    case 'movement':
+      return <MovementDetail trace={trace as MovementTrace} />;
     default:
       return <FallbackDetail trace={trace} />;
   }
@@ -665,6 +669,75 @@ const ModifierResolutionDetail = React.memo(function ModifierResolutionDetail({ 
   );
 });
 
+const MOVEMENT_EVENT_ICONS: Record<string, string> = {
+  depart: '->',
+  step: '>>',
+  arrive: '!!',
+  sublocation_enter: 'v',
+  sublocation_return: '^',
+  reroute: '~>',
+};
+
+const MovementDetail = React.memo(function MovementDetail({ trace }: { trace: MovementTrace }) {
+  const eventColor = TRACE_CATEGORY_COLORS.movement ?? '#38bdf8';
+  const icon = MOVEMENT_EVENT_ICONS[trace.event] ?? '?';
+
+  return (
+    <div style={DETAIL_AREA_STYLE}>
+      <div style={DETAIL_ROW_STYLE}>
+        <div style={DETAIL_LABEL_STYLE}>Event</div>
+        <div style={{ ...DETAIL_VALUE_STYLE, color: eventColor, fontWeight: 600 }}>
+          {icon} {trace.event}
+        </div>
+      </div>
+      {trace.fromLocationName && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>From</div>
+          <div style={DETAIL_VALUE_STYLE}>{trace.fromLocationName}</div>
+        </div>
+      )}
+      {trace.toLocationName && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>To</div>
+          <div style={DETAIL_VALUE_STYLE}>{trace.toLocationName}</div>
+        </div>
+      )}
+      {trace.destinationName && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>Destination</div>
+          <div style={DETAIL_VALUE_STYLE}>{trace.destinationName}</div>
+        </div>
+      )}
+      {trace.event === 'reroute' && trace.oldDestinationName && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>Old Dest</div>
+          <div style={{ ...DETAIL_VALUE_STYLE, textDecoration: 'line-through', opacity: 0.6 }}>
+            {trace.oldDestinationName}
+          </div>
+        </div>
+      )}
+      {trace.sublocationName && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>Sublocation</div>
+          <div style={DETAIL_VALUE_STYLE}>{trace.sublocationName}</div>
+        </div>
+      )}
+      {trace.encounterId && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>Encounter</div>
+          <div style={{ ...DETAIL_VALUE_STYLE, fontSize: '10px', opacity: 0.8 }}>{trace.encounterId}</div>
+        </div>
+      )}
+      {trace.queueLength != null && (
+        <div style={DETAIL_ROW_STYLE}>
+          <div style={DETAIL_LABEL_STYLE}>Hops Left</div>
+          <div style={DETAIL_VALUE_STYLE}>{trace.queueLength}</div>
+        </div>
+      )}
+    </div>
+  );
+});
+
 const FallbackDetail = React.memo(function FallbackDetail({ trace }: { trace: TraceEntry }) {
   return (
     <div style={DETAIL_AREA_STYLE}>
@@ -796,7 +869,7 @@ const SocialTabContent = React.memo(function SocialTabContent({
   );
 });
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -993,6 +1066,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             encounterProgress={encounterProgress ?? []}
             currentTick={currentTick}
             followAgentId={followAgentId}
+            onZoomToLocation={onZoomToLocation}
+            graph={graph}
           />
         ) : viewMode === 'social' ? (
           <SocialTabContent

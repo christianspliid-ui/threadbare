@@ -302,6 +302,27 @@ export interface FilterPipelineTrace extends TraceBase {
   afterCap: number;
 }
 
+/** Trace: agent movement transition or decision */
+export interface MovementTrace extends TraceBase {
+  category: 'movement';
+  agentId: string;
+  agentName: string;
+  event: 'step' | 'arrive' | 'sublocation_enter' | 'sublocation_return' | 'reroute' | 'depart';
+  fromLocationId?: string;
+  fromLocationName?: string;
+  toLocationId?: string;
+  toLocationName?: string;
+  destinationId?: string;
+  destinationName?: string;
+  sublocationId?: string;
+  sublocationName?: string;
+  encounterId?: string;
+  queueLength?: number;
+  /** For reroute: old destination vs new */
+  oldDestinationId?: string;
+  oldDestinationName?: string;
+}
+
 /** Trace: encounter scoring and selection */
 export interface ScoringTrace extends TraceBase {
   category: 'encounter_scoring';
@@ -347,7 +368,8 @@ export type TraceEntry =
   | FactionAwarenessTrace
   | CacheUpdateTrace
   | FilterPipelineTrace
-  | ScoringTrace;
+  | ScoringTrace
+  | MovementTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -376,6 +398,7 @@ export const TRACE_CATEGORIES = [
   'encounter_cache',
   'encounter_filter',
   'encounter_scoring',
+  'movement',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

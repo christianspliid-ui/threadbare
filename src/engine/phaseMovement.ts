@@ -14,6 +14,8 @@ import { generateMovementCandidates, scoreMovementCandidate } from './movementCa
 import { computeEdgeCost } from './movementCost';
 import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
+import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -70,6 +72,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
       // Emit event on movement transition (skip for avatar — player controls avatar)
       if (result.moved && !isAvatar) {
         const destNode = state.graph.getNode(result.newLocationId!);
+        const finalDestNode = state.graph.getNode(result.updatedState.destinationId);
         events.push({
           id: nextEventId(),
           tick: state.tick,
@@ -80,6 +83,25 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             ? { col: destNode.properties.hexCol as number, row: destNode.properties.hexRow as number }
             : undefined,
         });
+
+        // Trace: movement step
+        emitTrace({
+          category: 'movement',
+          tick: state.tick,
+          agentId: actorId,
+          agentName: actor.name,
+          event: result.arrivedAtDestination ? 'arrive' : 'step',
+          toLocationId: result.newLocationId!,
+          toLocationName: destNode?.name ?? '?',
+          destinationId: result.updatedState.destinationId,
+          destinationName: finalDestNode?.name ?? '?',
+          queueLength: result.updatedState.movementQueue.length,
+          encounterId: result.updatedState.targetEncounterId,
+          sublocationId: result.updatedState.targetSublocationId,
+          summary: result.arrivedAtDestination
+            ? `${actor.name} arrives at ${destNode?.name ?? '?'}`
+            : `${actor.name} moves to ${destNode?.name ?? '?'} (${result.updatedState.movementQueue.length} hops left)`,
+        } as TraceEntry);
       }
 
       // --- Sublocation entry on arrival ---
@@ -102,6 +124,22 @@ export function phaseMovement(state: GameState): Partial<GameState> {
               type: 'located_at',
               properties: {},
             });
+
+            // Trace: sublocation entry
+            emitTrace({
+              category: 'movement',
+              tick: state.tick,
+              agentId: actorId,
+              agentName: actor.name,
+              event: 'sublocation_enter',
+              toLocationId: sublocationId,
+              toLocationName: sublocation.name,
+              destinationId: result.updatedState.destinationId,
+              encounterId: result.updatedState.targetEncounterId,
+              sublocationId,
+              sublocationName: sublocation.name,
+              summary: `${actor.name} enters ${sublocation.name}`,
+            } as TraceEntry);
           }
         }
         // Clear targetSublocationId regardless (fail-soft: if sublocation dissolved, stay at parent)
@@ -152,6 +190,23 @@ export function phaseMovement(state: GameState): Partial<GameState> {
                 switchedState.movementHistory = result.updatedState.movementHistory;
                 // Track the original motivation pull for future re-evaluations
                 switchedState.motivationPull = newCandidates[0].motivationPull;
+
+                // Trace: reroute
+                const oldDest = state.graph.getNode(result.updatedState.destinationId);
+                const newDest = state.graph.getNode(newCandidates[0].destinationId);
+                emitTrace({
+                  category: 'movement',
+                  tick: state.tick,
+                  agentId: actorId,
+                  agentName: actor.name,
+                  event: 'reroute',
+                  oldDestinationId: result.updatedState.destinationId,
+                  oldDestinationName: oldDest?.name ?? '?',
+                  destinationId: newCandidates[0].destinationId,
+                  destinationName: newDest?.name ?? '?',
+                  queueLength: newPath.length,
+                  summary: `${actor.name} reroutes from ${oldDest?.name ?? '?'} to ${newDest?.name ?? '?'}`,
+                } as TraceEntry);
 
                 state.graph.updateNode(actorId, {
                   properties: { ...actor.properties, movementState: switchedState },
