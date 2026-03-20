@@ -31,7 +31,7 @@ export interface SegmentBezier {
 // ─── Constants ───────────────────────────────────────────────────
 
 /** Wobble magnitude as fraction of hex size for bezier control point offset */
-const WOBBLE_FACTOR = 0.45;
+const WOBBLE_FACTOR = 0.5;
 
 /** Number of samples for arc-length lookup table */
 const ARC_LENGTH_SAMPLES = 20;
