@@ -6,6 +6,8 @@ import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { generateVignette, classifyForecast } from '../../engine/vignetteProse';
 import type { ForecastTier } from '../../engine/vignetteProse';
 import { resolveEncounterNarrative } from '../../data/encounter-content';
+import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-content';
+import type { ReachDomain } from '../../types/traits';
 import { Modal } from '../shared/Modal';
 import { StepDots } from '../shared/StepDots';
 
@@ -35,6 +37,45 @@ const FORECAST_LABELS: Record<ForecastTier, string> = {
   uncertain: 'Uncertain',
   favorable: 'Favorable',
   fated: 'Fated',
+};
+
+/** Reach domain display names (capitalized for UI) */
+const REACH_DISPLAY_NAMES: Record<ReachDomain, string> = {
+  iron: 'Iron',
+  gold: 'Gold',
+  shadow: 'Shadow',
+  veil: 'Veil',
+  heart: 'Heart',
+  eye: 'Eye',
+  stone: 'Stone',
+  star: 'Star',
+  flesh: 'Flesh',
+};
+
+/** Narrative prose describing what each reach tests — inserted as "{name}'s {prose}" */
+const REACH_TEST_PROSE: Record<ReachDomain, string> = {
+  iron: 'strength of arms is tested',
+  gold: 'shrewdness with coin is tested',
+  shadow: 'gift for deception is tested',
+  veil: 'command of hidden arts is tested',
+  heart: 'force of will is tested',
+  eye: 'clarity of sight is tested',
+  stone: 'endurance is tested',
+  star: 'attunement to the divine is tested',
+  flesh: 'resilience of body is tested',
+};
+
+/** Reach domain icons — thematic glyphs for each domain */
+const REACH_ICONS: Record<ReachDomain, string> = {
+  iron: '⚔',
+  gold: '⚖',
+  shadow: '🗝',
+  veil: '✦',
+  heart: '♥',
+  eye: '◉',
+  stone: '⛰',
+  star: '★',
+  flesh: '⚕',
 };
 
 // ── Types ──────────────────────────────────────────────────────
@@ -143,12 +184,15 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
               </span>
             </div>
             {currentStep && !isOutOfBounds ? (
-              <p
-                className="text-sm font-semibold"
-                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-              >
-                {currentStep.name}
-              </p>
+              <>
+                <p
+                  className="text-sm font-semibold"
+                  style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+                >
+                  {currentStep.name}
+                </p>
+                <ReachBadge reach={currentStep.reach} agentName={agentName} />
+              </>
             ) : (
               <p
                 className="text-sm italic"
@@ -227,6 +271,36 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
 });
 
 // ── Helper sub-component ───────────────────────────────────────
+
+function ReachBadge({ reach, agentName }: { reach: ReachDomain; agentName: string }) {
+  const color = DOMAIN_COLORS[reach] ?? DEFAULT_AGENT_COLOR;
+  const icon = REACH_ICONS[reach] ?? '●';
+  const displayName = REACH_DISPLAY_NAMES[reach] ?? reach;
+  const prose = REACH_TEST_PROSE[reach] ?? 'resolve is tested';
+  const firstName = agentName.split(' ')[0];
+
+  return (
+    <div className="flex items-center gap-2 mt-1.5">
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
+        style={{
+          color,
+          backgroundColor: color + '20',
+          border: `1px solid ${color}40`,
+        }}
+      >
+        <span>{icon}</span>
+        <span>{displayName}</span>
+      </span>
+      <span
+        className="text-xs italic"
+        style={{ color: 'var(--text-secondary)' }}
+      >
+        {firstName}'s {prose}
+      </span>
+    </div>
+  );
+}
 
 function VignetteSection({ label, children }: { label: string; children: React.ReactNode }) {
   return (
