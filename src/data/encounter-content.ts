@@ -9,6 +9,7 @@
 
 import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import { getSocialEncounterById } from './social-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -5011,8 +5012,18 @@ export function getEncountersBySublocationAndLocation(
 }
 
 /**
- * Retrieve a specific encounter by ID.
+ * Retrieve a specific encounter by ID (exploration templates only).
  */
 export function getEncounterById(id: string): EncounterTemplate | undefined {
   return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id);
+}
+
+/**
+ * Retrieve any encounter by ID — checks exploration templates first,
+ * then social encounter templates. Use this everywhere an encounter
+ * might be either type (resolution, advancement, display).
+ */
+export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
+  return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
+    ?? getSocialEncounterById(id);
 }

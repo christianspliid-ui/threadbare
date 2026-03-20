@@ -33,7 +33,6 @@ import {
 } from '../types/disposition';
 import { buildNarrativeContext } from './contextBuilder';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
-import { generateRoutineProse, generateNotableProse } from './narrative';
 import {
   DILEMMA_STAKES_PROSE,
   DILEMMA_ADJ_POOL,
@@ -43,25 +42,17 @@ import {
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
 import {
-  getAvailableEncounters,
-  initiateEncounter,
   resolveEncounter,
   advanceEncounter,
   isEncounterOccupied,
 } from './encounter';
 import { getAvatarHexPosition } from './visibility';
-import { generateEncounterCandidates } from './encounterCandidates';
-import { runSelectionPipeline } from './agentSelection';
-import { getEncounterById } from '../data/encounter-content';
+import { getAnyEncounterById } from '../data/encounter-content';
 import type { EncounterOutcome } from '../types/encounter';
 import { getFamiliarity, addFamiliarity, checkThresholdCrossed } from './familiarity';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
-import { createAction, progressAction, isActionComplete, completeAction, isAgentIdle } from './actionLifecycle';
-import { getActionTemplateById, ACTION_TEMPLATES } from '../data/action-template-content';
-import { executeGraphOps } from './graphOpExecutor';
-import { generateActionCandidates } from './actionCandidates';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement } from './phaseMovement';
 import { phaseColocationDetection } from './phaseColocationDetection';
@@ -149,19 +140,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   return { doomClock: newDoom, tickEvents: [...state.tickEvents, ...events] };
 }
 
-// ─── Phase 2: Agent Actions ────────────────────────────────────
-
-/** Chance per tick that an agent considers an encounter */
-const ENCOUNTER_ATTEMPT_CHANCE = 0.20;
-
-/** Chance of a non-encounter routine action */
-const ROUTINE_ACTION_CHANCE = 0.10;
-
-/** Chance of starting a CRUD action when not encountering */
-const CRUD_ACTION_CHANCE = 0.35;
-
-/** Notable action interval — every N ticks, force one high-significance event */
-const NOTABLE_ACTION_INTERVAL = 5;
+// ─── Helpers ──────────────────────────────────────────────────────
 
 function getActorHexCoords(graph: WorldGraph, actorId: string): { col: number; row: number } | undefined {
   const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
@@ -169,299 +148,6 @@ function getActorHexCoords(graph: WorldGraph, actorId: string): { col: number; r
   const locNode = graph.getNode(locEdges[0].target);
   if (!locNode?.properties?.hexCol) return undefined;
   return { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number };
-}
-
-/** @deprecated Replaced by phaseIdleSelection + phaseUnifiedActionProgress. No longer called in the tick pipeline. */
-export function phaseAgentActions(state: GameState): Partial<GameState> {
-  const rng = mulberry32(state.seed + state.tick * 31);
-  const events: TickEvent[] = [];
-  const newActions = [...(state.actionsInProgress ?? [])];
-
-  const actors = state.graph.getNodesByType('actor').filter(
-    n => n.properties.actorType === 'individual'
-  );
-
-  for (const actor of actors) {
-    // Skip if already in an active encounter or action
-    if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
-    if (!isAgentIdle(state.actionsInProgress ?? [], actor.id)) continue;
-
-    // Encounter attempt
-    if (rng() < ENCOUNTER_ATTEMPT_CHANCE) {
-      // Find actor's location
-      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
-      if (locEdges.length === 0) continue;
-      const locationId = locEdges[0].target;
-
-      // Generate candidates from available encounters
-      const candidates = generateEncounterCandidates(state.graph, actor.id, locationId);
-
-      if (candidates.length > 0) {
-        try {
-          const result = runSelectionPipeline(
-            state.graph,
-            actor.id,
-            candidates,
-            { topN: 5, survivalThreshold: 0.8 },
-            state.tick,
-            rng(),
-          );
-
-          // Initiate the selected encounter
-          const template = getEncounterById(result.selected.templateId);
-          if (template) {
-            initiateEncounter(state, actor.id, template.id, state.tick);
-
-            const locationNode = state.graph.getNode(locationId);
-            const locationName = locationNode?.name ?? 'the realm';
-            events.push({
-              id: nextEventId(),
-              tick: state.tick,
-              type: 'agent_action_resolved',
-              message: `${actor.name} begins ${template.name} at ${locationName}.`,
-              sphere: template.sphereAffinity ?? (SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName),
-              significance: 0.7,
-              hexCoords: getActorHexCoords(state.graph, actor.id),
-            });
-          }
-        } catch {
-          // Selection pipeline can fail if no valid profile — fall through to routine action
-        }
-      }
-    }
-
-    // CRUD action attempt (non-encounter, creates ActionInProgress)
-    else if (rng() < CRUD_ACTION_CHANCE) {
-      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
-      if (locEdges.length > 0) {
-        const locationId = locEdges[0].target;
-        const actionCandidates = generateActionCandidates(state.graph, actor.id, locationId);
-
-        if (actionCandidates.length > 0) {
-          try {
-            // Pick a candidate — use selection pipeline if agent has profile, else random
-            let selectedCandidate = actionCandidates[Math.floor(rng() * actionCandidates.length)];
-
-            try {
-              const result = runSelectionPipeline(
-                state.graph,
-                actor.id,
-                actionCandidates,
-                { topN: 5, survivalThreshold: 0.8 },
-                state.tick,
-                rng(),
-              );
-              selectedCandidate = result.selected;
-            } catch {
-              // Selection pipeline can fail if no valid profile — use random fallback
-            }
-
-            const template = getActionTemplateById(selectedCandidate.templateId);
-            if (template) {
-              // Compute duration from template range
-              const durRange = template.durationRange;
-              const duration = durRange.min + Math.floor(rng() * (durRange.max - durRange.min + 1));
-
-              // NOTE: createAction mutates the graph (adds performing edge).
-              // In React StrictMode dev builds, runTick executes twice per tick,
-              // causing duplicate edges. This is benign — production builds run once.
-              // Future: make graph immutable via copy-on-write if this becomes an issue.
-              const action = createAction(state.graph, {
-                actorId: actor.id,
-                templateId: template.id,
-                targetId: selectedCandidate.targetId,
-                domain: template.reach,
-                duration,
-                tick: state.tick,
-              });
-
-              newActions.push(action);
-
-              const locationNode = state.graph.getNode(locationId);
-              const locationName = locationNode?.name ?? 'the realm';
-
-              // Emit trace for action start (inspectability)
-              emitTrace({
-                id: 0,
-                category: 'action_execution',
-                tick: state.tick,
-                timestamp: Date.now(),
-                summary: `${actor.name} begins ${template.name}`,
-                agentId: actor.id,
-                templateId: template.id,
-                actorId: actor.id,
-                outcome: 'started',
-                opsApplied: 0,
-                opsFailed: 0,
-                duration: duration,
-              });
-
-              events.push({
-                id: nextEventId(),
-                tick: state.tick,
-                type: 'agent_action_resolved',
-                message: `${actor.name} begins ${template.name} at ${locationName}.`,
-                sphere: (SPHERE_NAMES.includes(template.reach as any) ? template.reach : SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)]) as SphereName,
-                significance: 0.5,
-                hexCoords: getActorHexCoords(state.graph, actor.id),
-              });
-            }
-          } catch {
-            // Fail-soft: template node may not exist in graph yet — skip CRUD action
-          }
-        }
-      }
-    }
-
-    // Routine action (non-encounter flavor text)
-    else if (rng() < ROUTINE_ACTION_CHANCE) {
-      const spheres: SphereName[] = [...SPHERE_NAMES];
-      const sphere = spheres[Math.floor(rng() * spheres.length)];
-      const significance = 0.3 + rng() * 0.4;
-
-      const prose = generateRoutineProse('action_resolved', {
-        actorName: actor.name,
-        actorId: actor.id,
-        sphere,
-        locationName: 'the realm',
-      }, state.seed + state.tick * 100 + actors.indexOf(actor), state.graph);
-
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'agent_action_resolved',
-        message: prose.text,
-        sphere,
-        significance,
-        hexCoords: getActorHexCoords(state.graph, actor.id),
-      });
-
-      // Sphere influence
-      const locEdges = state.graph.getOutgoingEdges(actor.id, 'located_at');
-      if (locEdges.length > 0) {
-        const locNode = state.graph.getNode(locEdges[0].target);
-        if (locNode?.properties?.sphereInfluence) {
-          const inf = locNode.properties.sphereInfluence as Record<string, number>;
-          inf[sphere] = (inf[sphere] ?? 0) + 0.02;
-        }
-      }
-    }
-  }
-
-  // Keep notable action interval
-  if (actors.length > 0 && state.tick % NOTABLE_ACTION_INTERVAL === 0) {
-    const notableActor = actors[Math.floor(rng() * actors.length)];
-    const spheres: SphereName[] = [...SPHERE_NAMES];
-    const sphere = spheres[Math.floor(rng() * spheres.length)];
-
-    const prose = generateNotableProse('action_critical', {
-      actorName: notableActor.name,
-      actorId: notableActor.id,
-      sphere,
-      locationName: 'the realm',
-    }, state.seed + state.tick * 200, state.graph);
-
-    events.push({
-      id: nextEventId(),
-      tick: state.tick,
-      type: 'agent_action_resolved',
-      message: prose.text,
-      sphere,
-      significance: 0.85,
-      hexCoords: getActorHexCoords(state.graph, notableActor.id),
-    });
-  }
-
-  return { tickEvents: [...state.tickEvents, ...events], actionsInProgress: newActions };
-}
-
-// ─── Phase 2.25: Encounter Progression ────────────────────────────────────
-
-/** @deprecated Replaced by phaseUnifiedActionProgress. No longer called in the tick pipeline. */
-export function phaseEncounterProgression(state: GameState): Partial<GameState> {
-  const rng = mulberry32(state.seed + state.tick * 43);
-  const events: TickEvent[] = [];
-
-  // 1. Progress active encounters
-  const activeEncounters = state.encounterProgress.filter(p => p.status === 'active');
-  for (const progress of activeEncounters) {
-    // Skip resolution if agent is still occupied (multi-tick step in progress)
-    if (isEncounterOccupied(progress, state.tick)) continue;
-
-    // Resolve current step (includes capability growth + tier promotion)
-    const result = resolveEncounter(state, progress);
-    // Advance encounter (mutates progress)
-    advanceEncounter(state, progress, result.success, state.tick);
-
-    // Emit tier promotion event if a tier was crossed
-    if (result.growth?.tierCrossed && result.promotion?.traitGranted) {
-      const actorNode = state.graph.getNode(progress.actorId);
-      const agentName = actorNode?.name ?? 'An agent';
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'tier_promotion',
-        message: `${agentName} reached ${result.growth.domain} tier ${result.growth.newTier}: "${result.promotion.traitGranted}"`,
-        significance: 0.8,
-      });
-    }
-
-    // Generate event based on outcome
-    const eventType = result.success ? 'encounter_step_success' : 'encounter_step_failure';
-    if (progress.status === 'completed') {
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'encounter_completed',
-        message: `An agent has completed their encounter.`,
-        significance: 0.8,
-      });
-    } else if (progress.status === 'abandoned') {
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'encounter_step_failure',
-        message: `An agent failed their encounter step.`,
-        significance: 0.5,
-      });
-    } else {
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: eventType,
-        message: `An agent ${result.success ? 'succeeded' : 'struggled'} in their encounter.`,
-        significance: 0.6,
-      });
-    }
-  }
-
-  // 2. Initiate new encounters for eligible agents (small chance per tick)
-  const actors = state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual');
-  for (const actor of actors) {
-    // Skip if already has active encounter
-    if (state.encounterProgress.some(p => p.actorId === actor.id && p.status === 'active')) continue;
-
-    // 3% chance per tick to initiate
-    if (rng() < 0.03) {
-      const available = getAvailableEncounters(state, actor.id);
-      if (available.length > 0) {
-        const encounter = available[Math.floor(rng() * available.length)];
-        initiateEncounter(state, actor.id, encounter.id, state.tick);
-        events.push({
-          id: nextEventId(),
-          tick: state.tick,
-          type: 'encounter_step_success',
-          message: `${actor.name} begins a new encounter: ${encounter.name}.`,
-          significance: 0.7,
-        });
-      }
-    }
-  }
-
-  return {
-    tickEvents: [...state.tickEvents, ...events],
-    encounterProgress: [...state.encounterProgress],
-  };
 }
 
 /**
@@ -522,7 +208,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     // Generate event based on outcome
     const actorNode = state.graph.getNode(progress.actorId);
     const agentName = actorNode?.name ?? 'An agent';
-    const encounter = getEncounterById(progress.encounterId);
+    const encounter = getAnyEncounterById(progress.encounterId);
     const encounterName = encounter?.name ?? 'an encounter';
 
     // Check if actor is in the player's retinue (worships the ascendant)
@@ -576,85 +262,6 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
   };
 }
 
-// ─── Phase 2.3: Action Progress ────────────────────────────────────────
-
-/** @deprecated Replaced by phaseUnifiedActionProgress. No longer called in the tick pipeline. */
-export function phaseActionProgress(state: GameState): Partial<GameState> {
-  const events: TickEvent[] = [];
-  const rng = mulberry32(state.seed + state.tick * 47);
-
-  // Progress and resolve active actions
-  const updatedActions = state.actionsInProgress.map((action) => {
-    // Skip already resolved actions
-    if (action.resolved) return action;
-
-    // Increment progress
-    let updated = progressAction(action);
-
-    // Check if completed
-    if (isActionComplete(updated)) {
-      // Resolve the action
-      const template = getActionTemplateById(updated.templateId);
-      const isSuccess = rng() < (1 - (template?.difficulty ?? 0.5));
-      const outcome = isSuccess ? 'success' : 'failure';
-
-      // Apply GraphOps
-      if (template) {
-        const ops = isSuccess ? template.onSuccess : template.onFailure;
-        const ctx = {
-          actorId: updated.actorId,
-          targetId: updated.targetId,
-          locationId: updated.targetId,
-        };
-
-        try {
-          executeGraphOps(state.graph, ops, ctx);
-        } catch {
-          // Silently fail graph ops for now
-        }
-      }
-
-      // Mark as resolved
-      updated = completeAction(state.graph, updated, outcome);
-
-      // Emit trace
-      emitTrace({
-        id: 0,
-        category: 'action_execution',
-        tick: state.tick,
-        timestamp: Date.now(),
-        summary: `${updated.templateId} resolved`,
-        agentId: updated.actorId,
-        templateId: updated.templateId,
-        actorId: updated.actorId,
-        outcome,
-        opsApplied: isSuccess ? (template?.onSuccess.length ?? 0) : 0,
-        opsFailed: isSuccess ? 0 : (template?.onFailure.length ?? 0),
-        duration: updated.duration,
-      });
-
-      // Emit event
-      const actorNode = state.graph.getNode(updated.actorId);
-      const templateNode = state.graph.getNode(updated.templateId);
-      events.push({
-        id: nextEventId(),
-        tick: state.tick,
-        type: 'agent_action_resolved',
-        message: `${actorNode?.name ?? 'An agent'} ${isSuccess ? 'completed' : 'failed'} ${templateNode?.name ?? 'an action'}.`,
-        sphere: SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName,
-        significance: isSuccess ? 0.6 : 0.4,
-        hexCoords: getActorHexCoords(state.graph, updated.actorId),
-      });
-    }
-
-    return updated;
-  });
-
-  return {
-    actionsInProgress: updatedActions,
-    tickEvents: [...state.tickEvents, ...events],
-  };
-}
 
 // ─── Phase 2.5: Dilemma Detection ──────────────────────────────────────
 

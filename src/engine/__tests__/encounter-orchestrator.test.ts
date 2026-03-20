@@ -1,22 +1,21 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
-  getAvailableEncounters,
   initiateEncounter,
   resolveEncounter,
   advanceEncounter,
 } from '../encounter';
-import { phaseEncounterProgression, phaseEncounterProgressionV2, resetEventCounter } from '../orchestrator';
+import { phaseEncounterProgressionV2, resetEventCounter } from '../orchestrator';
 import { seedWorld } from '../worldSeed';
 import { createAscendant } from '../ascendant';
-import type { GameState, TickEvent } from '../../types/gameState';
-import type { CosmologyProfile, SphereName } from '../../types/index';
+import type { GameState } from '../../types/gameState';
+import type { CosmologyProfile } from '../../types/index';
 import { SPHERE_NAMES } from '../../types/index';
-import type { EncounterProgress } from '../../types/encounter';
 import { createGreatChronicle } from '../chronicle';
 import { createDefaultFundament, createResonanceState } from '../worldSoul';
 import { generateRivals, createRivalState } from '../rival';
 import { generateDoomClock, createDoomClockState } from '../doomClock';
 import { recalcVisibility, collectLOSSources } from '../visibility';
+import { getEncountersByLocationType } from '../../data/encounter-content';
 
 function balancedCosmology(): CosmologyProfile {
   const c = {} as CosmologyProfile;
@@ -72,10 +71,8 @@ function createTestGameState(seed: number = 42): GameState {
         mercy_ruthlessness: -0.3,
         honesty_cunning: 0.0,
         sacrifice_survival: 0.4,
-        loyalty_ambition: 0.5,
         tradition_novelty: 0.1,
         humility_pride: -0.2,
-        mercy_ruthlessness: 0.0,
         asceticism_extravagance: 0.3,
       },
       flavorText: 'A test archetype for the watcher',
@@ -134,229 +131,10 @@ function createTestGameState(seed: number = 42): GameState {
   };
 }
 
-describe('phaseEncounterProgression', () => {
-  beforeEach(() => {
-    resetEventCounter();
-  });
-
-  // Test 1: Handle empty encounter progress gracefully
-  it('handles empty encounterProgress array gracefully', () => {
-    const state = createTestGameState(1);
-    state.encounterProgress = [];
-
-    const result = phaseEncounterProgression(state);
-
-    expect(result).toBeDefined();
-    expect(result.tickEvents).toBeDefined();
-    expect(Array.isArray(result.tickEvents)).toBe(true);
-  });
-
-  // Test 2: Progress active encounters through encounters
-  it('resolves and advances active encounters each tick', () => {
-    const state = createTestGameState(2);
-
-    // Get available encounters for an actor at a location
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    expect(actors.length).toBeGreaterThan(0);
-
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    // If no encounters available in this world, skip this test gracefully
-    if (available.length === 0) {
-      // Just verify the phase runs without error
-      const result = phaseEncounterProgression(state);
-      expect(result.tickEvents).toBeDefined();
-      return;
-    }
-
-    // Initiate an encounter
-    const encounter = available[0];
-    const progress = initiateEncounter(state, actor.id, encounter.id, 1);
-    expect(progress.status).toBe('active');
-    expect(progress.currentEncounterIndex).toBe(0);
-
-    // Run phase
-    const result = phaseEncounterProgression(state);
-
-    // Should have generated events
-    expect(result.tickEvents).toBeDefined();
-    expect(Array.isArray(result.tickEvents)).toBe(true);
-
-    // Progress status should have changed (advanced or completed)
-    const updatedProgress = state.encounterProgress[0];
-    expect(updatedProgress).toBeDefined();
-    // Either advanced to next encounter or completed
-    expect(['active', 'completed', 'abandoned']).toContain(updatedProgress.status);
-  });
-
-  // Test 3: Events are generated for encounter progression
-  it('generates TickEvents for encounter outcomes (success/failure/completion)', () => {
-    const state = createTestGameState(3);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    if (available.length > 0) {
-      const encounter = available[0];
-      initiateEncounter(state, actor.id, encounter.id, 1);
-
-      const result = phaseEncounterProgression(state);
-
-      // Should have encounter-related events in the output
-      const encounterEvents = result.tickEvents.filter(e =>
-        e.type === 'encounter_encounter_success' ||
-        e.type === 'encounter_encounter_failure' ||
-        e.type === 'encounter_completed'
-      );
-
-      expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
-      encounterEvents.forEach(e => {
-        expect(e.significance).toBeGreaterThan(0);
-        expect(e.message).toBeDefined();
-      });
-    }
-  });
-
-  // Test 4: Encounter completion event generated
-  it('generates encounter_completed event when final encounter succeeds', () => {
-    const state = createTestGameState(4);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    if (available.length > 0) {
-      const encounter = available[0];
-      const progress = initiateEncounter(state, actor.id, encounter.id, 1);
-
-      // Manually advance through encounters using deterministic rolls
-      // (Success rolls for all encounters to reach completion)
-      for (let i = 0; i < encounter.steps.length; i++) {
-        const result = resolveEncounter(state, progress, 10); // 10 = success
-        advanceEncounter(state, progress, result.success, 1 + i);
-      }
-
-      // Progress should now be completed
-      expect(progress.status).toBe('completed');
-
-      // Phase should generate completion event
-      const phaseResult = phaseEncounterProgression(state);
-      const completionEvent = phaseResult.tickEvents.find(e => e.type === 'encounter_completed');
-      expect(completionEvent).toBeDefined();
-      expect(completionEvent?.significance).toBeGreaterThan(0.7);
-    }
-  });
-
-  // Test 5: Skips actors who already have active encounters
-  it('does not initiate a new encounter if actor already has an active one', () => {
-    const state = createTestGameState(5);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    if (available.length > 0) {
-      // Start one encounter
-      initiateEncounter(state, actor.id, available[0].id, 1);
-      const initialCount = state.encounterProgress.length;
-
-      // Run phase with high initiation chance (deterministic seed)
-      const result = phaseEncounterProgression(state);
-
-      // New encounter should NOT be initiated since actor already has active
-      expect(state.encounterProgress.filter(p => p.actorId === actor.id && p.status === 'active').length)
-        .toBeLessThanOrEqual(1);
-    }
-  });
-
-  // Test 6: Initiates new encounters for eligible actors
-  it('may initiate new encounters for actors without active ones', () => {
-    const state = createTestGameState(6);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    expect(actors.length).toBeGreaterThan(0);
-
-    // Start with no encounters
-    state.encounterProgress = [];
-
-    // Run phase multiple times to increase chance of initiation
-    for (let i = 0; i < 10; i++) {
-      state.tick = i + 2; // Update tick
-      phaseEncounterProgression(state);
-    }
-
-    // By high tick count, at least one actor should have started an encounter
-    // (3% per tick per actor means very likely after 10 ticks)
-    const hasEncounter = actors.some(a =>
-      state.encounterProgress.some(p => p.actorId === a.id && p.status === 'active')
-    );
-
-    // This is probabilistic, so we can't guarantee, but 10 ticks should be likely
-    // Just verify the structure is correct
-    state.encounterProgress.forEach(p => {
-      expect(p.encounterId).toBeDefined();
-      expect(p.actorId).toBeDefined();
-      expect(['active', 'completed', 'abandoned']).toContain(p.status);
-    });
-  });
-
-  // Test 7: Maintains encounterProgress array properly
-  it('maintains encounterProgress array in state after phase execution', () => {
-    const state = createTestGameState(7);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    if (available.length > 0) {
-      initiateEncounter(state, actor.id, available[0].id, 1);
-      const beforeCount = state.encounterProgress.length;
-
-      const result = phaseEncounterProgression(state);
-
-      // Result should include encounterProgress
-      expect(result.encounterProgress).toBeDefined();
-      expect(Array.isArray(result.encounterProgress)).toBe(true);
-      expect(result.encounterProgress.length).toBeGreaterThanOrEqual(beforeCount);
-    }
-  });
-
-  // Test 8: Abandoned encounter generates failure event
-  it('generates encounter_encounter_failure event when encounter fails', () => {
-    const state = createTestGameState(8);
-
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-
-    if (available.length > 0) {
-      const encounter = available[0];
-      const progress = initiateEncounter(state, actor.id, encounter.id, 1);
-
-      // Force failure with deterministic roll
-      const result = resolveEncounter(state, progress, 90); // 90 = failure
-      advanceEncounter(state, progress, result.success, 1);
-
-      // Progress should be abandoned
-      expect(progress.status).toBe('abandoned');
-
-      // Phase should process and generate event
-      const phaseResult = phaseEncounterProgression(state);
-      const failureEvent = phaseResult.tickEvents.find(e => e.type === 'encounter_encounter_failure');
-      expect(failureEvent).toBeDefined();
-      expect(failureEvent?.significance).toBeGreaterThan(0.4);
-    }
-  });
-});
+/** Find encounters available at a 'town' location type (used by tests). */
+function getTestEncounters() {
+  return getEncountersByLocationType('town');
+}
 
 describe('phaseEncounterProgressionV2 — retinue notifications', () => {
   beforeEach(() => {
@@ -364,7 +142,6 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
   });
 
   function makeRetinueAgent(state: GameState, actorId: string) {
-    // Add worships edge from actor to ascendant → makes them retinue
     state.graph.addEdge({
       source: actorId,
       target: state.ascendantId,
@@ -378,63 +155,10 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
+    const available = getTestEncounters();
     if (available.length === 0) return;
 
-    // Make actor part of retinue
     makeRetinueAgent(state, actor.id);
-
-    // Initiate and force-complete all steps
-    const encounter = available[0];
-    const progress = initiateEncounter(state, actor.id, encounter.id, 1);
-    for (let i = 0; i < encounter.steps.length; i++) {
-      const result = resolveEncounter(state, progress, 10); // success
-      advanceEncounter(state, progress, result.success, 1 + i);
-    }
-    expect(progress.status).toBe('completed');
-
-    // Reset active to force v2 to re-process (v2 only processes active encounters)
-    // Instead, create a fresh encounter and let v2 resolve it in one step
-    const state2 = createTestGameState(101);
-    const actors2 = state2.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor2 = actors2[0];
-    const available2 = getAvailableEncounters(state2, actor2.id);
-    if (available2.length === 0) return;
-
-    makeRetinueAgent(state2, actor2.id);
-    // Find a single-step encounter or use the first one
-    const enc2 = available2[0];
-    initiateEncounter(state2, actor2.id, enc2.id, 1);
-    // Set tick past occupiedUntilTick so v2 resolves it
-    state2.tick = 100;
-
-    const phaseResult = phaseEncounterProgressionV2(state2);
-    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
-      e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
-    );
-
-    // Should have at least one encounter event
-    expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
-
-    // The event for a retinue agent should have notification + actorId
-    const retinueEvent = encounterEvents.find(e => e.actorId === actor2.id);
-    if (retinueEvent && (retinueEvent.type === 'encounter_completed' || retinueEvent.type === 'encounter_step_failure')) {
-      expect(retinueEvent.notification).toBeDefined();
-      expect(retinueEvent.notification?.channel).toBe('toast');
-      expect(retinueEvent.actorId).toBe(actor2.id);
-    }
-  });
-
-  it('non-retinue agent completing encounter does NOT get notification', () => {
-    const state = createTestGameState(102);
-    const actors = state.graph.getNodesByType('actor')
-      .filter(n => n.properties.actorType === 'individual');
-    const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
-    if (available.length === 0) return;
-
-    // Do NOT add worships edge — actor is not retinue
     const enc = available[0];
     initiateEncounter(state, actor.id, enc.id, 1);
     state.tick = 100;
@@ -444,7 +168,33 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
       e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
     );
 
-    // Non-retinue events should NOT have notification directives
+    expect(encounterEvents.length).toBeGreaterThanOrEqual(1);
+
+    const retinueEvent = encounterEvents.find(e => e.actorId === actor.id);
+    if (retinueEvent && (retinueEvent.type === 'encounter_completed' || retinueEvent.type === 'encounter_step_failure')) {
+      expect(retinueEvent.notification).toBeDefined();
+      expect(retinueEvent.notification?.channel).toBe('toast');
+      expect(retinueEvent.actorId).toBe(actor.id);
+    }
+  });
+
+  it('non-retinue agent completing encounter does NOT get notification', () => {
+    const state = createTestGameState(102);
+    const actors = state.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    const actor = actors[0];
+    const available = getTestEncounters();
+    if (available.length === 0) return;
+
+    const enc = available[0];
+    initiateEncounter(state, actor.id, enc.id, 1);
+    state.tick = 100;
+
+    const phaseResult = phaseEncounterProgressionV2(state);
+    const encounterEvents = (phaseResult.tickEvents ?? []).filter(
+      e => e.type === 'encounter_completed' || e.type === 'encounter_step_failure' || e.type === 'encounter_step_success'
+    );
+
     for (const ev of encounterEvents) {
       expect(ev.notification).toBeUndefined();
       expect(ev.actorId).toBeUndefined();
@@ -456,7 +206,7 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
     const actors = state.graph.getNodesByType('actor')
       .filter(n => n.properties.actorType === 'individual');
     const actor = actors[0];
-    const available = getAvailableEncounters(state, actor.id);
+    const available = getTestEncounters();
     if (available.length === 0) return;
 
     makeRetinueAgent(state, actor.id);
@@ -469,7 +219,6 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
       e => (e.type === 'encounter_completed' || e.type === 'encounter_step_failure') && e.actorId === actor.id
     );
 
-    // Message should include the encounter template name
     for (const ev of encounterEvents) {
       expect(ev.message).toContain(enc.name);
     }

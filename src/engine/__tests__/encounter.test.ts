@@ -1,15 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
-  getAvailableEncounters,
   initiateEncounter,
   resolveEncounter,
   advanceEncounter,
   abandonEncounter,
-  generateEncountersForLocation,
 } from '../encounter';
-import type { GameState, EncounterProgress } from '../../types';
+import type { GameState } from '../../types';
 import { WorldGraph } from '../graph';
 import { enableTracing, disableTracing, clearTraces } from '../traceBuffer';
+import { getEncountersByLocationType } from '../../data/encounter-content';
 
 // ──────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -142,6 +141,11 @@ function addTraitToActor(
   });
 }
 
+/** Get encounters available at a 'town' location type. */
+function getTownEncounters() {
+  return getEncountersByLocationType('town');
+}
+
 // ──────────────────────────────────────────────────────────────────────
 // TESTS
 // ──────────────────────────────────────────────────────────────────────
@@ -156,80 +160,11 @@ describe('Encounter Engine', () => {
     clearTraces();
   });
 
-  describe('getAvailableEncounters', () => {
-    it('returns encounters matching location type', () => {
-      const { state, actorId } = buildTestGameState();
-
-      const encounters = getAvailableEncounters(state, actorId);
-
-      expect(encounters.length).toBeGreaterThan(0);
-      expect(encounters.some(o => o.id === 'encounter.merchants_gambit')).toBe(true);
-    });
-
-    it('returns empty if actor has no location', () => {
-      const { state, actorId } = buildTestGameState();
-      // Remove the located_at edge
-      state.graph.getOutgoingEdges(actorId, 'located_at').forEach(e => {
-        state.graph.removeEdge(e.id);
-      });
-
-      const encounters = getAvailableEncounters(state, actorId);
-      expect(encounters).toEqual([]);
-    });
-
-    it('excludes encounters with active progress', () => {
-      const { state, actorId } = buildTestGameState();
-
-      // Initiate an encounter
-      const encounters = getAvailableEncounters(state, actorId);
-      const encounterToStart = encounters[0];
-      initiateEncounter(state, actorId, encounterToStart.id, 0);
-
-      // Now get available encounters again
-      const available = getAvailableEncounters(state, actorId);
-
-      // The encounter we just started should not be available
-      expect(available.find(o => o.id === encounterToStart.id)).toBeUndefined();
-    });
-
-    it('excludes encounters with abandoned status but within cooldown', () => {
-      const { state, actorId } = buildTestGameState();
-
-      const encounters = getAvailableEncounters(state, actorId);
-      const encounterId = encounters[0].id;
-
-      // Initiate and abandon
-      const progress = initiateEncounter(state, actorId, encounterId, 0);
-      abandonEncounter(progress);
-
-      // Within cooldown, should be excluded
-      const available = getAvailableEncounters(state, actorId);
-      expect(available.find(o => o.id === encounterId)).toBeUndefined();
-    });
-
-    it('includes abandoned encounters after cooldown expires', () => {
-      const { state, actorId } = buildTestGameState();
-
-      const encounters = getAvailableEncounters(state, actorId);
-      const encounterId = encounters[0].id;
-
-      // Initiate and abandon at tick 0
-      const progress = initiateEncounter(state, actorId, encounterId, 0);
-      abandonEncounter(progress);
-
-      // Advance state to tick 25 (cooldown is 20)
-      state.tick = 25;
-
-      const available = getAvailableEncounters(state, actorId);
-      expect(available.find(o => o.id === encounterId)).toBeDefined();
-    });
-  });
-
   describe('initiateEncounter', () => {
     it('creates a new EncounterProgress with status active', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 5);
 
       expect(progress.status).toBe('active');
@@ -243,7 +178,7 @@ describe('Encounter Engine', () => {
     it('adds progress to state.encounterProgress', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const initialLen = state.encounterProgress.length;
 
       initiateEncounter(state, actorId, encounters[0].id, 5);
@@ -254,13 +189,12 @@ describe('Encounter Engine', () => {
     it('emits a trace', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       clearTraces();
 
       initiateEncounter(state, actorId, encounters[0].id, 5);
 
-      // Note: encounter_resolution trace may not exist yet in types, so just check that something was traced
-      // This will be properly validated in Task 6 when trace types are updated
+      // Trace emitted — proper validation in trace tests
     });
   });
 
@@ -268,16 +202,12 @@ describe('Encounter Engine', () => {
     it('returns success when roll passes probability threshold', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Location is 'market', so first encounter is Merchant's Gambit
-      // First encounter is 'Negotiation' with reach: 'gold'
-      // Give actor very high capability in gold (sigmoid(20) ≈ 0.98)
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 20);
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // With very high capability, a mid-range roll should pass
-      const result = resolveEncounter(state, progress, 50); // capability ~0.98 - 0.35 = 0.63 → threshold 63
+      const result = resolveEncounter(state, progress, 50);
 
       expect(result.success).toBe(true);
     });
@@ -285,11 +215,10 @@ describe('Encounter Engine', () => {
     it('returns failure when roll fails probability threshold', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // With default low capability and high roll, should fail
-      const result = resolveEncounter(state, progress, 95); // High roll → failure
+      const result = resolveEncounter(state, progress, 95);
 
       expect(result.success).toBe(false);
     });
@@ -297,10 +226,10 @@ describe('Encounter Engine', () => {
     it('includes EncounterOutcome with narrative', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 5); // Low roll → success
+      const result = resolveEncounter(state, progress, 5);
 
       expect(result.outcome).toBeDefined();
       expect(result.outcome.narrative).toBeDefined();
@@ -310,14 +239,11 @@ describe('Encounter Engine', () => {
     it('applies capability modifier based on domain', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Location is 'market', first encounter is Merchant's Gambit
-      // First encounter uses 'gold' reach
       addTraitToActor(state.graph, actorId, 'trait.high', 'gold', 10);
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress1 = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // With high trait, low roll should pass
       const result1 = resolveEncounter(state, progress1, 5);
       expect(result1.success).toBe(true);
     });
@@ -325,13 +251,11 @@ describe('Encounter Engine', () => {
     it('emits a trace with outcome details', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       clearTraces();
       resolveEncounter(state, progress, 30);
-
-      // Just verify that tracing didn't error (proper trace validation in Task 6)
     });
   });
 
@@ -339,11 +263,10 @@ describe('Encounter Engine', () => {
     it('records outcome in history', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Merchant's Gambit: first encounter needs 'gold', second needs 'eye'
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 5);
@@ -357,11 +280,10 @@ describe('Encounter Engine', () => {
     it('increments currentEncounterIndex on success', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Merchant's Gambit: first encounter needs 'gold'
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 8);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 8);
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 5);
@@ -374,18 +296,16 @@ describe('Encounter Engine', () => {
     it('sets status to completed on final encounter success', () => {
       const { state, actorId } = buildTestGameState();
 
-      // Merchant's Gambit: encounters need 'gold' and 'eye' and 'gold' again
       addTraitToActor(state.graph, actorId, 'trait.gold', 'gold', 10);
       addTraitToActor(state.graph, actorId, 'trait.eye', 'eye', 10);
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      // Simulate completing all encounters
       const encounter = encounters[0];
       for (let i = 0; i < encounter.steps.length; i++) {
         progress.currentEncounterIndex = i;
-        const result = resolveEncounter(state, progress, 5); // Low roll with high capability → success
+        const result = resolveEncounter(state, progress, 5);
         advanceEncounter(state, progress, result.success, i + 1);
       }
 
@@ -395,10 +315,10 @@ describe('Encounter Engine', () => {
     it('sets status to abandoned on failure', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 95); // Failure
+      const result = resolveEncounter(state, progress, 95);
       advanceEncounter(state, progress, result.success, 1);
 
       expect(progress.status).toBe('abandoned');
@@ -407,10 +327,10 @@ describe('Encounter Engine', () => {
     it('does not increment encounter on failure', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
-      const result = resolveEncounter(state, progress, 95); // Failure
+      const result = resolveEncounter(state, progress, 95);
       const idx = progress.currentEncounterIndex;
       advanceEncounter(state, progress, result.success, 1);
 
@@ -420,14 +340,12 @@ describe('Encounter Engine', () => {
     it('emits a trace', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 30);
       clearTraces();
       advanceEncounter(state, progress, result.success, 1);
-
-      // Proper trace validation in Task 6
     });
   });
 
@@ -435,7 +353,7 @@ describe('Encounter Engine', () => {
     it('sets status to abandoned', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       expect(progress.status).toBe('active');
@@ -447,7 +365,7 @@ describe('Encounter Engine', () => {
     it('preserves history', () => {
       const { state, actorId } = buildTestGameState();
 
-      const encounters = getAvailableEncounters(state, actorId);
+      const encounters = getTownEncounters();
       const progress = initiateEncounter(state, actorId, encounters[0].id, 0);
 
       const result = resolveEncounter(state, progress, 30);
@@ -457,43 +375,6 @@ describe('Encounter Engine', () => {
       abandonEncounter(progress);
 
       expect(progress.history.length).toBe(historyLen);
-    });
-  });
-
-  describe('generateEncountersForLocation', () => {
-    it('returns encounters matching location type', () => {
-      const { state, locationId } = buildTestGameState();
-
-      const encounters = generateEncountersForLocation(state, locationId);
-
-      expect(encounters.length).toBeGreaterThan(0);
-      expect(encounters.every(o => o.locationTypes.includes('town'))).toBe(true);
-    });
-
-    it('returns empty for unknown location type', () => {
-      const { state } = buildTestGameState();
-
-      const unknownLocId = 'loc.unknown';
-      state.graph.addNode({
-        id: unknownLocId,
-        type: 'location',
-        name: 'UnknownLoc',
-        properties: {
-          hexCol: 0,
-          hexRow: 0,
-          locationType: 'nonexistent_type',
-        },
-      });
-
-      const encounters = generateEncountersForLocation(state, unknownLocId);
-      expect(encounters).toEqual([]);
-    });
-
-    it('handles missing location gracefully', () => {
-      const { state } = buildTestGameState();
-
-      const encounters = generateEncountersForLocation(state, 'nonexistent.loc');
-      expect(encounters).toEqual([]);
     });
   });
 });

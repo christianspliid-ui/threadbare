@@ -17,16 +17,54 @@
 
 import type { GameState, TickEvent } from '../types/gameState';
 import type { EncounterCacheManager } from './encounterCache';
+import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
+import {
+  ENCOUNTER_ABANDON_COOLDOWN,
+  ENCOUNTER_COMPLETION_COOLDOWN,
+} from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
 import { scoreAndSelect } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
-import { getEncounterById } from '../data/encounter-content';
-import { getSocialEncounterById } from '../data/social-encounter-content';
+import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
 import { findShortestPath } from './pathfinding';
+
+/**
+ * Filter out candidates whose encounter template is on cooldown for this agent.
+ * An encounter is on cooldown if the agent has an abandoned or completed progress
+ * record whose last history tick is within the cooldown window.
+ */
+function filterByCooldown(
+  candidates: EncounterCacheEntry[],
+  agentId: string,
+  encounterProgress: readonly EncounterProgress[],
+  tick: number,
+): EncounterCacheEntry[] {
+  // Collect cooldown end ticks per template for this agent
+  const cooldownEnd = new Map<string, number>();
+  for (const p of encounterProgress) {
+    if (p.actorId !== agentId) continue;
+    if (p.status === 'abandoned') {
+      const lastStep = p.history[p.history.length - 1];
+      const abandonedAt = lastStep?.tick ?? p.startedTick;
+      cooldownEnd.set(p.encounterId, abandonedAt + ENCOUNTER_ABANDON_COOLDOWN);
+    } else if (p.status === 'completed') {
+      const lastStep = p.history[p.history.length - 1];
+      const completedAt = lastStep?.tick ?? p.startedTick;
+      cooldownEnd.set(p.encounterId, completedAt + ENCOUNTER_COMPLETION_COOLDOWN);
+    }
+  }
+
+  if (cooldownEnd.size === 0) return candidates;
+
+  return candidates.filter(c => {
+    const end = cooldownEnd.get(c.templateId);
+    return end === undefined || tick > end;
+  });
+}
 
 export function phaseAgentDecision(
   state: GameState,
@@ -98,12 +136,20 @@ export function phaseAgentDecision(
         : allEntries;
 
       // Run filter pipeline
-      const { candidates } = runFilterPipeline(
+      const { candidates: rawCandidates } = runFilterPipeline(
         mergedEntries,
         agentId,
         locationId,
         graph,
         distanceMatrix,
+        state.tick,
+      );
+
+      // Filter out encounters on cooldown (abandoned/completed recently)
+      const candidates = filterByCooldown(
+        rawCandidates,
+        agentId,
+        state.encounterProgress,
         state.tick,
       );
 
@@ -122,8 +168,7 @@ export function phaseAgentDecision(
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
           // Start the encounter — create EncounterProgress
-          const template = getEncounterById(sel.entry.templateId)
-            ?? getSocialEncounterById(sel.entry.templateId);
+          const template = getAnyEncounterById(sel.entry.templateId);
           if (template) {
             const firstStepDuration = template.steps[0]?.duration ?? 1;
             const progress: EncounterProgress = {

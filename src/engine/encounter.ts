@@ -1,5 +1,5 @@
 /**
- * Encounter Engine — generation, initiation, resolution, and progression.
+ * Encounter Engine — initiation, resolution, and progression.
  *
  * Encounters are linear step sequences where agents undergo narrative growth.
  * Each step uses sigmoid → d100 resolution based on domain capability.
@@ -7,16 +7,10 @@
  */
 
 import type { GameState } from '../types/gameState';
-import type { EncounterProgress, EncounterTemplate, EncounterOutcome } from '../types/encounter';
+import type { EncounterProgress, EncounterOutcome } from '../types/encounter';
 import type { EncounterResolutionTrace } from '../types/trace';
 import {
-  ENCOUNTER_ABANDON_COOLDOWN,
-  ENCOUNTER_COMPLETION_COOLDOWN,
-} from '../types/encounter';
-import {
-  ENCOUNTER_TEMPLATES,
-  getEncountersByLocationType,
-  getEncounterById,
+  getAnyEncounterById,
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
 import { resolveAction } from './resolution';
@@ -32,59 +26,6 @@ import type { PromotionResult } from './tierPromotion';
 // ────────────────────────────────────────────────────────────────────────
 
 /**
- * Get all encounters available to an actor at their current location.
- * Filters by location type, excludes active/abandoned (within cooldown) encounters.
- */
-export function getAvailableEncounters(state: GameState, actorId: string): EncounterTemplate[] {
-  // Find actor's current location
-  const locEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
-  if (locEdges.length === 0) return [];
-
-  const locationId = locEdges[0].target;
-  const locationNode = state.graph.getNode(locationId);
-  if (!locationNode) return [];
-
-  // Use locationSubtype if available (real values), fall back to locationType
-  const locationType = (locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined;
-  if (!locationType) return [];
-
-  // Get encounters for this location type
-  const candidateEncounters = getEncountersByLocationType(locationType);
-
-  // Filter out encounters the actor has active or recently abandoned
-  return candidateEncounters.filter(encounter => {
-    const progress = state.encounterProgress.find(
-      p => p.actorId === actorId && p.encounterId === encounter.id
-    );
-
-    if (!progress) return true; // No progress yet, available
-
-    if (progress.status === 'active') return false; // Active, not available
-
-    if (progress.status === 'abandoned') {
-      // Check cooldown from when the encounter was actually abandoned (last history tick),
-      // not from when it started — otherwise long-running encounters bypass cooldown
-      const lastStep = progress.history[progress.history.length - 1];
-      const abandonedAt = lastStep?.tick ?? progress.startedTick;
-      const ticksSinceAbandoned = state.tick - abandonedAt;
-      return ticksSinceAbandoned > ENCOUNTER_ABANDON_COOLDOWN;
-    }
-
-    if (progress.status === 'completed') {
-      // Check completion cooldown using last history entry tick
-      const lastStep = progress.history[progress.history.length - 1];
-      if (lastStep) {
-        const ticksSinceCompleted = state.tick - lastStep.tick;
-        return ticksSinceCompleted > ENCOUNTER_COMPLETION_COOLDOWN;
-      }
-      return true; // No history (shouldn't happen) — allow retry
-    }
-
-    return true;
-  });
-}
-
-/**
  * Initiate an encounter for an actor.
  * Creates a new EncounterProgress record, adds to state, emits trace.
  */
@@ -94,7 +35,7 @@ export function initiateEncounter(
   encounterId: string,
   tick: number,
 ): EncounterProgress {
-  const encounter = getEncounterById(encounterId);
+  const encounter = getAnyEncounterById(encounterId);
   const firstStepDuration = encounter?.steps[0]?.duration ?? 1;
   const progress: EncounterProgress = {
     encounterId,
@@ -142,7 +83,7 @@ export function resolveEncounter(
   progress: EncounterProgress,
   deterministicRoll?: number,
 ): { success: boolean; outcome: EncounterOutcome; growth?: GrowthResult; promotion?: PromotionResult } {
-  const encounter = getEncounterById(progress.encounterId);
+  const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) {
     // Graceful fallback: failed encounter with placeholder outcome
     return {
@@ -246,7 +187,7 @@ export function advanceEncounter(
   success: boolean,
   tick: number,
 ): void {
-  const encounter = getEncounterById(progress.encounterId);
+  const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) return;
 
   const step = encounter.steps[progress.currentEncounterIndex];
@@ -317,21 +258,4 @@ export function isEncounterOccupied(progress: EncounterProgress, currentTick: nu
 export function abandonEncounter(progress: EncounterProgress): void {
   progress.status = 'abandoned';
   progress.occupiedUntilTick = undefined;
-}
-
-/**
- * Generate all encounters available at a specific location.
- * Gets location type from graph, filters ENCOUNTER_TEMPLATES, optionally filters by sphere affinity.
- */
-export function generateEncountersForLocation(state: GameState, locationId: string): EncounterTemplate[] {
-  const locationNode = state.graph.getNode(locationId);
-  if (!locationNode) return [];
-
-  const locationType = (locationNode.properties.locationSubtype ?? locationNode.properties.locationType) as string | undefined;
-  if (!locationType) return [];
-
-  // Filter encounters by location type match
-  return ENCOUNTER_TEMPLATES.filter(encounter =>
-    encounter.locationTypes.includes(locationType)
-  );
 }
