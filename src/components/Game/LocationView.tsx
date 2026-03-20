@@ -105,11 +105,12 @@ const SublocationCard = memo(function SublocationCard({
       }}
       aria-label={`Enter ${sublocation.name}`}
     >
-      {/* Concept Art Banner — 16:9 landscape */}
+      {/* Concept Art Banner — 16:9 landscape, capped height for card context */}
       <div
         style={{
           background: conceptArt.gradient,
           aspectRatio: '16/9',
+          maxHeight: '80px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
