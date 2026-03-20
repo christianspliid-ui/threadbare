@@ -24,6 +24,17 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
 | `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
 
+**Dev Quick-Start URLs** (append to `http://localhost:5173`):
+
+| URL Param | What it does |
+|-----------|-------------|
+| `?view=game` | Skip worldgen + ascendant selection, jump straight to game view (seed 42, random archetype, "The Dev Oracle") |
+| `?view=glow` | Magic glow tile preview |
+| `?view=cms` | Content browser |
+| `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
+
+**When testing with Playwright or preview tools, always use `?view=game`** to skip the multi-click entry flow. Only test the worldgen/selection screens when those screens are the subject of the test.
+
 **Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 
 ## Documentation Strategy
@@ -58,6 +69,8 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 - Social Fabric & Faction Formation: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
 - Social Fabric Visibility Spec: `Docs/plans/2026-03-18-social-fabric-visibility-spec.md`
 - Implementation Ordering Guide: `Docs/plans/2026-03-18-implementation-ordering-guide.md`
+- Impediment log: `Docs/impediments.md`
+- Retrospective reports: `Docs/retrospectives/`
 
 ## Non-Functional Priorities (in order)
 
@@ -153,7 +166,8 @@ When implementation is complete and tests pass, **do all of these automatically 
 
 This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
 
-6. **Close out** — When all steps above are complete, explicitly tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."* This is the signal that the session can be safely closed.
+6. **Log impediments** — If you encountered *any* blockers, workarounds, or friction during the session, verify they are all logged in `Docs/impediments.md`. Load the `impediment-reporter` skill for format details. This is mandatory — unlogged friction is invisible friction.
+7. **Close out** — When all steps above are complete, explicitly tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."* This is the signal that the session can be safely closed.
 
 ## Session Workflow
 
@@ -178,8 +192,15 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
+| **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
+| Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
 
 ## Continuous Improvement
+
+Two skills form a feedback loop:
+
+1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
+2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
 
 Repetitive workflows → propose a skill. Use `skill-creator` to build and eval new skills.
 
