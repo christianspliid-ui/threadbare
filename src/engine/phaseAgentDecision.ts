@@ -31,6 +31,8 @@ import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
 import { findShortestPath } from './pathfinding';
+import { initMovementState } from './movementExecution';
+import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry } from '../types/trace';
 
@@ -201,17 +203,22 @@ export function phaseAgentDecision(
             locationId,
             sel.entry.locationId,
           );
-          if (pathResult) {
+          if (pathResult && pathResult.path.length > 0) {
+            const firstEdgeCost = computeEdgeCost(graph, agentId, locationId, pathResult.path[0]).totalCost;
+            const movState = initMovementState(
+              sel.entry.locationId,
+              pathResult.path,
+              firstEdgeCost,
+              state.tick,
+            );
+            // Attach encounter targeting fields
+            movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
+            movState.targetEncounterId = sel.entry.templateId;
+
             graph.updateNode(agentId, {
               properties: {
                 ...actor.properties,
-                movementState: {
-                  movementQueue: pathResult.path,
-                  destinationId: sel.entry.locationId,
-                  targetSublocationId: sel.entry.sublocationId ?? undefined,
-                  targetEncounterId: sel.entry.templateId,
-                  lastDecisionTick: state.tick,
-                },
+                movementState: movState,
               },
             });
             // Get location name for better message
@@ -264,15 +271,18 @@ export function phaseAgentDecision(
             locationId,
             idle.targetLocationId,
           );
-          if (pathResult) {
+          if (pathResult && pathResult.path.length > 0) {
+            const firstEdgeCost = computeEdgeCost(graph, agentId, locationId, pathResult.path[0]).totalCost;
+            const driftState = initMovementState(
+              idle.targetLocationId,
+              pathResult.path,
+              firstEdgeCost,
+              state.tick,
+            );
             graph.updateNode(agentId, {
               properties: {
                 ...actor.properties,
-                movementState: {
-                  movementQueue: pathResult.path,
-                  destinationId: idle.targetLocationId,
-                  lastDecisionTick: state.tick,
-                },
+                movementState: driftState,
               },
             });
           }
