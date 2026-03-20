@@ -92,6 +92,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     archetype,
   });
 
+  // ── Debug: fog-of-war toggle ──
+  const [fogDisabled, setFogDisabled] = useState(false);
+
   // ── View navigation hook ──
   const {
     hoveredHex, setHoveredHex, selectedHex, viewLevel,
@@ -99,7 +102,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleHexClick, handleLocationDoubleClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
-  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState });
+  } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled });
 
   // ── Scry hook ──
   const {
@@ -148,7 +151,21 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setGameState,
     archetype,
     onOpenScry: handleOpenScry,
+    scryState,
   });
+
+  // When fog is disabled, create a proxy map that returns 'visible' for every key
+  const effectiveVisibilityMap = useMemo(() => {
+    if (!fogDisabled) return gameState.visibilityMap;
+    // Proxy: any .get() call returns { state: 'visible' }, .size returns 1 to avoid "empty map" edge cases
+    return new Proxy(new Map() as import('../../types/visibility').VisibilityMap, {
+      get(target, prop) {
+        if (prop === 'get') return () => ({ state: 'visible' as const });
+        if (prop === 'size') return 1;
+        return Reflect.get(target, prop);
+      },
+    });
+  }, [fogDisabled, gameState.visibilityMap]);
 
   // ── Notification system hook ──
   const {
@@ -162,7 +179,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     tickEvents: gameState.tickEvents,
     running,
     setRunning,
-    visibilityMap: gameState.visibilityMap,
+    visibilityMap: effectiveVisibilityMap,
   });
 
   // ── Keyboard hotkeys ──
@@ -490,6 +507,14 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             states={gameState.rivalStates}
           />
           <IconButton
+            data-testid="fog-toggle"
+            icon={<span>{fogDisabled ? '☀' : '🌫'}</span>}
+            active={fogDisabled}
+            onClick={() => setFogDisabled(v => !v)}
+            title="Toggle fog of war (debug)"
+            aria-label="Toggle fog of war"
+          />
+          <IconButton
             data-testid="debug-toggle"
             icon={<span>⚙</span>}
             active={debugPanelOpen}
@@ -520,7 +545,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   hoveredHex={hoveredHex}
                   selectedHex={selectedHex}
                   overlayMode="none"
-                  visibilityMap={gameState.visibilityMap}
+                  visibilityMap={fogDisabled ? undefined : gameState.visibilityMap}
                   locationOverlays={locationOverlays}
                   avatarHex={avatarPos ?? undefined}
                   avatarId={avatarNodeId ?? undefined}

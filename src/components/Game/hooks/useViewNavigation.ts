@@ -16,6 +16,8 @@ interface UseViewNavigationParams {
   COLS: number;
   ROWS: number;
   scryState: ScryState;
+  /** When true, fog-of-war checks are bypassed (all hexes clickable) */
+  fogDisabled?: boolean;
 }
 
 interface UseViewNavigationReturn {
@@ -45,6 +47,7 @@ export function useViewNavigation({
   COLS,
   ROWS,
   scryState: _scryState,
+  fogDisabled,
 }: UseViewNavigationParams): UseViewNavigationReturn {
   const [hoveredHex, setHoveredHex] = useState<{ col: number; row: number } | null>(null);
   const [selectedHex, setSelectedHex] = useState<{ col: number; row: number } | null>(null);
@@ -56,13 +59,15 @@ export function useViewNavigation({
 
   const handleHexClick = useCallback((coord: { col: number; row: number }) => {
     // Only allow hex zoom into fully visible hexes — not unexplored or remembered (fog of war)
-    const hexVis = gameState.visibilityMap.get(visKey(coord.col, coord.row));
-    if (!hexVis || hexVis.state !== 'visible') return;
+    if (!fogDisabled) {
+      const hexVis = gameState.visibilityMap.get(visKey(coord.col, coord.row));
+      if (!hexVis || hexVis.state !== 'visible') return;
+    }
 
     setSelectedHex(coord);
     setViewLevel('hex-zoom');
     setFocusedHex(coord);
-  }, [gameState.visibilityMap]);
+  }, [gameState.visibilityMap, fogDisabled]);
 
   const handleLocationDoubleClick = useCallback((locationId: string) => {
     setViewLevel('location');
