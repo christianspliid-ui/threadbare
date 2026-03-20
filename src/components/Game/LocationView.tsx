@@ -105,11 +105,11 @@ const SublocationCard = memo(function SublocationCard({
       }}
       aria-label={`Enter ${sublocation.name}`}
     >
-      {/* Concept Art Banner */}
+      {/* Concept Art Banner — 16:9 landscape */}
       <div
         style={{
           background: conceptArt.gradient,
-          height: '56px',
+          aspectRatio: '16/9',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -517,10 +517,50 @@ const SublocationDetailView = memo(function SublocationDetailView({
         </span>
       </div>
 
-      {/* Prose / flavor text + concept art */}
-      {sublocationProse && (
-        <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '120px', maxHeight: '180px' }}>
-          {/* Prose column */}
+      {/* Concept art (16:9 landscape, left) + optional prose (right) */}
+      <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '140px', maxHeight: '200px' }}>
+        {/* Concept art placeholder — 16:9 landscape, always visible, left side */}
+        <div
+          className="rounded-lg border overflow-hidden flex items-center justify-center"
+          style={{
+            aspectRatio: '16/9',
+            height: '100%',
+            flexShrink: 0,
+            background: conceptArt.gradient,
+            borderColor: 'var(--border-subtle)',
+            position: 'relative',
+          }}
+        >
+          <span
+            style={{
+              fontSize: '48px',
+              color: conceptArt.glyphColor,
+              opacity: 0.5,
+              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
+              userSelect: 'none',
+            }}
+            aria-hidden="true"
+          >
+            {conceptArt.glyph}
+          </span>
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '6px',
+              right: '10px',
+              fontSize: 'var(--text-xs)',
+              color: conceptArt.glyphColor,
+              opacity: 0.35,
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+            }}
+          >
+            Concept Art
+          </span>
+        </div>
+        {/* Prose column — only when prose exists */}
+        {sublocationProse && (
           <div
             className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto"
             style={{
@@ -543,47 +583,8 @@ const SublocationDetailView = memo(function SublocationDetailView({
               ))}
             </div>
           </div>
-          {/* Concept art placeholder — themed per sublocation type */}
-          <div
-            className="rounded-lg border overflow-hidden flex items-center justify-center"
-            style={{
-              width: '40%',
-              flexShrink: 0,
-              background: conceptArt.gradient,
-              borderColor: 'var(--border-subtle)',
-              position: 'relative',
-            }}
-          >
-            <span
-              style={{
-                fontSize: '48px',
-                color: conceptArt.glyphColor,
-                opacity: 0.5,
-                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.6))',
-                userSelect: 'none',
-              }}
-              aria-hidden="true"
-            >
-              {conceptArt.glyph}
-            </span>
-            <span
-              style={{
-                position: 'absolute',
-                bottom: '6px',
-                right: '10px',
-                fontSize: 'var(--text-xs)',
-                color: conceptArt.glyphColor,
-                opacity: 0.35,
-                fontFamily: 'var(--font-display)',
-                letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-              }}
-            >
-              Concept Art
-            </span>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Content: Agents + Encounters side by side */}
       <div className="flex-1 flex gap-6 p-6 min-h-0">
@@ -990,8 +991,8 @@ export const LocationView = memo(function LocationView({
         <div
           className="mx-6 mt-5 rounded-lg border overflow-hidden flex items-center justify-center"
           style={{
-            aspectRatio: '21/9',
-            minHeight: '180px',
+            aspectRatio: '16/9',
+            maxHeight: '220px',
             background: locationArt.gradient,
             borderColor: 'var(--border-subtle)',
             position: 'relative',
