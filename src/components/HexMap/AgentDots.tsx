@@ -17,6 +17,8 @@ interface AgentDotsProps {
   /** Array of { locationId, x, y } positions where agents may be */
   locationPositions: Array<{ locationId: string; x: number; y: number }>;
   zoomScale: number;
+  /** Current tick — used to bust memo cache since graph is a mutable class */
+  currentTick?: number;
   /** Avatar actor node ID — renders with sphere color + breathing pulse */
   avatarId?: string;
   /** Sphere color for the avatar dot */
@@ -111,6 +113,7 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   graph,
   locationPositions,
   zoomScale,
+  currentTick,
   avatarId,
   sphereColor,
   onAgentClick,
@@ -147,7 +150,8 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
     }
 
     return { allAgents: agents, overflows: ovf };
-  }, [graph, locationPositions]);
+    // currentTick busts the cache — graph is mutable, reference never changes
+  }, [graph, locationPositions, currentTick]);
 
   // Step 2: Track previous locations for arrival flash detection
   const prevLocations = useRef<Map<string, string>>(new Map());
