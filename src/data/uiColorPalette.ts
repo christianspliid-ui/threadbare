@@ -70,6 +70,7 @@ export const TRACE_CATEGORY_COLORS: Record<string, string> = {
   tick_summary: '#ca8a04',          // amber-600
   encounter_resolution: '#10b981',     // green (encounter progress)
   familiarity_change: '#fbbf24',    // amber-400 (knowledge/connection growth)
+  movement: '#38bdf8',              // sky-400 (travel/pathfinding)
 };
 
 // ============================================================================

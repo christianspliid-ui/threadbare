@@ -31,6 +31,8 @@ import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
 import { findShortestPath } from './pathfinding';
+import { emitTrace } from './traceBuffer';
+import type { TraceEntry } from '../types/trace';
 
 /**
  * Filter out candidates whose encounter template is on cooldown for this agent.
@@ -222,6 +224,25 @@ export function phaseAgentDecision(
               message: `${actor.name} sets out toward ${destName}`,
               significance: 0.3,
             });
+
+            // Trace: depart toward encounter
+            const sublocNode = sel.entry.sublocationId ? graph.getNode(sel.entry.sublocationId) : null;
+            emitTrace({
+              category: 'movement',
+              tick: state.tick,
+              agentId,
+              agentName: actor.name,
+              event: 'depart',
+              fromLocationId: locationId,
+              fromLocationName: graph.getNode(locationId)?.name ?? '?',
+              destinationId: sel.entry.locationId,
+              destinationName: destName,
+              sublocationId: sel.entry.sublocationId ?? undefined,
+              sublocationName: sublocNode?.name ?? undefined,
+              encounterId: sel.entry.templateId,
+              queueLength: pathResult.path.length,
+              summary: `${actor.name} departs for ${destName} (${pathResult.path.length} hops, encounter: ${sel.entry.templateId})`,
+            } as TraceEntry);
           }
         }
       } else {
