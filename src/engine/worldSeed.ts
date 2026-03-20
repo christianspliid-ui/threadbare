@@ -32,6 +32,7 @@ import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
+import { ensureSublocations } from './sublocation';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
@@ -334,6 +335,11 @@ export function seedWorld(
     }
   }
 
+  // ── Eager Base Sublocations ──────────────────────────────
+  for (let i = 0; i < locationIds.length; i++) {
+    ensureSublocations(graph, locationIds[i], seed + i * 7717);
+  }
+
   // ── Resources ────────────────────────────────────────────
   const resourceRng = mulberry32(seed + 22091); // separate PRNG stream
   seedLocationResources(graph, locationIds, cosmology, resourceRng);
@@ -465,10 +471,10 @@ export function seedWorld(
     }
 
     graph.addEdge({
-      id: `edge_at_${id}`,
+      id: `${id}_located_at_${locationId}`,
       source: id,
       target: locationId,
-      type: 'contains',
+      type: 'located_at',
       properties: {},
     });
   }

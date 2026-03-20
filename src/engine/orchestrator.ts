@@ -197,6 +197,28 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
 
+    // Return agent to parent location if encounter ended and they're at a sublocation
+    if (progress.status === 'completed' || progress.status === 'abandoned') {
+      const locEdges = state.graph.getOutgoingEdges(progress.actorId, 'located_at');
+      if (locEdges.length > 0) {
+        const currentLoc = state.graph.getNode(locEdges[0].target);
+        if (currentLoc) {
+          const locProps = currentLoc.properties as Record<string, unknown>;
+          if (locProps.parentLocationId && typeof locProps.parentLocationId === 'string') {
+            // Agent is at a sublocation — return to parent
+            state.graph.removeEdge(locEdges[0].id);
+            state.graph.addEdge({
+              id: `${progress.actorId}_located_at_${locProps.parentLocationId}`,
+              source: progress.actorId,
+              target: locProps.parentLocationId as string,
+              type: 'located_at',
+              properties: {},
+            });
+          }
+        }
+      }
+    }
+
     // Emit tier promotion event if a tier was crossed
     if (result.growth?.tierCrossed && result.promotion?.traitGranted) {
       const actorNode = state.graph.getNode(progress.actorId);
@@ -975,7 +997,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
-  s = { ...s, ...phaseSublocations(s) };
+  s = { ...s, ...phaseSublocations(s, encounterCache) };
   phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 

@@ -206,6 +206,7 @@ export function phaseAgentDecision(
                 movementState: {
                   movementQueue: pathResult.path,
                   destinationId: sel.entry.locationId,
+                  targetSublocationId: sel.entry.sublocationId ?? undefined,
                   targetEncounterId: sel.entry.templateId,
                   lastDecisionTick: state.tick,
                 },

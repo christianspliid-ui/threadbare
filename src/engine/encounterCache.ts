@@ -24,8 +24,9 @@ import type { ReachDomain } from '../types/traits';
 import type { ThreatRating, EncounterType, EncounterTemplate } from '../types/encounter';
 import type { ValuePair } from '../types/agent';
 import type { SphereName } from '../types/index';
+import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
-import { getEncountersByLocationType } from '../data/encounter-content';
+import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -47,6 +48,10 @@ import {
 export interface EncounterCacheEntry {
   templateId: string;
   locationId: string;
+  /** The specific sublocation instance ID, or null for location-level encounters. */
+  sublocationId: string | null;
+  /** The sublocation type ID (e.g. 'sublocation-type.market-district'), or null. */
+  sublocationTypeId: string | null;
   reachPrimary: ReachDomain;
   reachSecondary: ReachDomain;
   threatRating: ThreatRating;
@@ -110,34 +115,84 @@ export function computeTotalTickCost(template: EncounterTemplate): number {
 
 // ─── Internal helpers ───────────────────────────────────────────
 
-function buildEntriesForLocation(
+/**
+ * Find sublocation nodes under a location (children linked via 'contains' edges
+ * that have a sublocationTypeId property).
+ */
+function getSublocations(graph: WorldGraph, locationId: string): GraphNode[] {
+  const containsEdges = graph.getOutgoingEdges(locationId, 'contains');
+  const subs: GraphNode[] = [];
+  for (const edge of containsEdges) {
+    const child = graph.getNode(edge.target);
+    if (child?.type === 'location') {
+      const props = child.properties as Record<string, unknown>;
+      if (props.parentLocationId === locationId && props.sublocationTypeId) {
+        subs.push(child);
+      }
+    }
+  }
+  return subs;
+}
+
+/**
+ * Build a single cache entry from a template, with sublocation context.
+ */
+function buildEntry(
+  tmpl: EncounterTemplate,
+  locationId: string,
+  sublocationId: string | null,
+  sublocationTypeId: string | null,
+): EncounterCacheEntry {
+  return {
+    templateId: tmpl.id,
+    locationId,
+    sublocationId,
+    sublocationTypeId,
+    reachPrimary: tmpl.reachPrimary,
+    reachSecondary: tmpl.reachSecondary,
+    threatRating: tmpl.threatRating,
+    encounterType: tmpl.encounterType,
+    motivations: [...tmpl.motivations],
+    visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
+    requiresPresence: !tmpl.remoteAttempt,
+    remotePenalty: 0, // Phase 2 concern
+    remoteMaxRange: undefined,
+    sphereAffinity: tmpl.sphereAffinity,
+    questPriority: tmpl.questPriority ?? 1.0,
+    totalTickCost: computeTotalTickCost(tmpl),
+    successRewardEstimate: computeRewardEstimate(tmpl),
+    stepCount: tmpl.steps.length,
+    stepDifficulties: tmpl.steps.map(s => s.difficulty),
+    stepReaches: tmpl.steps.map(s => s.reach),
+  };
+}
+
+/**
+ * Build cache entries for a location and all its sublocations.
+ * If sublocations exist: creates entries per sublocation using sublocation-aware template lookup.
+ * If no sublocations: falls back to location-level template lookup (sublocationId: null).
+ */
+function buildEntriesForLocationAndSublocations(
+  graph: WorldGraph,
   locationId: string,
   locationType: string,
 ): EncounterCacheEntry[] {
-  const templates = getEncountersByLocationType(locationType);
+  const sublocations = getSublocations(graph, locationId);
   const entries: EncounterCacheEntry[] = [];
 
-  for (const tmpl of templates) {
-    entries.push({
-      templateId: tmpl.id,
-      locationId,
-      reachPrimary: tmpl.reachPrimary,
-      reachSecondary: tmpl.reachSecondary,
-      threatRating: tmpl.threatRating,
-      encounterType: tmpl.encounterType,
-      motivations: [...tmpl.motivations],
-      visibleTo: tmpl.visibleTo ? [...tmpl.visibleTo] : undefined,
-      requiresPresence: !tmpl.remoteAttempt,
-      remotePenalty: 0, // Phase 2 concern
-      remoteMaxRange: undefined,
-      sphereAffinity: tmpl.sphereAffinity,
-      questPriority: tmpl.questPriority ?? 1.0,
-      totalTickCost: computeTotalTickCost(tmpl),
-      successRewardEstimate: computeRewardEstimate(tmpl),
-      stepCount: tmpl.steps.length,
-      stepDifficulties: tmpl.steps.map(s => s.difficulty),
-      stepReaches: tmpl.steps.map(s => s.reach),
-    });
+  if (sublocations.length > 0) {
+    for (const sub of sublocations) {
+      const subTypeId = (sub.properties as Record<string, unknown>).sublocationTypeId as string;
+      const templates = getEncountersBySublocationAndLocation(subTypeId, locationType);
+      for (const tmpl of templates) {
+        entries.push(buildEntry(tmpl, locationId, sub.id, subTypeId));
+      }
+    }
+  } else {
+    const templates = getEncountersByLocationType(locationType);
+    for (const tmpl of templates) {
+      entries.push(buildEntry(tmpl, locationId, null, null));
+    }
   }
 
   return entries;
@@ -173,7 +228,7 @@ export class EncounterCacheManager {
     for (const loc of locations) {
       const locationType = getLocationType(graph, loc.id);
       if (!locationType) continue;
-      const entries = buildEntriesForLocation(loc.id, locationType);
+      const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType);
       if (entries.length > 0) {
         this.byLocation.set(loc.id, entries);
       }
@@ -186,7 +241,7 @@ export class EncounterCacheManager {
   onLocationCreated(graph: WorldGraph, locationId: string): void {
     const locationType = getLocationType(graph, locationId);
     if (!locationType) return;
-    const entries = buildEntriesForLocation(locationId, locationType);
+    const entries = buildEntriesForLocationAndSublocations(graph, locationId, locationType);
     if (entries.length > 0) {
       this.byLocation.set(locationId, entries);
     }
@@ -205,6 +260,31 @@ export class EncounterCacheManager {
   onLocationTypeChanged(graph: WorldGraph, locationId: string): void {
     this.byLocation.delete(locationId);
     this.onLocationCreated(graph, locationId);
+  }
+
+  /**
+   * Incrementally rebuild parent location's cache entries when a sublocation is created.
+   * The new sublocation's templates are added to (or replace) the parent's entry set.
+   */
+  onSublocationCreated(graph: WorldGraph, sublocationId: string, parentLocationId: string): void {
+    // Rebuild the entire parent location's cache entries (includes all sublocations)
+    this.byLocation.delete(parentLocationId);
+    this.onLocationCreated(graph, parentLocationId);
+  }
+
+  /**
+   * Remove cache entries for a destroyed sublocation from the parent location's set.
+   * Filters out entries referencing the destroyed sublocation ID.
+   */
+  onSublocationDestroyed(sublocationId: string, parentLocationId: string): void {
+    const existing = this.byLocation.get(parentLocationId);
+    if (!existing) return;
+    const filtered = existing.filter(e => e.sublocationId !== sublocationId);
+    if (filtered.length > 0) {
+      this.byLocation.set(parentLocationId, filtered);
+    } else {
+      this.byLocation.delete(parentLocationId);
+    }
   }
 
   /**

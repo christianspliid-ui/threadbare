@@ -41,6 +41,8 @@ function makeTrivialEntry(
   return {
     templateId,
     locationId,
+    sublocationId: null,
+    sublocationTypeId: null,
     reachPrimary: 'heart',
     reachSecondary: 'iron',
     threatRating: 'trivial',
