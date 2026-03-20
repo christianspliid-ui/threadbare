@@ -32,7 +32,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** Encounter-Level Cache & Sublocation-Aware Decisions (2026-03-20) — agents now target specific encounters at specific sublocations, not location-level approximations.
+**Latest implementation:** Idle Decision Tracing (2026-03-20) — agents now trace why they idle (filter/cooldown/threshold), what idle action they chose, and the full filter pipeline counts. Filter and scoring traces also now emitted. — agents now target specific encounters at specific sublocations, not location-level approximations.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
