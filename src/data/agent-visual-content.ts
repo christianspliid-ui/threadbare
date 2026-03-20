@@ -16,6 +16,12 @@ export const AGENT_DOT_RADIUS = 2.5;
 /** Radius of agent dot at token zoom (kept small to avoid overlapping location icons) */
 export const AGENT_TOKEN_RADIUS = 4;
 
+/** Radius of circular portrait thumbnail at token zoom */
+export const AGENT_PORTRAIT_RADIUS = 7;
+
+/** Stroke width of ring around portrait thumbnail */
+export const AGENT_PORTRAIT_RING_WIDTH = 1.2;
+
 /** Agent domain-to-color mapping for dot rendering */
 export const DOMAIN_COLORS: Record<string, string> = {
   iron: '#6B7280',

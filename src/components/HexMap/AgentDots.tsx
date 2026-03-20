@@ -26,12 +26,15 @@ import {
   MAX_RING_AGENTS,
   AGENT_DOT_RADIUS,
   AGENT_TOKEN_RADIUS,
+  AGENT_PORTRAIT_RADIUS,
+  AGENT_PORTRAIT_RING_WIDTH,
   DOMAIN_COLORS,
   DEFAULT_AGENT_COLOR,
   AGENT_RING_RADIUS,
   AGENT_ARRIVE_FLASH_MS,
   AGENT_MOVE_TRANSITION_MS,
 } from '../../data/agent-visual-content';
+import { getPortraitUrl } from '../../data/portrait-assets';
 
 // ─── Constants ───────────────────────────────────────────────────
 
@@ -49,7 +52,6 @@ interface AgentDotsProps {
   avatarId?: string;
   sphereColor?: string;
   onAgentClick?: (agentId: string) => void;
-  onAgentDoubleClick?: (agentId: string) => void;
   onAgentHover?: (agentId: string | null) => void;
 }
 
@@ -141,7 +143,6 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
   avatarId,
   sphereColor,
   onAgentClick,
-  onAgentDoubleClick,
   onAgentHover,
 }) => {
   const isTokenZoom = zoomScale >= ZOOM_TOKEN_THRESHOLD;
@@ -222,7 +223,18 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
     else agentElRefs.current.delete(agentId);
   }, []);
 
-  // ── Step 4: Animate on position change ──
+  // ── Step 4: Unmount-only cleanup for rAF animations ──
+  useEffect(() => {
+    return () => {
+      for (const rafId of activeAnims.current.values()) {
+        cancelAnimationFrame(rafId);
+      }
+      activeAnims.current.clear();
+    };
+  }, []);
+
+  // ── Step 5: Animate on position change ──
+  // No cleanup — animations survive across ticks. Per-agent cancellation is inline.
   useEffect(() => {
     const now = performance.now();
 
@@ -236,9 +248,12 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
       const moved = prev && (Math.abs(prev.x - x) > 0.5 || Math.abs(prev.y - y) > 0.5);
 
       if (moved && prev) {
-        // Cancel any running animation
+        // Cancel any running animation for THIS agent only
         const existing = activeAnims.current.get(agent.id);
-        if (existing) cancelAnimationFrame(existing);
+        if (existing) {
+          cancelAnimationFrame(existing);
+          activeAnims.current.delete(agent.id);
+        }
 
         const hexChanged = prev.hex.col !== hex.col || prev.hex.row !== hex.row;
 
@@ -253,9 +268,10 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
             ringOffset,
           );
           const duration = AGENT_MOVE_TRANSITION_MS;
+          const startTime = now;
 
           const animate = (frameTime: number) => {
-            const elapsed = frameTime - now;
+            const elapsed = frameTime - startTime;
             const s = Math.min(1, elapsed / duration);
             const pos = evalBezierAtArcLength(bezier.p0, bezier.ctrl, bezier.p2, s);
             el.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
@@ -273,9 +289,10 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
           const fromX = prev.x;
           const fromY = prev.y;
           const duration = SETTLE_DURATION_MS;
+          const startTime = now;
 
           const animate = (frameTime: number) => {
-            const elapsed = frameTime - now;
+            const elapsed = frameTime - startTime;
             const t = Math.min(1, elapsed / duration);
             const px = fromX + (x - fromX) * t;
             const py = fromY + (y - fromY) * t;
@@ -291,23 +308,24 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
           activeAnims.current.set(agent.id, requestAnimationFrame(animate));
         }
       } else if (!activeAnims.current.has(agent.id)) {
-        // No movement or first render — set position directly
+        // No movement and no active animation — set position directly
         el.style.transform = `translate(${x}px, ${y}px)`;
       }
+      // If animation is running and agent didn't move this tick, let it continue
 
       prevPositions.current.set(agent.id, { x, y, hex, ringOffset });
     }
-
-    return () => {
-      for (const rafId of activeAnims.current.values()) {
-        cancelAnimationFrame(rafId);
-      }
-    };
   }, [allAgents, hexSize]);
 
-  // ── Step 5: Render ──
+  // ── Step 6: Render ──
   return (
     <g className="agent-dots-layer" style={{ pointerEvents: 'auto' }}>
+      {/* Shared clip-path definitions for portrait thumbnails */}
+      <defs>
+        <clipPath id="agent-portrait-clip">
+          <circle r={AGENT_PORTRAIT_RADIUS} />
+        </clipPath>
+      </defs>
       {allAgents.map(({ agent, x, y }) => {
         const isAvatar = agent.id === avatarId;
         const color = isAvatar && sphereColor
@@ -315,6 +333,8 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
           : getAgentColor(agent.properties?.domainCapabilities as Record<string, number>);
         const tooltip = buildTooltip(agent, isAvatar);
         const isArriving = arrivingAgents.has(agent.id);
+        const archetypeId = agent.properties?.narrativeArchetype as string | undefined;
+        const portraitUrl = isTokenZoom ? getPortraitUrl(archetypeId) : null;
 
         return (
           <Tooltip
@@ -330,21 +350,47 @@ export const AgentDots: React.FC<AgentDotsProps> = ({
               data-target-x={x}
               data-target-y={y}
               onClick={() => onAgentClick?.(agent.id)}
-              onDoubleClick={() => onAgentDoubleClick?.(agent.id)}
               onMouseEnter={() => onAgentHover?.(agent.id)}
               onMouseLeave={() => onAgentHover?.(null)}
               cursor="pointer"
             >
-              <circle
-                r={radius}
-                fill={color}
-                stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
-                strokeWidth={isAvatar ? 1.5 : 0.5}
-                className={[
-                  isAvatar ? 'avatar-pulse' : undefined,
-                  isArriving ? 'agent-arriving' : undefined,
-                ].filter(Boolean).join(' ') || undefined}
-              />
+              {portraitUrl ? (
+                <>
+                  {/* Circular portrait thumbnail */}
+                  <g clipPath="url(#agent-portrait-clip)">
+                    <image
+                      href={portraitUrl}
+                      x={-AGENT_PORTRAIT_RADIUS}
+                      y={-AGENT_PORTRAIT_RADIUS}
+                      width={AGENT_PORTRAIT_RADIUS * 2}
+                      height={AGENT_PORTRAIT_RADIUS * 2}
+                      preserveAspectRatio="xMidYMin slice"
+                    />
+                  </g>
+                  {/* Domain color ring */}
+                  <circle
+                    r={AGENT_PORTRAIT_RADIUS}
+                    fill="none"
+                    stroke={isAvatar ? sphereColor ?? color : color}
+                    strokeWidth={isAvatar ? AGENT_PORTRAIT_RING_WIDTH * 1.5 : AGENT_PORTRAIT_RING_WIDTH}
+                    className={[
+                      isAvatar ? 'avatar-pulse' : undefined,
+                      isArriving ? 'agent-arriving' : undefined,
+                    ].filter(Boolean).join(' ') || undefined}
+                  />
+                </>
+              ) : (
+                <circle
+                  r={radius}
+                  fill={color}
+                  stroke={isAvatar ? sphereColor ?? '#000' : '#000'}
+                  strokeWidth={isAvatar ? 1.5 : 0.5}
+                  className={[
+                    isAvatar ? 'avatar-pulse' : undefined,
+                    isArriving ? 'agent-arriving' : undefined,
+                  ].filter(Boolean).join(' ') || undefined}
+                />
+              )}
             </g>
           </Tooltip>
         );
