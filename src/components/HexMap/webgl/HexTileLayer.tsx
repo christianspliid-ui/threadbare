@@ -35,6 +35,9 @@ const HEX_TILE_Y_OFFSET = 0;
 /** Elevation scale — how much to lift tiles per elevation unit */
 const ELEVATION_SCALE = 0.7;
 
+/** Minimum elevation to generate a bottom fill column beneath */
+const BOTTOM_FILL_THRESHOLD = 0.15;
+
 /** Water terrain types */
 const WATER_TERRAINS: Set<TerrainType> = new Set([
   'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows',
@@ -179,6 +182,26 @@ function buildTileInstances(tiles: HexTile[]): Map<ModelId, THREE.Matrix4[]> {
       groups.set(modelId, arr);
     }
     arr.push(matrix);
+
+    // Bottom fill: place hex_grass_bottom beneath elevated tiles
+    // Scale Y to fill the gap between ground and tile surface
+    if (!isWater && elevation > BOTTOM_FILL_THRESHOLD) {
+      const fillHeight = py; // how tall the column needs to be
+      if (fillHeight > 0.05) {
+        const bottomMatrix = new THREE.Matrix4();
+        bottomMatrix.compose(
+          new THREE.Vector3(px, 0, pz), // sits at ground level
+          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), HEX_TILE_ROTATION_Y),
+          new THREE.Vector3(HEX_TILE_SCALE, HEX_TILE_SCALE * fillHeight, HEX_TILE_SCALE),
+        );
+        let bottomArr = groups.get('hex_grass_bottom');
+        if (!bottomArr) {
+          bottomArr = [];
+          groups.set('hex_grass_bottom', bottomArr);
+        }
+        bottomArr.push(bottomMatrix);
+      }
+    }
   }
 
   return groups;
@@ -212,6 +235,8 @@ function TileGroup({
       ref={meshRef}
       args={[model.geometry, material, instances.length]}
       frustumCulled={false}
+      castShadow
+      receiveShadow
     />
   );
 }

@@ -103,7 +103,7 @@ export interface LoadedModel {
 }
 
 let loadedModels: Map<ModelId, LoadedModel> | null = null;
-let sharedMaterial: THREE.MeshBasicMaterial | null = null;
+let sharedMaterial: THREE.MeshStandardMaterial | null = null;
 let loadPromise: Promise<void> | null = null;
 
 // ── Public API ──────────────────────────────────────────────────────────────
@@ -122,7 +122,7 @@ export function getModel(id: ModelId): LoadedModel | null {
 }
 
 /** Get the shared palette material. Returns null if not yet loaded. */
-export function getSharedMaterial(): THREE.MeshBasicMaterial | null {
+export function getSharedMaterial(): THREE.MeshStandardMaterial | null {
   return sharedMaterial;
 }
 
@@ -144,9 +144,12 @@ async function doLoad(): Promise<void> {
   texture.magFilter = THREE.NearestFilter; // Crisp pixel look for diorama
   texture.minFilter = THREE.NearestMipmapLinearFilter;
 
-  // Create the one shared material — meshBasicMaterial for diorama flat look
-  sharedMaterial = new THREE.MeshBasicMaterial({
+  // Create the one shared material — MeshStandardMaterial for proper lighting + shadows
+  // Roughness 1, metalness 0 = fully diffuse, no specular (matches KayKit look)
+  sharedMaterial = new THREE.MeshStandardMaterial({
     map: texture,
+    roughness: 1.0,
+    metalness: 0.0,
     fog: true,
   });
 

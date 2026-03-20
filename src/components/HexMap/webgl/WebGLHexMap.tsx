@@ -1,50 +1,55 @@
 /**
  * WebGL hex map renderer using React Three Fiber.
- * Procedural terrain mesh with texture atlas, elevation, directional lighting,
- * slight isometric camera tilt, and hex outlines.
- * Drop-in alternative to the SVG HexMap component.
+ * KayKit GLTF hex tiles with perspective camera, shadow maps,
+ * ambient occlusion, and post-processing for a miniature diorama look.
+ *
+ * Inspired by Felix Turner's hex-map-wfc rendering pipeline.
  */
 import { useRef, useMemo, useCallback, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
 import { MapControls } from '@react-three/drei';
-import { EffectComposer } from '@react-three/postprocessing';
+import { EffectComposer, N8AO, Vignette } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import type { HexTile, HexCoord } from '../../../types';
-import { buildHexMeshGeometry, faceIndexToHex, HEX_OUTLINE_OPACITY, HEX_OUTLINE_COLOR } from './hexMeshGeometry';
-import { loadTerrainAtlas } from './terrainAtlas';
-import { createTerrainMaterial } from './terrainShader';
+import { buildHexMeshGeometry, faceIndexToHex } from './hexMeshGeometry';
 import { PropLayer } from './PropLayer';
 import { WaterLayer } from './WaterLayer';
 import { LocationLayer } from './LocationLayer';
-import { CliffLayer } from './CliffLayer';
 import { GodRayLayer } from './GodRayLayer';
-import { ShorelineLayer } from './ShorelineLayer';
-import { CloudShadowLayer } from './CloudShadowLayer';
 import { HexTileLayer } from './HexTileLayer';
-import { TiltShift } from './TiltShiftEffect';
 import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import type { LocationSubtype } from '../../../types';
 
 // ── Constants (NFP #1: Tunability) ──────────────────────────────────────────
 
-const BG_COLOR = '#0a0a0c';
+/** Background color — soft blue-grey sky (matches Felix Turner's scene BG) */
+const BG_COLOR = '#98a4bb';
 
-/** Camera tilt angle in degrees (0 = top-down, 90 = horizon) */
-const CAMERA_TILT_DEG = 22;
+/** Camera FOV — narrow lens for miniature/tilt-shift feel */
+const CAMERA_FOV = 20;
+
+/** Camera initial distance from target */
+const CAMERA_DISTANCE = 100;
+
+/** Camera initial tilt angle in degrees (0 = top-down, 90 = horizon) */
+const CAMERA_TILT_DEG = 35;
 
 /** Sun direction — position of directional light */
-const SUN_DIRECTION = new THREE.Vector3(8, 6, -4);
-const SUN_INTENSITY = 1.8;
+const SUN_POSITION = new THREE.Vector3(50, 100, 50);
+const SUN_INTENSITY = 2.0;
 const SUN_COLOR = new THREE.Color('#fff0d8');
 
 /** Ambient light */
-const AMBIENT_INTENSITY = 0.8;
+const AMBIENT_INTENSITY = 0.6;
 const AMBIENT_COLOR = new THREE.Color('#b0b8d0');
 
 /** Hemisphere light */
 const HEMI_SKY_COLOR = '#90a8d0';
 const HEMI_GROUND_COLOR = '#5a4828';
-const HEMI_INTENSITY = 0.4;
+const HEMI_INTENSITY = 0.3;
+
+/** Shadow map size */
+const SHADOW_MAP_SIZE = 2048;
 
 // ── Props ───────────────────────────────────────────────────────────────────
 
@@ -73,7 +78,7 @@ function SelectionRing({ hex, color, tiles }: { hex: HexCoord | null; color: str
   const pz = hex.row * HEX_SCALE_Y + (hex.col % 2 === 1 ? HEX_SCALE_Y / 2 : 0);
   const tile = tiles.find(t => t.coord.col === hex.col && t.coord.row === hex.row);
   const elev = tile ? tile.geoParams.elevation : 0;
-  const y = elev * elev * 0.7 + 0.03;
+  const y = elev * elev * 0.7 + 0.08;
 
   const ringGeo = useMemo(() => {
     const points: THREE.Vector3[] = [];
@@ -99,7 +104,7 @@ function HoverHighlight({ hex, tiles }: { hex: HexCoord | null; tiles: HexTile[]
   const pz = hex.row * HEX_SCALE_Y + (hex.col % 2 === 1 ? HEX_SCALE_Y / 2 : 0);
   const tile = tiles.find(t => t.coord.col === hex.col && t.coord.row === hex.row);
   const elev = tile ? tile.geoParams.elevation : 0;
-  const y = elev * elev * 0.7 + 0.02;
+  const y = elev * elev * 0.7 + 0.07;
 
   const geo = useMemo(() => {
     const shape = new THREE.Shape();
@@ -123,64 +128,23 @@ function HoverHighlight({ hex, tiles }: { hex: HexCoord | null; tiles: HexTile[]
   );
 }
 
-// ── Hex mesh scene object ───────────────────────────────────────────────────
+// ── Invisible raycast mesh (procedural terrain for click/hover detection) ───
 
-function HexMeshScene({
+function RaycastMesh({
   tiles, cols, rows, seed,
-  hoveredHex, selectedHex,
   onHexClick, onHexHover,
-  locationOverlays,
-}: WebGLHexMapProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const [atlas, setAtlas] = useState<THREE.DataArrayTexture | null>(null);
-
-  const { geometry, hexFaceRanges, outlineGeometry } = useMemo(
+}: {
+  tiles: HexTile[];
+  cols: number;
+  rows: number;
+  seed?: number;
+  onHexClick: (coord: HexCoord) => void;
+  onHexHover: (coord: HexCoord | null) => void;
+}) {
+  const { geometry, hexFaceRanges } = useMemo(
     () => buildHexMeshGeometry(tiles, cols, rows, 30, seed ?? 42),
     [tiles, cols, rows, seed],
   );
-
-  // Load terrain atlas
-  useEffect(() => {
-    let cancelled = false;
-    loadTerrainAtlas().then(tex => {
-      if (!cancelled) setAtlas(tex);
-    }).catch(err => {
-      console.warn('[WebGLHexMap] Failed to load terrain atlas, using fallback:', err);
-    });
-    return () => { cancelled = true; };
-  }, []);
-
-  // Compute world bounds for edge fog
-  const worldBounds = useMemo(() => ({
-    minX: -HEX_SCALE_X,
-    minZ: -HEX_SCALE_Y,
-    maxX: (cols - 1) * HEX_SCALE_X + HEX_SCALE_X,
-    maxZ: (rows - 1) * HEX_SCALE_Y + HEX_SCALE_Y,
-  }), [cols, rows]);
-
-  // Create custom shader material when atlas is available
-  const terrainMaterial = useMemo(() => {
-    if (!atlas) return null;
-    return createTerrainMaterial(
-      atlas,
-      SUN_DIRECTION.clone(),
-      SUN_COLOR.clone(),
-      SUN_INTENSITY,
-      AMBIENT_COLOR.clone(),
-      AMBIENT_INTENSITY,
-      worldBounds,
-    );
-  }, [atlas, worldBounds]);
-
-  // Fallback material while atlas loads
-  const fallbackMaterial = useMemo(() =>
-    new THREE.MeshPhongMaterial({
-      vertexColors: true,
-      side: THREE.DoubleSide,
-      shininess: 8,
-      specular: new THREE.Color('#1a1510'),
-    }),
-  []);
 
   const handlePointerMove = useCallback((e: THREE.Event & { faceIndex?: number }) => {
     if (e.faceIndex !== undefined && e.faceIndex !== null) {
@@ -202,44 +166,106 @@ function HexMeshScene({
     onHexHover(null);
   }, [onHexHover]);
 
+  // Invisible material — only used for raycasting, not rendered
+  const invisibleMaterial = useMemo(() =>
+    new THREE.MeshBasicMaterial({
+      visible: false,
+      side: THREE.DoubleSide,
+    }),
+  []);
+
+  return (
+    <mesh
+      geometry={geometry}
+      material={invisibleMaterial}
+      onPointerMove={handlePointerMove}
+      onClick={handleClick}
+      onPointerLeave={handlePointerLeave}
+    />
+  );
+}
+
+// ── Scene contents ──────────────────────────────────────────────────────────
+
+function HexMeshScene({
+  tiles, cols, rows, seed,
+  hoveredHex, selectedHex,
+  onHexClick, onHexHover,
+  locationOverlays,
+}: WebGLHexMapProps) {
   return (
     <>
-      <mesh
-        ref={meshRef}
-        geometry={geometry}
-        material={terrainMaterial ?? fallbackMaterial}
-        onPointerMove={handlePointerMove}
-        onClick={handleClick}
-        onPointerLeave={handlePointerLeave}
+      {/* Invisible raycast surface for click/hover detection */}
+      <RaycastMesh
+        tiles={tiles}
+        cols={cols}
+        rows={rows}
+        seed={seed}
+        onHexClick={onHexClick}
+        onHexHover={onHexHover}
       />
-      <lineSegments geometry={outlineGeometry}>
-        <lineBasicMaterial color={HEX_OUTLINE_COLOR} transparent opacity={HEX_OUTLINE_OPACITY} fog />
-      </lineSegments>
+      {/* GLTF hex tile terrain */}
       <HexTileLayer tiles={tiles} />
-      <CliffLayer tiles={tiles} seed={seed ?? 42} />
+      {/* Water */}
       <WaterLayer tiles={tiles} />
-      <ShorelineLayer tiles={tiles} />
+      {/* Decorations and overlays */}
       <PropLayer tiles={tiles} seed={seed ?? 42} />
       <LocationLayer tiles={tiles} locationOverlays={locationOverlays} />
       <GodRayLayer tiles={tiles} locationOverlays={locationOverlays} />
-      <CloudShadowLayer worldWidth={cols * HEX_SCALE_X} worldHeight={rows * HEX_SCALE_Y} />
+      {/* Selection indicators */}
       <HoverHighlight hex={hoveredHex} tiles={tiles} />
       <SelectionRing hex={selectedHex} color="#d4af37" tiles={tiles} />
     </>
   );
 }
 
+// ── Dynamic sun that follows camera ─────────────────────────────────────────
+
+function DynamicSun({ controlsRef }: { controlsRef: React.RefObject<any> }) {
+  const lightRef = useRef<THREE.DirectionalLight>(null);
+
+  useFrame(() => {
+    if (!lightRef.current || !controlsRef.current) return;
+    const target = controlsRef.current.target;
+    // Sun offset from camera target — always lights from the same angle
+    lightRef.current.position.set(
+      target.x + SUN_POSITION.x,
+      SUN_POSITION.y,
+      target.z + SUN_POSITION.z,
+    );
+    lightRef.current.target.position.set(target.x, 0, target.z);
+    lightRef.current.target.updateMatrixWorld();
+  });
+
+  return (
+    <directionalLight
+      ref={lightRef}
+      intensity={SUN_INTENSITY}
+      color={SUN_COLOR}
+      castShadow
+      shadow-mapSize-width={SHADOW_MAP_SIZE}
+      shadow-mapSize-height={SHADOW_MAP_SIZE}
+      shadow-camera-near={1}
+      shadow-camera-far={300}
+      shadow-camera-left={-60}
+      shadow-camera-right={60}
+      shadow-camera-top={60}
+      shadow-camera-bottom={-60}
+      shadow-bias={-0.0005}
+    />
+  );
+}
+
 // ── WASD keyboard panning ────────────────────────────────────────────────────
 
 /** Pan speed in world units per second */
-const PAN_SPEED = 12;
+const PAN_SPEED = 40;
 
 function WASDControls({ controlsRef }: { controlsRef: React.RefObject<any> }) {
   const keysDown = useRef(new Set<string>());
 
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
-      // Don't capture if user is typing in an input
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       const k = e.key.toLowerCase();
       if (['w', 'a', 's', 'd'].includes(k)) {
@@ -263,7 +289,9 @@ function WASDControls({ controlsRef }: { controlsRef: React.RefObject<any> }) {
     const controls = controlsRef.current;
     if (!controls || keysDown.current.size === 0) return;
 
-    const speed = PAN_SPEED * delta / (camera as THREE.OrthographicCamera).zoom * 40;
+    // Scale speed by camera distance for consistent feel
+    const dist = camera.position.distanceTo(controls.target);
+    const speed = PAN_SPEED * delta * (dist / 100);
     let dx = 0;
     let dz = 0;
 
@@ -295,12 +323,11 @@ export const WebGLHexMap = forwardRef<WebGLHexMapHandle, WebGLHexMapProps>(({
   const worldWidth = cols * HEX_SCALE_X + 2;
   const worldHeight = rows * HEX_SCALE_Y + 2;
 
-  // Camera position: tilted slightly from the south
+  // Perspective camera position: tilted from the south, looking at map center
   const tiltRad = (CAMERA_TILT_DEG * Math.PI) / 180;
-  const camDist = 50;
   const camX = worldWidth / 2;
-  const camY = camDist * Math.cos(tiltRad);
-  const camZ = worldHeight / 2 + camDist * Math.sin(tiltRad);
+  const camY = CAMERA_DISTANCE * Math.cos(tiltRad);
+  const camZ = worldHeight / 2 + CAMERA_DISTANCE * Math.sin(tiltRad);
 
   useImperativeHandle(ref, () => ({
     centerOn: (x: number, y: number, scale?: number) => {
@@ -316,34 +343,32 @@ export const WebGLHexMap = forwardRef<WebGLHexMapHandle, WebGLHexMapProps>(({
   return (
     <div style={{ width: '100%', height: '100%', background: BG_COLOR }}>
       <Canvas
-        orthographic
         camera={{
+          fov: CAMERA_FOV,
           position: [camX, camY, camZ],
-          zoom: 40,
-          near: 0.1,
-          far: 200,
+          near: 1,
+          far: 500,
           up: [0, 1, 0],
         }}
-        flat
+        shadows
         gl={{ antialias: true, alpha: false }}
         onCreated={({ gl, camera }) => {
           gl.setClearColor(BG_COLOR);
+          gl.shadowMap.enabled = true;
+          gl.shadowMap.type = THREE.PCFSoftShadowMap;
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.0;
           camera.lookAt(worldWidth / 2, 0, worldHeight / 2);
           camera.updateProjectionMatrix();
         }}
         style={{ width: '100%', height: '100%' }}
       >
-        {/* Scene fog for non-shader objects (props, water, locations).
-            Distance-based from camera — tuned so edges fade similarly to terrain shader fog. */}
-        <fog attach="fog" args={[BG_COLOR, 60, 120]} />
+        {/* Soft fog for distance fade */}
+        <fog attach="fog" args={[BG_COLOR, 80, 200]} />
 
-        {/* Lighting for fallback material (custom shader handles its own) */}
+        {/* Lighting — matches Felix Turner's setup */}
         <ambientLight intensity={AMBIENT_INTENSITY} color={AMBIENT_COLOR} />
-        <directionalLight
-          position={[SUN_DIRECTION.x, SUN_DIRECTION.y, SUN_DIRECTION.z]}
-          intensity={SUN_INTENSITY}
-          color={SUN_COLOR}
-        />
+        <DynamicSun controlsRef={controlsRef} />
         <hemisphereLight args={[HEMI_SKY_COLOR, HEMI_GROUND_COLOR, HEMI_INTENSITY]} />
 
         <HexMeshScene
@@ -363,17 +388,22 @@ export const WebGLHexMap = forwardRef<WebGLHexMapHandle, WebGLHexMapProps>(({
           enableRotate
           enableDamping
           dampingFactor={0.1}
-          minZoom={10}
-          maxZoom={300}
+          minDistance={25}
+          maxDistance={300}
           minPolarAngle={0.2}
           maxPolarAngle={Math.PI / 2 - 0.05}
-          screenSpacePanning
+          screenSpacePanning={false}
           makeDefault
           target={[worldWidth / 2, 0, worldHeight / 2]}
         />
         <WASDControls controlsRef={controlsRef} />
         <EffectComposer>
-          <TiltShift />
+          <N8AO
+            aoRadius={1.0}
+            intensity={1.5}
+            halfRes
+          />
+          <Vignette eskil={false} offset={0.3} darkness={0.6} />
         </EffectComposer>
       </Canvas>
     </div>
