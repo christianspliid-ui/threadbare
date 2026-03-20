@@ -7,6 +7,9 @@ import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
 import { DecisionBreakdown } from './debug/DecisionBreakdown';
 import { RelationshipGraph } from './debug/RelationshipGraph';
+import { EncounterCacheView } from './debug/EncounterCacheView';
+import type { EncounterCacheEntry } from '../../engine/encounterCache';
+import type { EncounterProgress } from '../../types/encounter';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -17,9 +20,13 @@ interface DebugPanelProps {
   onToggleBonds?: (enabled: boolean) => void;
   /** Callback to toggle decision vector overlay on the hex map */
   onToggleDecisionVectors?: (enabled: boolean) => void;
+  /** Pre-computed encounter cache entries for the encounters tab */
+  cacheEntries?: readonly EncounterCacheEntry[];
+  /** Current encounter progress records */
+  encounterProgress?: readonly EncounterProgress[];
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -789,7 +796,7 @@ const SocialTabContent = React.memo(function SocialTabContent({
   );
 });
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -923,6 +930,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'social')} onClick={() => setViewMode('social')}>
           Social
         </button>
+        <button style={getTabButtonStyle(viewMode === 'encounters')} onClick={() => setViewMode('encounters')}>
+          Encounters
+        </button>
       </div>
 
       {/* Agent Follow Header */}
@@ -977,7 +987,14 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
 
       {/* Scroll Area */}
       <div ref={scrollRef} style={SCROLL_AREA_STYLE} onScroll={handleScroll}>
-        {viewMode === 'social' ? (
+        {viewMode === 'encounters' ? (
+          <EncounterCacheView
+            cacheEntries={cacheEntries ?? []}
+            encounterProgress={encounterProgress ?? []}
+            currentTick={currentTick}
+            followAgentId={followAgentId}
+          />
+        ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={followAgentId}
             graph={graph}

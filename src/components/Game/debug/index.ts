@@ -6,3 +6,6 @@ export type { RelationshipGraphProps } from './RelationshipGraph';
 
 export { BondOverlay } from './BondOverlay';
 export type { BondOverlayProps } from './BondOverlay';
+
+export { EncounterCacheView } from './EncounterCacheView';
+export type { EncounterCacheViewProps } from './EncounterCacheView';

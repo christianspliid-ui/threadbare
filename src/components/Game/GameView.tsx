@@ -39,6 +39,7 @@ import { HexChronicle } from './HexChronicle';
 import { INTERVENTION_DEFINITIONS } from '../../types/dream';
 import { MandateTracker } from './MandateTracker';
 import { DebugPanel } from './DebugPanel';
+import { getEncounterCacheManager } from '../../engine/orchestrator';
 import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
@@ -102,7 +103,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
   const {
     hoveredHex, setHoveredHex, selectedHex, viewLevel,
     focusedHex, focusedLocationId, moveMode, hexMapRef,
-    handleHexClick, handleLocationDoubleClick, handleBackToWorld,
+    handleHexClick, handleBackToWorld,
     handleBackToHex, handleLocationClick, handleCenterOnAvatar,
     handleAvatarMoveClick, handleHexClickMove,
   } = useViewNavigation({ gameState, setGameState, avatarPixelPos, tiles, COLS, ROWS, scryState, fogDisabled });
@@ -146,7 +147,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     handleOpenDrawer,
     handleAvatarActionClick,
     handleViewProfile,
-    handleAgentDoubleClick,
     handleCloseProfile,
     closeAllAgentOverlays,
   } = useAgentInteraction({
@@ -422,16 +422,11 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     setVignetteEncounter(null);
   }, []);
 
-  // IX-013: Wrapped location click/double-click closes drawer before drilling down
+  // IX-013: Wrapped location click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
     handleLocationClick(locationId);
   }, [handleDrawerClose, handleLocationClick]);
-
-  const handleLocationDoubleClickWithClose = useCallback((locationId: string) => {
-    handleDrawerClose();
-    handleLocationDoubleClick(locationId);
-  }, [handleDrawerClose, handleLocationDoubleClick]);
 
   return (
     <GameErrorBoundary>
@@ -579,7 +574,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
                   onAgentClick={handleAgentSelect}
-                  onAgentDoubleClick={handleAgentDoubleClick}
                 />
 
                 <AvatarHUD
@@ -676,7 +670,6 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                       agentsByLocation={hexAgentsByLocation}
                       regionData={hexRegionData}
                       onLocationClick={handleLocationClickWithClose}
-                      onLocationDoubleClick={handleLocationDoubleClickWithClose}
                       onAgentClick={handleAgentSelect}
                       graph={gameState.graph}
                       seed={gameState.seed}
@@ -739,6 +732,8 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             currentTick={gameState.tick}
             followAgentId={selectedAgentId ?? undefined}
             onClose={handleToggleDebug}
+            cacheEntries={getEncounterCacheManager()?.getAllEntries()}
+            encounterProgress={gameState.encounterProgress}
           />
         ) : (
           <div
