@@ -45,10 +45,18 @@ Present the data grouped and sorted for quick scanning:
 
 Read the current impediment data and regenerate `Design/impediment-dashboard.html` with the data embedded as JSON. Use the HTML template defined below.
 
-### Step 4: Tell the user
+### Step 4: Open the dashboard
 
-Report the summary and tell them the dashboard is updated:
-> "Dashboard updated at `Design/impediment-dashboard.html` — open in browser to view."
+After regenerating the HTML, open it in the user's default browser:
+
+```bash
+start Design/impediment-dashboard.html
+```
+
+### Step 5: Tell the user
+
+Report the summary and confirm the dashboard opened:
+> "Dashboard updated and opened in browser."
 
 ## HTML Dashboard Template
 
