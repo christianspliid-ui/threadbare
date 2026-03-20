@@ -19,6 +19,7 @@ import { LocationLayer } from './LocationLayer';
 import { CliffLayer } from './CliffLayer';
 import { GodRayLayer } from './GodRayLayer';
 import { ShorelineLayer } from './ShorelineLayer';
+import { CloudShadowLayer } from './CloudShadowLayer';
 import { TiltShift } from './TiltShiftEffect';
 import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import type { LocationSubtype } from '../../../types';
@@ -219,6 +220,7 @@ function HexMeshScene({
       <PropLayer tiles={tiles} seed={seed ?? 42} />
       <LocationLayer tiles={tiles} locationOverlays={locationOverlays} />
       <GodRayLayer tiles={tiles} locationOverlays={locationOverlays} />
+      <CloudShadowLayer worldWidth={cols * HEX_SCALE_X} worldHeight={rows * HEX_SCALE_Y} />
       <HoverHighlight hex={hoveredHex} tiles={tiles} />
       <SelectionRing hex={selectedHex} color="#d4af37" tiles={tiles} />
     </>
