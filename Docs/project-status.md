@@ -6,6 +6,7 @@
 **UI Design Audit** — systematic visual audit and design system consolidation.
 
 **Recent completions:**
+- ✅ Agent Movement Fix (2026-03-20) — fixed stale useMemo preventing agent dots from visually updating position. Agents now glide smoothly between hexes (600ms CSS transition) with arrival flash.
 - ✅ Encounter Vignette Reach Badge (2026-03-20) — color-coded reach domain badge with icon and narrative prose in encounter vignette modal step section.
 - ✅ Encounter Abandon Cooldown Fix (2026-03-20) — cooldown now measured from failure tick, not start tick. Prevents agents from re-attempting failed encounters every tick.
 - ✅ Social Encounter System Integration (2026-03-18) — wired 14 social encounter templates into tick loop. Agents now pursue agent-to-agent encounters (forge alliance, spy, negotiate, duel, etc.) alongside location encounters. Bond modifier in scoring, trust decay per tick, graph-walked reputation replaces flat score.
@@ -24,7 +25,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** Encounter Vignette Reach Badge (2026-03-20) — each encounter step now shows a color-coded reach domain badge with icon and narrative prose (e.g., "Kael's strength of arms is tested") in the vignette modal.
+**Latest implementation:** Agent Movement Fix (2026-03-20) — fixed stale useMemo cache-busting bug. Agent dots now visually move between hexes with smooth CSS transitions and arrival flash animations.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
