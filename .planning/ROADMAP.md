@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Scene scaffold, palette, InstancedMesh hex fill, grid lines, ?view=hexv2 route ✅ 2026-03-21
-- [ ] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states
+- [x] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states ✅ 2026-03-21
 
 ### Phase 2: World Generation
 **Goal**: A seeded world generator produces organic continents with realistic climate zones, rivers, and biome distribution
@@ -168,7 +168,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Renderer Foundation | 0/2 | Planning complete | - |
+| 1. Renderer Foundation | 2/3 | In progress | - |
 | 2. World Generation | 0/3 | Not started | - |
 | 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
 | 4. Regions & Borders | 0/3 | Not started | - |

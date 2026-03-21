@@ -11,9 +11,9 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 - [ ] **RNDR-01**: Three.js orthographic camera renders a 200x300 hex grid (60K hexes) at 60fps
 - [x] **RNDR-02**: Hex fills use InstancedMesh with per-instance color attributes (one draw call for all hex fills) ✅ 01-01
-- [ ] **RNDR-03**: Frustum culling skips off-screen hexes from all render passes
-- [ ] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification -> snap to hex)
-- [ ] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world -> screen coords)
+- [x] **RNDR-03**: Frustum culling skips off-screen hexes from all render passes ✅ 01-02
+- [x] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification -> snap to hex) ✅ 01-02
+- [x] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world -> screen coords) ✅ 01-02
 - [x] **RNDR-06**: 13-layer render order implemented (hex fill -> coastline -> grid -> ticks -> rivers -> roads -> borders -> signifiers -> locations -> agents -> events -> labels -> fog) ✅ 01-01
 
 ### World Generation (WGEN)
@@ -230,9 +230,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 |-------------|-------|--------|
 | RNDR-01 | Phase 1 | Pending (partial: renderer built, 60fps verified in Plan 02) |
 | RNDR-02 | Phase 1 | Complete ✅ 01-01 |
-| RNDR-03 | Phase 1 | Pending |
-| RNDR-04 | Phase 1 | Pending |
-| RNDR-05 | Phase 1 | Pending |
+| RNDR-03 | Phase 1 | Complete ✅ 01-02 |
+| RNDR-04 | Phase 1 | Complete ✅ 01-02 |
+| RNDR-05 | Phase 1 | Complete ✅ 01-02 |
 | RNDR-06 | Phase 1 | Complete ✅ 01-01 |
 | TERR-01 | Phase 1 | Complete ✅ 01-01 |
 | TERR-02 | Phase 1 | Complete ✅ 01-01 |

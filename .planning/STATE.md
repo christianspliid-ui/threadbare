@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: in-progress
-stopped_at: "Completed 01-01-PLAN.md"
-last_updated: "2026-03-21T12:49:00Z"
-last_activity: 2026-03-21 — Completed Phase 1 Plan 01 (renderer palette + InstancedMesh)
+stopped_at: "Completed 01-02-PLAN.md"
+last_updated: "2026-03-21T12:57:22Z"
+last_activity: 2026-03-21 — Completed Phase 1 Plan 02 (camera controls + interaction)
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
-  percent: 4
+  completed_plans: 2
+  percent: 8
 ---
 
 # Project State
@@ -26,28 +26,28 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 ## Current Position
 
 Phase: 1 of 8 (Renderer Foundation)
-Plan: 1 of 3 in current phase
+Plan: 2 of 3 in current phase
 Status: In progress
-Last activity: 2026-03-21 — Completed Plan 01 (palette + InstancedMesh + route)
+Last activity: 2026-03-21 — Completed Plan 02 (d3-zoom camera + raycasting + tooltip)
 
-Progress: [█░░░░░░░░░] 4%
+Progress: [█░░░░░░░░░] 8%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 4 minutes
-- Total execution time: 0.07 hours
+- Total plans completed: 2
+- Average duration: 4.5 minutes
+- Total execution time: 0.15 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 01-renderer-foundation | 1/3 | 4 min | 4 min |
+| 01-renderer-foundation | 2/3 | 9 min | 4.5 min |
 
 **Recent Trend:**
-- Last 5 plans: 4 min
-- Trend: establishing baseline
+- Last 5 plans: 4 min, 5 min
+- Trend: stable
 
 *Updated after each plan completion*
 
@@ -66,6 +66,9 @@ Recent decisions affecting current work:
 - HexV2View standalone component (not GameView modification) to minimize blast radius (Plan 01-01)
 - 200x300 grid for ?view=hexv2 to prove 60K-hex single draw call performance (Plan 01-01)
 - noiseCache Map in colorUtils prevents simplex-noise generator recreation per hex (Plan 01-01)
+- d3 transition for fly-to animation (matches HexMap.tsx centerOn pattern) — auto-syncs via zoom events (Plan 01-02)
+- LineBasicMaterial linewidth for selection ring — degrades to 1px on WebGL2 without ANGLE; Phase 7 upgrade path noted (Plan 01-02)
+- frustumCulled=true explicit on InstancedMesh; per-instance culling deferred to Phase 7 (Plan 01-02)
 
 ### Pending Todos
 
@@ -77,6 +80,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-21T12:49:00Z
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-renderer-foundation/01-02-PLAN.md
+Last session: 2026-03-21T12:57:22Z
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-renderer-foundation/01-03-PLAN.md
