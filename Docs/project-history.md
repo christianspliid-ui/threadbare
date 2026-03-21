@@ -90,6 +90,8 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - Topbar Redesign: ✅ Complete (2026-03-17) — Stellaris-style resource bar overhaul across 6 phases. Phase 1: useTopBarHotkeys (Space/+/-/./`). Phase 2: SimulationControls compact mode (◀ N× ▶ buttons replacing slider). Phase 3: EssencePanel resource chips (icon + value + income rate via computeEssenceIncome). Phase 4: IdentityChip (avatar name + archetype, sphere accent, clickable). Phase 5: DoomBar glyph, RivalsButton badge, debug gear icon. Phase 6: gold divider + polish. New files: useTopBarHotkeys.ts, essenceIncome.ts, IdentityChip.tsx. Design doc: Docs/plans/2026-03-17-topbar-redesign.md
 
+- Revert to 2D-Only Map: ✅ Complete (2026-03-21) — Removed WebGL/3D hex map renderer (17 component files), GLTF model assets (71 files), raw 3D assets, Felix Turner hex-map-wfc reference code, Three.js/R3F/postprocessing dependencies. Decision: invest in making the 2D canvas map beautiful rather than maintaining dual rendering paths. Added to Rejected Approaches list.
+
 - UI Primitives Library: ✅ Complete (2026-03-17) — 7 shared components (SectionHeading, Button, IconButton, ListRow, Card, Modal, Dropdown), 73 tests. Spec: Docs/design-system/primitives.md
 
 - UI Primitive Adoption Sweep: ✅ Complete (2026-03-17) — 17+ raw section headings replaced with SectionHeading across AgentProfileModal, LocationView, IntentSection, RetinuePanel. ActionDrawer close button → IconButton. Net -143 lines

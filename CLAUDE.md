@@ -143,6 +143,7 @@ Settled. Do not revisit.
 - ❌ Pure LLM-generated content — replaced by generated-within-constraints with player iteration
 - ❌ Intervention wheel (AgentWheel) — replaced by ActionDrawer with context-filtered cards via Generalized Action Targeting
 - ❌ Fixed action count / capped action slots — replaced by open-ended, data-driven template pool filtered per target context
+- ❌ WebGL/3D hex map (Three.js, React Three Fiber, KayKit GLTF models) — removed 2026-03-21. Investing in making the 2D canvas map beautiful instead of maintaining dual rendering paths.
 
 ## Change Audit Trail
 
