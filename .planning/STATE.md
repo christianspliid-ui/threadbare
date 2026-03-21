@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: unknown
-stopped_at: Phase 3 context updated
-last_updated: "2026-03-21T20:57:51.919Z"
-last_activity: 2026-03-21 — Climate fields + biome classification + adjacency smoothing (4 passes, 25 TDD tests)
+status: in_progress
+stopped_at: Completed 03-01-PLAN.md (coastline mask + water depth bands + worldgen threading)
+last_updated: "2026-03-21T22:32:00.000Z"
+last_activity: 2026-03-21 — Coastline overlay, water depth bands, lake coloring, WorldGenResult threading (2 tasks, 23 TDD tests)
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 6
-  completed_plans: 5
-  percent: 18
+  total_plans: 7
+  completed_plans: 6
+  percent: 21
 ---
 
 # Project State
@@ -21,22 +21,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Beautiful, readable, performant hex map at 60K hexes
-**Current focus:** Phase 2 - World Generation (Plan 02 next)
+**Current focus:** Phase 3 - Coastlines, Water & Elevation — Plan 01 complete
 
 ## Current Position
 
-Phase: 2 of 8 (World Generation) — Plan 02/03 complete
-Next: Phase 02 Plan 03 (hydrology: rivers, lakes, depression filling)
-Last activity: 2026-03-21 — Climate fields + biome classification + adjacency smoothing (4 passes, 25 TDD tests)
+Phase: 3 of 8 (Coastlines, Water & Elevation) — Plan 01/N complete
+Next: Phase 03 Plan 02 (river overlay rendering)
+Last activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 
-Progress: [███░░░░░░░] 18%
+Progress: [███░░░░░░░] 21%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~12 minutes
-- Total execution time: ~0.7 hours
+- Total plans completed: 6
+- Average duration: ~14 minutes
+- Total execution time: ~0.8 hours
 
 **By Phase:**
 
@@ -44,9 +44,11 @@ Progress: [███░░░░░░░] 18%
 |-------|-------|-------|----------|
 | 01-renderer-foundation | 3/3 ✅ | ~15 min | ~5 min |
 | 02-world-generation | 2/3 | ~39 min | ~20 min |
+| 03-coastlines-water-elevation | 1/N | ~10 min | ~10 min |
 
 *Updated after each plan completion*
 | Phase 02-world-generation P03 | 10 | 2 tasks | 7 files |
+| Phase 03-coastlines-water-elevation P01 | 10 | 2 tasks | 17 files |
 
 ## Accumulated Context
 
@@ -66,6 +68,10 @@ Progress: [███░░░░░░░] 18%
 - [Phase 02-world-generation]: Terrain seeding before biome pass: hydrology pre-seeds terrain from isOcean+elevation so river routing works before biome classification runs
 - [Phase 02-world-generation]: generateWorld() now uses WorldGenPipeline exclusively — old forceField+classifyBiome path replaced; cosmology accepted for API compatibility but deferred
 - [Phase 02-world-generation]: ValidationResult drainageGuaranteed uses 5% violation threshold — plateau hexes may have equal-elevation neighbors (flat traversal) without a strictly lower direct neighbor
+- [Phase 03-coastlines-water-elevation]: Water colors extracted from Design/hexmap macro-reference.png — deep_ocean #3A7AB8, ocean #5098D0, shallows #78BCE0, lake #4A8FC0, river #68B0D8
+- [Phase 03-coastlines-water-elevation]: generateWorld() returns WorldGenResult not HexTile[] — all call sites use .tiles
+- [Phase 03-coastlines-water-elevation]: CoastlineMesh two-layer approach: shallows band (z=0.01) + land boundary (z=0.02) using ShapeGeometry from marching squares loops
+- [Phase 03-coastlines-water-elevation]: Winding order: positive SVG signed area (CCW in y-down) reversed after Y-flip to maintain CCW in Three.js y-up
 
 ### Pending Todos
 
@@ -77,6 +83,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T20:57:51.918Z
-Stopped at: Phase 3 context updated
-Resume: Phase 02 Plan 03 (hydrology: rivers, lakes, depression filling)
+Last session: 2026-03-21T22:32:00.000Z
+Stopped at: Completed 03-01-PLAN.md (coastline mask + water depth bands + worldgen threading)
+Resume: Phase 03 Plan 02 (river overlay rendering)
