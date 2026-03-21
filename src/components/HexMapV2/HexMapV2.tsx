@@ -12,6 +12,7 @@ import { hexToPixel } from '../../lib/hexMath';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import { createHexGridLines } from './scene/HexGridLines';
+import { createCoastlineMesh } from './scene/CoastlineMesh';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -121,7 +122,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -212,6 +213,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const gridLines = createHexGridLines(tiles);
         scene.add(gridLines);
 
+        // Build coastline overlay — organic shoreline from marching squares contours (Plan 03-01)
+        // Renders above hex fill (renderOrder = COASTLINE = 1), below grid lines (renderOrder = GRID = 2)
+        const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed);
+        scene.add(coastlineMesh);
+
         // Selected hex ring (initially hidden)
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
@@ -283,6 +289,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           scene.clear();
           fillMesh.geometry.dispose();
           gridLines.geometry.dispose();
+          // Dispose coastline mesh children geometries and materials
+          for (const child of coastlineMesh.children) {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              if (Array.isArray(child.material)) {
+                for (const mat of child.material) mat.dispose();
+              } else {
+                child.material.dispose();
+              }
+            }
+          }
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
           hexScene?.dispose();
@@ -295,7 +312,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, seed]);
+    }, [tiles, cols, rows, seed]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
