@@ -171,6 +171,18 @@ export const VOLCANO_MIN_ELEVATION = 0.70;
 /** Minimum temperature for volcano placement */
 export const VOLCANO_MIN_TEMPERATURE = 0.4;
 
+// ─── Hydrology: delta generation constants ────────────────────────
+/** Hexes from coast where delta forking begins */
+export const DELTA_FORK_DISTANCE_FROM_COAST = 3;
+/** Spread angle of delta branches in radians (45 degrees) */
+export const DELTA_FAN_ANGLE = Math.PI / 4;
+/** Number of delta branches (in addition to main channel) */
+export const DELTA_BRANCH_COUNT = 2;
+
+// ─── Hydrology: wetland placement constants ───────────────────────
+/** Hexes around river-sea junction where wetlands spawn */
+export const WETLAND_SPAWN_PROBABILITY = 0.6; // fraction of eligible hexes that become wetland
+
 // ─── Adjacency smoothing constants ────────────────────────────────
 /** Maximum iterations of adjacency smoothing */
 export const SMOOTHING_MAX_ITERATIONS = 3;
