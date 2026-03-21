@@ -67,7 +67,7 @@ Plans:
   3. River width visibly increases from thin mountain streams to wide lowland rivers
   4. Mountain edges display caterpillar tick marks that get denser on steeper slopes
   5. Thin hex grid lines are visible at hero-local and regional zoom without obscuring terrain
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [x] 03-01-PLAN.md — Coastline mask rendering, water depth bands, lake fill, worldgen data threading, STYLE.md color update ✅ 2026-03-21
@@ -171,7 +171,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 |-------|----------------|--------|-----------|
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
-| 3. Coastlines, Water & Elevation | 1/3 | In progress | - |
+| 3. Coastlines, Water & Elevation | 2/3 | In Progress|  |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
