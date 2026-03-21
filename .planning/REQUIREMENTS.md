@@ -9,12 +9,12 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Renderer (RNDR)
 
-- [ ] **RNDR-01**: Three.js orthographic camera renders a 200×300 hex grid (60K hexes) at 60fps
+- [ ] **RNDR-01**: Three.js orthographic camera renders a 200x300 hex grid (60K hexes) at 60fps
 - [ ] **RNDR-02**: Hex fills use InstancedMesh with per-instance color attributes (one draw call for all hex fills)
 - [ ] **RNDR-03**: Frustum culling skips off-screen hexes from all render passes
-- [ ] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification → snap to hex)
-- [ ] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world → screen coords)
-- [ ] **RNDR-06**: 13-layer render order implemented (hex fill → coastline → grid → ticks → rivers → roads → borders → signifiers → locations → agents → events → labels → fog)
+- [ ] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification -> snap to hex)
+- [ ] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world -> screen coords)
+- [ ] **RNDR-06**: 13-layer render order implemented (hex fill -> coastline -> grid -> ticks -> rivers -> roads -> borders -> signifiers -> locations -> agents -> events -> labels -> fog)
 
 ### World Generation (WGEN)
 
@@ -25,7 +25,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [ ] **WGEN-05**: River generation via flow accumulation on hex grid — precipitation-driven sources, steepest-descent routing, lake formation in depressions
 - [ ] **WGEN-06**: Temperature reassessment pass incorporating lake effect and river valley cooling
 - [ ] **WGEN-07**: Hex grid overlay samples all continuous fields at 7 points per hex (center + 6 corners)
-- [ ] **WGEN-08**: Whittaker diagram maps temperature × moisture to one of 27 base terrain types
+- [ ] **WGEN-08**: Whittaker diagram maps temperature x moisture to one of 27 base terrain types
 - [ ] **WGEN-09**: Elevation overrides assign highland types (hills, mountains, plateau, mountain_pass) based on elevation thresholds
 - [ ] **WGEN-10**: Wetland overrides assign marsh/swamp/moor_bog/floodplain based on low elevation + high moisture
 - [ ] **WGEN-11**: Desert sub-type selection (sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands) from local noise
@@ -38,7 +38,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [ ] **WATR-01**: Coastal hexes retain inland biome — coastline rendered as mask, not terrain type
 - [ ] **WATR-02**: Marching-squares interpolation within coastal hexes produces organic shoreline from 7-point samples
 - [ ] **WATR-03**: Water depth bands render as shallows / mid-ocean / deep-ocean based on elevation below sea level
-- [ ] **WATR-04**: Rivers rendered as curved blue overlay lines through hexes (entry edge → exit edge), not as terrain type
+- [ ] **WATR-04**: Rivers rendered as curved blue overlay lines through hexes (entry edge -> exit edge), not as terrain type
 - [ ] **WATR-05**: River width proportional to flow accumulation (thin streams near source, wide near coast)
 - [ ] **WATR-06**: Lakes rendered as filled hex regions where drainage pass filled depressions
 
@@ -48,7 +48,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [ ] **TERR-02**: Tait-derived hex color palette maps each terrain type to a distinct, readable hex color
 - [ ] **TERR-03**: Water palette (shallows, ocean, deep_ocean, lake, river) separate from terrain palette
 - [ ] **TERR-04**: Hard terrain transitions at hex boundaries — no blending, no gradients between adjacent types
-- [ ] **TERR-05**: Optional per-hex brightness noise (±5%) to break up large uniform regions
+- [ ] **TERR-05**: Optional per-hex brightness noise (+/-5%) to break up large uniform regions
 
 ### Regions (REGN)
 
@@ -73,7 +73,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 - [ ] **LSIG-01**: Each of 27 terrain types has 2-5 SVG signifier variants (dark silhouette icons)
 - [ ] **LSIG-02**: Signifier variant selected deterministically per hex (seeded by hex coordinates)
-- [ ] **LSIG-03**: Signifiers rendered with slight position jitter (±10%) and rotation (±15°) for organic feel
+- [ ] **LSIG-03**: Signifiers rendered with slight position jitter (+/-10%) and rotation (+/-15deg) for organic feel
 - [ ] **LSIG-04**: Signifier size scales with hex render size (hidden below regional zoom threshold)
 - [ ] **LSIG-05**: All signifiers share consistent stroke weight, detail level, and color treatment (stylistic unity)
 
@@ -164,7 +164,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [ ] **FOG-03**: Visible hexes (occupied by retinue agent) render everything including dynamic content (agents, events, activity)
 - [ ] **FOG-04**: Default sight range = 0 (own hex only). Elevated positions add +1. Magic/scrying adds variable range.
 - [ ] **FOG-05**: Fog implemented as per-hex culling (skip expensive render layers), not post-process overlay
-- [ ] **FOG-06**: Reveal animation: unexplored→explored fade-in ~300ms, visible→explored dim-out ~500ms
+- [ ] **FOG-06**: Reveal animation: unexplored->explored fade-in ~300ms, visible->explored dim-out ~500ms
 
 ### Zoom LOD (ZOOM)
 
@@ -228,13 +228,148 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (populated by roadmapper) | | |
+| RNDR-01 | Phase 1 | Pending |
+| RNDR-02 | Phase 1 | Pending |
+| RNDR-03 | Phase 1 | Pending |
+| RNDR-04 | Phase 1 | Pending |
+| RNDR-05 | Phase 1 | Pending |
+| RNDR-06 | Phase 1 | Pending |
+| TERR-01 | Phase 1 | Pending |
+| TERR-02 | Phase 1 | Pending |
+| TERR-03 | Phase 1 | Pending |
+| TERR-04 | Phase 1 | Pending |
+| TERR-05 | Phase 1 | Pending |
+| WGEN-01 | Phase 2 | Pending |
+| WGEN-02 | Phase 2 | Pending |
+| WGEN-03 | Phase 2 | Pending |
+| WGEN-04 | Phase 2 | Pending |
+| WGEN-05 | Phase 2 | Pending |
+| WGEN-06 | Phase 2 | Pending |
+| WGEN-07 | Phase 2 | Pending |
+| WGEN-08 | Phase 2 | Pending |
+| WGEN-09 | Phase 2 | Pending |
+| WGEN-10 | Phase 2 | Pending |
+| WGEN-11 | Phase 2 | Pending |
+| WGEN-12 | Phase 2 | Pending |
+| WGEN-13 | Phase 2 | Pending |
+| WATR-01 | Phase 3 | Pending |
+| WATR-02 | Phase 3 | Pending |
+| WATR-03 | Phase 3 | Pending |
+| WATR-04 | Phase 3 | Pending |
+| WATR-05 | Phase 3 | Pending |
+| WATR-06 | Phase 3 | Pending |
+| ELEV-01 | Phase 3 | Pending |
+| ELEV-02 | Phase 3 | Pending |
+| ELEV-03 | Phase 3 | Pending |
+| ELEV-04 | Phase 3 | Pending |
+| GRID-01 | Phase 3 | Pending |
+| REGN-01 | Phase 4 | Pending |
+| REGN-02 | Phase 4 | Pending |
+| REGN-03 | Phase 4 | Pending |
+| REGN-04 | Phase 4 | Pending |
+| REGN-05 | Phase 4 | Pending |
+| REGN-06 | Phase 4 | Pending |
+| REGN-07 | Phase 4 | Pending |
+| REGN-08 | Phase 4 | Pending |
+| REGN-09 | Phase 4 | Pending |
+| GRID-02 | Phase 4 | Pending |
+| COMP-01 | Phase 5 | Pending |
+| COMP-02 | Phase 5 | Pending |
+| COMP-03 | Phase 5 | Pending |
+| COMP-04 | Phase 5 | Pending |
+| LSIG-01 | Phase 5 | Pending |
+| LSIG-02 | Phase 5 | Pending |
+| LSIG-03 | Phase 5 | Pending |
+| LSIG-04 | Phase 5 | Pending |
+| LSIG-05 | Phase 5 | Pending |
+| LART-01 | Phase 5 | Pending |
+| LART-02 | Phase 5 | Pending |
+| LART-03 | Phase 5 | Pending |
+| LART-04 | Phase 5 | Pending |
+| LART-05 | Phase 5 | Pending |
+| LART-06 | Phase 5 | Pending |
+| LART-07 | Phase 5 | Pending |
+| LART-08 | Phase 5 | Pending |
+| LART-09 | Phase 5 | Pending |
+| LART-10 | Phase 5 | Pending |
+| LART-11 | Phase 5 | Pending |
+| LART-12 | Phase 5 | Pending |
+| LART-13 | Phase 5 | Pending |
+| LART-14 | Phase 5 | Pending |
+| LART-15 | Phase 5 | Pending |
+| LART-16 | Phase 5 | Pending |
+| LART-17 | Phase 5 | Pending |
+| LART-18 | Phase 5 | Pending |
+| LART-19 | Phase 5 | Pending |
+| LART-20 | Phase 5 | Pending |
+| LART-21 | Phase 5 | Pending |
+| LART-22 | Phase 5 | Pending |
+| LART-23 | Phase 5 | Pending |
+| LART-24 | Phase 5 | Pending |
+| LART-25 | Phase 5 | Pending |
+| LART-26 | Phase 5 | Pending |
+| LART-27 | Phase 5 | Pending |
+| LART-28 | Phase 5 | Pending |
+| LART-29 | Phase 5 | Pending |
+| LART-30 | Phase 5 | Pending |
+| LOCI-01 | Phase 6 | Pending |
+| LOCI-02 | Phase 6 | Pending |
+| LOCI-03 | Phase 6 | Pending |
+| LOCI-04 | Phase 6 | Pending |
+| LOCI-05 | Phase 6 | Pending |
+| LIART-01 | Phase 6 | Pending |
+| LIART-02 | Phase 6 | Pending |
+| LIART-03 | Phase 6 | Pending |
+| LIART-04 | Phase 6 | Pending |
+| LIART-05 | Phase 6 | Pending |
+| LIART-06 | Phase 6 | Pending |
+| LIART-07 | Phase 6 | Pending |
+| LIART-08 | Phase 6 | Pending |
+| LIART-09 | Phase 6 | Pending |
+| LIART-10 | Phase 6 | Pending |
+| LIART-11 | Phase 6 | Pending |
+| LIART-12 | Phase 6 | Pending |
+| LIART-13 | Phase 6 | Pending |
+| LIART-14 | Phase 6 | Pending |
+| LIART-15 | Phase 6 | Pending |
+| LIART-16 | Phase 6 | Pending |
+| LIART-17 | Phase 6 | Pending |
+| COMP-05 | Phase 6 | Pending |
+| AGNT-01 | Phase 6 | Pending |
+| AGNT-02 | Phase 6 | Pending |
+| AGNT-03 | Phase 6 | Pending |
+| AGNT-04 | Phase 6 | Pending |
+| AGNT-05 | Phase 6 | Pending |
+| AGNT-06 | Phase 6 | Pending |
+| AGNT-07 | Phase 6 | Pending |
+| AGNT-08 | Phase 6 | Pending |
+| FOG-01 | Phase 7 | Pending |
+| FOG-02 | Phase 7 | Pending |
+| FOG-03 | Phase 7 | Pending |
+| FOG-04 | Phase 7 | Pending |
+| FOG-05 | Phase 7 | Pending |
+| FOG-06 | Phase 7 | Pending |
+| ZOOM-01 | Phase 7 | Pending |
+| ZOOM-02 | Phase 7 | Pending |
+| ZOOM-03 | Phase 7 | Pending |
+| ZOOM-04 | Phase 7 | Pending |
+| ZOOM-05 | Phase 7 | Pending |
+| ZOOM-06 | Phase 7 | Pending |
+| GRID-03 | Phase 7 | Pending |
+| GRID-04 | Phase 7 | Pending |
+| INTG-01 | Phase 8 | Pending |
+| INTG-02 | Phase 8 | Pending |
+| INTG-03 | Phase 8 | Pending |
+| INTG-04 | Phase 8 | Pending |
+| INTG-05 | Phase 8 | Pending |
+| INTG-06 | Phase 8 | Pending |
+| WGEN-14 | Phase 8 | Pending |
 
 **Coverage:**
-- v1 requirements: 93 total
-- Mapped to phases: 0
-- Unmapped: 93 ⚠️
+- v1 requirements: 136 total
+- Mapped to phases: 136
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-21*
-*Last updated: 2026-03-21 after initial definition*
+*Last updated: 2026-03-21 after roadmap creation*
