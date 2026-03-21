@@ -10,11 +10,11 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 ### Renderer (RNDR)
 
 - [ ] **RNDR-01**: Three.js orthographic camera renders a 200x300 hex grid (60K hexes) at 60fps
-- [ ] **RNDR-02**: Hex fills use InstancedMesh with per-instance color attributes (one draw call for all hex fills)
+- [x] **RNDR-02**: Hex fills use InstancedMesh with per-instance color attributes (one draw call for all hex fills) ✅ 01-01
 - [ ] **RNDR-03**: Frustum culling skips off-screen hexes from all render passes
 - [ ] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification -> snap to hex)
 - [ ] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world -> screen coords)
-- [ ] **RNDR-06**: 13-layer render order implemented (hex fill -> coastline -> grid -> ticks -> rivers -> roads -> borders -> signifiers -> locations -> agents -> events -> labels -> fog)
+- [x] **RNDR-06**: 13-layer render order implemented (hex fill -> coastline -> grid -> ticks -> rivers -> roads -> borders -> signifiers -> locations -> agents -> events -> labels -> fog) ✅ 01-01
 
 ### World Generation (WGEN)
 
@@ -44,11 +44,11 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Terrain Types & Palette (TERR)
 
-- [ ] **TERR-01**: Type system defines exactly 27 base terrain types (lowland 4, forest 5, wet 3, highland 6, desert 5, cold 3, volcanic 2, special 2)
-- [ ] **TERR-02**: Tait-derived hex color palette maps each terrain type to a distinct, readable hex color
-- [ ] **TERR-03**: Water palette (shallows, ocean, deep_ocean, lake, river) separate from terrain palette
-- [ ] **TERR-04**: Hard terrain transitions at hex boundaries — no blending, no gradients between adjacent types
-- [ ] **TERR-05**: Optional per-hex brightness noise (+/-5%) to break up large uniform regions
+- [x] **TERR-01**: Type system defines exactly 27 base terrain types (lowland 4, forest 5, wet 3, highland 6, desert 5, cold 3, volcanic 2, special 2) ✅ 01-01
+- [x] **TERR-02**: Tait-derived hex color palette maps each terrain type to a distinct, readable hex color ✅ 01-01
+- [x] **TERR-03**: Water palette (shallows, ocean, deep_ocean, lake, river) separate from terrain palette ✅ 01-01
+- [x] **TERR-04**: Hard terrain transitions at hex boundaries — no blending, no gradients between adjacent types ✅ 01-01
+- [x] **TERR-05**: Optional per-hex brightness noise (+/-5%) to break up large uniform regions ✅ 01-01
 
 ### Regions (REGN)
 
@@ -228,17 +228,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| RNDR-01 | Phase 1 | Pending |
-| RNDR-02 | Phase 1 | Pending |
+| RNDR-01 | Phase 1 | Pending (partial: renderer built, 60fps verified in Plan 02) |
+| RNDR-02 | Phase 1 | Complete ✅ 01-01 |
 | RNDR-03 | Phase 1 | Pending |
 | RNDR-04 | Phase 1 | Pending |
 | RNDR-05 | Phase 1 | Pending |
-| RNDR-06 | Phase 1 | Pending |
-| TERR-01 | Phase 1 | Pending |
-| TERR-02 | Phase 1 | Pending |
-| TERR-03 | Phase 1 | Pending |
-| TERR-04 | Phase 1 | Pending |
-| TERR-05 | Phase 1 | Pending |
+| RNDR-06 | Phase 1 | Complete ✅ 01-01 |
+| TERR-01 | Phase 1 | Complete ✅ 01-01 |
+| TERR-02 | Phase 1 | Complete ✅ 01-01 |
+| TERR-03 | Phase 1 | Complete ✅ 01-01 |
+| TERR-04 | Phase 1 | Complete ✅ 01-01 |
+| TERR-05 | Phase 1 | Complete ✅ 01-01 |
 | WGEN-01 | Phase 2 | Pending |
 | WGEN-02 | Phase 2 | Pending |
 | WGEN-03 | Phase 2 | Pending |

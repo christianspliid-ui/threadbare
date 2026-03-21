@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Scene scaffold, palette, InstancedMesh hex fill, grid lines, ?view=hexv2 route
+- [x] 01-01-PLAN.md — Scene scaffold, palette, InstancedMesh hex fill, grid lines, ?view=hexv2 route ✅ 2026-03-21
 - [ ] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states
 
 ### Phase 2: World Generation
