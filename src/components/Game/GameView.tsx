@@ -5,7 +5,8 @@ import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
 import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
-import { getEncountersByLocationType, getAnyEncounterById } from '../../data/encounter-content';
+import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
+import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
 import { useAvatarData } from './hooks/useAvatarData';
 import { useScry } from './hooks/useScry';
@@ -338,8 +339,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       ? locProps.locationSubtype
       : '';
 
-    // Get available encounters for this location type
-    const available = subtype ? getEncountersByLocationType(subtype) : [];
+    // Get available encounters for this location type + its sublocation types
+    const sublocationTypeIds = (SUBTYPE_SUBLOCATION_MAP[subtype] ?? []).map(d => d.id);
+    const available = subtype ? getEncountersForLocation(subtype, sublocationTypeIds) : [];
 
     // Get active encounters whose actor is at this location
     const active = gameState.encounterProgress.filter(p => {
@@ -732,8 +734,10 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             currentTick={gameState.tick}
             followAgentId={selectedAgentId ?? undefined}
             onClose={handleToggleDebug}
+            graph={gameState.graph}
             cacheEntries={getEncounterCacheManager()?.getAllEntries()}
             encounterProgress={gameState.encounterProgress}
+            onZoomToLocation={handleZoomToLocation}
           />
         ) : (
           <div
@@ -742,7 +746,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             style={{
               width: 'var(--sidebar-width)',
               background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-              borderLeft: '1px solid var(--border-subtle)',
+              borderLeft: '1px solid var(--border-gold)',
             }}
           >
             {agentInfoCard ? (

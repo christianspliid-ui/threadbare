@@ -32,7 +32,7 @@
 - UI Design Audit Phase 2 (spacing consolidation, typography enforcement, panel glass consistency)
 - UI Design Audit Phase 3 (animation cleanup, empty states, focus management, touch hover)
 
-**Latest implementation:** Idle Decision Tracing (2026-03-20) — agents now trace why they idle (filter/cooldown/threshold), what idle action they chose, and the full filter pipeline counts. Filter and scoring traces also now emitted. — agents now target specific encounters at specific sublocations, not location-level approximations.
+**Latest implementation:** Revert to 2D-only map (2026-03-21) — removed WebGL/3D hex map renderer, all GLTF model assets, Three.js/R3F dependencies, and Felix Turner reference code. Decision: invest in making the 2D canvas map beautiful instead of maintaining two rendering paths.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
