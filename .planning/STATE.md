@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 03-01-PLAN.md (coastline mask + water depth bands + worldgen threading)
-last_updated: "2026-03-21T22:32:00.000Z"
-last_activity: 2026-03-21 — Coastline overlay, water depth bands, lake coloring, WorldGenResult threading (2 tasks, 23 TDD tests)
+status: unknown
+stopped_at: Completed 03-02-PLAN.md (river overlay rendering with quad strips)
+last_updated: "2026-03-21T21:31:48.392Z"
+last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 2
-  total_plans: 7
-  completed_plans: 6
+  total_plans: 8
+  completed_plans: 7
   percent: 21
 ---
 
@@ -49,6 +49,7 @@ Progress: [███░░░░░░░] 21%
 *Updated after each plan completion*
 | Phase 02-world-generation P03 | 10 | 2 tasks | 7 files |
 | Phase 03-coastlines-water-elevation P01 | 10 | 2 tasks | 17 files |
+| Phase 03-coastlines-water-elevation P02 | 264 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -72,6 +73,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 03-coastlines-water-elevation]: generateWorld() returns WorldGenResult not HexTile[] — all call sites use .tiles
 - [Phase 03-coastlines-water-elevation]: CoastlineMesh two-layer approach: shallows band (z=0.01) + land boundary (z=0.02) using ShapeGeometry from marching squares loops
 - [Phase 03-coastlines-water-elevation]: Winding order: positive SVG signed area (CCW in y-down) reversed after Y-flip to maintain CCW in Three.js y-up
+- [Phase 03-coastlines-water-elevation]: Mesh quad strips used for river width (not linewidth — WebGL clamps to 1px)
+- [Phase 03-coastlines-water-elevation]: All river paths merged into one BufferGeometry for minimal draw calls
 
 ### Pending Todos
 
@@ -83,6 +86,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T22:32:00.000Z
-Stopped at: Completed 03-01-PLAN.md (coastline mask + water depth bands + worldgen threading)
+Last session: 2026-03-21T21:31:48.390Z
+Stopped at: Completed 03-02-PLAN.md (river overlay rendering with quad strips)
 Resume: Phase 03 Plan 02 (river overlay rendering)

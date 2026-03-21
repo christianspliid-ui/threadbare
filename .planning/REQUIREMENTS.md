@@ -38,8 +38,8 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **WATR-01**: Coastal hexes retain inland biome — coastline rendered as mask, not terrain type
 - [x] **WATR-02**: Marching-squares interpolation within coastal hexes produces organic shoreline from 7-point samples
 - [x] **WATR-03**: Water depth bands render as shallows / mid-ocean / deep-ocean based on elevation below sea level
-- [ ] **WATR-04**: Rivers rendered as curved blue overlay lines through hexes (entry edge -> exit edge), not as terrain type
-- [ ] **WATR-05**: River width proportional to flow accumulation (thin streams near source, wide near coast)
+- [x] **WATR-04**: Rivers rendered as curved blue overlay lines through hexes (entry edge -> exit edge), not as terrain type
+- [x] **WATR-05**: River width proportional to flow accumulation (thin streams near source, wide near coast)
 - [x] **WATR-06**: Lakes rendered as filled hex regions where drainage pass filled depressions
 
 ### Terrain Types & Palette (TERR)
@@ -255,8 +255,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WATR-01 | Phase 3 | Complete |
 | WATR-02 | Phase 3 | Complete |
 | WATR-03 | Phase 3 | Complete |
-| WATR-04 | Phase 3 | Pending |
-| WATR-05 | Phase 3 | Pending |
+| WATR-04 | Phase 3 | Complete |
+| WATR-05 | Phase 3 | Complete |
 | WATR-06 | Phase 3 | Complete |
 | ELEV-01 | Phase 3 | Pending |
 | ELEV-02 | Phase 3 | Pending |
