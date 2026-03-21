@@ -13,7 +13,7 @@
  *   ocean:      #5098d0 — mid ocean (medium blue)
  *   shallows:   #78bce0 — coastal shallows (light blue near coasts)
  *   lake:       #4a8fc0 — inland lake water (similar to ocean but distinct teal-blue)
- *   river:      #68b0d8 — river water (lighter, flowing blue)
+ *   river:      #78bce0 — river water (matches shallows per user decision)
  */
 
 export const WATER_PALETTE: Record<string, string> = {
@@ -21,7 +21,7 @@ export const WATER_PALETTE: Record<string, string> = {
   ocean:      '#5098D0',
   deep_ocean: '#3A7AB8',
   lake:       '#4A8FC0',
-  river:      '#68B0D8',
+  river:      '#78BCE0',
 } as const;
 
 /**
