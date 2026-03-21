@@ -1,4 +1,4 @@
-import type { HexCoord } from '../../../types';
+import type { HexCoord, GeoParams } from '../../../types';
 import { INTERACTION_CONSTANTS } from './HexRaycaster';
 
 /**
@@ -32,6 +32,20 @@ interface HexTooltipProps {
   canvasHeight: number;
   /** Raw terrain key — if this is a water terrain, override terrainName with water label */
   terrainKey?: string;
+  /** Geo parameters for dev debug display */
+  geoParams?: GeoParams;
+  /** Whether the hex has a river */
+  hasRiver?: boolean;
+}
+
+/** Format a 0-1 float as a percentage string */
+function pct(v: number): string {
+  return `${(v * 100).toFixed(0)}%`;
+}
+
+/** Format a float to 2 decimal places */
+function f2(v: number): string {
+  return v.toFixed(2);
 }
 
 /**
@@ -52,15 +66,17 @@ export function HexTooltip({
   canvasWidth,
   canvasHeight,
   terrainKey,
+  geoParams,
+  hasRiver,
 }: HexTooltipProps) {
   // Resolve display name: water terrains use their own labels per copywriting contract
   const displayName = terrainKey && WATER_DISPLAY_LABELS[terrainKey]
     ? WATER_DISPLAY_LABELS[terrainKey]
     : terrainName;
 
-  // Estimated tooltip dimensions for clamping (actual size unknown pre-render)
-  const estimatedWidth  = 140;
-  const estimatedHeight = 46;
+  // Estimated tooltip dimensions for clamping (wider now with geo data)
+  const estimatedWidth  = 180;
+  const estimatedHeight = geoParams ? 100 : 46;
   const offsetY = INTERACTION_CONSTANTS.TOOLTIP_OFFSET_Y;
 
   // Position tooltip above the hex center
@@ -73,6 +89,14 @@ export function HexTooltip({
 
   // If tooltip would go above canvas, flip it below the hex
   if (top < 4) top = screenY + offsetY;
+
+  const dimStyle = {
+    color:      'var(--text-tertiary)',
+    fontSize:   '10px',
+    fontWeight:  400 as const,
+    fontFamily: 'monospace',
+    lineHeight: 1.5,
+  };
 
   return (
     <div
@@ -101,6 +125,9 @@ export function HexTooltip({
         }}
       >
         {displayName}
+        {hasRiver && (
+          <span style={{ color: 'var(--text-secondary)', fontWeight: 400 }}> 🌊</span>
+        )}
       </div>
       {/* Secondary line: coordinates */}
       <div
@@ -113,7 +140,17 @@ export function HexTooltip({
         }}
       >
         ({coord.col}, {coord.row})
+        {terrainKey && terrainKey !== displayName.toLowerCase() && (
+          <span style={{ color: 'var(--text-tertiary)', marginLeft: 4 }}>{terrainKey}</span>
+        )}
       </div>
+      {/* Dev debug: geo parameters */}
+      {geoParams && (
+        <div style={{ marginTop: 2, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 2 }}>
+          <div style={dimStyle}>elev {f2(geoParams.elevation)} · temp {f2(geoParams.temperature)}</div>
+          <div style={dimStyle}>moist {pct(geoParams.moisture)}</div>
+        </div>
+      )}
     </div>
   );
 }
