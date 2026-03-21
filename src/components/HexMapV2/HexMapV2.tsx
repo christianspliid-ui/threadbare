@@ -126,6 +126,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const cameraRef   = useRef<THREE.OrthographicCamera | null>(null);
     const zoomRef     = useRef<import('d3').ZoomBehavior<HTMLCanvasElement, unknown> | null>(null);
     const destroyZoomRef = useRef<(() => void) | null>(null);
+    const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
+    const clearZoomTargetRef = useRef<(() => void) | null>(null);
 
     // Tooltip state (internal — not exposed to parent)
     const [tooltip, setTooltip] = useState<{
@@ -203,9 +205,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(hoverOverlay);
 
         // Set up d3-zoom — attaches to canvas, drives OrthographicCamera
-        const { zoom, destroy } = setupD3Zoom(canvas, camera);
+        const { zoom, setZoomTarget, clearZoomTarget, destroy } = setupD3Zoom(canvas, camera);
         zoomRef.current = zoom;
         destroyZoomRef.current = destroy;
+        setZoomTargetRef.current = setZoomTarget;
+        clearZoomTargetRef.current = clearZoomTarget;
 
         // Update selection ring when selectedHex prop changes
         // This runs inside the effect on mount; prop changes are handled separately below.
@@ -257,6 +261,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
+          setZoomTargetRef.current = null;
+          clearZoomTargetRef.current = null;
           cameraRef.current = null;
           scene.clear();
           fillMesh.geometry.dispose();
@@ -275,12 +281,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tiles, seed]);
 
-    // Update selection ring when selectedHex prop changes without re-mounting
+    // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
       const canvas = canvasRef.current as (HTMLCanvasElement & {
         _updateSelectionRing?: (h: HexCoord | null) => void;
       }) | null;
       canvas?._updateSelectionRing?.(selectedHex);
+
+      // Set zoom target so scroll-zoom converges on the selected hex
+      if (selectedHex) {
+        const { x, y } = hexToPixel(selectedHex, HEX_CONSTANTS.HEX_SIZE);
+        setZoomTargetRef.current?.(x, -y); // Y-flip to match world space
+      } else {
+        clearZoomTargetRef.current?.();
+      }
     }, [selectedHex]);
 
     // ── Mouse event handlers ───────────────────────────────────────
