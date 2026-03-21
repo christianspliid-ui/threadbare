@@ -15,6 +15,10 @@ import { runGridPass } from './passes/pass00-grid';
 import { runProvincePass } from './passes/pass01-provinces';
 import { runElevationPass } from './passes/pass02-elevation';
 import { runCoastlinePass } from './passes/pass03-coastline';
+import { runClimatePass } from './passes/pass04-climate';
+import { runTempReassessPass } from './passes/pass06-tempReassess';
+import { runBiomePass } from './passes/pass07-biome';
+import { runSmoothingPass } from './passes/pass08-smoothing';
 import type { WorldGenContext, WorldGenParams } from './types';
 
 export class WorldGenPipeline {
@@ -23,7 +27,12 @@ export class WorldGenPipeline {
     this._runPass('province', () => runProvincePass(ctx, params));
     this._runPass('elevation', () => runElevationPass(ctx, params));
     this._runPass('coastline', () => runCoastlinePass(ctx, params));
-    // Passes 04-09 will be added in Plans 02-02 and 02-03
+    this._runPass('climate', () => runClimatePass(ctx, params));
+    // Pass 05: Hydrology will be added in Plan 02-03
+    // runHydrologyPass(ctx, params);
+    this._runPass('tempReassess', () => runTempReassessPass(ctx));
+    this._runPass('biome', () => runBiomePass(ctx));
+    this._runPass('smoothing', () => runSmoothingPass(ctx));
     return ctx;
   }
 

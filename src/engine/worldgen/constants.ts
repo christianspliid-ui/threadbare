@@ -108,6 +108,75 @@ export const COASTAL_NOISE_RANGE = 3;
 /** Number of sample points per hex (center + 6 corners) */
 export const HEX_SAMPLE_POINTS = 7;
 
+// ─── Climate: temperature constants ──────────────────────────────
+/** How much latitude dominates temperature (0-1) */
+export const TEMP_LATITUDE_WEIGHT = 0.6;
+/** Temperature drop per unit elevation above sea level */
+export const TEMP_ALTITUDE_PENALTY = 0.3;
+/** Random variation weight in temperature */
+export const TEMP_NOISE_WEIGHT = 0.15;
+/** Spatial scale for temperature noise (from forceField.ts) */
+export const TEMP_NOISE_SCALE = 0.04;
+/** Hexes from coast that receive maritime temperature moderation */
+export const TEMP_MARITIME_RADIUS = 5;
+/** How strongly maritime proximity pulls temperature toward 0.5 */
+export const TEMP_MARITIME_STRENGTH = 0.15;
+
+// ─── Climate: moisture constants ──────────────────────────────────
+/** Moisture bonus at coast, decaying inland */
+export const MOISTURE_COASTAL_BONUS = 0.25;
+/** Decay rate per hex from coast (applied to coastal bonus) */
+export const MOISTURE_COASTAL_DECAY = 0.04;
+/** Random variation weight in moisture */
+export const MOISTURE_NOISE_WEIGHT = 0.2;
+/** Spatial scale for moisture noise */
+export const MOISTURE_NOISE_SCALE = 0.05;
+/** Hexes past ridge spine where rain shadow begins */
+export const RAIN_SHADOW_ONSET_DISTANCE = 1;
+/** Moisture reduction on downwind side of a ridge */
+export const RAIN_SHADOW_PENALTY = 0.25;
+/** How quickly rain shadow penalty decays per hex from ridge */
+export const RAIN_SHADOW_DECAY = 0.05;
+/**
+ * Prevailing wind direction: angle (radians) the wind travels TO.
+ * Math.PI * 0.75 = ~135° = southeast. Winds originate from the northwest.
+ */
+export const PREVAILING_WIND_ANGLE = Math.PI * 0.75;
+
+// ─── Temperature reassessment constants ──────────────────────────
+/** Hexes from lake shore where lake-effect temperature moderation applies */
+export const LAKE_EFFECT_RADIUS = 3;
+/** Strength of lake-effect moderation (pulls temp toward 0.5) */
+export const LAKE_EFFECT_STRENGTH = 0.08;
+/** Minimum lake size (hexes) to produce lake-effect moderation */
+export const LAKE_MIN_SIZE_FOR_EFFECT = 3;
+/** Temperature boost applied to all river valley hexes */
+export const RIVER_VALLEY_TEMP_BOOST = 0.03;
+/** Moisture boost applied to all river valley hexes */
+export const RIVER_VALLEY_MOISTURE_BOOST = 0.08;
+
+// ─── Biome override constants ─────────────────────────────────────
+/** Moisture threshold above which low-elevation hexes become wetlands */
+export const WETLAND_MOISTURE_THRESHOLD = 0.65;
+/** Maximum elevation for wetland classification */
+export const WETLAND_ELEVATION_MAX = 0.45;
+/** Radius from river mouth where floodplain override applies */
+export const WETLAND_RIVER_MOUTH_RADIUS = 2;
+/** Radius from lake shore where marsh override applies */
+export const WETLAND_LAKE_SHORE_RADIUS = 1;
+/** Spatial scale for desert sub-type noise */
+export const DESERT_SUBTYPE_NOISE_SCALE = 0.15;
+/** Minimum elevation for volcano placement */
+export const VOLCANO_MIN_ELEVATION = 0.70;
+/** Minimum temperature for volcano placement */
+export const VOLCANO_MIN_TEMPERATURE = 0.4;
+
+// ─── Adjacency smoothing constants ────────────────────────────────
+/** Maximum iterations of adjacency smoothing */
+export const SMOOTHING_MAX_ITERATIONS = 3;
+/** Stop smoothing when fewer than this fraction of hexes change per iteration */
+export const SMOOTHING_MAX_PERCENT = 0.05;
+
 // ─── Province elevation bias targets ─────────────────────────────
 /** Target elevation range for mountain province bias [min, max] */
 export const MOUNTAIN_PROVINCE_ELEV_RANGE: [number, number] = [0.7, 0.85];
