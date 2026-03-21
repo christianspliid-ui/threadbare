@@ -3,14 +3,20 @@ import type { CosmologyProfile, HexCoord, HexTile, OverlayMode } from './types';
 import type { AscendantArchetype } from './types/influence';
 import { createBalancedCosmology } from './engine/cosmology';
 import { generateWorld } from './engine/hexGrid';
+import { generateArchetypes } from './engine/ascendant';
 import { HexMap } from './components/HexMap/HexMap';
 import { CosmologyPanel } from './components/Cosmology/CosmologyPanel';
 import { InfoPanel } from './components/UI/InfoPanel';
 import { AscendantSelection } from './components/Ascendant/AscendantSelection';
 import { GameView } from './components/Game/GameView';
 import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
+import { HexV2View } from './components/HexMapV2/HexV2View';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
+
+// V2 renderer grid dimensions: 200×300 = 60K hexes (full world scale)
+const HEXV2_COLS = 200;
+const HEXV2_ROWS = 300;
 
 type GamePhase =
   | { phase: 'worldgen' }
@@ -20,13 +26,35 @@ type GamePhase =
 const DEFAULT_COLS = 20;
 const DEFAULT_ROWS = 15;
 
+/** Pick a random archetype and avatar name for dev quick-start. */
+function quickStartPhase(seed: number): GamePhase {
+  const archetypes = generateArchetypes(4, seed);
+  const archetype = archetypes[seed % archetypes.length];
+  const avatarName = 'The Dev Oracle';
+  return { phase: 'playing', archetype, avatarName };
+}
+
 function App() {
-  // Dev views via URL param: ?view=glow
+  // Dev views via URL param: ?view=glow | ?view=cms | ?view=game
   const viewParam = new URLSearchParams(window.location.search).get('view');
   if (viewParam === 'glow') return <MagicGlowTiles />;
   if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
+  // Three.js renderer V2 — 60K hex grid at full world scale
+  if (viewParam === 'hexv2') {
+    const hexv2Tiles = generateWorld(createBalancedCosmology(), HEXV2_COLS, HEXV2_ROWS, 42);
+    return (
+      <HexV2View
+        tiles={hexv2Tiles}
+        cols={HEXV2_COLS}
+        rows={HEXV2_ROWS}
+        seed={42}
+      />
+    );
+  }
 
-  const [gamePhase, setGamePhase] = useState<GamePhase>({ phase: 'worldgen' });
+  const [gamePhase, setGamePhase] = useState<GamePhase>(() =>
+    viewParam === 'game' ? quickStartPhase(42) : { phase: 'worldgen' }
+  );
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   const [seed, setSeed] = useState(42);
   const [tiles, setTiles] = useState<HexTile[]>(() =>
