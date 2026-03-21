@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-02-PLAN.md (river overlay rendering with quad strips)
-last_updated: "2026-03-21T21:31:48.392Z"
+stopped_at: Completed 03-03-PLAN.md (elevation ticks + GRID-01/ELEV-01 verification) — awaiting checkpoint 03-03 human-verify
+last_updated: "2026-03-21T21:33:38.371Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 21
 ---
 
@@ -50,6 +50,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 02-world-generation P03 | 10 | 2 tasks | 7 files |
 | Phase 03-coastlines-water-elevation P01 | 10 | 2 tasks | 17 files |
 | Phase 03-coastlines-water-elevation P02 | 264 | 2 tasks | 3 files |
+| Phase 03-coastlines-water-elevation P03 | 364 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -75,6 +76,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 03-coastlines-water-elevation]: Winding order: positive SVG signed area (CCW in y-down) reversed after Y-flip to maintain CCW in Three.js y-up
 - [Phase 03-coastlines-water-elevation]: Mesh quad strips used for river width (not linewidth — WebGL clamps to 1px)
 - [Phase 03-coastlines-water-elevation]: All river paths merged into one BufferGeometry for minimal draw calls
+- [Phase 03-coastlines-water-elevation]: ElevationTicks uses hex-pair coord dedup (not vertex-position key) to avoid index-to-neighbor mapping error in odd-q offset grids
+- [Phase 03-coastlines-water-elevation]: ELEV-04 (altitude text labels) cut from Phase 3 per user decision — not implemented
 
 ### Pending Todos
 
@@ -86,6 +89,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T21:31:48.390Z
-Stopped at: Completed 03-02-PLAN.md (river overlay rendering with quad strips)
+Last session: 2026-03-21T21:33:38.369Z
+Stopped at: Completed 03-03-PLAN.md (elevation ticks + GRID-01/ELEV-01 verification) — awaiting checkpoint 03-03 human-verify
 Resume: Phase 03 Plan 02 (river overlay rendering)

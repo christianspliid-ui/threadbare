@@ -64,9 +64,9 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Elevation Visual Language (ELEV)
 
-- [ ] **ELEV-01**: Terrain color passively communicates elevation (browns/golds = elevated, greens = low)
-- [ ] **ELEV-02**: Edge tick marks ("caterpillar" marks) on hex edges where elevation difference exceeds threshold
-- [ ] **ELEV-03**: Tick density scales with steepness (3-8 ticks per edge)
+- [x] **ELEV-01**: Terrain color passively communicates elevation (browns/golds = elevated, greens = low)
+- [x] **ELEV-02**: Edge tick marks ("caterpillar" marks) on hex edges where elevation difference exceeds threshold
+- [x] **ELEV-03**: Tick density scales with steepness (3-8 ticks per edge)
 - [ ] **ELEV-04**: Altitude text labels on named peaks and notable elevations (hero-local + regional zoom only)
 
 ### Landscape Signifiers (LSIG)
@@ -177,7 +177,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Borders & Grid (GRID)
 
-- [ ] **GRID-01**: Thin hex grid lines (0.5-1px, ~12% opacity black) at all zoom levels except full-world
+- [x] **GRID-01**: Thin hex grid lines (0.5-1px, ~12% opacity black) at all zoom levels except full-world
 - [ ] **GRID-02**: River labels (blue italic) along major rivers at regional zoom
 - [ ] **GRID-03**: Road network connecting settlements via pathfinding (solid for major, dotted for trails)
 - [ ] **GRID-04**: Bridge icons where roads cross rivers
@@ -258,11 +258,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WATR-04 | Phase 3 | Complete |
 | WATR-05 | Phase 3 | Complete |
 | WATR-06 | Phase 3 | Complete |
-| ELEV-01 | Phase 3 | Pending |
-| ELEV-02 | Phase 3 | Pending |
-| ELEV-03 | Phase 3 | Pending |
+| ELEV-01 | Phase 3 | Complete |
+| ELEV-02 | Phase 3 | Complete |
+| ELEV-03 | Phase 3 | Complete |
 | ELEV-04 | Phase 3 | Pending |
-| GRID-01 | Phase 3 | Pending |
+| GRID-01 | Phase 3 | Complete |
 | REGN-01 | Phase 4 | Pending |
 | REGN-02 | Phase 4 | Pending |
 | REGN-03 | Phase 4 | Pending |
