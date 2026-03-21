@@ -13,7 +13,7 @@ Bottom-up construction of a complete hex map system: start with the Three.js ren
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Renderer Foundation** - Three.js orthographic renderer displays 60K colored hexes at 60fps with camera controls ✅ 2026-03-21
-- [ ] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment
+- [x] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment (completed 2026-03-21)
 - [ ] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language
 - [ ] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers
 - [ ] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map
@@ -49,7 +49,7 @@ Plans:
   3. Rivers flow from high elevation to the sea, growing wider downstream, with lakes forming in depressions
   4. Highland areas (hills, mountains, plateaus) form mountain ranges and ridgelines, not random scattered peaks
   5. Every land hex has a drainage path to the sea (no isolated inland sinks except intentional lakes)
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 02-01-PLAN.md — Pipeline scaffold, types, province seeding, elevation with ridges/canyons/coastline, 7-point sampling
@@ -169,7 +169,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
-| 2. World Generation | 2/3 | In Progress|  |
+| 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |

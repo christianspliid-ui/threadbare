@@ -20,17 +20,17 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 - [x] **WGEN-01**: Multi-octave simplex noise produces continuous heightmap function from world seed
 - [x] **WGEN-02**: Sea level threshold classifies land vs ocean from continuous heightmap
-- [ ] **WGEN-03**: Latitude-based temperature function with elevation cooling and maritime moderation
-- [ ] **WGEN-04**: Precipitation/moisture function with prevailing wind, orographic effect (rain shadow), and temperature influence
-- [ ] **WGEN-05**: River generation via flow accumulation on hex grid — precipitation-driven sources, steepest-descent routing, lake formation in depressions
-- [ ] **WGEN-06**: Temperature reassessment pass incorporating lake effect and river valley cooling
+- [x] **WGEN-03**: Latitude-based temperature function with elevation cooling and maritime moderation
+- [x] **WGEN-04**: Precipitation/moisture function with prevailing wind, orographic effect (rain shadow), and temperature influence
+- [x] **WGEN-05**: River generation via flow accumulation on hex grid — precipitation-driven sources, steepest-descent routing, lake formation in depressions
+- [x] **WGEN-06**: Temperature reassessment pass incorporating lake effect and river valley cooling
 - [x] **WGEN-07**: Hex grid overlay samples all continuous fields at 7 points per hex (center + 6 corners)
-- [ ] **WGEN-08**: Whittaker diagram maps temperature x moisture to one of 27 base terrain types
-- [ ] **WGEN-09**: Elevation overrides assign highland types (hills, mountains, plateau, mountain_pass) based on elevation thresholds
-- [ ] **WGEN-10**: Wetland overrides assign marsh/swamp/moor_bog/floodplain based on low elevation + high moisture
-- [ ] **WGEN-11**: Desert sub-type selection (sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands) from local noise
-- [ ] **WGEN-12**: Drainage guarantee pass ensures every land hex has downhill path to sea
-- [ ] **WGEN-13**: Volcanic hex placement via hotspot noise (rare)
+- [x] **WGEN-08**: Whittaker diagram maps temperature x moisture to one of 27 base terrain types
+- [x] **WGEN-09**: Elevation overrides assign highland types (hills, mountains, plateau, mountain_pass) based on elevation thresholds
+- [x] **WGEN-10**: Wetland overrides assign marsh/swamp/moor_bog/floodplain based on low elevation + high moisture
+- [x] **WGEN-11**: Desert sub-type selection (sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands) from local noise
+- [x] **WGEN-12**: Drainage guarantee pass ensures every land hex has downhill path to sea
+- [x] **WGEN-13**: Volcanic hex placement via hotspot noise (rare)
 - [ ] **WGEN-14**: Fantasy overlay pass converts base biomes to magical variants based on sphere alignment
 
 ### Coastline & Water (WATR)
@@ -241,17 +241,17 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TERR-05 | Phase 1 | Complete ✅ 01-01 |
 | WGEN-01 | Phase 2 | Complete |
 | WGEN-02 | Phase 2 | Complete |
-| WGEN-03 | Phase 2 | Pending |
-| WGEN-04 | Phase 2 | Pending |
-| WGEN-05 | Phase 2 | Pending |
-| WGEN-06 | Phase 2 | Pending |
+| WGEN-03 | Phase 2 | Complete |
+| WGEN-04 | Phase 2 | Complete |
+| WGEN-05 | Phase 2 | Complete |
+| WGEN-06 | Phase 2 | Complete |
 | WGEN-07 | Phase 2 | Complete |
-| WGEN-08 | Phase 2 | Pending |
-| WGEN-09 | Phase 2 | Pending |
-| WGEN-10 | Phase 2 | Pending |
-| WGEN-11 | Phase 2 | Pending |
-| WGEN-12 | Phase 2 | Pending |
-| WGEN-13 | Phase 2 | Pending |
+| WGEN-08 | Phase 2 | Complete |
+| WGEN-09 | Phase 2 | Complete |
+| WGEN-10 | Phase 2 | Complete |
+| WGEN-11 | Phase 2 | Complete |
+| WGEN-12 | Phase 2 | Complete |
+| WGEN-13 | Phase 2 | Complete |
 | WATR-01 | Phase 3 | Pending |
 | WATR-02 | Phase 3 | Pending |
 | WATR-03 | Phase 3 | Pending |
