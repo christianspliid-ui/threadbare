@@ -47,7 +47,6 @@ created: 2026-03-21
 | 03-03-01 | 03 | 2 | ELEV-01 | visual | manual | N/A | ⬜ pending |
 | 03-03-02 | 03 | 2 | ELEV-02 | unit | `npm test -- --run` | ❌ W0 | ⬜ pending |
 | 03-03-03 | 03 | 2 | ELEV-03 | unit | `npm test -- --run` | ❌ W0 | ⬜ pending |
-| 03-03-04 | 03 | 2 | ELEV-04 | visual | manual | N/A | ⬜ pending |
 | 03-03-05 | 03 | 2 | GRID-01 | visual/unit | `npm test -- --run` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
