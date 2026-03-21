@@ -12,7 +12,8 @@ import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import { createHexGridLines } from './scene/HexGridLines';
 import { RENDER_ORDER } from './scene/RenderLayers';
-import { setupD3Zoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
+import * as d3 from 'd3';
+import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
 import { animateCameraTo } from './camera/CameraAnimator';
 import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { terrainDisplayName } from './palette/terrainPalette';
@@ -237,6 +238,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             const { width: rw, height: rh } = entry.contentRect;
             if (rw > 0 && rh > 0 && hexScene) {
               resizeHexScene(hexScene, rw, rh);
+              // Re-sync camera frustum from current d3-zoom transform
+              // (resizeHexScene only updates renderer size, not camera)
+              if (zoomRef.current && cameraRef.current) {
+                const currentTransform = d3.zoomTransform(canvas);
+                syncCameraToZoom(cameraRef.current, currentTransform, rw, rh);
+              }
               setCanvasDimensions({ w: rw, h: rh });
             }
           }

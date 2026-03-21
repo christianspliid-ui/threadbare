@@ -57,18 +57,10 @@ export function createHexScene(
 }
 
 /**
- * Updates renderer output size and camera frustum after a container resize.
- * Called by ResizeObserver in HexMapV2.
+ * Updates renderer output size after a container resize.
+ * Does NOT touch the camera frustum — that is managed by d3-zoom via syncCameraToZoom.
+ * The caller (ResizeObserver in HexMapV2) must re-sync the d3-zoom transform after calling this.
  */
 export function resizeHexScene(hexScene: HexScene, width: number, height: number): void {
-  const { renderer, camera } = hexScene;
-  renderer.setSize(width, height);
-
-  const halfW = width / 2;
-  const halfH = height / 2;
-  camera.left   = -halfW;
-  camera.right  =  halfW;
-  camera.top    =  halfH;
-  camera.bottom = -halfH;
-  camera.updateProjectionMatrix();
+  hexScene.renderer.setSize(width, height);
 }
