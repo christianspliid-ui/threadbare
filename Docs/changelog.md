@@ -5,6 +5,7 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 ### Recent Changes
 
 | Date | Where | What changed | Why |
+| 2026-03-21 | src/engine/worldgen/passes/pass05-hydrology.ts, pass09-validation.ts, WorldGenPipeline.ts, hexGrid.ts | Phase 2 Plan 03: Hydrology pass (depression filling, river routing, lake promotion, outflows, canyon carving), validation pass (drainage guarantee, province coverage, terrain distribution), generateWorld() now uses full pipeline. 26 TDD tests. | Complete worldgen pipeline: rivers flow from mountains to sea, lakes form in depressions, world generation is deterministic and validated. |
 |------|-------|-------------|-----|
 | 2026-03-21 | src/engine/worldgen/passes/pass04-08, __tests__/climate+biome | Phase 2 Plan 02: Climate fields (pass04), temp reassess (pass06), biome classification (pass07), adjacency smoothing (pass08), 25 TDD tests. | Transforms elevation field into classified terrain map with latitude gradient, rain shadow, wetland/highland/desert overrides, illegal adjacency elimination. |
 | 2026-03-21 | src/components/HexMapV2/ (new), src/App.tsx | Hex Map V2 Phase 1: Renderer Foundation — Three.js InstancedMesh renderer (60K hexes), terrain/water palettes, brightness noise, grid lines, d3-zoom camera, hex raycasting, tooltips with geo params, selection ring, zoom-toward-selected-hex, custom zoom-toward-cursor math. | New hex map renderer milestone, Phase 1 delivers rendering + interaction foundation at `?view=hexv2`. |
