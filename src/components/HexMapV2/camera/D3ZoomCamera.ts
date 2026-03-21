@@ -78,14 +78,16 @@ export function setupD3Zoom(
   };
   const { x: gridCenterX, y: gridCenterY } = hexToPixel(midHex, HEX_CONSTANTS.HEX_SIZE);
   const k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
-  const canvasW = canvas.clientWidth || 800;
-  const canvasH = canvas.clientHeight || 600;
 
-  // d3 transform: tx = canvasW/2 - worldX * k, ty = canvasH/2 + worldY * k
-  // (worldY uses +worldY because HexFillMesh stores world at -y for Y-flip,
-  //  so the center pixel in d3 space is canvasH/2 - (-gridCenterY)*k = canvasH/2 + gridCenterY*k)
+  // World center of the grid: hexToPixel gives positive y, but HexFillMesh stores
+  // positions at (x, -y, 0) for the Y-flip. So world center Y = -gridCenterY.
+  //
+  // syncCameraToZoom derives: cx = -tx/k, cy = ty/k
+  // To center on world point (gridCenterX, -gridCenterY):
+  //   tx = -gridCenterX * k
+  //   ty = -gridCenterY * k
   const initialTransform = d3.zoomIdentity
-    .translate(canvasW / 2 - gridCenterX * k, canvasH / 2 + gridCenterY * k)
+    .translate(-gridCenterX * k, -gridCenterY * k)
     .scale(k);
 
   selection.call(zoom.transform, initialTransform);
