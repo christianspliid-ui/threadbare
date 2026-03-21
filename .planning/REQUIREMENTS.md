@@ -18,13 +18,13 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### World Generation (WGEN)
 
-- [ ] **WGEN-01**: Multi-octave simplex noise produces continuous heightmap function from world seed
-- [ ] **WGEN-02**: Sea level threshold classifies land vs ocean from continuous heightmap
+- [x] **WGEN-01**: Multi-octave simplex noise produces continuous heightmap function from world seed
+- [x] **WGEN-02**: Sea level threshold classifies land vs ocean from continuous heightmap
 - [ ] **WGEN-03**: Latitude-based temperature function with elevation cooling and maritime moderation
 - [ ] **WGEN-04**: Precipitation/moisture function with prevailing wind, orographic effect (rain shadow), and temperature influence
 - [ ] **WGEN-05**: River generation via flow accumulation on hex grid — precipitation-driven sources, steepest-descent routing, lake formation in depressions
 - [ ] **WGEN-06**: Temperature reassessment pass incorporating lake effect and river valley cooling
-- [ ] **WGEN-07**: Hex grid overlay samples all continuous fields at 7 points per hex (center + 6 corners)
+- [x] **WGEN-07**: Hex grid overlay samples all continuous fields at 7 points per hex (center + 6 corners)
 - [ ] **WGEN-08**: Whittaker diagram maps temperature x moisture to one of 27 base terrain types
 - [ ] **WGEN-09**: Elevation overrides assign highland types (hills, mountains, plateau, mountain_pass) based on elevation thresholds
 - [ ] **WGEN-10**: Wetland overrides assign marsh/swamp/moor_bog/floodplain based on low elevation + high moisture
@@ -239,13 +239,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TERR-03 | Phase 1 | Complete ✅ 01-01 |
 | TERR-04 | Phase 1 | Complete ✅ 01-01 |
 | TERR-05 | Phase 1 | Complete ✅ 01-01 |
-| WGEN-01 | Phase 2 | Pending |
-| WGEN-02 | Phase 2 | Pending |
+| WGEN-01 | Phase 2 | Complete |
+| WGEN-02 | Phase 2 | Complete |
 | WGEN-03 | Phase 2 | Pending |
 | WGEN-04 | Phase 2 | Pending |
 | WGEN-05 | Phase 2 | Pending |
 | WGEN-06 | Phase 2 | Pending |
-| WGEN-07 | Phase 2 | Pending |
+| WGEN-07 | Phase 2 | Complete |
 | WGEN-08 | Phase 2 | Pending |
 | WGEN-09 | Phase 2 | Pending |
 | WGEN-10 | Phase 2 | Pending |
