@@ -12,6 +12,8 @@ export const CAMERA_CONSTANTS = {
   MAX_ZOOM: 10,               // Hero-local zoom (~300px/hex apparent)
   JUMP_TO_DURATION_MS: 500,   // Smooth fly-to duration in ms (CONTEXT.md decision)
   DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
+  ZOOM_TARGET_LERP_IN:  0.15, // Per-wheel-tick convergence toward selected hex when zooming in
+  ZOOM_TARGET_LERP_OUT: 0.05, // Per-wheel-tick convergence toward selected hex when zooming out (slower)
 } as const;
 
 /**
@@ -56,14 +58,32 @@ export function syncCameraToZoom(
  *
  * NFP #3: Initial transform is deterministic — same canvas size = same starting view.
  */
+export interface D3ZoomResult {
+  zoom: d3.ZoomBehavior<HTMLCanvasElement, unknown>;
+  /** Set the world-space point that scroll-zoom should converge on (typically the selected hex center). Pass null to revert to default mouse-pointer zoom. */
+  setZoomTarget: (worldX: number, worldY: number) => void;
+  /** Clear the zoom target — reverts to default mouse-pointer zoom behavior. */
+  clearZoomTarget: () => void;
+  destroy: () => void;
+}
+
 export function setupD3Zoom(
   canvas: HTMLCanvasElement,
   camera: THREE.OrthographicCamera,
-): { zoom: d3.ZoomBehavior<HTMLCanvasElement, unknown>; destroy: () => void } {
+): D3ZoomResult {
+  // Mutable zoom target — when set, scroll-zoom converges on this world point
+  // instead of the mouse cursor position.
+  let zoomTarget: { worldX: number; worldY: number } | null = null;
+
   const zoom = d3.zoom<HTMLCanvasElement, unknown>()
     .scaleExtent([CAMERA_CONSTANTS.MIN_ZOOM, CAMERA_CONSTANTS.MAX_ZOOM])
-    // Disable double-click zoom — per CONTEXT.md decision
-    .filter((event: Event) => event.type !== 'dblclick')
+    // Disable double-click zoom — per CONTEXT.md decision.
+    // Also block wheel events when a zoom target is set — we handle them manually below.
+    .filter((event: Event) => {
+      if (event.type === 'dblclick') return false;
+      if (event.type === 'wheel' && zoomTarget) return false;
+      return true;
+    })
     .on('zoom', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
       syncCameraToZoom(camera, event.transform, canvas.clientWidth, canvas.clientHeight);
     });
@@ -71,6 +91,56 @@ export function setupD3Zoom(
   const selection = d3.select(canvas);
   selection.call(zoom);
 
+  // ── Custom wheel handler: zoom toward the selected hex ─────────────────────
+  // When zoomTarget is set, we intercept wheel events and compute a transform
+  // that keeps the target world point stationary on screen while scaling.
+  const handleWheel = (event: WheelEvent) => {
+    if (!zoomTarget) return; // Let d3 handle it normally
+    event.preventDefault();
+
+    const currentTransform = d3.zoomTransform(canvas);
+    const [minK, maxK] = zoom.scaleExtent();
+
+    // Compute new scale (same delta logic as d3-zoom: -deltaY * 0.002)
+    const delta = -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+    const newK = Math.max(minK, Math.min(maxK, currentTransform.k * Math.pow(2, delta)));
+    if (newK === currentTransform.k) return;
+
+    // The zoom target's screen position under the current transform:
+    //   screenX = tx + worldX * k   (but our syncCameraToZoom uses cx = -tx/k)
+    //   We want the target to stay at screen center after zooming.
+    //
+    // World point: (zoomTarget.worldX, zoomTarget.worldY)
+    // For syncCameraToZoom: cx = -tx/k, cy = ty/k
+    // To center on the target at new scale:
+    //   tx_new = -zoomTarget.worldX * newK
+    //   ty_new = zoomTarget.worldY * newK
+    //
+    // But we don't want to snap — we want to smoothly converge.
+    // Interpolate the camera center between current center and target.
+    const currentCx = -currentTransform.x / currentTransform.k;
+    const currentCy = currentTransform.y / currentTransform.k;
+
+    // Lerp factor: zoom in → converge faster, zoom out → converge slower
+    const isZoomingIn = newK > currentTransform.k;
+    const lerpFactor = isZoomingIn
+      ? CAMERA_CONSTANTS.ZOOM_TARGET_LERP_IN
+      : CAMERA_CONSTANTS.ZOOM_TARGET_LERP_OUT;
+
+    const newCx = currentCx + (zoomTarget.worldX - currentCx) * lerpFactor;
+    const newCy = currentCy + (zoomTarget.worldY - currentCy) * lerpFactor;
+
+    // Convert back to d3 transform: tx = -cx * k, ty = cy * k
+    const newTransform = d3.zoomIdentity
+      .translate(-newCx * newK, newCy * newK)
+      .scale(newK);
+
+    selection.call(zoom.transform, newTransform);
+  };
+
+  canvas.addEventListener('wheel', handleWheel, { passive: false });
+
+  // ── Initial view ───────────────────────────────────────────────────────────
   // Center the initial view on the grid midpoint at DEFAULT_ZOOM
   const midHex = {
     col: Math.floor(HEX_CONSTANTS.GRID_COLS / 2),
@@ -93,8 +163,18 @@ export function setupD3Zoom(
   selection.call(zoom.transform, initialTransform);
 
   const destroy = () => {
+    canvas.removeEventListener('wheel', handleWheel);
     selection.on('.zoom', null);
   };
 
-  return { zoom, destroy };
+  return {
+    zoom,
+    setZoomTarget: (worldX: number, worldY: number) => {
+      zoomTarget = { worldX, worldY };
+    },
+    clearZoomTarget: () => {
+      zoomTarget = null;
+    },
+    destroy,
+  };
 }
