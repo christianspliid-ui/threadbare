@@ -48,6 +48,8 @@ export interface BiomeModifier {
   readonly materialCulture: string[];
   readonly metaphorPalette: string[];
   readonly reachWeights: Partial<Record<ReachDomain, number>>;
+  readonly preferredBiomes: TerrainType[];   // 3 core biomes for province generation
+  readonly toleratedBiomes: TerrainType[];   // up to 5 additional biomes for heartland
 }
 
 // ─── Cultural Prose Palette Interface ──────────────────────────────
@@ -184,6 +186,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['driftwood', 'shell', 'coral', 'sail-cloth', 'whale-bone', 'kelp-rope'],
     metaphorPalette: ['the deep that swallows', 'tides that remember', 'the horizon\'s promise'],
     reachWeights: { eye: 0.3, flesh: 0.3, heart: 0.2, star: 0.2 },
+    preferredBiomes: ['ocean', 'coastal_shallows', 'coast'],
+    toleratedBiomes: ['reef', 'tropical_ocean', 'river', 'marsh', 'grassland'],
   },
   {
     terrain: 'coastal_shallows',
@@ -191,6 +195,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['woven nets', 'beach glass', 'salt-cured leather', 'tidal stone', 'crab shell'],
     metaphorPalette: ['the shore between worlds', 'sand that shifts beneath', 'pools that hold secrets'],
     reachWeights: { gold: 0.3, eye: 0.2, heart: 0.2 },
+    preferredBiomes: ['coastal_shallows', 'coast', 'ocean'],
+    toleratedBiomes: ['reef', 'grassland', 'marsh', 'floodplain', 'river'],
   },
   {
     terrain: 'lake',
@@ -198,6 +204,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['reed-woven baskets', 'lake clay', 'freshwater pearl', 'birch bark', 'lily pads'],
     metaphorPalette: ['the mirror that thinks', 'depths that hold their breath', 'calm that deceives'],
     reachWeights: { heart: 0.3, eye: 0.2, veil: 0.2 },
+    preferredBiomes: ['lake', 'river', 'marsh'],
+    toleratedBiomes: ['grassland', 'temperate_forest', 'floodplain', 'swamp', 'hills'],
   },
   {
     terrain: 'river',
@@ -205,6 +213,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['river stone', 'otter pelt', 'rush matting', 'ferry ropes', 'water-smoothed wood'],
     metaphorPalette: ['the path that carves itself', 'the current\'s memory', 'water finding its level'],
     reachWeights: { gold: 0.3, eye: 0.2, stone: 0.2 },
+    preferredBiomes: ['river', 'floodplain', 'grassland'],
+    toleratedBiomes: ['lake', 'marsh', 'temperate_forest', 'farmland', 'hills'],
   },
 
   // Lowlands (4)
@@ -214,6 +224,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['horsehair', 'dried grass', 'leather', 'bone needles', 'felt'],
     metaphorPalette: ['the sea of grass', 'winds that carry whispers', 'the horizon\'s edge'],
     reachWeights: { heart: 0.2, flesh: 0.2, eye: 0.2 },
+    preferredBiomes: ['grassland', 'farmland', 'savanna'],
+    toleratedBiomes: ['steppe', 'hills', 'temperate_forest', 'floodplain', 'marsh'],
   },
   {
     terrain: 'farmland',
@@ -221,6 +233,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['grain sheaves', 'woven straw', 'clay pots', 'iron plows', 'sun-dried brick'],
     metaphorPalette: ['the seed that remembers', 'furrows like written lines', 'the patient harvest'],
     reachWeights: { stone: 0.3, heart: 0.3, gold: 0.2 },
+    preferredBiomes: ['farmland', 'grassland', 'floodplain'],
+    toleratedBiomes: ['river', 'marsh', 'hills', 'temperate_forest', 'savanna'],
   },
   {
     terrain: 'savanna',
@@ -228,6 +242,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['thorned wood', 'sun-bleached bone', 'woven grass', 'ochre pigment', 'acacia bark'],
     metaphorPalette: ['the golden silence', 'heat that shimmers like memory', 'the watering hole\'s truce'],
     reachWeights: { flesh: 0.3, eye: 0.3, iron: 0.2 },
+    preferredBiomes: ['savanna', 'grassland', 'steppe'],
+    toleratedBiomes: ['desert', 'badlands', 'hills', 'floodplain', 'oasis'],
   },
   {
     terrain: 'steppe',
@@ -235,6 +251,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['yurt felt', 'horsehide', 'fermented milk vessels', 'wind-chimes', 'sinew cord'],
     metaphorPalette: ['the wind\'s verdict', 'dust that buries empires', 'the endless ride'],
     reachWeights: { iron: 0.3, flesh: 0.3, eye: 0.2 },
+    preferredBiomes: ['steppe', 'grassland', 'badlands'],
+    toleratedBiomes: ['desert', 'hills', 'tundra', 'broken_lands', 'savanna'],
   },
 
   // Forest (4)
@@ -244,6 +262,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['hardwood', 'acorn flour', 'maple syrup', 'bark cloth', 'mushroom leather'],
     metaphorPalette: ['the canopy\'s counsel', 'roots that whisper', 'leaves that fall like pages'],
     reachWeights: { flesh: 0.3, eye: 0.2, veil: 0.2, heart: 0.2 },
+    preferredBiomes: ['temperate_forest', 'forested_hills', 'light_forest'],
+    toleratedBiomes: ['hills', 'grassland', 'marsh', 'dense_forest', 'farmland'],
   },
   {
     terrain: 'dense_forest',
@@ -251,6 +271,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['dark heartwood', 'moss', 'spider silk', 'phosphor fungi', 'hanging vine'],
     metaphorPalette: ['the green darkness', 'paths that close behind you', 'the forest\'s memory'],
     reachWeights: { veil: 0.3, flesh: 0.3, eye: 0.2 },
+    preferredBiomes: ['dense_forest', 'temperate_forest', 'boreal_forest'],
+    toleratedBiomes: ['hills', 'swamp', 'forested_hills', 'marsh', 'great_home_trees'],
   },
   {
     terrain: 'boreal_forest',
@@ -258,6 +280,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['pine resin', 'fur pelts', 'frozen amber', 'snowshoe frames', 'smoked fish'],
     metaphorPalette: ['the endless white', 'trees bent by patience', 'silence that cracks like ice'],
     reachWeights: { flesh: 0.4, stone: 0.2, veil: 0.2 },
+    preferredBiomes: ['boreal_forest', 'tundra', 'snow_fields'],
+    toleratedBiomes: ['temperate_forest', 'hills', 'marsh', 'glacier', 'evergreen_forest'],
   },
   {
     terrain: 'jungle',
@@ -265,6 +289,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['bright feathers', 'rubber sap', 'orchid dye', 'bamboo', 'poison-dart frogs'],
     metaphorPalette: ['the green cathedral', 'vines that strangle slowly', 'heat that breathes'],
     reachWeights: { flesh: 0.4, shadow: 0.3, veil: 0.2 },
+    preferredBiomes: ['jungle', 'tropical_forest', 'dense_forest'],
+    toleratedBiomes: ['swamp', 'marsh', 'river', 'savanna', 'floodplain'],
   },
 
   // Wet (2)
@@ -274,6 +300,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['peat', 'cypress knee', 'alligator hide', 'bog iron', 'cattail fiber'],
     metaphorPalette: ['the ground that drinks', 'mist that thinks', 'waters that remember the dead'],
     reachWeights: { veil: 0.3, flesh: 0.3, shadow: 0.2 },
+    preferredBiomes: ['swamp', 'marsh', 'moor_bog'],
+    toleratedBiomes: ['dense_forest', 'river', 'lake', 'jungle', 'floodplain'],
   },
   {
     terrain: 'marsh',
@@ -281,6 +309,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['bog butter', 'preserved wood', 'peat bricks', 'cranberry dye', 'sphagnum bandages'],
     metaphorPalette: ['the earth that swallows whole', 'time trapped in amber', 'the false path'],
     reachWeights: { veil: 0.3, eye: 0.2, shadow: 0.2 },
+    preferredBiomes: ['marsh', 'swamp', 'moor_bog'],
+    toleratedBiomes: ['lake', 'river', 'grassland', 'boreal_forest', 'floodplain'],
   },
 
   // Elevated (4)
@@ -290,6 +320,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['slate', 'copper ore', 'heather', 'limestone', 'hill marble'],
     metaphorPalette: ['the fold that hides', 'the vantage that reveals', 'the climb without a summit'],
     reachWeights: { stone: 0.3, iron: 0.2, eye: 0.2 },
+    preferredBiomes: ['hills', 'forested_hills', 'mountain_pass'],
+    toleratedBiomes: ['mountains', 'temperate_forest', 'grassland', 'badlands', 'plateau'],
   },
   {
     terrain: 'mountains',
@@ -297,6 +329,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['granite', 'ice crystal', 'mountain goat hide', 'obsidian', 'eagle feather'],
     metaphorPalette: ['the peak\'s judgment', 'stone that touches sky', 'the path that tests'],
     reachWeights: { stone: 0.5, iron: 0.3, flesh: 0.2 },
+    preferredBiomes: ['mountains', 'high_mountains', 'hills'],
+    toleratedBiomes: ['plateau', 'glacier', 'tundra', 'mountain_pass', 'badlands'],
   },
   {
     terrain: 'plateau',
@@ -304,6 +338,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['sandstone', 'wind-carved stone', 'turquoise', 'sun-baked adobe', 'dried sage'],
     metaphorPalette: ['the flat that sees forever', 'winds that never rest', 'the table of the gods'],
     reachWeights: { eye: 0.3, stone: 0.3, star: 0.2 },
+    preferredBiomes: ['plateau', 'badlands', 'steppe'],
+    toleratedBiomes: ['hills', 'desert', 'grassland', 'mountains', 'rocky_desert'],
   },
   {
     terrain: 'badlands',
@@ -311,6 +347,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['layered sediment', 'fossil bone', 'red clay', 'sulfur crystal', 'wind-sculpted stone'],
     metaphorPalette: ['the earth\'s broken teeth', 'colors bleeding from stone', 'the maze that shifts'],
     reachWeights: { stone: 0.4, eye: 0.3, flesh: 0.2 },
+    preferredBiomes: ['badlands', 'rocky_desert', 'steppe'],
+    toleratedBiomes: ['desert', 'plateau', 'hills', 'broken_lands', 'sand_dunes'],
   },
 
   // Extreme (4)
@@ -320,6 +358,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['sandstone', 'cactus fiber', 'bleached bone', 'copper wire', 'indigo dye'],
     metaphorPalette: ['the forge that shapes the worthy', 'sand that buries all', 'oasis mirage'],
     reachWeights: { flesh: 0.4, eye: 0.3, star: 0.2 },
+    preferredBiomes: ['desert', 'rocky_desert', 'sand_dunes'],
+    toleratedBiomes: ['steppe', 'badlands', 'hills', 'oasis', 'savanna'],
   },
   {
     terrain: 'tundra',
@@ -327,6 +367,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['walrus ivory', 'caribou hide', 'permafrost clay', 'lichen dye', 'ice-crystal'],
     metaphorPalette: ['the frozen breath', 'the white silence', 'light that dances without warmth'],
     reachWeights: { flesh: 0.5, heart: 0.2, star: 0.2 },
+    preferredBiomes: ['tundra', 'snow_fields', 'arctic'],
+    toleratedBiomes: ['glacier', 'boreal_forest', 'steppe', 'hills', 'broken_lands'],
   },
   {
     terrain: 'glacier',
@@ -334,6 +376,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['compacted ice', 'moraine gravel', 'glacial silt', 'frozen quartz', 'permafrost bone'],
     metaphorPalette: ['the river of ice', 'the grinding patience', 'cold that preserves'],
     reachWeights: { stone: 0.4, flesh: 0.3, eye: 0.2 },
+    preferredBiomes: ['glacier', 'arctic', 'tundra'],
+    toleratedBiomes: ['snow_fields', 'mountains', 'high_mountains', 'boreal_forest', 'hills'],
   },
   {
     terrain: 'volcano',
@@ -341,6 +385,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['basalt', 'volcanic glass', 'pumice', 'sulfur', 'obsidian blades'],
     metaphorPalette: ['the mountain\'s anger', 'fire that builds as it destroys', 'the forge of the earth'],
     reachWeights: { iron: 0.4, stone: 0.3, flesh: 0.3 },
+    preferredBiomes: ['volcano', 'mountains', 'rocky_desert'],
+    toleratedBiomes: ['badlands', 'high_mountains', 'plateau', 'hills', 'broken_lands'],
   },
   // New terrain types
   {
@@ -349,6 +395,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['abyssal-shell', 'pressure-glass', 'deep-coral', 'whale-fall-bone', 'vent-mineral', 'brine-crystal'],
     metaphorPalette: ['crushing depth', 'lightless truth', 'pressure shapes', 'abyssal patience', 'surface forgotten'],
     reachWeights: { shadow: 0.4, flesh: 0.3, veil: 0.3 },
+    preferredBiomes: ['deep_ocean', 'ocean', 'coastal_shallows'],
+    toleratedBiomes: ['reef', 'tropical_ocean', 'coast', 'river', 'marsh'],
   },
   {
     terrain: 'tropical_ocean',
@@ -356,6 +404,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['pearl', 'tropical-wood', 'palm-fiber', 'bright-coral', 'turtle-shell', 'sea-glass'],
     metaphorPalette: ['warm deception', 'beautiful danger', 'current beneath calm', 'colour hiding teeth', 'sun-bright cruelty'],
     reachWeights: { gold: 0.3, eye: 0.3, heart: 0.2 },
+    preferredBiomes: ['tropical_ocean', 'ocean', 'reef'],
+    toleratedBiomes: ['coastal_shallows', 'coast', 'jungle', 'tropical_forest', 'savanna'],
   },
   {
     terrain: 'coast',
@@ -363,6 +413,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['driftwood', 'sea-salt', 'beach-stone', 'rope-grass', 'bleached-bone', 'tide-iron'],
     metaphorPalette: ['edge of certainty', 'tide-marked patience', 'salt-worn endurance', 'between worlds', 'erosion as truth'],
     reachWeights: { gold: 0.3, eye: 0.2, heart: 0.2 },
+    preferredBiomes: ['coast', 'coastal_shallows', 'ocean'],
+    toleratedBiomes: ['grassland', 'marsh', 'hills', 'floodplain', 'reef'],
   },
   {
     terrain: 'reef',
@@ -370,6 +422,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['coral-fragment', 'reef-stone', 'shell-blade', 'sea-sponge', 'pearl-dust', 'fish-leather'],
     metaphorPalette: ['hidden architecture', 'patience of accretion', 'sharp beneath beauty', 'colony over self', 'slow construction'],
     reachWeights: { eye: 0.3, heart: 0.3, gold: 0.2 },
+    preferredBiomes: ['reef', 'coastal_shallows', 'tropical_ocean'],
+    toleratedBiomes: ['coast', 'ocean', 'grassland', 'jungle', 'savanna'],
   },
   {
     terrain: 'floodplain',
@@ -377,6 +431,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['river-clay', 'woven-reed', 'flood-timber', 'silt-brick', 'irrigation-stone', 'rush-mat'],
     metaphorPalette: ['generous destruction', 'seasonal drowning', 'fertility from violence', 'the river remembers', 'borrowed ground'],
     reachWeights: { stone: 0.3, heart: 0.2, gold: 0.2, eye: 0.2 },
+    preferredBiomes: ['floodplain', 'farmland', 'grassland'],
+    toleratedBiomes: ['river', 'marsh', 'savanna', 'lake', 'temperate_forest'],
   },
   {
     terrain: 'tropical_forest',
@@ -384,6 +440,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['hardwood', 'vine-rope', 'broad-leaf', 'tree-resin', 'feather-work', 'bark-cloth'],
     metaphorPalette: ['green machinery', 'rot and renewal', 'canopy politics', 'growth as violence', 'humidity of intent'],
     reachWeights: { flesh: 0.4, veil: 0.3, shadow: 0.2 },
+    preferredBiomes: ['tropical_forest', 'jungle', 'dense_forest'],
+    toleratedBiomes: ['savanna', 'swamp', 'floodplain', 'river', 'grassland'],
   },
   {
     terrain: 'evergreen_forest',
@@ -391,6 +449,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['pine-resin', 'needle-mat', 'spruce-bark', 'cone-seed', 'evergreen-timber', 'pitch-tar'],
     metaphorPalette: ['year-round shadow', 'stubborn green', 'needle patience', 'resin-sealed memory', 'muffled permanence'],
     reachWeights: { flesh: 0.3, stone: 0.2, veil: 0.2 },
+    preferredBiomes: ['evergreen_forest', 'boreal_forest', 'forested_hills'],
+    toleratedBiomes: ['hills', 'tundra', 'snow_fields', 'temperate_forest', 'glacier'],
   },
   {
     terrain: 'light_forest',
@@ -398,6 +458,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['light-timber', 'wildflower', 'berry-leather', 'thin-bark', 'meadow-grass', 'sapling-pole'],
     metaphorPalette: ['generous canopy', 'dappled truth', 'space between trees', 'almost welcoming', 'false safety'],
     reachWeights: { heart: 0.3, eye: 0.2, flesh: 0.2 },
+    preferredBiomes: ['light_forest', 'temperate_forest', 'grassland'],
+    toleratedBiomes: ['farmland', 'hills', 'forested_hills', 'moor_bog', 'marsh'],
   },
   {
     terrain: 'dead_forest',
@@ -405,6 +467,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['charcoal', 'dead-wood', 'fungus', 'ash-powder', 'hollow-trunk', 'grey-bark'],
     metaphorPalette: ['standing death', 'grey accusation', 'aftermath as landscape', 'silence of absence', 'testimony of loss'],
     reachWeights: { shadow: 0.4, veil: 0.3, eye: 0.2 },
+    preferredBiomes: ['dead_forest', 'broken_lands', 'badlands'],
+    toleratedBiomes: ['tundra', 'hills', 'steppe', 'moor_bog', 'rocky_desert'],
   },
   {
     terrain: 'moor_bog',
@@ -412,6 +476,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['peat', 'heather-bundle', 'bog-iron', 'moss-packing', 'wicker', 'turf-brick'],
     metaphorPalette: ['false ground', 'slow drowning', 'preservation in darkness', 'the moor keeps', 'waterlogged memory'],
     reachWeights: { veil: 0.3, shadow: 0.3, iron: 0.2 },
+    preferredBiomes: ['moor_bog', 'marsh', 'swamp'],
+    toleratedBiomes: ['boreal_forest', 'hills', 'tundra', 'grassland', 'dead_forest'],
   },
   {
     terrain: 'high_mountains',
@@ -419,6 +485,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['granite', 'ice-crystal', 'mountain-goat-hide', 'wind-stone', 'lichen-dye', 'peak-iron'],
     metaphorPalette: ['above mercy', 'thin-air truth', 'stone indifference', 'killing height', 'permanence of peaks'],
     reachWeights: { stone: 0.5, flesh: 0.4, iron: 0.2 },
+    preferredBiomes: ['high_mountains', 'mountains', 'glacier'],
+    toleratedBiomes: ['tundra', 'hills', 'snow_fields', 'mountain_pass', 'plateau'],
   },
   {
     terrain: 'mountain_pass',
@@ -426,6 +494,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['cairn-stone', 'pass-rope', 'wind-cloth', 'trail-marker', 'goat-leather', 'shelter-rock'],
     metaphorPalette: ['reluctant compromise', 'narrow mercy', 'funneled force', 'the only way through', 'passage as wound'],
     reachWeights: { iron: 0.3, stone: 0.3, gold: 0.2 },
+    preferredBiomes: ['mountain_pass', 'hills', 'mountains'],
+    toleratedBiomes: ['high_mountains', 'plateau', 'tundra', 'forested_hills', 'glacier'],
   },
   {
     terrain: 'oasis',
@@ -433,6 +503,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['palm-wood', 'date-fruit', 'well-stone', 'shade-cloth', 'spring-water', 'oasis-clay'],
     metaphorPalette: ['promise rarely kept', 'green wound', 'water table truth', 'generosity with limits', 'surrounded abundance'],
     reachWeights: { heart: 0.3, gold: 0.3, eye: 0.2 },
+    preferredBiomes: ['oasis', 'desert', 'rocky_desert'],
+    toleratedBiomes: ['sand_dunes', 'steppe', 'savanna', 'badlands', 'grassland'],
   },
   {
     terrain: 'rocky_desert',
@@ -440,6 +512,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['desert-stone', 'heat-glass', 'cactus-fiber', 'sun-bleached-bone', 'sandstone', 'dry-clay'],
     metaphorPalette: ['stone patience', 'baked indifference', 'erosion as artist', 'crack survival', 'heat-hammered truth'],
     reachWeights: { stone: 0.4, flesh: 0.3, eye: 0.2 },
+    preferredBiomes: ['rocky_desert', 'desert', 'badlands'],
+    toleratedBiomes: ['sand_dunes', 'steppe', 'plateau', 'broken_lands', 'oasis'],
   },
   {
     terrain: 'sand_dunes',
@@ -447,6 +521,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['sand-glass', 'dune-silk', 'wind-veil', 'sand-brick', 'buried-cache', 'sun-shade'],
     metaphorPalette: ['shifting truth', 'path-erasing patience', 'landscape in motion', 'memory burial', 'wind-written law'],
     reachWeights: { flesh: 0.4, star: 0.3, eye: 0.2 },
+    preferredBiomes: ['sand_dunes', 'desert', 'rocky_desert'],
+    toleratedBiomes: ['steppe', 'badlands', 'oasis', 'savanna', 'broken_lands'],
   },
   {
     terrain: 'arctic',
@@ -454,6 +530,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['ice-block', 'whale-blubber', 'seal-hide', 'bone-needle', 'snow-crystal', 'polar-fur'],
     metaphorPalette: ['frozen indifference', 'darkness shared', 'ice as law', 'survival measured in hours', 'warmth as memory'],
     reachWeights: { flesh: 0.5, heart: 0.3, iron: 0.2 },
+    preferredBiomes: ['arctic', 'tundra', 'glacier'],
+    toleratedBiomes: ['snow_fields', 'boreal_forest', 'high_mountains', 'mountains', 'coastal_shallows'],
   },
   {
     terrain: 'snow_fields',
@@ -461,6 +539,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['packed-snow', 'ice-lens', 'fur-wrap', 'frozen-hide', 'snow-brick', 'drift-wood'],
     metaphorPalette: ['white silence', 'burial without witness', 'muffled world', 'depth deception', 'erased distinction'],
     reachWeights: { flesh: 0.4, eye: 0.3, veil: 0.2 },
+    preferredBiomes: ['snow_fields', 'tundra', 'arctic'],
+    toleratedBiomes: ['glacier', 'boreal_forest', 'mountains', 'hills', 'steppe'],
   },
   // Gap terrains (referenced elsewhere but previously missing from BIOME_MODIFIERS)
   {
@@ -469,6 +549,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['hill-timber', 'slope-stone', 'valley-clay', 'ridge-iron', 'canopy-leaf', 'root-fiber'],
     metaphorPalette: ['sheltered ascent', 'hidden valleys', 'canopy over contour', 'green elevation', 'rooted rising'],
     reachWeights: { stone: 0.3, flesh: 0.2, veil: 0.2, eye: 0.2 },
+    preferredBiomes: ['forested_hills', 'hills', 'temperate_forest'],
+    toleratedBiomes: ['dense_forest', 'boreal_forest', 'grassland', 'mountains', 'light_forest'],
   },
   {
     terrain: 'great_home_trees',
@@ -476,6 +558,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['great-bark', 'living-wood', 'canopy-silk', 'trunk-resin', 'root-stone', 'leaf-weave'],
     metaphorPalette: ['monuments to life', 'vertical world', 'root memory', 'growth beyond scale', 'sheltered enormity'],
     reachWeights: { heart: 0.4, flesh: 0.3, star: 0.2 },
+    preferredBiomes: ['great_home_trees', 'dense_forest', 'temperate_forest'],
+    toleratedBiomes: ['forested_hills', 'jungle', 'tropical_forest', 'light_forest', 'hills'],
   },
   {
     terrain: 'broken_lands',
@@ -483,6 +567,8 @@ export const BIOME_MODIFIERS: BiomeModifier[] = [
     materialCulture: ['reality-shard', 'twisted-stone', 'fracture-glass', 'anomaly-crystal', 'void-touched-metal', 'broken-earth'],
     metaphorPalette: ['shattered order', 'defiance of nature', 'fracture as truth', 'wrongness made terrain', 'reality-wound'],
     reachWeights: { veil: 0.4, shadow: 0.3, star: 0.3 },
+    preferredBiomes: ['broken_lands', 'badlands', 'dead_forest'],
+    toleratedBiomes: ['steppe', 'rocky_desert', 'hills', 'tundra', 'moor_bog'],
   },
 ];
 
