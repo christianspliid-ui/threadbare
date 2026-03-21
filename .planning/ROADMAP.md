@@ -12,7 +12,7 @@ Bottom-up construction of a complete hex map system: start with the Three.js ren
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Renderer Foundation** - Three.js orthographic renderer displays 60K colored hexes at 60fps with camera controls
+- [x] **Phase 1: Renderer Foundation** - Three.js orthographic renderer displays 60K colored hexes at 60fps with camera controls ✅ 2026-03-21
 - [ ] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment
 - [ ] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language
 - [ ] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers
