@@ -6,12 +6,13 @@
 **Hex Map V2** — Three.js-based hex map renderer (8-phase milestone).
 
 **Recent completions:**
-- ✅ Hex Map V2 Phase 1: Renderer Foundation (2026-03-21) — Three.js InstancedMesh renders 60K hexes with terrain/water palettes, brightness noise, grid lines, d3-zoom camera controls, hex raycasting, tooltips with geo debug data, selected/hovered hex visual states, zoom-toward-selected-hex. Available at `?view=hexv2`.
+- ✅ Phase 2 Plan 02: Climate fields + biome classification (2026-03-21) — Temperature/moisture with latitude gradient, rain shadow, maritime moderation; Whittaker biome classification with elevation/wetland/desert/volcanic overrides; illegal adjacency smoothing. 25 TDD tests.
+- ✅ Phase 2 Plan 01: WorldGen pipeline scaffold (2026-03-21) — Province seeding, elevation heightmap, ridge overlays, coastline pass. Pipeline framework with fail-soft wrapping.
 
 **Up next:**
-- Phase 2: World Generation (continuous-field worldgen with heightmap, climate, rivers, biome assignment)
+- Phase 2 Plan 03: Hydrology (rivers, lakes, depression filling)
 
-**Latest implementation:** Hex Map V2 Phase 1 (2026-03-21) — complete renderer foundation with camera centering fix, custom zoom-toward-cursor math for non-standard coordinate mapping, dev tooltip showing elevation/temperature/moisture.
+**Latest implementation:** Phase 2 Plan 02 (2026-03-21) — pass04-climate, pass06-tempReassess, pass07-biome, pass08-smoothing wired into WorldGenPipeline. Volcanic placement, desert subtypes, wetland overrides all functional.
 
 ## Full Backlog
 Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf

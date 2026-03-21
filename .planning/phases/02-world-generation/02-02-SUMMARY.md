@@ -126,5 +126,12 @@ None — no external service configuration required.
 - Plan 03 (hydrology: rivers, lakes, depression filling) can proceed immediately
 
 ---
+## Self-Check: PASSED
+
+- All 7 new files exist on disk
+- Commits 4a6efc1 and c87ee2c verified in git log
+- 25/25 worldgen tests pass; 0 new test failures in full suite
+- TypeScript compiles cleanly (npx tsc --noEmit exits 0)
+
 *Phase: 02-world-generation*
 *Completed: 2026-03-21*
