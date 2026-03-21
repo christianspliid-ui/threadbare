@@ -14,9 +14,10 @@ import { HexV2View } from './components/HexMapV2/HexV2View';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 
-// V2 renderer grid dimensions: 200×300 = 60K hexes (full world scale)
-const HEXV2_COLS = 200;
-const HEXV2_ROWS = 300;
+// V2 renderer grid dimensions: 80×120 = 9.6K hexes (dev scale — fast load)
+// Production: 200×300 = 60K hexes (full world scale)
+const HEXV2_COLS = 80;
+const HEXV2_ROWS = 120;
 
 type GamePhase =
   | { phase: 'worldgen' }
