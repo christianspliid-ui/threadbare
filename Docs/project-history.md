@@ -141,3 +141,5 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - ✅ Complete — fix: encounter resolution for social encounters + cooldown in new pipeline (2026-03-20)
 
 - Encounter-Level Cache & Sublocation-Aware Decisions: ✅ Complete (2026-03-20) — agents target specific encounters at specific sublocations. Eager sublocation creation at worldgen, encounter cache entries carry sublocationId/sublocationTypeId, sublocation-aware pathfinding/arrival, return-to-parent on encounter completion, cache lifecycle hooks for conditional sublocation spawn/dissolve, dead code removal (encounterCandidates.ts). Determinism audit findings documented for follow-up.
+
+- Hex Map V2 Phase 1 — Renderer Foundation: ✅ Complete (2026-03-21) — Three.js InstancedMesh renders 60K hexes with terrain/water palettes, seeded brightness noise, grid lines. d3-zoom camera controls (pan/zoom/fly-to), hex raycasting, HTML tooltips with geo debug data (elevation/temperature/moisture), selected hex gold ring, hovered hex white overlay, zoom-toward-selected-hex with lerp convergence, custom zoom-toward-cursor math. Available at `?view=hexv2`.
