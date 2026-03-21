@@ -77,11 +77,14 @@ export function setupD3Zoom(
 
   const zoom = d3.zoom<HTMLCanvasElement, unknown>()
     .scaleExtent([CAMERA_CONSTANTS.MIN_ZOOM, CAMERA_CONSTANTS.MAX_ZOOM])
-    // Disable double-click zoom — per CONTEXT.md decision.
-    // Also block wheel events when a zoom target is set — we handle them manually below.
+    // Block double-click zoom and ALL wheel events — we handle wheel manually
+    // because d3-zoom's default zoom-toward-cursor math assumes a standard
+    // screen↔data mapping, but our syncCameraToZoom uses a custom mapping
+    // (cx = -tx/k, cy = ty/k with Y-flip). Manual handling gives us correct
+    // zoom-toward-cursor AND zoom-toward-selected-hex.
     .filter((event: Event) => {
       if (event.type === 'dblclick') return false;
-      if (event.type === 'wheel' && zoomTarget) return false;
+      if (event.type === 'wheel') return false;
       return true;
     })
     .on('zoom', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
@@ -91,11 +94,12 @@ export function setupD3Zoom(
   const selection = d3.select(canvas);
   selection.call(zoom);
 
-  // ── Custom wheel handler: zoom toward the selected hex ─────────────────────
-  // When zoomTarget is set, we intercept wheel events and compute a transform
-  // that keeps the target world point stationary on screen while scaling.
+  // ── Custom wheel handler ───────────────────────────────────────────────────
+  // Handles ALL scroll-zoom because our coordinate mapping is non-standard.
+  // Two modes:
+  //   1. No zoom target → zoom toward the world point under the mouse cursor
+  //   2. Zoom target set → zoom while lerping toward the selected hex
   const handleWheel = (event: WheelEvent) => {
-    if (!zoomTarget) return; // Let d3 handle it normally
     event.preventDefault();
 
     const currentTransform = d3.zoomTransform(canvas);
@@ -106,33 +110,48 @@ export function setupD3Zoom(
     const newK = Math.max(minK, Math.min(maxK, currentTransform.k * Math.pow(2, delta)));
     if (newK === currentTransform.k) return;
 
-    // The zoom target's screen position under the current transform:
-    //   screenX = tx + worldX * k   (but our syncCameraToZoom uses cx = -tx/k)
-    //   We want the target to stay at screen center after zooming.
-    //
-    // World point: (zoomTarget.worldX, zoomTarget.worldY)
-    // For syncCameraToZoom: cx = -tx/k, cy = ty/k
-    // To center on the target at new scale:
-    //   tx_new = -zoomTarget.worldX * newK
-    //   ty_new = zoomTarget.worldY * newK
-    //
-    // But we don't want to snap — we want to smoothly converge.
-    // Interpolate the camera center between current center and target.
-    const currentCx = -currentTransform.x / currentTransform.k;
-    const currentCy = currentTransform.y / currentTransform.k;
+    const canvasW = canvas.clientWidth;
+    const canvasH = canvas.clientHeight;
+    const oldK = currentTransform.k;
 
-    // Lerp factor: zoom in → converge faster, zoom out → converge slower
-    const isZoomingIn = newK > currentTransform.k;
-    const lerpFactor = isZoomingIn
-      ? CAMERA_CONSTANTS.ZOOM_TARGET_LERP_IN
-      : CAMERA_CONSTANTS.ZOOM_TARGET_LERP_OUT;
+    // Current camera center in world space
+    const cx = -currentTransform.x / oldK;
+    const cy = currentTransform.y / oldK;
 
-    const newCx = currentCx + (zoomTarget.worldX - currentCx) * lerpFactor;
-    const newCy = currentCy + (zoomTarget.worldY - currentCy) * lerpFactor;
+    let newTx: number;
+    let newTy: number;
 
-    // Convert back to d3 transform: tx = -cx * k, ty = cy * k
+    if (zoomTarget) {
+      // ── Mode 2: Lerp toward selected hex ─────────────────────────────
+      const isZoomingIn = newK > oldK;
+      const lerpFactor = isZoomingIn
+        ? CAMERA_CONSTANTS.ZOOM_TARGET_LERP_IN
+        : CAMERA_CONSTANTS.ZOOM_TARGET_LERP_OUT;
+
+      const newCx = cx + (zoomTarget.worldX - cx) * lerpFactor;
+      const newCy = cy + (zoomTarget.worldY - cy) * lerpFactor;
+
+      newTx = -newCx * newK;
+      newTy = newCy * newK;
+    } else {
+      // ── Mode 1: Zoom toward mouse cursor ─────────────────────────────
+      // World point under cursor:
+      //   worldX = cx + (sx - canvasW/2) / k
+      //   worldY = cy + (canvasH/2 - sy) / k
+      const sx = event.offsetX;
+      const sy = event.offsetY;
+      const worldX = cx + (sx - canvasW / 2) / oldK;
+      const worldY = cy + (canvasH / 2 - sy) / oldK;
+
+      // New transform that keeps (worldX, worldY) at screen (sx, sy):
+      //   tx' = -worldX * k' + (sx - canvasW/2)
+      //   ty' =  worldY * k' - (canvasH/2 - sy)
+      newTx = -worldX * newK + (sx - canvasW / 2);
+      newTy =  worldY * newK - (canvasH / 2 - sy);
+    }
+
     const newTransform = d3.zoomIdentity
-      .translate(-newCx * newK, newCy * newK)
+      .translate(newTx, newTy)
       .scale(newK);
 
     selection.call(zoom.transform, newTransform);
