@@ -127,15 +127,13 @@ function applyElevationOverride(
       elev > VOLCANO_MIN_ELEVATION &&
       ctx.temperature[idx] > VOLCANO_MIN_TEMPERATURE
     ) {
-      const noiseVal = fractalNoise(
-        col * 0.1,
-        row * 0.1,
-        seed + 99999,
-        2,
-        0.5,
-      );
-      const normalized = (noiseVal + 1) / 2;
-      if (normalized > (1 - VOLCANO_CHANCE)) return 'volcano';
+      // Deterministic integer hash for volcano placement.
+      // Produces uniform [0, 1) using mulberry32-style bit mixing.
+      let h = (col * 374761393 + row * 668265263 + seed * 1274126177) | 0;
+      h = Math.imul(h ^ (h >>> 13), h | 1);
+      h = (h ^ (h >>> 15)) >>> 0;
+      const hash = h / 4294967296;
+      if (hash < VOLCANO_CHANCE) return 'volcano';
     }
     return 'high_mountains';
   }
