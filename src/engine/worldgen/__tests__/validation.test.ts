@@ -133,14 +133,17 @@ describe('Validation pass — pass09', () => {
 });
 
 describe('generateWorld() — hexGrid.ts entry point', () => {
-  it('generateWorld returns HexTile[] with correct length (cols * rows)', () => {
-    const tiles = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
-    expect(tiles).toBeInstanceOf(Array);
-    expect(tiles.length).toBe(20 * 30);
+  it('generateWorld returns WorldGenResult with tiles, riverPaths, lakeIds', () => {
+    const result = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    expect(result).toHaveProperty('tiles');
+    expect(result).toHaveProperty('riverPaths');
+    expect(result).toHaveProperty('lakeIds');
+    expect(result.tiles).toBeInstanceOf(Array);
+    expect(result.tiles.length).toBe(20 * 30);
   });
 
   it('every HexTile has coord, geoParams, and terrain', () => {
-    const tiles = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    const { tiles } = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
     for (const tile of tiles) {
       expect(tile.coord).toBeDefined();
       expect(typeof tile.coord.col).toBe('number');
@@ -155,7 +158,7 @@ describe('generateWorld() — hexGrid.ts entry point', () => {
   });
 
   it('geoParams values are in [0, 1] range', () => {
-    const tiles = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    const { tiles } = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
     for (const tile of tiles) {
       expect(tile.geoParams.elevation).toBeGreaterThanOrEqual(0);
       expect(tile.geoParams.elevation).toBeLessThanOrEqual(1);
@@ -167,8 +170,8 @@ describe('generateWorld() — hexGrid.ts entry point', () => {
   });
 
   it('end-to-end determinism: same seed produces identical terrain at every hex', () => {
-    const tiles1 = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
-    const tiles2 = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    const { tiles: tiles1 } = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    const { tiles: tiles2 } = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
     expect(tiles1.length).toBe(tiles2.length);
     for (let i = 0; i < tiles1.length; i++) {
       expect(tiles1[i].terrain).toBe(tiles2[i].terrain);
@@ -179,7 +182,7 @@ describe('generateWorld() — hexGrid.ts entry point', () => {
   it('coords cover the full grid (0,0) to (cols-1, rows-1)', () => {
     const cols = 20;
     const rows = 30;
-    const tiles = generateWorld(DEFAULT_COSMOLOGY, cols, rows, 42);
+    const { tiles } = generateWorld(DEFAULT_COSMOLOGY, cols, rows, 42);
     const coordSet = new Set(tiles.map(t => `${t.coord.col},${t.coord.row}`));
     expect(coordSet.size).toBe(cols * rows);
     expect(coordSet.has('0,0')).toBe(true);
@@ -187,7 +190,7 @@ describe('generateWorld() — hexGrid.ts entry point', () => {
   });
 
   it('generated tiles include some river hexes (hasRiver)', () => {
-    const tiles = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
+    const { tiles } = generateWorld(DEFAULT_COSMOLOGY, 20, 30, 42);
     const riverTiles = tiles.filter(t => t.hasRiver === true);
     expect(riverTiles.length).toBeGreaterThan(0);
   });

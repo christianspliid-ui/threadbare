@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react';
 import type { HexCoord, HexTile } from '../../types';
+import type { RiverPath } from '../../engine/worldGenData';
 import type { HexMapV2Handle } from './HexMapV2';
 import HexMapV2 from './HexMapV2';
 
@@ -8,6 +9,8 @@ interface HexV2ViewProps {
   cols: number;
   rows: number;
   seed: number;
+  riverPaths?: RiverPath[];
+  lakeIds?: Int16Array;
 }
 
 /**
@@ -18,7 +21,7 @@ interface HexV2ViewProps {
  *
  * Layout: h-screen flex flex-col overflow-hidden (viewport contract per CLAUDE.md).
  */
-export function HexV2View({ tiles, cols, rows, seed }: HexV2ViewProps) {
+export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds }: HexV2ViewProps) {
   const mapRef = useRef<HexMapV2Handle>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
   const [hoveredHex, setHoveredHex]   = useState<HexCoord | null>(null);
@@ -100,6 +103,8 @@ export function HexV2View({ tiles, cols, rows, seed }: HexV2ViewProps) {
           selectedHex={selectedHex}
           onHexClick={handleHexClick}
           onHexHover={handleHexHover}
+          riverPaths={riverPaths}
+          lakeIds={lakeIds}
         />
       </div>
     </div>

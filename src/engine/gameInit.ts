@@ -68,7 +68,7 @@ export function initializeGameState(
   rows: number = DEFAULT_ROWS,
 ): { state: GameState; tiles: HexTile[] } {
   // Generate terrain
-  const tiles = generateWorld(cosmology, cols, rows, seed);
+  const tiles = generateWorld(cosmology, cols, rows, seed).tiles;
 
   // Seed the world graph with actors, locations, artifacts
   const { graph, individualIds } = seedWorld(cosmology, tiles, seed);

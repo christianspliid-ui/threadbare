@@ -7,6 +7,7 @@ import {
 } from 'react';
 import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../types';
+import type { RiverPath } from '../../engine/worldGenData';
 import { hexToPixel } from '../../lib/hexMath';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
@@ -30,6 +31,10 @@ export interface HexMapV2Props {
   selectedHex: HexCoord | null;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
+  /** River paths from worldgen — stored in ref for use by river rendering (Plan 03-02+) */
+  riverPaths?: RiverPath[];
+  /** Lake hex IDs from worldgen — stored in ref for use by lake coloring (Plan 03-01+) */
+  lakeIds?: Int16Array;
 }
 
 export interface HexMapV2Handle {
@@ -116,11 +121,19 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, seed = 42, selectedHex, onHexClick, onHexHover },
+    { tiles, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
     const canvasRef    = useRef<HTMLCanvasElement>(null);
+
+    // Worldgen data refs — available for scene setup (Plan 03-02+ will use these for river/lake rendering)
+    const riverPathsRef = useRef<RiverPath[]>(riverPaths ?? []);
+    const lakeIdsRef    = useRef<Int16Array>(lakeIds ?? new Int16Array(0));
+
+    // Keep refs in sync with latest props (stable reference, no re-render needed)
+    riverPathsRef.current = riverPaths ?? [];
+    lakeIdsRef.current    = lakeIds ?? new Int16Array(0);
 
     // Camera and zoom refs — stable across renders
     const cameraRef   = useRef<THREE.OrthographicCamera | null>(null);
@@ -190,7 +203,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Three.js performs bounding-sphere culling on the whole InstancedMesh.
         // Individual instances that pass the bounding sphere are handled by the GPU.
         // frustumCulled = true is the correct setting for Phase 1 performance targets.
-        const fillMesh = createHexFillMesh(tiles, seed);
+        // Pass lakeIds so lake hexes render with lake water color (Plan 03-01).
+        const fillMesh = createHexFillMesh(tiles, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
         fillMesh.frustumCulled = true; // Explicit for readability — this is already the default
         scene.add(fillMesh);
 

@@ -25,12 +25,12 @@ describe('WATER_PALETTE', () => {
     expect(Object.keys(WATER_PALETTE)).toHaveLength(5);
   });
 
-  it('contains shallows with correct color', () => {
-    expect(WATER_PALETTE['shallows']).toBe('#88C0E0');
+  it('contains shallows with correct color (from Design/hexmap macro-reference.png)', () => {
+    expect(WATER_PALETTE['shallows']).toBe('#78BCE0');
   });
 
-  it('contains deep_ocean with correct color', () => {
-    expect(WATER_PALETTE['deep_ocean']).toBe('#3870B0');
+  it('contains deep_ocean with correct color (from Design/hexmap macro-reference.png)', () => {
+    expect(WATER_PALETTE['deep_ocean']).toBe('#3A7AB8');
   });
 });
 
@@ -50,7 +50,7 @@ describe('terrainDisplayName', () => {
 
 describe('getWaterColor', () => {
   it("returns ocean color for 'ocean'", () => {
-    expect(getWaterColor('ocean')).toBe('#5898D0');
+    expect(getWaterColor('ocean')).toBe('#5098D0');
   });
 
   it("returns null for non-water terrain 'grassland'", () => {
@@ -58,15 +58,15 @@ describe('getWaterColor', () => {
   });
 
   it("returns shallows color for 'coastal_shallows'", () => {
-    expect(getWaterColor('coastal_shallows')).toBe('#88C0E0');
+    expect(getWaterColor('coastal_shallows')).toBe('#78BCE0');
   });
 
   it("returns shallows color for 'coast'", () => {
-    expect(getWaterColor('coast')).toBe('#88C0E0');
+    expect(getWaterColor('coast')).toBe('#78BCE0');
   });
 
   it("returns deep_ocean color for 'deep_ocean'", () => {
-    expect(getWaterColor('deep_ocean')).toBe('#3870B0');
+    expect(getWaterColor('deep_ocean')).toBe('#3A7AB8');
   });
 });
 
