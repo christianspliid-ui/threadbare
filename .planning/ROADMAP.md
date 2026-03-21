@@ -59,19 +59,20 @@ Plans:
 ### Phase 3: Coastlines, Water & Elevation
 **Goal**: Coastlines look organic (not hex-shaped), rivers flow as blue overlays through terrain, and elevation is visually readable
 **Depends on**: Phase 2
-**Requirements**: WATR-01, WATR-02, WATR-03, WATR-04, WATR-05, WATR-06, ELEV-01, ELEV-02, ELEV-03, ELEV-04, GRID-01
+**Requirements**: WATR-01, WATR-02, WATR-03, WATR-04, WATR-05, WATR-06, ELEV-01, ELEV-02, ELEV-03, GRID-01
+**Note**: ELEV-04 (altitude text labels) CUT from this phase -- deferred to later phase.
 **Success Criteria** (what must be TRUE):
   1. Coastal hexes show their inland biome color with an organic shoreline cutting through (not hex-edge aligned)
   2. Rivers appear as blue curved lines overlaid on terrain (a forest hex with a river still looks like forest + blue line)
   3. River width visibly increases from thin mountain streams to wide lowland rivers
   4. Mountain edges display caterpillar tick marks that get denser on steeper slopes
   5. Thin hex grid lines are visible at hero-local and regional zoom without obscuring terrain
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 03-01: Coastline mask rendering (marching squares, 7-point sub-hex sampling)
-- [ ] 03-02: River overlay rendering, width scaling, lake fill
-- [ ] 03-03: Elevation tick marks, altitude labels, water depth bands, grid lines
+- [ ] 03-01-PLAN.md — Coastline mask rendering, water depth bands, lake fill, worldgen data threading, STYLE.md color update
+- [ ] 03-02-PLAN.md — River overlay rendering with mesh quad strips, width scaling
+- [ ] 03-03-PLAN.md — Elevation tick marks, grid line verification, visual checkpoint
 
 ### Phase 4: Regions & Borders
 **Goal**: The world is divided into named geographic and political regions with visible borders and labels
@@ -170,7 +171,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 |-------|----------------|--------|-----------|
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
-| 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
+| 3. Coastlines, Water & Elevation | 0/3 | Planned | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
