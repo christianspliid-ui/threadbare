@@ -136,6 +136,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       terrainName: string;
       screenX: number;
       screenY: number;
+      geoParams?: import('../../types').GeoParams;
+      hasRiver?: boolean;
     } | null>(null);
 
     // Canvas dimensions for tooltip clamping
@@ -319,6 +321,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           terrainName,
           screenX: screen.x,
           screenY: screen.y,
+          geoParams: tile?.geoParams,
+          hasRiver: tile?.hasRiver,
         });
         onHexHover(hex);
       } else {
@@ -399,6 +403,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             screenY={tooltip.screenY}
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}
+            geoParams={tooltip.geoParams}
+            hasRiver={tooltip.hasRiver}
           />
         )}
       </div>
