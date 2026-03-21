@@ -40,7 +40,7 @@ Plans:
 - [x] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states ✅ 2026-03-21
 
 ### Phase 2: World Generation
-**Goal**: A seeded world generator produces organic continents with realistic climate zones, rivers, and biome distribution
+**Goal**: A seeded world generator produces organic continents with realistic climate zones, rivers, and biome distribution via a province-first multi-pass pipeline
 **Depends on**: Phase 1
 **Requirements**: WGEN-01, WGEN-02, WGEN-03, WGEN-04, WGEN-05, WGEN-06, WGEN-07, WGEN-08, WGEN-09, WGEN-10, WGEN-11, WGEN-12, WGEN-13
 **Success Criteria** (what must be TRUE):
@@ -49,12 +49,12 @@ Plans:
   3. Rivers flow from high elevation to the sea, growing wider downstream, with lakes forming in depressions
   4. Highland areas (hills, mountains, plateaus) form mountain ranges and ridgelines, not random scattered peaks
   5. Every land hex has a drainage path to the sea (no isolated inland sinks except intentional lakes)
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 02-01: Heightmap generation, sea level, hex grid sampling
-- [ ] 02-02: Temperature, moisture, Whittaker biome assignment, elevation/wetland/desert overrides
-- [ ] 02-03: River generation, lake formation, drainage guarantee, volcanic placement
+- [ ] 02-01-PLAN.md — Pipeline scaffold, types, province seeding, elevation with ridges/canyons/coastline, 7-point sampling
+- [ ] 02-02-PLAN.md — Climate fields (temp/moisture/rain shadow), biome classification with all overrides, adjacency smoothing
+- [ ] 02-03-PLAN.md — Hydrology integration (rivers/lakes/drainage/deltas/wetlands), validation pass, game entry point wiring
 
 ### Phase 3: Coastlines, Water & Elevation
 **Goal**: Coastlines look organic (not hex-shaped), rivers flow as blue overlays through terrain, and elevation is visually readable
@@ -168,8 +168,8 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Renderer Foundation | 2/3 | In progress | - |
-| 2. World Generation | 0/3 | Not started | - |
+| 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
+| 2. World Generation | 0/3 | Planned | - |
 | 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
