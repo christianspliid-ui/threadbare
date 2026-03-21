@@ -70,7 +70,7 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Coastline mask rendering, water depth bands, lake fill, worldgen data threading, STYLE.md color update
+- [x] 03-01-PLAN.md — Coastline mask rendering, water depth bands, lake fill, worldgen data threading, STYLE.md color update ✅ 2026-03-21
 - [ ] 03-02-PLAN.md — River overlay rendering with mesh quad strips, width scaling
 - [ ] 03-03-PLAN.md — Elevation tick marks, grid line verification, visual checkpoint
 
@@ -171,7 +171,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 |-------|----------------|--------|-----------|
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
-| 3. Coastlines, Water & Elevation | 0/3 | Planned | - |
+| 3. Coastlines, Water & Elevation | 1/3 | In progress | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
