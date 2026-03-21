@@ -1,6 +1,23 @@
 import type { CosmologyProfile, HexTile } from '../types';
 import { WorldGenPipeline } from './worldgen/WorldGenPipeline';
 import type { WorldGenContext, WorldGenParams } from './worldgen/types';
+import type { RiverPath } from './worldGenData';
+
+/**
+ * The result of world generation — includes tiles for rendering plus
+ * hydrology data (riverPaths, lakeIds) threaded through to the renderer.
+ *
+ * NFP #2: Inspectability — riverPaths and lakeIds allow downstream systems
+ * to trace which hexes have river/lake water without re-running worldgen.
+ */
+export interface WorldGenResult {
+  tiles: HexTile[];
+  riverPaths: RiverPath[];
+  lakeIds: Int16Array;
+  cols: number;
+  rows: number;
+  seed: number;
+}
 
 /**
  * Generate a complete world using the multi-pass pipeline.
@@ -18,7 +35,7 @@ export function generateWorld(
   cols: number,
   rows: number,
   seed: number,
-): HexTile[] {
+): WorldGenResult {
   const params: WorldGenParams = {
     cols,
     rows,
@@ -34,7 +51,14 @@ export function generateWorld(
   const pipeline = new WorldGenPipeline();
   const ctx = pipeline.run(params);
 
-  return toHexTilesFromContext(ctx);
+  return {
+    tiles: toHexTilesFromContext(ctx),
+    riverPaths: ctx.riverPaths,
+    lakeIds: ctx.lakeIds,
+    cols,
+    rows,
+    seed,
+  };
 }
 
 /**

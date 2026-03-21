@@ -43,10 +43,18 @@ export function buildHexGeometry(size: number): THREE.BufferGeometry {
  * Creates an InstancedMesh for all hex tiles with per-instance terrain colors.
  * Uses a single draw call for 60K hexes.
  *
- * NFP #3: Deterministic — colors derived from seeded noise, same seed = same appearance.
+ * NFP #1: lakeIds parameter is optional — fail-soft when not provided.
+ * NFP #3: Deterministic — colors derived from seeded noise + elevation, same seed = same appearance.
  * NFP #7: Performance — single InstancedMesh draw call for the entire grid.
+ *
+ * When lakeIds is provided, lake hexes (lakeId >= 0) render with lake water color.
+ * Ocean hexes render with depth-band colors based on elevation.
  */
-export function createHexFillMesh(tiles: HexTile[], seed: number): THREE.InstancedMesh {
+export function createHexFillMesh(
+  tiles: HexTile[],
+  seed: number,
+  lakeIds?: Int16Array,
+): THREE.InstancedMesh {
   const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
   const mat = new THREE.MeshBasicMaterial({ vertexColors: false });
   const mesh = new THREE.InstancedMesh(geo, mat, tiles.length);
@@ -62,7 +70,11 @@ export function createHexFillMesh(tiles: HexTile[], seed: number): THREE.Instanc
     matrix.setPosition(x, -y, 0);
     mesh.setMatrixAt(i, matrix);
 
-    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row);
+    const lakeId = lakeIds ? lakeIds[i] : undefined;
+    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
+      elevation: tile.geoParams.elevation,
+      lakeId,
+    });
     color.setRGB(r, g, b);
     mesh.setColorAt(i, color);
   }
@@ -84,12 +96,17 @@ export function updateHexColors(
   mesh: THREE.InstancedMesh,
   tiles: HexTile[],
   seed: number,
+  lakeIds?: Int16Array,
 ): void {
   const color = new THREE.Color();
 
   for (let i = 0; i < tiles.length; i++) {
     const tile = tiles[i];
-    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row);
+    const lakeId = lakeIds ? lakeIds[i] : undefined;
+    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
+      elevation: tile.geoParams.elevation,
+      lakeId,
+    });
     color.setRGB(r, g, b);
     mesh.setColorAt(i, color);
   }

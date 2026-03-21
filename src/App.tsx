@@ -41,13 +41,15 @@ function App() {
   if (viewParam === 'cms') return <Suspense fallback={<div className="h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--bg-abyss)', color: 'var(--text-muted)' }}>Loading Content Browser...</div>}><ContentBrowser /></Suspense>;
   // Three.js renderer V2 — 60K hex grid at full world scale
   if (viewParam === 'hexv2') {
-    const hexv2Tiles = generateWorld(createBalancedCosmology(), HEXV2_COLS, HEXV2_ROWS, 42);
+    const hexv2Result = generateWorld(createBalancedCosmology(), HEXV2_COLS, HEXV2_ROWS, 42);
     return (
       <HexV2View
-        tiles={hexv2Tiles}
+        tiles={hexv2Result.tiles}
         cols={HEXV2_COLS}
         rows={HEXV2_ROWS}
         seed={42}
+        riverPaths={hexv2Result.riverPaths}
+        lakeIds={hexv2Result.lakeIds}
       />
     );
   }
@@ -58,21 +60,21 @@ function App() {
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   const [seed, setSeed] = useState(42);
   const [tiles, setTiles] = useState<HexTile[]>(() =>
-    generateWorld(createBalancedCosmology(), DEFAULT_COLS, DEFAULT_ROWS, 42)
+    generateWorld(createBalancedCosmology(), DEFAULT_COLS, DEFAULT_ROWS, 42).tiles
   );
   const [hoveredHex, setHoveredHex] = useState<HexCoord | null>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
   const [overlayMode, setOverlayMode] = useState<OverlayMode>('none');
 
   const handleGenerate = useCallback(() => {
-    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed));
+    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed).tiles);
     setSelectedHex(null);
     setHoveredHex(null);
   }, [cosmology, seed]);
 
   const handleProceedToSelection = useCallback(() => {
     // Ensure world is generated with current settings before moving on
-    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed));
+    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed).tiles);
     setGamePhase({ phase: 'selection' });
   }, [cosmology, seed]);
 

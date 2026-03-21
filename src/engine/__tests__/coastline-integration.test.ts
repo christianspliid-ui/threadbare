@@ -17,7 +17,7 @@ describe('coastline integration', () => {
   };
 
   it('produces coastline from game-generated world', () => {
-    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
     const landCount = tiles.filter(t => !isWaterTerrain(t.terrain)).length;
     const waterCount = tiles.filter(t => isWaterTerrain(t.terrain)).length;
     expect(landCount).toBeGreaterThan(0);
@@ -47,7 +47,7 @@ describe('coastline integration', () => {
   });
 
   it('performance: computes in < 500ms for 20×15 grid', () => {
-    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
     const start = performance.now();
     computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
     const elapsed = performance.now() - start;
@@ -55,7 +55,7 @@ describe('coastline integration', () => {
   });
 
   it('deterministic across multiple calls', () => {
-    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
     const a = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
     const b = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
     expect(combineLoopPaths(a.loops)).toBe(combineLoopPaths(b.loops));
@@ -84,7 +84,7 @@ describe('coastline integration', () => {
   });
 
   it('produces different coastlines for different seeds', () => {
-    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
     const a = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
     const b = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 99);
     // Different seeds should produce different contours (though number of loops may coincidentally match)
@@ -105,7 +105,7 @@ describe('coastline integration', () => {
   });
 
   it('scalar field handles large grids without overflow', () => {
-    const largeTiles = generateWorld(cosmology, 30, 20, 100);
+    const largeTiles = generateWorld(cosmology, 30, 20, 100).tiles;
     const data = computeCoastline(largeTiles, 30, 30, 20, 42);
     expect(data.loops).toBeDefined();
     expect(Array.isArray(data.loops)).toBe(true);
@@ -125,7 +125,7 @@ describe('coastline integration', () => {
   });
 
   it('shallow loops are valid when present', () => {
-    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42);
+    const tiles = generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, 42).tiles;
     const data = computeCoastline(tiles, 30, DEFAULT_COLS, DEFAULT_ROWS, 42);
     // Shallow loops may be empty for some seeds, but if present must be valid
     for (const loop of data.shallowLoops) {

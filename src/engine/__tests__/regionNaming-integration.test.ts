@@ -16,7 +16,7 @@ describe('region naming integration', () => {
   for (const seed of seeds) {
     describe(`seed ${seed}`, () => {
       const cosmology = makeCosmology();
-      const tiles = generateWorld(cosmology, 20, 15, seed);
+      const tiles = generateWorld(cosmology, 20, 15, seed).tiles;
       const result = seedWorld(cosmology, tiles, seed);
 
       it('produces at least 1 region', () => {
@@ -63,8 +63,8 @@ describe('region naming integration', () => {
 
   it('is deterministic across runs', () => {
     const cosmology = makeCosmology();
-    const tiles1 = generateWorld(cosmology, 20, 15, 42);
-    const tiles2 = generateWorld(cosmology, 20, 15, 42);
+    const tiles1 = generateWorld(cosmology, 20, 15, 42).tiles;
+    const tiles2 = generateWorld(cosmology, 20, 15, 42).tiles;
     const r1 = seedWorld(cosmology, tiles1, 42);
     const r2 = seedWorld(cosmology, tiles2, 42);
     expect(r1.regionIds).toEqual(r2.regionIds);
