@@ -27,6 +27,8 @@ const RIVER_SEED_OFFSET = 5501;
 const RIVER_Z_OFFSET = 0.03;
 /** Bias from hex center toward the exit/entry edge for terminus points */
 const RIVER_TERMINUS_EDGE_BIAS = 0.6;
+/** How far past the last hex center to extend the river mouth (fraction of HEX_SIZE) */
+const RIVER_MOUTH_EXTENSION = 1.2;
 
 // ─── Internal types ──────────────────────────────────────────────────────────
 
@@ -212,6 +214,18 @@ function riverPathToWorldPoints(
   // 6. Chaikin smoothing (fewer passes for 2-hex paths)
   const smoothPasses = hexes.length === 2 ? 1 : RIVER_SMOOTH_PASSES;
   points = chaikinSmoothOpen(points, smoothPasses);
+
+  // 7. Extend mouth: push the endpoint further along the final tangent
+  //    so the river visually flows into the water body it drains into.
+  if (points.length >= 2) {
+    const last = points[points.length - 1];
+    const prev = points[points.length - 2];
+    const dx = last.x - prev.x;
+    const dy = last.y - prev.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const ext = RIVER_MOUTH_EXTENSION * HEX_CONSTANTS.HEX_SIZE;
+    points.push({ x: last.x + (dx / len) * ext, y: last.y + (dy / len) * ext });
+  }
 
   return points;
 }
