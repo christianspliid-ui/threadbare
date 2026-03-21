@@ -13,6 +13,8 @@ import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import { createHexGridLines } from './scene/HexGridLines';
 import { createCoastlineMesh } from './scene/CoastlineMesh';
+import { createRiverMesh } from './scene/RiverMesh';
+import { createElevationTicks } from './scene/ElevationTicks';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -218,6 +220,19 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed);
         scene.add(coastlineMesh);
 
+        // Build elevation tick marks — caterpillar-style marks on steep hex edges (Plan 03-03)
+        // Renders at RENDER_ORDER.ELEVATION_TICKS (3), above grid lines, below rivers
+        const elevTicks = createElevationTicks(tiles);
+        scene.add(elevTicks);
+
+        // Build river overlay — curved blue quad strips above terrain (Plan 03-02)
+        // Renders at RENDER_ORDER.RIVERS (4), above grid lines, overlaying terrain without changing hex color
+        let riverMesh: THREE.Group | null = null;
+        if (riverPathsRef.current.length > 0) {
+          riverMesh = createRiverMesh(riverPathsRef.current, tiles, seed);
+          scene.add(riverMesh);
+        }
+
         // Selected hex ring (initially hidden)
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
@@ -300,6 +315,26 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               }
             }
           }
+          // Dispose elevation tick geometry and material
+          elevTicks.geometry.dispose();
+          if (Array.isArray(elevTicks.material)) {
+            for (const mat of elevTicks.material) mat.dispose();
+          } else {
+            (elevTicks.material as THREE.Material).dispose();
+          }
+          // Dispose river mesh children geometries and materials
+          if (riverMesh) {
+            for (const child of riverMesh.children) {
+              if (child instanceof THREE.Mesh) {
+                child.geometry.dispose();
+                if (Array.isArray(child.material)) {
+                  for (const mat of child.material) mat.dispose();
+                } else {
+                  child.material.dispose();
+                }
+              }
+            }
+          }
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
           hexScene?.dispose();
@@ -312,7 +347,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed]);
+    }, [tiles, cols, rows, seed, riverPaths]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
