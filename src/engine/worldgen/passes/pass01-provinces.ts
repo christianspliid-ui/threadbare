@@ -21,12 +21,11 @@ import {
   BIOME_TEMP_BANDS,
 } from '../constants';
 import {
-  Province,
   PROVINCE_ROLE_CAPITAL,
   PROVINCE_ROLE_HEARTLAND,
   PROVINCE_ROLE_BORDERLAND,
 } from '../types';
-import type { WorldGenContext, WorldGenParams, CultureForWorldgen } from '../types';
+import type { Province, WorldGenContext, WorldGenParams, CultureForWorldgen } from '../types';
 import type { HexCoord } from '../../../types';
 
 // ─── Internal types ───────────────────────────────────────────────
