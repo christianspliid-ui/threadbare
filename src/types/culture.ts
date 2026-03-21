@@ -8,7 +8,9 @@ import type { ReachDomain } from './traits';
 export interface CultureIdentity {
   foundationBias: string;
   veneratedSpheres: SphereName[];
-  primaryBiome: TerrainType;
+  primaryBiome: TerrainType;   // kept for backward compatibility
+  preferredBiomes: TerrainType[];   // 3 core biomes for province generation (worldgen)
+  toleratedBiomes: TerrainType[];   // up to 5 additional biomes for heartland
   socialStructure: string;
   accountability: string;
   behavioralKeywords: string[];
