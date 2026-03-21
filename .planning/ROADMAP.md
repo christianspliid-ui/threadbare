@@ -49,7 +49,7 @@ Plans:
   3. Rivers flow from high elevation to the sea, growing wider downstream, with lakes forming in depressions
   4. Highland areas (hills, mountains, plateaus) form mountain ranges and ridgelines, not random scattered peaks
   5. Every land hex has a drainage path to the sea (no isolated inland sinks except intentional lakes)
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
 - [ ] 02-01-PLAN.md — Pipeline scaffold, types, province seeding, elevation with ridges/canyons/coastline, 7-point sampling
@@ -169,7 +169,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
-| 2. World Generation | 0/3 | Planned | - |
+| 2. World Generation | 1/3 | In Progress|  |
 | 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
