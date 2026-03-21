@@ -33,12 +33,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Camera pans with drag, zooms with scroll/pinch, and jumps to a specific hex via API call
   4. Hovering a hex shows an HTML tooltip with hex coordinates and terrain type
   5. Water hexes (shallows, ocean, deep_ocean, lake) use a separate blue palette from terrain
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 01-01: Three.js scene, orthographic camera, InstancedMesh hex grid
-- [ ] 01-02: Terrain type system, color palette, per-instance attributes
-- [ ] 01-03: Camera controls (pan, zoom, jump-to), frustum culling, tooltip overlay
+- [ ] 01-01-PLAN.md — Scene scaffold, palette, InstancedMesh hex fill, grid lines, ?view=hexv2 route
+- [ ] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states
 
 ### Phase 2: World Generation
 **Goal**: A seeded world generator produces organic continents with realistic climate zones, rivers, and biome distribution
@@ -169,7 +168,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Renderer Foundation | 0/3 | Not started | - |
+| 1. Renderer Foundation | 0/2 | Planning complete | - |
 | 2. World Generation | 0/3 | Not started | - |
 | 3. Coastlines, Water & Elevation | 0/3 | Not started | - |
 | 4. Regions & Borders | 0/3 | Not started | - |
