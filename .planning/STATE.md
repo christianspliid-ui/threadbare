@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07.1-stencil-coastline/07.1-01-PLAN.md
-last_updated: "2026-03-22T19:44:45.479Z"
+stopped_at: Completed 08-integration/08-02-PLAN.md
+last_updated: "2026-03-22T19:47:33.969Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 9
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 25
-  completed_plans: 24
+  completed_plans: 25
   percent: 95
 ---
 
@@ -99,6 +99,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 07-fog-zoom-grid P07-03 | 8 | 1 tasks | 3 files |
 | Phase 08-integration P01 | 3 | 2 tasks | 4 files |
 | Phase 07.1-stencil-coastline P01 | 7 | 2 tasks | 6 files |
+| Phase 08-integration P02 | 9 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -164,6 +165,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 07.1-stencil-coastline]: GPU stencil clipping via split land/water InstancedMesh — land mesh tests stencilRef=1, CoastlineMesh writes stencil at renderOrder -1
 - [Phase 07.1-stencil-coastline]: STENCIL_THRESHOLD = 0.30 (lower than default 0.35) to extend land contour past outer hex edges
 - [Phase 07.1-stencil-coastline]: globalToMeshMap built at scene init for O(1) fog routing across both land and water meshes; fog update inlined in HexMapV2.tsx
+- [Phase 08-integration]: PASS_SEED_FANTASY=70109 ensures independent PRNG stream for fantasy overlay pass
+- [Phase 08-integration]: V1 SVG hex map fully deleted in Phase 8 Plan 02 — HexMapV2 is sole hex renderer
 
 ### Pending Todos
 
@@ -175,6 +178,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:44:45.476Z
-Stopped at: Completed 07.1-stencil-coastline/07.1-01-PLAN.md
+Last session: 2026-03-22T19:47:33.967Z
+Stopped at: Completed 08-integration/08-02-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)

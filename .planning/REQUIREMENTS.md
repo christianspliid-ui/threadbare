@@ -31,7 +31,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **WGEN-11**: Desert sub-type selection (sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands) from local noise
 - [x] **WGEN-12**: Drainage guarantee pass ensures every land hex has downhill path to sea
 - [x] **WGEN-13**: Volcanic hex placement via hotspot noise (rare)
-- [ ] **WGEN-14**: Fantasy overlay pass converts base biomes to magical variants based on sphere alignment
+- [x] **WGEN-14**: Fantasy overlay pass converts base biomes to magical variants based on sphere alignment
 
 ### Coastline & Water (WATR)
 
@@ -189,7 +189,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **INTG-03**: Existing game state (agents, locations, encounters) renders on new map without engine changes
 - [x] **INTG-04**: Debug panel fog-of-war toggle works with new renderer
 - [x] **INTG-05**: URL params (?view=game, ?fog) work with new map
-- [ ] **INTG-06**: All existing tests pass after integration
+- [x] **INTG-06**: All existing tests pass after integration
 
 ## v2 Requirements
 
@@ -362,8 +362,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INTG-03 | Phase 8 | Complete |
 | INTG-04 | Phase 8 | Complete |
 | INTG-05 | Phase 8 | Complete |
-| INTG-06 | Phase 8 | Pending |
-| WGEN-14 | Phase 8 | Pending |
+| INTG-06 | Phase 8 | Complete |
+| WGEN-14 | Phase 8 | Complete |
 
 **Coverage:**
 - v1 requirements: 136 total
