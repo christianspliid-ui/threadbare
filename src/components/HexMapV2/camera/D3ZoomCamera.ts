@@ -14,6 +14,8 @@ export const CAMERA_CONSTANTS = {
   DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
   ZOOM_TARGET_LERP_IN:  0.4,  // Per-wheel-tick convergence toward selected hex when zooming in
   ZOOM_TARGET_LERP_OUT: 0.15, // Per-wheel-tick convergence toward selected hex when zooming out (slower)
+  INITIAL_CENTER_COL: 48,     // Starting view centers on this hex column
+  INITIAL_CENTER_ROW: 90,     // Starting view centers on this hex row
 } as const;
 
 /**
@@ -70,6 +72,8 @@ export interface D3ZoomResult {
 export function setupD3Zoom(
   canvas: HTMLCanvasElement,
   camera: THREE.OrthographicCamera,
+  gridCols?: number,
+  gridRows?: number,
 ): D3ZoomResult {
   // Mutable zoom target — when set, scroll-zoom converges on this world point
   // instead of the mouse cursor position.
@@ -160,15 +164,18 @@ export function setupD3Zoom(
   canvas.addEventListener('wheel', handleWheel, { passive: false });
 
   // ── Initial view ───────────────────────────────────────────────────────────
-  // Center the initial view on the grid midpoint at DEFAULT_ZOOM
-  const midHex = {
-    col: Math.floor(HEX_CONSTANTS.GRID_COLS / 2),
-    row: Math.floor(HEX_CONSTANTS.GRID_ROWS / 2),
+  // Center the initial view on the grid center if dimensions are provided,
+  // otherwise fall back to the configured default hex (for HexV2View).
+  const centerCol = gridCols != null ? Math.floor(gridCols / 2) : CAMERA_CONSTANTS.INITIAL_CENTER_COL;
+  const centerRow = gridRows != null ? Math.floor(gridRows / 2) : CAMERA_CONSTANTS.INITIAL_CENTER_ROW;
+  const startHex = {
+    col: centerCol,
+    row: centerRow,
   };
-  const { x: gridCenterX, y: gridCenterY } = hexToPixel(midHex, HEX_CONSTANTS.HEX_SIZE);
+  const { x: gridCenterX, y: gridCenterY } = hexToPixel(startHex, HEX_CONSTANTS.HEX_SIZE);
   const k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
 
-  // World center of the grid: hexToPixel gives positive y, but HexFillMesh stores
+  // World center: hexToPixel gives positive y, but HexFillMesh stores
   // positions at (x, -y, 0) for the Y-flip. So world center Y = -gridCenterY.
   //
   // syncCameraToZoom derives: cx = -tx/k, cy = ty/k
