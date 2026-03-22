@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { TERRAIN_TO_FEATURE, FEATURE_MIN_SIZE, type RegionFeatureType } from '../regionDetection';
 import type { HexTile, TerrainType } from '../../types';
-import { detectRegions, edgeBorderCost, type RegionCluster } from '../regionDetection';
+import { detectRegions, detectRegionsBorderCost, edgeBorderCost, REGION_MIN_SIZE, REGION_MAX_SIZE, type RegionCluster } from '../regionDetection';
+import { generateWorld } from '../hexGrid';
 
 function tile(col: number, row: number, terrain: TerrainType, elevation = 0.5): HexTile {
   return { coord: { col, row }, geoParams: { elevation, temperature: 0.5, moisture: 0.5 }, terrain };
@@ -199,5 +200,128 @@ describe('detectRegions', () => {
     expect(mountain).toBeDefined();
     expect(mountain!.centerCol).toBe(1);
     expect(mountain!.centerRow).toBe(0);
+  });
+});
+
+// ─── Task 2: detectRegionsBorderCost tests ────────────────────────────────────
+
+/** Build a synthetic HexTile grid from a 2D terrain array */
+function buildGrid(terrain: TerrainType[][], elevation?: number[][]): HexTile[] {
+  const tiles: HexTile[] = [];
+  for (let row = 0; row < terrain.length; row++) {
+    for (let col = 0; col < terrain[row].length; col++) {
+      tiles.push({
+        coord: { col, row },
+        geoParams: {
+          elevation: elevation ? elevation[row][col] : 0.5,
+          temperature: 0.5,
+          moisture: 0.5,
+        },
+        terrain: terrain[row][col],
+      });
+    }
+  }
+  return tiles;
+}
+
+describe('detectRegionsBorderCost', () => {
+  it('assigns every land hex to exactly one region (no gaps, no overlaps)', () => {
+    // 8x8 mixed terrain grid
+    const terrain: TerrainType[][] = [
+      ['ocean', 'ocean', 'coast', 'grassland', 'grassland', 'grassland', 'ocean', 'ocean'],
+      ['ocean', 'coast', 'grassland', 'grassland', 'temperate_forest', 'temperate_forest', 'coast', 'ocean'],
+      ['coast', 'grassland', 'grassland', 'hills', 'hills', 'temperate_forest', 'grassland', 'coast'],
+      ['grassland', 'grassland', 'mountains', 'mountains', 'hills', 'grassland', 'grassland', 'grassland'],
+      ['grassland', 'mountains', 'mountains', 'mountains', 'grassland', 'grassland', 'grassland', 'grassland'],
+      ['coast', 'grassland', 'grassland', 'grassland', 'grassland', 'desert', 'desert', 'coast'],
+      ['ocean', 'coast', 'grassland', 'grassland', 'desert', 'desert', 'coast', 'ocean'],
+      ['ocean', 'ocean', 'coast', 'grassland', 'grassland', 'coast', 'ocean', 'ocean'],
+    ];
+    const tiles = buildGrid(terrain);
+    const { regions, hexRegionId } = detectRegionsBorderCost(tiles, [], 8, []);
+
+    // Every land hex must be assigned
+    const landHexes = tiles.filter(t => {
+      const f = TERRAIN_TO_FEATURE[t.terrain];
+      return f && f !== 'sea';
+    });
+
+    for (const h of landHexes) {
+      const key = `${h.coord.col},${h.coord.row}`;
+      expect(hexRegionId.has(key), `Land hex ${key} not assigned to a region`).toBe(true);
+    }
+
+    // No overlaps: each key appears only once (Map enforces this)
+    expect(hexRegionId.size).toBeGreaterThanOrEqual(landHexes.length);
+  });
+
+  it('mountain wall separating plains creates at least 2 separate regions', () => {
+    // 5 rows x 7 cols: plains | mountain wall | plains
+    const terrain: TerrainType[][] = [
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
+    ];
+    const tiles = buildGrid(terrain);
+    const { regions } = detectRegionsBorderCost(tiles, [], 5, []);
+    // Should have at least 2 regions (the mountain wall separates two plains areas)
+    expect(regions.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('river between two forest areas creates boundary (produces 2+ forest-containing regions)', () => {
+    // 6x4: forest | river column | forest
+    const terrain: TerrainType[][] = [
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
+    ];
+
+    // Build river paths along column 2
+    const riverPath = { id: 'r1', hexes: [
+      { col: 2, row: 0 }, { col: 2, row: 1 }, { col: 2, row: 2 },
+      { col: 2, row: 3 }, { col: 2, row: 4 }, { col: 2, row: 5 },
+    ]};
+
+    const tiles = buildGrid(terrain);
+    const { regions } = detectRegionsBorderCost(tiles, [riverPath], 5, []);
+    // Expect at least 2 regions (river boundary separates the two forest sides)
+    expect(regions.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('centroid of each region is within the region', () => {
+    const terrain: TerrainType[][] = [
+      ['grassland', 'grassland', 'grassland', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'grassland', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'grassland', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'grassland', 'grassland', 'grassland'],
+      ['grassland', 'grassland', 'grassland', 'grassland', 'grassland'],
+    ];
+    const tiles = buildGrid(terrain);
+    const { regions, hexRegionId } = detectRegionsBorderCost(tiles, [], 5, []);
+
+    for (const region of regions) {
+      const centroidKey = `${region.centerCol},${region.centerRow}`;
+      const regionId = hexRegionId.get(centroidKey);
+      expect(regionId, `Centroid (${centroidKey}) of region ${region.id} is not within region`).toBe(region.id);
+    }
+  });
+
+  it('WorldGenResult.regionData is defined after generateWorld()', () => {
+    const cosmology = {
+      force: 0.125, matter: 0.125, energy: 0.125, life: 0.125,
+      mind: 0.125, spirit: 0.125, time: 0.125, entropy: 0.125,
+    };
+    const result = generateWorld(cosmology, 20, 20, 42);
+    expect(result.regionData).toBeDefined();
+    expect(result.regionData!.geographicRegions).toBeDefined();
+    expect(result.regionData!.geographicRegions.length).toBeGreaterThan(0);
+    expect(result.regionData!.hexRegionId).toBeInstanceOf(Map);
   });
 });
