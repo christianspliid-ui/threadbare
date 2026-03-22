@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment (completed 2026-03-21)
 - [x] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language (completed 2026-03-21)
 - [x] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers (completed 2026-03-22)
-- [ ] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map
+- [x] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map (completed 2026-03-22)
 - [ ] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation
 - [ ] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network
 - [ ] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring
@@ -101,7 +101,7 @@ Plans:
   3. Signifiers have subtle position jitter and rotation, creating an organic hand-placed feel
   4. Signifiers scale with zoom and disappear below regional zoom threshold
   5. The composition system correctly assigns signifiers to CENTER slots and handles suppression rules
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 05-01-PLAN.md — Composition system types, resolver, signifier registry with terrain reconciliation
@@ -173,7 +173,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
-| 5. Hex Composition & Landscape Signifiers | 3/4 | In Progress|  |
+| 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
