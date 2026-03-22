@@ -6,17 +6,17 @@
 **Hex Map V2** — Three.js-based hex map renderer (8-phase milestone).
 
 **Recent completions:**
-- ✅ Phase 2 Plan 03: Hydrology + validation (2026-03-21) — Depression filling, river generation, lake promotion, lake outflows, canyon carving, validation pass. generateWorld() now uses full pipeline. 26 TDD tests. Phase 2 complete.
-- ✅ Phase 2 Plan 02: Climate fields + biome classification (2026-03-21) — Temperature/moisture with latitude gradient, rain shadow, maritime moderation; Whittaker biome classification. 25 TDD tests.
-- ✅ Phase 2 Plan 01: WorldGen pipeline scaffold (2026-03-21) — Province seeding, elevation heightmap, ridge overlays, coastline pass.
+- ✅ Phase 4 Plan 03: HTML Label Overlay (2026-03-22) — RAF-driven kingdom/barony/geographic/river labels over Three.js canvas, AABB collision detection, zoom-tier filtering, cartographic halo style. Phase 4 complete.
+- ✅ Phase 4 Plan 02: Political regions + border mesh (2026-03-22) — barony/kingdom assignment, red quad-strip borders, capital dot markers wired into HexMapV2.
+- ✅ Phase 4 Plan 01: Geographic region detection (2026-03-22) — Dijkstra flood fill, watershed detection, RegionData types.
 
 **Up next:**
-- Phase 3: Coastline and water rendering using rivers/lakes from pipeline
+- Phase 5: Terrain signifiers (hex icons, biome markers)
 
-**Latest implementation:** Phase 2 Plan 03 (2026-03-21) — Full 9-pass worldgen pipeline operational. Rivers flow from mountains to sea. Lakes form in depressions. generateWorld() returns HexTile[] with rivers and full biome classification.
+**Latest implementation:** Phase 4 Plan 03 (2026-03-22) — Full label overlay system operational. Kingdom/barony/geographic/river labels render with proper typography, dark-text-with-halo, and zoom-tier visibility. Phase 4 Regions & Borders complete.
 
 ## Full Backlog
-Notion: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
+See: `.planning/BACKLOG.md`
 
 ## Completed Work
 See: Docs/project-history.md
