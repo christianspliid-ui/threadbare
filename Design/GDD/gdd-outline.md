@@ -285,8 +285,8 @@ Six canonical actor types, each with distinct:
 
 ## 9. Design Documentation & Workflow
 
-### 9.1 Primary Design Home: Notion
-[Development Backlog](https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf) — Sequenced discovery roadmap covering:
+### 9.1 Primary Design Home: Repo Markdown
+`.planning/BACKLOG.md` — Sequenced discovery roadmap covering:
 - Resolution System mechanics
 - Agent Action Selection algorithms
 - Adversarial AI (Rival Ascendant behavior)
@@ -295,7 +295,7 @@ Six canonical actor types, each with distinct:
 - Narrative Prose Generation (world events as story)
 - And more...
 
-*All design decisions are tracked here with reasoning and dependencies.*
+*All design decisions are tracked here with reasoning and dependencies. (Migrated from Notion 2026-03-22.)*
 
 ### 9.2 Graph Visualization: Obsidian Vault
 ~150 files capturing:
@@ -324,7 +324,7 @@ Six canonical actor types, each with distinct:
 
 ## 10. Open Design Questions (Discovery Backlog)
 
-See [Notion Development Backlog](https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf) for the full sequenced discovery roadmap. Key open questions include:
+See `.planning/BACKLOG.md` for the full sequenced discovery roadmap. Key open questions include:
 
 - **Resolution System:** How do we resolve contested actions when multiple actors want conflicting outcomes?
 - **Agent Action Selection:** What algorithm drives autonomous actor decision-making? How do intentions form?
