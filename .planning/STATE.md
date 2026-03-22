@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 08-integration/08-01-PLAN.md
-last_updated: "2026-03-22T19:34:45.175Z"
+stopped_at: Completed 07.1-stencil-coastline/07.1-01-PLAN.md
+last_updated: "2026-03-22T19:44:45.479Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 9
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
   percent: 95
 ---
 
@@ -98,6 +98,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 07-fog-zoom-grid P07-02 | 3 | 1 tasks | 2 files |
 | Phase 07-fog-zoom-grid P07-03 | 8 | 1 tasks | 3 files |
 | Phase 08-integration P01 | 3 | 2 tasks | 4 files |
+| Phase 07.1-stencil-coastline P01 | 7 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -160,6 +161,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 07-fog-zoom-grid]: ZOOM_VISIBILITY_MATRIX replaces scattered inline zoom threshold checks in zoom.on handler — all layer visibility goes through the matrix
 - [Phase 08-integration]: HexMapV2 is drop-in replacement for HexMap in GameView; HexMapV2Handle has same centerOn signature
 - [Phase 08-integration]: Agent adapter maps graph actor nodes to AgentRenderData[] with modulo faction coloring; retinue detected via getRetinueAgents
+- [Phase 07.1-stencil-coastline]: GPU stencil clipping via split land/water InstancedMesh — land mesh tests stencilRef=1, CoastlineMesh writes stencil at renderOrder -1
+- [Phase 07.1-stencil-coastline]: STENCIL_THRESHOLD = 0.30 (lower than default 0.35) to extend land contour past outer hex edges
+- [Phase 07.1-stencil-coastline]: globalToMeshMap built at scene init for O(1) fog routing across both land and water meshes; fog update inlined in HexMapV2.tsx
 
 ### Pending Todos
 
@@ -171,6 +175,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T19:34:45.173Z
-Stopped at: Completed 08-integration/08-01-PLAN.md
+Last session: 2026-03-22T19:44:45.476Z
+Stopped at: Completed 07.1-stencil-coastline/07.1-01-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
