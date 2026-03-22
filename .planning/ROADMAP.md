@@ -75,7 +75,7 @@ Plans:
 - [ ] 03-03-PLAN.md — Elevation tick marks, grid line verification, visual checkpoint
 
 ### Phase 4: Regions & Borders
-**Goal**: The world is divided into named geographic and political regions with visible borders and labels
+**Goal**: The world is divided into named geographic and political regions with visible borders, labels, and capital markers
 **Depends on**: Phase 3
 **Requirements**: REGN-01, REGN-02, REGN-03, REGN-04, REGN-05, REGN-06, REGN-07, REGN-08, REGN-09, GRID-02
 **Success Criteria** (what must be TRUE):
@@ -84,12 +84,12 @@ Plans:
   3. Region labels appear at region centers: kingdoms bold all-caps, baronies title case, geographic features italic
   4. Labels do not overlap each other
   5. Capital cities are marked with red dots distinguishable from terrain at regional zoom
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 04-01: Geographic region detection (flood-fill, border cost, watershed segmentation)
-- [ ] 04-02: Political regions, border rendering, capital markers
-- [ ] 04-03: Region labels, collision detection, river labels
+- [ ] 04-01-PLAN.md — Region type contracts, TERRAIN_TO_FEATURE audit, border-cost watershed detection, WorldGenResult threading
+- [ ] 04-02-PLAN.md — Political region grouping, border mesh (quad-strip polylines), capital markers, HexMapV2 wiring
+- [ ] 04-03-PLAN.md — Region label overlay (HTML/CSS), AABB collision detection, river labels, zoom-tier filtering
 
 ### Phase 5: Hex Composition & Landscape Signifiers
 **Goal**: Every terrain hex displays characteristic dark-silhouette signifiers (trees, mountains, dunes, etc.) placed via a slot-based composition system
@@ -172,7 +172,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
-| 4. Regions & Borders | 0/3 | Not started | - |
+| 4. Regions & Borders | 0/3 | Planned | - |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
