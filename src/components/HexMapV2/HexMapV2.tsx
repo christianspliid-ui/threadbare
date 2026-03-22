@@ -13,6 +13,7 @@ import type { VisibilityMap } from '../../types/visibility';
 import { hexToPixel } from '../../lib/hexMath';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
+import type { HexFillMeshResult } from './scene/HexFillMesh';
 import { createHexGridLines } from './scene/HexGridLines';
 import { createCoastlineMesh } from './scene/CoastlineMesh';
 import { createRiverMesh } from './scene/RiverMesh';
@@ -44,7 +45,6 @@ import {
 } from './scene/ZoomVisibilityMatrix';
 import {
   buildOriginalColorCache,
-  updateFogColors,
   isLayerVisibleForHex,
 } from './scene/FogCulling';
 import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
@@ -206,7 +206,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const prevAgentPositionsRef = useRef<Map<string, { col: number; row: number }>>(new Map());
 
     // Fog culling refs — populated in scene init, read in fog update effect
-    const fillMeshRef          = useRef<THREE.InstancedMesh | null>(null);
+    const fillResultRef        = useRef<HexFillMeshResult | null>(null);
+    const landMeshRef          = useRef<THREE.InstancedMesh | null>(null);
+    const waterMeshRef         = useRef<THREE.InstancedMesh | null>(null);
+    /** Maps global tile index → { mesh, instanceIdx } for fast fog routing */
+    const globalToMeshMapRef   = useRef<Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }> | null>(null);
     const originalColorsRef    = useRef<Float32Array | null>(null);
     const tileIndexByKeyRef    = useRef<Map<string, number> | null>(null);
     // Visibility map ref — kept in sync with prop for use without closure staleness
@@ -297,22 +301,36 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         cameraRef.current = camera;
         setCanvasDimensions({ w, h });
 
-        // Build fill mesh — InstancedMesh with frustumCulled = true (Three.js default)
-        // Three.js performs bounding-sphere culling on the whole InstancedMesh.
-        // Individual instances that pass the bounding sphere are handled by the GPU.
-        // frustumCulled = true is the correct setting for Phase 1 performance targets.
-        // Pass lakeIds so lake hexes render with lake water color (Plan 03-01).
-        const fillMesh = createHexFillMesh(tiles, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
-        fillMesh.frustumCulled = true; // Explicit for readability — this is already the default
-        scene.add(fillMesh);
-        fillMeshRef.current = fillMesh;
+        // Build fill mesh — split into land (stencil-tested) + water (normal) InstancedMeshes.
+        // Land mesh only renders where stencil = 1 (set by CoastlineMesh stencil write pass).
+        // Water mesh renders as full hexagonal shapes with no stencil constraints.
+        // Pass lakeIds so lake hexes (lakeId >= 0) are classified as water (Plan 03-01).
+        const lakeIdsArg = lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined;
+        const fillResult = createHexFillMesh(tiles, seed, lakeIdsArg);
+        fillResult.landMesh.frustumCulled = true;
+        fillResult.waterMesh.frustumCulled = true;
+        scene.add(fillResult.landMesh);
+        scene.add(fillResult.waterMesh);
+        fillResultRef.current = fillResult;
+        landMeshRef.current = fillResult.landMesh;
+        waterMeshRef.current = fillResult.waterMesh;
+
+        // Build global-to-mesh routing map for fog update (avoids re-scanning index arrays each fog update)
+        const globalToMeshMap = new Map<number, { mesh: THREE.InstancedMesh; instanceIdx: number }>();
+        for (let i = 0; i < fillResult.landTileIndices.length; i++) {
+          globalToMeshMap.set(fillResult.landTileIndices[i], { mesh: fillResult.landMesh, instanceIdx: i });
+        }
+        for (let i = 0; i < fillResult.waterTileIndices.length; i++) {
+          globalToMeshMap.set(fillResult.waterTileIndices[i], { mesh: fillResult.waterMesh, instanceIdx: i });
+        }
+        globalToMeshMapRef.current = globalToMeshMap;
 
         // Build original color cache for fog culling (Plan 07-01)
         // Stored in refs — fog update useEffect reads these without re-running scene init
         const { colors, indexByKey } = buildOriginalColorCache(
           tiles,
           seed,
-          lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined,
+          lakeIdsArg,
         );
         originalColorsRef.current = colors;
         tileIndexByKeyRef.current = indexByKey;
@@ -593,7 +611,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           clearZoomTargetRef.current = null;
           cameraRef.current = null;
           // Clear scene-bound refs
-          fillMeshRef.current = null;
+          fillResultRef.current = null;
+          landMeshRef.current = null;
+          waterMeshRef.current = null;
+          globalToMeshMapRef.current = null;
           originalColorsRef.current = null;
           tileIndexByKeyRef.current = null;
           signifierGroupRef.current = null;
@@ -605,7 +626,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           borderKingdomRef.current = null;
           borderBaronyRef.current = null;
           scene.clear();
-          fillMesh.geometry.dispose();
+          fillResult.landMesh.geometry.dispose();
+          fillResult.landMesh.material instanceof THREE.Material && fillResult.landMesh.material.dispose();
+          fillResult.waterMesh.geometry.dispose();
+          fillResult.waterMesh.material instanceof THREE.Material && fillResult.waterMesh.material.dispose();
           gridLines?.geometry.dispose();
           // Dispose coastline mesh children geometries and materials
           for (const child of coastlineMesh.children) {
@@ -715,35 +739,63 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     }, [tiles, cols, rows, seed, riverPaths, regionData, locations, agents]);
 
     // ── Fog update effect (separate from scene init — fog changes don't rebuild scene) ──
-    // Depends only on visibilityMap prop. Uses refs to access fillMesh, colorCache.
+    // Depends only on visibilityMap prop. Uses refs to access meshes, colorCache.
+    // Fog color routing goes through globalToMeshMap so both land and water meshes are updated.
     // NFP #4: Fail-soft — if refs aren't populated yet, silently returns.
     useEffect(() => {
-      const fillMesh = fillMeshRef.current;
-      if (!fillMesh) return;
+      const landMesh = landMeshRef.current;
+      const waterMesh = waterMeshRef.current;
+      const globalToMeshMap = globalToMeshMapRef.current;
+      if (!landMesh || !waterMesh || !globalToMeshMap) return;
 
       const originalColors = originalColorsRef.current;
       const indexByKey = tileIndexByKeyRef.current;
 
       if (!originalColors || !indexByKey) return;
 
+      const color = new THREE.Color();
+
       if (!visibilityMap || !fogEnabled) {
-        // Fog disabled: restore all instance colors to originals
-        const color = new THREE.Color();
+        // Fog disabled: restore all instance colors to originals via globalToMeshMap routing
         for (let i = 0; i < originalColors.length / 3; i++) {
+          const entry = globalToMeshMap.get(i);
+          if (!entry) continue;
           color.setRGB(
             originalColors[i * 3 + 0],
             originalColors[i * 3 + 1],
             originalColors[i * 3 + 2],
             THREE.SRGBColorSpace,
           );
-          fillMesh.setColorAt(i, color);
+          entry.mesh.setColorAt(entry.instanceIdx, color);
         }
-        if (fillMesh.instanceColor) fillMesh.instanceColor.needsUpdate = true;
+        if (landMesh.instanceColor) landMesh.instanceColor.needsUpdate = true;
+        if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
         return;
       }
 
-      // Apply fog colors to fill mesh
-      updateFogColors(fillMesh, visibilityMap, indexByKey, originalColors);
+      // Apply fog colors to both meshes via globalToMeshMap routing
+      // Inline of updateFogColors logic — routes to correct mesh for each global tile index
+      const FOG_COLOR = new THREE.Color(0x0a0a0c); // matches FOG_CONSTANTS.UNEXPLORED_HEX_COLOR
+      for (const [key, hexVis] of visibilityMap) {
+        const idx = indexByKey.get(key);
+        if (idx === undefined) continue; // fail-soft: unknown hex key
+        const entry = globalToMeshMap.get(idx);
+        if (!entry) continue; // fail-soft: not in either mesh
+
+        if (hexVis.state === 'unexplored') {
+          entry.mesh.setColorAt(entry.instanceIdx, FOG_COLOR);
+        } else {
+          color.setRGB(
+            originalColors[idx * 3 + 0],
+            originalColors[idx * 3 + 1],
+            originalColors[idx * 3 + 2],
+            THREE.SRGBColorSpace,
+          );
+          entry.mesh.setColorAt(entry.instanceIdx, color);
+        }
+      }
+      if (landMesh.instanceColor) landMesh.instanceColor.needsUpdate = true;
+      if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
 
       // Per-hex layer culling for signifier and location groups
       // Agent culling is handled inside the agents useEffect (no fog-based agent visibility here)
