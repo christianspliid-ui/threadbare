@@ -469,7 +469,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(hoverOverlay);
 
         // Set up d3-zoom — attaches to canvas, drives OrthographicCamera
-        const { zoom, setZoomTarget, clearZoomTarget, destroy } = setupD3Zoom(canvas, camera);
+        const { zoom, setZoomTarget, clearZoomTarget, destroy } = setupD3Zoom(canvas, camera, cols, rows);
         zoomRef.current = zoom;
         destroyZoomRef.current = destroy;
         setZoomTargetRef.current = setZoomTarget;
