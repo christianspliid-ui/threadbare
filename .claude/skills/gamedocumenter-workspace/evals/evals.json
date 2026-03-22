@@ -1,0 +1,23 @@
+{
+  "skill_name": "gamedocumenter",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I just finished implementing Phase 6G which added a location detail panel (LocationDetailPanel.tsx, 280 lines), a location engine module (locationDetail.ts, 150 lines), and modified GameView.tsx to wire it in. There are 24 new tests across 3 test files. The design doc is at Docs/plans/2026-03-07-location-detail-design.md and the implementation plan is at Docs/plans/2026-03-07-location-detail-implementation.md. Please update all documentation.",
+      "expected_output": "Agent should: 1) Update Docs/changelog.md and Docs/project-status.md, 2) Create an Obsidian system note 'Location Detail Panel.md' using obsidian_append_content, 3) Add link to Index.md using obsidian_append_content (NOT obsidian_patch_content on headings), 4) Update .planning/BACKLOG.md marking phase complete, 5) Git commit all doc changes",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Quick fix: I just changed the AVATAR_SIGHT_RANGE constant from 3 to 4 in src/types/visibility.ts and updated one test. Can you update the docs?",
+      "expected_output": "Agent should recognize this as a lightweight change and do Steps 1-2 only (Docs/changelog.md entry + Docs/project-status.md if needed). Should NOT create new Obsidian notes or update BACKLOG.md for a constant tweak. Should update the existing Fog of War note if the range constant is mentioned there.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I've completed two related tasks: the culture content data implementation (culture-content.ts, 950 lines, 45 tests) and the narrative context builder (narrativeContext.ts, 200 lines, 12 tests). These are part of the Content Strategy & Architecture section in the backlog. Design docs are at Docs/plans/2026-03-07-culture-content-design.md and Docs/plans/2026-03-07-narrative-context-design.md. Update everything please.",
+      "expected_output": "Agent should: 1) Add multiple changelog rows to Docs/changelog.md, 2) Update Docs/project-status.md marking both items complete, 3) Create TWO new Obsidian system notes (Culture Content Data, Narrative Context Builder), 4) Update existing Content Packages.md note via obsidian_append_content or cautious patch_content, 5) Add links to Index.md under Content Strategy section using append, 6) Update .planning/BACKLOG.md marking both items as done, 7) Git commit",
+      "files": []
+    }
+  ]
+}
