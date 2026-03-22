@@ -38,26 +38,24 @@ created: 2026-03-22
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 05-01-01 | 01 | 1 | COMP-01 | unit | `npx vitest run src/engine/hex-composition` | ❌ W0 | ⬜ pending |
-| 05-01-02 | 01 | 1 | COMP-02 | unit | `npx vitest run src/engine/hex-composition` | ❌ W0 | ⬜ pending |
-| 05-01-03 | 01 | 1 | COMP-03 | unit | `npx vitest run src/engine/hex-composition` | ❌ W0 | ⬜ pending |
-| 05-01-04 | 01 | 1 | COMP-04 | unit | `npx vitest run src/engine/hex-composition` | ❌ W0 | ⬜ pending |
-| 05-02-01 | 02 | 2 | LSIG-01 | visual | `npx vitest run src/components/HexMap` | ❌ W0 | ⬜ pending |
-| 05-02-02 | 02 | 2 | LSIG-02 | unit | `npx vitest run src/components/HexMap` | ❌ W0 | ⬜ pending |
-| 05-02-03 | 02 | 2 | LSIG-03 | unit | `npx vitest run src/components/HexMap` | ❌ W0 | ⬜ pending |
-| 05-02-04 | 02 | 2 | LSIG-04 | visual | manual | N/A | ⬜ pending |
-| 05-02-05 | 02 | 2 | LSIG-05 | visual | manual | N/A | ⬜ pending |
-| 05-03-01 | 03 | 2 | LART-01..12 | visual | manual + `npx vitest run` | ❌ W0 | ⬜ pending |
-| 05-04-01 | 04 | 2 | LART-13..30 | visual | manual + `npx vitest run` | ❌ W0 | ⬜ pending |
+| 05-01-01 | 01 | 1 | COMP-01..04 | unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/compositionResolver.test.ts` | No (W0) | pending |
+| 05-01-02 | 01 | 1 | LSIG-02..05 | unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` | No (W0) | pending |
+| 05-02-01 | 02 | 2 | LSIG-01, LSIG-04 | unit | `npx vitest run src/components/HexMapV2/scene/__tests__/SignifierMesh.test.ts` | No (W0) | pending |
+| 05-02-02 | 02 | 2 | LSIG-01 | visual | `npx tsc --noEmit` | N/A | pending |
+| 05-03-01 | 03 | 2 | LART-01..04 | visual+unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` | depends on 05-01 | pending |
+| 05-03-02 | 03 | 2 | LART-05..12 | visual+unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` | depends on 05-01 | pending |
+| 05-04-01 | 04 | 2 | LART-13..23 | visual+unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` | depends on 05-01 | pending |
+| 05-04-02 | 04 | 2 | LART-24..30 | visual+unit | `npx vitest run src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` | depends on 05-01 | pending |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: pending / green / red / flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `src/engine/hex-composition/__tests__/` — test stubs for composition system (COMP-01..04)
-- [ ] `src/components/HexMap/__tests__/signifier-renderer.test.ts` — test stubs for rendering pipeline (LSIG-01..05)
+- [ ] `src/components/HexMapV2/signifiers/__tests__/compositionResolver.test.ts` — test stubs for composition system (COMP-01..04)
+- [ ] `src/components/HexMapV2/signifiers/__tests__/signifierRegistry.test.ts` — test stubs for registry and params (LSIG-02..05)
+- [ ] `src/components/HexMapV2/scene/__tests__/SignifierMesh.test.ts` — test stubs for rendering pipeline (LSIG-01, LSIG-04)
 
 *Existing vitest infrastructure covers framework needs.*
 
@@ -67,7 +65,7 @@ created: 2026-03-22
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| Silhouette visual quality | LSIG-04, LSIG-05 | Aesthetic judgment of hand-drawn style | Preview at 1920×1080, zoom to hex-level, verify dark silhouettes match Threadbare style |
+| Silhouette visual quality | LSIG-04, LSIG-05 | Aesthetic judgment of hand-drawn style | Preview at 1920x1080, zoom to hex-level, verify dark silhouettes match Threadbare style |
 | Adjacent hex variant diversity | LSIG-02 | Visual inspection of neighbor variation | Find 3+ adjacent same-terrain hexes, verify no identical signifiers |
 | Organic jitter feel | LSIG-03 | Subjective hand-placed appearance | Pan across map, verify signifiers don't look grid-aligned |
 | SVG asset quality per terrain | LART-01..30 | Artistic style compliance | Compare each terrain's signifier against STYLE.md silhouette guidelines |
