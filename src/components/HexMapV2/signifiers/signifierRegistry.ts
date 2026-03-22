@@ -670,81 +670,203 @@ export const SIGNIFIER_REGISTRY: SignifierRegistry = {
 
   // ── Elevated ──────────────────────────────────────────────────────────────
 
-  // LART-13: hills (4 variants: single hill, double hill, rolling, steep)
+  // LART-13: hills (4 variants: rolling ridgelines, double hill, single prominent hill, steep hills)
   hills: [
-    { paths: [{ d: PLACEHOLDER_HILL, opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: PLACEHOLDER_HILL_DOUBLE, opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M5,75 Q25,45 45,68 Q65,45 85,65 L95,75', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M20,75 Q35,25 50,75', opacity: 0.55 }], viewBox: '0 0 100 100' },
+    // Variant 0: Rolling ridgelines — from Design/hills-hand-drawn.svg (three layered ridge rows)
+    { paths: [{ d: 'M32.0,86.3 C31.8,86.2 31.4,85.6 31.1,85.0 C30.3,83.4 29.3,83.3 23.3,84.2 C18.5,84.8 17.1,84.8 17.1,83.9 C17.1,83.0 21.2,81.3 25.2,80.5 C28.4,79.9 41.1,75.7 46.5,73.6 C48.3,72.9 51.0,71.6 52.5,70.7 C55.9,68.6 56.9,68.6 60.6,70.0 C65.9,72.2 72.2,74.3 76.4,75.5 C78.7,76.1 80.9,76.8 81.3,77.0 C81.6,77.2 83.8,77.7 86.2,78.1 C91.5,79.1 93.1,80.0 91.3,80.9 C89.9,81.7 86.3,80.9 72.2,76.9 C67.5,75.5 64.9,74.6 61.7,73.0 C57.4,70.9 56.0,71.2 51.8,74.9 C50.4,76.1 48.5,77.7 47.6,78.5 C46.4,79.5 45.7,80.4 45.1,81.6 C43.6,85.3 42.6,85.9 40.8,84.4 C40.2,83.9 39.6,83.5 39.3,83.5 C38.7,83.5 36.8,84.5 35.3,85.7 C34.2,86.4 33.0,86.7 32.0,86.3 Z M24.0,63.2 C23.0,62.9 21.5,62.8 20.7,62.9 C19.4,63.1 19.0,63.0 18.4,62.4 C17.5,61.4 15.4,61.2 12.3,61.9 C8.0,62.7 5.4,62.5 6.8,61.3 C7.8,60.3 10.5,59.5 14.5,58.9 C19.4,58.2 24.4,56.6 30.4,53.8 C33.2,52.5 36.1,51.3 36.9,51.0 C37.7,50.7 39.3,49.9 40.5,49.2 C43.6,47.3 46.7,46.1 48.4,46.1 C49.5,46.1 51.7,46.8 56.0,48.5 C72.4,54.9 78.2,56.4 85.8,56.4 C87.9,56.4 90.8,56.5 92.2,56.7 C94.8,56.9 94.8,56.9 94.1,57.5 C92.9,58.4 90.8,58.8 87.1,58.8 C79.0,58.7 73.4,57.5 63.3,53.5 C48.3,47.5 47.9,47.4 44.6,49.6 C42.4,51.2 38.6,55.4 36.2,58.9 C35.3,60.3 34.4,61.4 34.1,61.5 C33.9,61.5 32.7,61.5 31.4,61.5 C29.3,61.6 29.0,61.7 27.8,62.6 C26.3,63.8 26.5,63.8 24.0,63.2 Z M20.6,35.8 C20.3,35.6 20.1,35.2 20.2,34.7 C20.4,34.2 20.2,34.0 18.9,33.9 C18.0,33.7 16.8,33.6 16.3,33.6 C15.7,33.6 14.7,33.5 14.0,33.3 C11.9,32.7 13.0,32.2 17.1,32.0 C21.5,31.7 29.8,30.1 34.2,28.6 C37.3,27.6 40.5,26.1 46.6,22.7 C49.9,20.9 50.0,20.9 52.7,20.9 C55.3,20.9 55.8,21.0 58.0,22.1 C59.4,22.8 61.8,24.1 63.3,25.1 C69.7,29.2 71.6,29.8 82.1,30.5 C83.9,30.7 85.6,30.9 86.1,31.0 L86.9,31.2 L85.9,31.8 C83.8,32.9 77.3,33.3 73.2,32.6 C69.3,32.0 59.9,28.1 57.7,26.1 C53.7,22.7 51.9,22.6 49.1,25.6 C46.9,27.9 45.5,30.0 45.3,31.4 C45.1,32.1 44.9,32.9 44.7,33.2 C44.1,33.9 42.5,33.9 42.0,33.2 C41.8,32.9 41.5,32.7 41.3,32.7 C41.2,32.7 39.7,33.4 38.1,34.4 C35.1,36.0 35.1,36.1 33.6,35.6 C30.8,34.9 29.5,34.9 26.7,35.6 C23.7,36.4 21.5,36.5 20.6,35.8 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 1: Double hill — two rounded hills layered front-to-back, left larger with shadow fill
+    { paths: [
+      { d: 'M5,80 C10,78 16,72 24,62 C32,50 40,44 48,44 C56,44 62,50 70,62 C76,71 82,78 90,80 Z', opacity: 0.5 },
+      { d: 'M5,80 C10,76 16,70 22,62 C28,54 35,50 40,50 C43,50 45,52 47,56', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Single prominent hill — one dome shape, shadow on left slope
+    { paths: [
+      { d: 'M8,80 C14,80 24,72 34,60 C44,48 50,38 56,34 C62,30 68,34 76,44 C82,54 88,68 93,80 Z', opacity: 0.5 },
+      { d: 'M8,80 C14,76 22,68 30,58 C38,48 44,40 50,36 C53,34 56,34 58,36', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 3: Steep hills — sharper profiles, angular ridgelines, shadow left heavy
+    { paths: [
+      { d: 'M6,80 L24,42 C28,34 32,30 36,32 C38,33 40,38 42,44 L52,64 L60,48 C64,40 68,36 72,38 C75,40 78,44 82,52 L93,80 Z', opacity: 0.52 },
+      { d: 'M6,80 L22,46 C26,38 30,34 34,36 C36,37 38,40 40,44', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-14: forested_hills (3 variants: deciduous-topped, conifer-topped, mixed)
   forested_hills: [
-    { paths: [{ d: PLACEHOLDER_HILL, opacity: 0.45 }, { d: 'M35,47 Q50,32 65,47', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: PLACEHOLDER_HILL, opacity: 0.45 }, { d: 'M50,50 L50,30 L38,45 L50,30 L62,45 L50,30', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: PLACEHOLDER_HILL_DOUBLE, opacity: 0.45 }, { d: 'M28,42 Q35,32 42,42 M62,38 L62,22 L54,36 L62,22 L70,36 L62,22', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 0: Deciduous-topped — hill profiles with rounded tree canopy, shadow left
+    { paths: [
+      { d: 'M8,80 C14,80 22,72 32,60 C42,48 50,40 58,36 C66,32 72,36 80,48 C86,58 90,70 93,80 Z', opacity: 0.45 },
+      { d: 'M40,38 C38,30 42,22 50,20 C58,18 64,24 62,32 C60,38 56,40 52,40 C48,40 44,40 40,38 Z', opacity: 0.5 },
+      { d: 'M40,38 C39,35 40,32 42,30 C44,28 47,27 50,27', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Conifer-topped — hill with pointed tree silhouettes along ridge
+    { paths: [
+      { d: 'M5,80 C12,80 22,70 34,58 C44,48 52,40 60,38 C68,36 74,42 82,54 C88,64 92,74 95,80 Z', opacity: 0.45 },
+      { d: 'M38,50 L38,28 L30,44 L38,28 L46,44 L38,28 Z M54,46 L54,26 L46,42 L54,26 L62,42 L54,26 Z M68,52 L68,34 L62,46 L68,34 L74,46 L68,34 Z', opacity: 0.52 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Mixed — hill with varied tree shapes, some bare rock showing
+    { paths: [
+      { d: 'M5,80 C14,80 26,68 38,54 C48,44 56,36 64,34 C72,32 78,38 86,52 C91,62 93,74 95,80 Z', opacity: 0.45 },
+      { d: 'M34,46 C32,38 36,30 42,28 C48,26 52,30 50,38 Z M60,42 L60,24 L52,38 L60,24 L68,38 L60,24 Z', opacity: 0.5 },
+      { d: 'M72,52 C72,48 74,44 78,44 C80,44 82,46 82,50', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
   ],
 
-  // LART-15: mountains (4 variants: single peak, double peak, ridge, cliff face)
+  // LART-15: mountains (4 variants: double peak, single peak, ridge, cliff face)
   mountains: [
-    { paths: [{ d: PLACEHOLDER_TRIANGLE, opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M15,80 L40,20 L65,80 Z M50,80 L70,30 L90,80 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: PLACEHOLDER_RIDGE, opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M20,80 L20,20 L60,20 L60,80 Z M60,20 Q80,35 80,80', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 0: Double peak — from Design/mountain-hand-drawn.svg (complex organic path)
+    { paths: [{ d: 'M46.8,83.2 L38.9,78.0 L32.8,78.7 L32.8,75.4 L30.6,74.0 L31.2,71.4 L29.9,70.5 L24.1,72.8 L22.1,72.2 L21.4,66.6 L35.7,57.4 L54.2,42.3 L56.8,43.1 L58.7,47.5 L69.6,33.5 L73.6,30.3 L75.5,36.1 L82.8,48.8 L92.8,62.2 L91.2,62.4 L83.9,53.7 L74.4,39.2 L69.2,54.1 L71.0,57.8 L66.4,56.5 L55.9,49.2 L54.4,49.6 L52.6,59.1 L46.5,64.1 L44.8,67.4 L44.7,74.1 L43.5,76.8 L46.7,78.2 L46.6,79.9 L51.4,81.3 L48.5,83.7 L46.8,83.2 Z M71.1,83.5 L70.0,78.0 L73.5,81.7 L71.1,83.5 Z M79.9,79.0 L76.6,76.7 L76.7,73.2 L78.7,75.9 L82.3,77.3 L80.9,79.3 L79.9,79.0 Z M19.6,61.0 L17.1,56.2 L9.0,50.4 L11.5,49.3 L29.7,29.8 L37.2,18.0 L47.3,30.1 L51.7,33.5 L62.2,38.4 L60.1,39.5 L53.7,36.7 L43.8,29.6 L38.4,24.1 L37.8,28.7 L33.2,32.9 L32.3,35.3 L35.7,39.7 L30.0,42.5 L29.7,45.0 L25.4,50.0 L24.4,54.5 L25.3,56.1 L20.9,61.5 L19.6,61.0 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 1: Single peak — one prominent peak, jagged profile, left face filled
+    { paths: [
+      { d: 'M10,82 C16,82 26,72 34,62 C38,56 40,50 44,42 C46,38 48,32 50,24 C52,16 56,18 60,28 C64,38 68,52 74,64 C80,74 86,80 92,82 Z', opacity: 0.5 },
+      { d: 'M10,82 C16,80 24,70 32,60 C36,54 39,48 42,42 C44,38 46,32 48,26 C49,22 50,20 51,22', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Ridge — horizontal mountain ridge with multiple irregular peaks
+    { paths: [
+      { d: 'M5,78 C10,78 16,72 22,60 L28,46 C30,42 32,40 34,42 L40,54 L46,36 C48,30 50,28 52,30 L58,46 L64,34 C66,28 68,28 70,32 L76,50 L82,62 C86,70 90,76 95,78 Z', opacity: 0.5 },
+      { d: 'M5,78 C10,76 16,70 21,60 L27,48 C29,44 31,42 33,44', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 3: Cliff face — vertical left edge with deep shadow, sloping rocky right side
+    { paths: [
+      { d: 'M12,82 L12,38 C12,32 14,28 18,26 C24,24 30,28 36,36 C44,46 52,58 62,68 C70,76 80,80 90,82 Z', opacity: 0.55 },
+      { d: 'M12,82 L12,40 C12,34 14,30 17,28 C20,26 24,28 28,32 C32,36 36,42 40,50', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-16: high_mountains (3 variants: snow peak, twin peaks, massive single)
   high_mountains: [
-    { paths: [{ d: PLACEHOLDER_TRIANGLE, opacity: 0.55 }, { d: 'M35,42 Q50,30 65,42', opacity: 0.3 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,80 L35,18 L60,80 Z M45,80 L68,22 L90,80 Z', opacity: 0.55 }, { d: 'M22,42 Q35,32 48,42 M57,38 Q68,28 80,38', opacity: 0.3 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M15,80 L50,10 L85,80 Z', opacity: 0.6 }, { d: 'M35,45 Q50,32 65,45', opacity: 0.3 }], viewBox: '0 0 100 100' },
+    // Variant 0: Snow peak — tall peak, rocky base, lighter gap at snowy summit
+    { paths: [
+      { d: 'M10,82 C16,82 26,72 34,60 C40,52 44,44 48,32 C50,24 52,22 54,28 C56,34 60,44 66,58 C72,70 80,78 90,82 Z', opacity: 0.55 },
+      { d: 'M44,36 C46,28 48,24 50,22 C52,20 54,22 56,28 C58,34 60,40 62,48', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Twin peaks — two tall peaks with col between, snow on left shoulders
+    { paths: [
+      { d: 'M5,82 C10,82 18,72 24,58 C28,48 30,38 34,26 C36,18 38,16 40,22 C42,28 44,42 48,58 C52,48 54,38 58,26 C60,18 62,16 64,22 C66,30 68,44 74,58 C80,70 86,78 94,82 Z', opacity: 0.55 },
+      { d: 'M5,82 C10,80 18,70 23,58 C27,48 29,40 32,28 C34,20 36,18 38,24', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Massive single — very tall single peak, broad base, heavy left shadow fill
+    { paths: [
+      { d: 'M5,82 C14,82 26,70 36,56 C42,48 46,38 50,24 C52,16 54,14 56,20 C60,32 66,52 76,66 C84,76 90,80 95,82 Z', opacity: 0.6 },
+      { d: 'M5,82 C14,80 25,68 34,54 C40,46 44,38 48,26 C50,18 52,16 53,18', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-17: plateau (3 variants: mesa, cliff edge, stepped)
   plateau: [
-    { paths: [{ d: 'M15,55 L15,70 L85,70 L85,55 Q70,35 50,35 Q30,35 15,55 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,55 L10,70 L90,70 L90,55 L10,55 M10,55 Q30,40 50,40 Q70,40 90,55', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,70 L10,60 L30,60 L30,50 L60,50 L60,40 L90,40 L90,70 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 0: Mesa — flat-topped with steep cliff edges, left face shadow
+    { paths: [
+      { d: 'M14,72 L14,48 C14,44 16,42 20,42 L80,42 C84,42 86,44 86,48 L86,72 Z', opacity: 0.5 },
+      { d: 'M14,72 L14,50 C14,46 16,44 19,44 L40,44', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Cliff edge — plateau seen from edge, horizontal top, vertical left face heavy
+    { paths: [
+      { d: 'M10,44 L10,72 L90,72 L90,44 C90,40 88,38 84,38 L16,38 C12,38 10,40 10,44 Z', opacity: 0.5 },
+      { d: 'M10,72 L10,44 C10,40 12,38 15,38 L35,38', opacity: 0.32 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Stepped — two-level plateau, stair-step profile, left face shadow
+    { paths: [
+      { d: 'M8,78 L8,62 L30,62 L30,48 L70,48 L70,34 L90,34 L90,78 Z', opacity: 0.5 },
+      { d: 'M8,78 L8,64 L28,64 L28,50 L66,50 L66,36 L70,34', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-18: mountain_pass (2 variants: narrow pass, broad saddle)
   mountain_pass: [
-    { paths: [{ d: 'M10,80 L30,25 L45,55 L55,55 L70,25 L90,80 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,80 L30,35 L50,60 L70,35 L90,80 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 0: Narrow pass — two peaks flanking a low V-shaped gap
+    { paths: [
+      { d: 'M5,82 C10,82 18,68 26,50 C30,42 34,36 38,34 C40,33 42,34 44,38 C46,42 48,50 50,56 C52,50 54,42 56,38 C58,34 60,33 62,34 C66,36 70,44 76,54 C82,66 88,78 94,82 Z', opacity: 0.52 },
+      { d: 'M5,82 C10,80 18,66 24,50 C28,42 32,36 36,34 C38,33 40,34 42,38', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Broad saddle — gentle dip between two wide ridges
+    { paths: [
+      { d: 'M5,82 C12,82 22,72 30,58 C36,48 38,40 40,36 C42,32 44,32 46,34 C48,38 50,48 52,56 C54,48 56,40 58,36 C60,32 62,32 64,34 C68,40 74,52 82,66 C88,76 92,80 95,82 Z', opacity: 0.5 },
+      { d: 'M5,82 C12,80 22,70 28,58 C34,48 37,40 39,37 C41,33 43,33 45,36', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-23 (badlands variants 0-2) + LART-22 hardened_clay (variants 3-4): total 5
   badlands: [
-    // LART-23 badlands (3 variants: spires, layered, eroded pillars)
-    { paths: [{ d: PLACEHOLDER_SPIRES, opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,75 L10,55 L90,55 L90,75 M10,55 L10,40 L70,40 L70,55 M10,40 L10,28 L50,28 L50,40', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M20,80 L25,40 Q28,30 30,40 L35,80 M45,80 L50,35 Q53,25 55,35 L60,80 M70,80 L74,45 Q76,38 78,45 L82,80', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    // LART-22 hardened_clay (2 variants: fine cracks, deep cracks)
-    { paths: [{ d: 'M15,30 L25,50 L20,65 M40,25 L50,45 M60,35 L55,55 L65,70 M75,20 L80,45 L70,60', opacity: 0.35 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,25 L22,50 L18,70 M35,20 L48,48 L40,75 M55,30 L65,55 L60,78 M75,22 L83,50 L78,72', opacity: 0.4 }], viewBox: '0 0 100 100' },
+    // LART-23 Variant 0: Spires — tall thin eroded pillars, heavy shadow on left face
+    { paths: [
+      { d: 'M18,80 C19,80 20,76 22,66 C23,58 24,50 26,42 C27,36 28,34 30,36 C31,40 32,50 33,60 L35,80 Z M44,80 C45,80 46,74 48,62 C49,54 50,44 52,34 C53,28 54,26 56,28 C57,34 58,46 59,58 L61,80 Z M68,80 C69,80 70,76 72,66 C73,58 74,52 76,44 C77,38 78,38 80,42 C81,48 82,58 83,70 L84,80 Z', opacity: 0.5 },
+      { d: 'M18,80 C19,76 20,68 22,58 C23,50 24,44 26,42', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // LART-23 Variant 1: Layered — horizontal bands with erosion, vertical crack lines
+    { paths: [
+      { d: 'M8,72 L8,60 L92,60 L92,72 Z M8,60 L12,48 L88,48 L92,60 Z M12,48 L16,38 L84,38 L88,48 Z', opacity: 0.5 },
+      { d: 'M8,72 L8,62 L92,62 M12,60 L14,50 M28,60 L30,50 M44,60 L46,50 M60,60 L62,50 M76,60 L78,50', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // LART-23 Variant 2: Eroded pillars — mushroom-shaped erosion forms, shadow left
+    { paths: [
+      { d: 'M16,80 C18,80 22,76 24,68 C26,60 24,54 20,52 C26,50 32,48 30,44 C28,40 24,38 26,34 C28,30 32,32 34,36 C36,42 34,52 32,60 C30,68 28,76 30,80 Z M52,80 C54,80 58,74 60,64 C62,54 60,48 56,46 C62,44 68,40 66,36 C64,32 58,32 60,28 C62,24 66,26 68,32 C70,40 68,52 66,62 C64,72 62,78 64,80 Z', opacity: 0.5 },
+      { d: 'M16,80 C18,76 22,68 24,60 C26,52 24,46 20,44', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // LART-22 hardened_clay Variant 3: Fine cracks — thin crack lines radiating from centers
+    { paths: [
+      { d: 'M30,40 L42,52 L38,62 L44,74 M30,40 L20,50 L24,62 M42,52 L55,48 L66,58 M44,74 L52,80 M60,30 L70,42 L66,56 L74,64 M60,30 L50,36 L56,48 M70,42 L80,38 L86,48', opacity: 0.32 },
+    ], viewBox: '0 0 100 100' },
+    // LART-22 hardened_clay Variant 4: Deep cracks — heavier fissures, raised clay plate edges
+    { paths: [
+      { d: 'M20,38 L36,52 L30,68 L40,80 M20,38 L10,50 L16,64 M36,52 L52,46 L66,58 L62,72 M40,80 L50,82 M66,58 L80,50 L88,62 M52,46 L56,30 L68,22 M56,30 L44,22 L32,30', opacity: 0.4 },
+      { d: 'M22,40 L34,50 M34,50 L28,64 M34,50 L48,46 M60,30 L52,46 M66,60 L78,52', opacity: 0.22 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // ── Extreme ───────────────────────────────────────────────────────────────
 
   // LART-19: sand_desert / desert (3 variants: clean, wind ripples, scattered dots)
   desert: [
-    { paths: [{ d: 'M10,65 Q50,55 90,65 Q50,75 10,65', opacity: 0.4 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,50 Q30,42 50,50 Q70,42 90,50 M10,62 Q30,54 50,62 Q70,54 90,62 M10,74 Q30,66 50,74 Q70,66 90,74', opacity: 0.4 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: PLACEHOLDER_DOTS, opacity: 0.4 }], viewBox: '0 0 100 100' },
+    // Variant 0: Clean — minimal wind ripple curves at very low opacity
+    { paths: [
+      { d: 'M10,55 Q30,48 50,55 Q70,48 90,55 M10,65 Q30,58 50,65 Q70,58 90,65 M10,75 Q30,68 50,75 Q70,68 90,75', opacity: 0.22 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Wind ripples — parallel curved lines suggesting wind-blown surface
+    { paths: [
+      { d: 'M8,46 Q22,38 36,46 Q50,54 64,46 Q78,38 92,46 M8,58 Q22,50 36,58 Q50,66 64,58 Q78,50 92,58 M8,70 Q22,62 36,70 Q50,78 64,70 Q78,62 92,70', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Scattered dots — sparse dot pattern suggesting loose sand and pebbles
+    { paths: [
+      { d: 'M22,42 A4,3 0 1,0 22.01,42 Z M48,38 A3,2 0 1,0 48.01,38 Z M70,44 A4,3 0 1,0 70.01,44 Z M35,58 A3,2 0 1,0 35.01,58 Z M60,62 A4,3 0 1,0 60.01,62 Z M80,55 A3,2 0 1,0 80.01,55 Z M18,70 A3,2 0 1,0 18.01,70 Z M44,72 A4,3 0 1,0 44.01,72 Z M75,68 A3,2 0 1,0 75.01,68 Z', opacity: 0.35 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-20: sand_dunes (3 variants: rolling dunes, crescent, tall dune)
   sand_dunes: [
-    { paths: [{ d: PLACEHOLDER_DUNES, opacity: 0.45 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M25,65 Q50,38 75,65 Q62,72 50,75 Q38,72 25,65 Z', opacity: 0.45 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M20,75 Q50,25 80,75 Q65,80 50,82 Q35,80 20,75 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
+    // Variant 0: Rolling dunes — smooth wave shapes, shadow on left faces
+    { paths: [
+      { d: 'M8,66 C16,52 26,44 36,46 C46,48 52,56 58,60 C64,56 70,46 80,44 C88,42 94,50 94,66 L94,80 L8,80 Z', opacity: 0.45 },
+      { d: 'M8,66 C16,54 24,46 34,48 C40,50 44,56 48,60', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Crescent dune — single barchan crescent shape, left face filled
+    { paths: [
+      { d: 'M22,68 C26,52 34,40 44,36 C54,32 62,36 68,46 C74,56 74,66 68,72 C62,78 50,80 40,78 C30,76 22,74 22,68 Z', opacity: 0.48 },
+      { d: 'M22,68 C26,54 34,42 44,38 C50,35 56,37 60,44', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Tall dune — prominent single dune, steep left face shadow
+    { paths: [
+      { d: 'M12,78 C18,68 26,52 34,38 C38,30 42,24 46,22 C50,20 54,24 58,34 C64,48 72,64 80,76 C86,82 90,82 92,80 L12,80 Z', opacity: 0.5 },
+      { d: 'M12,80 C18,70 26,54 34,40 C38,32 42,26 46,24 C48,22 50,22 51,24', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-21: rocky_desert (3 variants: scattered rocks, rock pile, flat rocks)
   rocky_desert: [
-    { paths: [{ d: 'M20,65 L15,55 L25,50 L35,55 L30,65 Z M55,60 L50,50 L60,45 L70,52 L65,62 Z M75,70 L70,62 L80,58 L88,65 L82,72 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M30,70 L22,55 L35,45 L48,50 L55,62 L45,72 Z M50,58 L45,45 L58,38 L68,45 L65,58 L55,65 Z M60,68 L55,58 L65,55 L72,62 L68,70 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,65 L10,70 L90,70 L90,65 Z M15,60 L15,65 L70,65 L70,60 Z M25,55 L25,60 L60,60 L60,55 Z', opacity: 0.45 }], viewBox: '0 0 100 100' },
+    // Variant 0: Scattered rocks — 3-4 angular rock shapes, irregular, left-face shadow
+    { paths: [
+      { d: 'M16,68 L12,58 L18,50 L28,54 L32,64 L24,70 Z M50,62 L46,52 L54,46 L64,50 L66,60 L58,66 Z M76,72 L72,62 L80,56 L88,62 L86,72 L80,74 Z', opacity: 0.5 },
+      { d: 'M16,68 L12,60 L18,52 M50,62 L46,54 L54,48 M76,72 L72,64 L80,58', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Rock pile — cluster of rocks, larger at center, smaller at edges
+    { paths: [
+      { d: 'M32,72 L24,58 L34,46 L48,50 L56,62 L46,74 Z M48,58 L44,46 L56,38 L68,44 L66,58 L56,66 Z M58,70 L54,60 L62,56 L70,62 L68,72 Z M18,74 L16,64 L24,60 L28,68 L24,76 Z', opacity: 0.5 },
+      { d: 'M32,72 L24,60 L34,48 M48,58 L44,48 L56,40 M58,70 L54,62 L62,58', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Flat rocks — low horizontal rock shapes with crack lines, shadow left
+    { paths: [
+      { d: 'M8,62 L8,68 L38,68 L38,62 C38,58 36,56 32,56 L14,56 C10,56 8,58 8,62 Z M44,66 L44,72 L80,72 L80,66 C80,62 78,60 74,60 L50,60 C46,60 44,62 44,66 Z M62,56 L62,60 L90,60 L90,56 C90,52 88,50 86,50 L66,50 C63,50 62,52 62,56 Z', opacity: 0.45 },
+      { d: 'M8,66 L38,66 M44,70 L80,70 M62,58 L90,58', opacity: 0.22 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-24: tundra (3 variants: lichen, scrub, bare)
