@@ -21,6 +21,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map (completed 2026-03-22)
 - [x] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation (completed 2026-03-22)
 - [x] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network (completed 2026-03-22)
+- [ ] **Phase 7.1: Stencil Coastline** - INSERTED: WebGL stencil-based organic coastline that clips land hex edges to organic contour (fixes Phase 3 criterion #1)
 - [ ] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring
 
 ## Phase Details
