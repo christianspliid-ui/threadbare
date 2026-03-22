@@ -147,6 +147,22 @@ Plans:
 - [ ] 07-02-PLAN.md — Road mesh rendering (quad-strip geometry, major/trail styling, bridge icon detection at river crossings)
 - [ ] 07-03-PLAN.md — Full HexMapV2 wiring (fog prop threading, zoom matrix integration, road mesh, follow mode, default camera centering)
 
+### Phase 7.1: Stencil Coastline
+**Goal**: Organic coastline clips land hex edges using the WebGL stencil buffer, so coastal hexes show their inland biome color with an organic shoreline (fixes Phase 3 criterion #1)
+**Depends on**: Phase 7
+**Requirements**: WATR-01
+**Note**: INSERTED — fixes unmet Phase 3 success criterion. Stencil approach chosen over per-hex clip geometry.
+**Success Criteria** (what must be TRUE):
+  1. Coastal land hexes show their terrain color with organic (non-hexagonal) edges at the shoreline
+  2. Water hexes render with organic depth bands (shallows → ocean → deep ocean)
+  3. Lakes render with organic blue fill and organic shoreline edges
+  4. No terrain color is covered or replaced by flat overlay colors
+  5. Performance remains at 60fps (stencil is GPU-native, no extra draw calls beyond the split InstancedMesh)
+**Plans:** 1 plan
+
+Plans:
+- [ ] 07.1-01-PLAN.md — Split HexFillMesh into land/water InstancedMeshes, stencil write pass from coastline contours, depth band fills, HexMapV2 wiring + fog adaptation
+
 ### Phase 8: Integration
 **Goal**: The new hex map fully replaces the old SVG map in the live game with all existing systems working
 **Depends on**: Phase 7
@@ -166,7 +182,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 (parallel: 5) -> 6 -> 7 -> 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 (parallel: 5) -> 6 -> 7 -> 7.1 -> 8
 
 Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each other).
 
@@ -179,4 +195,5 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
 | 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
+| 7.1. Stencil Coastline | 0/1 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
