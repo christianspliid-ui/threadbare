@@ -38,12 +38,12 @@ created: 2026-03-22
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 04-01-01 | 01 | 1 | REGN-01, REGN-02 | unit | `npx vitest run src/engine/worldgen/__tests__/regionDetection.test.ts` | ❌ W0 | ⬜ pending |
-| 04-01-02 | 01 | 1 | REGN-03 | unit | `npx vitest run src/engine/worldgen/__tests__/regionDetection.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-01 | 02 | 2 | REGN-04 | unit | `npx vitest run src/engine/worldgen/__tests__/politicalRegions.test.ts` | ❌ W0 | ⬜ pending |
-| 04-02-02 | 02 | 2 | REGN-05, REGN-09 | visual | `npx vitest run src/components/HexMapV2/__tests__/BorderMesh.test.ts` | ❌ W0 | ⬜ pending |
-| 04-03-01 | 03 | 2 | REGN-07, REGN-08 | unit | `npx vitest run src/components/HexMapV2/__tests__/RegionLabels.test.ts` | ❌ W0 | ⬜ pending |
-| 04-03-02 | 03 | 2 | GRID-02 | unit | `npx vitest run src/components/HexMapV2/__tests__/RiverLabels.test.ts` | ❌ W0 | ⬜ pending |
+| 04-01-01 | 01 | 1 | REGN-01, REGN-02 | unit | `npx vitest run src/engine/__tests__/regionDetection.test.ts` | ❌ W0 | ⬜ pending |
+| 04-01-02 | 01 | 1 | REGN-03 | unit | `npx vitest run src/engine/__tests__/regionDetection.test.ts` | ❌ W0 | ⬜ pending |
+| 04-02-01 | 02 | 2 | REGN-04 | unit | `npx vitest run src/engine/__tests__/regionPolitical.test.ts` | ❌ W0 | ⬜ pending |
+| 04-02-02 | 02 | 2 | REGN-05, REGN-09 | visual | `npx vitest run src/components/HexMapV2/scene/__tests__/BorderMesh.test.ts` | ❌ W0 | ⬜ pending |
+| 04-03-01 | 03 | 3 | REGN-07, REGN-08 | unit | `npx vitest run src/engine/__tests__/regionLabels.test.ts src/components/HexMapV2/overlay/__tests__/labelCollision.test.ts` | ❌ W0 | ⬜ pending |
+| 04-03-02 | 03 | 3 | GRID-02 | unit | `npx vitest run src/engine/__tests__/regionLabels.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -51,11 +51,11 @@ created: 2026-03-22
 
 ## Wave 0 Requirements
 
-- [ ] `src/engine/worldgen/__tests__/regionDetection.test.ts` — stubs for REGN-01, REGN-02, REGN-03
-- [ ] `src/engine/worldgen/__tests__/politicalRegions.test.ts` — stubs for REGN-04
-- [ ] `src/components/HexMapV2/__tests__/BorderMesh.test.ts` — stubs for REGN-05, REGN-09
-- [ ] `src/components/HexMapV2/__tests__/RegionLabels.test.ts` — stubs for REGN-07, REGN-08
-- [ ] `src/components/HexMapV2/__tests__/RiverLabels.test.ts` — stubs for GRID-02
+- [ ] `src/engine/__tests__/regionDetection.test.ts` — stubs for REGN-01, REGN-02, REGN-03
+- [ ] `src/engine/__tests__/regionPolitical.test.ts` — stubs for REGN-04
+- [ ] `src/components/HexMapV2/scene/__tests__/BorderMesh.test.ts` — stubs for REGN-05, REGN-09
+- [ ] `src/engine/__tests__/regionLabels.test.ts` — stubs for REGN-07, REGN-08, GRID-02
+- [ ] `src/components/HexMapV2/overlay/__tests__/labelCollision.test.ts` — stubs for REGN-08
 
 *Existing vitest infrastructure covers framework needs. Only test stubs needed.*
 
