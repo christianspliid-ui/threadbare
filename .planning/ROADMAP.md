@@ -20,7 +20,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers (completed 2026-03-22)
 - [x] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map (completed 2026-03-22)
 - [x] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation (completed 2026-03-22)
-- [ ] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network
+- [x] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network (completed 2026-03-22)
 - [ ] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring
 
 ## Phase Details
@@ -139,7 +139,7 @@ Plans:
   3. Zooming smoothly transitions between hero-local, regional, continental, and full-world views with elements fading in/out
   4. At full-world zoom, only terrain colors and political borders are visible (no signifiers, no agents)
   5. Camera starts centered on the player's retinue agent and can auto-follow during movement
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md — Fog culling logic (color override, layer gating, visibility computation) + zoom visibility matrix (tier thresholds, fade alpha)
@@ -177,5 +177,5 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
 | 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
-| 7. Fog, Zoom & Grid | 2/3 | In Progress|  |
+| 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 8. Integration | 0/2 | Not started | - |
