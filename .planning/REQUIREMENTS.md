@@ -58,8 +58,8 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **REGN-04**: Political regions group geographic regions under factions, defined by travel-time from capital
 - [x] **REGN-05**: Political borders rendered as red polylines along hex edges (3px kingdom, 1.5px barony)
 - [x] **REGN-06**: Geographic features have NO border lines — text labels only
-- [ ] **REGN-07**: Region labels placed at centroids with hierarchy: kingdom (bold all-caps), barony (title case), geographic (italic)
-- [ ] **REGN-08**: Label collision detection prevents overlapping labels
+- [x] **REGN-07**: Region labels placed at centroids with hierarchy: kingdom (bold all-caps), barony (title case), geographic (italic)
+- [x] **REGN-08**: Label collision detection prevents overlapping labels
 - [x] **REGN-09**: Capital markers rendered as red dots/icons at political region seats of power
 
 ### Elevation Visual Language (ELEV)
@@ -178,7 +178,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 ### Borders & Grid (GRID)
 
 - [x] **GRID-01**: Thin hex grid lines (0.5-1px, ~12% opacity black) at all zoom levels except full-world
-- [ ] **GRID-02**: River labels (blue italic) along major rivers at regional zoom
+- [x] **GRID-02**: River labels (blue italic) along major rivers at regional zoom
 - [ ] **GRID-03**: Road network connecting settlements via pathfinding (solid for major, dotted for trails)
 - [ ] **GRID-04**: Bridge icons where roads cross rivers
 
@@ -269,10 +269,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REGN-04 | Phase 4 | Complete |
 | REGN-05 | Phase 4 | Complete |
 | REGN-06 | Phase 4 | Complete |
-| REGN-07 | Phase 4 | Pending |
-| REGN-08 | Phase 4 | Pending |
+| REGN-07 | Phase 4 | Complete |
+| REGN-08 | Phase 4 | Complete |
 | REGN-09 | Phase 4 | Complete |
-| GRID-02 | Phase 4 | Pending |
+| GRID-02 | Phase 4 | Complete |
 | COMP-01 | Phase 5 | Pending |
 | COMP-02 | Phase 5 | Pending |
 | COMP-03 | Phase 5 | Pending |
