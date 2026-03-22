@@ -1,10 +1,19 @@
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 import type { HexCoord, HexTile } from '../../types';
 import type { RiverPath } from '../../engine/worldGenData';
+import type { VisibilityMap } from '../../types/visibility';
+import { visKey } from '../../types/visibility';
 import type { HexMapV2Handle } from './HexMapV2';
 import HexMapV2 from './HexMapV2';
 import type { LocationNode } from './scene/LocationIconMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
+import { computeVisibilityFromSources, FOG_CONSTANTS } from './scene/FogCulling';
+
+// Read ?fog URL param once (stable — URL doesn't change during session)
+// NFP #1: fogEnabled is derived from URL, not a magic boolean in the component
+const fogEnabled = typeof window !== 'undefined'
+  ? new URLSearchParams(window.location.search).has('fog')
+  : false;
 
 interface HexV2ViewProps {
   tiles: HexTile[];
@@ -20,10 +29,51 @@ interface HexV2ViewProps {
 }
 
 /**
+ * Builds an initial VisibilityMap from an agent array.
+ *
+ * All hexes start as 'unexplored'. Hexes visible from any agent's position are set to
+ * 'visible'. In a real game, persistent explored state would be tracked in game state;
+ * for Phase 7 testing, we start fresh every render update.
+ *
+ * NFP #3: computeVisibilityFromSources is deterministic — same agents = same result.
+ * NFP #4: Fail-soft — empty agents array returns all-unexplored map.
+ */
+function buildVisibilityMap(agents: AgentRenderData[], tiles: HexTile[], cols: number, rows: number): VisibilityMap {
+  const map: VisibilityMap = new Map();
+
+  // Mark all hexes as unexplored
+  for (const tile of tiles) {
+    map.set(visKey(tile.coord.col, tile.coord.row), { state: 'unexplored' });
+  }
+
+  if (agents.length === 0) return map;
+
+  // Find the retinue agent to use as the primary LOS source
+  const retinue = agents.find(a => a.isRetinue);
+  const sources = retinue
+    ? [{ hexCol: retinue.hexCol, hexRow: retinue.hexRow, range: FOG_CONSTANTS.DEFAULT_SIGHT_RANGE + 2 }]
+    : agents.map(a => ({ hexCol: a.hexCol, hexRow: a.hexRow, range: FOG_CONSTANTS.DEFAULT_SIGHT_RANGE }));
+
+  // Compute currently visible hexes
+  const visible = computeVisibilityFromSources(sources, cols, rows);
+
+  // Mark visible hexes (previously explored hexes that are no longer visible become 'remembered')
+  for (const [key] of visible) {
+    map.set(key, { state: 'visible' });
+  }
+
+  return map;
+}
+
+/**
  * Minimal game chrome for the `?view=hexv2` route.
  *
- * Phase 1: topbar + full-width Three.js canvas. No sidebar, no simulation.
- * Later phases will progressively add chrome as the renderer matures.
+ * Phase 7: fog of war enabled via ?fog URL param.
+ * When fog is active:
+ * - Visibility map computed from agent positions
+ * - Unexplored hexes render as dark fill
+ * - Camera starts on retinue agent at hero-local zoom
+ * - Visibility updates when agents prop changes
  *
  * Layout: h-screen flex flex-col overflow-hidden (viewport contract per CLAUDE.md).
  */
@@ -31,6 +81,23 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
   const mapRef = useRef<HexMapV2Handle>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
   const [hoveredHex, setHoveredHex]   = useState<HexCoord | null>(null);
+
+  // Visibility map — only computed and maintained when fog is enabled
+  const [visibilityMap, setVisibilityMap] = useState<VisibilityMap | undefined>(() => {
+    if (!fogEnabled || !agents || agents.length === 0) return undefined;
+    return buildVisibilityMap(agents, tiles, cols, rows);
+  });
+
+  // Recompute visibility when agents move (fog mode only)
+  useEffect(() => {
+    if (!fogEnabled) return;
+    if (!agents || agents.length === 0) {
+      setVisibilityMap(undefined);
+      return;
+    }
+    setVisibilityMap(buildVisibilityMap(agents, tiles, cols, rows));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agents, tiles, cols, rows]);
 
   const handleHexClick = useCallback((coord: HexCoord) => {
     setSelectedHex(prev =>
@@ -78,6 +145,15 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
           {tiles.length.toLocaleString()} hexes · seed {seed}
         </span>
 
+        {fogEnabled && (
+          <>
+            <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--accent-gold)', opacity: 0.7 }}>
+              Fog active
+            </span>
+          </>
+        )}
+
         {selectedHex && (
           <>
             <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
@@ -113,6 +189,8 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
           lakeIds={lakeIds}
           locations={locations}
           agents={agents}
+          fogEnabled={fogEnabled}
+          visibilityMap={visibilityMap}
         />
       </div>
     </div>

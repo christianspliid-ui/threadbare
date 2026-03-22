@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../types';
 import type { RiverPath } from '../../engine/worldGenData';
 import type { RegionData } from '../../engine/regionTypes';
+import type { VisibilityMap } from '../../types/visibility';
 import { hexToPixel } from '../../lib/hexMath';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
@@ -33,6 +34,21 @@ import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
 import { animateCameraTo } from './camera/CameraAnimator';
+import { createRoadMesh } from './scene/RoadMesh';
+import {
+  getZoomTier,
+  ZOOM_VISIBILITY_MATRIX,
+  getFadeAlpha,
+  FADE_RANGE,
+  ZOOM_TIER_THRESHOLDS,
+} from './scene/ZoomVisibilityMatrix';
+import {
+  buildOriginalColorCache,
+  updateFogColors,
+  isLayerVisibleForHex,
+} from './scene/FogCulling';
+import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
+import type { FollowModeState } from './camera/FollowMode';
 import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
@@ -62,6 +78,10 @@ export interface HexMapV2Props {
   locations?: LocationNode[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
   agents?: AgentRenderData[];
+  /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
+  visibilityMap?: VisibilityMap;
+  /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
+  fogEnabled?: boolean;
 }
 
 export interface HexMapV2Handle {
@@ -70,6 +90,11 @@ export interface HexMapV2Handle {
    * Matches the HexMapHandle contract from Phase 8 drop-in swap.
    */
   centerOn: (x: number, y: number, scale?: number) => void;
+  /**
+   * Enable or disable camera follow mode for a specific agent.
+   * Pass null to stop following and free the camera.
+   */
+  setFollowAgent: (agentId: string | null) => void;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -130,7 +155,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 /**
- * Three.js hex map renderer — Phase 1, Plan 02: interactive camera + raycasting.
+ * Three.js hex map renderer — Phase 7, Plan 03: fog, zoom LOD, roads, follow mode.
  *
  * Features:
  * - d3-zoom drives OrthographicCamera for pan/zoom/pinch (continuous, no tier snapping)
@@ -140,6 +165,10 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  * - Click selects hex with gold ring outline
  * - Hovered hex shows subtle white overlay
  * - Frustum culling enabled on InstancedMesh (Three.js default)
+ * - Fog of war: unexplored=dark fill, explored=static layers, visible=all (Plan 07-01)
+ * - Zoom LOD: 4-tier visibility matrix with smooth fade transitions (Plan 07-01)
+ * - Road network: solid major roads + dashed trails + bridge sprites (Plan 07-02)
+ * - Follow mode: camera tracks agent hex changes, breaks on manual pan (Plan 07-03)
  *
  * NFP #7 (Performance): Three.js handles per-instance frustum culling via GPU vertex shader.
  * At 60K hexes with an orthographic camera, the GPU efficiently discards off-screen vertices.
@@ -148,7 +177,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, agents },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, agents, visibilityMap, fogEnabled = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -175,6 +204,31 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const trailGroupRef = useRef<THREE.Group | null>(null);
     // Previous agent positions for movement detection (hex change diff)
     const prevAgentPositionsRef = useRef<Map<string, { col: number; row: number }>>(new Map());
+
+    // Fog culling refs — populated in scene init, read in fog update effect
+    const fillMeshRef          = useRef<THREE.InstancedMesh | null>(null);
+    const originalColorsRef    = useRef<Float32Array | null>(null);
+    const tileIndexByKeyRef    = useRef<Map<string, number> | null>(null);
+    // Visibility map ref — kept in sync with prop for use without closure staleness
+    const visibilityMapRef     = useRef<VisibilityMap | undefined>(visibilityMap);
+    const fogEnabledRef        = useRef<boolean>(fogEnabled);
+
+    // Keep fog refs in sync with latest props
+    visibilityMapRef.current = visibilityMap;
+    fogEnabledRef.current    = fogEnabled;
+
+    // Scene group refs for fog layer culling and zoom matrix
+    const signifierGroupRef  = useRef<THREE.Group | null>(null);
+    const locationGroupRef   = useRef<THREE.Group | null>(null);
+    const roadGroupRef       = useRef<THREE.Group | null>(null);
+    const riverGroupRef      = useRef<THREE.Group | null>(null);
+    const gridLinesRef       = useRef<THREE.Mesh | null>(null);
+    const elevTicksRef       = useRef<THREE.Mesh | null>(null);
+    const borderKingdomRef   = useRef<THREE.Mesh | null>(null);
+    const borderBaronyRef    = useRef<THREE.Mesh | null>(null);
+
+    // Follow mode ref — mutable state, does not trigger re-renders
+    const followModeRef = useRef<FollowModeState>(createFollowMode());
 
     // Region label overlay state
     const [regionLabels, setRegionLabels] = useState<import('../../engine/regionTypes').RegionLabel[]>([]);
@@ -218,6 +272,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // For the HexMapHandle contract, x and y are world-space pixel coords.
         animateCameraTo(canvas, zoom, x, y, scale ?? CAMERA_CONSTANTS.DEFAULT_ZOOM);
       },
+      setFollowAgent(agentId: string | null) {
+        updateFollowTarget(followModeRef.current, agentId);
+      },
     }));
 
     // ── Three.js lifecycle ─────────────────────────────────────────
@@ -248,20 +305,36 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const fillMesh = createHexFillMesh(tiles, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
         fillMesh.frustumCulled = true; // Explicit for readability — this is already the default
         scene.add(fillMesh);
+        fillMeshRef.current = fillMesh;
 
-        // Build grid lines
-        const gridLines = createHexGridLines(tiles);
-        scene.add(gridLines);
+        // Build original color cache for fog culling (Plan 07-01)
+        // Stored in refs — fog update useEffect reads these without re-running scene init
+        const { colors, indexByKey } = buildOriginalColorCache(
+          tiles,
+          seed,
+          lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined,
+        );
+        originalColorsRef.current = colors;
+        tileIndexByKeyRef.current = indexByKey;
+
+        // Build grid lines (skip entirely when opacity is 0 for seamless look)
+        let gridLines: THREE.Mesh | null = null;
+        if (HEX_CONSTANTS.GRID_LINE_OPACITY > 0) {
+          gridLines = createHexGridLines(tiles);
+          scene.add(gridLines);
+        }
+        gridLinesRef.current = gridLines;
 
         // Build coastline overlay — organic shoreline from marching squares contours (Plan 03-01)
         // Renders above hex fill (renderOrder = COASTLINE = 1), below grid lines (renderOrder = GRID = 2)
-        const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed);
+        const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
         scene.add(coastlineMesh);
 
         // Build elevation tick marks — caterpillar-style marks on steep hex edges (Plan 03-03)
         // Renders at RENDER_ORDER.ELEVATION_TICKS (3), above grid lines, below rivers
         const elevTicks = createElevationTicks(tiles);
         scene.add(elevTicks);
+        elevTicksRef.current = elevTicks;
 
         // Build river overlay — curved blue quad strips above terrain (Plan 03-02)
         // Renders at RENDER_ORDER.RIVERS (4), above grid lines, overlaying terrain without changing hex color
@@ -270,6 +343,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           riverMesh = createRiverMesh(riverPathsRef.current, tiles, seed);
           scene.add(riverMesh);
         }
+        riverGroupRef.current = riverMesh;
 
         // Build political border polylines — red quad-strip borders for kingdoms and baronies (Plan 04-02)
         // Renders at RENDER_ORDER.BORDERS (6), above rivers and elevation ticks.
@@ -287,6 +361,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           capitalMarkers = createCapitalMarkers(regionData);
           scene.add(capitalMarkers);
         }
+        borderKingdomRef.current = borderKingdomMesh;
+        borderBaronyRef.current  = borderBaronyMesh;
+
+        // Build road network — solid major roads + dashed trails + bridge sprites (Plan 07-02)
+        // Renders at RENDER_ORDER.ROADS, initially hidden (zoom matrix controls visibility)
+        const roadGroup = createRoadMesh(
+          locations ?? [],
+          tiles,
+          cols,
+          rows,
+          riverPathsRef.current,
+        );
+        scene.add(roadGroup);
+        roadGroupRef.current = roadGroup;
 
         // Build signifier sprites — landscape icons for each land hex (Plan 05-02)
         // Renders at RENDER_ORDER.SIGNIFIERS (7), above borders, below location overlays.
@@ -294,6 +382,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const signifierGroup = createSignifierMesh(tiles, seed);
         scene.add(signifierGroup);
         signifierGroup.visible = false; // Hidden until zoom reaches regional tier
+        signifierGroupRef.current = signifierGroup;
 
         // Build location icon sprites — settlement and landmark icons (Plan 06-01)
         // Renders at RENDER_ORDER.LOCATIONS (8), above signifiers.
@@ -316,6 +405,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         } else {
           setLocationLabels([]);
         }
+        locationGroupRef.current = locationGroup;
 
         // Build agent sprite groups — Three-tier sprites (portrait/dot/continental) (Plan 06-04)
         // Renders at RENDER_ORDER.AGENTS (9), above location icons.
@@ -367,22 +457,56 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         setZoomTargetRef.current = setZoomTarget;
         clearZoomTargetRef.current = clearZoomTarget;
 
-        // Track zoom level for label tier filtering (Plan 04-03)
-        // Hook into d3-zoom's existing 'zoom' event with a secondary listener name
-        // NFP #1: SIGNIFIER_ZOOM_THRESHOLD as named constant — tune to change signifier visibility cutoff
-        const SIGNIFIER_ZOOM_THRESHOLD = 5; // regional tier lower bound (full-world <1.5, continental <5, regional >=5)
+        // Track zoom level for label tier filtering and layer visibility matrix (Plan 07-01)
+        // Replaces scattered per-threshold checks with unified ZOOM_VISIBILITY_MATRIX lookup.
+        // NFP #1: All thresholds in ZOOM_TIER_THRESHOLDS, all layer visibility in ZOOM_VISIBILITY_MATRIX
         zoom.on('zoom.labels', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
-          setZoomLevel(event.transform.k);
-          // Signifier visibility: show at regional (>=5) and hero-local (>=15), hide at continental/full-world
-          signifierGroup.visible = event.transform.k >= SIGNIFIER_ZOOM_THRESHOLD;
-          // Location icon visibility: same threshold as signifiers (regional+)
-          if (locationGroup) {
-            locationGroup.visible = event.transform.k >= LOCATION_ICON_THRESHOLD;
+          const k = event.transform.k;
+          setZoomLevel(k);
+          const tier = getZoomTier(k);
+
+          // Layer visibility from matrix (Plan 07-01)
+          if (signifierGroupRef.current) signifierGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.signifiers[tier];
+          if (locationGroupRef.current) locationGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.locations[tier];
+          if (elevTicksRef.current) elevTicksRef.current.visible = ZOOM_VISIBILITY_MATRIX.elev_ticks[tier];
+          if (riverGroupRef.current) riverGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.rivers[tier];
+          if (roadGroupRef.current) roadGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.roads[tier];
+          if (gridLinesRef.current) gridLinesRef.current.visible = ZOOM_VISIBILITY_MATRIX.grid_lines[tier];
+          if (borderKingdomRef.current) borderKingdomRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_kingdom[tier];
+          if (borderBaronyRef.current) borderBaronyRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_barony[tier];
+
+          // Agent tiers (portrait/dot/retinue) — updateZoomVisibility handles tier logic
+          const agentGroup = agentSpriteGroupRef.current;
+          if (agentGroup) updateZoomVisibility(agentGroup, k);
+
+          // Movement trails visible when agents are visible at regional+ or hero-local
+          if (trailGroupRef.current) {
+            trailGroupRef.current.visible =
+              ZOOM_VISIBILITY_MATRIX.agents_dot[tier] || ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
           }
-          // Agent sprite zoom tier visibility (portrait/dot/continental tiers)
-          updateZoomVisibility(agentSpriteGroup, event.transform.k);
-          // Movement trails visible at regional+ zoom
-          trailGroup.visible = event.transform.k >= AGENT_ZOOM_THRESHOLDS.REGIONAL;
+
+          // Fade transitions for signifiers near the regional threshold
+          // NFP #1: FADE_RANGE constant controls transition zone width
+          const currentSignifierGroup = signifierGroupRef.current;
+          if (currentSignifierGroup?.visible) {
+            const alpha = getFadeAlpha(k, ZOOM_TIER_THRESHOLDS.REGIONAL, FADE_RANGE * ZOOM_TIER_THRESHOLDS.REGIONAL);
+            for (const child of currentSignifierGroup.children) {
+              if (child instanceof THREE.Sprite) {
+                (child.material as THREE.SpriteMaterial).opacity = alpha;
+              }
+            }
+          }
+        });
+
+        // Break follow mode on manual pan (user-initiated zoom events have sourceEvent)
+        zoom.on('zoom.follow', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
+          if (event.sourceEvent && (
+            event.sourceEvent.type === 'mousemove' ||
+            event.sourceEvent.type === 'pointermove' ||
+            event.sourceEvent.type === 'touchmove'
+          )) {
+            followModeRef.current.active = false;
+          }
         });
 
         // Update selection ring when selectedHex prop changes
@@ -403,13 +527,36 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         updateSelectionRing(selectedHex);
 
+        // ZOOM-05: Default camera on retinue agent when fog is enabled (Plan 07-03)
+        // Centers camera on retinue at hero-local zoom so the player starts with vision
+        const currentAgents = agents ?? [];
+        const retinue = currentAgents.find(a => a.isRetinue);
+        if (retinue && fogEnabledRef.current) {
+          const { x, y } = hexToPixel({ col: retinue.hexCol, row: retinue.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+          // setTimeout(0) ensures zoom is fully initialized before animating
+          setTimeout(() => {
+            if (zoomRef.current && canvasRef.current) {
+              animateCameraTo(
+                canvasRef.current,
+                zoomRef.current,
+                x,
+                -y,
+                ZOOM_TIER_THRESHOLDS.HERO_LOCAL,
+                0,
+              );
+            }
+          }, 0);
+        }
+
         // Render loop
         function animate() {
           rafId = requestAnimationFrame(animate);
           // Advance agent bezier hop animations (no-op if no active animations)
-          tickAgentAnimations(animStates, agentSpriteGroup.spriteMap);
+          const spriteGroup = agentSpriteGroupRef.current;
+          if (spriteGroup) tickAgentAnimations(animStates, spriteGroup.spriteMap);
           // Fade and dispose expired movement trail segments
-          updateTrails(trailGroup);
+          const tGroup = trailGroupRef.current;
+          if (tGroup) updateTrails(tGroup);
           renderer.render(scene, camera);
         }
         animate();
@@ -436,17 +583,30 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         return () => {
           cancelAnimationFrame(rafId);
           resizeObserver.disconnect();
-          // Remove zoom.labels listener (Plan 04-03)
+          // Remove zoom listeners (Plan 04-03, Plan 07-03)
           zoom.on('zoom.labels', null);
+          zoom.on('zoom.follow', null);
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
           setZoomTargetRef.current = null;
           clearZoomTargetRef.current = null;
           cameraRef.current = null;
+          // Clear scene-bound refs
+          fillMeshRef.current = null;
+          originalColorsRef.current = null;
+          tileIndexByKeyRef.current = null;
+          signifierGroupRef.current = null;
+          locationGroupRef.current = null;
+          roadGroupRef.current = null;
+          riverGroupRef.current = null;
+          gridLinesRef.current = null;
+          elevTicksRef.current = null;
+          borderKingdomRef.current = null;
+          borderBaronyRef.current = null;
           scene.clear();
           fillMesh.geometry.dispose();
-          gridLines.geometry.dispose();
+          gridLines?.geometry.dispose();
           // Dispose coastline mesh children geometries and materials
           for (const child of coastlineMesh.children) {
             if (child instanceof THREE.Mesh) {
@@ -476,6 +636,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                   child.material.dispose();
                 }
               }
+            }
+          }
+          // Dispose road group geometries and materials (Plan 07-02)
+          for (const child of roadGroup.children) {
+            if (child instanceof THREE.Mesh) {
+              child.geometry.dispose();
+              if (Array.isArray(child.material)) {
+                for (const mat of child.material) mat.dispose();
+              } else {
+                (child.material as THREE.Material).dispose();
+              }
+            } else if (child instanceof THREE.Sprite) {
+              (child.material as THREE.SpriteMaterial).map?.dispose();
+              child.material.dispose();
             }
           }
           // Dispose border meshes
@@ -516,10 +690,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           agentSpriteGroup.dispose();
           agentSpriteGroupRef.current = null;
           // Dispose movement trail segments
-          for (const child of trailGroup.children) {
-            if (child instanceof THREE.Line) {
-              child.geometry.dispose();
-              (child.material as THREE.Material).dispose();
+          const finalTrailGroup = trailGroupRef.current;
+          if (finalTrailGroup) {
+            for (const child of finalTrailGroup.children) {
+              if (child instanceof THREE.Line) {
+                child.geometry.dispose();
+                (child.material as THREE.Material).dispose();
+              }
             }
           }
           trailGroupRef.current = null;
@@ -536,6 +713,64 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tiles, cols, rows, seed, riverPaths, regionData, locations, agents]);
+
+    // ── Fog update effect (separate from scene init — fog changes don't rebuild scene) ──
+    // Depends only on visibilityMap prop. Uses refs to access fillMesh, colorCache.
+    // NFP #4: Fail-soft — if refs aren't populated yet, silently returns.
+    useEffect(() => {
+      const fillMesh = fillMeshRef.current;
+      if (!fillMesh) return;
+
+      const originalColors = originalColorsRef.current;
+      const indexByKey = tileIndexByKeyRef.current;
+
+      if (!originalColors || !indexByKey) return;
+
+      if (!visibilityMap || !fogEnabled) {
+        // Fog disabled: restore all instance colors to originals
+        const color = new THREE.Color();
+        for (let i = 0; i < originalColors.length / 3; i++) {
+          color.setRGB(
+            originalColors[i * 3 + 0],
+            originalColors[i * 3 + 1],
+            originalColors[i * 3 + 2],
+            THREE.SRGBColorSpace,
+          );
+          fillMesh.setColorAt(i, color);
+        }
+        if (fillMesh.instanceColor) fillMesh.instanceColor.needsUpdate = true;
+        return;
+      }
+
+      // Apply fog colors to fill mesh
+      updateFogColors(fillMesh, visibilityMap, indexByKey, originalColors);
+
+      // Per-hex layer culling for signifier and location groups
+      // Agent culling is handled inside the agents useEffect (no fog-based agent visibility here)
+      const signifierGroup = signifierGroupRef.current;
+      if (signifierGroup) {
+        for (const child of signifierGroup.children) {
+          const sprite = child as THREE.Sprite & { userData?: { hexKey?: string } };
+          const hexKey = sprite.userData?.hexKey;
+          if (!hexKey) continue;
+          const hexVis = visibilityMap.get(hexKey);
+          const state = hexVis?.state ?? 'unexplored';
+          sprite.visible = isLayerVisibleForHex(state, 'signifier');
+        }
+      }
+
+      const locationGroup = locationGroupRef.current;
+      if (locationGroup) {
+        for (const child of locationGroup.children) {
+          const sprite = child as THREE.Sprite & { userData?: { hexKey?: string } };
+          const hexKey = sprite.userData?.hexKey;
+          if (!hexKey) continue;
+          const hexVis = visibilityMap.get(hexKey);
+          const state = hexVis?.state ?? 'unexplored';
+          sprite.visible = isLayerVisibleForHex(state, 'location');
+        }
+      }
+    }, [visibilityMap, fogEnabled]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
@@ -555,6 +790,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Update agent positions and trigger movement animations when agents prop changes.
     // Diffs old vs new hex positions — agents that changed hex get a bezier hop + trail segment.
+    // Also checks follow mode state and pans camera to followed agent on hex change.
     useEffect(() => {
       const spriteGroup = agentSpriteGroupRef.current;
       const trailGroup  = trailGroupRef.current;
@@ -591,6 +827,25 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               factionColor: FACTION_HERALDIC_COLORS[agent.factionIndex] ?? FACTION_HERALDIC_COLORS[0],
               startTime: now,
             });
+          }
+        }
+      }
+
+      // Follow mode: pan camera when followed agent changes hex (Plan 07-03)
+      const follow = followModeRef.current;
+      if (follow.active && follow.agentId) {
+        const followedAgent = agents.find(a => a.id === follow.agentId);
+        if (followedAgent) {
+          const newKey = `${followedAgent.hexCol},${followedAgent.hexRow}`;
+          if (newKey !== follow.lastHexKey) {
+            follow.lastHexKey = newKey;
+            const { x, y } = hexToPixel(
+              { col: followedAgent.hexCol, row: followedAgent.hexRow },
+              HEX_CONSTANTS.HEX_SIZE,
+            );
+            if (zoomRef.current && canvasRef.current) {
+              animateCameraTo(canvasRef.current, zoomRef.current, x, -y, undefined, 500);
+            }
           }
         }
       }
