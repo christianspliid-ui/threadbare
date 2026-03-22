@@ -57,10 +57,9 @@ For any fix with effort=1 (trivial) and ROI > 3, **implement it immediately**:
 - Edit CLAUDE.md
 - Update the relevant process doc
 
-For larger fixes, create entries in the Notion backlog with:
-- Title: `[CI] <description>`
-- Tag: `continuous-improvement`
-- Priority based on ROI score
+For larger fixes, add entries to `.planning/BACKLOG.md` under the appropriate section:
+- Prefix with `💡` if it needs design work, `🔲` if ready to build
+- Include the ROI score so they can be prioritized relative to other backlog items
 
 ### Step 5: Write the Retrospective Report
 

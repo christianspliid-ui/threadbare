@@ -1,38 +1,64 @@
 # Cowork Ways of Working
 
-> Added 2026-03-16 after a session where Cowork tried to write code, commit, and push — all of which failed due to sandbox limitations. This document prevents repeating those mistakes.
+> Added 2026-03-16. Updated 2026-03-22: added handover protocol, removed Notion references, clarified Cowork's role.
 
-## The Rule
+## Cowork's Role
+
+**Strategic advisor + domain knowledge keeper.** Cowork does exploration, design, brainstorming, and documentation. Claude Code does coding, testing, committing, and deploying.
 
 **Cowork does not write production code. Cowork does not touch git.**
 
 ## What Cowork Does
 
-- Architecture and design docs
+- Architecture and design docs (save to `.planning/` or workspace output folder)
 - Implementation plans detailed enough for Claude Code to execute
 - Codebase research and analysis (read-only)
 - Game design brainstorming and critique
-- Notion updates (MCP access works)
 - Obsidian vault updates (MCP access works)
-- Changelog and documentation updates (MCP access works)
+- `.planning/BACKLOG.md` updates (backlog prioritization, adding new items)
+- `.planning/HANDOVER.md` updates (see Handover Protocol below)
 - Code review and analysis
 
 ## What Cowork Does NOT Do
 
-- Write or modify files in `src/`, `Docs/plans/`, or any git-tracked directory
+- Write or modify files in `src/`
 - Run `git add`, `git commit`, `git push`, or any git operation
 - Run `npm test`, `npm run build`, or other build/test commands (sandbox lacks native modules)
 - Attempt to "just quickly fix" something in the codebase
 
+## Handover Protocol
+
+When a Cowork session produces something Claude Code should act on, **write it to `.planning/HANDOVER.md`**. This is how context flows from Cowork to Claude Code without the user being the middleman.
+
+**When to write a handover entry:**
+- Design decisions that affect code (architecture changes, rejected approaches, new constants)
+- Documentation changes that need committing (Cowork can edit files but can't commit)
+- New backlog items or priority changes
+- Brainstorm conclusions that should become design docs or implementation plans
+
+**Handover entry format:**
+```markdown
+## YYYY-MM-DD: Short title
+
+**Context:** What was discussed and decided (2-3 sentences).
+**What Cowork already did:** List of files changed or MCP updates made.
+**Action for Claude Code:**
+- [ ] Specific action item
+- [ ] Another action item
+**Files changed:** List of files Cowork modified that need committing.
+```
+
+**Lifecycle:** Claude Code reads HANDOVER.md at session start (step 2 in Session Workflow). After acting on entries, Claude Code moves them to the "Completed" section at the bottom.
+
 ## When the User Asks Cowork to Build Something
 
 1. Write a design doc + implementation plan
-2. Save it to the workspace output folder (not the repo)
-3. Share a clickable link to the plan
-4. Tell the user: *"Hand this to Claude Code: [task name]. Implementation plan: [link]"*
+2. Save it to `.planning/` or the workspace output folder
+3. Add a handover entry to `.planning/HANDOVER.md` with the plan reference
+4. Tell the user: *"Ready for Claude Code — handover entry written. Plan: [link]"*
 5. Do NOT start writing the code yourself
 
-## Why
+## Why These Constraints
 
 The Cowork sandbox runs in a VM with:
 - **No git credentials** — `git push` will always fail
@@ -58,3 +84,4 @@ The Cowork sandbox runs in a VM with:
 | Giving user `&&` chained commands | Fails on older PowerShell | One command per code block |
 | Assuming user's repo path | "not a git repository" error | Ask first, or check `.git/config` |
 | Not checking git log before asking user to commit | User spends 10 minutes committing files that are already committed | Always run `git log --oneline -5 -- <file>` first |
+| Finishing a session without writing HANDOVER.md | Decisions and context are lost; user has to re-explain to Claude Code | Always write a handover entry if anything actionable was discussed |
