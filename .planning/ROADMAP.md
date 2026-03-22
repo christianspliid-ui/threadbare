@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language (completed 2026-03-21)
 - [x] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers (completed 2026-03-22)
 - [x] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map (completed 2026-03-22)
-- [ ] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation
+- [x] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation (completed 2026-03-22)
 - [ ] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network
 - [ ] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring
 
@@ -119,7 +119,7 @@ Plans:
   3. Retinue agents are instantly distinguishable from other agents by their gold/white border
   4. When an agent moves, it visually hops along a bezier curve from source to destination hex
   5. Major locations suppress terrain signifiers on their hex (a city replaces tree icons)
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md — Location icon pipeline (registry, textures, LocationIconMesh), label overlay, COMP-05 RING extension, HexMapV2 wiring
@@ -174,6 +174,6 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
-| 6. Locations & Agents | 3/4 | In Progress|  |
+| 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
