@@ -91,24 +91,24 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **LART-10**: SVG signifier set for marsh (3 variants: reeds, water lines, mixed)
 - [x] **LART-11**: SVG signifier set for swamp (3 variants: standing water, dead trees, dense reeds)
 - [x] **LART-12**: SVG signifier set for moor_bog (3 variants: heather, peat, sparse scrub)
-- [ ] **LART-13**: SVG signifier set for hills (4 variants: single hill, double hill, rolling, steep)
-- [ ] **LART-14**: SVG signifier set for forested_hills (3 variants: deciduous-topped, conifer-topped, mixed)
-- [ ] **LART-15**: SVG signifier set for mountains (4 variants: single peak, double peak, ridge, cliff face)
-- [ ] **LART-16**: SVG signifier set for high_mountains (3 variants: snow peak, twin peaks, massive single)
-- [ ] **LART-17**: SVG signifier set for plateau (3 variants: mesa, cliff edge, stepped)
-- [ ] **LART-18**: SVG signifier set for mountain_pass (2 variants: narrow pass, broad saddle)
-- [ ] **LART-19**: SVG signifier set for sand_desert (3 variants: clean, wind ripples, scattered dots)
-- [ ] **LART-20**: SVG signifier set for sand_dunes (3 variants: rolling dunes, crescent, tall dune)
-- [ ] **LART-21**: SVG signifier set for rocky_desert (3 variants: scattered rocks, rock pile, flat rocks)
-- [ ] **LART-22**: SVG signifier set for hardened_clay (2 variants: fine cracks, deep cracks)
-- [ ] **LART-23**: SVG signifier set for badlands (3 variants: spires, layered, eroded pillars)
-- [ ] **LART-24**: SVG signifier set for tundra (3 variants: lichen, scrub, bare)
-- [ ] **LART-25**: SVG signifier set for snow_fields (2 variants: clean, drift patterns)
-- [ ] **LART-26**: SVG signifier set for glacier (2 variants: crevassed, smooth)
-- [ ] **LART-27**: SVG signifier set for volcanic (3 variants: active crater, dormant, vent)
-- [ ] **LART-28**: SVG signifier set for lava (2 variants: fresh flow, cooling)
-- [ ] **LART-29**: SVG signifier set for broken_lands (2 variants: cracked, rubble)
-- [ ] **LART-30**: SVG signifier set for dead_forest (3 variants: standing dead, fallen, charred)
+- [x] **LART-13**: SVG signifier set for hills (4 variants: single hill, double hill, rolling, steep)
+- [x] **LART-14**: SVG signifier set for forested_hills (3 variants: deciduous-topped, conifer-topped, mixed)
+- [x] **LART-15**: SVG signifier set for mountains (4 variants: single peak, double peak, ridge, cliff face)
+- [x] **LART-16**: SVG signifier set for high_mountains (3 variants: snow peak, twin peaks, massive single)
+- [x] **LART-17**: SVG signifier set for plateau (3 variants: mesa, cliff edge, stepped)
+- [x] **LART-18**: SVG signifier set for mountain_pass (2 variants: narrow pass, broad saddle)
+- [x] **LART-19**: SVG signifier set for sand_desert (3 variants: clean, wind ripples, scattered dots)
+- [x] **LART-20**: SVG signifier set for sand_dunes (3 variants: rolling dunes, crescent, tall dune)
+- [x] **LART-21**: SVG signifier set for rocky_desert (3 variants: scattered rocks, rock pile, flat rocks)
+- [x] **LART-22**: SVG signifier set for hardened_clay (2 variants: fine cracks, deep cracks)
+- [x] **LART-23**: SVG signifier set for badlands (3 variants: spires, layered, eroded pillars)
+- [x] **LART-24**: SVG signifier set for tundra (3 variants: lichen, scrub, bare)
+- [x] **LART-25**: SVG signifier set for snow_fields (2 variants: clean, drift patterns)
+- [x] **LART-26**: SVG signifier set for glacier (2 variants: crevassed, smooth)
+- [x] **LART-27**: SVG signifier set for volcanic (3 variants: active crater, dormant, vent)
+- [x] **LART-28**: SVG signifier set for lava (2 variants: fresh flow, cooling)
+- [x] **LART-29**: SVG signifier set for broken_lands (2 variants: cracked, rubble)
+- [x] **LART-30**: SVG signifier set for dead_forest (3 variants: standing dead, fallen, charred)
 
 ### Location Signifiers (LOCI)
 
@@ -294,24 +294,24 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LART-10 | Phase 5 | Complete |
 | LART-11 | Phase 5 | Complete |
 | LART-12 | Phase 5 | Complete |
-| LART-13 | Phase 5 | Pending |
-| LART-14 | Phase 5 | Pending |
-| LART-15 | Phase 5 | Pending |
-| LART-16 | Phase 5 | Pending |
-| LART-17 | Phase 5 | Pending |
-| LART-18 | Phase 5 | Pending |
-| LART-19 | Phase 5 | Pending |
-| LART-20 | Phase 5 | Pending |
-| LART-21 | Phase 5 | Pending |
-| LART-22 | Phase 5 | Pending |
-| LART-23 | Phase 5 | Pending |
-| LART-24 | Phase 5 | Pending |
-| LART-25 | Phase 5 | Pending |
-| LART-26 | Phase 5 | Pending |
-| LART-27 | Phase 5 | Pending |
-| LART-28 | Phase 5 | Pending |
-| LART-29 | Phase 5 | Pending |
-| LART-30 | Phase 5 | Pending |
+| LART-13 | Phase 5 | Complete |
+| LART-14 | Phase 5 | Complete |
+| LART-15 | Phase 5 | Complete |
+| LART-16 | Phase 5 | Complete |
+| LART-17 | Phase 5 | Complete |
+| LART-18 | Phase 5 | Complete |
+| LART-19 | Phase 5 | Complete |
+| LART-20 | Phase 5 | Complete |
+| LART-21 | Phase 5 | Complete |
+| LART-22 | Phase 5 | Complete |
+| LART-23 | Phase 5 | Complete |
+| LART-24 | Phase 5 | Complete |
+| LART-25 | Phase 5 | Complete |
+| LART-26 | Phase 5 | Complete |
+| LART-27 | Phase 5 | Complete |
+| LART-28 | Phase 5 | Complete |
+| LART-29 | Phase 5 | Complete |
+| LART-30 | Phase 5 | Complete |
 | LOCI-01 | Phase 6 | Pending |
 | LOCI-02 | Phase 6 | Pending |
 | LOCI-03 | Phase 6 | Pending |

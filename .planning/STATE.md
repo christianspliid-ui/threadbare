@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-hex-composition-landscape-signifiers 05-03-PLAN.md
-last_updated: "2026-03-22T11:46:55.605Z"
+stopped_at: Completed 05-hex-composition-landscape-signifiers 05-04-PLAN.md
+last_updated: "2026-03-22T11:51:04.029Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 82
 ---
 
@@ -73,6 +73,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 05-hex-composition-landscape-signifiers P01 | 6 | 2 tasks | 5 files |
 | Phase 05-hex-composition-landscape-signifiers P02 | 8 | 2 tasks | 4 files |
 | Phase 05-hex-composition-landscape-signifiers P03 | 12 | 2 tasks | 1 files |
+| Phase 05-hex-composition-landscape-signifiers P04 | 12 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -115,6 +116,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 05-hex-composition-landscape-signifiers]: SIGNIFIER_ZOOM_THRESHOLD=5: signifiers show at regional+ zoom (k>=5), hidden at continental/full-world
 - [Phase 05-hex-composition-landscape-signifiers]: Texture cache keyed as terrain:variantIndex; buildSignifierTextureCache called once at scene init, no per-frame cost
 - [Phase 05-hex-composition-landscape-signifiers]: Steppe variant 0 and dense_forest variant 0 use exact path data from Design/ hand-drawn SVGs (style standard extraction)
+- [Phase 05-hex-composition-landscape-signifiers]: hills v0 and mountains v0 use actual hand-drawn SVG paths from Design/ as style anchors
+- [Phase 05-hex-composition-landscape-signifiers]: Two-path highland signifier pattern: filled silhouette + shadow highlight at lower opacity
 
 ### Pending Todos
 
@@ -126,6 +129,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:46:55.603Z
-Stopped at: Completed 05-hex-composition-landscape-signifiers 05-03-PLAN.md
+Last session: 2026-03-22T11:51:04.027Z
+Stopped at: Completed 05-hex-composition-landscape-signifiers 05-04-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
