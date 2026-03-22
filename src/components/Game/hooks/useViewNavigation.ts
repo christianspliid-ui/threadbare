@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { GameState } from '../../../types/gameState';
 import type { HexTile } from '../../../types';
-import type { HexMapHandle } from '../../HexMap/HexMap';
+import type { HexMapV2Handle } from '../../HexMapV2/HexMapV2';
 import { moveAvatarToHex } from '../../../engine/avatarMove';
 import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
@@ -28,7 +28,7 @@ interface UseViewNavigationReturn {
   focusedHex: { col: number; row: number } | null;
   focusedLocationId: string | null;
   moveMode: boolean;
-  hexMapRef: React.RefObject<HexMapHandle>;
+  hexMapRef: React.RefObject<HexMapV2Handle>;
   handleHexClick: (coord: { col: number; row: number }) => void;
   handleBackToWorld: () => void;
   handleBackToHex: () => void;
@@ -54,7 +54,7 @@ export function useViewNavigation({
   const [focusedHex, setFocusedHex] = useState<{ col: number; row: number } | null>(null);
   const [focusedLocationId, setFocusedLocationId] = useState<string | null>(null);
   const [moveMode, setMoveMode] = useState(false);
-  const hexMapRef = useRef<HexMapHandle>(null);
+  const hexMapRef = useRef<HexMapV2Handle>(null);
 
   const handleHexClick = useCallback((coord: { col: number; row: number }) => {
     // Only allow hex zoom into fully visible hexes — not unexplored or remembered (fog of war)
