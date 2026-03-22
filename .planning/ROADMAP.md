@@ -2,7 +2,9 @@
 
 ## Overview
 
-Bottom-up construction of a complete hex map system: start with the Three.js renderer and terrain palette, layer in world generation, water systems, regions, then signifier art and composition, agents, fog/zoom, and finally integrate into the live game. Each phase delivers a verifiable visual capability that builds on the previous. The old SVG map continues working until Phase 8 swaps it out.
+Bottom-up construction of a complete hex map system: start with the Three.js renderer and terrain palette, layer in world generation, water systems, regions, then signifier art and composition, agents, fog/zoom, and finally integrate into the live game. Each phase delivers a verifiable visual capability that builds on the previous.
+
+**V1 hex map (SVG) development is stopped.** All hex map work targets V2 exclusively (`?view=hexv2`). The V1 SVG map remains in the codebase at `?view=game` but receives no new features or fixes. Phase 8 will remove V1 and wire V2 into the game view.
 
 ## Phases
 
@@ -137,12 +139,12 @@ Plans:
   3. Zooming smoothly transitions between hero-local, regional, continental, and full-world views with elements fading in/out
   4. At full-world zoom, only terrain colors and political borders are visible (no signifiers, no agents)
   5. Camera starts centered on the player's retinue agent and can auto-follow during movement
-**Plans**: TBD
+**Plans:** 3 plans
 
 Plans:
-- [ ] 07-01: Fog of war system (per-hex state, culling, reveal animation)
-- [ ] 07-02: Zoom LOD tiers, visibility matrix, fade transitions
-- [ ] 07-03: Road network rendering, bridge icons, follow mode
+- [ ] 07-01-PLAN.md — Fog culling logic (color override, layer gating, visibility computation) + zoom visibility matrix (tier thresholds, fade alpha)
+- [ ] 07-02-PLAN.md — Road mesh rendering (quad-strip geometry, major/trail styling, bridge icon detection at river crossings)
+- [ ] 07-03-PLAN.md — Full HexMapV2 wiring (fog prop threading, zoom matrix integration, road mesh, follow mode, default camera centering)
 
 ### Phase 8: Integration
 **Goal**: The new hex map fully replaces the old SVG map in the live game with all existing systems working
@@ -175,5 +177,5 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
 | 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
-| 7. Fog, Zoom & Grid | 0/3 | Not started | - |
+| 7. Fog, Zoom & Grid | 0/3 | In progress | - |
 | 8. Integration | 0/2 | Not started | - |
