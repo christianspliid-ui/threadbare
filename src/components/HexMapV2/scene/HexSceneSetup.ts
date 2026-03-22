@@ -31,9 +31,17 @@ export function createHexScene(
   width: number,
   height: number,
 ): HexScene {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, stencil: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, SCENE_CONSTANTS.PIXEL_RATIO_CAP));
   renderer.setSize(width, height);
+
+  // Disable tone mapping — we use flat 2D colors, not HDR lighting.
+  // Default tone mapping (AgX/ACES) compresses color gamut, making distinct
+  // terrain palette colors appear as the same washed-out green.
+  renderer.toneMapping = THREE.NoToneMapping;
+
+  // Use sRGB output so hex color strings (#RRGGBB) display correctly on screen.
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(SCENE_CONSTANTS.BACKGROUND_COLOR);

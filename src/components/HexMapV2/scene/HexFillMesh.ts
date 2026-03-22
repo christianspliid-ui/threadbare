@@ -3,6 +3,7 @@ import type { HexTile } from '../../../types';
 import { hexToPixel } from '../../../lib/hexMath';
 import { getHexColor } from '../palette/colorUtils';
 import { RENDER_ORDER } from './RenderLayers';
+import { isWaterTerrain } from '../../../engine/coastline';
 
 /**
  * Grid and hex sizing constants.
@@ -15,6 +16,20 @@ export const HEX_CONSTANTS = {
   GRID_LINE_OPACITY:    0.12,  // ~12% opacity black on hex edges (CONTEXT.md decision)
   BRIGHTNESS_NOISE_RANGE: 0.05, // ±5% luminosity variation per TERR-05
 } as const;
+
+/**
+ * Result of createHexFillMesh — two InstancedMeshes for land and water.
+ * Land mesh uses stencil testing (only renders where stencil = 1, set by coastline contour).
+ * Water mesh renders normally as full hexagonal shapes.
+ */
+export interface HexFillMeshResult {
+  landMesh: THREE.InstancedMesh;
+  waterMesh: THREE.InstancedMesh;
+  /** Global tile index (into tiles[]) for each land mesh instance */
+  landTileIndices: number[];
+  /** Global tile index (into tiles[]) for each water mesh instance */
+  waterTileIndices: number[];
+}
 
 /**
  * Builds a flat-top hexagonal BufferGeometry with the given radius.
@@ -40,78 +55,147 @@ export function buildHexGeometry(size: number): THREE.BufferGeometry {
 }
 
 /**
- * Creates an InstancedMesh for all hex tiles with per-instance terrain colors.
- * Uses a single draw call for 60K hexes.
+ * Creates two InstancedMeshes for hex tiles — one for land (stencil-tested) and one for water (normal).
+ *
+ * Land mesh uses GPU stencil testing: only renders where the stencil buffer = 1.
+ * The coastline contour (CoastlineMesh at renderOrder -1) writes 1 into the stencil buffer
+ * for all land pixels, so the land hex color is only visible inside the organic coastline shape.
+ *
+ * Water mesh renders normally as full hexagons with no stencil constraints.
  *
  * NFP #1: lakeIds parameter is optional — fail-soft when not provided.
  * NFP #3: Deterministic — colors derived from seeded noise + elevation, same seed = same appearance.
- * NFP #7: Performance — single InstancedMesh draw call for the entire grid.
+ * NFP #7: Performance — two InstancedMesh draw calls for the entire grid (split from one).
  *
- * When lakeIds is provided, lake hexes (lakeId >= 0) render with lake water color.
- * Ocean hexes render with depth-band colors based on elevation.
+ * When lakeIds is provided, lake hexes (lakeId >= 0) render with lake water color, in water mesh.
+ * Ocean hexes render with depth-band colors based on elevation, in water mesh.
  */
 export function createHexFillMesh(
   tiles: HexTile[],
   seed: number,
   lakeIds?: Int16Array,
-): THREE.InstancedMesh {
+): HexFillMeshResult {
   const geo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
-  const mat = new THREE.MeshBasicMaterial({ vertexColors: false });
-  const mesh = new THREE.InstancedMesh(geo, mat, tiles.length);
+
+  // First pass: classify each tile as land or water
+  const landTileIndices: number[] = [];
+  const waterTileIndices: number[] = [];
+
+  for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    const lakeId = lakeIds ? lakeIds[i] : -1;
+    const isWater = isWaterTerrain(tile.terrain) || (lakeIds !== undefined && lakeId >= 0);
+    if (isWater) {
+      waterTileIndices.push(i);
+    } else {
+      landTileIndices.push(i);
+    }
+  }
+
+  // Land mesh — stencil-tested: only renders where stencil buffer = 1
+  // The stencil buffer is written by CoastlineMesh at renderOrder STENCIL_WRITE (-1).
+  const landMat = new THREE.MeshBasicMaterial({ vertexColors: false });
+  landMat.stencilWrite = false;
+  landMat.stencilFunc = THREE.EqualStencilFunc;
+  landMat.stencilRef = 1;
+  landMat.stencilFuncMask = 0xFF;
+  landMat.stencilFail = THREE.KeepStencilOp;
+  landMat.stencilZFail = THREE.KeepStencilOp;
+  landMat.stencilZPass = THREE.KeepStencilOp;
+
+  const landMesh = new THREE.InstancedMesh(geo, landMat, landTileIndices.length);
+  landMesh.renderOrder = RENDER_ORDER.HEX_FILL;
+  landMesh.frustumCulled = true;
+
+  // Water mesh — no stencil constraints; renders as full hexagonal shapes
+  const waterMat = new THREE.MeshBasicMaterial({ vertexColors: false });
+  const waterMesh = new THREE.InstancedMesh(geo, waterMat, waterTileIndices.length);
+  waterMesh.renderOrder = RENDER_ORDER.HEX_FILL;
+  waterMesh.frustumCulled = true;
 
   const matrix = new THREE.Matrix4();
   const color  = new THREE.Color();
 
-  for (let i = 0; i < tiles.length; i++) {
-    const tile = tiles[i];
+  // Populate land mesh instances
+  for (let i = 0; i < landTileIndices.length; i++) {
+    const globalIdx = landTileIndices[i];
+    const tile = tiles[globalIdx];
     const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
-
-    // Y-flip: SVG is y-down, Three.js world is y-up
     matrix.setPosition(x, -y, 0);
-    mesh.setMatrixAt(i, matrix);
+    landMesh.setMatrixAt(i, matrix);
 
-    const lakeId = lakeIds ? lakeIds[i] : undefined;
+    const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;
     const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
       elevation: tile.geoParams.elevation,
       lakeId,
     });
     color.setRGB(r, g, b);
-    mesh.setColorAt(i, color);
+    landMesh.setColorAt(i, color);
   }
 
-  mesh.instanceMatrix.needsUpdate = true;
-  if (mesh.instanceColor) {
-    mesh.instanceColor.needsUpdate = true;
+  // Populate water mesh instances
+  for (let i = 0; i < waterTileIndices.length; i++) {
+    const globalIdx = waterTileIndices[i];
+    const tile = tiles[globalIdx];
+    const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
+    matrix.setPosition(x, -y, 0);
+    waterMesh.setMatrixAt(i, matrix);
+
+    const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;
+    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
+      elevation: tile.geoParams.elevation,
+      lakeId,
+    });
+    color.setRGB(r, g, b);
+    waterMesh.setColorAt(i, color);
   }
 
-  mesh.renderOrder = RENDER_ORDER.HEX_FILL;
-  return mesh;
+  landMesh.instanceMatrix.needsUpdate = true;
+  if (landMesh.instanceColor) landMesh.instanceColor.needsUpdate = true;
+
+  waterMesh.instanceMatrix.needsUpdate = true;
+  if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
+
+  return { landMesh, waterMesh, landTileIndices, waterTileIndices };
 }
 
 /**
- * Re-applies per-hex colors to an existing InstancedMesh.
+ * Re-applies per-hex colors to both InstancedMeshes in a HexFillMeshResult.
  * Used for dynamic terrain updates without rebuilding geometry.
  */
 export function updateHexColors(
-  mesh: THREE.InstancedMesh,
+  result: HexFillMeshResult,
   tiles: HexTile[],
   seed: number,
   lakeIds?: Int16Array,
 ): void {
   const color = new THREE.Color();
 
-  for (let i = 0; i < tiles.length; i++) {
-    const tile = tiles[i];
-    const lakeId = lakeIds ? lakeIds[i] : undefined;
+  // Update land mesh colors
+  for (let i = 0; i < result.landTileIndices.length; i++) {
+    const globalIdx = result.landTileIndices[i];
+    const tile = tiles[globalIdx];
+    const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;
     const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
       elevation: tile.geoParams.elevation,
       lakeId,
     });
     color.setRGB(r, g, b);
-    mesh.setColorAt(i, color);
+    result.landMesh.setColorAt(i, color);
   }
+  if (result.landMesh.instanceColor) result.landMesh.instanceColor.needsUpdate = true;
 
-  if (mesh.instanceColor) {
-    mesh.instanceColor.needsUpdate = true;
+  // Update water mesh colors
+  for (let i = 0; i < result.waterTileIndices.length; i++) {
+    const globalIdx = result.waterTileIndices[i];
+    const tile = tiles[globalIdx];
+    const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;
+    const [r, g, b] = getHexColor(tile.terrain, seed, tile.coord.col, tile.coord.row, {
+      elevation: tile.geoParams.elevation,
+      lakeId,
+    });
+    color.setRGB(r, g, b);
+    result.waterMesh.setColorAt(i, color);
   }
+  if (result.waterMesh.instanceColor) result.waterMesh.instanceColor.needsUpdate = true;
 }
