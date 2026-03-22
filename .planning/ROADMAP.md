@@ -119,7 +119,7 @@ Plans:
   3. Retinue agents are instantly distinguishable from other agents by their gold/white border
   4. When an agent moves, it visually hops along a bezier curve from source to destination hex
   5. Major locations suppress terrain signifiers on their hex (a city replaces tree icons)
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — Location icon pipeline (registry, textures, LocationIconMesh), label overlay, COMP-05 RING extension, HexMapV2 wiring
@@ -174,6 +174,6 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
-| 6. Locations & Agents | 1/4 | In Progress|  |
+| 6. Locations & Agents | 2/4 | In Progress|  |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
