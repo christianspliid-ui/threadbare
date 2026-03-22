@@ -25,6 +25,8 @@ import { animateCameraTo } from './camera/CameraAnimator';
 import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
+import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
+import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
 // ─── Props & Handle ───────────────────────────────────────────────────────────
 
@@ -150,6 +152,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
 
+    // Region label overlay state
+    const [regionLabels, setRegionLabels] = useState<import('../../engine/regionTypes').RegionLabel[]>([]);
+    // Current d3-zoom scale level — tracked to drive label tier filtering
+    const [zoomLevel, setZoomLevel] = useState<number>(CAMERA_CONSTANTS.DEFAULT_ZOOM);
+
     // Tooltip state (internal — not exposed to parent)
     const [tooltip, setTooltip] = useState<{
       coord: HexCoord;
@@ -255,6 +262,19 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           scene.add(capitalMarkers);
         }
 
+        // Generate HTML region labels from regionData (Plan 04-03)
+        // Labels are generated client-side from regionData — worldgen produces the data,
+        // RegionLabelOverlay handles the rendering.
+        if (regionData && (regionData.kingdoms.length > 0 || regionData.baronies.length > 0)) {
+          const allLabels = [
+            ...generateRegionLabels(regionData),
+            ...generateRiverLabels(riverPathsRef.current, seed),
+          ];
+          setRegionLabels(allLabels);
+        } else {
+          setRegionLabels([]);
+        }
+
         // Selected hex ring (initially hidden)
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
@@ -269,6 +289,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         destroyZoomRef.current = destroy;
         setZoomTargetRef.current = setZoomTarget;
         clearZoomTargetRef.current = clearZoomTarget;
+
+        // Track zoom level for label tier filtering (Plan 04-03)
+        // Hook into d3-zoom's existing 'zoom' event with a secondary listener name
+        zoom.on('zoom.labels', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
+          setZoomLevel(event.transform.k);
+        });
 
         // Update selection ring when selectedHex prop changes
         // This runs inside the effect on mount; prop changes are handled separately below.
@@ -317,6 +343,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         return () => {
           cancelAnimationFrame(rafId);
           resizeObserver.disconnect();
+          // Remove zoom.labels listener (Plan 04-03)
+          zoom.on('zoom.labels', null);
           destroy();
           zoomRef.current = null;
           destroyZoomRef.current = null;
@@ -511,6 +539,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             canvasHeight={canvasDimensions.h}
             geoParams={tooltip.geoParams}
             hasRiver={tooltip.hasRiver}
+          />
+        )}
+        {regionLabels.length > 0 && (
+          <RegionLabelOverlay
+            labels={regionLabels}
+            cameraRef={cameraRef}
+            canvasWidth={canvasDimensions.w}
+            canvasHeight={canvasDimensions.h}
+            zoomLevel={zoomLevel}
           />
         )}
       </div>
