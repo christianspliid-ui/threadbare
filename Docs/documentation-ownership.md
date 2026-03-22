@@ -1,16 +1,23 @@
 # Documentation Ownership Map
 
-> Added 2026-03-12. Defines where each type of fact lives and what must never be duplicated. Written as part of DOC-02 from the remediation plan.
+> Added 2026-03-12. Defines where each type of fact lives and what must never be duplicated.
+> Updated 2026-03-22: Notion backlog archived → backlog now lives in `.planning/BACKLOG.md`. Obsidian `Build Status` deprecated.
 
-## The Four Surfaces
+## The Three Surfaces (+ CLAUDE.md)
 
 | Surface | Owns | Does NOT own |
 |---------|------|--------------|
-| **Notion** (`Development Backlog`) | Sprint tasks, phase status, backlog items, audit follow-ups, work-in-progress tracking | System design, code architecture, UI specifications |
-| **Obsidian vault** (`TheFantasyWorldSimulator/`) | Domain model: systems, mechanics, relationships, terminology definitions, build status | Task tracking, implementation rationale, raw code shape |
-| **Repo docs** (`Docs/`) | Implementation rationale — why we chose X over Y, design tradeoffs, plan docs, changelog, UI patterns | Project planning, phase progress, backlog |
+| **Obsidian vault** (`TheFantasyWorldSimulator/`) | Domain model: systems, mechanics, relationships, terminology definitions | Task tracking, implementation rationale, project status |
+| **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, backlog, milestone roadmaps | System definitions, visual documentation |
 | **Paper** | UI/system visual documentation — component anatomy, visual style, asset registry, player journey maps, interaction flows | Implementation detail (no file sizes, line counts, or code snippets) |
-| **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above four — link, don't copy |
+| **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
+
+### Archived surfaces
+
+| Surface | Status | What happened |
+|---------|--------|---------------|
+| **Notion** (`Development Backlog`) | Archived 2026-03-22 | Pending items migrated to `.planning/BACKLOG.md`. Page has deprecation notice. Kept for historical reference only. |
+| **Obsidian** `Build Status` note | Deprecated 2026-03-22 | Was frozen at 2026-03-05. Project status lives in `Docs/project-status.md` + `Docs/project-history.md`. |
 
 ---
 
@@ -18,27 +25,28 @@
 
 **One fact, one home.** If the same information exists in two places, one of them is wrong or stale.
 
-- **Phase/sprint status** → Notion only. `project-status.md` holds current focus only (≤ 20 lines). `project-history.md` holds the append-only completed milestone log.
+- **What to build next** → `.planning/BACKLOG.md` only. Prioritized backlog of future work.
+- **Active milestone tracking** → `.planning/ROADMAP.md` + `.planning/STATE.md`. Phase-level progress and decisions.
+- **Project status** → `Docs/project-status.md` (current focus, ≤60 lines) + `Docs/project-history.md` (append-only archive).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
 - **Visual component shape/anatomy** → Paper only. Obsidian may link to the Paper board; repo docs do not describe component appearance.
-- **Current next priority** → Notion (Remediation Plan or active backlog item). `CLAUDE.md` says "check Notion for next tasks" rather than restating them.
 
 ---
 
 ## What Lives Where — Quick Reference
 
-### Notion
-- Development Backlog page and sub-pages
-- Remediation plan items (DOC-*, TECH-*, ARCH-*, FE-*, etc.)
-- Sprint goals and acceptance criteria
-- Audit follow-ups
-
 ### Obsidian
 - All wikilinked system notes (`Index.md` as entry point)
-- Build status (`Build Status` note)
 - Cosmology, reaches, actor types, relationship types
 - Content strategy and narrative archetypes
+
+### Repo — `.planning/`
+- `BACKLOG.md` — prioritized future work (migrated from Notion 2026-03-22)
+- `ROADMAP.md` — active milestone phase plan
+- `REQUIREMENTS.md` — milestone requirements
+- `STATE.md` — session continuity, decisions, velocity
+- `phases/` — per-phase plan documents
 
 ### Repo — `Docs/plans/`
 - One markdown file per design decision / implementation plan
@@ -46,7 +54,7 @@
 - Tradeoffs, alternatives considered, "why not X"
 
 ### Repo — `Docs/` (top level)
-- `project-status.md` — current focus + next priority (≤ 20 lines, orientation only)
+- `project-status.md` — current focus + next priority (≤60 lines, orientation only)
 - `project-history.md` — append-only completed milestone archive (troubleshooting reference)
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ui-patterns.md` — frontend interaction conventions and component patterns
@@ -66,7 +74,7 @@ Some facts change so frequently they must not be documented statically:
 | Fact | Where | How |
 |------|-------|-----|
 | File sizes / line counts | Nowhere static | Check live with `wc -l` |
-| Test counts | Notion task entries only (as "approximately X new tests") | Not in Obsidian |
+| Test counts | `.planning/STATE.md` (approximate) | Updated after each plan completion |
 | Node/edge counts | `world-model.json` is the source; `CLAUDE.md` note is updated per session | |
 | Engine module count | `CLAUDE.md` project status line only | Updated when meaningfully changed |
 

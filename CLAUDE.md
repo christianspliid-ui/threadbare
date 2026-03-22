@@ -44,13 +44,16 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 | Surface | Owns |
 |---------|------|
 | **Obsidian vault** | Domain model: systems, mechanics, terminology (wikilinks). Read `Index.md` first. |
-| **Notion** | Sprint tasks, phase status, backlog, audit follow-ups |
-| **Repo `Docs/`** | Implementation rationale (`plans/`), changelog, UI patterns, this ownership map |
+| **Repo `.planning/`** | Backlog (`BACKLOG.md`), active milestone roadmap, requirements, session state |
+| **Repo `Docs/`** | Implementation rationale (`plans/`), changelog, UI patterns, project status, this ownership map |
 | **Paper** | Visual documentation: component anatomy, style, asset registry, player journey maps |
+
+*Notion backlog archived 2026-03-22 — all tracking now in repo markdown files.*
 
 ## Key Links
 
-- Notion backlog: https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf
+- Backlog: `.planning/BACKLOG.md`
+- Active milestone roadmap: `.planning/ROADMAP.md`
 - Obsidian vault index: read via Obsidian MCP → `TheFantasyWorldSimulator/Index.md`
 - Documentation ownership: `Docs/documentation-ownership.md`
 - Visual style guide: `STYLE.md`
@@ -143,7 +146,8 @@ Settled. Do not revisit.
 - ❌ Pure LLM-generated content — replaced by generated-within-constraints with player iteration
 - ❌ Intervention wheel (AgentWheel) — replaced by ActionDrawer with context-filtered cards via Generalized Action Targeting
 - ❌ Fixed action count / capped action slots — replaced by open-ended, data-driven template pool filtered per target context
-- ❌ WebGL/3D hex map (Three.js, React Three Fiber, KayKit GLTF models) — removed 2026-03-21. Investing in making the 2D canvas map beautiful instead of maintaining dual rendering paths.
+- ❌ React Three Fiber (R3F) — use raw Three.js with canvas ref instead. Direct Three.js gives full control over InstancedMesh, render loop, and d3-zoom integration without R3F abstraction overhead.
+- ❌ KayKit GLTF 3D models — replaced by flat hex grid with 2D signifier art composited per-hex
 
 ## Change Audit Trail
 
@@ -160,7 +164,7 @@ When implementation is complete and tests pass, **do all of these automatically 
 2. **Push** to GitHub (`git push`, with `-u origin <branch>` if needed)
 3. **Merge** feature branches into main immediately — don't leave branches waiting
 4. **Deploy** to Vercel production — Vercel auto-deploys from GitHub on push to `main`. No manual deploy step needed; just ensure the push succeeded.
-5. **Document** — update Notion backlog (mark phases ✅), update `Docs/project-status.md` and `Docs/changelog.md` and `Docs/project-history.md`
+5. **Document** — update `.planning/BACKLOG.md` (mark items complete, add new ones), update `Docs/project-status.md` and `Docs/changelog.md` and `Docs/project-history.md`
    - `project-history.md`: Append a one-line `✅ Complete` entry for each completed feature/system
    - `project-status.md`: Keep this file compact (current focus + recent completions only). Move any "Previous:" entries older than the current session into `project-history.md`. This file should never exceed ~60 lines.
    - `changelog.md`: Append row(s) as usual
@@ -173,10 +177,11 @@ This is non-negotiable. Work is not "done" until it is deployed and documented. 
 ## Session Workflow
 
 1. Read this file for orientation
-2. Read Obsidian `Index.md` via MCP, follow links to the relevant system
-3. Check Notion backlog for current phase and next tasks
-4. Read relevant design doc in `Docs/plans/` before writing code
-5. After completing work, follow the **Definition of Done** above
+2. **Check `.planning/HANDOVER.md` for pending actions from Cowork sessions** — act on any open items before starting new work
+3. Read Obsidian `Index.md` via MCP, follow links to the relevant system
+4. Check `.planning/BACKLOG.md` for backlog and `.planning/ROADMAP.md` for active milestone
+5. Read relevant design doc in `Docs/plans/` before writing code
+6. After completing work, follow the **Definition of Done** above
 
 ## Domain Skills
 
@@ -209,6 +214,6 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
-- Current phase: **Hex Actions & Control Mechanic** (design) — check Notion backlog for next priority
+- Current phase: **Hex Map V2** (Phase 3 of 8) — see `.planning/ROADMAP.md` for phase details, `.planning/BACKLOG.md` for future work
 - Engine: ~323 modules, ~70,600+ lines, ~5,111+ tests across 351+ test files
 - Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
