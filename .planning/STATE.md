@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 03-03-PLAN.md (elevation ticks + GRID-01/ELEV-01 verification) — awaiting checkpoint 03-03 human-verify
-last_updated: "2026-03-21T21:33:38.371Z"
+stopped_at: Completed 04-regions-borders-01-PLAN.md
+last_updated: "2026-03-22T10:11:03.818Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
+  completed_phases: 3
+  total_plans: 11
+  completed_plans: 9
+  percent: 82
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+stopped_at: Phase 4 UI-SPEC approved
+last_updated: "2026-03-22T09:40:15.774Z"
+last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
+progress:
+  [████████░░] 82%
   completed_phases: 3
   total_plans: 8
   completed_plans: 8
@@ -51,6 +67,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 03-coastlines-water-elevation P01 | 10 | 2 tasks | 17 files |
 | Phase 03-coastlines-water-elevation P02 | 264 | 2 tasks | 3 files |
 | Phase 03-coastlines-water-elevation P03 | 364 | 2 tasks | 3 files |
+| Phase 04-regions-borders P01 | 8min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -78,6 +95,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 03-coastlines-water-elevation]: All river paths merged into one BufferGeometry for minimal draw calls
 - [Phase 03-coastlines-water-elevation]: ElevationTicks uses hex-pair coord dedup (not vertex-position key) to avoid index-to-neighbor mapping error in odd-q offset grids
 - [Phase 03-coastlines-water-elevation]: ELEV-04 (altitude text labels) cut from Phase 3 per user decision — not implemented
+- [Phase 04-regions-borders]: RegionCluster id field added to legacy detectRegions() for backward compat — returns sequential int starting at 0
+- [Phase 04-regions-borders]: detectRegionsBorderCost seeds from province capitals; fallback auto-places seeds every sqrt(REGION_TARGET_SIZE) hexes on land
+- [Phase 04-regions-borders]: coast/coastal_shallows/reef map to 'sea' feature type; plateau to 'hill_country'; oasis to 'desert'
 
 ### Pending Todos
 
@@ -89,6 +109,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-21T21:33:38.369Z
-Stopped at: Completed 03-03-PLAN.md (elevation ticks + GRID-01/ELEV-01 verification) — awaiting checkpoint 03-03 human-verify
+Last session: 2026-03-22T10:10:54.585Z
+Stopped at: Completed 04-regions-borders-01-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
