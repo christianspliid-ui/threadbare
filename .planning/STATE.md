@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-22T10:54:26.618Z"
+stopped_at: Completed 05-hex-composition-landscape-signifiers 05-01-PLAN.md
+last_updated: "2026-03-22T11:36:35.009Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 15
+  completed_plans: 12
   percent: 82
 ---
 
@@ -70,6 +70,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 04-regions-borders P01 | 8min | 2 tasks | 4 files |
 | Phase 04-regions-borders P02 | 7 | 1 tasks | 7 files |
 | Phase 04-regions-borders P03 | 5 | 2 tasks | 6 files |
+| Phase 05-hex-composition-landscape-signifiers P01 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 04-regions-borders]: HEX_SIZE=10 duplicated as local const in regionLabels.ts to avoid circular import with HexMapV2 scene layer
 - [Phase 04-regions-borders]: Zoom tier thresholds: full-world <1.5, continental <5, regional <15, hero-local >=15; kingdom/barony/geo/river filter accordingly
 - [Phase 04-regions-borders]: zoom.on('zoom.labels') secondary listener for decoupled zoom level tracking, removed with null in cleanup
+- [Phase 05-hex-composition-landscape-signifiers]: Terrain type reconciliation: 28 direct registry entries + 6 TERRAIN_SIGNIFIER_FALLBACK = all 33 land TerrainType values covered
+- [Phase 05-hex-composition-landscape-signifiers]: LART-22 hardened_clay absorbed into badlands (variants 3-4); LART-28 lava absorbed into volcano (variants 3-4)
+- [Phase 05-hex-composition-landscape-signifiers]: SIGNIFIER_JITTER_RANGE and SIGNIFIER_ROTATION_RANGE as named constants (NFP #1); placeholder SVG paths in registry, Plans 03+04 replace with production art
 
 ### Pending Todos
 
@@ -117,6 +121,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T10:54:26.616Z
-Stopped at: Phase 5 context gathered
+Last session: 2026-03-22T11:36:35.007Z
+Stopped at: Completed 05-hex-composition-landscape-signifiers 05-01-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
