@@ -18,6 +18,7 @@ import { createRiverMesh } from './scene/RiverMesh';
 import { createElevationTicks } from './scene/ElevationTicks';
 import { createBorderMesh } from './scene/BorderMesh';
 import { createCapitalMarkers } from './scene/CapitalMarkers';
+import { createSignifierMesh } from './scene/SignifierMesh';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -262,6 +263,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           scene.add(capitalMarkers);
         }
 
+        // Build signifier sprites — landscape icons for each land hex (Plan 05-02)
+        // Renders at RENDER_ORDER.SIGNIFIERS (7), above borders, below location overlays.
+        // Hidden by default; visible only at regional+ zoom (k >= SIGNIFIER_ZOOM_THRESHOLD).
+        const signifierGroup = createSignifierMesh(tiles, seed);
+        scene.add(signifierGroup);
+        signifierGroup.visible = false; // Hidden until zoom reaches regional tier
+
         // Generate HTML region labels from regionData (Plan 04-03)
         // Labels are generated client-side from regionData — worldgen produces the data,
         // RegionLabelOverlay handles the rendering.
@@ -292,8 +300,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         // Track zoom level for label tier filtering (Plan 04-03)
         // Hook into d3-zoom's existing 'zoom' event with a secondary listener name
+        // NFP #1: SIGNIFIER_ZOOM_THRESHOLD as named constant — tune to change signifier visibility cutoff
+        const SIGNIFIER_ZOOM_THRESHOLD = 5; // regional tier lower bound (full-world <1.5, continental <5, regional >=5)
         zoom.on('zoom.labels', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
           setZoomLevel(event.transform.k);
+          // Signifier visibility: show at regional (>=5) and hero-local (>=15), hide at continental/full-world
+          signifierGroup.visible = event.transform.k >= SIGNIFIER_ZOOM_THRESHOLD;
         });
 
         // Update selection ring when selectedHex prop changes
@@ -401,6 +413,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 child.geometry.dispose();
                 (child.material as THREE.Material).dispose();
               }
+            }
+          }
+          // Dispose signifier sprite materials and textures
+          for (const child of signifierGroup.children) {
+            if (child instanceof THREE.Sprite) {
+              (child.material as THREE.SpriteMaterial).map?.dispose();
+              child.material.dispose();
             }
           }
           selectionRing.geometry.dispose();
