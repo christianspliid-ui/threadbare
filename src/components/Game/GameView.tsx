@@ -18,7 +18,10 @@ export type { ViewLevel } from './hooks/useViewNavigation';
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
 import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
-import { HexMap } from '../HexMap/HexMap';
+import HexMapV2 from '../HexMapV2/HexMapV2';
+import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
+import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
+import { getRetinueAgents } from '../../engine/retinue';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
@@ -73,9 +76,9 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
 
   // ── Use simulation hook ──
   const {
-    gameState, setGameState, tiles, running, speed,
-    harvestResult, doTick, handleBeginNextCycle, handleToggleRunning,
-    setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
+    gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
+    running, speed, harvestResult, doTick, handleBeginNextCycle,
+    handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState });
 
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
@@ -170,6 +173,37 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       },
     });
   }, [fogDisabled, gameState.visibilityMap]);
+
+  // ── Agent render data adapter (graph → AgentRenderData[]) ──
+  const agentRenderData = useMemo<AgentRenderData[]>(() => {
+    const retinueIds = new Set(
+      getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.agentId)
+    );
+    const actors = gameState.graph.getNodesByType('actor');
+    return actors
+      .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
+      .map((n, i) => ({
+        id: n.id,
+        hexCol: n.properties.hexCol as number,
+        hexRow: n.properties.hexRow as number,
+        factionIndex: i % 6,
+        isRetinue: retinueIds.has(n.id),
+        name: n.name,
+      }));
+  }, [gameState.graph, gameState.ascendantId]);
+
+  // ── Location render data adapter (graph → LocationNode[]) ──
+  const locationNodes = useMemo<LocationNode[]>(() => {
+    return gameState.graph.getNodesByType('location')
+      .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
+      .map(n => ({
+        locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
+        hexCol: n.properties.hexCol as number,
+        hexRow: n.properties.hexRow as number,
+        name: n.name,
+        isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
+      }));
+  }, [gameState.graph]);
 
   // ── Notification system hook ──
   const {
@@ -553,7 +587,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             <ToastStack toasts={notificationState.toasts} onDismiss={handleDismissToast} />
             {viewLevel === 'world' && (
               <>
-                <HexMap
+                <HexMapV2
                   ref={hexMapRef}
                   tiles={tiles}
                   cols={COLS}
@@ -561,21 +595,15 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
                   seed={gameState.seed}
                   hoveredHex={hoveredHex}
                   selectedHex={selectedHex}
-                  overlayMode="none"
-                  visibilityMap={fogDisabled ? undefined : gameState.visibilityMap}
-                  locationOverlays={locationOverlays}
-                  avatarHex={avatarPos ?? undefined}
-                  avatarId={avatarNodeId ?? undefined}
-                  sphereColor={sphereColor}
-                  avatarRoute={avatarRoute ?? undefined}
-                  avatarTargetHex={avatarTargetHex ?? undefined}
-                  initialCenter={avatarPixelPos ?? undefined}
-                  initialScale={3.0}
-                  graph={gameState.graph}
-                  currentTick={gameState.tick}
+                  riverPaths={riverPaths}
+                  lakeIds={lakeIds}
+                  regionData={regionData}
+                  locations={locationNodes}
+                  agents={agentRenderData}
+                  visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
+                  fogEnabled={!fogDisabled}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
-                  onAgentClick={handleAgentSelect}
                 />
 
                 <AvatarHUD
