@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Renderer Foundation** - Three.js orthographic renderer displays 60K colored hexes at 60fps with camera controls ✅ 2026-03-21
 - [x] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment (completed 2026-03-21)
 - [x] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language (completed 2026-03-21)
-- [ ] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers
+- [x] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers (completed 2026-03-22)
 - [ ] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map
 - [ ] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation
 - [ ] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network
@@ -84,7 +84,7 @@ Plans:
   3. Region labels appear at region centers: kingdoms bold all-caps, baronies title case, geographic features italic
   4. Labels do not overlap each other
   5. Capital cities are marked with red dots distinguishable from terrain at regional zoom
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 04-01-PLAN.md — Region type contracts, TERRAIN_TO_FEATURE audit, border-cost watershed detection, WorldGenResult threading
@@ -172,7 +172,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
-| 4. Regions & Borders | 2/3 | In Progress|  |
+| 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
