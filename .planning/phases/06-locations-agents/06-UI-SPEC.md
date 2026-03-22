@@ -21,7 +21,7 @@ created: 2026-03-22
 | Preset | not applicable | n/a |
 | Component library | none (raw Three.js sprites + HTML overlays) | RESEARCH.md: no component library; HexMapV2 uses raw Three.js |
 | Icon library | hand-drawn SVG paths (inline Path2D) | CONTEXT.md: same pipeline as terrain signifiers |
-| Display font | Cinzel (serif), weights 400/600/700 | src/index.css `--font-display` |
+| Display font | Cinzel (serif), weights 400/700 | src/index.css `--font-display` |
 | Body font | Alegreya Sans, weights 400/500/700 | src/index.css `--font-body` |
 
 shadcn gate: not applicable — no React component library in use for this phase. All rendering is Three.js sprites and HTML overlays. Registry safety gate: not required.
@@ -61,9 +61,11 @@ Source: `src/index.css` `--space-*` vars (pre-existing). Confirmed no exceptions
 | Role | Size | Weight | Font | Line Height | Usage | Source |
 |------|------|--------|------|-------------|-------|--------|
 | Capital label | 13px | 700 | Cinzel | 1.2 | Capital and city location names | CONTEXT.md: font size scales by importance |
-| City/town label | 11px | 600 | Cinzel | 1.2 | Town, castle, fort, temple names | CONTEXT.md: importance-based |
-| Small location label | 10px | 400 | Cinzel | 1.2 | Hamlet, shrine, camp, ruins, mining, battleground names | CONTEXT.md: importance-based |
+| City/town label | 11px | 400 | Cinzel | 1.2 | Town, castle, fort, temple names | CONTEXT.md: importance-based; weight differentiation via size, not boldness |
+| Small location label | 9px | 400 | Cinzel | 1.2 | Hamlet, shrine, camp, ruins, mining, battleground names | CONTEXT.md: importance-based; 9px gives 4px separation from city label |
 | Count badge | 10px | 700 | Alegreya Sans | 1.0 | Agent count badge (>4 per hex at regional zoom) | RESEARCH.md: AGNT-02 |
+
+Cinzel weight set: **400 (regular)** and **700 (bold)** only. Two weights maximum. Hierarchy between capital (bold, 13px), city/town (regular, 11px), and small (regular, 9px) is communicated through size alone — no intermediate weight.
 
 Note: These sizes apply to HTML overlay elements (`LocationLabelOverlay.tsx`). Three.js CanvasTexture labels are rasterized at a fixed canvas resolution and scale with the camera — not subject to CSS font tokens.
 
@@ -206,8 +208,8 @@ This phase is a visual rendering phase — no primary user-facing CTAs, modals, 
 | Element | Copy | Notes |
 |---------|------|-------|
 | Location label — capital | "{Name}" in Cinzel 13px bold | Name from game state. No prefix/suffix label. |
-| Location label — city/town | "{Name}" in Cinzel 11px semibold | Same pattern. |
-| Location label — small | "{Name}" in Cinzel 10px regular | Same pattern. |
+| Location label — city/town | "{Name}" in Cinzel 11px regular | Same pattern. |
+| Location label — small | "{Name}" in Cinzel 9px regular | Same pattern. |
 | Agent count badge | "{N}+" (e.g. "5+") | Shown when >4 agents on hex at regional zoom. |
 | Activity indicator aria-label | "{AgentName} — {activity}" | Screen reader label on HTML overlay wrapping Three.js sprite region. |
 | Empty state — no locations | (no text — empty hex shows terrain only) | Location labels only appear when location data present. |
