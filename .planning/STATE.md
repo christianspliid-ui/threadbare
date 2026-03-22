@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-22T13:03:32.840Z"
+stopped_at: Completed 06-03-PLAN.md
+last_updated: "2026-03-22T14:16:42.559Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 19
+  completed_plans: 16
   percent: 82
 ---
 
@@ -74,6 +74,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 05-hex-composition-landscape-signifiers P02 | 8 | 2 tasks | 4 files |
 | Phase 05-hex-composition-landscape-signifiers P03 | 12 | 2 tasks | 1 files |
 | Phase 05-hex-composition-landscape-signifiers P04 | 12 | 2 tasks | 1 files |
+| Phase 06-locations-agents P03 | 4 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -118,6 +119,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 05-hex-composition-landscape-signifiers]: Steppe variant 0 and dense_forest variant 0 use exact path data from Design/ hand-drawn SVGs (style standard extraction)
 - [Phase 05-hex-composition-landscape-signifiers]: hills v0 and mountains v0 use actual hand-drawn SVG paths from Design/ as style anchors
 - [Phase 05-hex-composition-landscape-signifiers]: Two-path highland signifier pattern: filled silhouette + shadow highlight at lower opacity
+- [Phase 06-locations-agents]: Texture caches (dotTextureCache, retinueDotTextureCache) pre-built at module load for performance — no per-frame canvas ops
+- [Phase 06-locations-agents]: Portrait sprites initially use faction dot texture as placeholder; loadAgentPortraits upgrades async with fail-soft fallback
+- [Phase 06-locations-agents]: RING layout uses getRingSlotOffset from movementPath.ts (shared with AgentDots SVG layer) — agent sort by id for deterministic slots
 
 ### Pending Todos
 
@@ -129,6 +133,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T13:03:32.838Z
-Stopped at: Phase 6 context gathered
+Last session: 2026-03-22T14:16:42.557Z
+Stopped at: Completed 06-03-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
