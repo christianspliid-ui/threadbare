@@ -120,23 +120,23 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Location Icon Content (LIART)
 
-- [ ] **LIART-01**: SVG icon for capital (large castle with banner)
-- [ ] **LIART-02**: SVG icon for city (castle/walled town silhouette)
-- [ ] **LIART-03**: SVG icon for town (building cluster with spire)
-- [ ] **LIART-04**: SVG icon for hamlet (small house cluster)
-- [ ] **LIART-05**: SVG icon for castle (fortified tower with crenellations)
-- [ ] **LIART-06**: SVG icon for fort (square fortification)
-- [ ] **LIART-07**: SVG icon for tower (single tall tower)
-- [ ] **LIART-08**: SVG icon for temple (domed/spired building)
-- [ ] **LIART-09**: SVG icon for shrine (small arch or standing stone)
-- [ ] **LIART-10**: SVG icon for ruins (broken building)
-- [ ] **LIART-11**: SVG icon for ruined_city (broken castle)
-- [ ] **LIART-12**: SVG icon for ruined_tower (broken tower)
-- [ ] **LIART-13**: SVG icon for ruined_village (broken houses)
-- [ ] **LIART-14**: SVG icon for mining (pick/mine entrance)
-- [ ] **LIART-15**: SVG icon for camp (tent silhouette)
-- [ ] **LIART-16**: SVG icon for battleground (crossed swords)
-- [ ] **LIART-17**: SVG icon for unexplored_poi (question mark / generic marker)
+- [x] **LIART-01**: SVG icon for capital (large castle with banner)
+- [x] **LIART-02**: SVG icon for city (castle/walled town silhouette)
+- [x] **LIART-03**: SVG icon for town (building cluster with spire)
+- [x] **LIART-04**: SVG icon for hamlet (small house cluster)
+- [x] **LIART-05**: SVG icon for castle (fortified tower with crenellations)
+- [x] **LIART-06**: SVG icon for fort (square fortification)
+- [x] **LIART-07**: SVG icon for tower (single tall tower)
+- [x] **LIART-08**: SVG icon for temple (domed/spired building)
+- [x] **LIART-09**: SVG icon for shrine (small arch or standing stone)
+- [x] **LIART-10**: SVG icon for ruins (broken building)
+- [x] **LIART-11**: SVG icon for ruined_city (broken castle)
+- [x] **LIART-12**: SVG icon for ruined_tower (broken tower)
+- [x] **LIART-13**: SVG icon for ruined_village (broken houses)
+- [x] **LIART-14**: SVG icon for mining (pick/mine entrance)
+- [x] **LIART-15**: SVG icon for camp (tent silhouette)
+- [x] **LIART-16**: SVG icon for battleground (crossed swords)
+- [x] **LIART-17**: SVG icon for unexplored_poi (question mark / generic marker)
 
 ### Hex Composition System (COMP)
 
@@ -317,23 +317,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LOCI-03 | Phase 6 | Complete |
 | LOCI-04 | Phase 6 | Complete |
 | LOCI-05 | Phase 6 | Complete |
-| LIART-01 | Phase 6 | Pending |
-| LIART-02 | Phase 6 | Pending |
-| LIART-03 | Phase 6 | Pending |
-| LIART-04 | Phase 6 | Pending |
-| LIART-05 | Phase 6 | Pending |
-| LIART-06 | Phase 6 | Pending |
-| LIART-07 | Phase 6 | Pending |
-| LIART-08 | Phase 6 | Pending |
-| LIART-09 | Phase 6 | Pending |
-| LIART-10 | Phase 6 | Pending |
-| LIART-11 | Phase 6 | Pending |
-| LIART-12 | Phase 6 | Pending |
-| LIART-13 | Phase 6 | Pending |
-| LIART-14 | Phase 6 | Pending |
-| LIART-15 | Phase 6 | Pending |
-| LIART-16 | Phase 6 | Pending |
-| LIART-17 | Phase 6 | Pending |
+| LIART-01 | Phase 6 | Complete |
+| LIART-02 | Phase 6 | Complete |
+| LIART-03 | Phase 6 | Complete |
+| LIART-04 | Phase 6 | Complete |
+| LIART-05 | Phase 6 | Complete |
+| LIART-06 | Phase 6 | Complete |
+| LIART-07 | Phase 6 | Complete |
+| LIART-08 | Phase 6 | Complete |
+| LIART-09 | Phase 6 | Complete |
+| LIART-10 | Phase 6 | Complete |
+| LIART-11 | Phase 6 | Complete |
+| LIART-12 | Phase 6 | Complete |
+| LIART-13 | Phase 6 | Complete |
+| LIART-14 | Phase 6 | Complete |
+| LIART-15 | Phase 6 | Complete |
+| LIART-16 | Phase 6 | Complete |
+| LIART-17 | Phase 6 | Complete |
 | COMP-05 | Phase 6 | Complete |
 | AGNT-01 | Phase 6 | Complete |
 | AGNT-02 | Phase 6 | Complete |
