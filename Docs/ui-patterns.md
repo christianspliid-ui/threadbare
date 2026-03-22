@@ -272,7 +272,7 @@ GameView delegates all state management to custom hooks. Each hook groups relate
 
 ## 9. SVG Layout Constants
 
-All SVG/canvas-based components (hex map, hex zoom, breadcrumbs) extract every magic number into module-level typed constant objects.
+All SVG/canvas-based components (hex zoom, breadcrumbs) and the Three.js hex map (HexMapV2) extract every magic number into module-level typed constant objects. The sole hex map renderer is HexMapV2 (Three.js InstancedMesh, `?view=hexv2`).
 
 ### Where it appears
 
