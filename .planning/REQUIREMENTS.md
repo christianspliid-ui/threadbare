@@ -153,9 +153,9 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **AGNT-03**: Agents hidden at continental and full-world zoom (retinue only at continental as tiny dots)
 - [x] **AGNT-04**: Faction heraldic colors are saturated/bright, distinct from terrain palette (red, blue, purple, magenta, cyan, orange)
 - [x] **AGNT-05**: Retinue agents use fixed gold/white border for instant recognition
-- [ ] **AGNT-06**: Movement animation: bezier hop from source to destination hex (~800ms), 150ms settle
-- [ ] **AGNT-07**: Activity indicator icons below agent (boot=moving, swords=fighting, hourglass=idle, coin=trading, hammer=building, bandage=injured)
-- [ ] **AGNT-08**: Event indicators on hexes (battle, construction, divine intervention, corruption, trade route)
+- [x] **AGNT-06**: Movement animation: bezier hop from source to destination hex (~800ms), 150ms settle
+- [x] **AGNT-07**: Activity indicator icons below agent (boot=moving, swords=fighting, hourglass=idle, coin=trading, hammer=building, bandage=injured)
+- [x] **AGNT-08**: Event indicators on hexes (battle, construction, divine intervention, corruption, trade route)
 
 ### Fog of War (FOG)
 
@@ -340,9 +340,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AGNT-03 | Phase 6 | Complete |
 | AGNT-04 | Phase 6 | Complete |
 | AGNT-05 | Phase 6 | Complete |
-| AGNT-06 | Phase 6 | Pending |
-| AGNT-07 | Phase 6 | Pending |
-| AGNT-08 | Phase 6 | Pending |
+| AGNT-06 | Phase 6 | Complete |
+| AGNT-07 | Phase 6 | Complete |
+| AGNT-08 | Phase 6 | Complete |
 | FOG-01 | Phase 7 | Pending |
 | FOG-02 | Phase 7 | Pending |
 | FOG-03 | Phase 7 | Pending |
