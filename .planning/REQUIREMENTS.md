@@ -112,11 +112,11 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Location Signifiers (LOCI)
 
-- [ ] **LOCI-01**: Location icons rendered as black silhouettes on hex via composition system slots
-- [ ] **LOCI-02**: Location icon catalog covers: capital, city, town, hamlet, castle, fort, tower, temple, shrine, ruins variants, mining, camp, battleground, unexplored_poi
-- [ ] **LOCI-03**: Location name labels rendered below icons with font size scaling by importance
-- [ ] **LOCI-04**: Black text with white halo for readability against all terrain colors
-- [ ] **LOCI-05**: Capital markers rendered with red ring/dot per political hierarchy
+- [x] **LOCI-01**: Location icons rendered as black silhouettes on hex via composition system slots
+- [x] **LOCI-02**: Location icon catalog covers: capital, city, town, hamlet, castle, fort, tower, temple, shrine, ruins variants, mining, camp, battleground, unexplored_poi
+- [x] **LOCI-03**: Location name labels rendered below icons with font size scaling by importance
+- [x] **LOCI-04**: Black text with white halo for readability against all terrain colors
+- [x] **LOCI-05**: Capital markers rendered with red ring/dot per political hierarchy
 
 ### Location Icon Content (LIART)
 
@@ -144,7 +144,7 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **COMP-02**: HexVisualManifest interface defines preferredSlot, footprint, suppression rules, zoom visibility, priority, fallbacks per entity type
 - [x] **COMP-03**: Composition resolver collects entities per hex, sorts by priority, assigns slots, evaluates suppression
 - [x] **COMP-04**: Major locations suppress terrain signifiers when occupying the same hex
-- [ ] **COMP-05**: Agent RING layout distributes agents around hex edge, sorted by ID for stable positions
+- [x] **COMP-05**: Agent RING layout distributes agents around hex edge, sorted by ID for stable positions
 
 ### Agents & Icons (AGNT)
 
@@ -312,11 +312,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LART-28 | Phase 5 | Complete |
 | LART-29 | Phase 5 | Complete |
 | LART-30 | Phase 5 | Complete |
-| LOCI-01 | Phase 6 | Pending |
-| LOCI-02 | Phase 6 | Pending |
-| LOCI-03 | Phase 6 | Pending |
-| LOCI-04 | Phase 6 | Pending |
-| LOCI-05 | Phase 6 | Pending |
+| LOCI-01 | Phase 6 | Complete |
+| LOCI-02 | Phase 6 | Complete |
+| LOCI-03 | Phase 6 | Complete |
+| LOCI-04 | Phase 6 | Complete |
+| LOCI-05 | Phase 6 | Complete |
 | LIART-01 | Phase 6 | Pending |
 | LIART-02 | Phase 6 | Pending |
 | LIART-03 | Phase 6 | Pending |
@@ -334,7 +334,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LIART-15 | Phase 6 | Pending |
 | LIART-16 | Phase 6 | Pending |
 | LIART-17 | Phase 6 | Pending |
-| COMP-05 | Phase 6 | Pending |
+| COMP-05 | Phase 6 | Complete |
 | AGNT-01 | Phase 6 | Complete |
 | AGNT-02 | Phase 6 | Complete |
 | AGNT-03 | Phase 6 | Complete |
