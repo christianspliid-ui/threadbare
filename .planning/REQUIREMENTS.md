@@ -172,8 +172,8 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 - [x] **ZOOM-02**: Unified visibility matrix controls which render layers appear at each zoom tier
 - [x] **ZOOM-03**: Smooth fade transitions between zoom tiers (~20% overlap range, no hard pop-in/out)
 - [x] **ZOOM-04**: Elements below visibility threshold are not rendered (not just transparent) — performance skip
-- [ ] **ZOOM-05**: Default camera position: centered on player's primary retinue agent, hero-local zoom
-- [ ] **ZOOM-06**: Follow mode: camera auto-follows selected agent during movement (toggleable)
+- [x] **ZOOM-05**: Default camera position: centered on player's primary retinue agent, hero-local zoom
+- [x] **ZOOM-06**: Follow mode: camera auto-follows selected agent during movement (toggleable)
 
 ### Borders & Grid (GRID)
 
@@ -184,11 +184,11 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Integration (INTG)
 
-- [ ] **INTG-01**: New hex map replaces current SVG hex map in GameView
-- [ ] **INTG-02**: Hex click events wire to existing hex chronicle, location view, and agent interaction systems
-- [ ] **INTG-03**: Existing game state (agents, locations, encounters) renders on new map without engine changes
-- [ ] **INTG-04**: Debug panel fog-of-war toggle works with new renderer
-- [ ] **INTG-05**: URL params (?view=game, ?fog) work with new map
+- [x] **INTG-01**: New hex map replaces current SVG hex map in GameView
+- [x] **INTG-02**: Hex click events wire to existing hex chronicle, location view, and agent interaction systems
+- [x] **INTG-03**: Existing game state (agents, locations, encounters) renders on new map without engine changes
+- [x] **INTG-04**: Debug panel fog-of-war toggle works with new renderer
+- [x] **INTG-05**: URL params (?view=game, ?fog) work with new map
 - [ ] **INTG-06**: All existing tests pass after integration
 
 ## v2 Requirements
@@ -353,15 +353,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ZOOM-02 | Phase 7 | Complete |
 | ZOOM-03 | Phase 7 | Complete |
 | ZOOM-04 | Phase 7 | Complete |
-| ZOOM-05 | Phase 7 | Pending |
-| ZOOM-06 | Phase 7 | Pending |
+| ZOOM-05 | Phase 7 | Complete |
+| ZOOM-06 | Phase 7 | Complete |
 | GRID-03 | Phase 7 | Complete |
 | GRID-04 | Phase 7 | Complete |
-| INTG-01 | Phase 8 | Pending |
-| INTG-02 | Phase 8 | Pending |
-| INTG-03 | Phase 8 | Pending |
-| INTG-04 | Phase 8 | Pending |
-| INTG-05 | Phase 8 | Pending |
+| INTG-01 | Phase 8 | Complete |
+| INTG-02 | Phase 8 | Complete |
+| INTG-03 | Phase 8 | Complete |
+| INTG-04 | Phase 8 | Complete |
+| INTG-05 | Phase 8 | Complete |
 | INTG-06 | Phase 8 | Pending |
 | WGEN-14 | Phase 8 | Pending |
 
