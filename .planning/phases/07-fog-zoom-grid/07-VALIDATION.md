@@ -38,15 +38,11 @@ created: 2026-03-22
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 07-01-01 | 01 | 1 | FOG-01 | unit | `npm test -- src/components/HexMapV2/scene/__tests__/FogMesh.test.ts` | ❌ W0 | ⬜ pending |
-| 07-01-02 | 01 | 1 | FOG-02, FOG-03 | unit | `npm test -- src/components/HexMapV2/scene/__tests__/FogMesh.test.ts` | ❌ W0 | ⬜ pending |
-| 07-01-03 | 01 | 1 | FOG-04, FOG-05 | unit | `npm test -- src/components/HexMapV2/scene/__tests__/FogMesh.test.ts` | ❌ W0 | ⬜ pending |
-| 07-01-04 | 01 | 1 | FOG-06 | visual | manual verification | N/A | ⬜ pending |
-| 07-02-01 | 02 | 1 | ZOOM-01, ZOOM-02 | unit | `npm test -- src/components/HexMapV2/__tests__/zoomTiers.test.ts` | ❌ W0 | ⬜ pending |
-| 07-02-02 | 02 | 1 | ZOOM-03, ZOOM-04 | unit | `npm test -- src/components/HexMapV2/__tests__/zoomTiers.test.ts` | ❌ W0 | ⬜ pending |
-| 07-02-03 | 02 | 1 | ZOOM-05, ZOOM-06 | unit+visual | `npm test -- src/components/HexMapV2/__tests__/zoomTiers.test.ts` | ❌ W0 | ⬜ pending |
-| 07-03-01 | 03 | 2 | GRID-03 | unit | `npm test -- src/components/HexMapV2/scene/__tests__/RoadMesh.test.ts` | ❌ W0 | ⬜ pending |
-| 07-03-02 | 03 | 2 | GRID-04 | unit | `npm test -- src/components/HexMapV2/__tests__/followMode.test.ts` | ❌ W0 | ⬜ pending |
+| 07-01-01 | 01 | 1 | ZOOM-01, ZOOM-02, ZOOM-03, ZOOM-04 | unit | `npx vitest run src/components/HexMapV2/scene/__tests__/ZoomVisibilityMatrix.test.ts` | ❌ W0 | ⬜ pending |
+| 07-01-02 | 01 | 1 | FOG-01, FOG-02, FOG-03, FOG-04, FOG-05, FOG-06 | unit | `npx vitest run src/components/HexMapV2/scene/__tests__/FogCulling.test.ts` | ❌ W0 | ⬜ pending |
+| 07-02-01 | 02 | 1 | GRID-03, GRID-04 | unit | `npx vitest run src/components/HexMapV2/scene/__tests__/RoadMesh.test.ts` | ❌ W0 | ⬜ pending |
+| 07-03-01 | 03 | 2 | ZOOM-05, ZOOM-06, FOG-01–06, ZOOM-02–04, GRID-03–04 | build | `npm run build` | N/A | ⬜ pending |
+| 07-03-02 | 03 | 2 | all | visual | checkpoint:human-verify | N/A | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -54,10 +50,9 @@ created: 2026-03-22
 
 ## Wave 0 Requirements
 
-- [ ] `src/components/HexMapV2/scene/__tests__/FogMesh.test.ts` — stubs for FOG-01 through FOG-06
-- [ ] `src/components/HexMapV2/__tests__/zoomTiers.test.ts` — stubs for ZOOM-01 through ZOOM-06
-- [ ] `src/components/HexMapV2/scene/__tests__/RoadMesh.test.ts` — stubs for GRID-03
-- [ ] `src/components/HexMapV2/__tests__/followMode.test.ts` — stubs for GRID-04
+- [ ] `src/components/HexMapV2/scene/__tests__/ZoomVisibilityMatrix.test.ts` — stubs for ZOOM-01 through ZOOM-06
+- [ ] `src/components/HexMapV2/scene/__tests__/FogCulling.test.ts` — stubs for FOG-01 through FOG-06
+- [ ] `src/components/HexMapV2/scene/__tests__/RoadMesh.test.ts` — stubs for GRID-03, GRID-04
 
 *Existing vitest infrastructure covers framework needs.*
 
