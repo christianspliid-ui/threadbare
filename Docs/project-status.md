@@ -6,14 +6,15 @@
 **Hex Map V2** — Three.js-based hex map renderer (8-phase milestone).
 
 **Recent completions:**
-- ✅ Phase 4 Plan 03: HTML Label Overlay (2026-03-22) — RAF-driven kingdom/barony/geographic/river labels over Three.js canvas, AABB collision detection, zoom-tier filtering, cartographic halo style. Phase 4 complete.
-- ✅ Phase 4 Plan 02: Political regions + border mesh (2026-03-22) — barony/kingdom assignment, red quad-strip borders, capital dot markers wired into HexMapV2.
-- ✅ Phase 4 Plan 01: Geographic region detection (2026-03-22) — Dijkstra flood fill, watershed detection, RegionData types.
+- ✅ Phase 5 Plan 04: Remaining terrain signifier art (2026-03-22) — Production SVG paths for all highland, desert, cold, volcanic, and special terrain types. 28 direct + 6 fallback = all 33 land TerrainTypes covered. Phase 5 complete.
+- ✅ Phase 5 Plan 03: Lowland + forest terrain signifier art (2026-03-22) — Production SVG paths for grassland, forest, wet, and special terrain types.
+- ✅ Phase 5 Plans 01-02: Signifier system scaffold + composition resolver (2026-03-22).
+- ✅ Phase 4 Plan 03: HTML Label Overlay (2026-03-22) — RAF-driven labels, AABB collision detection, zoom-tier filtering. Phase 4 complete.
 
 **Up next:**
-- Phase 5: Terrain signifiers (hex icons, biome markers)
+- Phase 6: Location markers (settlements, resources, points of interest on hex map)
 
-**Latest implementation:** Phase 4 Plan 03 (2026-03-22) — Full label overlay system operational. Kingdom/barony/geographic/river labels render with proper typography, dark-text-with-halo, and zoom-tier visibility. Phase 4 Regions & Borders complete.
+**Latest implementation:** Phase 5 Plan 04 (2026-03-22) — Full signifier art coverage. All 33 land TerrainTypes display recognizable terrain icons. Phase 5 Terrain Signifiers complete.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
