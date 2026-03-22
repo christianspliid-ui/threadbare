@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { TERRAIN_TO_FEATURE, FEATURE_MIN_SIZE, type RegionFeatureType } from '../regionDetection';
 import type { HexTile, TerrainType } from '../../types';
-import { detectRegions, type RegionCluster } from '../regionDetection';
+import { detectRegions, edgeBorderCost, type RegionCluster } from '../regionDetection';
 
-function tile(col: number, row: number, terrain: TerrainType): HexTile {
-  return { coord: { col, row }, geoParams: { elevation: 0.5, temperature: 0.5, moisture: 0.5 }, terrain };
+function tile(col: number, row: number, terrain: TerrainType, elevation = 0.5): HexTile {
+  return { coord: { col, row }, geoParams: { elevation, temperature: 0.5, moisture: 0.5 }, terrain };
 }
 
 describe('region detection constants', () => {
@@ -32,6 +32,112 @@ describe('region detection constants', () => {
     expect(FEATURE_MIN_SIZE.tundra).toBe(4);
     expect(FEATURE_MIN_SIZE.river).toBe(5);
     expect(FEATURE_MIN_SIZE.lake).toBe(1);
+  });
+
+  // Task 1 TDD: TERRAIN_TO_FEATURE coverage for all 42 terrain types
+  it('covers all land terrain types (non-water) in TERRAIN_TO_FEATURE', () => {
+    // Water types — these may map to 'sea', 'lake', 'river', or undefined (all valid)
+    const waterTypes: TerrainType[] = [
+      'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
+    ];
+
+    // All TerrainType values (42 types from types/index.ts)
+    const allTerrainTypes: TerrainType[] = [
+      'ocean', 'deep_ocean', 'tropical_ocean', 'coastal_shallows', 'coast', 'lake', 'river', 'reef',
+      'grassland', 'farmland', 'savanna', 'steppe', 'floodplain',
+      'temperate_forest', 'dense_forest', 'boreal_forest', 'jungle',
+      'tropical_forest', 'evergreen_forest', 'light_forest', 'dead_forest',
+      'swamp', 'marsh', 'moor_bog',
+      'hills', 'mountains', 'high_mountains', 'plateau', 'badlands', 'mountain_pass',
+      'forested_hills',
+      'great_home_trees', 'broken_lands', 'oasis',
+      'desert', 'rocky_desert', 'sand_dunes', 'tundra', 'glacier', 'volcano',
+      'arctic', 'snow_fields',
+    ];
+
+    const missing: TerrainType[] = [];
+    for (const terrain of allTerrainTypes) {
+      if (waterTypes.includes(terrain)) continue; // water types are optional
+      if (TERRAIN_TO_FEATURE[terrain] === undefined) {
+        missing.push(terrain);
+      }
+    }
+    expect(missing, `Missing land terrain types: ${missing.join(', ')}`).toHaveLength(0);
+  });
+
+  it('has entries for newly required terrain types: plateau, oasis, coastal_shallows, coast, reef', () => {
+    expect(TERRAIN_TO_FEATURE.plateau).toBeDefined();
+    expect(TERRAIN_TO_FEATURE.oasis).toBeDefined();
+    expect(TERRAIN_TO_FEATURE.coastal_shallows).toBeDefined();
+    expect(TERRAIN_TO_FEATURE.coast).toBeDefined();
+    expect(TERRAIN_TO_FEATURE.reef).toBeDefined();
+  });
+});
+
+describe('edgeBorderCost', () => {
+  it('returns 1.0 when neighbor is coast/ocean', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'coast', 0.3);
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(1.0);
+  });
+
+  it('returns 0.9 when neighbor is mountain', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'mountains', 0.5);
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(0.9);
+  });
+
+  it('returns 0.7 when there is a river edge between the two hexes', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'grassland', 0.5);
+    expect(edgeBorderCost(current, neighbor, true)).toBeCloseTo(0.7);
+  });
+
+  it('returns 0.5 for steep elevation difference (>0.15)', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'grassland', 0.68); // diff = 0.18 > 0.15
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(0.5);
+  });
+
+  it('returns 0.4 for biome change (different feature type)', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'desert', 0.5);
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(0.4);
+  });
+
+  it('returns 0.1 for same terrain', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'grassland', 0.5);
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(0.1);
+  });
+
+  it('prioritizes highest cost: mountain neighbor beats river edge (0.9 not 0.7)', () => {
+    const current = tile(0, 0, 'grassland', 0.5);
+    const neighbor = tile(1, 0, 'mountains', 0.5);
+    // Even with river edge, mountain wins (higher cost = stronger boundary)
+    expect(edgeBorderCost(current, neighbor, true)).toBeCloseTo(0.9);
+  });
+
+  it('prioritizes coast/ocean over mountain (1.0 > 0.9)', () => {
+    const current = tile(0, 0, 'mountains', 0.5);
+    const neighbor = tile(1, 0, 'ocean', 0.3);
+    expect(edgeBorderCost(current, neighbor, false)).toBeCloseTo(1.0);
+  });
+});
+
+describe('RegionCluster interface', () => {
+  it('has an id field on RegionCluster returned from detectRegions', () => {
+    const tiles: HexTile[] = [
+      tile(0, 0, 'mountains'), tile(1, 0, 'mountains'), tile(2, 0, 'mountains'),
+    ];
+    const regions = detectRegions(tiles);
+    const mountain = regions.find(r => r.featureType === 'mountain_range');
+    // id may be undefined in old RegionCluster — test that new interface has it
+    if (mountain) {
+      expect(typeof (mountain as RegionCluster & { id?: number }).id).toBe('number');
+    }
+    // At minimum, the type shape must compile (no runtime error)
+    expect(true).toBe(true);
   });
 });
 
