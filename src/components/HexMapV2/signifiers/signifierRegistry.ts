@@ -79,6 +79,18 @@ const PLACEHOLDER_REEDS = 'M30,20 L28,80 M50,15 L48,80 M70,25 L68,80 M20,50 Q50,
  * Key: actual TerrainType name (from src/types/index.ts).
  * Value: ordered array of SignifierVariant. Variant selected per-hex via getSignifierParams.
  *
+ * TERRAIN TYPE COVERAGE:
+ * Direct entries: 28 terrain types (grassland through dead_forest)
+ * Fallback mapping: 6 types via TERRAIN_SIGNIFIER_FALLBACK
+ *   farmland -> grassland, jungle -> tropical_forest, evergreen_forest -> boreal_forest,
+ *   arctic -> snow_fields, great_home_trees -> dense_forest, oasis -> savanna
+ * Not in TerrainType: hardened_clay (covered by badlands), lava (covered by volcano)
+ * Total: 28 direct + 6 fallback = all 33 land TerrainType values covered
+ *
+ * LART requirement coverage:
+ * LART-22 (hardened_clay: 2 variants fine cracks/deep cracks): satisfied by badlands variants 3-4
+ * LART-28 (lava: 2 variants fresh flow/cooling): satisfied by volcano variants 3-4
+ *
  * LART mapping notes:
  *   - 'light_forest' corresponds to LART-05 'woodland'
  *   - 'desert' corresponds to LART-19 'sand_desert'
@@ -871,38 +883,91 @@ export const SIGNIFIER_REGISTRY: SignifierRegistry = {
 
   // LART-24: tundra (3 variants: lichen, scrub, bare)
   tundra: [
-    { paths: [{ d: 'M20,60 A8,5 0 1,0 20.01,60 Z M45,55 A6,4 0 1,0 45.01,55 Z M65,62 A7,5 0 1,0 65.01,62 Z M80,57 A5,4 0 1,0 80.01,57 Z', opacity: 0.4 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M18,68 L16,55 Q20,50 22,55 M40,65 L38,53 Q42,48 44,53 M62,67 L60,56 Q64,51 66,56 M80,66 L78,55 Q82,50 84,55', opacity: 0.4 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,70 Q50,62 90,70', opacity: 0.3 }], viewBox: '0 0 100 100' },
+    // Variant 0: Lichen — small scattered organic blob shapes, very low profile
+    { paths: [
+      { d: 'M16,64 C14,60 16,56 20,56 C24,56 26,60 24,64 C22,68 18,68 16,64 Z M38,60 C36,57 38,54 41,54 C44,54 46,57 44,60 C42,63 38,63 38,60 Z M60,65 C58,62 60,58 63,58 C66,58 68,62 66,65 C64,68 60,68 60,65 Z M78,61 C76,58 78,55 81,55 C84,55 86,58 84,61 C82,64 78,64 78,61 Z M28,74 C26,71 28,68 31,68 C33,68 35,71 33,74 C31,76 27,76 28,74 Z M50,70 C48,67 50,64 53,64 C55,64 57,67 55,70 C53,72 49,72 50,70 Z', opacity: 0.38 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Scrub — tiny bush dots, windswept, minimal vertical extent
+    { paths: [
+      { d: 'M18,68 L16,58 Q18,54 20,56 Q22,58 20,68 Z M34,66 L32,57 Q34,53 36,55 Q38,57 36,66 Z M50,69 L48,60 Q50,56 52,58 Q54,60 52,69 Z M66,67 L64,58 Q66,54 68,56 Q70,58 68,67 Z M80,65 L78,57 Q80,53 82,55 Q84,57 82,65 Z', opacity: 0.38 },
+      { d: 'M14,68 Q30,64 45,68 Q60,64 75,68 Q85,66 92,68', opacity: 0.2 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 2: Bare — very sparse marks, a few small rock shapes and horizon line
+    { paths: [
+      { d: 'M20,68 L16,62 L22,58 L28,62 L26,68 Z M55,65 L51,59 L57,55 L63,59 L61,65 Z M80,70 L76,64 L82,60 L88,64 L86,70 Z', opacity: 0.3 },
+      { d: 'M8,72 Q50,66 92,72', opacity: 0.2 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-25: snow_fields (2 variants: clean, drift patterns)
   snow_fields: [
-    { paths: [{ d: 'M10,65 Q50,58 90,65 Q50,72 10,65', opacity: 0.3 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M10,58 Q30,50 50,58 Q70,50 90,58 M15,68 Q35,62 55,68 Q75,62 90,68', opacity: 0.3 }], viewBox: '0 0 100 100' },
+    // Variant 0: Clean — very minimal subtle drift curves at low opacity
+    { paths: [
+      { d: 'M8,52 Q22,46 36,52 Q50,58 64,52 Q78,46 92,52 M8,66 Q22,60 36,66 Q50,72 64,66 Q78,60 92,66', opacity: 0.22 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Drift patterns — parallel curved lines suggesting wind-blown snow
+    { paths: [
+      { d: 'M8,44 Q20,36 32,44 Q44,52 56,44 Q68,36 80,44 Q88,40 92,44 M8,56 Q20,48 32,56 Q44,64 56,56 Q68,48 80,56 Q88,52 92,56 M8,68 Q20,62 32,68 Q44,74 56,68 Q68,62 80,68 Q88,64 92,68', opacity: 0.24 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-26: glacier (2 variants: crevassed, smooth)
   glacier: [
-    { paths: [{ d: 'M20,70 L20,30 L80,30 L80,70 Z M35,30 L35,70 M55,30 L55,70 M20,50 L80,50', opacity: 0.35 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M15,70 Q50,45 85,70 Q50,78 15,70', opacity: 0.35 }], viewBox: '0 0 100 100' },
+    // Variant 0: Crevassed — parallel crack lines with slight curve suggesting ice flow
+    { paths: [
+      { d: 'M28,28 C30,36 28,52 26,70 M42,26 C44,34 42,50 40,70 M56,28 C58,36 56,52 54,70 M70,26 C72,34 70,50 68,70', opacity: 0.32 },
+      { d: 'M22,48 Q50,44 78,48 M20,60 Q50,56 80,60', opacity: 0.2 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Smooth — subtle texture dots suggesting compressed ice, mostly empty
+    { paths: [
+      { d: 'M25,42 A3,2 0 1,0 25.01,42 Z M50,38 A2,2 0 1,0 50.01,38 Z M72,44 A3,2 0 1,0 72.01,44 Z M35,58 A2,2 0 1,0 35.01,58 Z M60,62 A3,2 0 1,0 60.01,62 Z M80,56 A2,2 0 1,0 80.01,56 Z', opacity: 0.25 },
+      { d: 'M10,70 Q50,60 90,70', opacity: 0.2 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-27 volcanic / volcano (variants 0-2) + LART-28 lava (variants 3-4): total 5
   volcano: [
-    // LART-27 volcanic (3 variants: active crater, dormant, vent)
-    { paths: [{ d: 'M15,80 L50,20 L85,80 Z M40,45 Q50,38 60,45', opacity: 0.55 }, { d: 'M45,20 Q50,10 55,20 Q55,15 50,12 Q45,15 45,20', opacity: 0.4 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M20,80 L50,25 L80,80 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M15,80 L50,20 L85,80 Z M45,55 L50,35 L55,55', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    // LART-28 lava (2 variants: fresh flow, cooling)
-    { paths: [{ d: 'M30,30 Q50,50 70,30 Q80,55 70,70 Q50,80 30,70 Q20,55 30,30 Z', opacity: 0.5 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M25,35 Q50,55 75,35 Q80,60 65,75 Q50,82 35,75 Q20,60 25,35 Z M35,50 Q50,62 65,50', opacity: 0.45 }], viewBox: '0 0 100 100' },
+    // LART-27 Variant 0: Active crater — cone shape with open top, smoke wisps, shadow left
+    { paths: [
+      { d: 'M12,82 C18,82 26,72 32,60 C36,52 38,46 40,40 C42,34 44,32 46,34 C48,36 50,42 50,50 C50,42 52,36 54,34 C56,32 58,34 60,40 C62,46 66,54 72,62 C78,72 86,80 92,82 Z', opacity: 0.55 },
+      { d: 'M12,82 C18,80 26,70 32,58 C36,50 38,44 40,40', opacity: 0.3 },
+      { d: 'M46,34 Q44,22 42,14 Q50,10 48,20 M50,34 Q50,22 52,12 Q56,8 54,18', opacity: 0.4 },
+    ], viewBox: '0 0 100 100' },
+    // LART-27 Variant 1: Dormant — cone shape, closed top, weathered sides, less dramatic
+    { paths: [
+      { d: 'M14,82 C20,82 28,72 36,58 C42,48 46,38 50,28 C54,38 58,50 64,60 C70,70 78,78 86,82 Z', opacity: 0.5 },
+      { d: 'M14,82 C20,80 28,70 36,56 C42,46 46,38 49,30', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
+    // LART-27 Variant 2: Vent — small low cone with steam lines, lower profile
+    { paths: [
+      { d: 'M20,78 C26,78 34,70 40,60 C44,54 46,48 50,42 C54,48 56,56 62,64 C68,72 76,76 82,78 Z', opacity: 0.5 },
+      { d: 'M20,78 C26,76 34,68 40,58 C44,52 46,48 49,44', opacity: 0.25 },
+      { d: 'M47,42 Q45,30 43,20 M50,42 Q50,28 50,18 M53,42 Q55,30 57,22', opacity: 0.35 },
+    ], viewBox: '0 0 100 100' },
+    // LART-28 Variant 3: Fresh flow — irregular flowing shapes radiating from center, active feel
+    { paths: [
+      { d: 'M40,36 C36,42 28,52 22,62 C16,72 14,80 18,82 C26,84 38,76 44,68 C48,62 50,58 52,62 C56,68 62,76 70,80 C78,84 84,82 84,74 C84,66 76,54 68,44 C62,36 56,30 50,28 C44,30 42,34 40,36 Z', opacity: 0.55 },
+      { d: 'M40,36 C36,42 28,52 22,62 C16,72 14,80 18,82', opacity: 0.3 },
+    ], viewBox: '0 0 100 100' },
+    // LART-28 Variant 4: Cooling — slower flow shapes with crack lines through cooling surface
+    { paths: [
+      { d: 'M36,40 C32,48 26,58 22,68 C18,76 18,82 24,82 C34,82 44,72 50,62 C56,72 64,82 74,82 C80,82 82,76 78,68 C74,58 68,48 64,40 C60,32 56,28 50,28 C44,28 40,34 36,40 Z', opacity: 0.48 },
+      { d: 'M38,52 L42,62 L38,72 M50,42 L52,54 L48,64 L50,76 M62,52 L58,62 L62,72', opacity: 0.28 },
+    ], viewBox: '0 0 100 100' },
   ],
 
   // LART-29: broken_lands (2 variants: cracked, rubble)
   broken_lands: [
-    { paths: [{ d: PLACEHOLDER_CRACKS, opacity: 0.45 }], viewBox: '0 0 100 100' },
-    { paths: [{ d: 'M15,65 L20,55 L30,60 L25,70 Z M40,60 L48,50 L58,55 L52,66 Z M65,68 L70,58 L80,62 L75,72 Z', opacity: 0.45 }], viewBox: '0 0 100 100' },
+    // Variant 0: Cracked — deep crack lines radiating from center, rubble dots
+    { paths: [
+      { d: 'M50,50 L28,30 M50,50 L20,60 L14,72 M50,50 L30,70 L24,82 M50,50 L62,28 M50,50 L72,62 L80,74 M50,50 L68,70 L74,82', opacity: 0.45 },
+      { d: 'M24,36 L18,32 L20,26 L28,28 Z M70,32 L76,28 L78,36 L70,38 Z M18,68 L12,64 L14,58 L22,60 Z M76,66 L82,62 L84,70 L76,72 Z', opacity: 0.38 },
+    ], viewBox: '0 0 100 100' },
+    // Variant 1: Rubble — scattered angular debris shapes, irregular, chaotic
+    { paths: [
+      { d: 'M14,60 L10,52 L18,46 L26,50 L28,58 L20,64 Z M38,54 L34,46 L42,40 L50,44 L52,54 L44,60 Z M58,66 L54,56 L62,50 L70,54 L72,64 L64,70 Z M76,56 L72,48 L80,42 L88,48 L88,58 L80,62 Z M24,76 L20,68 L28,62 L36,66 L36,76 L28,80 Z M52,78 L48,70 L56,64 L64,70 L64,80 L56,84 Z', opacity: 0.45 },
+      { d: 'M14,60 L10,54 L18,48 M38,54 L34,48 L42,42 M58,66 L54,58 L62,52', opacity: 0.25 },
+    ], viewBox: '0 0 100 100' },
   ],
 };
 
