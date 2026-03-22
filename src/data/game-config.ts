@@ -27,7 +27,7 @@ import type { DoomClockArchetype } from '../types/doomClock';
  *
  * Current default: 200 (Long tier).
  */
-export const DEFAULT_DOOM_TICKS = 2000;
+export const DEFAULT_DOOM_TICKS = 200000;
 
 /**
  * Doom archetypes available for selection at run start.

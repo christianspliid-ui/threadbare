@@ -81,7 +81,7 @@ const SublocationCard = memo(function SublocationCard({
       }
     : {
         backgroundColor: 'var(--bg-raised)',
-        borderColor: 'var(--border-subtle)',
+        borderColor: 'var(--border-gold)',
       };
 
   return (
@@ -93,7 +93,7 @@ const SublocationCard = memo(function SublocationCard({
         e.currentTarget.style.borderColor = 'var(--accent-gold)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = isDivine ? 'var(--divine-border)' : 'var(--border-subtle)';
+        e.currentTarget.style.borderColor = isDivine ? 'var(--divine-border)' : 'var(--border-gold)';
       }}
       role="button"
       tabIndex={0}
@@ -105,150 +105,158 @@ const SublocationCard = memo(function SublocationCard({
       }}
       aria-label={`Enter ${sublocation.name}`}
     >
-      {/* Concept Art Banner — 16:9 landscape, capped height for card context */}
-      <div
-        style={{
-          background: conceptArt.gradient,
-          aspectRatio: '16/9',
-          maxHeight: '80px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <span
+      <div style={{ display: 'flex' }}>
+        {/* Concept Art Thumbnail — left column */}
+        <div
           style={{
-            fontSize: '28px',
-            color: conceptArt.glyphColor,
-            opacity: 0.6,
-            filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
-            userSelect: 'none',
-          }}
-          aria-hidden="true"
-        >
-          {conceptArt.glyph}
-        </span>
-        <span
-          style={{
-            position: 'absolute',
-            bottom: '4px',
-            right: '8px',
-            fontSize: '9px',
-            color: conceptArt.glyphColor,
-            opacity: 0.35,
-            fontFamily: 'var(--font-display)',
-            letterSpacing: '1.5px',
-            textTransform: 'uppercase',
+            background: conceptArt.gradient,
+            width: '80px',
+            minHeight: '80px',
+            flexShrink: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          Concept Art
-        </span>
-      </div>
-
-      {/* Card Header */}
-      <div
-        className="flex items-center justify-between px-3.5 py-2.5 border-b"
-        style={{
-          borderColor: hasAgents ? 'var(--border-subtle)' : 'transparent',
-        }}
-      >
-        <h4
-          className="text-xs font-semibold truncate"
-          style={{
-            color: 'var(--text-primary)',
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-sm)',
-          }}
-        >
-          {sublocation.name}
-        </h4>
-        <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-          <Tooltip label="Sublocation Type" desc="The kind of place this is — shrine, ruin, settlement, or wilderness. Each type attracts different encounters and agent behaviors.">
-            <span
-              className="text-xs px-2 py-1 rounded font-semibold whitespace-nowrap cursor-help"
-              style={{
-                color: badgeColor,
-                backgroundColor: badgeBg,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                fontSize: 'var(--text-xs)',
-              }}
-            >
-              {badgeText}
-            </span>
-          </Tooltip>
           <span
             style={{
-              color: 'var(--text-tertiary)',
-              fontSize: 'var(--text-sm)',
+              fontSize: '28px',
+              color: conceptArt.glyphColor,
+              opacity: 0.6,
+              filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))',
+              userSelect: 'none',
+            }}
+            aria-hidden="true"
+          >
+            {conceptArt.glyph}
+          </span>
+          <span
+            style={{
+              position: 'absolute',
+              bottom: '4px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              fontSize: '8px',
+              color: conceptArt.glyphColor,
+              opacity: 0.35,
+              fontFamily: 'var(--font-display)',
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              whiteSpace: 'nowrap',
             }}
           >
-            →
+            Concept Art
           </span>
         </div>
-      </div>
 
-      {/* Agent Rows (only if hasAgents) */}
-      {hasAgents && (
-        <div>
-          {agents.map(agent => {
-            const props = (agent.properties ?? {}) as Record<string, unknown>;
-            const actorType = typeof props.actorType === 'string' ? props.actorType : 'unknown';
-
-            // Find active encounters for this agent
-            const agentEncounters = activeEncounters.filter(ep => ep.actorId === agent.id);
-
-            return (
-              <AgentRow
-                key={agent.id}
-                agent={agent}
-                actorType={actorType as string}
-                encounters={agentEncounters}
-                getEncounterTemplate={getEncounterTemplate}
-                onAgentClick={onAgentClick}
-                onEncounterClick={onEncounterClick}
-              />
-            );
-          })}
-        </div>
-      )}
-
-      {/* Available Encounters Hint (only if hasAgents) */}
-      {hasAgents && availableEncounters.length > 0 && (
-        <AvailableEncountersHint encounters={availableEncounters} />
-      )}
-
-      {/* Empty State (when no agents) */}
-      {!hasAgents && (
-        <div
-          className="px-3.5 py-2"
-          style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-muted)',
-            fontStyle: 'italic',
-          }}
-        >
-          No agents present
-        </div>
-      )}
-
-      {/* FE-TT-18: Divine hint with tooltip */}
-      {isDivine && (
-        <Tooltip label="Divine Origin" desc="This sublocation was created by a divine intervention. It is temporary and will dissolve when its purpose is fulfilled.">
+        {/* Content — right column */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Card Header */}
           <div
-            className="px-3.5 py-1.5 text-xs cursor-help"
+            className="flex items-center justify-between px-3.5 py-2.5 border-b"
             style={{
-              color: 'var(--badge-divine)',
-              fontStyle: 'italic',
-              fontSize: 'var(--text-xs)',
+              borderColor: hasAgents ? 'var(--border-subtle)' : 'transparent',
             }}
           >
-            Dissolves when encounter completes
+            <h4
+              className="text-xs font-semibold truncate"
+              style={{
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-display)',
+                fontSize: 'var(--text-sm)',
+              }}
+            >
+              {sublocation.name}
+            </h4>
+            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+              <Tooltip label="Sublocation Type" desc="The kind of place this is — shrine, ruin, settlement, or wilderness. Each type attracts different encounters and agent behaviors.">
+                <span
+                  className="text-xs px-2 py-1 rounded font-semibold whitespace-nowrap cursor-help"
+                  style={{
+                    color: badgeColor,
+                    backgroundColor: badgeBg,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    fontSize: 'var(--text-xs)',
+                  }}
+                >
+                  {badgeText}
+                </span>
+              </Tooltip>
+              <span
+                style={{
+                  color: 'var(--text-tertiary)',
+                  fontSize: 'var(--text-sm)',
+                }}
+              >
+                →
+              </span>
+            </div>
           </div>
-        </Tooltip>
-      )}
+
+          {/* Agent Rows (only if hasAgents) */}
+          {hasAgents && (
+            <div>
+              {agents.map(agent => {
+                const props = (agent.properties ?? {}) as Record<string, unknown>;
+                const actorType = typeof props.actorType === 'string' ? props.actorType : 'unknown';
+
+                // Find active encounters for this agent
+                const agentEncounters = activeEncounters.filter(ep => ep.actorId === agent.id);
+
+                return (
+                  <AgentRow
+                    key={agent.id}
+                    agent={agent}
+                    actorType={actorType as string}
+                    encounters={agentEncounters}
+                    getEncounterTemplate={getEncounterTemplate}
+                    onAgentClick={onAgentClick}
+                    onEncounterClick={onEncounterClick}
+                  />
+                );
+              })}
+            </div>
+          )}
+
+          {/* Available Encounters Hint (only if hasAgents) */}
+          {hasAgents && availableEncounters.length > 0 && (
+            <AvailableEncountersHint encounters={availableEncounters} />
+          )}
+
+          {/* Empty State (when no agents) */}
+          {!hasAgents && (
+            <div
+              className="px-3.5 py-2"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--text-muted)',
+                fontStyle: 'italic',
+              }}
+            >
+              No agents present
+            </div>
+          )}
+
+          {/* FE-TT-18: Divine hint with tooltip */}
+          {isDivine && (
+            <Tooltip label="Divine Origin" desc="This sublocation was created by a divine intervention. It is temporary and will dissolve when its purpose is fulfilled.">
+              <div
+                className="px-3.5 py-1.5 text-xs cursor-help"
+                style={{
+                  color: 'var(--badge-divine)',
+                  fontStyle: 'italic',
+                  fontSize: 'var(--text-xs)',
+                }}
+              >
+                Dissolves when encounter completes
+              </div>
+            </Tooltip>
+          )}
+        </div>
+      </div>
     </div>
   );
 });
@@ -459,7 +467,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
         className="flex items-center gap-4 px-6 py-4 border-b"
         style={{
           backgroundColor: 'var(--bg-deep)',
-          borderColor: 'var(--border-subtle)',
+          borderColor: 'var(--border-gold)',
         }}
       >
         <button
@@ -528,7 +536,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
             height: '100%',
             flexShrink: 0,
             background: conceptArt.gradient,
-            borderColor: 'var(--border-subtle)',
+            borderColor: 'var(--border-gold)',
             position: 'relative',
           }}
         >
@@ -566,7 +574,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
             className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto"
             style={{
               backgroundColor: 'var(--bg-raised)',
-              borderColor: 'var(--border-subtle)',
+              borderColor: 'var(--border-gold)',
             }}
           >
             <div className="space-y-3">
@@ -677,13 +685,13 @@ const SublocationDetailView = memo(function SublocationDetailView({
                         className="px-3 py-2.5 rounded-lg border transition-colors"
                         style={{
                           backgroundColor: 'var(--bg-deep)',
-                          borderColor: 'var(--border-subtle)',
+                          borderColor: 'var(--border-gold)',
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.borderColor = 'var(--accent-gold)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                          e.currentTarget.style.borderColor = 'var(--border-gold)';
                         }}
                       >
                         <div className="flex items-start justify-between gap-2 mb-1">
@@ -879,7 +887,7 @@ export const LocationView = memo(function LocationView({
         className="flex items-center gap-4 px-6 py-4 border-b"
         style={{
           backgroundColor: 'var(--bg-deep)',
-          borderColor: 'var(--border-subtle)',
+          borderColor: 'var(--border-gold)',
         }}
       >
         <button
@@ -896,7 +904,7 @@ export const LocationView = memo(function LocationView({
           className="w-10 h-10 rounded-full border flex-shrink-0"
           style={{
             backgroundColor: 'var(--bg-raised)',
-            borderColor: 'var(--border-subtle)',
+            borderColor: 'var(--border-gold)',
           }}
         />
 
@@ -930,7 +938,7 @@ export const LocationView = memo(function LocationView({
             className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto"
             style={{
               backgroundColor: 'var(--bg-raised)',
-              borderColor: 'var(--border-subtle)',
+              borderColor: 'var(--border-gold)',
             }}
           >
             <div className="space-y-3">
@@ -955,7 +963,7 @@ export const LocationView = memo(function LocationView({
               width: '40%',
               flexShrink: 0,
               background: locationArt.gradient,
-              borderColor: 'var(--border-subtle)',
+              borderColor: 'var(--border-gold)',
               position: 'relative',
             }}
           >
@@ -995,7 +1003,7 @@ export const LocationView = memo(function LocationView({
             aspectRatio: '16/9',
             maxHeight: '220px',
             background: locationArt.gradient,
-            borderColor: 'var(--border-subtle)',
+            borderColor: 'var(--border-gold)',
             position: 'relative',
           }}
         >
@@ -1222,13 +1230,13 @@ export const LocationView = memo(function LocationView({
                           className="px-3 py-2.5 rounded-lg border transition-colors"
                           style={{
                             backgroundColor: 'var(--bg-deep)',
-                            borderColor: 'var(--border-subtle)',
+                            borderColor: 'var(--border-gold)',
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.borderColor = 'var(--accent-gold)';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                            e.currentTarget.style.borderColor = 'var(--border-gold)';
                           }}
                         >
                           <div className="flex items-start justify-between gap-2 mb-1">

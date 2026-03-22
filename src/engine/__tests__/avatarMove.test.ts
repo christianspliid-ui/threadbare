@@ -320,14 +320,27 @@ describe('integration: moveAvatarToHex + phaseMovement', () => {
 
     const state = buildMinimalState(graph, 1);
 
-    // Tick 1: avatar should move to first intermediate hex
+    // 2-edge model: each hop costs 2 ticks on grassland
+    // Tick 1: accumulate toward first hop
     phaseMovement(state);
     let locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
     expect(locEdges).toHaveLength(1);
+
+    // Tick 2: avatar moves to first intermediate hex
+    state.tick = 2;
+    state.tickEvents = [];
+    phaseMovement(state);
+    locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');
+    expect(locEdges).toHaveLength(1);
     expect(locEdges[0].target).not.toBe('loc.start');
 
-    // Tick 2: avatar should arrive at destination
-    state.tick = 2;
+    // Tick 3: accumulate toward second hop
+    state.tick = 3;
+    state.tickEvents = [];
+    phaseMovement(state);
+
+    // Tick 4: avatar should arrive at destination
+    state.tick = 4;
     state.tickEvents = [];
     phaseMovement(state);
     locEdges = graph.getOutgoingEdges('avatar.1', 'located_at');

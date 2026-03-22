@@ -13,7 +13,6 @@ describe('LocationCard', () => {
         agentCount={3}
         flavorText="test"
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.getByText('The Forge')).toBeTruthy();
@@ -28,7 +27,6 @@ describe('LocationCard', () => {
         agentCount={3}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.getByText('3 souls present')).toBeTruthy();
@@ -43,7 +41,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText={flavorText}
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.getByText(flavorText)).toBeTruthy();
@@ -58,26 +55,9 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={fn}
-        onDoubleClick={() => {}}
       />,
     );
     fireEvent.click(screen.getByRole('button'));
-    expect(fn).toHaveBeenCalledOnce();
-  });
-
-  it('fires onDoubleClick on double click', () => {
-    const fn = vi.fn();
-    render(
-      <LocationCard
-        name="The Forge"
-        subtype="settlement"
-        agentCount={0}
-        flavorText=""
-        onClick={() => {}}
-        onDoubleClick={fn}
-      />,
-    );
-    fireEvent.doubleClick(screen.getByRole('button'));
     expect(fn).toHaveBeenCalledOnce();
   });
 
@@ -89,7 +69,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.queryByText(/soul/)).toBeNull();
@@ -103,7 +82,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(container.textContent).toContain('🏘');
@@ -117,7 +95,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(container.textContent).toContain('⛰');
@@ -131,7 +108,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(container.textContent).toContain('🏚');
@@ -145,7 +121,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(container.textContent).toContain('◆');
@@ -160,7 +135,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={fn}
-        onDoubleClick={() => {}}
       />,
     );
     const button = screen.getByRole('button');
@@ -176,7 +150,6 @@ describe('LocationCard', () => {
         agentCount={0}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.getByLabelText('Location: The Forge')).toBeTruthy();
@@ -190,7 +163,6 @@ describe('LocationCard', () => {
         agentCount={1}
         flavorText=""
         onClick={() => {}}
-        onDoubleClick={() => {}}
       />,
     );
     expect(screen.getByText('1 soul present')).toBeTruthy();

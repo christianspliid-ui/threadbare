@@ -3,317 +3,248 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Impediment Dashboard</title>
+<title>Impediment Dashboard — The Fantasy World Simulator</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #1a1a2e; color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e2e8f0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 2rem; min-height: 100vh; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; }
+  h2 { font-size: 1.3rem; margin: 2rem 0 1rem; color: #e2e8f0; border-bottom: 1px solid #334155; padding-bottom: 0.5rem; }
   .muted { color: #94a3b8; }
-  a { color: #60a5fa; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; }
+  .header-left h1 { color: #e2e8f0; }
+  .header-right { display: flex; gap: 1.5rem; }
+  .stat-card { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; text-align: center; min-width: 120px; }
+  .stat-card .value { font-size: 2rem; font-weight: 700; }
+  .stat-card .label { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
+  .stat-card.hot .value { color: #e94560; }
+  .stat-card.warn .value { color: #f59e0b; }
+  .stat-card.ok .value { color: #10b981; }
 
-  /* Header */
-  .header { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem; border-bottom: 1px solid #334155; padding-bottom: 1.5rem; }
-  .header h1 { font-size: 1.75rem; font-weight: 600; }
-  .header-stats { display: flex; gap: 2rem; flex-wrap: wrap; }
-  .stat { text-align: center; }
-  .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; }
-  .stat-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-top: 0.25rem; }
-  .stat-value.danger { color: #e94560; }
-  .stat-value.warning { color: #f59e0b; }
-  .stat-value.ok { color: #10b981; }
+  .alert-card { background: #16213e; border-left: 4px solid #10b981; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 1rem; }
+  .alert-card.hot { border-left-color: #e94560; }
+  .alert-card.warn { border-left-color: #f59e0b; }
+  .alert-card .title { font-weight: 600; margin-bottom: 0.25rem; }
+  .alert-card .desc { color: #94a3b8; font-size: 0.9rem; }
 
-  /* Alerts */
-  .alert-section { margin-bottom: 2rem; }
-  .alert { padding: 1rem 1.25rem; border-radius: 0.5rem; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
-  .alert-danger { background: #e9456020; border: 1px solid #e94560; }
-  .alert-warning { background: #f59e0b18; border: 1px solid #f59e0b80; }
-  .alert-danger .alert-count { color: #e94560; font-weight: 700; font-size: 1.25rem; }
-  .alert-warning .alert-count { color: #f59e0b; font-weight: 700; font-size: 1.25rem; }
-  .alert-desc { flex: 1; margin: 0 1rem; }
-  .alert-cat { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; background: #334155; padding: 0.15rem 0.5rem; border-radius: 999px; }
+  table { width: 100%; border-collapse: collapse; background: #16213e; border-radius: 8px; overflow: hidden; }
+  th { background: #0f3460; color: #e2e8f0; text-align: left; padding: 0.75rem 1rem; cursor: pointer; user-select: none; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  th:hover { background: #1a4a7a; }
+  th.sorted-asc::after { content: ' \u25B2'; }
+  th.sorted-desc::after { content: ' \u25BC'; }
+  td { padding: 0.6rem 1rem; border-top: 1px solid #1a1a2e; font-size: 0.9rem; vertical-align: top; }
+  tr:hover td { background: #1a2744; }
 
-  /* Grid layout */
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
-  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+  .badge-s { background: #064e3b; color: #6ee7b7; }
+  .badge-m { background: #78350f; color: #fbbf24; }
+  .badge-l { background: #7c2d12; color: #fb923c; }
+  .badge-blocked { background: #7f1d1d; color: #fca5a5; }
+  .badge-yes { background: #064e3b; color: #6ee7b7; }
+  .badge-no { background: #7f1d1d; color: #fca5a5; }
 
-  /* Cards */
-  .card { background: #16213e; border-radius: 0.75rem; padding: 1.25rem; }
-  .card h2 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.04em; color: #94a3b8; }
-  .card.full-width { grid-column: 1 / -1; }
+  .cat-bar-container { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+  .cat-label { width: 160px; text-align: right; font-size: 0.9rem; color: #94a3b8; }
+  .cat-bar { height: 24px; border-radius: 4px; display: flex; align-items: center; padding-left: 8px; font-size: 0.8rem; font-weight: 600; min-width: 30px; }
 
-  /* Bar chart */
-  .bar-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-  .bar-label { width: 140px; font-size: 0.8rem; text-align: right; flex-shrink: 0; }
-  .bar-track { flex: 1; height: 24px; background: #1a1a2e; border-radius: 4px; overflow: hidden; position: relative; }
-  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; min-width: 2px; }
-  .bar-count { width: 40px; font-size: 0.85rem; font-weight: 600; text-align: right; flex-shrink: 0; }
-  .cat-tool-failure .bar-fill { background: #e94560; }
-  .cat-api-quirk .bar-fill { background: #f59e0b; }
-  .cat-permission .bar-fill { background: #8b5cf6; }
-  .cat-environment .bar-fill { background: #06b6d4; }
-  .cat-skill-gap .bar-fill { background: #ec4899; }
-  .cat-process-friction .bar-fill { background: #f97316; }
-  .cat-dependency .bar-fill { background: #14b8a6; }
-  .cat-unclear-requirements .bar-fill { background: #a78bfa; }
-  .cat-flaky-test .bar-fill { background: #fbbf24; }
-  .cat-other .bar-fill { background: #64748b; }
+  .impact-grid { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .impact-card { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; flex: 1; min-width: 120px; text-align: center; }
+  .impact-card .count { font-size: 1.8rem; font-weight: 700; }
+  .impact-card .lbl { font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem; }
 
-  /* Impact pills */
-  .impact-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
-  .impact-pill { display: flex; flex-direction: column; align-items: center; padding: 0.75rem 1.5rem; border-radius: 0.5rem; background: #1a1a2e; min-width: 80px; }
-  .impact-pill .pill-value { font-size: 1.5rem; font-weight: 700; }
-  .impact-pill .pill-label { font-size: 0.7rem; text-transform: uppercase; color: #94a3b8; margin-top: 0.25rem; }
-  .impact-S .pill-value { color: #10b981; }
-  .impact-M .pill-value { color: #f59e0b; }
-  .impact-L .pill-value { color: #f97316; }
-  .impact-Blocked .pill-value { color: #e94560; }
+  .timeline-item { background: #16213e; border-radius: 8px; padding: 1rem 1.5rem; margin-bottom: 0.75rem; display: flex; gap: 1rem; align-items: flex-start; }
+  .timeline-date { color: #94a3b8; font-size: 0.85rem; min-width: 90px; padding-top: 2px; }
+  .timeline-content .title { font-weight: 600; margin-bottom: 0.25rem; }
+  .timeline-content .meta { color: #94a3b8; font-size: 0.85rem; }
 
-  /* Table */
-  .table-wrap { overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-  th { text-align: left; padding: 0.6rem 0.75rem; border-bottom: 2px solid #334155; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; cursor: pointer; user-select: none; white-space: nowrap; }
-  th:hover { color: #e2e8f0; }
-  th.sorted-asc::after { content: ' ▲'; }
-  th.sorted-desc::after { content: ' ▼'; }
-  td { padding: 0.6rem 0.75rem; border-bottom: 1px solid #1e293b; vertical-align: top; }
-  tr:hover td { background: #1e293b; }
-  .badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.7rem; font-weight: 600; }
-  .badge-S { background: #10b98130; color: #10b981; }
-  .badge-M { background: #f59e0b25; color: #f59e0b; }
-  .badge-L { background: #f9731625; color: #f97316; }
-  .badge-Blocked { background: #e9456025; color: #e94560; }
-  .badge-yes { background: #10b98125; color: #10b981; }
-  .badge-no { background: #e9456020; color: #e94560; }
-  .count-hot { color: #e94560; font-weight: 700; }
-  .count-warm { color: #f59e0b; font-weight: 700; }
-
-  /* Unresolved */
-  .unresolved-item { padding: 0.75rem 1rem; background: #e9456010; border-left: 3px solid #e94560; border-radius: 0 0.5rem 0.5rem 0; margin-bottom: 0.5rem; }
-  .unresolved-item .imp-num { color: #e94560; font-weight: 700; margin-right: 0.5rem; }
-
-  /* Empty state */
-  .empty { text-align: center; padding: 4rem 2rem; color: #64748b; }
-  .empty h2 { font-size: 1.25rem; margin-bottom: 0.5rem; color: #94a3b8; }
-
-  /* Retro banner */
-  .retro-banner { background: linear-gradient(135deg, #e9456030, #f59e0b15); border: 1px solid #e94560; border-radius: 0.75rem; padding: 1.25rem; margin-bottom: 2rem; display: none; }
-  .retro-banner.show { display: flex; align-items: center; gap: 1rem; }
-  .retro-banner .icon { font-size: 1.5rem; }
-  .retro-banner .msg { flex: 1; }
-  .retro-banner .msg strong { color: #e94560; }
-  .retro-banner code { background: #1a1a2e; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.85rem; }
-
-  .footer { text-align: center; color: #475569; font-size: 0.75rem; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #1e293b; }
+  .section-empty { color: #94a3b8; font-style: italic; padding: 1rem; }
 </style>
 </head>
 <body>
 
 <script>
-// ── Impediment data (regenerated by /impediments skill) ──
-const DATA = [];
-// ── End data ──
-</script>
-
-<div id="app"></div>
-
-<script>
-(function() {
-  const app = document.getElementById('app');
-
-  if (!DATA.length) {
-    app.innerHTML = `
-      <div class="header"><h1>Impediment Dashboard</h1></div>
-      <div class="empty">
-        <h2>No impediments logged yet</h2>
-        <p>When agents encounter blockers, they'll appear here.<br>Run <code>/impediments</code> after some sessions to see the data.</p>
-      </div>
-      <div class="footer">Generated by /impediments &mdash; The Fantasy World Simulator</div>
-    `;
-    return;
+const DATA = [
+  {
+    id: 1, count: 1, date: "2026-03-21", category: "tool-failure",
+    description: "Claude Preview preview_screenshot times out on WebGL canvas (Three.js 60K hex render). Headless browser WebGL compositing too slow for screenshot capture.",
+    consequence: "Had to switch to Playwright MCP for screenshots.",
+    impact: "M", workaroundFound: true,
+    workaround: "Use mcp__playwright__browser_take_screenshot instead of preview_screenshot for WebGL content.",
+    session: "Phase 01 verification"
+  },
+  {
+    id: 2, count: 1, date: "2026-03-21", category: "api-quirk",
+    description: "d3-zoom default wheel handler assumes standard screen-to-data coordinate mapping. Our syncCameraToZoom uses non-standard mapping. Default zoom-toward-cursor math silently produces wrong results.",
+    consequence: "Zoom toward cursor appeared broken. Required full manual wheel handling with correct math.",
+    impact: "M", workaroundFound: true,
+    workaround: "Handle ALL wheel events manually with correct zoom-toward-point math derived from our custom coordinate mapping.",
+    session: "Phase 01 verification"
+  },
+  {
+    id: 3, count: 1, date: "2026-03-21", category: "api-quirk",
+    description: "ResizeObserver callback in HexMapV2 called resizeHexScene which reset camera frustum to origin, overwriting d3-zoom's centered camera transform. Race condition.",
+    consequence: "Grid appeared in bottom-right corner instead of centered.",
+    impact: "M", workaroundFound: true,
+    workaround: "resizeHexScene now only updates renderer size. Caller re-syncs d3-zoom transform via syncCameraToZoom after resize.",
+    session: "Phase 01 verification"
   }
+];
 
-  // Compute stats
-  const total = DATA.length;
-  const totalOccurrences = DATA.reduce((s, d) => s + d.count, 0);
-  const timeLookup = { S: 1, M: 8, L: 20, Blocked: 30 };
-  const estMinutes = DATA.reduce((s, d) => s + (timeLookup[d.impact] || 0) * d.count, 0);
-  const estH = Math.floor(estMinutes / 60);
-  const estM = estMinutes % 60;
-  const hotItems = DATA.filter(d => d.count > 5);
-  const warmItems = DATA.filter(d => d.count > 3 && d.count <= 5);
-  const unresolved = DATA.filter(d => !d.workaroundFound);
-  const needsRetro = hotItems.length > 0;
+const IMPACT_MINUTES = { S: 1, M: 8, L: 20, Blocked: 30 };
+const IMPACT_COLORS = { S: '#10b981', M: '#f59e0b', L: '#fb923c', Blocked: '#e94560' };
+const CAT_COLORS = {
+  'tool-failure': '#e94560',
+  'api-quirk': '#f59e0b',
+  'permission': '#8b5cf6',
+  'environment': '#06b6d4',
+  'skill-gap': '#ec4899',
+  'process-friction': '#f97316',
+  'dependency': '#6366f1',
+  'unclear-requirements': '#14b8a6',
+  'flaky-test': '#a855f7',
+  'other': '#64748b'
+};
 
-  // Category counts
-  const catMap = {};
-  DATA.forEach(d => {
-    if (!catMap[d.category]) catMap[d.category] = { items: 0, occurrences: 0 };
-    catMap[d.category].items++;
-    catMap[d.category].occurrences += d.count;
-  });
-  const catEntries = Object.entries(catMap).sort((a, b) => b[1].occurrences - a[1].occurrences);
-  const maxCatOcc = catEntries.length ? catEntries[0][1].occurrences : 1;
+function impactBadge(impact) {
+  return '<span class="badge badge-' + impact.toLowerCase() + '">' + impact + '</span>';
+}
+function workaroundBadge(found) {
+  return found ? '<span class="badge badge-yes">Yes</span>' : '<span class="badge badge-no">No</span>';
+}
 
-  // Impact counts
-  const impactMap = {};
-  DATA.forEach(d => {
-    impactMap[d.impact] = (impactMap[d.impact] || 0) + d.count;
-  });
+const totalItems = DATA.length;
+const totalOccurrences = DATA.reduce(function(s, d) { return s + d.count; }, 0);
+const hotItems = DATA.filter(function(d) { return d.count > 3; });
+const unresolvedItems = DATA.filter(function(d) { return !d.workaroundFound; });
 
-  // Retro banner
-  const retroBanner = needsRetro ? `
-    <div class="retro-banner show">
-      <div class="icon">&#9888;</div>
-      <div class="msg">
-        <strong>${hotItems.length} impediment${hotItems.length > 1 ? 's' : ''} above retro threshold (count&gt;5).</strong>
-        Run <code>/retrospective</code> to analyze and fix recurring friction.
-      </div>
-    </div>
-  ` : '';
+const impactDist = {};
+DATA.forEach(function(d) { impactDist[d.impact] = (impactDist[d.impact] || 0) + d.count; });
+const totalMinutes = DATA.reduce(function(s, d) { return s + (IMPACT_MINUTES[d.impact] || 0) * d.count; }, 0);
+const hours = Math.floor(totalMinutes / 60);
+const mins = totalMinutes % 60;
+const timeLost = hours > 0 ? hours + 'h ' + mins + 'm' : mins + 'm';
 
-  // Alerts
-  let alertsHtml = '';
-  if (hotItems.length || warmItems.length) {
-    alertsHtml = '<div class="alert-section">';
-    hotItems.sort((a, b) => b.count - a.count).forEach(d => {
-      alertsHtml += `<div class="alert alert-danger"><span class="alert-count">&times;${d.count}</span><span class="alert-desc">${esc(d.description)}</span><span class="alert-cat">${esc(d.category)}</span></div>`;
+const catCounts = {};
+DATA.forEach(function(d) {
+  if (!catCounts[d.category]) catCounts[d.category] = { items: 0, occurrences: 0 };
+  catCounts[d.category].items++;
+  catCounts[d.category].occurrences += d.count;
+});
+const maxCatOcc = Math.max.apply(null, Object.values(catCounts).map(function(c) { return c.occurrences; }));
+
+function render() {
+  var html = '';
+
+  // Header
+  html += '<div class="header">';
+  html += '<div class="header-left"><h1>Impediment Dashboard</h1>';
+  html += '<div class="muted">The Fantasy World Simulator \u2014 ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) + '</div></div>';
+  html += '<div class="header-right">';
+  html += '<div class="stat-card ok"><div class="value">' + totalItems + '</div><div class="label">Impediments</div></div>';
+  html += '<div class="stat-card ok"><div class="value">' + totalOccurrences + '</div><div class="label">Occurrences</div></div>';
+  html += '<div class="stat-card ' + (totalMinutes > 120 ? 'hot' : totalMinutes > 60 ? 'warn' : 'ok') + '"><div class="value">~' + timeLost + '</div><div class="label">Est. Time Lost</div></div>';
+  html += '</div></div>';
+
+  // Hot items
+  if (hotItems.length > 0) {
+    html += '<h2>Hot Items (count > 3)</h2>';
+    hotItems.forEach(function(d) {
+      html += '<div class="alert-card ' + (d.count > 5 ? 'hot' : 'warn') + '">';
+      html += '<div class="title">#' + d.id + ' \u2014 ' + d.category + ' (\u00D7' + d.count + ')</div>';
+      html += '<div class="desc">' + d.description + '</div></div>';
     });
-    warmItems.sort((a, b) => b.count - a.count).forEach(d => {
-      alertsHtml += `<div class="alert alert-warning"><span class="alert-count">&times;${d.count}</span><span class="alert-desc">${esc(d.description)}</span><span class="alert-cat">${esc(d.category)}</span></div>`;
-    });
-    alertsHtml += '</div>';
-  }
-
-  // Bar chart
-  let barsHtml = catEntries.map(([cat, v]) => {
-    const pct = (v.occurrences / maxCatOcc) * 100;
-    const cls = 'cat-' + cat.replace(/[^a-z]/g, '-');
-    return `<div class="bar-row ${cls}"><span class="bar-label">${esc(cat)}</span><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><span class="bar-count">${v.occurrences}</span></div>`;
-  }).join('');
-
-  // Impact pills
-  const impactOrder = ['S', 'M', 'L', 'Blocked'];
-  let impactHtml = '<div class="impact-row">' + impactOrder.map(imp => {
-    const v = impactMap[imp] || 0;
-    return `<div class="impact-pill impact-${imp}"><span class="pill-value">${v}</span><span class="pill-label">${imp === 'Blocked' ? 'Blocked' : imp + ' impact'}</span></div>`;
-  }).join('') + '</div>';
-
-  // Unresolved
-  let unresolvedHtml = '';
-  if (unresolved.length) {
-    unresolvedHtml = unresolved.map(d =>
-      `<div class="unresolved-item"><span class="imp-num">#${d.num}</span>${esc(d.description)} <span class="muted">(${esc(d.category)}, ${d.impact})</span></div>`
-    ).join('');
   } else {
-    unresolvedHtml = '<p class="muted">All impediments have workarounds.</p>';
+    html += '<h2>Hot Items</h2>';
+    html += '<div class="alert-card"><div class="desc">No hot items \u2014 all impediments have count \u2264 3. Nice.</div></div>';
   }
 
   // Table
-  let tableRows = DATA.map(d => {
-    const countCls = d.count > 5 ? 'count-hot' : d.count > 3 ? 'count-warm' : '';
-    return `<tr>
-      <td>${d.num}</td>
-      <td class="${countCls}">${d.count}</td>
-      <td>${esc(d.date)}</td>
-      <td>${esc(d.category)}</td>
-      <td>${esc(d.description)}</td>
-      <td><span class="badge badge-${d.impact}">${d.impact}</span></td>
-      <td><span class="badge badge-${d.workaroundFound ? 'yes' : 'no'}">${d.workaroundFound ? 'Yes' : 'No'}</span></td>
-      <td>${esc(d.workaround)}</td>
-      <td class="muted">${esc(d.session)}</td>
-    </tr>`;
-  }).join('');
+  html += '<h2>All Impediments</h2>';
+  html += '<table id="mainTable"><thead><tr>';
+  html += '<th data-col="id">#</th><th data-col="count">Count</th><th data-col="date">Date</th>';
+  html += '<th data-col="category">Category</th><th data-col="description">Description</th>';
+  html += '<th data-col="impact">Impact</th><th data-col="workaroundFound">Workaround?</th>';
+  html += '<th data-col="session">Session</th></tr></thead><tbody>';
+  DATA.forEach(function(d) {
+    html += '<tr><td>' + d.id + '</td><td>' + d.count + '</td><td>' + d.date + '</td>';
+    html += '<td>' + d.category + '</td><td>' + d.description + '</td>';
+    html += '<td>' + impactBadge(d.impact) + '</td><td>' + workaroundBadge(d.workaroundFound) + '</td>';
+    html += '<td>' + d.session + '</td></tr>';
+  });
+  html += '</tbody></table>';
 
-  app.innerHTML = `
-    <div class="header">
-      <h1>Impediment Dashboard</h1>
-      <div class="header-stats">
-        <div class="stat"><div class="stat-value">${total}</div><div class="stat-label">Unique items</div></div>
-        <div class="stat"><div class="stat-value">${totalOccurrences}</div><div class="stat-label">Total occurrences</div></div>
-        <div class="stat"><div class="stat-value ${estMinutes > 120 ? 'danger' : estMinutes > 60 ? 'warning' : 'ok'}">${estH}h ${estM}m</div><div class="stat-label">Est. time lost</div></div>
-        <div class="stat"><div class="stat-value ${unresolved.length ? 'danger' : 'ok'}">${unresolved.length}</div><div class="stat-label">Unresolved</div></div>
-      </div>
-    </div>
-
-    ${retroBanner}
-    ${alertsHtml}
-
-    <div class="grid">
-      <div class="card">
-        <h2>By Category</h2>
-        ${barsHtml || '<p class="muted">No data</p>'}
-      </div>
-      <div class="card">
-        <h2>Impact Distribution</h2>
-        ${impactHtml}
-        <p class="muted" style="margin-top:0.75rem;font-size:0.8rem">Estimates: S=1m, M=8m, L=20m, Blocked=30m per occurrence</p>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card full-width">
-        <h2>Unresolved</h2>
-        ${unresolvedHtml}
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:2rem">
-      <h2>All Impediments</h2>
-      <div class="table-wrap">
-        <table id="imp-table">
-          <thead><tr>
-            <th data-col="num">#</th>
-            <th data-col="count">Count</th>
-            <th data-col="date">Date</th>
-            <th data-col="category">Category</th>
-            <th data-col="description">Description</th>
-            <th data-col="impact">Impact</th>
-            <th data-col="workaroundFound">Workaround?</th>
-            <th>Workaround</th>
-            <th>Session</th>
-          </tr></thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="footer">Generated by <code>/impediments</code> &mdash; The Fantasy World Simulator</div>
-  `;
-
-  // Sorting
-  let sortCol = null, sortDir = 'asc';
-  document.querySelectorAll('#imp-table th[data-col]').forEach(th => {
-    th.addEventListener('click', () => {
-      const col = th.dataset.col;
-      if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
-      else { sortCol = col; sortDir = 'asc'; }
-      document.querySelectorAll('#imp-table th').forEach(t => t.classList.remove('sorted-asc', 'sorted-desc'));
-      th.classList.add('sorted-' + sortDir);
-      const sorted = [...DATA].sort((a, b) => {
-        let va = a[col], vb = b[col];
-        if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
-        va = String(va).toLowerCase(); vb = String(vb).toLowerCase();
-        return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-      });
-      const tbody = document.querySelector('#imp-table tbody');
-      tbody.innerHTML = sorted.map(d => {
-        const countCls = d.count > 5 ? 'count-hot' : d.count > 3 ? 'count-warm' : '';
-        return `<tr>
-          <td>${d.num}</td>
-          <td class="${countCls}">${d.count}</td>
-          <td>${esc(d.date)}</td>
-          <td>${esc(d.category)}</td>
-          <td>${esc(d.description)}</td>
-          <td><span class="badge badge-${d.impact}">${d.impact}</span></td>
-          <td><span class="badge badge-${d.workaroundFound ? 'yes' : 'no'}">${d.workaroundFound ? 'Yes' : 'No'}</span></td>
-          <td>${esc(d.workaround)}</td>
-          <td class="muted">${esc(d.session)}</td>
-        </tr>`;
-      }).join('');
-    });
+  // Category breakdown
+  html += '<h2>Category Breakdown</h2>';
+  var sortedCats = Object.entries(catCounts).sort(function(a, b) { return b[1].occurrences - a[1].occurrences; });
+  sortedCats.forEach(function(entry) {
+    var cat = entry[0], v = entry[1];
+    var width = Math.max(v.occurrences / maxCatOcc * 400, 40);
+    html += '<div class="cat-bar-container"><div class="cat-label">' + cat + '</div>';
+    html += '<div class="cat-bar" style="width:' + width + 'px;background:' + (CAT_COLORS[cat] || '#64748b') + ';">' + v.items + ' (\u00D7' + v.occurrences + ')</div></div>';
   });
 
-  function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
-})();
+  // Impact distribution
+  html += '<h2>Impact Distribution</h2><div class="impact-grid">';
+  ['S', 'M', 'L', 'Blocked'].forEach(function(level) {
+    var labels = { S: ' (~1m)', M: ' (~8m)', L: ' (~20m)', Blocked: ' (~30m)' };
+    html += '<div class="impact-card"><div class="count" style="color:' + IMPACT_COLORS[level] + '">' + (impactDist[level] || 0) + '</div>';
+    html += '<div class="lbl">' + level + labels[level] + '</div></div>';
+  });
+  html += '</div>';
+
+  // Timeline
+  html += '<h2>Timeline (Most Recent First)</h2>';
+  var sorted = DATA.slice().sort(function(a, b) { return b.date.localeCompare(a.date) || b.id - a.id; });
+  sorted.forEach(function(d) {
+    var shortDesc = d.description.length > 80 ? d.description.slice(0, 80) + '\u2026' : d.description;
+    html += '<div class="timeline-item"><div class="timeline-date">' + d.date + '</div>';
+    html += '<div class="timeline-content"><div class="title">#' + d.id + ' ' + shortDesc + '</div>';
+    html += '<div class="meta">' + d.category + ' \u00B7 ' + impactBadge(d.impact) + ' \u00B7 ' + workaroundBadge(d.workaroundFound) + '</div></div></div>';
+  });
+
+  // Unresolved
+  if (unresolvedItems.length > 0) {
+    html += '<h2>Unresolved (No Workaround)</h2>';
+    unresolvedItems.forEach(function(d) {
+      html += '<div class="alert-card hot"><div class="title">#' + d.id + ' \u2014 ' + d.category + ' (\u00D7' + d.count + ')</div>';
+      html += '<div class="desc">' + d.description + '<br><em>Consequence: ' + d.consequence + '</em></div></div>';
+    });
+  } else {
+    html += '<h2>Unresolved</h2>';
+    html += '<div class="alert-card"><div class="desc">All impediments have workarounds. Zero unresolved.</div></div>';
+  }
+
+  document.body.innerHTML = html;
+
+  // Sortable table headers
+  var sortCol = null, sortDir = 'asc';
+  document.querySelectorAll('#mainTable th').forEach(function(th) {
+    th.addEventListener('click', function() {
+      var col = th.dataset.col;
+      if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortCol = col; sortDir = 'asc'; }
+      document.querySelectorAll('#mainTable th').forEach(function(t) { t.classList.remove('sorted-asc', 'sorted-desc'); });
+      th.classList.add(sortDir === 'asc' ? 'sorted-asc' : 'sorted-desc');
+      var s = DATA.slice().sort(function(a, b) {
+        var va = a[col], vb = b[col];
+        if (typeof va === 'number') return sortDir === 'asc' ? va - vb : vb - va;
+        if (typeof va === 'boolean') return sortDir === 'asc' ? (va ? 1 : -1) : (vb ? 1 : -1);
+        return sortDir === 'asc' ? String(va).localeCompare(String(vb)) : String(vb).localeCompare(String(va));
+      });
+      var tbody = document.querySelector('#mainTable tbody');
+      var rows = '';
+      s.forEach(function(d) {
+        rows += '<tr><td>' + d.id + '</td><td>' + d.count + '</td><td>' + d.date + '</td>';
+        rows += '<td>' + d.category + '</td><td>' + d.description + '</td>';
+        rows += '<td>' + impactBadge(d.impact) + '</td><td>' + workaroundBadge(d.workaroundFound) + '</td>';
+        rows += '<td>' + d.session + '</td></tr>';
+      });
+      tbody.innerHTML = rows;
+    });
+  });
+}
+
+render();
 </script>
+
 </body>
 </html>

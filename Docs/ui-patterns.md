@@ -413,6 +413,7 @@ Minimum requirements for all interactive elements:
 - **Semantics:** use `role="list"` / `role="listitem"` for list-like structures that aren't `<ul>`/`<li>`
 - **Landmarks:** left sidebar wrapped in `<nav>`, main content in `<main>`
 - **Expanded state:** toggleable popovers use `aria-expanded` on their trigger button
+- **Clickable text underline:** all clickable text must be underlined (`text-decoration: underline` or Tailwind `underline`) so users can distinguish interactive text from static text at a glance — this applies to inline links, clickable labels, and any text-styled interactive element that isn't already a visually distinct button
 
 ---
 

@@ -4,7 +4,6 @@ interface ListRowProps {
   accentColor?: string;
   selected?: boolean;
   onClick?: () => void;
-  onDoubleClick?: () => void;
   trailing?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
@@ -52,10 +51,10 @@ function Leading({ children }: { children: React.ReactNode }) {
 
 export const ListRow = Object.assign(
   forwardRef<HTMLDivElement, ListRowProps>(function ListRow(
-    { accentColor, selected, onClick, onDoubleClick, trailing, children, className },
+    { accentColor, selected, onClick, trailing, children, className },
     ref,
   ) {
-    const interactive = !!(onClick || onDoubleClick);
+    const interactive = !!onClick;
 
     const baseStyle: React.CSSProperties = {
       display: 'flex',
@@ -101,7 +100,6 @@ export const ListRow = Object.assign(
         className={`interactive-row ${className ?? ''}`}
         style={baseStyle}
         onClick={onClick}
-        onDoubleClick={onDoubleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
         onKeyDown={interactive ? handleKeyDown : undefined}

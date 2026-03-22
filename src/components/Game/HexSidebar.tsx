@@ -79,7 +79,7 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
       style={{
         width: isExpanded ? '220px' : '60px',
         background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-        borderRight: '1px solid var(--border-subtle)',
+        borderRight: '1px solid var(--border-gold)',
         padding: isExpanded ? '16px 12px' : '12px 4px',
         display: 'flex',
         flexDirection: 'column',

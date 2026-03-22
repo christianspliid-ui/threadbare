@@ -32,6 +32,7 @@ interface UseAgentInteractionParams {
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
   archetype: AscendantArchetype;
   onOpenScry: () => void;
+  scryState?: import('../../../types/scry').ScryState;
 }
 
 export function useAgentInteraction({
@@ -39,6 +40,7 @@ export function useAgentInteraction({
   setGameState,
   archetype,
   onOpenScry,
+  scryState,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -104,8 +106,23 @@ export function useAgentInteraction({
     if (!selectedAgentId) return null;
     const familiarity = getFamiliarity(gameState.familiarityMap, selectedAgentId);
     const knowledgeLevel = getKnowledgeLevel(familiarity);
-    return getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed);
-  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed]);
+    const card = getAgentInfoCard(gameState.graph, selectedAgentId, gameState.ascendantId, knowledgeLevel, gameState.seed, gameState.tick);
+
+    // Add scry court position as an active effect if agent holds one
+    if (card && scryState?.initialized) {
+      const position = scryState.positions.find(p => p.assignedAgentId === selectedAgentId);
+      if (position?.activeTitle) {
+        const courtEffect = {
+          type: 'scry_court' as const,
+          label: position.activeTitle.name,
+          sphere: position.activeTitle.sphereAffinity,
+        };
+        card.activeEffects = [...(card.activeEffects ?? []), courtEffect];
+      }
+    }
+
+    return card;
+  }, [selectedAgentId, gameState.graph, gameState.ascendantId, gameState.familiarityMap, gameState.seed, gameState.tick, scryState]);
 
   const agentFullProfile = useMemo(() => {
     if (!profileModalAgentId) return undefined;
@@ -131,7 +148,7 @@ export function useAgentInteraction({
         return;
       }
 
-      // Guard: prevent rapid double-clicks from queuing multiple interventions
+      // Guard: prevent rapid clicks from queuing multiple interventions
       if (pendingIntervention || playingCardId) return;
 
       const slot = wheelSlots?.find(s => s.id === slotId);
@@ -374,14 +391,6 @@ export function useAgentInteraction({
     }
   }, [selectedAgentId, gameState, setGameState]);
 
-  /** DES-009: Double-click agent dot → open full profile modal directly */
-  const handleAgentDoubleClick = useCallback((agentId: string) => {
-    setSelectedAgentId(agentId);
-    setStrandViewAgent(null);
-    setDrawerOpen(false);
-    setProfileModalAgentId(agentId);
-  }, []);
-
   const handleCloseProfile = useCallback(() => {
     setProfileModalAgentId(null);
   }, []);
@@ -426,7 +435,6 @@ export function useAgentInteraction({
     handleOpenDrawer,
     handleAvatarActionClick,
     handleViewProfile,
-    handleAgentDoubleClick,
     handleCloseProfile,
     closeAllAgentOverlays,
   };

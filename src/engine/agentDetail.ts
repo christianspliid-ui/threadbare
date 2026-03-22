@@ -25,6 +25,10 @@ import { generateTieredBackstory } from './backstoryGenerator';
 import type { BackstoryResult } from '../types/prose';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { getPortraitUrl } from '../data/portrait-assets';
+import { getDivineInfluences } from './interventionEffects';
+import { getCurrentStrength } from './decayCurve';
+import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
+import type { SphereName } from '../types';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -111,6 +115,33 @@ export interface AgentDetail {
   portraitUrl: string | null;
 }
 
+// ─── Active Effects (divine influences visible on agent card) ────────
+
+/** Display-friendly labels for each intervention type */
+const INTERVENTION_LABELS: Record<InterventionType, string> = {
+  dream: 'Dream',
+  persuade: 'Persuaded',
+  deceive: 'Deceived',
+  intimidate: 'Intimidated',
+  inspire_intervention: 'Inspired',
+  coincidence: 'Coincidence',
+  omen: 'Omen',
+  afflict_bless: 'Blessed / Afflicted',
+};
+
+export interface ActiveEffect {
+  /** Source intervention type or 'scry_court' for court positions */
+  type: InterventionType | 'scry_court';
+  /** Human-readable label */
+  label: string;
+  /** Sphere used for this effect (for color coding) */
+  sphere?: SphereName;
+  /** Current strength 0–1 (for divine influences with decay) */
+  strength?: number;
+  /** Ticks remaining before expiry */
+  ticksRemaining?: number;
+}
+
 // ─── Familiarity-gated Info Card (Tier 2) ──────────────────────────
 
 export interface AgentInfoCardData {
@@ -146,6 +177,8 @@ export interface AgentInfoCardData {
   primaryIntentSummary?: { displayName: string; category: AmbitionCategory };
   /** Portrait URL — only present if knowledge >= recognised */
   portraitUrl?: string;
+  /** Active divine effects on this agent (always visible — player's own actions) */
+  activeEffects?: ActiveEffect[];
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -403,6 +436,7 @@ export function getAgentInfoCard(
   ascendantId: string,
   knowledgeLevel: KnowledgeLevel,
   seed = 0,
+  tick = 0,
 ): AgentInfoCardData | null {
   const detail = getAgentDetail(graph, agentId, ascendantId);
   if (!detail) return null;
@@ -583,6 +617,36 @@ export function getAgentInfoCard(
     if (giftsAndBurdens.length > 0) {
       card.giftsAndBurdens = giftsAndBurdens;
     }
+  }
+
+  // ─── Active Effects (always visible — player's own divine actions) ──
+  const divineInfluences = getDivineInfluences(graph, agentId);
+  const activeEffects: ActiveEffect[] = [];
+
+  for (const influence of divineInfluences) {
+    const strength = getCurrentStrength({
+      initialStrength: influence.initialStrength,
+      decayRate: influence.decayRate,
+      minimumStrength: influence.minimumStrength,
+      maxDuration: influence.maxDuration,
+      tickApplied: influence.tickApplied,
+    }, tick);
+
+    if (strength <= 0) continue; // Expired — don't show
+
+    const ticksRemaining = Math.max(0, (influence.tickApplied + influence.maxDuration) - tick);
+
+    activeEffects.push({
+      type: influence.interventionType,
+      label: INTERVENTION_LABELS[influence.interventionType] ?? influence.interventionType,
+      sphere: influence.sphere,
+      strength,
+      ticksRemaining,
+    });
+  }
+
+  if (activeEffects.length > 0) {
+    card.activeEffects = activeEffects;
   }
 
   return card;

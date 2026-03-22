@@ -110,7 +110,7 @@ function buildLocationDesc(
   if (agentCount > 0) {
     parts.push(`${agentCount} agent${agentCount !== 1 ? 's' : ''}`);
   }
-  parts.push('Double-click to enter');
+  parts.push('Click to enter');
   return parts.join(' · ');
 }
 
@@ -128,7 +128,6 @@ interface HexZoomViewProps {
   cultures: HexCultureSummary[];
   factions: HexFactionSummary[];
   onLocationClick: (locationId: string) => void;
-  onLocationDoubleClick: (locationId: string) => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────
@@ -142,7 +141,6 @@ export const HexZoomView = memo(function HexZoomView({
   cultures,
   factions,
   onLocationClick,
-  onLocationDoubleClick,
 }: HexZoomViewProps) {
   const polygonRadius = LAYOUT.HEX_RADIUS * LAYOUT.POLYGON_FRACTION;
   const vertices = useMemo(
@@ -170,14 +168,10 @@ export const HexZoomView = memo(function HexZoomView({
   const terrainImgSize = LAYOUT.HEX_RADIUS * TERRAIN_IMAGE_SCALE;
 
   // Keyboard handler
-  const handleLocationKeyDown = (e: React.KeyboardEvent, locationId: string, isDoubleClick: boolean) => {
+  const handleLocationKeyDown = (e: React.KeyboardEvent, locationId: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      if (isDoubleClick) {
-        onLocationDoubleClick(locationId);
-      } else {
-        onLocationClick(locationId);
-      }
+      onLocationClick(locationId);
     }
   };
 
@@ -308,7 +302,7 @@ export const HexZoomView = memo(function HexZoomView({
               role="button"
               aria-label={isHidden ? 'Unknown location' : `Location: ${loc.name}${agents.length > 0 ? `, ${agents.length} agent${agents.length !== 1 ? 's' : ''}` : ''}`}
               tabIndex={0}
-              onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id, false)}
+              onKeyDown={(e) => handleLocationKeyDown(e as unknown as React.KeyboardEvent, loc.id)}
               style={{ cursor: 'pointer', outline: 'none' }}
             >
               {/* Location circle — outer glow ring */}
@@ -337,7 +331,6 @@ export const HexZoomView = memo(function HexZoomView({
                 opacity={isDimmed ? OPACITY.LOCATION_DIMMED : 1}
                 style={{ cursor: 'pointer', pointerEvents: 'auto' }}
                 onClick={() => onLocationClick(loc.id)}
-                onDoubleClick={() => onLocationDoubleClick(loc.id)}
               />
 
               {/* Location overlay icon (clipped to circle) */}
@@ -386,8 +379,7 @@ export const HexZoomView = memo(function HexZoomView({
                   fontWeight="600"
                   style={{ cursor: 'pointer', pointerEvents: 'auto' }}
                   onClick={() => onLocationClick(loc.id)}
-                  onDoubleClick={() => onLocationDoubleClick(loc.id)}
-                >
+                  >
                   {nameLines.map((line, li) => (
                     <tspan
                       key={li}

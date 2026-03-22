@@ -19,7 +19,7 @@ const CONTAINER_STYLE = {
   top: '1rem',
   left: '1rem',
   backgroundColor: 'rgba(10, 10, 14, 0.85)', // Kept as fallback, CSS vars via JS don't support rgba() conversion
-  border: '1px solid var(--border-subtle)',
+  border: '1px solid var(--border-gold)',
   borderRadius: '0.375rem',
   padding: 'var(--space-3)',
   zIndex: 20,

@@ -7,9 +7,11 @@ import { visKey } from '../../types/visibility';
 // Tunable constants (NFP #1: Tunability)
 export const REGION_LABEL_FADE_START = 2.5;
 export const REGION_LABEL_FADE_END = 3.5;
-const REGION_LABEL_FONT_SCALE = 0.6; // font size relative to hexSize
-const REGION_LABEL_FILL = 'rgba(45, 35, 25, 0.7)';
-const REGION_LABEL_LETTER_SPACING = '0.2em';
+const REGION_LABEL_FONT_SCALE = 0.2; // font size relative to hexSize (~1/3 of original 0.6)
+const REGION_LABEL_FILL = '#000000';
+const REGION_LABEL_LETTER_SPACING = '0.15em';
+const REGION_LABEL_ROTATION_RANGE = 45; // max degrees of rotation (+/-);
+const REGION_LABEL_EDGE_OFFSET = 0.433; // half of (sqrt(3)/2) — shifts label onto hex edges, not centers
 
 interface RegionLabel {
   regionId: string;
@@ -25,6 +27,42 @@ interface RegionLabelsProps {
   hexSize: number;
   zoomScale: number;
   visibilityMap?: VisibilityMap;
+}
+
+/**
+ * Simple deterministic hash from a string → integer.
+ */
+function hashString(s: string): number {
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) {
+    hash = ((hash << 5) - hash + s.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+/**
+ * Deterministic rotation angle from region ID.
+ * Simple string hash → angle in [-ROTATION_RANGE, +ROTATION_RANGE].
+ */
+function computeRotation(regionId: string): number {
+  const hash = hashString(regionId);
+  const normalized = (((hash % 1000) + 1000) % 1000) / 999; // 0..1
+  return (normalized * 2 - 1) * REGION_LABEL_ROTATION_RANGE;
+}
+
+/**
+ * Offset label perpendicular to its rotation so the text sits
+ * over hex edges (between centers) rather than on top of hex centers.
+ */
+function computeEdgeOffset(regionId: string, hexSize: number): { dx: number; dy: number } {
+  const angleDeg = computeRotation(regionId);
+  const angleRad = (angleDeg * Math.PI) / 180;
+  const offset = hexSize * REGION_LABEL_EDGE_OFFSET;
+  // Perpendicular to text direction (rotate 90°)
+  return {
+    dx: -Math.sin(angleRad) * offset,
+    dy: Math.cos(angleRad) * offset,
+  };
 }
 
 function computeOpacity(zoomScale: number): number {
@@ -92,18 +130,23 @@ export const RegionLabels: React.FC<RegionLabelsProps> = ({
     >
       {labels
         .filter(l => isRegionVisible(l.memberHexes, visibilityMap))
-        .map(l => (
+        .map(l => {
+          const { dx, dy } = computeEdgeOffset(l.regionId, hexSize);
+          const lx = l.cx + dx;
+          const ly = l.cy + dy;
+          return (
           <text
             key={l.regionId}
-            x={l.cx}
-            y={l.cy}
+            x={lx}
+            y={ly}
             textAnchor="middle"
             dominantBaseline="central"
+            transform={`rotate(${computeRotation(l.regionId).toFixed(1)}, ${lx}, ${ly})`}
             filter="url(#region-label-halo)"
             style={{
               fontFamily: 'Georgia, "Times New Roman", serif',
               fontSize: `${fontSize}px`,
-              fontWeight: 400,
+              fontWeight: 700,
               letterSpacing: REGION_LABEL_LETTER_SPACING,
               textTransform: 'uppercase' as const,
               fill: REGION_LABEL_FILL,
@@ -112,7 +155,8 @@ export const RegionLabels: React.FC<RegionLabelsProps> = ({
           >
             {l.name}
           </text>
-        ))}
+          );
+        })}
     </g>
   );
 };

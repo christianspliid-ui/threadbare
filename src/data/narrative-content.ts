@@ -34,44 +34,44 @@ import type { ValuePair } from '../types/agent';
  */
 export const SPHERE_VOCABULARY: Record<SphereName, SphereVocabulary> = {
   force: {
-    adjectives: ['mighty', 'thunderous', 'relentless', 'crushing', 'unyielding'],
-    verbs: ['shattered', 'struck', 'overwhelmed', 'battered', 'surged'],
-    nouns: ['might', 'fury', 'impact', 'avalanche', 'storm'],
+    adjectives: ['mighty', 'thunderous', 'relentless', 'crushing', 'unyielding', 'brutal', 'staggering', 'iron-willed', 'ferocious', 'unflinching'],
+    verbs: ['shattered', 'struck', 'overwhelmed', 'battered', 'surged', 'hammered', 'cleaved', 'collided', 'broke', 'crashed'],
+    nouns: ['might', 'fury', 'impact', 'avalanche', 'storm', 'weight', 'hammer', 'tide', 'thunder', 'pressure'],
   },
   matter: {
-    adjectives: ['solid', 'enduring', 'immovable', 'crystalline', 'dense'],
-    verbs: ['forged', 'shaped', 'hardened', 'anchored', 'crystallized'],
-    nouns: ['stone', 'iron', 'foundation', 'bulwark', 'bedrock'],
+    adjectives: ['solid', 'enduring', 'immovable', 'crystalline', 'dense', 'tempered', 'uneroded', 'rooted', 'mineral', 'ponderous'],
+    verbs: ['forged', 'shaped', 'hardened', 'anchored', 'crystallized', 'set', 'reinforced', 'compressed', 'calcified', 'cemented'],
+    nouns: ['stone', 'iron', 'foundation', 'bulwark', 'bedrock', 'ore', 'weight', 'marrow', 'sediment', 'permanence'],
   },
   energy: {
-    adjectives: ['crackling', 'luminous', 'volatile', 'radiant', 'searing'],
-    verbs: ['blazed', 'surged', 'erupted', 'ignited', 'cascaded'],
-    nouns: ['flame', 'lightning', 'pulse', 'arc', 'inferno'],
+    adjectives: ['crackling', 'luminous', 'volatile', 'radiant', 'searing', 'incandescent', 'blinding', 'kinetic', 'furious', 'white-hot'],
+    verbs: ['blazed', 'surged', 'erupted', 'ignited', 'cascaded', 'flared', 'arced', 'detonated', 'kindled', 'scorched'],
+    nouns: ['flame', 'lightning', 'pulse', 'arc', 'inferno', 'spark', 'conflagration', 'voltage', 'radiance', 'furnace'],
   },
   life: {
-    adjectives: ['verdant', 'flourishing', 'vital', 'blooming', 'fecund'],
-    verbs: ['bloomed', 'healed', 'nurtured', 'grew', 'restored'],
-    nouns: ['growth', 'renewal', 'bloom', 'vitality', 'spring'],
+    adjectives: ['verdant', 'flourishing', 'vital', 'blooming', 'fecund', 'tenacious', 'warm-blooded', 'rooted', 'persistent', 'green'],
+    verbs: ['bloomed', 'healed', 'nurtured', 'grew', 'restored', 'mended', 'seeded', 'quickened', 'thrived', 'germinated'],
+    nouns: ['growth', 'renewal', 'bloom', 'vitality', 'spring', 'root', 'breath', 'sap', 'marrow', 'pulse'],
   },
   mind: {
-    adjectives: ['keen', 'piercing', 'calculating', 'lucid', 'insightful'],
-    verbs: ['discerned', 'analyzed', 'perceived', 'understood', 'unraveled'],
-    nouns: ['thought', 'insight', 'clarity', 'revelation', 'logic'],
+    adjectives: ['keen', 'piercing', 'calculating', 'lucid', 'insightful', 'measured', 'exacting', 'ruthless', 'crystalline', 'surgical'],
+    verbs: ['discerned', 'analyzed', 'perceived', 'understood', 'unraveled', 'calculated', 'deduced', 'mapped', 'dissected', 'read'],
+    nouns: ['thought', 'insight', 'clarity', 'revelation', 'logic', 'precision', 'pattern', 'schema', 'diagnosis', 'architecture'],
   },
   spirit: {
-    adjectives: ['ethereal', 'transcendent', 'luminous', 'spectral', 'sacred'],
-    verbs: ['resonated', 'sanctified', 'communed', 'invoked', 'channeled'],
-    nouns: ['soul', 'essence', 'prayer', 'vision', 'aura'],
+    adjectives: ['hallowed', 'transcendent', 'resonant', 'spectral', 'sacred', 'solemn', 'unworldly', 'numinous', 'consecrated', 'liminal'],
+    verbs: ['resonated', 'sanctified', 'communed', 'invoked', 'channeled', 'blessed', 'consecrated', 'stirred', 'entreated', 'anointed'],
+    nouns: ['soul', 'essence', 'prayer', 'vision', 'aura', 'rite', 'covenant', 'devotion', 'sacrament', 'vigil'],
   },
   time: {
-    adjectives: ['ancient', 'inexorable', 'cyclic', 'fading', 'eternal'],
-    verbs: ['aged', 'unwound', 'echoed', 'rippled', 'decayed'],
-    nouns: ['epoch', 'moment', 'tide', 'cycle', 'memory'],
+    adjectives: ['ancient', 'inexorable', 'cyclic', 'fading', 'eternal', 'weathered', 'patient', 'eroded', 'persistent', 'slow'],
+    verbs: ['aged', 'unwound', 'echoed', 'rippled', 'decayed', 'accumulated', 'endured', 'recurred', 'persisted', 'outlasted'],
+    nouns: ['epoch', 'moment', 'tide', 'cycle', 'memory', 'erosion', 'patience', 'sediment', 'season', 'inheritance'],
   },
   entropy: {
-    adjectives: ['decaying', 'consuming', 'inevitable', 'dissolving', 'chaotic'],
-    verbs: ['crumbled', 'consumed', 'unraveled', 'corroded', 'scattered'],
-    nouns: ['ash', 'ruin', 'void', 'decay', 'dissolution'],
+    adjectives: ['corroding', 'consuming', 'inevitable', 'dissolving', 'chaotic', 'hollow', 'terminal', 'fraying', 'spent', 'irreversible'],
+    verbs: ['crumbled', 'consumed', 'unraveled', 'corroded', 'scattered', 'erased', 'devoured', 'hollowed', 'dismantled', 'extinguished'],
+    nouns: ['ash', 'ruin', 'void', 'silence', 'dust', 'wreckage', 'remnant', 'absence', 'entropy', 'nothing'],
   },
 };
 

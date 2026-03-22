@@ -3,6 +3,7 @@ import type { EncounterCacheEntry } from '../../../engine/encounterCache';
 import type { EncounterProgress } from '../../../types/encounter';
 import { ENCOUNTER_ABANDON_COOLDOWN, ENCOUNTER_COMPLETION_COOLDOWN } from '../../../types/encounter';
 import { getAnyEncounterById } from '../../../data/encounter-content';
+import type { WorldGraph } from '../../../engine/graph';
 
 // ─── Styles ─────────────────────────────────────────────────────
 
@@ -66,6 +67,14 @@ const STATUS_COLORS: Record<string, string> = {
   completed: '#60a5fa',
 };
 
+const CLICKABLE_NAME_STYLE: React.CSSProperties = {
+  color: 'var(--accent-gold)',
+  cursor: 'pointer',
+  textDecoration: 'underline',
+  textDecorationStyle: 'dotted',
+  textUnderlineOffset: '2px',
+};
+
 const EMPTY_STATE_STYLE: React.CSSProperties = {
   padding: '16px',
   textAlign: 'center',
@@ -81,6 +90,10 @@ export interface EncounterCacheViewProps {
   encounterProgress: readonly EncounterProgress[];
   currentTick: number;
   followAgentId?: string;
+  /** Callback to zoom the map to a location's hex */
+  onZoomToLocation?: (locationId: string) => void;
+  /** World graph for looking up location names */
+  graph?: WorldGraph;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -104,12 +117,23 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
   encounterProgress,
   currentTick,
   followAgentId,
+  onZoomToLocation,
+  graph,
 }: EncounterCacheViewProps) {
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
 
   const toggleLocation = useCallback((locId: string) => {
     setExpandedLocation(prev => prev === locId ? null : locId);
   }, []);
+
+  // Map templateId → locationId for encounter progress lookups
+  const templateToLocation = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const entry of cacheEntries) {
+      map.set(entry.templateId, entry.locationId);
+    }
+    return map;
+  }, [cacheEntries]);
 
   // Group cache entries by location
   const byLocation = useMemo(() => {
@@ -176,7 +200,9 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
         {filteredActive.length === 0 ? (
           <div style={EMPTY_STATE_STYLE}>No active encounters</div>
         ) : (
-          filteredActive.map(p => (
+          filteredActive.map(p => {
+            const locId = templateToLocation.get(p.encounterId);
+            return (
             <div key={`${p.actorId}-${p.encounterId}-${p.startedTick}`} style={ENCOUNTER_ITEM_STYLE}>
               <div style={ROW_STYLE}>
                 <span style={LABEL_STYLE}>Agent</span>
@@ -184,7 +210,13 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
               </div>
               <div style={ROW_STYLE}>
                 <span style={LABEL_STYLE}>Encounter</span>
-                <span style={VALUE_STYLE}>{getEncounterName(p.encounterId)}</span>
+                <span
+                  style={{ ...VALUE_STYLE, ...(onZoomToLocation && locId ? CLICKABLE_NAME_STYLE : {}) }}
+                  onClick={onZoomToLocation && locId ? () => onZoomToLocation(locId) : undefined}
+                  title={locId ? `Zoom to ${locId}` : undefined}
+                >
+                  {getEncounterName(p.encounterId)}
+                </span>
               </div>
               <div style={ROW_STYLE}>
                 <span style={LABEL_STYLE}>Step</span>
@@ -200,7 +232,8 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
                 <span style={{ ...VALUE_STYLE, color: STATUS_COLORS[p.status] }}>{p.status}</span>
               </div>
             </div>
-          ))
+            );
+          })
         )}
       </div>
 
@@ -215,6 +248,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
           filteredCooldowns.map(p => {
             const end = getCooldownEnd(p);
             const remaining = end - currentTick;
+            const locId = templateToLocation.get(p.encounterId);
             return (
               <div key={`${p.actorId}-${p.encounterId}-${p.startedTick}`} style={ENCOUNTER_ITEM_STYLE}>
                 <div style={ROW_STYLE}>
@@ -223,7 +257,13 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
                 </div>
                 <div style={ROW_STYLE}>
                   <span style={LABEL_STYLE}>Encounter</span>
-                  <span style={VALUE_STYLE}>{getEncounterName(p.encounterId)}</span>
+                  <span
+                    style={{ ...VALUE_STYLE, ...(onZoomToLocation && locId ? CLICKABLE_NAME_STYLE : {}) }}
+                    onClick={onZoomToLocation && locId ? () => onZoomToLocation(locId) : undefined}
+                    title={locId ? `Zoom to ${locId}` : undefined}
+                  >
+                    {getEncounterName(p.encounterId)}
+                  </span>
                 </div>
                 <div style={ROW_STYLE}>
                   <span style={LABEL_STYLE}>Reason</span>
@@ -253,6 +293,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
               >
                 <span style={{ color: 'var(--text-primary)' }}>
                   {expandedLocation === locId ? '\u25BC' : '\u25B6'} {locId}
+                  {graph && (() => { const n = graph.getNode(locId); return n ? ` (${n.name})` : ''; })()}
                 </span>
                 <span style={{ color: 'var(--text-muted)' }}>
                   {entries.length} encounters
@@ -260,7 +301,14 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
               </div>
               {expandedLocation === locId && entries.map(e => (
                 <div key={e.templateId} style={ENCOUNTER_ITEM_STYLE}>
-                  <div style={{ color: 'var(--text-primary)', marginBottom: '2px' }}>
+                  <div
+                    style={{
+                      marginBottom: '2px',
+                      ...(onZoomToLocation ? CLICKABLE_NAME_STYLE : { color: 'var(--text-primary)' }),
+                    }}
+                    onClick={onZoomToLocation ? () => onZoomToLocation(e.locationId) : undefined}
+                    title={`Zoom to ${e.locationId}`}
+                  >
                     {getEncounterName(e.templateId)}
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>

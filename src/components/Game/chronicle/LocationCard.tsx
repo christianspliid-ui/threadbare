@@ -7,7 +7,6 @@ interface LocationCardProps {
   agentCount: number;
   flavorText: string;
   onClick: () => void;
-  onDoubleClick: () => void;
   /** Nested content: sublocation cards, inline agent entries */
   children?: ReactNode;
 }
@@ -23,7 +22,7 @@ const SUBTYPE_GLYPHS: Record<string, string> = {
 };
 
 export const LocationCard = memo(function LocationCard({
-  name, subtype, agentCount, flavorText, onClick, onDoubleClick, children,
+  name, subtype, agentCount, flavorText, onClick, children,
 }: LocationCardProps) {
   const glyph = SUBTYPE_GLYPHS[subtype] || SUBTYPE_GLYPHS.default;
 
@@ -36,10 +35,9 @@ export const LocationCard = memo(function LocationCard({
 
   return (
     <div
+      className="card-gold-edge"
       style={{
         background: 'var(--bg-raised)',
-        border: '1px solid var(--border-subtle)',
-        borderRadius: '6px',
         padding: '10px 14px',
         transition: 'border-color 0.2s ease',
         margin: '8px 0',
@@ -48,7 +46,6 @@ export const LocationCard = memo(function LocationCard({
       {/* Clickable header row */}
       <div
         onClick={onClick}
-        onDoubleClick={onDoubleClick}
         onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}
@@ -82,11 +79,11 @@ export const LocationCard = memo(function LocationCard({
           </span>
           <span
             style={{
-              fontFamily: 'var(--font-body)',
-              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-display)',
+              color: 'var(--accent-gold-dim)',
               fontSize: 'var(--text-xs)',
               textTransform: 'uppercase',
-              letterSpacing: '0.06em',
+              letterSpacing: '0.1em',
               marginLeft: 'auto',
             }}
           >

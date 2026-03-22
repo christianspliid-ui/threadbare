@@ -53,7 +53,7 @@ export function EventPopup({ popup, queueLength, onDismiss, onChoice }: EventPop
                   fontSize: '10px',
                   backgroundColor: 'var(--bg-raised)',
                   color: 'var(--text-muted)',
-                  border: '1px solid var(--border-subtle)',
+                  border: '1px solid var(--border-gold)',
                 }}
               >
                 {badge}

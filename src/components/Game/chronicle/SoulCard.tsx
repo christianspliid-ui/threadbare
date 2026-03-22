@@ -34,7 +34,7 @@ export const SoulCard = memo(function SoulCard({
       style={{
         background: 'var(--bg-raised)',
         borderLeft: `3px solid ${sphereColor}`,
-        border: `1px solid var(--border-subtle)`,
+        border: `1px solid var(--border-gold)`,
         borderLeftColor: sphereColor,
         borderRadius: '6px',
         padding: '8px 12px',
@@ -43,11 +43,11 @@ export const SoulCard = memo(function SoulCard({
         margin: '8px 0',
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-subtle)';
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-gold)';
         (e.currentTarget as HTMLDivElement).style.borderLeftColor = sphereColor;
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-subtle)';
+        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-gold)';
         (e.currentTarget as HTMLDivElement).style.borderLeftColor = sphereColor;
       }}
     >

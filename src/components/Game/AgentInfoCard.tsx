@@ -67,7 +67,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
         style={{
           backgroundColor: 'var(--bg-deep)',
-          borderBottom: '1px solid var(--border-subtle)',
+          borderBottom: '1px solid var(--border-gold)',
         }}
       >
         <button
@@ -134,13 +134,74 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
           )}
         </div>
 
+        {/* Active Effects (divine influences & court position) */}
+        {card.activeEffects && card.activeEffects.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {card.activeEffects.map((effect, idx) => {
+              const sphereColor = effect.sphere ? getSphereColor(effect.sphere) : 'var(--accent-gold)';
+              const isCourtPosition = effect.type === 'scry_court';
+              const strengthPct = effect.strength != null ? Math.round(effect.strength * 100) : null;
+
+              return (
+                <Tooltip
+                  key={idx}
+                  label={effect.label}
+                  desc={
+                    isCourtPosition
+                      ? 'Court position in your divine Scry'
+                      : `${strengthPct}% strength · ${effect.ticksRemaining} ticks remaining`
+                  }
+                >
+                  <span
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full cursor-help"
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      backgroundColor: `color-mix(in srgb, ${sphereColor} 15%, transparent)`,
+                      border: `1px solid color-mix(in srgb, ${sphereColor} 40%, transparent)`,
+                      color: sphereColor,
+                    }}
+                  >
+                    {isCourtPosition ? '♛' : '◈'}
+                    <span>{effect.label}</span>
+                    {!isCourtPosition && strengthPct != null && (
+                      <span
+                        style={{
+                          width: '1.5rem',
+                          height: '3px',
+                          borderRadius: '2px',
+                          backgroundColor: `color-mix(in srgb, ${sphereColor} 25%, transparent)`,
+                          display: 'inline-block',
+                          position: 'relative',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                            height: '100%',
+                            width: `${strengthPct}%`,
+                            borderRadius: '2px',
+                            backgroundColor: sphereColor,
+                          }}
+                        />
+                      </span>
+                    )}
+                  </span>
+                </Tooltip>
+              );
+            })}
+          </div>
+        )}
+
         {/* Agent summary prose (Recognised+) */}
         {agentProse && card.knowledgeLevel !== 'stranger' && (
           <div
             className="rounded p-2.5"
             style={{
               backgroundColor: 'var(--bg-raised)',
-              borderTop: '1px solid var(--border-subtle)',
+              borderTop: '1px solid var(--border-gold)',
             }}
           >
             <p
@@ -176,7 +237,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                 className="rounded px-2 py-1.5"
                 style={{
                   backgroundColor: 'var(--bg-raised)',
-                  border: '1px solid var(--border-subtle)',
+                  border: '1px solid var(--border-gold)',
                 }}
               >
                 <p
@@ -200,7 +261,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                   style={{
                     fontSize: 'var(--text-xs)',
                     backgroundColor: 'var(--bg-raised)',
-                    border: '1px solid var(--border-subtle)',
+                    border: '1px solid var(--border-gold)',
                     color: 'var(--text-secondary)',
                   }}
                 >
@@ -234,12 +295,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.topValues && card.topValues.length > 0 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Character
             </h3>
@@ -257,12 +313,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.domains && card.domains.length > 0 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Domains
             </h3>
@@ -280,12 +331,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.topBonds && card.topBonds.length > 0 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Bonds
             </h3>
@@ -306,20 +352,16 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.quotes && card.quotes.length > 0 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Voice
             </h3>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {card.quotes.map((quote, idx) => (
-                <p key={idx} className="italic" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-                  "{quote}"
-                </p>
+                <div key={idx} className="quote-block" style={{ fontSize: 'var(--text-xs)', padding: '10px 16px' }}>
+                  &ldquo;{quote}&rdquo;
+                  <span className="quote-attr">~ {card.name}</span>
+                </div>
               ))}
             </div>
           </div>
@@ -329,12 +371,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.cooperationStrategy && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Disposition
             </h3>
@@ -355,12 +392,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.allTraits && card.allTraits.length > 0 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Traits
             </h3>
@@ -378,12 +410,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         {card.backstoryParagraph1 && (
           <div>
             <h3
-              className="font-semibold tracking-wider uppercase mb-1.5"
-              style={{
-                fontSize: 'var(--text-xs)',
-                color: 'var(--text-secondary)',
-                fontFamily: 'var(--font-display)',
-              }}
+              className="section-heading mb-1.5"
             >
               Backstory
             </h3>
@@ -404,7 +431,7 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
         className="flex gap-2 px-4 py-4 flex-shrink-0"
         style={{
           backgroundColor: 'var(--bg-deep)',
-          borderTop: '1px solid var(--border-subtle)',
+          borderTop: '1px solid var(--border-gold)',
         }}
       >
         <button

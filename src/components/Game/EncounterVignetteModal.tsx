@@ -168,7 +168,7 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
           {/* Step Progress */}
           <div
             className="rounded-lg p-3"
-            style={{ backgroundColor: 'var(--bg-raised)', border: '1px solid var(--border-subtle)' }}
+            style={{ backgroundColor: 'var(--bg-raised)', border: '1px solid var(--border-gold)' }}
           >
             <div className="flex items-center justify-between mb-2">
               <StepDots
@@ -260,7 +260,7 @@ export const EncounterVignetteModal = memo(function EncounterVignetteModal({
           style={{
             backgroundColor: 'var(--bg-raised)',
             color: 'var(--text-primary)',
-            border: '1px solid var(--border-subtle)',
+            border: '1px solid var(--border-gold)',
           }}
         >
           Close

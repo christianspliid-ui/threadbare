@@ -5,6 +5,8 @@ import type { HexVisibilityState, StaleSnapshot } from '../../types/visibility';
 import { BIOME_COLORS } from '../../engine/color';
 import { hexPolygonPoints, HEX_IMG_SCALE } from '../../lib/hexMath';
 import { getHexTileUrl, getOverlayIconUrl, isFullSizeOverlay } from '../../data/hex-tile-assets';
+import { getRingSlotOffset } from '../../lib/movementPath';
+import { AGENT_RING_RADIUS } from '../../data/agent-visual-content';
 import { isWaterTerrain } from '../../engine/coastline';
 import { buildHexTooltipProse } from '../../engine/hexTooltipProse';
 import { Tooltip } from '../shared/Tooltip';
@@ -20,8 +22,10 @@ const AVATAR_PULSE_WIDTH = 3; // Stroke width for avatar hex pulse ring
 const OVERLAY_OPACITY = 0.85; // Location overlay icon opacity
 
 // Overlay sizing: full-size settlements fill the hex, structures render at half size
-const OVERLAY_FULL_SCALE = 0.85;  // Settlement overlays (hamlet, town, city, capital) — nearly fill hex
-const OVERLAY_HALF_SCALE = 0.45;  // Structure/marker overlays (shrine, fort, ruins, etc.) — half hex size
+const OVERLAY_SIZE_FACTOR = 0.7;  // Overlays render at 70% of previous size
+const OVERLAY_FULL_SCALE = 0.85 * OVERLAY_SIZE_FACTOR;  // Settlement overlays (hamlet, town, city, capital)
+const OVERLAY_HALF_SCALE = 0.45 * OVERLAY_SIZE_FACTOR;  // Structure/marker overlays (shrine, fort, ruins, etc.)
+const OVERLAY_RING_ROTATION_DEG = 8; // Degrees to rotate overlay ring relative to agent ring
 
 /** RC-046: Extracted helper — renders hex-clipped location overlay icon */
 function renderLocationOverlay(
@@ -35,8 +39,13 @@ function renderLocationOverlay(
   if (!overlayUrl) return null;
   const scale = isFullSizeOverlay(subtype) ? OVERLAY_FULL_SCALE : OVERLAY_HALF_SCALE;
   const overlaySize = size * 2 * scale;
+  // Position on agent ring but rotated 8° so overlays sit between agent slots
+  const baseOffset = getRingSlotOffset(0, 1, AGENT_RING_RADIUS);
+  const rotRad = (OVERLAY_RING_ROTATION_DEG * Math.PI) / 180;
+  const offsetX = baseOffset.x * Math.cos(rotRad) - baseOffset.y * Math.sin(rotRad);
+  const offsetY = baseOffset.x * Math.sin(rotRad) + baseOffset.y * Math.cos(rotRad);
   return (
-    <g clipPath={`url(#${hexClipId})`} transform={`translate(${cx}, ${cy})`}>
+    <g clipPath={`url(#${hexClipId})`} transform={`translate(${cx + offsetX}, ${cy + offsetY})`}>
       <image
         href={overlayUrl}
         x={-overlaySize / 2}

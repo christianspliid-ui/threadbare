@@ -306,8 +306,8 @@ describe('Movement Execution', () => {
 
       expect(result.moved).toBe(true);
       expect(result.updatedState.movementQueue).toEqual(['hex_c']);
-      // Next edge cost should be computed (grassland = 1)
-      expect(result.updatedState.currentEdgeCost).toBe(1);
+      // Next edge cost should be computed (grassland→grassland = 2 with 2-edge model)
+      expect(result.updatedState.currentEdgeCost).toBe(2);
     });
   });
 });

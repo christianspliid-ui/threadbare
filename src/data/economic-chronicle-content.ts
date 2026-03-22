@@ -55,6 +55,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Where once stood the {oldType} of {settlement}, a {newType} now rises — its streets widening, its markets swelling with commerce.',
     'The {oldType} of {settlement} has outgrown its name. It is a {newType} now, and the world has taken notice.',
     'Prosperity begets growth, and {settlement} has answered the call. The {oldType} is no more; a {newType} stands in its place.',
+    'New buildings rise faster than old ones decay. {settlement} has crossed the threshold from {oldType} to {newType}.',
+    'The gates of {settlement} widen. What was a {oldType} now carries the weight and ambition of a {newType}.',
   ],
 
   settlement_demotion: [
@@ -62,6 +64,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'The decline of {settlement} is complete. Where a {oldType} once thrived, only the bones of a {newType} remain.',
     'Hard times have stripped {settlement} of its standing. The {oldType} shrinks, and those who remain call it a {newType} now.',
     'Famine, neglect, or ill fortune — whatever the cause, {settlement} has fallen from {oldType} to {newType}, and its people grow fewer by the day.',
+    'The market stalls stand empty. {settlement} is a {newType} now, whatever it once claimed to be.',
+    'Those who could leave {settlement} already have. What remains is a {newType} in all but memory.',
   ],
 
   trade_route_established: [
@@ -69,6 +73,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Merchants have blazed a path between {actor} and {target}. Wagons heavy with {goodsType} now roll where none did before.',
     'The road between {actor} and {target} comes alive with commerce — {goodsType} flowing like a river of coin.',
     '{actor} and {target} are linked now by trade. The first caravans of {goodsType} have already set out.',
+    'Where there was no road, there is now a track beaten flat by merchant wheels. {goodsType} moves between {actor} and {target}.',
+    'Coin follows goods, and goods now follow the road between {actor} and {target}. The {goodsType} trade has begun.',
   ],
 
   trade_route_died: [
@@ -76,6 +82,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'No wagons move between {actor} and {target} any longer. The route has withered from disuse, and the road grows over.',
     'Trade between {actor} and {target} has ceased. What was once a lifeline of commerce is now an empty trail.',
     'The merchants who once traveled between {actor} and {target} have found other roads. This one belongs to the dust now.',
+    'Grass grows through the wheel ruts between {actor} and {target}. The trade is dead.',
+    'The last merchant to travel between {actor} and {target} did not send another. The route has been abandoned.',
   ],
 
   guild_founded: [
@@ -83,6 +91,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'A new power takes root in {settlement}: the {guildName} opens its doors, and {flavor}.',
     'The {guildName} of {settlement} is born. {flavor} — and the balance of power shifts accordingly.',
     'In {settlement}, the {guildName} hangs their charter. {flavor}, and a new order begins.',
+    'The {guildName} claims its place in {settlement}. Where {flavor}, a guild hall now stands.',
+    'With the founding of the {guildName}, {settlement} gains a new centre of gravity. {flavor}.',
   ],
 
   monopoly_established: [
@@ -90,6 +100,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'The {resource} trade in {settlement} now answers to {actor} alone. Competitors have been bought, broken, or driven out.',
     '{actor} has cornered the {resource} market in {settlement}. Those who need it must now pay whatever {actor} demands.',
     'A stranglehold tightens: {actor} controls all {resource} in {settlement}. The free market is a memory.',
+    'One hand controls the {resource} in {settlement}, and it belongs to {actor}. The price is whatever they say it is.',
+    '{actor} has eliminated the last competitor. The {resource} supply in {settlement} flows through a single gate now.',
   ],
 
   monopoly_broken: [
@@ -97,6 +109,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Competition returns to {settlement}. The grip on {resource} has been broken, and prices begin their slow descent.',
     'The {resource} stranglehold in {settlement} is no more. Traders flood back, and the old order crumbles.',
     'Freedom, of a kind: the {resource} monopoly that choked {settlement} has shattered. New merchants fill the void.',
+    'The {resource} gates in {settlement} open to all comers once more. The monopoly is over.',
+    'Prices fall in {settlement} as the {resource} market finds its feet again. Competition returns.',
   ],
 
   mercenary_hire: [
@@ -104,6 +118,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Armed strangers arrive in {settlement} at {actor}\'s invitation. They call themselves guards. The locals call them something else.',
     '{actor} has coin, and coin buys steel. A mercenary band now marches under their banner.',
     'The sound of hired boots echoes through {settlement}. {actor} has purchased loyalty — or at least its convincing imitation.',
+    'Professional soldiers take up posts around {actor}\'s holdings. The message is clear without being spoken.',
+    '{actor} pays for swords. Whether the swords stay paid for is a question that answers itself over time.',
   ],
 
   assassination_commissioned: [
@@ -111,6 +127,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'A contract has been drawn in {settlement}. {target}\'s days are numbered, though they may not yet know it.',
     'Gold changes hands in shadow. In {settlement}, {actor} has set events in motion that cannot be undone.',
     'The price of a life has been agreed upon. In {settlement}, someone wants {target} dead — and has the means to arrange it.',
+    'A quiet transaction in {settlement}. {target} is the merchandise, and the buyer is patient.',
+    'Coin has been placed. In {settlement}, {target}\'s name is now currency of a different kind.',
   ],
 
   agreement_broken: [
@@ -118,6 +136,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'The agreement between {actor} and {target} lies in ruins. Words spoken in good faith have been revealed as hollow.',
     '{actor} has betrayed the terms of their accord with {target}. The consequences ripple outward like cracks in ice.',
     'What was sworn between {actor} and {target} has been forsaken. The world remembers who broke faith first.',
+    'The pact between {actor} and {target} is void. Whatever it cost to make, it cost more to keep.',
+    '{actor} walks away from what was promised to {target}. The breach is public. The damage is done.',
   ],
 
   wealth_tier_up: [
@@ -125,6 +145,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Fortune favors {actor} — they have ascended to {tierLabel}. {flavor}',
     'The ledgers tell the story: {actor} has climbed to {tierLabel}. {flavor}',
     '{actor}\'s wealth grows. They stand now among the {tierLabel}. {flavor}',
+    'Coin accumulates. {actor} has reached {tierLabel}. {flavor}',
+    'The rise of {actor} continues — {tierLabel} now. {flavor}',
   ],
 
   wealth_tier_down: [
@@ -132,6 +154,8 @@ export const ECONOMIC_CHRONICLE_TEMPLATES: Record<EconomicChronicleTrigger, stri
     'Misfortune dogs {actor} — they have sunk to {tierLabel}. {flavor}',
     'The ledgers do not lie: {actor} has fallen to {tierLabel}. {flavor}',
     '{actor}\'s fortunes crumble. They count themselves among the {tierLabel} now. {flavor}',
+    'The decline is measured in coin. {actor} is {tierLabel} now. {flavor}',
+    '{actor} has less than they did. The new station: {tierLabel}. {flavor}',
   ],
 };
 

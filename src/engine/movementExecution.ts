@@ -136,6 +136,10 @@ export function tickMovement(
       currentEdgeCost: nextEdgeCost,
       lastDecisionTick: state.lastDecisionTick,
       movementHistory: newHistory,
+      // Preserve encounter targeting fields through transitions
+      targetSublocationId: state.targetSublocationId,
+      targetEncounterId: state.targetEncounterId,
+      motivationPull: state.motivationPull,
     };
 
     return {

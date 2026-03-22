@@ -127,7 +127,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
           {props.agendaName && (
             <div
               className="mb-4 p-3 border rounded-lg"
-              style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-subtle)' }}
+              style={{ backgroundColor: 'var(--bg-deep)', borderColor: 'var(--border-gold)' }}
             >
               <div
                 className="font-bold"

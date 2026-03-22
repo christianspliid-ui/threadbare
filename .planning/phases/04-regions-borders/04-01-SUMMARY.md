@@ -141,3 +141,19 @@ None - no external service configuration required.
 ---
 *Phase: 04-regions-borders*
 *Completed: 2026-03-22*
+
+## Self-Check: PASSED
+
+All key files confirmed present on disk:
+- FOUND: src/engine/regionTypes.ts
+- FOUND: src/engine/regionDetection.ts
+- FOUND: src/engine/hexGrid.ts
+- FOUND: src/engine/__tests__/regionDetection.test.ts
+- FOUND: .planning/phases/04-regions-borders/04-01-SUMMARY.md
+
+All task commits verified in git log:
+- 370a67a - test RED Task 1
+- 0fbe9e1 - feat GREEN Task 1
+- 0c1d0e8 - test RED Task 2
+- af50f4a - feat GREEN Task 2
+- b16275d - docs metadata commit

@@ -30,7 +30,6 @@ interface UseViewNavigationReturn {
   moveMode: boolean;
   hexMapRef: React.RefObject<HexMapHandle>;
   handleHexClick: (coord: { col: number; row: number }) => void;
-  handleLocationDoubleClick: (locationId: string) => void;
   handleBackToWorld: () => void;
   handleBackToHex: () => void;
   handleLocationClick: (locationId: string) => void;
@@ -69,12 +68,6 @@ export function useViewNavigation({
     setFocusedHex(coord);
   }, [gameState.visibilityMap, fogDisabled]);
 
-  const handleLocationDoubleClick = useCallback((locationId: string) => {
-    setViewLevel('location');
-    setFocusedLocationId(locationId);
-    // IX-013: View transition is handled; drawer close is done at GameView level
-  }, []);
-
   const handleBackToWorld = useCallback(() => {
     setViewLevel('world');
     setFocusedHex(null);
@@ -87,8 +80,9 @@ export function useViewNavigation({
     setFocusedLocationId(null);
   }, []);
 
-  const handleLocationClick = useCallback((_locationId: string) => {
-    // Future: show info tooltip
+  const handleLocationClick = useCallback((locationId: string) => {
+    setViewLevel('location');
+    setFocusedLocationId(locationId);
   }, []);
 
   const handleCenterOnAvatar = useCallback(() => {
@@ -144,7 +138,6 @@ export function useViewNavigation({
     moveMode,
     hexMapRef,
     handleHexClick,
-    handleLocationDoubleClick,
     handleBackToWorld,
     handleBackToHex,
     handleLocationClick,

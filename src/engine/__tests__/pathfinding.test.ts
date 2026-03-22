@@ -65,7 +65,8 @@ describe('findShortestPath (Dijkstra)', () => {
 
       expect(result).not.toBeNull();
       expect(result?.path).toEqual([endId]);
-      expect(result?.totalCost).toBe(1);
+      // 2-edge model: grassland→grassland = 2 ticks
+      expect(result?.totalCost).toBe(2);
     });
 
     it('returns path for two-hop route A→B→C', () => {
@@ -139,7 +140,8 @@ describe('findShortestPath (Dijkstra)', () => {
 
       expect(result).not.toBeNull();
       expect(result?.path).toEqual([midId, endId]);
-      expect(result?.totalCost).toBe(2);
+      // 2-edge model: 2 hops × 2 ticks grassland = 4 ticks
+      expect(result?.totalCost).toBe(4);
     });
 
     it('returns empty path with zero cost when start === end', () => {
@@ -374,8 +376,8 @@ describe('findShortestPath (Dijkstra)', () => {
         },
       });
 
-      // start → plains → end (cost: 1 + 1 = 2)
-      // start → mountain → end (cost: 1 + 2.5 = 3.5)
+      // start → plains → end (cost: 2 + 2 = 4) — 2-edge model
+      // start → mountain → end (cost: 2+1.5 + 2 = 5.5) — mountains have +1.5 arrival tax
       graph.addEdge({
         id: 'edge_start_plains',
         source: startId,
@@ -445,7 +447,8 @@ describe('findShortestPath (Dijkstra)', () => {
       expect(result).not.toBeNull();
       // Should pick plains route (lower cost)
       expect(result?.path).toEqual([plainsId, endId]);
-      expect(result?.totalCost).toBe(2);
+      // 2-edge model: 2 hops × 2 ticks grassland = 4 ticks
+      expect(result?.totalCost).toBe(4);
     });
   });
 
@@ -488,7 +491,7 @@ describe('findShortestPath (Dijkstra)', () => {
         },
       });
 
-      // contains edge: hex_center → city (cost 1 base + 1 city entry = 2)
+      // contains edge: hex_center → city (cost 2 base + 1 city entry = 3)
       graph.addEdge({
         id: 'edge_hex_city',
         source: hexCenterId,
@@ -509,8 +512,8 @@ describe('findShortestPath (Dijkstra)', () => {
 
       expect(result).not.toBeNull();
       expect(result?.path).toEqual([cityLocationId]);
-      // cost should be 1 (base) + 1 (city entry tax) = 2
-      expect(result?.totalCost).toBe(2);
+      // 2-edge model: 2 (base) + 1 (city entry tax) = 3
+      expect(result?.totalCost).toBe(3);
     });
   });
 
@@ -602,7 +605,8 @@ describe('findShortestPath (Dijkstra)', () => {
       expect(result).not.toBeNull();
       // Should use direct route, avoiding non-location NPC
       expect(result?.path).toEqual([endId]);
-      expect(result?.totalCost).toBe(1);
+      // 2-edge model: grassland→grassland = 2 ticks
+      expect(result?.totalCost).toBe(2);
     });
   });
 

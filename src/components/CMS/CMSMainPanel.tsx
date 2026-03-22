@@ -5,12 +5,13 @@
  * and creating the viewer component. All config comes from the registry entry.
  */
 
-import type { ContentRegistryEntry } from './types';
+import type { ContentRegistryEntry, TunableGroup } from './types';
 import { TableViewer } from './viewers/TableViewer';
 import { RecordViewer } from './viewers/RecordViewer';
 import { ConstantsViewer } from './viewers/ConstantsViewer';
 import { ProseViewer } from './viewers/ProseViewer';
 import { TreeViewer } from './viewers/TreeViewer';
+import { ConfigManager } from './viewers/ConfigManager';
 
 interface Props {
   entry: ContentRegistryEntry | null;
@@ -108,6 +109,13 @@ function renderViewer(
           data={entry.data as Record<string, unknown[]>}
           searchQuery={searchQuery}
           onSelectItem={onSelectItem}
+        />
+      );
+    case 'config-manager':
+      return (
+        <ConfigManager
+          groups={entry.data as TunableGroup[]}
+          searchQuery={searchQuery}
         />
       );
     default:

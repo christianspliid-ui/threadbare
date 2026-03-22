@@ -20,6 +20,7 @@ export interface UseHexZoomDataParams {
   focusedHex: { col: number; row: number } | null;
   focusedLocationId: string | null;
   tiles: HexTile[];
+  fogDisabled?: boolean;
 }
 
 export interface UseHexZoomDataReturn {
@@ -46,6 +47,7 @@ export function useHexZoomData({
   focusedHex,
   focusedLocationId,
   tiles,
+  fogDisabled,
 }: UseHexZoomDataParams): UseHexZoomDataReturn {
   const hexLocations = useMemo(() => {
     if (!focusedHex) return [];
@@ -70,9 +72,10 @@ export function useHexZoomData({
   }, [graph, focusedHex]);
 
   const hexLineOfSight = useMemo(() => {
+    if (fogDisabled) return 'full' as const;
     if (!focusedHex) return 'none' as const;
     return getLineOfSight(graph, ascendantId, focusedHex);
-  }, [graph, ascendantId, focusedHex]);
+  }, [graph, ascendantId, focusedHex, fogDisabled]);
 
   const hexTotalAgents = useMemo(() => {
     return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
