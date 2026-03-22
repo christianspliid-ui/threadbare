@@ -71,10 +71,10 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Landscape Signifiers (LSIG)
 
-- [ ] **LSIG-01**: Each of 27 terrain types has 2-5 SVG signifier variants (dark silhouette icons)
+- [x] **LSIG-01**: Each of 27 terrain types has 2-5 SVG signifier variants (dark silhouette icons)
 - [x] **LSIG-02**: Signifier variant selected deterministically per hex (seeded by hex coordinates)
 - [x] **LSIG-03**: Signifiers rendered with slight position jitter (+/-10%) and rotation (+/-15deg) for organic feel
-- [ ] **LSIG-04**: Signifier size scales with hex render size (hidden below regional zoom threshold)
+- [x] **LSIG-04**: Signifier size scales with hex render size (hidden below regional zoom threshold)
 - [x] **LSIG-05**: All signifiers share consistent stroke weight, detail level, and color treatment (stylistic unity)
 
 ### Landscape Signifier Content (LART)
@@ -277,10 +277,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COMP-02 | Phase 5 | Complete |
 | COMP-03 | Phase 5 | Complete |
 | COMP-04 | Phase 5 | Complete |
-| LSIG-01 | Phase 5 | Pending |
+| LSIG-01 | Phase 5 | Complete |
 | LSIG-02 | Phase 5 | Complete |
 | LSIG-03 | Phase 5 | Complete |
-| LSIG-04 | Phase 5 | Pending |
+| LSIG-04 | Phase 5 | Complete |
 | LSIG-05 | Phase 5 | Complete |
 | LART-01 | Phase 5 | Pending |
 | LART-02 | Phase 5 | Pending |
