@@ -79,18 +79,18 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Landscape Signifier Content (LART)
 
-- [ ] **LART-01**: SVG signifier set for grassland (3 variants: clean, light tufts, wildflowers)
-- [ ] **LART-02**: SVG signifier set for savanna (3 variants: single tree, two trees, dry grass)
-- [ ] **LART-03**: SVG signifier set for steppe (3 variants: scrub, bent grass, bare)
-- [ ] **LART-04**: SVG signifier set for floodplain (2 variants: dry, wet-season marks)
-- [ ] **LART-05**: SVG signifier set for woodland (4 variants: 2-tree, 3-tree, single large, mixed)
-- [ ] **LART-06**: SVG signifier set for temperate_forest (4 variants: tight cluster, mixed sizes, clearing, full canopy)
-- [ ] **LART-07**: SVG signifier set for dense_forest (3 variants: solid canopy, deep shade, ancient trunks)
-- [ ] **LART-08**: SVG signifier set for boreal_forest (4 variants: tight conifers, mixed height, snow-dusted, sparse)
-- [ ] **LART-09**: SVG signifier set for tropical_forest (3 variants: dense canopy, palms mixed, vine-draped)
-- [ ] **LART-10**: SVG signifier set for marsh (3 variants: reeds, water lines, mixed)
-- [ ] **LART-11**: SVG signifier set for swamp (3 variants: standing water, dead trees, dense reeds)
-- [ ] **LART-12**: SVG signifier set for moor_bog (3 variants: heather, peat, sparse scrub)
+- [x] **LART-01**: SVG signifier set for grassland (3 variants: clean, light tufts, wildflowers)
+- [x] **LART-02**: SVG signifier set for savanna (3 variants: single tree, two trees, dry grass)
+- [x] **LART-03**: SVG signifier set for steppe (3 variants: scrub, bent grass, bare)
+- [x] **LART-04**: SVG signifier set for floodplain (2 variants: dry, wet-season marks)
+- [x] **LART-05**: SVG signifier set for woodland (4 variants: 2-tree, 3-tree, single large, mixed)
+- [x] **LART-06**: SVG signifier set for temperate_forest (4 variants: tight cluster, mixed sizes, clearing, full canopy)
+- [x] **LART-07**: SVG signifier set for dense_forest (3 variants: solid canopy, deep shade, ancient trunks)
+- [x] **LART-08**: SVG signifier set for boreal_forest (4 variants: tight conifers, mixed height, snow-dusted, sparse)
+- [x] **LART-09**: SVG signifier set for tropical_forest (3 variants: dense canopy, palms mixed, vine-draped)
+- [x] **LART-10**: SVG signifier set for marsh (3 variants: reeds, water lines, mixed)
+- [x] **LART-11**: SVG signifier set for swamp (3 variants: standing water, dead trees, dense reeds)
+- [x] **LART-12**: SVG signifier set for moor_bog (3 variants: heather, peat, sparse scrub)
 - [ ] **LART-13**: SVG signifier set for hills (4 variants: single hill, double hill, rolling, steep)
 - [ ] **LART-14**: SVG signifier set for forested_hills (3 variants: deciduous-topped, conifer-topped, mixed)
 - [ ] **LART-15**: SVG signifier set for mountains (4 variants: single peak, double peak, ridge, cliff face)
@@ -282,18 +282,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | LSIG-03 | Phase 5 | Complete |
 | LSIG-04 | Phase 5 | Complete |
 | LSIG-05 | Phase 5 | Complete |
-| LART-01 | Phase 5 | Pending |
-| LART-02 | Phase 5 | Pending |
-| LART-03 | Phase 5 | Pending |
-| LART-04 | Phase 5 | Pending |
-| LART-05 | Phase 5 | Pending |
-| LART-06 | Phase 5 | Pending |
-| LART-07 | Phase 5 | Pending |
-| LART-08 | Phase 5 | Pending |
-| LART-09 | Phase 5 | Pending |
-| LART-10 | Phase 5 | Pending |
-| LART-11 | Phase 5 | Pending |
-| LART-12 | Phase 5 | Pending |
+| LART-01 | Phase 5 | Complete |
+| LART-02 | Phase 5 | Complete |
+| LART-03 | Phase 5 | Complete |
+| LART-04 | Phase 5 | Complete |
+| LART-05 | Phase 5 | Complete |
+| LART-06 | Phase 5 | Complete |
+| LART-07 | Phase 5 | Complete |
+| LART-08 | Phase 5 | Complete |
+| LART-09 | Phase 5 | Complete |
+| LART-10 | Phase 5 | Complete |
+| LART-11 | Phase 5 | Complete |
+| LART-12 | Phase 5 | Complete |
 | LART-13 | Phase 5 | Pending |
 | LART-14 | Phase 5 | Pending |
 | LART-15 | Phase 5 | Pending |

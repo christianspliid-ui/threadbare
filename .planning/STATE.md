@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 05-hex-composition-landscape-signifiers 05-02-PLAN.md
-last_updated: "2026-03-22T11:42:34.284Z"
+stopped_at: Completed 05-hex-composition-landscape-signifiers 05-03-PLAN.md
+last_updated: "2026-03-22T11:46:55.605Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 82
 ---
 
@@ -72,6 +72,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 04-regions-borders P03 | 5 | 2 tasks | 6 files |
 | Phase 05-hex-composition-landscape-signifiers P01 | 6 | 2 tasks | 5 files |
 | Phase 05-hex-composition-landscape-signifiers P02 | 8 | 2 tasks | 4 files |
+| Phase 05-hex-composition-landscape-signifiers P03 | 12 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 05-hex-composition-landscape-signifiers]: SIGNIFIER_JITTER_RANGE and SIGNIFIER_ROTATION_RANGE as named constants (NFP #1); placeholder SVG paths in registry, Plans 03+04 replace with production art
 - [Phase 05-hex-composition-landscape-signifiers]: SIGNIFIER_ZOOM_THRESHOLD=5: signifiers show at regional+ zoom (k>=5), hidden at continental/full-world
 - [Phase 05-hex-composition-landscape-signifiers]: Texture cache keyed as terrain:variantIndex; buildSignifierTextureCache called once at scene init, no per-frame cost
+- [Phase 05-hex-composition-landscape-signifiers]: Steppe variant 0 and dense_forest variant 0 use exact path data from Design/ hand-drawn SVGs (style standard extraction)
 
 ### Pending Todos
 
@@ -124,6 +126,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T11:42:34.282Z
-Stopped at: Completed 05-hex-composition-landscape-signifiers 05-02-PLAN.md
+Last session: 2026-03-22T11:46:55.603Z
+Stopped at: Completed 05-hex-composition-landscape-signifiers 05-03-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
