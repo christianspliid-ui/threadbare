@@ -28,12 +28,13 @@ npm run dev    # start Vite dev server with hot reload
 
 | URL Param | What it does |
 |-----------|-------------|
-| `?view=game` | Skip worldgen + ascendant selection, jump straight to game view (seed 42, random archetype, "The Dev Oracle") |
+| `?view=hexv2` | **Primary dev view.** Three.js hex map renderer (V2) with full game chrome. All hex map development uses this route. |
+| `?view=game` | Full game view with Three.js hex map (HexMapV2) and game chrome. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=cms` | Content browser |
 | `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
 
-**When testing with Playwright or preview tools, always use `?view=game`** to skip the multi-click entry flow. Only test the worldgen/selection screens when those screens are the subject of the test.
+**When testing hex map work, always use `?view=hexv2`.** When testing non-map game systems, use `?view=game` to skip the multi-click entry flow. Only test the worldgen/selection screens when those screens are the subject of the test.
 
 **Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 
@@ -94,6 +95,7 @@ The game fills exactly one viewport. **Nothing scrolls. Nothing renders below th
 - **CSS enforcement:** `html, body, #root` have `height: 100dvh; overflow: hidden` in `index.css`. Never remove this.
 - **Layout rule:** Every full-screen layout must use `h-screen flex flex-col overflow-hidden`. Child panels use `flex-1 overflow-y-auto` for internal scroll.
 - **Preview verification:** Always run `preview_resize` to 1920×1080 (or the user's specified resolution) **before** taking screenshots. The default Playwright/preview viewport is not 1920×1080 — it can be any size.
+- **WebGL/Three.js verification:** Playwright `preview_snapshot` and `preview_inspect` cannot see WebGL canvas content — they only see a blank `<canvas>` element. For visual verification of the hex map (HexMapV2) or any Three.js/WebGL content, use **Claude in Chrome** (`mcp__Claude_in_Chrome__*` tools): `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"` or `action: "zoom"`. Playwright is still useful for console errors, network requests, and DOM-based UI around the canvas.
 - **Modal/overlay rule:** Modals use `max-height: 85vh` (already in Modal primitive). Absolute-positioned overlays (InterventionConfirm, AgendaPicker) must use `inset: 0` within their parent, never exceed the parent's bounds.
 - **Test for it:** If a component renders off-screen at 1920×1080, that's a bug — same severity as a broken interaction.
 
@@ -148,6 +150,7 @@ Settled. Do not revisit.
 - ❌ Fixed action count / capped action slots — replaced by open-ended, data-driven template pool filtered per target context
 - ❌ React Three Fiber (R3F) — use raw Three.js with canvas ref instead. Direct Three.js gives full control over InstancedMesh, render loop, and d3-zoom integration without R3F abstraction overhead.
 - ❌ KayKit GLTF 3D models — replaced by flat hex grid with 2D signifier art composited per-hex
+- ❌ V1 SVG hex map (HexMap.tsx, HexTile.tsx, AgentDots.tsx, MovementTrails.tsx) — deleted in Phase 8. Replaced by HexMapV2 (Three.js InstancedMesh).
 
 ## Change Audit Trail
 
@@ -214,6 +217,6 @@ Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
 
 Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
 
-- Current phase: **Hex Map V2** (Phase 3 of 8) — see `.planning/ROADMAP.md` for phase details, `.planning/BACKLOG.md` for future work
-- Engine: ~323 modules, ~70,600+ lines, ~5,111+ tests across 351+ test files
+- Current phase: **Phase 8 Integration** (final) — V1 SVG hex map deleted, HexMapV2 is the sole renderer. See `.planning/ROADMAP.md` for phase details, `.planning/BACKLOG.md` for future work.
+- Engine: ~325 modules, ~70,800+ lines, ~5,119+ tests across 352+ test files
 - Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests

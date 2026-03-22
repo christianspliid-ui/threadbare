@@ -1,20 +1,18 @@
 # Project Status
 
-> Updated 2026-03-20. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
+> Updated 2026-03-22. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Hex Map V2** — Three.js-based hex map renderer (8-phase milestone). **V1 SVG hex map is frozen** — all development targets V2 only (`?view=hexv2`).
+**Phase 8 Integration complete.** The Hex Map V2 milestone (8 phases) is finished. HexMapV2 (Three.js InstancedMesh) is the sole hex renderer. The V1 SVG hex map has been deleted.
 
 **Recent completions:**
+- ✅ Phase 8 Plan 02: V1 SVG hex map deleted, WGEN-14 fantasy overlay pass (2026-03-22) — 22 V1 files deleted, sphere-driven biome transformation pass implemented with 8 TDD tests, App.tsx worldgen screen updated to HexMapV2, all documentation cleaned up. Requirements INTG-06 + WGEN-14 complete.
 - ✅ Phase 8 Plan 01: HexMapV2 integration into GameView (2026-03-22) — Three.js renderer replaces SVG HexMap in `?view=game`; WorldGenResult data threaded through; graph-to-AgentRenderData + LocationNode adapters; fog toggle wired. Requirements INTG-01..05 complete.
-- ✅ Phase 7 Plan 01: Fog & Zoom pure logic modules (2026-03-22) — ZoomVisibilityMatrix (16-layer visibility matrix, 4 zoom tiers, fade alpha) + FogCulling (color override, layer gating, BFS visibility). 83 tests. Requirements FOG-01..06 + ZOOM-01..04 complete.
-- ✅ Phase 6 Plan 04: Agent animation + HexMapV2 wiring (2026-03-22) — bezier hop (800ms + 150ms settle bounce), 6 activity icons, 5 event indicators, movement trails (2s fade), all render-loop integrated. Phase 6 complete.
-- ✅ Phase 6 Plan 03: Agent rendering system (2026-03-22) — Three-tier sprite system (portrait/dot/continental), faction-color rings, retinue gold borders. 41 tests.
+- ✅ Phase 07.1 Plan 01: Stencil coastline clipping (2026-03-22) — GPU stencil-buffer clips coastal land hexes to organic shoreline; land/water InstancedMesh split; fog routing via globalToMeshMap. Requirement WATR-01 complete.
+- ✅ Phase 7 Plan 01: Fog & Zoom pure logic modules (2026-03-22) — ZoomVisibilityMatrix (16-layer visibility matrix, 4 zoom tiers, fade alpha) + FogCulling (color override, layer gating, BFS visibility). 83 tests.
+- ✅ Phase 6 complete: Agent rendering, animation, location icons, all wired to HexMapV2.
 
-**Up next:**
-- Phase 8 Plan 02: Documentation cleanup and V1 removal
-
-**Latest implementation:** Phase 8 Plan 01 (2026-03-22) — HexMapV2 drop-in replacement for HexMap in GameView. WorldGenResult (riverPaths, lakeIds, regionData) flows from gameInit through useSimulation to HexMapV2 props. Agent and location adapters build render data from world graph.
+**Latest implementation:** Phase 8 Plan 02 (2026-03-22) — V1 HexMap/ directory deleted; pass10-fantasyOverlay wired into generateWorld(); WGEN-14 fantasy overlay transforms sphere-high biomes to magical variants.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
