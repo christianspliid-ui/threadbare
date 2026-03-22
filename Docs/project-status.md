@@ -6,17 +6,15 @@
 **Hex Map V2** — Three.js-based hex map renderer (8-phase milestone). **V1 SVG hex map is frozen** — all development targets V2 only (`?view=hexv2`).
 
 **Recent completions:**
+- ✅ Phase 8 Plan 01: HexMapV2 integration into GameView (2026-03-22) — Three.js renderer replaces SVG HexMap in `?view=game`; WorldGenResult data threaded through; graph-to-AgentRenderData + LocationNode adapters; fog toggle wired. Requirements INTG-01..05 complete.
 - ✅ Phase 7 Plan 01: Fog & Zoom pure logic modules (2026-03-22) — ZoomVisibilityMatrix (16-layer visibility matrix, 4 zoom tiers, fade alpha) + FogCulling (color override, layer gating, BFS visibility). 83 tests. Requirements FOG-01..06 + ZOOM-01..04 complete.
 - ✅ Phase 6 Plan 04: Agent animation + HexMapV2 wiring (2026-03-22) — bezier hop (800ms + 150ms settle bounce), 6 activity icons, 5 event indicators, movement trails (2s fade), all render-loop integrated. Phase 6 complete.
 - ✅ Phase 6 Plan 03: Agent rendering system (2026-03-22) — Three-tier sprite system (portrait/dot/continental), faction-color rings, retinue gold borders. 41 tests.
-- ✅ Phase 6 Plan 01/02: Location rendering pipeline + production icon art. 17 location types.
-- ✅ Phase 5 Plans 01-04: Signifier system scaffold, composition resolver, all terrain art. Phase 5 complete.
 
 **Up next:**
-- Phase 7: Fog of War
-- Phase 8: Integration
+- Phase 8 Plan 02: Documentation cleanup and V1 removal
 
-**Latest implementation:** Phase 6 Plan 04 (2026-03-22) — Agent animation state machine, activity/event indicator SVG registries, Three.js movement trail system with per-frame fade/dispose, HexMapV2 wiring. No external tween library — fully render-loop integrated.
+**Latest implementation:** Phase 8 Plan 01 (2026-03-22) — HexMapV2 drop-in replacement for HexMap in GameView. WorldGenResult (riverPaths, lakeIds, regionData) flows from gameInit through useSimulation to HexMapV2 props. Agent and location adapters build render data from world graph.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
