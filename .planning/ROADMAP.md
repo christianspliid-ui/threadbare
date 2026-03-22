@@ -84,7 +84,7 @@ Plans:
   3. Region labels appear at region centers: kingdoms bold all-caps, baronies title case, geographic features italic
   4. Labels do not overlap each other
   5. Capital cities are marked with red dots distinguishable from terrain at regional zoom
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 04-01-PLAN.md — Region type contracts, TERRAIN_TO_FEATURE audit, border-cost watershed detection, WorldGenResult threading
@@ -172,7 +172,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
-| 4. Regions & Borders | 0/3 | Planned | - |
+| 4. Regions & Borders | 2/3 | In Progress|  |
 | 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
