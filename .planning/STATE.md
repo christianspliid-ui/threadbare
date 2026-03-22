@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 06-01-PLAN.md
-last_updated: "2026-03-22T14:20:24.271Z"
+stopped_at: Completed 06-02-PLAN.md
+last_updated: "2026-03-22T14:27:06.259Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 19
-  completed_plans: 17
+  completed_plans: 18
   percent: 82
 ---
 
@@ -76,6 +76,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 05-hex-composition-landscape-signifiers P04 | 12 | 2 tasks | 1 files |
 | Phase 06-locations-agents P03 | 4 | 2 tasks | 6 files |
 | Phase 06-locations-agents P01 | 8 | 2 tasks | 12 files |
+| Phase 06-locations-agents P02 | 3 | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -125,6 +126,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 06-locations-agents]: RING layout uses getRingSlotOffset from movementPath.ts (shared with AgentDots SVG layer) — agent sort by id for deterministic slots
 - [Phase 06-locations-agents]: LOCATION_ICON_THRESHOLD=5 matches SIGNIFIER_ZOOM_THRESHOLD - both show at regional+
 - [Phase 06-locations-agents]: RING slot uses ringCounter not occupiedSlots — unlimited capacity, purely additive
+- [Phase 06-locations-agents]: Location icon ruin variants share proportions with intact counterparts — ruined_city from city wall layout, ruined_tower from tower body, ruined_village from hamlet dual-cottage layout
+- [Phase 06-locations-agents]: Shadow layer always second in location icon path array at opacity 0.2-0.25 on left face, per sun-from-right convention established in Phase 5
 
 ### Pending Todos
 
@@ -136,6 +139,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T14:20:24.269Z
-Stopped at: Completed 06-01-PLAN.md
+Last session: 2026-03-22T14:27:06.257Z
+Stopped at: Completed 06-02-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
