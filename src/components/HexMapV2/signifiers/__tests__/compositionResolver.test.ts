@@ -135,4 +135,74 @@ describe('resolveHexComposition', () => {
     expect(result[1].entity).toBe('mid');
     expect(result[2].entity).toBe('low');
   });
+
+  // ── COMP-05: RING slot supports multiple occupants ─────────────────────────
+
+  it('Test 8 (COMP-05): RING slot supports multiple occupants — all get visible=true', () => {
+    const agent1: HexVisualManifest = {
+      entityType: 'agent-1',
+      preferredSlot: 'RING',
+      footprint: 'tiny',
+      suppresses: [],
+      visibleAt: ['hero-local', 'regional'],
+      priority: 30,
+    };
+    const agent2: HexVisualManifest = {
+      entityType: 'agent-2',
+      preferredSlot: 'RING',
+      footprint: 'tiny',
+      suppresses: [],
+      visibleAt: ['hero-local', 'regional'],
+      priority: 30,
+    };
+    const agent3: HexVisualManifest = {
+      entityType: 'agent-3',
+      preferredSlot: 'RING',
+      footprint: 'tiny',
+      suppresses: [],
+      visibleAt: ['hero-local', 'regional'],
+      priority: 30,
+    };
+
+    const result = resolveHexComposition([agent1, agent2, agent3]);
+    expect(result).toHaveLength(3);
+    // All 3 RING entities are visible
+    for (const r of result) {
+      expect(r.slot).toBe('RING');
+      expect(r.visible).toBe(true);
+    }
+    // Each RING entity gets a sequential ringIndex
+    const indices = result.map(r => r.ringIndex).sort();
+    expect(indices).toEqual([0, 1, 2]);
+  });
+
+  it('Test 9 (COMP-05): RING entities do NOT block CENTER slot (location + agents coexist)', () => {
+    const location: HexVisualManifest = {
+      entityType: 'major-location',
+      preferredSlot: 'CENTER',
+      footprint: 'full',
+      suppresses: [],
+      visibleAt: ['hero-local', 'regional'],
+      priority: 90,
+    };
+    const agent: HexVisualManifest = {
+      entityType: 'agent-1',
+      preferredSlot: 'RING',
+      footprint: 'tiny',
+      suppresses: [],
+      visibleAt: ['hero-local', 'regional'],
+      priority: 30,
+    };
+
+    const result = resolveHexComposition([location, agent]);
+    expect(result).toHaveLength(2);
+
+    const locationResult = result.find(r => r.entity === 'major-location');
+    const agentResult = result.find(r => r.entity === 'agent-1');
+
+    expect(locationResult?.slot).toBe('CENTER');
+    expect(locationResult?.visible).toBe(true);
+    expect(agentResult?.slot).toBe('RING');
+    expect(agentResult?.visible).toBe(true);
+  });
 });

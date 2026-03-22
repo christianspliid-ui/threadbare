@@ -66,4 +66,10 @@ export interface CompositionResult {
   slot: HexSlot;
   /** Whether this entity should be rendered (false = suppressed or no slot available) */
   visible: boolean;
+  /**
+   * Sequential index for RING-slot entities only (0-based).
+   * Undefined for non-RING slots. Callers use this to distribute agents around the hex.
+   * COMP-05: RING slot has unlimited capacity; ringIndex identifies position order.
+   */
+  ringIndex?: number;
 }
