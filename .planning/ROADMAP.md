@@ -101,13 +101,13 @@ Plans:
   3. Signifiers have subtle position jitter and rotation, creating an organic hand-placed feel
   4. Signifiers scale with zoom and disappear below regional zoom threshold
   5. The composition system correctly assigns signifiers to CENTER slots and handles suppression rules
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 05-01: Hex composition system (slots, manifest, resolver, suppression)
-- [ ] 05-02: Landscape signifier rendering pipeline (SVG to Three.js sprites)
-- [ ] 05-03: SVG signifier assets — lowland, forest, wet terrain types (LART-01 through LART-12)
-- [ ] 05-04: SVG signifier assets — highland, desert, cold, volcanic, special types (LART-13 through LART-30)
+- [ ] 05-01-PLAN.md — Composition system types, resolver, signifier registry with terrain reconciliation
+- [ ] 05-02-PLAN.md — Signifier rendering pipeline (SVG-to-CanvasTexture, SignifierMesh, HexMapV2 wiring)
+- [ ] 05-03-PLAN.md — SVG signifier assets for lowland, forest, wet terrain types (LART-01 through LART-12)
+- [ ] 05-04-PLAN.md — SVG signifier assets for highland, desert, cold, volcanic, special types (LART-13 through LART-30)
 
 ### Phase 6: Locations & Agents
 **Goal**: Settlements, POIs, and agents are visible on the map with faction colors, status indicators, and movement animation
@@ -173,7 +173,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
-| 5. Hex Composition & Landscape Signifiers | 0/4 | Not started | - |
+| 5. Hex Composition & Landscape Signifiers | 0/4 | Planned | - |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
