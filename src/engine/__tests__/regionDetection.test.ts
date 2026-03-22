@@ -256,41 +256,44 @@ describe('detectRegionsBorderCost', () => {
   });
 
   it('mountain wall separating plains creates at least 2 separate regions', () => {
-    // 5 rows x 7 cols: plains | mountain wall | plains
-    const terrain: TerrainType[][] = [
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-      ['grassland', 'grassland', 'mountains', 'grassland', 'grassland'],
-    ];
+    // Each plains side needs > REGION_MIN_SIZE (20) hexes to avoid being merged.
+    // 12 rows x 5 cols: 2 plains | mountain wall | 2 plains
+    // Each side: 12 rows * 2 cols = 24 hexes > 20
+    const rows = 12;
+    const terrain: TerrainType[][] = [];
+    for (let r = 0; r < rows; r++) {
+      terrain.push(['grassland', 'grassland', 'mountains', 'grassland', 'grassland']);
+    }
     const tiles = buildGrid(terrain);
-    const { regions } = detectRegionsBorderCost(tiles, [], 5, []);
+    // Seed each side explicitly
+    const seeds = [{ col: 0, row: 0 }, { col: 4, row: 0 }];
+    const { regions } = detectRegionsBorderCost(tiles, [], 5, seeds);
     // Should have at least 2 regions (the mountain wall separates two plains areas)
     expect(regions.length).toBeGreaterThanOrEqual(2);
   });
 
   it('river between two forest areas creates boundary (produces 2+ forest-containing regions)', () => {
-    // 6x4: forest | river column | forest
-    const terrain: TerrainType[][] = [
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-      ['temperate_forest', 'temperate_forest', 'river', 'temperate_forest', 'temperate_forest'],
-    ];
+    // Build a wider grid so each forest side has > REGION_MIN_SIZE (20) hexes
+    // 15 rows x 5 cols: 2 forest cols | river col | 2 forest cols
+    // Each side: 15 rows * 2 cols = 30 hexes > REGION_MIN_SIZE=20
+    const rows = 15;
+    const terrain: TerrainType[][] = [];
+    for (let r = 0; r < rows; r++) {
+      terrain.push([
+        'temperate_forest', 'temperate_forest',
+        'river',
+        'temperate_forest', 'temperate_forest',
+      ]);
+    }
 
-    // Build river paths along column 2
-    const riverPath = { id: 'r1', hexes: [
-      { col: 2, row: 0 }, { col: 2, row: 1 }, { col: 2, row: 2 },
-      { col: 2, row: 3 }, { col: 2, row: 4 }, { col: 2, row: 5 },
-    ]};
+    // Build river paths along column 2 (edges between forest hexes, not river terrain hexes)
+    // The river path marks edges between col 1 and col 3 for each row
+    const riverPath = { id: 'r1', hexes: terrain.map((_, r) => ({ col: 2, row: r })) };
 
     const tiles = buildGrid(terrain);
-    const { regions } = detectRegionsBorderCost(tiles, [riverPath], 5, []);
+    // Seeds on left side (col 0) and right side (col 4)
+    const seeds = [{ col: 0, row: 0 }, { col: 4, row: 0 }];
+    const { regions } = detectRegionsBorderCost(tiles, [riverPath], 5, seeds);
     // Expect at least 2 regions (river boundary separates the two forest sides)
     expect(regions.length).toBeGreaterThanOrEqual(2);
   });
