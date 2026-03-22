@@ -139,7 +139,7 @@ Plans:
   3. Zooming smoothly transitions between hero-local, regional, continental, and full-world views with elements fading in/out
   4. At full-world zoom, only terrain colors and political borders are visible (no signifiers, no agents)
   5. Camera starts centered on the player's retinue agent and can auto-follow during movement
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 07-01-PLAN.md — Fog culling logic (color override, layer gating, visibility computation) + zoom visibility matrix (tier thresholds, fade alpha)
@@ -177,5 +177,5 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
 | 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
-| 7. Fog, Zoom & Grid | 0/3 | In progress | - |
+| 7. Fog, Zoom & Grid | 2/3 | In Progress|  |
 | 8. Integration | 0/2 | Not started | - |

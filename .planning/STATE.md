@@ -3,11 +3,27 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-22T15:48:08.300Z"
+stopped_at: Completed 07-fog-zoom-grid-01-PLAN.md
+last_updated: "2026-03-22T16:46:50.147Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
+  completed_phases: 6
+  total_plans: 22
+  completed_plans: 21
+  percent: 95
+---
+
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+stopped_at: Phase 7 UI-SPEC approved
+last_updated: "2026-03-22T16:06:31.310Z"
+last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
+progress:
+  [██████████] 95%
   completed_phases: 6
   total_plans: 19
   completed_plans: 19
@@ -78,6 +94,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 06-locations-agents P01 | 8 | 2 tasks | 12 files |
 | Phase 06-locations-agents P02 | 3 | 2 tasks | 1 files |
 | Phase 06-locations-agents P04 | 9 | 2 tasks | 7 files |
+| Phase 07-fog-zoom-grid P01 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -97,7 +114,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 02-world-generation]: Terrain seeding before biome pass: hydrology pre-seeds terrain from isOcean+elevation so river routing works before biome classification runs
 - [Phase 02-world-generation]: generateWorld() now uses WorldGenPipeline exclusively — old forceField+classifyBiome path replaced; cosmology accepted for API compatibility but deferred
 - [Phase 02-world-generation]: ValidationResult drainageGuaranteed uses 5% violation threshold — plateau hexes may have equal-elevation neighbors (flat traversal) without a strictly lower direct neighbor
-- [Phase 03-coastlines-water-elevation]: Water colors extracted from Design/hexmap macro-reference.png — deep_ocean #3A7AB8, ocean #5098D0, shallows #78BCE0, lake #4A8FC0, river #68B0D8
+- [Phase 03-coastlines-water-elevation]: Water colors extracted from Design/mark-known-world-region-8-v2.png — deep_ocean #3A7AB8, ocean #5098D0, shallows #78BCE0, lake #4A8FC0, river #68B0D8
 - [Phase 03-coastlines-water-elevation]: generateWorld() returns WorldGenResult not HexTile[] — all call sites use .tiles
 - [Phase 03-coastlines-water-elevation]: CoastlineMesh two-layer approach: shallows band (z=0.01) + land boundary (z=0.02) using ShapeGeometry from marching squares loops
 - [Phase 03-coastlines-water-elevation]: Winding order: positive SVG signed area (CCW in y-down) reversed after Y-flip to maintain CCW in Three.js y-up
@@ -131,6 +148,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 06-locations-agents]: Shadow layer always second in location icon path array at opacity 0.2-0.25 on left face, per sun-from-right convention established in Phase 5
 - [Phase 06-locations-agents]: Agent animation state stored in useRef — mutated by render loop without triggering React re-renders
 - [Phase 06-locations-agents]: startMoveAnimation overrides bezier p0/p2 with Y-flipped world positions after getSegmentBezier call
+- [Phase 07-fog-zoom-grid]: ZOOM_VISIBILITY_MATRIX uses 16 layer keys to cover agent sub-tiers (portrait/dot/retinue) and border sub-tiers (kingdom/barony) as explicit entries
+- [Phase 07-fog-zoom-grid]: computeVisibilityFromSources returns visible-set only; caller diffs against stored VisibilityMap for state transitions
 
 ### Pending Todos
 
@@ -142,6 +161,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T15:48:08.298Z
-Stopped at: Phase 7 context gathered
+Last session: 2026-03-22T16:46:50.144Z
+Stopped at: Completed 07-fog-zoom-grid-01-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)

@@ -159,19 +159,19 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Fog of War (FOG)
 
-- [ ] **FOG-01**: Unexplored hexes render as solid dark fill only — no terrain, signifiers, icons, or grid lines
-- [ ] **FOG-02**: Explored hexes render at full color with all static layers (terrain, signifiers, locations, labels) — NO agents or events
-- [ ] **FOG-03**: Visible hexes (occupied by retinue agent) render everything including dynamic content (agents, events, activity)
-- [ ] **FOG-04**: Default sight range = 0 (own hex only). Elevated positions add +1. Magic/scrying adds variable range.
-- [ ] **FOG-05**: Fog implemented as per-hex culling (skip expensive render layers), not post-process overlay
-- [ ] **FOG-06**: Reveal animation: unexplored->explored fade-in ~300ms, visible->explored dim-out ~500ms
+- [x] **FOG-01**: Unexplored hexes render as solid dark fill only — no terrain, signifiers, icons, or grid lines
+- [x] **FOG-02**: Explored hexes render at full color with all static layers (terrain, signifiers, locations, labels) — NO agents or events
+- [x] **FOG-03**: Visible hexes (occupied by retinue agent) render everything including dynamic content (agents, events, activity)
+- [x] **FOG-04**: Default sight range = 0 (own hex only). Elevated positions add +1. Magic/scrying adds variable range.
+- [x] **FOG-05**: Fog implemented as per-hex culling (skip expensive render layers), not post-process overlay
+- [x] **FOG-06**: Reveal animation: unexplored->explored fade-in ~300ms, visible->explored dim-out ~500ms
 
 ### Zoom LOD (ZOOM)
 
-- [ ] **ZOOM-01**: Four zoom tiers: hero-local (~300px/hex), regional (~100px), continental (~30px), full-world (~10px)
-- [ ] **ZOOM-02**: Unified visibility matrix controls which render layers appear at each zoom tier
-- [ ] **ZOOM-03**: Smooth fade transitions between zoom tiers (~20% overlap range, no hard pop-in/out)
-- [ ] **ZOOM-04**: Elements below visibility threshold are not rendered (not just transparent) — performance skip
+- [x] **ZOOM-01**: Four zoom tiers: hero-local (~300px/hex), regional (~100px), continental (~30px), full-world (~10px)
+- [x] **ZOOM-02**: Unified visibility matrix controls which render layers appear at each zoom tier
+- [x] **ZOOM-03**: Smooth fade transitions between zoom tiers (~20% overlap range, no hard pop-in/out)
+- [x] **ZOOM-04**: Elements below visibility threshold are not rendered (not just transparent) — performance skip
 - [ ] **ZOOM-05**: Default camera position: centered on player's primary retinue agent, hero-local zoom
 - [ ] **ZOOM-06**: Follow mode: camera auto-follows selected agent during movement (toggleable)
 
@@ -343,16 +343,16 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AGNT-06 | Phase 6 | Complete |
 | AGNT-07 | Phase 6 | Complete |
 | AGNT-08 | Phase 6 | Complete |
-| FOG-01 | Phase 7 | Pending |
-| FOG-02 | Phase 7 | Pending |
-| FOG-03 | Phase 7 | Pending |
-| FOG-04 | Phase 7 | Pending |
-| FOG-05 | Phase 7 | Pending |
-| FOG-06 | Phase 7 | Pending |
-| ZOOM-01 | Phase 7 | Pending |
-| ZOOM-02 | Phase 7 | Pending |
-| ZOOM-03 | Phase 7 | Pending |
-| ZOOM-04 | Phase 7 | Pending |
+| FOG-01 | Phase 7 | Complete |
+| FOG-02 | Phase 7 | Complete |
+| FOG-03 | Phase 7 | Complete |
+| FOG-04 | Phase 7 | Complete |
+| FOG-05 | Phase 7 | Complete |
+| FOG-06 | Phase 7 | Complete |
+| ZOOM-01 | Phase 7 | Complete |
+| ZOOM-02 | Phase 7 | Complete |
+| ZOOM-03 | Phase 7 | Complete |
+| ZOOM-04 | Phase 7 | Complete |
 | ZOOM-05 | Phase 7 | Pending |
 | ZOOM-06 | Phase 7 | Pending |
 | GRID-03 | Phase 7 | Pending |
