@@ -157,11 +157,11 @@ Plans:
   3. All existing agents, locations, and encounters from game state appear on the new map without engine changes
   4. The fog toggle in the debug panel works with the new renderer
   5. All pre-existing tests pass without modification
-**Plans**: TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 08-01: GameView swap (replace SVG map component, wire click events)
-- [ ] 08-02: Fantasy overlay pass, debug panel integration, URL params, test verification
+- [ ] 08-01-PLAN.md — WorldGenResult data threading, GameView component swap (HexMap to HexMapV2), agent/location adapters, fog toggle wiring
+- [ ] 08-02-PLAN.md — V1 SVG map code deletion, WGEN-14 fantasy overlay pass, App.tsx worldgen screen update, test suite verification
 
 ## Progress
 
