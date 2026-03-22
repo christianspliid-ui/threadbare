@@ -179,8 +179,8 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 - [x] **GRID-01**: Thin hex grid lines (0.5-1px, ~12% opacity black) at all zoom levels except full-world
 - [x] **GRID-02**: River labels (blue italic) along major rivers at regional zoom
-- [ ] **GRID-03**: Road network connecting settlements via pathfinding (solid for major, dotted for trails)
-- [ ] **GRID-04**: Bridge icons where roads cross rivers
+- [x] **GRID-03**: Road network connecting settlements via pathfinding (solid for major, dotted for trails)
+- [x] **GRID-04**: Bridge icons where roads cross rivers
 
 ### Integration (INTG)
 
@@ -355,8 +355,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ZOOM-04 | Phase 7 | Complete |
 | ZOOM-05 | Phase 7 | Pending |
 | ZOOM-06 | Phase 7 | Pending |
-| GRID-03 | Phase 7 | Pending |
-| GRID-04 | Phase 7 | Pending |
+| GRID-03 | Phase 7 | Complete |
+| GRID-04 | Phase 7 | Complete |
 | INTG-01 | Phase 8 | Pending |
 | INTG-02 | Phase 8 | Pending |
 | INTG-03 | Phase 8 | Pending |

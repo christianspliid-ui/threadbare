@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 07-fog-zoom-grid-01-PLAN.md
-last_updated: "2026-03-22T16:46:50.147Z"
+stopped_at: Completed 07-02-PLAN.md (RoadMesh)
+last_updated: "2026-03-22T16:47:18.460Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
@@ -95,6 +95,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 06-locations-agents P02 | 3 | 2 tasks | 1 files |
 | Phase 06-locations-agents P04 | 9 | 2 tasks | 7 files |
 | Phase 07-fog-zoom-grid P01 | 3 | 2 tasks | 4 files |
+| Phase 07-fog-zoom-grid P07-02 | 3 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -150,6 +151,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 06-locations-agents]: startMoveAnimation overrides bezier p0/p2 with Y-flipped world positions after getSegmentBezier call
 - [Phase 07-fog-zoom-grid]: ZOOM_VISIBILITY_MATRIX uses 16 layer keys to cover agent sub-tiers (portrait/dot/retinue) and border sub-tiers (kingdom/barony) as explicit entries
 - [Phase 07-fog-zoom-grid]: computeVisibilityFromSources returns visible-set only; caller diffs against stored VisibilityMap for state transitions
+- [Phase 07-fog-zoom-grid]: Road path includes start coord prepended to findHexPath result (which excludes start) — full path [from, ...result.path]
+- [Phase 07-fog-zoom-grid]: Water hexes naturally impassable via findHexPath/getTerrainTax Infinity cost — no separate filter needed for roads
 
 ### Pending Todos
 
@@ -161,6 +164,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T16:46:50.144Z
-Stopped at: Completed 07-fog-zoom-grid-01-PLAN.md
+Last session: 2026-03-22T16:47:18.458Z
+Stopped at: Completed 07-02-PLAN.md (RoadMesh)
 Resume: Phase 03 Plan 02 (river overlay rendering)
