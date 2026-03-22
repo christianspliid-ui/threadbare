@@ -21,6 +21,14 @@ import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
 import type { LocationNode } from './scene/LocationIconMesh';
+import { createAgentSpriteMesh, updateZoomVisibility, updateAgentPositions, loadAgentPortraits } from './scene/AgentSpriteMesh';
+import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
+import type { AgentRenderData } from './agents/agentSpriteTypes';
+import { AGENT_ZOOM_THRESHOLDS } from './agents/agentSpriteTypes';
+import { startMoveAnimation, tickAgentAnimations } from './agents/agentAnimationState';
+import type { AgentAnimState } from './agents/agentAnimationState';
+import { createMovementTrailMesh, addTrailSegment, updateTrails } from './scene/MovementTrailMesh';
+import { FACTION_HERALDIC_COLORS } from './agents/agentSpriteTypes';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -52,6 +60,8 @@ export interface HexMapV2Props {
   regionData?: RegionData;
   /** Location nodes to render as icons and labels (Plan 06-01+) */
   locations?: LocationNode[];
+  /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
+  agents?: AgentRenderData[];
 }
 
 export interface HexMapV2Handle {
@@ -138,7 +148,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, agents },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -158,6 +168,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const destroyZoomRef = useRef<(() => void) | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
+
+    // Agent animation state refs — stable across renders, mutated by render loop
+    const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
+    const animStatesRef = useRef<Map<string, AgentAnimState>>(new Map());
+    const trailGroupRef = useRef<THREE.Group | null>(null);
+    // Previous agent positions for movement detection (hex change diff)
+    const prevAgentPositionsRef = useRef<Map<string, { col: number; row: number }>>(new Map());
 
     // Region label overlay state
     const [regionLabels, setRegionLabels] = useState<import('../../engine/regionTypes').RegionLabel[]>([]);
@@ -300,6 +317,28 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           setLocationLabels([]);
         }
 
+        // Build agent sprite groups — Three-tier sprites (portrait/dot/continental) (Plan 06-04)
+        // Renders at RENDER_ORDER.AGENTS (9), above location icons.
+        const agentSpriteGroup = createAgentSpriteMesh(agents ?? []);
+        scene.add(agentSpriteGroup.portraitGroup);
+        scene.add(agentSpriteGroup.dotGroup);
+        scene.add(agentSpriteGroup.continentalGroup);
+        agentSpriteGroupRef.current = agentSpriteGroup;
+
+        // Kick off portrait loading (fire-and-forget — fail-soft)
+        if ((agents ?? []).length > 0) {
+          void loadAgentPortraits(agentSpriteGroup, agents ?? []);
+        }
+
+        // Create movement trail group — Line segments that fade over TRAIL_FADE_DURATION
+        const trailGroup = createMovementTrailMesh();
+        scene.add(trailGroup);
+        trailGroupRef.current = trailGroup;
+
+        // Initialize animation state map (shared ref — mutated by render loop)
+        const animStates = animStatesRef.current;
+        animStates.clear();
+
         // Generate HTML region labels from regionData (Plan 04-03)
         // Labels are generated client-side from regionData — worldgen produces the data,
         // RegionLabelOverlay handles the rendering.
@@ -340,6 +379,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (locationGroup) {
             locationGroup.visible = event.transform.k >= LOCATION_ICON_THRESHOLD;
           }
+          // Agent sprite zoom tier visibility (portrait/dot/continental tiers)
+          updateZoomVisibility(agentSpriteGroup, event.transform.k);
+          // Movement trails visible at regional+ zoom
+          trailGroup.visible = event.transform.k >= AGENT_ZOOM_THRESHOLDS.REGIONAL;
         });
 
         // Update selection ring when selectedHex prop changes
@@ -363,6 +406,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Render loop
         function animate() {
           rafId = requestAnimationFrame(animate);
+          // Advance agent bezier hop animations (no-op if no active animations)
+          tickAgentAnimations(animStates, agentSpriteGroup.spriteMap);
+          // Fade and dispose expired movement trail segments
+          updateTrails(trailGroup);
           renderer.render(scene, camera);
         }
         animate();
@@ -465,6 +512,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               }
             }
           }
+          // Dispose agent sprite groups
+          agentSpriteGroup.dispose();
+          agentSpriteGroupRef.current = null;
+          // Dispose movement trail segments
+          for (const child of trailGroup.children) {
+            if (child instanceof THREE.Line) {
+              child.geometry.dispose();
+              (child.material as THREE.Material).dispose();
+            }
+          }
+          trailGroupRef.current = null;
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
           hexScene?.dispose();
@@ -477,7 +535,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData, locations]);
+    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, agents]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
@@ -494,6 +552,59 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         clearZoomTargetRef.current?.();
       }
     }, [selectedHex]);
+
+    // Update agent positions and trigger movement animations when agents prop changes.
+    // Diffs old vs new hex positions — agents that changed hex get a bezier hop + trail segment.
+    useEffect(() => {
+      const spriteGroup = agentSpriteGroupRef.current;
+      const trailGroup  = trailGroupRef.current;
+      if (!spriteGroup || !agents || agents.length === 0) return;
+
+      const prevPositions = prevAgentPositionsRef.current;
+      const animStates    = animStatesRef.current;
+      const now = performance.now();
+
+      for (const agent of agents) {
+        const prev = prevPositions.get(agent.id);
+        const hexChanged =
+          prev && (prev.col !== agent.hexCol || prev.row !== agent.hexRow);
+
+        if (hexChanged && prev) {
+          // Start bezier hop animation
+          const animState = startMoveAnimation(
+            agent.id,
+            prev,
+            { col: agent.hexCol, row: agent.hexRow },
+            seed,
+          );
+          animStates.set(agent.id, animState);
+
+          // Add trail segment from old hex center to new hex center (Y-flipped world coords)
+          if (trailGroup) {
+            const fromCenter = hexToPixel(prev, HEX_CONSTANTS.HEX_SIZE);
+            const toCenter   = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+            addTrailSegment(trailGroup, {
+              fromX: fromCenter.x,
+              fromY: -fromCenter.y,
+              toX:   toCenter.x,
+              toY:   -toCenter.y,
+              factionColor: FACTION_HERALDIC_COLORS[agent.factionIndex] ?? FACTION_HERALDIC_COLORS[0],
+              startTime: now,
+            });
+          }
+        }
+      }
+
+      // Update sprite positions for non-animating agents
+      updateAgentPositions(spriteGroup, agents);
+
+      // Update previous positions snapshot
+      const newPrev = new Map<string, { col: number; row: number }>();
+      for (const agent of agents) {
+        newPrev.set(agent.id, { col: agent.hexCol, row: agent.hexRow });
+      }
+      prevAgentPositionsRef.current = newPrev;
+    }, [agents, seed]);
 
     // ── Mouse event handlers ───────────────────────────────────────
 

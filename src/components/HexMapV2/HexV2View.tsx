@@ -4,6 +4,7 @@ import type { RiverPath } from '../../engine/worldGenData';
 import type { HexMapV2Handle } from './HexMapV2';
 import HexMapV2 from './HexMapV2';
 import type { LocationNode } from './scene/LocationIconMesh';
+import type { AgentRenderData } from './agents/agentSpriteTypes';
 
 interface HexV2ViewProps {
   tiles: HexTile[];
@@ -14,6 +15,8 @@ interface HexV2ViewProps {
   lakeIds?: Int16Array;
   /** Location nodes to render as icons and labels (Plan 06-01+) */
   locations?: LocationNode[];
+  /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
+  agents?: AgentRenderData[];
 }
 
 /**
@@ -24,7 +27,7 @@ interface HexV2ViewProps {
  *
  * Layout: h-screen flex flex-col overflow-hidden (viewport contract per CLAUDE.md).
  */
-export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locations }: HexV2ViewProps) {
+export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents }: HexV2ViewProps) {
   const mapRef = useRef<HexMapV2Handle>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
   const [hoveredHex, setHoveredHex]   = useState<HexCoord | null>(null);
@@ -109,6 +112,7 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
           riverPaths={riverPaths}
           lakeIds={lakeIds}
           locations={locations}
+          agents={agents}
         />
       </div>
     </div>
