@@ -3,6 +3,7 @@ import { WorldGenPipeline } from './worldgen/WorldGenPipeline';
 import type { WorldGenContext, WorldGenParams } from './worldgen/types';
 import type { RiverPath } from './worldGenData';
 import { detectRegionsBorderCost } from './regionDetection';
+import { assignPoliticalRegions } from './regionPolitical';
 import type { RegionData } from './regionTypes';
 
 /**
@@ -72,14 +73,39 @@ export function generateWorld(
       cols,
       ctx.provinceCapitalHexes,
     );
+
+    // Assign political regions (baronies + kingdoms) from geographic regions + provinces.
+    // NFP #4 Fail-soft: if assignment fails, baronies/kingdoms stay empty (Plan 01 state).
+    let baronies: RegionData['baronies'] = [];
+    let kingdoms: RegionData['kingdoms'] = [];
+    let hexBaronyId = new Map<string, number>();
+    let hexKingdomId = new Map<string, number>();
+    try {
+      const political = assignPoliticalRegions(
+        regions,
+        hexRegionId,
+        ctx.provinces,
+        ctx.provinceCapitalHexes,
+        ctx.provinceIds,
+        cols,
+        seed,
+      );
+      baronies = political.baronies;
+      kingdoms = political.kingdoms;
+      hexBaronyId = political.hexBaronyId;
+      hexKingdomId = political.hexKingdomId;
+    } catch {
+      // NFP #4 Fail-soft: political assignment failure keeps empty baronies/kingdoms
+    }
+
     regionData = {
       geographicRegions: regions,
-      baronies: [],
-      kingdoms: [],
+      baronies,
+      kingdoms,
       labels: [],
       hexRegionId,
-      hexBaronyId: new Map(),
-      hexKingdomId: new Map(),
+      hexBaronyId,
+      hexKingdomId,
     };
   } catch {
     // NFP #4 Fail-soft: region detection failure must not crash world generation

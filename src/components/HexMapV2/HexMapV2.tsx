@@ -8,6 +8,7 @@ import {
 import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../types';
 import type { RiverPath } from '../../engine/worldGenData';
+import type { RegionData } from '../../engine/regionTypes';
 import { hexToPixel } from '../../lib/hexMath';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
@@ -15,6 +16,8 @@ import { createHexGridLines } from './scene/HexGridLines';
 import { createCoastlineMesh } from './scene/CoastlineMesh';
 import { createRiverMesh } from './scene/RiverMesh';
 import { createElevationTicks } from './scene/ElevationTicks';
+import { createBorderMesh } from './scene/BorderMesh';
+import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -38,6 +41,8 @@ export interface HexMapV2Props {
   riverPaths?: RiverPath[];
   /** Lake hex IDs from worldgen — stored in ref for use by lake coloring (Plan 03-01+) */
   lakeIds?: Int16Array;
+  /** Region data from worldgen — baronies, kingdoms, borders, and capital markers (Plan 04-02+) */
+  regionData?: RegionData;
 }
 
 export interface HexMapV2Handle {
@@ -124,7 +129,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -233,6 +238,23 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           scene.add(riverMesh);
         }
 
+        // Build political border polylines — red quad-strip borders for kingdoms and baronies (Plan 04-02)
+        // Renders at RENDER_ORDER.BORDERS (6), above rivers and elevation ticks.
+        // Geographic-only differences produce no geometry (REGN-06).
+        let borderKingdomMesh: THREE.Mesh | null = null;
+        let borderBaronyMesh: THREE.Mesh | null = null;
+        let capitalMarkers: THREE.Group | null = null;
+        if (regionData && (regionData.baronies.length > 0 || regionData.hexBaronyId.size > 0)) {
+          const borders = createBorderMesh(regionData, tiles, cols);
+          borderKingdomMesh = borders.kingdomMesh;
+          borderBaronyMesh = borders.baronyMesh;
+          scene.add(borderKingdomMesh);
+          scene.add(borderBaronyMesh);
+
+          capitalMarkers = createCapitalMarkers(regionData);
+          scene.add(capitalMarkers);
+        }
+
         // Selected hex ring (initially hidden)
         const selectionRing = createHexRingMesh(HEX_CONSTANTS.HEX_SIZE);
         scene.add(selectionRing);
@@ -335,6 +357,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               }
             }
           }
+          // Dispose border meshes
+          if (borderKingdomMesh) {
+            borderKingdomMesh.geometry.dispose();
+            (borderKingdomMesh.material as THREE.Material).dispose();
+          }
+          if (borderBaronyMesh) {
+            borderBaronyMesh.geometry.dispose();
+            (borderBaronyMesh.material as THREE.Material).dispose();
+          }
+          // Dispose capital markers
+          if (capitalMarkers) {
+            for (const child of capitalMarkers.children) {
+              if (child instanceof THREE.Points) {
+                child.geometry.dispose();
+                (child.material as THREE.Material).dispose();
+              }
+            }
+          }
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
           hexScene?.dispose();
@@ -347,7 +387,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths]);
+    }, [tiles, cols, rows, seed, riverPaths, regionData]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
