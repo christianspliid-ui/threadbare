@@ -78,7 +78,6 @@ interface HexChronicleProps {
   agentsByLocation: Record<string, GraphNode[]>;
   regionData: HexRegionData | null;
   onLocationClick: (locationId: string) => void;
-  onLocationDoubleClick: (locationId: string) => void;
   onAgentClick: (agentId: string) => void;
   graph: WorldGraph;
   seed: number;
@@ -96,7 +95,6 @@ export const HexChronicle = memo(function HexChronicle({
   agentsByLocation,
   regionData,
   onLocationClick,
-  onLocationDoubleClick,
   onAgentClick,
   graph,
   seed,
@@ -339,15 +337,15 @@ export const HexChronicle = memo(function HexChronicle({
   const ruleStyle: React.CSSProperties = {
     flex: 1,
     height: '1px',
-    background: 'var(--border-subtle)',
+    background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)',
   };
 
   const labelStyle: React.CSSProperties = {
     fontFamily: 'var(--font-display)',
     fontSize: 'var(--text-xs)',
-    color: 'var(--text-muted)',
+    color: 'var(--accent-gold)',
     textTransform: 'uppercase',
-    letterSpacing: '0.1em',
+    letterSpacing: '0.14em',
     whiteSpace: 'nowrap',
   };
 
@@ -361,25 +359,31 @@ export const HexChronicle = memo(function HexChronicle({
     >
     <div style={{ maxWidth: '860px', margin: '0 auto' }}>
       {/* ─── HERO SECTION ─────────────────────────────────────────────────── */}
-      <div className="chronicle-hero" style={{ marginBottom: '32px' }}>
+      <div className="chronicle-hero" style={{ marginBottom: '32px', textAlign: 'center' }}>
         <h2 style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'var(--text-2xl)',
           color: 'var(--text-primary)',
           margin: '0 0 8px 0',
-          letterSpacing: '0.04em',
+          letterSpacing: '0.06em',
         }}>
           {regionData?.regionName ?? terrainLabel}
         </h2>
         <div className="chronicle-subtitle" style={{
           fontFamily: 'var(--font-body)',
           fontSize: 'var(--text-xs)',
-          color: 'var(--text-tertiary)',
+          color: 'var(--accent-gold)',
           textTransform: 'uppercase',
-          letterSpacing: '0.08em',
+          letterSpacing: '0.12em',
         }}>
           {heroSubtitle}
         </div>
+        <div style={{
+          margin: '16px auto 0',
+          maxWidth: '200px',
+          height: '1px',
+          background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)',
+        }} />
       </div>
 
       {/* ─── THE LAND ─────────────────────────────────────────────────────── */}
@@ -392,7 +396,7 @@ export const HexChronicle = memo(function HexChronicle({
           <span style={labelStyle}>The Land</span>
           <div style={ruleStyle} />
         </div>
-        <p className="chronicle-prose" style={proseStyle}>
+        <p className="chronicle-prose drop-cap" style={proseStyle}>
           {landProse1}
         </p>
         {landProse2 && (
@@ -459,7 +463,7 @@ export const HexChronicle = memo(function HexChronicle({
         </div>
 
         {dominantSphereProse && (
-          <p className="chronicle-prose" style={proseStyle}>
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
             {dominantSphereProse}
           </p>
         )}
@@ -527,12 +531,12 @@ export const HexChronicle = memo(function HexChronicle({
         </div>
 
         {dominantCulture && cultureProse && (
-          <p className="chronicle-prose" style={proseStyle}>
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
             {cultureProse}
           </p>
         )}
         {dominantCulture && !cultureProse && (
-          <p className="chronicle-prose" style={proseStyle}>
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
             The {stripLeadingThe(dominantCulture.cultureName)} claim this land, their traditions shaping the settlement and its people.
           </p>
         )}
@@ -570,7 +574,6 @@ export const HexChronicle = memo(function HexChronicle({
                   agentCount={totalAgents}
                   flavorText={flavorText}
                   onClick={() => onLocationClick(loc.id)}
-                  onDoubleClick={() => onLocationDoubleClick(loc.id)}
                 >
                   {/* Agents directly at this location */}
                   {agentsHere.length > 0 && (
@@ -603,7 +606,6 @@ export const HexChronicle = memo(function HexChronicle({
                             name={sub.name}
                             flavorText={subFlavor}
                             onClick={() => onLocationClick(sub.id)}
-                            onDoubleClick={() => onLocationDoubleClick(sub.id)}
                           >
                             {subAgents.length > 0 && (
                               <div style={{ marginTop: '4px' }}>
@@ -644,7 +646,6 @@ export const HexChronicle = memo(function HexChronicle({
                   agentCount={agentsHere.length}
                   flavorText={flavorText}
                   onClick={() => onLocationClick(loc.id)}
-                  onDoubleClick={() => onLocationDoubleClick(loc.id)}
                 >
                   {agentsHere.length > 0 && (
                     <div style={{ paddingLeft: '26px', marginTop: '6px' }}>
@@ -683,7 +684,7 @@ export const HexChronicle = memo(function HexChronicle({
             <div style={ruleStyle} />
           </div>
 
-          <p className="chronicle-prose" style={proseStyle}>
+          <p className="chronicle-prose drop-cap" style={proseStyle}>
             Before the current inhabitants came, this land belonged to the {stripLeadingThe(regionData.historicalCulture.name)}.
             Their reign has passed, but their echoes linger in stone and shadow.
           </p>
@@ -701,18 +702,9 @@ export const HexChronicle = memo(function HexChronicle({
           )}
 
           {regionData.historicalCulture.legacyFlavor && (
-            <div className="epitaph-text" style={{
-              fontFamily: 'var(--font-prose)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--text-tertiary)',
-              fontStyle: 'italic',
-              lineHeight: 1.8,
-              textAlign: 'center',
-              margin: '16px 0',
-              paddingLeft: '20px',
-              paddingRight: '20px',
-            }}>
-              "{regionData.historicalCulture.legacyFlavor}"
+            <div className="quote-block">
+              &ldquo;{regionData.historicalCulture.legacyFlavor}&rdquo;
+              <span className="quote-attr">~ {stripLeadingThe(regionData.historicalCulture.name)}</span>
             </div>
           )}
 

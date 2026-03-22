@@ -5012,6 +5012,23 @@ export function getEncountersBySublocationAndLocation(
 }
 
 /**
+ * Return all encounters available at a location, including those that target
+ * sublocation types present at that location subtype.
+ * Use this when building the full encounter list for a location view.
+ */
+export function getEncountersForLocation(
+  locationType: string,
+  sublocationTypeIds: string[],
+): EncounterTemplate[] {
+  return ENCOUNTER_TEMPLATES.filter(t => {
+    if (t.sublocationTypes && t.sublocationTypes.length > 0) {
+      return t.sublocationTypes.some(st => sublocationTypeIds.includes(st));
+    }
+    return t.locationTypes.includes(locationType);
+  });
+}
+
+/**
  * Retrieve a specific encounter by ID (exploration templates only).
  */
 export function getEncounterById(id: string): EncounterTemplate | undefined {

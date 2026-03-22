@@ -56,7 +56,6 @@ interface HexPoiPanelProps {
   agentsByLocation: Record<string, GraphNode[]>;
   lineOfSight: LineOfSight;
   onLocationClick: (locationId: string) => void;
-  onLocationDoubleClick: (locationId: string) => void;
 }
 
 export const HexPoiPanel = memo(function HexPoiPanel({
@@ -64,7 +63,6 @@ export const HexPoiPanel = memo(function HexPoiPanel({
   agentsByLocation,
   lineOfSight,
   onLocationClick,
-  onLocationDoubleClick,
 }: HexPoiPanelProps) {
   const isHidden = lineOfSight === 'none';
 
@@ -151,7 +149,6 @@ export const HexPoiPanel = memo(function HexPoiPanel({
                 (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent';
               }}
               onClick={() => onLocationClick(loc.id)}
-              onDoubleClick={() => onLocationDoubleClick(loc.id)}
               onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();

@@ -35,3 +35,6 @@ scripts/playtest.mjs
 
 .vercel
 .env*.local
+
+# QA server state
+.qa-server.json

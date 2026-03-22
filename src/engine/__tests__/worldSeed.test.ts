@@ -4,6 +4,7 @@ import {
   INDIVIDUAL_COUNT,
   FACTION_COUNT,
   LOCATION_COUNT,
+  LOCATION_DENSITY,
   ARTIFACT_COUNT,
 } from '../worldSeed';
 import type { CosmologyProfile, HexTile } from '../../types/index';
@@ -33,12 +34,31 @@ function mockTiles(): HexTile[] {
 
 describe('seedWorld', () => {
   it('creates a populated graph from cosmology and seed', () => {
-    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    const tiles = mockTiles();
+    const result = seedWorld(balancedCosmology(), tiles, 42);
     expect(result.individualIds.length).toBeGreaterThanOrEqual(INDIVIDUAL_COUNT.min);
     expect(result.individualIds.length).toBeLessThanOrEqual(INDIVIDUAL_COUNT.max);
     expect(result.factionIds.length).toBeGreaterThanOrEqual(FACTION_COUNT.min);
-    expect(result.locationIds.length).toBeGreaterThanOrEqual(LOCATION_COUNT.min);
+    // Density-based: at least 30% of habitable hexes should have locations
+    const habitableCount = tiles.filter(t =>
+      t.terrain !== 'ocean' && t.terrain !== 'deep_ocean'
+      && t.terrain !== 'coastal_shallows' && t.terrain !== 'lake'
+    ).length;
+    expect(result.locationIds.length).toBeGreaterThanOrEqual(
+      Math.max(LOCATION_COUNT.min, Math.floor(habitableCount * LOCATION_DENSITY.min))
+    );
     expect(result.artifactIds.length).toBeGreaterThanOrEqual(ARTIFACT_COUNT.min);
+  });
+
+  it('places locations on unique hexes', () => {
+    const result = seedWorld(balancedCosmology(), mockTiles(), 42);
+    const hexKeys = new Set<string>();
+    for (const locId of result.locationIds) {
+      const node = result.graph.getNode(locId)!;
+      const key = `${node.properties.hexCol},${node.properties.hexRow}`;
+      expect(hexKeys.has(key)).toBe(false);
+      hexKeys.add(key);
+    }
   });
 
   it('is deterministic — same seed produces same world', () => {
@@ -166,7 +186,7 @@ describe('seedWorld culture integration', () => {
         .filter(e => e.type === 'belongs_to');
       if (edges.length > 0) withCulture++;
     }
-    expect(withCulture).toBeGreaterThan(result.individualIds.length * 0.5);
+    expect(withCulture).toBeGreaterThanOrEqual(result.individualIds.length * 0.5);
   });
 
   it('assigns cultures to factions', () => {

@@ -14,8 +14,8 @@ describe('movement types', () => {
   it('exports DECISION_REEVALUATION_TICKS as 4', () => {
     expect(DECISION_REEVALUATION_TICKS).toBe(4);
   });
-  it('exports TRAIL_HISTORY_TICKS as 12', () => {
-    expect(TRAIL_HISTORY_TICKS).toBe(12);
+  it('exports TRAIL_HISTORY_TICKS as 6', () => {
+    expect(TRAIL_HISTORY_TICKS).toBe(6);
   });
   it('MovementState shape is assignable', () => {
     const state: MovementState = {

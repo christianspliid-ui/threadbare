@@ -51,7 +51,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
       data-testid="attachment-row"
       style={{
         backgroundColor: 'var(--bg-raised)',
-        border: '1px solid var(--border-subtle)',
+        border: '1px solid var(--border-gold)',
         borderLeft: `3px solid ${tierColor}`,
         borderRadius: '4px',
         padding: '0.5rem 0.75rem',
@@ -61,7 +61,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
         e.currentTarget.style.borderLeftColor = tierColor;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = 'var(--border-subtle)';
+        e.currentTarget.style.borderColor = 'var(--border-gold)';
         e.currentTarget.style.borderLeftColor = tierColor;
       }}
     >

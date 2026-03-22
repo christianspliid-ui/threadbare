@@ -61,6 +61,7 @@ import * as threat from '../../data/threat-content';
 import * as agentVisual from '../../data/agent-visual-content';
 import * as gameConfig from '../../data/game-config';
 import * as influence from '../../data/influence-content';
+import { TUNABLE_GROUPS } from './tunableConstants';
 
 // ── Reach domain badge colors (reused across viewers) ────────────
 export const REACH_BADGE_COLORS: Record<string, string> = {
@@ -654,6 +655,15 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   },
 
   // ─── Configuration ──────────────────────────────────────────
+  {
+    id: 'game-tuning',
+    label: 'Game Tuning (All Constants)',
+    category: 'Configuration',
+    description: 'Browse and edit every tunable game-design constant. Grouped by system with ranges, descriptions, and save-to-source.',
+    data: TUNABLE_GROUPS,
+    viewer: 'config-manager',
+    sourceFile: 'src/components/CMS/tunableConstants.ts',
+  },
   {
     id: 'game-config',
     label: 'Game Configuration',

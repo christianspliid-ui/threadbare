@@ -52,7 +52,6 @@ interface HexMapProps {
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
   onAgentClick?: (agentId: string) => void;
-  onAgentDoubleClick?: (agentId: string) => void;
 }
 
 export interface HexMapHandle {
@@ -71,7 +70,7 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
   ghostDots: ghostDotsProp,
   onZoomChange,
   onHexClick, onHexHover,
-  onAgentClick, onAgentDoubleClick,
+  onAgentClick,
 }, ref) => {
   const [currentZoomScale, setCurrentZoomScale] = useState(DEFAULT_ZOOM_SCALE);
 
@@ -387,7 +386,6 @@ const HexMapComponent = forwardRef<HexMapHandle, HexMapProps>(({
                 avatarId={avatarId}
                 sphereColor={sphereColor}
                 onAgentClick={onAgentClick}
-                onAgentDoubleClick={onAgentDoubleClick}
               />
             )}
             {/* Layer 4.5: Ghost dots — fading agents that left LOS */}

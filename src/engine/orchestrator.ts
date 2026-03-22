@@ -844,7 +844,7 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
 
 export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = []): GameState {
   // Start with clean tick events
-  let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [] };
+  let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [], prosperityShocks: [] };
 
   // Lazy-init encounter cache and distance matrix
   if (!encounterCache) {

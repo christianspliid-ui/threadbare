@@ -13,6 +13,7 @@ import type { HexCoord, HexTile, TerrainType } from '../types';
 import type { MovementState } from '../types/movement';
 import { findHexPath } from './pathfinding';
 import { initMovementState } from './movementExecution';
+import { findOrCreateLocationAtHex } from './hexMovementPath';
 import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 import { getTerrainTax } from '../data/movement-content';
 
@@ -39,43 +40,6 @@ function resolveAvatarHex(graph: WorldGraph, avatarId: string): HexCoord | null 
   const row = locNode.properties.hexRow as number | undefined;
   if (col == null || row == null) return null;
   return { col, row };
-}
-
-/**
- * Find an existing location node at the given hex, or create a transient one.
- * Sets terrain on transient locations so movementCost can compute taxes.
- */
-function findOrCreateLocationAtHex(
-  graph: WorldGraph,
-  hex: HexCoord,
-  terrain?: TerrainType,
-): string {
-  // Search existing locations
-  const allLocations = graph.getNodesByType('location');
-  for (const loc of allLocations) {
-    const hexCol = loc.properties.hexCol as number | undefined;
-    const hexRow = loc.properties.hexRow as number | undefined;
-    if (hexCol === hex.col && hexRow === hex.row) {
-      return loc.id;
-    }
-  }
-
-  // Create transient location
-  const transientId = `loc.transient.${hex.col}.${hex.row}`;
-  if (!graph.getNode(transientId)) {
-    graph.addNode({
-      id: transientId,
-      type: 'location',
-      name: `Wilderness (${hex.col}, ${hex.row})`,
-      properties: {
-        hexCol: hex.col,
-        hexRow: hex.row,
-        locationType: 'wilderness',
-        ...(terrain ? { terrain } : {}),
-      },
-    });
-  }
-  return transientId;
 }
 
 /**

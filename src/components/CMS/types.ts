@@ -9,7 +9,7 @@
 // ── Viewer Types ─────────────────────────────────────────────────
 
 /** Available viewer components. Add new viewers here when data shapes diverge. */
-export type ViewerType = 'table' | 'record' | 'tree' | 'constants' | 'prose';
+export type ViewerType = 'table' | 'record' | 'tree' | 'constants' | 'prose' | 'config-manager';
 
 // ── Column Definitions ───────────────────────────────────────────
 
@@ -82,4 +82,36 @@ export interface ContentCategory {
 export interface CMSSelection {
   entryId: string | null;
   itemKey: string | number | null;
+}
+
+// ── Tunable Constants (Config Manager) ──────────────────────────
+
+/** A single tunable constant with rich metadata for the Configuration Manager */
+export interface TunableConstant {
+  /** Export name in source (e.g. STEP_PROBABILITY_OFFSET) */
+  exportName: string;
+  /** Current runtime value */
+  value: number | boolean | string;
+  /** Human-readable description of what this controls */
+  description: string;
+  /** Source file path relative to project root */
+  sourceFile: string;
+  /** Valid range [min, max] for numeric constants */
+  range?: [number, number];
+  /** Which engine functions / formulas use this constant */
+  usedBy?: string;
+  /** Type hint for the editor */
+  type: 'number' | 'boolean' | 'string';
+}
+
+/** A group of related tunable constants */
+export interface TunableGroup {
+  /** Group identifier */
+  id: string;
+  /** Display name */
+  label: string;
+  /** One-line description of the system */
+  description: string;
+  /** Constants in this group */
+  constants: TunableConstant[];
 }

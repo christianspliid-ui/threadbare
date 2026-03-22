@@ -296,7 +296,7 @@ export function StrandView({ agentName, strands, onClose }: StrandViewProps) {
       <div
         className="w-[70%] max-w-4xl h-[70%] rounded-lg border flex flex-col"
         onClick={(e) => e.stopPropagation()}
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
       >
         {/* Header */}
         <div

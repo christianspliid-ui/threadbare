@@ -108,6 +108,7 @@ This file is the single source of truth for every testable UI surface in The Fan
 |----|---------|-----------|----------|------|------------------|---------------|
 | S-090 | Debug Panel | DebugPanel | dev | components/Game/DebugPanel.tsx | Feed/Agent-follow/Tick-inspector tabs, trace entries, category filters | Debug mode on (backtick) |
 | S-091 | Magic Glow Tiles | MagicGlowTiles | dev | components/UI/MagicGlowTiles.tsx | Sphere color visualization with layered glows | URL param `?view=glow` |
+| S-094 | Dev Quick-Start | App (quickStartPhase) | dev | App.tsx | Skip worldgen+selection, load game view directly (seed 42, random archetype) | URL param `?view=game` |
 | S-092 | Taxonomy Viewer | TaxonomyViewer | dev | components/TaxonomyViewer/TaxonomyViewer.tsx | Force-directed graph of cosmological taxonomy | Separate route/view |
 | S-093 | Node Detail | NodeDetail | sub-component | components/TaxonomyViewer/NodeDetail.tsx | Sidebar detail for selected taxonomy node | Inside TaxonomyViewer |
 

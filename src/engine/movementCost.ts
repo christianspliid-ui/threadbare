@@ -1,11 +1,13 @@
 /**
  * Movement Cost Calculator
  *
- * Computes the tick cost to traverse a single edge based on:
- * - Base traversal cost (constant)
- * - Terrain difficulty at the destination
- * - Location entry resistance (if destination is a settlement/structure)
- * - Agent speed modifiers from movement traits
+ * Implements the 2-edge-per-hex model from the movement design doc:
+ * each graph edge between hex centers represents TWO traversals:
+ *   [Hex A center] ---(1 tick + departure tax)---> [border]
+ *   [border]       ---(1 tick + arrival tax)  ---> [Hex B center]
+ *
+ * Total = 2 × BASE_EDGE_TRAVERSAL_COST + sourceTerrain + destTerrain
+ *       + locationEntryTax + speedModifier
  *
  * All costs are tunable and stored in movement-content.ts.
  */
@@ -23,29 +25,48 @@ import type { TerrainType, LocationSubtype } from '../types';
 /**
  * Compute the tick cost to traverse from source to destination.
  *
+ * Each hop between hex centers represents two design edges (departure + arrival).
+ * Base cost = 2 × BASE_EDGE_TRAVERSAL_COST (1 per edge).
+ * Departure tax = source hex terrain tax.
+ * Arrival tax = destination hex terrain tax.
+ *
  * @param graph — the world graph
  * @param agentId — the actor traversing
- * @param _sourceId — the starting location (unused in current design, kept for forward compat)
+ * @param sourceId — the starting location (used for departure terrain tax)
  * @param destId — the destination location
  * @returns MovementEdgeCost breakdown
  */
 export function computeEdgeCost(
   graph: WorldGraph,
   agentId: string,
-  _sourceId: string,
+  sourceId: string,
   destId: string,
 ): MovementEdgeCost {
-  const baseCost = BASE_EDGE_TRAVERSAL_COST;
+  // 2-edge model: each hop = departure edge + arrival edge
+  const baseCost = 2 * BASE_EDGE_TRAVERSAL_COST;
 
-  // --- Terrain Tax ---
-  let terrainTax = 0;
+  // --- Departure Terrain Tax (source hex) ---
+  let departureTax = 0;
+  const sourceNode = graph.getNode(sourceId);
+  if (sourceNode) {
+    const terrain = sourceNode.properties.terrain as TerrainType | undefined;
+    if (terrain) {
+      departureTax = getTerrainTax(terrain);
+    }
+  }
+
+  // --- Arrival Terrain Tax (destination hex) ---
+  let arrivalTax = 0;
   const destNode = graph.getNode(destId);
   if (destNode) {
     const terrain = destNode.properties.terrain as TerrainType | undefined;
     if (terrain) {
-      terrainTax = getTerrainTax(terrain);
+      arrivalTax = getTerrainTax(terrain);
     }
   }
+
+  // Combined terrain tax (departure + arrival)
+  const terrainTax = departureTax + arrivalTax;
 
   // --- Location Entry Tax ---
   let locationTax = 0;

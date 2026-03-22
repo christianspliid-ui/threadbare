@@ -129,7 +129,7 @@ export const DECISION_REEVALUATION_TICKS = 4;
 /**
  * Number of recent movement entries kept for trail rendering.
  */
-export const TRAIL_HISTORY_TICKS = 12;
+export const TRAIL_HISTORY_TICKS = 6;
 
 /**
  * Distance decay factor for range-based effects

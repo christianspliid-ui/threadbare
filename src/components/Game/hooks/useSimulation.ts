@@ -44,7 +44,7 @@ export function useSimulation({
   const [gameState, setGameState] = useState<GameState>(initial.state);
   const [tiles] = useState<HexTile[]>(initial.tiles);
   const [running, setRunning] = useState(false);
-  const [speed, setSpeed] = useState(3);
+  const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

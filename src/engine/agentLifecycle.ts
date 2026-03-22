@@ -37,12 +37,6 @@ export const DEATH_CHANCE_LOW_REP = 0.02;
 /** Reputation threshold below which death chance applies */
 export const LOW_REP_THRESHOLD = 0.1;
 
-/** Chance per tick of death for agents older than OLD_AGE_TICKS */
-export const DEATH_CHANCE_OLD_AGE = 0.01;
-
-/** Tick age threshold for old-age death chance */
-export const OLD_AGE_TICKS = 200;
-
 /** Chance per tick of birth at a location with enough agents */
 export const BIRTH_CHANCE = 0.01;
 
@@ -94,17 +88,11 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
   // ── Deaths ─────────────────────────────────────────────
   for (const actor of actors) {
     const rep = (actor.properties.reputationScore as number) ?? DEFAULT_REPUTATION;
-    const bornTick = (actor.properties.bornTick as number) ?? 0;
-    const age = state.tick - bornTick;
 
     let shouldDie = false;
 
     // Low reputation death
     if (rep < LOW_REP_THRESHOLD && rng() < DEATH_CHANCE_LOW_REP) {
-      shouldDie = true;
-    }
-    // Old age death
-    if (age > OLD_AGE_TICKS && rng() < DEATH_CHANCE_OLD_AGE) {
       shouldDie = true;
     }
 
@@ -190,10 +178,10 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         });
 
         graph.addEdge({
-          id: `edge_at_${newId}`,
+          id: `${newId}_located_at_${locId}`,
           source: newId,
           target: locId,
-          type: 'contains',
+          type: 'located_at',
           properties: {},
         });
 

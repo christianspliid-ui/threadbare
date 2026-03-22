@@ -49,6 +49,54 @@ export function pickSphereWord(
   return words[Math.floor(rng() * words.length)];
 }
 
+// ─── Same-Root Collision Guard ──────────────────────────────────
+
+/**
+ * Extract a stem-like root from a word by stripping common suffixes.
+ * Not a full stemmer — just enough to catch obvious collisions
+ * like "decaying"/"decay", "consuming"/"consumption", "crushing"/"crush".
+ */
+function wordRoot(word: string): string {
+  return word.toLowerCase()
+    .replace(/(?:ing|tion|sion|ment|ness|ous|ive|able|ible|ful|less|ly|ed|er|est|al|ial|ent|ant|ence|ance)$/, '');
+}
+
+/**
+ * Check whether two words share a linguistic root.
+ * Returns true for collisions like "decaying"/"decay", "consuming"/"consumption".
+ */
+function sharesRoot(a: string, b: string): boolean {
+  const rootA = wordRoot(a);
+  const rootB = wordRoot(b);
+  if (rootA.length < 3 || rootB.length < 3) return false;
+  return rootA === rootB || rootA.startsWith(rootB) || rootB.startsWith(rootA);
+}
+
+/** Max re-rolls when adj/noun collide on the same root. */
+const COLLISION_REROLL_LIMIT = 3;
+
+/**
+ * Pick sphere words for adj, verb, noun — re-rolling noun if it
+ * shares a linguistic root with adj (e.g. "decaying" + "decay").
+ */
+export function pickSphereWords(
+  sphere: SphereName,
+  seed: number,
+): { adj: string; verb: string; noun: string } {
+  const adj = pickSphereWord(sphere, 'adjectives', seed + 1);
+  const verb = pickSphereWord(sphere, 'verbs', seed + 2);
+  let noun = pickSphereWord(sphere, 'nouns', seed + 3);
+
+  // Re-roll noun if it collides with adj
+  let rerolls = 0;
+  while (sharesRoot(adj, noun) && rerolls < COLLISION_REROLL_LIMIT) {
+    rerolls++;
+    noun = pickSphereWord(sphere, 'nouns', seed + 3 + rerolls * 7);
+  }
+
+  return { adj, verb, noun };
+}
+
 // ─── Voice Selection ─────────────────────────────────────────────
 
 function getVoice(eventType: NarrativeEventType): VoiceMode {
@@ -99,9 +147,7 @@ export function generateRoutineProse(
   const templates = ROUTINE_TEMPLATES[eventType] ?? ROUTINE_TEMPLATES.action_resolved;
   const template = templates[Math.floor(rng() * templates.length)];
 
-  let adj = pickSphereWord(sphere, 'adjectives', seed + 1);
-  let verb = pickSphereWord(sphere, 'verbs', seed + 2);
-  let noun = pickSphereWord(sphere, 'nouns', seed + 3);
+  let { adj, verb, noun } = pickSphereWords(sphere, seed);
 
   // Apply cultural flavor if actor and graph provided
   let culturalFlavorApplied = false;
@@ -167,9 +213,7 @@ export function generateNotableProse(
   const templates = NOTABLE_TEMPLATES[eventType] ?? NOTABLE_TEMPLATES.action_critical;
   const template = templates[Math.floor(rng() * templates.length)];
 
-  let adj = pickSphereWord(sphere, 'adjectives', seed + 10);
-  let verb = pickSphereWord(sphere, 'verbs', seed + 20);
-  let noun = pickSphereWord(sphere, 'nouns', seed + 30);
+  let { adj, verb, noun } = pickSphereWords(sphere, seed + 10);
   const personality = getPersonalityClause(context.dominantValues, seed + 40);
 
   // Apply cultural flavor if actor and graph provided

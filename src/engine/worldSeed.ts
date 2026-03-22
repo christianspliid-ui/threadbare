@@ -53,8 +53,31 @@ function mulberry32(seed: number): () => number {
 
 export const INDIVIDUAL_COUNT = { min: 8, max: 12 };
 export const FACTION_COUNT = { min: 2, max: 3 };
-export const LOCATION_COUNT = { min: 4, max: 6 };
+/** Location count is now proportional to habitable hexes — see LOCATION_DENSITY */
+export const LOCATION_COUNT = { min: 4, max: 6 }; // legacy fallback only
+/** Fraction of habitable (non-ocean/coastal) hexes that should contain a location */
+export const LOCATION_DENSITY = { min: 0.30, max: 0.50 };
 export const ARTIFACT_COUNT = { min: 1, max: 2 };
+
+/** Initial prosperity by settlement subtype — larger settlements start wealthier */
+export const INITIAL_PROSPERITY: Partial<Record<LocationSubtype, number>> = {
+  capital: 65,
+  city: 55,
+  town: 40,
+  hamlet: 20,
+  fort: 30,
+  castle: 35,
+  tower: 15,
+  camp: 10,
+  mining: 30,
+  farmland: 25,
+  shrine: 10,
+  temple: 20,
+  oasis: 15,
+  ruins: 0,
+  battleground: 0,
+  unexplored_poi: 0,
+};
 
 // VALUE_PAIRS imported from types/agent.ts
 
@@ -81,6 +104,110 @@ export const LOCATION_NAMES = [
   'Ardenmor Keep', 'The Shattered Sanctum', 'Thornhaven', 'The Sunken Library',
   'Wraithwood', 'The Forge of Sorrow', 'Crystalspire', 'The Bone Coast',
 ];
+
+// ─── Procedural Location Naming ──────────────────────────────────
+
+/** Prefixes by location subtype for procedural names */
+const LOCATION_PREFIXES: Partial<Record<LocationSubtype, string[]>> = {
+  hamlet:   ['Little', 'Old', 'Lower', 'Upper', 'East', 'West', 'New'],
+  town:     ['Greater', 'Market', 'Fair', 'High', 'Free'],
+  city:     ['Grand', 'Royal', 'Great', 'Noble'],
+  capital:  ['Imperial', 'Crown', 'Sovereign', 'High'],
+  camp:     ['Wanderer\'s', 'Ranger\'s', 'Exile\'s', 'Hunter\'s', 'Drifter\'s'],
+  fort:     ['Iron', 'Stone', 'Grey', 'Black', 'Red', 'Shield'],
+  tower:    ['Lone', 'Tall', 'Dark', 'Pale', 'Silver', 'Broken'],
+  shrine:   ['Sacred', 'Silent', 'Hidden', 'Blessed', 'Ancient'],
+  temple:   ['Holy', 'Grand', 'Eternal', 'Divine', 'Hallowed'],
+  mining:   ['Deep', 'Dark', 'Rich', 'Copper', 'Iron', 'Silver'],
+  ruins:    ['Fallen', 'Shattered', 'Crumbled', 'Forgotten', 'Lost'],
+  oasis:    ['Green', 'Cool', 'Hidden', 'Bright', 'Sweet'],
+  castle:   ['Storm', 'Raven', 'Wolf', 'Dragon', 'Eagle'],
+  farmland: ['Golden', 'Green', 'Rich', 'Harvest', 'Sunny'],
+};
+
+/** Core name roots by terrain type */
+const TERRAIN_NAME_ROOTS: Partial<Record<TerrainType, string[]>> = {
+  grassland:   ['Meadow', 'Field', 'Green', 'Lea', 'Downs'],
+  farmland:    ['Grange', 'Stead', 'Furrow', 'Acre', 'Tilth'],
+  savanna:     ['Reach', 'Flat', 'Grass', 'Plain', 'Dry'],
+  steppe:      ['Wind', 'Dust', 'Wide', 'Vast', 'Horse'],
+  forest:      ['Wood', 'Thorn', 'Oak', 'Elm', 'Briar'],
+  dense_forest:['Deep', 'Shadow', 'Dark', 'Old', 'Moss'],
+  ancient_forest: ['Elder', 'Root', 'Bark', 'Hollow', 'Verdant'],
+  hills:       ['Hill', 'Crest', 'Ridge', 'Knoll', 'Barrow'],
+  mountains:   ['Peak', 'Crag', 'Stone', 'Rock', 'Granite'],
+  desert:      ['Sand', 'Dust', 'Dry', 'Sun', 'Salt'],
+  swamp:       ['Mire', 'Bog', 'Muck', 'Marsh', 'Murk'],
+  marsh:       ['Reed', 'Fen', 'Sedge', 'Pool', 'Wet'],
+  tundra:      ['Frost', 'Ice', 'Snow', 'Pale', 'Bitter'],
+  volcano:     ['Ash', 'Cinder', 'Flame', 'Ember', 'Slag'],
+  jungle:      ['Vine', 'Fern', 'Tangle', 'Canopy', 'Orchid'],
+  broken_lands:['Scar', 'Ruin', 'Shatter', 'Wreck', 'Void'],
+  glacier:     ['Crystal', 'Frost', 'Gleam', 'Ice', 'Pale'],
+};
+
+/** Suffix by location subtype */
+const LOCATION_SUFFIXES: Partial<Record<LocationSubtype, string[]>> = {
+  hamlet:   ['bury', 'ton', 'wick', 'stead', 'ford', 'ham', 'vale'],
+  town:     ['town', 'borough', 'gate', 'bridge', 'cross', 'market'],
+  city:     ['city', 'polis', 'haven', 'port', 'hold'],
+  capital:  ['throne', 'seat', 'crown', 'heart', 'spire'],
+  camp:     [' Camp', ' Rest', ' Halt', ' Clearing', ' Hollow'],
+  fort:     ['guard', 'wall', 'hold', 'keep', 'watch'],
+  tower:    [' Tower', ' Spire', ' Pinnacle', ' Watch'],
+  shrine:   [' Shrine', ' Altar', ' Sanctum', ' Circle'],
+  temple:   [' Temple', ' Cathedral', ' Basilica', ' Monastery'],
+  mining:   [' Mine', ' Delve', ' Quarry', ' Shaft', ' Dig'],
+  ruins:    [' Ruins', ' Remnant', ' Hollow', ' Cairn'],
+  oasis:    [' Oasis', ' Spring', ' Pool', ' Wells'],
+  castle:   [' Castle', ' Citadel', ' Fortress', ' Keep'],
+  farmland: [' Fields', ' Farms', ' Pastures', ' Commons'],
+  battleground: [' Field', ' Crossing', ' Stand', ' Pass'],
+  unexplored_poi: [' Mystery', ' Unknown', ' Enigma', ' Wonder'],
+};
+
+const DEFAULT_ROOTS = ['Stone', 'Grey', 'Iron', 'Silver', 'Raven', 'Wolf', 'Thorn', 'Hawk'];
+
+/**
+ * Generate a procedural location name from terrain + subtype.
+ * Deterministic for a given rng state.
+ */
+function generateLocationName(
+  rng: () => number,
+  terrain: TerrainType,
+  subtype: LocationSubtype,
+  usedNames: Set<string>,
+): string {
+  const maxAttempts = 5;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const prefixes = LOCATION_PREFIXES[subtype] ?? ['Old', 'New', 'Far'];
+    const roots = TERRAIN_NAME_ROOTS[terrain] ?? DEFAULT_ROOTS;
+    const suffixes = LOCATION_SUFFIXES[subtype] ?? ['ton', 'bury', 'vale'];
+
+    const usePrefix = rng() < 0.35;
+    const root = roots[Math.floor(rng() * roots.length)];
+    const suffix = suffixes[Math.floor(rng() * suffixes.length)];
+
+    let name: string;
+    if (usePrefix) {
+      const prefix = prefixes[Math.floor(rng() * prefixes.length)];
+      // If suffix starts with space, it's a separate word
+      name = suffix.startsWith(' ')
+        ? `${prefix} ${root}${suffix}`
+        : `${prefix} ${root}${suffix}`;
+    } else {
+      name = suffix.startsWith(' ')
+        ? `${root}${suffix}`
+        : `${root}${suffix}`;
+    }
+
+    if (!usedNames.has(name) || attempt === maxAttempts - 1) {
+      return name;
+    }
+  }
+  // Final fallback — append a number
+  return `Settlement ${usedNames.size + 1}`;
+}
 
 // ─── Generators ───────────────────────────────────────────────────
 
@@ -254,27 +381,43 @@ export function seedWorld(
   }
 
   // ── Locations ────────────────────────────────────────────
-  const locCount = randomInRange(rng, LOCATION_COUNT.min, LOCATION_COUNT.max);
-  const usedNameIndices = new Set<number>();
+  // Density-based: spawn locations on 30-50% of habitable hexes
+  const habitableTiles = tiles.filter(t =>
+    t.terrain !== 'ocean' && t.terrain !== 'deep_ocean'
+    && t.terrain !== 'coastal_shallows' && t.terrain !== 'lake'
+  );
+  const densityFraction = LOCATION_DENSITY.min + rng() * (LOCATION_DENSITY.max - LOCATION_DENSITY.min);
+  const locCount = Math.max(
+    LOCATION_COUNT.min,
+    Math.round(habitableTiles.length * densityFraction),
+  );
 
-  for (let i = 0; i < locCount; i++) {
-    let nameIdx: number;
-    do { nameIdx = Math.floor(rng() * LOCATION_NAMES.length); }
-    while (usedNameIndices.has(nameIdx) && usedNameIndices.size < LOCATION_NAMES.length);
-    usedNameIndices.add(nameIdx);
+  // Shuffle habitable tiles for unique hex placement (Fisher-Yates)
+  const shuffledTiles = [...habitableTiles];
+  for (let i = shuffledTiles.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [shuffledTiles[i], shuffledTiles[j]] = [shuffledTiles[j], shuffledTiles[i]];
+  }
 
+  const usedLocationNames = new Set<string>();
+
+  for (let i = 0; i < Math.min(locCount, shuffledTiles.length); i++) {
     const id = `loc_${i}`;
-    const validTiles = tiles.filter(t =>
-      t.terrain !== 'ocean' && t.terrain !== 'coastal_shallows'
-    );
-    const tile = validTiles.length > 0
-      ? validTiles[Math.floor(rng() * validTiles.length)]
-      : tiles[0];
+    const tile = shuffledTiles[i];
 
     const locInjection = injections?.find(inj => inj.injection.injectionType === 'location_feature');
     const sphereBiases = locInjection ? { ...locInjection.injection.sphereBiases } : {};
 
     const locationSubtype = pickLocationSubtype(rng, tile.terrain, i, locCount);
+
+    // Use handcrafted names first, then procedural generation
+    let name: string;
+    if (i < LOCATION_NAMES.length) {
+      name = LOCATION_NAMES[i];
+    } else {
+      name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames);
+    }
+    usedLocationNames.add(name);
 
     // Initialize sphereInfluence on each location (used by mandate evaluation)
     const sphereInfluence: Record<string, number> = {};
@@ -285,7 +428,7 @@ export function seedWorld(
     graph.addNode({
       id,
       type: 'location',
-      name: LOCATION_NAMES[nameIdx],
+      name,
       properties: {
         locationType: locationSubtype,
         locationSubtype,
@@ -294,6 +437,7 @@ export function seedWorld(
         terrain: tile.terrain,
         sphereBiases,
         sphereInfluence,
+        prosperity: INITIAL_PROSPERITY[locationSubtype] ?? 0,
       },
     });
     locationIds.push(id);

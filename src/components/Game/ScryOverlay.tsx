@@ -70,7 +70,7 @@ const PositionSlot = memo(function PositionSlot(
           width: size.width,
           height: size.height,
           backgroundColor: 'var(--bg-surface)',
-          borderColor: 'var(--border-subtle)',
+          borderColor: 'var(--border-gold)',
         }}
       >
         <Tooltip id={`ui.scry_rank_${position.rank === 'apex' ? 'champion' : position.rank === 'inner' ? 'steward' : 'herald'}`}>
@@ -229,7 +229,7 @@ const ContextMenu = memo(function ContextMenu({
   return (
     <div
       className="absolute border rounded-lg shadow-lg z-40"
-      style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-subtle)' }}
+      style={{ backgroundColor: 'var(--bg-raised)', borderColor: 'var(--border-gold)' }}
     >
       <button
         onClick={() => {
@@ -270,7 +270,7 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
     <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
       <div
         className="border rounded-xl p-6 max-w-md w-full mx-4"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
       >
         <div className="flex items-center justify-between mb-4">
           <Tooltip id="ui.scry_assign">
@@ -309,7 +309,7 @@ const AgentPickerPanel = memo(function AgentPickerPanel({
                   className="w-full text-left p-3 rounded-lg border transition-all flex gap-3 items-center"
                   style={{
                     backgroundColor: 'var(--bg-raised)',
-                    borderColor: 'var(--border-subtle)',
+                    borderColor: 'var(--border-gold)',
                   }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-hover)')}
                   onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'var(--bg-raised)')}
@@ -442,7 +442,7 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
     <div className="absolute inset-0 z-40 flex items-center justify-center" style={{ backgroundColor: 'rgba(10, 10, 14, 0.6)' }}>
       <div
         className="border rounded-xl p-6 max-w-2xl w-full mx-4"
-        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-subtle)' }}
+        style={{ backgroundColor: 'var(--bg-surface)', borderColor: 'var(--border-gold)' }}
       >
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Select Title for {agent.name}</h3>
@@ -714,7 +714,7 @@ export function ScryOverlay() {
           className="rounded-lg border p-6 space-y-6 relative"
           style={{
             backgroundColor: 'rgba(20, 18, 15, 0.85)',
-            borderColor: 'var(--border-subtle)',
+            borderColor: 'var(--border-gold)',
           }}
         >
           {/* SVG thread connections behind position slots */}
@@ -802,7 +802,7 @@ export function ScryOverlay() {
                     className="p-3 rounded-lg text-center text-xs"
                     style={{
                       backgroundColor: 'var(--bg-surface)',
-                      borderColor: 'var(--border-subtle)',
+                      borderColor: 'var(--border-gold)',
                       border: '1px solid',
                       color: 'var(--text-tertiary)',
                     }}
@@ -824,7 +824,7 @@ export function ScryOverlay() {
                     className="p-3 rounded-lg text-center text-xs"
                     style={{
                       backgroundColor: 'var(--bg-surface)',
-                      borderColor: 'var(--border-subtle)',
+                      borderColor: 'var(--border-gold)',
                       border: '1px solid',
                       color: 'var(--text-tertiary)',
                     }}
@@ -841,7 +841,7 @@ export function ScryOverlay() {
             className="p-3 rounded-lg text-xs italic relative z-10"
             style={{
               backgroundColor: 'var(--bg-surface)',
-              borderColor: 'var(--border-subtle)',
+              borderColor: 'var(--border-gold)',
               border: '1px solid',
               color: 'var(--text-secondary)',
             }}

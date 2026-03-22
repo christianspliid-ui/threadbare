@@ -1,14 +1,17 @@
-# Ascendant Scry — Design Document
+# Divine Court (Investiture) — Design Document
 
 **Date:** 2026-03-06
+**Revised:** 2026-03-17 — Separated from Scry. "Scry" now refers exclusively to temporary remote observation (see `2026-03-17-scry-observation-design.md`). This document covers the divine court hierarchy, titles, sacred sites, and artifacts.
 **Phase:** 6D
-**Status:** Approved
+**Status:** Approved (revised)
 
 ## Overview
 
-The Ascendant Scry is a full-screen overlay that represents the player's divine court — a metaphysical visualization inspired by the Deck of Dragons from Malazan Book of the Fallen. It shows all positions in the player's divine hierarchy (agents, sacred sites, artifacts), where each position has a player-chosen title with bonuses and weaknesses.
+The Divine Court is a full-screen overlay that represents the player's divine hierarchy — a metaphysical visualization inspired by the Deck of Dragons from Malazan Book of the Fallen. It shows all positions in the player's court (agents, sacred sites, artifacts), where each position has a player-chosen title with bonuses and weaknesses.
 
-The Scry is *not* a tactical dashboard. It's a narrative experience — connecting to the cosmic forces, seeing your divine court take shape. Abstract, conceptual, about correlations and titles rather than precise tactical details.
+The Court is *not* a tactical dashboard. It's a narrative experience — connecting to the cosmic forces, seeing your divine court take shape. Abstract, conceptual, about correlations and titles rather than precise tactical details.
+
+> **Naming clarification (2026-03-17):** The Divine Court and Scry are separate systems. "Scry" means temporary remote observation of an agent (see companion design doc). The Divine Court is about permanent hierarchy — investiture, titles, rank. Agents assigned to court positions appear in the sidebar under **Retinue**. Agents being scried appear under **Scry**. These are orthogonal categories.
 
 ## Key Design Decisions
 
@@ -18,12 +21,13 @@ The Scry is *not* a tactical dashboard. It's a narrative experience — connecti
 4. **Court geometry is player-chosen** — different visual layouts linked to Foundation Spheres
 5. **Three holding types**: Agent positions, Sacred Sites, Divine Artifacts
 6. **Full-screen overlay** — represents ascending to the metaphysical plane
-7. **Player deck only** for initial implementation; rival decks are a future phase
+7. **Player court only** for initial implementation; rival courts are a future phase
 8. **Extensibility is paramount** — all structures data-driven, expandable
+9. **Court agents provide permanent LOS** — agents assigned to court positions share line of sight with the player indefinitely (see LOS design doc). This is distinct from Scry, which is temporary.
 
 ## Court Structures
 
-Four geometries tied to Foundation Sphere pairs. The player chooses one when first opening the Scry (or can restructure later for significant cost).
+Four geometries tied to Foundation Sphere pairs. The player chooses one when first opening the Court (or can restructure later for significant cost).
 
 | Structure | Geometry | Foundation | Passive Bonus |
 |-----------|----------|------------|---------------|
@@ -33,6 +37,26 @@ Four geometries tied to Foundation Sphere pairs. The player chooses one when fir
 | The Abyss | Inverse pyramid | Darkness | Weaknesses on titles are reduced by 30% |
 
 Each structure has 10 agent positions (1 Apex, 3 Inner, 6 Outer), 2-3 Sacred Site slots, and 2-4 Artifact slots. The geometry is purely visual — slot mechanics are identical across structures.
+
+### Constants Table
+
+| Constant | Default | Purpose |
+|----------|---------|---------|
+| `APEX_SLOTS` | 1 | Number of apex positions per court |
+| `INNER_SLOTS` | 3 | Number of inner positions per court |
+| `OUTER_SLOTS` | 6 | Number of outer positions per court |
+| `RANK_MIN_TIER.apex` | 3 (Devoted) | Minimum influence tier for apex |
+| `RANK_MIN_TIER.inner` | 2 (Aligned) | Minimum influence tier for inner |
+| `RANK_MIN_TIER.outer` | 1 (Touched) | Minimum influence tier for outer |
+| `RANK_REASSIGNMENT_COST.apex` | 30 | Essence cost to reassign apex |
+| `RANK_REASSIGNMENT_COST.inner` | 15 | Essence cost to reassign inner |
+| `RANK_REASSIGNMENT_COST.outer` | 5 | Essence cost to reassign outer |
+| `RANK_DEMOTION_COST.apex` | 15 | Essence cost to demote from apex |
+| `RANK_DEMOTION_COST.inner` | 8 | Essence cost to demote from inner |
+| `RANK_DEMOTION_COST.outer` | 3 | Essence cost to demote from outer |
+| `REASSIGNMENT_ESCALATION` | 1.25 | Cost multiplier per reassignment |
+| `RESTRUCTURE_COST` | 50 | Essence cost to change court geometry |
+| `TITLE_PROPOSALS_COUNT` | 3–4 | Number of title options generated per assignment |
 
 ### Expandability
 
@@ -56,7 +80,7 @@ Court structures are defined as data objects (not hardcoded). New structures can
 
 ### Title Generation
 
-When a player assigns an agent to a position, the system generates 3-4 title proposals. Generation is deterministic (seeded PRNG) and based on:
+When a player assigns an agent to a position, the system generates 3-4 title proposals. Generation is deterministic (seeded PRNG: `hash(agentId + positionId + totalReassignmentCount)`) and based on:
 
 - **Agent's sphere affinities** (from ascendant's sphere alignment + agent's domain capabilities)
 - **Agent's strongest domains** (from domainCapabilities in RetinueAgent)
@@ -88,11 +112,46 @@ Effects use a unified `TitleEffect` type:
 - **Demote**: Remove agent from position. Agent stays in retinue, loses title bonuses (and weaknesses). Position opens. Half the reassignment cost.
 - **Restructure Court**: Change the court geometry entirely. Costs 50 essence + all current titles are revoked. Positions and slots reset.
 
+### Tracing
+
+The court system emits these trace types:
+
+```typescript
+interface CourtAssignmentTrace {
+  type: 'court_assignment';
+  tick: number;
+  positionId: string;
+  agentId: string;
+  titleId: string;
+  action: 'assign' | 'reassign' | 'demote' | 'restructure';
+  essenceCost: number;
+  rank: PositionRank;
+}
+
+interface CourtStructureTrace {
+  type: 'court_structure_change';
+  tick: number;
+  oldStructure: CourtStructureType | null;
+  newStructure: CourtStructureType;
+  essenceCost: number;
+}
+```
+
+### Fail-Soft
+
+| Failure Case | Fallback Behavior |
+|---|---|
+| Agent no longer meets tier requirement for assigned position | Agent remains in position; UI shows warning badge. Not auto-demoted (player chose this). |
+| Title generation seed produces fewer than 3 proposals | Show whatever proposals were generated (minimum 1). Log warning. |
+| Court state missing on ascendant node | Treat as uninitialized; show court structure picker on open. |
+| Referenced agent ID not found in graph | Show empty slot with "Agent lost" label. Do not crash. |
+| Essence pool insufficient mid-assignment | Reject assignment; show "Insufficient essence" message. State unchanged. |
+
 ## The Three Holdings
 
 ### 1. Agent Positions (fully implemented)
 
-The core of the Scry — 10 slots arranged in the court geometry. Each slot holds one retinue agent with a player-chosen title.
+The core of the Court — 10 slots arranged in the court geometry. Each slot holds one retinue agent with a player-chosen title.
 
 ### 2. Sacred Sites (Nexus) — data model + UI, placeholder interaction
 
@@ -190,8 +249,10 @@ interface DivineArtifact {
   creationCost: number;
 }
 
-// Top-level scry state (lives on ascendant node properties)
-interface ScryState {
+// Top-level court state (lives on ascendant node properties)
+// NOTE: This was formerly named ScryState. Renaming to CourtState
+// is tracked as a future refactor task.
+interface CourtState {
   courtStructure: CourtStructure;
   sacredSites: SacredSite[];
   artifacts: DivineArtifact[];
@@ -257,11 +318,13 @@ Content packages must define:
 
 ### Full-Screen Overlay
 
-The Scry is a full-screen modal with a visual transition (fade + subtle particle effect suggesting ascending to the metaphysical plane).
+The Court is a full-screen modal with a visual transition (fade + subtle particle effect suggesting ascending to the metaphysical plane).
+
+**Access point:** A dedicated "Court" button in the top bar or sidebar header — *not* the scry wheel slot (which now triggers temporary observation). The wheel slot labeled "Scry" on the action wheel is for the observation mechanic described in the companion design doc.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  ✦ THE SCRY — [Court Name]              [Close ✕]  │
+│  ✦ THE DIVINE COURT — [Court Name]       [Close ✕]  │
 │  "Through the veil, your court takes shape..."       │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
@@ -313,7 +376,7 @@ The Scry is a full-screen modal with a visual transition (fade + subtle particle
 - Title generation engine (pure function, seeded PRNG)
 - Title effect application (mechanical modifiers)
 - Agent assignment / reassignment / demotion flow
-- Scry state on ascendant node properties
+- Court state on ascendant node properties
 - Full-screen overlay UI with court geometry visualization
 - Agent picker and title proposal panels
 - Essence cost calculation and spending
@@ -324,10 +387,18 @@ The Scry is a full-screen modal with a visual transition (fade + subtle particle
 - Artifact slots (rendered, not interactive)
 - Court restructuring (button visible, not wired)
 
+### Requires Refactoring (post-separation)
+- Rename `ScryState` → `CourtState` in types and engine
+- Rename `ScryOverlay` → `CourtOverlay` / `DivineCourt` in UI
+- Rename `ScryContext` / `useScry` → `CourtContext` / `useCourt`
+- Move court entry point from scry wheel slot to dedicated top-bar/sidebar button
+- Update `scry-content.ts` → `court-content.ts`
+- Update LOS: court-assigned agents still provide permanent LOS via `COURT_AGENT_SIGHT_RANGE` (renamed from `SCRY_SIGHT_RANGE`)
+
 ### Future Phases
 - Sacred Site consecration flow
 - Artifact forging flow
-- Rival Scry (obscured view of opponent courts)
+- Rival Courts (obscured view of opponent courts)
 - Court restructuring interaction
 - Title-driven narrative events
 - Artifact theft/loss mechanics
@@ -337,4 +408,17 @@ The Scry is a full-screen modal with a visual transition (fade + subtle particle
 - **Auto-assigned titles**: Rejected — player agency in choosing from proposals is core to the Deck of Dragons feel
 - **Organic/freeform positions**: Rejected — fixed positional hierarchy gives structure and progression
 - **Sphere-themed sub-courts**: Rejected as initial approach — could be an expansion of the system later
-- **Dashboard-style UI**: Rejected — the Scry must feel metaphysical and narrative, not tactical
+- **Dashboard-style UI**: Rejected — the Court must feel metaphysical and narrative, not tactical
+- **"Scry" as the name for this system**: Rejected (2026-03-17) — "scry" means observe/see remotely, which is a different god-power. The divine hierarchy is investiture, not observation. Conflating them confused both the UI (one button for two unrelated actions) and the mental model (retinue vs. scry sidebar categories).
+
+## NFP Compliance Summary
+
+| # | Priority | Verdict |
+|---|----------|---------|
+| 1 | Tunability | PASS — All costs, tier thresholds, slot counts, and escalation factors are named constants. |
+| 2 | Inspectability | PASS — `CourtAssignmentTrace` and `CourtStructureTrace` provide full causal audit trail. |
+| 3 | Determinism | PASS — Title generation uses seeded PRNG (`hash(agentId + positionId + reassignmentCount)`). |
+| 4 | Fail-soft | PASS — Fail-soft table covers missing agents, insufficient proposals, missing state, and insufficient essence. |
+| 5 | Narrative | PASS — Metaphysical overlay aesthetic, title flavor text, court geometry as narrative identity. |
+| 6 | Additive | PASS — Separation from Scry is additive: Court retains all existing functionality, Scry becomes a new system. |
+| 7 | Performance | PASS — Court is opened on demand (no per-tick cost). Title generation is pure and cacheable. |

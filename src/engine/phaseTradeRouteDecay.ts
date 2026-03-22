@@ -10,13 +10,14 @@
  * NFP priorities: Tunability, Inspectability, Determinism, Fail-soft
  */
 
-import type { GameState, TickEvent } from '../types/gameState';
+import type { GameState, TickEvent, ProsperityShock } from '../types/gameState';
 import {
   TRADE_ROUTE_DECAY_RATE,
   TRADE_ROUTE_FRESHNESS_WINDOW,
   readTradeRouteProps,
   isRouteStale,
 } from './tradeRoute';
+import { SHOCK_TRADE_ROUTE_LOST } from './phaseProsperity';
 import { emitTrace } from './traceBuffer';
 import { resolveEconomicChronicle } from './economicChronicle';
 
@@ -40,6 +41,7 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
   const { graph, tick, seed } = state;
   const events: TickEvent[] = [];
   const chronicleEntries: typeof state.chronicleEntries = [];
+  const prosperityShocks: ProsperityShock[] = [];
 
   // Collect all trades_with edges
   const tradeEdges = graph.getEdgesByType('trades_with');
@@ -78,6 +80,20 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
       // Route dies — remove edge and emit dissolved trace
       const establishedTick = props.established;
       const totalTicksActive = tick - establishedTick;
+
+      // Push prosperity shocks to settlements at both endpoints
+      for (const actorId of [edge.source, edge.target]) {
+        const locEdges = graph.getOutgoingEdges(actorId, 'located_at');
+        for (const locEdge of locEdges) {
+          prosperityShocks.push({
+            locationId: locEdge.target,
+            delta: SHOCK_TRADE_ROUTE_LOST,
+            causeType: 'trade_route_lost',
+            causeId: edge.id,
+            description: `Trade route dissolved: ${sourceNode.name} ↔ ${targetNode.name}`,
+          });
+        }
+      }
 
       graph.removeEdge(edge.id);
 
@@ -142,9 +158,10 @@ export function phaseTradeRouteDecay(state: GameState): Partial<GameState> {
     }
   }
 
-  // Return accumulated events and chronicle entries
+  // Return accumulated events, chronicle entries, and prosperity shocks
   return {
     ...(events.length > 0 ? { tickEvents: [...state.tickEvents, ...events] } : {}),
     ...(chronicleEntries.length > 0 ? { chronicleEntries: [...state.chronicleEntries, ...chronicleEntries] } : {}),
+    ...(prosperityShocks.length > 0 ? { prosperityShocks: [...(state.prosperityShocks ?? []), ...prosperityShocks] } : {}),
   };
 }

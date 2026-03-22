@@ -68,7 +68,6 @@ function makeTestProps(overrides: Partial<any> = {}) {
       },
     },
     onLocationClick: () => {},
-    onLocationDoubleClick: () => {},
     onAgentClick: () => {},
     graph: mockGraph,
     seed: 42,

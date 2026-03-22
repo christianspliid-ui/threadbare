@@ -73,7 +73,7 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
           fontSize: 'var(--text-xs)',
           backgroundColor: isOpen ? 'var(--accent-gold-dim)' : 'var(--bg-raised)',
           color: isOpen ? 'var(--text-primary)' : 'var(--text-secondary)',
-          borderColor: 'var(--border-subtle)',
+          borderColor: 'var(--border-gold)',
         }}
       >
         <span className="text-lg">☰</span>

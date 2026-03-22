@@ -45,26 +45,59 @@ Ask the user which mode to run, or default to Mode 1 if they said "run QA" witho
 | **2** | Headless Sweep | No | CLI regression check: tests + typecheck + playtest runner + model validation |
 | **3** | Targeted Audit | Maybe | Deep-dive on a specific system (user specifies which) |
 
+## Server Isolation
+
+**Every QA session runs its own Vite dev server on an isolated port.** This prevents conflicts with:
+- The user's own `npm run dev` on port 5173
+- Other Claude Code agents or worktrees running concurrently
+- Previous QA sessions that weren't cleaned up
+
+### How it works
+
+1. The orchestrator runs `bash scripts/qa-server.sh start` before dispatching any browser agents
+2. The script finds a free port in the 5180–5199 range (away from the default 5173)
+3. It starts Vite on that port and writes `{port, pid, url}` to `.qa-server.json`
+4. All agent prompts receive the dynamic `QA_URL` (e.g., `http://localhost:5183/?view=game`)
+5. After the sweep, the orchestrator runs `bash scripts/qa-server.sh stop` to clean up
+
+### Orchestrator responsibility
+
+The orchestrator **must** manage the server lifecycle:
+
+```bash
+# Before dispatching agents:
+bash scripts/qa-server.sh start
+# Read the output to get the URL, e.g.: {"port":5183,"pid":12345,"url":"http://localhost:5183"}
+# Set QA_URL = "http://localhost:5183"
+
+# After all agents complete (or on failure):
+bash scripts/qa-server.sh stop
+```
+
+**Never hardcode `localhost:5173` in agent prompts.** Always substitute the dynamic URL from the server start output.
+
 ## Prerequisites (Mode 1 and 3)
 
 Before dispatching browser-based agents, verify:
 
-1. **Dev server running** — user must have `npm run dev` active at `http://localhost:5173`
+1. **Start isolated QA server** — run `bash scripts/qa-server.sh start` and capture the URL from the output. This is `QA_URL` for all agent prompts.
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
 
-**Pre-flight check:** Navigate to `http://localhost:5173` via Playwright. If the page doesn't load, stop and tell the user to start the dev server.
+**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
 
 ### Game Entry Flow (required for all browser agents)
 
-To reach the main game view, agents must click through this exact sequence:
+**Use the quick-start URL:** `{QA_URL}/?view=game`
+
+This bypasses the multi-step entry flow and loads directly into the main game view with a valid game state. Wait 2-3 seconds for all components to mount before beginning tests.
+
+Only use the manual entry flow below when **testing the worldgen or selection screens themselves:**
 
 1. **Generate World** — click the "Generate World" button on the world generation screen
 2. **Shape Your Divinity** — click the "✧ Shape Your Divinity ✧" button to enter character selection
 3. **Select a character** — click one of the 4 archetype cards (e.g., "The Storm Marshal", "The Patient One", etc.)
 4. **Ascend** — click the "✧ Ascend ✧" button to enter the game
-
-After step 4, the main game view loads with the hex map, sidebar panels, and HUD. Wait 2-3 seconds after Ascend for all components to mount before beginning tests.
 
 ## Prerequisites (Mode 2)
 
@@ -72,7 +105,7 @@ No browser needed. Just verify the project directory is correct and `npm test` c
 
 ## Prerequisites (All Modes)
 
-- **Notion MCP connected** — for writing findings to the Development Backlog
+- **`.planning/BACKLOG.md` exists** — for routing findings to the project backlog
 - Read `STYLE.md` for visual reference
 - Initialize findings collection: `findings = []`
 
@@ -167,9 +200,8 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 > - Fog of war: unexplored=black, remembered=dim, visible=normal
 >
 > **Step 2:** Use Playwright MCP to play through the game:
-> 1. `browser_navigate` to `http://localhost:5173`
-> 2. Enter the game: click "Generate World" → click "✧ Shape Your Divinity ✧" → click a character card → click "✧ Ascend ✧". Wait 3 seconds for the game to load.
-> 3. `browser_take_screenshot` — full viewport
+> 1. `browser_navigate` to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds for the game to load.
+> 2. `browser_take_screenshot` — full viewport
 > 4. `browser_evaluate` to extract ALL computed CSS background-color, color, border-color values from visible elements. Convert each to HSL and check the L (lightness) component against STYLE.md brightness thresholds.
 > 5. Screenshot individual panels for detail inspection
 > 6. Advance game 10+ ticks (click Step button repeatedly), screenshot again
@@ -194,7 +226,7 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 > You are an Information Architecture auditor for The Fantasy World Simulator. Identify redundant text, dead space, information density imbalance, and wasted screen real estate.
 >
 > **Use Playwright MCP tools:**
-> 1. Navigate to `http://localhost:5173`. Enter the game: click "Generate World" → "✧ Shape Your Divinity ✧" → click a character card → "✧ Ascend ✧". Wait 3 seconds.
+> 1. Navigate to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds.
 > 2. `browser_evaluate` to run a DOM analysis that:
 >    - Extracts all visible text nodes with their parent element tags and bounding rects
 >    - Groups by screen zone (LEFT_SIDEBAR: x<250, TOP_BAR: y<60, CENTER_MAP: 250<x<viewport-350, RIGHT_SIDEBAR: x>viewport-350, BOTTOM: bottom 200px)
@@ -226,7 +258,7 @@ Edge case: findings spanning two backlogs get filed to whichever backlog owns th
 >
 > **Use Playwright MCP to systematically test each flow:**
 >
-> 1. **World Creation:** Navigate to `http://localhost:5173`. Click "Generate World" → "✧ Shape Your Divinity ✧" → select a character card → "✧ Ascend ✧". Wait 3 seconds. Screenshot each step.
+> 1. **Game Entry:** Navigate to `{QA_URL}/?view=game` (skips worldgen/selection). Wait 3 seconds. Screenshot to confirm game loaded.
 >
 > 2. **Tick Progression:** Click "Step" button 5+ times. Verify: narrative log updates, doom bar moves, essence values change. Screenshot before/after.
 >
@@ -310,34 +342,43 @@ This is the rigid flow for a full QA sweep. Do not skip steps. Do not reorder.
 1. Read this skill file fully
 2. Read `test-surfaces.md` (companion file in this skill directory) — this is your surface checklist
 3. Read `STYLE.md` for current visual spec
-4. Pre-flight: `browser_navigate` to `http://localhost:5173` — must load. Test Notion MCP responds.
-5. Initialize findings collection and surface coverage tracker (all surface IDs start as "untested")
+4. **Start isolated QA server:** Run `bash scripts/qa-server.sh start`. Parse the JSON output to get `QA_URL` (e.g., `http://localhost:5183`). If it fails, check the log and tell the user.
+5. Pre-flight: `browser_navigate` to `{QA_URL}/?view=game` — must load into game view. Test Notion MCP responds.
+6. Initialize findings collection and surface coverage tracker (all surface IDs start as "untested")
 
 ### Phase 2: Agent Dispatch (Sequential)
 
-6. **Dispatch Agent 1** (Visual Style) — use the prompt template above. Collect returned findings. Each finding must include `surfaceIds`.
-7. **Dispatch Agent 2** (Info Architecture) — use the prompt template above. Collect returned findings.
-8. **Dispatch Agent 3** (Interaction & State) — use the prompt template above. Collect returned findings.
-9. **Dispatch Agent 4** (React Code Quality) — use the prompt template above. Collect returned findings.
+**IMPORTANT:** When constructing agent prompts, replace every `{QA_URL}` with the actual URL from step 4 (e.g., `http://localhost:5183`). Do not pass the literal placeholder string.
+
+7. **Dispatch Agent 1** (Visual Style) — use the prompt template above, substituting `{QA_URL}`. Collect returned findings. Each finding must include `surfaceIds`.
+8. **Dispatch Agent 2** (Info Architecture) — use the prompt template above, substituting `{QA_URL}`. Collect returned findings.
+9. **Dispatch Agent 3** (Interaction & State) — use the prompt template above, substituting `{QA_URL}`. Collect returned findings.
+10. **Dispatch Agent 4** (React Code Quality) — use the prompt template above. Collect returned findings. (No browser needed — no URL substitution required.)
 
 **Why sequential:** Playwright MCP controls a single browser. Parallel agents would conflict. Later agents also benefit from the game state left by earlier agents.
 
 ### Phase 3: Merge & Report
 
-10. **Deduplicate:** Same UI element + same issue -> merge, keep the more detailed description. Cross-agent links: if Agent 1 flags a color and Agent 4 finds the hardcoded value -> reference both.
-11. **Route:** Apply the Backlog Routing Decision Tree to every finding.
-12. **Sort:** Primary: severity (critical->suggestion). Secondary: effort (S->L).
-13. **Coverage report:** Collect all `surfaceIds` from all findings. Compare against the full surface registry. Produce coverage summary showing tested vs. untested surfaces and coverage percentage. Flag any non-dev surfaces that no agent touched.
-14. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions. Coverage: N/49 surfaces tested (XX%)." Table format with ID, severity, title, effort, backlog. Ask: "Which findings should I add to the Notion backlog? (all / critical+major / select specific IDs)"
+11. **Deduplicate:** Same UI element + same issue -> merge, keep the more detailed description. Cross-agent links: if Agent 1 flags a color and Agent 4 finds the hardcoded value -> reference both.
+12. **Route:** Apply the Backlog Routing Decision Tree to every finding.
+13. **Sort:** Primary: severity (critical->suggestion). Secondary: effort (S->L).
+14. **Coverage report:** Collect all `surfaceIds` from all findings. Compare against the full surface registry. Produce coverage summary showing tested vs. untested surfaces and coverage percentage. Flag any non-dev surfaces that no agent touched.
+15. **Present:** Show summary to user — "QA sweep found N findings: X critical, Y major, Z minor, W suggestions. Coverage: N/49 surfaces tested (XX%)." Table format with ID, severity, title, effort, backlog. Ask: "Which findings should I add to the backlog? (all / critical+major / select specific IDs)"
 
 ### Phase 4: Backlog Integration
 
-15. **Notion:** Add user-approved findings to the Development Backlog at `https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf`. Create a section "QA Findings [YYYY-MM-DD]" with a table: ID, Severity, Category, Title, Effort, Status (default: "To Fix").
-16. **Save raw JSON:** Write all findings to `Docs/qa/YYYY-MM-DD-qa-findings.json` for future diffing. Include a top-level `coverage` object with `tested`, `skipped`, `crossCutting`, and `percentage` fields.
+16. **Backlog:** Add user-approved findings to `.planning/BACKLOG.md`. Create a section "## QA Findings [YYYY-MM-DD]" with entries using the project's status emoji convention (🔲 Ready to build). Include ID, Severity, Category, Title, and Effort for each finding.
+17. **Save raw JSON:** Write all findings to `Docs/qa/YYYY-MM-DD-qa-findings.json` for future diffing. Include a top-level `coverage` object with `tested`, `skipped`, `crossCutting`, and `percentage` fields.
 
 ### Phase 5: Surface Registry Maintenance
 
-17. **Update registry:** If any new components were discovered during the sweep that aren't in `test-surfaces.md`, add them now. If any listed components no longer exist, mark them `deprecated`.
+18. **Update registry:** If any new components were discovered during the sweep that aren't in `test-surfaces.md`, add them now. If any listed components no longer exist, mark them `deprecated`.
+
+### Phase 6: Cleanup
+
+19. **Stop QA server:** Run `bash scripts/qa-server.sh stop`. This kills the isolated Vite process and removes `.qa-server.json`. **This step is mandatory** — even if the sweep failed or was aborted. Leaked server processes waste resources and block ports for future sweeps.
+
+**Failure handling:** If any agent fails or the sweep is aborted early, **still run step 19**. Wrap the entire Phase 2–5 flow in a mental "try/finally" — cleanup always happens.
 
 ---
 
@@ -404,11 +445,14 @@ const traces = await window.__DEBUG.getTraces();
 
 | Mistake | Fix |
 |---------|-----|
+| Hardcoding `localhost:5173` in agent prompts | Always use `{QA_URL}` from `scripts/qa-server.sh start` output. The user's dev server may be on 5173. |
+| Forgetting to stop the QA server | Always run `bash scripts/qa-server.sh stop` after the sweep — even on failure. Leaked processes block ports. |
 | Running agents in parallel | Playwright MCP is single-browser. Run sequentially. |
-| Skipping pre-flight checks | Agent 1 will fail if dev server isn't running |
+| Skipping server start (using user's dev server) | QA must be isolated. Start your own server — don't share port 5173. |
+| Passing `{QA_URL}` as a literal string | Substitute the actual URL (e.g., `http://localhost:5183`) before dispatching agents. |
 | Fixing during sweep | Collect first, fix later. Changing code mid-sweep invalidates later agents. |
 | Not saving raw JSON | You lose the ability to diff between QA runs |
-| Merging all findings to Notion without asking | Ask user first — they may want to defer suggestions |
+| Merging all findings to backlog without asking | Ask user first — they may want to defer suggestions |
 | Forgetting backlog routing | Every finding needs `backlog` and `notionPrefix` fields |
 | Not reading test-surfaces.md | Every sweep must start by reading the surface registry |
 | Adding components without updating registry | New components = new registry entry, same session |
@@ -419,4 +463,3 @@ const traces = await window.__DEBUG.getTraces();
 - During active implementation (game state unstable)
 - For engine-only changes (use unit tests, not browser QA)
 - For content/narrative quality review (different concern — use prose skills)
-- Without the dev server running (Agents 1-3 need the browser)

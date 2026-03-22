@@ -30,7 +30,6 @@ describe('HexZoomView', () => {
     connections: mockConnections,
     lineOfSight: 'full' as const,
     onLocationClick: vi.fn(),
-    onLocationDoubleClick: vi.fn(),
   };
 
   it('renders location names', () => {
@@ -52,13 +51,6 @@ describe('HexZoomView', () => {
     render(<HexZoomView {...defaultProps} onLocationClick={onLocationClick} />);
     fireEvent.click(screen.getByText('Tavern'));
     expect(onLocationClick).toHaveBeenCalledWith('loc.1');
-  });
-
-  it('calls onLocationDoubleClick on double click', () => {
-    const onLocationDoubleClick = vi.fn();
-    render(<HexZoomView {...defaultProps} onLocationDoubleClick={onLocationDoubleClick} />);
-    fireEvent.doubleClick(screen.getByText('Tavern'));
-    expect(onLocationDoubleClick).toHaveBeenCalledWith('loc.1');
   });
 
   it('dims locations when line of sight is none', () => {

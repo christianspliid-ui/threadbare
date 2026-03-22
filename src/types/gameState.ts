@@ -117,11 +117,30 @@ export interface GameState {
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];
 
+  // Prosperity shocks — one-time deltas pushed by other phases, consumed by phaseProsperity
+  // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)
+  prosperityShocks?: ProsperityShock[];
+
   // Metaprogression (persists across cycles)
   worldSoul: WorldSoulState;
   echoDefinitions: EchoDefinition[];
   echoStates: EchoState[];
   chronicle: GreatChronicle;
+}
+
+// ─── Prosperity Shock ───────────────────────────────────────────
+
+/** A one-time prosperity delta pushed by an upstream phase, consumed by phaseProsperity. */
+export interface ProsperityShock {
+  locationId: string;
+  delta: number;
+  causeType: 'trade_route_established' | 'trade_route_lost' | 'trade_route_threatened' | 'trade_route_secured'
+    | 'encounter_impact' | 'faction_arrival' | 'faction_departure'
+    | 'corruption_shock' | 'corruption_cleared' | 'divine_blessing' | 'divine_blessing_lost'
+    | 'unrest_shock' | 'unrest_relief'
+    | 'agent_economic_action' | 'wealthy_resident_arrival' | 'wealthy_resident_departure';
+  causeId: string;
+  description: string;
 }
 
 // ─── Constants ──────────────────────────────────────────────────
@@ -132,8 +151,8 @@ export const MAX_RECENT_EVENTS = 100;
 /** Stealth exposure decay per tick (natural forgetting) */
 export const STEALTH_DECAY_PER_TICK = 0.01;
 
-/** Default doom clock length in ticks (200 = longer game cycle) */
-export const DEFAULT_DOOM_TICKS = 200;
+/** Default doom clock length in ticks (20000 = 100× normal for testing) */
+export const DEFAULT_DOOM_TICKS = 20_000;
 
 /** Doom archetypes available for selection */
 export const DOOM_ARCHETYPES: DoomClockArchetype[] = [

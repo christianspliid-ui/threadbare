@@ -10,7 +10,7 @@ const RIVER_WIDTH_SOURCE = 1.2;
 const RIVER_WIDTH_MOUTH = 3.5;
 
 // ─── Meander tuning constants (NFP #1: Tunability) ──────────────
-/** Intermediate waypoints inserted between each pair of hex centers */
+/** Intermediate waypoints inserted between each pair of edge midpoints */
 const MEANDER_SUBDIVISIONS = 4;
 /** Noise frequency — lower = wider bends, higher = tighter wiggles */
 const MEANDER_NOISE_SCALE = 0.035;
@@ -20,6 +20,8 @@ const MEANDER_AMPLITUDE = 0.35;
 const MEANDER_SMOOTH_PASSES = 2;
 /** Noise seed offset so river meander pattern differs from coastline noise */
 const MEANDER_SEED_OFFSET = 5501;
+/** How far start/end points are offset from center toward the nearest edge (0=center, 1=edge) */
+const TERMINUS_EDGE_BIAS = 0.6;
 
 type Point2D = { x: number; y: number };
 
@@ -142,15 +144,58 @@ function chaikinSmoothOpen(points: Point2D[], passes: number): Point2D[] {
 
 // ─── SVG path conversion ────────────────────────────────────────
 
+// ─── Edge-midpoint waypoint generation ───────────────────────────
+
+/**
+ * Convert hex center path to edge-midpoint waypoints.
+ *
+ * Instead of routing center → center (which puts the curve right on top
+ * of hex icons), we route through the midpoints of shared hex edges.
+ * This naturally keeps the river away from hex centers.
+ *
+ * For the first hex: offset from center toward the exit edge.
+ * For the last hex: offset from center toward the entry edge.
+ * Interior waypoints: midpoint between consecutive hex centers (= shared edge midpoint).
+ */
+function hexPathToEdgeMidpoints(centers: Point2D[]): Point2D[] {
+  if (centers.length < 2) return centers;
+
+  const edgeMids: Point2D[] = [];
+
+  // Start point: offset from first center toward the first edge midpoint
+  const firstEdge = mid(centers[0], centers[1]);
+  edgeMids.push(lerp2D(centers[0], firstEdge, TERMINUS_EDGE_BIAS));
+
+  // Interior: shared edge midpoints between consecutive hexes
+  for (let i = 0; i < centers.length - 1; i++) {
+    edgeMids.push(mid(centers[i], centers[i + 1]));
+  }
+
+  // End point: offset from last center toward the last edge midpoint
+  const lastEdge = mid(centers[centers.length - 2], centers[centers.length - 1]);
+  edgeMids.push(lerp2D(centers[centers.length - 1], lastEdge, TERMINUS_EDGE_BIAS));
+
+  return edgeMids;
+}
+
+function mid(a: Point2D, b: Point2D): Point2D {
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+}
+
+function lerp2D(a: Point2D, b: Point2D, t: number): Point2D {
+  return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+}
+
 /**
  * Convert a river path (hex coords) to a meandering SVG path string.
  *
  * Pipeline:
  * 1. Map hex coords → pixel centers
- * 2. Subdivide with intermediate waypoints between hex centers
- * 3. Displace perpendicular to flow using seeded simplex noise
- * 4. Chaikin-smooth the displaced points
- * 5. Emit as Catmull-Rom → Bezier SVG path
+ * 2. Convert to edge-midpoint waypoints (avoids hex centers where icons sit)
+ * 3. Subdivide with intermediate waypoints between edge midpoints
+ * 4. Displace perpendicular to flow using seeded simplex noise
+ * 5. Chaikin-smooth the displaced points
+ * 6. Emit as Catmull-Rom → Bezier SVG path
  *
  * Exported for testing.
  */
@@ -161,9 +206,10 @@ export function riverPathToSvgPath(
 ): string {
   if (hexes.length < 2) return '';
 
-  let points: Point2D[] = hexes.map(h => hexToPixel(h, hexSize));
+  const centers: Point2D[] = hexes.map(h => hexToPixel(h, hexSize));
+  let points = hexPathToEdgeMidpoints(centers);
 
-  if (points.length === 2) {
+  if (hexes.length === 2) {
     // Even 2-hex paths get a slight meander
     points = subdividePoints(points, MEANDER_SUBDIVISIONS);
     points = displaceRiverPath(points, seed, MEANDER_NOISE_SCALE, MEANDER_AMPLITUDE * 0.5, hexSize);

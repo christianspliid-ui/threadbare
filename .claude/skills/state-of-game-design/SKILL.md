@@ -349,10 +349,10 @@ When in tension, higher priorities win.
 | Hex state + hex actions | `Docs/plans/2026-03-17-world-state-and-hex-actions-design.md` |
 | Hex action brainstorm | `brainstorm-hex-actions-and-control-mechanic.md` |
 | Domain Capability design | `Docs/plans/2026-03-04-disc13-domain-capability-and-resolution-design.md` |
-| Original CRUD design | [Notion: Actor CRUD Action System](https://www.notion.so/Design-Actor-CRUD-Action-System-3182b241dfb081fa9b91d160999e2f34) |
+| Original CRUD design | `Docs/plans/2026-03-03-actor-crud-action-system.md` |
 | Visual style guide | `STYLE.md` |
 | Design system | `Docs/design-system/INDEX.md` |
-| Notion backlog | https://www.notion.so/Development-Backlog-3182b241dfb081b9af78c279eef405cf |
+| Backlog | `.planning/BACKLOG.md` |
 | Project status | `Docs/project-status.md` |
 | Project history | `Docs/project-history.md` |
 

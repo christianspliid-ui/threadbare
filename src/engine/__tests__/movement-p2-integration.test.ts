@@ -49,18 +49,29 @@ describe('P2 integration', () => {
     graph.addEdge({ id: 'b_adj_c', source: 'hex_b', target: 'hex_c', type: 'adjacent', properties: {} });
     graph.addEdge({ id: 'agent_1_at', source: 'agent_1', target: 'hex_a', type: 'located_at', properties: {} });
 
-    let state = initMovementState('hex_c', ['hex_b', 'hex_c'], 1, 0);
+    // 2-edge model: grassland→grassland = 2 ticks per hop
+    let state = initMovementState('hex_c', ['hex_b', 'hex_c'], 2, 0);
 
-    // Tick 1: move to hex_b
-    const r1 = tickMovement(graph, 'agent_1', state, 1);
+    // Tick 1: accumulate toward hex_b (need 2 ticks)
+    const r0 = tickMovement(graph, 'agent_1', state, 1);
+    expect(r0.moved).toBe(false);
+    state = r0.updatedState;
+
+    // Tick 2: move to hex_b
+    const r1 = tickMovement(graph, 'agent_1', state, 2);
     expect(r1.moved).toBe(true);
-    expect(r1.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_b', tick: 1, hexCol: 1, hexRow: 0 });
+    expect(r1.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_b', tick: 2, hexCol: 1, hexRow: 0 });
     state = r1.updatedState;
 
-    // Tick 2: move to hex_c
-    const r2 = tickMovement(graph, 'agent_1', state, 2);
+    // Tick 3: accumulate toward hex_c (need 2 ticks)
+    const r2a = tickMovement(graph, 'agent_1', state, 3);
+    expect(r2a.moved).toBe(false);
+    state = r2a.updatedState;
+
+    // Tick 4: move to hex_c
+    const r2 = tickMovement(graph, 'agent_1', state, 4);
     expect(r2.moved).toBe(true);
-    expect(r2.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_c', tick: 2, hexCol: 2, hexRow: 0 });
+    expect(r2.updatedState.movementHistory[0]).toEqual({ nodeId: 'hex_c', tick: 4, hexCol: 2, hexRow: 0 });
     expect(r2.updatedState.movementHistory).toHaveLength(2);
 
     // Both entries have hex coords — trail renderer can draw lines

@@ -39,7 +39,7 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
         className="relative border rounded-xl shadow-2xl overflow-hidden"
         style={{
           backgroundColor: 'var(--bg-surface)',
-          borderColor: 'var(--border-subtle)',
+          borderColor: 'var(--border-gold)',
           width: 'min(28rem, 90vw)',
         }}
       >
@@ -73,7 +73,7 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
               className="w-full text-left p-4 rounded-lg border transition-all duration-150 group"
               style={{
                 backgroundColor: 'var(--bg-raised)',
-                borderColor: 'var(--border-subtle)',
+                borderColor: 'var(--border-gold)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
@@ -81,7 +81,7 @@ export function AgendaPicker({ agendas, onSelect, onCancel, sphere }: AgendaPick
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--bg-raised)';
-                e.currentTarget.style.borderColor = 'var(--border-subtle)';
+                e.currentTarget.style.borderColor = 'var(--border-gold)';
               }}
             >
               <div className="flex items-center gap-2.5 mb-1.5">

@@ -93,7 +93,7 @@ export function HexBreadcrumb({
       className="flex items-center gap-3 px-4 py-2.5 border-b"
       style={{
         backgroundColor: 'var(--bg-deep)',
-        borderColor: 'var(--border-subtle)',
+        borderColor: 'var(--border-gold)',
       }}
     >
       <button

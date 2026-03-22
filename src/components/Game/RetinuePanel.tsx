@@ -13,12 +13,13 @@ interface RetinuePanelProps {
   agents: RetinueAgent[];
   selectedAgentId: string | null;
   onAgentSelect: (agentId: string) => void;
+  onCenterOnHex?: (locationId: string) => void;
   onZoomToLocation?: (locationId: string) => void;
   activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
   onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
 }
 
-export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onZoomToLocation, activeEncounters, onEncounterClick }: RetinuePanelProps) {
+export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick }: RetinuePanelProps) {
   if (agents.length === 0) {
     return (
       <div
@@ -59,10 +60,10 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 `}
                 style={{
                   backgroundColor: 'var(--bg-raised)',
-                  borderColor: isSelected ? undefined : 'var(--border-subtle)',
+                  borderColor: isSelected ? undefined : 'var(--border-gold)',
                   borderLeftColor: tierColor,
                   borderLeftWidth: '3px',
-                  transition: 'background-color 150ms ease',
+                  transition: 'background-color 150ms ease, border-color 150ms ease',
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-hover)';
@@ -73,15 +74,27 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
               >
                 {/* Agent name and optional tier badge */}
                 <div className="flex items-center justify-between gap-2 mb-0.5">
-                  <span
-                    className="font-medium truncate flex-1"
-                    style={{
-                      fontSize: 'var(--text-sm)',
-                      color: 'var(--text-primary)',
-                      opacity: 0.9,
-                    }}
-                  >
-                    {agent.name}
+                  <span className="flex items-center gap-1 truncate flex-1">
+                    <span
+                      className="font-medium truncate"
+                      style={{
+                        fontSize: 'var(--text-sm)',
+                        color: 'var(--text-primary)',
+                        opacity: 0.9,
+                      }}
+                    >
+                      {agent.name}
+                    </span>
+                    {onCenterOnHex && (
+                      <IconButton
+                        icon={<span>&#x1F441;</span>}
+                        size="sm"
+                        onClick={(e) => { e.stopPropagation(); onCenterOnHex(agent.locationId); }}
+                        aria-label={`Center map on ${agent.name}`}
+                        title={`Center map on ${agent.name}`}
+                        style={{ border: 'none', width: 'auto', height: 'auto', padding: 0, flexShrink: 0 }}
+                      />
+                    )}
                   </span>
                   {showTierBadge && (
                     <span

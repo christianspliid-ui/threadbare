@@ -5,14 +5,13 @@ interface SubLocationEntryProps {
   name: string;
   flavorText?: string;
   onClick: () => void;
-  onDoubleClick: () => void;
   /** Inline agent entries for this sublocation */
   children?: ReactNode;
 }
 
 /** Compact nested sublocation row for display within a parent LocationCard. */
 export const SubLocationEntry = memo(function SubLocationEntry({
-  name, flavorText, onClick, onDoubleClick, children,
+  name, flavorText, onClick, children,
 }: SubLocationEntryProps) {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -24,14 +23,13 @@ export const SubLocationEntry = memo(function SubLocationEntry({
   return (
     <div
       style={{
-        borderLeft: '2px solid var(--border-subtle)',
+        borderLeft: '2px solid var(--border-gold)',
         paddingLeft: '12px',
         margin: '6px 0',
       }}
     >
       <div
         onClick={(e) => { e.stopPropagation(); onClick(); }}
-        onDoubleClick={(e) => { e.stopPropagation(); onDoubleClick(); }}
         onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}

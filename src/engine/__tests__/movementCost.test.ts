@@ -8,14 +8,13 @@ import {
 import { MIN_EDGE_COST } from '../../data/movement-content';
 
 describe('computeEdgeCost', () => {
-  describe('basic terrain and location tax calculations', () => {
-    it('plains hex with no modifiers yields baseCost=1, terrainTax=0, totalCost=1', () => {
+  describe('2-edge hex model (departure + arrival)', () => {
+    it('grassland-to-grassland yields baseCost=2, terrainTax=0, totalCost=2', () => {
       const graph = new WorldGraph();
       const agentId = 'actor_wanderer';
       const sourceId = 'hex_a_center';
       const destId = 'hex_b_center';
 
-      // Create actor node
       graph.addNode({
         id: agentId,
         type: 'actor',
@@ -23,7 +22,6 @@ describe('computeEdgeCost', () => {
         properties: { actorType: 'individual' },
       });
 
-      // Create destination hex with grassland terrain (tax 0)
       graph.addNode({
         id: destId,
         type: 'location',
@@ -36,7 +34,6 @@ describe('computeEdgeCost', () => {
         },
       });
 
-      // Create source hex for completeness (not directly used in calculation)
       graph.addNode({
         id: sourceId,
         type: 'location',
@@ -51,14 +48,14 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(BASE_EDGE_TRAVERSAL_COST);
-      expect(cost.terrainTax).toBe(0);
+      expect(cost.baseCost).toBe(2 * BASE_EDGE_TRAVERSAL_COST);
+      expect(cost.terrainTax).toBe(0); // grassland(0) + grassland(0)
       expect(cost.locationTax).toBe(0);
       expect(cost.speedModifier).toBe(0);
-      expect(cost.totalCost).toBe(1);
+      expect(cost.totalCost).toBe(2);
     });
 
-    it('mountain destination yields terrainTax=1.5, totalCost=2.5', () => {
+    it('grassland-to-mountains yields terrainTax=1.5, totalCost=3.5', () => {
       const graph = new WorldGraph();
       const agentId = 'actor_wanderer';
       const sourceId = 'hex_a';
@@ -98,14 +95,58 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(1);
-      expect(cost.terrainTax).toBe(1.5);
+      expect(cost.baseCost).toBe(2);
+      expect(cost.terrainTax).toBe(1.5); // grassland(0) + mountains(1.5)
       expect(cost.locationTax).toBe(0);
       expect(cost.speedModifier).toBe(0);
-      expect(cost.totalCost).toBe(2.5);
+      expect(cost.totalCost).toBe(3.5);
     });
 
-    it('city destination yields locationTax=1, totalCost=2', () => {
+    it('forest-to-mountains yields terrainTax=2.0 (departure+arrival)', () => {
+      const graph = new WorldGraph();
+      const agentId = 'actor_wanderer';
+      const sourceId = 'hex_forest';
+      const destId = 'hex_mountain';
+
+      graph.addNode({
+        id: agentId,
+        type: 'actor',
+        name: 'Wanderer',
+        properties: { actorType: 'individual' },
+      });
+
+      graph.addNode({
+        id: sourceId,
+        type: 'location',
+        name: 'Forest Hex',
+        properties: {
+          terrain: 'temperate_forest',
+          locationType: 'hex_center',
+          hexCol: 4,
+          hexRow: 3,
+        },
+      });
+
+      graph.addNode({
+        id: destId,
+        type: 'location',
+        name: 'Mountain Hex',
+        properties: {
+          terrain: 'mountains',
+          locationType: 'hex_center',
+          hexCol: 5,
+          hexRow: 3,
+        },
+      });
+
+      const cost = computeEdgeCost(graph, agentId, sourceId, destId);
+
+      expect(cost.baseCost).toBe(2);
+      expect(cost.terrainTax).toBe(2.0); // forest(0.5) + mountains(1.5)
+      expect(cost.totalCost).toBe(4.0);
+    });
+
+    it('city destination yields locationTax=1, totalCost=3', () => {
       const graph = new WorldGraph();
       const agentId = 'actor_wanderer';
       const sourceId = 'hex_a';
@@ -126,7 +167,7 @@ describe('computeEdgeCost', () => {
         properties: {
           locationSubtype: 'city',
           locationType: 'location',
-          terrain: 'grassland', // base terrain is still grassland
+          terrain: 'grassland',
         },
       });
 
@@ -144,11 +185,11 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(1);
-      expect(cost.terrainTax).toBe(0);
+      expect(cost.baseCost).toBe(2);
+      expect(cost.terrainTax).toBe(0); // grassland(0) + grassland(0)
       expect(cost.locationTax).toBe(1);
       expect(cost.speedModifier).toBe(0);
-      expect(cost.totalCost).toBe(2);
+      expect(cost.totalCost).toBe(3);
     });
   });
 
@@ -166,7 +207,6 @@ describe('computeEdgeCost', () => {
         properties: { actorType: 'individual' },
       });
 
-      // Add trait edge with movement_speed modifier
       graph.addEdge({
         id: 'trait_fleet_footed',
         source: agentId,
@@ -204,9 +244,9 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(1);
+      expect(cost.baseCost).toBe(2);
       expect(cost.speedModifier).toBe(-5);
-      // 1 + 0 + 0 + (-5) = -4, floored at 0.5
+      // 2 + 0 + 0 + (-5) = -3, floored at 0.5
       expect(cost.totalCost).toBe(MIN_EDGE_COST);
     });
 
@@ -223,7 +263,6 @@ describe('computeEdgeCost', () => {
         properties: { actorType: 'individual' },
       });
 
-      // Add first trait with movement_speed
       graph.addEdge({
         id: 'trait_swift_1',
         source: agentId,
@@ -235,7 +274,6 @@ describe('computeEdgeCost', () => {
         },
       });
 
-      // Add second trait with movement_speed
       graph.addEdge({
         id: 'trait_swift_2',
         source: agentId,
@@ -273,9 +311,10 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(1);
+      expect(cost.baseCost).toBe(2);
       expect(cost.speedModifier).toBe(-0.8); // -0.5 + -0.3
-      expect(cost.totalCost).toBe(MIN_EDGE_COST); // 1 + 0 + 0 + (-0.8) = 0.2, floored at 0.5
+      // 2 + 0 + 0 + (-0.8) = 1.2
+      expect(cost.totalCost).toBe(1.2);
     });
   });
 
@@ -293,7 +332,6 @@ describe('computeEdgeCost', () => {
         properties: { actorType: 'individual' },
       });
 
-      // Location with explicit entryTax override
       graph.addNode({
         id: destId,
         type: 'location',
@@ -302,7 +340,7 @@ describe('computeEdgeCost', () => {
           locationSubtype: 'city',
           locationType: 'location',
           terrain: 'grassland',
-          entryTax: 2.5, // explicit override (city normally is 1)
+          entryTax: 2.5,
         },
       });
 
@@ -321,12 +359,12 @@ describe('computeEdgeCost', () => {
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
       expect(cost.locationTax).toBe(2.5);
-      expect(cost.totalCost).toBe(3.5); // 1 + 0 + 2.5
+      expect(cost.totalCost).toBe(4.5); // 2 + 0 + 2.5
     });
   });
 
   describe('edge cases', () => {
-    it('handles missing destination node gracefully (returns 0 tax)', () => {
+    it('handles missing destination node gracefully (returns base + source terrain)', () => {
       const graph = new WorldGraph();
       const agentId = 'actor_test';
       const sourceId = 'hex_a';
@@ -353,11 +391,11 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      // Missing dest means no terrain/location tax
-      expect(cost.baseCost).toBe(1);
-      expect(cost.terrainTax).toBe(0);
+      // Missing dest means no arrival terrain tax, but source tax still applies
+      expect(cost.baseCost).toBe(2);
+      expect(cost.terrainTax).toBe(0); // grassland(0) + missing(0)
       expect(cost.locationTax).toBe(0);
-      expect(cost.totalCost).toBe(1);
+      expect(cost.totalCost).toBe(2);
     });
 
     it('handles agent with no trait edges', () => {
@@ -400,7 +438,7 @@ describe('computeEdgeCost', () => {
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
       expect(cost.speedModifier).toBe(0);
-      expect(cost.totalCost).toBe(1);
+      expect(cost.totalCost).toBe(2);
     });
 
     it('handles trait edges with no movement_speed property', () => {
@@ -416,7 +454,6 @@ describe('computeEdgeCost', () => {
         properties: { actorType: 'individual' },
       });
 
-      // Add trait edge without movement_speed
       graph.addEdge({
         id: 'trait_other',
         source: agentId,
@@ -455,7 +492,7 @@ describe('computeEdgeCost', () => {
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
       expect(cost.speedModifier).toBe(0);
-      expect(cost.totalCost).toBe(1);
+      expect(cost.totalCost).toBe(2);
     });
 
     it('handles terrain and location taxes together', () => {
@@ -488,7 +525,7 @@ describe('computeEdgeCost', () => {
         type: 'location',
         name: 'Source',
         properties: {
-          terrain: 'grassland',
+          terrain: 'grassland', // tax 0
           locationType: 'hex_center',
           hexCol: 0,
           hexRow: 0,
@@ -497,10 +534,10 @@ describe('computeEdgeCost', () => {
 
       const cost = computeEdgeCost(graph, agentId, sourceId, destId);
 
-      expect(cost.baseCost).toBe(1);
-      expect(cost.terrainTax).toBe(1.5);
+      expect(cost.baseCost).toBe(2);
+      expect(cost.terrainTax).toBe(1.5); // grassland(0) + mountains(1.5)
       expect(cost.locationTax).toBe(1);
-      expect(cost.totalCost).toBe(3.5);
+      expect(cost.totalCost).toBe(4.5); // 2 + 1.5 + 1
     });
   });
 
