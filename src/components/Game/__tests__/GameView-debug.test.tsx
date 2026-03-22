@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameView } from '../GameView';
 import { disableTracing, clearTraces } from '../../../engine/traceBuffer';
+
+// Mock HexMapV2 to avoid canvas initialization in jsdom
+vi.mock('../../HexMapV2/HexMapV2', () => ({
+  default: vi.fn().mockReturnValue(null),
+}));
 
 describe('GameView debug panel integration', () => {
   const defaultProps = {

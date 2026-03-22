@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { GameView } from '../GameView';
+
+// Mock HexMapV2 to avoid canvas initialization in jsdom
+vi.mock('../../HexMapV2/HexMapV2', () => ({
+  default: vi.fn().mockReturnValue(null),
+}));
 import type { AscendantArchetype } from '../../../types/influence';
 import type { CosmologyProfile } from '../../../types';
 
