@@ -2,13 +2,19 @@ import type { CosmologyProfile, HexTile } from '../types';
 import { WorldGenPipeline } from './worldgen/WorldGenPipeline';
 import type { WorldGenContext, WorldGenParams } from './worldgen/types';
 import type { RiverPath } from './worldGenData';
+import { detectRegionsBorderCost } from './regionDetection';
+import type { RegionData } from './regionTypes';
 
 /**
  * The result of world generation — includes tiles for rendering plus
- * hydrology data (riverPaths, lakeIds) threaded through to the renderer.
+ * hydrology data (riverPaths, lakeIds) and region data threaded through
+ * to the renderer.
  *
- * NFP #2: Inspectability — riverPaths and lakeIds allow downstream systems
- * to trace which hexes have river/lake water without re-running worldgen.
+ * NFP #2: Inspectability — riverPaths, lakeIds, and regionData allow downstream
+ * systems to trace which hexes have river/lake water or belong to which region
+ * without re-running worldgen.
+ *
+ * NFP #4: Fail-soft — regionData is optional (undefined if detection fails).
  */
 export interface WorldGenResult {
   tiles: HexTile[];
@@ -17,6 +23,8 @@ export interface WorldGenResult {
   cols: number;
   rows: number;
   seed: number;
+  /** Geographic region assignments. Optional for backward compat — always set by generateWorld(). */
+  regionData?: RegionData;
 }
 
 /**
@@ -51,13 +59,41 @@ export function generateWorld(
   const pipeline = new WorldGenPipeline();
   const ctx = pipeline.run(params);
 
+  const tiles = toHexTilesFromContext(ctx);
+
+  // Detect geographic regions using border-cost watershed.
+  // Seeds from province capital hexes — each capital anchors one natural region.
+  // NFP #4 Fail-soft: if detection fails, regionData is undefined (caller handles).
+  let regionData: RegionData | undefined;
+  try {
+    const { regions, hexRegionId } = detectRegionsBorderCost(
+      tiles,
+      ctx.riverPaths,
+      cols,
+      ctx.provinceCapitalHexes,
+    );
+    regionData = {
+      geographicRegions: regions,
+      baronies: [],
+      kingdoms: [],
+      labels: [],
+      hexRegionId,
+      hexBaronyId: new Map(),
+      hexKingdomId: new Map(),
+    };
+  } catch {
+    // NFP #4 Fail-soft: region detection failure must not crash world generation
+    regionData = undefined;
+  }
+
   return {
-    tiles: toHexTilesFromContext(ctx),
+    tiles,
     riverPaths: ctx.riverPaths,
     lakeIds: ctx.lakeIds,
     cols,
     rows,
     seed,
+    regionData,
   };
 }
 
