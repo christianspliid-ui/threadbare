@@ -52,15 +52,15 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Regions (REGN)
 
-- [ ] **REGN-01**: Geographic regions auto-detected by flood-fill of similar terrain, bounded by natural features (mountains, rivers, coastline)
-- [ ] **REGN-02**: Border cost field assigns weights to hex edges based on terrain difference, elevation change, rivers, mountains
-- [ ] **REGN-03**: Watershed segmentation from seed points with size capping (20-200 hexes per geographic region)
-- [ ] **REGN-04**: Political regions group geographic regions under factions, defined by travel-time from capital
-- [ ] **REGN-05**: Political borders rendered as red polylines along hex edges (3px kingdom, 1.5px barony)
-- [ ] **REGN-06**: Geographic features have NO border lines — text labels only
+- [x] **REGN-01**: Geographic regions auto-detected by flood-fill of similar terrain, bounded by natural features (mountains, rivers, coastline)
+- [x] **REGN-02**: Border cost field assigns weights to hex edges based on terrain difference, elevation change, rivers, mountains
+- [x] **REGN-03**: Watershed segmentation from seed points with size capping (20-200 hexes per geographic region)
+- [x] **REGN-04**: Political regions group geographic regions under factions, defined by travel-time from capital
+- [x] **REGN-05**: Political borders rendered as red polylines along hex edges (3px kingdom, 1.5px barony)
+- [x] **REGN-06**: Geographic features have NO border lines — text labels only
 - [ ] **REGN-07**: Region labels placed at centroids with hierarchy: kingdom (bold all-caps), barony (title case), geographic (italic)
 - [ ] **REGN-08**: Label collision detection prevents overlapping labels
-- [ ] **REGN-09**: Capital markers rendered as red dots/icons at political region seats of power
+- [x] **REGN-09**: Capital markers rendered as red dots/icons at political region seats of power
 
 ### Elevation Visual Language (ELEV)
 
@@ -263,15 +263,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ELEV-03 | Phase 3 | Complete |
 | ELEV-04 | Phase 3 | Pending |
 | GRID-01 | Phase 3 | Complete |
-| REGN-01 | Phase 4 | Pending |
-| REGN-02 | Phase 4 | Pending |
-| REGN-03 | Phase 4 | Pending |
-| REGN-04 | Phase 4 | Pending |
-| REGN-05 | Phase 4 | Pending |
-| REGN-06 | Phase 4 | Pending |
+| REGN-01 | Phase 4 | Complete |
+| REGN-02 | Phase 4 | Complete |
+| REGN-03 | Phase 4 | Complete |
+| REGN-04 | Phase 4 | Complete |
+| REGN-05 | Phase 4 | Complete |
+| REGN-06 | Phase 4 | Complete |
 | REGN-07 | Phase 4 | Pending |
 | REGN-08 | Phase 4 | Pending |
-| REGN-09 | Phase 4 | Pending |
+| REGN-09 | Phase 4 | Complete |
 | GRID-02 | Phase 4 | Pending |
 | COMP-01 | Phase 5 | Pending |
 | COMP-02 | Phase 5 | Pending |

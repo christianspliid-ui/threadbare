@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 04-regions-borders-01-PLAN.md
-last_updated: "2026-03-22T10:11:03.818Z"
+stopped_at: Completed 04-regions-borders-02-PLAN.md
+last_updated: "2026-03-22T10:21:31.771Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 11
-  completed_plans: 9
+  completed_plans: 10
   percent: 82
 ---
 
@@ -68,6 +68,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 03-coastlines-water-elevation P02 | 264 | 2 tasks | 3 files |
 | Phase 03-coastlines-water-elevation P03 | 364 | 2 tasks | 3 files |
 | Phase 04-regions-borders P01 | 8min | 2 tasks | 4 files |
+| Phase 04-regions-borders P02 | 7 | 1 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -98,6 +99,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 04-regions-borders]: RegionCluster id field added to legacy detectRegions() for backward compat — returns sequential int starting at 0
 - [Phase 04-regions-borders]: detectRegionsBorderCost seeds from province capitals; fallback auto-places seeds every sqrt(REGION_TARGET_SIZE) hexes on land
 - [Phase 04-regions-borders]: coast/coastal_shallows/reef map to 'sea' feature type; plateau to 'hill_country'; oasis to 'desert'
+- [Phase 04-regions-borders]: One province = one barony — province is the unit of political control, not geographic region
+- [Phase 04-regions-borders]: REGN-06: only barony/kingdom differences generate border geometry — geographic-only differences produce nothing
+- [Phase 04-regions-borders]: Two separate Points objects for capitals: PointsMaterial has one size per object, not per-point
 
 ### Pending Todos
 
@@ -109,6 +113,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T10:10:54.585Z
-Stopped at: Completed 04-regions-borders-01-PLAN.md
+Last session: 2026-03-22T10:21:31.769Z
+Stopped at: Completed 04-regions-borders-02-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
