@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-22T18:51:05.307Z"
+stopped_at: Completed 08-integration/08-01-PLAN.md
+last_updated: "2026-03-22T19:34:45.175Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 8
+  total_phases: 9
   completed_phases: 7
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 25
+  completed_plans: 23
   percent: 95
 ---
 
@@ -97,6 +97,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 07-fog-zoom-grid P01 | 3 | 2 tasks | 4 files |
 | Phase 07-fog-zoom-grid P07-02 | 3 | 1 tasks | 2 files |
 | Phase 07-fog-zoom-grid P07-03 | 8 | 1 tasks | 3 files |
+| Phase 08-integration P01 | 3 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -157,6 +158,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 07-fog-zoom-grid]: FollowMode stored in useRef not useState — follow changes don't trigger re-renders, camera is animated via animateCameraTo directly
 - [Phase 07-fog-zoom-grid]: visibilityMap excluded from scene init deps — fog changes never rebuild 60K-hex geometry, only call updateFogColors in separate useEffect
 - [Phase 07-fog-zoom-grid]: ZOOM_VISIBILITY_MATRIX replaces scattered inline zoom threshold checks in zoom.on handler — all layer visibility goes through the matrix
+- [Phase 08-integration]: HexMapV2 is drop-in replacement for HexMap in GameView; HexMapV2Handle has same centerOn signature
+- [Phase 08-integration]: Agent adapter maps graph actor nodes to AgentRenderData[] with modulo faction coloring; retinue detected via getRetinueAgents
 
 ### Pending Todos
 
@@ -168,6 +171,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-22T18:51:05.305Z
-Stopped at: Phase 8 context gathered
+Last session: 2026-03-22T19:34:45.173Z
+Stopped at: Completed 08-integration/08-01-PLAN.md
 Resume: Phase 03 Plan 02 (river overlay rendering)
