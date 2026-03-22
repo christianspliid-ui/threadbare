@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import type { HexTile } from '../../../../types';
 import { RENDER_ORDER } from '../RenderLayers';
 import { WATER_PALETTE } from '../../palette/waterPalette';
+import { hexToThreeColor } from '../../palette/colorUtils';
 
 // Mock computeCoastline to control output in tests
 vi.mock('../../../../engine/coastline', () => ({
@@ -13,7 +14,7 @@ vi.mock('../../../../engine/coastline', () => ({
 }));
 
 import { computeCoastline } from '../../../../engine/coastline';
-import { createCoastlineMesh } from '../CoastlineMesh';
+import { createCoastlineMesh, COASTLINE_LAND_COLOR } from '../CoastlineMesh';
 
 // Helper to build a minimal HexTile
 function makeTile(col: number, row: number, terrain: 'ocean' | 'grassland' = 'ocean'): HexTile {
@@ -62,7 +63,7 @@ describe('createCoastlineMesh', () => {
 
     const group = createCoastlineMesh(tiles, 10, 10, 42);
 
-    // Group should have children (stencil write meshes from the land contour loops)
+    // Group should have children (land boundary meshes from the contour loops)
     expect(group.children.length).toBeGreaterThan(0);
 
     // At least one child should have geometry with vertices
@@ -82,7 +83,6 @@ describe('createCoastlineMesh', () => {
 
     const group = createCoastlineMesh(tiles, 2, 1, 42);
 
-    // Empty loops → no mesh children (or only empty group)
     let totalVertices = 0;
     for (const child of group.children) {
       if (child instanceof THREE.Mesh) {
@@ -95,7 +95,6 @@ describe('createCoastlineMesh', () => {
 
   it('coastline mesh Y coordinates are negated vs SVG space (Y-flip)', () => {
     const tiles = [makeTile(0, 0, 'grassland'), makeTile(1, 0, 'ocean')];
-    // Loop with positive SVG Y (y-down convention)
     const positiveSvgLoop = [
       { x: 0, y: 50 },
       { x: 100, y: 50 },
@@ -106,7 +105,6 @@ describe('createCoastlineMesh', () => {
 
     const group = createCoastlineMesh(tiles, 2, 1, 42);
 
-    // Find any mesh (stencil write meshes have geometry too)
     let foundNegativeY = false;
     for (const child of group.children) {
       if (child instanceof THREE.Mesh) {
@@ -119,40 +117,44 @@ describe('createCoastlineMesh', () => {
         }
       }
     }
-    // With positive SVG Y values (50-150), Three.js Y should be negative (-50 to -150)
     expect(foundNegativeY).toBe(true);
   });
 
-  it('stencil write meshes have colorWrite false and stencilWrite true', () => {
+  it('land boundary meshes use COASTLINE_LAND_COLOR', () => {
     const tiles = [makeTile(0, 0, 'ocean'), makeTile(1, 0, 'grassland')];
     vi.mocked(computeCoastline).mockReturnValue({ loops: [SQUARE_LOOP], shallowLoops: [], midLoops: [], lakeLoops: [] });
 
     const group = createCoastlineMesh(tiles, 10, 10, 42);
 
-    const stencilMeshes = group.children.filter(c =>
-      c instanceof THREE.Mesh && (c.material as THREE.MeshBasicMaterial).colorWrite === false
-    );
-    expect(stencilMeshes.length).toBeGreaterThan(0);
+    const [expectedR, expectedG, expectedB] = hexToThreeColor(COASTLINE_LAND_COLOR);
+    let foundLandMesh = false;
 
-    const mat = (stencilMeshes[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
-    expect(mat.stencilWrite).toBe(true);
-    expect(mat.stencilRef).toBe(1);
+    for (const child of group.children) {
+      if (child instanceof THREE.Mesh) {
+        const mat = child.material as THREE.MeshBasicMaterial;
+        if (mat.color) {
+          const dr = Math.abs(mat.color.r - expectedR);
+          const dg = Math.abs(mat.color.g - expectedG);
+          const db = Math.abs(mat.color.b - expectedB);
+          if (dr < 0.01 && dg < 0.01 && db < 0.01) {
+            foundLandMesh = true;
+          }
+        }
+      }
+    }
+    expect(foundLandMesh).toBe(true);
   });
 
-  it('stencil write meshes have renderOrder = RENDER_ORDER.STENCIL_WRITE (-1)', () => {
+  it('land boundary meshes have renderOrder = RENDER_ORDER.COASTLINE', () => {
     const tiles = [makeTile(0, 0, 'ocean'), makeTile(1, 0, 'grassland')];
     vi.mocked(computeCoastline).mockReturnValue({ loops: [SQUARE_LOOP], shallowLoops: [], midLoops: [], lakeLoops: [] });
 
     const group = createCoastlineMesh(tiles, 10, 10, 42);
 
-    const stencilMeshes = group.children.filter(c =>
-      c instanceof THREE.Mesh && (c.material as THREE.MeshBasicMaterial).colorWrite === false
-    );
-    expect(stencilMeshes.length).toBeGreaterThan(0);
-
-    for (const mesh of stencilMeshes) {
-      expect(mesh.renderOrder).toBe(RENDER_ORDER.STENCIL_WRITE);
-      expect(mesh.renderOrder).toBe(-1);
+    for (const child of group.children) {
+      if (child instanceof THREE.Mesh) {
+        expect(child.renderOrder).toBe(RENDER_ORDER.COASTLINE);
+      }
     }
   });
 
@@ -167,15 +169,12 @@ describe('createCoastlineMesh', () => {
 
     const group = createCoastlineMesh(tiles, 2, 1, 42);
 
-    // Find the shallow mesh (should have shallows color and colorWrite: true)
     let foundShallowMesh = false;
     const shallowsHex = WATER_PALETTE['shallows'].toLowerCase();
 
     for (const child of group.children) {
       if (child instanceof THREE.Mesh) {
         const mat = child.material as THREE.MeshBasicMaterial;
-        // Skip stencil write meshes (colorWrite: false)
-        if (!mat || mat.colorWrite === false) continue;
         if (mat.color) {
           const r = Math.round(mat.color.r * 255).toString(16).padStart(2, '0');
           const g = Math.round(mat.color.g * 255).toString(16).padStart(2, '0');
@@ -187,7 +186,6 @@ describe('createCoastlineMesh', () => {
         }
       }
     }
-
     expect(foundShallowMesh).toBe(true);
   });
 

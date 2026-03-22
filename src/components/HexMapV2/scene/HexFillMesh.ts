@@ -19,8 +19,9 @@ export const HEX_CONSTANTS = {
 
 /**
  * Result of createHexFillMesh — two InstancedMeshes for land and water.
- * Land mesh uses stencil testing (only renders where stencil = 1, set by coastline contour).
- * Water mesh renders normally as full hexagonal shapes.
+ * Both render as full hexagonal shapes.
+ * Organic coastline clipping is handled by CoastlineMesh ocean mask overlay
+ * (water-colored rectangle with coastline contour holes, rendered on top).
  */
 export interface HexFillMeshResult {
   landMesh: THREE.InstancedMesh;
@@ -92,16 +93,9 @@ export function createHexFillMesh(
     }
   }
 
-  // Land mesh — stencil-tested: only renders where stencil buffer = 1
-  // The stencil buffer is written by CoastlineMesh at renderOrder STENCIL_WRITE (-1).
+  // Land mesh — renders full hex shapes; organic coastline clipping is handled by
+  // CoastlineMesh ocean mask overlay (water-colored fill with coastline contour holes).
   const landMat = new THREE.MeshBasicMaterial({ vertexColors: false });
-  landMat.stencilWrite = false;
-  landMat.stencilFunc = THREE.EqualStencilFunc;
-  landMat.stencilRef = 1;
-  landMat.stencilFuncMask = 0xFF;
-  landMat.stencilFail = THREE.KeepStencilOp;
-  landMat.stencilZFail = THREE.KeepStencilOp;
-  landMat.stencilZPass = THREE.KeepStencilOp;
 
   const landMesh = new THREE.InstancedMesh(geo, landMat, landTileIndices.length);
   landMesh.renderOrder = RENDER_ORDER.HEX_FILL;
