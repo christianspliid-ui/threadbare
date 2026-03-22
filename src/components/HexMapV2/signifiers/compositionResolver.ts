@@ -3,10 +3,14 @@
  *
  * Algorithm:
  *   1. Sort entities by priority descending (higher priority gets preferred slot)
- *   2. Track occupied slots as a Set<HexSlot>
+ *   2. Track occupied slots as a Set<HexSlot> (RING slot is exempt — unlimited capacity)
  *   3. For each entity: try preferredSlot → try fallbackSlots in order → mark hidden
+ *      Exception: RING slot entities are always assigned RING and always visible
  *   4. Evaluate suppression rules: any suppressor may override visible=false on its targets
  *   5. Return CompositionResult[] in priority order
+ *
+ * COMP-05: RING slot supports unlimited occupants. RING entities get sequential ringIndex
+ * (0-based) for caller use in distributing agents around the hex perimeter.
  *
  * NFP #2 (inspectability): Pure function — same input always produces same output, no side effects.
  * NFP #4 (fail-soft): Empty input returns []. Unknown entityTypes pass through without error.
@@ -33,10 +37,24 @@ export function resolveHexComposition(
   const sorted = [...entities].sort((a, b) => b.priority - a.priority);
 
   // Step 2 & 3: Assign slots in priority order
+  // Note: RING slot is NOT added to occupiedSlots — it has unlimited capacity (COMP-05)
   const occupiedSlots = new Set<HexSlot>();
   const results: Array<CompositionResult & { manifest: HexVisualManifest }> = [];
+  let ringCounter = 0;
 
   for (const entity of sorted) {
+    // COMP-05: RING slot has unlimited capacity — always assign, always visible
+    if (entity.preferredSlot === 'RING') {
+      results.push({
+        entity: entity.entityType,
+        slot: 'RING',
+        visible: true,
+        ringIndex: ringCounter++,
+        manifest: entity,
+      });
+      continue;
+    }
+
     let assignedSlot: HexSlot | null = null;
 
     // Try preferred slot first
@@ -91,5 +109,10 @@ export function resolveHexComposition(
   }
 
   // Step 5: Return results without internal manifest reference
-  return results.map(({ entity, slot, visible }) => ({ entity, slot, visible }));
+  return results.map(({ entity, slot, visible, ringIndex }) => ({
+    entity,
+    slot,
+    visible,
+    ...(ringIndex !== undefined ? { ringIndex } : {}),
+  }));
 }

@@ -19,6 +19,8 @@ import { createElevationTicks } from './scene/ElevationTicks';
 import { createBorderMesh } from './scene/BorderMesh';
 import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
+import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
+import type { LocationNode } from './scene/LocationIconMesh';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -27,6 +29,8 @@ import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } f
 import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
+import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
+import { LOCATION_IMPORTANCE_MAP } from './locations/locationIconRegistry';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
 // ─── Props & Handle ───────────────────────────────────────────────────────────
@@ -46,6 +50,8 @@ export interface HexMapV2Props {
   lakeIds?: Int16Array;
   /** Region data from worldgen — baronies, kingdoms, borders, and capital markers (Plan 04-02+) */
   regionData?: RegionData;
+  /** Location nodes to render as icons and labels (Plan 06-01+) */
+  locations?: LocationNode[];
 }
 
 export interface HexMapV2Handle {
@@ -132,7 +138,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -155,6 +161,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Region label overlay state
     const [regionLabels, setRegionLabels] = useState<import('../../engine/regionTypes').RegionLabel[]>([]);
+    // Location label overlay state — derived from locations prop
+    const [locationLabels, setLocationLabels] = useState<LocationLabelData[]>([]);
     // Current d3-zoom scale level — tracked to drive label tier filtering
     const [zoomLevel, setZoomLevel] = useState<number>(CAMERA_CONSTANTS.DEFAULT_ZOOM);
 
@@ -270,6 +278,28 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(signifierGroup);
         signifierGroup.visible = false; // Hidden until zoom reaches regional tier
 
+        // Build location icon sprites — settlement and landmark icons (Plan 06-01)
+        // Renders at RENDER_ORDER.LOCATIONS (8), above signifiers.
+        // Hidden by default; visible only at regional+ zoom (k >= LOCATION_ICON_THRESHOLD).
+        let locationGroup: THREE.Group | null = null;
+        if (locations && locations.length > 0) {
+          locationGroup = createLocationIconMesh(locations);
+          scene.add(locationGroup);
+          locationGroup.visible = false; // Hidden until zoom reaches regional tier
+
+          // Derive location label data from location nodes
+          const labelData: LocationLabelData[] = locations.map(loc => ({
+            id: `loc-${loc.hexCol}-${loc.hexRow}-${loc.name}`,
+            name: loc.name,
+            hexCol: loc.hexCol,
+            hexRow: loc.hexRow,
+            importance: LOCATION_IMPORTANCE_MAP[loc.locationType as keyof typeof LOCATION_IMPORTANCE_MAP] ?? 'small',
+          }));
+          setLocationLabels(labelData);
+        } else {
+          setLocationLabels([]);
+        }
+
         // Generate HTML region labels from regionData (Plan 04-03)
         // Labels are generated client-side from regionData — worldgen produces the data,
         // RegionLabelOverlay handles the rendering.
@@ -306,6 +336,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           setZoomLevel(event.transform.k);
           // Signifier visibility: show at regional (>=5) and hero-local (>=15), hide at continental/full-world
           signifierGroup.visible = event.transform.k >= SIGNIFIER_ZOOM_THRESHOLD;
+          // Location icon visibility: same threshold as signifiers (regional+)
+          if (locationGroup) {
+            locationGroup.visible = event.transform.k >= LOCATION_ICON_THRESHOLD;
+          }
         });
 
         // Update selection ring when selectedHex prop changes
@@ -422,6 +456,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               child.material.dispose();
             }
           }
+          // Dispose location icon sprite materials and textures
+          if (locationGroup) {
+            for (const child of locationGroup.children) {
+              if (child instanceof THREE.Sprite) {
+                (child.material as THREE.SpriteMaterial).map?.dispose();
+                child.material.dispose();
+              }
+            }
+          }
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
           hexScene?.dispose();
@@ -434,7 +477,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData]);
+    }, [tiles, cols, rows, seed, riverPaths, regionData, locations]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
@@ -563,6 +606,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         {regionLabels.length > 0 && (
           <RegionLabelOverlay
             labels={regionLabels}
+            cameraRef={cameraRef}
+            canvasWidth={canvasDimensions.w}
+            canvasHeight={canvasDimensions.h}
+            zoomLevel={zoomLevel}
+          />
+        )}
+        {locationLabels.length > 0 && (
+          <LocationLabelOverlay
+            locations={locationLabels}
             cameraRef={cameraRef}
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}
