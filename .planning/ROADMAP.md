@@ -119,13 +119,13 @@ Plans:
   3. Retinue agents are instantly distinguishable from other agents by their gold/white border
   4. When an agent moves, it visually hops along a bezier curve from source to destination hex
   5. Major locations suppress terrain signifiers on their hex (a city replaces tree icons)
-**Plans**: TBD
+**Plans:** 4 plans
 
 Plans:
-- [ ] 06-01: Location signifier rendering, label system (white halo text), capital red markers
-- [ ] 06-02: SVG location icon assets (LIART-01 through LIART-17)
-- [ ] 06-03: Agent rendering (portraits, faction dots, RING layout, zoom-tier visibility)
-- [ ] 06-04: Agent animation (bezier hop), activity indicators, event indicators
+- [ ] 06-01-PLAN.md — Location icon pipeline (registry, textures, LocationIconMesh), label overlay, COMP-05 RING extension, HexMapV2 wiring
+- [ ] 06-02-PLAN.md — Production SVG location icon art for all 17 types (LIART-01 through LIART-17)
+- [ ] 06-03-PLAN.md — Agent sprite rendering (portraits, faction dots, RING layout, zoom-tier visibility)
+- [ ] 06-04-PLAN.md — Agent animation (bezier hop), activity/event indicators, movement trails, full HexMapV2 wiring
 
 ### Phase 7: Fog, Zoom & Grid
 **Goal**: Fog of war hides unexplored territory, zoom levels show appropriate detail, and roads connect settlements
@@ -174,6 +174,6 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
 | 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
-| 6. Locations & Agents | 0/4 | Not started | - |
+| 6. Locations & Agents | 0/4 | Planned | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
