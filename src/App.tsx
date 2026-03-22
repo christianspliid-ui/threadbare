@@ -1,10 +1,10 @@
 import { useState, useCallback, useMemo, lazy, Suspense } from 'react';
-import type { CosmologyProfile, HexCoord, HexTile, OverlayMode } from './types';
+import type { CosmologyProfile, HexCoord, HexTile } from './types';
 import type { AscendantArchetype } from './types/influence';
 import { createBalancedCosmology } from './engine/cosmology';
 import { generateWorld } from './engine/hexGrid';
 import { generateArchetypes } from './engine/ascendant';
-import { HexMap } from './components/HexMap/HexMap';
+import HexMapV2 from './components/HexMapV2/HexMapV2';
 import { CosmologyPanel } from './components/Cosmology/CosmologyPanel';
 import { InfoPanel } from './components/UI/InfoPanel';
 import { AscendantSelection } from './components/Ascendant/AscendantSelection';
@@ -65,7 +65,6 @@ function App() {
   );
   const [hoveredHex, setHoveredHex] = useState<HexCoord | null>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
-  const [overlayMode, setOverlayMode] = useState<OverlayMode>('none');
 
   const handleGenerate = useCallback(() => {
     setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed).tiles);
@@ -160,13 +159,12 @@ function App() {
         </button>
       </div>
       <div className="flex-1 flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-abyss)' }}>
-        <HexMap
+        <HexMapV2
           tiles={tiles}
           cols={DEFAULT_COLS}
           rows={DEFAULT_ROWS}
           hoveredHex={hoveredHex}
           selectedHex={selectedHex}
-          overlayMode={overlayMode}
           onHexClick={setSelectedHex}
           onHexHover={setHoveredHex}
         />

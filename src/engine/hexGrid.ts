@@ -5,6 +5,7 @@ import type { RiverPath } from './worldGenData';
 import { detectRegionsBorderCost } from './regionDetection';
 import { assignPoliticalRegions } from './regionPolitical';
 import type { RegionData } from './regionTypes';
+import { runFantasyOverlayPass } from './worldgen/passes/pass10-fantasyOverlay';
 
 /**
  * The result of world generation — includes tiles for rendering plus
@@ -40,7 +41,7 @@ export interface WorldGenResult {
  * until forceField supports it in the pipeline path.
  */
 export function generateWorld(
-  _cosmology: CosmologyProfile,
+  cosmology: CosmologyProfile,
   cols: number,
   rows: number,
   seed: number,
@@ -59,6 +60,10 @@ export function generateWorld(
 
   const pipeline = new WorldGenPipeline();
   const ctx = pipeline.run(params);
+
+  // WGEN-14: Fantasy overlay pass — transform biomes based on sphere alignment
+  // NFP #4: if cosmology is null/balanced, pass is a no-op
+  runFantasyOverlayPass(ctx.terrain, cols, rows, seed, cosmology);
 
   const tiles = toHexTilesFromContext(ctx);
 

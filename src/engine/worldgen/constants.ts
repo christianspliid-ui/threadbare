@@ -29,6 +29,8 @@ export const PASS_SEED_BIOME = 54583;
 export const PASS_SEED_SMOOTHING = 62347;
 /** Validation and determinism check */
 export const PASS_SEED_VALIDATION = 70099;
+/** Fantasy overlay pass — sphere-driven biome transformation */
+export const PASS_SEED_FANTASY = 70109;
 
 // ─── Province constants ──────────────────────────────────────────
 /** Maximum hexes any single province can claim via flood-fill */
@@ -62,7 +64,7 @@ export const ELEVATION_LACUNARITY = 2.0;
 /** Default number of ridge mountain spines */
 export const RIDGE_COUNT_DEFAULT = 4;
 /** Peak elevation value at ridge spine hexes (0-1) */
-export const RIDGE_PEAK_ELEVATION = 0.85;
+export const RIDGE_PEAK_ELEVATION = 0.90;
 /** Number of hexes from spine to foothills transition edge */
 export const RIDGE_FOOTHILLS_HEXES = 4;
 /** Probability of a fork branching off at each spine step */
@@ -159,7 +161,7 @@ export const RIVER_VALLEY_MOISTURE_BOOST = 0.08;
 /** Moisture threshold above which low-elevation hexes become wetlands */
 export const WETLAND_MOISTURE_THRESHOLD = 0.65;
 /** Maximum elevation for wetland classification */
-export const WETLAND_ELEVATION_MAX = 0.45;
+export const WETLAND_ELEVATION_MAX = 0.50;
 /** Radius from river mouth where floodplain override applies */
 export const WETLAND_RIVER_MOUTH_RADIUS = 2;
 /** Radius from lake shore where marsh override applies */
@@ -167,7 +169,7 @@ export const WETLAND_LAKE_SHORE_RADIUS = 1;
 /** Spatial scale for desert sub-type noise */
 export const DESERT_SUBTYPE_NOISE_SCALE = 0.15;
 /** Minimum elevation for volcano placement */
-export const VOLCANO_MIN_ELEVATION = 0.70;
+export const VOLCANO_MIN_ELEVATION = 0.90;
 /** Minimum temperature for volcano placement */
 export const VOLCANO_MIN_TEMPERATURE = 0.4;
 
@@ -191,11 +193,11 @@ export const SMOOTHING_MAX_PERCENT = 0.05;
 
 // ─── Province elevation bias targets ─────────────────────────────
 /** Target elevation range for mountain province bias [min, max] */
-export const MOUNTAIN_PROVINCE_ELEV_RANGE: [number, number] = [0.7, 0.85];
+export const MOUNTAIN_PROVINCE_ELEV_RANGE: [number, number] = [0.75, 0.92];
 /** Target elevation range for lowland province bias */
-export const LOWLAND_PROVINCE_ELEV_RANGE: [number, number] = [0.35, 0.5];
+export const LOWLAND_PROVINCE_ELEV_RANGE: [number, number] = [0.35, 0.48];
 /** Target elevation range for forest province bias */
-export const FOREST_PROVINCE_ELEV_RANGE: [number, number] = [0.4, 0.55];
+export const FOREST_PROVINCE_ELEV_RANGE: [number, number] = [0.38, 0.50];
 
 // ─── Biome-to-temperature-band lookup ────────────────────────────
 /**
