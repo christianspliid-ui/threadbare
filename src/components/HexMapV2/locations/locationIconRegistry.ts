@@ -1,15 +1,16 @@
 /**
  * locationIconRegistry.ts — Registry of location icon definitions for the hex map.
  *
- * Provides placeholder SVG path data for all 17 LocationType values.
- * Plan 02 replaces placeholder paths with production-quality silhouette art.
+ * Production-quality hand-drawn SVG silhouette paths for all 17 LocationType values.
+ * Art style matches Phase 5 terrain signifiers: organic paths, multi-layer opacity,
+ * sun-from-right shadow (shadow on left face of structures).
  *
- * Each entry uses simple geometric shapes as stand-ins:
- * - Capital/City: concentric shapes (large footprint)
- * - Castles/Forts: rectangular fortifications
- * - Temples/Shrines: dome/arch shapes
- * - Ruins: broken/irregular geometry
- * - Camps/POI: simple markers
+ * Icon style guide:
+ * - Capital/City: complex fortified settlements (full size class)
+ * - Castles/Forts/Tower: military structures (medium/small)
+ * - Temples/Shrines: religious architecture (medium/small)
+ * - Ruins: broken versions of their intact counterparts
+ * - Mining/Camp/Battleground/POI: utility and special markers
  *
  * NFP #1 (tunability): All size scale values are named constants.
  * NFP #4 (fail-soft): Unknown types should silently skip — callers check registry membership.
@@ -95,184 +96,227 @@ export const LOCATION_IMPORTANCE_MAP: Record<LocationType, LocationImportance> =
   unexplored_poi: 'small',
 };
 
-// ── Placeholder SVG paths ─────────────────────────────────────────────────────
-// All paths use viewBox "0 0 100 100" for consistency.
-// Each icon uses 2-3 layers at different opacities (0.4, 0.7, 1.0) matching the
-// multi-layer signifier style from Phase 05.
-// Plan 02 replaces these with hand-drawn production silhouettes.
+// ── Production SVG paths ───────────────────────────────────────────────────────
+// All paths use viewBox "0 0 100 100". Hand-drawn silhouette style matching Phase 5.
+// Multi-layer opacity (0.2–1.0) for depth. Sun-from-right: shadow on LEFT face.
+// Organic paths — irregular vertices, no mechanical precision. Filled only, no strokes.
 
-/** Capital: Large city with crown-like spires — multiple rings + tower shapes */
+/**
+ * Capital: Grand crenellated castle — central keep with flanking towers, banner on pole.
+ * Shadow layer on left wall face. 4 layers.
+ */
 const CAPITAL_PATHS: LocationPathDef[] = [
-  // Outer ring / city mass (base layer)
-  { d: 'M50 20 L70 35 L80 55 L70 75 L50 85 L30 75 L20 55 L30 35 Z', opacity: 0.4 },
-  // Inner keep
-  { d: 'M50 30 L63 42 L68 58 L60 68 L50 73 L40 68 L32 58 L37 42 Z', opacity: 0.7 },
-  // Central tower
-  { d: 'M44 30 L44 55 L56 55 L56 30 L52 22 L48 22 Z', opacity: 1.0 },
+  // City mass / curtain wall base
+  { d: 'M12 82 L12 42 L18 42 L18 37 L24 37 L24 42 L36 42 L36 37 L44 37 L44 42 L56 42 L56 37 L64 37 L64 42 L76 42 L76 37 L82 37 L82 42 L88 42 L88 82 Z', opacity: 0.25 },
+  // Shadow layer — left wall face
+  { d: 'M12 42 L12 82 L26 82 L26 42 Z', opacity: 0.2 },
+  // Central keep with flanking towers
+  { d: 'M30 82 L30 28 L36 28 L36 22 L44 22 L44 18 L56 18 L56 22 L64 22 L64 28 L70 28 L70 82 Z M19 82 L19 50 L28 50 L28 82 Z M72 82 L72 50 L81 50 L81 82 Z', opacity: 0.65 },
+  // Banner pole + flag, keep crenellations
+  { d: 'M49 18 L49 8 L49 18 Z M49 8 L58 11 L49 14 Z M31 28 L31 22 L36 22 L36 28 Z M43 28 L43 22 L49 22 L49 28 Z M51 28 L51 22 L57 22 L57 28 Z M64 28 L64 22 L69 22 L69 28 Z', opacity: 1.0 },
 ];
 
-/** City: Large walled settlement — oval with gate */
+/**
+ * City: Walled town — crenellated curtain wall spanning full width, 2-3 towers behind.
+ * Shadow on left wall sections. 3 layers.
+ */
 const CITY_PATHS: LocationPathDef[] = [
-  // City walls (oval)
-  { d: 'M50 15 C75 15 85 30 85 50 C85 70 75 85 50 85 C25 85 15 70 15 50 C15 30 25 15 50 15 Z', opacity: 0.4 },
-  // Inner district
-  { d: 'M50 28 C65 28 72 37 72 50 C72 63 65 72 50 72 C35 72 28 63 28 50 C28 37 35 28 50 28 Z', opacity: 0.7 },
-  // Central hall
-  { d: 'M42 42 L42 58 L58 58 L58 42 Z', opacity: 1.0 },
+  // Full wall + towers base
+  { d: 'M10 82 L10 48 L17 48 L17 42 L25 42 L25 48 L38 48 L38 42 L46 42 L46 48 L54 48 L54 42 L62 42 L62 48 L75 48 L75 42 L83 42 L83 48 L90 48 L90 82 Z', opacity: 0.3 },
+  // Shadow — left portion of wall
+  { d: 'M10 48 L10 82 L24 82 L24 48 Z', opacity: 0.2 },
+  // Towers behind wall — left tower, centre tower (tallest), right tower
+  { d: 'M16 82 L16 34 L27 34 L27 82 Z M42 82 L42 22 L58 22 L58 82 Z M73 82 L73 38 L84 38 L84 82 Z', opacity: 1.0 },
 ];
 
-/** Town: Medium walled settlement — simple rectangle with towers */
+/**
+ * Town: Building cluster with central spire — 3-4 varied buildings, tallest has pointed spire.
+ * Organic rooflines, shadow on left faces. 3 layers.
+ */
 const TOWN_PATHS: LocationPathDef[] = [
-  // Wall base
-  { d: 'M25 35 L75 35 L75 75 L25 75 Z', opacity: 0.4 },
-  // Corner towers
-  { d: 'M22 30 L36 30 L36 45 L22 45 Z M64 30 L78 30 L78 45 L64 45 Z', opacity: 0.7 },
-  // Gate / main building
-  { d: 'M40 60 L60 60 L60 75 L40 75 Z M46 45 L54 45 L54 60 L46 60 Z', opacity: 1.0 },
+  // Building cluster base — organic footprint
+  { d: 'M18 82 L18 54 L33 54 L33 58 L41 58 L41 46 L59 46 L59 58 L67 58 L67 52 L82 52 L82 82 Z', opacity: 0.3 },
+  // Shadow layer — left sides of buildings
+  { d: 'M18 54 L18 82 L28 82 L28 54 Z M41 46 L41 82 L50 82 L50 46 Z', opacity: 0.2 },
+  // Rooflines and spire — pointed central spire, gabled secondary roofs
+  { d: 'M18 54 L26 38 L33 54 Z M33 58 L41 48 L41 58 Z M41 46 L50 26 L59 46 Z M59 58 L67 50 L67 58 Z M67 52 L75 40 L82 52 Z', opacity: 1.0 },
 ];
 
-/** Hamlet: Small cluster of houses */
+/**
+ * Hamlet: Two modest peaked-roof cottages — simple silhouettes, thatched roofline feel.
+ * Shadow on left walls. 2 layers.
+ */
 const HAMLET_PATHS: LocationPathDef[] = [
-  // House base shapes
-  { d: 'M20 55 L50 55 L50 75 L20 75 Z M55 55 L80 55 L80 75 L55 75 Z', opacity: 0.4 },
-  // Roof triangles
-  { d: 'M18 55 L35 38 L52 55 Z M53 55 L67 41 L82 55 Z', opacity: 1.0 },
+  // Two house bodies + shadow on left wall
+  { d: 'M14 82 L14 56 L42 56 L42 82 Z M52 82 L52 60 L82 60 L82 82 Z M14 56 L14 82 L22 82 L22 56 Z M52 60 L52 82 L60 82 L60 60 Z', opacity: 0.35 },
+  // Roof triangles — irregular gabled peaks, slightly uneven
+  { d: 'M11 56 L28 34 L45 56 Z M49 60 L67 42 L85 60 Z', opacity: 1.0 },
 ];
 
-/** Castle: Fortified stronghold — keep with outer wall */
+/**
+ * Castle: Stocky fortified tower — single main tower with crenellations, buttressed base.
+ * Heavier and wider than tower. Shadow on left face. 3 layers.
+ */
 const CASTLE_PATHS: LocationPathDef[] = [
-  // Outer curtain wall
-  { d: 'M15 30 L85 30 L85 80 L15 80 Z', opacity: 0.35 },
-  // Battlements (merlons) on top
-  { d: 'M15 25 L25 25 L25 30 L15 30 Z M35 25 L45 25 L45 30 L35 30 Z M55 25 L65 25 L65 30 L55 30 Z M75 25 L85 25 L85 30 L75 30 Z', opacity: 0.7 },
-  // Central keep tower
-  { d: 'M38 30 L62 30 L62 80 L38 80 Z M44 20 L44 30 L56 30 L56 20 Z', opacity: 1.0 },
+  // Outer curtain wall — wide, low
+  { d: 'M14 82 L14 52 L22 52 L22 46 L30 46 L30 52 L70 52 L70 46 L78 46 L78 52 L86 52 L86 82 Z', opacity: 0.3 },
+  // Shadow layer — left face of keep and wall
+  { d: 'M28 82 L28 28 L40 28 L40 82 Z M14 52 L14 82 L27 82 L27 52 Z', opacity: 0.2 },
+  // Central keep with crenellations
+  { d: 'M28 82 L28 28 L72 28 L72 82 Z M28 28 L28 22 L36 22 L36 28 Z M44 28 L44 22 L52 22 L52 28 Z M56 28 L56 22 L64 22 L64 28 Z M64 28 L64 22 L72 22 L72 28 Z', opacity: 1.0 },
 ];
 
-/** Fort: Military outpost — square with corner bastions */
+/**
+ * Fort: Low-profile military square — wide rectangular body, corner turret nubs.
+ * Distinctly wider than tall, military silhouette. 3 layers.
+ */
 const FORT_PATHS: LocationPathDef[] = [
-  // Fort body
-  { d: 'M25 25 L75 25 L75 75 L25 75 Z', opacity: 0.4 },
-  // Corner bastions (diamond shapes)
-  { d: 'M25 25 L10 18 L18 10 L25 25 Z M75 25 L90 18 L82 10 L75 25 Z M25 75 L10 82 L18 90 L25 75 Z M75 75 L90 82 L82 90 L75 75 Z', opacity: 0.7 },
-  // Gate arch
-  { d: 'M40 60 Q50 50 60 60 L60 75 L40 75 Z', opacity: 1.0 },
+  // Fort body base
+  { d: 'M16 74 L16 36 L84 36 L84 74 Z', opacity: 0.3 },
+  // Shadow — left face
+  { d: 'M16 36 L16 74 L30 74 L30 36 Z', opacity: 0.2 },
+  // Corner turrets + wall merlons
+  { d: 'M10 80 L10 30 L24 30 L24 36 L76 36 L76 30 L90 30 L90 80 Z M24 36 L24 30 L30 30 L30 36 Z M42 36 L42 30 L48 30 L48 36 Z M52 36 L52 30 L58 30 L58 36 Z M70 36 L70 30 L76 30 L76 36 Z', opacity: 1.0 },
 ];
 
-/** Tower: Lone watchtower — tall narrow structure */
+/**
+ * Tower: Single slim watchtower — much taller than wide, flat-top cap, no crenellations.
+ * Narrower than castle. Shadow on left face. 2 layers.
+ */
 const TOWER_PATHS: LocationPathDef[] = [
-  // Tower body
-  { d: 'M38 25 L62 25 L62 80 L38 80 Z', opacity: 0.5 },
-  // Crenellated top
-  { d: 'M36 18 L42 18 L42 25 L36 25 Z M46 18 L54 18 L54 25 L46 25 Z M58 18 L64 18 L64 25 L58 25 Z', opacity: 0.8 },
-  // Arrow slit
-  { d: 'M47 40 L53 40 L53 55 L47 55 Z', opacity: 1.0 },
+  // Tower body shadow (left face)
+  { d: 'M39 82 L39 24 L48 24 L48 82 Z', opacity: 0.25 },
+  // Tower silhouette + cap + narrow slit window
+  { d: 'M39 82 L39 24 L62 24 L62 82 Z M36 24 L36 18 L65 18 L65 24 Z M48 48 L48 56 L53 56 L53 48 Z', opacity: 1.0 },
 ];
 
-/** Temple: Sacred structure — dome with columns */
+/**
+ * Temple: Domed religious structure — central dome, flanking pinnacles, stepped base.
+ * Distinct from castle — wider, rounder dome mass. 3 layers.
+ */
 const TEMPLE_PATHS: LocationPathDef[] = [
-  // Dome
-  { d: 'M20 55 C20 25 80 25 80 55 Z', opacity: 0.4 },
-  // Steps / base
-  { d: 'M15 65 L85 65 L85 75 L15 75 Z M18 55 L82 55 L82 65 L18 65 Z', opacity: 0.7 },
-  // Columns
-  { d: 'M25 55 L30 55 L30 65 L25 65 Z M45 55 L50 55 L50 65 L45 65 Z M65 55 L70 55 L70 65 L65 65 Z', opacity: 1.0 },
+  // Stepped base platform
+  { d: 'M12 82 L12 72 L88 72 L88 82 Z M16 72 L16 65 L84 65 L84 72 Z', opacity: 0.3 },
+  // Shadow — left side of dome mass
+  { d: 'M20 65 L20 38 L38 22 L38 65 Z', opacity: 0.2 },
+  // Dome silhouette + flanking spires
+  { d: 'M20 65 L20 38 L38 22 L50 18 L62 22 L80 38 L80 65 Z M36 65 L36 30 L42 30 L42 65 Z M58 65 L58 30 L64 30 L64 65 Z M30 30 L30 24 L38 20 L38 30 Z M62 30 L62 24 L70 20 L70 30 Z', opacity: 1.0 },
 ];
 
-/** Shrine: Small sacred marker — obelisk or standing stone */
+/**
+ * Shrine: Dolmen standing stones — two upright stones with capstone, mystical simplicity.
+ * Shadow on left upright. 2 layers.
+ */
 const SHRINE_PATHS: LocationPathDef[] = [
-  // Standing stone / obelisk
-  { d: 'M43 20 L57 20 L60 80 L40 80 Z', opacity: 0.5 },
-  // Glow / aura ring
-  { d: 'M50 45 C60 45 65 50 65 55 C65 60 60 65 50 65 C40 65 35 60 35 55 C35 50 40 45 50 45 Z', opacity: 1.0 },
+  // Shadow — left upright face
+  { d: 'M24 82 L24 46 L32 46 L32 82 Z', opacity: 0.25 },
+  // Two uprights + capstone spanning them
+  { d: 'M24 82 L24 46 L36 46 L36 82 Z M64 82 L64 46 L76 46 L76 82 Z M18 46 L18 38 L82 38 L82 46 Z', opacity: 1.0 },
 ];
 
-/** Ruins: Collapsed structure — broken walls */
+/**
+ * Ruins: Generic crumbled building — partial standing walls with gaps, rubble mounds.
+ * Broken silhouette reads as "destroyed structure." 3 layers.
+ */
 const RUINS_PATHS: LocationPathDef[] = [
-  // Broken wall segments
-  { d: 'M15 65 L35 65 L35 75 L15 75 Z M55 60 L70 60 L70 75 L55 75 Z', opacity: 0.4 },
-  // Collapsed sections (diagonal rubble)
-  { d: 'M35 55 L50 55 L40 75 Z M65 55 L80 65 L65 75 Z', opacity: 0.7 },
-  // Remaining arch / keystone
-  { d: 'M40 30 L60 30 L65 45 L55 45 L55 55 L45 55 L45 45 L35 45 Z', opacity: 1.0 },
+  // Rubble mound at ground level
+  { d: 'M12 82 L12 72 L28 72 L38 66 L48 72 L52 68 L62 72 L72 68 L82 72 L88 72 L88 82 Z', opacity: 0.3 },
+  // Partial standing walls — broken gaps between sections
+  { d: 'M14 72 L14 44 L26 44 L26 72 Z M54 72 L54 36 L64 36 L64 52 L72 52 L72 72 Z', opacity: 0.65 },
+  // Remaining arch / top fragment
+  { d: 'M26 44 L26 38 L38 28 L50 38 L50 44 Z', opacity: 1.0 },
 ];
 
-/** Ruined City: Large collapsed settlement — extensive rubble */
+/**
+ * Ruined City: Broken version of city icon — wall has gaps, one tower toppled, rubble at base.
+ * Must read as "this was once a walled city." 3 layers.
+ */
 const RUINED_CITY_PATHS: LocationPathDef[] = [
-  // Outer ruined wall (partial)
-  { d: 'M15 20 L40 20 L40 30 L15 30 Z M60 20 L85 20 L85 50 L75 50 L75 30 L60 30 Z', opacity: 0.35 },
-  // Rubble mounds
-  { d: 'M20 65 L35 50 L50 65 Z M50 70 L65 55 L80 70 Z', opacity: 0.6 },
-  // Broken tower stump
-  { d: 'M42 30 L58 30 L62 55 L38 55 Z', opacity: 1.0 },
+  // Partial curtain wall — gaps on right section, left section standing
+  { d: 'M10 82 L10 48 L17 48 L17 42 L25 42 L25 48 L38 48 L38 42 L46 42 L46 48 L54 48 L54 82 Z M72 52 L72 42 L80 42 L80 52 L90 52 L90 82 L72 82 Z', opacity: 0.3 },
+  // Shadow on left wall section
+  { d: 'M10 48 L10 82 L24 82 L24 48 Z', opacity: 0.2 },
+  // Left tower (intact), centre tower (truncated/broken), rubble mound right side
+  { d: 'M16 82 L16 34 L27 34 L27 82 Z M42 82 L42 22 L50 22 L55 35 L58 22 L58 48 L58 82 Z M60 78 L68 64 L76 72 L84 66 L90 72 L90 82 Z', opacity: 1.0 },
 ];
 
-/** Ruined Tower: Collapsed watchtower — broken stump */
+/**
+ * Ruined Tower: Truncated broken tower — same slim body as tower (LIART-07)
+ * but top cut at irregular angle with crack. Must read as "broken tower." 3 layers.
+ */
 const RUINED_TOWER_PATHS: LocationPathDef[] = [
-  // Tower stump
-  { d: 'M38 45 L62 45 L62 80 L38 80 Z', opacity: 0.5 },
-  // Broken top (jagged)
-  { d: 'M38 45 L44 35 L50 42 L56 32 L62 45 Z', opacity: 0.8 },
-  // Rubble at base
-  { d: 'M30 75 L40 68 L50 75 L60 68 L70 75 L70 80 L30 80 Z', opacity: 1.0 },
+  // Shadow on left face (same proportion as tower)
+  { d: 'M39 82 L39 38 L48 38 L48 82 Z', opacity: 0.25 },
+  // Truncated tower body — top cut jagged
+  { d: 'M39 82 L39 38 L62 38 L62 82 Z', opacity: 0.65 },
+  // Jagged broken top + rubble at base
+  { d: 'M36 38 L42 28 L47 35 L53 24 L59 32 L65 38 Z M32 78 L40 70 L50 76 L60 68 L68 76 L68 82 L32 82 Z', opacity: 1.0 },
 ];
 
-/** Ruined Village: Small abandoned settlement — scattered foundations */
+/**
+ * Ruined Village: Collapsed hamlet — same 2-house layout as hamlet (LIART-04)
+ * but one roof collapsed and one structure leaning. Must read as "ruined village." 2 layers.
+ */
 const RUINED_VILLAGE_PATHS: LocationPathDef[] = [
-  // Foundation outlines
-  { d: 'M20 40 L40 40 L40 60 L20 60 Z M55 45 L75 45 L75 65 L55 65 Z', opacity: 0.35 },
-  // Overgrowth hint
-  { d: 'M25 60 Q35 55 45 60 Q50 63 45 68 Q35 73 25 68 Z M58 65 Q68 60 78 65 Q83 68 78 73 Q68 78 58 73 Z', opacity: 0.5 },
-  // Chimney stubs
-  { d: 'M28 32 L32 32 L32 40 L28 40 Z M62 37 L66 37 L66 45 L62 45 Z', opacity: 1.0 },
+  // Foundation outlines — same footprint as hamlet but with gaps/debris
+  { d: 'M14 82 L14 56 L42 56 L42 82 Z M52 82 L52 60 L82 60 L82 82 Z M14 56 L14 82 L22 82 L22 56 Z', opacity: 0.3 },
+  // Left cottage: roof collapsed (broken peak). Right cottage: leaning wall + partial roof.
+  { d: 'M11 56 L20 42 L28 50 L36 38 L45 56 Z M49 60 L56 54 L63 60 Z M62 60 L62 52 L70 46 L78 52 L78 60 Z M54 76 L48 82 L82 82 L82 76 Z', opacity: 1.0 },
 ];
 
-/** Mining: Resource extraction site — pickaxe / shaft entrance */
+/**
+ * Mining: Triangular headframe above shaft entrance — industrial silhouette.
+ * Headframe is an A-frame with dark opening beneath. 3 layers.
+ */
 const MINING_PATHS: LocationPathDef[] = [
-  // Mineshaft entrance
-  { d: 'M30 50 Q50 30 70 50 L70 80 L30 80 Z', opacity: 0.4 },
-  // Support beams
-  { d: 'M38 50 L38 80 L42 80 L42 50 Z M58 50 L58 80 L62 80 L62 50 Z', opacity: 0.7 },
-  // Cart / load symbol
-  { d: 'M40 62 L60 62 L60 72 L40 72 Z', opacity: 1.0 },
+  // Platform / ground level
+  { d: 'M12 82 L12 74 L88 74 L88 82 Z', opacity: 0.3 },
+  // Shadow — left face of headframe
+  { d: 'M36 74 L50 30 L50 74 Z', opacity: 0.2 },
+  // A-frame headframe + shaft opening
+  { d: 'M36 74 L50 30 L64 74 Z M42 74 L42 58 L58 58 L58 74 Z', opacity: 1.0 },
 ];
 
-/** Camp: Temporary military or traveler camp — tent shape */
+/**
+ * Camp: Tent cluster — two conical tents side by side, slightly different heights.
+ * Left tent has shadow on left face. 2 layers.
+ */
 const CAMP_PATHS: LocationPathDef[] = [
-  // Main tent
-  { d: 'M50 20 L80 70 L20 70 Z', opacity: 0.5 },
-  // Tent flap
-  { d: 'M50 20 L58 70 L42 70 Z', opacity: 0.8 },
-  // Fire pit
-  { d: 'M45 72 L50 68 L55 72 L50 78 Z', opacity: 1.0 },
+  // Shadow — left face of left tent
+  { d: 'M18 76 L36 34 L36 76 Z', opacity: 0.25 },
+  // Two conical tents + ground line
+  { d: 'M18 76 L36 34 L54 76 Z M50 76 L66 44 L82 76 Z M14 76 L14 82 L86 82 L86 76 Z', opacity: 1.0 },
 ];
 
-/** Battleground: Site of conflict — crossed swords / marker */
+/**
+ * Battleground: Crossed swords in X formation — two sword silhouettes crossing center.
+ * Simple iconic shape, immediately readable. 3 layers.
+ */
 const BATTLEGROUND_PATHS: LocationPathDef[] = [
-  // Sword 1 (diagonal //)
-  { d: 'M20 20 L30 20 L80 70 L70 80 Z', opacity: 0.5 },
-  // Sword 2 (diagonal \\)
-  { d: 'M80 20 L70 20 L20 70 L30 80 Z', opacity: 0.5 },
-  // Center medallion
-  { d: 'M42 42 L58 42 L58 58 L42 58 Z', opacity: 1.0 },
+  // Sword bodies — each a long tapered blade shape
+  { d: 'M22 14 L30 14 L78 82 L70 82 Z', opacity: 0.5 },
+  { d: 'M78 14 L70 14 L22 82 L30 82 Z', opacity: 0.5 },
+  // Crossguard intersection
+  { d: 'M38 46 L62 46 L62 54 L38 54 Z', opacity: 1.0 },
 ];
 
-/** Unexplored POI: Mystery marker — question mark / eye symbol */
+/**
+ * Unexplored POI: Upside-down teardrop marker with organic question mark cutout.
+ * Tiny size class — must read clearly at 25% of HEX_SIZE. 2 layers.
+ */
 const UNEXPLORED_POI_PATHS: LocationPathDef[] = [
-  // Outer ring
-  { d: 'M50 20 C70 20 80 35 80 50 C80 65 70 80 50 80 C30 80 20 65 20 50 C20 35 30 20 50 20 Z', opacity: 0.3 },
-  // Question mark top arc
-  { d: 'M38 38 C38 25 62 25 62 38 C62 50 55 52 52 58 L48 58 C46 50 46 44 38 38 Z', opacity: 0.8 },
-  // Question mark dot
-  { d: 'M46 64 L54 64 L54 72 L46 72 Z', opacity: 1.0 },
+  // Outer teardrop body
+  { d: 'M50 10 L62 26 L68 38 L68 52 L62 64 L50 72 L38 64 L32 52 L32 38 L38 26 Z', opacity: 0.35 },
+  // Question mark shape — top arc + dot
+  { d: 'M44 36 L44 30 L56 30 L56 40 L50 46 L50 54 L48 54 L48 46 L54 40 L54 34 L46 34 L46 36 Z M48 58 L52 58 L52 62 L48 62 Z', opacity: 1.0 },
 ];
 
 // ── Registry ──────────────────────────────────────────────────────────────────
 
 /**
  * Complete registry of location icon definitions.
- * All 17 location types are registered with placeholder SVG paths.
- * Plan 02 replaces these paths with production hand-drawn silhouettes.
+ * All 17 location types are registered with production hand-drawn SVG paths (Plan 02).
+ * Multi-layer opacity compositing, sun-from-right shadow, organic irregular paths.
  *
  * Size class assignment:
  * - full:   capital, city (largest hexes)
