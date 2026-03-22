@@ -3,6 +3,8 @@ import type { HexTile } from '../../../types';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
+import type { RiverPath } from '../../../engine/worldGenData';
+import type { RegionData } from '../../../engine/regionTypes';
 import { initializeGameState } from '../../../engine/gameInit';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
 import {
@@ -43,6 +45,9 @@ export function useSimulation({
 
   const [gameState, setGameState] = useState<GameState>(initial.state);
   const [tiles] = useState<HexTile[]>(initial.tiles);
+  const [riverPaths] = useState<RiverPath[]>(initial.riverPaths);
+  const [lakeIds] = useState<Int16Array>(initial.lakeIds);
+  const [regionData] = useState<RegionData | undefined>(initial.regionData);
   const [running, setRunning] = useState(false);
   const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
@@ -121,6 +126,9 @@ export function useSimulation({
     gameState,
     setGameState,
     tiles,
+    riverPaths,
+    lakeIds,
+    regionData,
     running,
     speed,
     setSpeed,

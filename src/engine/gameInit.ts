@@ -11,6 +11,8 @@ import type { CosmologyProfile, HexTile } from '../types';
 import type { AscendantArchetype } from '../types/influence';
 import type { GameState } from '../types/gameState';
 import { generateWorld } from './hexGrid';
+import type { RiverPath } from './worldGenData';
+import type { RegionData } from './regionTypes';
 import { createAscendant } from './ascendant';
 import { seedWorld } from './worldSeed';
 import { generateRivals, createRivalState } from './rival';
@@ -57,7 +59,7 @@ export const INITIAL_WORSHIPPER_TIER = 1;
  * @param seed - PRNG seed for deterministic world generation
  * @param cols - Hex grid width (default: DEFAULT_COLS = 20)
  * @param rows - Hex grid height (default: DEFAULT_ROWS = 15)
- * @returns { state, tiles } - Initialized GameState and hex tiles
+ * @returns { state, tiles, riverPaths, lakeIds, regionData } - Initialized GameState, hex tiles, and WorldGenResult fields
  */
 export function initializeGameState(
   archetype: AscendantArchetype,
@@ -66,9 +68,10 @@ export function initializeGameState(
   seed: number,
   cols: number = DEFAULT_COLS,
   rows: number = DEFAULT_ROWS,
-): { state: GameState; tiles: HexTile[] } {
+): { state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
   // Generate terrain
-  const tiles = generateWorld(cosmology, cols, rows, seed).tiles;
+  const worldGenResult = generateWorld(cosmology, cols, rows, seed);
+  const tiles = worldGenResult.tiles;
 
   // Seed the world graph with actors, locations, artifacts
   const { graph, individualIds } = seedWorld(cosmology, tiles, seed);
@@ -230,5 +233,11 @@ export function initializeGameState(
     chronicle: createGreatChronicle(),
   };
 
-  return { state, tiles };
+  return {
+    state,
+    tiles,
+    riverPaths: worldGenResult.riverPaths,
+    lakeIds: worldGenResult.lakeIds,
+    regionData: worldGenResult.regionData,
+  };
 }
