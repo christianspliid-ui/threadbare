@@ -101,7 +101,7 @@ Plans:
   3. Signifiers have subtle position jitter and rotation, creating an organic hand-placed feel
   4. Signifiers scale with zoom and disappear below regional zoom threshold
   5. The composition system correctly assigns signifiers to CENTER slots and handles suppression rules
-**Plans:** 2/4 plans executed
+**Plans:** 3/4 plans executed
 
 Plans:
 - [ ] 05-01-PLAN.md — Composition system types, resolver, signifier registry with terrain reconciliation
@@ -173,7 +173,7 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 2. World Generation | 3/3 | Complete   | 2026-03-21 |
 | 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
 | 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
-| 5. Hex Composition & Landscape Signifiers | 2/4 | In Progress|  |
+| 5. Hex Composition & Landscape Signifiers | 3/4 | In Progress|  |
 | 6. Locations & Agents | 0/4 | Not started | - |
 | 7. Fog, Zoom & Grid | 0/3 | Not started | - |
 | 8. Integration | 0/2 | Not started | - |
