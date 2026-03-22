@@ -72,10 +72,10 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 ### Landscape Signifiers (LSIG)
 
 - [ ] **LSIG-01**: Each of 27 terrain types has 2-5 SVG signifier variants (dark silhouette icons)
-- [ ] **LSIG-02**: Signifier variant selected deterministically per hex (seeded by hex coordinates)
-- [ ] **LSIG-03**: Signifiers rendered with slight position jitter (+/-10%) and rotation (+/-15deg) for organic feel
+- [x] **LSIG-02**: Signifier variant selected deterministically per hex (seeded by hex coordinates)
+- [x] **LSIG-03**: Signifiers rendered with slight position jitter (+/-10%) and rotation (+/-15deg) for organic feel
 - [ ] **LSIG-04**: Signifier size scales with hex render size (hidden below regional zoom threshold)
-- [ ] **LSIG-05**: All signifiers share consistent stroke weight, detail level, and color treatment (stylistic unity)
+- [x] **LSIG-05**: All signifiers share consistent stroke weight, detail level, and color treatment (stylistic unity)
 
 ### Landscape Signifier Content (LART)
 
@@ -140,10 +140,10 @@ Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
 
 ### Hex Composition System (COMP)
 
-- [ ] **COMP-01**: Slot-based layout system (CENTER, N, NE, SE, S, SW, NW, FILL, RING) assigns visual entities to hex positions
-- [ ] **COMP-02**: HexVisualManifest interface defines preferredSlot, footprint, suppression rules, zoom visibility, priority, fallbacks per entity type
-- [ ] **COMP-03**: Composition resolver collects entities per hex, sorts by priority, assigns slots, evaluates suppression
-- [ ] **COMP-04**: Major locations suppress terrain signifiers when occupying the same hex
+- [x] **COMP-01**: Slot-based layout system (CENTER, N, NE, SE, S, SW, NW, FILL, RING) assigns visual entities to hex positions
+- [x] **COMP-02**: HexVisualManifest interface defines preferredSlot, footprint, suppression rules, zoom visibility, priority, fallbacks per entity type
+- [x] **COMP-03**: Composition resolver collects entities per hex, sorts by priority, assigns slots, evaluates suppression
+- [x] **COMP-04**: Major locations suppress terrain signifiers when occupying the same hex
 - [ ] **COMP-05**: Agent RING layout distributes agents around hex edge, sorted by ID for stable positions
 
 ### Agents & Icons (AGNT)
@@ -273,15 +273,15 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REGN-08 | Phase 4 | Complete |
 | REGN-09 | Phase 4 | Complete |
 | GRID-02 | Phase 4 | Complete |
-| COMP-01 | Phase 5 | Pending |
-| COMP-02 | Phase 5 | Pending |
-| COMP-03 | Phase 5 | Pending |
-| COMP-04 | Phase 5 | Pending |
+| COMP-01 | Phase 5 | Complete |
+| COMP-02 | Phase 5 | Complete |
+| COMP-03 | Phase 5 | Complete |
+| COMP-04 | Phase 5 | Complete |
 | LSIG-01 | Phase 5 | Pending |
-| LSIG-02 | Phase 5 | Pending |
-| LSIG-03 | Phase 5 | Pending |
+| LSIG-02 | Phase 5 | Complete |
+| LSIG-03 | Phase 5 | Complete |
 | LSIG-04 | Phase 5 | Pending |
-| LSIG-05 | Phase 5 | Pending |
+| LSIG-05 | Phase 5 | Complete |
 | LART-01 | Phase 5 | Pending |
 | LART-02 | Phase 5 | Pending |
 | LART-03 | Phase 5 | Pending |
