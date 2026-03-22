@@ -6,15 +6,16 @@
 **Hex Map V2** — Three.js-based hex map renderer (8-phase milestone).
 
 **Recent completions:**
+- ✅ Phase 6 Plan 01: Location rendering pipeline (2026-03-22) — 17 LocationType registry, CanvasTexture cache, LocationIconMesh at renderOrder=8, LocationLabelOverlay with importance-based fonts (capital 13px/700, city/town 11px/400, small 9px/400), COMP-05 RING slot multi-occupant extension. 26 tests.
 - ✅ Phase 6 Plan 03: Agent rendering system (2026-03-22) — Three-tier sprite system (portrait/dot/continental), faction-color rings, retinue gold borders, RING layout via getRingSlotOffset, async portrait loading with fail-soft fallback. 41 tests.
-- ✅ Phase 5 Plan 04: Remaining terrain signifier art (2026-03-22) — Production SVG paths for all highland, desert, cold, volcanic, and special terrain types. 28 direct + 6 fallback = all 33 land TerrainTypes covered. Phase 5 complete.
-- ✅ Phase 5 Plans 01-03: Signifier system scaffold, composition resolver, lowland + forest terrain art (2026-03-22).
-- ✅ Phase 4 Plans 01-03: Regions, borders, HTML label overlay (2026-03-22). Phase 4 complete.
+- ✅ Phase 5 Plans 01-04: Signifier system scaffold, composition resolver, all terrain art. Phase 5 complete.
+- ✅ Phase 4 Plans 01-03: Regions, borders, HTML label overlay. Phase 4 complete.
 
 **Up next:**
+- Phase 6 Plan 02: Location icon production art
 - Phase 6 Plan 04: Agent animation (bezier hop, movement trails, indicators)
 
-**Latest implementation:** Phase 6 Plan 03 (2026-03-22) — Agent rendering system. Three-tier sprite groups (portrait at k≥15, dot at k≥5, continental retinue at k≥1.5). Faction heraldic colors, retinue gold rings, RING layout, async portrait textures with fail-soft fallback.
+**Latest implementation:** Phase 6 Plan 01 (2026-03-22) — Location rendering pipeline: registry → texture cache → sprites → labels. COMP-05 RING slot supports unlimited agents per hex with sequential ringIndex.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
