@@ -121,12 +121,19 @@ export function isThemeMuted(): boolean {
   return localStorage.getItem(THEME_MUTE_STORAGE_KEY) === 'true';
 }
 
-/** Toggle mute and persist to localStorage. Returns new muted state. */
+/** Toggle mute and persist to localStorage. Returns new muted state.
+ *  If unmuting and audio hasn't started yet, starts playback (user gesture context). */
 export function toggleThemeMute(): boolean {
   const next = !isThemeMuted();
   localStorage.setItem(THEME_MUTE_STORAGE_KEY, String(next));
-  if (audio) {
-    audio.muted = next;
+  const a = getAudio();
+  a.muted = next;
+
+  // If unmuting and audio was never started or is paused, start it now.
+  // This click IS a user gesture, so autoplay policy is satisfied.
+  if (!next && a.paused) {
+    a.volume = THEME_VOLUME_DEFAULT;
+    a.play().catch(() => {});
   }
   return next;
 }
