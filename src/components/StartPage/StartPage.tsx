@@ -9,6 +9,7 @@ import {
   START_PAGE_LORE_LINE_2,
   START_PAGE_FADE_DURATION_MS,
   THEME_MUSIC_SRC,
+  THEME_VOLUME_DEFAULT,
   VERSION_STAMP_TEXT,
   START_PAGE_BG_IMAGE,
 } from './startPageConstants';
@@ -19,7 +20,16 @@ interface StartPageProps {
 }
 
 export function StartPage({ onNewWorld }: StartPageProps) {
-  const { play, fadeOut, muted, toggleMute } = useThemeMusic(THEME_MUSIC_SRC);
+  const { play, fadeOut, muted, toggleMute, setVolume } = useThemeMusic(THEME_MUSIC_SRC);
+  const [volume, setVolumeState] = useState(THEME_VOLUME_DEFAULT);
+
+  const handleVolumeChange = useCallback(
+    (v: number) => {
+      setVolumeState(v);
+      setVolume(v);
+    },
+    [setVolume],
+  );
   const [fading, setFading] = useState(false);
   const hasInteracted = useRef(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -87,7 +97,14 @@ export function StartPage({ onNewWorld }: StartPageProps) {
         </button>
         <span className="start-page__version">{VERSION_STAMP_TEXT}</span>
       </div>
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        volume={volume}
+        onVolumeChange={handleVolumeChange}
+        muted={muted}
+        onToggleMute={toggleMute}
+      />
       <CreditsModal open={creditsOpen} onClose={() => setCreditsOpen(false)} />
     </>
   );
