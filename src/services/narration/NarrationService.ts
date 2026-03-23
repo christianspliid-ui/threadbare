@@ -100,7 +100,13 @@ class NarrationServiceImpl {
 
   // ── Speak ─────────────────────────────────────────────────────
 
+  /** Speak a single text block. */
   async speak(text: string, voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
+    return this.speakSections([text], voice, speed);
+  }
+
+  /** Speak multiple text sections with pauses between them. */
+  async speakSections(sections: string[], voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
     this.ensureAudioContext();
 
     if (this._status === 'loading') return;
@@ -109,15 +115,11 @@ class NarrationServiceImpl {
       if (this._status !== 'ready') return;
     }
 
+    const filtered = sections.map(s => s.trim()).filter(Boolean);
+    if (filtered.length === 0) return;
+
     // Stop any current playback
     this.stopPlayback();
-
-    // Truncate at sentence boundary if too long
-    let truncated = text;
-    if (text.length > NARRATION_MAX_TEXT_LENGTH) {
-      const cutoff = text.lastIndexOf('.', NARRATION_MAX_TEXT_LENGTH);
-      truncated = cutoff > 0 ? text.slice(0, cutoff + 1) : text.slice(0, NARRATION_MAX_TEXT_LENGTH);
-    }
 
     const id = ++this.speakCounter;
     this.currentSpeakId = id;
@@ -131,7 +133,7 @@ class NarrationServiceImpl {
       const res = await fetch(`${NARRATION_TTS_SERVER_URL}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: truncated, voice, speed }),
+        body: JSON.stringify({ sections: filtered, voice, speed }),
         signal: this.abortController.signal,
       });
 
