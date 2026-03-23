@@ -44,6 +44,35 @@ describe('familiarity integration', () => {
       15,
     );
     state = result.state;
+
+    // Ensure at least one worshipper is co-located with the avatar.
+    // World generation doesn't guarantee this, so we move a worshipper into the avatar's hex.
+    const avatarEdges = state.graph.getIncomingEdges(state.ascendantId, 'avatar_of');
+    if (avatarEdges.length > 0) {
+      const avatarId = avatarEdges[0].source;
+      const avatarLocEdges = state.graph.getOutgoingEdges(avatarId, 'located_at');
+      if (avatarLocEdges.length > 0) {
+        const avatarLocationId = avatarLocEdges[0].target;
+        const worshipEdges = state.graph.getEdgesByType('worships');
+        if (worshipEdges.length > 0) {
+          const worshipperId = worshipEdges[0].source;
+          // Update worshipper's locationId property to point to the avatar's location
+          state.graph.updateNode(worshipperId, { properties: { locationId: avatarLocationId } });
+          // Also update the located_at edge to point to the avatar's location
+          const worshipperLocEdges = state.graph.getOutgoingEdges(worshipperId, 'located_at');
+          for (const edge of worshipperLocEdges) {
+            state.graph.removeEdge(edge.id);
+          }
+          state.graph.addEdge({
+            id: `edge_worshipper_at_avatar_hex_${worshipperId}`,
+            source: worshipperId,
+            target: avatarLocationId,
+            type: 'located_at',
+            properties: {},
+          });
+        }
+      }
+    }
   });
 
   it('initializes familiarity map in GameState', () => {
