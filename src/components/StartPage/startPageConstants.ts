@@ -4,7 +4,7 @@
  */
 
 // ─── Text Content ────────────────────────────────────────────────
-export const START_PAGE_TITLE = 'THREADBAERER';
+export const START_PAGE_TITLE = 'THREADBEARER';
 export const START_PAGE_LORE_LINE_1 = 'Worlds are woven. Worlds are worn through.';
 export const START_PAGE_LORE_LINE_2 = 'The loom turns. The threads remember.';
 
@@ -30,7 +30,7 @@ export const THEME_MUSIC_SRC = '/audio/theme-drone.mp3';
 export const THEME_VOLUME_DEFAULT = 0.4;
 export const THEME_FADE_IN_MS = 3000;
 export const THEME_FADE_OUT_MS = 1500;
-export const THEME_MUTE_STORAGE_KEY = 'threadbaerer_muted';
+export const THEME_MUTE_STORAGE_KEY = 'threadbearer_muted';
 
 // ─── Version ─────────────────────────────────────────────────────
 export const VERSION_STAMP_TEXT = 'v0.1.0 · prototype';
