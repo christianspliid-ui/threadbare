@@ -193,11 +193,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
-      // Actors can have hexCol/hexRow directly, or resolve via locationId
+      // Resolve hex position: check actor properties first, then follow located_at edge
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
       if (hexCol == null || hexRow == null) {
-        const locationId = n.properties.locationId as string | undefined;
+        // Agents store their location as a located_at edge, not a property
+        const locEdges = gameState.graph.getOutgoingEdges(n.id, 'located_at');
+        const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
         if (locationId) {
           const loc = gameState.graph.getNode(locationId);
           if (loc) {

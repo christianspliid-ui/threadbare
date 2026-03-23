@@ -92,7 +92,8 @@ export function evaluateGraphCondition(
     case 'agent_in_region': {
       const agent = graph.getNode(agentId);
       if (!agent) return false;
-      const locationId = agent.properties.locationId as string | undefined;
+      const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+      const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
       if (!locationId) return false;
       const loc = graph.getNode(locationId);
       if (!loc) return false;
@@ -102,7 +103,8 @@ export function evaluateGraphCondition(
     case 'agent_not_in_region': {
       const agent = graph.getNode(agentId);
       if (!agent) return false;
-      const locationId = agent.properties.locationId as string | undefined;
+      const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+      const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
       if (!locationId) return false;
       const loc = graph.getNode(locationId);
       if (!loc) return false;

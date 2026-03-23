@@ -208,13 +208,12 @@ describe('Strand Data Extractors', () => {
             courage_prudence: 0,
           },
           domainCapabilities: { iron: 0.5, gold: 0.5, shadow: 0.5, veil: 0.5, heart: 0.5, eye: 0.5, stone: 0.5, star: 0.5, flesh: 0.5 },
-          locationId: 'missing.location',
         },
       });
-
+      // Agent has no located_at edge — orphaned agent
       const strand = getPresenceStrand(graph, orphanId);
       expect(strand.locationName).toBe('');
-      expect(strand.locationId).toBe('missing.location');
+      expect(strand.locationId).toBe('');
     });
   });
 
