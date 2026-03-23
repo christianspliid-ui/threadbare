@@ -29,29 +29,22 @@
 
 ---
 
-## 2026-03-23: Kokoro TTS narration prototype
-
-**Context:** Researched in-browser TTS options for narrating game prose. Kokoro TTS (82M params, Apache 2.0) has a first-class JS package (`kokoro-js`) that runs entirely client-side via WASM/WebGPU — no API key, no server, no recurring cost. The q8 quantized model is ~92 MB. Wrote a complete prototype design doc with architecture, API, constants, fail-soft table, and acceptance criteria. Integration hooks into existing `TickEvent.message` text displayed in the NarrativeLog.
-
-**What Cowork already did:** Wrote design doc at `Docs/plans/2026-03-23-kokoro-tts-narration-prototype.md`.
-
-**Action for Claude Code:**
-- [ ] `npm install kokoro-js`
-- [ ] Create `src/services/narration/narrationConstants.ts` — feature flag (off by default), model config, voice, speed
-- [ ] Create `src/services/narration/NarrationWorker.ts` — Web Worker that loads kokoro-js, handles `init`/`speak`/`stop` messages
-- [ ] Create `src/services/narration/NarrationService.ts` — public API wrapping the worker (init, speak, stop, status, progress)
-- [ ] Create `src/services/narration/useNarration.ts` — React hook exposing service state
-- [ ] Create `src/components/Game/NarrationToggle.tsx` — simple on/off button + loading indicator
-- [ ] Add a "narrate" icon button to NarrativeLog event entries (only visible when `NARRATION_ENABLED = true`)
-- [ ] Verify Web Worker isolation — narration must not block Three.js render loop or UI
-- [ ] Test on Chrome and Firefox (WASM backend)
-- [ ] Handle AudioContext autoplay policy (init from user gesture)
-
-**Files changed:** `Docs/plans/2026-03-23-kokoro-tts-narration-prototype.md` (new), `.planning/HANDOVER.md` (this entry)
-
 ---
 
 ## Completed
+
+### 2026-03-23: Kokoro TTS narration prototype (completed 2026-03-23)
+
+All action items done:
+- Installed kokoro-js (v1.2.1) — 82M param model, Apache 2.0, client-side WASM
+- Created `src/services/narration/` with 4 files: narrationConstants.ts, NarrationWorker.ts, NarrationService.ts, useNarration.ts
+- NarrationWorker runs kokoro-js inference in Web Worker (off main thread)
+- NarrationService wraps worker with AudioContext playback, singleton pattern
+- useNarration React hook with useSyncExternalStore for zero-re-render subscriptions
+- HexChronicle: narrate button in hero section with icon states (Volume2 → Loader2 spinner → Square stop)
+- Auto-stops narration on hex change
+- Feature flag off by default (NARRATION_ENABLED = false)
+- All 5798 tests pass, build succeeds, type-check clean
 
 ### 2026-03-23: Rename game title from "Threadbare" to "Threadbearer" (completed 2026-03-23)
 
