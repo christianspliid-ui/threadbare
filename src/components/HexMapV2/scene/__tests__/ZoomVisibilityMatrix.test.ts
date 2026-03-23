@@ -61,24 +61,18 @@ describe('ZOOM_VISIBILITY_MATRIX — signifiers', () => {
 });
 
 describe('ZOOM_VISIBILITY_MATRIX — agents', () => {
-  it('agents_portrait is true at hero-local', () => {
+  it('agents_portrait is true at hero-local, regional, and continental', () => {
     expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['hero-local']).toBe(true);
-  });
-
-  it('agents_portrait is false at regional', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['regional']).toBe(false);
-  });
-
-  it('agents_portrait is false at continental', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['continental']).toBe(false);
+    expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['regional']).toBe(true);
+    expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['continental']).toBe(true);
   });
 
   it('agents_portrait is false at full-world', () => {
     expect(ZOOM_VISIBILITY_MATRIX.agents_portrait['full-world']).toBe(false);
   });
 
-  it('agents_dot is true at regional only', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.agents_dot['regional']).toBe(true);
+  it('agents_dot is false at all tiers (portraits used instead)', () => {
+    expect(ZOOM_VISIBILITY_MATRIX.agents_dot['regional']).toBe(false);
     expect(ZOOM_VISIBILITY_MATRIX.agents_dot['hero-local']).toBe(false);
     expect(ZOOM_VISIBILITY_MATRIX.agents_dot['continental']).toBe(false);
     expect(ZOOM_VISIBILITY_MATRIX.agents_dot['full-world']).toBe(false);
@@ -121,8 +115,8 @@ describe('ZOOM_VISIBILITY_MATRIX — rivers', () => {
 });
 
 describe('ZOOM_VISIBILITY_MATRIX — grid lines', () => {
-  it('grid_lines is false at continental', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.grid_lines['continental']).toBe(false);
+  it('grid_lines is true at continental', () => {
+    expect(ZOOM_VISIBILITY_MATRIX.grid_lines['continental']).toBe(true);
   });
 
   it('grid_lines is true at regional', () => {
@@ -133,8 +127,8 @@ describe('ZOOM_VISIBILITY_MATRIX — grid lines', () => {
     expect(ZOOM_VISIBILITY_MATRIX.grid_lines['hero-local']).toBe(true);
   });
 
-  it('grid_lines is false at full-world', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.grid_lines['full-world']).toBe(false);
+  it('grid_lines is true at full-world', () => {
+    expect(ZOOM_VISIBILITY_MATRIX.grid_lines['full-world']).toBe(true);
   });
 });
 

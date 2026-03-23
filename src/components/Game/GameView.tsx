@@ -22,7 +22,10 @@ import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
+import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
+import { getPortraitUrl } from '../../data/portrait-assets';
+import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
@@ -204,10 +207,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         }
       }
       if (hexCol == null || hexRow == null) continue;
+      const archetypeId = n.properties.narrativeArchetype as string | undefined;
       result.push({
         id: n.id,
         hexCol,
         hexRow,
+        portraitUrl: getPortraitUrl(archetypeId) ?? undefined,
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
         name: n.name,
@@ -228,6 +233,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
       }));
   }, [gameState.graph]);
+
+  const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
 
   // ── Notification system hook ──
   const {
@@ -445,8 +452,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const col = typeof props.hexCol === 'number' ? props.hexCol : undefined;
     const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
     if (col !== undefined && row !== undefined && hexMapRef.current) {
-      const HEX_SIZE = 30; // matches HexMap default
-      const px = hexToPixel({ col, row }, HEX_SIZE);
+      const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
       hexMapRef.current.centerOn(px.x, px.y);
     }
   }, [gameState.graph, hexMapRef]);
@@ -623,6 +629,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   lakeIds={lakeIds}
                   regionData={regionData}
                   locations={locationNodes}
+                  roadPaths={roadPaths}
                   agents={agentRenderData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
