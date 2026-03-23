@@ -230,7 +230,8 @@ export function getPresenceStrand(graph: WorldGraph, agentId: string): PresenceS
     };
   }
 
-  const locationId = (agent.properties.locationId as string) || '';
+  const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+  const locationId = locEdges.length > 0 ? locEdges[0].target : '';
   let locationName = '';
 
   if (locationId) {

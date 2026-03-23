@@ -230,10 +230,10 @@ describe('evaluateGraphCondition', () => {
     it('returns true when agent is in the specified region', () => {
       const graph = createMockGraph(
         [
-          { id: 'a1', properties: { locationId: 'loc1' } },
+          { id: 'a1', properties: {} },
           { id: 'loc1', properties: { regionId: 'northlands' } },
         ],
-        [],
+        [{ source: 'a1', target: 'loc1', type: 'located_at', properties: {} }],
       );
       const cond: GraphCondition = { type: 'agent_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
@@ -242,16 +242,16 @@ describe('evaluateGraphCondition', () => {
     it('returns false when agent is in a different region', () => {
       const graph = createMockGraph(
         [
-          { id: 'a1', properties: { locationId: 'loc1' } },
+          { id: 'a1', properties: {} },
           { id: 'loc1', properties: { regionId: 'southlands' } },
         ],
-        [],
+        [{ source: 'a1', target: 'loc1', type: 'located_at', properties: {} }],
       );
       const cond: GraphCondition = { type: 'agent_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
     });
 
-    it('returns false when agent has no locationId', () => {
+    it('returns false when agent has no located_at edge', () => {
       const graph = createMockGraph([{ id: 'a1', properties: {} }], []);
       const cond: GraphCondition = { type: 'agent_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
@@ -259,8 +259,8 @@ describe('evaluateGraphCondition', () => {
 
     it('returns false when location node does not exist', () => {
       const graph = createMockGraph(
-        [{ id: 'a1', properties: { locationId: 'missing-loc' } }],
-        [],
+        [{ id: 'a1', properties: {} }],
+        [{ source: 'a1', target: 'missing-loc', type: 'located_at', properties: {} }],
       );
       const cond: GraphCondition = { type: 'agent_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
@@ -271,10 +271,10 @@ describe('evaluateGraphCondition', () => {
     it('returns true when agent is in a different region', () => {
       const graph = createMockGraph(
         [
-          { id: 'a1', properties: { locationId: 'loc1' } },
+          { id: 'a1', properties: {} },
           { id: 'loc1', properties: { regionId: 'southlands' } },
         ],
-        [],
+        [{ source: 'a1', target: 'loc1', type: 'located_at', properties: {} }],
       );
       const cond: GraphCondition = { type: 'agent_not_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(true);
@@ -283,10 +283,10 @@ describe('evaluateGraphCondition', () => {
     it('returns false when agent is in the specified region', () => {
       const graph = createMockGraph(
         [
-          { id: 'a1', properties: { locationId: 'loc1' } },
+          { id: 'a1', properties: {} },
           { id: 'loc1', properties: { regionId: 'northlands' } },
         ],
-        [],
+        [{ source: 'a1', target: 'loc1', type: 'located_at', properties: {} }],
       );
       const cond: GraphCondition = { type: 'agent_not_in_region', region: 'northlands' };
       expect(evaluateGraphCondition(cond, graph, 'a1')).toBe(false);
