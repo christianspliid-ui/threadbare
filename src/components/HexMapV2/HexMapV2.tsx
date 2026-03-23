@@ -57,7 +57,71 @@ import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
+import { getRingSlotOffset } from '../../lib/movementPath';
+import {
+  LOCATION_RING_RADIUS,
+  LOCATION_RING_ROTATION_DEG,
+} from '../../data/agent-visual-content';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
+
+// ─── Location offset for trail endpoints ──────────────────────────────────────
+
+/** Rotation offset in radians (same as LocationIconMesh). */
+const TRAIL_LOC_ROTATION_RAD = LOCATION_RING_ROTATION_DEG * Math.PI / 180;
+
+/**
+ * Builds a lookup from hex key ("col,row") to the world-space offset (dx, dy)
+ * of the primary (most important) location in that hex.
+ *
+ * Trail endpoints use this so lines converge on the location icon
+ * instead of the raw hex center.
+ *
+ * Uses the same centering/ring logic as LocationIconMesh:
+ *  - full/medium size → offset (0, 0)
+ *  - small/tiny → first ring slot
+ *
+ * NFP #4: Returns empty map if locations is undefined.
+ */
+function buildLocationOffsetLookup(
+  locations: LocationNode[] | undefined,
+): Map<string, { dx: number; dy: number }> {
+  const lookup = new Map<string, { dx: number; dy: number }>();
+  if (!locations || locations.length === 0) return lookup;
+
+  // Group by hex, picking the most important location per hex
+  const best = new Map<string, LocationNode>();
+  for (const loc of locations) {
+    const key = `${loc.hexCol},${loc.hexRow}`;
+    const existing = best.get(key);
+    if (!existing) {
+      best.set(key, loc);
+      continue;
+    }
+    // Prefer centered (larger) locations — they're more visually prominent
+    const existingDef = LOCATION_ICON_REGISTRY[existing.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+    const locDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+    if (locDef && (!existingDef || CENTERED_SIZE_CLASSES.has(locDef.sizeClass))) {
+      best.set(key, loc);
+    }
+  }
+
+  for (const [key, loc] of best) {
+    const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+    if (!iconDef) continue;
+
+    if (CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
+      // Large location — centered on hex, no offset
+      lookup.set(key, { dx: 0, dy: 0 });
+    } else {
+      // Small location — first ring slot position
+      const offset = getRingSlotOffset(0, 1, LOCATION_RING_RADIUS, TRAIL_LOC_ROTATION_RAD);
+      // Y-flip: ring offset Y matches LocationIconMesh convention
+      lookup.set(key, { dx: offset.x, dy: -offset.y });
+    }
+  }
+
+  return lookup;
+}
 
 // ─── Props & Handle ───────────────────────────────────────────────────────────
 
@@ -78,6 +142,8 @@ export interface HexMapV2Props {
   regionData?: RegionData;
   /** Location nodes to render as icons and labels (Plan 06-01+) */
   locations?: LocationNode[];
+  /** Pre-computed road paths from world graph for rendering */
+  roadPaths?: import('./scene/RoadMesh').RoadPath[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
   agents?: AgentRenderData[];
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
@@ -184,7 +250,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, agents, visibilityMap, fogEnabled = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -211,6 +277,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const trailGroupRef = useRef<THREE.Group | null>(null);
     // Previous agent positions for movement detection (hex change diff)
     const prevAgentPositionsRef = useRef<Map<string, { col: number; row: number }>>(new Map());
+    // Location offset lookup for trail endpoints — rebuilt when locations change
+    const locationOffsetRef = useRef<Map<string, { dx: number; dy: number }>>(new Map());
+    locationOffsetRef.current = buildLocationOffsetLookup(locations);
 
     // Fog culling refs — populated in scene init, read in fog update effect
     const fillResultRef        = useRef<HexFillMeshResult | null>(null);
@@ -403,10 +472,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Build road network — solid major roads + dashed trails (Plan 07-02)
         // Renders at RENDER_ORDER.ROADS, initially hidden (zoom matrix controls visibility)
         const roadGroup = createRoadMesh(
-          locations ?? [],
+          roadPaths ?? [],
           tiles,
-          cols,
-          rows,
         );
         scene.add(roadGroup);
         roadGroupRef.current = roadGroup;
@@ -773,7 +840,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, agents]);
+    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, roadPaths, agents]);
 
     // ── Fog update effect (separate from scene init — fog changes don't rebuild scene) ──
     // Depends only on visibilityMap prop. Uses refs to access meshes, colorCache.
@@ -904,15 +971,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           );
           animStates.set(agent.id, animState);
 
-          // Add trail segment from old hex center to new hex center (Y-flipped world coords)
+          // Add trail segment — offset endpoints toward location icons when present
           if (trailGroup) {
+            const locOffsets = locationOffsetRef.current;
             const fromCenter = hexToPixel(prev, HEX_CONSTANTS.HEX_SIZE);
             const toCenter   = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+            const fromOff = locOffsets.get(`${prev.col},${prev.row}`);
+            const toOff   = locOffsets.get(`${agent.hexCol},${agent.hexRow}`);
             addTrailSegment(trailGroup, {
-              fromX: fromCenter.x,
-              fromY: -fromCenter.y,
-              toX:   toCenter.x,
-              toY:   -toCenter.y,
+              fromX: fromCenter.x + (fromOff?.dx ?? 0),
+              fromY: -fromCenter.y + (fromOff?.dy ?? 0),
+              toX:   toCenter.x + (toOff?.dx ?? 0),
+              toY:   -toCenter.y + (toOff?.dy ?? 0),
               factionColor: FACTION_HERALDIC_COLORS[agent.factionIndex] ?? FACTION_HERALDIC_COLORS[0],
               startTime: now,
             });

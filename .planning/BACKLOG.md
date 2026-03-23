@@ -59,6 +59,16 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 ---
 
+## 🔲 Investigate: HexChronicle location list may miss locations due to type mismatch
+
+When clicking a hex with a visible hamlet icon, the HexChronicle places list sometimes shows no locations. Suspected cause: `hexCol`/`hexRow` stored as strings in some worldgen paths but compared with `===` against numbers in `getLocationsInHex()` (`hexZoom.ts:28-31`). The location icons render because `GameView.tsx:229` uses `!=` (loose) for the null check but the downstream hex zoom query uses strict equality.
+
+**Investigate:** Add a runtime assertion or type coercion in `getLocationsInHex()` to confirm. Also verify the user isn't clicking an adjacent hex (small ring-positioned icons can visually overlap into neighbors).
+
+**Files:** `src/engine/hexZoom.ts`, `src/engine/worldSeed.ts` (location node creation), `src/components/Game/GameView.tsx` (locationNodes adapter)
+
+---
+
 ## Implementation Prerequisites (from 2026-03-18 design session)
 
 Several of these may already be done — verify before starting.
