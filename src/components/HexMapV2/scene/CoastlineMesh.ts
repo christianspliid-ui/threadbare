@@ -200,26 +200,11 @@ export function createCoastlineMesh(
     }
   }
 
-  // ── Shallow depth band fills (renderOrder = COASTLINE = 1) ────────
-  for (const loop of coastlineData.shallowLoops) {
-    const mesh = loopToMesh(loop, COASTLINE_SHALLOW_COLOR, COASTLINE_SHALLOW_Z);
-    if (mesh) {
-      mesh.renderOrder = RENDER_ORDER.COASTLINE;
-      group.add(mesh);
-    }
-  }
-
-  // ── Lake shore fills (renderOrder = COASTLINE = 1) ────────────────
-  if (coastlineData.lakeLoops && coastlineData.lakeLoops.length > 0) {
-    const lakeColor = WATER_PALETTE['lake'];
-    for (const loop of coastlineData.lakeLoops) {
-      const mesh = loopToMesh(loop, lakeColor, COASTLINE_SHALLOW_Z);
-      if (mesh) {
-        mesh.renderOrder = RENDER_ORDER.COASTLINE;
-        group.add(mesh);
-      }
-    }
-  }
+  // NOTE: Shallow band and lake shore overlays are DISABLED for now.
+  // The shallow band covers both water AND land area. Without the old green land boundary
+  // overlay to mask the land portion, the shallow band paints the entire map light blue.
+  // Water hexes already have per-hex depth-band colors from getHexColor.
+  // TODO: Re-add shallow band with stencil test (only render where stencil = 0 / water area).
 
   return group;
 }
