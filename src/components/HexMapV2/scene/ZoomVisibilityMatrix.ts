@@ -86,12 +86,12 @@ export const ZOOM_VISIBILITY_MATRIX: Record<string, Record<ZoomTier, boolean>> =
     'continental': true,
     'full-world': true,
   },
-  /** Hex grid lines — detail zoom only */
+  /** Hex grid lines — visible at all zoom tiers */
   grid_lines: {
     'hero-local': true,
     'regional': true,
-    'continental': false,
-    'full-world': false,
+    'continental': true,
+    'full-world': true,
   },
   /** Elevation tick marks — detail zoom only */
   elev_ticks: {
@@ -142,17 +142,17 @@ export const ZOOM_VISIBILITY_MATRIX: Record<string, Record<ZoomTier, boolean>> =
     'continental': false,
     'full-world': false,
   },
-  /** Agent portrait thumbnails — hero-local only */
+  /** Agent portrait thumbnails — visible at all zoom tiers above full-world */
   agents_portrait: {
     'hero-local': true,
-    'regional': false,
-    'continental': false,
+    'regional': true,
+    'continental': true,
     'full-world': false,
   },
-  /** Agent faction dots — regional only */
+  /** Agent faction dots — unused (portraits shown at all tiers) */
   agents_dot: {
     'hero-local': false,
-    'regional': true,
+    'regional': false,
     'continental': false,
     'full-world': false,
   },

@@ -232,22 +232,36 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
  * @param group — the AgentSpriteGroup to update
  * @param zoomLevel — current d3 zoom scale (k value)
  */
+/**
+ * Portrait scale factor by zoom tier.
+ * At hero-local zoom, portraits render at full size (1.0).
+ * At lower zooms they shrink to remain visible without overwhelming the map.
+ * NFP #1: all scale factors are named constants.
+ */
+const PORTRAIT_ZOOM_SCALES = {
+  HERO_LOCAL: 1.0,
+  REGIONAL: 0.5,
+  CONTINENTAL: 0.3,
+} as const;
+
 export function updateZoomVisibility(group: AgentSpriteGroup, zoomLevel: number): void {
-  if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL) {
-    // Hero-local: show portraits only
+  if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
+    // All zoom tiers above continental: show portrait circles
     group.portraitGroup.visible = true;
     group.dotGroup.visible = false;
     group.continentalGroup.visible = false;
-  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.REGIONAL) {
-    // Regional: show dots only
-    group.portraitGroup.visible = false;
-    group.dotGroup.visible = true;
-    group.continentalGroup.visible = false;
-  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
-    // Continental: show retinue tiny dots only
-    group.portraitGroup.visible = false;
-    group.dotGroup.visible = false;
-    group.continentalGroup.visible = true;
+
+    // Scale portraits based on zoom tier
+    const scaleFactor = zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL
+      ? PORTRAIT_ZOOM_SCALES.HERO_LOCAL
+      : zoomLevel >= AGENT_ZOOM_THRESHOLDS.REGIONAL
+        ? PORTRAIT_ZOOM_SCALES.REGIONAL
+        : PORTRAIT_ZOOM_SCALES.CONTINENTAL;
+    const baseScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS);
+    const s = baseScale * scaleFactor;
+    for (const child of group.portraitGroup.children) {
+      child.scale.set(s, s, 1);
+    }
   } else {
     // Full-world: hide all
     group.portraitGroup.visible = false;
