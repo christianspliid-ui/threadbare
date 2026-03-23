@@ -73,20 +73,20 @@ describe('createCoastlineMesh', () => {
     expect(totalVertices).toBeGreaterThan(0);
   });
 
-  it('given an all-ocean tile set, coastline mesh is empty (no land boundary to draw)', () => {
+  it('given an all-ocean tile set, coastline mesh has only the water overlay (no stencil write meshes)', () => {
     const tiles = [makeTile(0, 0, 'ocean'), makeTile(1, 0, 'ocean')];
     vi.mocked(computeCoastline).mockReturnValue({ loops: [], shallowLoops: [], midLoops: [], lakeLoops: [] });
 
     const group = createCoastlineMesh(tiles, 2, 1, 42);
 
-    let totalVertices = 0;
-    for (const child of group.children) {
-      if (child instanceof THREE.Mesh) {
-        const pos = child.geometry.getAttribute('position');
-        if (pos) totalVertices += pos.count;
-      }
-    }
-    expect(totalVertices).toBe(0);
+    // No stencil write meshes (colorWrite: false) when loops are empty
+    const stencilMeshes = group.children.filter(c =>
+      c instanceof THREE.Mesh && (c.material as THREE.MeshBasicMaterial).colorWrite === false
+    );
+    expect(stencilMeshes.length).toBe(0);
+
+    // Water overlay quad is always present (covers non-land area with background color)
+    expect(group.children.length).toBeGreaterThan(0);
   });
 
   it('coastline mesh Y coordinates are negated vs SVG space (Y-flip)', () => {
@@ -150,7 +150,7 @@ describe('createCoastlineMesh', () => {
     }
   });
 
-  it('shallow band overlays are disabled (only stencil write meshes present)', () => {
+  it('water overlay uses inverse stencil test (NotEqualStencilFunc, ref=1)', () => {
     const tiles = [makeTile(0, 0, 'grassland'), makeTile(1, 0, 'ocean')];
     vi.mocked(computeCoastline).mockReturnValue({
       loops: [SQUARE_LOOP],
@@ -161,13 +161,16 @@ describe('createCoastlineMesh', () => {
 
     const group = createCoastlineMesh(tiles, 2, 1, 42);
 
-    // All meshes should be stencil write meshes (colorWrite: false) — no visible overlays
-    for (const child of group.children) {
-      if (child instanceof THREE.Mesh) {
-        const mat = child.material as THREE.MeshBasicMaterial;
-        expect(mat.colorWrite).toBe(false);
-      }
-    }
+    // Find the water overlay (visible mesh with NotEqualStencilFunc)
+    const overlayMeshes = group.children.filter(c =>
+      c instanceof THREE.Mesh &&
+      (c.material as THREE.MeshBasicMaterial).stencilFunc === THREE.NotEqualStencilFunc
+    );
+    expect(overlayMeshes.length).toBe(1);
+
+    const mat = (overlayMeshes[0] as THREE.Mesh).material as THREE.MeshBasicMaterial;
+    expect(mat.stencilRef).toBe(1);
+    expect(mat.stencilWrite).toBe(true);
   });
 
   it('accepts optional lakeIds parameter without error', () => {
