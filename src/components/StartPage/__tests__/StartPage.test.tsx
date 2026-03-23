@@ -2,7 +2,7 @@
 import { describe, it } from 'vitest';
 
 describe('StartPage', () => {
-  it.todo('renders title text THREADBAERER');          // SC-1
+  it.todo('renders title text THREADBEARER');          // SC-1
   it.todo('renders lore fragment');                    // SC-1
   it.todo('renders menu items: New World, Settings, Credits'); // SC-1
   it.todo('does not render Continue menu item');       // SC-1

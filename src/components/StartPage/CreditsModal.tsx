@@ -25,7 +25,7 @@ export function CreditsModal({ open, onClose }: CreditsModalProps) {
               margin: 0,
             }}
           >
-            THREADBAERER
+            THREADBEARER
           </h2>
 
           {/* Separator */}

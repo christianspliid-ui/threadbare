@@ -1,10 +1,10 @@
-# Threadbaerer — Visual Style Guide
+# Threadbearer — Visual Style Guide
 
 ## Core Principle
 
 **Dark world. Hidden magic. Threads that break through.**
 
-The world of Threadbaerer is dark, weathered, and ancient — charcoal stone, deep shadow, twilight skies. Behind everything runs a vast invisible web of magic — but it is hidden, "behind the veil." You only see magic where it *breaks through*: at concentrated nodes, fracture points, thread-intersections, and moments of power. It appears as thin luminous threads, bright points, and networked filaments — never as diffuse ambient glow or splashed color.
+The world of Threadbearer is dark, weathered, and ancient — charcoal stone, deep shadow, twilight skies. Behind everything runs a vast invisible web of magic — but it is hidden, "behind the veil." You only see magic where it *breaks through*: at concentrated nodes, fracture points, thread-intersections, and moments of power. It appears as thin luminous threads, bright points, and networked filaments — never as diffuse ambient glow or splashed color.
 
 Think of bioluminescent mycelium glimpsed through cracks in dark soil. Or a dark circuit board where only the solder points glow. The magic is everywhere but mostly invisible — what we see are the points where it pierces the surface.
 
@@ -111,7 +111,7 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 
 ## Text Rules
 
-- The ONLY text ever allowed is the game title **"Threadbaerer"**
+- The ONLY text ever allowed is the game title **"Threadbearer"**
 - When included: warm gold serif font, glowing, matching the magic thread aesthetic
 - **Most images should have NO text at all**
 - Never include labels, captions, UI text, or descriptive text in images
@@ -482,7 +482,7 @@ Frame locations as: the structure + stormy twilight sky + atmospheric haze. No g
 - No photorealistic rendering
 - No bright daylight or sunny scenes
 - No pastel colors anywhere — world is dark, magic is vivid
-- No text labels, captions, or descriptive text (only "Threadbaerer" title when requested)
+- No text labels, captions, or descriptive text (only "Threadbearer" title when requested)
 - No excessive detail that flattens the painterly quality
 
 ---
