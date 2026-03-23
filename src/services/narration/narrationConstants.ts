@@ -3,7 +3,7 @@
 // Flip NARRATION_ENABLED to true to activate the prototype.
 
 /** Feature flag — narration is opt-in for the prototype. */
-export const NARRATION_ENABLED = false;
+export const NARRATION_ENABLED = true;
 
 /** HuggingFace model repository for Kokoro 82M. */
 export const NARRATION_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
