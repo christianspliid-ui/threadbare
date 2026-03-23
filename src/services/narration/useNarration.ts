@@ -54,6 +54,10 @@ export function useNarration() {
     if (!NARRATION_ENABLED) return;
     const svc = service.current;
 
+    // CRITICAL: Create AudioContext NOW, during the user gesture (click).
+    // If we defer to an async callback, Chrome's autoplay policy blocks it.
+    svc.ensureAudioContext();
+
     if (svc.status === 'idle' || svc.status === 'error') {
       await svc.init();
     }
