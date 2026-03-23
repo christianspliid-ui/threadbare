@@ -1,4 +1,5 @@
-import { memo, useMemo } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
+import { Volume2, Square, Loader2 } from 'lucide-react';
 import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { HexRegionData } from '../../engine/hexRegion';
@@ -9,6 +10,7 @@ import { LocationCard, SoulCard, AgentEntry, SubLocationEntry, EventBlock, Explo
 import { historicalCultureResolver, regionEtymologyResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { mulberry32 } from '../../lib/prng';
+import { useNarration } from '../../services/narration/useNarration';
 import {
   BIOME_PROSE,
   SPHERE_LOCATION_PROSE,
@@ -100,6 +102,31 @@ export const HexChronicle = memo(function HexChronicle({
   graph,
   seed,
 }: HexChronicleProps) {
+  // ── Narration ─────────────────────────────────────────────────────
+
+  const chronicleRef = useRef<HTMLDivElement>(null);
+  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, narrateChronicle, stop: stopNarration } = useNarration();
+
+  // Stop narration when hex changes
+  const prevHexKey = useRef(`${hexCol},${hexRow}`);
+  useEffect(() => {
+    const key = `${hexCol},${hexRow}`;
+    if (prevHexKey.current !== key) {
+      prevHexKey.current = key;
+      if (isSpeaking || isLoading) {
+        stopNarration();
+      }
+    }
+  }, [hexCol, hexRow, isSpeaking, isLoading, stopNarration]);
+
+  const handleNarrate = useCallback(() => {
+    if (isSpeaking || isLoading) {
+      stopNarration();
+    } else {
+      narrateChronicle(chronicleRef.current);
+    }
+  }, [isSpeaking, isLoading, stopNarration, narrateChronicle]);
+
   // ── Derived data ─────────────────────────────────────────────────
 
   const terrainLabel = useMemo(() => {
@@ -364,7 +391,7 @@ export const HexChronicle = memo(function HexChronicle({
         padding: '24px 24px 160px 24px',
       }}
     >
-    <div style={{ maxWidth: '860px', margin: '0 auto' }}>
+    <div ref={chronicleRef} style={{ maxWidth: '860px', margin: '0 auto' }}>
       {/* ─── HERO SECTION ─────────────────────────────────────────────────── */}
       <div className="chronicle-hero" style={{ marginBottom: '32px', textAlign: 'center' }}>
         {/* Concept Art Banner (16:9) */}
@@ -425,6 +452,42 @@ export const HexChronicle = memo(function HexChronicle({
           height: '1px',
           background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)',
         }} />
+
+        {/* Narrate button — only visible when NARRATION_ENABLED = true */}
+        {narrationEnabled && (
+          <button
+            onClick={handleNarrate}
+            title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading narrator...' : 'Narrate this chronicle'}
+            aria-label={isSpeaking ? 'Stop narration' : isLoading ? 'Loading narrator' : 'Narrate chronicle'}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '6px',
+              marginTop: '12px',
+              padding: '6px 14px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: '16px',
+              cursor: isLoading ? 'wait' : 'pointer',
+              color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              transition: 'color 0.2s, border-color 0.2s',
+            }}
+          >
+            {isLoading ? (
+              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
+            ) : isSpeaking ? (
+              <Square size={12} />
+            ) : (
+              <Volume2 size={14} />
+            )}
+            <span>{isLoading ? 'Loading...' : isSpeaking ? 'Stop' : 'Narrate'}</span>
+          </button>
+        )}
       </div>
 
       {/* ─── THE LAND ─────────────────────────────────────────────────────── */}
