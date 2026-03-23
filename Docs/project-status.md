@@ -6,7 +6,7 @@
 **Phase 9: Start Screen** — in progress (1/3 plans complete).
 
 **Recent completions:**
-- ✅ Agent map rendering fix (2026-03-23) — Agents now visible on hex map; position resolved via locationId → location node.
+- ✅ Agent map rendering fix (2026-03-23) — Agents visible on hex map with face portraits at all zoom tiers; eye icon zoom fixed; position resolved via locationId.
 - ✅ Kokoro TTS narration prototype (2026-03-23) — Client-side TTS via kokoro-js (82M params, WASM). Web Worker isolation, narrate button in HexChronicle header. Feature-flagged off by default.
 - ✅ Phase 9 Plan 01: Start screen core (2026-03-23) — useThemeMusic hook, StartPage component, App.tsx 'start' phase.
 - ✅ Phase 8 Integration COMPLETE (2026-03-23) — HexMapV2 is sole renderer, all 5,798 tests pass.
