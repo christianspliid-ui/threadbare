@@ -41,6 +41,20 @@ export const DEFAULT_AGENT_COLOR = '#555555';
 /** Ring distance from hex center for agent positioning — large enough to orbit outside location icons */
 export const AGENT_RING_RADIUS = 18;
 
+// --- Location Ring Constants ---
+
+/** Ring distance from hex center for location positioning — inside the agent orbit */
+export const LOCATION_RING_RADIUS = 12;
+
+/** Rotation offset (degrees) for location ring vs agent ring — prevents overlap at same slot index */
+export const LOCATION_RING_ROTATION_DEG = 8;
+
+/** Scale multiplier for locations placed in the ring (smaller to fit comfortably) */
+export const LOCATION_RING_SCALE_FACTOR = 0.75;
+
+/** Max locations shown in ring around hex before overflow */
+export const MAX_RING_LOCATIONS = 6;
+
 // --- Movement Trail Constants ---
 
 /** Trail line color — dark ink on parchment aesthetic */
