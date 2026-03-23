@@ -4,8 +4,8 @@ import { WATER_PALETTE, getWaterColor } from '../waterPalette';
 import { hexToThreeColor, applyBrightnessNoise } from '../colorUtils';
 
 describe('TERRAIN_PALETTE', () => {
-  it('has exactly 30 keys', () => {
-    expect(Object.keys(TERRAIN_PALETTE)).toHaveLength(30);
+  it('has exactly 32 keys', () => {
+    expect(Object.keys(TERRAIN_PALETTE)).toHaveLength(32);
   });
 
   it('every value matches #RRGGBB format', () => {

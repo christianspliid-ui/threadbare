@@ -14,7 +14,7 @@ describe('coastline types', () => {
     expect(c.smoothPasses).toBe(2);
     expect(c.displacement).toBe(0.02);
     expect(c.noiseScale).toBe(0.02);
-    expect(c.shallowWidth).toBe(0.19);
+    expect(c.shallowWidth).toBe(0.28);
     expect(c.fieldResolution).toBe(4);
     expect(c.minLoopPoints).toBe(20);
   });
