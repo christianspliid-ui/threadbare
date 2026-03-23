@@ -4,6 +4,8 @@ import type { AscendantArchetype } from './types/influence';
 import { createBalancedCosmology } from './engine/cosmology';
 import { generateWorld } from './engine/hexGrid';
 import { generateArchetypes } from './engine/ascendant';
+import { MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from './engine/gameInit';
+import type { MapSizePreset } from './engine/gameInit';
 import HexMapV2 from './components/HexMapV2/HexMapV2';
 import { CosmologyPanel } from './components/Cosmology/CosmologyPanel';
 import { InfoPanel } from './components/UI/InfoPanel';
@@ -24,8 +26,12 @@ type GamePhase =
   | { phase: 'selection' }
   | { phase: 'playing'; archetype: AscendantArchetype; avatarName: string };
 
-const DEFAULT_COLS = 20;
-const DEFAULT_ROWS = 15;
+/** Parse ?size= URL param into a valid MapSizePreset, falling back to default. */
+function parseMapSizeParam(): MapSizePreset {
+  const param = new URLSearchParams(window.location.search).get('size');
+  if (param && param in MAP_SIZE_PRESETS) return param as MapSizePreset;
+  return DEFAULT_MAP_SIZE;
+}
 
 /** Pick a random archetype and avatar name for dev quick-start. */
 function quickStartPhase(seed: number): GamePhase {
@@ -60,23 +66,26 @@ function App() {
   );
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   const [seed, setSeed] = useState(42);
+  const [mapSize, setMapSize] = useState<MapSizePreset>(parseMapSizeParam);
+  const previewSize = MAP_SIZE_PRESETS[mapSize];
   const [tiles, setTiles] = useState<HexTile[]>(() =>
-    generateWorld(createBalancedCosmology(), DEFAULT_COLS, DEFAULT_ROWS, 42).tiles
+    generateWorld(createBalancedCosmology(), previewSize.cols, previewSize.rows, 42).tiles
   );
   const [hoveredHex, setHoveredHex] = useState<HexCoord | null>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
 
   const handleGenerate = useCallback(() => {
-    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed).tiles);
+    const sz = MAP_SIZE_PRESETS[mapSize];
+    setTiles(generateWorld(cosmology, sz.cols, sz.rows, seed).tiles);
     setSelectedHex(null);
     setHoveredHex(null);
-  }, [cosmology, seed]);
+  }, [cosmology, seed, mapSize]);
 
   const handleProceedToSelection = useCallback(() => {
-    // Ensure world is generated with current settings before moving on
-    setTiles(generateWorld(cosmology, DEFAULT_COLS, DEFAULT_ROWS, seed).tiles);
+    const sz = MAP_SIZE_PRESETS[mapSize];
+    setTiles(generateWorld(cosmology, sz.cols, sz.rows, seed).tiles);
     setGamePhase({ phase: 'selection' });
-  }, [cosmology, seed]);
+  }, [cosmology, seed, mapSize]);
 
   const handleSelectArchetype = useCallback((archetype: AscendantArchetype, avatarName: string) => {
     setGamePhase({ phase: 'playing', archetype, avatarName });
@@ -105,6 +114,7 @@ function App() {
         avatarName={gamePhase.avatarName}
         cosmology={cosmology}
         seed={seed}
+        mapSize={mapSize}
       />
     );
   }
@@ -140,6 +150,57 @@ function App() {
           onSeedChange={setSeed}
           onGenerate={handleGenerate}
         />
+
+        {/* Map size preset selector */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+          <label
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-muted)',
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Realm Size
+          </label>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)' }}>
+            {(Object.keys(MAP_SIZE_PRESETS) as MapSizePreset[]).map((key) => {
+              const preset = MAP_SIZE_PRESETS[key];
+              const isActive = key === mapSize;
+              return (
+                <button
+                  key={key}
+                  onClick={() => {
+                    setMapSize(key);
+                    const sz = MAP_SIZE_PRESETS[key];
+                    setTiles(generateWorld(cosmology, sz.cols, sz.rows, seed).tiles);
+                    setSelectedHex(null);
+                    setHoveredHex(null);
+                  }}
+                  style={{
+                    padding: 'var(--space-2) var(--space-3)',
+                    borderRadius: 'var(--radius-md)',
+                    border: isActive ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
+                    background: isActive ? 'rgba(212, 160, 64, 0.12)' : 'transparent',
+                    color: isActive ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{preset.label}</div>
+                  <div style={{ fontSize: '0.65rem', opacity: 0.7, marginTop: '2px' }}>
+                    {preset.cols}&times;{preset.rows} &mdash; {preset.description}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <InfoPanel tile={selectedTile ?? hoveredTile} />
 
         {/* Proceed to ascendant selection */}
@@ -161,8 +222,8 @@ function App() {
       <div className="flex-1 flex items-center justify-center overflow-hidden" style={{ backgroundColor: 'var(--bg-abyss)' }}>
         <HexMapV2
           tiles={tiles}
-          cols={DEFAULT_COLS}
-          rows={DEFAULT_ROWS}
+          cols={previewSize.cols}
+          rows={previewSize.rows}
           hoveredHex={hoveredHex}
           selectedHex={selectedHex}
           onHexClick={setSelectedHex}
