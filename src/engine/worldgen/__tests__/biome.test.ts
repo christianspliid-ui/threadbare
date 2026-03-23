@@ -148,16 +148,16 @@ describe('runTempReassessPass — river valley effect', () => {
 // ─── Biome elevation overrides ────────────────────────────────────
 
 describe('runBiomePass — elevation overrides', () => {
-  it('high elevation hexes (>= 0.85) are classified as high_mountains or volcano', () => {
+  it('high elevation hexes (>= ELEV.HIGH_MOUNTAINS) are classified as high_mountains or volcano', () => {
     const params = makeTestParams();
     const ctx = makeCtx(params);
     const { cols, rows } = params;
 
-    // Set specific hexes to very high elevation
+    // Set specific hexes to very high elevation (above HIGH_MOUNTAINS = 0.95)
     const testRow = Math.floor(rows / 2);
     for (let col = 5; col < 10; col++) {
       const idx = testRow * cols + col;
-      ctx.elevation[idx] = 0.9;
+      ctx.elevation[idx] = 0.97;
       ctx.isOcean[idx] = 0;
       ctx.temperature[idx] = 0.3; // cold (no volcano)
     }
@@ -175,7 +175,7 @@ describe('runBiomePass — elevation overrides', () => {
     }
   });
 
-  it('highland elevation (>= ELEV.HIGHLAND = 0.80) produces mountains or plateau', () => {
+  it('highland elevation (>= ELEV.HIGHLAND = 0.75) produces mountains or plateau', () => {
     const params = makeTestParams();
     const ctx = makeCtx(params);
     const { cols, rows } = params;
@@ -374,9 +374,9 @@ describe('runBiomePass — volcanic placement', () => {
     const ctx = makeCtx(params);
     const { cols, rows } = params;
 
-    // Force many qualifying hexes — both high elevation (>= 0.85) and high temp (> 0.4)
+    // Force many qualifying hexes — both high elevation (>= 0.95) and high temp (> 0.4)
     for (let i = 0; i < cols * rows; i++) {
-      ctx.elevation[i] = 0.88;
+      ctx.elevation[i] = 0.97;
       ctx.temperature[i] = 0.72; // > VOLCANO_MIN_TEMPERATURE (0.4)
       ctx.moisture[i] = 0.3;
       ctx.isOcean[i] = 0; // all land

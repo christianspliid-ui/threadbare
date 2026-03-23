@@ -109,8 +109,8 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       }
     }
 
-    // Extract archetype and portrait
-    const archetypeId = (agentProps.archetypeId as string) ?? null;
+    // Extract archetype and portrait (agents store archetype as 'narrativeArchetype')
+    const archetypeId = (agentProps.narrativeArchetype as string) ?? null;
     const portraitUrl = getPortraitUrl(archetypeId ?? undefined);
 
     // Derive primary domain from highest capability

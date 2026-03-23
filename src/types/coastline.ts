@@ -11,8 +11,12 @@ export type ContourLoop = Point2D[];
 export interface CoastlineData {
   /** Land boundary contour loops (at main threshold). */
   loops: ContourLoop[];
+  /** Mid-depth ocean contour loops (wider band — between deep ocean and shallows). */
+  midLoops: ContourLoop[];
   /** Coastal shallows contour loops (at lower threshold — wider than land). */
   shallowLoops: ContourLoop[];
+  /** Lake shore contour loops (organic lake boundaries). */
+  lakeLoops: ContourLoop[];
 }
 
 /** Tunable coastline rendering parameters. */
@@ -27,6 +31,8 @@ export interface CoastlineConfig {
   displacement: number;
   /** Noise frequency scale. Default: 0.02 */
   noiseScale: number;
+  /** Threshold offset for the mid-depth band (midThreshold = threshold - midWidth). Default: 0.10 */
+  midWidth: number;
   /** Threshold offset for the shallows band (shallowThreshold = threshold - shallowWidth). Default: 0.19 */
   shallowWidth: number;
   /** Scalar field grid resolution in pixels. Lower = finer but slower. Default: 4 */
@@ -48,7 +54,8 @@ export const COASTLINE_DEFAULTS: CoastlineConfig = {
   smoothPasses: 2,
   displacement: 0.02,
   noiseScale: 0.02,
-  shallowWidth: 0.19,
+  midWidth: 0.15,
+  shallowWidth: 0.28,
   fieldResolution: 4,
   minLoopPoints: 20,
   colors: {

@@ -30,6 +30,10 @@ export interface ScalarFieldResult {
 /**
  * Build a metaball-style scalar field from land hex positions.
  * Each land hex emits a quartic falloff: (1 - d²/r²)².
+ *
+ * When lakeIds is provided, lake hexes are treated as LAND for the scalar field.
+ * This ensures the organic coastline contour wraps around land+lakes together,
+ * so the ocean mask holes include lake areas (lakes stay visible, not covered by ocean).
  */
 export function buildScalarField(
   tiles: HexTile[],
@@ -37,6 +41,7 @@ export function buildScalarField(
   cols: number,
   rows: number,
   opts: Pick<CoastlineConfig, 'blobRadius' | 'fieldResolution'> = COASTLINE_DEFAULTS,
+  lakeIds?: Int16Array,
 ): ScalarFieldResult {
   const fieldRes = opts.fieldResolution;
   const blobRadius = opts.blobRadius * hexSize;
@@ -50,12 +55,13 @@ export function buildScalarField(
   const canvasW = cols * hexSize * HEX_SCALE_X + hexSize * 0.5 + hexSize + margin * 2;
   const canvasH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5 + hexSize + margin * 2;
 
-  // Collect land hex pixel positions in local space (NO tileBaseTransform offset —
-  // CoastlineOverlay is rendered inside the same <g transform> that positions hex tiles,
-  // so contour points must use the same coordinate system as hexToPixel output).
+  // Collect land hex pixel positions. Lake hexes (lakeId >= 0) are included as land
+  // so the organic coastline wraps around both land and lakes together.
   const landPositions: Point2D[] = [];
-  for (const tile of tiles) {
-    if (isWaterTerrain(tile.terrain)) continue;
+  for (let i = 0; i < tiles.length; i++) {
+    const tile = tiles[i];
+    const isLake = lakeIds && lakeIds[i] >= 0;
+    if (isWaterTerrain(tile.terrain) && !isLake) continue;
     const { x, y } = hexToPixel(tile.coord, hexSize);
     landPositions.push({ x: x + margin, y: y + margin });
   }
@@ -342,6 +348,63 @@ function shiftLoops(loops: ContourLoop[], margin: number): ContourLoop[] {
 }
 
 /**
+ * Build a metaball-style scalar field from LAKE hex positions.
+ * Used for organic lake shore contours — same approach as land coastline
+ * but with lake hexes as the "blob emitters".
+ */
+export function buildLakeScalarField(
+  tiles: HexTile[],
+  hexSize: number,
+  cols: number,
+  rows: number,
+  lakeIds: Int16Array | undefined,
+  opts: Pick<CoastlineConfig, 'blobRadius' | 'fieldResolution'> = COASTLINE_DEFAULTS,
+): ScalarFieldResult | null {
+  if (!lakeIds) return null;
+
+  const fieldRes = opts.fieldResolution;
+  const blobRadius = opts.blobRadius * hexSize;
+  const r2 = blobRadius * blobRadius;
+
+  const margin = Math.ceil(blobRadius);
+  const canvasW = cols * hexSize * HEX_SCALE_X + hexSize * 0.5 + hexSize + margin * 2;
+  const canvasH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize * 0.5 + hexSize + margin * 2;
+
+  // Collect lake hex positions
+  const lakePositions: Point2D[] = [];
+  for (let i = 0; i < tiles.length; i++) {
+    if (lakeIds[i] < 0) continue; // not a lake hex
+    const { x, y } = hexToPixel(tiles[i].coord, hexSize);
+    lakePositions.push({ x: x + margin, y: y + margin });
+  }
+
+  if (lakePositions.length === 0) return null;
+
+  const gridW = Math.ceil(canvasW / fieldRes) + 1;
+  const gridH = Math.ceil(canvasH / fieldRes) + 1;
+  const field = new Float32Array(gridW * gridH);
+
+  for (let gy = 0; gy < gridH; gy++) {
+    const py = gy * fieldRes;
+    for (let gx = 0; gx < gridW; gx++) {
+      const px = gx * fieldRes;
+      let value = 0;
+      for (const hex of lakePositions) {
+        const dx = px - hex.x;
+        const dy = py - hex.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 >= r2) continue;
+        const t = 1 - d2 / r2;
+        value += t * t;
+      }
+      field[gy * gridW + gx] = value;
+    }
+  }
+
+  return { field, gridW, gridH, fieldRes, canvasW, canvasH, margin };
+}
+
+/**
  * Full coastline computation pipeline.
  */
 export function computeCoastline(
@@ -351,8 +414,9 @@ export function computeCoastline(
   rows: number,
   seed: number,
   config: CoastlineConfig = COASTLINE_DEFAULTS,
+  lakeIds?: Int16Array,
 ): CoastlineData {
-  const { field, gridW, gridH, fieldRes, margin } = buildScalarField(tiles, hexSize, cols, rows, config);
+  const { field, gridW, gridH, fieldRes, margin } = buildScalarField(tiles, hexSize, cols, rows, config, lakeIds);
 
   const loops = processLoops(
     field, gridW, gridH,
@@ -366,6 +430,24 @@ export function computeCoastline(
     fieldRes,
   );
 
+  // Mid-depth organic band (wider than land boundary, narrower than shallows)
+  let midLoops: ContourLoop[] = [];
+  if (config.midWidth > 0) {
+    const midThreshold = Math.max(0.01, config.threshold - config.midWidth);
+    midLoops = processLoops(
+      field, gridW, gridH,
+      midThreshold,
+      config.smoothPasses,
+      config.displacement,
+      config.noiseScale,
+      seed,
+      hexSize,
+      config.minLoopPoints,
+      fieldRes,
+    );
+  }
+
+  // Shallows organic band (widest — outermost water band)
   let shallowLoops: ContourLoop[] = [];
   if (config.shallowWidth > 0) {
     const shallowThreshold = Math.max(0.01, config.threshold - config.shallowWidth);
@@ -382,12 +464,30 @@ export function computeCoastline(
     );
   }
 
+  // Lake shore contours — organic boundaries for inland lakes
+  let lakeLoops: ContourLoop[] = [];
+  const lakeField = buildLakeScalarField(tiles, hexSize, cols, rows, lakeIds, config);
+  if (lakeField) {
+    lakeLoops = processLoops(
+      lakeField.field, lakeField.gridW, lakeField.gridH,
+      config.threshold,
+      config.smoothPasses,
+      config.displacement * 0.5, // Less displacement for lakes — they're calmer
+      config.noiseScale,
+      seed + 7, // Different seed offset so lake shores don't mirror coastline noise
+      hexSize,
+      config.minLoopPoints,
+      lakeField.fieldRes,
+    );
+    lakeLoops = shiftLoops(lakeLoops, lakeField.margin);
+  }
+
   // Shift contour coordinates from field-space back to hexToPixel-space.
-  // The scalar field adds a margin offset to hex positions for smooth edge rolloff;
-  // this must be subtracted so contour paths align with hex tile rendering.
   return {
     loops: shiftLoops(loops, margin),
+    midLoops: shiftLoops(midLoops, margin),
     shallowLoops: shiftLoops(shallowLoops, margin),
+    lakeLoops,
   };
 }
 

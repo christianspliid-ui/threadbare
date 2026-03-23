@@ -121,7 +121,7 @@ function applyElevationOverride(
   const elev = ctx.elevation[idx];
 
   // Very high mountains
-  if (elev >= 0.85) {
+  if (elev >= ELEV.HIGH_MOUNTAINS) {
     // Check for volcanic placement
     if (
       elev > VOLCANO_MIN_ELEVATION &&
@@ -166,7 +166,7 @@ function applyElevationOverride(
       const nElev = ctx.elevation[n.row * cols + n.col];
       return nElev >= elev;
     });
-    if (isLocalMin && neighbors.length === 6 && elev < 0.85) {
+    if (isLocalMin && neighbors.length === 6 && elev < ELEV.HIGH_MOUNTAINS) {
       return 'mountain_pass';
     }
 
@@ -271,6 +271,12 @@ export function runBiomePass(ctx: WorldGenContext): void {
       // Ocean hexes: classify by depth
       if (ctx.isOcean[idx]) {
         ctx.terrain[idx] = classifyOceanDepth(elev);
+        continue;
+      }
+
+      // Preserve lake terrain set by hydrology pass
+      if (ctx.lakeIds[idx] >= 0) {
+        ctx.terrain[idx] = 'lake';
         continue;
       }
 
