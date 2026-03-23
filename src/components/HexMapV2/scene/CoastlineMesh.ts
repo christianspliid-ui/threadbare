@@ -197,20 +197,54 @@ export function createCoastlineMesh(
     }
   }
 
-  // ── Lake shores: same two-curve approach ────────────────────────
-  // Inner curve lakeLoops mark stencil=1 for land interior around lakes.
-  // Outer curve lakeLoops paint the coastal band around lake edges.
-  if (innerData.lakeLoops && innerData.lakeLoops.length > 0) {
-    for (const loop of innerData.lakeLoops) {
-      const mesh = loopToStencilMesh(loop, stencilMat);
+  // ── Lake shores ──────────────────────────────────────────────────
+  // Problem: the main stencil writes stencil=1 for all land interior,
+  // including the area around inland lakes. The lake coastal band uses
+  // NotEqualStencilFunc(1) — blocked by the land stencil.
+  //
+  // Fix: punch a hole in the stencil by writing stencil=0 inside lake
+  // contours. Use the outer lake loops (threshold 0.30, which produces
+  // reliable lake contours) for both the hole punch and the visible band.
+  if (outerData.lakeLoops && outerData.lakeLoops.length > 0) {
+    // Stencil clear material — writes stencil=0 to "punch holes" in land stencil
+    const lakeStencilClearMat = new THREE.MeshBasicMaterial({
+      colorWrite: false,
+      depthWrite: false,
+      depthTest: false,
+      stencilWrite: true,
+      stencilWriteMask: 0xFF,
+      stencilFunc: THREE.AlwaysStencilFunc,
+      stencilRef: 0,
+      stencilFuncMask: 0xFF,
+      stencilFail: THREE.ReplaceStencilOp,
+      stencilZFail: THREE.ReplaceStencilOp,
+      stencilZPass: THREE.ReplaceStencilOp,
+      side: THREE.DoubleSide,
+    });
+
+    // Step 1: Clear stencil inside lake contours (write stencil=0).
+    // renderOrder -0.5: AFTER main stencil write (-1) but BEFORE hex fill (0).
+    for (const loop of outerData.lakeLoops) {
+      const mesh = loopToStencilMesh(loop, lakeStencilClearMat);
       if (mesh) {
-        mesh.renderOrder = RENDER_ORDER.STENCIL_WRITE;
+        mesh.renderOrder = -0.5;
         group.add(mesh);
       }
     }
-  }
 
-  if (outerData.lakeLoops && outerData.lakeLoops.length > 0) {
+    // Step 2: Re-write stencil=1 for the land ring around lake shore using inner lake loops.
+    // renderOrder -0.4: AFTER clear (-0.5) so land ring stays stencil=1.
+    if (innerData.lakeLoops && innerData.lakeLoops.length > 0) {
+      for (const loop of innerData.lakeLoops) {
+        const mesh = loopToStencilMesh(loop, stencilMat);
+        if (mesh) {
+          mesh.renderOrder = -0.4;
+          group.add(mesh);
+        }
+      }
+    }
+
+    // Step 3: Visible blue band for lake shores (renders where stencil≠1)
     for (const loop of outerData.lakeLoops) {
       const mesh = loopToVisibleMesh(loop, coastalBandMat, 0.03);
       if (mesh) {
