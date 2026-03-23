@@ -173,7 +173,7 @@ Plans:
   3. All existing agents, locations, and encounters from game state appear on the new map without engine changes
   4. The fog toggle in the debug panel works with the new renderer
   5. All pre-existing tests pass without modification
-**Plans:** 4 plans
+**Plans:** 3/4 plans executed
 
 Plans:
 - [x] 08-01-PLAN.md — WorldGenResult data threading, GameView component swap (HexMap to HexMapV2), agent/location adapters, fog toggle wiring
@@ -198,4 +198,4 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 7.1. Stencil Coastline | 0/1 | Not started | - |
-| 8. Integration | 2/4 | Gap closure | 2026-03-22 |
+| 8. Integration | 3/4 | In Progress|  |
