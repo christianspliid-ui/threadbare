@@ -166,11 +166,11 @@ describe('Movement Execution', () => {
     });
 
     it('caps movement history at TRAIL_HISTORY_TICKS', () => {
-      // Build a history with 12 entries (newest first)
-      // [hex_11, hex_10, ..., hex_0] in chronological order
-      const history = Array.from({ length: 12 }, (_, i) => ({
-        nodeId: `hex_${11 - i}`,
-        tick: 11 - i,
+      // Build a history with 6 entries (newest first)
+      // [hex_5, hex_4, ..., hex_0] in chronological order
+      const history = Array.from({ length: 6 }, (_, i) => ({
+        nodeId: `hex_${5 - i}`,
+        tick: 5 - i,
       }));
 
       const state: MovementState = {
@@ -182,13 +182,13 @@ describe('Movement Execution', () => {
         movementHistory: history,
       };
 
-      const result = tickMovement(graph, 'agent_1', state, 12);
+      const result = tickMovement(graph, 'agent_1', state, 6);
 
-      expect(result.updatedState.movementHistory).toHaveLength(12);
-      // Newest entry should be hex_b at tick 12 with hex coordinates
+      expect(result.updatedState.movementHistory).toHaveLength(6);
+      // Newest entry should be hex_b at tick 6 with hex coordinates
       expect(result.updatedState.movementHistory[0]).toEqual({
         nodeId: 'hex_b',
-        tick: 12,
+        tick: 6,
         hexCol: 1,
         hexRow: 0,
       });

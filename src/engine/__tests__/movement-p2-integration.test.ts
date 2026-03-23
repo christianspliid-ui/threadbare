@@ -32,7 +32,7 @@ describe('P2 integration', () => {
   });
 
   it('trail history ticks matches design spec', () => {
-    expect(TRAIL_HISTORY_TICKS).toBe(12);
+    expect(TRAIL_HISTORY_TICKS).toBe(6);
   });
 
   it('ghost dot decay ticks matches design spec', () => {
