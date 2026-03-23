@@ -49,13 +49,17 @@ export function useNarration() {
     await service.current.init();
   }, []);
 
-  /** Narrate text. If model isn't loaded yet, loads it first. */
+  /** Narrate text. If model isn't loaded yet, waits for it then speaks. */
   const speak = useCallback(async (text: string) => {
     if (!NARRATION_ENABLED) return;
     const svc = service.current;
+
     if (svc.status === 'idle' || svc.status === 'error') {
       await svc.init();
-      // Wait for ready, then speak
+    }
+
+    // If still loading (either from eager pre-load or init() above), wait for ready
+    if (svc.status === 'loading') {
       const unsub = svc.subscribe((s) => {
         if (s.status === 'ready') {
           unsub();
@@ -64,6 +68,7 @@ export function useNarration() {
       });
       return;
     }
+
     await svc.speak(text);
   }, []);
 
