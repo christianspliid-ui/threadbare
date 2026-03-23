@@ -36,6 +36,15 @@ import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 /** Ocean overlay color — uniform blue for all water area. */
 export const OCEAN_OVERLAY_COLOR = WATER_PALETTE['ocean'];
 
+/**
+ * Stencil contour threshold — higher than the default land threshold (0.35).
+ * Higher value shifts the contour INWARD onto land hexes near water,
+ * so the organic boundary cuts through those land hexes rather than
+ * sitting between land and water hexes.
+ * NFP #1: Named constant for tunability.
+ */
+export const STENCIL_THRESHOLD = 0.45;
+
 // ─── Geometry Helpers ─────────────────────────────────────────────
 
 /** Signed area of a contour loop (Shoelace formula). Positive = CCW in y-down. */
@@ -91,13 +100,14 @@ export function createCoastlineMesh(
   // ── Compute organic coastline contour at default threshold ──────
   let coastlineData;
   try {
+    const stencilConfig = { ...COASTLINE_DEFAULTS, threshold: STENCIL_THRESHOLD };
     coastlineData = computeCoastline(
       tiles,
       HEX_CONSTANTS.HEX_SIZE,
       cols,
       rows,
       seed,
-      COASTLINE_DEFAULTS,
+      stencilConfig,
     );
   } catch (err) {
     console.error('[CoastlineMesh] computeCoastline failed:', err);
@@ -140,11 +150,13 @@ export function createCoastlineMesh(
 
     const overlayGeo = new THREE.PlaneGeometry(mapW + pad * 2, mapH + pad * 2);
     const [r, g, b] = hexToThreeColor(OCEAN_OVERLAY_COLOR);
+    // Opaque (not transparent) so it renders in the same pass as hex fill.
+    // renderOrder COASTLINE (1) ensures it draws AFTER hex fill (0).
+    // depthTest: false so it always renders on top regardless of z-depth.
     const overlayMat = new THREE.MeshBasicMaterial({
       color: new THREE.Color(r, g, b),
-      transparent: true,
-      opacity: 1.0,
       depthTest: false,
+      depthWrite: false,
       side: THREE.DoubleSide,
       stencilWrite: true,
       stencilFunc: THREE.NotEqualStencilFunc,
