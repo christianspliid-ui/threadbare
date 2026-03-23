@@ -1,0 +1,24 @@
+{
+  "total_ms": 53.53689193725586,
+  "breakdown_ms": {
+    "load": 38.91181945800781,
+    "mask": 0.06198883056640625,
+    "clip": 0.07009506225585938,
+    "bg_create": 0.0171661376953125,
+    "composite": 0.04792213439941406,
+    "save": 14.406919479370117
+  },
+  "source_image": {
+    "path": "/sessions/kind-sharp-knuth/mnt/TheFantasyWorldSimulator/Design/hex-crops-v2/ocean.png",
+    "dimensions": "120x104"
+  },
+  "output": {
+    "path": "/sessions/kind-sharp-knuth/mnt/TheFantasyWorldSimulator/skills/image-manipulation-workspace/iteration-3/layer-composite/without_skill/outputs/composite.png",
+    "dimensions": "200x200",
+    "background_color": "#2d5a1e",
+    "hex_offset": [
+      40,
+      48
+    ]
+  }
+}

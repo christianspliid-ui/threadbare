@@ -28,13 +28,13 @@ npm run dev    # start Vite dev server with hot reload
 
 | URL Param | What it does |
 |-----------|-------------|
-| `?view=hexv2` | **Primary dev view.** Three.js hex map renderer (V2) with full game chrome. All hex map development uses this route. |
-| `?view=game` | Full game view with Three.js hex map (HexMapV2) and game chrome. |
+| `?view=game` | **Primary dev view.** Full game view with Three.js hex map (HexMapV2) and all game chrome. Use this for all hex map and gameplay testing. |
+| `?view=hexv2` | Standalone hex map renderer (seed 42, no game state). Useful for isolated renderer debugging only. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=cms` | Content browser |
 | `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
 
-**When testing hex map work, always use `?view=hexv2`.** When testing non-map game systems, use `?view=game` to skip the multi-click entry flow. Only test the worldgen/selection screens when those screens are the subject of the test.
+**For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test. Use `?view=hexv2` only when debugging the renderer in isolation (no game state, fixed seed 42).
 
 **Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 
@@ -196,6 +196,8 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
+| Hex map renderer | `hexmap-developer` | Writing any code in `src/components/HexMapV2/` or hex-related engine code. Architecture, coordinates, scene layers, zoom, coastline, stencil, signifiers, testing, debugging. Comprehensive developer onboarding guide. |
+| Hex map decisions | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns from Phases 1-8. Lighter than `hexmap-developer`. |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Creative prose & content | `cw-*` (platform) | `cw-brainstorming` for ideas, `cw-prose-writing` for drafts, `cw-official-docs` for wiki, `cw-story-critique` for review |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
