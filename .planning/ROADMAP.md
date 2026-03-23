@@ -194,7 +194,7 @@ Plans:
   4. Dark ambient music loops on user interaction, fades out on "New World", and mute state persists in localStorage
   5. Settings and Credits modals open as overlays on the start screen
   6. If title-screen.png or audio file is missing, the page degrades gracefully (solid dark bg, silent)
-**Plans:** 3 plans
+**Plans:** 2/3 plans executed
 
 Plans:
 - [ ] 09-00-PLAN.md — Wave 0 test scaffolds (StartPage.test.tsx, useThemeMusic.test.ts, App.test.tsx)
@@ -219,4 +219,4 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 7.1. Stencil Coastline | 0/1 | Not started | - |
 | 8. Integration | 4/4 | Complete   | 2026-03-23 |
-| 9. Start Screen | 0/3 | Not started | - |
+| 9. Start Screen | 2/3 | In Progress|  |
