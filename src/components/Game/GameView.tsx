@@ -434,20 +434,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleAvatarScryClick();
   }, [closeAllAgentOverlays, handleAvatarScryClick]);
 
-  // Zoom to an agent's location hex from sidebar/retinue eye icon
-  const handleZoomToLocation = useCallback((locationId: string) => {
-    const locNode = gameState.graph.getNode(locationId);
-    if (!locNode) return;
-    const props = (locNode.properties ?? {}) as Record<string, unknown>;
-    const col = typeof props.hexCol === 'number' ? props.hexCol : undefined;
-    const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
-    if (col !== undefined && row !== undefined) {
-      handleHexClick({ col, row });
-    }
-  }, [gameState.graph, handleHexClick]);
+  // NFP #1: Named constant for retinue eye-icon zoom level.
+  // Regional tier (k=5) — portraits render at 0.5× scale, clearly visible as circular images.
+  const RETINUE_EYE_ZOOM_SCALE = 5;
 
-  // Center the map on an agent's hex without changing view level
-  const handleCenterOnHex = useCallback((locationId: string) => {
+  // Zoom camera to an agent's location hex at regional zoom (both eye icons use this)
+  const handleZoomToLocation = useCallback((locationId: string) => {
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const props = (locNode.properties ?? {}) as Record<string, unknown>;
@@ -455,9 +447,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
     if (col !== undefined && row !== undefined && hexMapRef.current) {
       const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-      hexMapRef.current.centerOn(px.x, px.y);
+      hexMapRef.current.centerOn(px.x, px.y, RETINUE_EYE_ZOOM_SCALE);
     }
   }, [gameState.graph, hexMapRef]);
+
+  // Both eye icons now do the same thing — zoom camera to agent at regional zoom
+  const handleCenterOnHex = handleZoomToLocation;
 
   // ── Encounter vignette modal ──
   const [vignetteEncounter, setVignetteEncounter] = useState<{
