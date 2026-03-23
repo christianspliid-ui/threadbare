@@ -16,6 +16,75 @@
   z-index: 0;
 }
 
+/* ─── Fog wisps — blurred shapes that drift across the canyon ── */
+.start-page__mist {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(60px);
+  will-change: transform;
+}
+
+.start-page__mist--1 {
+  width: 120%;
+  height: 35%;
+  top: 35%;
+  left: -10%;
+  background: rgba(230, 220, 200, 0.45);
+  animation: fog-drift-1 22s ease-in-out infinite;
+}
+
+.start-page__mist--2 {
+  width: 100%;
+  height: 30%;
+  top: 45%;
+  right: -10%;
+  left: auto;
+  background: rgba(220, 210, 190, 0.3);
+  animation: fog-drift-2 30s ease-in-out infinite;
+}
+
+@keyframes fog-drift-1 {
+  0%   { transform: translateX(0%) translateY(0%); opacity: 0.4; }
+  25%  { transform: translateX(15%) translateY(-3%); opacity: 0.7; }
+  50%  { transform: translateX(30%) translateY(2%); opacity: 0.5; }
+  75%  { transform: translateX(12%) translateY(-1%); opacity: 0.65; }
+  100% { transform: translateX(0%) translateY(0%); opacity: 0.4; }
+}
+
+@keyframes fog-drift-2 {
+  0%   { transform: translateX(0%) translateY(0%); opacity: 0.3; }
+  30%  { transform: translateX(-20%) translateY(3%); opacity: 0.55; }
+  60%  { transform: translateX(-35%) translateY(-2%); opacity: 0.35; }
+  100% { transform: translateX(0%) translateY(0%); opacity: 0.3; }
+}
+
+/* ─── Sun shimmer — golden glow that breathes ─────────────────── */
+.start-page__shimmer {
+  position: absolute;
+  top: -10%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 210, 120, 0.25) 0%,
+    rgba(255, 190, 80, 0.1) 40%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  animation: shimmer-pulse 7s ease-in-out infinite;
+}
+
+@keyframes shimmer-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.1); }
+}
+
 .start-page__gradient {
   position: absolute;
   inset: 0;
@@ -41,7 +110,7 @@
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-  z-index: 2;
+  z-index: 3;
   max-width: 500px;
   width: 100%;
 }
@@ -104,7 +173,7 @@
   position: absolute;
   bottom: 16px;
   left: 16px;
-  z-index: 2;
+  z-index: 3;
   background: none;
   border: none;
   color: var(--text-muted);
@@ -121,7 +190,7 @@
   position: absolute;
   bottom: 16px;
   right: 16px;
-  z-index: 2;
+  z-index: 3;
   font-family: var(--font-body);
   font-size: var(--text-xs);
   color: var(--text-muted);

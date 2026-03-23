@@ -8,7 +8,6 @@ import {
   START_PAGE_LORE_LINE_1,
   START_PAGE_LORE_LINE_2,
   START_PAGE_FADE_DURATION_MS,
-  THEME_MUSIC_SRC,
   THEME_VOLUME_DEFAULT,
   VERSION_STAMP_TEXT,
   START_PAGE_BG_IMAGE,
@@ -20,7 +19,7 @@ interface StartPageProps {
 }
 
 export function StartPage({ onNewWorld }: StartPageProps) {
-  const { play, fadeOut, muted, toggleMute, setVolume } = useThemeMusic(THEME_MUSIC_SRC);
+  const { play, muted, toggleMute, setVolume } = useThemeMusic();
   const [volume, setVolumeState] = useState(THEME_VOLUME_DEFAULT);
 
   const handleVolumeChange = useCallback(
@@ -44,12 +43,11 @@ export function StartPage({ onNewWorld }: StartPageProps) {
   const handleNewWorld = useCallback(() => {
     if (fading) return;
     setFading(true);
-    // Audio fade runs concurrently (1500ms), page transitions after 600ms
-    void fadeOut();
+    // Music continues playing — no fadeOut. Visual fade, then transition.
     setTimeout(() => {
       onNewWorld();
     }, START_PAGE_FADE_DURATION_MS);
-  }, [fading, fadeOut, onNewWorld]);
+  }, [fading, onNewWorld]);
 
   return (
     <>
@@ -68,6 +66,9 @@ export function StartPage({ onNewWorld }: StartPageProps) {
           }}
         />
         <div className="start-page__gradient" />
+        <div className="start-page__mist start-page__mist--1" />
+        <div className="start-page__mist start-page__mist--2" />
+        <div className="start-page__shimmer" />
         <div className="start-page__content">
           <h1 className="start-page__title">{START_PAGE_TITLE}</h1>
           <p className="start-page__lore">
