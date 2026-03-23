@@ -18,6 +18,7 @@ import {
 import type { ResourceInstance } from '../../types/resource';
 import { getAbundanceLabel, RESOURCE_ICONS } from '../../types/resource';
 import { RESOURCE_PROSE } from '../../data/resource-content';
+import { pickConceptArt } from '../../data/concept-art-assets';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -110,6 +111,12 @@ export const HexChronicle = memo(function HexChronicle({
 
   // Hex-specific seed for deterministic prose selection
   const hexSeed = useMemo(() => seed + hexCol * 1000 + hexRow, [seed, hexCol, hexRow]);
+
+  // Pick concept art based on terrain, locations, and sphere influence
+  const conceptArtUrl = useMemo(
+    () => pickConceptArt(terrain, locations, sphereInfluence),
+    [terrain, locations, sphereInfluence],
+  );
 
   // ── LAND: Two paragraphs from BIOME_PROSE ──────────────────────
 
@@ -360,6 +367,40 @@ export const HexChronicle = memo(function HexChronicle({
     <div style={{ maxWidth: '860px', margin: '0 auto' }}>
       {/* ─── HERO SECTION ─────────────────────────────────────────────────── */}
       <div className="chronicle-hero" style={{ marginBottom: '32px', textAlign: 'center' }}>
+        {/* Concept Art Banner (16:9) */}
+        <div style={{
+          width: '100%',
+          aspectRatio: '16 / 9',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          border: '1px solid var(--border-gold)',
+          marginBottom: '16px',
+          position: 'relative',
+        }}>
+          <img
+            src={conceptArtUrl}
+            alt={terrainLabel}
+            data-testid="chronicle-concept-art"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              opacity: lineOfSight === 'partial' ? 0.5 : 0.95,
+              transition: 'opacity 0.3s ease',
+            }}
+          />
+          {/* Gradient overlay for text legibility */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '50%',
+            background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+            pointerEvents: 'none',
+          }} />
+        </div>
+
         <h2 style={{
           fontFamily: 'var(--font-display)',
           fontSize: 'var(--text-2xl)',
