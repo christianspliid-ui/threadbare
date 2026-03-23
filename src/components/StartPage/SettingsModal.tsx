@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Modal } from '../shared/Modal';
 import { VERSION_STAMP_TEXT } from './startPageConstants';
 
-const FOG_DEFAULT_STORAGE_KEY = 'threadbare_fog_default';
+const FOG_DEFAULT_STORAGE_KEY = 'threadbaerer_fog_default';
 
 const LABEL_STYLE: React.CSSProperties = {
   fontFamily: 'var(--font-display)',

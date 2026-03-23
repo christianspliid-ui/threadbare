@@ -149,7 +149,7 @@ export function MagicGlowTiles() {
         className="text-center text-2xl font-bold tracking-widest uppercase mb-2"
         style={{ fontFamily: 'Cinzel, serif', color: '#d4af37' }}
       >
-        Threadbare
+        Threadbaerer
       </h1>
       <p className="text-center text-gray-500 text-sm mb-10">
         Magic Glow Tiles — Radiant Core Effect

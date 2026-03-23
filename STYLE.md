@@ -1,10 +1,10 @@
-# Threadbare — Visual Style Guide
+# Threadbaerer — Visual Style Guide
 
 ## Core Principle
 
 **Dark world. Hidden magic. Threads that break through.**
 
-The world of Threadbare is dark, weathered, and ancient — charcoal stone, deep shadow, twilight skies. Behind everything runs a vast invisible web of magic — but it is hidden, "behind the veil." You only see magic where it *breaks through*: at concentrated nodes, fracture points, thread-intersections, and moments of power. It appears as thin luminous threads, bright points, and networked filaments — never as diffuse ambient glow or splashed color.
+The world of Threadbaerer is dark, weathered, and ancient — charcoal stone, deep shadow, twilight skies. Behind everything runs a vast invisible web of magic — but it is hidden, "behind the veil." You only see magic where it *breaks through*: at concentrated nodes, fracture points, thread-intersections, and moments of power. It appears as thin luminous threads, bright points, and networked filaments — never as diffuse ambient glow or splashed color.
 
 Think of bioluminescent mycelium glimpsed through cracks in dark soil. Or a dark circuit board where only the solder points glow. The magic is everywhere but mostly invisible — what we see are the points where it pierces the surface.
 
@@ -24,7 +24,7 @@ The world itself should feel old, heavy, and dim. Not grey — *dark*. Deep char
 | Terrain & soil | `#3d3025` to `#5a4a38` | Burnt umber, dark earth |
 | Vegetation | `#1a2a1a` to `#3a4a30` | Deep olive, near-black forest |
 | Sky | `#0d0d1a` to `#2a2a4a` | Twilight, pre-storm, deep blue |
-| Water | See `Design/hexmap macro-reference.png` | Reference image is canonical color source for all water tones. Extracted palette: deep ocean `#3A7AB8`, mid ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`. |
+| Water | See `Design/mark-known-world-region-8-v2.png` | Reference image is canonical color source for all water tones. Extracted palette: deep ocean `#3A7AB8`, mid ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`. |
 | Architecture | `#3a3535` to `#5a5550` | Weathered dark stone, aged |
 
 **Key principle:** The world's value range is 10–40% brightness. Nothing in the environment should be bright. Overcast, twilight, or torchlit — never midday sun.
@@ -111,7 +111,7 @@ Each sphere has a unique color AND a unique thread form. When describing magic i
 
 ## Text Rules
 
-- The ONLY text ever allowed is the game title **"Threadbare"**
+- The ONLY text ever allowed is the game title **"Threadbaerer"**
 - When included: warm gold serif font, glowing, matching the magic thread aesthetic
 - **Most images should have NO text at all**
 - Never include labels, captions, UI text, or descriptive text in images
@@ -482,7 +482,7 @@ Frame locations as: the structure + stormy twilight sky + atmospheric haze. No g
 - No photorealistic rendering
 - No bright daylight or sunny scenes
 - No pastel colors anywhere — world is dark, magic is vivid
-- No text labels, captions, or descriptive text (only "Threadbare" title when requested)
+- No text labels, captions, or descriptive text (only "Threadbaerer" title when requested)
 - No excessive detail that flattens the painterly quality
 
 ---
