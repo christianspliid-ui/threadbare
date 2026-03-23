@@ -175,8 +175,9 @@ function isTierVisible(tier: RegionLabel['tier'], zoomLevel: number): boolean {
   }
 }
 
-/** Apply title case to a string */
+/** Apply title case to a string (NFP #4: fail-soft for undefined/null text) */
 function toTitleCase(text: string): string {
+  if (!text) return '';
   return text.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.slice(1).toLowerCase());
 }
 

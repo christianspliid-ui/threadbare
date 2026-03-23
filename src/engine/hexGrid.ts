@@ -2,9 +2,9 @@ import type { CosmologyProfile, HexTile } from '../types';
 import { WorldGenPipeline } from './worldgen/WorldGenPipeline';
 import type { WorldGenContext, WorldGenParams } from './worldgen/types';
 import type { RiverPath } from './worldGenData';
-import { detectRegionsBorderCost } from './regionDetection';
+import { detectRegionsBorderCost, type RegionFeatureType } from './regionDetection';
 import { assignPoliticalRegions } from './regionPolitical';
-import type { RegionData } from './regionTypes';
+import type { RegionData, RegionCluster } from './regionTypes';
 import { runFantasyOverlayPass } from './worldgen/passes/pass10-fantasyOverlay';
 
 /**
@@ -27,6 +27,40 @@ export interface WorldGenResult {
   seed: number;
   /** Geographic region assignments. Optional for backward compat — always set by generateWorld(). */
   regionData?: RegionData;
+}
+
+// ── Simple region naming (no graph required) ─────────────────────────────────
+
+/** Feature type display labels for region names */
+const FEATURE_LABELS: Record<string, string> = {
+  mountain_range: 'Mountains', hill_country: 'Hills', forest: 'Forest',
+  plains: 'Plains', desert: 'Desert', wetland: 'Marshes',
+  tundra: 'Wastes', river: 'River', lake: 'Lake', sea: 'Sea',
+};
+
+const GEO_ADJECTIVES = [
+  'Grey', 'Iron', 'Stone', 'Dark', 'White', 'Long', 'Old', 'Black',
+  'Silver', 'Ash', 'Red', 'Wind', 'Frost', 'Storm', 'Deep',
+];
+
+/** mulberry32 PRNG */
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let z = s;
+    z = Math.imul(z ^ (z >>> 15), z | 1);
+    z ^= z + Math.imul(z ^ (z >>> 7), z | 61);
+    return ((z ^ (z >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Generate a simple geographic name: "{Adjective} {FeatureType}" */
+function generateSimpleRegionName(featureType: RegionFeatureType, id: number, seed: number): string {
+  const rng = mulberry32(seed + id * 4919 + 7331);
+  const adj = GEO_ADJECTIVES[Math.floor(rng() * GEO_ADJECTIVES.length)];
+  const feature = FEATURE_LABELS[featureType] ?? 'Lands';
+  return `${adj} ${feature}`;
 }
 
 /**
@@ -103,8 +137,16 @@ export function generateWorld(
       // NFP #4 Fail-soft: political assignment failure keeps empty baronies/kingdoms
     }
 
+    // Name geographic regions — detectRegionsBorderCost returns clusters without names.
+    // Uses simple wilderness naming (feature-based) since graph isn't available at this stage.
+    // NFP #3: Seeded PRNG for deterministic names.
+    const namedRegions: RegionCluster[] = regions.map(r => ({
+      ...r,
+      name: (r as RegionCluster).name ?? generateSimpleRegionName(r.featureType, r.id, seed),
+    }));
+
     regionData = {
-      geographicRegions: regions,
+      geographicRegions: namedRegions,
       baronies,
       kingdoms,
       labels: [],
