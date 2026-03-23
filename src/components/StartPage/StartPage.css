@@ -1,0 +1,134 @@
+.start-page {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-abyss);
+}
+
+.start-page__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 0;
+}
+
+.start-page__gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 35%,
+    rgba(10, 10, 14, 0.4) 50%,
+    rgba(10, 10, 14, 0.85) 75%,
+    rgba(10, 10, 14, 0.95) 100%
+  );
+  /* NOTE: The rgba values are a necessary exception -- CSS linear-gradient() cannot
+     reference custom property colors with partial opacity. These values match
+     --bg-abyss (#0a0a0e) and are captured as named constants
+     START_PAGE_GRADIENT_OPACITY_MID (0.4) and START_PAGE_GRADIENT_OPACITY_LOW (0.95)
+     in startPageConstants.ts. */
+}
+
+.start-page__content {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 2;
+  max-width: 500px;
+  width: 100%;
+}
+
+.start-page__title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  color: var(--accent-gold);
+  text-shadow: 0 0 40px rgba(212, 160, 64, 0.3);
+  margin: 0 0 var(--space-6) 0;
+}
+
+.start-page__lore {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-8) 0;
+}
+
+.start-page__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.start-page__menu-item {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.start-page__menu-item:hover {
+  color: var(--text-primary);
+}
+
+.start-page__menu-item:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-gold);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+.start-page__mute {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 2;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  transition: color 0.3s ease;
+}
+
+.start-page__mute:hover {
+  color: var(--text-secondary);
+}
+
+.start-page__version {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 2;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Fade-out transition for New World click */
+.start-page--fading {
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+}

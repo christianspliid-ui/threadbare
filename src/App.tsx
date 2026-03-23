@@ -13,6 +13,7 @@ import { AscendantSelection } from './components/Ascendant/AscendantSelection';
 import { GameView } from './components/Game/GameView';
 import { MagicGlowTiles } from './components/UI/MagicGlowTiles';
 import { HexV2View } from './components/HexMapV2/HexV2View';
+import { StartPage } from './components/StartPage/StartPage';
 
 const ContentBrowser = lazy(() => import('./components/CMS/ContentBrowser'));
 
@@ -22,6 +23,7 @@ const HEXV2_COLS = 80;
 const HEXV2_ROWS = 120;
 
 type GamePhase =
+  | { phase: 'start' }
   | { phase: 'worldgen' }
   | { phase: 'selection' }
   | { phase: 'playing'; archetype: AscendantArchetype; avatarName: string };
@@ -62,7 +64,7 @@ function App() {
   }
 
   const [gamePhase, setGamePhase] = useState<GamePhase>(() =>
-    viewParam === 'game' ? quickStartPhase(42) : { phase: 'worldgen' }
+    viewParam === 'game' ? quickStartPhase(42) : { phase: 'start' }
   );
   const [cosmology, setCosmology] = useState<CosmologyProfile>(createBalancedCosmology());
   const [seed, setSeed] = useState(42);
@@ -100,6 +102,11 @@ function App() {
     if (!selectedHex) return null;
     return tiles.find(t => t.coord.col === selectedHex.col && t.coord.row === selectedHex.row) ?? null;
   }, [tiles, selectedHex]);
+
+  // ── Start screen (default entry point) ──
+  if (gamePhase.phase === 'start') {
+    return <StartPage onNewWorld={() => setGamePhase({ phase: 'worldgen' })} />;
+  }
 
   // ── Ascendant selection screen ──
   if (gamePhase.phase === 'selection') {

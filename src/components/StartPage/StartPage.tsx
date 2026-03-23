@@ -1,0 +1,94 @@
+import { useState, useCallback, useRef } from 'react';
+import { Volume2, VolumeX } from 'lucide-react';
+import { useThemeMusic } from './useThemeMusic';
+import { SettingsModal } from './SettingsModal';
+import { CreditsModal } from './CreditsModal';
+import {
+  START_PAGE_TITLE,
+  START_PAGE_LORE_LINE_1,
+  START_PAGE_LORE_LINE_2,
+  START_PAGE_FADE_DURATION_MS,
+  THEME_MUSIC_SRC,
+  VERSION_STAMP_TEXT,
+  START_PAGE_BG_IMAGE,
+} from './startPageConstants';
+import './StartPage.css';
+
+interface StartPageProps {
+  onNewWorld: () => void;
+}
+
+export function StartPage({ onNewWorld }: StartPageProps) {
+  const { play, fadeOut, muted, toggleMute } = useThemeMusic(THEME_MUSIC_SRC);
+  const [fading, setFading] = useState(false);
+  const hasInteracted = useRef(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [creditsOpen, setCreditsOpen] = useState(false);
+
+  const handleFirstInteraction = useCallback(() => {
+    if (hasInteracted.current) return;
+    hasInteracted.current = true;
+    play();
+  }, [play]);
+
+  const handleNewWorld = useCallback(() => {
+    if (fading) return;
+    setFading(true);
+    // Audio fade runs concurrently (1500ms), page transitions after 600ms
+    void fadeOut();
+    setTimeout(() => {
+      onNewWorld();
+    }, START_PAGE_FADE_DURATION_MS);
+  }, [fading, fadeOut, onNewWorld]);
+
+  return (
+    <>
+      <div
+        className={`start-page${fading ? ' start-page--fading' : ''}`}
+        onClick={handleFirstInteraction}
+        onKeyDown={handleFirstInteraction}
+      >
+        <img
+          src={START_PAGE_BG_IMAGE}
+          alt=""
+          role="presentation"
+          className="start-page__bg"
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        <div className="start-page__gradient" />
+        <div className="start-page__content">
+          <h1 className="start-page__title">{START_PAGE_TITLE}</h1>
+          <p className="start-page__lore">
+            {START_PAGE_LORE_LINE_1}
+            <br />
+            {START_PAGE_LORE_LINE_2}
+          </p>
+          <nav className="start-page__menu">
+            <button className="start-page__menu-item" onClick={handleNewWorld}>
+              New World
+            </button>
+            {/* Continue hidden until save system ships */}
+            <button className="start-page__menu-item" onClick={() => setSettingsOpen(true)}>
+              Settings
+            </button>
+            <button className="start-page__menu-item" onClick={() => setCreditsOpen(true)}>
+              Credits
+            </button>
+          </nav>
+        </div>
+        <button
+          className="start-page__mute"
+          onClick={toggleMute}
+          aria-label={muted ? 'Unmute theme music' : 'Mute theme music'}
+        >
+          {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+        </button>
+        <span className="start-page__version">{VERSION_STAMP_TEXT}</span>
+      </div>
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <CreditsModal open={creditsOpen} onClose={() => setCreditsOpen(false)} />
+    </>
+  );
+}
