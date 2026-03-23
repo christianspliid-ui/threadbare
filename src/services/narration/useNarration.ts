@@ -24,6 +24,16 @@ export function useNarration() {
     return unsubscribe;
   }, []);
 
+  // Eagerly pre-load the model in the background after a short delay.
+  // AudioContext is created lazily on first speak() (requires user gesture).
+  useEffect(() => {
+    if (!NARRATION_ENABLED) return;
+    const timer = setTimeout(() => {
+      service.current.init();
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   // Stop playback on unmount
   useEffect(() => {
     return () => {
