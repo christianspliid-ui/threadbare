@@ -9,6 +9,15 @@ vi.mock('../../HexMapV2/HexMapV2', () => ({
   default: vi.fn().mockReturnValue(null),
 }));
 
+// Mock theme audio to avoid HTMLAudioElement issues in jsdom
+vi.mock('../../../audio/themeAudio', () => ({
+  resumeTheme: vi.fn(),
+  fadeOutTheme: vi.fn().mockResolvedValue(undefined),
+  playTheme: vi.fn(),
+  setMuted: vi.fn(),
+  isMuted: vi.fn().mockReturnValue(false),
+}));
+
 describe('GameView debug panel integration', () => {
   const defaultProps = {
     archetype: {

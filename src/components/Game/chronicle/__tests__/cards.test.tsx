@@ -74,7 +74,7 @@ describe('LocationCard', () => {
     expect(screen.queryByText(/soul/)).toBeNull();
   });
 
-  it('renders correct glyph for settlement', () => {
+  it('renders subtype label for settlement', () => {
     const { container } = render(
       <LocationCard
         name="The Forge"
@@ -84,10 +84,10 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('🏘');
+    expect(container.textContent).toContain('settlement');
   });
 
-  it('renders correct glyph for landmark', () => {
+  it('renders subtype label for landmark', () => {
     const { container } = render(
       <LocationCard
         name="The Peak"
@@ -97,10 +97,10 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('⛰');
+    expect(container.textContent).toContain('landmark');
   });
 
-  it('renders correct glyph for ruin', () => {
+  it('renders subtype label for ruin', () => {
     const { container } = render(
       <LocationCard
         name="The Ruin"
@@ -110,10 +110,10 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('🏚');
+    expect(container.textContent).toContain('ruin');
   });
 
-  it('renders default glyph for unknown subtype', () => {
+  it('renders subtype label for unknown subtype', () => {
     const { container } = render(
       <LocationCard
         name="The Place"
@@ -123,7 +123,7 @@ describe('LocationCard', () => {
         onClick={() => {}}
       />,
     );
-    expect(container.textContent).toContain('◆');
+    expect(container.textContent).toContain('unknown');
   });
 
   it('fires onClick on Enter key', () => {

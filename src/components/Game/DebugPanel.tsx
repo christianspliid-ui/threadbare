@@ -10,6 +10,8 @@ import { RelationshipGraph } from './debug/RelationshipGraph';
 import { EncounterCacheView } from './debug/EncounterCacheView';
 import type { EncounterCacheEntry } from '../../engine/encounterCache';
 import type { EncounterProgress } from '../../types/encounter';
+import type { WebGLDiagnosticsSnapshot } from '../HexMapV2/diagnostics/WebGLDiagnostics';
+import { WebGLDebugTab } from './debug/WebGLDebugTab';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -26,9 +28,11 @@ interface DebugPanelProps {
   encounterProgress?: readonly EncounterProgress[];
   /** Callback to zoom the map to a location's hex */
   onZoomToLocation?: (locationId: string) => void;
+  /** Getter for WebGL diagnostics snapshot from HexMapV2 */
+  getWebGLDiagnostics?: () => WebGLDiagnosticsSnapshot | null;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'webgl';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -869,7 +873,7 @@ const SocialTabContent = React.memo(function SocialTabContent({
   );
 });
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -1006,6 +1010,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'encounters')} onClick={() => setViewMode('encounters')}>
           Encounters
         </button>
+        <button style={getTabButtonStyle(viewMode === 'webgl')} onClick={() => setViewMode('webgl')}>
+          WebGL
+        </button>
       </div>
 
       {/* Agent Follow Header */}
@@ -1060,7 +1067,13 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
 
       {/* Scroll Area */}
       <div ref={scrollRef} style={SCROLL_AREA_STYLE} onScroll={handleScroll}>
-        {viewMode === 'encounters' ? (
+        {viewMode === 'webgl' ? (
+          getWebGLDiagnostics ? (
+            <WebGLDebugTab getDiagnostics={getWebGLDiagnostics} />
+          ) : (
+            <div style={EMPTY_STATE_STYLE}>No renderer connected.</div>
+          )
+        ) : viewMode === 'encounters' ? (
           <EncounterCacheView
             cacheEntries={cacheEntries ?? []}
             encounterProgress={encounterProgress ?? []}

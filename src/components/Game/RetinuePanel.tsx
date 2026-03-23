@@ -72,6 +72,35 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                   if (!isSelected) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--bg-raised)';
                 }}
               >
+                {/* Full-width portrait */}
+                {agent.portraitUrl ? (
+                  <div
+                    className="overflow-hidden rounded-t"
+                    style={{
+                      margin: '-6px -10px 6px -10px',
+                      aspectRatio: '3 / 4',
+                      borderBottom: `2px solid ${tierColor}40`,
+                    }}
+                  >
+                    <img
+                      src={agent.portraitUrl}
+                      alt=""
+                      loading="lazy"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="rounded-t"
+                    style={{
+                      margin: '-6px -10px 6px -10px',
+                      height: 48,
+                      background: `linear-gradient(135deg, ${tierColor}30, ${tierColor}08)`,
+                      borderBottom: `2px solid ${tierColor}40`,
+                    }}
+                  />
+                )}
+
                 {/* Agent name and optional tier badge */}
                 <div className="flex items-center justify-between gap-2 mb-0.5">
                   <span className="flex items-center gap-1 truncate flex-1">
@@ -110,7 +139,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                   )}
                 </div>
 
-                {/* Location on second line */}
+                {/* Location */}
                 <div className="flex items-center gap-1" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
                   <span className="truncate">{agent.locationName}</span>
                   {onZoomToLocation && (
@@ -125,7 +154,7 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                   )}
                 </div>
 
-                {/* Activity status on third line */}
+                {/* Activity status */}
                 <div
                   className="truncate italic"
                   style={{
