@@ -20,6 +20,12 @@ export const LOCATION_TEXTURE_SIZE = 128;
 /** Fill color for all location icon paths — same near-black as signifiers. */
 const LOCATION_FILL_COLOR = '#1a1a1a';
 
+/** Outline stroke color for location icons — dark outline for legibility over terrain. */
+const LOCATION_OUTLINE_COLOR = '#0a0a0a';
+
+/** Outline stroke width in viewBox units (scaled with the icon). */
+const LOCATION_OUTLINE_WIDTH = 2.5;
+
 // ── Texture builders ──────────────────────────────────────────────────────────
 
 /**
@@ -48,6 +54,17 @@ export function buildLocationIconTexture(
 
   ctx.save();
   ctx.scale(scaleX, scaleY);
+
+  // Pass 1: stroke outlines (drawn first so fill renders on top)
+  ctx.strokeStyle = LOCATION_OUTLINE_COLOR;
+  ctx.lineWidth = LOCATION_OUTLINE_WIDTH;
+  ctx.lineJoin = 'round';
+  for (const path of def.paths) {
+    ctx.globalAlpha = path.opacity;
+    ctx.stroke(new Path2D(path.d));
+  }
+
+  // Pass 2: fill paths on top of outlines
   for (const path of def.paths) {
     ctx.globalAlpha = path.opacity;
     ctx.fillStyle = LOCATION_FILL_COLOR;
