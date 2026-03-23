@@ -34,6 +34,7 @@ class NarrationServiceImpl {
   private _status: NarrationStatus = 'idle';
   private _loadProgress = 0;
   private _error: string | null = null;
+  private _cachedState: NarrationState = { status: 'idle', loadProgress: 0, error: null };
   private listeners = new Set<NarrationListener>();
 
   // ── Public state ──────────────────────────────────────────────
@@ -43,8 +44,9 @@ class NarrationServiceImpl {
   get error(): string | null { return this._error; }
   get isSpeaking(): boolean { return this._status === 'speaking'; }
 
+  /** Returns a cached snapshot — same reference if nothing changed (required by useSyncExternalStore). */
   getState(): NarrationState {
-    return { status: this._status, loadProgress: this._loadProgress, error: this._error };
+    return this._cachedState;
   }
 
   subscribe(listener: NarrationListener): () => void {
@@ -53,7 +55,9 @@ class NarrationServiceImpl {
   }
 
   private notify() {
-    const state = this.getState();
+    // Create a new snapshot object only when state actually changes
+    this._cachedState = { status: this._status, loadProgress: this._loadProgress, error: this._error };
+    const state = this._cachedState;
     for (const listener of this.listeners) {
       listener(state);
     }
