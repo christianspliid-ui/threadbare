@@ -1,20 +1,17 @@
 /**
- * CoastlineMesh — Three.js scene module for coastline rendering.
+ * CoastlineMesh — Three.js scene module for organic coastline rendering.
  *
- * Two-pass stencil approach:
+ * Two-curve stencil approach:
  *
- *   Pass 1 (renderOrder = STENCIL_WRITE = -1):
- *     Marching-squares organic contour writes stencil=1 for the land interior.
- *     The contour runs THROUGH coastal land hexes at the default threshold,
- *     creating an organic boundary that partially clips coastal hexes.
- *     Uses ShapeGeometry from contour loops (regular Mesh, not InstancedMesh).
+ *   Inner curve (higher threshold): cuts through LAND hexes adjacent to water.
+ *     Writes stencil=1 for the land interior. Land hexes near water get partially
+ *     clipped — terrain on the land side, coastal blue on the water side.
  *
- *   Pass 2 (renderOrder = COASTLINE = 1):
- *     Ocean-blue PlaneGeometry with NotEqualStencilFunc(ref=1).
- *     Only renders where stencil=0 — water area + water-side slivers of coastal hexes.
+ *   Outer curve (lower threshold): the coastal boundary in shallow water.
+ *     Rendered as visible blue ShapeGeometry where stencil≠1.
+ *     Creates the blue coastal band between the two curves.
  *
- * Result: inland land = full terrain colors, coastal land = partially clipped
- * (terrain on land side, blue on water side), water = uniform ocean blue.
+ *   Beyond the outer curve: water hexes show their own per-hex colors.
  *
  * NFP #1: All tunable values are named constants.
  * NFP #4: Fail-soft — returns empty Group on computeCoastline failure.
@@ -29,21 +26,26 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 import { RENDER_ORDER } from './RenderLayers';
 import { WATER_PALETTE } from '../palette/waterPalette';
 import { hexToThreeColor } from '../palette/colorUtils';
-import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────
 
-/** Ocean overlay color — uniform blue for all water area. */
-export const OCEAN_OVERLAY_COLOR = WATER_PALETTE['ocean'];
+/** Coastal band color — the blue painted between the two curves. */
+export const COASTAL_BAND_COLOR = WATER_PALETTE['ocean'];
 
 /**
- * Stencil contour threshold — higher than the default land threshold (0.35).
- * Higher value shifts the contour INWARD onto land hexes near water,
- * so the organic boundary cuts through those land hexes rather than
- * sitting between land and water hexes.
+ * Inner curve threshold — higher value pushes contour INTO land hexes near water.
+ * Must be high enough that the contour only touches land hexes adjacent to
+ * shallow water, never touching the shallow water hexes themselves.
  * NFP #1: Named constant for tunability.
  */
-export const STENCIL_THRESHOLD = 0.45;
+export const INNER_CURVE_THRESHOLD = 0.9;
+
+/**
+ * Outer curve threshold — lower value pushes contour OUT toward water.
+ * Defines the seaward edge of the coastal band.
+ * NFP #1: Named constant for tunability.
+ */
+export const OUTER_CURVE_THRESHOLD = 0.30;
 
 // ─── Geometry Helpers ─────────────────────────────────────────────
 
@@ -78,15 +80,37 @@ function loopToStencilMesh(
   return new THREE.Mesh(geometry, stencilMaterial);
 }
 
+/**
+ * Creates a visible colored mesh from a contour loop.
+ * Applies Y-flip and fixes winding. Uses the provided material.
+ */
+function loopToVisibleMesh(
+  loop: ContourLoop,
+  material: THREE.MeshBasicMaterial,
+  zOffset: number,
+): THREE.Mesh | null {
+  if (loop.length < 3) return null;
+
+  const flippedPoints: THREE.Vector2[] = loop.map(p => new THREE.Vector2(p.x, -p.y));
+  const svgArea = signedArea(loop);
+  if (svgArea > 0) flippedPoints.reverse();
+
+  const shape = new THREE.Shape(flippedPoints);
+  const geometry = new THREE.ShapeGeometry(shape);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.z = zOffset;
+  return mesh;
+}
+
 // ─── Scene Module Factory ─────────────────────────────────────────
 
 /**
- * Creates a THREE.Group containing coastline geometry.
+ * Creates a THREE.Group containing two-curve coastline geometry.
  *
- * The organic contour at the default threshold (0.35) runs through coastal
- * land hexes — it sits between land hex centers and water hex centers.
- * This creates partially-clipped coastal hexes: terrain color on the land side,
- * ocean blue on the water side.
+ * Inner curve (INNER_CURVE_THRESHOLD): stencil write for land interior.
+ * Outer curve (OUTER_CURVE_THRESHOLD): visible blue fill for coastal band.
+ * Between them: the organic coastal band.
+ * Beyond outer curve: water hexes show per-hex colors.
  */
 export function createCoastlineMesh(
   tiles: HexTile[],
@@ -97,26 +121,32 @@ export function createCoastlineMesh(
 ): THREE.Group {
   const group = new THREE.Group();
 
-  // ── Compute organic coastline contour at default threshold ──────
-  let coastlineData;
+  // ── Compute inner curve (land interior boundary) ────────────────
+  let innerData;
   try {
-    const stencilConfig = { ...COASTLINE_DEFAULTS, threshold: STENCIL_THRESHOLD };
-    coastlineData = computeCoastline(
-      tiles,
-      HEX_CONSTANTS.HEX_SIZE,
-      cols,
-      rows,
-      seed,
-      stencilConfig,
+    const innerConfig = { ...COASTLINE_DEFAULTS, threshold: INNER_CURVE_THRESHOLD };
+    innerData = computeCoastline(
+      tiles, HEX_CONSTANTS.HEX_SIZE, cols, rows, seed, innerConfig, lakeIds,
     );
   } catch (err) {
-    console.error('[CoastlineMesh] computeCoastline failed:', err);
+    console.error('[CoastlineMesh] inner computeCoastline failed:', err);
     return group;
   }
 
-  // ── Stencil write pass (renderOrder = STENCIL_WRITE = -1) ───────
-  // Organic contour fills write stencil=1 for the land interior.
-  // The contour cuts through coastal land hexes at the default threshold.
+  // ── Compute outer curve (coastal band seaward edge) ─────────────
+  let outerData;
+  try {
+    const outerConfig = { ...COASTLINE_DEFAULTS, threshold: OUTER_CURVE_THRESHOLD };
+    outerData = computeCoastline(
+      tiles, HEX_CONSTANTS.HEX_SIZE, cols, rows, seed, outerConfig, lakeIds,
+    );
+  } catch (err) {
+    console.error('[CoastlineMesh] outer computeCoastline failed:', err);
+    return group;
+  }
+
+  // ── Pass 1: Stencil write from inner curve (renderOrder = STENCIL_WRITE) ──
+  // Marks stencil=1 for the land interior (inside the inner curve).
   const stencilMat = new THREE.MeshBasicMaterial({
     colorWrite: false,
     depthWrite: false,
@@ -132,7 +162,7 @@ export function createCoastlineMesh(
     side: THREE.DoubleSide,
   });
 
-  for (const loop of coastlineData.loops) {
+  for (const loop of innerData.loops) {
     const mesh = loopToStencilMesh(loop, stencilMat);
     if (mesh) {
       mesh.renderOrder = RENDER_ORDER.STENCIL_WRITE;
@@ -140,37 +170,54 @@ export function createCoastlineMesh(
     }
   }
 
-  // ── Ocean overlay with inverse stencil (renderOrder = COASTLINE) ──
-  // Uniform ocean blue — renders where stencil ≠ 1 (water + coastal slivers).
-  {
-    const hexSize = HEX_CONSTANTS.HEX_SIZE;
-    const mapW = cols * hexSize * HEX_SCALE_X + hexSize * 2;
-    const mapH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize;
-    const pad = 200;
+  // ── Pass 2: Visible coastal band from outer curve (renderOrder = COASTLINE) ──
+  // Blue fill for the outer curve shape, but only where stencil≠1.
+  // This paints blue between the two curves (the coastal band)
+  // and doesn't touch the land interior (stencil=1).
+  const [r, g, b] = hexToThreeColor(COASTAL_BAND_COLOR);
+  const coastalBandMat = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(r, g, b),
+    depthTest: false,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    stencilWrite: true,
+    stencilFunc: THREE.NotEqualStencilFunc,
+    stencilRef: 1,
+    stencilFuncMask: 0xFF,
+    stencilFail: THREE.KeepStencilOp,
+    stencilZFail: THREE.KeepStencilOp,
+    stencilZPass: THREE.KeepStencilOp,
+  });
 
-    const overlayGeo = new THREE.PlaneGeometry(mapW + pad * 2, mapH + pad * 2);
-    const [r, g, b] = hexToThreeColor(OCEAN_OVERLAY_COLOR);
-    // Opaque (not transparent) so it renders in the same pass as hex fill.
-    // renderOrder COASTLINE (1) ensures it draws AFTER hex fill (0).
-    // depthTest: false so it always renders on top regardless of z-depth.
-    const overlayMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(r, g, b),
-      depthTest: false,
-      depthWrite: false,
-      side: THREE.DoubleSide,
-      stencilWrite: true,
-      stencilFunc: THREE.NotEqualStencilFunc,
-      stencilRef: 1,
-      stencilFuncMask: 0xFF,
-      stencilFail: THREE.KeepStencilOp,
-      stencilZFail: THREE.KeepStencilOp,
-      stencilZPass: THREE.KeepStencilOp,
-    });
+  for (const loop of outerData.loops) {
+    const mesh = loopToVisibleMesh(loop, coastalBandMat, 0.03);
+    if (mesh) {
+      mesh.renderOrder = RENDER_ORDER.COASTLINE;
+      group.add(mesh);
+    }
+  }
 
-    const overlayMesh = new THREE.Mesh(overlayGeo, overlayMat);
-    overlayMesh.position.set(mapW / 2 - hexSize, -(mapH / 2), 0.03);
-    overlayMesh.renderOrder = RENDER_ORDER.COASTLINE;
-    group.add(overlayMesh);
+  // ── Lake shores: same two-curve approach ────────────────────────
+  // Inner curve lakeLoops mark stencil=1 for land interior around lakes.
+  // Outer curve lakeLoops paint the coastal band around lake edges.
+  if (innerData.lakeLoops && innerData.lakeLoops.length > 0) {
+    for (const loop of innerData.lakeLoops) {
+      const mesh = loopToStencilMesh(loop, stencilMat);
+      if (mesh) {
+        mesh.renderOrder = RENDER_ORDER.STENCIL_WRITE;
+        group.add(mesh);
+      }
+    }
+  }
+
+  if (outerData.lakeLoops && outerData.lakeLoops.length > 0) {
+    for (const loop of outerData.lakeLoops) {
+      const mesh = loopToVisibleMesh(loop, coastalBandMat, 0.03);
+      if (mesh) {
+        mesh.renderOrder = RENDER_ORDER.COASTLINE;
+        group.add(mesh);
+      }
+    }
   }
 
   return group;
