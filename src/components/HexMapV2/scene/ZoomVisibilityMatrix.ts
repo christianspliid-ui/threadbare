@@ -128,12 +128,12 @@ export const ZOOM_VISIBILITY_MATRIX: Record<string, Record<ZoomTier, boolean>> =
     'continental': true,
     'full-world': false,
   },
-  /** Terrain signifiers (landscape art) — regional+ only */
+  /** Terrain signifiers (landscape art) — always visible */
   signifiers: {
     'hero-local': true,
     'regional': true,
-    'continental': false,
-    'full-world': false,
+    'continental': true,
+    'full-world': true,
   },
   /** Location icons — regional+ only */
   locations: {

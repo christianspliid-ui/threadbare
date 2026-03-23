@@ -48,6 +48,8 @@ import {
   isLayerVisibleForHex,
 } from './scene/FogCulling';
 import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
+import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
+import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
 import type { FollowModeState } from './camera/FollowMode';
 import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { terrainDisplayName } from './palette/terrainPalette';
@@ -95,6 +97,11 @@ export interface HexMapV2Handle {
    * Pass null to stop following and free the camera.
    */
   setFollowAgent: (agentId: string | null) => void;
+  /**
+   * Get a snapshot of WebGL diagnostics (render stats, context info, error log).
+   * Returns null if the renderer isn't initialized yet.
+   */
+  getDiagnostics: () => WebGLDiagnosticsSnapshot | null;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -234,6 +241,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Follow mode ref — mutable state, does not trigger re-renders
     const followModeRef = useRef<FollowModeState>(createFollowMode());
 
+    // WebGL diagnostics — captures render stats, context events, error log
+    const diagnosticsRef = useRef<WebGLDiagnostics>(new WebGLDiagnostics());
+    // Scene refs for diagnostics snapshot (renderer + scene needed at snapshot time)
+    const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+    const sceneRef    = useRef<THREE.Scene | null>(null);
+
     // Region label overlay state
     const [regionLabels, setRegionLabels] = useState<import('../../engine/regionTypes').RegionLabel[]>([]);
     // Location label overlay state — derived from locations prop
@@ -271,13 +284,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const canvas = canvasRef.current;
         const zoom   = zoomRef.current;
         if (!canvas || !zoom) return;
-        // x, y are already world-space coordinates (caller uses hexToPixel + Y-flip externally,
-        // or passes hex coord which we convert here if needed).
-        // For the HexMapHandle contract, x and y are world-space pixel coords.
         animateCameraTo(canvas, zoom, x, y, scale ?? CAMERA_CONSTANTS.DEFAULT_ZOOM);
       },
       setFollowAgent(agentId: string | null) {
         updateFollowTarget(followModeRef.current, agentId);
+      },
+      getDiagnostics(): WebGLDiagnosticsSnapshot | null {
+        const renderer = rendererRef.current;
+        const scene    = sceneRef.current;
+        if (!renderer || !scene) return null;
+        return diagnosticsRef.current.snapshot(renderer, scene);
       },
     }));
 
@@ -299,6 +315,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const { renderer, scene, camera } = hexScene;
 
         cameraRef.current = camera;
+        rendererRef.current = renderer;
+        sceneRef.current = scene;
+        diagnosticsRef.current.attach(canvas, renderer);
         setCanvasDimensions({ w, h });
 
         // Build fill mesh — split into land (stencil-tested) + water (normal) InstancedMeshes.
@@ -503,11 +522,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               ZOOM_VISIBILITY_MATRIX.agents_dot[tier] || ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
           }
 
-          // Fade transitions for signifiers near the regional threshold
+          // Fade transitions for signifiers near the continental threshold
           // NFP #1: FADE_RANGE constant controls transition zone width
           const currentSignifierGroup = signifierGroupRef.current;
           if (currentSignifierGroup?.visible) {
-            const alpha = getFadeAlpha(k, ZOOM_TIER_THRESHOLDS.REGIONAL, FADE_RANGE * ZOOM_TIER_THRESHOLDS.REGIONAL);
+            const alpha = getFadeAlpha(k, ZOOM_TIER_THRESHOLDS.CONTINENTAL, FADE_RANGE * ZOOM_TIER_THRESHOLDS.CONTINENTAL);
             for (const child of currentSignifierGroup.children) {
               if (child instanceof THREE.Sprite) {
                 (child.material as THREE.SpriteMaterial).opacity = alpha;
@@ -569,6 +588,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Render loop
         function animate() {
           rafId = requestAnimationFrame(animate);
+          diagnosticsRef.current.recordFrame();
           // Advance agent bezier hop animations (no-op if no active animations)
           const spriteGroup = agentSpriteGroupRef.current;
           if (spriteGroup) tickAgentAnimations(animStates, spriteGroup.spriteMap);
@@ -726,12 +746,19 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           trailGroupRef.current = null;
           selectionRing.geometry.dispose();
           hoverOverlay.geometry.dispose();
+          diagnosticsRef.current.dispose();
+          rendererRef.current = null;
+          sceneRef.current = null;
           hexScene?.dispose();
         };
       } catch (err) {
         console.error('[HexMapV2] Three.js initialization failed:', err);
+        diagnosticsRef.current.addLog('error', 'init', `Init failed: ${err instanceof Error ? err.message : String(err)}`);
         if (canvas) canvas.dataset.failed = 'true';
         return () => {
+          diagnosticsRef.current.dispose();
+          rendererRef.current = null;
+          sceneRef.current = null;
           if (hexScene) hexScene.dispose();
         };
       }

@@ -52,20 +52,11 @@ describe('getZoomTier', () => {
 });
 
 describe('ZOOM_VISIBILITY_MATRIX — signifiers', () => {
-  it('signifiers is false at full-world', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.signifiers['full-world']).toBe(false);
-  });
-
-  it('signifiers is true at regional', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.signifiers['regional']).toBe(true);
-  });
-
-  it('signifiers is true at hero-local', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.signifiers['hero-local']).toBe(true);
-  });
-
-  it('signifiers is false at continental', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.signifiers['continental']).toBe(false);
+  it('signifiers is true at all tiers', () => {
+    const tiers: ZoomTier[] = ['hero-local', 'regional', 'continental', 'full-world'];
+    for (const tier of tiers) {
+      expect(ZOOM_VISIBILITY_MATRIX.signifiers[tier]).toBe(true);
+    }
   });
 });
 
