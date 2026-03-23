@@ -70,6 +70,13 @@ export const LOCATION_SIZE_SCALE: Record<LocationSizeClass, number> = {
   tiny:   0.25,
 };
 
+/**
+ * Size classes that render centered on the hex (no ring offset).
+ * Large locations stay centered to avoid spillover into neighbor hexes.
+ * Smaller size classes distribute in a ring around the hex center.
+ */
+export const CENTERED_SIZE_CLASSES = new Set<LocationSizeClass>(['full', 'medium']);
+
 // ── Importance mapping ────────────────────────────────────────────────────────
 
 /**

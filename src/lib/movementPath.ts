@@ -193,8 +193,9 @@ export function getRingSlotOffset(
   agentIndex: number,
   totalAgents: number,
   ringRadius: number,
+  rotationOffset = 0,
 ): Point {
-  const angle = (2 * Math.PI * agentIndex) / Math.max(totalAgents, 1) - Math.PI / 2;
+  const angle = (2 * Math.PI * agentIndex) / Math.max(totalAgents, 1) - Math.PI / 2 + rotationOffset;
   return {
     x: Math.cos(angle) * ringRadius,
     y: Math.sin(angle) * ringRadius,
