@@ -38,3 +38,12 @@ scripts/playtest.mjs
 
 # QA server state
 .qa-server.json
+
+# Playwright MCP screenshots
+.playwright-mcp/
+
+# Temporary verification screenshots (root level)
+*.png
+!public/**/*.png
+!Design/**/*.png
+!Docs/**/*.png
