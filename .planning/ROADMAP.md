@@ -23,6 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network (completed 2026-03-22)
 - [ ] **Phase 7.1: Stencil Coastline** - INSERTED: WebGL stencil-based organic coastline that clips land hex edges to organic contour (fixes Phase 3 criterion #1)
 - [x] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring (completed 2026-03-22)
+- [ ] **Phase 9: Start Screen** - Main menu with title art, ambient audio, narrative tone, and navigation to worldgen
 
 ## Phase Details
 
@@ -181,10 +182,24 @@ Plans:
 - [ ] 08-03-PLAN.md — Gap closure: fix HexMapV2 WIP test mismatches (SignifierMesh mock, ElevationTicks rewrite, terrainPalette/coastline constants, delete V1 MovementTrails test)
 - [ ] 08-04-PLAN.md — Gap closure: fix pre-existing engine test failures (movement TRAIL_HISTORY_TICKS, traceBuffer eviction, familiarity setup, MandateTracker pips)
 
+### Phase 9: Start Screen
+**Goal**: Player sees an atmospheric title screen with concept art, ambient music, and a clean menu before entering worldgen
+**Depends on**: Phase 8
+**Requirements**: None (new capability)
+**Canonical refs**: `Docs/plans/2026-03-23-start-page-design.md`
+**Success Criteria** (what must be TRUE):
+  1. Opening the game (no URL params) shows the start screen with title art, "THREADBARE" title, lore fragment, and menu
+  2. "New World" transitions to the existing cosmology/worldgen screen with a fade
+  3. Dev view shortcuts (?view=game, ?view=hexv2) skip the start screen entirely
+  4. Dark ambient music loops on user interaction, fades out on "New World", and mute state persists in localStorage
+  5. Settings and Credits modals open as overlays on the start screen
+  6. If title-screen.png or audio file is missing, the page degrades gracefully (solid dark bg, silent)
+**Plans:** 0 plans
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 (parallel: 5) -> 6 -> 7 -> 7.1 -> 8
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 (parallel: 5) -> 6 -> 7 -> 7.1 -> 8 -> 9
 
 Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each other).
 
@@ -199,3 +214,4 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 7.1. Stencil Coastline | 0/1 | Not started | - |
 | 8. Integration | 4/4 | Complete   | 2026-03-23 |
+| 9. Start Screen | 0/0 | Not started | - |
