@@ -12,8 +12,9 @@
  *     This clips the full hexagonal land tiles to the organic coastline boundary.
  *
  *   Pass 3 (renderOrder = COASTLINE = 1):
- *     Shallow depth band fills (shallowLoops) and lake shore fills render on top
- *     of the water hex fill, creating the coastal shallows gradient.
+ *     Shallow depth band fills (shallowLoops) and lake shore fills.
+ *     Currently DISABLED — the stencil write only covers coastline boundary, not
+ *     full land interior, so an inverse stencil test can't distinguish land from water.
  *
  * Uses marching squares contour loops from computeCoastline().
  * Applies Y-flip to convert SVG coordinates (y-down) to Three.js (y-up).
@@ -200,11 +201,18 @@ export function createCoastlineMesh(
     }
   }
 
-  // NOTE: Shallow band and lake shore overlays are DISABLED for now.
-  // The shallow band covers both water AND land area. Without the old green land boundary
-  // overlay to mask the land portion, the shallow band paints the entire map light blue.
-  // Water hexes already have per-hex depth-band colors from getHexColor.
-  // TODO: Re-add shallow band with stencil test (only render where stencil = 0 / water area).
+  // NOTE: Shallow band and lake shore overlays are DISABLED.
+  // The stencil write pass uses marching-squares contour loops which trace the coastline
+  // boundary but do NOT fill the entire land interior. This means stencil=1 only exists
+  // near the coast, not for inland hexes. An inverse stencil test (NotEqualStencilFunc)
+  // on the shallow band would incorrectly render over inland hexes (which have stencil=0).
+  //
+  // To fix: either (a) add a separate full-land stencil fill pass using hex geometry for
+  // all land tiles, or (b) use the scalar field to generate a filled polygon that covers
+  // all land area, not just the boundary contour.
+  //
+  // Water hexes already have per-hex depth-band colors from getHexColor, so the visual
+  // impact of missing shallow bands is minimal.
 
   return group;
 }
