@@ -435,8 +435,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [closeAllAgentOverlays, handleAvatarScryClick]);
 
   // NFP #1: Named constant for retinue eye-icon zoom level.
-  // Regional tier (k=5) — portraits render at 0.5× scale, clearly visible as circular images.
-  const RETINUE_EYE_ZOOM_SCALE = 5;
+  // Hero-local tier (k=10, MAX_ZOOM) — portraits render at full 1.0× scale, maximum detail.
+  const RETINUE_EYE_ZOOM_SCALE = 10;
 
   // Zoom camera to an agent's location hex at regional zoom (both eye icons use this)
   const handleZoomToLocation = useCallback((locationId: string) => {
