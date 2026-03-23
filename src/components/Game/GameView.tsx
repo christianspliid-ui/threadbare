@@ -1,6 +1,7 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
+import { resumeTheme } from '../../audio/themeAudio';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
@@ -72,6 +73,11 @@ interface GameViewProps {
 }
 
 export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: GameViewProps) {
+  // ── Resume theme music if it was started on the start screen ──
+  useEffect(() => {
+    resumeTheme();
+  }, []);
+
   // ── Scry state (lifted here so simulation + navigation can use it for LOS) ──
   const [scryState, setScryState] = useState<ScryState>(createScryState);
 
