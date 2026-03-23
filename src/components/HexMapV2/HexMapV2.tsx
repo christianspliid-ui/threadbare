@@ -413,10 +413,22 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(roadGroup);
         roadGroupRef.current = roadGroup;
 
+        // Build set of hex keys that have centered (full/medium) location icons.
+        // Signifiers on these hexes are hidden to avoid overlapping with the location art.
+        const centeredLocationHexes = new Set<string>();
+        if (locations) {
+          for (const loc of locations) {
+            const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+            if (iconDef && CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
+              centeredLocationHexes.add(`${loc.hexCol},${loc.hexRow}`);
+            }
+          }
+        }
+
         // Build signifier sprites — landscape icons for each land hex (Plan 05-02)
         // Renders at RENDER_ORDER.SIGNIFIERS (7), above borders, below location overlays.
         // Hidden by default; visible only at regional+ zoom (k >= SIGNIFIER_ZOOM_THRESHOLD).
-        const signifierGroup = createSignifierMesh(tiles, seed);
+        const signifierGroup = createSignifierMesh(tiles, seed, centeredLocationHexes);
         scene.add(signifierGroup);
         signifierGroup.visible = false; // Hidden until zoom reaches regional tier
         signifierGroupRef.current = signifierGroup;
