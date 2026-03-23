@@ -23,7 +23,12 @@ vi.stubGlobal('document', {
           save: vi.fn(),
           restore: vi.fn(),
           scale: vi.fn(),
+          translate: vi.fn(),
+          clip: vi.fn(),
           fill: vi.fn(),
+          beginPath: vi.fn(),
+          closePath: vi.fn(),
+          fillRect: vi.fn(),
           fillStyle: '',
           globalAlpha: 1,
         }),
@@ -81,8 +86,8 @@ describe('SignifierMesh', () => {
     SIGNIFIER_Z = mod.SIGNIFIER_Z;
   });
 
-  it('exports SIGNIFIER_SPRITE_SCALE = 0.7', () => {
-    expect(SIGNIFIER_SPRITE_SCALE).toBe(0.7);
+  it('exports SIGNIFIER_SPRITE_SCALE = 1.3', () => {
+    expect(SIGNIFIER_SPRITE_SCALE).toBe(1.3);
   });
 
   it('exports SIGNIFIER_Z = 0.07', () => {
