@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Isometric Hex Map Prototype — Threadbare</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0d1a;
+    color: #c4b99a;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .controls {
+    padding: 12px 20px;
+    background: #1a1a2a;
+    border-bottom: 1px solid #2a2a3a;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+    z-index: 10;
+  }
+  .controls label {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .controls input[type="range"] {
+    width: 120px;
+    accent-color: #d4af37;
+  }
+  .controls select {
+    background: #2a2a3a;
+    color: #c4b99a;
+    border: 1px solid #3a3a4a;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .controls .value {
+    font-size: 11px;
+    color: #8a8a9a;
+    min-width: 32px;
+  }
+  .controls .group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-right: 16px;
+    border-right: 1px solid #2a2a3a;
+  }
+  .controls .group:last-child { border-right: none; }
+
+  h1 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #d4af37;
+    letter-spacing: 0.5px;
+  }
+
+  .canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+  }
+  .canvas-wrap:active { cursor: grabbing; }
+
+  canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .mode-tabs {
+    display: flex;
+    gap: 2px;
+  }
+  .mode-tab {
+    padding: 4px 12px;
+    background: #2a2a3a;
+    color: #8a8a9a;
+    border: 1px solid #3a3a4a;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .mode-tab:hover { background: #3a3a4a; color: #c4b99a; }
+  .mode-tab.active { background: #d4af37; color: #0d0d1a; border-color: #d4af37; }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <h1>ISOMETRIC HEX PROTOTYPE</h1>
+
+  <div class="group">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="iso">Isometric</button>
+      <button class="mode-tab" data-mode="top">Top-Down</button>
+      <button class="mode-tab" data-mode="steep">Steep Iso</button>
+    </div>
+  </div>
+
+  <div class="group">
+    <label>Tilt <input type="range" id="tilt" min="0" max="75" value="45"> <span class="value" id="tiltVal">45°</span></label>
+    <label>Rotation <input type="range" id="rotation" min="0" max="360" value="0"> <span class="value" id="rotVal">0°</span></label>
+  </div>
+
+  <div class="group">
+    <label>Hex Size <input type="range" id="hexSize" min="40" max="160" value="80"> <span class="value" id="sizeVal">80</span></label>
+    <label>Gap <input type="range" id="gap" min="0" max="10" value="2"> <span class="value" id="gapVal">2</span></label>
+  </div>
+
+  <div class="group">
+    <label>Tiles:
+      <select id="tileStyle">
+        <option value="painterly">Painterly (clear-*)</option>
+        <option value="icon">Icon (current)</option>
+        <option value="color">Flat Color</option>
+      </select>
+    </label>
+  </div>
+</div>
+
+<div class="canvas-wrap" id="canvasWrap">
+  <canvas id="c"></canvas>
+</div>
+
+<script>
+// ── Tile definitions ──
+const BIOMES = [
+  { id: 'mountains', color: '#3d3025', painterly: 'clear-mountains.png', icon: 'mountain.png' },
+  { id: 'forest',    color: '#1a2a1a', painterly: 'clear-forest.png',    icon: 'dense-forest.png' },
+  { id: 'grassland', color: '#2a3a20', painterly: 'clear-grassland.png', icon: 'open-grassland.png' },
+  { id: 'desert',    color: '#5a4a38', painterly: 'clear-desert.png',    icon: 'desert.png' },
+  { id: 'hills',     color: '#4a4540', painterly: 'clear-hills.png',     icon: 'hills.png' },
+  { id: 'snow',      color: '#6a7a8a', painterly: 'clear-snow.png',      icon: 'tundra.png' },
+  { id: 'volcanic',  color: '#3a2020', painterly: 'clear-volcanic.png',  icon: 'volcanic.png' },
+];
+
+// ── Generate a hex grid map ──
+const GRID_RADIUS = 6; // rings around center
+const hexGrid = [];
+
+// Simple seeded random for consistent biome assignment
+let seed = 42;
+function seededRandom() {
+  seed = (seed * 16807 + 0) % 2147483647;
+  return (seed - 1) / 2147483646;
+}
+
+// Biome assignment with clustering
+function assignBiomes() {
+  // First pass: random
+  const map = new Map();
+  for (let q = -GRID_RADIUS; q <= GRID_RADIUS; q++) {
+    for (let r = -GRID_RADIUS; r <= GRID_RADIUS; r++) {
+      const s = -q - r;
+      if (Math.abs(s) <= GRID_RADIUS) {
+        const dist = Math.max(Math.abs(q), Math.abs(r), Math.abs(s));
+        // Bias toward certain biomes based on distance from center
+        let biomeIdx;
+        const roll = seededRandom();
+        if (dist <= 1) biomeIdx = 2; // grassland center
+        else if (roll < 0.2) biomeIdx = 0; // mountains
+        else if (roll < 0.45) biomeIdx = 1; // forest
+        else if (roll < 0.6) biomeIdx = 2; // grassland
+        else if (roll < 0.72) biomeIdx = 4; // hills
+        else if (roll < 0.82) biomeIdx = 3; // desert
+        else if (roll < 0.92) biomeIdx = 5; // snow
+        else biomeIdx = 6; // volcanic
+
+        map.set(`${q},${r}`, biomeIdx);
+        hexGrid.push({ q, r, s, biome: biomeIdx });
+      }
+    }
+  }
+  return map;
+}
+assignBiomes();
+
+// ── Load tile images ──
+const painterlyImages = {};
+const iconImages = {};
+let imagesLoaded = 0;
+const totalImages = BIOMES.length * 2;
+
+function loadImage(src) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
+async function loadAllImages() {
+  const promises = BIOMES.map(async (b) => {
+    painterlyImages[b.id] = await loadImage(`/hex-tiles/${b.painterly}`);
+    iconImages[b.id] = await loadImage(`/hex-tiles/${b.icon}`);
+  });
+  await Promise.all(promises);
+  render();
+}
+
+// ── Canvas setup ──
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const wrap = document.getElementById('canvasWrap');
+
+function resizeCanvas() {
+  canvas.width = wrap.clientWidth;
+  canvas.height = wrap.clientHeight;
+  render();
+}
+window.addEventListener('resize', resizeCanvas);
+
+// ── Pan state ──
+let panX = 0, panY = 0;
+let dragging = false, lastMX = 0, lastMY = 0;
+
+wrap.addEventListener('mousedown', (e) => {
+  dragging = true;
+  lastMX = e.clientX;
+  lastMY = e.clientY;
+});
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  panX += e.clientX - lastMX;
+  panY += e.clientY - lastMY;
+  lastMX = e.clientX;
+  lastMY = e.clientY;
+  render();
+});
+window.addEventListener('mouseup', () => { dragging = false; });
+
+// ── Controls ──
+const tiltSlider = document.getElementById('tilt');
+const rotSlider = document.getElementById('rotation');
+const sizeSlider = document.getElementById('hexSize');
+const gapSlider = document.getElementById('gap');
+const tileSelect = document.getElementById('tileStyle');
+
+const tiltVal = document.getElementById('tiltVal');
+const rotVal = document.getElementById('rotVal');
+const sizeVal = document.getElementById('sizeVal');
+const gapVal = document.getElementById('gapVal');
+
+[tiltSlider, rotSlider, sizeSlider, gapSlider].forEach(s => s.addEventListener('input', render));
+tileSelect.addEventListener('change', render);
+
+// Mode tabs
+document.querySelectorAll('.mode-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const mode = tab.dataset.mode;
+    if (mode === 'top') {
+      tiltSlider.value = 0;
+    } else if (mode === 'iso') {
+      tiltSlider.value = 45;
+    } else if (mode === 'steep') {
+      tiltSlider.value = 60;
+    }
+    render();
+  });
+});
+
+// ── Hex math ──
+function hexToPixel(q, r, size) {
+  // Flat-top hex
+  const x = size * (3/2 * q);
+  const y = size * (Math.sqrt(3)/2 * q + Math.sqrt(3) * r);
+  return { x, y };
+}
+
+function drawHexPath(ctx, cx, cy, size, gap) {
+  const s = size - gap;
+  ctx.beginPath();
+  for (let i = 0; i < 6; i++) {
+    const angle = Math.PI / 180 * (60 * i);
+    const hx = cx + s * Math.cos(angle);
+    const hy = cy + s * Math.sin(angle);
+    if (i === 0) ctx.moveTo(hx, hy);
+    else ctx.lineTo(hx, hy);
+  }
+  ctx.closePath();
+}
+
+// ── Render ──
+function render() {
+  const W = canvas.width;
+  const H = canvas.height;
+  const tilt = parseFloat(tiltSlider.value);
+  const rot = parseFloat(rotSlider.value);
+  const hexSize = parseFloat(sizeSlider.value);
+  const gap = parseFloat(gapSlider.value);
+  const tileStyle = tileSelect.value;
+
+  tiltVal.textContent = `${tilt}°`;
+  rotVal.textContent = `${rot}°`;
+  sizeVal.textContent = hexSize;
+  gapVal.textContent = gap;
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.save();
+
+  // Move to center + pan
+  ctx.translate(W / 2 + panX, H / 2 + panY);
+
+  // Apply rotation around Y axis (horizontal spin)
+  const rotRad = rot * Math.PI / 180;
+
+  // Isometric projection: tilt is rotation around X axis
+  // In 2D canvas, we simulate this by scaling Y axis
+  const tiltRad = tilt * Math.PI / 180;
+  const yScale = Math.cos(tiltRad);
+
+  // Sort hexes by draw order (back to front for isometric)
+  const sortedHexes = [...hexGrid].sort((a, b) => {
+    const pa = hexToPixel(a.q, a.r, hexSize);
+    const pb = hexToPixel(b.q, b.r, hexSize);
+    // Rotate positions
+    const ay = pa.x * Math.sin(rotRad) + pa.y * Math.cos(rotRad);
+    const by = pb.x * Math.sin(rotRad) + pb.y * Math.cos(rotRad);
+    return ay - by;
+  });
+
+  for (const hex of sortedHexes) {
+    const { x: px, y: py } = hexToPixel(hex.q, hex.r, hexSize);
+
+    // Apply rotation
+    const rx = px * Math.cos(rotRad) - py * Math.sin(rotRad);
+    const ry = px * Math.sin(rotRad) + py * Math.cos(rotRad);
+
+    // Apply tilt (Y compression)
+    const sx = rx;
+    const sy = ry * yScale;
+
+    const biome = BIOMES[hex.biome];
+
+    ctx.save();
+    ctx.translate(sx, sy);
+
+    // Scale the hex clip path for isometric
+    ctx.save();
+    ctx.scale(1, yScale > 0.01 ? 1 : 1); // hex shape stays, image gets squished via the global yScale
+
+    // We need to draw hex shape in isometric space
+    // Create hex clip in screen space (accounting for tilt)
+    const drawSize = hexSize - gap;
+
+    // Draw isometric hex (squished vertically)
+    ctx.beginPath();
+    for (let i = 0; i < 6; i++) {
+      const angle = Math.PI / 180 * (60 * i);
+      const hx = drawSize * Math.cos(angle);
+      const hy = drawSize * Math.sin(angle) * yScale;
+      if (i === 0) ctx.moveTo(hx, hy);
+      else ctx.lineTo(hx, hy);
+    }
+    ctx.closePath();
+
+    // Choose fill style
+    if (tileStyle === 'color') {
+      ctx.fillStyle = biome.color;
+      ctx.fill();
+      // Subtle border
+      ctx.strokeStyle = 'rgba(212,175,55,0.15)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    } else {
+      const imgMap = tileStyle === 'painterly' ? painterlyImages : iconImages;
+      const img = imgMap[biome.id];
+
+      if (img) {
+        ctx.clip();
+        // Draw image to fill the hex bounding box
+        const bboxW = drawSize * 2;
+        const bboxH = drawSize * 2 * yScale;
+        ctx.drawImage(img, -bboxW/2, -bboxH/2, bboxW, bboxH);
+      } else {
+        // Fallback to color
+        ctx.fillStyle = biome.color;
+        ctx.fill();
+      }
+      // Border
+      // Re-draw path for stroke (clip consumed it)
+      ctx.beginPath();
+      for (let i = 0; i < 6; i++) {
+        const angle = Math.PI / 180 * (60 * i);
+        const hx = drawSize * Math.cos(angle);
+        const hy = drawSize * Math.sin(angle) * yScale;
+        if (i === 0) ctx.moveTo(hx, hy);
+        else ctx.lineTo(hx, hy);
+      }
+      ctx.closePath();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+    ctx.restore();
+  }
+
+  ctx.restore();
+}
+
+// ── Init ──
+resizeCanvas();
+loadAllImages();
+</script>
+</body>
+</html>
