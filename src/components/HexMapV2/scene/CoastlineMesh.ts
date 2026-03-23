@@ -158,15 +158,16 @@ export function createCoastlineMesh(
 
   let coastlineData;
   try {
-    // Use a lower threshold for stencil contour to extend coverage past outer land hex edges
-    const stencilConfig = { ...COASTLINE_DEFAULTS, threshold: STENCIL_THRESHOLD };
+    // Use default threshold for all coastline contours (stencil + display).
+    // Using a lower threshold (e.g. STENCIL_THRESHOLD 0.30) causes shallowLoops to
+    // cover the entire map, painting all hexes with shallow-water color.
     coastlineData = computeCoastline(
       tiles,
       HEX_CONSTANTS.HEX_SIZE,
       cols,
       rows,
       seed,
-      stencilConfig,
+      COASTLINE_DEFAULTS,
     );
   } catch (err) {
     // NFP #4: Fail-soft — computeCoastline failure returns empty group, never crashes
