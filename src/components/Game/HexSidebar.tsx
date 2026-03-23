@@ -100,45 +100,48 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
 
       {isExpanded ? (
         <>
-          {/* Hex Terrain Image Preview */}
-          <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <svg
-              viewBox={`0 0 ${HEX_PREVIEW_SIZE} ${HEX_PREVIEW_SIZE}`}
-              width="100%"
-              style={{ maxWidth: `${HEX_PREVIEW_SIZE}px` }}
-            >
-              <defs>
-                <clipPath id="hex-sidebar-clip">
-                  <polygon points={HEX_PREVIEW_POINTS} />
-                </clipPath>
-              </defs>
-              <polygon
-                points={HEX_PREVIEW_POINTS}
-                fill="var(--bg-abyss)"
-                stroke="var(--accent-gold)"
-                strokeWidth="1.5"
-                strokeOpacity={0.3}
-              />
-              <g clipPath="url(#hex-sidebar-clip)">
-                <image
-                  href={getHexTileUrl(props.terrain)}
-                  x={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
-                  y={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
-                  width={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
-                  height={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
-                  preserveAspectRatio="xMidYMid slice"
-                  opacity={props.lineOfSight === 'none' ? 0.08 : props.lineOfSight === 'partial' ? 0.4 : 0.85}
+          {/* Hex Terrain Image Preview — hidden when locations exist
+              (concept art banner in HexChronicle provides the landscape visual) */}
+          {props.locations.length === 0 && (
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <svg
+                viewBox={`0 0 ${HEX_PREVIEW_SIZE} ${HEX_PREVIEW_SIZE}`}
+                width="100%"
+                style={{ maxWidth: `${HEX_PREVIEW_SIZE}px` }}
+              >
+                <defs>
+                  <clipPath id="hex-sidebar-clip">
+                    <polygon points={HEX_PREVIEW_POINTS} />
+                  </clipPath>
+                </defs>
+                <polygon
+                  points={HEX_PREVIEW_POINTS}
+                  fill="var(--bg-abyss)"
+                  stroke="var(--accent-gold)"
+                  strokeWidth="1.5"
+                  strokeOpacity={0.3}
                 />
-              </g>
-              <polygon
-                points={HEX_PREVIEW_POINTS}
-                fill="none"
-                stroke="var(--accent-gold)"
-                strokeWidth="1.5"
-                strokeOpacity={0.3}
-              />
-            </svg>
-          </div>
+                <g clipPath="url(#hex-sidebar-clip)">
+                  <image
+                    href={getHexTileUrl(props.terrain)}
+                    x={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
+                    y={HEX_PREVIEW_CENTER - (HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE) / 2}
+                    width={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
+                    height={HEX_PREVIEW_RADIUS * HEX_PREVIEW_IMG_SCALE}
+                    preserveAspectRatio="xMidYMid slice"
+                    opacity={props.lineOfSight === 'none' ? 0.08 : props.lineOfSight === 'partial' ? 0.4 : 0.85}
+                  />
+                </g>
+                <polygon
+                  points={HEX_PREVIEW_POINTS}
+                  fill="none"
+                  stroke="var(--accent-gold)"
+                  strokeWidth="1.5"
+                  strokeOpacity={0.3}
+                />
+              </svg>
+            </div>
+          )}
 
           {/* Region Section */}
           {props.regionData ? (
