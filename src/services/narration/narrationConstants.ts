@@ -14,11 +14,11 @@ export const NARRATION_DTYPE = 'q8';
 /** Inference backend — "wasm" for broad compatibility. */
 export const NARRATION_DEVICE = 'wasm';
 
-/** Default narrator voice — British female, fits storybook aesthetic. */
-export const NARRATION_VOICE = 'bf_emma';
+/** Default narrator voice — British male, deeper storyteller tone. */
+export const NARRATION_VOICE = 'bm_george';
 
-/** Default speaking speed (0.5–2.0). */
-export const NARRATION_SPEED = 1.0;
+/** Default speaking speed (0.5–2.0). Slower for storyteller cadence. */
+export const NARRATION_SPEED = 0.85;
 
 /** Kokoro output sample rate in Hz. */
 export const NARRATION_SAMPLE_RATE = 24000;
