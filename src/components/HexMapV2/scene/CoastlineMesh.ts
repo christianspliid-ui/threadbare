@@ -25,12 +25,15 @@
 
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
-import { isWaterTerrain } from '../../../engine/coastline';
-import { HEX_CONSTANTS, buildHexGeometry } from './HexFillMesh';
+import type { ContourLoop } from '../../../types/coastline';
+import { computeCoastline } from '../../../engine/coastline';
+import { COASTLINE_DEFAULTS } from '../../../types/coastline';
+import { HEX_CONSTANTS } from './HexFillMesh';
 import { RENDER_ORDER } from './RenderLayers';
 import { WATER_PALETTE } from '../palette/waterPalette';
 import { hexToThreeColor } from '../palette/colorUtils';
-import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
+import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
+import { SCENE_CONSTANTS } from './HexSceneSetup';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────
 
@@ -46,14 +49,90 @@ export const COASTLINE_SHALLOW_Z = 0.01;
 export const COASTLINE_SHALLOW_COLOR = WATER_PALETTE['shallows'];
 
 /**
- * Stencil contour threshold — much lower than the default land threshold (0.35).
- * Lower value extends the stencil=1 area well past coastal land hex edges into
- * the water zone. This ensures NO land hex pixel is covered by the water overlay.
- * The organic coastline boundary is defined by where the stencil=1 area meets
- * the water overlay — so a lower threshold pushes the visible shore outward.
+ * Stencil contour threshold — slightly lower than the default land threshold (0.35).
+ * Lower value extends the land contour past the outer land hex edges, ensuring
+ * the stencil covers all land hex pixels including their outermost edges.
  * NFP #1: Named constant for tunability.
  */
-export const STENCIL_THRESHOLD = 0.01;
+export const STENCIL_THRESHOLD = 0.30;
+
+// ─── Geometry Helpers ─────────────────────────────────────────────
+
+/**
+ * Computes signed area of a contour loop (Shoelace formula).
+ * Positive = counter-clockwise in screen-space (y-down).
+ * After Y-flip, positive SVG area becomes negative Three.js area (CW in 3D space).
+ */
+function signedArea(loop: ContourLoop): number {
+  let area = 0;
+  const n = loop.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += loop[i].x * loop[j].y;
+    area -= loop[j].x * loop[i].y;
+  }
+  return area / 2;
+}
+
+/**
+ * Creates a filled THREE.Mesh from a contour loop using THREE.Shape + ShapeGeometry.
+ *
+ * Y-flip: SVG uses y-down, Three.js uses y-up.
+ * All points are negated in Y before being passed to THREE.Shape.
+ *
+ * Winding: THREE.Shape expects CCW outer loops.
+ * After Y-flip: y negation flips the winding direction, so:
+ *   positive SVG area (CCW in y-down) → CW in y-up → reverse to make CCW
+ *   negative SVG area (CW in y-down)  → CCW in y-up → keep
+ *
+ * NFP #4: Fail-soft — loops with < 3 points are skipped.
+ */
+function loopToMesh(loop: ContourLoop, color: string, zOffset: number): THREE.Mesh | null {
+  if (loop.length < 3) return null;
+
+  const flippedPoints: THREE.Vector2[] = loop.map(p => new THREE.Vector2(p.x, -p.y));
+  const svgArea = signedArea(loop);
+  if (svgArea > 0) flippedPoints.reverse();
+
+  const shape = new THREE.Shape(flippedPoints);
+  const geometry = new THREE.ShapeGeometry(shape);
+
+  const [r, g, b] = hexToThreeColor(color);
+  const material = new THREE.MeshBasicMaterial({
+    color: new THREE.Color(r, g, b),
+    side: THREE.DoubleSide,
+    depthTest: false,
+  });
+
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.z = zOffset;
+
+  return mesh;
+}
+
+/**
+ * Creates a stencil write mesh from a contour loop.
+ * This mesh writes 1 into the stencil buffer for all land pixels.
+ * colorWrite: false — invisible but marks land area in stencil buffer.
+ *
+ * Uses a shared stencil material passed in to minimize material allocations.
+ */
+function loopToStencilMesh(
+  loop: ContourLoop,
+  stencilMaterial: THREE.MeshBasicMaterial,
+): THREE.Mesh | null {
+  if (loop.length < 3) return null;
+
+  const flippedPoints: THREE.Vector2[] = loop.map(p => new THREE.Vector2(p.x, -p.y));
+  const svgArea = signedArea(loop);
+  if (svgArea > 0) flippedPoints.reverse();
+
+  const shape = new THREE.Shape(flippedPoints);
+  const geometry = new THREE.ShapeGeometry(shape);
+  const mesh = new THREE.Mesh(geometry, stencilMaterial);
+
+  return mesh;
+}
 
 // ─── Scene Module Factory ─────────────────────────────────────────
 
@@ -61,16 +140,15 @@ export const STENCIL_THRESHOLD = 0.01;
  * Creates a THREE.Group containing coastline geometry.
  *
  * The group contains:
- * 1. Hex-based stencil write mesh: merged BufferGeometry of all land hexes.
- *    colorWrite: false, stencilWrite: true, stencilRef: 1.
- *    Writes stencil=1 for every land hex pixel (not contour-based).
- *    renderOrder = STENCIL_WRITE (-1) — render before hex fill.
- * 2. Water overlay: PlaneGeometry with NotEqualStencilFunc(ref=1).
- *    Renders ocean blue where stencil=0 (water area), covering hex grid
- *    edges and background. renderOrder = COASTLINE (1).
+ * 1. Stencil write meshes (from coastlineData.loops at STENCIL_THRESHOLD):
+ *    colorWrite: false, stencilWrite: true, stencilRef: 1
+ *    renderOrder = STENCIL_WRITE (-1) — render before hex fill
+ * 2. Shallow band meshes (from shallowLoops, at COASTLINE_SHALLOW_Z):
+ *    renderOrder = COASTLINE (1) — render above hex fill, below grid
+ * 3. Lake shore meshes (from lakeLoops, at COASTLINE_SHALLOW_Z):
+ *    renderOrder = COASTLINE (1)
  *
- * NFP #4: Returns empty Group if no land tiles exist.
- * NFP #7: One merged Mesh draw call for stencil (~90K vertices for ~5K land hexes).
+ * NFP #4: Returns empty Group if computeCoastline returns no loops (all-ocean world).
  */
 export function createCoastlineMesh(
   tiles: HexTile[],
@@ -81,67 +159,48 @@ export function createCoastlineMesh(
 ): THREE.Group {
   const group = new THREE.Group();
 
-  // ── Hex-based stencil write pass (renderOrder = STENCIL_WRITE = -1) ─────
-  // Merge all land hex geometries into a single BufferGeometry Mesh.
-  // Writes stencil=1 for every land hex pixel. Using a regular Mesh (not InstancedMesh)
-  // because Three.js InstancedMesh ignores stencil material properties.
-  //
-  // Performance: ~5000 land hexes × 18 vertices = ~90K vertices in one draw call.
-  {
-    const hexGeo = buildHexGeometry(HEX_CONSTANTS.HEX_SIZE);
-    const hexPositions = hexGeo.getAttribute('position');
-    const verticesPerHex = hexPositions.count; // 18 (6 triangles × 3 vertices)
+  let coastlineData;
+  try {
+    // Use default threshold for all coastline contours (stencil + display).
+    // Using a lower threshold (e.g. STENCIL_THRESHOLD 0.30) causes shallowLoops to
+    // cover the entire map, painting all hexes with shallow-water color.
+    coastlineData = computeCoastline(
+      tiles,
+      HEX_CONSTANTS.HEX_SIZE,
+      cols,
+      rows,
+      seed,
+      COASTLINE_DEFAULTS,
+    );
+  } catch (err) {
+    // NFP #4: Fail-soft — computeCoastline failure returns empty group, never crashes
+    console.error('[CoastlineMesh] computeCoastline failed:', err);
+    return group;
+  }
 
-    // Count land tiles
-    const landIndices: number[] = [];
-    for (let i = 0; i < tiles.length; i++) {
-      const tile = tiles[i];
-      const lakeId = lakeIds ? lakeIds[i] : -1;
-      const isWater = isWaterTerrain(tile.terrain) || (lakeIds !== undefined && lakeId >= 0);
-      if (!isWater) landIndices.push(i);
+  // ── Stencil write pass (renderOrder = STENCIL_WRITE = -1) ─────────
+  // One shared stencil material for all land contour loops (minimizes allocations)
+  const stencilWriteMaterial = new THREE.MeshBasicMaterial({
+    colorWrite: false,
+    depthWrite: false,
+    depthTest: false,
+    stencilWrite: true,
+    stencilWriteMask: 0xFF,
+    stencilFunc: THREE.AlwaysStencilFunc,
+    stencilRef: 1,
+    stencilFuncMask: 0xFF,
+    stencilFail: THREE.ReplaceStencilOp,
+    stencilZFail: THREE.ReplaceStencilOp,
+    stencilZPass: THREE.ReplaceStencilOp,
+    side: THREE.DoubleSide,
+  });
+
+  for (const loop of coastlineData.loops) {
+    const mesh = loopToStencilMesh(loop, stencilWriteMaterial);
+    if (mesh) {
+      mesh.renderOrder = RENDER_ORDER.STENCIL_WRITE;
+      group.add(mesh);
     }
-
-    if (landIndices.length > 0) {
-      // Merge hex geometries: translate each hex template to its world position
-      const totalVerts = landIndices.length * verticesPerHex;
-      const mergedPositions = new Float32Array(totalVerts * 3);
-
-      for (let li = 0; li < landIndices.length; li++) {
-        const tile = tiles[landIndices[li]];
-        const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
-        const baseIdx = li * verticesPerHex * 3;
-
-        for (let v = 0; v < verticesPerHex; v++) {
-          mergedPositions[baseIdx + v * 3]     = hexPositions.getX(v) + x;
-          mergedPositions[baseIdx + v * 3 + 1] = hexPositions.getY(v) - y; // Y-flip
-          mergedPositions[baseIdx + v * 3 + 2] = 0;
-        }
-      }
-
-      const mergedGeo = new THREE.BufferGeometry();
-      mergedGeo.setAttribute('position', new THREE.Float32BufferAttribute(mergedPositions, 3));
-
-      const stencilWriteMaterial = new THREE.MeshBasicMaterial({
-        colorWrite: false,
-        depthWrite: false,
-        depthTest: false,
-        stencilWrite: true,
-        stencilWriteMask: 0xFF,
-        stencilFunc: THREE.AlwaysStencilFunc,
-        stencilRef: 1,
-        stencilFuncMask: 0xFF,
-        stencilFail: THREE.ReplaceStencilOp,
-        stencilZFail: THREE.ReplaceStencilOp,
-        stencilZPass: THREE.ReplaceStencilOp,
-        side: THREE.DoubleSide,
-      });
-
-      const stencilMesh = new THREE.Mesh(mergedGeo, stencilWriteMaterial);
-      stencilMesh.renderOrder = RENDER_ORDER.STENCIL_WRITE;
-      group.add(stencilMesh);
-    }
-
-    hexGeo.dispose();
   }
 
   // ── Water-colored overlay with inverse stencil (renderOrder = COASTLINE) ──
@@ -160,11 +219,10 @@ export function createCoastlineMesh(
     const pad = 100;
 
     const overlayGeo = new THREE.PlaneGeometry(mapW + pad * 2, mapH + pad * 2);
-    // Use ocean blue so the overlay shows as water where it covers hex edges
-    // past the organic coastline boundary. Matches mid-ocean depth band.
-    const [oR, oG, oB] = hexToThreeColor(WATER_PALETTE['ocean']);
+    // Use scene background color so the overlay blends with the dark canvas.
+    // Construct Color from hex int to match SCENE_CONSTANTS.BACKGROUND_COLOR exactly.
     const overlayMat = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(oR, oG, oB),
+      color: new THREE.Color(SCENE_CONSTANTS.BACKGROUND_COLOR),
       transparent: true,
       opacity: 1.0,
       depthTest: false,
