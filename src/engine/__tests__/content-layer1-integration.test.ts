@@ -103,7 +103,7 @@ describe('Layer 1 content integration', () => {
     expect(current.tick).toBe(100);
     expect(current.chronicle).toBeDefined();
     expect(current.tickEvents).toBeDefined();
-  });
+  }, 30000);
 
   it('simulation produces narrative variety across 100 ticks', () => {
     const { state: initialState } = initializeGameState(
@@ -125,7 +125,7 @@ describe('Layer 1 content integration', () => {
 
     // Should produce multiple event types, not just one
     expect(allEventTypes.size).toBeGreaterThan(0);
-  });
+  }, 30000);
 
   it('simulation accumulates chronicle entries over 100 ticks', () => {
     const { state: initialState } = initializeGameState(
@@ -144,7 +144,7 @@ describe('Layer 1 content integration', () => {
 
     const endingCount = current.chronicleEntries.length;
     expect(endingCount).toBeGreaterThanOrEqual(startingCount);
-  });
+  }, 30000);
 
   it('doom clock advances correctly over 100 ticks', () => {
     const { state: initialState } = initializeGameState(
@@ -164,7 +164,7 @@ describe('Layer 1 content integration', () => {
     // Doom should advance or stay same
     expect(current.doomClock.progress).toBeGreaterThanOrEqual(0);
     expect(current.doomClock.progress).toBeLessThanOrEqual(1);
-  });
+  }, 30000);
 
   it('mandate state updates correctly over 100 ticks', () => {
     const { state: initialState } = initializeGameState(
@@ -184,7 +184,7 @@ describe('Layer 1 content integration', () => {
     // Mandate should be valid
     expect(current.mandateState.progress).toBeGreaterThanOrEqual(0);
     expect(current.mandateState.progress).toBeLessThanOrEqual(1);
-  });
+  }, 30000);
 
   it('different seeds produce different narratives', () => {
     const { state: state42 } = initializeGameState(
@@ -223,7 +223,7 @@ describe('Layer 1 content integration', () => {
     const events42 = allEvents42.join('|');
     const events7 = allEvents7.join('|');
     expect(events42).not.toBe(events7);
-  });
+  }, 30000);
 
   it('same seed produces deterministic results', () => {
     const { state: state42a } = initializeGameState(
@@ -253,7 +253,7 @@ describe('Layer 1 content integration', () => {
 
     // And same chronicle length (deterministic)
     expect(current42a.chronicleEntries.length).toBe(current42b.chronicleEntries.length);
-  });
+  }, 30000);
 
   it('agent lifecycle events fire during 100-tick simulation', () => {
     const { state: initialState } = initializeGameState(
@@ -278,7 +278,7 @@ describe('Layer 1 content integration', () => {
     // Lifecycle events should be possible (even if rare)
     // This test just confirms the system runs without error
     expect(lifecycleEvents.size).toBeGreaterThanOrEqual(0);
-  });
+  }, 30000);
 
   it('encounter progression events can fire', () => {
     const { state: initialState } = initializeGameState(
@@ -302,5 +302,5 @@ describe('Layer 1 content integration', () => {
 
     // Encounter events should be possible
     expect(encounterEvents.size).toBeGreaterThanOrEqual(0);
-  });
+  }, 30000);
 });

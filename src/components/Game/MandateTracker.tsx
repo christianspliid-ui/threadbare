@@ -109,6 +109,13 @@ export function MandateTracker({ definition, state }: MandateTrackerProps) {
         <span className="font-mono flex-shrink-0" style={{ fontSize: '10px', color }}>
           {displayText}
         </span>
+        <div className="flex gap-0.5 items-center ml-auto">
+          {STAGE_ORDER.map(stage => (
+            <span key={stage}>
+              {renderStagePip(getStagePipStatus(stage, state.currentStage, state.completed))}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Expanded Popover — IX-001: Added role="dialog" */}
