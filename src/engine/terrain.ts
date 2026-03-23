@@ -8,9 +8,10 @@ export const ELEV = {
   DEEP_OCEAN: 0.15,     // below → ocean
   SHALLOWS: 0.25,       // below → coastal_shallows
   LAKE_MAX: 0.28,       // below + wet → lake
-  LOWLAND: 0.40,        // below → lowland biomes
-  MID: 0.60,            // below → mid-elevation biomes
-  HIGHLAND: 0.80,       // below → highland biomes, above → mountains
+  LOWLAND: 0.50,        // below → lowland biomes (grassland, forest, etc.)
+  MID: 0.625,           // below → mid-elevation biomes (hills transition)
+  HIGHLAND: 0.75,       // below → highland biomes, above → mountains
+  HIGH_MOUNTAINS: 0.95, // above → high mountains / volcano candidates
 } as const;
 
 /** Temperature band boundaries (normalized 0–1) */

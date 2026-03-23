@@ -44,7 +44,8 @@ describe('classifyBiome', () => {
   });
 
   it('returns forested_hills for mid-elevation, moderate moisture, cool temp', () => {
-    const biome = classifyBiome(0.45, 0.35, 0.60);
+    // Mid-elevation is 0.50–0.625 with new thresholds
+    const biome = classifyBiome(0.55, 0.35, 0.60);
     expect(biome).toBe('forested_hills');
   });
 
