@@ -63,8 +63,10 @@ export const ELEVATION_LACUNARITY = 2.0;
 // ─── Ridge constants ─────────────────────────────────────────────
 /** Default number of ridge mountain spines */
 export const RIDGE_COUNT_DEFAULT = 4;
-/** Peak elevation value at ridge spine hexes (0-1) */
-export const RIDGE_PEAK_ELEVATION = 0.90;
+/** Peak elevation value at ridge spine hexes (0-1).
+ * With max()-blend, only exact spine hexes reach this value,
+ * creating narrow linear peaks along mountain ranges. */
+export const RIDGE_PEAK_ELEVATION = 0.97;
 /** Number of hexes from spine to foothills transition edge */
 export const RIDGE_FOOTHILLS_HEXES = 4;
 /** Probability of a fork branching off at each spine step */
