@@ -679,3 +679,8 @@
   font-size: var(--text-xs);
   color: var(--text-tertiary);
 }
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

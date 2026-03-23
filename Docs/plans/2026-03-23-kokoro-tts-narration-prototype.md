@@ -129,9 +129,21 @@ source.start();
 
 ### What to Narrate (Prototype)
 
-Start narrow. Only narrate events the player explicitly clicks on, via a "narrate" button on the NarrativeLog entry. Do NOT auto-narrate the event stream — that would be overwhelming and create a queue/cancellation mess.
+**Primary target: the HexChronicle panel** (`src/components/Game/HexChronicle.tsx`). This is the narrative panel that appears when the player selects a hex, displaying four prose sections: The Land (biome + resource prose), The Soul (sphere influence prose), The People (culture + faction + location prose), and The Ruins (historical culture + etymology + legacy flavor).
 
-Later iterations can add: auto-narrate high-significance events, narrate encounter vignettes, narrate lore popups.
+This is a much better narration target than individual tick events because:
+- The text is rich, atmospheric, and meant to be savored — exactly the content worth hearing aloud
+- The player explicitly chose to inspect this hex, so narration isn't unsolicited
+- The sections are short enough for batch generation (1-3 paragraphs each)
+- It's deterministic per hex, so the same hex always produces the same narration
+
+**Prototype integration:** Add a "narrate" button (speaker icon) to the HexChronicle header. On click, collect the visible prose text from all four sections and send it to the NarrationService. The sections should be concatenated in order (Land → Soul → People → Ruins) with brief pauses between them (achieved by inserting period-space between sections).
+
+**Text extraction:** The HexChronicle already computes prose strings from the layered prose system (BIOME_PROSE, SPHERE_LOCATION_PROSE, CULTURE_LOCATION_PROSE, etc.) and renders them as paragraphs. The narration hook should extract the same text strings before they're wrapped in JSX — not by scraping the DOM, but by calling the same prose functions and concatenating the results.
+
+Alternatively, the simplest approach: pass a `ref` or callback that collects `innerText` from the chronicle's content container. This is pragmatic for a prototype — it reads exactly what the player sees, including dynamically-generated prose. Keep it simple.
+
+Later iterations can add: narrate individual sections on click, auto-narrate on hex selection, narrate NarrativeLog events, narrate encounter vignettes.
 
 ## Constants Table
 
@@ -144,7 +156,8 @@ Later iterations can add: auto-narrate high-significance events, narrate encount
 | `NARRATION_VOICE` | `"bf_emma"` | Default narrator voice |
 | `NARRATION_SPEED` | `1.0` | Default speaking speed |
 | `NARRATION_SAMPLE_RATE` | `24000` | Kokoro output sample rate (Hz) |
-| `NARRATION_MAX_TEXT_LENGTH` | `500` | Max characters per speak() call |
+| `NARRATION_MAX_TEXT_LENGTH` | `1500` | Max characters per speak() call (HexChronicle can be long) |
+| `NARRATION_SECTION_PAUSE` | `". "` | Inserted between chronicle sections for a natural pause |
 
 ## Fail-Soft Table
 
@@ -177,15 +190,20 @@ Not needed for prototype. If we later integrate narration into the tick loop, em
 | 6. Additive over destructive | PASS — purely new code, touches no existing modules |
 | 7. Performance budget | PASS — Web Worker isolates inference from render loop |
 
+### Streaming vs. Batch (Revisited for HexChronicle)
+
+HexChronicle text can be longer than individual tick events (potentially 500-1500 chars across all four sections). For the prototype, still **use batch generation** — even at 1500 chars, Kokoro generates audio in a few seconds on WASM, which is acceptable for a "click to narrate" flow. If latency feels too long during testing, switch to streaming for the production version.
+
 ## Prototype Acceptance Criteria
 
-1. Player can click a "narrate" button on a NarrativeLog event entry
-2. First click triggers lazy model download with progress indicator
-3. After model loads, the event text is spoken aloud in the selected voice
-4. Player can stop playback mid-speech
-5. Narration is off by default (`NARRATION_ENABLED = false`)
+1. Player can click a "narrate" speaker icon button in the HexChronicle header
+2. First click triggers lazy model download with progress indicator (spinner replaces icon)
+3. After model loads, the chronicle prose (all four sections) is spoken aloud in the selected voice
+4. Player can stop playback mid-speech (icon toggles to stop/square)
+5. Narration is off by default (`NARRATION_ENABLED = false`) — enable with constant flip
 6. No impact on game performance (Web Worker isolation verified)
 7. Works on Chrome and Firefox (WASM backend)
+8. Selecting a different hex while narration is playing stops the current narration
 
 ## Out of Scope (Prototype)
 
