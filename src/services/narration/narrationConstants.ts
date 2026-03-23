@@ -11,7 +11,7 @@ export const NARRATION_TTS_SERVER_URL = 'http://localhost:3001/api/tts';
 export const NARRATION_VOICE = 'bm_george';
 
 /** Default speaking speed (0.5–2.0). Slower for storyteller cadence. */
-export const NARRATION_SPEED = 0.85;
+export const NARRATION_SPEED = 0.9;
 
 /** Max characters per speak() call — prevents excessively long inference. */
 export const NARRATION_MAX_TEXT_LENGTH = 1500;
