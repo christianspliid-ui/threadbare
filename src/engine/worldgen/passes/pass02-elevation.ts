@@ -3,9 +3,9 @@
  *
  * Generates a province-biased heightmap with:
  * - Multi-octave simplex base elevation
- * - Ridge mountain spine overlay with foothills falloff
  * - Dry rift canyon carving
  * - Province elevation bias (mountain/lowland/forest provinces)
+ * - Ridge mountain spine overlay (max-blend, applied last for linear peaks)
  *
  * Exposes sampleElevation(col, row) continuous function for Phase 3 coastline rendering.
  *
@@ -326,23 +326,12 @@ export function runElevationPass(ctx: WorldGenContext, params: WorldGenParams): 
     }
   }
 
-  // 2. Generate ridges
+  // 2. Generate ridges (structure only — overlay applied after province bias)
   const ridgeCount = params.ridgeCount ?? RIDGE_COUNT_DEFAULT;
   const ridges = generateRidges(cols, rows, ridgeCount, rng);
   ctx.ridges = ridges;
 
-  // 3. Apply ridge elevation overlay
-  if (ridges.length > 0) {
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        const idx = row * cols + col;
-        const ridgeContrib = ridgeElevationAt({ col, row }, ridges);
-        ctx.elevation[idx] = Math.min(1, ctx.elevation[idx] + ridgeContrib);
-      }
-    }
-  }
-
-  // 4. Generate canyons and apply
+  // 3. Generate canyons and apply
   const canyons = generateCanyons(cols, rows, ctx.elevation, rng);
   ctx.canyons = canyons;
 
@@ -354,7 +343,7 @@ export function runElevationPass(ctx: WorldGenContext, params: WorldGenParams): 
     }
   }
 
-  // 5. Apply province elevation bias
+  // 4. Apply province elevation bias
   for (const province of ctx.provinces) {
     const targetRange = getProvinceTargetElevation(province.terrainIdentity);
     if (!targetRange) continue;
@@ -373,12 +362,27 @@ export function runElevationPass(ctx: WorldGenContext, params: WorldGenParams): 
     }
   }
 
+  // 5. Apply ridge elevation overlay (max-blend, not additive).
+  // Runs AFTER province bias so ridge spines guarantee linear peak lines
+  // that aren't pulled down by province smoothing.
+  // max() means ridges set a floor elevation — only exact spine hexes
+  // reach RIDGE_PEAK_ELEVATION (0.97), creating narrow ridgelines.
+  if (ridges.length > 0) {
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        const idx = row * cols + col;
+        const ridgeContrib = ridgeElevationAt({ col, row }, ridges);
+        ctx.elevation[idx] = Math.max(ctx.elevation[idx], ridgeContrib);
+      }
+    }
+  }
+
   // 6. Set sea level
   for (let i = 0; i < ctx.elevation.length; i++) {
     ctx.isOcean[i] = ctx.elevation[i] < SEA_LEVEL ? 1 : 0;
   }
 
-  // 7. Store continuous sampleElevation function with ridge awareness
+  // 8. Store continuous sampleElevation function with ridge awareness
   ctx.sampleElevation = (col: number, row: number): number => {
     // Integer coords: return array value (fast path)
     if (Number.isInteger(col) && Number.isInteger(row)) {
@@ -386,9 +390,9 @@ export function runElevationPass(ctx: WorldGenContext, params: WorldGenParams): 
       const r = Math.max(0, Math.min(rows - 1, row));
       return ctx.elevation[r * cols + c];
     }
-    // Fractional coords: re-evaluate noise + ridge overlay at this exact point
+    // Fractional coords: re-evaluate noise + ridge overlay (max-blend) at this exact point
     const base = evaluateElevationAt(col, row);
     const ridge = ridgeElevationAt({ col: Math.round(col), row: Math.round(row) }, ridges);
-    return Math.max(0, Math.min(1, base + ridge));
+    return Math.max(0, Math.min(1, Math.max(base, ridge)));
   };
 }
