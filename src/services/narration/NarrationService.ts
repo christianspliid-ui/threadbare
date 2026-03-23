@@ -71,6 +71,7 @@ class NarrationServiceImpl {
 
   // ── Init ──────────────────────────────────────────────────────
 
+  /** Eagerly load the worker + model. No user gesture required. */
   async init(): Promise<void> {
     if (this._status === 'loading' || this._status === 'ready') return;
 
@@ -90,11 +91,6 @@ class NarrationServiceImpl {
         this.setStatus('error', e.message);
       };
 
-      // Initialize AudioContext from user gesture context (caller ensures this)
-      if (!this.audioCtx) {
-        this.audioCtx = new AudioContext({ sampleRate: NARRATION_SAMPLE_RATE });
-      }
-
       // Tell worker to load the model
       this.worker.postMessage({
         type: 'init',
@@ -108,9 +104,19 @@ class NarrationServiceImpl {
     }
   }
 
+  /** Ensure AudioContext exists — must be called from a user gesture. */
+  private ensureAudioContext(): void {
+    if (!this.audioCtx) {
+      this.audioCtx = new AudioContext({ sampleRate: NARRATION_SAMPLE_RATE });
+    }
+  }
+
   // ── Speak ─────────────────────────────────────────────────────
 
   async speak(text: string, voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
+    // Create AudioContext on first speak (requires user gesture)
+    this.ensureAudioContext();
+
     if (!this.worker || this._status === 'loading') return;
 
     // If not ready, auto-init (but this shouldn't happen in normal flow)
