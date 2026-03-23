@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 09-start-screen/09-02-PLAN.md (awaiting Task 2 human-verify checkpoint)
-last_updated: "2026-03-23T09:07:45.858Z"
+stopped_at: Completed 09-start-screen/09-02-PLAN.md
+last_updated: "2026-03-23T09:18:14.603Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 10
@@ -152,6 +152,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 09-start-screen P00 | 1min | 1 tasks | 3 files |
 | Phase 09-start-screen P01 | 12 | 2 tasks | 6 files |
 | Phase 09-start-screen P02 | 2 | 1 tasks | 3 files |
+| Phase 09-start-screen P02 | 15 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -227,6 +228,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 09-start-screen]: App.tsx default phase changed from 'worldgen' to 'start'; dev shortcuts bypass via early return
 - [Phase 09-start-screen]: Volume slider state lives in StartPage (not SettingsModal) so it survives modal close/reopen cycles
 - [Phase 09-start-screen]: Fog default key threadbare_fog_default stored in localStorage, unchecked by default matching existing ?fog off-by-default behavior
+- [Phase 09-start-screen]: Seed hardcoded as 42 on start screen (no dynamic seed access from start page context)
+- [Phase 09-start-screen]: Tech credits rendered as a list from a const array for easy extensibility
 
 ### Pending Todos
 
@@ -238,6 +241,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T09:07:45.856Z
-Stopped at: Completed 09-start-screen/09-02-PLAN.md (awaiting Task 2 human-verify checkpoint)
+Last session: 2026-03-23T09:18:14.600Z
+Stopped at: Completed 09-start-screen/09-02-PLAN.md
 Resume file: None
