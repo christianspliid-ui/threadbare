@@ -2,7 +2,7 @@
 // Exposes NarrationService state to React components with automatic
 // subscription management.
 
-import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getNarrationService, type NarrationState } from './NarrationService';
 import { NARRATION_ENABLED, NARRATION_SECTION_PAUSE } from './narrationConstants';
 
@@ -10,22 +10,23 @@ const DISABLED_STATE: NarrationState = { status: 'idle', loadProgress: 0, error:
 
 export function useNarration() {
   const service = useRef(getNarrationService());
+  const [state, setState] = useState<NarrationState>(() => {
+    if (!NARRATION_ENABLED) return DISABLED_STATE;
+    return service.current.getState();
+  });
 
-  const state = useSyncExternalStore(
-    useCallback((cb) => {
-      if (!NARRATION_ENABLED) return () => {};
-      return service.current.subscribe(cb);
-    }, []),
-    useCallback(() => {
-      if (!NARRATION_ENABLED) return DISABLED_STATE;
-      return service.current.getState();
-    }, []),
-  );
+  // Subscribe to service state changes
+  useEffect(() => {
+    if (!NARRATION_ENABLED) return;
+    const unsubscribe = service.current.subscribe((newState) => {
+      setState(newState);
+    });
+    return unsubscribe;
+  }, []);
 
-  // Cleanup on unmount
+  // Stop playback on unmount
   useEffect(() => {
     return () => {
-      // Stop playback if component unmounts while speaking
       if (service.current.isSpeaking) {
         service.current.stop();
       }
@@ -45,9 +46,9 @@ export function useNarration() {
     if (svc.status === 'idle' || svc.status === 'error') {
       await svc.init();
       // Wait for ready, then speak
-      const unsubscribe = svc.subscribe((s) => {
+      const unsub = svc.subscribe((s) => {
         if (s.status === 'ready') {
-          unsubscribe();
+          unsub();
           svc.speak(text);
         }
       });
