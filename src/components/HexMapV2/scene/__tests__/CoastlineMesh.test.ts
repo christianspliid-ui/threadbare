@@ -85,8 +85,8 @@ describe('createCoastlineMesh', () => {
     );
     expect(stencilMeshes.length).toBe(0);
 
-    // Water overlay quad is always present (covers non-land area with background color)
-    expect(group.children.length).toBeGreaterThan(0);
+    // No coastal band meshes either — empty loops produce empty group
+    expect(group.children.length).toBe(0);
   });
 
   it('coastline mesh Y coordinates are negated vs SVG space (Y-flip)', () => {
