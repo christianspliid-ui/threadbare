@@ -32,6 +32,8 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 import { RENDER_ORDER } from './RenderLayers';
 import { WATER_PALETTE } from '../palette/waterPalette';
 import { hexToThreeColor } from '../palette/colorUtils';
+import { HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
+import { SCENE_CONSTANTS } from './HexSceneSetup';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────
 
@@ -201,18 +203,46 @@ export function createCoastlineMesh(
     }
   }
 
-  // NOTE: Shallow band and lake shore overlays are DISABLED.
-  // The stencil write pass uses marching-squares contour loops which trace the coastline
-  // boundary but do NOT fill the entire land interior. This means stencil=1 only exists
-  // near the coast, not for inland hexes. An inverse stencil test (NotEqualStencilFunc)
-  // on the shallow band would incorrectly render over inland hexes (which have stencil=0).
+  // ── Water-colored overlay with inverse stencil (renderOrder = COASTLINE) ──
+  // A full-map quad that only renders where stencil != 1 (water area).
+  // This covers the jagged hex edges of coastal land hexes that extend past
+  // the organic coastline boundary, creating smooth organic shores.
   //
-  // To fix: either (a) add a separate full-land stencil fill pass using hex geometry for
-  // all land tiles, or (b) use the scalar field to generate a filled polygon that covers
-  // all land area, not just the boundary contour.
-  //
-  // Water hexes already have per-hex depth-band colors from getHexColor, so the visual
-  // impact of missing shallow bands is minimal.
+  // Three.js InstancedMesh ignores material stencil properties, so we can't
+  // stencil-test the land InstancedMesh directly. Instead, this regular Mesh
+  // overlay paints water color on top of hex edges outside the organic boundary.
+  // Stencil test works correctly on regular Mesh (verified with diagnostic).
+  {
+    const hexSize = HEX_CONSTANTS.HEX_SIZE;
+    const mapW = cols * hexSize * HEX_SCALE_X + hexSize * 2;
+    const mapH = rows * HEX_SCALE_Y * hexSize + HEX_SCALE_Y * hexSize;
+    const pad = 100;
+
+    const overlayGeo = new THREE.PlaneGeometry(mapW + pad * 2, mapH + pad * 2);
+    // Use scene background color so the overlay blends with the dark canvas.
+    // Construct Color from hex int to match SCENE_CONSTANTS.BACKGROUND_COLOR exactly.
+    const overlayMat = new THREE.MeshBasicMaterial({
+      color: new THREE.Color(SCENE_CONSTANTS.BACKGROUND_COLOR),
+      transparent: true,
+      opacity: 1.0,
+      depthTest: false,
+      side: THREE.DoubleSide,
+      // Inverse stencil: only render where stencil != 1 (water pixels)
+      stencilWrite: true,
+      stencilFunc: THREE.NotEqualStencilFunc,
+      stencilRef: 1,
+      stencilFuncMask: 0xFF,
+      stencilFail: THREE.KeepStencilOp,
+      stencilZFail: THREE.KeepStencilOp,
+      stencilZPass: THREE.KeepStencilOp,
+    });
+
+    const overlayMesh = new THREE.Mesh(overlayGeo, overlayMat);
+    // Center the quad over the hex grid (hexToPixel origin is top-left)
+    overlayMesh.position.set(mapW / 2 - hexSize, -(mapH / 2), 0.03);
+    overlayMesh.renderOrder = RENDER_ORDER.COASTLINE;
+    group.add(overlayMesh);
+  }
 
   return group;
 }

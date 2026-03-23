@@ -92,16 +92,10 @@ export function createHexFillMesh(
     }
   }
 
-  // Land mesh — stencil-tested: only renders where stencil buffer = 1.
-  // The stencil buffer is written by CoastlineMesh stencil write pass (renderOrder -1).
+  // Land mesh — renders full hex shapes (no stencil on InstancedMesh — Three.js limitation).
+  // Organic coastline clipping is handled by CoastlineMesh water-colored overlay
+  // that uses inverse stencil test on a regular Mesh (where stencil DOES work).
   const landMat = new THREE.MeshBasicMaterial({ vertexColors: false });
-  landMat.stencilWrite = false;
-  landMat.stencilFunc = THREE.EqualStencilFunc;
-  landMat.stencilRef = 1;
-  landMat.stencilFuncMask = 0xFF;
-  landMat.stencilFail = THREE.KeepStencilOp;
-  landMat.stencilZFail = THREE.KeepStencilOp;
-  landMat.stencilZPass = THREE.KeepStencilOp;
 
   const landMesh = new THREE.InstancedMesh(geo, landMat, landTileIndices.length);
   landMesh.renderOrder = RENDER_ORDER.HEX_FILL;

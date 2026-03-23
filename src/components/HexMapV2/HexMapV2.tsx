@@ -56,7 +56,7 @@ import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
-import { LOCATION_IMPORTANCE_MAP } from './locations/locationIconRegistry';
+import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
 // ─── Props & Handle ───────────────────────────────────────────────────────────
