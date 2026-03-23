@@ -8,11 +8,12 @@ export const NARRATION_ENABLED = true;
 /** HuggingFace model repository for Kokoro 82M. */
 export const NARRATION_MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 
-/** Quantization level — q8 is ~92 MB with minimal quality loss. */
-export const NARRATION_DTYPE = 'q8';
+/** Quantization level — q4 is ~46 MB, faster WASM inference with acceptable quality. */
+export const NARRATION_DTYPE = 'q4';
 
-/** Inference backend — "webgpu" for speed, falls back to "wasm" in worker if unsupported. */
-export const NARRATION_DEVICE = 'webgpu';
+/** Inference backend — WASM for correct output. WebGPU produces garbled audio
+ *  due to incomplete ONNX node coverage on Windows. */
+export const NARRATION_DEVICE = 'wasm';
 
 /** Default narrator voice — British male, deeper storyteller tone. */
 export const NARRATION_VOICE = 'bm_george';

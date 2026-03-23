@@ -25,16 +25,9 @@ self.onmessage = async (e: MessageEvent) => {
   switch (msg.type) {
     case 'init': {
       try {
-        // Try requested device, fall back to WASM if WebGPU unavailable in worker
-        let device = msg.device;
-        if (device === 'webgpu' && typeof navigator !== 'undefined' && !navigator.gpu) {
-          console.warn('[NarrationWorker] WebGPU not available in worker, falling back to WASM');
-          device = 'wasm';
-        }
-
         tts = await KokoroTTS.from_pretrained(msg.modelId, {
           dtype: msg.dtype,
-          device,
+          device: msg.device,
           progress_callback: (progress: { status: string; progress?: number }) => {
             if (progress.progress != null) {
               self.postMessage({ type: 'init-progress', progress: progress.progress / 100 });
@@ -43,26 +36,7 @@ self.onmessage = async (e: MessageEvent) => {
         });
         self.postMessage({ type: 'init-done' });
       } catch (err) {
-        // If WebGPU init fails, retry with WASM
-        if (msg.device === 'webgpu' && !tts) {
-          try {
-            console.warn('[NarrationWorker] WebGPU init failed, retrying with WASM');
-            tts = await KokoroTTS.from_pretrained(msg.modelId, {
-              dtype: msg.dtype,
-              device: 'wasm',
-              progress_callback: (progress: { status: string; progress?: number }) => {
-                if (progress.progress != null) {
-                  self.postMessage({ type: 'init-progress', progress: progress.progress / 100 });
-                }
-              },
-            });
-            self.postMessage({ type: 'init-done' });
-          } catch (fallbackErr) {
-            self.postMessage({ type: 'init-error', error: String(fallbackErr) });
-          }
-        } else {
-          self.postMessage({ type: 'init-error', error: String(err) });
-        }
+        self.postMessage({ type: 'init-error', error: String(err) });
       }
       break;
     }
