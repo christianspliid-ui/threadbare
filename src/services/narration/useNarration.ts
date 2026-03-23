@@ -4,7 +4,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getNarrationService, type NarrationState } from './NarrationService';
-import { NARRATION_ENABLED, NARRATION_SECTION_PAUSE } from './narrationConstants';
+import { NARRATION_ENABLED } from './narrationConstants';
 
 const DISABLED_STATE: NarrationState = { status: 'idle', loadProgress: 0, error: null };
 
@@ -45,15 +45,20 @@ export function useNarration() {
     await service.current.init();
   }, []);
 
-  /** Narrate text via the TTS server. */
+  /** Narrate a single text block via the TTS server. */
   const speak = useCallback(async (text: string) => {
     if (!NARRATION_ENABLED) return;
     const svc = service.current;
-
-    // CRITICAL: Create AudioContext NOW, during the user gesture (click).
     svc.ensureAudioContext();
-
     await svc.speak(text);
+  }, []);
+
+  /** Narrate multiple text sections with pauses between them. */
+  const speakSections = useCallback(async (sections: string[]) => {
+    if (!NARRATION_ENABLED) return;
+    const svc = service.current;
+    svc.ensureAudioContext();
+    await svc.speakSections(sections);
   }, []);
 
   /** Stop current narration. */
@@ -69,17 +74,16 @@ export function useNarration() {
     if (!containerEl || !NARRATION_ENABLED) return;
 
     const proseElements = containerEl.querySelectorAll('.chronicle-prose');
-    const texts: string[] = [];
+    const sections: string[] = [];
     for (const el of proseElements) {
       const text = (el as HTMLElement).innerText?.trim();
-      if (text) texts.push(text);
+      if (text) sections.push(text);
     }
 
-    if (texts.length === 0) return;
+    if (sections.length === 0) return;
 
-    const fullText = texts.join(NARRATION_SECTION_PAUSE);
-    await speak(fullText);
-  }, [speak]);
+    await speakSections(sections);
+  }, [speakSections]);
 
   return {
     enabled: NARRATION_ENABLED,
@@ -90,6 +94,7 @@ export function useNarration() {
     isLoading: state.status === 'loading',
     init,
     speak,
+    speakSections,
     stop,
     narrateChronicle,
   };
