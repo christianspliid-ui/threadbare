@@ -21,6 +21,8 @@ import * as abc from '../../data/agent-behavior-constants';
 
 // ── Engine imports: src/engine/ ─────────────────────────────────────────
 
+import * as terrain from '../../engine/terrain';
+import * as wgConstants from '../../engine/worldgen/constants';
 import * as forceField from '../../engine/forceField';
 import * as terrainTypes from '../../engine/terrainPipeline/types';
 import * as agentLife from '../../engine/agentLifecycle';
@@ -1103,6 +1105,61 @@ export const TUNABLE_GROUPS: TunableGroup[] = [
         'Frequency increase per octave for moisture.',
         'src/engine/forceField.ts', [1.0, 4.0],
         'forceField → moisture noise'),
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 13b. BIOME CLASSIFICATION — Elevation & Climate Bands
+  // ═══════════════════════════════════════════════════════════════════════
+  {
+    id: 'biome-classification',
+    label: 'Biome Classification — Elevation Bands',
+    description: 'Elevation thresholds that determine terrain type: lowland, hills, mountains, high mountains. Also temperature and moisture band boundaries.',
+    constants: [
+      n('ELEV_DEEP_OCEAN', terrain.ELEV.DEEP_OCEAN,
+        'Elevation below which hexes are deep ocean.',
+        'src/engine/terrain.ts', [0.05, 0.25],
+        'classifyBiome → ocean depth'),
+      n('ELEV_SHALLOWS', terrain.ELEV.SHALLOWS,
+        'Elevation below which hexes are coastal shallows.',
+        'src/engine/terrain.ts', [0.15, 0.35],
+        'classifyBiome → ocean depth'),
+      n('ELEV_LAKE_MAX', terrain.ELEV.LAKE_MAX,
+        'Maximum elevation for lake formation.',
+        'src/engine/terrain.ts', [0.20, 0.40],
+        'classifyBiome → lake placement'),
+      n('ELEV_LOWLAND', terrain.ELEV.LOWLAND,
+        'Elevation ceiling for lowland biomes (grassland, forest, etc.).',
+        'src/engine/terrain.ts', [0.35, 0.60],
+        'classifyBiome → lowland/mid transition'),
+      n('ELEV_MID', terrain.ELEV.MID,
+        'Elevation ceiling for mid-elevation biomes (hills transition zone).',
+        'src/engine/terrain.ts', [0.50, 0.75],
+        'classifyBiome → hills/highland transition'),
+      n('ELEV_HIGHLAND', terrain.ELEV.HIGHLAND,
+        'Elevation ceiling for highland biomes. Above this = mountains.',
+        'src/engine/terrain.ts', [0.60, 0.90],
+        'classifyBiome + pass07 → mountain override'),
+      n('ELEV_HIGH_MOUNTAINS', terrain.ELEV.HIGH_MOUNTAINS,
+        'Elevation threshold for high mountains. Above this = high_mountains/volcano.',
+        'src/engine/terrain.ts', [0.85, 1.00],
+        'pass07 → high mountain override'),
+      n('SEA_LEVEL', wgConstants.SEA_LEVEL,
+        'Elevation threshold dividing ocean from land.',
+        'src/engine/worldgen/constants.ts', [0.25, 0.50],
+        'pass02 → ocean mask'),
+      n('RIDGE_PEAK_ELEVATION', wgConstants.RIDGE_PEAK_ELEVATION,
+        'Peak elevation at ridge spine hexes.',
+        'src/engine/worldgen/constants.ts', [0.70, 1.00],
+        'pass02 → ridge overlay'),
+      n('RIDGE_FOOTHILLS_HEXES', wgConstants.RIDGE_FOOTHILLS_HEXES,
+        'Hexes from ridge spine to foothills edge.',
+        'src/engine/worldgen/constants.ts', [2, 8],
+        'pass02 → ridge falloff'),
+      n('VOLCANO_MIN_ELEVATION', wgConstants.VOLCANO_MIN_ELEVATION,
+        'Minimum elevation for volcano placement.',
+        'src/engine/worldgen/constants.ts', [0.80, 1.00],
+        'pass07 → volcano check'),
     ],
   },
 

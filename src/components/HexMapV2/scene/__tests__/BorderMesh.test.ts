@@ -95,8 +95,11 @@ describe('createBorderMesh', () => {
     expect(pos.count).toBeGreaterThan(0);
   });
 
-  it('REGN-06: geographic-only differences produce zero border geometry (no barony/kingdom difference)', () => {
-    // All hexes in same barony AND same kingdom — different geographic region doesn't matter
+  it('REGN-06: geographic-only differences produce zero INTERNAL border geometry (no barony/kingdom difference)', () => {
+    // All hexes in same barony AND same kingdom — different geographic region doesn't matter.
+    // Internal edges (between two assigned hexes in the same barony) produce no borders.
+    // Outer boundary edges (where the region meets map edge / unassigned territory) DO produce
+    // geometry — that's the ring around the region, not a geographic-only border.
     const cols = 3;
     const tiles: HexTile[] = [];
     const hexBaronyId = new Map<string, number>();
@@ -113,15 +116,17 @@ describe('createBorderMesh', () => {
     const regionData = makeRegionData(hexBaronyId, hexKingdomId);
     const result = createBorderMesh(regionData, tiles, cols);
 
-    // No borders between same-barony/same-kingdom hexes
+    // No barony borders at all (barony borders are for different baronies within same kingdom)
     const baronyPos = result.baronyMesh.geometry.getAttribute('position');
-    const kingdomPos = result.kingdomMesh.geometry.getAttribute('position');
-
-    // Either no position attribute or 0 vertices
     const baronyVertices = baronyPos ? baronyPos.count : 0;
-    const kingdomVertices = kingdomPos ? kingdomPos.count : 0;
     expect(baronyVertices).toBe(0);
-    expect(kingdomVertices).toBe(0);
+
+    // Kingdom border geometry WILL exist — these are the outer ring borders where the single
+    // kingdom meets the edge of the map / unassigned territory. This is correct: the ring
+    // closes around the region's perimeter, not between internal geographic differences.
+    const kingdomPos = result.kingdomMesh.geometry.getAttribute('position');
+    const kingdomVertices = kingdomPos ? kingdomPos.count : 0;
+    expect(kingdomVertices).toBeGreaterThan(0);
   });
 
   it('kingdom border geometry is separate from barony border geometry', () => {

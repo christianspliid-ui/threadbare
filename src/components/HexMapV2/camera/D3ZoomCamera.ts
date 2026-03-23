@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import * as THREE from 'three';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
 
 /**
@@ -173,7 +173,24 @@ export function setupD3Zoom(
     row: centerRow,
   };
   const { x: gridCenterX, y: gridCenterY } = hexToPixel(startHex, HEX_CONSTANTS.HEX_SIZE);
-  const k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
+
+  // Compute initial zoom to fit grid within the canvas (with padding).
+  // Grid world extent: cols * HEX_SCALE_X * hexSize wide, rows * HEX_SCALE_Y * hexSize tall.
+  // Zoom k means 1 world unit = k screen pixels, so we need k = canvasPx / worldUnits.
+  const FIT_PADDING = 0.85; // Show grid at 85% of canvas, leaving edge padding
+  let k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
+  if (gridCols != null && gridRows != null) {
+    const worldW = gridCols * HEX_SCALE_X * HEX_CONSTANTS.HEX_SIZE;
+    const worldH = gridRows * HEX_SCALE_Y * HEX_CONSTANTS.HEX_SIZE;
+    const canvasW = canvas.clientWidth;
+    const canvasH = canvas.clientHeight;
+    const fitK = Math.min(
+      (canvasW * FIT_PADDING) / worldW,
+      (canvasH * FIT_PADDING) / worldH,
+    );
+    // Clamp to zoom extent
+    k = Math.max(CAMERA_CONSTANTS.MIN_ZOOM, Math.min(CAMERA_CONSTANTS.MAX_ZOOM, fitK));
+  }
 
   // World center: hexToPixel gives positive y, but HexFillMesh stores
   // positions at (x, -y, 0) for the Y-flip. So world center Y = -gridCenterY.

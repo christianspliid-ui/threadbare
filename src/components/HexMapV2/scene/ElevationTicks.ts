@@ -9,21 +9,32 @@ import { HEX_CONSTANTS } from './HexFillMesh';
  * NFP #1: Every tunable number is named here — change game feel by adjusting these values.
  */
 export const ELEVATION_TICK_CONSTANTS = {
-  /** Minimum elevation difference (0–1) to show caterpillar tick marks on an edge. */
-  TICK_THRESHOLD:    0.08,
-  /** Elevation difference per tick step — lower value = more ticks per given elevation diff. */
-  TICK_DENSITY_STEP: 0.03,
-  /** Half-length of each tick mark in world units (perpendicular to hex edge). */
-  TICK_LENGTH:       0.8,
+  /** Minimum elevation difference (0–1) to show tick marks on a plateau edge. */
+  TICK_THRESHOLD:    0.01,
+  /** Tick length as fraction of hex edge length. */
+  TICK_LENGTH_FRAC:  0.20,
+  /** Width of each tick quad in world units (along the hex edge direction). */
+  TICK_WIDTH:        0.12,
+  /** Number of tick lines evenly spaced along each hex edge (excludes corners). */
+  TICKS_PER_EDGE:    4,
   /** Dark brown — blends with mountain/highland terrain. */
   TICK_COLOR:        0x2a1a0a,
   /** Tick mark opacity (0–1). */
-  TICK_OPACITY:      0.6,
-  /** Minimum ticks per qualifying edge (gentle slope). */
-  TICK_MIN:          3,
-  /** Maximum ticks per qualifying edge (cliff face). */
-  TICK_MAX:          8,
+  TICK_OPACITY:      0.7,
 } as const;
+
+// ── Water terrain types (never receive elevation ticks) ──────────────────────
+
+const WATER_TYPES = new Set<string>([
+  'ocean',
+  'deep_ocean',
+  'tropical_ocean',
+  'coastal_shallows',
+  'coast',
+  'lake',
+  'river',
+  'reef',
+]);
 
 // ─── Hex-pair deduplication key ────────────────────────────────────────────────
 
@@ -95,31 +106,33 @@ function sharedEdgeVertices(
 // ─── Factory function ──────────────────────────────────────────────────────────
 
 /**
- * Creates a LineSegments mesh showing caterpillar-style tick marks on steep hex edges.
+ * Creates a Mesh of thin quads showing caterpillar-style tick marks on steep hex edges.
  * Tick density scales 3–8 per edge based on elevation difference (like topographic hatch marks).
+ *
+ * Uses quad geometry (two triangles per tick) instead of LineSegments because
+ * WebGL ignores linewidth > 1 on most platforms, making line-based ticks invisible.
  *
  * NFP #1: All constants tunable via ELEVATION_TICK_CONSTANTS.
  * NFP #2: Pure function — deterministic output for same tile set.
  * NFP #3: No randomness — tick positions are purely geometric.
- * NFP #4: Fail-soft — empty tiles or all-flat terrain returns empty LineSegments (no crash).
+ * NFP #4: Fail-soft — empty tiles or all-flat terrain returns empty Mesh (no crash).
  * NFP #7: Hex-pair deduplication ensures each shared edge is processed exactly once.
  */
-export function createElevationTicks(tiles: HexTile[]): THREE.LineSegments {
+export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
   const {
     TICK_THRESHOLD,
-    TICK_DENSITY_STEP,
-    TICK_LENGTH,
+    TICK_LENGTH_FRAC,
+    TICK_WIDTH,
+    TICKS_PER_EDGE,
     TICK_COLOR,
     TICK_OPACITY,
-    TICK_MIN,
-    TICK_MAX,
   } = ELEVATION_TICK_CONSTANTS;
 
   const size = HEX_CONSTANTS.HEX_SIZE;
 
-  // Fail-soft: return empty LineSegments for empty input
+  // Fail-soft: return empty Mesh for empty input
   if (tiles.length === 0) {
-    return buildLineSegments([], TICK_COLOR, TICK_OPACITY);
+    return buildTickMesh([], [], TICK_COLOR, TICK_OPACITY);
   }
 
   // O(1) tile lookup: "col,row" → HexTile
@@ -128,21 +141,67 @@ export function createElevationTicks(tiles: HexTile[]): THREE.LineSegments {
     tileMap.set(`${tile.coord.col},${tile.coord.row}`, tile);
   }
 
-  // Track processed hex pairs to avoid double-processing shared edges
   const processedPairs = new Set<string>();
-  const tickPoints: number[] = [];
+  const positions: number[] = [];
+  const indices: number[] = [];
+  let vertexIndex = 0;
+
+  const halfW = TICK_WIDTH / 2;
+
+  // Helper: emit one tick quad at a position, extending tickLen in the down direction
+  function emitTick(
+    baseX: number, baseY: number,
+    downX: number, downY: number,
+    alongX: number, alongY: number,
+    tickLen: number,
+  ) {
+    const t0x = baseX - alongX * halfW;
+    const t0y = baseY - alongY * halfW;
+    const t1x = baseX + alongX * halfW;
+    const t1y = baseY + alongY * halfW;
+    const b0x = t0x + downX * tickLen;
+    const b0y = t0y + downY * tickLen;
+    const b1x = t1x + downX * tickLen;
+    const b1y = t1y + downY * tickLen;
+
+    positions.push(
+      t0x, t0y, 0,
+      t1x, t1y, 0,
+      b0x, b0y, 0,
+      b1x, b1y, 0,
+    );
+    indices.push(
+      vertexIndex, vertexIndex + 1, vertexIndex + 2,
+      vertexIndex + 1, vertexIndex + 3, vertexIndex + 2,
+    );
+    vertexIndex += 4;
+  }
 
   for (const tile of tiles) {
+    // Only plateau hexes get elevation ticks
+    if (tile.terrain !== 'plateau') continue;
+
     const { x: cx, y: cy } = hexToPixel(tile.coord, size);
-    const worldCY = -cy; // Y-flip: SVG y-down → Three.js y-up
+    const worldCY = -cy; // Y-flip
 
     const neighbors = hexNeighbors(tile.coord);
 
     for (const neighbor of neighbors) {
       const neighborTile = tileMap.get(`${neighbor.col},${neighbor.row}`);
-      if (!neighborTile) continue; // Map boundary — no ticks
+      if (!neighborTile) continue;
 
-      // Dedup: process each (tileA, tileB) pair exactly once
+      // Skip if neighbor is also plateau
+      if (neighborTile.terrain === 'plateau') continue;
+
+      // Skip if neighbor is higher or equal elevation
+      const tileElev = tile.geoParams.elevation;
+      const neighborElev = neighborTile.geoParams.elevation;
+      if (neighborElev >= tileElev) continue;
+
+      const elevDiff = tileElev - neighborElev;
+      if (elevDiff < TICK_THRESHOLD) continue;
+
+      // Dedup edges
       const pairKey = hexPairKey(
         tile.coord.col, tile.coord.row,
         neighbor.col, neighbor.row,
@@ -150,70 +209,73 @@ export function createElevationTicks(tiles: HexTile[]): THREE.LineSegments {
       if (processedPairs.has(pairKey)) continue;
       processedPairs.add(pairKey);
 
-      // Compute elevation difference
-      const elevDiff = Math.abs(
-        tile.geoParams.elevation - neighborTile.geoParams.elevation,
-      );
-
-      // Skip edges with gentle or no slope
-      if (elevDiff < TICK_THRESHOLD) continue;
-
-      // Scale tick count with steepness, clamped to [TICK_MIN, TICK_MAX]
-      const tickCount = Math.min(TICK_MAX, Math.max(TICK_MIN, Math.floor(elevDiff / TICK_DENSITY_STEP)));
-
-      // Get the shared edge geometry between these two adjacent hexes
+      // Get shared edge
       const { x: ncx, y: ncy } = hexToPixel(neighbor, size);
-      const worldNCY = -ncy; // Y-flip
+      const worldNCY = -ncy;
 
       const edge = sharedEdgeVertices(cx, worldCY, ncx, worldNCY, size);
       if (!edge) continue;
 
-      // Edge vector and perpendicular
       const edgeDX = edge.x1 - edge.x0;
       const edgeDY = edge.y1 - edge.y0;
       const edgeLen = Math.sqrt(edgeDX * edgeDX + edgeDY * edgeDY);
       if (edgeLen < 1e-6) continue;
 
-      // Unit perpendicular to the edge (rotate edge vector 90°)
-      const perpX = -edgeDY / edgeLen;
-      const perpY =  edgeDX / edgeLen;
+      // Tick length = fraction of hex edge length
+      const tickLen = edgeLen * TICK_LENGTH_FRAC;
 
-      // Emit tickCount evenly-spaced tick marks along the edge
-      for (let k = 0; k < tickCount; k++) {
-        // Lerp parameter: distribute evenly, not at endpoints
-        const t = (k + 1) / (tickCount + 1);
-        const midX = edge.x0 + edgeDX * t;
-        const midY = edge.y0 + edgeDY * t;
+      // Unit along edge
+      const alongX = edgeDX / edgeLen;
+      const alongY = edgeDY / edgeLen;
 
-        // Tick line: perpendicular segment of length 2 × TICK_LENGTH centered on edge
-        tickPoints.push(
-          midX - perpX * TICK_LENGTH, midY - perpY * TICK_LENGTH, 0,
-          midX + perpX * TICK_LENGTH, midY + perpY * TICK_LENGTH, 0,
-        );
+      // Direction from edge toward the lower (neighbor) hex
+      const edgeMidX = (edge.x0 + edge.x1) / 2;
+      const edgeMidY = (edge.y0 + edge.y1) / 2;
+      const toNX = ncx - edgeMidX;
+      const toNY = worldNCY - edgeMidY;
+      const toNLen = Math.sqrt(toNX * toNX + toNY * toNY);
+      if (toNLen < 1e-6) continue;
+
+      const downX = toNX / toNLen;
+      const downY = toNY / toNLen;
+
+      // 4 ticks evenly spaced along the edge (not at endpoints)
+      for (let k = 0; k < TICKS_PER_EDGE; k++) {
+        const t = (k + 1) / (TICKS_PER_EDGE + 1);
+        const baseX = edge.x0 + edgeDX * t;
+        const baseY = edge.y0 + edgeDY * t;
+        emitTick(baseX, baseY, downX, downY, alongX, alongY, tickLen);
       }
+
     }
   }
 
-  return buildLineSegments(tickPoints, TICK_COLOR, TICK_OPACITY);
+  return buildTickMesh(positions, indices, TICK_COLOR, TICK_OPACITY);
 }
 
 // ─── Internal helpers ──────────────────────────────────────────────────────────
 
-function buildLineSegments(
-  points: number[],
+function buildTickMesh(
+  positions: number[],
+  indices: number[],
   color: number,
   opacity: number,
-): THREE.LineSegments {
+): THREE.Mesh {
   const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  if (indices.length > 0) {
+    geo.setIndex(indices);
+  }
 
-  const mat = new THREE.LineBasicMaterial({
+  const mat = new THREE.MeshBasicMaterial({
     color,
     transparent: true,
     opacity,
+    side: THREE.DoubleSide,
+    depthWrite: false,
   });
 
-  const lines = new THREE.LineSegments(geo, mat);
-  lines.renderOrder = RENDER_ORDER.ELEVATION_TICKS;
-  return lines;
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.renderOrder = RENDER_ORDER.ELEVATION_TICKS;
+  return mesh;
 }

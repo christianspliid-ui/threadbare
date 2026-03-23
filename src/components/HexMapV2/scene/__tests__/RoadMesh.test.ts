@@ -8,7 +8,6 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import type { HexCoord, HexTile } from '../../../../types';
-import type { RiverPath } from '../../../../engine/worldGenData';
 import type { LocationNode } from '../LocationIconMesh';
 
 // Mock findHexPath before importing RoadMesh
@@ -26,7 +25,6 @@ import { findHexPath } from '../../../../engine/pathfinding';
 import {
   ROAD_CONSTANTS,
   generateRoadPaths,
-  findRiverCrossings,
   classifyRoad,
   createRoadMesh,
 } from '../RoadMesh';
@@ -52,10 +50,6 @@ function makeLocation(
   return { hexCol: col, hexRow: row, locationType, name };
 }
 
-function makeRiverPath(hexes: HexCoord[]): RiverPath {
-  return { id: 'river-1', hexes } as RiverPath;
-}
-
 const COLS = 10;
 const ROWS = 10;
 
@@ -70,16 +64,12 @@ describe('ROAD_CONSTANTS', () => {
     expect(ROAD_CONSTANTS.TRAIL_COLOR).toBe('#4a3d2c');
   });
 
-  it('BRIDGE_COLOR is correct aged stone', () => {
-    expect(ROAD_CONSTANTS.BRIDGE_COLOR).toBe('#8b7d6b');
-  });
-
   it('MAJOR_HALF_WIDTH is 0.4', () => {
     expect(ROAD_CONSTANTS.MAJOR_HALF_WIDTH).toBe(0.4);
   });
 
-  it('TRAIL_HALF_WIDTH is 0.2', () => {
-    expect(ROAD_CONSTANTS.TRAIL_HALF_WIDTH).toBe(0.2);
+  it('TRAIL_HALF_WIDTH is 0.1', () => {
+    expect(ROAD_CONSTANTS.TRAIL_HALF_WIDTH).toBe(0.1);
   });
 
   it('Z_OFFSET is 0.025', () => {
@@ -196,42 +186,6 @@ describe('generateRoadPaths', () => {
   });
 });
 
-// ─── findRiverCrossings tests ─────────────────────────────────────────────────
-
-describe('findRiverCrossings', () => {
-  it('returns empty array with no river paths', () => {
-    const roadPaths = [{ path: [{ col: 0, row: 0 }, { col: 1, row: 0 }], roadType: 'major' as const }];
-    const result = findRiverCrossings(roadPaths, []);
-    expect(result).toEqual([]);
-  });
-
-  it('returns empty array when no overlap between road and river', () => {
-    const roadPaths = [{ path: [{ col: 0, row: 0 }, { col: 1, row: 0 }], roadType: 'major' as const }];
-    const riverPaths = [makeRiverPath([{ col: 5, row: 5 }, { col: 5, row: 6 }])];
-    const result = findRiverCrossings(roadPaths, riverPaths);
-    expect(result).toEqual([]);
-  });
-
-  it('detects crossing when road hex pair matches river hex pair', () => {
-    // Road goes from (0,0) to (1,0), river crosses same edge (1,0) to (0,0)
-    const roadPaths = [{ path: [{ col: 0, row: 0 }, { col: 1, row: 0 }], roadType: 'major' as const }];
-    const riverPaths = [makeRiverPath([{ col: 2, row: 0 }, { col: 1, row: 0 }, { col: 0, row: 0 }])];
-    const result = findRiverCrossings(roadPaths, riverPaths);
-    // The edge (0,0)-(1,0) appears in both road and river → crossing
-    expect(result.length).toBeGreaterThan(0);
-  });
-
-  it('returns worldMidpoint for each crossing', () => {
-    const roadPaths = [{ path: [{ col: 0, row: 0 }, { col: 1, row: 0 }], roadType: 'major' as const }];
-    const riverPaths = [makeRiverPath([{ col: 2, row: 0 }, { col: 1, row: 0 }, { col: 0, row: 0 }])];
-    const result = findRiverCrossings(roadPaths, riverPaths);
-    expect(result.length).toBeGreaterThan(0);
-    // worldMidpoint should have x and y
-    expect(result[0].worldMidpoint).toHaveProperty('x');
-    expect(result[0].worldMidpoint).toHaveProperty('y');
-  });
-});
-
 // ─── createRoadMesh tests ─────────────────────────────────────────────────────
 
 describe('createRoadMesh', () => {
@@ -240,7 +194,7 @@ describe('createRoadMesh', () => {
   });
 
   it('returns THREE.Group with renderOrder === RENDER_ORDER.ROADS (5) for 0 settlements', () => {
-    const group = createRoadMesh([], [], COLS, ROWS, []);
+    const group = createRoadMesh([], [], COLS, ROWS);
     expect(group.renderOrder).toBe(RENDER_ORDER.ROADS);
     expect(group.renderOrder).toBe(5);
   });
@@ -256,14 +210,14 @@ describe('createRoadMesh', () => {
       makeLocation(0, 0, 'city'),
       makeLocation(2, 0, 'town'),
     ];
-    const group = createRoadMesh(locations, tiles, COLS, ROWS, []);
+    const group = createRoadMesh(locations, tiles, COLS, ROWS);
     // Group should have children (road mesh)
     expect(group.children.length).toBeGreaterThan(0);
     expect(group.renderOrder).toBe(RENDER_ORDER.ROADS);
   });
 
   it('group is initially hidden (visible = false)', () => {
-    const group = createRoadMesh([], [], COLS, ROWS, []);
+    const group = createRoadMesh([], [], COLS, ROWS);
     expect(group.visible).toBe(false);
   });
 });

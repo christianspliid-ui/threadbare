@@ -42,18 +42,37 @@ export function buildSignifierTexture(
   canvas.height = size;
   const ctx = canvas.getContext('2d')!;
 
-  // Parse viewBox: "minX minY width height" — use width/height for scaling
+  // Parse viewBox: "minX minY width height" — use all four values for proper positioning
   const parts = variant.viewBox.split(' ').map(Number);
+  const vbX = parts[0] || 0;
+  const vbY = parts[1] || 0;
   const vbW = parts[2] || 100;
   const vbH = parts[3] || 100;
-  const scaleX = size / vbW;
-  const scaleY = size / vbH;
+
+  // Uniform scale preserves aspect ratio — fit the larger dimension into the canvas,
+  // then center the art on the shorter axis so nothing gets stretched.
+  const uniformScale = size / Math.max(vbW, vbH);
+  const offsetX = (size - vbW * uniformScale) / 2;
+  const offsetY = (size - vbH * uniformScale) / 2;
 
   ctx.save();
-  ctx.scale(scaleX, scaleY);
+  // Flip vertically if variant requires it (fixes inverted Inkscape SVGs)
+  if (variant.flipY) {
+    ctx.translate(0, size);
+    ctx.scale(1, -1);
+  }
+  ctx.translate(offsetX - vbX * uniformScale, offsetY - vbY * uniformScale);
+  ctx.scale(uniformScale, uniformScale);
+
+  // Apply clip path if present (e.g. hand-drawn SVGs with Inkscape clip masks)
+  if (variant.clipPath) {
+    ctx.clip(new Path2D(variant.clipPath));
+  }
+
+  const color = variant.fillColor ?? SIGNIFIER_FILL_COLOR;
   for (const path of variant.paths) {
-    ctx.globalAlpha = path.opacity;
-    ctx.fillStyle = SIGNIFIER_FILL_COLOR;
+    ctx.globalAlpha = Math.min(path.opacity * 1.5, 1.0);
+    ctx.fillStyle = color;
     ctx.fill(new Path2D(path.d));
   }
   ctx.restore();

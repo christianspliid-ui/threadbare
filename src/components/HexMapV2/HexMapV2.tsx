@@ -400,14 +400,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         borderKingdomRef.current = borderKingdomMesh;
         borderBaronyRef.current  = borderBaronyMesh;
 
-        // Build road network — solid major roads + dashed trails + bridge sprites (Plan 07-02)
+        // Build road network — solid major roads + dashed trails (Plan 07-02)
         // Renders at RENDER_ORDER.ROADS, initially hidden (zoom matrix controls visibility)
         const roadGroup = createRoadMesh(
           locations ?? [],
           tiles,
           cols,
           rows,
-          riverPathsRef.current,
         );
         scene.add(roadGroup);
         roadGroupRef.current = roadGroup;

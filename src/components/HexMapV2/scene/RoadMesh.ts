@@ -13,11 +13,11 @@
 
 import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../../types';
-import type { RiverPath } from '../../../engine/worldGenData';
 import type { LocationNode } from './LocationIconMesh';
 import { hexToPixel } from '../../../lib/hexMath';
 import { findHexPath } from '../../../engine/pathfinding';
 import { isWaterTerrain } from '../../../engine/coastline';
+import { getTerrainTax } from '../../../data/movement-content';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
@@ -44,20 +44,30 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 export const ROAD_CONSTANTS = {
   MAJOR_COLOR:       '#6b5a40',
   TRAIL_COLOR:       '#4a3d2c',
-  BRIDGE_COLOR:      '#8b7d6b',
   MAJOR_HALF_WIDTH:  0.4,
-  TRAIL_HALF_WIDTH:  0.2,
+  TRAIL_HALF_WIDTH:  0.1,
   Z_OFFSET:          0.025,
-  TRAIL_DASH_SIZE:   4,
-  TRAIL_GAP_SIZE:    6,
+  TRAIL_DASH_SIZE:   0.5,
+  TRAIL_GAP_SIZE:    0.5,
   MAX_ROADS:         500,
   K_NEAREST:         3,
   SETTLEMENT_TYPES:  ['capital', 'city', 'town', 'hamlet', 'castle', 'fort'] as const,
   MAJOR_ROAD_TYPES:  ['capital', 'city', 'town', 'castle', 'fort'] as const,
-  /** Bridge sprite size as multiple of HEX_SIZE */
-  BRIDGE_SPRITE_SCALE: 1.5,
-  /** Canvas size for bridge icon texture (square) */
-  BRIDGE_CANVAS_SIZE:  64,
+  // ── Winding road constants ──────────────────────────────────────────────────
+  /** Base wobble magnitude as fraction of hex size for flat terrain */
+  WOBBLE_BASE:         0.08,
+  /** Wobble scaling for light terrain (tax 0.5) */
+  WOBBLE_LIGHT:        0.18,
+  /** Wobble scaling for moderate terrain (tax 1.0) */
+  WOBBLE_MODERATE:     0.30,
+  /** Wobble scaling for heavy terrain (tax 1.5+) */
+  WOBBLE_HEAVY:        0.45,
+  /** Number of interpolation points per hex-to-hex segment for Catmull-Rom */
+  SPLINE_SAMPLES:      6,
+  /** Catmull-Rom spline tension (0 = Catmull-Rom, 0.5 = tighter, 1 = linear) */
+  SPLINE_TENSION:      0.0,
+  /** Fraction of hex size to offset intermediate waypoints from hex centers */
+  WAYPOINT_DRIFT:      0.25,
 } as const;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -69,11 +79,6 @@ export interface RoadPath {
   roadType: RoadType;
 }
 
-export interface RiverCrossing {
-  from: HexCoord;
-  to: HexCoord;
-  worldMidpoint: { x: number; y: number };
-}
 
 // ─── Road classification ──────────────────────────────────────────────────────
 
@@ -187,67 +192,168 @@ export function generateRoadPaths(
     if (result.length >= ROAD_CONSTANTS.MAX_ROADS) break;
   }
 
-  return result;
+  return deduplicateOverlappingRoads(result, locations);
 }
 
-// ─── River crossing detection ─────────────────────────────────────────────────
+// ─── Road overlap deduplication ───────────────────────────────────────────────
 
 /**
- * Find all crossings where road paths cross river paths.
+ * Priority score for a location type. Higher = more important.
+ * Used to determine which road "wins" when multiple roads share edges.
  *
- * Uses a Set of normalized edge keys (min-col,min-row-max-col,max-row) for O(1) lookup.
- * Returns world midpoint (Y-flipped) for each crossing (for bridge sprite placement).
- *
- * NFP #4: Fail-soft — empty inputs, missing hexes return empty array.
+ * | Type     | Score | Rationale                           |
+ * |----------|-------|-------------------------------------|
+ * | capital  | 5     | Most important settlement           |
+ * | city     | 4     | Major population center             |
+ * | temple   | 3     | Significant religious site          |
+ * | castle   | 3     | Military stronghold                 |
+ * | fort     | 3     | Fortified position                  |
+ * | town     | 2     | Minor settlement                    |
+ * | hamlet   | 1     | Small settlement                    |
  */
-export function findRiverCrossings(
-  roadPaths: RoadPath[],
-  riverPaths: RiverPath[],
-): RiverCrossing[] {
-  if (!riverPaths || riverPaths.length === 0) return [];
+const LOCATION_PRIORITY: Record<string, number> = {
+  capital: 5,
+  city: 4,
+  temple: 3,
+  castle: 3,
+  fort: 3,
+  town: 2,
+  hamlet: 1,
+};
 
-  // Build set of river edges (normalized key: smaller coord first)
-  const riverEdges = new Set<string>();
-  for (const river of riverPaths) {
-    if (!river.hexes || river.hexes.length < 2) continue;
-    for (let i = 0; i < river.hexes.length - 1; i++) {
-      const a = river.hexes[i];
-      const b = river.hexes[i + 1];
-      riverEdges.add(normalizeEdgeKey(a, b));
+/**
+ * Compute priority score for a road based on the importance of its endpoints.
+ * Sum of both endpoint priorities — the road between two capitals scores highest.
+ */
+function roadPriority(road: RoadPath, locations: LocationNode[]): number {
+  if (road.path.length < 2) return 0;
+  const start = road.path[0];
+  const end = road.path[road.path.length - 1];
+
+  const startLoc = locations.find(l => l.hexCol === start.col && l.hexRow === start.row);
+  const endLoc = locations.find(l => l.hexCol === end.col && l.hexRow === end.row);
+
+  return (LOCATION_PRIORITY[startLoc?.locationType ?? ''] ?? 0) +
+         (LOCATION_PRIORITY[endLoc?.locationType ?? ''] ?? 0);
+}
+
+// ─── Union-Find for connectivity tracking ────────────────────────────────────
+
+class UnionFind {
+  private parent: Map<string, string> = new Map();
+  private rank: Map<string, number> = new Map();
+
+  find(x: string): string {
+    if (!this.parent.has(x)) {
+      this.parent.set(x, x);
+      this.rank.set(x, 0);
     }
+    let root = x;
+    while (this.parent.get(root) !== root) {
+      root = this.parent.get(root)!;
+    }
+    // Path compression
+    let curr = x;
+    while (curr !== root) {
+      const next = this.parent.get(curr)!;
+      this.parent.set(curr, root);
+      curr = next;
+    }
+    return root;
   }
 
-  if (riverEdges.size === 0) return [];
+  union(a: string, b: string): void {
+    const ra = this.find(a);
+    const rb = this.find(b);
+    if (ra === rb) return;
+    const rankA = this.rank.get(ra) ?? 0;
+    const rankB = this.rank.get(rb) ?? 0;
+    if (rankA < rankB) { this.parent.set(ra, rb); }
+    else if (rankA > rankB) { this.parent.set(rb, ra); }
+    else { this.parent.set(rb, ra); this.rank.set(ra, rankA + 1); }
+  }
 
-  const crossings: RiverCrossing[] = [];
-  const seenCrossings = new Set<string>();
+  connected(a: string, b: string): boolean {
+    return this.find(a) === this.find(b);
+  }
+}
 
-  for (const roadPath of roadPaths) {
-    const path = roadPath.path;
-    if (!path || path.length < 2) continue;
+/**
+ * Deduplicate and cull redundant roads using connectivity-aware filtering.
+ *
+ * Strategy (processed in priority order, highest first):
+ * 1. Major roads with >40% edge overlap with a higher-priority road → downgrade to trail
+ * 2. Trails that connect two settlements already reachable via existing roads → REMOVE
+ * 3. Only keep trails that provide new connectivity (MST-like behavior)
+ *
+ * This prevents the "web of trails" problem where K-nearest generates
+ * redundant paths between already-connected settlement clusters.
+ *
+ * NFP #3: Deterministic — same inputs always produce same culling decisions.
+ */
+function deduplicateOverlappingRoads(
+  roads: RoadPath[],
+  locations: LocationNode[],
+): RoadPath[] {
+  if (roads.length < 2) return roads;
 
-    for (let i = 0; i < path.length - 1; i++) {
-      const from = path[i];
-      const to = path[i + 1];
-      const edgeKey = normalizeEdgeKey(from, to);
+  // Score and sort roads by priority (highest first)
+  const scored = roads.map((road, idx) => ({
+    road,
+    idx,
+    priority: roadPriority(road, locations),
+  }));
+  scored.sort((a, b) => b.priority - a.priority);
 
-      if (riverEdges.has(edgeKey) && !seenCrossings.has(edgeKey)) {
-        seenCrossings.add(edgeKey);
+  // Track which edges are "claimed" by a major road
+  const claimedEdges = new Set<string>();
 
-        // Compute world midpoint (Y-flipped for Three.js)
-        const fromPx = hexToPixel(from, HEX_CONSTANTS.HEX_SIZE);
-        const toPx = hexToPixel(to, HEX_CONSTANTS.HEX_SIZE);
-        const worldMidpoint = {
-          x: (fromPx.x + toPx.x) / 2,
-          y: -((fromPx.y + toPx.y) / 2),
-        };
+  // Union-Find tracks which settlements are connected
+  const uf = new UnionFind();
 
-        crossings.push({ from, to, worldMidpoint });
+  // Helper: get settlement key from a road endpoint
+  const endpointKey = (coord: HexCoord) => `${coord.col},${coord.row}`;
+
+  const result: (RoadPath | null)[] = new Array(roads.length).fill(null);
+
+  for (const { road, idx } of scored) {
+    const startKey = endpointKey(road.path[0]);
+    const endKey = endpointKey(road.path[road.path.length - 1]);
+
+    // Count edge overlap with already-claimed major roads
+    const edges: string[] = [];
+    let claimedCount = 0;
+    for (let i = 0; i < road.path.length - 1; i++) {
+      const edgeKey = normalizeEdgeKey(road.path[i], road.path[i + 1]);
+      edges.push(edgeKey);
+      if (claimedEdges.has(edgeKey)) claimedCount++;
+    }
+    const totalEdges = edges.length || 1;
+    const overlapRatio = claimedCount / totalEdges;
+
+    if (road.roadType === 'major') {
+      // Major roads: remove entirely if >40% overlap with higher-priority road
+      if (overlapRatio > 0.4) {
+        // Don't render — it would just clutter alongside the existing road
+        result[idx] = null;
+      } else {
+        result[idx] = { path: road.path, roadType: 'major' };
+        for (const edge of edges) claimedEdges.add(edge);
+      }
+      // Always contribute connectivity regardless of rendering
+      uf.union(startKey, endKey);
+    } else {
+      // Trails: only keep if they provide NEW connectivity
+      if (uf.connected(startKey, endKey)) {
+        result[idx] = null;
+      } else {
+        result[idx] = { path: road.path, roadType: 'trail' };
+        uf.union(startKey, endKey);
       }
     }
   }
 
-  return crossings;
+  return result.filter((r): r is RoadPath => r !== null);
 }
 
 /** Canonical edge key: smaller col,row pair first */
@@ -326,6 +432,221 @@ function roadPathToWorldPoints(path: HexCoord[]): Point2D[] {
     const px = hexToPixel(coord, HEX_CONSTANTS.HEX_SIZE);
     return { x: px.x, y: -px.y };
   });
+}
+
+// ─── Deterministic hash for road wobble (NFP #3) ─────────────────────────────
+
+/**
+ * Deterministic hash for road segment wobble. Same inputs = same wobble.
+ * Produces a value in [-1, 1] for perpendicular offset direction.
+ */
+function roadSegmentHash(fromCol: number, fromRow: number, toCol: number, toRow: number): number {
+  let h = 0x9e3779b9;
+  h = ((h << 5) - h + fromCol) | 0;
+  h = (h ^ (h >>> 16)) | 0;
+  h = ((h << 5) - h + fromRow) | 0;
+  h = (h ^ (h >>> 16)) | 0;
+  h = ((h << 5) - h + toCol) | 0;
+  h = (h ^ (h >>> 16)) | 0;
+  h = ((h << 5) - h + toRow) | 0;
+  h = (h ^ (h >>> 16)) | 0;
+  return ((h & 0xffff) / 0xffff) * 2 - 1;
+}
+
+/**
+ * Map terrain tax to wobble magnitude fraction.
+ *
+ * | Tax       | Terrain examples           | Wobble |
+ * |-----------|----------------------------|--------|
+ * | 0         | grassland, farmland        | BASE   |
+ * | 0.5       | hills, forest, boreal      | LIGHT  |
+ * | 1.0       | swamp, desert, badlands    | MODERATE |
+ * | 1.5+      | mountains, glacier, volcano| HEAVY  |
+ */
+function wobbleMagnitudeForTax(tax: number): number {
+  if (tax <= 0)   return ROAD_CONSTANTS.WOBBLE_BASE;
+  if (tax <= 0.5) return ROAD_CONSTANTS.WOBBLE_LIGHT;
+  if (tax <= 1.0) return ROAD_CONSTANTS.WOBBLE_MODERATE;
+  return ROAD_CONSTANTS.WOBBLE_HEAVY;
+}
+
+/**
+ * Add terrain-aware wobble to road paths, including drifting intermediate
+ * waypoints off hex centers so roads don't rigidly pass through every center.
+ *
+ * Only the first and last points (the settlements) stay anchored at hex centers.
+ * All intermediate hex waypoints are drifted perpendicular to the overall road
+ * direction, and midpoints between waypoints are wobbled based on terrain.
+ *
+ * This breaks the "through-every-center" pattern that the human eye catches.
+ *
+ * NFP #1: Wobble magnitudes and WAYPOINT_DRIFT in ROAD_CONSTANTS.
+ * NFP #3: Deterministic via roadSegmentHash.
+ */
+function addTerrainWobble(
+  path: HexCoord[],
+  terrainMap: Map<string, string>,
+): Point2D[] {
+  if (path.length < 2) return roadPathToWorldPoints(path);
+
+  const hexSize = HEX_CONSTANTS.HEX_SIZE;
+  const waypointDrift = ROAD_CONSTANTS.WAYPOINT_DRIFT;
+  const lastIdx = path.length - 1;
+
+  // First pass: compute drifted waypoint positions.
+  // Start and end stay at hex centers (settlements); intermediates drift.
+  const waypoints: Point2D[] = [];
+
+  for (let i = 0; i <= lastIdx; i++) {
+    const coord = path[i];
+    const px = hexToPixel(coord, hexSize);
+    let wx = px.x;
+    let wy = -px.y;
+
+    // Drift intermediate waypoints off hex centers
+    if (i > 0 && i < lastIdx) {
+      // Use prev→next direction for perpendicular drift
+      const prevPx = hexToPixel(path[i - 1], hexSize);
+      const nextPx = hexToPixel(path[i + 1], hexSize);
+      const dx = nextPx.x - prevPx.x;
+      const dy = -(nextPx.y - prevPx.y); // Y-flipped
+      const len = Math.sqrt(dx * dx + dy * dy) || 1;
+      const perpX = -dy / len;
+      const perpY = dx / len;
+
+      // Terrain-aware drift: rougher terrain = more drift
+      const terrainKey = `${coord.col},${coord.row}`;
+      const terrain = terrainMap.get(terrainKey) ?? 'grassland';
+      const tax = getTerrainTax(terrain as import('../../../types').TerrainType);
+      const wobbleFrac = wobbleMagnitudeForTax(tax === Infinity ? 0 : tax);
+
+      // Hash for deterministic direction — use a different salt than midpoint hash
+      const hash = roadSegmentHash(coord.col * 7, coord.row * 13, coord.col, coord.row);
+      const drift = hash * (waypointDrift + wobbleFrac * 0.5) * hexSize;
+
+      wx += perpX * drift;
+      wy += perpY * drift;
+    }
+
+    waypoints.push({ x: wx, y: wy });
+  }
+
+  // Second pass: insert wobbled midpoints between each pair of waypoints
+  const result: Point2D[] = [waypoints[0]];
+
+  for (let i = 0; i < waypoints.length - 1; i++) {
+    const from = path[i];
+    const to = path[i + 1];
+    const a = waypoints[i];
+    const b = waypoints[i + 1];
+
+    // Get terrain at destination hex for midpoint wobble
+    const terrainKey = `${to.col},${to.row}`;
+    const terrain = terrainMap.get(terrainKey) ?? 'grassland';
+    const tax = getTerrainTax(terrain as import('../../../types').TerrainType);
+    const wobbleFraction = wobbleMagnitudeForTax(tax === Infinity ? 0 : tax);
+
+    // Perpendicular to segment direction
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const segLen = Math.sqrt(dx * dx + dy * dy) || 1;
+    const perpX = -dy / segLen;
+    const perpY = dx / segLen;
+
+    // Deterministic wobble for midpoint
+    const hash = roadSegmentHash(from.col, from.row, to.col, to.row);
+    const offset = hash * wobbleFraction * hexSize;
+
+    // Insert wobbled midpoint
+    const midX = (a.x + b.x) / 2 + perpX * offset;
+    const midY = (a.y + b.y) / 2 + perpY * offset;
+    result.push({ x: midX, y: midY });
+
+    // Then the (already-drifted) endpoint
+    result.push(b);
+  }
+
+  return result;
+}
+
+// ─── Catmull-Rom spline interpolation ────────────────────────────────────────
+
+/**
+ * Evaluate a Catmull-Rom spline segment at parameter t ∈ [0,1].
+ *
+ * Uses the standard Catmull-Rom matrix with configurable tension.
+ * At tension=0, this is the standard Catmull-Rom spline.
+ *
+ * @param p0 — control point before segment start
+ * @param p1 — segment start
+ * @param p2 — segment end
+ * @param p3 — control point after segment end
+ * @param t  — interpolation parameter [0,1]
+ */
+function catmullRom(p0: Point2D, p1: Point2D, p2: Point2D, p3: Point2D, t: number): Point2D {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  const tension = ROAD_CONSTANTS.SPLINE_TENSION;
+  const s = (1 - tension) / 2;
+
+  return {
+    x: s * ((-t3 + 2 * t2 - t) * p0.x + (3 * t3 - 5 * t2 + 2) * p1.x +
+        (-3 * t3 + 4 * t2 + t) * p2.x + (t3 - t2) * p3.x),
+    y: s * ((-t3 + 2 * t2 - t) * p0.y + (3 * t3 - 5 * t2 + 2) * p1.y +
+        (-3 * t3 + 4 * t2 + t) * p2.y + (t3 - t2) * p3.y),
+  };
+}
+
+/**
+ * Smooth a polyline using Catmull-Rom spline interpolation.
+ *
+ * Takes the wobbled path points and produces a smooth curve by interpolating
+ * SPLINE_SAMPLES points between each pair of control points.
+ *
+ * NFP #1: SPLINE_SAMPLES and SPLINE_TENSION in ROAD_CONSTANTS.
+ */
+function smoothWithCatmullRom(points: Point2D[]): Point2D[] {
+  if (points.length < 3) return points;
+
+  const samples = ROAD_CONSTANTS.SPLINE_SAMPLES;
+  const result: Point2D[] = [points[0]];
+
+  for (let i = 0; i < points.length - 1; i++) {
+    // Catmull-Rom needs 4 points: p0, p1, p2, p3
+    // Clamp indices at boundaries
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+
+    for (let s = 1; s <= samples; s++) {
+      const t = s / samples;
+      result.push(catmullRom(p0, p1, p2, p3, t));
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Build a natural, winding road path from hex coordinates.
+ *
+ * Pipeline:
+ * 1. hex coords → world points with terrain-aware wobble at midpoints
+ * 2. wobbled points → Catmull-Rom spline smoothing
+ *
+ * Result: roads that are roughly linear on flat terrain, gently curved
+ * in forests/hills, and noticeably winding in mountains.
+ *
+ * @param path       — hex coords from A* pathfinding
+ * @param terrainMap — "col,row" → terrain type for wobble lookup
+ */
+function buildWindingRoadPoints(
+  path: HexCoord[],
+  terrainMap: Map<string, string>,
+): Point2D[] {
+  const wobbled = addTerrainWobble(path, terrainMap);
+  return smoothWithCatmullRom(wobbled);
 }
 
 /**
@@ -414,75 +735,13 @@ function buildDashedQuadStrip(
   return { positions: allPositions, indices: allIndices };
 }
 
-// ─── Bridge sprite ────────────────────────────────────────────────────────────
-
-/**
- * Build a canvas texture for a bridge icon.
- * Simple stone arch: two pillars with a semicircular arc connecting their tops.
- *
- * NFP #4: If canvas context unavailable, returns minimal placeholder texture.
- */
-function buildBridgeTexture(): THREE.CanvasTexture {
-  const size = ROAD_CONSTANTS.BRIDGE_CANVAS_SIZE;
-  const canvas = document.createElement('canvas');
-  canvas.width = size;
-  canvas.height = size;
-  const ctx = canvas.getContext('2d');
-
-  if (ctx) {
-    ctx.clearRect(0, 0, size, size);
-
-    const color = ROAD_CONSTANTS.BRIDGE_COLOR;
-    const darkColor = '#5a4f3f';
-
-    const pillarW = size * 0.2;
-    const pillarH = size * 0.45;
-    const pillarY = size * 0.52;
-    const leftX = size * 0.15;
-    const rightX = size * 0.65;
-    const archR = (rightX - leftX) / 2 + pillarW / 2;
-    const archCX = (leftX + rightX + pillarW) / 2;
-    const archCY = pillarY;
-
-    // Pillars
-    ctx.fillStyle = color;
-    ctx.strokeStyle = darkColor;
-    ctx.lineWidth = 1.5;
-
-    ctx.fillRect(leftX, pillarY, pillarW, pillarH);
-    ctx.strokeRect(leftX, pillarY, pillarW, pillarH);
-
-    ctx.fillRect(rightX, pillarY, pillarW, pillarH);
-    ctx.strokeRect(rightX, pillarY, pillarW, pillarH);
-
-    // Semicircular arch
-    ctx.beginPath();
-    ctx.arc(archCX, archCY, archR, Math.PI, 0);
-    ctx.lineWidth = size * 0.12;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-
-    // Arch outline
-    ctx.beginPath();
-    ctx.arc(archCX, archCY, archR, Math.PI, 0);
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = darkColor;
-    ctx.stroke();
-  }
-
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.needsUpdate = true;
-  return tex;
-}
-
 // ─── Scene Module Factory ─────────────────────────────────────────────────────
 
 /**
- * Creates a THREE.Group containing merged road meshes and bridge sprites.
+ * Creates a THREE.Group containing merged road meshes.
  *
  * - Major roads: solid quad-strip geometry, one merged mesh
  * - Trails: dashed quad-strip geometry, one merged mesh
- * - Bridges: THREE.Sprite at each river-road crossing
  * - Group is initially hidden (Plan 03 wires zoom visibility)
  *
  * NFP #1: All constants in ROAD_CONSTANTS.
@@ -493,7 +752,6 @@ function buildBridgeTexture(): THREE.CanvasTexture {
  * @param tiles       Hex tile array for pathfinding terrain costs
  * @param cols        Grid column count
  * @param rows        Grid row count
- * @param riverPaths  River paths for bridge detection
  * @returns           THREE.Group at RENDER_ORDER.ROADS, initially hidden
  */
 export function createRoadMesh(
@@ -501,7 +759,6 @@ export function createRoadMesh(
   tiles: HexTile[],
   cols: number,
   rows: number,
-  riverPaths: RiverPath[],
 ): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.ROADS;
@@ -510,6 +767,12 @@ export function createRoadMesh(
   // Fail-soft: generate paths (returns [] for < 2 settlements)
   const roadPaths = generateRoadPaths(locations, tiles, cols, rows);
   if (roadPaths.length === 0) return group;
+
+  // Build terrain lookup for winding road generation
+  const terrainMap = new Map<string, string>();
+  for (const tile of tiles) {
+    terrainMap.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+  }
 
   // Separate major and trail paths
   const majorPaths = roadPaths.filter(p => p.roadType === 'major');
@@ -522,7 +785,7 @@ export function createRoadMesh(
     let vertexOffset = 0;
 
     for (const roadPath of majorPaths) {
-      const worldPoints = roadPathToWorldPoints(roadPath.path);
+      const worldPoints = buildWindingRoadPoints(roadPath.path, terrainMap);
       if (worldPoints.length < 2) continue;
 
       const { positions, indices } = buildQuadStripFromPoints(
@@ -562,7 +825,7 @@ export function createRoadMesh(
     let vertexOffset = 0;
 
     for (const roadPath of trailPaths) {
-      const worldPoints = roadPathToWorldPoints(roadPath.path);
+      const worldPoints = buildWindingRoadPoints(roadPath.path, terrainMap);
       if (worldPoints.length < 2) continue;
 
       const { positions, indices } = buildDashedQuadStrip(
@@ -592,27 +855,6 @@ export function createRoadMesh(
       const mesh = new THREE.Mesh(geo, mat);
       mesh.renderOrder = RENDER_ORDER.ROADS;
       group.add(mesh);
-    }
-  }
-
-  // ── Bridge sprites: at each river-road crossing ───────────────────────────
-  const crossings = findRiverCrossings(roadPaths, riverPaths);
-  if (crossings.length > 0) {
-    // Build bridge texture once (shared)
-    const bridgeTexture = buildBridgeTexture();
-    const bridgeSize = ROAD_CONSTANTS.BRIDGE_SPRITE_SCALE * HEX_CONSTANTS.HEX_SIZE;
-
-    for (const crossing of crossings) {
-      const mat = new THREE.SpriteMaterial({
-        map: bridgeTexture,
-        depthTest: false,
-        transparent: true,
-      });
-      const sprite = new THREE.Sprite(mat);
-      sprite.position.set(crossing.worldMidpoint.x, crossing.worldMidpoint.y, ROAD_CONSTANTS.Z_OFFSET + 0.001);
-      sprite.scale.set(bridgeSize, bridgeSize, 1);
-      sprite.renderOrder = RENDER_ORDER.ROADS;
-      group.add(sprite);
     }
   }
 
