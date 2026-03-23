@@ -68,9 +68,10 @@ interface GameViewProps {
   avatarName: string;
   cosmology: CosmologyProfile;
   seed: number;
+  mapSize?: import('../../engine/gameInit').MapSizePreset;
 }
 
-export function GameView({ archetype, avatarName, cosmology, seed }: GameViewProps) {
+export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: GameViewProps) {
   // ── Scry state (lifted here so simulation + navigation can use it for LOS) ──
   const [scryState, setScryState] = useState<ScryState>(createScryState);
 
@@ -79,7 +80,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
     gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
     running, speed, harvestResult, doTick, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
-  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState });
+  } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize });
 
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
   const {
@@ -539,7 +540,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div style={{ maxWidth: '120px', minWidth: 0, overflow: 'hidden' }}>
+              <div style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden' }}>
                 <MandateTracker
                   definition={gameState.mandateDefinition}
                   state={gameState.mandateState}
@@ -580,7 +581,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
       <div className="flex flex-1 overflow-hidden">
         {/* ── Center: map / hex zoom / location ── */}
         <div className="flex-1 flex flex-col overflow-hidden relative">
-          <div className="flex-1 flex items-center justify-center overflow-hidden relative">
+          <div className="flex-1 overflow-hidden relative">
             {/* NarrativeLog overlay */}
             <NarrativeLog events={gameState.recentEvents} />
             {/* Toast notifications */}
@@ -766,6 +767,7 @@ export function GameView({ archetype, avatarName, cosmology, seed }: GameViewPro
             cacheEntries={getEncounterCacheManager()?.getAllEntries()}
             encounterProgress={gameState.encounterProgress}
             onZoomToLocation={handleZoomToLocation}
+            getWebGLDiagnostics={() => hexMapRef.current?.getDiagnostics() ?? null}
           />
         ) : (
           <div

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { initializeGameState, DEFAULT_COLS, DEFAULT_ROWS, INITIAL_WORSHIPPER_COUNT, INITIAL_WORSHIPPER_TIER } from '../gameInit';
+import { initializeGameState, DEFAULT_COLS, DEFAULT_ROWS, INITIAL_WORSHIPPER_COUNT, INITIAL_WORSHIPPER_TIER, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../gameInit';
+import type { MapSizePreset } from '../gameInit';
 import { getRetinueAgents } from '../retinue';
 import type { AscendantArchetype } from '../../types/influence';
 import type { CosmologyProfile } from '../../types';
@@ -72,9 +73,9 @@ describe('Game Initialization', () => {
     expect(tiles.length).toBe(expectedTileCount);
   });
 
-  it('tiles array has 300 tiles by default (20 cols × 15 rows)', () => {
+  it('tiles array has 768 tiles by default (32 cols × 24 rows)', () => {
     const { tiles } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
-    expect(tiles.length).toBe(300);
+    expect(tiles.length).toBe(DEFAULT_COLS * DEFAULT_ROWS);
   });
 
   it('initializes essencePool with all spheres at 0', () => {
@@ -155,8 +156,8 @@ describe('Game Initialization', () => {
   });
 
   it('uses DEFAULT_COLS and DEFAULT_ROWS when not provided', () => {
-    expect(DEFAULT_COLS).toBe(20);
-    expect(DEFAULT_ROWS).toBe(15);
+    expect(DEFAULT_COLS).toBe(32);
+    expect(DEFAULT_ROWS).toBe(24);
   });
 
   it('initializes echoes as empty arrays', () => {
@@ -225,5 +226,26 @@ describe('Game Initialization', () => {
     // With different seeds, at least the count or members should differ
     expect(ids1.length > 0).toBe(true);
     expect(ids2.length > 0).toBe(true);
+  });
+
+  it('MAP_SIZE_PRESETS has all expected keys with valid dimensions', () => {
+    const keys: MapSizePreset[] = ['small', 'medium', 'large', 'epic'];
+    for (const key of keys) {
+      const preset = MAP_SIZE_PRESETS[key];
+      expect(preset).toBeDefined();
+      expect(preset.cols).toBeGreaterThan(0);
+      expect(preset.rows).toBeGreaterThan(0);
+      expect(preset.label).toBeTruthy();
+      expect(preset.description).toBeTruthy();
+    }
+  });
+
+  it('DEFAULT_MAP_SIZE is a valid preset key', () => {
+    expect(MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE]).toBeDefined();
+  });
+
+  it('DEFAULT_COLS/ROWS match the default preset', () => {
+    expect(DEFAULT_COLS).toBe(MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].cols);
+    expect(DEFAULT_ROWS).toBe(MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].rows);
   });
 });

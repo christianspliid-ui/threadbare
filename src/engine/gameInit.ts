@@ -27,10 +27,25 @@ import { createMandateState } from './mandate';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import { ACTION_TEMPLATES } from '../data/action-template-content';
 
+// ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
+
+export type MapSizePreset = 'small' | 'medium' | 'large' | 'epic';
+
+export const MAP_SIZE_PRESETS: Record<MapSizePreset, { cols: number; rows: number; label: string; description: string }> = {
+  small:  { cols: 20, rows: 15, label: 'Small',  description: 'A compact realm — fast games' },
+  medium: { cols: 32, rows: 24, label: 'Medium', description: 'A balanced kingdom' },
+  large:  { cols: 48, rows: 36, label: 'Large',  description: 'A sprawling empire' },
+  epic:   { cols: 64, rows: 48, label: 'Epic',   description: 'A vast continent — long games' },
+};
+
+export const DEFAULT_MAP_SIZE: MapSizePreset = 'medium';
+
 // ─── Constants ────────────────────────────────────────────────────
 
-export const DEFAULT_COLS = 20;
-export const DEFAULT_ROWS = 15;
+/** @deprecated Use MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE] instead. Kept for backward compat. */
+export const DEFAULT_COLS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].cols;
+/** @deprecated Use MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE] instead. Kept for backward compat. */
+export const DEFAULT_ROWS = MAP_SIZE_PRESETS[DEFAULT_MAP_SIZE].rows;
 export const DEFAULT_TICKS_PER_SEASON = 90;
 
 /** How many seeded individuals start as initial worshippers of the ascendant. */
@@ -57,8 +72,8 @@ export const INITIAL_WORSHIPPER_TIER = 1;
  * @param avatarName - Name for the Ascendant's mortal vessel
  * @param cosmology - Foundation + Creation sphere weights for world tone
  * @param seed - PRNG seed for deterministic world generation
- * @param cols - Hex grid width (default: DEFAULT_COLS = 20)
- * @param rows - Hex grid height (default: DEFAULT_ROWS = 15)
+ * @param cols - Hex grid width (default: DEFAULT_COLS = 32)
+ * @param rows - Hex grid height (default: DEFAULT_ROWS = 24)
  * @returns { state, tiles, riverPaths, lakeIds, regionData } - Initialized GameState, hex tiles, and WorldGenResult fields
  */
 export function initializeGameState(

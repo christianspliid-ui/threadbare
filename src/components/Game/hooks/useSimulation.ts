@@ -5,7 +5,8 @@ import type { CosmologyProfile } from '../../../types';
 import type { GameState } from '../../../types/gameState';
 import type { RiverPath } from '../../../engine/worldGenData';
 import type { RegionData } from '../../../engine/regionTypes';
-import { initializeGameState } from '../../../engine/gameInit';
+import { initializeGameState, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
+import type { MapSizePreset } from '../../../engine/gameInit';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
 import {
   startTwilight,
@@ -24,10 +25,9 @@ interface UseSimulationParams {
   cosmology: CosmologyProfile;
   seed: number;
   scryState: ScryState;
+  mapSize?: MapSizePreset;
 }
 
-const COLS = 20;
-const ROWS = 15;
 const SEASONS = ['spring', 'summer', 'autumn', 'winter'] as const;
 
 export function useSimulation({
@@ -36,11 +36,15 @@ export function useSimulation({
   cosmology,
   seed,
   scryState,
+  mapSize = DEFAULT_MAP_SIZE,
 }: UseSimulationParams) {
+  // ── Resolve map dimensions from preset ──
+  const { cols: COLS, rows: ROWS } = MAP_SIZE_PRESETS[mapSize];
+
   // ── Initialize ──
   const initial = useMemo(
     () => initializeGameState(archetype, avatarName, cosmology, seed, COLS, ROWS),
-    [archetype, avatarName, cosmology, seed]
+    [archetype, avatarName, cosmology, seed, COLS, ROWS]
   );
 
   const [gameState, setGameState] = useState<GameState>(initial.state);
