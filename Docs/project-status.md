@@ -6,6 +6,7 @@
 **Phase 9: Start Screen** — in progress (1/3 plans complete).
 
 **Recent completions:**
+- ✅ Trail endpoints target location icons (2026-03-23) — Movement trails converge on settlement/POI icons instead of hex centers.
 - ✅ Agent map rendering fix (2026-03-23) — Agents visible on hex map with face portraits at all zoom tiers; eye icon zoom fixed; position resolved via locationId.
 - ✅ Kokoro TTS narration prototype (2026-03-23) — Client-side TTS via kokoro-js (82M params, WASM). Web Worker isolation, narrate button in HexChronicle header. Feature-flagged off by default.
 - ✅ Phase 9 Plan 01: Start screen core (2026-03-23) — useThemeMusic hook, StartPage component, App.tsx 'start' phase.

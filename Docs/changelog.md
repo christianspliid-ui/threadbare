@@ -5,6 +5,8 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 ### Recent Changes
 
 | Date | Where | What changed | Why |
+| 2026-03-23 | src/components/HexMapV2/HexMapV2.tsx | Trail endpoints now converge on location icons (using LocationIconMesh centering/ring logic) instead of raw hex centers | Movement trails should visually connect to the settlement/POI, not just the middle of the hex |
+| 2026-03-23 | .planning/BACKLOG.md | Documented suspected hexCol/hexRow type mismatch bug — strict equality in getLocationsInHex may miss string-typed coordinates | HexChronicle places list may not show locations that are visually present as icons |
 | 2026-03-23 | src/components/Game/GameView.tsx, AgentSpriteMesh.ts, ZoomVisibilityMatrix.ts | Eye icon zoom fix (HEX_SIZE 30→10), agent portraits at all zoom tiers with dynamic scaling, portraitUrl passed from narrativeArchetype | Eye icons panned to wrong position; agents showed as dots not portraits; portraits only visible at hero-local zoom |
 | 2026-03-23 | src/components/Game/GameView.tsx | Agent render data adapter now resolves hex position via locationId → location node fallback | Actors are seeded with locationId not hexCol/hexRow, so all agents were filtered out and invisible on the map |
 | 2026-03-23 | src/services/narration/ (new), src/components/Game/HexChronicle.tsx, src/index.css, package.json | Kokoro TTS narration prototype — kokoro-js (82M, q8 WASM), NarrationWorker (Web Worker), NarrationService (singleton + AudioContext), useNarration hook (useSyncExternalStore), narrate button in HexChronicle hero (Volume2/Loader2/Square icons), auto-stop on hex change. Feature-flagged off (NARRATION_ENABLED). | Validate in-browser TTS for atmospheric chronicle narration; no API key or server cost |
