@@ -24,14 +24,10 @@ export function useNarration() {
     return unsubscribe;
   }, []);
 
-  // Eagerly pre-load the model in the background after a short delay.
-  // AudioContext is created lazily on first speak() (requires user gesture).
+  // Probe the TTS server on mount so the button shows ready/error state
   useEffect(() => {
     if (!NARRATION_ENABLED) return;
-    const timer = setTimeout(() => {
-      service.current.init();
-    }, 3000);
-    return () => clearTimeout(timer);
+    service.current.init();
   }, []);
 
   // Stop playback on unmount
@@ -43,35 +39,19 @@ export function useNarration() {
     };
   }, []);
 
-  /** Initialize the model (call from user gesture for AudioContext). */
+  /** Initialize (probe TTS server). */
   const init = useCallback(async () => {
     if (!NARRATION_ENABLED) return;
     await service.current.init();
   }, []);
 
-  /** Narrate text. If model isn't loaded yet, waits for it then speaks. */
+  /** Narrate text via the TTS server. */
   const speak = useCallback(async (text: string) => {
     if (!NARRATION_ENABLED) return;
     const svc = service.current;
 
     // CRITICAL: Create AudioContext NOW, during the user gesture (click).
-    // If we defer to an async callback, Chrome's autoplay policy blocks it.
     svc.ensureAudioContext();
-
-    if (svc.status === 'idle' || svc.status === 'error') {
-      await svc.init();
-    }
-
-    // If still loading (either from eager pre-load or init() above), wait for ready
-    if (svc.status === 'loading') {
-      const unsub = svc.subscribe((s) => {
-        if (s.status === 'ready') {
-          unsub();
-          svc.speak(text);
-        }
-      });
-      return;
-    }
 
     await svc.speak(text);
   }, []);

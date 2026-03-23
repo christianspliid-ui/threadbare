@@ -1,15 +1,12 @@
 // ── NarrationService ────────────────────────────────────────────────
-// Public API wrapping the narration Web Worker. Handles model loading,
-// text-to-speech, playback via Web Audio API, and lifecycle management.
+// Calls the local Kokoro TTS server (tts-server.py) for GPU-accelerated
+// speech synthesis. Falls back to error state if server is unavailable.
 
 import {
-  NARRATION_MODEL_ID,
-  NARRATION_DTYPE,
-  NARRATION_DEVICE,
   NARRATION_VOICE,
   NARRATION_SPEED,
-  NARRATION_SAMPLE_RATE,
   NARRATION_MAX_TEXT_LENGTH,
+  NARRATION_TTS_SERVER_URL,
 } from './narrationConstants';
 
 export type NarrationStatus = 'idle' | 'loading' | 'ready' | 'speaking' | 'error';
@@ -25,11 +22,11 @@ export interface NarrationState {
 let instance: NarrationServiceImpl | null = null;
 
 class NarrationServiceImpl {
-  private worker: Worker | null = null;
   private audioCtx: AudioContext | null = null;
   private currentSource: AudioBufferSourceNode | null = null;
+  private abortController: AbortController | null = null;
   private speakCounter = 0;
-  private currentSpeakId: string | null = null;
+  private currentSpeakId = 0;
 
   private _status: NarrationStatus = 'idle';
   private _loadProgress = 0;
@@ -55,7 +52,6 @@ class NarrationServiceImpl {
   }
 
   private notify() {
-    // Create a new snapshot object only when state actually changes
     this._cachedState = { status: this._status, loadProgress: this._loadProgress, error: this._error };
     const state = this._cachedState;
     for (const listener of this.listeners) {
@@ -71,45 +67,32 @@ class NarrationServiceImpl {
 
   // ── Init ──────────────────────────────────────────────────────
 
-  /** Eagerly load the worker + model. No user gesture required. */
+  /** Check if the TTS server is available. */
   async init(): Promise<void> {
     if (this._status === 'loading' || this._status === 'ready') return;
 
     this.setStatus('loading');
-    this._loadProgress = 0;
+    this._loadProgress = 0.5;
+    this.notify();
 
     try {
-      // Create worker using Vite's worker import pattern
-      this.worker = new Worker(
-        new URL('./NarrationWorker.ts', import.meta.url),
-        { type: 'module' },
-      );
-
-      this.worker.onmessage = (e: MessageEvent) => this.handleWorkerMessage(e.data);
-      this.worker.onerror = (e: ErrorEvent) => {
-        console.error('[NarrationService] Worker error:', e.message);
-        this.setStatus('error', e.message);
-      };
-
-      // Tell worker to load the model
-      this.worker.postMessage({
-        type: 'init',
-        modelId: NARRATION_MODEL_ID,
-        dtype: NARRATION_DTYPE,
-        device: NARRATION_DEVICE,
+      const res = await fetch(`${NARRATION_TTS_SERVER_URL}/health`, {
+        signal: AbortSignal.timeout(5000),
       });
-    } catch (err) {
-      console.error('[NarrationService] Init failed:', err);
-      this.setStatus('error', String(err));
+      if (!res.ok) throw new Error(`Server returned ${res.status}`);
+      this._loadProgress = 1;
+      this.setStatus('ready');
+    } catch {
+      // Server not running — that's OK, narration just won't work
+      this.setStatus('error', 'TTS server not available. Start it with: .venv/Scripts/python.exe tts-server.py');
     }
   }
 
   /** Ensure AudioContext exists — call from a user gesture to satisfy autoplay policy. */
   ensureAudioContext(): void {
     if (!this.audioCtx) {
-      this.audioCtx = new AudioContext({ sampleRate: NARRATION_SAMPLE_RATE });
+      this.audioCtx = new AudioContext();
     }
-    // Resume if suspended (Chrome blocks AudioContext created outside user gestures)
     if (this.audioCtx.state === 'suspended') {
       this.audioCtx.resume();
     }
@@ -118,16 +101,12 @@ class NarrationServiceImpl {
   // ── Speak ─────────────────────────────────────────────────────
 
   async speak(text: string, voice = NARRATION_VOICE, speed = NARRATION_SPEED): Promise<void> {
-    // Create AudioContext on first speak (requires user gesture)
     this.ensureAudioContext();
 
-    if (!this.worker || this._status === 'loading') return;
-
-    // If not ready, auto-init (but this shouldn't happen in normal flow)
+    if (this._status === 'loading') return;
     if (this._status === 'idle' || this._status === 'error') {
       await this.init();
-      // Wait for ready — the speak will be triggered after init completes
-      return;
+      if (this._status !== 'ready') return;
     }
 
     // Stop any current playback
@@ -140,26 +119,46 @@ class NarrationServiceImpl {
       truncated = cutoff > 0 ? text.slice(0, cutoff + 1) : text.slice(0, NARRATION_MAX_TEXT_LENGTH);
     }
 
-    const id = String(++this.speakCounter);
+    const id = ++this.speakCounter;
     this.currentSpeakId = id;
     this.setStatus('speaking');
 
-    this.worker.postMessage({
-      type: 'speak',
-      text: truncated,
-      voice,
-      speed,
-      id,
-    });
+    // Cancel any in-flight request
+    this.abortController?.abort();
+    this.abortController = new AbortController();
+
+    try {
+      const res = await fetch(`${NARRATION_TTS_SERVER_URL}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: truncated, voice, speed }),
+        signal: this.abortController.signal,
+      });
+
+      if (id !== this.currentSpeakId) return; // Stale
+
+      if (!res.ok) {
+        const errText = await res.text().catch(() => 'Unknown error');
+        throw new Error(`TTS server error ${res.status}: ${errText}`);
+      }
+
+      const arrayBuffer = await res.arrayBuffer();
+      if (id !== this.currentSpeakId) return; // Stale
+
+      await this.playWav(arrayBuffer);
+    } catch (err) {
+      if (id !== this.currentSpeakId) return;
+      if ((err as Error).name === 'AbortError') return;
+      console.error('[NarrationService] Speak failed:', err);
+      this.setStatus('ready');
+    }
   }
 
   // ── Stop ──────────────────────────────────────────────────────
 
   stop(): void {
     this.stopPlayback();
-    if (this.worker) {
-      this.worker.postMessage({ type: 'stop' });
-    }
+    this.abortController?.abort();
     if (this._status === 'speaking') {
       this.setStatus('ready');
     }
@@ -176,64 +175,19 @@ class NarrationServiceImpl {
     }
   }
 
-  // ── Worker message handler ────────────────────────────────────
-
-  private handleWorkerMessage(msg: Record<string, unknown>) {
-    switch (msg.type) {
-      case 'init-progress': {
-        this._loadProgress = msg.progress as number;
-        this.notify();
-        break;
-      }
-
-      case 'init-done': {
-        this._loadProgress = 1;
-        this.setStatus('ready');
-        break;
-      }
-
-      case 'init-error': {
-        console.error('[NarrationService] Model load failed:', msg.error);
-        this.setStatus('error', msg.error as string);
-        break;
-      }
-
-      case 'audio': {
-        if (msg.id !== this.currentSpeakId) return; // Stale response
-        this.playAudio(msg.audio as Float32Array, msg.sampleRate as number);
-        break;
-      }
-
-      case 'speak-error': {
-        if (msg.id !== this.currentSpeakId) return;
-        console.error('[NarrationService] Speak failed:', msg.error);
-        this.setStatus('ready');
-        break;
-      }
-
-      case 'stopped': {
-        if (msg.id !== this.currentSpeakId) return;
-        this.setStatus('ready');
-        break;
-      }
-    }
-  }
-
   // ── Audio playback ────────────────────────────────────────────
 
-  private playAudio(audioData: Float32Array, sampleRate: number) {
+  private async playWav(wavBuffer: ArrayBuffer): Promise<void> {
     if (!this.audioCtx) return;
 
-    // Resume AudioContext if suspended (autoplay policy)
     if (this.audioCtx.state === 'suspended') {
-      this.audioCtx.resume();
+      await this.audioCtx.resume();
     }
 
-    const buffer = this.audioCtx.createBuffer(1, audioData.length, sampleRate);
-    buffer.copyToChannel(audioData, 0);
+    const audioBuffer = await this.audioCtx.decodeAudioData(wavBuffer);
 
     const source = this.audioCtx.createBufferSource();
-    source.buffer = buffer;
+    source.buffer = audioBuffer;
     source.connect(this.audioCtx.destination);
     source.onended = () => {
       if (this.currentSource === source) {
@@ -250,10 +204,6 @@ class NarrationServiceImpl {
 
   dispose() {
     this.stop();
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-    }
     if (this.audioCtx) {
       this.audioCtx.close();
       this.audioCtx = null;

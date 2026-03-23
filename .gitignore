@@ -47,3 +47,6 @@ scripts/playtest.mjs
 !public/**/*.png
 !Design/**/*.png
 !Docs/**/*.png
+
+# Python TTS server
+.venv/
