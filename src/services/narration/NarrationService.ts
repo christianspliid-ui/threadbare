@@ -104,10 +104,14 @@ class NarrationServiceImpl {
     }
   }
 
-  /** Ensure AudioContext exists — must be called from a user gesture. */
-  private ensureAudioContext(): void {
+  /** Ensure AudioContext exists — call from a user gesture to satisfy autoplay policy. */
+  ensureAudioContext(): void {
     if (!this.audioCtx) {
       this.audioCtx = new AudioContext({ sampleRate: NARRATION_SAMPLE_RATE });
+    }
+    // Resume if suspended (Chrome blocks AudioContext created outside user gestures)
+    if (this.audioCtx.state === 'suspended') {
+      this.audioCtx.resume();
     }
   }
 
