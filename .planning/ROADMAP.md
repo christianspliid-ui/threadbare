@@ -23,7 +23,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network (completed 2026-03-22)
 - [ ] **Phase 7.1: Stencil Coastline** - INSERTED: WebGL stencil-based organic coastline that clips land hex edges to organic contour (fixes Phase 3 criterion #1)
 - [x] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring (completed 2026-03-22)
-- [ ] **Phase 9: Start Screen** - Main menu with title art, ambient audio, narrative tone, and navigation to worldgen
+- [x] **Phase 9: Start Screen** - Main menu with title art, ambient audio, narrative tone, and navigation to worldgen (completed 2026-03-23)
 
 ## Phase Details
 
@@ -194,7 +194,7 @@ Plans:
   4. Dark ambient music loops on user interaction, fades out on "New World", and mute state persists in localStorage
   5. Settings and Credits modals open as overlays on the start screen
   6. If title-screen.png or audio file is missing, the page degrades gracefully (solid dark bg, silent)
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 09-00-PLAN.md — Wave 0 test scaffolds (StartPage.test.tsx, useThemeMusic.test.ts, App.test.tsx)
@@ -219,4 +219,4 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 7.1. Stencil Coastline | 0/1 | Not started | - |
 | 8. Integration | 4/4 | Complete   | 2026-03-23 |
-| 9. Start Screen | 2/3 | In Progress|  |
+| 9. Start Screen | 3/3 | Complete   | 2026-03-23 |
