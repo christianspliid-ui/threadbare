@@ -187,16 +187,33 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.agentId)
     );
     const actors = gameState.graph.getNodesByType('actor');
-    return actors
-      .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
-      .map((n, i) => ({
+    const result: AgentRenderData[] = [];
+    for (let i = 0; i < actors.length; i++) {
+      const n = actors[i];
+      // Actors can have hexCol/hexRow directly, or resolve via locationId
+      let hexCol = n.properties.hexCol as number | undefined;
+      let hexRow = n.properties.hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) {
+        const locationId = n.properties.locationId as string | undefined;
+        if (locationId) {
+          const loc = gameState.graph.getNode(locationId);
+          if (loc) {
+            hexCol = loc.properties.hexCol as number | undefined;
+            hexRow = loc.properties.hexRow as number | undefined;
+          }
+        }
+      }
+      if (hexCol == null || hexRow == null) continue;
+      result.push({
         id: n.id,
-        hexCol: n.properties.hexCol as number,
-        hexRow: n.properties.hexRow as number,
+        hexCol,
+        hexRow,
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
         name: n.name,
-      }));
+      });
+    }
+    return result;
   }, [gameState.graph, gameState.ascendantId]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
