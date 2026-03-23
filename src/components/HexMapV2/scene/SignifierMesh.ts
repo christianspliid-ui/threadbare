@@ -28,19 +28,33 @@ import { buildSignifierTextureCache } from '../signifiers/signifierTextures';
 
 // ── NFP #1: Tunable constants ────────────────────────────────────────────────
 
-/** Sprite world-size as a fraction of HEX_SIZE (flat-top hex radius). */
-export const SIGNIFIER_SPRITE_SCALE = 0.7;
+/** Default sprite world-size as a fraction of HEX_SIZE (flat-top hex radius). */
+export const SIGNIFIER_SPRITE_SCALE = 1.3;
+
+/** Per-terrain scale overrides — terrain types that need to fill the hex more fully. */
+export const SIGNIFIER_SCALE_OVERRIDES: Record<string, number> = {
+  badlands: 2.0,
+  grassland: 2.0,
+  steppe: 2.0,
+  tundra: 2.0,
+};
+
+/** Hand-drawn signifiers that are already precisely positioned — no jitter applied. */
+const NO_JITTER_TYPES = new Set<string>([
+  'boreal_forest',
+  'dead_forest',
+]);
 
 /** Z offset for signifier sprites — above borders (0.06), below location overlays. */
 export const SIGNIFIER_Z = 0.07;
 
-// ── Water terrain types (no signifiers) ─────────────────────────────────────
+// ── Excluded terrain types (no signifiers) ───────────────────────────────────
 
 /**
  * Terrain types that should never receive a signifier sprite.
- * All are water/aquatic surfaces where land icons would be incorrect.
+ * Water/aquatic surfaces and plateau (which relies on elevation ticks only).
  */
-const WATER_TYPES = new Set<string>([
+const EXCLUDED_TYPES = new Set<string>([
   'ocean',
   'deep_ocean',
   'tropical_ocean',
@@ -49,6 +63,7 @@ const WATER_TYPES = new Set<string>([
   'lake',
   'river',
   'reef',
+  'plateau',
 ]);
 
 // ── Scene Module Factory ─────────────────────────────────────────────────────
@@ -64,18 +79,23 @@ const WATER_TYPES = new Set<string>([
  * NFP #7: One Sprite per land hex — acceptable for up to 60K tiles.
  *         A future optimization pass can use InstancedMesh if profiling reveals issues.
  */
-export function createSignifierMesh(tiles: HexTile[], seed: number): THREE.Group {
+export function createSignifierMesh(
+  tiles: HexTile[],
+  seed: number,
+  centeredLocationHexes?: Set<string>,
+): THREE.Group {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.SIGNIFIERS;
 
   // Build texture cache once at scene init (no per-frame cost)
   const textureCache = buildSignifierTextureCache(SIGNIFIER_REGISTRY);
 
-  const spriteSize = HEX_CONSTANTS.HEX_SIZE * SIGNIFIER_SPRITE_SCALE;
-
   for (const tile of tiles) {
     // NFP #4: Skip water tiles — no signifier for aquatic terrain
-    if (WATER_TYPES.has(tile.terrain)) continue;
+    if (EXCLUDED_TYPES.has(tile.terrain)) continue;
+
+    // Skip hexes with centered (full/medium) location icons to avoid overlap
+    if (centeredLocationHexes?.has(`${tile.coord.col},${tile.coord.row}`)) continue;
 
     // Resolve terrain type to a registry key (direct or fallback)
     let registryKey: string = tile.terrain;
@@ -104,9 +124,14 @@ export function createSignifierMesh(tiles: HexTile[], seed: number): THREE.Group
 
     const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
 
-    // Apply seeded jitter (±10% of hex size in each axis)
-    const jx = params.jitterX * HEX_CONSTANTS.HEX_SIZE;
-    const jy = params.jitterY * HEX_CONSTANTS.HEX_SIZE;
+    // Apply seeded jitter (±10% of hex size in each axis) — skip for hand-drawn icons
+    const noJitter = NO_JITTER_TYPES.has(registryKey);
+    const jx = noJitter ? 0 : params.jitterX * HEX_CONSTANTS.HEX_SIZE;
+    const jy = noJitter ? 0 : params.jitterY * HEX_CONSTANTS.HEX_SIZE;
+
+    // Per-terrain scale override (e.g. badlands fills full hex)
+    const scale = SIGNIFIER_SCALE_OVERRIDES[registryKey] ?? SIGNIFIER_SPRITE_SCALE;
+    const spriteSize = HEX_CONSTANTS.HEX_SIZE * scale;
 
     // Y-flip: SVG is y-down, Three.js world is y-up
     sprite.position.set(x + jx, -y + jy, SIGNIFIER_Z);

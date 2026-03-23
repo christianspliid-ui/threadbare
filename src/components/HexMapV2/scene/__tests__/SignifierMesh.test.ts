@@ -74,7 +74,7 @@ function makeTile(
 
 describe('SignifierMesh', () => {
   // Import after mocks are set up
-  let createSignifierMesh: (tiles: HexTile[], seed: number) => THREE.Group;
+  let createSignifierMesh: (tiles: HexTile[], seed: number, centeredLocationHexes?: Set<string>) => THREE.Group;
   let SIGNIFIER_SPRITE_SCALE: number;
   let SIGNIFIER_Z: number;
 
@@ -155,5 +155,31 @@ describe('SignifierMesh', () => {
     expect(() => createSignifierMesh(tiles, 42)).not.toThrow();
     const group = createSignifierMesh(tiles, 42);
     expect(group.children.length).toBe(0);
+  });
+
+  it('hexes with centered locations are skipped when centeredLocationHexes is provided', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'grassland'),
+      makeTile(2, 0, 'grassland'),
+    ];
+    // Without exclusion: all 3 land tiles get sprites
+    const groupAll = createSignifierMesh(tiles, 42);
+    expect(groupAll.children.length).toBe(3);
+
+    // With hex (1,0) excluded: only 2 sprites
+    const excluded = new Set(['1,0']);
+    const groupFiltered = createSignifierMesh(tiles, 42, excluded);
+    expect(groupFiltered.children.length).toBe(2);
+  });
+
+  it('centeredLocationHexes does not affect hexes without locations', () => {
+    const tiles: HexTile[] = [
+      makeTile(5, 5, 'grassland'),
+    ];
+    // Exclude a hex that doesn't exist in tiles — no effect
+    const excluded = new Set(['99,99']);
+    const group = createSignifierMesh(tiles, 42, excluded);
+    expect(group.children.length).toBe(1);
   });
 });
