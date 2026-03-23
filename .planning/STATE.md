@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 09-start-screen/09-00-PLAN.md
-last_updated: "2026-03-23T08:59:36.978Z"
+stopped_at: Completed 09-start-screen/09-01-PLAN.md
+last_updated: "2026-03-23T09:02:06.762Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 10
   completed_phases: 9
   total_plans: 30
-  completed_plans: 28
+  completed_plans: 29
   percent: 93
 ---
 
@@ -150,6 +150,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 08-integration P03 | 5 | 2 tasks | 5 files |
 | Phase 08-integration P04 | 15 | 2 tasks | 8 files |
 | Phase 09-start-screen P00 | 1min | 1 tasks | 3 files |
+| Phase 09-start-screen P01 | 12 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -220,6 +221,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 08-integration]: Canvas mock must include all ctx methods invoked by buildSignifierTexture: translate, clip, beginPath, closePath, fillRect
 - [Phase 08-integration]: ElevationTicks now plateau-only with fixed TICKS_PER_EDGE=4 quad geometry — tests match new quad-mesh approach
 - [Phase 08-integration]: TRAIL_HISTORY_TICKS=6 in tests after constant change from 12; traceBuffer uses range assertion for eviction-sensitive counts; content-layer1 gets 30s timeout; familiarity test manually places worshipper in avatar hex
+- [Phase 09-start-screen]: lucide-react installed for Volume2/VolumeX icons (was missing from package.json)
+- [Phase 09-start-screen]: fadeOut interval uses plain closure variable (not useRef) so it survives component unmount during 600ms page transition
+- [Phase 09-start-screen]: App.tsx default phase changed from 'worldgen' to 'start'; dev shortcuts bypass via early return
 
 ### Pending Todos
 
@@ -231,6 +235,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T08:59:36.975Z
-Stopped at: Completed 09-start-screen/09-00-PLAN.md
+Last session: 2026-03-23T09:02:06.759Z
+Stopped at: Completed 09-start-screen/09-01-PLAN.md
 Resume file: None
