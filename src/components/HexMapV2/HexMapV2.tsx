@@ -362,13 +362,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
         gridLinesRef.current = gridLines;
 
-        // Build coastline overlay — stencil-based land/water boundary (Phase 07.1)
-        // Stencil write at renderOrder -1, ocean overlay at renderOrder 1
-        const coastlineMesh = createCoastlineMesh(
-          tiles, cols, rows, seed,
-          lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined,
-          fillResult.landTileIndices,
-        );
+        // Build coastline overlay — organic stencil boundary + ocean blue overlay (Phase 07.1)
+        const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
         scene.add(coastlineMesh);
 
         // Build elevation tick marks — caterpillar-style marks on steep hex edges (Plan 03-03)
