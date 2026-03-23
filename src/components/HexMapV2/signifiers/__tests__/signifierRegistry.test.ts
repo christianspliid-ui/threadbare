@@ -8,32 +8,33 @@ import {
 // The 25 terrain types with direct registry entries (TerrainType names, not LART names)
 const DIRECT_REGISTRY_KEYS = [
   // Lowlands (4 direct: farmland + oasis use fallback)
-  'grassland',   // LART-01: 3 variants
+  'grassland',   // LART-01: 1 variant
   'savanna',     // LART-02: 3 variants
-  'steppe',      // LART-03: 3 variants
+  'steppe',      // LART-03: 1 variant
   'floodplain',  // LART-04: 2 variants
   // Forest (6 direct: jungle + evergreen_forest use fallback)
-  'light_forest',      // LART-05 'woodland': 4 variants
-  'temperate_forest',  // LART-06: 4 variants
+  'light_forest',      // LART-05: 1 variant (hand-drawn)
+  'temperate_forest',  // LART-06: 1 variant (deep forest)
   'dense_forest',      // LART-07: 3 variants
-  'boreal_forest',     // LART-08: 4 variants
+  'boreal_forest',     // LART-08: 1 variant (hand-drawn)
   'tropical_forest',   // LART-09: 3 variants
-  'dead_forest',       // LART-30: 3 variants
+  'dead_forest',       // LART-30: 1 variant (hand-drawn)
   // Wet (3 direct)
   'marsh',    // LART-10: 3 variants
-  'swamp',    // LART-11: 3 variants
-  'moor_bog', // LART-12: 3 variants
+  'swamp',    // LART-11: 1 variant (hand-drawn)
+  'moor_bog', // LART-12: 1 variant (hand-drawn)
   // Elevated (6 direct)
-  'hills',          // LART-13: 4 variants
-  'forested_hills', // LART-14: 3 variants
-  'mountains',      // LART-15: 4 variants
-  'high_mountains', // LART-16: 3 variants
+  'hills',          // LART-13: 1 variant (hand-drawn)
+  'forested_hills', // LART-14: 1 variant (hand-drawn)
+  'mountains',      // LART-15: 1 variant (hand-drawn)
+  'high_mountains', // LART-16: 1 variant (hand-drawn)
   'plateau',        // LART-17: 3 variants
   'mountain_pass',  // LART-18: 2 variants
-  'badlands',       // LART-23 (3) + LART-22 (2) = 5 variants
+  'badlands',       // LART-23: 1 variant (hand-drawn)
+  'hardened_clay',  // LART-22: 1 variant (hand-drawn, formerly in badlands)
   // Extreme (6 direct: arctic + great_home_trees use fallback)
   'desert',       // LART-19 'sand_desert': 3 variants
-  'sand_dunes',   // LART-20: 3 variants
+  'sand_dunes',   // LART-20: 1 variant (hand-drawn)
   'rocky_desert', // LART-21: 3 variants
   'tundra',       // LART-24: 3 variants
   'snow_fields',  // LART-25: 2 variants
@@ -44,30 +45,31 @@ const DIRECT_REGISTRY_KEYS = [
 
 // Expected variant counts per TerrainType registry key
 const EXPECTED_VARIANT_COUNTS: Record<string, number> = {
-  grassland: 3,
+  grassland: 1,
   savanna: 3,
-  steppe: 3,
+  steppe: 1,
   floodplain: 2,
-  light_forest: 4,
-  temperate_forest: 4,
+  light_forest: 1,
+  temperate_forest: 1,
   dense_forest: 3,
-  boreal_forest: 4,
+  boreal_forest: 1,
   tropical_forest: 3,
-  dead_forest: 3,
+  dead_forest: 1,
   marsh: 3,
-  swamp: 3,
-  moor_bog: 3,
-  hills: 4,
-  forested_hills: 3,
-  mountains: 4,
-  high_mountains: 3,
+  swamp: 1,
+  moor_bog: 1,
+  hills: 1,
+  forested_hills: 1,
+  mountains: 1,
+  high_mountains: 1,
   plateau: 3,
   mountain_pass: 2,
-  badlands: 5,   // LART-23 (3) + LART-22 hardened_clay (2)
+  badlands: 1,   // hand-drawn
+  hardened_clay: 0, // cleared — awaiting new art
   desert: 3,
-  sand_dunes: 3,
+  sand_dunes: 1,
   rocky_desert: 3,
-  tundra: 3,
+  tundra: 1,
   snow_fields: 2,
   glacier: 2,
   volcano: 5,    // LART-27 volcanic (3) + LART-28 lava (2)
@@ -75,12 +77,12 @@ const EXPECTED_VARIANT_COUNTS: Record<string, number> = {
 };
 
 describe('SIGNIFIER_REGISTRY', () => {
-  it('Test 1: registry has entries for all 28 direct terrain types', () => {
+  it('Test 1: registry has entries for all 29 direct terrain types', () => {
     for (const key of DIRECT_REGISTRY_KEYS) {
       expect(SIGNIFIER_REGISTRY[key], `Missing registry entry for '${key}'`).toBeDefined();
       expect(Array.isArray(SIGNIFIER_REGISTRY[key]), `Entry for '${key}' should be an array`).toBe(true);
     }
-    expect(Object.keys(SIGNIFIER_REGISTRY).length).toBeGreaterThanOrEqual(25);
+    expect(Object.keys(SIGNIFIER_REGISTRY).length).toBeGreaterThanOrEqual(29);
   });
 
   it('Test 2: each registry entry has the correct number of variants', () => {
@@ -89,16 +91,15 @@ describe('SIGNIFIER_REGISTRY', () => {
       expect(variants, `Missing entry for '${key}'`).toBeDefined();
       expect(variants.length, `'${key}' should have ${expectedCount} variants`).toBe(expectedCount);
     }
-    // badlands has exactly 5 variants (LART-23 + LART-22)
-    expect(SIGNIFIER_REGISTRY['badlands'].length).toBe(5);
     // volcano has exactly 5 variants (LART-27 + LART-28)
     expect(SIGNIFIER_REGISTRY['volcano'].length).toBe(5);
-    // All other entries have 2-4 variants
+    // Cleared entries (awaiting new art) are allowed to have 0 variants
+    const clearedEntries = ['hardened_clay'];
+    // All other entries have 1-4 variants
     for (const [key, variants] of Object.entries(SIGNIFIER_REGISTRY)) {
-      if (key !== 'badlands' && key !== 'volcano') {
-        expect(variants.length, `'${key}' should have 2-4 variants`).toBeGreaterThanOrEqual(2);
-        expect(variants.length, `'${key}' should have 2-4 variants`).toBeLessThanOrEqual(4);
-      }
+      if (key === 'volcano' || clearedEntries.includes(key)) continue;
+      expect(variants.length, `'${key}' should have 1-4 variants`).toBeGreaterThanOrEqual(1);
+      expect(variants.length, `'${key}' should have 1-4 variants`).toBeLessThanOrEqual(4);
     }
   });
 
@@ -144,13 +145,11 @@ describe('getSignifierParams', () => {
     }
   });
 
-  it('Test 7: rotation is within [-PI/12, PI/12] (+-15 degrees)', () => {
-    const PI_12 = Math.PI / 12;
+  it('Test 7: rotation is always 0 (locked upright)', () => {
     for (let col = 0; col < 10; col++) {
       for (let row = 0; row < 10; row++) {
         const params = getSignifierParams(col, row, 42, 3);
-        expect(params.rotation).toBeGreaterThanOrEqual(-PI_12);
-        expect(params.rotation).toBeLessThanOrEqual(PI_12);
+        expect(Math.abs(params.rotation)).toBe(0);
       }
     }
   });

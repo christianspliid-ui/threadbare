@@ -1,7 +1,7 @@
 import { createNoise2D } from 'simplex-noise';
 import { mulberry32 } from '../../../lib/prng';
 import { TERRAIN_PALETTE, FALLBACK_TERRAIN_COLOR } from './terrainPalette';
-import { getWaterColor, getDepthBandColor, WATER_PALETTE, WATER_TERRAIN_KEYS } from './waterPalette';
+import { getWaterColor, WATER_PALETTE, WATER_TERRAIN_KEYS } from './waterPalette';
 
 /** NFP #1: Brightness noise range (±5% per TERR-05). */
 export const BRIGHTNESS_NOISE_RANGE = 0.05;
@@ -91,9 +91,10 @@ export function getHexColor(
   if (lakeId !== undefined && lakeId >= 0) {
     colorHex = WATER_PALETTE['lake'];
   }
-  // Priority 2: Ocean terrain with elevation → depth band coloring
-  else if (DEPTH_BAND_TERRAINS.has(terrain) && elevation !== undefined) {
-    colorHex = getDepthBandColor(elevation);
+  // Priority 2: Ocean terrain → uniform deep_ocean color (darkest blue)
+  // Organic contour fills layer on top to create depth gradient: deep → mid → shallows
+  else if (DEPTH_BAND_TERRAINS.has(terrain)) {
+    colorHex = WATER_PALETTE['deep_ocean'];
   }
   // Priority 3: Other water terrain → flat water palette
   else if (WATER_TERRAIN_KEYS.has(terrain)) {
