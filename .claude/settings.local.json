@@ -61,7 +61,9 @@
       "Bash(curl -s -X POST http://localhost:5173/__config-writer -H \"Content-Type: application/json\" -d '{\"\"changes\"\":[{\"\"sourceFile\"\":\"\"src/data/game-config.ts\"\",\"\"exportName\"\":\"\"DEFAULT_DOOM_TICKS\"\",\"\"newValue\"\":\"\"200000\"\"}]}')",
       "Bash(curl -s -X POST http://localhost:5173/__config-writer -H \"Content-Type: application/json\" -d '{\"\"changes\"\":[{\"\"sourceFile\"\":\"\"src/data/game-config.ts\"\",\"\"exportName\"\":\"\"DEFAULT_DOOM_TICKS\"\",\"\"newValue\"\":\"\"300000\"\"}]}')",
       "Bash(curl -s -X POST http://localhost:5173/__config-writer -H \"Content-Type: application/json\" -d '{\"\"changes\"\":[{\"\"sourceFile\"\":\"\"src/data/game-config.ts\"\",\"\"exportName\"\":\"\"TWILIGHT_TICKS\"\",\"\"newValue\"\":\"\"7\"\"},{\"\"sourceFile\"\":\"\"src/engine/wealth.ts\"\",\"\"exportName\"\":\"\"WEALTH_MERCENARY_COST\"\",\"\"newValue\"\":\"\"10\"\"},{\"\"sourceFile\"\":\"\"src/data/agent-behavior-constants.ts\"\",\"\"exportName\"\":\"\"STEP_PROBABILITY_OFFSET\"\",\"\"newValue\"\":\"\"0.6\"\"}]}')",
-      "Bash(curl -s -X POST http://localhost:5173/__config-writer -H \"Content-Type: application/json\" -d '{\"\"changes\"\":[{\"\"sourceFile\"\":\"\"src/data/agent-behavior-constants.ts\"\",\"\"exportName\"\":\"\"FACTION_NETWORK_AWARENESS\"\",\"\"newValue\"\":\"\"true\"\"}]}')"
+      "Bash(curl -s -X POST http://localhost:5173/__config-writer -H \"Content-Type: application/json\" -d '{\"\"changes\"\":[{\"\"sourceFile\"\":\"\"src/data/agent-behavior-constants.ts\"\",\"\"exportName\"\":\"\"FACTION_NETWORK_AWARENESS\"\",\"\"newValue\"\":\"\"true\"\"}]}')",
+      "Bash(sed \"s/[: ]//g\")",
+      "Bash(npx tsx -e \":*)"
     ]
   }
 }

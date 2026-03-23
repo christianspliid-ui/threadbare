@@ -122,6 +122,15 @@ None beyond the HexTile field access correction above.
 - Plans 03 and 04 can now add production hand-drawn SVG paths to the registry placeholders
 - Zoom visibility at k >= 5 matches regional tier, consistent with label tier thresholds from Phase 04
 
+## Self-Check: PASSED
+
+- FOUND: src/components/HexMapV2/signifiers/signifierTextures.ts
+- FOUND: src/components/HexMapV2/scene/SignifierMesh.ts
+- FOUND: src/components/HexMapV2/scene/__tests__/SignifierMesh.test.ts
+- FOUND: .planning/phases/05-hex-composition-landscape-signifiers/05-02-SUMMARY.md
+- FOUND: commit e350d60 (Task 1)
+- FOUND: commit 3897986 (Task 2)
+
 ---
 *Phase: 05-hex-composition-landscape-signifiers*
 *Completed: 2026-03-22*

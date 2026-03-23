@@ -1,23 +1,34 @@
 ---
 name: hexmap-renderer
 description: >
-  Three.js hex map renderer patterns and decisions from Hex Map V2 (Phases 1-4).
+  Three.js hex map renderer patterns and decisions from Hex Map V2 (Phases 1-8).
   Load when working on HexMapV2, scene layers, zoom behavior, coordinate mapping,
   coastline/river/elevation overlays, region labels, or any rendering code in
-  src/components/HexMap/. Triggers on "hex map", "HexMapV2", "Three.js scene",
+  src/components/HexMapV2/. Triggers on "hex map", "HexMapV2", "Three.js scene",
   "zoom", "coastline", "river overlay", "region labels", "elevation ticks",
   "InstancedMesh", "d3-zoom", or any hex renderer work.
 ---
 
 # Hex Map Renderer — Domain Context
 
-This skill captures hard-won decisions from the Hex Map V2 implementation (Phases 1-4). Load before modifying any rendering code.
+This skill captures hard-won decisions from the Hex Map V2 implementation (Phases 1-8). HexMapV2 is the sole hex map renderer — the old V1 SVG map was deleted in Phase 8. Load before modifying any rendering code.
 
 ## Architecture
 
 - **Raw Three.js** — no React Three Fiber. Direct Three.js gives full control over InstancedMesh, render loop, and d3-zoom integration.
 - **Canvas ref pattern** — React owns the `<canvas>` element via ref; Three.js owns the scene graph and render loop.
 - **Scene layers** — each visual feature (terrain, coastline, rivers, elevation ticks, region borders, labels) is a separate module that adds/removes its own meshes.
+
+## Visual Verification
+
+Playwright/preview tools **cannot** see WebGL canvas content — snapshots and inspect only see a blank `<canvas>` element. Use this two-tier approach:
+
+| What to check | Tool |
+|----------------|------|
+| Console errors, network, DOM UI around canvas | Playwright `preview_console_logs`, `preview_network`, `preview_snapshot` |
+| Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Claude in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. Use `?view=hexv2` only for isolated renderer debugging (no game state). |
+
+When verifying hex map changes, always check both: Playwright for errors, Claude in Chrome for visual correctness.
 
 ## Coordinate System
 
@@ -43,7 +54,7 @@ This skill captures hard-won decisions from the Hex Map V2 implementation (Phase
 
 ## Water & Coastlines
 
-- **Water colors** extracted from `Design/hexmap macro-reference.png`: deep_ocean `#3A7AB8`, ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`.
+- **Water colors** extracted from `Design/mark-known-world-region-8-v2.png`: deep_ocean `#3A7AB8`, ocean `#5098D0`, shallows `#78BCE0`, lake `#4A8FC0`, river `#68B0D8`.
 - **CoastlineMesh** — two-layer approach: shallows band (z=0.01) + land boundary (z=0.02) using ShapeGeometry from marching squares loops.
 - **River rendering** — mesh quad strips for width (not linewidth — WebGL clamps to 1px). All river paths merged into one BufferGeometry for minimal draw calls.
 - **Terrain seeding before biome pass** — hydrology pre-seeds terrain from `isOcean` + elevation so river routing works before biome classification.
@@ -68,17 +79,15 @@ This skill captures hard-won decisions from the Hex Map V2 implementation (Phase
 
 | File | Purpose |
 |------|---------|
-| `src/components/HexMap/HexMap.tsx` | Main scene setup, d3-zoom integration, render loop |
-| `src/components/HexMap/HexTile.tsx` | Per-hex data structures and terrain classification |
-| `src/components/HexMap/RiverOverlay.tsx` | River mesh generation from hydrology data |
-| `src/components/HexMap/RegionLabels.tsx` | Zoom-tiered HTML label overlay |
+| `src/components/HexMapV2/HexMapV2.tsx` | Main scene setup, d3-zoom integration, render loop |
+| `src/components/HexMapV2/scene/` | Scene layers: terrain, coastline, rivers, elevation ticks, grid lines, signifiers |
+| `src/components/HexMapV2/camera/D3ZoomCamera.ts` | d3-zoom ↔ Three.js camera sync |
+| `src/components/HexMapV2/signifiers/` | Terrain signifier textures and registry |
+| `src/components/HexMapV2/agents/` | Agent sprite rendering on hex map |
+| `src/components/HexMapV2/HexV2View.tsx` | Standalone `?view=hexv2` debug route (no game state) |
+| `src/components/Game/GameView.tsx` | Primary game view — imports HexMapV2 with full game chrome |
 | `src/engine/worldSeed.ts` | World generation pipeline |
-| `.planning/STATE.md` | Full decision log with phase context |
 
-## Remaining Phases (5-8)
+## Completed Phases
 
-Phases 5-8 of the roadmap build on this foundation:
-- **Phase 5:** Terrain signifiers (hex tile art compositing)
-- **Phase 6:** Location markers and POI display
-- **Phase 7:** Fog of war and zoom-to-hex
-- **Phase 8:** Integration testing and performance profiling
+All 8 phases of the Hex Map V2 roadmap are complete. The V1 SVG hex map was deleted in Phase 8 and HexMapV2 is now the sole renderer, integrated directly into GameView.

@@ -7,11 +7,69 @@
 
 ---
 
-*(No pending items — check Completed section below.)*
+## 2026-03-23: Implement start page (main menu)
+
+**Context:** The game currently drops players straight into cosmology setup with no introduction. Designed a full start page with title, lore fragment, main menu (New World / Continue / Settings / Credits), and theme music system. Narrative-mysterious tone — text over the existing title-screen.png art with a darkening gradient. Dark ambient drone plays on first interaction, fades out on "New World". Full design doc with layout mockup, audio system spec, token usage, constants table, NFP compliance, accessibility notes, and implementation file list.
+
+**What Cowork already did:** Wrote complete design doc at `Docs/plans/2026-03-23-start-page-design.md`.
+
+**Action for Claude Code:**
+- [ ] Create `StartPage.tsx` component per design doc layout and token spec
+- [ ] Create `startPageConstants.ts` with tunable constants from the design (includes audio constants)
+- [ ] Create `useThemeMusic.ts` hook — HTMLAudioElement, fade-in on first interaction, fade-out on "New World", mute toggle with localStorage persistence, graceful failure on blocked play()
+- [ ] Create stub `SettingsModal.tsx` (master volume slider wired to theme music, fog toggle, version)
+- [ ] Create `CreditsModal.tsx` (scrollable credits list)
+- [ ] Add mute/unmute toggle icon (Lucide Volume2/VolumeX) in bottom-left corner
+- [ ] Create placeholder silent MP3 at `public/audio/theme-drone.mp3` (user will replace with real file)
+- [ ] Modify `App.tsx`: add `start` phase as default, "New World" transitions to `worldgen`, dev view params (`?view=game`, `?view=hexv2`, etc.) skip start page
+- [ ] Write unit tests: renders title/lore/menu, "Continue" hidden without save, "New World" triggers phase change, dev views bypass start page, audio hook fade/mute/failure
+- [ ] Visual verification at 1920×1080: text legible over gradient, menu items respond to hover/focus, image fallback works, mute icon visible
+
+**Files changed:** `Docs/plans/2026-03-23-start-page-design.md` (new + updated with audio), `.planning/HANDOVER.md` (this entry)
+
+---
+
+## 2026-03-23: Kokoro TTS narration prototype
+
+**Context:** Researched in-browser TTS options for narrating game prose. Kokoro TTS (82M params, Apache 2.0) has a first-class JS package (`kokoro-js`) that runs entirely client-side via WASM/WebGPU — no API key, no server, no recurring cost. The q8 quantized model is ~92 MB. Wrote a complete prototype design doc with architecture, API, constants, fail-soft table, and acceptance criteria. Integration hooks into existing `TickEvent.message` text displayed in the NarrativeLog.
+
+**What Cowork already did:** Wrote design doc at `Docs/plans/2026-03-23-kokoro-tts-narration-prototype.md`.
+
+**Action for Claude Code:**
+- [ ] `npm install kokoro-js`
+- [ ] Create `src/services/narration/narrationConstants.ts` — feature flag (off by default), model config, voice, speed
+- [ ] Create `src/services/narration/NarrationWorker.ts` — Web Worker that loads kokoro-js, handles `init`/`speak`/`stop` messages
+- [ ] Create `src/services/narration/NarrationService.ts` — public API wrapping the worker (init, speak, stop, status, progress)
+- [ ] Create `src/services/narration/useNarration.ts` — React hook exposing service state
+- [ ] Create `src/components/Game/NarrationToggle.tsx` — simple on/off button + loading indicator
+- [ ] Add a "narrate" icon button to NarrativeLog event entries (only visible when `NARRATION_ENABLED = true`)
+- [ ] Verify Web Worker isolation — narration must not block Three.js render loop or UI
+- [ ] Test on Chrome and Firefox (WASM backend)
+- [ ] Handle AudioContext autoplay policy (init from user gesture)
+
+**Files changed:** `Docs/plans/2026-03-23-kokoro-tts-narration-prototype.md` (new), `.planning/HANDOVER.md` (this entry)
 
 ---
 
 ## Completed
+
+### 2026-03-23: Rename game title from "Threadbare" to "Threadbearer" (completed 2026-03-23)
+
+All action items done:
+- Changed START_PAGE_TITLE, CreditsModal heading, MagicGlowTiles h1, STYLE.md heading + text rules, index.html title
+- Updated localStorage keys (threadbare_muted → threadbearer_muted, threadbare_fog_default → threadbearer_fog_default) and test todo text
+- Internal aesthetic references ("Threadbare aesthetic") left unchanged per design intent
+- Visual verification: letter-spacing looks great at 1920×1080
+
+### 2026-03-23: Complete stencil coastline wiring (completed 2026-03-23)
+
+All action items done:
+- Wired stencil test on land mesh material (EqualStencilFunc, ref=1)
+- Rewrote CoastlineMesh: stencil write pass from land contour loops (colorWrite: false)
+- Disabled shallow band overlays (they covered land area with light blue — root cause of the all-blue map)
+- Updated CoastlineMesh tests for stencil behavior
+- Visual verification: per-hex terrain colors visible on both `?view=hexv2` and `http://localhost:5173/`
+- Remaining TODO: re-add shallow band with stencil test (only render where stencil=0)
 
 ### 2026-03-22: Documentation cleanup + Notion migration (completed 2026-03-22)
 

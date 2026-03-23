@@ -1,0 +1,23 @@
+{
+  "skill_name": "image-manipulation",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have a bunch of hex tile PNGs in Design/hex-crops-v2/ that are 120x104 pixels with a black border around each hex shape. I need to clip them to just the hexagon on a transparent background — remove the white corners and the black border. They're flat-top hexagons. Can you process all of them and save the results?",
+      "expected_output": "Properly clipped hex PNGs with transparent backgrounds, no border artifacts, anti-aliased edges. All 51 tiles should pass validation.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have an image at Design/hex-crops-v2/ocean.png that's a flat-top hexagonal tile (120x104px). I need to cut it into a clean hexagon shape with transparency outside the hex. The image has a ~4px black border I want to exclude. Save it as ocean_clipped.png and show me it's correct.",
+      "expected_output": "A single cleanly clipped hex PNG with transparent corners, no black border remnants, center pixel opaque, transparency ratio around 39-45%.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I need to composite two images together. Take the ocean hex tile and overlay it on top of a green (#2d5a1e) background canvas that's 200x200 pixels, centered. The hex tile should keep its transparency so you can see the green background through the corners.",
+      "expected_output": "A 200x200 PNG showing the hex ocean tile centered on a green background, with green visible in the hex corners. The hex edges should be clean.",
+      "files": []
+    }
+  ]
+}

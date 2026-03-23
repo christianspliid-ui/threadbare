@@ -1,0 +1,39 @@
+{
+  "expectations": [
+    {
+      "text": "Recognizes this as a lightweight change requiring only Steps 1-2",
+      "passed": true,
+      "evidence": "Plan title explicitly states 'we run the lightweight subset (Steps 1-2 only)'. Has dedicated section 'Why Steps 3-6 Are Not Needed' with 5 bullet points justifying why each step is skipped."
+    },
+    {
+      "text": "Updates CLAUDE.md changelog with a row for the constant change",
+      "passed": true,
+      "evidence": "Step 1 appends one row: '| 2026-03-07 | Repo: src/types/ | Modified visibility.ts — AVATAR_SIGHT_RANGE constant: 3 → 4 | Quick fix: expanded avatar detection range for better discoverability |'"
+    },
+    {
+      "text": "Does NOT create new Obsidian system notes for a constant tweak",
+      "passed": true,
+      "evidence": "Section 'Why Steps 3-6 Are Not Needed' explicitly states: '✅ Does not introduce new systems (no Obsidian vault notes needed)'. No obsidian tool calls in the plan."
+    },
+    {
+      "text": "Does NOT update Notion backlog for a minor constant change",
+      "passed": true,
+      "evidence": "Section 'Why Steps 3-6 Are Not Needed' states: '✅ Does not change phase/task tracking (no Notion backlog update needed)'. No notion tool calls in the plan."
+    },
+    {
+      "text": "Does NOT attempt obsidian_patch_content on headings with special characters",
+      "passed": true,
+      "evidence": "No Obsidian tool calls at all in the plan. Steps 3-6 are explicitly skipped."
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 0,
+    "total": 5,
+    "pass_rate": 1.0
+  },
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "Perfect lightweight identification. The skill's scope-detection logic works well here."
+  }
+}

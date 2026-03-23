@@ -84,7 +84,7 @@ Before dispatching browser-based agents, verify:
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
 
-**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
+**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view with HexMapV2 (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`. Note: `?view=hexv2` is a standalone renderer debug route — always use `?view=game` for QA sweeps.
 
 ### Game Entry Flow (required for all browser agents)
 
@@ -448,6 +448,7 @@ const traces = await window.__DEBUG.getTraces();
 | Hardcoding `localhost:5173` in agent prompts | Always use `{QA_URL}` from `scripts/qa-server.sh start` output. The user's dev server may be on 5173. |
 | Forgetting to stop the QA server | Always run `bash scripts/qa-server.sh stop` after the sweep — even on failure. Leaked processes block ports. |
 | Running agents in parallel | Playwright MCP is single-browser. Run sequentially. |
+| Using Playwright screenshots for WebGL/Three.js content | Playwright `browser_snapshot` and `browser_take_screenshot` cannot see WebGL canvas content — they only capture a blank `<canvas>`. For hex map (HexMapV2) visual verification, use **Claude in Chrome** tools: `tabs_context_mcp` → `navigate` → `computer` with `action: "screenshot"`. Playwright is still correct for console errors, DOM-based UI, and network checks. |
 | Skipping server start (using user's dev server) | QA must be isolated. Start your own server — don't share port 5173. |
 | Passing `{QA_URL}` as a literal string | Substitute the actual URL (e.g., `http://localhost:5183`) before dispatching agents. |
 | Fixing during sweep | Collect first, fix later. Changing code mid-sweep invalidates later agents. |
