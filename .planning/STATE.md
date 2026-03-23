@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 09-start-screen/09-01-PLAN.md
-last_updated: "2026-03-23T09:02:06.762Z"
+stopped_at: Completed 09-start-screen/09-02-PLAN.md (awaiting Task 2 human-verify checkpoint)
+last_updated: "2026-03-23T09:07:45.858Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 10
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 30
-  completed_plans: 29
+  completed_plans: 30
   percent: 93
 ---
 
@@ -151,6 +151,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 08-integration P04 | 15 | 2 tasks | 8 files |
 | Phase 09-start-screen P00 | 1min | 1 tasks | 3 files |
 | Phase 09-start-screen P01 | 12 | 2 tasks | 6 files |
+| Phase 09-start-screen P02 | 2 | 1 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -224,6 +225,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 09-start-screen]: lucide-react installed for Volume2/VolumeX icons (was missing from package.json)
 - [Phase 09-start-screen]: fadeOut interval uses plain closure variable (not useRef) so it survives component unmount during 600ms page transition
 - [Phase 09-start-screen]: App.tsx default phase changed from 'worldgen' to 'start'; dev shortcuts bypass via early return
+- [Phase 09-start-screen]: Volume slider state lives in StartPage (not SettingsModal) so it survives modal close/reopen cycles
+- [Phase 09-start-screen]: Fog default key threadbare_fog_default stored in localStorage, unchecked by default matching existing ?fog off-by-default behavior
 
 ### Pending Todos
 
@@ -235,6 +238,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T09:02:06.759Z
-Stopped at: Completed 09-start-screen/09-01-PLAN.md
+Last session: 2026-03-23T09:07:45.856Z
+Stopped at: Completed 09-start-screen/09-02-PLAN.md (awaiting Task 2 human-verify checkpoint)
 Resume file: None
