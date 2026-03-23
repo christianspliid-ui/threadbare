@@ -4,7 +4,7 @@
 
 Bottom-up construction of a complete hex map system: start with the Three.js renderer and terrain palette, layer in world generation, water systems, regions, then signifier art and composition, agents, fog/zoom, and finally integrate into the live game. Each phase delivers a verifiable visual capability that builds on the previous.
 
-**V1 hex map (SVG) development is stopped.** All hex map work targets V2 exclusively (`?view=hexv2`). The V1 SVG map remains in the codebase at `?view=game` but receives no new features or fixes. Phase 8 will remove V1 and wire V2 into the game view.
+**All 8 phases complete.** V1 SVG hex map deleted in Phase 8. HexMapV2 (Three.js) is the sole renderer, integrated into `?view=game`. The standalone `?view=hexv2` route remains for isolated renderer debugging only.
 
 ## Phases
 
@@ -194,7 +194,11 @@ Plans:
   4. Dark ambient music loops on user interaction, fades out on "New World", and mute state persists in localStorage
   5. Settings and Credits modals open as overlays on the start screen
   6. If title-screen.png or audio file is missing, the page degrades gracefully (solid dark bg, silent)
-**Plans:** 0 plans
+**Plans:** 2 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — StartPage component (layout, CSS, gradient, menu), useThemeMusic hook, App.tsx phase integration
+- [ ] 09-02-PLAN.md — Settings modal (volume, fog toggle, version), Credits modal (title, tech, lore), visual verification checkpoint
 
 ## Progress
 
@@ -214,4 +218,4 @@ Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each
 | 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
 | 7.1. Stencil Coastline | 0/1 | Not started | - |
 | 8. Integration | 4/4 | Complete   | 2026-03-23 |
-| 9. Start Screen | 0/0 | Not started | - |
+| 9. Start Screen | 0/2 | Not started | - |
