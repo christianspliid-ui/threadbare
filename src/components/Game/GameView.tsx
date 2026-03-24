@@ -447,7 +447,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const row = typeof props.hexRow === 'number' ? props.hexRow : undefined;
     if (col !== undefined && row !== undefined && hexMapRef.current) {
       const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
-      hexMapRef.current.centerOn(px.x, px.y, RETINUE_EYE_ZOOM_SCALE);
+      // Y-flip: hexToPixel returns SVG y-down, Three.js camera uses y-up
+      hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
     }
   }, [gameState.graph, hexMapRef]);
 

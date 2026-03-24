@@ -217,7 +217,11 @@ export function getAgentDetail(
   const tier = (worshipEdge.properties as Record<string, unknown>).tier as InfluenceTier;
   const profile = (props.axiologicalProfile as AxiologicalProfile) || {} as AxiologicalProfile;
   const domainCapabilities = (props.domainCapabilities as Record<ReachDomain, number>) || {} as Record<ReachDomain, number>;
-  const locationId = (props.locationId as string) || '';
+  // Resolve location via located_at edge (authoritative), fallback to legacy property
+  const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+  const locationId = locEdges.length > 0
+    ? locEdges[0].target
+    : ((props.locationId as string) || '');
 
   let locationName = '(unknown)';
   if (locationId) {

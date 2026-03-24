@@ -27,7 +27,7 @@ import { createAgentSpriteMesh, updateZoomVisibility, updateAgentPositions, load
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { AGENT_ZOOM_THRESHOLDS } from './agents/agentSpriteTypes';
-import { startMoveAnimation, tickAgentAnimations } from './agents/agentAnimationState';
+import { startMoveAnimation, startSettleAnimation, tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, addTrailSegment, updateTrails } from './scene/MovementTrailMesh';
 import { FACTION_HERALDIC_COLORS } from './agents/agentSpriteTypes';
@@ -61,6 +61,8 @@ import { getRingSlotOffset } from '../../lib/movementPath';
 import {
   LOCATION_RING_RADIUS,
   LOCATION_RING_ROTATION_DEG,
+  AGENT_RING_RADIUS,
+  MAX_RING_AGENTS,
 } from '../../data/agent-visual-content';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
@@ -275,8 +277,12 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
     const animStatesRef = useRef<Map<string, AgentAnimState>>(new Map());
     const trailGroupRef = useRef<THREE.Group | null>(null);
-    // Previous agent positions for movement detection (hex change diff)
-    const prevAgentPositionsRef = useRef<Map<string, { col: number; row: number }>>(new Map());
+    // Previous agent positions for movement detection (hex change diff + ring slot world position)
+    const prevAgentPositionsRef = useRef<Map<string, {
+      col: number; row: number;
+      ringOffset: { x: number; y: number };
+      worldX: number; worldY: number;
+    }>>(new Map());
     // Location offset lookup for trail endpoints — rebuilt when locations change
     const locationOffsetRef = useRef<Map<string, { dx: number; dy: number }>>(new Map());
     locationOffsetRef.current = buildLocationOffsetLookup(locations);
@@ -840,7 +846,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         };
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, roadPaths, agents]);
+    // NOTE: `agents` is intentionally excluded — agent position updates are handled
+    // incrementally by the animation useEffect below (line ~950). Including agents here
+    // would tear down and recreate the entire Three.js scene every tick, destroying
+    // animation state (prevPositions, animStates, trailGroup) and preventing movement
+    // animations from ever triggering.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, roadPaths]);
 
     // ── Fog update effect (separate from scene init — fog changes don't rebuild scene) ──
     // Depends only on visibilityMap prop. Uses refs to access meshes, colorCache.
@@ -946,6 +958,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Update agent positions and trigger movement animations when agents prop changes.
     // Diffs old vs new hex positions — agents that changed hex get a bezier hop + trail segment.
+    // Agents that stay on the same hex but whose ring slot moved get a settle tween.
     // Also checks follow mode state and pans camera to followed agent on hex change.
     useEffect(() => {
       const spriteGroup = agentSpriteGroupRef.current;
@@ -956,25 +969,64 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const animStates    = animStatesRef.current;
       const now = performance.now();
 
+      // ── Step 1: Group agents by hex and compute ring offsets (same logic as AgentSpriteMesh) ──
+      const hexGroups = new Map<string, AgentRenderData[]>();
+      for (const agent of agents) {
+        const key = `${agent.hexCol},${agent.hexRow}`;
+        if (!hexGroups.has(key)) hexGroups.set(key, []);
+        hexGroups.get(key)!.push(agent);
+      }
+      // Sort each group by ID for deterministic ring slot assignment (NFP #3)
+      for (const group of hexGroups.values()) {
+        group.sort((a, b) => a.id.localeCompare(b.id));
+      }
+
+      // Build ring offset lookup: agentId → { ringOffset, worldX, worldY }
+      const newPositions = new Map<string, {
+        col: number; row: number;
+        ringOffset: { x: number; y: number };
+        worldX: number; worldY: number;
+      }>();
+      for (const hexAgents of hexGroups.values()) {
+        const visible = hexAgents.slice(0, MAX_RING_AGENTS);
+        for (let i = 0; i < visible.length; i++) {
+          const agent = visible[i];
+          const ringOffset = getRingSlotOffset(i, visible.length, AGENT_RING_RADIUS);
+          const hexCenter = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+          const wx = hexCenter.x + ringOffset.x;
+          const wy = -(hexCenter.y + ringOffset.y); // Y-flip
+          newPositions.set(agent.id, {
+            col: agent.hexCol, row: agent.hexRow,
+            ringOffset, worldX: wx, worldY: wy,
+          });
+        }
+      }
+
+      // ── Step 2: Detect hex changes (hop) and ring rearrangements (settle) ──
+      let movedCount = 0;
       for (const agent of agents) {
         const prev = prevPositions.get(agent.id);
-        const hexChanged =
-          prev && (prev.col !== agent.hexCol || prev.row !== agent.hexRow);
+        const curr = newPositions.get(agent.id);
+        if (!curr) continue; // overflow agent, not in ring
+
+        const hexChanged = prev && (prev.col !== agent.hexCol || prev.row !== agent.hexRow);
 
         if (hexChanged && prev) {
-          // Start bezier hop animation
+          // ── Hop animation: wobbled bezier from old ring slot to new ring slot ──
           const animState = startMoveAnimation(
             agent.id,
-            prev,
+            { col: prev.col, row: prev.row },
             { col: agent.hexCol, row: agent.hexRow },
             seed,
+            prev.ringOffset,
+            curr.ringOffset,
           );
           animStates.set(agent.id, animState);
 
           // Add trail segment — offset endpoints toward location icons when present
           if (trailGroup) {
             const locOffsets = locationOffsetRef.current;
-            const fromCenter = hexToPixel(prev, HEX_CONSTANTS.HEX_SIZE);
+            const fromCenter = hexToPixel({ col: prev.col, row: prev.row }, HEX_CONSTANTS.HEX_SIZE);
             const toCenter   = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
             const fromOff = locOffsets.get(`${prev.col},${prev.row}`);
             const toOff   = locOffsets.get(`${agent.hexCol},${agent.hexRow}`);
@@ -987,7 +1039,27 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               startTime: now,
             });
           }
+          movedCount++;
+        } else if (prev && !hexChanged) {
+          // Same hex — check if ring slot world position changed (rearrangement)
+          const dx = Math.abs(prev.worldX - curr.worldX);
+          const dy = Math.abs(prev.worldY - curr.worldY);
+          if (dx > 0.5 || dy > 0.5) {
+            // Ring slot rearrangement — linear settle tween (150ms)
+            // Only start if not already animating a hop
+            if (!animStates.has(agent.id)) {
+              const settleState = startSettleAnimation(
+                agent.id,
+                { x: prev.worldX, y: prev.worldY },
+                { x: curr.worldX, y: curr.worldY },
+              );
+              animStates.set(agent.id, settleState);
+            }
+          }
         }
+      }
+      if (movedCount > 0) {
+        console.log(`[HexMapV2] ${movedCount} agent(s) moved hex — animations triggered, trailGroup children: ${trailGroup?.children.length ?? 'N/A'}`);
       }
 
       // Follow mode: pan camera when followed agent changes hex (Plan 07-03)
@@ -1012,12 +1084,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       // Update sprite positions for non-animating agents
       updateAgentPositions(spriteGroup, agents);
 
-      // Update previous positions snapshot
-      const newPrev = new Map<string, { col: number; row: number }>();
-      for (const agent of agents) {
-        newPrev.set(agent.id, { col: agent.hexCol, row: agent.hexRow });
-      }
-      prevAgentPositionsRef.current = newPrev;
+      // Update previous positions snapshot (with ring offsets for rearrangement detection)
+      prevAgentPositionsRef.current = newPositions;
     }, [agents, seed]);
 
     // ── Mouse event handlers ───────────────────────────────────────
