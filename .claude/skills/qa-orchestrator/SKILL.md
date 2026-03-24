@@ -84,7 +84,7 @@ Before dispatching browser-based agents, verify:
 2. **Playwright MCP connected** — `browser_navigate` must respond
 3. **STYLE.md exists** — read it for visual spec reference
 
-**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view with HexMapV2 (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`. Note: `?view=hexv2` is a standalone renderer debug route — always use `?view=game` for QA sweeps.
+**Pre-flight check:** Navigate to `{QA_URL}/?view=game` via Playwright. This skips worldgen and ascendant selection, jumping straight to the game view with HexMapV2 (seed 42, random archetype, "The Dev Oracle"). If the page doesn't load, check `bash scripts/qa-server.sh status` and the log at `/tmp/qa-vite-{port}.log`.
 
 ### Game Entry Flow (required for all browser agents)
 

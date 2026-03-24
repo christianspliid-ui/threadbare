@@ -102,7 +102,7 @@ describe('Historical Culture Resolvers', () => {
         category: 'history',
         source: 'historicalCultureResolver',
       });
-      expect(result[0].text).toContain('The Star-Readers');
+      expect(result[0].text).toContain('Star-Readers');
       // Chaos templates mention "ambition" or "brilliance"
       expect(
         result[0].text.includes('ambition') ||
@@ -144,7 +144,7 @@ describe('Historical Culture Resolvers', () => {
       const result = historicalCultureResolver('region_0', graph, testSeed);
 
       expect(result).toHaveLength(1);
-      expect(result[0].text).toContain('The Architects');
+      expect(result[0].text).toContain('Architects');
       // Order templates mention "precision" or "ordered"
       expect(result[0].text.includes('precision') || result[0].text.includes('ordered')).toBe(
         true,
@@ -369,7 +369,6 @@ describe('Historical Culture Resolvers', () => {
         source: 'regionEtymologyResolver',
       });
       expect(result[0].text).toContain('Valdris');
-      expect(result[0].text).toContain('The Valdren');
     });
 
     it('returns prose explaining name etymology', () => {

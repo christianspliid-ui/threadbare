@@ -70,6 +70,8 @@ export type EdgeType =
   | 'sphere_influence' // location/actor → sphere influence (weight/dominance tracking)
   // Ambition
   | 'pursues'          // actor → ambition (priority, status, milestones)
+  // Infrastructure
+  | 'road'             // location ↔ location road/trail (roadType, hexPath, totalCost, pathLength)
   // Economic
   | 'trades_with';     // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
 

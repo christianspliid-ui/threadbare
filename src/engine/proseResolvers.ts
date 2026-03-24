@@ -516,8 +516,11 @@ export function historicalCultureResolver(regionId: string, graph: WorldGraph, s
       ? ruinDescs[Math.floor(mulberry32(seed + 1)() * ruinDescs.length)]
       : 'weathered ruins';
 
+  // Strip leading "The " from culture name to avoid "the The X" constructions
+  const cultureName = histNode.name.replace(/^The\s+/i, '');
+
   // Replace placeholders
-  let text = replacePlaceholder(template, 'histCulture', histNode.name);
+  let text = replacePlaceholder(template, 'histCulture', cultureName);
   text = replacePlaceholder(text, 'ruinDescriptor', ruinDesc);
 
   return [
@@ -557,8 +560,11 @@ export function regionEtymologyResolver(regionId: string, graph: WorldGraph, see
   const template = pickTemplate(REGION_ETYMOLOGY_PROSE, seed + 7);
   if (!template) return [];
 
+  // Strip leading "The " from region name to avoid "The name The X" constructions
+  const regionName = regionNode.name.replace(/^The\s+/i, '');
+
   // Replace placeholders
-  let text = replacePlaceholder(template, 'regionName', regionNode.name);
+  let text = replacePlaceholder(template, 'regionName', regionName);
   text = replacePlaceholder(text, 'histCulture', histNode.name);
 
   return [

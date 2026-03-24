@@ -157,7 +157,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             <div className="flex justify-between" style={{ fontSize: 'var(--text-base)' }}>
               <span className="font-semibold" style={{ color: 'var(--text-tertiary)' }}>Cost</span>
               <span className="font-bold" style={{ color: 'var(--text-primary)' }}>
-                {essenceCost} {sphere} essence
+                {Math.round(essenceCost)} {sphere} essence
               </span>
             </div>
             <div className="flex justify-between" style={{ fontSize: 'var(--text-base)' }}>
@@ -205,7 +205,7 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
                 opacity: 0.85,
               }}
             >
-              Insufficient {sphere} essence (need {essenceCost}, have {Math.floor(props.availableEssence ?? 0)})
+              Insufficient {sphere} essence (need {Math.round(essenceCost)}, have {Math.round(props.availableEssence ?? 0)})
             </div>
           )}
 

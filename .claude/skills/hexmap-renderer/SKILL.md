@@ -26,7 +26,7 @@ Playwright/preview tools **cannot** see WebGL canvas content — snapshots and i
 | What to check | Tool |
 |----------------|------|
 | Console errors, network, DOM UI around canvas | Playwright `preview_console_logs`, `preview_network`, `preview_snapshot` |
-| Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Claude in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. Use `?view=hexv2` only for isolated renderer debugging (no game state). |
+| Actual rendered hex map visuals (terrain, coastlines, signifiers, colors) | **Claude in Chrome** — `tabs_context_mcp` → `navigate` to `localhost:5173/?view=game` → `computer` with `action: "screenshot"` or `action: "zoom"` for detail. |
 
 When verifying hex map changes, always check both: Playwright for errors, Claude in Chrome for visual correctness.
 
@@ -84,7 +84,7 @@ When verifying hex map changes, always check both: Playwright for errors, Claude
 | `src/components/HexMapV2/camera/D3ZoomCamera.ts` | d3-zoom ↔ Three.js camera sync |
 | `src/components/HexMapV2/signifiers/` | Terrain signifier textures and registry |
 | `src/components/HexMapV2/agents/` | Agent sprite rendering on hex map |
-| `src/components/HexMapV2/HexV2View.tsx` | Standalone `?view=hexv2` debug route (no game state) |
+| `src/components/HexMapV2/HexV2View.tsx` | Standalone debug route (no game state) |
 | `src/components/Game/GameView.tsx` | Primary game view — imports HexMapV2 with full game chrome |
 | `src/engine/worldSeed.ts` | World generation pipeline |
 

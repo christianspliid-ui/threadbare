@@ -742,6 +742,34 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 
 const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
+    id: 'hex.sense_threads',
+    name: 'Sense Threads',
+    reach: 'eye',
+    crudType: 'read',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'continue_weakened',
+    }],
+    apCost: 0,
+    // Base cost: 0.5 essence. Resolution priority:
+    // 1. Pay from area sphere influence (highest sphere first, descending)
+    // 2. If area cannot cover, pay 2× cost (1.0) from player's essence pool (highest first, descending)
+    essenceCost: 0.5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['hex'],
+    motivations: [],
+    narrativeTemplates: {
+      initiation: 'reaches out to feel the threads of essence woven through this land',
+      success: 'the sphere energies reveal themselves — currents of power made visible to divine sight',
+      failure: 'the threads remain elusive, only fragments of the weave can be sensed',
+    },
+  },
+  {
     id: 'hex.bless_land',
     name: 'Bless the Land',
     reach: 'star',

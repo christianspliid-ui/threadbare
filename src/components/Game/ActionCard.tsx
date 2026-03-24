@@ -186,7 +186,7 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
             />
           )}
           <span data-testid="action-card-cost">
-            {slot.essenceCost === 0 ? 'Free' : slot.essenceCost}
+            {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
           </span>
         </div>
 

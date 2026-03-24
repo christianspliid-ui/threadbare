@@ -9,7 +9,7 @@ export const ELEV = {
   SHALLOWS: 0.25,       // below → coastal_shallows
   LAKE_MAX: 0.28,       // below + wet → lake
   LOWLAND: 0.50,        // below → lowland biomes (grassland, forest, etc.)
-  MID: 0.625,           // below → mid-elevation biomes (hills transition)
+  MID: 0.675,           // below → mid-elevation biomes (hills transition)
   HIGHLAND: 0.75,       // below → highland biomes, above → mountains
   HIGH_MOUNTAINS: 0.95, // above → high mountains / volcano candidates
 } as const;
@@ -104,9 +104,9 @@ export function classifyBiome(
       if (temperature > TEMP.COLD) return 'temperate_forest';
       return 'boreal_forest';
     }
-    // Drier mid-elevation → hills or badlands
+    // Drier mid-elevation → steppe or badlands
     if (temperature > TEMP.HOT) return 'badlands';
-    return 'hills';
+    return 'steppe';
   }
 
   // Highlands
@@ -117,11 +117,11 @@ export function classifyBiome(
       return 'boreal_forest';
     }
     if (moisture > MOIST.MODERATE) {
-      return temperature > TEMP.COLD ? 'hills' : 'boreal_forest';
+      return temperature > TEMP.COLD ? 'temperate_forest' : 'boreal_forest';
     }
     if (temperature > TEMP.HOT) return 'plateau';
     if (temperature < TEMP.FROZEN) return 'glacier';
-    return 'hills';
+    return 'steppe';
   }
 
   // High mountains and extremes: > ELEV.HIGHLAND

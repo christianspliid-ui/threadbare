@@ -47,10 +47,6 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
 
   if (compact) {
     return (
-      <Tooltip
-        id="ui.essence_panel"
-        label={`Total: ${totalEssence.toFixed(1)} / ${(maxEssence * 8).toFixed(0)}`}
-      >
         <div className="flex items-center gap-2">
           {sorted.map((sphere) => {
             const value = pool[sphere];
@@ -60,40 +56,43 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
 
             const color = getSphereColor(sphere);
             const net = income?.[sphere] ?? null;
-            const incomeSign = net !== null && Math.abs(net) >= 0.05 ? (net >= 0 ? '+' : '−') : null;
-            const incomeAbs = net !== null ? Math.abs(net).toFixed(1) : null;
+            const roundedNet = net !== null ? Math.round(net) : null;
+            const incomeSign = roundedNet !== null && roundedNet !== 0 ? (roundedNet >= 0 ? '+' : '−') : null;
 
             return (
-              <div
+              <Tooltip
                 key={sphere}
-                className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
-                style={{
-                  background: 'var(--bg-raised)',
-                  border: `1px solid ${isPrimary ? `${color}40` : 'transparent'}`,
-                  opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
-                }}
+                label={`${sphere}${isPrimary ? ' (Primary)' : isSecondary ? ' (Secondary)' : ''}: ${Math.round(value)} / ${maxEssence}${incomeSign ? ` (${incomeSign}${Math.abs(roundedNet!)}/tick)` : ''}`}
               >
-                <SphereIcon sphereName={sphere} size="0.8rem" className="w-3.5 text-center" />
-                <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
-                  {value % 1 === 0 ? value.toFixed(0) : value.toFixed(1)}
-                </span>
-                {incomeSign && (
-                  <span
-                    className="font-mono"
-                    style={{
-                      fontSize: 'var(--text-xs)',
-                      color: net! >= 0 ? 'var(--positive)' : 'var(--negative)',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {incomeSign}{incomeAbs}
+                <div
+                  className={`flex items-center gap-1 px-1.5 py-0.5 rounded transition-colors${pulsingIds.has(sphere) ? ' pulse-gold' : ''}`}
+                  style={{
+                    background: 'var(--bg-raised)',
+                    border: `1px solid ${isPrimary ? `${color}40` : 'transparent'}`,
+                    opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
+                  }}
+                >
+                  <SphereIcon sphereName={sphere} size="0.8rem" className="w-3.5 text-center" />
+                  <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-primary)' }}>
+                    {Math.round(value)}
                   </span>
-                )}
-              </div>
+                  {incomeSign && (
+                    <span
+                      className="font-mono"
+                      style={{
+                        fontSize: 'var(--text-xs)',
+                        color: roundedNet! >= 0 ? 'var(--positive)' : 'var(--negative)',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {incomeSign}{Math.abs(roundedNet!)}
+                    </span>
+                  )}
+                </div>
+              </Tooltip>
             );
           })}
         </div>
-      </Tooltip>
     );
   }
 
@@ -109,7 +108,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
           </h2>
         </Tooltip>
         <span className="font-mono" style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
-          {totalEssence.toFixed(1)} / {(maxEssence * 8).toFixed(0)}
+          {Math.round(totalEssence)} / {maxEssence * 8}
         </span>
       </div>
 
@@ -147,7 +146,7 @@ export function EssencePanel({ pool, maxEssence, primarySphere, secondarySphere,
                   opacity: isPrimary ? 1 : isSecondary ? 0.85 : 0.6,
                 }}
               >
-                {value.toFixed(1)}
+                {Math.round(value)}
               </span>
               {isPrimary && (
                 <span style={{ fontSize: 'var(--text-xs)', padding: '0.375rem 0.375rem', borderRadius: '0.25rem', backgroundColor: 'var(--accent-gold-dim)', color: 'var(--text-primary)' }}>1st</span>

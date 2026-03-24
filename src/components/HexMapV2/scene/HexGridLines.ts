@@ -7,10 +7,10 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 // ─── Grid line constants (NFP #1: Tunability) ───────────────────────────────
 
 /** Half-width of hex grid lines in world units (visual width = 2 * GRID_LINE_HALF_WIDTH) */
-const GRID_LINE_HALF_WIDTH = 0.15;
+const GRID_LINE_HALF_WIDTH = 0.30;
 
-/** Grid line color — matches UI --border-medium (#3a3530) warm dark grey */
-const GRID_LINE_COLOR = 0x3a3530;
+/** Grid line color — cool mid-grey */
+const GRID_LINE_COLOR = 0x5D5E66;
 
 /** Z position for grid line vertices — above hex fill (0), coastline (0.01–0.02) */
 const GRID_LINE_Z = 0.025;
