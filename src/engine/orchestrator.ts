@@ -657,7 +657,7 @@ export function phaseEssence(state: GameState): Partial<GameState> {
       id: nextEventId(),
       tick: state.tick,
       type: 'essence_gain',
-      message: `+${totalGen.toFixed(1)} essence flows from the cosmos`,
+      message: `+${Math.round(totalGen)} essence flows from the cosmos`,
       significance: 0.1,
     });
   }

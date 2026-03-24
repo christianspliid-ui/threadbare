@@ -269,76 +269,76 @@ export const CULTURE_LOCATION_PROSE: Record<string, string[]> = {
 
 export const SPHERE_LOCATION_PROSE: Record<string, string[]> = {
   force: [
-    'The location carries the mark of Force — impact points visible in shattered structures, violence made architecture. Conflict shapes the settlement itself.',
-    'Scars of impact and explosion mar the landscape. Force speaks through destruction and the terrible clarity that comes after things break.',
-    'The walls here are not built for beauty but for impact. Every surface shows the memory of collision — dents, cracks, the specific scarring of stone that has been struck and has held.',
-    'Tension sits in the air like heat before a storm. The settlement is a coiled spring, and Force ensures it stays wound tight.',
+    'You sense the mark of Force here — impact and collision written into shattered stone, violence made architecture. The land itself remembers every blow.',
+    'Your awareness meets a wall of pressure. Scars of impact and explosion radiate outward, and you feel the terrible clarity that follows when things break beyond mending.',
+    'You feel the tension before you see it — a settlement wound tight as a drawn bowstring. Every surface bears the memory of collision, dents and cracks that speak of blows absorbed and answered.',
+    'A tremor of aggression runs through your perception. The air here is charged with the promise of impact, and the people move with the coiled readiness of those who expect the next blow at any moment.',
   ],
   matter: [
-    'Matter dominates the region — stone is solid and dependable, mineral wealth draws inhabitants, and the earth itself seems more present and less yielding.',
-    'The settlement is built deep into stone, walls are impossibly thick, and resources are fought for with geometric precision. Matter provides but demands respect.',
-    'Everything here has weight. The buildings press into the ground with the authority of permanence, and the people walk with the heaviness of those who work in stone and ore.',
-    'The soil is rich with mineral veins that surface in glittering seams along cliff faces. The settlement exists because the earth here offered something worth digging for.',
+    'You feel the weight of the earth here pressing upward — stone more solid, mineral wealth dense beneath your awareness. The ground itself demands acknowledgement.',
+    'Your senses meet resistance. The settlement is built deep into bedrock, walls impossibly thick, and the earth yields its riches only to those who earn them.',
+    'Everything you touch with your awareness has substance. The buildings press into the ground with the authority of permanence, and the mortals walk heavy-footed, shaped by a life of stone and ore.',
+    'Rich mineral veins pulse beneath your perception, surfacing in glittering seams along cliff faces. The settlement exists because the earth offered something worth digging for, and the people have not yet exhausted its patience.',
   ],
   energy: [
-    'The location thrums with radiant Energy — patterns of activity, brightness, and ceaseless motion. Even the quiet moments feel like a held breath.',
-    'Energy manifests as cycles and rhythms — the settlement pulses with life, activity, and cycles of exhaustion and renewal. Nothing here is still.',
-    'Heat radiates from the ground in faint shimmers. Fires catch easily, tempers run hot, and the settlement burns through resources and patience at equal speed.',
-    'The air crackles with potential — static builds on metal surfaces, sparks jump between iron fittings, and the settlement hums with a frequency just below hearing.',
+    'Your awareness thrums the moment it reaches this place — patterns of activity, brightness, and ceaseless motion. Even the quiet moments feel to you like a held breath before ignition.',
+    'You sense cycles and rhythms pulsing through the settlement like a heartbeat. Exhaustion and renewal chase each other in visible waves. Nothing here holds still long enough to study.',
+    'You feel heat radiating upward in faint shimmers. Fires catch easily here, tempers run hot, and your awareness tells you this settlement burns through resources and patience at equal speed.',
+    'The air crackles against your perception — static building on metal surfaces, sparks leaping between iron fittings. You sense a hum just below mortal hearing that sets the whole place vibrating.',
   ],
   life: [
-    'Life is dominant here — growth is visible in the decay of old structures under vine and moss, in the way nature claims back human works. The boundary between tended and wild is blurred.',
-    'The settlement is part of the ecosystem rather than separate from it. Life flows through it, and death feeds new life in visible cycles.',
-    'Green things push through every crack with the insistence of the living. The buildings are not abandoned — they are colonized, repurposed by root and tendril into something the builders did not intend.',
-    'Birth and rot happen in the same breath here. Mushrooms crown fallen timbers, songbirds nest in skulls, and the settlement smells of both blossom and compost.',
+    'You sense Life pressing in from every direction — growth visible in the slow conquest of stone by vine and moss. The boundary between tended and wild has blurred beyond recovery.',
+    'Your awareness cannot separate the settlement from the ecosystem that threads through it. Life flows through walls and foundations alike, and death feeds new growth in cycles you can feel turning.',
+    'Green things push through every crack, and you feel the insistence behind them — a force that treats masonry as temporary inconvenience. The buildings are not abandoned but colonized, repurposed by root and tendril.',
+    'Birth and rot arrive in the same breath of your awareness. Mushrooms crown fallen timbers, songbirds nest in skulls, and the smell of blossom and compost reaches you as a single, complicated truth.',
   ],
   mind: [
-    'Mind shapes the location into patterns of thought made manifest — libraries, schools, spaces for gathering and contemplation. The architecture reflects intellectual organization.',
-    'The settlement is built around centers of learning and memory. Every structure speaks to the value of knowledge and the organization of understanding.',
-    'Inscriptions cover the walls — equations, theorems, fragments of debate carved into doorframes. Knowledge here is not stored but displayed, as if thinking were a public act.',
-    'The silence in this settlement is not emptiness but concentration. People here speak in measured phrases, and the pauses between words carry as much meaning as the words themselves.',
+    'You sense patterns of thought made manifest — libraries, schools, spaces where contemplation has left an impression on the very stone. The architecture reflects a mind that values order in knowledge.',
+    'Your awareness meets structured intention. The settlement is built around centres of learning and memory, and every wall carries the residue of ideas debated and preserved.',
+    'Inscriptions cover the walls — equations, theorems, fragments of argument carved into doorframes. You sense that knowledge here is not hoarded but displayed, as if thinking were a public act.',
+    'The silence here is not emptiness but concentration, and you feel it pressing against your awareness like a held thought. The mortals speak in measured phrases, their pauses carrying as much weight as their words.',
   ],
   spirit: [
-    'Spirit manifests as transcendence — the settlement is oriented toward the sky, built in imitation of other worlds, and contains spaces meant for purposes beyond the physical.',
-    'The location is thin — the boundary between worlds is permeable here, and the settlement\'s architecture acknowledges realities beyond the material.',
-    'Candles burn in windows at all hours, tended by those who believe the flames anchor something unseen. The settlement exists in two planes — the physical one merely the visible half.',
-    'The air carries a faint resonance, as if a bell struck long ago is still fading. People here speak of what they feel more than what they see, and the difference matters.',
+    'You sense the boundary thinning here — the settlement reaches toward something beyond the physical, its architecture oriented skyward in imitation of realms your awareness knows well.',
+    'Your perception slides between planes. The location is thin, the veil permeable, and the settlement\'s builders have acknowledged realities that most mortals only suspect.',
+    'You feel the pull of candle flames burning in windows at all hours, tended by those who believe the light anchors something they cannot see. The settlement exists in two planes — the physical merely the visible half.',
+    'A faint resonance reaches your awareness, as if a bell struck long ago is still fading through the fabric of the world. The mortals here speak of what they feel more than what they see, and you sense they are closer to the truth for it.',
   ],
   time: [
-    'Time marks the location visibly — layers of construction on construction, ruins of older settlements visible beneath newer ones. The past is present here.',
-    'The settlement exists in multiple temporal states simultaneously — echoes of older cities, prophecies of future ones, all visible in how it is built and rebuilt.',
-    'Clocks and sundials mark every public square, but none agree. The settlement measures time obsessively because time here does not behave — seasons arrive late, days stretch, nights compress.',
-    'Old and new sit side by side without transition. A wall of mortared brick meets a wall of rough-hewn stone from a century earlier, joined so tightly that the seam seems intentional.',
+    'You sense layers here — construction upon construction, the ghosts of older settlements visible beneath the present one. The past is not buried but merely standing behind the now.',
+    'Your awareness flickers between temporal states. Echoes of older cities and prophecies of future ones exist simultaneously, all legible in how this place is endlessly built and rebuilt.',
+    'You feel time behaving strangely here — seasons arriving late, days stretching, nights compressing. The mortals measure time obsessively with clocks and sundials, but none of them agree, and you understand why.',
+    'Old and new sit side by side without transition, and your awareness cannot find the seam. A wall of mortared brick meets rough-hewn stone from a century earlier, joined so tightly that the join seems intentional.',
   ],
   entropy: [
-    'Entropy is the dominant force — decay visible in every structure, entropy eroding stability, and the slow dissolution of all things the only certainty.',
-    'The settlement crumbles slowly and steadily. Nothing is permanent here, and the entropy that claims it does so with patient inevitability.',
-    'Rust blooms on every iron surface like an orange flower. Wood softens, stone powders, and the people here have learned to build with the expectation of loss rather than against it.',
-    'The settlement does not fight its own dissolution. Roofs sag, foundations shift, and the inhabitants patch what they can with the calm resignation of people who understand that mending is temporary.',
+    'You sense dissolution working patiently through every structure. Decay is not an intruder here but a resident, and the slow unravelling of all things is the only certainty your awareness can find.',
+    'Your perception meets a settlement crumbling with steady grace. Nothing is permanent, and the entropy that claims each wall and beam does so with an inevitability that feels almost gentle.',
+    'Rust blooms on every iron surface like an orange flower beneath your gaze. Wood softens, stone powders, and you sense that the mortals here build with the expectation of loss rather than against it.',
+    'You feel no resistance to dissolution here. Roofs sag, foundations shift, and the inhabitants patch what they can with the calm resignation of people who understand that mending is always temporary.',
   ],
   chaos: [
-    'Chaos reigns here — nothing stays in its place for long. Streets shift, buildings lean at improbable angles, and the locals have stopped trying to impose order on a place that refuses it.',
-    'The settlement thrums with restless, unpredictable energy. Markets erupt and vanish overnight, alliances shift with the wind, and the only constant is constant change.',
-    'Disorder is not a failing here but a philosophy. The people have learned to thrive in turbulence, reading opportunity in confusion the way farmers read weather.',
-    'Wild magic saturates the air — doors open onto different rooms each morning, and the townspeople navigate by instinct rather than habit.',
+    'Your awareness reels the moment it touches this place. Nothing stays where it was — streets shift, buildings lean at improbable angles, and the mortals have stopped trying to impose order on a settlement that refuses it.',
+    'You sense restless, unpredictable energy surging through every corner. Markets erupt and vanish overnight, alliances shift with the wind, and the only constant your awareness can fix on is constant change.',
+    'You feel disorder here not as failure but as philosophy. The mortals have learned to thrive in turbulence, reading opportunity in confusion the way farmers read weather.',
+    'Wild magic saturates the air against your perception — doors open onto different rooms each morning, and the townspeople navigate by instinct rather than habit. You sense that even the land has forgotten its own layout.',
   ],
   order: [
-    'Everything here has its place, its schedule, its regulation. The settlement runs with mechanical precision, and deviation from routine draws sharp attention.',
-    'Perfect symmetry governs the layout — streets at right angles, buildings of uniform height, gardens trimmed to geometric exactness. The order is beautiful and slightly unnerving.',
-    'Law is not merely enforced here but woven into the fabric of daily life. Even the market stalls are arranged by an ancient and exacting protocol that no one questions.',
-    'The settlement operates like a single organism. Each person knows their role, each structure serves its purpose, and the whole hums with quiet, coordinated efficiency.',
+    'You sense a grid beneath everything — each structure in its place, each schedule kept, each regulation observed. The settlement runs with mechanical precision, and your awareness detects how deviation draws sharp attention.',
+    'Perfect symmetry governs the layout beneath your gaze — streets at right angles, buildings of uniform height, gardens trimmed to geometric exactness. The order is beautiful and you sense it is slightly feared.',
+    'You feel law woven into the fabric of daily life here, not merely enforced but assumed. Even the market stalls follow an ancient protocol that no mortal questions, and your awareness finds no thread out of place.',
+    'The settlement operates like a single organism beneath your perception. Each person knows their role, each structure serves its purpose, and the whole hums with the quiet efficiency of a mechanism that has never needed repair.',
   ],
   light: [
-    'Light lingers here longer than it should — dawn comes early, dusk arrives late, and even moonless nights carry a faint luminance that seems to rise from the earth itself.',
-    'The settlement glows with an inner warmth. Kindness is currency here, honesty is reflex, and strangers are greeted with a trust that borders on recklessness.',
-    'Truth is inescapable in this place. Lies wither on the tongue, shadows refuse to hide what they contain, and every secret eventually finds its way into the open.',
-    'Radiance suffuses the architecture — pale stone that catches and holds sunlight, windows designed to flood every room with clarity. There are no dark corners here.',
+    'You sense Light lingering here longer than it should — dawn arriving early, dusk arriving late. Even on moonless nights a faint luminance rises from the earth, and your awareness drinks it in.',
+    'Your perception meets warmth. The settlement glows from within — kindness is currency, honesty is reflex, and you sense that strangers are greeted with a trust that borders on recklessness.',
+    'You feel truth pressing outward from every surface. Lies wither on the tongue here, shadows refuse to shelter what they contain, and your awareness tells you that every secret in this place eventually finds its way into the open.',
+    'Radiance suffuses the architecture beneath your gaze — pale stone that catches and holds sunlight, windows that flood every room with clarity. You sense no dark corners, no places where things might hide.',
   ],
   darkness: [
-    'Shadow clings to this place like a second skin. Even at midday the light feels muted, filtered through something that turns warmth to coolness and brightness to grey.',
-    'Secrets are the true currency here. Everyone carries them, everyone trades in them, and the settlement thrives on what remains unspoken and unseen.',
-    'The darkness here is not hostile — it is sheltering. It hides those who need hiding, obscures what should not be seen, and offers a velvet silence that some find more honest than light.',
-    'Night is the natural state. The inhabitants have adapted — they see clearly in dimness, speak softly, and understand that some truths are better discovered by touch than by sight.',
+    'Shadow clings to your awareness the moment it reaches this place. Even at midday the light feels muted, filtered through something that turns warmth to coolness and brightness to grey.',
+    'You sense secrets layered thick as sediment. Everyone here carries them, everyone trades in them, and the settlement thrives on what remains unspoken — your awareness can feel the weight of all that is deliberately unseen.',
+    'The darkness here is not hostile, and you sense the distinction. It shelters those who need sheltering, obscures what should not be seen, and offers a velvet silence that strikes you as more honest than light.',
+    'Night is the natural state, and your awareness adjusts. The inhabitants see clearly in dimness, speak softly, and understand that some truths are better discovered by touch than by sight — a wisdom you find yourself respecting.',
   ],
 };
 
@@ -618,23 +618,23 @@ export const POPULATION_PROSE_TEMPLATES: string[] = [
 
 export const HISTORICAL_CULTURE_PROSE: Record<string, string[]> = {
   order: [
-    'Before the current inhabitants, this land was shaped by {histCulture} — builders of precision and devotion whose {ruinDescriptor} still stand in silent testimony to an age of meticulous craft.',
-    'The {histCulture} once held this territory, their ordered ways visible in the {ruinDescriptor} that dot the landscape — remnants too well-made to crumble entirely.',
+    'You sense older foundations beneath this place — the precise geometry of {histCulture}, whose {ruinDescriptor} still stand in silent testimony to an age of meticulous craft. Their reign ended, but their stonework did not.',
+    'Your awareness traces patterns of vanished discipline. {histCulture} shaped this territory with ordered devotion, and their {ruinDescriptor} endure as remnants too well-made to crumble entirely.',
   ],
   chaos: [
-    'Before the current people came, {histCulture} claimed this land — a people of restless ambition whose {ruinDescriptor} remain as monuments to brilliance that could not sustain itself.',
-    'This was once the domain of {histCulture}, whose chaotic genius left behind {ruinDescriptor} — structures that even in ruin seem to defy expectation.',
+    'Your awareness catches the residue of restless ambition. {histCulture} once claimed this territory — brilliant and unsustainable — and their {ruinDescriptor} remain as monuments to genius that burned itself out.',
+    'You sense old wildness here. {histCulture} built with chaotic inspiration, and their {ruinDescriptor} survive in ruin, still defying expectation even in collapse.',
   ],
   light: [
-    '{histCulture} once illuminated this region, their open ways preserved in the {ruinDescriptor} that remain — built to be seen, to welcome, to endure as testament.',
-    'The land remembers {histCulture}, whose devotion to revelation left behind {ruinDescriptor} — places that still seem to wait for congregations that will never return.',
+    'You sense a faded radiance beneath the surface. {histCulture} once illuminated this territory, and their {ruinDescriptor} remain — built to be seen, to welcome, to endure as testament long after the welcomers departed.',
+    'Your awareness meets a warmth that predates the current inhabitants. {histCulture} devoted themselves to revelation here, and their {ruinDescriptor} still seem to wait for congregations that will never return.',
   ],
   darkness: [
-    '{histCulture} once held this territory in secret, their hidden ways preserved in the {ruinDescriptor} that lie half-buried — places designed to conceal as much as they sheltered.',
-    'Before the current age, {histCulture} claimed this land. Their {ruinDescriptor} endure in shadowed hollows, built to keep their mysteries even in abandonment.',
+    'You sense concealment woven into the foundations. {histCulture} once held this territory in secret, and their {ruinDescriptor} lie half-buried — places designed to hide as much as they sheltered.',
+    'Your awareness probes shadowed hollows that predate the current settlement. {histCulture} built here to keep mysteries, and their {ruinDescriptor} endure in the dark places, still guarding what was never meant to be found.',
   ],
   unknown: [
-    'A vanished people once shaped this land. Their {ruinDescriptor} endure — monuments to a civilization that left no name the current inhabitants remember.',
+    'You sense the faintest impression of a vanished people beneath this place. Their {ruinDescriptor} endure — monuments to a civilization whose name has been lost even to your awareness.',
   ],
 };
 
@@ -908,10 +908,10 @@ export const GUILD_IDENTITY_PROSE: Record<string, string[]> = {
 // Explains why a region has its current name, linking it to historical culture.
 
 export const REGION_ETYMOLOGY_PROSE: string[] = [
-  'The locals call this expanse {regionName} — a name that echoes {histCulture} speech, though few remember the original tongue.',
-  'This territory is known as {regionName}, a name that has outlived the {histCulture} who first spoke it, worn smooth by generations of mispronunciation.',
-  '{regionName} — the name itself is a fossil, a {histCulture} phrase that survived the culture that coined it.',
-  "The region's name, {regionName}, derives from {histCulture} cartography — their maps outlasted their mapmakers.",
+  'The locals call this expanse {regionName} — a word that echoes their speech, though few remember the original tongue or the mouths that shaped it.',
+  'The name {regionName} has outlived those who first spoke it, worn smooth by generations of mispronunciation until only the sound remains.',
+  '{regionName} — the name itself is a fossil, a phrase from their language that survived the culture that coined it.',
+  "The name {regionName} derives from their cartography — maps that outlasted the mapmakers, carrying a dead people's words into living mouths.",
 ];
 
 // ─── Trade Route Prose ──────────────────────────────────────────────────────

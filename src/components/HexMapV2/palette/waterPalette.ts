@@ -3,25 +3,24 @@
  * Separate from the terrain palette — water hexes always use these blues.
  * NFP #1: Every color is a named entry.
  *
- * COLOR SOURCE: Colors extracted from Design/hexmap macro-reference.png
- * The reference image shows a top-down fantasy map with distinct ocean depth bands,
- * coastal shallows, and inland lakes. These are the authoritative color values.
- * Do not replace with arbitrary values — always sample from the reference image.
+ * COLOR SOURCE: "Golden Hour" warm-shifted palette derived from the original
+ * Tait reference (Design/hexmap macro-reference.png). Blues desaturated and
+ * warmed toward muted teal-blue to harmonize with the dark-gold UI chrome.
  *
- * Extracted values (from Design/hexmap macro-reference.png):
- *   deep_ocean: #3a7ab8 — deepest ocean (darkest blue, furthest from coast)
- *   ocean:      #5098d0 — mid ocean (medium blue)
- *   shallows:   #78bce0 — coastal shallows (light blue near coasts)
- *   lake:       #4a8fc0 — inland lake water (similar to ocean but distinct teal-blue)
- *   river:      #78bce0 — river water (matches shallows per user decision)
+ * Original Tait values for reference:
+ *   deep_ocean: #3A7AB8 → #366A98
+ *   ocean:      #5098D0 → #4886B0
+ *   shallows:   #78BCE0 → #6AA2C0
+ *   lake:       #4A8FC0 → #4280A8
+ *   river:      #78BCE0 → #6AA2C0
  */
 
 export const WATER_PALETTE: Record<string, string> = {
-  shallows:   '#78BCE0',
-  ocean:      '#5098D0',
-  deep_ocean: '#3A7AB8',
-  lake:       '#4A8FC0',
-  river:      '#78BCE0',
+  shallows:   '#6AA2C0',
+  ocean:      '#4886B0',
+  deep_ocean: '#366A98',
+  lake:       '#4280A8',
+  river:      '#6AA2C0',
 } as const;
 
 /**

@@ -655,10 +655,21 @@ export const HexChronicle = memo(function HexChronicle({
             Control rests with {dominantFaction.factionName}.
           </p>
         )}
+      </div>
 
-        {/* Location cards with nested sublocations and inline agents */}
-        {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
-          <div style={{ marginBottom: '16px' }}>
+      {/* ─── THE PLACES ──────────────────────────────────────────────────── */}
+      {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
+      <div className="chronicle-layer" style={{
+        marginBottom: '40px',
+        animation: 'fadeIn 0.6s ease-out 0.35s both',
+      }}>
+        <div className="chronicle-marker" style={markerStyle}>
+          <div style={ruleStyle} />
+          <span style={labelStyle}>The Places</span>
+          <div style={ruleStyle} />
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
             {parentLocations.map(loc => {
               const agentsHere = agentsByLocation[loc.id] || [];
               const subtype = (loc.properties as any)?.locationSubtype ?? 'landmark';
@@ -773,8 +784,8 @@ export const HexChronicle = memo(function HexChronicle({
               );
             })}
           </div>
-        )}
       </div>
+      )}
 
       {/* ─── THE RUINS (conditional) ──────────────────────────────────────── */}
       {regionData?.historicalCulture && (
@@ -788,13 +799,8 @@ export const HexChronicle = memo(function HexChronicle({
             <div style={ruleStyle} />
           </div>
 
-          <p className="chronicle-prose drop-cap" style={proseStyle}>
-            Before the current inhabitants came, this land belonged to the {stripLeadingThe(regionData.historicalCulture.name)}.
-            Their reign has passed, but their echoes linger in stone and shadow.
-          </p>
-
           {historyLayers.length > 0 && (
-            <p className="chronicle-prose" style={proseStyle}>
+            <p className="chronicle-prose drop-cap" style={proseStyle}>
               {historyLayers[0]?.text}
             </p>
           )}

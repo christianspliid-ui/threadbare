@@ -1,57 +1,61 @@
 /**
- * Tait-derived terrain palette for the Three.js hex renderer.
+ * "Golden Hour" terrain palette for the Three.js hex renderer.
+ * Warm-shifted from the original Tait reference to harmonize with
+ * the dark-parchment-and-gold UI chrome. Greens lean olive/sage,
+ * cold tiles gain warm ivory, water desaturates toward teal-blue.
+ *
  * All 30 terrain types mapped to hex color strings.
  * NFP #1: Every color is a named entry — change game feel by changing a value here.
  */
 
 export const TERRAIN_PALETTE: Record<string, string> = {
   // Lowland (4)
-  grassland:       '#8EB852',
-  savanna:         '#B8B44E',
-  steppe:          '#C6DA79',
-  floodplain:      '#7EA04A',
+  grassland:       '#9CA85C',
+  savanna:         '#B4A654',
+  steppe:          '#BCC272',
+  floodplain:      '#88945A',
 
   // Forest (6)
-  light_forest:    '#7AAE42',
-  woodland:        '#6A9E3A',
-  temperate_forest:'#4E8830',
-  dense_forest:    '#3A6E24',
-  boreal_forest:   '#3A6830',
-  tropical_forest: '#2E6E2C',
+  light_forest:    '#849A52',
+  woodland:        '#748C48',
+  temperate_forest:'#5C783E',
+  dense_forest:    '#4C6436',
+  boreal_forest:   '#4A5E3A',
+  tropical_forest: '#426440',
 
   // Wet (3)
-  marsh:           '#8A9850',
-  swamp:           '#6E8838',
-  moor_bog:        '#82C896',
+  marsh:           '#8E905A',
+  swamp:           '#748046',
+  moor_bog:        '#80B488',
 
   // Highland (6)
-  hills:           '#C8A850',
-  forested_hills:  '#5C8234',
-  mountains:       '#9E7830',
-  high_mountains:  '#8A8A8A',
-  plateau:         '#B89848',
-  mountain_pass:   '#A89060',
+  hills:           '#C0A05A',
+  forested_hills:  '#687844',
+  mountains:       '#A47A3C',
+  high_mountains:  '#908680',
+  plateau:         '#B69450',
+  mountain_pass:   '#A68C58',
 
   // Desert (5)
-  sand_desert:     '#D4B878',
-  sand_dunes:      '#CCAC60',
-  rocky_desert:    '#C09050',
-  hardened_clay:   '#D0A090',
-  badlands:        '#C07844',
+  sand_desert:     '#CEAE72',
+  sand_dunes:      '#C8A460',
+  rocky_desert:    '#B88C50',
+  hardened_clay:   '#C69A84',
+  badlands:        '#B4764A',
 
   // Cold (3)
-  tundra:          '#F0F0F0',
-  snow_fields:     '#E8E8E8',
-  glacier:         '#D0DDE8',
+  tundra:          '#E2DCD0',
+  snow_fields:     '#DAD4C8',
+  glacier:         '#C6CCD2',
 
   // Volcanic (3)
-  volcanic:        '#8A8890',
-  volcano:         '#8A4430',
-  lava:            '#D06830',
+  volcanic:        '#8A8480',
+  volcano:         '#884C38',
+  lava:            '#C46C3C',
 
   // Special (2)
-  broken_lands:    '#A09888',
-  dead_forest:     '#98988A',
+  broken_lands:    '#9C9284',
+  dead_forest:     '#929080',
 } as const;
 
 /** Fallback color for any terrain type not in the palette. */

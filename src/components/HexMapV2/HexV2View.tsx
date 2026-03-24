@@ -188,6 +188,7 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
           riverPaths={riverPaths}
           lakeIds={lakeIds}
           locations={locations}
+          roadPaths={[]}
           agents={agents}
           fogEnabled={fogEnabled}
           visibilityMap={visibilityMap}

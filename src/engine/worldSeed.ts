@@ -7,6 +7,7 @@
  * cosmology profile + seed + echo injections.
  */
 import { WorldGraph } from './graph';
+import { generateRoadEdges } from './roadNetwork';
 import type { CosmologyProfile, SphereName, HexTile, TerrainType, LocationSubtype } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
 import type { AxiologicalProfile } from '../types/agent';
@@ -487,6 +488,11 @@ export function seedWorld(
   // ── Resources ────────────────────────────────────────────
   const resourceRng = mulberry32(seed + 22091); // separate PRNG stream
   seedLocationResources(graph, locationIds, cosmology, resourceRng);
+
+  // ── Road Network ──────────────────────────────────────────
+  const roadCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
+  const roadRows = tiles.reduce((max, t) => Math.max(max, t.coord.row), 0) + 1;
+  generateRoadEdges(graph, tiles, roadCols, roadRows);
 
   // ── Cultures ──────────────────────────────────────────────
   const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, foundations);

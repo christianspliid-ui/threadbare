@@ -29,12 +29,11 @@ npm run dev    # start Vite dev server with hot reload
 | URL Param | What it does |
 |-----------|-------------|
 | `?view=game` | **Primary dev view.** Full game view with Three.js hex map (HexMapV2) and all game chrome. Use this for all hex map and gameplay testing. |
-| `?view=hexv2` | Standalone hex map renderer (seed 42, no game state). Useful for isolated renderer debugging only. |
 | `?view=glow` | Magic glow tile preview |
 | `?view=cms` | Content browser |
 | `?fog` | Enable fog of war on load (fog is off by default). Combinable: `?view=game&fog` |
 
-**For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test. Use `?view=hexv2` only when debugging the renderer in isolation (no game state, fixed seed 42).
+**For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test.
 
 **Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
 
@@ -137,6 +136,8 @@ Settled. Do not revisit.
 - **Everything is a graph node/edge.** No separate relational tables.
 - **Reaches and Spheres are orthogonal axes.** Reaches = what you do (activity categories). Spheres = what fuels it (cosmic energies). They combine freely — same Reach at different Sphere alignments produces different action flavors. Neither subsumes the other.
 - **Ascendants use the same prerequisite system as agents.** Domain Capability tiers + sphere alignment checks apply equally. Ascendants are powerful former mortals, not a special-cased entity type. Power level is tunable, not structurally different.
+- **No inventing node types without verification.** If a conversation references a node type that doesn't exist in the current graph schema, **stop and ask the human** before creating it. First confirm it isn't an existing node under a different name. Check `src/types/graph.ts` and `world-model.json` for the canonical list.
+- **New node types require full design before code.** If a genuinely new node type is confirmed, design it before implementing: define its category, required/optional properties, which edge types connect it to existing nodes, how it participates in the tick loop, and what traces it emits. No stub-it-and-figure-it-out-later.
 
 
 ## Rejected Approaches (do not reintroduce)

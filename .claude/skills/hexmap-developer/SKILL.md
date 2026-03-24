@@ -90,7 +90,7 @@ interface HexMapV2Handle {
 | File | Role |
 |------|------|
 | `src/components/HexMapV2/HexMapV2.tsx` | Main component — scene setup, d3-zoom, render loop, layer orchestration |
-| `src/components/HexMapV2/HexV2View.tsx` | Standalone debug view (`?view=hexv2`, seed 42, no game state) |
+| `src/components/HexMapV2/HexV2View.tsx` | Standalone debug view (seed 42, no game state) |
 | `src/components/Game/GameView.tsx` | Primary game view — imports HexMapV2 with full game chrome |
 
 ---
@@ -560,7 +560,6 @@ Playwright `preview_snapshot` and `preview_inspect` see only a blank `<canvas>` 
 | URL | Purpose |
 |-----|---------|
 | `?view=game` | **Primary.** Full game with HexMapV2 + all chrome. Use for all testing. |
-| `?view=hexv2` | Standalone renderer (seed 42, no game state). Isolated debugging only. |
 | `?view=game&fog` | Game view with fog-of-war enabled |
 
 ### Screenshot Tips
