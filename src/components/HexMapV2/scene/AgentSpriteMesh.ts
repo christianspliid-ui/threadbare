@@ -63,9 +63,12 @@ export interface AgentSpriteGroup {
 
 // ── Scale helpers ────────────────────────────────────────────────────────────
 
-/** Convert SVG-unit radius to Three.js world units */
+/** Convert SVG-unit radius to Three.js sprite scale (diameter in world units).
+ *  SVG units match world units at HEX_SIZE=10 — sprite scale = diameter.
+ *  V1 used radius directly for SVG circle `r` attribute; Three.js sprites are
+ *  unit squares scaled to diameter, so multiply by 2. This gives the same
+ *  visual footprint as V1's SVG circles. */
 function agentSpriteScale(radiusInSvgUnits: number): number {
-  // SVG units match world units at HEX_SIZE=10 (1:1 scale)
   return radiusInSvgUnits * 2;
 }
 
@@ -233,35 +236,30 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
  * @param zoomLevel — current d3 zoom scale (k value)
  */
 /**
- * Portrait scale factor by zoom tier.
- * At hero-local zoom, portraits render at full size (1.0).
- * At lower zooms they shrink to remain visible without overwhelming the map.
- * NFP #1: all scale factors are named constants.
+ * Restores V1 zoom tier behavior:
+ *   k >= HERO_LOCAL  → portrait thumbnails with faction rings (token zoom)
+ *   k >= REGIONAL    → colored faction dots (small dots)
+ *   k >= CONTINENTAL → tiny dots (retinue agents only via continentalGroup)
+ *   k < CONTINENTAL  → hidden
+ *
+ * NFP #1: all thresholds from AGENT_ZOOM_THRESHOLDS.
  */
-const PORTRAIT_ZOOM_SCALES = {
-  HERO_LOCAL: 1.0,
-  REGIONAL: 0.5,
-  CONTINENTAL: 0.3,
-} as const;
-
 export function updateZoomVisibility(group: AgentSpriteGroup, zoomLevel: number): void {
-  if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
-    // All zoom tiers above continental: show portrait circles
+  if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL) {
+    // Hero-local: portrait thumbnails with rings
     group.portraitGroup.visible = true;
     group.dotGroup.visible = false;
     group.continentalGroup.visible = false;
-
-    // Scale portraits based on zoom tier
-    const scaleFactor = zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL
-      ? PORTRAIT_ZOOM_SCALES.HERO_LOCAL
-      : zoomLevel >= AGENT_ZOOM_THRESHOLDS.REGIONAL
-        ? PORTRAIT_ZOOM_SCALES.REGIONAL
-        : PORTRAIT_ZOOM_SCALES.CONTINENTAL;
-    const baseScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS);
-    const s = baseScale * scaleFactor;
-    for (const child of group.portraitGroup.children) {
-      child.scale.set(s, s, 1);
-    }
+  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.REGIONAL) {
+    // Regional: colored faction dots
+    group.portraitGroup.visible = false;
+    group.dotGroup.visible = true;
+    group.continentalGroup.visible = false;
+  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
+    // Continental: tiny retinue-only dots
+    group.portraitGroup.visible = false;
+    group.dotGroup.visible = false;
+    group.continentalGroup.visible = true;
   } else {
     // Full-world: hide all
     group.portraitGroup.visible = false;

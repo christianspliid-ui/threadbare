@@ -142,18 +142,18 @@ export const ZOOM_VISIBILITY_MATRIX: Record<string, Record<ZoomTier, boolean>> =
     'continental': false,
     'full-world': false,
   },
-  /** Agent portrait thumbnails — visible at all zoom tiers above full-world */
+  /** Agent portrait thumbnails — hero-local only (V1 token zoom behavior) */
   agents_portrait: {
     'hero-local': true,
-    'regional': true,
-    'continental': true,
-    'full-world': false,
-  },
-  /** Agent faction dots — unused (portraits shown at all tiers) */
-  agents_dot: {
-    'hero-local': false,
     'regional': false,
     'continental': false,
+    'full-world': false,
+  },
+  /** Agent faction dots — visible at regional and continental tiers (V1 dot behavior) */
+  agents_dot: {
+    'hero-local': false,
+    'regional': true,
+    'continental': true,
     'full-world': false,
   },
   /** Agent retinue tiny dots — continental only */

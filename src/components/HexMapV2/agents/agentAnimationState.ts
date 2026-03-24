@@ -17,7 +17,7 @@
 
 import * as THREE from 'three';
 import { getSegmentBezier, evalBezierAtArcLength } from '../../../lib/movementPath';
-import type { SegmentBezier } from '../../../lib/movementPath';
+import type { SegmentBezier, Point } from '../../../lib/movementPath';
 import { AGENT_MOVE_TRANSITION_MS } from '../../../data/agent-visual-content';
 import { AGENT_SPRITE_Z } from './agentSpriteTypes';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
@@ -34,13 +34,13 @@ const SETTLE_BOUNCE_SCALE = 1.05;
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 /**
- * Per-agent animation state for bezier hop movement.
+ * Per-agent animation state for bezier hop movement or ring-slot settle tween.
  * One entry per actively animating agent. Removed from the map on completion.
  */
 export interface AgentAnimState {
   /** Agent node ID — matches key in AgentSpriteGroup.spriteMap */
   agentId: string;
-  /** Precomputed bezier from start to destination world positions */
+  /** Precomputed bezier from start to destination world positions (used in 'moving' phase) */
   bezier: SegmentBezier;
   /** performance.now() when animation started */
   startTime: number;
@@ -49,13 +49,17 @@ export interface AgentAnimState {
   /** Settle bounce duration (ms) — SETTLE_DURATION_MS */
   settleDuration: number;
   /** Current animation phase */
-  phase: 'moving' | 'settling' | 'idle';
+  phase: 'moving' | 'settling' | 'ring-settle' | 'idle';
   /** performance.now() when settle phase started — set on transition */
   settleStart?: number;
   /** Source hex for trace logging */
   fromHex: { col: number; row: number };
   /** Destination hex for trace logging */
   toHex: { col: number; row: number };
+  /** For ring-settle: start world position */
+  ringSettleFrom?: { x: number; y: number };
+  /** For ring-settle: end world position */
+  ringSettleTo?: { x: number; y: number };
 }
 
 // ── Factory ───────────────────────────────────────────────────────────────────
@@ -63,14 +67,20 @@ export interface AgentAnimState {
 /**
  * Creates a new AgentAnimState for a hex-to-hex move.
  *
- * Converts fromHex/toHex to world positions (hexToPixel + Y-flip),
+ * Converts fromHex/toHex to world positions (hexToPixel + Y-flip + ring offsets),
  * computes the wobbled bezier via getSegmentBezier, and returns a
  * state ready to hand to tickAgentAnimations.
  *
- * @param agentId — agent node ID (deterministic wobble seed)
- * @param fromHex — source hex coordinate
- * @param toHex   — destination hex coordinate
- * @param seed    — additional numeric seed (e.g., tick number) for extra variation
+ * Ring offsets allow the bezier to animate from the agent's ring slot position
+ * in the source hex to its ring slot position in the destination hex, matching
+ * V1 AgentDots behavior where agents hop from slot to slot.
+ *
+ * @param agentId    — agent node ID (deterministic wobble seed)
+ * @param fromHex    — source hex coordinate
+ * @param toHex      — destination hex coordinate
+ * @param seed       — additional numeric seed (e.g., tick number) for extra variation
+ * @param fromOffset — optional ring slot offset in SVG units at the source hex
+ * @param toOffset   — optional ring slot offset in SVG units at the destination hex
  * @returns new AgentAnimState with phase='moving'
  */
 export function startMoveAnimation(
@@ -78,28 +88,25 @@ export function startMoveAnimation(
   fromHex: { col: number; row: number },
   toHex: { col: number; row: number },
   seed: number,
+  fromOffset?: Point,
+  toOffset?: Point,
 ): AgentAnimState {
-  const fromCenter = hexToPixel(fromHex, HEX_CONSTANTS.HEX_SIZE);
-  const toCenter   = hexToPixel(toHex,   HEX_CONSTANTS.HEX_SIZE);
-
-  // Y-flip: SVG y-down → Three.js y-up
-  const p0 = { x: fromCenter.x, y: -fromCenter.y };
-  const p2 = { x: toCenter.x,   y: -toCenter.y   };
-
-  // Build bezier using agentId as the deterministic seed source.
-  // getSegmentBezier accepts HexCoord-shaped objects — supply fromHex/toHex
-  // directly so the wobble is unique per agent + route (NFP #3).
-  const bezier = getSegmentBezier(
+  // getSegmentBezier computes the full bezier in SVG space (y-down) with ring offsets.
+  const svgBezier = getSegmentBezier(
     agentId,
     fromHex,
     toHex,
     HEX_CONSTANTS.HEX_SIZE,
+    fromOffset,
+    toOffset,
   );
 
-  // Override p0/p2 with Y-flipped world positions (getSegmentBezier uses hexToPixel
-  // internally without Y-flip, so we swap them to match Three.js world space).
-  bezier.p0 = p0;
-  bezier.p2 = p2;
+  // Y-flip all three bezier points from SVG space (y-down) to Three.js space (y-up).
+  const bezier: SegmentBezier = {
+    p0:   { x: svgBezier.p0.x,   y: -svgBezier.p0.y },
+    ctrl: { x: svgBezier.ctrl.x, y: -svgBezier.ctrl.y },
+    p2:   { x: svgBezier.p2.x,   y: -svgBezier.p2.y },
+  };
 
   return {
     agentId,
@@ -110,6 +117,38 @@ export function startMoveAnimation(
     phase: 'moving',
     fromHex,
     toHex,
+  };
+}
+
+/**
+ * Creates an AgentAnimState for a same-hex ring slot rearrangement (settle tween).
+ *
+ * When agents enter or leave a hex, the remaining agents' ring slot positions change.
+ * This creates a short linear tween from the old position to the new one, matching
+ * V1 AgentDots settle behavior (150ms).
+ *
+ * @param agentId — agent node ID
+ * @param fromWorld — current world position {x, y} of the sprite
+ * @param toWorld   — target world position {x, y} after ring rearrangement
+ * @returns new AgentAnimState with phase='ring-settle'
+ */
+export function startSettleAnimation(
+  agentId: string,
+  fromWorld: { x: number; y: number },
+  toWorld: { x: number; y: number },
+): AgentAnimState {
+  return {
+    agentId,
+    // Bezier unused for ring-settle — set to degenerate line
+    bezier: { p0: fromWorld, ctrl: fromWorld, p2: toWorld },
+    startTime: performance.now(),
+    duration: SETTLE_DURATION_MS,
+    settleDuration: SETTLE_DURATION_MS,
+    phase: 'ring-settle',
+    fromHex: { col: 0, row: 0 },
+    toHex: { col: 0, row: 0 },
+    ringSettleFrom: fromWorld,
+    ringSettleTo: toWorld,
   };
 }
 
@@ -151,7 +190,7 @@ export function tickAgentAnimations(
       }
 
       if (t >= 1) {
-        // Transition to settle phase
+        // Transition to settle phase (bounce on arrival)
         state.phase = 'settling';
         state.settleStart = now;
       }
@@ -175,6 +214,29 @@ export function tickAgentAnimations(
         if (sprites.continental) {
           sprites.continental.scale.set(1, 1, 1);
         }
+        toRemove.push(agentId);
+      }
+    } else if (state.phase === 'ring-settle') {
+      // Linear tween from old ring slot to new ring slot (same hex, 150ms).
+      // Matches V1 AgentDots settle behavior for ring rearrangement.
+      const from = state.ringSettleFrom;
+      const to = state.ringSettleTo;
+      if (!from || !to) {
+        toRemove.push(agentId);
+        continue;
+      }
+
+      const t = Math.min(1, (now - state.startTime) / state.duration);
+      const px = from.x + (to.x - from.x) * t;
+      const py = from.y + (to.y - from.y) * t;
+
+      sprites.portrait.position.set(px, py, AGENT_SPRITE_Z);
+      sprites.dot.position.set(px, py, AGENT_SPRITE_Z);
+      if (sprites.continental) {
+        sprites.continental.position.set(px, py, AGENT_SPRITE_Z);
+      }
+
+      if (t >= 1) {
         toRemove.push(agentId);
       }
     }

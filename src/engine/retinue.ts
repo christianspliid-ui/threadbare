@@ -84,9 +84,14 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
 
     // Extract agent properties
     const agentProps = agentNode.properties as Record<string, unknown>;
-    const locationId = agentProps.locationId as string | undefined;
     const profile = agentProps.axiologicalProfile as AxiologicalProfile;
     const domainCapabilities = agentProps.domainCapabilities as Record<ReachDomain, number>;
+
+    // Resolve location via located_at edge (authoritative), fallback to legacy property
+    const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+    const locationId = locEdges.length > 0
+      ? locEdges[0].target
+      : (agentProps.locationId as string | undefined);
 
     // Look up location name
     let locationName = '(unknown)';
