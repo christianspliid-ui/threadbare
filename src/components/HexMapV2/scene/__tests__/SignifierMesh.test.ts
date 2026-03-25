@@ -1,8 +1,9 @@
 /**
- * SignifierMesh.test.ts — Unit tests for the signifier sprite scene module.
+ * SignifierMesh.test.ts — Unit tests for the instanced signifier scene module.
  *
- * Mocks document.createElement (canvas) and THREE.CanvasTexture so tests run
- * in jsdom without requiring a full WebGL context.
+ * Verifies: InstancedMesh per terrain type, texture atlas creation,
+ * per-instance UV rect + fog alpha attributes, SignifierGroupMeta for fog culling,
+ * and fail-soft behavior for unknown/water terrain types.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -31,6 +32,7 @@ vi.stubGlobal('document', {
           fillRect: vi.fn(),
           fillStyle: '',
           globalAlpha: 1,
+          drawImage: vi.fn(),
         }),
       };
     }
@@ -48,7 +50,11 @@ vi.mock('three', async () => {
   const actual = await vi.importActual<typeof THREE>('three');
   class CanvasTextureMock {
     needsUpdate = false;
+    isTexture = true;
+    minFilter = 0;
+    magFilter = 0;
     constructor(_canvas: unknown) {}
+    dispose() {}
   }
   return {
     ...actual,
@@ -70,11 +76,15 @@ function makeTile(
   };
 }
 
+// ── Types ──────────────────────────────────────────────────────────────────
+
+type SignifierGroupMeta = import('../SignifierMesh').SignifierGroupMeta;
+type SignifierGroup = THREE.Group & { meta?: SignifierGroupMeta };
+
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe('SignifierMesh', () => {
-  // Import after mocks are set up
-  let createSignifierMesh: (tiles: HexTile[], seed: number, centeredLocationHexes?: Set<string>) => THREE.Group;
+  let createSignifierMesh: (tiles: HexTile[], seed: number, centeredLocationHexes?: Set<string>) => SignifierGroup;
   let SIGNIFIER_SPRITE_SCALE: number;
   let SIGNIFIER_Z: number;
 
@@ -86,6 +96,8 @@ describe('SignifierMesh', () => {
     SIGNIFIER_Z = mod.SIGNIFIER_Z;
   });
 
+  // ── Constants ──────────────────────────────────────────────────────────
+
   it('exports SIGNIFIER_SPRITE_SCALE = 1.3', () => {
     expect(SIGNIFIER_SPRITE_SCALE).toBe(1.3);
   });
@@ -93,6 +105,8 @@ describe('SignifierMesh', () => {
   it('exports SIGNIFIER_Z = 0.07', () => {
     expect(SIGNIFIER_Z).toBe(0.07);
   });
+
+  // ── Group structure ────────────────────────────────────────────────────
 
   it('returns a THREE.Group', () => {
     const group = createSignifierMesh([], 42);
@@ -105,12 +119,15 @@ describe('SignifierMesh', () => {
     expect(group.renderOrder).toBe(7);
   });
 
-  it('empty tiles array returns empty group', () => {
+  it('empty tiles array returns empty group with no meta', () => {
     const group = createSignifierMesh([], 42);
     expect(group.children.length).toBe(0);
+    expect(group.meta).toBeUndefined();
   });
 
-  it('water-type tiles produce no sprites', () => {
+  // ── Terrain type grouping ──────────────────────────────────────────────
+
+  it('water-type tiles produce no InstancedMeshes', () => {
     const waterTiles: HexTile[] = [
       makeTile(0, 0, 'ocean'),
       makeTile(1, 0, 'deep_ocean'),
@@ -125,17 +142,155 @@ describe('SignifierMesh', () => {
     expect(group.children.length).toBe(0);
   });
 
-  it('land-type tiles produce at least one sprite', () => {
+  it('same-terrain land tiles produce exactly one InstancedMesh', () => {
     const landTiles: HexTile[] = [
       makeTile(0, 0, 'grassland'),
       makeTile(1, 0, 'grassland'),
       makeTile(2, 0, 'grassland'),
     ];
     const group = createSignifierMesh(landTiles, 42);
-    expect(group.children.length).toBeGreaterThan(0);
+    // One InstancedMesh for 'grassland'
+    expect(group.children.length).toBe(1);
+    expect(group.children[0]).toBeInstanceOf(THREE.InstancedMesh);
   });
 
-  it('mixed water and land tiles — only land tiles get sprites', () => {
+  it('different terrain types produce one InstancedMesh each', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'desert'),
+      makeTile(2, 0, 'forest'),
+    ];
+    const group = createSignifierMesh(tiles, 42);
+    // Each terrain type with registry entries gets its own InstancedMesh
+    expect(group.children.length).toBeGreaterThanOrEqual(1);
+    for (const child of group.children) {
+      expect(child).toBeInstanceOf(THREE.InstancedMesh);
+    }
+  });
+
+  it('InstancedMesh count matches number of tiles of that terrain type', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'grassland'),
+      makeTile(2, 0, 'grassland'),
+    ];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    expect(mesh.count).toBe(3);
+  });
+
+  // ── Per-instance attributes ────────────────────────────────────────────
+
+  it('InstancedMesh has aUvRect attribute (vec4)', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    const attr = mesh.geometry.getAttribute('aUvRect') as THREE.InstancedBufferAttribute;
+    expect(attr).toBeDefined();
+    expect(attr.itemSize).toBe(4);
+    expect(attr).toBeInstanceOf(THREE.InstancedBufferAttribute);
+  });
+
+  it('InstancedMesh has aFogAlpha attribute (float)', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    const attr = mesh.geometry.getAttribute('aFogAlpha') as THREE.InstancedBufferAttribute;
+    expect(attr).toBeDefined();
+    expect(attr.itemSize).toBe(1);
+    expect(attr).toBeInstanceOf(THREE.InstancedBufferAttribute);
+  });
+
+  it('aFogAlpha defaults to 1.0 for all instances', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'grassland'),
+    ];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    const attr = mesh.geometry.getAttribute('aFogAlpha') as THREE.InstancedBufferAttribute;
+    for (let i = 0; i < attr.count; i++) {
+      expect(attr.getX(i)).toBe(1.0);
+    }
+  });
+
+  // ── SignifierGroupMeta ─────────────────────────────────────────────────
+
+  it('exposes meta on group when tiles are present', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    expect(group.meta).toBeDefined();
+    expect(group.meta!.hexInstanceMap).toBeInstanceOf(Map);
+    expect(group.meta!.meshMap).toBeInstanceOf(Map);
+    expect(typeof group.meta!.setFogAlpha).toBe('function');
+    expect(typeof group.meta!.flushFogAlpha).toBe('function');
+  });
+
+  it('hexInstanceMap tracks each hex tile to its terrain and instance index', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'grassland'),
+    ];
+    const group = createSignifierMesh(tiles, 42);
+    const { hexInstanceMap } = group.meta!;
+    expect(hexInstanceMap.size).toBe(2);
+    expect(hexInstanceMap.has('0,0')).toBe(true);
+    expect(hexInstanceMap.has('1,0')).toBe(true);
+    const entry = hexInstanceMap.get('0,0')!;
+    expect(entry.terrainKey).toBeDefined();
+    expect(typeof entry.instanceIndex).toBe('number');
+  });
+
+  it('meshMap maps terrain keys to InstancedMesh instances', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const { meshMap } = group.meta!;
+    expect(meshMap.size).toBeGreaterThan(0);
+    for (const mesh of meshMap.values()) {
+      expect(mesh).toBeInstanceOf(THREE.InstancedMesh);
+    }
+  });
+
+  it('setFogAlpha updates buffer for a tracked hex', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const { setFogAlpha, hexInstanceMap, meshMap } = group.meta!;
+    const entry = hexInstanceMap.get('0,0')!;
+    const mesh = meshMap.get(entry.terrainKey)!;
+
+    // Initially 1.0
+    const attr = mesh.geometry.getAttribute('aFogAlpha') as THREE.InstancedBufferAttribute;
+    expect(attr.getX(entry.instanceIndex)).toBe(1.0);
+
+    // Set to 0.0 (fogged)
+    setFogAlpha('0,0', 0.0);
+    expect(attr.getX(entry.instanceIndex)).toBe(0.0);
+  });
+
+  it('setFogAlpha silently ignores unknown hex keys', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    expect(() => group.meta!.setFogAlpha('99,99', 0.0)).not.toThrow();
+  });
+
+  it('flushFogAlpha can be called without error', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    expect(() => group.meta!.flushFogAlpha()).not.toThrow();
+  });
+
+  // ── Fail-soft ──────────────────────────────────────────────────────────
+
+  it('unknown terrain type is silently skipped (fail-soft)', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'unknown_terrain_xyz' as HexTile['terrain']),
+    ];
+    expect(() => createSignifierMesh(tiles, 42)).not.toThrow();
+    const group = createSignifierMesh(tiles, 42);
+    expect(group.children.length).toBe(0);
+  });
+
+  it('mixed water and land tiles — only land tiles get instances', () => {
     const tiles: HexTile[] = [
       makeTile(0, 0, 'ocean'),
       makeTile(1, 0, 'grassland'),
@@ -143,19 +298,12 @@ describe('SignifierMesh', () => {
       makeTile(3, 0, 'grassland'),
     ];
     const group = createSignifierMesh(tiles, 42);
-    // 2 land tiles should produce 2 sprites
-    expect(group.children.length).toBe(2);
+    // 2 grassland tiles → 1 InstancedMesh with count=2
+    expect(group.children.length).toBe(1);
+    expect((group.children[0] as THREE.InstancedMesh).count).toBe(2);
   });
 
-  it('unknown terrain type is silently skipped (fail-soft)', () => {
-    const tiles: HexTile[] = [
-      makeTile(0, 0, 'unknown_terrain_xyz' as HexTile['terrain']),
-    ];
-    // Should not throw
-    expect(() => createSignifierMesh(tiles, 42)).not.toThrow();
-    const group = createSignifierMesh(tiles, 42);
-    expect(group.children.length).toBe(0);
-  });
+  // ── Centered location exclusion ────────────────────────────────────────
 
   it('hexes with centered locations are skipped when centeredLocationHexes is provided', () => {
     const tiles: HexTile[] = [
@@ -163,23 +311,55 @@ describe('SignifierMesh', () => {
       makeTile(1, 0, 'grassland'),
       makeTile(2, 0, 'grassland'),
     ];
-    // Without exclusion: all 3 land tiles get sprites
+    // Without exclusion: all 3 land tiles
     const groupAll = createSignifierMesh(tiles, 42);
-    expect(groupAll.children.length).toBe(3);
+    expect((groupAll.children[0] as THREE.InstancedMesh).count).toBe(3);
 
-    // With hex (1,0) excluded: only 2 sprites
+    // With hex (1,0) excluded: only 2 instances
     const excluded = new Set(['1,0']);
     const groupFiltered = createSignifierMesh(tiles, 42, excluded);
-    expect(groupFiltered.children.length).toBe(2);
+    expect((groupFiltered.children[0] as THREE.InstancedMesh).count).toBe(2);
   });
 
   it('centeredLocationHexes does not affect hexes without locations', () => {
     const tiles: HexTile[] = [
       makeTile(5, 5, 'grassland'),
     ];
-    // Exclude a hex that doesn't exist in tiles — no effect
     const excluded = new Set(['99,99']);
     const group = createSignifierMesh(tiles, 42, excluded);
-    expect(group.children.length).toBe(1);
+    expect((group.children[0] as THREE.InstancedMesh).count).toBe(1);
+  });
+
+  // ── Render properties ──────────────────────────────────────────────────
+
+  it('InstancedMesh uses ShaderMaterial with transparent + no depthWrite', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    const material = mesh.material as THREE.ShaderMaterial;
+    expect(material).toBeInstanceOf(THREE.ShaderMaterial);
+    expect(material.transparent).toBe(true);
+    expect(material.depthWrite).toBe(false);
+  });
+
+  it('InstancedMesh.renderOrder matches RENDER_ORDER.SIGNIFIERS', () => {
+    const tiles: HexTile[] = [makeTile(0, 0, 'grassland')];
+    const group = createSignifierMesh(tiles, 42);
+    const mesh = group.children[0] as THREE.InstancedMesh;
+    expect(mesh.renderOrder).toBe(RENDER_ORDER.SIGNIFIERS);
+  });
+
+  // ── Determinism (NFP #3) ───────────────────────────────────────────────
+
+  it('same seed produces same instance count and hex mapping', () => {
+    const tiles: HexTile[] = [
+      makeTile(0, 0, 'grassland'),
+      makeTile(1, 0, 'grassland'),
+      makeTile(2, 0, 'desert'),
+    ];
+    const group1 = createSignifierMesh(tiles, 42);
+    const group2 = createSignifierMesh(tiles, 42);
+    expect(group1.meta!.hexInstanceMap.size).toBe(group2.meta!.hexInstanceMap.size);
+    expect(group1.children.length).toBe(group2.children.length);
   });
 });

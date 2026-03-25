@@ -1,11 +1,9 @@
 /**
- * AgentSpriteMesh.test.ts — Unit tests for the agent sprite scene module.
+ * AgentSpriteMesh.test.ts — Unit tests for the single-sprite-per-agent scene module.
  *
- * Verifies: createAgentSpriteMesh returns correct groups, render orders,
- * RING layout for multiple agents, zoom visibility toggling.
- *
- * Mocks document.createElement (canvas) and THREE.CanvasTexture so tests
- * run in jsdom without a full WebGL context.
+ * Verifies: createAgentSpriteMesh returns a single group with one sprite per agent,
+ * RING layout for multiple agents, zoom visibility material/scale swapping,
+ * and portrait loading.
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -15,7 +13,6 @@ import type { AgentRenderData } from '../../agents/agentSpriteTypes';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-// Mock Image for portrait loading
 vi.stubGlobal('Image', class {
   crossOrigin = '';
   onload: (() => void) | null = null;
@@ -29,7 +26,6 @@ vi.stubGlobal('Image', class {
   }
 });
 
-// Mock canvas
 vi.stubGlobal('document', {
   createElement: (tag: string) => {
     if (tag === 'canvas') {
@@ -58,7 +54,6 @@ vi.stubGlobal('document', {
   },
 });
 
-// Mock THREE.CanvasTexture to avoid GPU operations
 vi.mock('three', async () => {
   const actual = await vi.importActual<typeof THREE>('three');
   class CanvasTextureMock {
@@ -91,120 +86,90 @@ describe('createAgentSpriteMesh', () => {
     createAgentSpriteMesh = mod.createAgentSpriteMesh;
   });
 
-  it('returns an AgentSpriteGroup with portraitGroup and dotGroup', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group).toBeDefined();
-    expect(group.portraitGroup).toBeInstanceOf(THREE.Group);
-    expect(group.dotGroup).toBeInstanceOf(THREE.Group);
+  it('returns an AgentSpriteGroup with a single group', () => {
+    const result = createAgentSpriteMesh([]);
+    expect(result).toBeDefined();
+    expect(result.group).toBeInstanceOf(THREE.Group);
   });
 
-  it('returns a continentalGroup', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group.continentalGroup).toBeInstanceOf(THREE.Group);
+  it('group.renderOrder equals RENDER_ORDER.AGENTS (9)', () => {
+    const result = createAgentSpriteMesh([]);
+    expect(result.group.renderOrder).toBe(RENDER_ORDER.AGENTS);
+    expect(result.group.renderOrder).toBe(9);
   });
 
-  it('portraitGroup.renderOrder equals RENDER_ORDER.AGENTS (9)', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group.portraitGroup.renderOrder).toBe(RENDER_ORDER.AGENTS);
-    expect(group.portraitGroup.renderOrder).toBe(9);
+  it('returns empty group for empty agents array', () => {
+    const result = createAgentSpriteMesh([]);
+    expect(result.group.children.length).toBe(0);
+    expect(result.spriteMap.size).toBe(0);
   });
 
-  it('dotGroup.renderOrder equals RENDER_ORDER.AGENTS (9)', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group.dotGroup.renderOrder).toBe(RENDER_ORDER.AGENTS);
+  it('creates exactly one sprite per agent', () => {
+    const agents = [makeAgent('agent-1', 5, 3), makeAgent('agent-2', 7, 4)];
+    const result = createAgentSpriteMesh(agents);
+    expect(result.group.children.length).toBe(2);
+    expect(result.spriteMap.size).toBe(2);
   });
 
-  it('continentalGroup.renderOrder equals RENDER_ORDER.AGENTS (9)', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group.continentalGroup.renderOrder).toBe(RENDER_ORDER.AGENTS);
-  });
-
-  it('returns empty groups for empty agents array', () => {
-    const group = createAgentSpriteMesh([]);
-    expect(group.portraitGroup.children.length).toBe(0);
-    expect(group.dotGroup.children.length).toBe(0);
-  });
-
-  it('creates portrait and dot sprites for a single agent', () => {
+  it('spriteMap entry has sprite, materials, and scales', () => {
     const agents = [makeAgent('agent-1', 5, 3)];
-    const group = createAgentSpriteMesh(agents);
-    expect(group.portraitGroup.children.length).toBe(1);
-    expect(group.dotGroup.children.length).toBe(1);
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('agent-1')!;
+    expect(entry.sprite).toBeInstanceOf(THREE.Sprite);
+    expect(entry.materials.portrait).toBeDefined();
+    expect(entry.materials.dot).toBeDefined();
+    expect(entry.scales.portrait).toBe(9); // AGENT_PORTRAIT_RADIUS (4.5) × 2
+    expect(entry.scales.dot).toBe(3);      // AGENT_TOKEN_RADIUS (1.5) × 2
   });
 
-  it('spriteMap has an entry for each agent', () => {
-    const agents = [
-      makeAgent('agent-1', 5, 3),
-      makeAgent('agent-2', 7, 4),
-    ];
-    const group = createAgentSpriteMesh(agents);
-    expect(group.spriteMap.has('agent-1')).toBe(true);
-    expect(group.spriteMap.has('agent-2')).toBe(true);
+  it('stores baseScale in sprite.userData', () => {
+    const agents = [makeAgent('agent-1', 5, 3)];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('agent-1')!;
+    // Starts with portrait scale
+    expect(entry.sprite.userData.baseScale).toBe(9);
   });
 
-  it('multiple agents on same hex get different RING positions', () => {
+  it('multiple agents on same hex get different positions', () => {
     const agents = [
       makeAgent('agent-1', 5, 3),
-      makeAgent('agent-2', 5, 3), // same hex
-      makeAgent('agent-3', 5, 3), // same hex
+      makeAgent('agent-2', 5, 3),
+      makeAgent('agent-3', 5, 3),
     ];
-    const group = createAgentSpriteMesh(agents);
+    const result = createAgentSpriteMesh(agents);
 
-    const positions = Array.from(group.spriteMap.values()).map(s => ({
-      x: s.dot.position.x,
-      y: s.dot.position.y,
+    const positions = Array.from(result.spriteMap.values()).map(e => ({
+      x: e.sprite.position.x,
+      y: e.sprite.position.y,
     }));
 
-    // All 3 should have different positions
     const unique = new Set(positions.map(p => `${p.x.toFixed(4)},${p.y.toFixed(4)}`));
     expect(unique.size).toBe(3);
   });
 
-  it('stores baseScale in userData for portrait sprites', () => {
-    const agents = [makeAgent('agent-1', 5, 3)];
-    const group = createAgentSpriteMesh(agents);
-    const entry = group.spriteMap.get('agent-1')!;
-    // Portrait scale = AGENT_PORTRAIT_RADIUS (4.5) × 2 = 9.0
-    expect(entry.portrait.userData.baseScale).toBe(9);
-  });
-
-  it('stores baseScale in userData for dot sprites', () => {
-    const agents = [makeAgent('agent-1', 5, 3)];
-    const group = createAgentSpriteMesh(agents);
-    const entry = group.spriteMap.get('agent-1')!;
-    // Dot scale = AGENT_TOKEN_RADIUS (1.5) × 2 = 3.0
-    expect(entry.dot.userData.baseScale).toBe(3);
-  });
-
-  it('stores baseScale in userData for continental sprites', () => {
+  it('creates continental material for retinue agents', () => {
     const agents = [makeAgent('retinue-1', 5, 3, 0, true)];
-    const group = createAgentSpriteMesh(agents);
-    const entry = group.spriteMap.get('retinue-1')!;
-    // Continental scale = AGENT_DOT_RADIUS (2.5) × 2 = 5.0
-    expect(entry.continental!.userData.baseScale).toBe(5);
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('retinue-1')!;
+    expect(entry.materials.continental).toBeDefined();
+    expect(entry.scales.continental).toBe(5); // AGENT_DOT_RADIUS (2.5) × 2
+    expect(entry.isRetinue).toBe(true);
   });
 
-  it('creates continental sprite for retinue agents', () => {
-    const agents = [makeAgent('retinue-1', 5, 3, 0, true)];
-    const group = createAgentSpriteMesh(agents);
-    const entry = group.spriteMap.get('retinue-1');
-    expect(entry?.continental).toBeDefined();
-    expect(group.continentalGroup.children.length).toBe(1);
-  });
-
-  it('does not create continental sprite for non-retinue agents', () => {
+  it('does not create continental material for non-retinue agents', () => {
     const agents = [makeAgent('regular-1', 5, 3, 0, false)];
-    const group = createAgentSpriteMesh(agents);
-    const entry = group.spriteMap.get('regular-1');
-    expect(entry?.continental).toBeUndefined();
-    expect(group.continentalGroup.children.length).toBe(0);
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('regular-1')!;
+    expect(entry.materials.continental).toBeUndefined();
+    expect(entry.scales.continental).toBeUndefined();
+    expect(entry.isRetinue).toBe(false);
   });
 
   it('dispose function exists and can be called', () => {
     const agents = [makeAgent('agent-1', 5, 3)];
-    const group = createAgentSpriteMesh(agents);
-    expect(typeof group.dispose).toBe('function');
-    expect(() => group.dispose()).not.toThrow();
+    const result = createAgentSpriteMesh(agents);
+    expect(typeof result.dispose).toBe('function');
+    expect(() => result.dispose()).not.toThrow();
   });
 });
 
@@ -219,36 +184,54 @@ describe('updateZoomVisibility', () => {
     updateZoomVisibility = mod.updateZoomVisibility;
   });
 
-  it('hero-local tier: only portraitGroup is visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 'hero-local');
-    expect(group.portraitGroup.visible).toBe(true);
-    expect(group.dotGroup.visible).toBe(false);
-    expect(group.continentalGroup.visible).toBe(false);
+  it('hero-local tier: portrait material and scale', () => {
+    const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(result, 'hero-local');
+    const entry = result.spriteMap.get('a')!;
+    expect(entry.sprite.material).toBe(entry.materials.portrait);
+    expect(entry.sprite.visible).toBe(true);
+    expect(entry.sprite.userData.baseScale).toBe(entry.scales.portrait);
   });
 
-  it('regional tier: only dotGroup is visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 'regional');
-    expect(group.portraitGroup.visible).toBe(false);
-    expect(group.dotGroup.visible).toBe(true);
-    expect(group.continentalGroup.visible).toBe(false);
+  it('regional tier: dot material and scale', () => {
+    const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(result, 'regional');
+    const entry = result.spriteMap.get('a')!;
+    expect(entry.sprite.material).toBe(entry.materials.dot);
+    expect(entry.sprite.visible).toBe(true);
+    expect(entry.sprite.userData.baseScale).toBe(entry.scales.dot);
   });
 
-  it('continental tier: dotGroup and continentalGroup are visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 'continental');
-    expect(group.portraitGroup.visible).toBe(false);
-    expect(group.dotGroup.visible).toBe(true);
-    expect(group.continentalGroup.visible).toBe(true);
+  it('continental tier: all agents get dot material (agents_dot=true takes precedence)', () => {
+    const result = createAgentSpriteMesh([
+      makeAgent('regular', 0, 0, 0, false),
+      makeAgent('retinue', 1, 0, 0, true),
+    ]);
+    updateZoomVisibility(result, 'continental');
+    // agents_dot=true at continental, so dot material takes precedence for all agents
+    const regular = result.spriteMap.get('regular')!;
+    expect(regular.sprite.material).toBe(regular.materials.dot);
+    expect(regular.sprite.visible).toBe(true);
+    const retinue = result.spriteMap.get('retinue')!;
+    expect(retinue.sprite.material).toBe(retinue.materials.dot);
+    expect(retinue.sprite.visible).toBe(true);
   });
 
-  it('full-world tier: all groups hidden', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 'full-world');
-    expect(group.portraitGroup.visible).toBe(false);
-    expect(group.dotGroup.visible).toBe(false);
-    expect(group.continentalGroup.visible).toBe(false);
+  it('full-world tier: sprite hidden', () => {
+    const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(result, 'full-world');
+    const entry = result.spriteMap.get('a')!;
+    expect(entry.sprite.visible).toBe(false);
+  });
+
+  it('updates baseScale on zoom swap for settle bounce', () => {
+    const result = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(result, 'hero-local');
+    const entry = result.spriteMap.get('a')!;
+    expect(entry.sprite.userData.baseScale).toBe(entry.scales.portrait);
+
+    updateZoomVisibility(result, 'regional');
+    expect(entry.sprite.userData.baseScale).toBe(entry.scales.dot);
   });
 });
 
@@ -267,7 +250,7 @@ describe('loadAgentPortraits', () => {
     const agents: AgentRenderData[] = [
       { id: 'a1', hexCol: 0, hexRow: 0, factionIndex: 0, isRetinue: false, portraitUrl: '/portraits/hero.png' },
     ];
-    const group = createAgentSpriteMesh(agents);
-    await expect(loadAgentPortraits(group, agents)).resolves.toBeUndefined();
+    const result = createAgentSpriteMesh(agents);
+    await expect(loadAgentPortraits(result, agents)).resolves.toBeUndefined();
   });
 });

@@ -3,7 +3,7 @@
  *
  * Tests cover:
  * - startMoveAnimation creates AgentAnimState with correct bezier and timing
- * - tickAgentAnimations advances sprite positions along bezier curve
+ * - tickAgentAnimations advances single sprite position along bezier curve
  * - Animation completes and removes from map after duration elapses
  * - Settle phase (150ms) after main move phase
  */
@@ -14,12 +14,12 @@ import type { AgentAnimState } from '../agentAnimationState';
 import { AGENT_MOVE_TRANSITION_MS } from '../../../../data/agent-visual-content';
 
 // ── Mock Three.js ─────────────────────────────────────────────────────────────
-// agentAnimationState.ts uses THREE.Sprite for position updates.
-// We mock Three.js to avoid WebGL initialization in tests.
 vi.mock('three', () => {
   class MockSprite {
     position = { x: 0, y: 0, z: 0, set: vi.fn(function(this: { x: number; y: number; z: number }, x: number, y: number, z: number) { this.x = x; this.y = y; this.z = z; }) };
     scale = { x: 1, y: 1, z: 1, set: vi.fn() };
+    userData: Record<string, unknown> = {};
+    material = {};
   }
   return {
     Sprite: MockSprite,
@@ -37,16 +37,15 @@ function makeSprite(baseScale = 9) {
     position: Object.assign(pos, { set: posSet }),
     scale: { x: baseScale, y: baseScale, z: 1, set: vi.fn() },
     userData: { baseScale },
+    material: {},
   } as unknown as import('three').Sprite;
 }
 
 function makeSpriteMap(agentId: string) {
-  const portrait = makeSprite(9);   // AGENT_PORTRAIT_RADIUS × 2
-  const dot = makeSprite(3);        // AGENT_TOKEN_RADIUS × 2
-  const continental = makeSprite(5); // AGENT_DOT_RADIUS × 2
-  const map = new Map<string, { portrait: import('three').Sprite; dot: import('three').Sprite; continental?: import('three').Sprite }>();
-  map.set(agentId, { portrait, dot, continental });
-  return { map, portrait, dot, continental };
+  const sprite = makeSprite(9);
+  const map = new Map<string, { sprite: import('three').Sprite }>();
+  map.set(agentId, { sprite });
+  return { map, sprite };
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
@@ -96,15 +95,12 @@ describe('startMoveAnimation', () => {
   });
 
   it('p0 is derived from fromHex world position', () => {
-    // fromHex={col:0,row:0} → hexToPixel → (0,0)
     const state = startMoveAnimation('agent-1', { col: 0, row: 0 }, { col: 1, row: 0 }, 0);
-    // p0.x should be near 0 (hex(0,0) x is 0 for flat-top hex)
     expect(state.bezier.p0.x).toBeCloseTo(0, 0);
   });
 
   it('p2 is derived from toHex world position (different from fromHex)', () => {
     const state = startMoveAnimation('agent-1', { col: 0, row: 0 }, { col: 3, row: 0 }, 0);
-    // Moving 3 hexes right — p2.x should be significantly larger than p0.x
     expect(state.bezier.p2.x).toBeGreaterThan(state.bezier.p0.x);
   });
 });
@@ -124,25 +120,22 @@ describe('tickAgentAnimations', () => {
 
   it('does nothing if animStates is empty', () => {
     const animStates = new Map<string, AgentAnimState>();
-    const { map, portrait } = makeSpriteMap('agent-1');
+    const { map, sprite } = makeSpriteMap('agent-1');
     tickAgentAnimations(animStates, map);
-    expect(portrait.position.set).not.toHaveBeenCalled();
+    expect(sprite.position.set).not.toHaveBeenCalled();
   });
 
   it('updates sprite position during moving phase', () => {
     const state = startMoveAnimation('agent-1', { col: 0, row: 0 }, { col: 2, row: 0 }, 42);
-    // Override startTime to now (so t=0 at start)
     state.startTime = now;
 
     const animStates = new Map<string, AgentAnimState>();
     animStates.set('agent-1', state);
 
-    const { map, portrait, dot } = makeSpriteMap('agent-1');
+    const { map, sprite } = makeSpriteMap('agent-1');
 
-    // Tick at t=0 (no time elapsed)
     tickAgentAnimations(animStates, map);
-    expect(portrait.position.set).toHaveBeenCalled();
-    expect(dot.position.set).toHaveBeenCalled();
+    expect(sprite.position.set).toHaveBeenCalled();
   });
 
   it('advances position midway through animation', () => {
@@ -152,14 +145,12 @@ describe('tickAgentAnimations', () => {
     const animStates = new Map<string, AgentAnimState>();
     animStates.set('agent-1', state);
 
-    const { map, portrait } = makeSpriteMap('agent-1');
+    const { map, sprite } = makeSpriteMap('agent-1');
 
-    // Advance to halfway
-    performanceNowSpy.mockReturnValue(now + 400); // t = 0.5
+    performanceNowSpy.mockReturnValue(now + 400);
     tickAgentAnimations(animStates, map);
 
-    const callArgs = (portrait.position.set as ReturnType<typeof vi.fn>).mock.calls[0];
-    // At t=0.5, position should be somewhere between p0 and p2
+    const callArgs = (sprite.position.set as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(callArgs[0]).toBeGreaterThan(state.bezier.p0.x);
     expect(callArgs[0]).toBeLessThan(state.bezier.p2.x);
   });
@@ -173,8 +164,7 @@ describe('tickAgentAnimations', () => {
 
     const { map } = makeSpriteMap('agent-1');
 
-    // Advance past full duration
-    performanceNowSpy.mockReturnValue(now + 900); // t > 1
+    performanceNowSpy.mockReturnValue(now + 900);
     tickAgentAnimations(animStates, map);
 
     expect(animStates.get('agent-1')?.phase).toBe('settling');
@@ -184,7 +174,6 @@ describe('tickAgentAnimations', () => {
     const state = startMoveAnimation('agent-1', { col: 0, row: 0 }, { col: 2, row: 0 }, 42);
     state.startTime = now;
     state.phase = 'settling';
-    // settleStart must be set — set it to 'now'
     (state as AgentAnimState & { settleStart?: number }).settleStart = now;
 
     const animStates = new Map<string, AgentAnimState>();
@@ -192,8 +181,7 @@ describe('tickAgentAnimations', () => {
 
     const { map } = makeSpriteMap('agent-1');
 
-    // Advance past settle duration
-    performanceNowSpy.mockReturnValue(now + 200); // past 150ms settle
+    performanceNowSpy.mockReturnValue(now + 200);
     tickAgentAnimations(animStates, map);
 
     expect(animStates.has('agent-1')).toBe(false);
@@ -206,30 +194,27 @@ describe('tickAgentAnimations', () => {
     const animStates = new Map<string, AgentAnimState>();
     animStates.set('ghost-agent', state);
 
-    // Empty sprite map — agent not found
-    const emptyMap = new Map<string, { portrait: import('three').Sprite; dot: import('three').Sprite; continental?: import('three').Sprite }>();
+    const emptyMap = new Map<string, { sprite: import('three').Sprite }>();
 
-    // Should not throw
     expect(() => tickAgentAnimations(animStates, emptyMap)).not.toThrow();
   });
 
-  it('applies scale bounce during settling phase', () => {
+  it('applies scale bounce during settling phase using baseScale', () => {
     const state = startMoveAnimation('agent-1', { col: 0, row: 0 }, { col: 2, row: 0 }, 42);
-    state.startTime = now - 900; // Move phase done
+    state.startTime = now - 900;
     state.phase = 'settling';
     (state as AgentAnimState & { settleStart?: number }).settleStart = now;
 
     const animStates = new Map<string, AgentAnimState>();
     animStates.set('agent-1', state);
 
-    const { map, portrait } = makeSpriteMap('agent-1');
+    const { map, sprite } = makeSpriteMap('agent-1');
 
-    // Tick during settle — should call scale.set with >1.0 (bounce)
-    performanceNowSpy.mockReturnValue(now + 50); // 50ms into 150ms settle
+    performanceNowSpy.mockReturnValue(now + 50);
     tickAgentAnimations(animStates, map);
 
-    expect(portrait.scale.set).toHaveBeenCalled();
-    const scaleArgs = (portrait.scale.set as ReturnType<typeof vi.fn>).mock.calls[0];
+    expect(sprite.scale.set).toHaveBeenCalled();
+    const scaleArgs = (sprite.scale.set as ReturnType<typeof vi.fn>).mock.calls[0];
     // baseScale (9) × bounceMultiplier (>1.0) should be > 9.0
     expect(scaleArgs[0]).toBeGreaterThan(9.0);
   });
