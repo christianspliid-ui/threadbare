@@ -9,6 +9,47 @@
 
 ---
 
+## 2026-03-25: Cross-Boundary Testing Infrastructure
+
+**Context:** Analysis of why movement/HexMapV2 changes frequently break downstream systems. Root cause: strong unit tests but zero contract tests between modules. A change to `computeEdgeCost` ripples through pathfinding → movement → animation → trails, but only step 1 has tests. MovementTrailMesh has zero tests. The orchestrator doesn't test movement. 10 integration tests are `describe.skip`'d. No CI gates exist.
+
+**What Cowork already did:**
+- Added "Cross-Boundary Testing" section to `CLAUDE.md` (after NFPs) with: layer boundary rule, contract test pattern with code example, required contract test pairs table, integration test triggers, anti-patterns list, pre-commit verification checklist
+- Created `testing-patterns` skill at `.claude/skills/testing-patterns/SKILL.md` with: full movement/HexMapV2 dependency map, contract test pattern with extended code example, file naming convention (`*.contract.test.ts`), known coverage gaps prioritized (critical/high/medium), anti-patterns with fix examples, submission checklist
+- Added `testing-patterns` skill to Domain Skills table in `CLAUDE.md`
+- Added "Cross-Boundary Contract Tests" backlog item to `.planning/BACKLOG.md` with 6 prioritized sub-items
+
+**Action for Claude Code:**
+- [ ] Commit the CLAUDE.md changes, new skill, and backlog update
+- [ ] Create `src/engine/__tests__/contracts/` directory
+- [ ] Create `src/components/HexMapV2/__tests__/contracts/` directory
+- [ ] Write `MovementTrailMesh.test.ts` (highest-risk zero-coverage gap)
+- [ ] Write `pathfinding-to-movement.contract.test.ts` (first contract test — establishes pattern)
+- [ ] Add at least one movement test to `orchestrator.test.ts`
+- [ ] Rewrite or delete `movement-integration.test.ts` (currently `describe.skip`)
+
+**Files changed:** `CLAUDE.md` (testing section + skill table row), `.claude/skills/testing-patterns/SKILL.md` (new), `.planning/BACKLOG.md` (new item), `.planning/HANDOVER.md` (this entry)
+
+---
+
+## 2026-03-25: Road-Aware Agent Movement
+
+**Context:** Roads and trails exist as graph edges with full hex paths and visual rendering, but have zero mechanical effect — pathfinding ignores them, agents fly between locations in single bezier hops, and moving agents are decision-locked. Designed a complete system to make roads affect pathfinding cost, animate agents hex-by-hex along road paths, and allow moving agents to re-evaluate decisions mid-journey. Also closes a design-to-implementation gap where `phaseAgentDecision` skips moving agents entirely.
+
+**What Cowork already did:** Wrote complete design doc at `Docs/plans/2026-03-25-road-aware-movement-design.md`. Six design decisions covering: road edges in Dijkstra, hex-level movement state, road mode in `tickMovement`, decision re-evaluation for moving agents, animation system road mode, and cost computation architecture. Full NFP compliance audit, constants tables, trace schemas, fail-soft tables, implementation order.
+
+**Action for Claude Code:**
+- [ ] Implement Step 1: Road-aware pathfinding — extend `findShortestPath` in `pathfinding.ts` to consider `road` edges (both outgoing and incoming), apply `ROAD_COST_MULTIPLIER`, return `RoadSegmentInfo[]` on `PathResult`. Add constants to `movement-content.ts`. **Watch for:** hexPath direction reversal when traversing road opposite to stored direction; cost formula scale difference between A* and `computeEdgeCost`.
+- [ ] Implement Step 2: Extend `MovementState` in `types/movement.ts` with `currentHexPosition`, `roadHexQueue`, `roadHexCost`, `currentRoadType` (all optional, backward-compatible).
+- [ ] Implement Step 3: Add road hex traversal branch in `tickMovement` (`movementExecution.ts`). Populate `roadHexQueue` in `initMovementState` from `RoadSegmentInfo`. Handle mixed paths (road segment → adjacent hop transitions).
+- [ ] Implement Step 4: **Do NOT remove** the moving-agent skip in `phaseAgentDecision.ts` — **replace it** with a gated re-evaluation path. Moving agents skip the full decision pipeline (no social candidates, no filter pipeline, no `start_local`/`attempt_remote`). They only check: "is my current destination still the best heading?" with `REROUTE_SCORE_MULTIPLIER` threshold, tick gating, and strict guards against movement state corruption. See Decision 4 in the design doc for the 5-guard pseudocode.
+- [ ] Implement Step 5: Animation road mode — `startRoadHopAnimation` factory, road hop timing (300ms major / 500ms trail), hop chaining without settle bounce, reduced wobble, settle on final hex. Update `HexMapV2.tsx` to detect `currentRoadType` on hex change.
+- [ ] Add trace types `RoadHexTransitionTrace` and `AgentRerouteTrace` to `types/trace.ts`.
+- [ ] Write tests: road path cheaper than adjacent path, hex-by-hex advancement, `located_at` only updates on arrival, reroute threshold logic, mixed path transitions, hexPath reversal.
+- [ ] Visual verification at `?view=game`: agents follow road paths, trail traces road, animation speed varies by road type.
+
+**Files changed:** `Docs/plans/2026-03-25-road-aware-movement-design.md` (new), `.planning/HANDOVER.md` (this entry)
+
 ---
 
 ## 2026-03-23: Implement start page (main menu)
