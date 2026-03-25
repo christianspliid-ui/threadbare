@@ -104,6 +104,10 @@
 
 ## Completed
 
+### 2026-03-25: Graph Schema Enforcement (completed 2026-03-25)
+
+Implemented by Claude Code. Three-layer enforcement: 30 canonical query functions, EDGE_SCHEMA registry for all 22 edge types, dev-mode validated addEdge. 5 high-traffic files migrated to canonical queries. Schema-driven validateAgentIntegrity. 45 new tests.
+
 ### 2026-03-25: Rendering Module Resilience Refactor (completed 2026-03-25)
 
 Implemented by Claude Code. Shared primitives (hexKey, worldPosition, hexGrouping) extracted to src/lib/, AgentAnimationTarget sprite abstraction layer, isLayerVisible zoom convenience. 31 files, 50+ inline patterns replaced. 3/6 hooks already extracted (TB-016); remaining 3 deferred (tightly coupled with scene init lifecycle).

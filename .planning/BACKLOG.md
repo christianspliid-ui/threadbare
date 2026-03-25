@@ -65,12 +65,11 @@ Agents should start with bonds, faction hierarchy, and narrative hooks instead o
 
 ---
 
-## 📐▶ TB-033 · Graph Schema Enforcement
+## ✅ TB-033 · Graph Schema Enforcement (completed 2026-03-25)
 
-The graph model has no schema enforcement. Edge types are unguarded strings, there are no canonical query functions, and semantic duplicates (`located_at`/`located_in`, `relates_to`/`relationship`) cause recurring integration bugs. Three-layer fix: (1) canonical query functions in `graphQueries.ts`, (2) edge schema registry with source/target type constraints, (3) dev-mode validated `addEdge`. Also cleans up 4 variant edge bugs and 4 dead edge types.
+Three-layer graph schema enforcement: (1) 30 canonical query functions in `graphQueries.ts`, (2) `EDGE_SCHEMA` registry with source/target type constraints for all 22 edge types, (3) dev-mode validated `addEdge` with warnings. Migrated 5 high-traffic files, schema-driven `validateAgentIntegrity`. 45 new tests.
 
 **Design doc:** `Docs/plans/2026-03-25-graph-schema-enforcement-design.md`
-**Depends on:** TB-030 (agent validation utility provides the first consumer of the schema)
 
 ---
 
