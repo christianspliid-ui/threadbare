@@ -3,17 +3,15 @@
 > Updated 2026-03-25. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Phase 9: Start Screen** — in progress (1/3 plans complete).
+**Road-aware agent movement** — complete.
 
 **Recent completions:**
-- ✅ HexMapV2 quick wins — consistency & type safety (2026-03-25) — Centralized LAYER_Z constants, typed ZoomVisibilityMatrix keys, named D3ZoomCamera magic numbers, removed dead WATER_TYPES.
-- ✅ Agent zoom tiers & ring token overhaul (2026-03-25) — HERO_LOCAL threshold 15→5, MAX_ZOOM 10→15, ring tokens radius 3→1.5, unified ring-offset across tiers, LOCATION_RING_RADIUS 12→6, debug panel shows live zoom k + tier name.
-- ✅ Fixed-slot hex layout (2026-03-25) — Agents on edge-midpoint slots, locations on vertex slots. 30° angular separation eliminates icon overlap structurally.
-- ✅ Organic trail rendering (2026-03-25) — Trails now use terrain-aware wobble + Catmull-Rom spline at 60% intensity.
-- ✅ Restore V1 agent dot behavior (2026-03-24) — Small dots at regional zoom, portraits only at hero-local; ring slot offsets in hop animations.
-- ✅ Phase 9 Plan 01: Start screen core (2026-03-23) — useThemeMusic hook, StartPage component, App.tsx 'start' phase.
+- ✅ Road-aware agent movement (2026-03-25) — Roads now affect pathfinding cost (major 0.4×, trail 0.7×), agents traverse hex-by-hex along road paths, moving agents get gated re-evaluation (5-guard system), animation system gains road hop mode (300ms/500ms). 6 design decisions, 2 new trace types, full NFP compliance.
+- ✅ Cross-boundary testing infrastructure (2026-03-25) — Contract tests (pathfinding→movement, 8 tests), MovementTrailMesh tests (24 tests), orchestrator movement tests (2 tests), rewritten movement-integration tests (6 tests). New testing-patterns skill.
+- ✅ HexMapV2 quick wins — consistency & type safety (2026-03-25)
+- ✅ Fixed-slot hex layout (2026-03-25)
 
-**Latest implementation:** HexMapV2 quick wins — consistency & type safety (2026-03-25) — Restructured zoom tier thresholds (HERO_LOCAL k=5, MAX_ZOOM k=15), shrunk ring tokens to radius 1.5, unified sprite positions across tiers to eliminate position-jump, fixed location ring radius, added live zoom debug info.
+**Latest implementation:** Road-aware agent movement (2026-03-25) — Roads mechanically affect gameplay: Dijkstra considers road edges with discount multipliers, agents walk hex-by-hex along road paths with per-hex tick accumulation, moving agents can reroute mid-journey via 5-guard re-evaluation, animation system chains road hops with reduced wobble and shorter durations.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
