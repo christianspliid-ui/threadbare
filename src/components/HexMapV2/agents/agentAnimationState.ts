@@ -15,8 +15,8 @@
  * NFP #4 (fail-soft): Missing sprite silently skipped — never crashes render loop.
  */
 
-import * as THREE from 'three';
 import { getSegmentBezier, evalBezierAtArcLength } from '../../../lib/movementPath';
+import type { AgentAnimationTarget } from './agentSpriteTarget';
 import type { SegmentBezier, Point } from '../../../lib/movementPath';
 import { AGENT_MOVE_TRANSITION_MS, ROAD_MAJOR_HOP_MS, ROAD_TRAIL_HOP_MS, ROAD_WOBBLE_FACTOR } from '../../../data/agent-visual-content';
 import { AGENT_SPRITE_Z } from './agentSpriteTypes';
@@ -222,14 +222,15 @@ export function startSettleAnimation(
  * Advances all active agent animations by one frame.
  *
  * Called once per frame from the Three.js render loop (before renderer.render()).
- * Mutates sprite positions and scales in place. Removes completed animations.
+ * Operates on AgentAnimationTarget interface — never touches sprites directly.
+ * Removes completed animations.
  *
  * @param animStates — mutable map of agentId → active animation state
- * @param spriteMap  — agent sprite references from AgentSpriteGroup
+ * @param targetMap  — agent animation targets from AgentSpriteGroup
  */
 export function tickAgentAnimations(
   animStates: Map<string, AgentAnimState>,
-  spriteMap: Map<string, { portrait: THREE.Sprite; dot: THREE.Sprite; continental?: THREE.Sprite }>,
+  targetMap: Map<string, AgentAnimationTarget>,
 ): void {
   if (animStates.size === 0) return;
 
@@ -237,9 +238,9 @@ export function tickAgentAnimations(
   const toRemove: string[] = [];
 
   for (const [agentId, state] of animStates) {
-    const sprites = spriteMap.get(agentId);
-    if (!sprites) {
-      // NFP #4: agent not in spriteMap — skip silently
+    const target = targetMap.get(agentId);
+    if (!target) {
+      // NFP #4: agent not in targetMap — skip silently
       continue;
     }
 
@@ -247,19 +248,12 @@ export function tickAgentAnimations(
       const t = Math.min(1, (now - state.startTime) / state.duration);
       const pos = evalBezierAtArcLength(state.bezier.p0, state.bezier.ctrl, state.bezier.p2, t);
 
-      sprites.portrait.position.set(pos.x, pos.y, AGENT_SPRITE_Z);
-      sprites.dot.position.set(pos.x, pos.y, AGENT_SPRITE_Z);
-      if (sprites.continental) {
-        sprites.continental.position.set(pos.x, pos.y, AGENT_SPRITE_Z);
-      }
+      target.setPosition(pos.x, pos.y, AGENT_SPRITE_Z);
 
       if (t >= 1) {
-        // Road hops: skip settle bounce unless this is the final hop
         if (state.roadContext && !state.roadContext.isLastHop) {
-          // Road hop complete, no settle — remove immediately so next hop can chain
           toRemove.push(agentId);
         } else {
-          // Transition to settle phase (bounce on arrival)
           state.phase = 'settling';
           state.settleStart = now;
         }
@@ -268,32 +262,14 @@ export function tickAgentAnimations(
       const settleStart = state.settleStart ?? now;
       const t = Math.min(1, (now - settleStart) / state.settleDuration);
 
-      // Bounce: multiply base scale by SETTLE_BOUNCE_SCALE → 1.0
-      // NFP #4: missing baseScale defaults to 1.0 (no worse than previous behavior)
       const bounceMultiplier = SETTLE_BOUNCE_SCALE + (1.0 - SETTLE_BOUNCE_SCALE) * t;
-
-      const basePortrait = (sprites.portrait.userData.baseScale as number) ?? 1;
-      const baseDot = (sprites.dot.userData.baseScale as number) ?? 1;
-      sprites.portrait.scale.set(basePortrait * bounceMultiplier, basePortrait * bounceMultiplier, 1);
-      sprites.dot.scale.set(baseDot * bounceMultiplier, baseDot * bounceMultiplier, 1);
-      if (sprites.continental) {
-        const baseCont = (sprites.continental.userData.baseScale as number) ?? 1;
-        sprites.continental.scale.set(baseCont * bounceMultiplier, baseCont * bounceMultiplier, 1);
-      }
+      target.setScaleMultiplier(bounceMultiplier);
 
       if (t >= 1) {
-        // Restore exact base scale
-        sprites.portrait.scale.set(basePortrait, basePortrait, 1);
-        sprites.dot.scale.set(baseDot, baseDot, 1);
-        if (sprites.continental) {
-          const baseCont = (sprites.continental.userData.baseScale as number) ?? 1;
-          sprites.continental.scale.set(baseCont, baseCont, 1);
-        }
+        target.resetScale();
         toRemove.push(agentId);
       }
     } else if (state.phase === 'ring-settle') {
-      // Linear tween from old ring slot to new ring slot (same hex, 150ms).
-      // Matches V1 AgentDots settle behavior for ring rearrangement.
       const from = state.ringSettleFrom;
       const to = state.ringSettleTo;
       if (!from || !to) {
@@ -305,11 +281,7 @@ export function tickAgentAnimations(
       const px = from.x + (to.x - from.x) * t;
       const py = from.y + (to.y - from.y) * t;
 
-      sprites.portrait.position.set(px, py, AGENT_SPRITE_Z);
-      sprites.dot.position.set(px, py, AGENT_SPRITE_Z);
-      if (sprites.continental) {
-        sprites.continental.position.set(px, py, AGENT_SPRITE_Z);
-      }
+      target.setPosition(px, py, AGENT_SPRITE_Z);
 
       if (t >= 1) {
         toRemove.push(agentId);
@@ -317,7 +289,6 @@ export function tickAgentAnimations(
     }
   }
 
-  // Remove completed animations
   for (const agentId of toRemove) {
     animStates.delete(agentId);
   }

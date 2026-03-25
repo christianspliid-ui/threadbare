@@ -84,17 +84,14 @@ Phase 4 overlaps with TB-016 item 1 — when Phase 4 ships, mark TB-016 item 1 c
 
 ---
 
-## 📐▶ TB-016 · HexMapV2 Medium-Term Improvements
+## ✅ TB-016 · HexMapV2 Medium-Term Improvements (2026-03-25)
 
-From architectural review. Three items with real architectural payoff:
-1. Extract custom hooks from HexMapV2.tsx God component (useAgentAnimations, useFogCulling, useZoomLayerVisibility)
-2. Convert signifier sprites to InstancedMesh with texture atlas (~4K draw calls → ~20)
-3. Single sprite per agent with material swap on zoom change (memory halving)
+All three items complete:
+1. ✅ Extract custom hooks (useAgentAnimations, useFogCulling, useZoomLayerVisibility) — HexMapV2.tsx 1256→1033 lines
+2. ✅ Signifier InstancedMesh with texture atlas + custom GLSL shaders — ~4K draw calls → ~20
+3. ✅ Single sprite per agent with material swap on zoom change — 67% draw call reduction
 
-**Prerequisite:** TB-030 (Agent Sprite Scale Bug) should land before item 3.
-**Implementation order:** Hooks → Single sprite → Signifier instancing (each ships independently).
 **Design doc:** `Docs/plans/2026-03-25-hexmapv2-medium-term-improvements.md`
-**Review:** Obsidian → `Systems/HexMapV2 Architectural Review.md`
 
 ---
 

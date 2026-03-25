@@ -10,7 +10,8 @@ import type { HexCoord, HexTile } from '../../types';
 import type { RiverPath } from '../../engine/worldGenData';
 import type { RegionData } from '../../engine/regionTypes';
 import type { VisibilityMap } from '../../types/visibility';
-import { hexToPixel } from '../../lib/hexMath';
+import { hexKey } from '../../lib/hexKey';
+import { hexToWorld } from '../../lib/worldPosition';
 import { createHexScene, resizeHexScene } from './scene/HexSceneSetup';
 import { createHexFillMesh, HEX_CONSTANTS } from './scene/HexFillMesh';
 import type { HexFillMeshResult } from './scene/HexFillMesh';
@@ -23,13 +24,16 @@ import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
 import type { LocationNode } from './scene/LocationIconMesh';
-import { createAgentSpriteMesh, updateZoomVisibility, updateAgentPositions, loadAgentPortraits } from './scene/AgentSpriteMesh';
+import { createAgentSpriteMesh, loadAgentPortraits } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
-import { startMoveAnimation, startRoadHopAnimation, startSettleAnimation, tickAgentAnimations } from './agents/agentAnimationState';
+import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
-import { createMovementTrailMesh, addTrailSegment, updateTrails } from './scene/MovementTrailMesh';
-import { FACTION_HERALDIC_COLORS } from './agents/agentSpriteTypes';
+import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
+import { useAgentAnimations } from './hooks/useAgentAnimations';
+import type { AgentPrevPosition } from './hooks/useAgentAnimations';
+import { useFogCulling } from './hooks/useFogCulling';
+import { useZoomLayerVisibility } from './hooks/useZoomLayerVisibility';
 import { RENDER_ORDER } from './scene/RenderLayers';
 import * as d3 from 'd3';
 import { setupD3Zoom, syncCameraToZoom, CAMERA_CONSTANTS } from './camera/D3ZoomCamera';
@@ -37,14 +41,11 @@ import { animateCameraTo } from './camera/CameraAnimator';
 import { createRoadMesh } from './scene/RoadMesh';
 import {
   getZoomTier,
-  ZOOM_VISIBILITY_MATRIX,
-  getFadeAlpha,
-  FADE_RANGE,
   ZOOM_TIER_THRESHOLDS,
 } from './scene/ZoomVisibilityMatrix';
+import type { ZoomTier } from './scene/ZoomVisibilityMatrix';
 import {
   buildOriginalColorCache,
-  isLayerVisibleForHex,
 } from './scene/FogCulling';
 import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
@@ -60,8 +61,6 @@ import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
   SLOT_RING_RADIUS,
   VERTEX_ANGLES_DEG,
-  EDGE_MID_ANGLES_DEG,
-  MAX_RING_AGENTS,
 } from '../../data/agent-visual-content';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
@@ -89,7 +88,7 @@ function buildLocationOffsetLookup(
   // Group by hex, picking the most important location per hex
   const best = new Map<string, LocationNode>();
   for (const loc of locations) {
-    const key = `${loc.hexCol},${loc.hexRow}`;
+    const key = hexKey(loc.hexCol, loc.hexRow);
     const existing = best.get(key);
     if (!existing) {
       best.set(key, loc);
@@ -281,11 +280,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const animStatesRef = useRef<Map<string, AgentAnimState>>(new Map());
     const trailGroupRef = useRef<THREE.Group | null>(null);
     // Previous agent positions for movement detection (hex change diff + ring slot world position)
-    const prevAgentPositionsRef = useRef<Map<string, {
-      col: number; row: number;
-      ringOffset: { x: number; y: number };
-      worldX: number; worldY: number;
-    }>>(new Map());
+    const prevAgentPositionsRef = useRef<Map<string, AgentPrevPosition>>(new Map());
     // Location offset lookup for trail endpoints — rebuilt when locations change
     const locationOffsetRef = useRef<Map<string, { dx: number; dy: number }>>(new Map());
     locationOffsetRef.current = buildLocationOffsetLookup(locations);
@@ -332,6 +327,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const [locationLabels, setLocationLabels] = useState<LocationLabelData[]>([]);
     // Current d3-zoom scale level — tracked to drive label tier filtering
     const [zoomLevel, setZoomLevel] = useState<number>(CAMERA_CONSTANTS.DEFAULT_ZOOM);
+    // Zoom tier state — drives useZoomLayerVisibility hook
+    const [zoomTier, setZoomTier] = useState<ZoomTier>(getZoomTier(CAMERA_CONSTANTS.DEFAULT_ZOOM));
+    const [zoomK, setZoomK] = useState<number>(CAMERA_CONSTANTS.DEFAULT_ZOOM);
 
     // Tooltip state (internal — not exposed to parent)
     const [tooltip, setTooltip] = useState<{
@@ -352,7 +350,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     useEffect(() => {
       const map = new Map<string, HexTile>();
       for (const tile of tiles) {
-        map.set(`${tile.coord.col},${tile.coord.row}`, tile);
+        map.set(hexKey(tile.coord.col, tile.coord.row), tile);
       }
       tileLookup.current = map;
     }, [tiles]);
@@ -499,7 +497,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           for (const loc of locations) {
             const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
             if (iconDef && CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
-              centeredLocationHexes.add(`${loc.hexCol},${loc.hexRow}`);
+              centeredLocationHexes.add(hexKey(loc.hexCol, loc.hexRow));
             }
           }
         }
@@ -536,12 +534,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
         locationGroupRef.current = locationGroup;
 
-        // Build agent sprite groups — Three-tier sprites (portrait/dot/continental) (Plan 06-04)
+        // Build agent sprites — single sprite per agent with material swap (Plan 06-04)
         // Renders at RENDER_ORDER.AGENTS (9), above location icons.
         const agentSpriteGroup = createAgentSpriteMesh(agents ?? []);
-        scene.add(agentSpriteGroup.portraitGroup);
-        scene.add(agentSpriteGroup.dotGroup);
-        scene.add(agentSpriteGroup.continentalGroup);
+        scene.add(agentSpriteGroup.group);
         agentSpriteGroupRef.current = agentSpriteGroup;
 
         // Kick off portrait loading (fire-and-forget — fail-soft)
@@ -586,45 +582,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         setZoomTargetRef.current = setZoomTarget;
         clearZoomTargetRef.current = clearZoomTarget;
 
-        // Track zoom level for label tier filtering and layer visibility matrix (Plan 07-01)
-        // Replaces scattered per-threshold checks with unified ZOOM_VISIBILITY_MATRIX lookup.
-        // NFP #1: All thresholds in ZOOM_TIER_THRESHOLDS, all layer visibility in ZOOM_VISIBILITY_MATRIX
+        // Track zoom level for label tier filtering and layer visibility (Plan 07-01)
+        // Visibility toggling is handled by useZoomLayerVisibility hook — zoom handler just updates state.
         zoom.on('zoom.labels', (event: d3.D3ZoomEvent<HTMLCanvasElement, unknown>) => {
           const k = event.transform.k;
           setZoomLevel(k);
-          const tier = getZoomTier(k);
-
-          // Layer visibility from matrix (Plan 07-01)
-          if (signifierGroupRef.current) signifierGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.signifiers[tier];
-          if (locationGroupRef.current) locationGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.locations[tier];
-          if (elevTicksRef.current) elevTicksRef.current.visible = ZOOM_VISIBILITY_MATRIX.elev_ticks[tier];
-          if (riverGroupRef.current) riverGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.rivers[tier];
-          if (roadGroupRef.current) roadGroupRef.current.visible = ZOOM_VISIBILITY_MATRIX.roads[tier];
-          if (gridLinesRef.current) gridLinesRef.current.visible = ZOOM_VISIBILITY_MATRIX.grid_lines[tier];
-          if (borderKingdomRef.current) borderKingdomRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_kingdom[tier];
-          if (borderBaronyRef.current) borderBaronyRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_barony[tier];
-
-          // Agent tiers (portrait/dot/retinue) — updateZoomVisibility uses centralized tier
-          const agentGroup = agentSpriteGroupRef.current;
-          if (agentGroup) updateZoomVisibility(agentGroup, tier);
-
-          // Movement trails visible when agents are visible at regional+ or hero-local
-          if (trailGroupRef.current) {
-            trailGroupRef.current.visible =
-              ZOOM_VISIBILITY_MATRIX.agents_dot[tier] || ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
-          }
-
-          // Fade transitions for signifiers near the continental threshold
-          // NFP #1: FADE_RANGE constant controls transition zone width
-          const currentSignifierGroup = signifierGroupRef.current;
-          if (currentSignifierGroup?.visible) {
-            const alpha = getFadeAlpha(k, ZOOM_TIER_THRESHOLDS.CONTINENTAL, FADE_RANGE * ZOOM_TIER_THRESHOLDS.CONTINENTAL);
-            for (const child of currentSignifierGroup.children) {
-              if (child instanceof THREE.Sprite) {
-                (child.material as THREE.SpriteMaterial).opacity = alpha;
-              }
-            }
-          }
+          setZoomTier(getZoomTier(k));
+          setZoomK(k);
         });
 
         // Break follow mode on manual pan (user-initiated zoom events have sourceEvent)
@@ -642,8 +606,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // This runs inside the effect on mount; prop changes are handled separately below.
         const updateSelectionRing = (hex: HexCoord | null) => {
           if (hex) {
-            const { x, y } = hexToPixel(hex, HEX_CONSTANTS.HEX_SIZE);
-            selectionRing.position.set(x, -y, 0.1); // slight Z offset above fill mesh
+            const world = hexToWorld(hex, HEX_CONSTANTS.HEX_SIZE);
+            selectionRing.position.set(world.x, world.y, 0.1); // slight Z offset above fill mesh
             selectionRing.visible = true;
           } else {
             selectionRing.visible = false;
@@ -661,15 +625,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const currentAgents = agents ?? [];
         const retinue = currentAgents.find(a => a.isRetinue);
         if (retinue && fogEnabledRef.current) {
-          const { x, y } = hexToPixel({ col: retinue.hexCol, row: retinue.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+          const retWorld = hexToWorld({ col: retinue.hexCol, row: retinue.hexRow }, HEX_CONSTANTS.HEX_SIZE);
           // setTimeout(0) ensures zoom is fully initialized before animating
           setTimeout(() => {
             if (zoomRef.current && canvasRef.current) {
               animateCameraTo(
                 canvasRef.current,
                 zoomRef.current,
-                x,
-                -y,
+                retWorld.x,
+                retWorld.y,
                 ZOOM_TIER_THRESHOLDS.HERO_LOCAL,
                 0,
               );
@@ -864,91 +828,37 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [tiles, cols, rows, seed, riverPaths, regionData, locations, roadPaths]);
 
-    // ── Fog update effect (separate from scene init — fog changes don't rebuild scene) ──
-    // Depends only on visibilityMap prop. Uses refs to access meshes, colorCache.
-    // Fog color routing goes through globalToMeshMap so both land and water meshes are updated.
-    // NFP #4: Fail-soft — if refs aren't populated yet, silently returns.
-    useEffect(() => {
-      const landMesh = landMeshRef.current;
-      const waterMesh = waterMeshRef.current;
-      const globalToMeshMap = globalToMeshMapRef.current;
-      if (!landMesh || !waterMesh || !globalToMeshMap) return;
+    // ── Fog update — delegated to useFogCulling hook ──
+    useFogCulling({
+      visibilityMap,
+      fogEnabled,
+      landMesh: landMeshRef,
+      waterMesh: waterMeshRef,
+      globalToMeshMap: globalToMeshMapRef,
+      originalColors: originalColorsRef,
+      tileIndexByKey: tileIndexByKeyRef,
+      signifierGroup: signifierGroupRef,
+      locationGroup: locationGroupRef,
+    });
 
-      const originalColors = originalColorsRef.current;
-      const indexByKey = tileIndexByKeyRef.current;
-
-      if (!originalColors || !indexByKey) return;
-
-      const color = new THREE.Color();
-
-      if (!visibilityMap || !fogEnabled) {
-        // Fog disabled: restore all instance colors to originals via globalToMeshMap routing
-        for (let i = 0; i < originalColors.length / 3; i++) {
-          const entry = globalToMeshMap.get(i);
-          if (!entry) continue;
-          color.setRGB(
-            originalColors[i * 3 + 0],
-            originalColors[i * 3 + 1],
-            originalColors[i * 3 + 2],
-            THREE.SRGBColorSpace,
-          );
-          entry.mesh.setColorAt(entry.instanceIdx, color);
-        }
-        if (landMesh.instanceColor) landMesh.instanceColor.needsUpdate = true;
-        if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
-        return;
-      }
-
-      // Apply fog colors to both meshes via globalToMeshMap routing
-      // Inline of updateFogColors logic — routes to correct mesh for each global tile index
-      const FOG_COLOR = new THREE.Color(0x0a0a0c); // matches FOG_CONSTANTS.UNEXPLORED_HEX_COLOR
-      for (const [key, hexVis] of visibilityMap) {
-        const idx = indexByKey.get(key);
-        if (idx === undefined) continue; // fail-soft: unknown hex key
-        const entry = globalToMeshMap.get(idx);
-        if (!entry) continue; // fail-soft: not in either mesh
-
-        if (hexVis.state === 'unexplored') {
-          entry.mesh.setColorAt(entry.instanceIdx, FOG_COLOR);
-        } else {
-          color.setRGB(
-            originalColors[idx * 3 + 0],
-            originalColors[idx * 3 + 1],
-            originalColors[idx * 3 + 2],
-            THREE.SRGBColorSpace,
-          );
-          entry.mesh.setColorAt(entry.instanceIdx, color);
-        }
-      }
-      if (landMesh.instanceColor) landMesh.instanceColor.needsUpdate = true;
-      if (waterMesh.instanceColor) waterMesh.instanceColor.needsUpdate = true;
-
-      // Per-hex layer culling for signifier and location groups
-      // Agent culling is handled inside the agents useEffect (no fog-based agent visibility here)
-      const signifierGroup = signifierGroupRef.current;
-      if (signifierGroup) {
-        for (const child of signifierGroup.children) {
-          const sprite = child as THREE.Sprite & { userData?: { hexKey?: string } };
-          const hexKey = sprite.userData?.hexKey;
-          if (!hexKey) continue;
-          const hexVis = visibilityMap.get(hexKey);
-          const state = hexVis?.state ?? 'unexplored';
-          sprite.visible = isLayerVisibleForHex(state, 'signifier');
-        }
-      }
-
-      const locationGroup = locationGroupRef.current;
-      if (locationGroup) {
-        for (const child of locationGroup.children) {
-          const sprite = child as THREE.Sprite & { userData?: { hexKey?: string } };
-          const hexKey = sprite.userData?.hexKey;
-          if (!hexKey) continue;
-          const hexVis = visibilityMap.get(hexKey);
-          const state = hexVis?.state ?? 'unexplored';
-          sprite.visible = isLayerVisibleForHex(state, 'location');
-        }
-      }
-    }, [visibilityMap, fogEnabled]);
+    // ── Zoom layer visibility — delegated to useZoomLayerVisibility hook ──
+    useZoomLayerVisibility({
+      zoomTier,
+      zoomK,
+      groups: {
+        signifiers: signifierGroupRef,
+        locations: locationGroupRef,
+        roads: roadGroupRef,
+        rivers: riverGroupRef,
+        gridLines: gridLinesRef,
+        elevTicks: elevTicksRef,
+        borderKingdom: borderKingdomRef,
+        borderBarony: borderBaronyRef,
+        coastline: coastlineRef,
+      },
+      agentSpriteGroup: agentSpriteGroupRef,
+      trailGroup: trailGroupRef,
+    });
 
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {
@@ -966,161 +876,27 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
       // Set zoom target so scroll-zoom converges on the selected hex
       if (selectedHex) {
-        const { x, y } = hexToPixel(selectedHex, HEX_CONSTANTS.HEX_SIZE);
-        setZoomTargetRef.current?.(x, -y); // Y-flip to match world space
+        const selWorld = hexToWorld(selectedHex, HEX_CONSTANTS.HEX_SIZE);
+        setZoomTargetRef.current?.(selWorld.x, selWorld.y);
       } else {
         clearZoomTargetRef.current?.();
       }
     }, [selectedHex]);
 
-    // Update agent positions and trigger movement animations when agents prop changes.
-    // Diffs old vs new hex positions — agents that changed hex get a bezier hop + trail segment.
-    // Agents that stay on the same hex but whose ring slot moved get a settle tween.
-    // Also checks follow mode state and pans camera to followed agent on hex change.
-    useEffect(() => {
-      const spriteGroup = agentSpriteGroupRef.current;
-      const trailGroup  = trailGroupRef.current;
-      if (!spriteGroup || !agents || agents.length === 0) return;
-
-      const prevPositions = prevAgentPositionsRef.current;
-      const animStates    = animStatesRef.current;
-      const now = performance.now();
-
-      // ── Step 1: Group agents by hex and compute ring offsets (same logic as AgentSpriteMesh) ──
-      const hexGroups = new Map<string, AgentRenderData[]>();
-      for (const agent of agents) {
-        const key = `${agent.hexCol},${agent.hexRow}`;
-        if (!hexGroups.has(key)) hexGroups.set(key, []);
-        hexGroups.get(key)!.push(agent);
-      }
-      // Sort each group by ID for deterministic ring slot assignment (NFP #3)
-      for (const group of hexGroups.values()) {
-        group.sort((a, b) => a.id.localeCompare(b.id));
-      }
-
-      // Build ring offset lookup: agentId → { ringOffset, worldX, worldY }
-      const newPositions = new Map<string, {
-        col: number; row: number;
-        ringOffset: { x: number; y: number };
-        worldX: number; worldY: number;
-      }>();
-      for (const hexAgents of hexGroups.values()) {
-        const visible = hexAgents.slice(0, MAX_RING_AGENTS);
-        for (let i = 0; i < visible.length; i++) {
-          const agent = visible[i];
-          const ringOffset = getFixedSlotOffset(i, visible.length, EDGE_MID_ANGLES_DEG, SLOT_RING_RADIUS);
-          const hexCenter = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
-          const wx = hexCenter.x + ringOffset.x;
-          const wy = -(hexCenter.y + ringOffset.y); // Y-flip
-          newPositions.set(agent.id, {
-            col: agent.hexCol, row: agent.hexRow,
-            ringOffset, worldX: wx, worldY: wy,
-          });
-        }
-      }
-
-      // ── Step 2: Detect hex changes (hop) and ring rearrangements (settle) ──
-      let movedCount = 0;
-      for (const agent of agents) {
-        const prev = prevPositions.get(agent.id);
-        const curr = newPositions.get(agent.id);
-        if (!curr) continue; // overflow agent, not in ring
-
-        const hexChanged = prev && (prev.col !== agent.hexCol || prev.row !== agent.hexRow);
-
-        if (hexChanged && prev) {
-          // ── Hop animation: road hop or standard wobbled bezier ──
-          let animState: AgentAnimState;
-          if (agent.currentRoadType) {
-            // Road hop: shorter duration, reduced wobble, chain without settle
-            const isLastHop = !agent.roadHexQueueLength || agent.roadHexQueueLength === 0;
-            animState = startRoadHopAnimation(
-              agent.id,
-              { col: prev.col, row: prev.row },
-              { col: agent.hexCol, row: agent.hexRow },
-              seed,
-              agent.currentRoadType,
-              isLastHop,
-              prev.ringOffset,
-              curr.ringOffset,
-            );
-          } else {
-            animState = startMoveAnimation(
-              agent.id,
-              { col: prev.col, row: prev.row },
-              { col: agent.hexCol, row: agent.hexRow },
-              seed,
-              prev.ringOffset,
-              curr.ringOffset,
-            );
-          }
-          animStates.set(agent.id, animState);
-
-          // Add trail segment — offset endpoints toward location icons when present
-          if (trailGroup) {
-            const locOffsets = locationOffsetRef.current;
-            const fromCenter = hexToPixel({ col: prev.col, row: prev.row }, HEX_CONSTANTS.HEX_SIZE);
-            const toCenter   = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
-            const fromOff = locOffsets.get(`${prev.col},${prev.row}`);
-            const toOff   = locOffsets.get(`${agent.hexCol},${agent.hexRow}`);
-            addTrailSegment(trailGroup, {
-              fromX: fromCenter.x + (fromOff?.dx ?? 0),
-              fromY: -fromCenter.y + (fromOff?.dy ?? 0),
-              toX:   toCenter.x + (toOff?.dx ?? 0),
-              toY:   -toCenter.y + (toOff?.dy ?? 0),
-              factionColor: FACTION_HERALDIC_COLORS[agent.factionIndex] ?? FACTION_HERALDIC_COLORS[0],
-              startTime: now,
-            });
-          }
-          movedCount++;
-        } else if (prev && !hexChanged) {
-          // Same hex — check if ring slot world position changed (rearrangement)
-          const dx = Math.abs(prev.worldX - curr.worldX);
-          const dy = Math.abs(prev.worldY - curr.worldY);
-          if (dx > 0.5 || dy > 0.5) {
-            // Ring slot rearrangement — linear settle tween (150ms)
-            // Only start if not already animating a hop
-            if (!animStates.has(agent.id)) {
-              const settleState = startSettleAnimation(
-                agent.id,
-                { x: prev.worldX, y: prev.worldY },
-                { x: curr.worldX, y: curr.worldY },
-              );
-              animStates.set(agent.id, settleState);
-            }
-          }
-        }
-      }
-      if (movedCount > 0) {
-        console.log(`[HexMapV2] ${movedCount} agent(s) moved hex — animations triggered, trailGroup children: ${trailGroup?.children.length ?? 'N/A'}`);
-      }
-
-      // Follow mode: pan camera when followed agent changes hex (Plan 07-03)
-      const follow = followModeRef.current;
-      if (follow.active && follow.agentId) {
-        const followedAgent = agents.find(a => a.id === follow.agentId);
-        if (followedAgent) {
-          const newKey = `${followedAgent.hexCol},${followedAgent.hexRow}`;
-          if (newKey !== follow.lastHexKey) {
-            follow.lastHexKey = newKey;
-            const { x, y } = hexToPixel(
-              { col: followedAgent.hexCol, row: followedAgent.hexRow },
-              HEX_CONSTANTS.HEX_SIZE,
-            );
-            if (zoomRef.current && canvasRef.current) {
-              animateCameraTo(canvasRef.current, zoomRef.current, x, -y, undefined, 500);
-            }
-          }
-        }
-      }
-
-      // Update sprite positions for non-animating agents (skip those with active bezier hops)
-      const animatingIds = new Set(animStates.keys());
-      updateAgentPositions(spriteGroup, agents, animatingIds);
-
-      // Update previous positions snapshot (with ring offsets for rearrangement detection)
-      prevAgentPositionsRef.current = newPositions;
-    }, [agents, seed]);
+    // ── Agent animation — delegated to useAgentAnimations hook ──
+    useAgentAnimations({
+      agents,
+      seed,
+      agentSpriteGroup: agentSpriteGroupRef,
+      trailGroup: trailGroupRef,
+      animStates: animStatesRef,
+      prevAgentPositions: prevAgentPositionsRef,
+      locationOffsets: locationOffsetRef,
+      followMode: followModeRef,
+      zoomRef,
+      canvasRef,
+      cameraRef,
+    });
 
     // ── Mouse event handlers ───────────────────────────────────────
 
@@ -1134,7 +910,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const worldPos = hexToWorldCenter(hex);
         const screen   = worldToScreen(worldPos, camera, canvas);
 
-        const tile = tileLookup.current.get(`${hex.col},${hex.row}`);
+        const tile = tileLookup.current.get(hexKey(hex.col, hex.row));
         const terrainKey  = tile?.terrain ?? 'unknown';
         const terrainName = terrainDisplayName(terrainKey);
 
