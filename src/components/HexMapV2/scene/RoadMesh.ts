@@ -58,6 +58,8 @@ export const ROAD_CONSTANTS = {
   SPLINE_TENSION:      0.0,
   /** Fraction of hex size to offset intermediate waypoints from hex centers */
   WAYPOINT_DRIFT:      0.25,
+  /** Wobble scale factor for trails relative to major roads (0–1). Lower = subtler curves. */
+  TRAIL_WOBBLE_SCALE:  0.6,
 } as const;
 
 // ─── Geometry builders ────────────────────────────────────────────────────────
@@ -145,6 +147,7 @@ function wobbleMagnitudeForTax(tax: number): number {
 function addTerrainWobble(
   path: HexCoord[],
   terrainMap: Map<string, string>,
+  wobbleScale = 1.0,
 ): Point2D[] {
   if (path.length < 2) return roadPathToWorldPoints(path);
 
@@ -175,7 +178,7 @@ function addTerrainWobble(
       const wobbleFrac = wobbleMagnitudeForTax(tax === Infinity ? 0 : tax);
 
       const hash = roadSegmentHash(coord.col * 7, coord.row * 13, coord.col, coord.row);
-      const drift = hash * (waypointDrift + wobbleFrac * 0.5) * hexSize;
+      const drift = hash * (waypointDrift + wobbleFrac * 0.5) * hexSize * wobbleScale;
 
       wx += perpX * drift;
       wy += perpY * drift;
@@ -204,7 +207,7 @@ function addTerrainWobble(
     const perpY = dx / segLen;
 
     const hash = roadSegmentHash(from.col, from.row, to.col, to.row);
-    const offset = hash * wobbleFraction * hexSize;
+    const offset = hash * wobbleFraction * hexSize * wobbleScale;
 
     const midX = (a.x + b.x) / 2 + perpX * offset;
     const midY = (a.y + b.y) / 2 + perpY * offset;
@@ -259,8 +262,9 @@ function smoothWithCatmullRom(points: Point2D[]): Point2D[] {
 function buildWindingRoadPoints(
   path: HexCoord[],
   terrainMap: Map<string, string>,
+  wobbleScale = 1.0,
 ): Point2D[] {
-  const wobbled = addTerrainWobble(path, terrainMap);
+  const wobbled = addTerrainWobble(path, terrainMap, wobbleScale);
   return smoothWithCatmullRom(wobbled);
 }
 
@@ -443,9 +447,11 @@ export function createRoadMesh(
     let vertexOffset = 0;
 
     for (const roadPath of trailPaths) {
-      // Trails use straight hex-center-to-hex-center paths (no wobble/spline).
-      // Short trails (2-4 hexes) would visually miss endpoints with wobble drift.
-      const worldPoints = roadPathToWorldPoints(roadPath.path);
+      // Trails get the same wobble+spline treatment as major roads, but at reduced
+      // magnitude (TRAIL_WOBBLE_SCALE) so they feel like lighter, organic footpaths.
+      const worldPoints = buildWindingRoadPoints(
+        roadPath.path, terrainMap, ROAD_CONSTANTS.TRAIL_WOBBLE_SCALE,
+      );
       if (worldPoints.length < 2) continue;
 
       const { positions, indices } = buildDashedQuadStrip(
