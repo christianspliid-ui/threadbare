@@ -37,7 +37,7 @@ const BARONY_HALF_WIDTH = 0.375;
 const EDGE_EXTENSION = 0.35;
 
 /** Border opacity (0–1). Slightly transparent to blend with terrain. */
-const BORDER_OPACITY = 0.8;
+const BORDER_OPACITY = 0.7;
 
 /** Z position for border vertices — above rivers (0.03), below signifiers */
 const BORDER_Z = 0.035;

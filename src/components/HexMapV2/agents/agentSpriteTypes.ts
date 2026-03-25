@@ -78,8 +78,8 @@ export const RETINUE_BORDER_ALT_COLOR = 'rgba(255,255,255,0.9)';
  *   k < CONTINENTAL  → hidden
  */
 export const AGENT_ZOOM_THRESHOLDS = {
-  /** Hero-local zoom: full portrait thumbnails with rings */
-  HERO_LOCAL: 15,
+  /** Hero-local zoom: large portrait thumbnails with colored borders */
+  HERO_LOCAL: 5,
   /** Regional zoom: colored faction dots */
   REGIONAL: 5,
   /** Continental zoom: tiny retinue-only dots */

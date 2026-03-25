@@ -18,6 +18,8 @@ export interface ScreenLabel {
   screenX: number;
   screenY: number;
   visible: boolean;
+  /** Screen-space width of the province/region (pixels), for letter-spacing calc */
+  screenWidth?: number;
 }
 
 export interface ScreenBBox {
@@ -70,8 +72,17 @@ const TIER_PRIORITY: Record<ScreenLabel['tier'], number> = {
 export function estimateBBox(label: ScreenLabel): ScreenBBox {
   const fontSize = TIER_FONT_SIZE[label.tier];
   const charWidth = fontSize * CHAR_WIDTH_FACTOR;
-  const width = label.text.length * charWidth;
-  const height = fontSize * LINE_HEIGHT_FACTOR;
+  let width = label.text.length * charWidth;
+  let height = fontSize * LINE_HEIGHT_FACTOR;
+  // If screenWidth is set (province width for scaled font), use the wider/taller estimate
+  if (label.screenWidth) {
+    const scaledWidth = label.screenWidth * 0.5; // 50% of province width
+    if (scaledWidth > width) {
+      const scale = scaledWidth / width;
+      width = scaledWidth;
+      height = height * scale; // font size scales proportionally
+    }
+  }
   return {
     left: label.screenX - width / 2,
     top: label.screenY - height / 2,

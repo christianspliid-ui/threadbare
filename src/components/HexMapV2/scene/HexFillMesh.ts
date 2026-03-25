@@ -13,7 +13,7 @@ export const HEX_CONSTANTS = {
   HEX_SIZE:             10,    // Flat-top hex radius in Three.js world units (1 unit = 1px at zoom 1)
   GRID_COLS:            200,   // Expected grid width
   GRID_ROWS:            300,   // Expected grid height
-  GRID_LINE_OPACITY:    0.12,  // ~12% opacity black on hex edges (CONTEXT.md decision)
+  GRID_LINE_OPACITY:    0.50,  // 50% opacity on hex edges
   BRIGHTNESS_NOISE_RANGE: 0.05, // ±5% luminosity variation per TERR-05
 } as const;
 

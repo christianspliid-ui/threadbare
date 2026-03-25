@@ -529,6 +529,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             hexCol: loc.hexCol,
             hexRow: loc.hexRow,
             importance: LOCATION_IMPORTANCE_MAP[loc.locationType as keyof typeof LOCATION_IMPORTANCE_MAP] ?? 'small',
+            locationType: loc.locationType,
           }));
           setLocationLabels(labelData);
         } else {

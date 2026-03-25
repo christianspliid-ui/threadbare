@@ -91,6 +91,18 @@ export function initializeGameState(
   // Seed the world graph with actors, locations, artifacts
   const { graph, individualIds } = seedWorld(cosmology, tiles, seed);
 
+  // Sync graph region names back to regionData.geographicRegions.
+  // seedWorld() names regions with culture-aware names (via regionNaming.ts),
+  // but regionData still has simple placeholder names from hexGrid.ts.
+  if (worldGenResult.regionData) {
+    for (const geo of worldGenResult.regionData.geographicRegions) {
+      const regionNode = graph.getNode(`region_${geo.id}`);
+      if (regionNode && regionNode.name) {
+        geo.name = regionNode.name;
+      }
+    }
+  }
+
   // Register action template nodes so createAction can add performing edges
   for (const template of ACTION_TEMPLATES) {
     if (!graph.getNode(template.id)) {

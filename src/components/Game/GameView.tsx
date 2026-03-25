@@ -113,6 +113,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     () => !new URLSearchParams(window.location.search).has('fog')
   );
 
+  // ── Debug: organic shore toggle ──
+  const [showOrganicShore, setShowOrganicShore] = useState(false);
+
   // ── View navigation hook ──
   const {
     hoveredHex, setHoveredHex, selectedHex, viewLevel,
@@ -221,12 +224,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       });
     }
     return result;
-  }, [gameState.graph, gameState.ascendantId]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   const locationNodes = useMemo<LocationNode[]>(() => {
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
+      .filter(n => !n.properties.sublocationTypeId) // Exclude sublocations — they share parent hex coords
       .map(n => ({
         locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
         hexCol: n.properties.hexCol as number,
@@ -631,6 +635,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   agents={agentRenderData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
+                  showOrganicShore={showOrganicShore}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
                 />
@@ -796,6 +801,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             encounterProgress={gameState.encounterProgress}
             onZoomToLocation={handleZoomToLocation}
             getWebGLDiagnostics={() => hexMapRef.current?.getDiagnostics() ?? null}
+            getZoomLevel={() => hexMapRef.current?.getZoomLevel() ?? 1.5}
+            showOrganicShore={showOrganicShore}
+            onToggleOrganicShore={setShowOrganicShore}
           />
         ) : (
           <div

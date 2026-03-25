@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import type { WebGLDiagnosticsSnapshot, WebGLLogEntry } from '../../HexMapV2/diagnostics/WebGLDiagnostics';
+import { AGENT_ZOOM_THRESHOLDS } from '../../HexMapV2/agents/agentSpriteTypes';
 
 interface WebGLDebugTabProps {
   getDiagnostics: () => WebGLDiagnosticsSnapshot | null;
+  /** Getter for current d3-zoom scale (k value) */
+  getZoomLevel?: () => number;
+  /** Whether organic shore (coastline) rendering is enabled */
+  showOrganicShore: boolean;
+  /** Callback to toggle organic shore rendering */
+  onToggleOrganicShore: (enabled: boolean) => void;
 }
 
 const SECTION_STYLE: React.CSSProperties = {
@@ -67,19 +74,33 @@ const EMPTY_STYLE: React.CSSProperties = {
  *
  * Polls diagnostics every 500ms to avoid per-frame React renders.
  */
-export const WebGLDebugTab = React.memo(function WebGLDebugTab({ getDiagnostics }: WebGLDebugTabProps) {
+const TOGGLE_LABEL_STYLE: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '6px',
+  padding: '4px 10px',
+  fontSize: '12px',
+  fontFamily: 'monospace',
+  color: 'var(--text-primary)',
+  cursor: 'pointer',
+};
+
+export const WebGLDebugTab = React.memo(function WebGLDebugTab({ getDiagnostics, getZoomLevel, showOrganicShore, onToggleOrganicShore }: WebGLDebugTabProps) {
   const [snapshot, setSnapshot] = useState<WebGLDiagnosticsSnapshot | null>(null);
+  const [zoomLevel, setZoomLevel] = useState<number | null>(null);
 
   useEffect(() => {
     // Initial capture
     setSnapshot(getDiagnostics());
+    if (getZoomLevel) setZoomLevel(getZoomLevel());
 
     const interval = setInterval(() => {
       setSnapshot(getDiagnostics());
+      if (getZoomLevel) setZoomLevel(getZoomLevel());
     }, 500);
 
     return () => clearInterval(interval);
-  }, [getDiagnostics]);
+  }, [getDiagnostics, getZoomLevel]);
 
   if (!snapshot) {
     return <div style={EMPTY_STYLE}>Renderer not initialized.</div>;
@@ -87,8 +108,38 @@ export const WebGLDebugTab = React.memo(function WebGLDebugTab({ getDiagnostics 
 
   const { stats, context, log, sceneObjects } = snapshot;
 
+  // Derive zoom tier label
+  const zoomTier = zoomLevel != null
+    ? zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL ? 'Zoomed-in (ring)'
+      : zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL ? 'Zoomed-out (portrait)'
+      : 'Full-world'
+    : '—';
+
   return (
     <div>
+      {/* Feature Flags */}
+      <div style={SECTION_STYLE}>
+        <div style={SECTION_HEADER_STYLE}>Feature Flags</div>
+        <label style={TOGGLE_LABEL_STYLE}>
+          <input
+            type="checkbox"
+            checked={showOrganicShore}
+            onChange={(e) => onToggleOrganicShore(e.target.checked)}
+            style={{ cursor: 'pointer' }}
+          />
+          Organic Shore
+        </label>
+      </div>
+
+      {/* Camera */}
+      {zoomLevel != null && (
+        <div style={SECTION_STYLE}>
+          <div style={SECTION_HEADER_STYLE}>Camera</div>
+          <StatRow label="Zoom (k)" value={zoomLevel.toFixed(2)} />
+          <StatRow label="Zoom tier" value={zoomTier} />
+        </div>
+      )}
+
       {/* Render Stats */}
       <div style={SECTION_STYLE}>
         <div style={SECTION_HEADER_STYLE}>Render Stats</div>

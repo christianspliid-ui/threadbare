@@ -62,7 +62,7 @@ describe('syncCameraToZoom', () => {
 describe('CAMERA_CONSTANTS', () => {
   it('has expected zoom range values', () => {
     expect(CAMERA_CONSTANTS.MIN_ZOOM).toBe(0.3);
-    expect(CAMERA_CONSTANTS.MAX_ZOOM).toBe(10);
+    expect(CAMERA_CONSTANTS.MAX_ZOOM).toBe(15);
     expect(CAMERA_CONSTANTS.JUMP_TO_DURATION_MS).toBe(500);
     expect(CAMERA_CONSTANTS.DEFAULT_ZOOM).toBe(1.5);
   });
