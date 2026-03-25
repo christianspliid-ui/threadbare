@@ -7,15 +7,19 @@
  * All functions are pure (read graph, return events + mutations).
  */
 import type { GameState, TickEvent } from '../types/gameState';
-import type { SphereName } from '../types/index';
+import type { CosmologyProfile, SphereName } from '../types/index';
 import type { ReachDomain } from '../types/traits';
 import { SPHERE_NAMES } from '../types/index';
+import type { AxiologicalProfile } from '../types/agent';
+import { VALUE_PAIRS } from '../types/agent';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { BORN_NAMES } from '../data/narrative-content';
 import { assignCooperationStrategy } from './disposition';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
+import { validateAgentIntegrity } from './agentValidation';
+import { emitTrace } from './traceBuffer';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -47,6 +51,20 @@ export const BIRTH_DENSITY_THRESHOLD = 3;
  * @deprecated Replaced by phaseMovement with axiological scoring (DES-009 Task 7)
  */
 export const MIGRATION_CHANCE = 0.02;
+
+// ─── Axiological Profile Generator ───────────────────────────────
+
+function generateAxiologicalProfile(rng: () => number, cosmology: CosmologyProfile): AxiologicalProfile {
+  const profile = {} as AxiologicalProfile;
+  const chaosBias = (cosmology.entropy ?? 0) > 0.15 ? 0.2 : -0.1;
+
+  for (const pair of VALUE_PAIRS) {
+    const base = (rng() * 1.6) - 0.8;
+    const bias = pair === 'tradition_novelty' ? chaosBias : 0;
+    profile[pair] = Math.max(-1, Math.min(1, base + bias));
+  }
+  return profile;
+}
 
 // ─── ID Generator ────────────────────────────────────────────────
 
@@ -132,7 +150,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
     for (const locId of locationIds) {
       // Count agents at this location
-      const agentsHere = graph.getIncomingEdges(locId, 'contains')
+      const agentsHere = graph.getIncomingEdges(locId, 'located_at')
         .map(e => graph.getNode(e.source))
         .filter(n => n && n.properties.actorType === 'individual');
 
@@ -159,7 +177,8 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
           domainCaps[r] = 0.1 + rng() * 0.4;
         }
 
-        const cooperationStrategy = assignCooperationStrategy(archetype.id, {} as any, rng);
+        const axiologicalProfile = generateAxiologicalProfile(rng, state.cosmology);
+        const cooperationStrategy = assignCooperationStrategy(archetype.id, axiologicalProfile, rng);
 
         graph.addNode({
           id: newId,
@@ -167,7 +186,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
           name,
           properties: {
             actorType: 'individual',
-            axiologicalProfile: {},
+            axiologicalProfile,
             domainCapabilities: domainCaps,
             locationId: locId,
             narrativeArchetype: archetype.id,
@@ -248,6 +267,29 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
               completedMilestones: [],
             },
           });
+        }
+
+        // Validate newborn agent integrity
+        const validation = validateAgentIntegrity(graph, newId);
+        if (!validation.valid) {
+          emitTrace({
+            category: 'agent_validation',
+            tick: state.tick,
+            agentId: newId,
+            agentName: name,
+            errors: validation.errors,
+            warnings: validation.warnings,
+            summary: `Born agent ${name} failed validation: ${validation.errors.join('; ')}`,
+          } as any);
+        } else if (validation.warnings.length > 0) {
+          emitTrace({
+            category: 'agent_validation',
+            tick: state.tick,
+            agentId: newId,
+            agentName: name,
+            warnings: validation.warnings,
+            summary: `Born agent ${name} has warnings: ${validation.warnings.join('; ')}`,
+          } as any);
         }
 
         events.push({

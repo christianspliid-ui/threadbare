@@ -12,6 +12,8 @@ import { DECISION_REEVALUATION_TICKS } from '../types/movement';
 import { tickMovement, initMovementState } from './movementExecution';
 import { generateMovementCandidates, scoreMovementCandidate } from './movementCandidates';
 import { computeEdgeCost } from './movementCost';
+import { buildHexMovementPath } from './hexMovementPath';
+import { findShortestPath } from './pathfinding';
 import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
 import { emitTrace } from './traceBuffer';
@@ -52,6 +54,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
     .filter(actor => actor.properties?.actorType === 'individual');
 
   for (const actor of agents) {
+   try {
     const actorId = actor.id;
 
     // Detect if this actor is the player's avatar (has outgoing avatar_of edge)
@@ -194,16 +197,47 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             );
 
             if (newCandidates[0].score > currentRemainingScore * 2) {
-              // Switch to new destination
-              const newPath = newCandidates[0].path;
-              if (newPath.length > 0) {
-                const newEdgeCost = computeEdgeCost(state.graph, actorId, currentLocId, newPath[0]).totalCost;
-                const switchedState = initMovementState(
-                  newCandidates[0].destinationId,
-                  newPath,
-                  newEdgeCost,
-                  state.tick,
+              // Switch to new destination — use road-aware pathfinding with hex-by-hex fallback
+              // (matches phaseAgentDecision's movement initiation logic)
+              let switchedState: MovementState | null = null;
+
+              const graphPath = findShortestPath(state.graph, actorId, currentLocId, newCandidates[0].destinationId);
+              if (graphPath && graphPath.roadSegments && graphPath.roadSegments.length > 0 && graphPath.path.length > 0) {
+                // Road-aware path: use graph-level path with road segments
+                const firstSeg = graphPath.roadSegments.find(
+                  seg => (seg.fromId === currentLocId && seg.toId === graphPath.path[0]) ||
+                         (seg.toId === currentLocId && seg.fromId === graphPath.path[0]),
                 );
+                const firstEdgeCost = firstSeg
+                  ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length)
+                  : computeEdgeCost(state.graph, actorId, currentLocId, graphPath.path[0]).totalCost;
+                switchedState = initMovementState(
+                  newCandidates[0].destinationId,
+                  graphPath.path,
+                  firstEdgeCost,
+                  state.tick,
+                  graphPath.roadSegments,
+                  currentLocId,
+                );
+              } else {
+                // Fall back to hex-by-hex A*
+                const hexPath = buildHexMovementPath(
+                  state.graph,
+                  currentLocId,
+                  newCandidates[0].destinationId,
+                  state.tiles,
+                );
+                if (hexPath) {
+                  switchedState = initMovementState(
+                    hexPath.destinationId,
+                    hexPath.locationIds,
+                    hexPath.firstEdgeCost,
+                    state.tick,
+                  );
+                }
+              }
+
+              if (switchedState) {
                 // Preserve movement history from current state
                 switchedState.movementHistory = result.updatedState.movementHistory;
                 // Track the original motivation pull for future re-evaluations
@@ -222,7 +256,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
                   oldDestinationName: oldDest?.name ?? '?',
                   destinationId: newCandidates[0].destinationId,
                   destinationName: newDest?.name ?? '?',
-                  queueLength: newPath.length,
+                  queueLength: switchedState.movementQueue.length,
                   summary: `${actor.name} reroutes from ${oldDest?.name ?? '?'} to ${newDest?.name ?? '?'}`,
                 } as TraceEntry);
 
@@ -256,6 +290,16 @@ export function phaseMovement(state: GameState): Partial<GameState> {
 
     // Legacy destination-picking (generateMovementCandidates + computeBasePull)
     // removed — replaced by encounter-driven scoring in phaseAgentDecision.
+   } catch (err) {
+    events.push({
+      id: nextEventId(),
+      tick: state.tick,
+      type: 'phase_error' as any,
+      message: `Movement phase failed for ${actor.id}: ${err}`,
+      significance: 0.8,
+    });
+    // Continue to next agent — don't crash the loop
+   }
   }
 
   return {

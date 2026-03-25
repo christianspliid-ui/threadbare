@@ -55,7 +55,7 @@ export type EdgeType =
   | 'member_of'        // individual is member of group/faction
   | 'belongs_to'       // actor/location belongs to culture (culturalStrength, cultureLayer)
   | 'worships'         // actor worships god/ascendant
-  // Enchantment
+  // Enchantment — RESERVED: not yet implemented
   | 'enchanted'        // caster → target enchantment
   | 'warded'           // ritual site → location ward
   | 'cursed'           // source → target curse
@@ -72,6 +72,8 @@ export type EdgeType =
   | 'pursues'          // actor → ambition (priority, status, milestones)
   // Infrastructure
   | 'road'             // location ↔ location road/trail (roadType, hexPath, totalCost, pathLength)
+  // Encounter
+  | 'encounter_at'     // encounter_template → location (encounter available at location)
   // Economic
   | 'trades_with';     // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
 
