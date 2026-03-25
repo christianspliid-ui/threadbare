@@ -1,5 +1,6 @@
 import type { HexCoord, HexTile, TerrainType } from '../types';
 import { hexNeighbors } from '../lib/hexMath';
+import { hexKeyFromCoord } from '../lib/hexKey';
 
 /** Geographic feature categories for region clustering */
 export type RegionFeatureType =
@@ -235,7 +236,7 @@ export function detectRegionsBorderCost(
   // Build tile map
   const tileMap = new Map<string, HexTile>();
   for (const t of tiles) {
-    tileMap.set(`${t.coord.col},${t.coord.row}`, t);
+    tileMap.set(hexKeyFromCoord(t.coord), t);
   }
 
   // Build river-edge set: "col1,row1-col2,row2" (canonical: smaller key first)
@@ -244,8 +245,8 @@ export function detectRegionsBorderCost(
     for (let i = 0; i < rp.hexes.length - 1; i++) {
       const a = rp.hexes[i];
       const b = rp.hexes[i + 1];
-      const ka = `${a.col},${a.row}`;
-      const kb = `${b.col},${b.row}`;
+      const ka = hexKeyFromCoord(a);
+      const kb = hexKeyFromCoord(b);
       const edgeKey = ka < kb ? `${ka}-${kb}` : `${kb}-${ka}`;
       riverEdges.add(edgeKey);
     }
@@ -267,7 +268,7 @@ export function detectRegionsBorderCost(
   // Determine seeds: use province capitals, or auto-place if none
   const effectiveSeeds: HexCoord[] = [];
   for (const s of seedHexes) {
-    const key = `${s.col},${s.row}`;
+    const key = hexKeyFromCoord(s);
     if (tileMap.has(key)) {
       const t = tileMap.get(key)!;
       const feature = TERRAIN_TO_FEATURE[t.terrain];
@@ -292,7 +293,7 @@ export function detectRegionsBorderCost(
   // Seed all regions simultaneously
   for (let seedId = 0; seedId < effectiveSeeds.length; seedId++) {
     const seed = effectiveSeeds[seedId];
-    const key = `${seed.col},${seed.row}`;
+    const key = hexKeyFromCoord(seed);
     if (!hexRegionId.has(key) && tileMap.has(key)) {
       hexRegionId.set(key, seedId);
       pq.push({ cost: 0, hexKey: key, seedId });
@@ -310,7 +311,7 @@ export function detectRegionsBorderCost(
     const currentTile = tileMap.get(hexKey)!;
 
     for (const neighbor of hexNeighbors({ col, row })) {
-      const nKey = `${neighbor.col},${neighbor.row}`;
+      const nKey = hexKeyFromCoord(neighbor);
       if (hexRegionId.has(nKey)) continue;
       const nTile = tileMap.get(nKey);
       if (!nTile) continue;
@@ -318,7 +319,7 @@ export function detectRegionsBorderCost(
       if (!nFeature || nFeature === 'sea') continue;
 
       // Check river edge
-      const ka = hexKey;
+      const ka = entry.hexKey;
       const kb = nKey;
       const edgeKey = ka < kb ? `${ka}-${kb}` : `${kb}-${ka}`;
       const hasRiverEdge = riverEdges.has(edgeKey);
@@ -345,7 +346,7 @@ export function detectRegionsBorderCost(
     const adjacent = new Set<number>();
     for (const hex of hexes) {
       for (const neighbor of hexNeighbors(hex)) {
-        const nKey = `${neighbor.col},${neighbor.row}`;
+        const nKey = hexKeyFromCoord(neighbor);
         const nRegionId = hexRegionId.get(nKey);
         if (nRegionId !== undefined && nRegionId !== regionId) {
           adjacent.add(nRegionId);
@@ -394,8 +395,7 @@ export function detectRegionsBorderCost(
       const targetHexes = regionHexMap.get(bestNeighbor)!;
       for (const hex of hexes) {
         targetHexes.push(hex);
-        const key = `${hex.col},${hex.row}`;
-        hexRegionId.set(key, bestNeighbor);
+        hexRegionId.set(hexKeyFromCoord(hex), bestNeighbor);
       }
       regionHexMap.delete(regionId);
       mergeTarget.set(regionId, bestNeighbor);
@@ -412,7 +412,7 @@ export function detectRegionsBorderCost(
     if (hexes.length <= REGION_MAX_SIZE) continue;
 
     // Split into chunks of REGION_TARGET_SIZE via BFS from first hex
-    const hexSet = new Set(hexes.map(h => `${h.col},${h.row}`));
+    const hexSet = new Set(hexes.map(h => hexKeyFromCoord(h)));
     const remaining = [...hexes];
     finalRegions.delete(regionId);
 
@@ -421,13 +421,13 @@ export function detectRegionsBorderCost(
       const chunk: HexCoord[] = [];
       const visited = new Set<string>();
       const queue: HexCoord[] = [remaining[0]];
-      visited.add(`${remaining[0].col},${remaining[0].row}`);
+      visited.add(hexKeyFromCoord(remaining[0]));
 
       while (queue.length > 0 && chunk.length < chunkSize) {
         const hex = queue.shift()!;
         chunk.push(hex);
         for (const neighbor of hexNeighbors(hex)) {
-          const nKey = `${neighbor.col},${neighbor.row}`;
+          const nKey = hexKeyFromCoord(neighbor);
           if (!visited.has(nKey) && hexSet.has(nKey)) {
             visited.add(nKey);
             queue.push(neighbor);
@@ -435,15 +435,15 @@ export function detectRegionsBorderCost(
         }
       }
 
-      const chunkKeys = new Set(chunk.map(h => `${h.col},${h.row}`));
+      const chunkKeys = new Set(chunk.map(h => hexKeyFromCoord(h)));
       const newId = remaining === hexes ? regionId : nextId++;
       finalRegions.set(newId, chunk);
       for (const h of chunk) {
-        hexRegionId.set(`${h.col},${h.row}`, newId);
+        hexRegionId.set(hexKeyFromCoord(h), newId);
       }
 
       // Remove chunk from remaining
-      const remainingAfter = remaining.filter(h => !chunkKeys.has(`${h.col},${h.row}`));
+      const remainingAfter = remaining.filter(h => !chunkKeys.has(hexKeyFromCoord(h)));
       remaining.length = 0;
       remaining.push(...remainingAfter);
     }
@@ -463,7 +463,7 @@ export function detectRegionsBorderCost(
     const rawCenterRow = sumRow / hexes.length;
 
     // Snap to nearest hex IN the region
-    const hexInRegion = new Set(hexes.map(h => `${h.col},${h.row}`));
+    const hexInRegion = new Set(hexes.map(h => hexKeyFromCoord(h)));
     let bestHex = hexes[0];
     let bestDist = Infinity;
     for (const hex of hexes) {
@@ -477,8 +477,8 @@ export function detectRegionsBorderCost(
     // Determine dominant feature type for this region
     const featureCounts = new Map<RegionFeatureType, number>();
     for (const hex of hexes) {
-      const key = `${hex.col},${hex.row}`;
-      const t = tileMap.get(key);
+      const hKey = hexKeyFromCoord(hex);
+      const t = tileMap.get(hKey);
       if (!t) continue;
       const feature = TERRAIN_TO_FEATURE[t.terrain];
       if (!feature || feature === 'sea') continue;
@@ -492,7 +492,7 @@ export function detectRegionsBorderCost(
 
     // Update hexRegionId to use sequential output id
     for (const hex of hexes) {
-      hexRegionId.set(`${hex.col},${hex.row}`, outputId);
+      hexRegionId.set(hexKeyFromCoord(hex), outputId);
     }
 
     clusters.push({
@@ -522,7 +522,7 @@ export function detectRegions(tiles: HexTile[]): RegionCluster[] {
   // Build lookup: "col,row" → HexTile
   const tileMap = new Map<string, HexTile>();
   for (const t of tiles) {
-    tileMap.set(`${t.coord.col},${t.coord.row}`, t);
+    tileMap.set(hexKeyFromCoord(t.coord), t);
   }
 
   const visited = new Set<string>();
@@ -530,23 +530,23 @@ export function detectRegions(tiles: HexTile[]): RegionCluster[] {
   let nextId = 0;
 
   for (const t of tiles) {
-    const key = `${t.coord.col},${t.coord.row}`;
-    if (visited.has(key)) continue;
+    const tKey = hexKeyFromCoord(t.coord);
+    if (visited.has(tKey)) continue;
 
     const feature = TERRAIN_TO_FEATURE[t.terrain];
-    if (!feature) { visited.add(key); continue; }
+    if (!feature) { visited.add(tKey); continue; }
 
     // Flood-fill
     const queue: HexCoord[] = [t.coord];
     const clusterHexes: HexCoord[] = [];
-    visited.add(key);
+    visited.add(tKey);
 
     while (queue.length > 0) {
       const current = queue.shift()!;
       clusterHexes.push(current);
 
       for (const neighbor of hexNeighbors(current)) {
-        const nKey = `${neighbor.col},${neighbor.row}`;
+        const nKey = hexKeyFromCoord(neighbor);
         if (visited.has(nKey)) continue;
         const nTile = tileMap.get(nKey);
         if (!nTile) continue;

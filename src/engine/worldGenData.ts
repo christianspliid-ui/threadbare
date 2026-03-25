@@ -2,6 +2,7 @@ import type { HexTile, TerrainType } from '../types';
 import { generateGeoField } from './forceField';
 import { classifyBiome } from './terrain';
 import type { HexCoord } from '../types';
+import { hexKey } from '../lib/hexKey';
 
 // ─── River/Lake constants ────────────────────────────────────────
 export const RIVER_SOURCE_COUNT_MIN = 4;
@@ -93,7 +94,7 @@ export function createWorldGenData(
   for (let row = 0; row < rows; row++) {
     for (let col = 0; col < cols; col++) {
       const idx = row * cols + col;
-      const geo = geoField.get(`${col},${row}`);
+      const geo = geoField.get(hexKey(col, row));
       // RC-217: Fail-soft fallback — missing geo data produces ocean instead of crashing
       const safeGeo = geo ?? { elevation: 0.1, temperature: 0.5, moisture: 0.5 };
 

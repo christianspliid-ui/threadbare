@@ -11,6 +11,7 @@ import type { HexCoord, HexTile, TerrainType } from '../types';
 import { findHexPath } from './pathfinding';
 import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 import { getTerrainTax } from '../data/movement-content';
+import { hexKeyFromCoord } from '../lib/hexKey';
 
 /**
  * Find an existing location node at the given hex, or create a transient one.
@@ -107,13 +108,13 @@ export function buildHexMovementPath(
   // Build terrain lookup
   const terrainByHex = new Map<string, TerrainType>();
   for (const tile of tiles) {
-    terrainByHex.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+    terrainByHex.set(hexKeyFromCoord(tile.coord), tile.terrain);
   }
 
   // Ensure location nodes exist for each hex in the path
   const locationIds: string[] = [];
   for (const hex of hexPath.path) {
-    const terrain = terrainByHex.get(`${hex.col},${hex.row}`);
+    const terrain = terrainByHex.get(hexKeyFromCoord(hex));
     const locId = findOrCreateLocationAtHex(graph, hex, terrain);
     locationIds.push(locId);
   }

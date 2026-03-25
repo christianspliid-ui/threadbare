@@ -34,7 +34,5 @@ export const SCRY_SIGHT_RANGE = 0;
 export const SCRY_ESSENCE_PER_TICK = 2;
 export const MOVE_ESSENCE_COST = 0; // free for prototype
 
-/** Helper to make a visibility map key. */
-export function visKey(col: number, row: number): string {
-  return `${col},${row}`;
-}
+/** Helper to make a visibility map key. Re-exports hexKey for backward compatibility. */
+export { hexKey as visKey } from '../lib/hexKey';

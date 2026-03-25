@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { getHexColor } from '../palette/colorUtils';
 import { RENDER_ORDER } from './RenderLayers';
 import { isWaterTerrain } from '../../../engine/coastline';
@@ -114,8 +114,8 @@ export function createHexFillMesh(
   for (let i = 0; i < landTileIndices.length; i++) {
     const globalIdx = landTileIndices[i];
     const tile = tiles[globalIdx];
-    const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
-    matrix.setPosition(x, -y, 0);
+    const { x, y } = hexToWorld(tile.coord, HEX_CONSTANTS.HEX_SIZE);
+    matrix.setPosition(x, y, 0);
     landMesh.setMatrixAt(i, matrix);
 
     const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;
@@ -131,8 +131,8 @@ export function createHexFillMesh(
   for (let i = 0; i < waterTileIndices.length; i++) {
     const globalIdx = waterTileIndices[i];
     const tile = tiles[globalIdx];
-    const { x, y } = hexToPixel(tile.coord, HEX_CONSTANTS.HEX_SIZE);
-    matrix.setPosition(x, -y, 0);
+    const { x, y } = hexToWorld(tile.coord, HEX_CONSTANTS.HEX_SIZE);
+    matrix.setPosition(x, y, 0);
     waterMesh.setMatrixAt(i, matrix);
 
     const lakeId = lakeIds ? lakeIds[globalIdx] : undefined;

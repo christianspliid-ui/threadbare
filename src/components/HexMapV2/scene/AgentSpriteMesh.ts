@@ -33,6 +33,7 @@ import {
 } from '../agents/agentPortraitTextures';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { hexToWorldWithOffset } from '../../../lib/worldPosition';
 import type { AgentAnimationTarget } from '../agents/agentSpriteTarget';
 import { createAnimationTarget } from '../agents/agentSpriteTarget';
@@ -130,7 +131,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
   // Group agents by hex key for RING layout computation
   const hexGroups = new Map<string, AgentRenderData[]>();
   for (const agent of agents) {
-    const key = `${agent.hexCol},${agent.hexRow}`;
+    const key = hexKeyFn(agent.hexCol, agent.hexRow);
     if (!hexGroups.has(key)) hexGroups.set(key, []);
     hexGroups.get(key)!.push(agent);
   }
@@ -208,6 +209,9 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         },
         isRetinue: agent.isRetinue,
       });
+
+      // Build animation target wrapping the sprite
+      animationTargets.set(agent.id, createAnimationTarget(sprite));
     }
   }
 
@@ -223,7 +227,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
     spriteMap.clear();
   };
 
-  return { group, spriteMap, dispose };
+  return { group, spriteMap, animationTargets, dispose };
 }
 
 // ── Zoom Visibility ──────────────────────────────────────────────────────────
@@ -321,7 +325,7 @@ export function updateAgentPositions(
 ): void {
   const hexGroups = new Map<string, AgentRenderData[]>();
   for (const agent of agents) {
-    const key = `${agent.hexCol},${agent.hexRow}`;
+    const key = hexKeyFn(agent.hexCol, agent.hexRow);
     if (!hexGroups.has(key)) hexGroups.set(key, []);
     hexGroups.get(key)!.push(agent);
   }

@@ -1,5 +1,6 @@
 import type { TickEvent } from '../types/gameState';
 import type { VisibilityMap } from '../types/visibility';
+import { hexKeyFromCoord } from '../lib/hexKey';
 
 /**
  * Filter tick events by the player's line of sight.
@@ -12,7 +13,7 @@ export function filterEventsByVisibility(
 ): TickEvent[] {
   return events.filter(event => {
     if (!event.hexCoords) return true;
-    const key = `${event.hexCoords.col},${event.hexCoords.row}`;
+    const key = hexKeyFromCoord(event.hexCoords);
     return visibilityMap.get(key)?.state === 'visible';
   });
 }

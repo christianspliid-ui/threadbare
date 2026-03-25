@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import type { RiverPath } from '../../../engine/worldGenData';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { SimplexNoise } from '../../../lib/simplexNoise';
 import { WATER_PALETTE } from '../palette/waterPalette';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
@@ -185,13 +185,8 @@ function riverPathToWorldPoints(
 ): Point2D[] {
   if (hexes.length < 2) return [];
 
-  // 1. Convert hex coords to pixel centers (SVG y-down space)
-  const svgCenters: Point2D[] = hexes.map(h =>
-    hexToPixel(h, HEX_CONSTANTS.HEX_SIZE),
-  );
-
-  // 2. Y-flip: Three.js uses y-up, SVG uses y-down
-  const centers: Point2D[] = svgCenters.map(p => ({ x: p.x, y: -p.y }));
+  // 1. Convert hex coords to world-space centers (Y-flipped for Three.js)
+  const centers: Point2D[] = hexes.map(h => hexToWorld(h, HEX_CONSTANTS.HEX_SIZE));
 
   // 3. Route through edge midpoints (avoids hex center icons)
   let points = hexPathToEdgeMidpoints(centers);

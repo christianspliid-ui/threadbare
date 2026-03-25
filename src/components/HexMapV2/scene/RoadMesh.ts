@@ -14,7 +14,8 @@ import type { HexCoord, HexTile } from '../../../types';
 import { getTerrainTax } from '../../../data/movement-content';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { hexToWorld } from '../../../lib/worldPosition';
 
 // Re-export types from engine for backward compat
 export type { RoadPath, RoadType } from '../../../engine/roadNetwork';
@@ -112,10 +113,7 @@ function buildQuadStripFromPoints(
  * Convert a road path's hex coords to world-space 2D points (Y-flipped).
  */
 function roadPathToWorldPoints(path: HexCoord[]): Point2D[] {
-  return path.map(coord => {
-    const px = hexToPixel(coord, HEX_CONSTANTS.HEX_SIZE);
-    return { x: px.x, y: -px.y };
-  });
+  return path.map(coord => hexToWorld(coord, HEX_CONSTANTS.HEX_SIZE));
 }
 
 // ─── Deterministic hash for road wobble (NFP #3) ─────────────────────────────
@@ -159,21 +157,20 @@ function addTerrainWobble(
 
   for (let i = 0; i <= lastIdx; i++) {
     const coord = path[i];
-    const px = hexToPixel(coord, hexSize);
-    let wx = px.x;
-    let wy = -px.y;
+    const wp = hexToWorld(coord, hexSize);
+    let wx = wp.x;
+    let wy = wp.y;
 
     if (i > 0 && i < lastIdx) {
-      const prevPx = hexToPixel(path[i - 1], hexSize);
-      const nextPx = hexToPixel(path[i + 1], hexSize);
-      const dx = nextPx.x - prevPx.x;
-      const dy = -(nextPx.y - prevPx.y);
+      const prevW = hexToWorld(path[i - 1], hexSize);
+      const nextW = hexToWorld(path[i + 1], hexSize);
+      const dx = nextW.x - prevW.x;
+      const dy = nextW.y - prevW.y;
       const len = Math.sqrt(dx * dx + dy * dy) || 1;
       const perpX = -dy / len;
       const perpY = dx / len;
 
-      const terrainKey = `${coord.col},${coord.row}`;
-      const terrain = terrainMap.get(terrainKey) ?? 'grassland';
+      const terrain = terrainMap.get(hexKeyFn(coord.col, coord.row)) ?? 'grassland';
       const tax = getTerrainTax(terrain as import('../../../types').TerrainType);
       const wobbleFrac = wobbleMagnitudeForTax(tax === Infinity ? 0 : tax);
 
@@ -195,8 +192,7 @@ function addTerrainWobble(
     const a = waypoints[i];
     const b = waypoints[i + 1];
 
-    const terrainKey = `${to.col},${to.row}`;
-    const terrain = terrainMap.get(terrainKey) ?? 'grassland';
+    const terrain = terrainMap.get(hexKeyFn(to.col, to.row)) ?? 'grassland';
     const tax = getTerrainTax(terrain as import('../../../types').TerrainType);
     const wobbleFraction = wobbleMagnitudeForTax(tax === Infinity ? 0 : tax);
 
@@ -394,7 +390,7 @@ export function createRoadMesh(
   // Build terrain lookup for winding road generation
   const terrainMap = new Map<string, string>();
   for (const tile of tiles) {
-    terrainMap.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+    terrainMap.set(hexKeyFromCoord(tile.coord), tile.terrain);
   }
 
   const majorPaths = roadPaths.filter(p => p.roadType === 'major');

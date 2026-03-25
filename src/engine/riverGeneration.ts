@@ -1,6 +1,7 @@
 import type { HexCoord } from '../types';
 import type { WorldGenData } from './worldGenData';
 import { hexNeighbors, hexDistance } from '../lib/hexMath';
+import { hexKey } from '../lib/hexKey';
 import { mulberry32 } from '../lib/prng';
 import {
   RIVER_SOURCE_COUNT_MIN,
@@ -57,7 +58,7 @@ function routeRiver(
 
   const path: HexCoord[] = [{ col: startCol, row: startRow }];
   const visited = new Set<string>();
-  visited.add(`${startCol},${startRow}`);
+  visited.add(hexKey(startCol, startRow));
 
   let currentCol = startCol;
   let currentRow = startRow;
@@ -88,9 +89,9 @@ function routeRiver(
     let bestScore = Infinity;
 
     for (const n of neighbors) {
-      const key = `${n.col},${n.row}`;
-      if (visited.has(key)) continue;
-      if (globalVisited?.has(key)) continue;
+      const nk = hexKey(n.col, n.row);
+      if (visited.has(nk)) continue;
+      if (globalVisited?.has(nk)) continue;
       const nIdx = n.row * cols + n.col;
       let score = elev[nIdx];
 
@@ -103,7 +104,7 @@ function routeRiver(
         // reduce its score to attract the river toward confluence
         const nNeighbors = hexNeighbors(n).filter(nn => inBounds(nn.col, nn.row, cols, rows));
         for (const nn of nNeighbors) {
-          const nnKey = `${nn.col},${nn.row}`;
+          const nnKey = hexKey(nn.col, nn.row);
           if (visited.has(nnKey)) continue;
           const nnIdx = nn.row * cols + nn.col;
           if (hasRiver[nnIdx] === 1) {
@@ -122,9 +123,9 @@ function routeRiver(
     // If no strictly downhill neighbor, try near-flat (plateau traversal)
     if (!bestNeighbor || bestScore >= currentElev) {
       for (const n of neighbors) {
-        const key = `${n.col},${n.row}`;
-        if (visited.has(key)) continue;
-        if (globalVisited?.has(key)) continue;
+        const nk = hexKey(n.col, n.row);
+        if (visited.has(nk)) continue;
+        if (globalVisited?.has(nk)) continue;
         const nIdx = n.row * cols + n.col;
         if (elev[nIdx] <= currentElev + 0.01) {
           bestNeighbor = n;
@@ -136,7 +137,7 @@ function routeRiver(
     if (!bestNeighbor) break;
 
     path.push(bestNeighbor);
-    visited.add(`${bestNeighbor.col},${bestNeighbor.row}`);
+    visited.add(hexKey(bestNeighbor.col, bestNeighbor.row));
     currentCol = bestNeighbor.col;
     currentRow = bestNeighbor.row;
 
@@ -247,7 +248,7 @@ export function generateRivers(data: WorldGenData): void {
 
       // Find a fork direction: a neighbor that isn't on the main path
       // and is downhill, but in a different direction
-      const mainPathSet = new Set(path.map(h => `${h.col},${h.row}`));
+      const mainPathSet = new Set(path.map(h => hexKey(h.col, h.row)));
       const forkPath = routeRiver(data, hex.col, hex.row, mainPathSet, rng);
 
       if (forkPath.length < 2) continue;
@@ -363,7 +364,7 @@ function routeRiverNoConfluence(
 
   const path: HexCoord[] = [{ col: startCol, row: startRow }];
   const visited = new Set<string>();
-  visited.add(`${startCol},${startRow}`);
+  visited.add(hexKey(startCol, startRow));
 
   let currentCol = startCol;
   let currentRow = startRow;
@@ -391,8 +392,8 @@ function routeRiverNoConfluence(
     let bestScore = Infinity;
 
     for (const n of neighbors) {
-      const key = `${n.col},${n.row}`;
-      if (visited.has(key)) continue;
+      const nk = hexKey(n.col, n.row);
+      if (visited.has(nk)) continue;
       const nIdx = n.row * cols + n.col;
       const score = elev[nIdx];
       if (score < bestScore) {
@@ -403,8 +404,8 @@ function routeRiverNoConfluence(
 
     if (!bestNeighbor || bestScore >= currentElev) {
       for (const n of neighbors) {
-        const key = `${n.col},${n.row}`;
-        if (visited.has(key)) continue;
+        const nk = hexKey(n.col, n.row);
+        if (visited.has(nk)) continue;
         const nIdx = n.row * cols + n.col;
         if (elev[nIdx] <= currentElev + 0.01) {
           bestNeighbor = n;
@@ -416,7 +417,7 @@ function routeRiverNoConfluence(
     if (!bestNeighbor) break;
 
     path.push(bestNeighbor);
-    visited.add(`${bestNeighbor.col},${bestNeighbor.row}`);
+    visited.add(hexKey(bestNeighbor.col, bestNeighbor.row));
     currentCol = bestNeighbor.col;
     currentRow = bestNeighbor.row;
 

@@ -217,6 +217,17 @@ export const FADE_RANGE = 0.2;
  * @param threshold  - Tier boundary k value
  * @param fadeRange  - Half-width of the cross-fade zone (use FADE_RANGE as default)
  */
+/**
+ * Convenience: check whether a layer should be visible at a given zoom tier.
+ * Reads directly from ZOOM_VISIBILITY_MATRIX.
+ */
+export function isLayerVisible(layer: LayerName, tier: ZoomTier): boolean;
+export function isLayerVisible(layer: LayerName, k: number): boolean;
+export function isLayerVisible(layer: LayerName, tierOrK: ZoomTier | number): boolean {
+  const tier = typeof tierOrK === 'number' ? getZoomTier(tierOrK) : tierOrK;
+  return ZOOM_VISIBILITY_MATRIX[layer][tier];
+}
+
 export function getFadeAlpha(k: number, threshold: number, fadeRange: number): number {
   const low = threshold - fadeRange;
   const high = threshold + fadeRange;

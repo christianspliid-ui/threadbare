@@ -22,6 +22,7 @@
 import type { HexCoord } from '../types';
 import type { RegionCluster, BaronyRegion, KingdomRegion } from './regionTypes';
 import type { Province } from './worldgen/types';
+import { hexKey, hexKeyFromCoord } from '../lib/hexKey';
 
 // ─── Name generation constants (NFP #1: Tunability) ──────────────────────────
 
@@ -117,7 +118,7 @@ export function assignPoliticalRegions(
     if (provinceId < 0) continue;
     const col = idx % cols;
     const row = Math.floor(idx / cols);
-    provinceHexSets.get(provinceId)?.add(`${col},${row}`);
+    provinceHexSets.get(provinceId)?.add(hexKey(col, row));
   }
 
   // ── Step 2: Create one barony per province ──────────────────────────────────
@@ -147,7 +148,7 @@ export function assignPoliticalRegions(
     for (const cluster of geographicRegions) {
       let inProvince = 0;
       for (const hex of cluster.hexes) {
-        if (provinceHexSet.has(`${hex.col},${hex.row}`)) inProvince++;
+        if (provinceHexSet.has(hexKeyFromCoord(hex))) inProvince++;
       }
       // Majority of the cluster's hexes in this province
       if (inProvince > 0 && inProvince >= cluster.hexes.length / 2) {
@@ -219,7 +220,7 @@ export function assignPoliticalRegions(
     for (const baronyId of baronyIds) {
       const barony = baronies.find(b => b.id === baronyId)!;
       for (const hex of barony.hexes) {
-        hexKingdomId.set(`${hex.col},${hex.row}`, kingdomId);
+        hexKingdomId.set(hexKeyFromCoord(hex), kingdomId);
       }
     }
 
