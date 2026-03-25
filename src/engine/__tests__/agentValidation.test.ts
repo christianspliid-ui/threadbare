@@ -204,7 +204,7 @@ describe('validateAgentIntegrity', () => {
 
     const result = validateAgentIntegrity(graph, 'agent.1');
     expect(result.checks.edgeRelationships).toBe(false);
-    expect(result.warnings.some(w => w.includes("type 'location'"))).toBe(true);
+    expect(result.warnings.some(w => w.includes('member_of') && w.includes('location'))).toBe(true);
   });
 
   it('born agent with all 10 axiological pairs passes profile check', () => {

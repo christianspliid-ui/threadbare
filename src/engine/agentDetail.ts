@@ -28,6 +28,15 @@ import { getPortraitUrl } from '../data/portrait-assets';
 import { getDivineInfluences } from './interventionEffects';
 import { getCurrentStrength } from './decayCurve';
 import type { InterventionType, DivineInfluenceEntry } from '../types/dream';
+import {
+  getAgentLocationId,
+  getAgentFaction,
+  getAgentBonds,
+  getIncomingBonds,
+  getActorTraits,
+  getActorCultures,
+  getAgentAmbitions,
+} from './graphQueries';
 import type { SphereName } from '../types';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
@@ -218,10 +227,7 @@ export function getAgentDetail(
   const profile = (props.axiologicalProfile as AxiologicalProfile) || {} as AxiologicalProfile;
   const domainCapabilities = (props.domainCapabilities as Record<ReachDomain, number>) || {} as Record<ReachDomain, number>;
   // Resolve location via located_at edge (authoritative), fallback to legacy property
-  const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-  const locationId = locEdges.length > 0
-    ? locEdges[0].target
-    : ((props.locationId as string) || '');
+  const locationId = getAgentLocationId(graph, agentId) ?? ((props.locationId as string) || '');
 
   let locationName = '(unknown)';
   if (locationId) {
@@ -230,11 +236,8 @@ export function getAgentDetail(
   }
 
   let factionName: string | null = null;
-  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
-  if (memberEdges.length > 0) {
-    const facNode = graph.getNode(memberEdges[0].target);
-    if (facNode) factionName = facNode.name;
-  }
+  const factionResult = getAgentFaction(graph, agentId);
+  if (factionResult) factionName = factionResult.faction.name;
 
   const archetypeId = props.narrativeArchetype as string | undefined;
   const archetype = archetypeId ? getArchetype(archetypeId) ?? null : null;
@@ -255,19 +258,15 @@ export function getAgentDetail(
     return { pair, value, label };
   });
 
-  const relEdges = graph.getOutgoingEdges(agentId, 'relates_to');
-  const bonds: BondSummary[] = relEdges
-    .map(edge => {
-      const rProps = edge.properties as Record<string, unknown>;
-      const targetNode = graph.getNode(edge.target);
-      return {
-        targetId: edge.target,
-        targetName: targetNode?.name ?? '(unknown)',
-        sentiment: (rProps.sentiment as number) ?? 0,
-        strength: (rProps.strength as number) ?? 0,
-        basis: (rProps.basis as string) ?? 'unknown',
-      };
-    })
+  const bondEntries = getAgentBonds(graph, agentId);
+  const bonds: BondSummary[] = bondEntries
+    .map(b => ({
+      targetId: b.agent.id,
+      targetName: b.agent.name ?? '(unknown)',
+      sentiment: b.sentiment,
+      strength: (b.edge.properties.strength as number) ?? 0,
+      basis: (b.edge.properties.basis as string) ?? 'unknown',
+    }))
     .sort((a, b) => b.strength - a.strength)
     .slice(0, 5);
 
@@ -277,12 +276,10 @@ export function getAgentDetail(
 
   // Gather interaction logs from all relates_to edges (both directions)
   const allInteractions: InteractionRecord[] = [];
-  const outRelates = graph.getOutgoingEdges(agentId, 'relates_to');
-  const inRelates = graph.getIncomingEdges(agentId, 'relates_to');
-
-  for (const edge of [...outRelates, ...inRelates]) {
-    const edgeProps = edge.properties as Record<string, unknown>;
-    const log = edgeProps.interactionLog as InteractionRecord[] | undefined;
+  const outBonds = getAgentBonds(graph, agentId);
+  const inBonds = getIncomingBonds(graph, agentId);
+  for (const b of [...outBonds, ...inBonds]) {
+    const log = b.edge.properties.interactionLog as InteractionRecord[] | undefined;
     if (log && Array.isArray(log)) {
       allInteractions.push(...log);
     }
@@ -347,15 +344,7 @@ export function getAgentDetail(
  * @private
  */
 function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
-  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
-  const traitNames: string[] = [];
-  for (const edge of traitEdges) {
-    const traitNode = graph.getNode(edge.target);
-    if (traitNode) {
-      traitNames.push(traitNode.name);
-    }
-  }
-  return traitNames;
+  return getActorTraits(graph, agentId).map(t => t.trait.name);
 }
 
 /**
@@ -364,16 +353,8 @@ function getAgentTraitNames(graph: WorldGraph, agentId: string): string[] {
  * @private
  */
 function getAgentCultureName(graph: WorldGraph, agentId: string): string | undefined {
-  const cultureEdges = graph.getOutgoingEdges(agentId, 'belongs_to')
-    .filter(e => {
-      const node = graph.getNode(e.target);
-      return node?.type === 'actor' && (node.properties as Record<string, unknown>).actorType === 'culture';
-    });
-
-  if (cultureEdges.length === 0) return undefined;
-
-  const cultureNode = graph.getNode(cultureEdges[0].target);
-  return cultureNode?.name;
+  const cultures = getActorCultures(graph, agentId);
+  return cultures.length > 0 ? cultures[0].culture.name : undefined;
 }
 
 /**
@@ -382,26 +363,21 @@ function getAgentCultureName(graph: WorldGraph, agentId: string): string | undef
  * @private
  */
 function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
-  const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
-  const activeEdges = pursuesEdges.filter(
-    e => (e.properties.status as string) === 'active',
-  );
+  const ambitionEntries = getAgentAmbitions(graph, agentId)
+    .filter(a => a.status === 'active');
 
   // TODO: gate by familiarity tier when PROTOTYPE_INTENT_VISIBLE = false
   const intents: ActiveIntent[] = [];
 
-  for (const edge of activeEdges) {
-    const ambitionNode = graph.getNode(edge.target);
-    if (!ambitionNode) continue; // fail-soft
-
-    const templateId = ambitionNode.properties.templateId as string;
+  for (const entry of ambitionEntries) {
+    const templateId = entry.ambition.properties.templateId as string;
     if (!templateId) continue; // fail-soft
 
     const template = AMBITION_TEMPLATES.find(t => t.id === templateId);
     if (!template) continue; // fail-soft
 
-    const completedMilestoneIds = (edge.properties.completedMilestones as string[]) ?? [];
-    const priority = (edge.properties.priority as 'primary' | 'secondary') ?? 'secondary';
+    const completedMilestoneIds = (entry.edge.properties.completedMilestones as string[]) ?? [];
+    const priority = (entry.edge.properties.priority as 'primary' | 'secondary') ?? 'secondary';
 
     // Detect reactive templates by presence of triggerEvent field
     const isReactive = 'triggerEvent' in template;

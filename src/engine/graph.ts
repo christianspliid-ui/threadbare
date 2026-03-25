@@ -5,6 +5,7 @@
  * and adjacency index for fast neighborhood queries.
  */
 import type { GraphNode, GraphEdge, GraphMutation, NodeType, EdgeType } from '../types/graph';
+import { EDGE_SCHEMA, matchesNodeType, GRAPH_SCHEMA_VALIDATION_ENABLED } from '../types/edgeSchema';
 
 export class WorldGraph {
   private nodes = new Map<string, GraphNode>();
@@ -73,6 +74,35 @@ export class WorldGraph {
     if (!this.nodes.has(edge.target)) {
       throw new Error(`Target node not found: ${edge.target}`);
     }
+
+    // Dev-mode schema validation — warn on constraint violations, never throw
+    if (import.meta.env?.DEV && GRAPH_SCHEMA_VALIDATION_ENABLED) {
+      const schema = EDGE_SCHEMA[edge.type as EdgeType];
+      if (!schema) {
+        console.warn(`[GraphSchema] Unknown edge type: "${edge.type}". Not in EDGE_SCHEMA.`);
+      } else {
+        const sourceNode = this.nodes.get(edge.source);
+        const targetNode = this.nodes.get(edge.target);
+        if (sourceNode && !matchesNodeType(sourceNode.type, schema.sourceNodeType)) {
+          console.warn(
+            `[GraphSchema] Edge "${edge.type}" source should be ${JSON.stringify(schema.sourceNodeType)}, got "${sourceNode.type}" (edge ${edge.id})`,
+          );
+        }
+        if (targetNode && !matchesNodeType(targetNode.type, schema.targetNodeType)) {
+          console.warn(
+            `[GraphSchema] Edge "${edge.type}" target should be ${JSON.stringify(schema.targetNodeType)}, got "${targetNode.type}" (edge ${edge.id})`,
+          );
+        }
+        for (const prop of schema.requiredProperties) {
+          if (!(prop in edge.properties)) {
+            console.warn(
+              `[GraphSchema] Edge "${edge.type}" missing required property: "${prop}" (edge ${edge.id})`,
+            );
+          }
+        }
+      }
+    }
+
     this.edges.set(edge.id, { ...edge, properties: { ...edge.properties } });
     this.outgoing.get(edge.source)!.add(edge.id);
     this.incoming.get(edge.target)!.add(edge.id);

@@ -40,6 +40,7 @@ import { IDLE_SCORE_THRESHOLD } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
+import { getAgentLocationId } from './graphQueries';
 
 /**
  * Filter out candidates whose encounter template is on cooldown for this agent.
@@ -134,8 +135,7 @@ export function phaseAgentDecision(
           const currentScore = movementState.motivationPull ?? 0;
 
           // Get agent location for distance calculation
-          const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-          const agentLocId = locEdges.length > 0 ? locEdges[0].target : undefined;
+          const agentLocId = getAgentLocationId(graph, agentId);
 
           if (agentLocId) {
             const allEntries = encounterCache.getAllEntries();
@@ -196,8 +196,7 @@ export function phaseAgentDecision(
           }
         } else {
           // Target invalid — reroute unconditionally to any available destination
-          const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-          const agentLocId = locEdges.length > 0 ? locEdges[0].target : undefined;
+          const agentLocId = getAgentLocationId(graph, agentId);
 
           if (agentLocId) {
             const currentHexPos = movementState.currentHexPosition ?? { col: 0, row: 0 };
@@ -241,13 +240,12 @@ export function phaseAgentDecision(
       }
 
       // Get agent location — check located_at outgoing, then contains outgoing
-      // (worldSeed uses contains: source=agent, target=location)
-      const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
-      const outContains = graph.getOutgoingEdges(agentId, 'contains');
-
-      let locationId: string | undefined;
-      if (locEdges.length > 0) locationId = locEdges[0].target;
-      else if (outContains.length > 0) locationId = outContains[0].target;
+      // (worldSeed uses contains: source=agent, target=location — legacy fallback)
+      let locationId = getAgentLocationId(graph, agentId);
+      if (!locationId) {
+        const outContains = graph.getOutgoingEdges(agentId, 'contains');
+        if (outContains.length > 0) locationId = outContains[0].target;
+      }
 
       if (!locationId) continue;
 
@@ -337,8 +335,14 @@ export function phaseAgentDecision(
           const graphPath = findShortestPath(graph, agentId, locationId, sel.entry.locationId);
           if (graphPath && graphPath.roadSegments && graphPath.roadSegments.length > 0 && graphPath.path.length > 0) {
             // Road-aware path: use graph-level path with road segments
-            const firstEdgeCost = graphPath.roadSegments[0]
-              ? graphPath.roadSegments[0].discountedCost / Math.max(1, graphPath.roadSegments[0].hexPath.length)
+            // Find the road segment that matches the FIRST leg (start → path[0]),
+            // not just roadSegments[0] which may be for a later leg.
+            const firstSeg = graphPath.roadSegments.find(
+              seg => (seg.fromId === locationId && seg.toId === graphPath.path[0]) ||
+                     (seg.toId === locationId && seg.fromId === graphPath.path[0]),
+            );
+            const firstEdgeCost = firstSeg
+              ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length)
               : computeEdgeCost(graph, agentId, locationId, graphPath.path[0]).totalCost;
             movState = initMovementState(
               sel.entry.locationId,

@@ -18,6 +18,7 @@ import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/m
 import type { AxiologicalProfile } from '../types/agent';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, RoadHexTransitionTrace } from '../types/trace';
+import { getAvatarAscendant, getAgentLocationId } from './graphQueries';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -58,7 +59,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
     const actorId = actor.id;
 
     // Detect if this actor is the player's avatar (has outgoing avatar_of edge)
-    const isAvatar = state.graph.getOutgoingEdges(actorId, 'avatar_of').length > 0;
+    const isAvatar = getAvatarAscendant(state.graph, actorId) != null;
 
     // Get current movement state (or undefined if not started)
     const movementState = actor.properties?.movementState as MovementState | undefined;
@@ -172,9 +173,8 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           result.updatedState.movementQueue.length > 0 &&
           (state.tick - (result.updatedState.lastDecisionTick ?? 0) >= DECISION_REEVALUATION_TICKS)) {
         // Get current location for re-evaluation
-        const currentLocEdges = state.graph.getOutgoingEdges(actorId, 'located_at');
-        if (currentLocEdges.length > 0) {
-          const currentLocId = currentLocEdges[0].target;
+        const currentLocId = getAgentLocationId(state.graph, actorId);
+        if (currentLocId) {
           const profile = (actor.properties?.axiologicalProfile as AxiologicalProfile) || {
             mercy_ruthlessness: 0,
             asceticism_extravagance: 0,
