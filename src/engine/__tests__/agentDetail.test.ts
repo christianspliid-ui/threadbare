@@ -85,7 +85,7 @@ describe('getAgentDetail', () => {
     graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
     for (let i = 2; i <= 7; i++) {
       graph.addNode({ id: `agent.${i}`, type: 'actor', name: `Agent ${i}`, properties: { actorType: 'individual' } });
-      graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i}`, type: 'relationship', properties: { sentiment: (i % 2 === 0) ? 0.5 : -0.3, strength: 0.4 + i * 0.05, basis: 'friendship' } });
+      graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i}`, type: 'relates_to', properties: { sentiment: (i % 2 === 0) ? 0.5 : -0.3, strength: 0.4 + i * 0.05, basis: 'friendship' } });
     }
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.topBonds.length).toBeLessThanOrEqual(5);
@@ -287,7 +287,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
     for (let i = 1; i <= 2; i++) {
       graph.addNode({ id: `agent.${i + 1}`, type: 'actor', name: `Agent ${i + 1}`, properties: { actorType: 'individual' } });
-      graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i + 1}`, type: 'relationship', properties: { sentiment: 0.5, strength: 0.7 - i * 0.1, basis: 'friendship' } });
+      graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i + 1}`, type: 'relates_to', properties: { sentiment: 0.5, strength: 0.7 - i * 0.1, basis: 'friendship' } });
     }
     graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
 

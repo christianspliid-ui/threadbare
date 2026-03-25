@@ -116,7 +116,7 @@ export function phaseEconomicChronicle(state: GameState): Partial<GameState> {
       : 'wealth_tier_down';
 
     // Resolve location name for context
-    const locationEdges = graph.getOutgoingEdges(agent.id, 'located_in');
+    const locationEdges = graph.getOutgoingEdges(agent.id, 'located_at');
     const locationId = locationEdges.length > 0 ? locationEdges[0].target : undefined;
     const locationNode = locationId ? graph.getNode(locationId) : undefined;
 
@@ -213,7 +213,7 @@ function buildContextFromEvent(
     if (actorResolved.hexCoords) context.hexCoords = actorResolved.hexCoords;
 
     // For location-based triggers, resolve the actor's location
-    const locationEdges = graph.getOutgoingEdges(event.actorId, 'located_in');
+    const locationEdges = graph.getOutgoingEdges(event.actorId, 'located_at');
     if (locationEdges.length > 0) {
       const locNode = graph.getNode(locationEdges[0].target);
       if (locNode) {

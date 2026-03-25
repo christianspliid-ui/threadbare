@@ -255,7 +255,7 @@ export function getAgentDetail(
     return { pair, value, label };
   });
 
-  const relEdges = graph.getOutgoingEdges(agentId, 'relationship');
+  const relEdges = graph.getOutgoingEdges(agentId, 'relates_to');
   const bonds: BondSummary[] = relEdges
     .map(edge => {
       const rProps = edge.properties as Record<string, unknown>;

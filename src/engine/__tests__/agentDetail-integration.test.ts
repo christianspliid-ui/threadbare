@@ -58,7 +58,7 @@ describe('agent detail integration', () => {
       id: 'rel.1',
       source: 'agent.1',
       target: 'agent.2',
-      type: 'relationship',
+      type: 'relates_to',
       properties: { sentiment: -0.4, strength: 0.7, basis: 'rivalry' },
     });
 
