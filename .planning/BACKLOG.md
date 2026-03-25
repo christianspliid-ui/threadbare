@@ -16,6 +16,22 @@
 
 ---
 
+## ✅ HexMapV2 Quick Wins — Consistency & Type Safety (completed 2026-03-25)
+
+---
+
+## 💡 HexMapV2 Medium-Term Improvements
+
+From architectural review. Three items with real architectural payoff:
+1. Extract custom hooks from HexMapV2.tsx God component (useAgentAnimations, useFogCulling, useZoomLayerVisibility)
+2. Convert signifier sprites to InstancedMesh with texture atlas (~4K draw calls → ~20)
+3. Single sprite per agent with material swap on zoom change (memory halving)
+
+**Needs design:** Yes — hook extraction needs interface design; instancing needs texture atlas pipeline
+**Review:** Obsidian → `Systems/HexMapV2 Architectural Review.md`
+
+---
+
 ## 🔲 Intent Visibility — Agent Model & Character Sheet
 
 Surface agent ambitions and priorities in the character sheet so players can empathize with what agents are pursuing. IntentSection component for AgentProfileModal/AgentDetailPanel, single-line summary in AgentInfoCard, knowledge-gated reveal structure.

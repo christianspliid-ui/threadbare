@@ -24,3 +24,20 @@ export const RENDER_ORDER = {
 } as const;
 
 export type RenderLayerName = keyof typeof RENDER_ORDER;
+
+/** Z-positions for each layer. Monotonic with RENDER_ORDER.
+ *  All meshes MUST use these values instead of local Z constants. */
+export const LAYER_Z = {
+  HEX_FILL:        0.000,
+  COASTLINE:       0.010,
+  GRID:            0.015,
+  ELEVATION_TICKS: 0.020,
+  RIVERS:          0.025,
+  ROADS:           0.030,
+  BORDERS:         0.035,
+  SIGNIFIERS:      0.070,
+  LOCATIONS:       0.080,
+  TRAILS:          0.085,
+  AGENTS:          0.090,
+  EVENTS:          0.100,
+} as const;

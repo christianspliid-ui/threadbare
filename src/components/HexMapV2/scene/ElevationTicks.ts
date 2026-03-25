@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import { hexToPixel, hexNeighbors } from '../../../lib/hexMath';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
 /**
@@ -22,19 +22,6 @@ export const ELEVATION_TICK_CONSTANTS = {
   /** Tick mark opacity (0–1). */
   TICK_OPACITY:      0.7,
 } as const;
-
-// ── Water terrain types (never receive elevation ticks) ──────────────────────
-
-const WATER_TYPES = new Set<string>([
-  'ocean',
-  'deep_ocean',
-  'tropical_ocean',
-  'coastal_shallows',
-  'coast',
-  'lake',
-  'river',
-  'reef',
-]);
 
 // ─── Hex-pair deduplication key ────────────────────────────────────────────────
 
@@ -165,10 +152,10 @@ export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
     const b1y = t1y + downY * tickLen;
 
     positions.push(
-      t0x, t0y, 0,
-      t1x, t1y, 0,
-      b0x, b0y, 0,
-      b1x, b1y, 0,
+      t0x, t0y, LAYER_Z.ELEVATION_TICKS,
+      t1x, t1y, LAYER_Z.ELEVATION_TICKS,
+      b0x, b0y, LAYER_Z.ELEVATION_TICKS,
+      b1x, b1y, LAYER_Z.ELEVATION_TICKS,
     );
     indices.push(
       vertexIndex, vertexIndex + 1, vertexIndex + 2,

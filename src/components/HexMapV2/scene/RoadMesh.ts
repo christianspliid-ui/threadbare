@@ -12,7 +12,7 @@
 import * as THREE from 'three';
 import type { HexCoord, HexTile } from '../../../types';
 import { getTerrainTax } from '../../../data/movement-content';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { hexToPixel } from '../../../lib/hexMath';
 
@@ -31,7 +31,7 @@ import type { RoadPath } from '../../../engine/roadNetwork';
  * | TRAIL_COLOR        | '#4a3d2c'   | Darker earth — 25% brightness (per UI-SPEC)   |
  * | MAJOR_HALF_WIDTH   | 0.4         | Half-width of major roads in world units       |
  * | TRAIL_HALF_WIDTH   | 0.1         | Half-width of trail roads in world units       |
- * | Z_OFFSET           | 0.025       | Between coastline (0.01) and rivers (0.03)    |
+ * | Z_OFFSET           | LAYER_Z.ROADS | From centralized LAYER_Z (monotonic with renderOrder) |
  * | TRAIL_DASH_SIZE    | 0.5         | World units per dash segment                  |
  * | TRAIL_GAP_SIZE     | 0.5         | World units per gap between dashes            |
  */
@@ -40,7 +40,7 @@ export const ROAD_CONSTANTS = {
   TRAIL_COLOR:       '#4a3d2c',
   MAJOR_HALF_WIDTH:  0.4,
   TRAIL_HALF_WIDTH:  0.1,
-  Z_OFFSET:          0.025,
+  Z_OFFSET:          LAYER_Z.ROADS,
   TRAIL_DASH_SIZE:   0.5,
   TRAIL_GAP_SIZE:    0.5,
   // ── Winding road constants ──────────────────────────────────────────────────
