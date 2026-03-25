@@ -405,6 +405,103 @@ describe('Orchestrator', () => {
   });
 });
 
+describe('Movement integration via orchestrator', () => {
+  beforeEach(() => {
+    resetEventCounter();
+  });
+
+  it('agent with pre-set movement queue advances after a tick', () => {
+    const state = createTestGameState();
+
+    // Find an individual agent
+    const agents = state.graph.getNodesByType('actor')
+      .filter(n => n.properties?.actorType === 'individual');
+    expect(agents.length).toBeGreaterThan(0);
+
+    const agent = agents[0];
+    const agentLocEdges = state.graph.getOutgoingEdges(agent.id, 'located_at');
+    expect(agentLocEdges.length).toBeGreaterThan(0);
+    const startLocId = agentLocEdges[0].target;
+
+    // Find an adjacent location from the start
+    const adjEdges = state.graph.getOutgoingEdges(startLocId, 'adjacent');
+    if (adjEdges.length === 0) return; // skip if isolated (shouldn't happen with seeded world)
+    const destLocId = adjEdges[0].target;
+
+    // Set up a movement queue manually
+    const movementState = {
+      destinationId: destLocId,
+      movementQueue: [destLocId],
+      ticksAccumulated: 0,
+      currentEdgeCost: 1, // Will traverse in 1 tick
+      lastDecisionTick: 0,
+      movementHistory: [],
+    };
+
+    state.graph.updateNode(agent.id, {
+      properties: { ...agent.properties, movementState },
+    });
+
+    // Run one tick
+    const next = runTick(state);
+
+    // The agent should have progressed — either moved or accumulated ticks
+    const updatedAgent = next.graph.getNode(agent.id)!;
+    const updatedMs = updatedAgent.properties.movementState as any;
+    expect(updatedMs).toBeDefined();
+
+    // Either the queue shrank (agent moved) or ticks accumulated
+    const queueShrank = updatedMs.movementQueue.length < movementState.movementQueue.length;
+    const ticksGrew = updatedMs.ticksAccumulated > 0;
+    expect(queueShrank || ticksGrew).toBe(true);
+  });
+
+  it('agent arrives at destination after enough ticks', () => {
+    const state = createTestGameState();
+
+    const agents = state.graph.getNodesByType('actor')
+      .filter(n => n.properties?.actorType === 'individual');
+    const agent = agents[0];
+    const agentLocEdges = state.graph.getOutgoingEdges(agent.id, 'located_at');
+    const startLocId = agentLocEdges[0].target;
+
+    const adjEdges = state.graph.getOutgoingEdges(startLocId, 'adjacent');
+    if (adjEdges.length === 0) return;
+    const destLocId = adjEdges[0].target;
+
+    // Set up movement with low cost so agent arrives quickly
+    const movementState = {
+      destinationId: destLocId,
+      movementQueue: [destLocId],
+      ticksAccumulated: 0,
+      currentEdgeCost: 1,
+      lastDecisionTick: 0,
+      movementHistory: [],
+    };
+
+    state.graph.updateNode(agent.id, {
+      properties: { ...agent.properties, movementState },
+    });
+
+    // Run multiple ticks to ensure arrival
+    let s = state;
+    for (let i = 0; i < 10; i++) {
+      s = runTick(s);
+    }
+
+    const finalAgent = s.graph.getNode(agent.id)!;
+    const finalMs = finalAgent.properties.movementState as any;
+
+    // Agent should have arrived (empty queue)
+    expect(finalMs.movementQueue).toHaveLength(0);
+
+    // Agent's located_at should point to destination
+    const locEdges = s.graph.getOutgoingEdges(agent.id, 'located_at');
+    expect(locEdges.length).toBe(1);
+    expect(locEdges[0].target).toBe(destLocId);
+  });
+});
+
 describe('Full game loop integration', () => {
   it('runs a complete cycle: play → doom expires → twilight → harvest → transition → new cycle', () => {
     resetEventCounter();
