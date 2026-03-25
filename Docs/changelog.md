@@ -5,6 +5,7 @@ Full changelog for The Fantasy World Simulator. Referenced from CLAUDE.md.
 ### Recent Changes
 
 | Date | Where | What changed | Why |
+| 2026-03-25 | src/components/HexMapV2/scene/RoadMesh.ts | Trails now use terrain-aware wobble + Catmull-Rom spline smoothing at 60% intensity (TRAIL_WOBBLE_SCALE) | Trails were straight hex-to-hex lines while roads had organic curves |
 | 2026-03-24 | ZoomVisibilityMatrix, AgentSpriteMesh, agentAnimationState, HexMapV2, GameView, retinue.ts, agentDetail.ts | Restored V1 agent dot behavior: small dots at regional zoom, portraits hero-local only; bezier hops use ring slot offsets; settle tweens for ring rearrangement; eye icon Y-flip fix; located_at edge resolution for retinue/agentDetail | Agents were too large (portraits at all zoom levels), didn't animate from ring slot to ring slot, eye icons zoomed to wrong position |
 | 2026-03-23 | src/components/HexMapV2/HexMapV2.tsx | Trail endpoints now converge on location icons (using LocationIconMesh centering/ring logic) instead of raw hex centers | Movement trails should visually connect to the settlement/POI, not just the middle of the hex |
 | 2026-03-23 | .planning/BACKLOG.md | Documented suspected hexCol/hexRow type mismatch bug — strict equality in getLocationsInHex may miss string-typed coordinates | HexChronicle places list may not show locations that are visually present as icons |
