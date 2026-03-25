@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-030**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-034**.
 
 ---
 
@@ -40,22 +40,60 @@ Agent sprites shrink to ~1 world unit after first movement because the settle an
 
 ---
 
-## 🎨 TB-015 · Rendering Module Resilience Refactor
+## ✅ TB-030 · Agent Spawn Integrity Fixes (2026-03-25)
 
-Four-phase refactor to improve module independence and eliminate silent cross-module breakage. Phase 1: shared primitives (hexKey, worldPosition, hexGrouping). Phase 2: sprite abstraction layer (decouple animation from sprite internals). Phase 3: unified zoom tier module. Phase 4: HexMapV2 hook extraction.
+Six defects in agent creation and tick-loop handling. **Critical:** births are completely broken (wrong edge type query — `contains` instead of `located_at`). Also: born agents have empty axiological profiles, no fail-soft wrapping in `phaseMovement`, sublocation null-deref risk, and no centralized agent validation.
 
-**Design doc:** `Docs/plans/2026-03-25-rendering-module-resilience-refactor.md`
+**Assessment:** `Docs/agent-spawn-assessment.md`
+**Plan:** `Docs/plans/2026-03-25-agent-spawn-integrity-fixes.md`
 
 ---
 
-## 🎨 TB-016 · HexMapV2 Medium-Term Improvements
+## 💡 TB-031 · Culture Seeding — Territory-Aware Placement
+
+Cultures should have geographic coherence: homeland clusters, border zones, diaspora. Currently culture assignment ignores location entirely. Needs full design pass.
+
+**Preliminary design:** `Docs/plans/2026-03-25-culture-and-agent-seeding-preliminary-design.md`
+
+---
+
+## 💡 TB-032 · Agent Seeding — Pre-Existing Relationships
+
+Agents should start with bonds, faction hierarchy, and narrative hooks instead of spawning as isolated strangers. Seed `relates_to` edges, faction leadership ranks, and opening situations. Needs full design pass.
+
+**Preliminary design:** `Docs/plans/2026-03-25-culture-and-agent-seeding-preliminary-design.md`
+
+---
+
+## 📐▶ TB-033 · Graph Schema Enforcement
+
+The graph model has no schema enforcement. Edge types are unguarded strings, there are no canonical query functions, and semantic duplicates (`located_at`/`located_in`, `relates_to`/`relationship`) cause recurring integration bugs. Three-layer fix: (1) canonical query functions in `graphQueries.ts`, (2) edge schema registry with source/target type constraints, (3) dev-mode validated `addEdge`. Also cleans up 4 variant edge bugs and 4 dead edge types.
+
+**Design doc:** `Docs/plans/2026-03-25-graph-schema-enforcement-design.md`
+**Depends on:** TB-030 (agent validation utility provides the first consumer of the schema)
+
+---
+
+## 📐▶ TB-015 · Rendering Module Resilience Refactor
+
+Four-phase refactor to improve module independence and eliminate silent cross-module breakage. Phase 1: shared primitives (hexKey, worldPosition, hexGrouping). Phase 2: sprite abstraction layer (decouple animation from sprite internals). Phase 3: unified zoom tier module. Phase 4: HexMapV2 hook extraction.
+
+Phase 4 overlaps with TB-016 item 1 — when Phase 4 ships, mark TB-016 item 1 complete.
+
+**Design + plan:** `Docs/plans/2026-03-25-rendering-module-resilience-refactor.md`
+
+---
+
+## 📐▶ TB-016 · HexMapV2 Medium-Term Improvements
 
 From architectural review. Three items with real architectural payoff:
 1. Extract custom hooks from HexMapV2.tsx God component (useAgentAnimations, useFogCulling, useZoomLayerVisibility)
 2. Convert signifier sprites to InstancedMesh with texture atlas (~4K draw calls → ~20)
 3. Single sprite per agent with material swap on zoom change (memory halving)
 
-**Needs design:** Yes — hook extraction needs interface design; instancing needs texture atlas pipeline
+**Prerequisite:** TB-030 (Agent Sprite Scale Bug) should land before item 3.
+**Implementation order:** Hooks → Single sprite → Signifier instancing (each ships independently).
+**Design doc:** `Docs/plans/2026-03-25-hexmapv2-medium-term-improvements.md`
 **Review:** Obsidian → `Systems/HexMapV2 Architectural Review.md`
 
 ---
@@ -194,4 +232,4 @@ Ideas that need significant design work or aren't urgent.
 - **TB-026** · OCEAN personality model for agents
 - **TB-027** · Bonds/leverage system between agents
 - **TB-028** · Resources system v2 (production chains, scarcity)
-- **TB-029** · Ascendant Creation Experience redesign
+- **TB-029** · Ascendant Creation Ex
