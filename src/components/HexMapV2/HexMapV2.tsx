@@ -26,7 +26,6 @@ import type { LocationNode } from './scene/LocationIconMesh';
 import { createAgentSpriteMesh, updateZoomVisibility, updateAgentPositions, loadAgentPortraits } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
-import { AGENT_ZOOM_THRESHOLDS } from './agents/agentSpriteTypes';
 import { startMoveAnimation, startRoadHopAnimation, startSettleAnimation, tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, addTrailSegment, updateTrails } from './scene/MovementTrailMesh';
@@ -605,9 +604,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (borderKingdomRef.current) borderKingdomRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_kingdom[tier];
           if (borderBaronyRef.current) borderBaronyRef.current.visible = ZOOM_VISIBILITY_MATRIX.borders_barony[tier];
 
-          // Agent tiers (portrait/dot/retinue) — updateZoomVisibility handles tier logic
+          // Agent tiers (portrait/dot/retinue) — updateZoomVisibility uses centralized tier
           const agentGroup = agentSpriteGroupRef.current;
-          if (agentGroup) updateZoomVisibility(agentGroup, k);
+          if (agentGroup) updateZoomVisibility(agentGroup, tier);
 
           // Movement trails visible when agents are visible at regional+ or hero-local
           if (trailGroupRef.current) {

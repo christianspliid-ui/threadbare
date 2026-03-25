@@ -71,27 +71,6 @@ export const RETINUE_BORDER_COLOR = '#d4a040';
  */
 export const RETINUE_BORDER_ALT_COLOR = 'rgba(255,255,255,0.9)';
 
-// ── Zoom Thresholds ──────────────────────────────────────────────────────────
-
-/**
- * Zoom level thresholds that control agent sprite visibility tier.
- * Matches the existing ZOOM_THRESHOLDS from RegionLabelOverlay.
- *
- * Tier behavior:
- *   k >= HERO_LOCAL  → portrait thumbnails with faction rings
- *   k >= REGIONAL    → colored dots (faction color or gold for retinue)
- *   k >= CONTINENTAL → tiny dots (retinue agents only)
- *   k < CONTINENTAL  → hidden
- */
-export const AGENT_ZOOM_THRESHOLDS = {
-  /** Hero-local zoom: large portrait thumbnails with colored borders */
-  HERO_LOCAL: 5,
-  /** Regional zoom: colored faction dots */
-  REGIONAL: 5,
-  /** Continental zoom: tiny retinue-only dots */
-  CONTINENTAL: 1.5,
-} as const;
-
 // ── Z Offsets ────────────────────────────────────────────────────────────────
 
 /**

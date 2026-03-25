@@ -30,19 +30,20 @@ vi.mock('three', () => {
 
 const SETTLE_DURATION_MS = 150;
 
-function makeSprite() {
+function makeSprite(baseScale = 9) {
   const pos = { x: 0, y: 0, z: 0 };
   const posSet = vi.fn((x: number, y: number, z: number) => { pos.x = x; pos.y = y; pos.z = z; });
   return {
     position: Object.assign(pos, { set: posSet }),
-    scale: { x: 1, y: 1, z: 1, set: vi.fn() },
+    scale: { x: baseScale, y: baseScale, z: 1, set: vi.fn() },
+    userData: { baseScale },
   } as unknown as import('three').Sprite;
 }
 
 function makeSpriteMap(agentId: string) {
-  const portrait = makeSprite();
-  const dot = makeSprite();
-  const continental = makeSprite();
+  const portrait = makeSprite(9);   // AGENT_PORTRAIT_RADIUS × 2
+  const dot = makeSprite(3);        // AGENT_TOKEN_RADIUS × 2
+  const continental = makeSprite(5); // AGENT_DOT_RADIUS × 2
   const map = new Map<string, { portrait: import('three').Sprite; dot: import('three').Sprite; continental?: import('three').Sprite }>();
   map.set(agentId, { portrait, dot, continental });
   return { map, portrait, dot, continental };
@@ -229,6 +230,7 @@ describe('tickAgentAnimations', () => {
 
     expect(portrait.scale.set).toHaveBeenCalled();
     const scaleArgs = (portrait.scale.set as ReturnType<typeof vi.fn>).mock.calls[0];
-    expect(scaleArgs[0]).toBeGreaterThan(1.0); // bounce scale
+    // baseScale (9) × bounceMultiplier (>1.0) should be > 9.0
+    expect(scaleArgs[0]).toBeGreaterThan(9.0);
   });
 });

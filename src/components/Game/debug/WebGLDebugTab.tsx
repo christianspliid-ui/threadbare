@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { WebGLDiagnosticsSnapshot, WebGLLogEntry } from '../../HexMapV2/diagnostics/WebGLDiagnostics';
-import { AGENT_ZOOM_THRESHOLDS } from '../../HexMapV2/agents/agentSpriteTypes';
+import { getZoomTier } from '../../HexMapV2/scene/ZoomVisibilityMatrix';
 
 interface WebGLDebugTabProps {
   getDiagnostics: () => WebGLDiagnosticsSnapshot | null;
@@ -108,10 +108,11 @@ export const WebGLDebugTab = React.memo(function WebGLDebugTab({ getDiagnostics,
 
   const { stats, context, log, sceneObjects } = snapshot;
 
-  // Derive zoom tier label
+  // Derive zoom tier label from centralized thresholds
   const zoomTier = zoomLevel != null
-    ? zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL ? 'Zoomed-in (ring)'
-      : zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL ? 'Zoomed-out (portrait)'
+    ? getZoomTier(zoomLevel) === 'hero-local' ? 'Hero-local (portrait)'
+      : getZoomTier(zoomLevel) === 'regional' ? 'Regional (dot)'
+      : getZoomTier(zoomLevel) === 'continental' ? 'Continental (retinue)'
       : 'Full-world'
     : '—';
 
