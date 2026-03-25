@@ -42,6 +42,38 @@
     border-bottom: 1px solid #4a2020;
     display: none;
   }
+  .drop-zone {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 60px 40px;
+    margin: 40px auto;
+    max-width: 500px;
+    border: 2px dashed #444;
+    border-radius: 12px;
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .drop-zone.drag-over {
+    border-color: #daa520;
+    background: #1a1800;
+  }
+  .drop-zone button {
+    background: #2a2a2a;
+    color: #daa520;
+    border: 1px solid #444;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .drop-zone button:hover { background: #333; }
+  .drop-zone .hint { font-size: 11px; color: #555; }
   .board {
     display: flex;
     gap: 12px;
@@ -194,6 +226,13 @@
 </header>
 
 <div class="error-banner" id="error"></div>
+
+<div class="drop-zone" id="dropZone">
+  <div>Drop <strong>BACKLOG.md</strong> here</div>
+  <div>or</div>
+  <button id="pickFile">Choose file</button>
+  <div class="hint">Opened via file:// — drag .planning/BACKLOG.md onto this page to load the board</div>
+</div>
 
 <div class="board" id="board"></div>
 
@@ -459,6 +498,41 @@ function escHtml(s) {
   return d.innerHTML;
 }
 
+function loadFromText(md) {
+  const items = parseBacklog(md);
+  document.getElementById('dropZone').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  renderBoard(items);
+}
+
+// Drop zone + file picker for file:// fallback
+function showDropZone() {
+  const zone = document.getElementById('dropZone');
+  zone.style.display = 'flex';
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) file.text().then(loadFromText);
+  });
+
+  document.getElementById('pickFile').addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md';
+    input.onchange = () => {
+      if (input.files[0]) input.files[0].text().then(loadFromText);
+    };
+    input.click();
+  });
+}
+
 // Load and render
 async function init() {
   document.getElementById('ts').textContent =
@@ -466,14 +540,12 @@ async function init() {
 
   try {
     const resp = await fetch('.planning/BACKLOG.md');
-    if (!resp.ok) throw new Error(`Failed to fetch BACKLOG.md: ${resp.status} ${resp.statusText}`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const md = await resp.text();
-    const items = parseBacklog(md);
-    renderBoard(items);
+    loadFromText(md);
   } catch (err) {
-    const banner = document.getElementById('error');
-    banner.style.display = 'block';
-    banner.textContent = `Could not load BACKLOG.md: ${err.message}. Serve this file from the repo root (e.g. npx serve .)`;
+    // file:// or server not running — show drop zone fallback
+    showDropZone();
   }
 }
 
