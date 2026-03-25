@@ -89,6 +89,15 @@ export const AGENT_MOVE_TRANSITION_MS = 800;
 /** Duration of arrival flash animation when agent reaches a new hex (ms) */
 export const AGENT_ARRIVE_FLASH_MS = 500;
 
+/** Animation duration per hex on major roads (ms) — fast travel */
+export const ROAD_MAJOR_HOP_MS = 300;
+
+/** Animation duration per hex on trails (ms) — moderate travel */
+export const ROAD_TRAIL_HOP_MS = 500;
+
+/** Multiplier on standard wobble magnitude for road hops (1.0 = same as off-road) */
+export const ROAD_WOBBLE_FACTOR = 0.3;
+
 // --- Ghost Dot Constants ---
 
 /** Initial opacity for ghost dots when agent leaves LOS */

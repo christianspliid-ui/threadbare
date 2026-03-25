@@ -12,8 +12,8 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 27 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(27);
+  it('TRACE_CATEGORIES has 29 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(29);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');
@@ -30,6 +30,8 @@ describe('TraceEntry types', () => {
     expect(TRACE_CATEGORIES).toContain('trade_route_dissolved');
     expect(TRACE_CATEGORIES).toContain('settlement_tier_change');
     expect(TRACE_CATEGORIES).toContain('target_action_filter');
+    expect(TRACE_CATEGORIES).toContain('road_hex_transition');
+    expect(TRACE_CATEGORIES).toContain('agent_reroute');
   });
 
   it('ActionSelectionTrace satisfies TraceEntry union', () => {

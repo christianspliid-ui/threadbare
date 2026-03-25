@@ -32,9 +32,14 @@ import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
 import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
+import { findShortestPath } from './pathfinding';
+import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
 import { IDLE_SCORE_THRESHOLD } from '../data/agent-behavior-constants';
+import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
+import type { MovementState } from '../types/movement';
+import type { AgentRerouteTrace } from '../types/trace';
 
 /**
  * Filter out candidates whose encounter template is on cooldown for this agent.
@@ -107,11 +112,131 @@ export function phaseAgentDecision(
       // Also skip if agent already has ANY active encounter (not just occupied ones)
       if (activeEncounter) continue;
 
-      // Skip if moving
-      const movementState = actor.properties?.movementState as
-        | { movementQueue?: string[] }
-        | undefined;
+      // Gated re-evaluation for moving agents (replaces blanket skip).
+      // Moving agents do NOT enter the full decision pipeline. They only check:
+      // "is my current destination still the best heading?"
+      const movementState = actor.properties?.movementState as MovementState | undefined;
       if (movementState?.movementQueue && movementState.movementQueue.length > 0) {
+        // GUARD 1: Tick gating — only re-evaluate every DECISION_REEVALUATION_TICKS
+        if (state.tick - (movementState.lastDecisionTick ?? 0) < DECISION_REEVALUATION_TICKS) {
+          continue;
+        }
+
+        // GUARD 5: Target invalidation — check if current target encounter still exists
+        const currentTargetId = movementState.targetEncounterId;
+        const currentTargetValid = currentTargetId
+          ? !!getAnyEncounterById(currentTargetId)
+          : true; // No target encounter → just traveling (drift), always "valid"
+
+        if (currentTargetValid) {
+          // Quick scan: does any encounter cache entry for a DIFFERENT location score
+          // dramatically better? We don't run the full pipeline — just check the cache.
+          const currentScore = movementState.motivationPull ?? 0;
+
+          // Get agent location for distance calculation
+          const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+          const agentLocId = locEdges.length > 0 ? locEdges[0].target : undefined;
+
+          if (agentLocId) {
+            const allEntries = encounterCache.getAllEntries();
+            let bestAltScore = 0;
+            let bestAltLocationId: string | null = null;
+
+            for (const entry of allEntries) {
+              if (entry.locationId === movementState.destinationId) continue; // Skip current destination
+              // Simple heuristic: questPriority as rough score proxy
+              const entryScore = entry.questPriority ?? 1.0;
+              if (entryScore > bestAltScore) {
+                bestAltScore = entryScore;
+                bestAltLocationId = entry.locationId;
+              }
+            }
+
+            // GUARD 3: Reroute threshold — alternative must be dramatically better
+            if (bestAltScore >= currentScore * REROUTE_SCORE_MULTIPLIER && bestAltLocationId) {
+              // GUARD 4: Only allow queue_movement (moving agents can't start local/remote)
+              const graphPath = findShortestPath(graph, agentId, agentLocId, bestAltLocationId);
+              if (graphPath && graphPath.path.length > 0) {
+                // Reroute: emit trace, create new movement state
+                const oldDestId = movementState.destinationId;
+                const currentHexPos = movementState.currentHexPosition ?? { col: 0, row: 0 };
+
+                emitTrace({
+                  category: 'agent_reroute',
+                  tick: state.tick,
+                  agentId,
+                  agentName: actor.name,
+                  oldDestinationId: oldDestId,
+                  newDestinationId: bestAltLocationId,
+                  currentHexPosition: currentHexPos,
+                  reason: 'better_encounter',
+                  oldScore: currentScore,
+                  newScore: bestAltScore,
+                  summary: `${actor.name} reroutes from ${graph.getNode(oldDestId)?.name ?? '?'} to ${graph.getNode(bestAltLocationId)?.name ?? '?'}`,
+                } as AgentRerouteTrace & { agentName: string; summary: string });
+
+                const firstEdgeCost = computeEdgeCost(graph, agentId, agentLocId, graphPath.path[0]).totalCost;
+                const newMovState = initMovementState(
+                  bestAltLocationId,
+                  graphPath.path,
+                  firstEdgeCost,
+                  state.tick,
+                  graphPath.roadSegments,
+                  agentLocId,
+                );
+                // Preserve movement history
+                newMovState.movementHistory = movementState.movementHistory;
+
+                graph.updateNode(agentId, {
+                  properties: { ...actor.properties, movementState: newMovState },
+                });
+                continue;
+              }
+            }
+          }
+        } else {
+          // Target invalid — reroute unconditionally to any available destination
+          const locEdges = graph.getOutgoingEdges(agentId, 'located_at');
+          const agentLocId = locEdges.length > 0 ? locEdges[0].target : undefined;
+
+          if (agentLocId) {
+            const currentHexPos = movementState.currentHexPosition ?? { col: 0, row: 0 };
+
+            emitTrace({
+              category: 'agent_reroute',
+              tick: state.tick,
+              agentId,
+              agentName: actor.name,
+              oldDestinationId: movementState.destinationId,
+              newDestinationId: agentLocId, // Will idle at current location
+              currentHexPosition: currentHexPos,
+              reason: 'target_invalid',
+              oldScore: movementState.motivationPull ?? 0,
+              newScore: 0,
+              summary: `${actor.name} abandons invalid target, will idle on arrival`,
+            } as AgentRerouteTrace & { agentName: string; summary: string });
+
+            // Clear target encounter — agent will pick a new one on arrival
+            const updatedState: MovementState = {
+              ...movementState,
+              targetEncounterId: undefined,
+              targetSublocationId: undefined,
+              lastDecisionTick: state.tick,
+            };
+            graph.updateNode(agentId, {
+              properties: { ...actor.properties, movementState: updatedState },
+            });
+          }
+        }
+
+        // Update lastDecisionTick to prevent re-evaluation next tick
+        const updatedMs: MovementState = {
+          ...movementState,
+          lastDecisionTick: state.tick,
+        };
+        graph.updateNode(agentId, {
+          properties: { ...actor.properties, movementState: updatedMs },
+        });
         continue;
       }
 
@@ -185,6 +310,7 @@ export function phaseAgentDecision(
             const progress: EncounterProgress = {
               encounterId: sel.entry.templateId,
               actorId: agentId,
+              ...(sel.entry.targetAgentId ? { targetAgentId: sel.entry.targetAgentId } : {}),
               currentEncounterIndex: 0,
               history: [],
               status: 'active',
@@ -203,20 +329,46 @@ export function phaseAgentDecision(
             });
           }
         } else if (sel.action === 'queue_movement') {
-          // Queue movement toward the encounter's location (hex-by-hex A*)
-          const hexPath = buildHexMovementPath(
-            graph,
-            locationId,
-            sel.entry.locationId,
-            state.tiles,
-          );
-          if (hexPath) {
-            const movState = initMovementState(
-              hexPath.destinationId,
-              hexPath.locationIds,
-              hexPath.firstEdgeCost,
+          // Queue movement toward the encounter's location.
+          // Try graph-level pathfinding first (road-aware), fall back to hex A*.
+          let movState: ReturnType<typeof initMovementState> | null = null;
+          let queueLength = 0;
+
+          const graphPath = findShortestPath(graph, agentId, locationId, sel.entry.locationId);
+          if (graphPath && graphPath.roadSegments && graphPath.roadSegments.length > 0 && graphPath.path.length > 0) {
+            // Road-aware path: use graph-level path with road segments
+            const firstEdgeCost = graphPath.roadSegments[0]
+              ? graphPath.roadSegments[0].discountedCost / Math.max(1, graphPath.roadSegments[0].hexPath.length)
+              : computeEdgeCost(graph, agentId, locationId, graphPath.path[0]).totalCost;
+            movState = initMovementState(
+              sel.entry.locationId,
+              graphPath.path,
+              firstEdgeCost,
               state.tick,
+              graphPath.roadSegments,
+              locationId,
             );
+            queueLength = graphPath.path.length;
+          } else {
+            // Fall back to hex-by-hex A* (no road segments)
+            const hexPath = buildHexMovementPath(
+              graph,
+              locationId,
+              sel.entry.locationId,
+              state.tiles,
+            );
+            if (hexPath) {
+              movState = initMovementState(
+                hexPath.destinationId,
+                hexPath.locationIds,
+                hexPath.firstEdgeCost,
+                state.tick,
+              );
+              queueLength = hexPath.locationIds.length;
+            }
+          }
+
+          if (movState) {
             // Attach encounter targeting fields
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
@@ -253,8 +405,8 @@ export function phaseAgentDecision(
               sublocationId: sel.entry.sublocationId ?? undefined,
               sublocationName: sublocNode?.name ?? undefined,
               encounterId: sel.entry.templateId,
-              queueLength: hexPath.locationIds.length,
-              summary: `${actor.name} departs for ${destName} (${hexPath.locationIds.length} hops, encounter: ${sel.entry.templateId})`,
+              queueLength,
+              summary: `${actor.name} departs for ${destName} (${queueLength} hops, encounter: ${sel.entry.templateId})`,
             } as TraceEntry);
           }
         }

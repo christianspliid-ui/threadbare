@@ -28,6 +28,35 @@ export interface MovementState {
   targetSublocationId?: string;
   /** Encounter template the agent intends to attempt on arrival */
   targetEncounterId?: string;
+
+  // --- Road traversal fields (all optional, backward-compatible) ---
+
+  /** Current hex position during road traversal.
+   *  For non-road movement: matches the hex of the current graph node.
+   *  For road movement: advances through the road's hexPath. */
+  currentHexPosition?: { col: number; row: number };
+
+  /** When traversing a road segment, the remaining hex path to follow.
+   *  Consumed one hex at a time as ticks accumulate.
+   *  undefined/empty = not on a road (normal adjacent hop). */
+  roadHexQueue?: { col: number; row: number }[];
+
+  /** Per-hex cost for the current road segment.
+   *  Pre-computed when entering a road: discountedCost / hexPath.length.
+   *  Used by tickMovement to advance hex-by-hex instead of node-by-node. */
+  roadHexCost?: number;
+
+  /** Road type being traversed (for animation speed and trail rendering). */
+  currentRoadType?: 'major' | 'trail';
+
+  /** Full road segment info for the path, used to populate roadHexQueue on leg transitions. */
+  roadSegments?: Array<{
+    fromId: string;
+    toId: string;
+    roadType: 'major' | 'trail';
+    hexPath: { col: number; row: number }[];
+    discountedCost: number;
+  }>;
 }
 
 /** One entry in the movement trail history */

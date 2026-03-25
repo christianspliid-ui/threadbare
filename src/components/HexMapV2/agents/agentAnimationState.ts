@@ -18,7 +18,7 @@
 import * as THREE from 'three';
 import { getSegmentBezier, evalBezierAtArcLength } from '../../../lib/movementPath';
 import type { SegmentBezier, Point } from '../../../lib/movementPath';
-import { AGENT_MOVE_TRANSITION_MS } from '../../../data/agent-visual-content';
+import { AGENT_MOVE_TRANSITION_MS, ROAD_MAJOR_HOP_MS, ROAD_TRAIL_HOP_MS, ROAD_WOBBLE_FACTOR } from '../../../data/agent-visual-content';
 import { AGENT_SPRITE_Z } from './agentSpriteTypes';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
 import { hexToPixel } from '../../../lib/hexMath';
@@ -60,6 +60,12 @@ export interface AgentAnimState {
   ringSettleFrom?: { x: number; y: number };
   /** For ring-settle: end world position */
   ringSettleTo?: { x: number; y: number };
+  /** If set, this is a road hop — affects wobble and chaining behavior */
+  roadContext?: {
+    roadType: 'major' | 'trail';
+    /** true → play settle bounce after this hop (final hex of road segment) */
+    isLastHop: boolean;
+  };
 }
 
 // ── Factory ───────────────────────────────────────────────────────────────────
@@ -117,6 +123,64 @@ export function startMoveAnimation(
     phase: 'moving',
     fromHex,
     toHex,
+  };
+}
+
+/**
+ * Creates a new AgentAnimState for a road hop (shorter, reduced wobble, chaining).
+ *
+ * Road hops use shorter durations (300ms major / 500ms trail) and reduced wobble
+ * (ROAD_WOBBLE_FACTOR × standard). Settle bounce only plays on the final hop
+ * of a road segment (isLastHop = true).
+ *
+ * @param agentId    — agent node ID
+ * @param fromHex    — source hex coordinate
+ * @param toHex      — destination hex coordinate
+ * @param seed       — numeric seed for wobble
+ * @param roadType   — 'major' or 'trail' (determines hop duration)
+ * @param isLastHop  — if true, play settle bounce after this hop
+ * @param fromOffset — optional ring slot offset at source hex
+ * @param toOffset   — optional ring slot offset at destination hex
+ * @returns new AgentAnimState with phase='moving' and roadContext set
+ */
+export function startRoadHopAnimation(
+  agentId: string,
+  fromHex: { col: number; row: number },
+  toHex: { col: number; row: number },
+  seed: number,
+  roadType: 'major' | 'trail',
+  isLastHop: boolean,
+  fromOffset?: Point,
+  toOffset?: Point,
+): AgentAnimState {
+  const svgBezier = getSegmentBezier(
+    agentId,
+    fromHex,
+    toHex,
+    HEX_CONSTANTS.HEX_SIZE,
+    fromOffset,
+    toOffset,
+    ROAD_WOBBLE_FACTOR,
+  );
+
+  const bezier: SegmentBezier = {
+    p0:   { x: svgBezier.p0.x,   y: -svgBezier.p0.y },
+    ctrl: { x: svgBezier.ctrl.x, y: -svgBezier.ctrl.y },
+    p2:   { x: svgBezier.p2.x,   y: -svgBezier.p2.y },
+  };
+
+  const duration = roadType === 'major' ? ROAD_MAJOR_HOP_MS : ROAD_TRAIL_HOP_MS;
+
+  return {
+    agentId,
+    bezier,
+    startTime: performance.now(),
+    duration,
+    settleDuration: SETTLE_DURATION_MS,
+    phase: 'moving',
+    fromHex,
+    toHex,
+    roadContext: { roadType, isLastHop },
   };
 }
 
@@ -190,9 +254,15 @@ export function tickAgentAnimations(
       }
 
       if (t >= 1) {
-        // Transition to settle phase (bounce on arrival)
-        state.phase = 'settling';
-        state.settleStart = now;
+        // Road hops: skip settle bounce unless this is the final hop
+        if (state.roadContext && !state.roadContext.isLastHop) {
+          // Road hop complete, no settle — remove immediately so next hop can chain
+          toRemove.push(agentId);
+        } else {
+          // Transition to settle phase (bounce on arrival)
+          state.phase = 'settling';
+          state.settleStart = now;
+        }
       }
     } else if (state.phase === 'settling') {
       const settleStart = state.settleStart ?? now;

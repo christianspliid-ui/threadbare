@@ -27,7 +27,7 @@ const PARTIAL_SIGHT_RANGE = 1;
 export function getLocationsInHex(graph: WorldGraph, col: number, row: number): GraphNode[] {
   return graph.getNodesByType('location').filter(node => {
     const props = node.properties as Record<string, unknown>;
-    return props.hexCol === col && props.hexRow === row;
+    return Number(props.hexCol) === col && Number(props.hexRow) === row;
   });
 }
 

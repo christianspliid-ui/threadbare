@@ -9,6 +9,84 @@
 
 ---
 
+## 2026-03-25: Stream 1 — Intent Visibility (character sheet)
+
+**Context:** Agents already pursue ambitions via `pursues` edges with priority/status/milestones, but none of this is visible to the player. This feature surfaces active agent intent through three UI touchpoints: full Intent section in AgentProfileModal and AgentDetailPanel, single-line summary in AgentInfoCard. Seven ambition categories map to existing domain colors. Knowledge gating is structured for future use but prototyped as always-visible.
+
+**What Cowork already did:** Design doc exists and is implementation-ready with 12 steps, file list, type definitions, and component specs.
+
+**Action for Claude Code:**
+- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-17-intent-visibility.md`
+- [ ] Step 1: Add `ActiveIntent` type and `AmbitionCategory` union to types (check `src/types/agentDetail.ts` or equivalent). Extend `AgentDetail` with `intents?: ActiveIntent[]` and `AgentInfoCardData` with `primaryIntentSummary`
+- [ ] Step 2: Extend `getAgentFullProfile()` and `getAgentInfoCard()` in `src/engine/agentDetail.ts` — query `pursues` edges where `status === 'active'`, resolve ambition templates, build `ActiveIntent` objects sorted primary-first. Skip knowledge gating (add `// TODO: gate by familiarity tier`)
+- [ ] Step 3: Create `src/components/Game/IntentSection.tsx` — section header matching existing modal pattern, ambition cards with category color border, milestone pips, affinity dots, reactive trigger tag, empty state "No discernible intent"
+- [ ] Step 4: Integrate IntentSection into `AgentProfileModal.tsx` between Nature and Prowess sections
+- [ ] Step 5: Integrate IntentSection into `AgentDetailPanel.tsx` between Character and Domain Grid
+- [ ] Step 6: Add primary intent single-line to `AgentInfoCard.tsx` — `{categoryGlyph} {displayName}` below archetype/faction
+- [ ] Step 7: Create category glyph + color constant map (prefer unicode/SVG over emoji, match Threadbare aesthetic)
+- [ ] Step 8: Unit tests — ActiveIntent construction from pursues edges, primary-before-secondary sort, empty state, reactive trigger, milestone count accuracy, render tests for IntentSection with 0/1/2 intents
+- [ ] Step 9: Add `actorId` to ambition tick events in `ambitionTick.ts`, add optional `actorId?: string` to `TickEvent` interface
+- [ ] Step 10: Wire notification tap-through — toasts/alerts with `actorId` become clickable, call `onSelectAgent(actorId)`
+- [ ] Step 11: Intent-change pulse animation on IntentSection (amber flash ~600ms on card change, `useEffect` + `usePrevious`)
+- [ ] Visual verification at `?view=game`: intent section visible in character sheet, milestone pips render, empty state works for ambition-less agents
+
+**Design doc:** `Docs/plans/2026-03-17-intent-visibility.md`
+**Files changed:** `.planning/HANDOVER.md` (this entry)
+
+---
+
+## 2026-03-25: Stream 2 — Attachment Tier Advancement
+
+**Context:** The attachment system design defines a 4-tier rarity system (Mundane → Storied → Mythic → Legendary) that applies universally across all six attachment categories (possessions, conditions, blessings/curses, bestowed powers, agreements, retainers). Tier colors, on-use triggers, tag vocabulary, and acquisition flow are fully designed. Player promotes tiers via Enchant/Empower action templates. Dependencies met (Attachment Action Templates complete).
+
+**What Cowork already did:** Full design doc exists covering the unified attachment model, tier system, possession taxonomy, on-use triggers, encounter-driven acquisition, and UI detail cards.
+
+**Action for Claude Code:**
+- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-10-attachment-system-design.md` (full read — it's comprehensive)
+- [ ] Verify existing graph infrastructure: confirm `artifact`, `possesses`, `bonded_to`, `has_trait` (category: `condition`), `relates_to` edge types exist in `src/types/graph.ts` and `world-model.json`
+- [ ] Add `tier` property (1–4) to attachment-bearing nodes/edges if not present. Add `TIER_COLORS` and `TIER_NAMES` constants (Mundane/silver, Storied/copper, Mythic/violet, Legendary/gold-ember)
+- [ ] Add `tags: string[]` to artifact node properties and agreement edge properties (traits already have it). Create `getByTag()` helper (~15-line pure function) for tag-based resolution
+- [ ] Add `onUseTriggers` array to attachment properties — trigger condition, probability, effect, narrative template, tags. Integrate into resolution engine: check tag overlap, roll PRNG against probability, apply effects additively alongside encounter outcomes
+- [ ] Create attachment detail card UI component with tier-colored border, subcategory icon, flavor text, mechanical summary, tags, source, duration. Render in agent profile panels
+- [ ] Implement Enchant/Empower action templates for tier promotion — player spends essence to advance an attachment's tier. Prerequisites: attachment must be equipped by an agent the player has influence over
+- [ ] Unit tests: tier assignment on acquisition, tier color rendering, tag-based queries, on-use trigger probability, Enchant/Empower prerequisites, detail card with each attachment category
+- [ ] Visual verification at `?view=game`: tier colors visible on attachment items in character sheet, detail card renders for possessions/conditions/agreements
+
+**Design doc:** `Docs/plans/2026-03-10-attachment-system-design.md`
+**Files changed:** `.planning/HANDOVER.md` (this entry)
+
+---
+
+## 2026-03-25: Stream 3 — Agreement Creation + HexChronicle bug fix
+
+**Context (Agreement Creation):** Diplomacy as a direct player verb. Agreements are enriched `relates_to` edges with fulfillment conditions and tick timers. Social encounters enter the agent decision pipeline via the same CRUD framework as location encounters. Bond strength modifies encounter scoring. All dependencies met (Generalized Action Targeting complete).
+
+**Context (HexChronicle bug):** When clicking a hex with visible hamlet icons, the location list sometimes shows empty. Suspected: `hexCol`/`hexRow` stored as strings in some worldgen paths, compared with `===` against numbers in `getLocationsInHex()`. Icons render because `GameView.tsx` uses loose `!=` for null checks.
+
+**What Cowork already did:** Social fabric design doc exists with full CRUD mapping, bond scoring formulas, colocation/remote constraints, and target availability rules. Bug documented in backlog.
+
+**Action for Claude Code — HexChronicle bug (do first, quick win):**
+- [ ] Investigate type mismatch: add `console.assert(typeof props.hexCol === 'number')` in `getLocationsInHex()` (`src/engine/hexZoom.ts:28-31`) and run. Check `worldSeed.ts` location creation paths for string vs number writes
+- [ ] Fix: coerce to `Number()` in `getLocationsInHex()` filter, or fix at source in worldgen. Add a type guard or assertion
+- [ ] Also verify: are ring-positioned location icons visually overlapping into adjacent hexes? If so, note as a separate cosmetic issue
+- [ ] Unit test: `getLocationsInHex` returns locations regardless of string/number storage
+
+**Action for Claude Code — Agreement Creation:**
+- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
+- [ ] Add social encounter templates to `ENCOUNTER_TEMPLATES` with `targetCategories: ['agent']` — Create (form bond, recruit), Find (investigate, spy), Change (persuade, negotiate, threaten), Destroy (duel, sabotage), Control (patronage, mentorship). Use reach primaries from the CRUD mapping table in the design doc
+- [ ] Extend agent decision phase to generate social encounter candidates for each visible agent — pull bond data (trust, sentiment, interaction history) into candidates
+- [ ] Implement `bondModifier` scoring: strong positive bonds boost cooperative encounters, strong negative bonds boost destructive, strangers get base penalty unless agent's Heart axis > `STRANGER_CURIOSITY_THRESHOLD` or Eye > `STRANGER_PERCEPTION_THRESHOLD`
+- [ ] Implement agreement node creation on successful social encounter resolution — `relates_to` edge with `agreement` property block containing type (pact/debt/favour/oath/treaty/bargain), `fulfillmentCondition`, `ticksRemaining`
+- [ ] Handle colocation vs remote constraints per encounter type (duel/recruit require colocation, negotiate/persuade/spy support remote with penalty)
+- [ ] Add all new constants (thresholds, multipliers, modifiers) as named constants in appropriate content file
+- [ ] Unit tests: social encounter template filtering, bond modifier calculation, agreement edge creation, colocation/remote gating, scoring with various bond states
+- [ ] Visual verification at `?view=game`: social encounters appear in action drawer when agents are colocated, agreement creation produces visible bond in agent profile
+
+**Design docs:** `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`, bug in `.planning/BACKLOG.md` (lines 95-101)
+**Files changed:** `.planning/HANDOVER.md` (this entry)
+
+---
+
 ## 2026-03-25: Cross-Boundary Testing Infrastructure
 
 **Context:** Analysis of why movement/HexMapV2 changes frequently break downstream systems. Root cause: strong unit tests but zero contract tests between modules. A change to `computeEdgeCost` ripples through pathfinding → movement → animation → trails, but only step 1 has tests. MovementTrailMesh has zero tests. The orchestrator doesn't test movement. 10 integration tests are `describe.skip`'d. No CI gates exist.

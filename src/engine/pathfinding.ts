@@ -12,14 +12,30 @@ import { WorldGraph } from './graph';
 import { computeEdgeCost } from './movementCost';
 import type { HexCoord, HexTile } from '../types';
 import { hexNeighbors, hexDistance } from '../lib/hexMath';
-import { getTerrainTax } from '../data/movement-content';
+import { getTerrainTax, ROAD_MAJOR_COST_MULTIPLIER, ROAD_TRAIL_COST_MULTIPLIER, MIN_EDGE_COST } from '../data/movement-content';
 import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
+
+/** Metadata for a road segment used in a path */
+export interface RoadSegmentInfo {
+  /** Source location node ID */
+  fromId: string;
+  /** Destination location node ID */
+  toId: string;
+  /** Road type used */
+  roadType: 'major' | 'trail';
+  /** Full hex path for this road segment */
+  hexPath: HexCoord[];
+  /** Discounted cost for this segment */
+  discountedCost: number;
+}
 
 export interface PathResult {
   /** Node IDs to visit (excludes start) */
   path: string[];
   /** Total accumulated cost */
   totalCost: number;
+  /** If set, the path includes road segments with hex-level detail */
+  roadSegments?: RoadSegmentInfo[];
 }
 
 /**
@@ -66,6 +82,9 @@ export function findShortestPath(
   // Parent map: nodeId → previous nodeId on shortest path
   const parent = new Map<string, string>();
 
+  // Track road edges used in the shortest path: "from→to" → road edge info
+  const roadEdgeUsed = new Map<string, { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number }>();
+
   // Priority queue: array of unvisited nodeIds (we'll sort manually)
   // For ~320 hexes, O(n²) sorting is acceptable
   const unvisited = new Set<string>();
@@ -93,15 +112,13 @@ export function findShortestPath(
 
     // If we reached the end, we can return early (Dijkstra property)
     if (current === endId) {
-      return reconstructPath(parent, endId, distance);
+      return reconstructPath(parent, endId, distance, roadEdgeUsed);
     }
 
     unvisited.delete(current);
 
-    const currentNode = graph.getNode(current)!;
-
     // Examine all outgoing edges from current
-    // Include both 'adjacent' and 'contains' edge types
+    // Include 'adjacent', 'contains', and 'road' edge types
     const outgoingEdges = [
       ...graph.getOutgoingEdges(current, 'adjacent'),
       ...graph.getOutgoingEdges(current, 'contains'),
@@ -132,7 +149,48 @@ export function findShortestPath(
       if (newDist < neighborDist) {
         distance.set(neighborId, newDist);
         parent.set(neighborId, current);
+        // Clear any road edge for this neighbor (non-road edge won)
+        roadEdgeUsed.delete(`${current}→${neighborId}`);
         // Add to unvisited if not already present
+        unvisited.add(neighborId);
+      }
+    }
+
+    // Road edges: check both outgoing and incoming (roads are canonically ordered by ID)
+    const roadOutgoing = graph.getOutgoingEdges(current, 'road');
+    const roadIncoming = graph.getIncomingEdges(current, 'road');
+
+    for (const edge of roadOutgoing) {
+      const neighborId = edge.target;
+      const roadCost = computeRoadEdgeCost(edge);
+      if (roadCost === null) continue; // Fail-soft: skip corrupt road edge
+
+      const currentDist = distance.get(current)!;
+      const newDist = currentDist + roadCost.discountedCost;
+      const neighborDist = distance.get(neighborId) ?? Infinity;
+
+      if (newDist < neighborDist) {
+        distance.set(neighborId, newDist);
+        parent.set(neighborId, current);
+        roadEdgeUsed.set(`${current}→${neighborId}`, roadCost);
+        unvisited.add(neighborId);
+      }
+    }
+
+    for (const edge of roadIncoming) {
+      // For incoming edges, the neighbor is the source (we're at the target)
+      const neighborId = edge.source;
+      const roadCost = computeRoadEdgeCost(edge);
+      if (roadCost === null) continue;
+
+      const currentDist = distance.get(current)!;
+      const newDist = currentDist + roadCost.discountedCost;
+      const neighborDist = distance.get(neighborId) ?? Infinity;
+
+      if (newDist < neighborDist) {
+        distance.set(neighborId, newDist);
+        parent.set(neighborId, current);
+        roadEdgeUsed.set(`${current}→${neighborId}`, roadCost);
         unvisited.add(neighborId);
       }
     }
@@ -143,12 +201,38 @@ export function findShortestPath(
 }
 
 /**
+ * Compute discounted road edge cost from a road graph edge.
+ * Returns null if the edge is missing required properties (fail-soft).
+ */
+function computeRoadEdgeCost(
+  edge: { properties: Record<string, unknown> },
+): { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number } | null {
+  const totalCost = edge.properties.totalCost;
+  const roadType = edge.properties.roadType as string | undefined;
+  const hexPath = edge.properties.hexPath as HexCoord[] | undefined;
+
+  if (typeof totalCost !== 'number' || !isFinite(totalCost)) return null;
+  if (roadType !== 'major' && roadType !== 'trail') return null;
+
+  const multiplier = roadType === 'major' ? ROAD_MAJOR_COST_MULTIPLIER : ROAD_TRAIL_COST_MULTIPLIER;
+  const discountedCost = Math.max(MIN_EDGE_COST, totalCost * multiplier);
+
+  return {
+    roadType,
+    hexPath: hexPath ?? [],
+    discountedCost,
+  };
+}
+
+/**
  * Reconstruct the path from start to end using the parent map.
+ * Also collects road segment info for any road edges used in the path.
  */
 function reconstructPath(
   parent: Map<string, string>,
   endId: string,
   distance: Map<string, number>,
+  roadEdgeUsed: Map<string, { roadType: 'major' | 'trail'; hexPath: HexCoord[]; discountedCost: number }>,
 ): PathResult {
   const path: string[] = [];
   let current = endId;
@@ -162,9 +246,27 @@ function reconstructPath(
   // path is now [node1, node2, ..., endId] (excludes start)
   const totalCost = distance.get(endId) ?? 0;
 
+  // Collect road segments from the path
+  const roadSegments: RoadSegmentInfo[] = [];
+  let prevId = current; // current is now the start ID (walked back past all parents)
+  for (const nodeId of path) {
+    const roadInfo = roadEdgeUsed.get(`${prevId}→${nodeId}`);
+    if (roadInfo) {
+      roadSegments.push({
+        fromId: prevId,
+        toId: nodeId,
+        roadType: roadInfo.roadType,
+        hexPath: roadInfo.hexPath,
+        discountedCost: roadInfo.discountedCost,
+      });
+    }
+    prevId = nodeId;
+  }
+
   return {
     path,
     totalCost,
+    ...(roadSegments.length > 0 ? { roadSegments } : {}),
   };
 }
 

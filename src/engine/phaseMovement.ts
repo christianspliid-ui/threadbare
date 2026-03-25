@@ -15,7 +15,7 @@ import { computeEdgeCost } from './movementCost';
 import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
 import { emitTrace } from './traceBuffer';
-import type { TraceEntry } from '../types/trace';
+import type { TraceEntry, RoadHexTransitionTrace } from '../types/trace';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -68,6 +68,24 @@ export function phaseMovement(state: GameState): Partial<GameState> {
       state.graph.updateNode(actorId, {
         properties: { ...actor.properties, movementState: result.updatedState },
       });
+
+      // Emit road hex transition trace (if applicable)
+      if (result.roadHexTransition) {
+        emitTrace({
+          category: 'road_hex_transition',
+          tick: state.tick,
+          agentId: actorId,
+          agentName: actor.name,
+          fromHex: result.roadHexTransition.fromHex,
+          toHex: result.roadHexTransition.toHex,
+          roadType: result.roadHexTransition.roadType,
+          hexProgress: result.roadHexTransition.hexProgress,
+          hexTotal: result.roadHexTransition.hexTotal,
+          ticksAccumulated: 1,
+          hexCost: result.updatedState.roadHexCost ?? 0,
+          summary: `${actor.name} walks ${result.roadHexTransition.roadType} road (${result.roadHexTransition.hexProgress}/${result.roadHexTransition.hexTotal})`,
+        } as RoadHexTransitionTrace & { summary: string });
+      }
 
       // Emit event on movement transition (skip for avatar — player controls avatar)
       if (result.moved && !isAvatar) {

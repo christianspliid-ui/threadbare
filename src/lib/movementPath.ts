@@ -134,6 +134,7 @@ export function evalBezierAtArcLength(p0: Point, ctrl: Point, p2: Point, s: numb
  * @param hexSize — hex tile size in pixels
  * @param fromOffset — optional pixel offset from hex center (e.g., ring slot position)
  * @param toOffset — optional pixel offset from hex center at destination
+ * @param wobbleScale — optional multiplier on wobble magnitude (default 1.0, use < 1 for roads)
  */
 export function getSegmentBezier(
   agentId: string,
@@ -142,6 +143,7 @@ export function getSegmentBezier(
   hexSize: number,
   fromOffset?: Point,
   toOffset?: Point,
+  wobbleScale?: number,
 ): SegmentBezier {
   const fromCenter = hexToPixel(fromHex, hexSize);
   const toCenter = hexToPixel(toHex, hexSize);
@@ -165,7 +167,7 @@ export function getSegmentBezier(
   const hash = segmentHash(agentId, fromHex, toHex);
   // Map hash to [-1, 1] range
   const wobbleNorm = ((hash & 0xffff) / 0xffff) * 2 - 1;
-  const wobbleMag = hexSize * WOBBLE_FACTOR * wobbleNorm;
+  const wobbleMag = hexSize * WOBBLE_FACTOR * wobbleNorm * (wobbleScale ?? 1.0);
 
   const ctrl: Point = {
     x: (p0.x + p2.x) / 2 + perpX * wobbleMag,

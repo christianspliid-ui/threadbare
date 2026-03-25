@@ -212,6 +212,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         }
       }
       if (hexCol == null || hexRow == null) continue;
+
+      // Road traversal: use currentHexPosition for visual position if on a road
+      const movState = n.properties.movementState as
+        | { currentHexPosition?: { col: number; row: number }; currentRoadType?: string; roadHexQueue?: unknown[] }
+        | undefined;
+      if (movState?.currentHexPosition) {
+        hexCol = movState.currentHexPosition.col;
+        hexRow = movState.currentHexPosition.row;
+      }
+
       const archetypeId = n.properties.narrativeArchetype as string | undefined;
       result.push({
         id: n.id,
@@ -221,6 +231,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
         name: n.name,
+        currentRoadType: movState?.currentRoadType as 'major' | 'trail' | undefined,
+        roadHexQueueLength: Array.isArray(movState?.roadHexQueue) ? movState.roadHexQueue.length : undefined,
       });
     }
     return result;
