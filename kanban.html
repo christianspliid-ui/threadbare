@@ -387,6 +387,7 @@ function parseBacklog(md) {
         { re: /\*\*Design doc:\*\*\s*`([^`]+)`/, type: 'design', label: 'Design' },
         { re: /\*\*Design:\*\*\s*`([^`]+)`/, type: 'design', label: 'Design' },
         { re: /\*\*Skill:\*\*\s*`([^`]+)`/, type: 'review', label: 'Skill' },
+        { re: /\*\*Review:\*\*\s*Obsidian\s*→\s*`([^`]+)`/, type: 'review', label: 'Review', vault: true },
         { re: /\*\*Review:\*\*\s*.*?`([^`]+)`/, type: 'review', label: 'Review' },
         { re: /\*\*Files:\*\*/, type: null }, // skip, no link
       ];
@@ -396,7 +397,7 @@ function parseBacklog(md) {
         if (m) {
           isMetaLine = true;
           if (lp.type && m[1]) {
-            currentItem.links.push({ type: lp.type, label: lp.label, path: m[1] });
+            currentItem.links.push({ type: lp.type, label: lp.label, path: m[1], vault: !!lp.vault });
           }
           break;
         }
@@ -446,8 +447,18 @@ function parseBacklog(md) {
   return items;
 }
 
+const OBSIDIAN_VAULT = 'Obsidian';
+const OBSIDIAN_SUBFOLDER = 'TheFantasyWorldSimulator';
+
 function renderLink(link) {
-  const href = `file:///${REPO_ROOT}/${link.path}`;
+  let href;
+  if (link.vault) {
+    // Obsidian vault note — use obsidian:// URI
+    const notePath = `${OBSIDIAN_SUBFOLDER}/${link.path}`;
+    href = `obsidian://open?vault=${encodeURIComponent(OBSIDIAN_VAULT)}&file=${encodeURIComponent(notePath)}`;
+  } else {
+    href = `file:///${REPO_ROOT}/${link.path}`;
+  }
   const cls = `tag tag-${link.type}`;
   return `<a class="tag-link" href="${href}" target="_blank"><span class="${cls}">${link.label} \u2197</span></a>`;
 }
@@ -533,20 +544,44 @@ function showDropZone() {
   });
 }
 
+const BACKLOG_PATH = `${REPO_ROOT}/.planning/BACKLOG.md`;
+
+// Try loading via XHR (works for file:// in some browsers/extensions)
+function tryXHR(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.onload = () => {
+      if (xhr.status === 0 || xhr.status === 200) resolve(xhr.responseText);
+      else reject(new Error(`XHR ${xhr.status}`));
+    };
+    xhr.onerror = () => reject(new Error('XHR failed'));
+    xhr.send();
+  });
+}
+
 // Load and render
 async function init() {
   document.getElementById('ts').textContent =
     'Live from BACKLOG.md \u00B7 ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
 
+  // Strategy 1: relative fetch (works when served via HTTP)
   try {
     const resp = await fetch('.planning/BACKLOG.md');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const md = await resp.text();
     loadFromText(md);
-  } catch (err) {
-    // file:// or server not running — show drop zone fallback
-    showDropZone();
-  }
+    return;
+  } catch (_) {}
+
+  // Strategy 2: absolute file:// via XHR (works with file:// extensions)
+  try {
+    const md = await tryXHR(`file:///${BACKLOG_PATH}`);
+    if (md && md.includes('TB-')) { loadFromText(md); return; }
+  } catch (_) {}
+
+  // Strategy 3: drop zone fallback
+  showDropZone();
 }
 
 init();
