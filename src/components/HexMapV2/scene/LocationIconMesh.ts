@@ -3,9 +3,8 @@
  *
  * Places one THREE.Sprite per location using the location icon registry.
  * Large locations (full/medium size class) are centered on the hex.
- * Smaller locations distribute in a ring around the hex center, using the
- * same getRingSlotOffset system as agents but with a smaller radius and
- * an 8-degree rotation offset.
+ * Smaller locations distribute on fixed vertex slots around the hex center,
+ * using getFixedSlotOffset with VERTEX_ANGLES_DEG (0°/60°/120°/…).
  *
  * Capital locations additionally receive a red ring sprite overlay.
  *
@@ -19,7 +18,7 @@
 
 import * as THREE from 'three';
 import { hexToPixel } from '../../../lib/hexMath';
-import { getRingSlotOffset } from '../../../lib/movementPath';
+import { getFixedSlotOffset } from '../../../lib/movementPath';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import {
@@ -29,8 +28,8 @@ import {
 } from '../locations/locationIconRegistry';
 import { buildLocationIconTextureCache } from '../locations/locationIconTextures';
 import {
-  LOCATION_RING_RADIUS,
-  LOCATION_RING_ROTATION_DEG,
+  SLOT_RING_RADIUS,
+  VERTEX_ANGLES_DEG,
   LOCATION_RING_SCALE_FACTOR,
   MAX_RING_LOCATIONS,
 } from '../../../data/agent-visual-content';
@@ -51,9 +50,6 @@ const CAPITAL_RING_COLOR = '#cc3333';
 
 /** Canvas size for the capital ring texture. */
 const CAPITAL_RING_SIZE = 128;
-
-/** Location ring rotation offset in radians (converted from degrees at module load). */
-const LOCATION_RING_ROTATION_RAD = LOCATION_RING_ROTATION_DEG * Math.PI / 180;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -171,7 +167,7 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
     const visible = ringEligible.slice(0, MAX_RING_LOCATIONS);
     for (let i = 0; i < visible.length; i++) {
       const loc = visible[i];
-      const offset = getRingSlotOffset(i, visible.length, LOCATION_RING_RADIUS, LOCATION_RING_ROTATION_RAD);
+      const offset = getFixedSlotOffset(i, visible.length, VERTEX_ANGLES_DEG, SLOT_RING_RADIUS);
 
       addLocationSprite(group, loc, textureCache, offset.x, offset.y, LOCATION_RING_SCALE_FACTOR);
 

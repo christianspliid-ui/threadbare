@@ -13,11 +13,12 @@ export const MAX_RING_AGENTS = 6;
 /** Radius of agent dot at default zoom */
 export const AGENT_DOT_RADIUS = 2.5;
 
-/** Radius of agent dot at token zoom (kept small to avoid overlapping location icons) */
-export const AGENT_TOKEN_RADIUS = 4;
+/** Radius of small agent portrait at zoomed-in tier (k >= 5) — ring-positioned.
+ *  Must be small enough to leave room for center location + location ring. */
+export const AGENT_TOKEN_RADIUS = 1.5;
 
-/** Radius of circular portrait thumbnail at token zoom */
-export const AGENT_PORTRAIT_RADIUS = 7;
+/** Radius of large agent portrait at zoomed-out tier (k < 5) — ring-positioned, slight hex clip OK */
+export const AGENT_PORTRAIT_RADIUS = 4.5;
 
 /** Stroke width of ring around portrait thumbnail */
 export const AGENT_PORTRAIT_RING_WIDTH = 1.2;
@@ -38,15 +39,26 @@ export const DOMAIN_COLORS: Record<string, string> = {
 /** Default agent dot color when domain is unknown */
 export const DEFAULT_AGENT_COLOR = '#555555';
 
-/** Ring distance from hex center for agent positioning — large enough to orbit outside location icons */
-export const AGENT_RING_RADIUS = 18;
+/** Ring distance from hex center for agent positioning — inside hex edge (HEX_SIZE=10) */
+export const AGENT_RING_RADIUS = 6;
+
+// --- Fixed-Slot Hex Layout Constants ---
+
+/** Shared ring radius for all perimeter slots (agents + locations). */
+export const SLOT_RING_RADIUS = 6;
+
+/** Fixed angles (degrees) for secondary location slots — hex vertex directions. */
+export const VERTEX_ANGLES_DEG: readonly number[] = [0, 60, 120, 180, 240, 300];
+
+/** Fixed angles (degrees) for agent slots — hex edge-midpoint directions. */
+export const EDGE_MID_ANGLES_DEG: readonly number[] = [30, 90, 150, 210, 270, 330];
 
 // --- Location Ring Constants ---
 
-/** Ring distance from hex center for location positioning — inside the agent orbit */
-export const LOCATION_RING_RADIUS = 12;
+/** @deprecated Use SLOT_RING_RADIUS instead. Kept for V1 HexMap consumers. */
+export const LOCATION_RING_RADIUS = 6;
 
-/** Rotation offset (degrees) for location ring vs agent ring — prevents overlap at same slot index */
+/** @deprecated Structural 30° separation replaces this rotation hack. Kept for V1 HexMap consumers. */
 export const LOCATION_RING_ROTATION_DEG = 8;
 
 /** Scale multiplier for locations placed in the ring (smaller to fit comfortably) */
