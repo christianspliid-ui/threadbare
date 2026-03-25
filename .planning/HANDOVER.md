@@ -7,6 +7,8 @@
 
 ---
 
+---
+
 ## 2026-03-23: Implement start page (main menu)
 
 **Context:** The game currently drops players straight into cosmology setup with no introduction. Designed a full start page with title, lore fragment, main menu (New World / Continue / Settings / Credits), and theme music system. Narrative-mysterious tone — text over the existing title-screen.png art with a darkening gradient. Dark ambient drone plays on first interaction, fades out on "New World". Full design doc with layout mockup, audio system spec, token usage, constants table, NFP compliance, accessibility notes, and implementation file list.
@@ -32,6 +34,17 @@
 ---
 
 ## Completed
+
+### 2026-03-25: Fixed-slot hex layout (completed 2026-03-25)
+
+All action items done:
+- Added `BALANCED_SLOT_INDICES` lookup table and `getFixedSlotOffset()` to `movementPath.ts`
+- Added `SLOT_RING_RADIUS`, `VERTEX_ANGLES_DEG`, `EDGE_MID_ANGLES_DEG` to `agent-visual-content.ts`; deprecated `LOCATION_RING_ROTATION_DEG`
+- Updated `AgentSpriteMesh.ts`: `getFixedSlotOffset` with `EDGE_MID_ANGLES_DEG` (both create and update functions)
+- Updated `LocationIconMesh.ts`: `getFixedSlotOffset` with `VERTEX_ANGLES_DEG`; removed rotation offset logic
+- Updated `HexMapV2.tsx`: animation bezier endpoints and trail location offsets use `getFixedSlotOffset`
+- 14 unit tests for `getFixedSlotOffset` (angles, balanced distribution 1-6, edge cases, determinism, no agent/location overlap)
+- Visual verification pending (user must run `npm run dev` and check `?view=game`)
 
 ### 2026-03-23: Kokoro TTS narration prototype (completed 2026-03-23)
 
