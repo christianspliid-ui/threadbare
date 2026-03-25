@@ -10,7 +10,6 @@ import {
   FACTION_HERALDIC_COLORS,
   RETINUE_BORDER_COLOR,
   RETINUE_BORDER_ALT_COLOR,
-  AGENT_ZOOM_THRESHOLDS,
   AGENT_SPRITE_Z,
   PORTRAIT_TEXTURE_SIZE,
   FACTION_DOT_TEXTURE_SIZE,
@@ -41,20 +40,6 @@ describe('RETINUE_BORDER_COLOR', () => {
 describe('RETINUE_BORDER_ALT_COLOR', () => {
   it('is a white-ish rgba value', () => {
     expect(RETINUE_BORDER_ALT_COLOR).toBe('rgba(255,255,255,0.9)');
-  });
-});
-
-describe('AGENT_ZOOM_THRESHOLDS', () => {
-  it('has HERO_LOCAL = 5', () => {
-    expect(AGENT_ZOOM_THRESHOLDS.HERO_LOCAL).toBe(5);
-  });
-
-  it('has REGIONAL = 5', () => {
-    expect(AGENT_ZOOM_THRESHOLDS.REGIONAL).toBe(5);
-  });
-
-  it('has CONTINENTAL = 1.5', () => {
-    expect(AGENT_ZOOM_THRESHOLDS.CONTINENTAL).toBe(1.5);
   });
 });
 

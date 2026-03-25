@@ -268,21 +268,26 @@ export function tickAgentAnimations(
       const settleStart = state.settleStart ?? now;
       const t = Math.min(1, (now - settleStart) / state.settleDuration);
 
-      // Bounce: scale from SETTLE_BOUNCE_SCALE down to 1.0
-      const scale = SETTLE_BOUNCE_SCALE + (1.0 - SETTLE_BOUNCE_SCALE) * t;
+      // Bounce: multiply base scale by SETTLE_BOUNCE_SCALE → 1.0
+      // NFP #4: missing baseScale defaults to 1.0 (no worse than previous behavior)
+      const bounceMultiplier = SETTLE_BOUNCE_SCALE + (1.0 - SETTLE_BOUNCE_SCALE) * t;
 
-      sprites.portrait.scale.set(scale, scale, 1);
-      sprites.dot.scale.set(scale, scale, 1);
+      const basePortrait = (sprites.portrait.userData.baseScale as number) ?? 1;
+      const baseDot = (sprites.dot.userData.baseScale as number) ?? 1;
+      sprites.portrait.scale.set(basePortrait * bounceMultiplier, basePortrait * bounceMultiplier, 1);
+      sprites.dot.scale.set(baseDot * bounceMultiplier, baseDot * bounceMultiplier, 1);
       if (sprites.continental) {
-        sprites.continental.scale.set(scale, scale, 1);
+        const baseCont = (sprites.continental.userData.baseScale as number) ?? 1;
+        sprites.continental.scale.set(baseCont * bounceMultiplier, baseCont * bounceMultiplier, 1);
       }
 
       if (t >= 1) {
-        // Ensure final scale is exactly 1.0
-        sprites.portrait.scale.set(1, 1, 1);
-        sprites.dot.scale.set(1, 1, 1);
+        // Restore exact base scale
+        sprites.portrait.scale.set(basePortrait, basePortrait, 1);
+        sprites.dot.scale.set(baseDot, baseDot, 1);
         if (sprites.continental) {
-          sprites.continental.scale.set(1, 1, 1);
+          const baseCont = (sprites.continental.userData.baseScale as number) ?? 1;
+          sprites.continental.scale.set(baseCont, baseCont, 1);
         }
         toRemove.push(agentId);
       }

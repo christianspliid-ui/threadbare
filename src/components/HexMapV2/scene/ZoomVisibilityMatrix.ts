@@ -28,10 +28,8 @@ export type ZoomTier = 'hero-local' | 'regional' | 'continental' | 'full-world';
  * Minimum k (d3-zoom scale) values for each zoom tier.
  * Tiers use >= checks in descending order: if k >= HERO_LOCAL → hero-local, etc.
  *
- * These values match AGENT_ZOOM_THRESHOLDS in agentSpriteTypes.ts (same numbers).
- * Plan 03 cleanup: consider having agentSpriteTypes.ts re-export from here.
- *
  * NFP #1: All threshold values are named constants.
+ * Agent zoom visibility uses these thresholds via getZoomTier + ZOOM_VISIBILITY_MATRIX.
  */
 export const ZOOM_TIER_THRESHOLDS = {
   /** Hero-local zoom: full detail, portraits, events, grid lines */

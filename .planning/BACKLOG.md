@@ -2,25 +2,53 @@
 
 > Prioritized list of future work. Migrated from Notion 2026-03-22 — Notion backlog archived.
 >
-> **Rules:** One item per heading. Status is the emoji prefix. Move completed items to `Docs/project-history.md` periodically.
+> **Rules:** One item per heading. Status is the emoji prefix. Move `✅` items to `Docs/project-history.md` periodically.
 >
-> **Statuses:** 🏗️ In progress · 🔲 Ready to build · 💡 Needs design · 🧊 Ice box (parked idea)
+> **Kanban states:** `💡` idea · `📋` todo · `🎨` design · `📐` plan · `🏗️` dev · `✅` done
+> Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
+> Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
+>
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-030**.
 
 ---
 
-## 🏗️ Hex Map V2
+## ✅ TB-001 · Hex Map V2 (2026-03-23)
 
-8-phase milestone. Tracked in `.planning/ROADMAP.md`.
+All 9 phases complete (including inserted Phase 7.1 Stencil Coastline, behind feature flag). V1 SVG hex map deleted. HexMapV2 is sole renderer.
 
-**Progress:** Phase 3 of 8 in progress (Coastlines, Water & Elevation). Phases 1–2 complete.
-
----
-
-## ✅ HexMapV2 Quick Wins — Consistency & Type Safety (completed 2026-03-25)
+**Roadmap:** `.planning/ROADMAP.md`
 
 ---
 
-## 💡 HexMapV2 Medium-Term Improvements
+## ✅ TB-002 · HexMapV2 Quick Wins — Consistency & Type Safety (2026-03-25)
+
+---
+
+## ✅ TB-013 · Agent Sprite Scale Bug + Zoom Threshold Unification (2026-03-25)
+
+Agent sprites shrink to ~1 world unit after first movement because the settle animation resets scale to absolute 1.0 instead of the sprite's base size. Also, `AGENT_ZOOM_THRESHOLDS` disagrees with `ZOOM_TIER_THRESHOLDS` (hero-local at k=5 vs k=15), causing wrong sprite tiers to display. Continental group (retinue dots) is never shown.
+
+**Plan:** `Docs/plans/2026-03-25-agent-sprite-scale-and-zoom-fix.md`
+
+---
+
+## ✅ TB-014 · Dynamic Kanban Board (2026-03-25)
+
+`kanban.html` maintains a hardcoded `ITEMS` array that must be manually updated whenever BACKLOG.md changes. Replace with a parser that reads BACKLOG.md at load time via `fetch()`, extracts headings + emoji prefixes + metadata (dates, links, deps), and renders cards dynamically. Single source of truth, zero manual sync.
+
+**Scope:** `kanban.html` only — self-contained, no build step, no dependencies.
+
+---
+
+## 🎨 TB-015 · Rendering Module Resilience Refactor
+
+Four-phase refactor to improve module independence and eliminate silent cross-module breakage. Phase 1: shared primitives (hexKey, worldPosition, hexGrouping). Phase 2: sprite abstraction layer (decouple animation from sprite internals). Phase 3: unified zoom tier module. Phase 4: HexMapV2 hook extraction.
+
+**Design doc:** `Docs/plans/2026-03-25-rendering-module-resilience-refactor.md`
+
+---
+
+## 🎨 TB-016 · HexMapV2 Medium-Term Improvements
 
 From architectural review. Three items with real architectural payoff:
 1. Extract custom hooks from HexMapV2.tsx God component (useAgentAnimations, useFogCulling, useZoomLayerVisibility)
@@ -32,58 +60,47 @@ From architectural review. Three items with real architectural payoff:
 
 ---
 
-## 🔲 Intent Visibility — Agent Model & Character Sheet
+## ✅ TB-003 · Intent Visibility — Agent Model & Character Sheet (2026-03-25)
 
-Surface agent ambitions and priorities in the character sheet so players can empathize with what agents are pursuing. IntentSection component for AgentProfileModal/AgentDetailPanel, single-line summary in AgentInfoCard, knowledge-gated reveal structure.
+Surface agent ambitions and priorities in the character sheet. IntentSection in AgentProfileModal/AgentDetailPanel, single-line summary in AgentInfoCard, knowledge-gated reveal structure, notification tap-through, pulse animation.
 
 **Design doc:** `Docs/plans/2026-03-17-intent-visibility.md`
-**Depends on:** Nothing (ready to build)
 
 ---
 
-## 🔲 Attachment Tier Advancement
+## ✅ TB-004 · Attachment Tier Advancement (2026-03-25)
 
-Player actions promote item tiers (Mundane → Storied → Mythic → Legendary). Tier-transition logic in attachment lifecycle, player action template for Enchant/Empower.
+Player actions promote item tiers (Mundane → Storied → Mythic → Legendary). Tier-transition logic, Enchant/Empower action templates, detail card UI, on-use triggers, tag system.
 
-**Depends on:** Attachment Action Templates (✅ complete)
-
----
-
-## 🔲 Agreement Creation as Player Action
-
-Player forges agreements between agents — diplomacy as a direct manipulation verb. Creates agreement nodes (pact, debt, favour, oath, treaty, bargain). fulfillmentCondition and ticksRemaining fields already exist.
-
-**Depends on:** Generalized Action Targeting (✅ complete)
+**Design doc:** `Docs/plans/2026-03-10-attachment-system-design.md`
 
 ---
 
-## 🔲 Cross-Boundary Contract Tests (Testing Infrastructure)
+## ✅ TB-005 · Agreement Creation as Player Action (2026-03-25)
 
-The movement/HexMapV2 area has strong unit tests but zero contract tests between systems. Changes break downstream modules silently. This item creates the foundational contract test infrastructure.
+Diplomacy as a direct player verb. Social encounter templates (CRUD), bond scoring, agreement node creation, colocation/remote constraints.
 
-**Priority items (in order):**
-1. Write `MovementTrailMesh.test.ts` — currently 0% coverage, rendering-critical
-2. Create `src/engine/__tests__/contracts/` directory with initial contract tests: pathfinding→movement, decision→movement, road-network→pathfinding
-3. Create `src/components/HexMapV2/__tests__/contracts/` with: movement-state→trail, movement-state→agent-sprite
-4. Add movement phases to `orchestrator.test.ts` — agent advances, arrives, enters decision
-5. Rewrite or delete `movement-integration.test.ts` (`describe.skip` — 10 dead tests)
-6. Seed PRNG in all movement/decision test files that don't currently seed it
-
-**Design doc:** See `testing-patterns` skill (`.claude/skills/testing-patterns/SKILL.md`) for patterns, dependency map, and anti-patterns.
-**Depends on:** Nothing (ready to build)
+**Design doc:** `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
 
 ---
 
-## 💡 Chain Reactions / Trigger System
+## ✅ TB-006 · Cross-Boundary Contract Tests (2026-03-25)
+
+Contract test infrastructure for movement/HexMapV2 boundaries. MovementTrailMesh tests, pathfinding-to-movement contract, orchestrator integration, movement-integration rewrite.
+
+**Skill:** `.claude/skills/testing-patterns/SKILL.md`
+
+---
+
+## 💡 TB-017 · Chain Reactions / Trigger System
 
 Lightweight trigger system: "when cursed edge added at this location, also add unrest +10." Player actions cascade through world in visible, traceable ways. Must stay deterministic and traceable per NFPs.
 
 **Depends on:** Location State Fields, Attachment Action Templates
-**Needs design:** Yes — tracing and fail-soft need careful thought
 
 ---
 
-## 💡 Cosmological Manipulation
+## 💡 TB-018 · Cosmological Manipulation
 
 Player targets foundation axes (chaos↔order, light↔darkness) directly. Globally modifies action difficulty, terrain stability, agent behavior. Very expensive essence cost, dramatic narrative payoff.
 
@@ -92,13 +109,45 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 ---
 
-## 🔲 Investigate: HexChronicle location list may miss locations due to type mismatch
+## ✅ TB-007 · HexChronicle location list bug (2026-03-25)
 
-When clicking a hex with a visible hamlet icon, the HexChronicle places list sometimes shows no locations. Suspected cause: `hexCol`/`hexRow` stored as strings in some worldgen paths but compared with `===` against numbers in `getLocationsInHex()` (`hexZoom.ts:28-31`). The location icons render because `GameView.tsx:229` uses `!=` (loose) for the null check but the downstream hex zoom query uses strict equality.
+Fixed type mismatch — `hexCol`/`hexRow` string vs number in `getLocationsInHex()`.
 
-**Investigate:** Add a runtime assertion or type coercion in `getLocationsInHex()` to confirm. Also verify the user isn't clicking an adjacent hex (small ring-positioned icons can visually overlap into neighbors).
+**Files:** `src/engine/hexZoom.ts`, `src/engine/worldSeed.ts`, `src/components/Game/GameView.tsx`
 
-**Files:** `src/engine/hexZoom.ts`, `src/engine/worldSeed.ts` (location node creation), `src/components/Game/GameView.tsx` (locationNodes adapter)
+---
+
+## ✅ TB-008 · Road-Aware Agent Movement (2026-03-25)
+
+Road-aware Dijkstra, hex-by-hex traversal, gated re-evaluation, road animation mode.
+
+**Design doc:** `Docs/plans/2026-03-25-road-aware-movement-design.md`
+
+---
+
+## ✅ TB-009 · Start Page (2026-03-23)
+
+Title screen, lore fragment, main menu, theme music, settings/credits modals.
+
+**Design doc:** `Docs/plans/2026-03-23-start-page-design.md`
+
+---
+
+## ✅ TB-010 · Kokoro TTS Narration (2026-03-23)
+
+Client-side TTS via Web Worker, narrate button in HexChronicle.
+
+---
+
+## ✅ TB-011 · Fixed-Slot Hex Layout (2026-03-25)
+
+Deterministic slot positions for agents and locations on hex tiles.
+
+---
+
+## ✅ TB-012 · Stencil Coastline (2026-03-23)
+
+WebGL stencil-based organic coastline (Phase 7.1). Behind feature flag.
 
 ---
 
@@ -119,27 +168,22 @@ Several of these may already be done — verify before starting.
 
 ### From Hex Chronicle Redesign (2026-03-15)
 
-- **Exploration Hook Generation** — Design a system that generates hooks from ruin locations, unexplored POIs, encounter seeds, sphere anomalies, historical artifacts
-- **Soul Layer Prose Enrichment** — Cross-sphere prose templates for how spheres interact in the same hex
-
-### From Slack (#threadbare, 2026-03-13)
-
-- **Agent Ambition Stat** — Agents need a visible ambition stat (if paid for). Overlaps with Intent Visibility above.
+- **TB-019 · Exploration Hook Generation** — Design a system that generates hooks from ruin locations, unexplored POIs, encounter seeds, sphere anomalies, historical artifacts
+- **TB-020 · Soul Layer Prose Enrichment** — Cross-sphere prose templates for how spheres interact in the same hex
 
 ### Content Backlog
 
-- SVG resource icons to replace emoji placeholders (🪵🪨⛏️💧🐟🌾🌽🟤)
-- Additional encounter templates per reach as needed
+- **TB-021** · SVG resource icons to replace emoji placeholders (🪵🪨⛏️💧🐟🌾🌽🟤)
 
 ### Frontend Polish
 
-- Responsive layout (currently viewport-locked to 1920×1080)
-- Onboarding / first-minute clarity pass
+- **TB-022** · Responsive layout (currently viewport-locked to 1920×1080)
+- **TB-023** · Onboarding / first-minute clarity pass
 
 ### Developer Tools
 
-- Content authoring UI (CMS at `?view=cms` exists but read-only)
-- Constants tuning panel with live editing
+- **TB-024** · Content authoring UI (CMS at `?view=cms` exists but read-only)
+- **TB-025** · Constants tuning panel with live editing
 
 ---
 
@@ -147,7 +191,7 @@ Several of these may already be done — verify before starting.
 
 Ideas that need significant design work or aren't urgent.
 
-- OCEAN personality model for agents
-- Bonds/leverage system between agents
-- Resources system v2 (production chains, scarcity)
-- Ascendant Creation Experience redesign
+- **TB-026** · OCEAN personality model for agents
+- **TB-027** · Bonds/leverage system between agents
+- **TB-028** · Resources system v2 (production chains, scarcity)
+- **TB-029** · Ascendant Creation Experience redesign

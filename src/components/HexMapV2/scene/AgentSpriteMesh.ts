@@ -21,10 +21,11 @@ import * as THREE from 'three';
 import type { AgentRenderData } from '../agents/agentSpriteTypes';
 import {
   FACTION_HERALDIC_COLORS,
-  AGENT_ZOOM_THRESHOLDS,
   AGENT_SPRITE_Z,
   PORTRAIT_TEXTURE_SIZE,
 } from '../agents/agentSpriteTypes';
+import type { ZoomTier } from './ZoomVisibilityMatrix';
+import { ZOOM_VISIBILITY_MATRIX } from './ZoomVisibilityMatrix';
 import {
   buildFactionDotTextureCache,
   buildRetinueDotTexture,
@@ -160,6 +161,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       const portraitSprite = new THREE.Sprite(portraitMaterial);
       const portraitScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS);
       portraitSprite.scale.set(portraitScale, portraitScale, 1);
+      portraitSprite.userData.baseScale = portraitScale;
       portraitSprite.position.set(wx, wy, AGENT_SPRITE_Z);
       portraitGroup.add(portraitSprite);
 
@@ -172,6 +174,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       const dotSprite = new THREE.Sprite(dotMaterial);
       const dotScale = agentSpriteScale(AGENT_TOKEN_RADIUS);
       dotSprite.scale.set(dotScale, dotScale, 1);
+      dotSprite.userData.baseScale = dotScale;
       dotSprite.position.set(wx, wy, AGENT_SPRITE_Z);
       dotGroup.add(dotSprite);
 
@@ -189,6 +192,7 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         continentalSprite = new THREE.Sprite(contMaterial);
         const contScale = agentSpriteScale(AGENT_DOT_RADIUS);
         continentalSprite.scale.set(contScale, contScale, 1);
+        continentalSprite.userData.baseScale = contScale;
         continentalSprite.position.set(wx, wy, AGENT_SPRITE_Z);
         continentalGroup.add(continentalSprite);
       }
@@ -225,39 +229,20 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
 // ── Zoom Visibility ──────────────────────────────────────────────────────────
 
 /**
- * Toggles portrait/dot/continental group visibility based on the current d3 zoom level.
+ * Toggles portrait/dot/continental group visibility based on the current zoom tier.
  *
- * Called on every zoom event. Thresholds match the existing ZOOM_THRESHOLDS used
- * by RegionLabelOverlay and the agent rendering specification.
+ * Uses the centralized ZOOM_VISIBILITY_MATRIX — no local threshold constants.
+ * Called on every zoom event from HexMapV2.tsx.
+ *
+ * NFP #1: all thresholds from ZOOM_TIER_THRESHOLDS via getZoomTier.
  *
  * @param group — the AgentSpriteGroup to update
- * @param zoomLevel — current d3 zoom scale (k value)
+ * @param tier — current zoom tier (from getZoomTier)
  */
-/**
- * Restores V1 zoom tier behavior:
- *   k >= HERO_LOCAL (5)    → small portraits on ring positions (dotGroup)
- *   k >= CONTINENTAL (1.5) → large hex-centered portraits (portraitGroup)
- *   k < CONTINENTAL        → hidden
- *
- * NFP #1: all thresholds from AGENT_ZOOM_THRESHOLDS.
- */
-export function updateZoomVisibility(group: AgentSpriteGroup, zoomLevel: number): void {
-  if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL) {
-    // Zoomed in (k >= 5): small portraits on ring positions
-    group.portraitGroup.visible = false;
-    group.dotGroup.visible = true;
-    group.continentalGroup.visible = false;
-  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
-    // Zoomed out (1.5 <= k < 5): large hex-centered portraits with colored borders
-    group.portraitGroup.visible = true;
-    group.dotGroup.visible = false;
-    group.continentalGroup.visible = false;
-  } else {
-    // Full-world (k < 1.5): hide all
-    group.portraitGroup.visible = false;
-    group.dotGroup.visible = false;
-    group.continentalGroup.visible = false;
-  }
+export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier): void {
+  group.portraitGroup.visible = ZOOM_VISIBILITY_MATRIX.agents_portrait[tier];
+  group.dotGroup.visible = ZOOM_VISIBILITY_MATRIX.agents_dot[tier];
+  group.continentalGroup.visible = ZOOM_VISIBILITY_MATRIX.agents_retinue[tier];
 }
 
 // ── Portrait Loader ──────────────────────────────────────────────────────────

@@ -160,6 +160,30 @@ describe('createAgentSpriteMesh', () => {
     expect(unique.size).toBe(3);
   });
 
+  it('stores baseScale in userData for portrait sprites', () => {
+    const agents = [makeAgent('agent-1', 5, 3)];
+    const group = createAgentSpriteMesh(agents);
+    const entry = group.spriteMap.get('agent-1')!;
+    // Portrait scale = AGENT_PORTRAIT_RADIUS (4.5) × 2 = 9.0
+    expect(entry.portrait.userData.baseScale).toBe(9);
+  });
+
+  it('stores baseScale in userData for dot sprites', () => {
+    const agents = [makeAgent('agent-1', 5, 3)];
+    const group = createAgentSpriteMesh(agents);
+    const entry = group.spriteMap.get('agent-1')!;
+    // Dot scale = AGENT_TOKEN_RADIUS (1.5) × 2 = 3.0
+    expect(entry.dot.userData.baseScale).toBe(3);
+  });
+
+  it('stores baseScale in userData for continental sprites', () => {
+    const agents = [makeAgent('retinue-1', 5, 3, 0, true)];
+    const group = createAgentSpriteMesh(agents);
+    const entry = group.spriteMap.get('retinue-1')!;
+    // Continental scale = AGENT_DOT_RADIUS (2.5) × 2 = 5.0
+    expect(entry.continental!.userData.baseScale).toBe(5);
+  });
+
   it('creates continental sprite for retinue agents', () => {
     const agents = [makeAgent('retinue-1', 5, 3, 0, true)];
     const group = createAgentSpriteMesh(agents);
@@ -195,41 +219,33 @@ describe('updateZoomVisibility', () => {
     updateZoomVisibility = mod.updateZoomVisibility;
   });
 
-  it('at zoom >= 5 (zoomed in): only dotGroup is visible', () => {
+  it('hero-local tier: only portraitGroup is visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 5);
-    expect(group.portraitGroup.visible).toBe(false);
-    expect(group.dotGroup.visible).toBe(true);
-    expect(group.continentalGroup.visible).toBe(false);
-  });
-
-  it('at zoom 10 (max zoom): only dotGroup is visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 10);
-    expect(group.portraitGroup.visible).toBe(false);
-    expect(group.dotGroup.visible).toBe(true);
-    expect(group.continentalGroup.visible).toBe(false);
-  });
-
-  it('at zoom 4.9 (zoomed out): only portraitGroup is visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 4.9);
+    updateZoomVisibility(group, 'hero-local');
     expect(group.portraitGroup.visible).toBe(true);
     expect(group.dotGroup.visible).toBe(false);
     expect(group.continentalGroup.visible).toBe(false);
   });
 
-  it('at zoom 1.5 (continental boundary): only portraitGroup is visible', () => {
+  it('regional tier: only dotGroup is visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 1.5);
-    expect(group.portraitGroup.visible).toBe(true);
-    expect(group.dotGroup.visible).toBe(false);
+    updateZoomVisibility(group, 'regional');
+    expect(group.portraitGroup.visible).toBe(false);
+    expect(group.dotGroup.visible).toBe(true);
     expect(group.continentalGroup.visible).toBe(false);
   });
 
-  it('at zoom < 1.5 (full-world): all groups hidden', () => {
+  it('continental tier: dotGroup and continentalGroup are visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 1.0);
+    updateZoomVisibility(group, 'continental');
+    expect(group.portraitGroup.visible).toBe(false);
+    expect(group.dotGroup.visible).toBe(true);
+    expect(group.continentalGroup.visible).toBe(true);
+  });
+
+  it('full-world tier: all groups hidden', () => {
+    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(group, 'full-world');
     expect(group.portraitGroup.visible).toBe(false);
     expect(group.dotGroup.visible).toBe(false);
     expect(group.continentalGroup.visible).toBe(false);
