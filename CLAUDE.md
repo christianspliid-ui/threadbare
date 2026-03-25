@@ -153,9 +153,10 @@ Before committing changes to `src/engine/` or `src/components/HexMapV2/`:
 
 1. `npm test` — all tests pass
 2. `npx tsc --noEmit` — type check clean
-3. If movement/pathfinding changed → verify contract tests in `__tests__/contracts/` pass
-4. If any tick phase changed → run orchestrator integration suite
-5. If HexMapV2 changed → visual verification at `?view=game` (world, continental, hero-local zoom)
+3. `npx vite build` — production build succeeds (catches issues that type-check alone misses; confirms Vercel will deploy cleanly)
+4. If movement/pathfinding changed → verify contract tests in `__tests__/contracts/` pass
+5. If any tick phase changed → run orchestrator integration suite
+6. If HexMapV2 changed → visual verification at `?view=game` (world, continental, hero-local zoom)
 
 ## Viewport Contract (1920×1080)
 
