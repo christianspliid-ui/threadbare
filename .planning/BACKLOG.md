@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-034**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-035**.
 
 ---
 
@@ -226,4 +226,14 @@ Ideas that need significant design work or aren't urgent.
 - **TB-026** · OCEAN personality model for agents
 - **TB-027** · Bonds/leverage system between agents
 - **TB-028** · Resources system v2 (production chains, scarcity)
-- **TB-029** · Ascendant Creation Ex
+- **TB-029** · Ascendant Creation Experience — guided flow for the player to create and customize Ascendants (powerful former mortals). Domain capability selection, sphere alignment, visual identity, backstory generation within constraints.
+
+---
+
+## 💡 TB-034 · Browser-Side TTS Fallback (kokoro-js)
+
+When deployed to Vercel (or any host without the local `tts-server.py`), narration silently fails because the TTS endpoint at `localhost:3001` is unreachable. Add a fallback path using the existing `kokoro-js` dependency and `NarrationWorker.ts` to run Kokoro TTS inference entirely in the browser via WebAssembly/WebGPU. The local server path remains preferred when available (lower latency, GPU-accelerated); the browser path activates automatically when the server health-check fails.
+
+**Scope:** `NarrationService.ts`, `NarrationWorker.ts`, `narrationConstants.ts`
+**Depends on:** TB-010 (✅ Kokoro TTS Narration)
+**Trade-offs:** ~50 MB model download on first use; heavier client CPU/GPU; needs loading indicator
