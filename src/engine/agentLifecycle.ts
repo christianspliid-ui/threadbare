@@ -20,6 +20,7 @@ import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
 import { emitTrace } from './traceBuffer';
+import { getAvatarsOf, getAgentLocation, getAgentsAtLocation, getActorCultures } from './graphQueries';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -90,9 +91,9 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
   {
     const ascendantNode = graph.getNode(state.ascendantId);
     if (ascendantNode) {
-      const avatarEdges = graph.getIncomingEdges(state.ascendantId, 'avatar_of');
-      for (const e of avatarEdges) {
-        avatarNodeIds.add(e.source);
+      const avatars = getAvatarsOf(graph, state.ascendantId);
+      for (const a of avatars) {
+        avatarNodeIds.add(a.id);
       }
     }
   }
@@ -116,8 +117,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
     if (shouldDie) {
       // Capture location before removing edges
-      const locEdges = graph.getOutgoingEdges(actor.id, 'located_at');
-      const deathLocNode = locEdges.length > 0 ? graph.getNode(locEdges[0].target) : undefined;
+      const deathLocNode = getAgentLocation(graph, actor.id);
       const deathHexCoords = deathLocNode?.properties?.hexCol != null
         ? { col: deathLocNode.properties.hexCol as number, row: deathLocNode.properties.hexRow as number }
         : undefined;
@@ -150,9 +150,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
 
     for (const locId of locationIds) {
       // Count agents at this location
-      const agentsHere = graph.getIncomingEdges(locId, 'located_at')
-        .map(e => graph.getNode(e.source))
-        .filter(n => n && n.properties.actorType === 'individual');
+      const agentsHere = getAgentsAtLocation(graph, locId);
 
       if (agentsHere.length >= BIRTH_DENSITY_THRESHOLD && rng() < BIRTH_CHANCE) {
         const newId = nextLifecycleId('born');
@@ -205,15 +203,14 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         });
 
         // Inherit culture from a parent at this location
-        const parentCultures = agentsHere
-          .filter(a => a !== null)
-          .flatMap(a => graph.getOutgoingEdges(a!.id, 'belongs_to'));
-        if (parentCultures.length > 0) {
-          const parentCulture = parentCultures[Math.floor(rng() * parentCultures.length)];
+        const parentCultureEntries = agentsHere
+          .flatMap(a => getActorCultures(graph, a.id));
+        if (parentCultureEntries.length > 0) {
+          const pick = parentCultureEntries[Math.floor(rng() * parentCultureEntries.length)];
           graph.addEdge({
             id: `edge_culture_${newId}`,
             source: newId,
-            target: parentCulture.target,
+            target: pick.culture.id,
             type: 'belongs_to',
             properties: { strength: 0.6 },
           });
@@ -223,7 +220,7 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
         const agentSnapshot = {
           domainCapabilities: domainCaps as Record<ReachDomain, number>,
           traits: [] as string[],  // newly born agents have no traits yet
-          culturalSpheres: parentCultures.length > 0
+          culturalSpheres: parentCultureEntries.length > 0
             ? [dominantSphere]
             : [],
           bonds: [],  // newly born agents have no bonds yet

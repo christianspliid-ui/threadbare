@@ -12,6 +12,8 @@ import { VALUE_PAIRS } from '../types/agent';
 import { REACH_DOMAINS } from '../types/traits';
 import type { ReachDomain } from '../types/traits';
 import type { MovementState } from '../types/movement';
+import { EDGE_SCHEMA, matchesNodeType } from '../types/edgeSchema';
+import type { EdgeType } from '../types/graph';
 
 // ─── Constants ────────────────────────────────────────────────────
 
@@ -204,37 +206,61 @@ export function validateAgentIntegrity(
     }
   }
 
-  // ── Check 6: Edge Relationships ───────────────────────────────
-  const edgeChecks: [string, string][] = [
-    ['member_of', 'actor'],
-    ['worships', 'actor'],
-    ['belongs_to', 'actor'],
-  ];
+  // ── Check 6: Edge Relationships (schema-driven) ──────────────
+  const allOutgoing = graph.getOutgoingEdges(agentId);
+  const allIncoming = graph.getIncomingEdges(agentId);
 
-  for (const [edgeType, expectedNodeType] of edgeChecks) {
-    const edges = graph.getOutgoingEdges(agentId, edgeType as any);
-    for (const edge of edges) {
-      const target = graph.getNode(edge.target);
-      if (!target) {
+  for (const edge of allOutgoing) {
+    const schema = EDGE_SCHEMA[edge.type as EdgeType];
+    if (!schema) {
+      result.checks.edgeRelationships = false;
+      result.warnings.push(`Unknown outgoing edge type: '${edge.type}'`);
+      continue;
+    }
+
+    // Verify source type matches schema (this agent is the source)
+    if (!matchesNodeType(node.type, schema.sourceNodeType)) {
+      result.checks.edgeRelationships = false;
+      result.warnings.push(
+        `${edge.type} edge source should be ${JSON.stringify(schema.sourceNodeType)}, got '${node.type}'`,
+      );
+    }
+
+    // Verify target node exists and type matches schema
+    const target = graph.getNode(edge.target);
+    if (!target) {
+      result.checks.edgeRelationships = false;
+      result.warnings.push(`${edge.type} edge points to non-existent node: ${edge.target}`);
+    } else if (!matchesNodeType(target.type, schema.targetNodeType)) {
+      result.checks.edgeRelationships = false;
+      result.warnings.push(
+        `${edge.type} edge target should be ${JSON.stringify(schema.targetNodeType)}, got '${target.type}'`,
+      );
+    }
+
+    // Check required properties
+    for (const prop of schema.requiredProperties) {
+      if (!(prop in edge.properties)) {
         result.checks.edgeRelationships = false;
-        result.warnings.push(`${edgeType} edge points to non-existent node: ${edge.target}`);
-      } else if (target.type !== expectedNodeType) {
-        result.checks.edgeRelationships = false;
-        result.warnings.push(`${edgeType} edge target has type '${target.type}', expected '${expectedNodeType}'`);
+        result.warnings.push(`${edge.type} edge missing required property: ${prop}`);
       }
     }
   }
 
-  // Check pursues edges point to ambition nodes
-  const pursuesEdges = graph.getOutgoingEdges(agentId, 'pursues');
-  for (const edge of pursuesEdges) {
-    const target = graph.getNode(edge.target);
-    if (!target) {
+  for (const edge of allIncoming) {
+    const schema = EDGE_SCHEMA[edge.type as EdgeType];
+    if (!schema) {
       result.checks.edgeRelationships = false;
-      result.warnings.push(`pursues edge points to non-existent node: ${edge.target}`);
-    } else if (target.type !== 'ambition') {
+      result.warnings.push(`Unknown incoming edge type: '${edge.type}'`);
+      continue;
+    }
+
+    // Verify target type matches schema (this agent is the target)
+    if (!matchesNodeType(node.type, schema.targetNodeType)) {
       result.checks.edgeRelationships = false;
-      result.warnings.push(`pursues edge target has type '${target.type}', expected 'ambition'`);
+      result.warnings.push(
+        `${edge.type} incoming edge target should be ${JSON.stringify(schema.targetNodeType)}, got '${node.type}'`,
+      );
     }
   }
 
