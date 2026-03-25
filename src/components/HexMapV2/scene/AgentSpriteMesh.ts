@@ -2,13 +2,13 @@
  * AgentSpriteMesh.ts — Three.js scene module for agent sprite rendering.
  *
  * Creates two-tier sprite groups for agent rendering:
- *   - Portrait tier (k >= 15): circular portrait thumbnails with faction/retinue rings
- *   - Dot tier (k >= 5): colored faction dots
- *   - Continental tier (k >= 1.5): tiny retinue-only dots
+ *   - Dot tier (k >= 5): small circular portraits on ring positions
+ *   - Portrait tier (1.5 <= k < 5): large hex-centered circular portraits with colored borders
+ *   - Hidden (k < 1.5): all agents hidden
  *
- * Multiple agents on the same hex are distributed via RING layout using
- * getRingSlotOffset from movementPath.ts. Stable sort by agent id ensures
- * deterministic slot assignment.
+ * Multiple agents on the same hex are distributed via fixed edge-midpoint
+ * slots using getFixedSlotOffset from movementPath.ts. Stable sort by agent
+ * id ensures deterministic slot assignment.
  *
  * NFP #1 (tunability): All scale and sprite size values are derived from named constants.
  * NFP #3 (determinism): Agents sorted by id for deterministic ring slot assignment.
@@ -33,9 +33,10 @@ import {
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { hexToPixel } from '../../../lib/hexMath';
-import { getRingSlotOffset } from '../../../lib/movementPath';
+import { getFixedSlotOffset } from '../../../lib/movementPath';
 import {
-  AGENT_RING_RADIUS,
+  SLOT_RING_RADIUS,
+  EDGE_MID_ANGLES_DEG,
   AGENT_TOKEN_RADIUS,
   AGENT_PORTRAIT_RADIUS,
   AGENT_DOT_RADIUS,
@@ -138,15 +139,16 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       const agent = visible[i];
 
       // Compute world position: hexToPixel + RING offset + Y-flip
+      // Both tiers share the same position to avoid a visual jump at the zoom threshold.
       const hexCenter = hexToPixel(
         { col: agent.hexCol, row: agent.hexRow },
         HEX_CONSTANTS.HEX_SIZE,
       );
-      const ringOffset = getRingSlotOffset(i, visible.length, AGENT_RING_RADIUS);
+      const ringOffset = getFixedSlotOffset(i, visible.length, EDGE_MID_ANGLES_DEG, SLOT_RING_RADIUS);
       const wx = hexCenter.x + ringOffset.x;
-      const wy = -(hexCenter.y + ringOffset.y); // Y-flip: SVG y-down → Three.js y-up
+      const wy = -(hexCenter.y + ringOffset.y);
 
-      // ── Portrait sprite (hero-local zoom) ──
+      // ── Portrait sprite (hero-local zoom, k > 5) ──
       const factionTexture = dotTextureCache.get(agent.factionIndex)
         ?? dotTextureCache.get(0)!;
 
@@ -161,13 +163,9 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       portraitSprite.position.set(wx, wy, AGENT_SPRITE_Z);
       portraitGroup.add(portraitSprite);
 
-      // ── Dot sprite (regional zoom) ──
-      const dotTexture = agent.isRetinue
-        ? (retinueDotTextureCache.get(agent.factionIndex) ?? retinueDotTextureCache.get(0)!)
-        : factionTexture;
-
+      // ── Dot sprite (regional zoom, k <= 5) — small portrait on ring ──
       const dotMaterial = new THREE.SpriteMaterial({
-        map: dotTexture,
+        map: factionTexture,
         transparent: true,
         depthWrite: false,
       });
@@ -237,31 +235,25 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
  */
 /**
  * Restores V1 zoom tier behavior:
- *   k >= HERO_LOCAL  → portrait thumbnails with faction rings (token zoom)
- *   k >= REGIONAL    → colored faction dots (small dots)
- *   k >= CONTINENTAL → tiny dots (retinue agents only via continentalGroup)
- *   k < CONTINENTAL  → hidden
+ *   k >= HERO_LOCAL (5)    → small portraits on ring positions (dotGroup)
+ *   k >= CONTINENTAL (1.5) → large hex-centered portraits (portraitGroup)
+ *   k < CONTINENTAL        → hidden
  *
  * NFP #1: all thresholds from AGENT_ZOOM_THRESHOLDS.
  */
 export function updateZoomVisibility(group: AgentSpriteGroup, zoomLevel: number): void {
   if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.HERO_LOCAL) {
-    // Hero-local: portrait thumbnails with rings
-    group.portraitGroup.visible = true;
-    group.dotGroup.visible = false;
-    group.continentalGroup.visible = false;
-  } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.REGIONAL) {
-    // Regional: colored faction dots
+    // Zoomed in (k >= 5): small portraits on ring positions
     group.portraitGroup.visible = false;
     group.dotGroup.visible = true;
     group.continentalGroup.visible = false;
   } else if (zoomLevel >= AGENT_ZOOM_THRESHOLDS.CONTINENTAL) {
-    // Continental: tiny retinue-only dots
-    group.portraitGroup.visible = false;
+    // Zoomed out (1.5 <= k < 5): large hex-centered portraits with colored borders
+    group.portraitGroup.visible = true;
     group.dotGroup.visible = false;
-    group.continentalGroup.visible = true;
+    group.continentalGroup.visible = false;
   } else {
-    // Full-world: hide all
+    // Full-world (k < 1.5): hide all
     group.portraitGroup.visible = false;
     group.dotGroup.visible = false;
     group.continentalGroup.visible = false;
@@ -298,14 +290,15 @@ export async function loadAgentPortraits(
       // NFP #4: loadPortraitTexture never rejects — falls back to dot texture on error
       const texture = await loadPortraitTexture(agent.portraitUrl!, ringColor, agent.isRetinue);
 
-      // Swap the portrait sprite's texture
-      const material = sprites.portrait.material as THREE.SpriteMaterial;
-      if (material.map) {
-        // Dispose old placeholder texture if it was unique to this sprite
-        // (shared cache textures are NOT disposed here)
-      }
-      material.map = texture;
-      material.needsUpdate = true;
+      // Swap portrait sprite's texture (large, hex-centered)
+      const portraitMat = sprites.portrait.material as THREE.SpriteMaterial;
+      portraitMat.map = texture;
+      portraitMat.needsUpdate = true;
+
+      // Swap dot sprite's texture too (small portrait on ring)
+      const dotMat = sprites.dot.material as THREE.SpriteMaterial;
+      dotMat.map = texture;
+      dotMat.needsUpdate = true;
     });
 
   // Promise.allSettled: all loads attempted regardless of individual failures
@@ -321,12 +314,18 @@ export async function loadAgentPortraits(
  * that are already in the spriteMap. Does not handle adds/removes — callers
  * should recreate the group when the agent roster changes significantly.
  *
+ * Agents in `animatingIds` are skipped — their positions are controlled by
+ * tickAgentAnimations in the render loop, so overwriting them here would
+ * cancel the bezier hop animation.
+ *
  * @param group — the AgentSpriteGroup to update
  * @param agents — updated AgentRenderData array with new hex positions
+ * @param animatingIds — set of agent IDs currently in a movement animation (skip these)
  */
 export function updateAgentPositions(
   group: AgentSpriteGroup,
   agents: AgentRenderData[],
+  animatingIds?: ReadonlySet<string>,
 ): void {
   // Re-group by hex for RING layout
   const hexGroups = new Map<string, AgentRenderData[]>();
@@ -349,12 +348,14 @@ export function updateAgentPositions(
       const agent = visible[i];
       const sprites = group.spriteMap.get(agent.id);
       if (!sprites) continue; // NFP #4: unknown agent — silently skip
+      if (animatingIds?.has(agent.id)) continue; // Skip — render loop controls position
 
       const hexCenter = hexToPixel(
         { col: agent.hexCol, row: agent.hexRow },
         HEX_CONSTANTS.HEX_SIZE,
       );
-      const ringOffset = getRingSlotOffset(i, visible.length, AGENT_RING_RADIUS);
+      const ringOffset = getFixedSlotOffset(i, visible.length, EDGE_MID_ANGLES_DEG, SLOT_RING_RADIUS);
+
       const wx = hexCenter.x + ringOffset.x;
       const wy = -(hexCenter.y + ringOffset.y);
 

@@ -175,6 +175,52 @@ export function getSegmentBezier(
   return { p0, ctrl, p2 };
 }
 
+// ─── Fixed-slot hex layout ───────────────────────────────────────
+
+/**
+ * Balanced distribution lookup: for N entities (0-6), which slot indices
+ * to use for maximal visual spacing. Same table for agents and locations.
+ */
+const BALANCED_SLOT_INDICES: readonly (readonly number[])[] = [
+  [],                    // 0 entities
+  [0],                   // 1
+  [0, 3],               // 2 — opposite slots
+  [0, 2, 4],            // 3 — every other
+  [0, 1, 3, 4],         // 4 — two opposite pairs
+  [0, 1, 2, 3, 4],     // 5 — first five
+  [0, 1, 2, 3, 4, 5],  // 6 — all slots
+];
+
+/**
+ * Returns world-unit offset from hex center for a fixed hex-geometry slot.
+ *
+ * Replaces getRingSlotOffset for static on-hex positioning. Agents use
+ * EDGE_MID_ANGLES_DEG (30°/90°/…), locations use VERTEX_ANGLES_DEG (0°/60°/…).
+ * Adjacent slots are always 30° apart — no overlap possible.
+ *
+ * @param entityIndex   Index of this entity among its peers on this hex (0-based, sorted by id/name)
+ * @param totalEntities Total entities of this category on this hex (capped at 6)
+ * @param slotAnglesDeg The 6 fixed angles for this category (VERTEX or EDGE_MID)
+ * @param radius        Distance from hex center (SLOT_RING_RADIUS)
+ * @returns {x, y} offset in world units
+ */
+export function getFixedSlotOffset(
+  entityIndex: number,
+  totalEntities: number,
+  slotAnglesDeg: readonly number[],
+  radius: number,
+): Point {
+  const capped = Math.min(Math.max(totalEntities, 0), 6);
+  const indices = BALANCED_SLOT_INDICES[capped] ?? BALANCED_SLOT_INDICES[6];
+  const slotIdx = indices[entityIndex] ?? 0;
+  const angleDeg = slotAnglesDeg[slotIdx] ?? 0;
+  const angleRad = (angleDeg * Math.PI) / 180 - Math.PI / 2; // -90° to start from top
+  return {
+    x: Math.cos(angleRad) * radius,
+    y: Math.sin(angleRad) * radius,
+  };
+}
+
 // ─── Ring slot computation ───────────────────────────────────────
 
 /**

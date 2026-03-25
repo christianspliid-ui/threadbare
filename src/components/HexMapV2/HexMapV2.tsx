@@ -57,19 +57,16 @@ import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
-import { getRingSlotOffset } from '../../lib/movementPath';
+import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
-  LOCATION_RING_RADIUS,
-  LOCATION_RING_ROTATION_DEG,
-  AGENT_RING_RADIUS,
+  SLOT_RING_RADIUS,
+  VERTEX_ANGLES_DEG,
+  EDGE_MID_ANGLES_DEG,
   MAX_RING_AGENTS,
 } from '../../data/agent-visual-content';
 import { generateRegionLabels, generateRiverLabels } from '../../engine/regionLabels';
 
 // ─── Location offset for trail endpoints ──────────────────────────────────────
-
-/** Rotation offset in radians (same as LocationIconMesh). */
-const TRAIL_LOC_ROTATION_RAD = LOCATION_RING_ROTATION_DEG * Math.PI / 180;
 
 /**
  * Builds a lookup from hex key ("col,row") to the world-space offset (dx, dy)
@@ -116,7 +113,7 @@ function buildLocationOffsetLookup(
       lookup.set(key, { dx: 0, dy: 0 });
     } else {
       // Small location — first ring slot position
-      const offset = getRingSlotOffset(0, 1, LOCATION_RING_RADIUS, TRAIL_LOC_ROTATION_RAD);
+      const offset = getFixedSlotOffset(0, 1, VERTEX_ANGLES_DEG, SLOT_RING_RADIUS);
       // Y-flip: ring offset Y matches LocationIconMesh convention
       lookup.set(key, { dx: offset.x, dy: -offset.y });
     }
@@ -152,6 +149,8 @@ export interface HexMapV2Props {
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
   fogEnabled?: boolean;
+  /** Whether to render the organic shore (coastline) mesh. Default true. */
+  showOrganicShore?: boolean;
 }
 
 export interface HexMapV2Handle {
@@ -170,6 +169,11 @@ export interface HexMapV2Handle {
    * Returns null if the renderer isn't initialized yet.
    */
   getDiagnostics: () => WebGLDiagnosticsSnapshot | null;
+  /**
+   * Get the current d3-zoom scale (k value).
+   * Returns the default zoom if not yet initialized.
+   */
+  getZoomLevel: () => number;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -252,7 +256,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false, showOrganicShore = true },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -312,6 +316,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const elevTicksRef       = useRef<THREE.Mesh | null>(null);
     const borderKingdomRef   = useRef<THREE.Mesh | null>(null);
     const borderBaronyRef    = useRef<THREE.Mesh | null>(null);
+    const coastlineRef       = useRef<THREE.Group | null>(null);
 
     // Follow mode ref — mutable state, does not trigger re-renders
     const followModeRef = useRef<FollowModeState>(createFollowMode());
@@ -369,6 +374,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const scene    = sceneRef.current;
         if (!renderer || !scene) return null;
         return diagnosticsRef.current.snapshot(renderer, scene);
+      },
+      getZoomLevel(): number {
+        return zoomLevel;
       },
     }));
 
@@ -439,6 +447,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         // Build coastline overlay — organic stencil boundary + ocean blue overlay (Phase 07.1)
         const coastlineMesh = createCoastlineMesh(tiles, cols, rows, seed, lakeIdsRef.current.length > 0 ? lakeIdsRef.current : undefined);
+        coastlineRef.current = coastlineMesh;
         scene.add(coastlineMesh);
 
         // Build elevation tick marks — caterpillar-style marks on steep hex edges (Plan 03-03)
@@ -724,6 +733,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           locationGroupRef.current = null;
           roadGroupRef.current = null;
           riverGroupRef.current = null;
+          coastlineRef.current = null;
           gridLinesRef.current = null;
           elevTicksRef.current = null;
           borderKingdomRef.current = null;
@@ -940,6 +950,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       }
     }, [visibilityMap, fogEnabled]);
 
+    // Toggle organic shore (coastline) mesh visibility
+    useEffect(() => {
+      if (coastlineRef.current) {
+        coastlineRef.current.visible = showOrganicShore;
+      }
+    }, [showOrganicShore]);
+
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
       const canvas = canvasRef.current as (HTMLCanvasElement & {
@@ -991,7 +1008,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const visible = hexAgents.slice(0, MAX_RING_AGENTS);
         for (let i = 0; i < visible.length; i++) {
           const agent = visible[i];
-          const ringOffset = getRingSlotOffset(i, visible.length, AGENT_RING_RADIUS);
+          const ringOffset = getFixedSlotOffset(i, visible.length, EDGE_MID_ANGLES_DEG, SLOT_RING_RADIUS);
           const hexCenter = hexToPixel({ col: agent.hexCol, row: agent.hexRow }, HEX_CONSTANTS.HEX_SIZE);
           const wx = hexCenter.x + ringOffset.x;
           const wy = -(hexCenter.y + ringOffset.y); // Y-flip
@@ -1081,8 +1098,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
       }
 
-      // Update sprite positions for non-animating agents
-      updateAgentPositions(spriteGroup, agents);
+      // Update sprite positions for non-animating agents (skip those with active bezier hops)
+      const animatingIds = new Set(animStates.keys());
+      updateAgentPositions(spriteGroup, agents, animatingIds);
 
       // Update previous positions snapshot (with ring offsets for rearrangement detection)
       prevAgentPositionsRef.current = newPositions;
