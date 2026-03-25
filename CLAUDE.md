@@ -87,6 +87,76 @@ When in tension, higher priorities win.
 6. **Additive over destructive changes** — Add new fields/functions; only refactor when old shape blocks progress.
 7. **Performance budget, not premature optimization** — Profile before optimizing. Lean on the spotlight tier system.
 
+## Cross-Boundary Testing
+
+Changes in engine and HexMapV2 frequently break downstream systems because each module is tested in isolation. The fix: **test the contracts between systems, not just the systems themselves.**
+
+### The Layer Boundary Rule
+
+When modifying a module, verify the contract with its immediate consumers — not just the module itself:
+
+- **If you change a function's return type or shape:** Add or update a contract test that feeds real output from the changed function into every known consumer.
+- **If you change engine state** (`MovementState`, `GameState`, graph node shape, encounter progress): verify that both the producing module and all consuming modules (UI components, other phases, traces) handle the new shape correctly.
+- **If you change a tick phase or phase ordering:** Run the orchestrator integration test, not just the phase's unit test.
+- **If you change HexMapV2 data flow** (agent props, trail data, road paths): visual verification at `?view=game` at all three zoom tiers (world, continental, hero-local) in addition to unit tests.
+
+### Contract Tests
+
+For every pair of modules where A's output feeds B's input, there should be a test that constructs **real** A output (not hand-built mocks) and feeds it to real B. These live in `__tests__/contracts/` within the relevant engine or component directory.
+
+```typescript
+// ❌ Wrong: each module tested with hand-built mocks that may not match reality
+test('pathfinding returns path', () => { /* mock graph, verify path structure */ });
+test('movement executes path', () => { /* hand-build path array, verify ticks */ });
+
+// ✅ Right: contract test — A's real output feeds B's real input
+test('pathfinding output is valid movementExecution input', () => {
+  const pathResult = findShortestPath(realGraph, agentId, startId, endId);
+  const state = initMovementState(pathResult.destinationId, pathResult.path, firstEdgeCost, tick);
+  const result = tickMovement(graph, agentId, state, tick);
+  expect(result.moved || result.arrivedAtDestination).toBe(true);
+});
+```
+
+### Required Contract Test Pairs
+
+These must exist. If a change breaks one, the failure names which integration is broken:
+
+| Producer | Consumer | What the contract verifies |
+|---|---|---|
+| `findShortestPath` | `initMovementState` | Path array is a valid movement queue; road segments populate `roadHexQueue` |
+| `tickMovement` | HexMapV2 agent props | Movement history entries have valid hex coords for trail rendering |
+| `phaseAgentDecision` | `phaseMovement` | Decision output produces valid `MovementState` that ticks correctly |
+| `generateRoadEdges` | `findShortestPath` | Road edges are discoverable, cost-valid, and hexPath is traversable |
+| `MovementState` changes | `agentAnimationState` | Hex transitions produce valid animation input (fromHex, toHex, roadContext) |
+| `movementHistory` | `MovementTrailMesh` | History format matches what the trail renderer consumes |
+
+### When to Write Integration Tests
+
+Write a full-orchestrator integration test (multiple ticks, real graph, real agents) when:
+
+- Adding a new tick phase or modifying phase ordering
+- Changing how phases communicate (e.g., movement → encounter detection)
+- Modifying `MovementState`, `EncounterProgress`, or `GameState` shape
+- Any change that touches 3+ files across `src/engine/` and `src/components/`
+
+### Testing Anti-Patterns to Avoid
+
+- **Mocking upstream modules in integration tests** — If you're testing the road→pathfinding→movement chain, use real `findHexPath`, not `vi.mock`. Mocks mask integration failures.
+- **Tiny test graphs only** — The real map is ~320 hexes with ~250 graph nodes. Test with at least one realistic-scale graph per system to catch performance and topology edge cases.
+- **No PRNG seed in tests** — Movement and decision tests must pass a deterministic seed. Non-seeded tests hide ordering-dependent bugs.
+- **Skipping deprecated tests without replacement** — If a `describe.skip` block exists, either rewrite it for the current architecture or delete it. Skipped tests are false comfort.
+
+### Pre-Commit Verification Checklist
+
+Before committing changes to `src/engine/` or `src/components/HexMapV2/`:
+
+1. `npm test` — all tests pass
+2. `npx tsc --noEmit` — type check clean
+3. If movement/pathfinding changed → verify contract tests in `__tests__/contracts/` pass
+4. If any tick phase changed → run orchestrator integration suite
+5. If HexMapV2 changed → visual verification at `?view=game` (world, continental, hero-local zoom)
+
 ## Viewport Contract (1920×1080)
 
 The game fills exactly one viewport. **Nothing scrolls. Nothing renders below the fold.**
@@ -204,6 +274,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |
+| Testing & contracts | `testing-patterns` | Writing tests for engine or HexMapV2 changes. Contract test patterns, dependency maps, anti-patterns, coverage gap reference. |
 | **Impediment reporting (always active)** | `impediment-reporter` | **Every session, every agent.** Log blockers and workarounds to `Docs/impediments.md` as they occur. Part of Definition of Done. |
 | Continuous improvement | `retrospective` | Review impediment log, analyze patterns, implement quick-fix improvements, backlog larger ones. Run with `/retrospective`. |
 

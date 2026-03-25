@@ -57,6 +57,23 @@ Player forges agreements between agents — diplomacy as a direct manipulation v
 
 ---
 
+## 🔲 Cross-Boundary Contract Tests (Testing Infrastructure)
+
+The movement/HexMapV2 area has strong unit tests but zero contract tests between systems. Changes break downstream modules silently. This item creates the foundational contract test infrastructure.
+
+**Priority items (in order):**
+1. Write `MovementTrailMesh.test.ts` — currently 0% coverage, rendering-critical
+2. Create `src/engine/__tests__/contracts/` directory with initial contract tests: pathfinding→movement, decision→movement, road-network→pathfinding
+3. Create `src/components/HexMapV2/__tests__/contracts/` with: movement-state→trail, movement-state→agent-sprite
+4. Add movement phases to `orchestrator.test.ts` — agent advances, arrives, enters decision
+5. Rewrite or delete `movement-integration.test.ts` (`describe.skip` — 10 dead tests)
+6. Seed PRNG in all movement/decision test files that don't currently seed it
+
+**Design doc:** See `testing-patterns` skill (`.claude/skills/testing-patterns/SKILL.md`) for patterns, dependency map, and anti-patterns.
+**Depends on:** Nothing (ready to build)
+
+---
+
 ## 💡 Chain Reactions / Trigger System
 
 Lightweight trigger system: "when cursed edge added at this location, also add unrest +10." Player actions cascade through world in visible, traceable ways. Must stay deterministic and traceable per NFPs.
