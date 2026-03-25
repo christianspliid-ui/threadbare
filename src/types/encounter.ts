@@ -170,6 +170,8 @@ export interface EncounterProgress {
   encounterId: string;
   /** Which agent is undergoing this encounter */
   actorId: string;
+  /** Target agent for social encounters (agent-to-agent interactions) */
+  targetAgentId?: string;
   /** Current step index (0-based) */
   currentEncounterIndex: number;
   /** History of step outcomes */

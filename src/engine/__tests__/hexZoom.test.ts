@@ -114,6 +114,18 @@ describe('hexZoom engine queries', () => {
       expect(getLocationsInHex(graph, 0, 0)).toEqual([]);
     });
 
+    it('finds locations even when hexCol/hexRow are stored as strings', () => {
+      graph.addNode({
+        id: 'loc.stringcoords',
+        type: 'location',
+        name: 'String Coord Place',
+        properties: { locationType: 'location', hexCol: '3' as unknown as number, hexRow: '4' as unknown as number, terrain: 'plains' },
+      });
+      const locs = getLocationsInHex(graph, 3, 4);
+      expect(locs).toHaveLength(3);
+      expect(locs.map(l => l.id)).toContain('loc.stringcoords');
+    });
+
     it('only returns location-type nodes', () => {
       graph.addNode({
         id: 'actor.wanderer',

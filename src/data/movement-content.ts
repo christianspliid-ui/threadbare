@@ -153,6 +153,30 @@ export const DEFAULT_LOCATION_ENTRY_TAX = 0;
  */
 export const MIN_EDGE_COST = 0.5;
 
+// --- Road Cost Constants ---
+
+/**
+ * Discount applied to major road A* cost at pathfinding time.
+ * Lower = faster travel. Road totalCost × this multiplier = effective cost.
+ */
+export const ROAD_MAJOR_COST_MULTIPLIER = 0.4;
+
+/**
+ * Discount applied to trail A* cost at pathfinding time.
+ * Trails are slower than major roads but still faster than off-road.
+ */
+export const ROAD_TRAIL_COST_MULTIPLIER = 0.7;
+
+/**
+ * Floor for per-hex road cost (prevents instant traversal of short roads).
+ */
+export const MIN_ROAD_HEX_COST = 0.25;
+
+/**
+ * New destination must score this much better than current to trigger mid-movement reroute.
+ */
+export const REROUTE_SCORE_MULTIPLIER = 1.5;
+
 /**
  * Maximum tick distance to consider for movement candidates.
  * Locations further than this are not evaluated as destinations.

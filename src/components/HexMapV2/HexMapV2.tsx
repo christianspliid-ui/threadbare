@@ -27,7 +27,7 @@ import { createAgentSpriteMesh, updateZoomVisibility, updateAgentPositions, load
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { AGENT_ZOOM_THRESHOLDS } from './agents/agentSpriteTypes';
-import { startMoveAnimation, startSettleAnimation, tickAgentAnimations } from './agents/agentAnimationState';
+import { startMoveAnimation, startRoadHopAnimation, startSettleAnimation, tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, addTrailSegment, updateTrails } from './scene/MovementTrailMesh';
 import { FACTION_HERALDIC_COLORS } from './agents/agentSpriteTypes';
@@ -1030,15 +1030,31 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         const hexChanged = prev && (prev.col !== agent.hexCol || prev.row !== agent.hexRow);
 
         if (hexChanged && prev) {
-          // ── Hop animation: wobbled bezier from old ring slot to new ring slot ──
-          const animState = startMoveAnimation(
-            agent.id,
-            { col: prev.col, row: prev.row },
-            { col: agent.hexCol, row: agent.hexRow },
-            seed,
-            prev.ringOffset,
-            curr.ringOffset,
-          );
+          // ── Hop animation: road hop or standard wobbled bezier ──
+          let animState: AgentAnimState;
+          if (agent.currentRoadType) {
+            // Road hop: shorter duration, reduced wobble, chain without settle
+            const isLastHop = !agent.roadHexQueueLength || agent.roadHexQueueLength === 0;
+            animState = startRoadHopAnimation(
+              agent.id,
+              { col: prev.col, row: prev.row },
+              { col: agent.hexCol, row: agent.hexRow },
+              seed,
+              agent.currentRoadType,
+              isLastHop,
+              prev.ringOffset,
+              curr.ringOffset,
+            );
+          } else {
+            animState = startMoveAnimation(
+              agent.id,
+              { col: prev.col, row: prev.row },
+              { col: agent.hexCol, row: agent.hexRow },
+              seed,
+              prev.ringOffset,
+              curr.ringOffset,
+            );
+          }
           animStates.set(agent.id, animState);
 
           // Add trail segment — offset endpoints toward location icons when present

@@ -35,6 +35,10 @@ export interface AgentRenderData {
   activityIcon?: 'boot' | 'swords' | 'hourglass' | 'coin' | 'hammer' | 'bandage';
   /** Agent name — used for fallback initial rendering when portrait unavailable */
   name?: string;
+  /** Road type the agent is currently traversing (for animation timing) */
+  currentRoadType?: 'major' | 'trail';
+  /** Number of remaining hexes in the road queue (0 or undefined = last hop or not on road) */
+  roadHexQueueLength?: number;
 }
 
 // ── Faction Heraldic Colors ──────────────────────────────────────────────────

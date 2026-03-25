@@ -373,6 +373,33 @@ export interface ScoringTrace extends TraceBase {
   action: 'start_local' | 'queue_movement' | 'attempt_remote' | 'idle';
 }
 
+/** Trace: agent advanced one hex along a road during movement */
+export interface RoadHexTransitionTrace extends TraceBase {
+  category: 'road_hex_transition';
+  agentId: string;
+  fromHex: { col: number; row: number };
+  toHex: { col: number; row: number };
+  roadType: 'major' | 'trail';
+  /** Current hex index in the road path (e.g., 4 of 8) */
+  hexProgress: number;
+  /** Total hexes in the road segment */
+  hexTotal: number;
+  ticksAccumulated: number;
+  hexCost: number;
+}
+
+/** Trace: agent rerouted mid-movement to a new destination */
+export interface AgentRerouteTrace extends TraceBase {
+  category: 'agent_reroute';
+  agentId: string;
+  oldDestinationId: string;
+  newDestinationId: string;
+  currentHexPosition: { col: number; row: number };
+  reason: 'better_encounter' | 'target_invalid' | 'threat';
+  oldScore: number;
+  newScore: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -401,7 +428,9 @@ export type TraceEntry =
   | FilterPipelineTrace
   | ScoringTrace
   | MovementTrace
-  | IdleDecisionTrace;
+  | IdleDecisionTrace
+  | RoadHexTransitionTrace
+  | AgentRerouteTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -432,6 +461,8 @@ export const TRACE_CATEGORIES = [
   'encounter_scoring',
   'movement',
   'idle_decision',
+  'road_hex_transition',
+  'agent_reroute',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
