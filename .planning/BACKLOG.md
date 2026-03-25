@@ -74,11 +74,9 @@ The graph model has no schema enforcement. Edge types are unguarded strings, the
 
 ---
 
-## 📐▶ TB-015 · Rendering Module Resilience Refactor
+## ✅ TB-015 · Rendering Module Resilience Refactor (2026-03-25)
 
-Four-phase refactor to improve module independence and eliminate silent cross-module breakage. Phase 1: shared primitives (hexKey, worldPosition, hexGrouping). Phase 2: sprite abstraction layer (decouple animation from sprite internals). Phase 3: unified zoom tier module. Phase 4: HexMapV2 hook extraction.
-
-Phase 4 overlaps with TB-016 item 1 — when Phase 4 ships, mark TB-016 item 1 complete.
+Four-phase refactor: shared primitives (hexKey, worldPosition, hexGrouping), sprite abstraction layer (AgentAnimationTarget), zoom convenience (isLayerVisible), hook extraction (3/6 already done via TB-016, remaining 3 deferred — tightly coupled with scene init lifecycle).
 
 **Design + plan:** `Docs/plans/2026-03-25-rendering-module-resilience-refactor.md`
 
