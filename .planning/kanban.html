@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Kanban Board</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f0f;
+    color: #e0ddd4;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+  header {
+    padding: 20px 32px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #daa520;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header .subtitle { font-size: 15.6px; color: #666; }
+  header .timestamp {
+    margin-left: auto;
+    font-size: 14.4px;
+    color: #555;
+    font-family: monospace;
+  }
+  .toolbar {
+    padding: 8px 32px;
+    border-bottom: 1px solid #1a1a1a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .toolbar label {
+    font-size: 13.2px;
+    color: #777;
+  }
+  .toolbar input[type="text"] {
+    flex: 1;
+    max-width: 500px;
+    padding: 4px 10px;
+    font-size: 13.2px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: #e0ddd4;
+    font-family: monospace;
+  }
+  .toolbar input[type="text"]:focus { outline: none; border-color: #daa520; }
+  .toolbar button {
+    padding: 4px 12px;
+    font-size: 13.2px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 4px;
+    color: #e0ddd4;
+    cursor: pointer;
+  }
+  .toolbar button:hover { background: #333; border-color: #555; }
+  .toolbar .status {
+    font-size: 12px;
+    color: #555;
+    margin-left: auto;
+  }
+  .toolbar .status.ok { color: #5ab866; }
+  .toolbar .status.err { color: #c07070; }
+  .board {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    min-height: calc(100vh - 100px);
+    align-items: flex-start;
+  }
+  .column {
+    flex: 1;
+    min-width: 200px;
+    max-width: 280px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+  }
+  .column-header {
+    padding: 12px 14px;
+    font-size: 14.4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .column-header .count {
+    margin-left: auto;
+    background: #2a2a2a;
+    color: #888;
+    font-size: 13.2px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .column-header .emoji { font-size: 16.8px; }
+  .col-idea .column-header { color: #a0a0a0; border-bottom-color: #333; }
+  .col-todo .column-header { color: #7ba3c9; border-bottom-color: #2a3f55; }
+  .col-design .column-header { color: #c07be0; border-bottom-color: #3d2a4d; }
+  .col-plan .column-header { color: #e0a040; border-bottom-color: #4d3a1a; }
+  .col-dev .column-header { color: #e08040; border-bottom-color: #4d2a1a; }
+  .col-done .column-header { color: #5ab866; border-bottom-color: #1f3d22; }
+  .column-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card {
+    background: #222;
+    border-radius: 6px;
+    padding: 10px 12px;
+    border-left: 3px solid #444;
+    cursor: default;
+    transition: background 0.15s;
+  }
+  .card:hover { background: #282828; }
+  .card-id {
+    font-size: 12px;
+    color: #555;
+    font-family: monospace;
+    margin-bottom: 2px;
+  }
+  .card-title {
+    font-size: 15.6px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 13.2px;
+    color: #888;
+    line-height: 1.4;
+  }
+  .card-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    font-size: 12px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .tag-date { background: #1e2a1e; color: #5ab866; }
+  .tag-owner { background: #2a2a1e; color: #c9b06a; }
+  .tag-dep { background: #2a1e1e; color: #c07070; }
+  .tag-ready {
+    background: #3d2a00;
+    color: #e0a040;
+    font-weight: 700;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  a.tag-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  a.tag-link:hover { opacity: 0.8; }
+  .tag-design { background: #1e1e2a; color: #9090d0; }
+  .tag-plan { background: #2a2418; color: #c0a050; }
+  .tag-brainstorm { background: #1e2a24; color: #60b090; }
+  .tag-review { background: #2a1e2a; color: #b070b0; }
+  .tag-icebox { background: #1a1a2a; color: #6a6a8a; }
+
+  .col-idea .card { border-left-color: #555; }
+  .col-todo .card { border-left-color: #4a7aa0; }
+  .col-design .card { border-left-color: #9050b0; }
+  .col-plan .card { border-left-color: #c08030; }
+  .col-dev .card { border-left-color: #d06020; }
+  .col-done .card { border-left-color: #3a8a45; opacity: 0.7; }
+  .col-done .card:hover { opacity: 0.9; }
+  .empty-state {
+    font-size: 14.4px;
+    color: #444;
+    text-align: center;
+    padding: 20px 10px;
+    font-style: italic;
+  }
+  .legend {
+    padding: 12px 32px 16px;
+    display: flex;
+    gap: 20px;
+    font-size: 13.2px;
+    color: #555;
+    border-top: 1px solid #1a1a1a;
+    flex-wrap: wrap;
+  }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Threadbearer</h1>
+  <span class="subtitle">Kanban Board — source of truth: .planning/BACKLOG.md</span>
+  <span class="timestamp" id="ts"></span>
+</header>
+
+<div class="toolbar">
+  <label for="backlog-path">Backlog:</label>
+  <input type="text" id="backlog-path" value="../.planning/BACKLOG.md" />
+  <button id="reload-btn">Reload</button>
+  <span class="status" id="load-status"></span>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="legend">
+  <span><span class="legend-dot" style="background:#555"></span> idea</span>
+  <span><span class="legend-dot" style="background:#4a7aa0"></span> todo</span>
+  <span><span class="legend-dot" style="background:#9050b0"></span> design</span>
+  <span><span class="legend-dot" style="background:#c08030"></span> plan</span>
+  <span><span class="legend-dot" style="background:#d06020"></span> dev</span>
+  <span><span class="legend-dot" style="background:#3a8a45"></span> done</span>
+  <span style="color:#e0a040;">&#9654; = ready for next agent</span>
+  <span style="color:#9090d0;">design doc = clickable link</span>
+</div>
+
+<script>
+const REPO_ROOT = 'C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator';
+const DEFAULT_BACKLOG = 'BACKLOG.md';
+
+const COLUMNS = [
+  { id: 'idea', label: 'Idea', emoji: '&#128161;' },
+  { id: 'todo', label: 'Todo', emoji: '&#128203;' },
+  { id: 'design', label: 'Design', emoji: '&#127912;' },
+  { id: 'plan', label: 'Plan', emoji: '&#128208;' },
+  { id: 'dev', label: 'Dev', emoji: '&#127959;&#65039;' },
+  { id: 'done', label: 'Done', emoji: '&#9989;' },
+];
+
+const STATE_MAP = {
+  '\u2705': 'done',     // ✅
+  '\ud83d\udca1': 'idea',     // 💡
+  '\ud83d\udccb': 'todo',     // 📋
+  '\ud83c\udfa8': 'design',   // 🎨
+  '\ud83d\udcd0': 'plan',     // 📐
+  '\ud83c\udfd7\ufe0f': 'dev', // 🏗️
+  '\ud83c\udfd7': 'dev',       // 🏗 (without VS16)
+};
+
+// Also detect ready marker ▶ after the state emoji
+function parseHeading(line) {
+  // Match: ## <emoji>[▶] TB-XXX · Title (optional date)
+  const m = line.match(/^##\s+(\S+?)(▶?)\s+(TB-\d+)\s+·\s+(.+)$/);
+  if (!m) return null;
+  const emoji = m[1];
+  const ready = m[2] === '▶';
+  const id = m[3];
+  let titlePart = m[4];
+
+  // Extract date in parentheses at end
+  let date = null;
+  const dateMatch = titlePart.match(/\((\d{4}-\d{2}-\d{2})\)\s*$/);
+  if (dateMatch) {
+    date = dateMatch[1];
+    titlePart = titlePart.slice(0, dateMatch.index).trim();
+  }
+  // Also check for "completed YYYY-MM-DD" in title
+  const completedMatch = titlePart.match(/\(completed\s+(\d{4}-\d{2}-\d{2})\)\s*$/i);
+  if (completedMatch) {
+    date = completedMatch[1];
+    titlePart = titlePart.slice(0, completedMatch.index).trim();
+  }
+
+  const state = STATE_MAP[emoji] || 'idea';
+
+  return { id, title: titlePart, state, date, ready };
+}
+
+function parseBacklog(text) {
+  const lines = text.split('\n');
+  const items = [];
+  let current = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // New heading
+    if (line.startsWith('## ')) {
+      // Check for ice box section header
+      if (line.match(/ice\s*box/i) && !line.match(/TB-\d+/)) {
+        // Ice box section — items below are bullet-pointed, not headings
+        current = null;
+        continue;
+      }
+      // Check for non-item headings (Implementation Prerequisites, Deferred Items, etc.)
+      if (!line.match(/TB-\d+/)) {
+        current = null;
+        continue;
+      }
+
+      const parsed = parseHeading(line);
+      if (parsed) {
+        current = { ...parsed, desc: '', links: [], deps: [], frozen: false };
+        items.push(current);
+      } else {
+        current = null;
+      }
+      continue;
+    }
+
+    // Deferred items as bullet points with TB-IDs
+    if (line.match(/^-\s+\*\*TB-\d+/) && !current) {
+      const bm = line.match(/^\-\s+\*\*(TB-\d+)\*\*\s+·?\s*(.+)/);
+      if (bm) {
+        const title = bm[2].match(/^(.+?)(?:\s*—\s*(.+))?$/);
+        items.push({
+          id: bm[1],
+          title: title ? title[1].trim() : bm[2].trim(),
+          desc: title && title[2] ? title[2].trim() : '',
+          state: 'idea',
+          date: null,
+          ready: false,
+          links: [],
+          deps: [],
+          frozen: false,
+        });
+      }
+      continue;
+    }
+
+    // Ice box bullet items
+    if (line.match(/^-\s+\*\*TB-\d+/) && !current) {
+      // Already handled above
+      continue;
+    }
+
+    if (!current) continue;
+
+    // Body lines — extract metadata
+    const trimmed = line.trim();
+    if (!trimmed || trimmed === '---') {
+      if (trimmed === '---') current = null;
+      continue;
+    }
+
+    // Design/plan doc links
+    const linkMatch = trimmed.match(/\*\*(Design(?:\s+doc)?|Plan|Roadmap|Skill|Assessment|Preliminary design|Design \+ plan)\s*:\*\*\s*`([^`]+)`/i);
+    if (linkMatch) {
+      const label = linkMatch[1];
+      const path = linkMatch[2];
+      let type = 'plan';
+      if (/design/i.test(label)) type = 'design';
+      if (/skill/i.test(label)) type = 'review';
+      current.links.push({ type, label: label.replace(/\s+doc$/i, '').replace(/\s*\+\s*plan$/i, ''), path });
+      continue;
+    }
+
+    // Dependencies
+    const depMatch = trimmed.match(/\*\*Depends on:\*\*\s*(.+)/i);
+    if (depMatch) {
+      current.deps = depMatch[1].split(',').map(d => d.replace(/\(✅\)/g, '').trim()).filter(Boolean);
+      continue;
+    }
+
+    // Description: first non-metadata paragraph line
+    if (!current.desc && trimmed && !trimmed.startsWith('**') && !trimmed.startsWith('-')) {
+      current.desc = trimmed;
+    }
+  }
+
+  // Parse ice box items
+  const iceBoxStart = text.indexOf('## \ud83e\uddf� Ice Box');
+  if (iceBoxStart !== -1) {
+    const iceLines = text.slice(iceBoxStart).split('\n');
+    for (const il of iceLines) {
+      const ibm = il.match(/^\-\s+\*\*(TB-\d+)\*\*\s+·\s*(.+)/);
+      if (ibm) {
+        const title = ibm[2].match(/^(.+?)(?:\s*—\s*(.+))?$/);
+        // Check if already parsed
+        if (!items.find(x => x.id === ibm[1])) {
+          items.push({
+            id: ibm[1],
+            title: title ? title[1].trim() : ibm[2].trim(),
+            desc: title && title[2] ? title[2].trim() : '',
+            state: 'idea',
+            date: null,
+            ready: false,
+            links: [],
+            deps: [],
+            frozen: true,
+          });
+        } else {
+          // Mark as frozen
+          const existing = items.find(x => x.id === ibm[1]);
+          if (existing) existing.frozen = true;
+        }
+      }
+    }
+  }
+
+  return items;
+}
+
+function renderLink(link) {
+  const href = `file:///${REPO_ROOT}/${link.path}`;
+  const cls = `tag tag-${link.type}`;
+  return `<a class="tag-link" href="${href}" target="_blank"><span class="${cls}">${link.label} &#8599;</span></a>`;
+}
+
+function renderBoard(items) {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  COLUMNS.forEach(col => {
+    let colItems = items.filter(i => i.state === col.id);
+
+    // Sort done column by date descending (most recent first)
+    if (col.id === 'done') {
+      colItems.sort((a, b) => {
+        const da = a.date || '0000-00-00';
+        const db = b.date || '0000-00-00';
+        return db.localeCompare(da);
+      });
+    }
+
+    const div = document.createElement('div');
+    div.className = `column col-${col.id}`;
+
+    div.innerHTML = `
+      <div class="column-header">
+        <span class="emoji">${col.emoji}</span>
+        ${col.label}
+        <span class="count">${colItems.length}</span>
+      </div>
+      <div class="column-body">
+        ${colItems.length === 0
+          ? '<div class="empty-state">No items</div>'
+          : colItems.map(item => `
+            <div class="card">
+              <div class="card-id">${item.id}</div>
+              <div class="card-title">${item.title}</div>
+              ${item.desc ? `<div class="card-desc">${item.desc}</div>` : ''}
+              <div class="card-meta">
+                ${item.date ? `<span class="tag tag-date">${item.date}</span>` : ''}
+                ${item.deps.length ? item.deps.map(d => `<span class="tag tag-dep">needs: ${d}</span>`).join('') : ''}
+                ${(item.links || []).map(renderLink).join('')}
+                ${item.ready ? `<span class="tag tag-ready">&#9654; READY</span>` : ''}
+                ${item.frozen ? `<span class="tag tag-icebox">&#129482; ice box</span>` : ''}
+              </div>
+            </div>
+          `).join('')
+        }
+      </div>
+    `;
+
+    board.appendChild(div);
+  });
+}
+
+async function loadBacklog(path) {
+  const status = document.getElementById('load-status');
+  try {
+    const resp = await fetch(path);
+    if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
+    const text = await resp.text();
+    const items = parseBacklog(text);
+    renderBoard(items);
+    status.className = 'status ok';
+    status.textContent = `Loaded ${items.length} items`;
+    document.getElementById('ts').textContent = 'Loaded: ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+  } catch (err) {
+    status.className = 'status err';
+    status.textContent = `Error: ${err.message}`;
+    console.error('Failed to load backlog:', err);
+  }
+}
+
+// Init
+document.getElementById('reload-btn').addEventListener('click', () => {
+  loadBacklog(document.getElementById('backlog-path').value);
+});
+document.getElementById('backlog-path').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') loadBacklog(e.target.value);
+});
+
+// Auto-load default backlog
+loadBacklog(DEFAULT_BACKLOG);
+</script>
+</body>
+</html>
