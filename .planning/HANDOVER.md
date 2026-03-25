@@ -4,114 +4,125 @@
 >
 > **Format:** Each entry has a date, context (what was discussed/decided), and action items.
 > **Lifecycle:** Claude Code acts on entries, then moves them to the "Completed" section below.
+>
+> **IMPORTANT:** When you complete a handover entry, you MUST also update the item's state in `.planning/BACKLOG.md` to `✅`. BACKLOG.md is the single source of truth — see `Docs/cowork-ways-of-working.md` → "Unified Kanban".
 
 ---
 
----
+### 2026-03-25: HexMapV2 Medium-Term Improvements (TB-016)
 
-## 2026-03-25: Stream 1 — Intent Visibility (character sheet)
+**Context:** Architectural review identified three medium-effort refactors with high payoff. Design doc has full interface specs, shader code, and fail-soft tables. Quick wins (typed layer keys, Z centralization, D3ZoomCamera constants) already completed in prior session.
 
-**Context:** Agents already pursue ambitions via `pursues` edges with priority/status/milestones, but none of this is visible to the player. This feature surfaces active agent intent through three UI touchpoints: full Intent section in AgentProfileModal and AgentDetailPanel, single-line summary in AgentInfoCard. Seven ambition categories map to existing domain colors. Knowledge gating is structured for future use but prototyped as always-visible.
+**Prerequisite:** TB-030 (Agent Sprite Scale Bug + Zoom Threshold Unification) should land before item 3 — it rewrites `updateZoomVisibility` and stores `baseScale` in `userData`.
 
-**What Cowork already did:** Design doc exists and is implementation-ready with 12 steps, file list, type definitions, and component specs.
+**Implementation order:** Ship each independently. Do them in this order:
 
-**Action for Claude Code:**
-- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-17-intent-visibility.md`
-- [ ] Step 1: Add `ActiveIntent` type and `AmbitionCategory` union to types (check `src/types/agentDetail.ts` or equivalent). Extend `AgentDetail` with `intents?: ActiveIntent[]` and `AgentInfoCardData` with `primaryIntentSummary`
-- [ ] Step 2: Extend `getAgentFullProfile()` and `getAgentInfoCard()` in `src/engine/agentDetail.ts` — query `pursues` edges where `status === 'active'`, resolve ambition templates, build `ActiveIntent` objects sorted primary-first. Skip knowledge gating (add `// TODO: gate by familiarity tier`)
-- [ ] Step 3: Create `src/components/Game/IntentSection.tsx` — section header matching existing modal pattern, ambition cards with category color border, milestone pips, affinity dots, reactive trigger tag, empty state "No discernible intent"
-- [ ] Step 4: Integrate IntentSection into `AgentProfileModal.tsx` between Nature and Prowess sections
-- [ ] Step 5: Integrate IntentSection into `AgentDetailPanel.tsx` between Character and Domain Grid
-- [ ] Step 6: Add primary intent single-line to `AgentInfoCard.tsx` — `{categoryGlyph} {displayName}` below archetype/faction
-- [ ] Step 7: Create category glyph + color constant map (prefer unicode/SVG over emoji, match Threadbare aesthetic)
-- [ ] Step 8: Unit tests — ActiveIntent construction from pursues edges, primary-before-secondary sort, empty state, reactive trigger, milestone count accuracy, render tests for IntentSection with 0/1/2 intents
-- [ ] Step 9: Add `actorId` to ambition tick events in `ambitionTick.ts`, add optional `actorId?: string` to `TickEvent` interface
-- [ ] Step 10: Wire notification tap-through — toasts/alerts with `actorId` become clickable, call `onSelectAgent(actorId)`
-- [ ] Step 11: Intent-change pulse animation on IntentSection (amber flash ~600ms on card change, `useEffect` + `usePrevious`)
-- [ ] Visual verification at `?view=game`: intent section visible in character sheet, milestone pips render, empty state works for ambition-less agents
+**Item 1 — Extract custom hooks from HexMapV2.tsx:**
+1. Create `src/components/HexMapV2/hooks/useAgentAnimations.ts` — move lines 980–1123 (the `agents` useEffect) into a hook. Interface spec in design doc.
+2. Create `src/components/HexMapV2/hooks/useFogCulling.ts` — move lines 871–951 (the fog update useEffect). Interface spec in design doc.
+3. Create `src/components/HexMapV2/hooks/useZoomLayerVisibility.ts` — extract the zoom tier change handler from scene init. Make `zoomTier` a React state variable updated by d3 zoom handler; hook runs useEffect on tier changes.
+4. Update HexMapV2.tsx to call the three hooks, passing refs. Target: ~600–700 lines post-extraction.
+5. Tests: unit test per hook (mock refs, verify effect runs), contract test for animation output → `updateAgentPositions` input.
+6. Visual verification at `?view=game` across all zoom tiers.
 
-**Design doc:** `Docs/plans/2026-03-17-intent-visibility.md`
-**Files changed:** `.planning/HANDOVER.md` (this entry)
+**Item 2 — Single agent sprite with material swap (after TB-030):**
+1. Rewrite `AgentSpriteGroup` interface — one `sprite` per agent instead of `portrait + dot + continental`. Pre-build all three materials and scale values, store in `spriteMap` entry.
+2. Rewrite `updateZoomVisibility` — on tier change, swap `sprite.material` and `sprite.scale.setScalar()` based on `ZOOM_VISIBILITY_MATRIX`. Instant swap, no cross-fade.
+3. Update `sprite.userData.baseScale` on zoom swap so settle bounce uses correct multiplier.
+4. Update `loadAgentPortraits` — update `materials.portrait` and `materials.dot` objects (shared by reference).
+5. Update `updateAgentPositions` — single sprite positioning instead of three.
+6. Update animation wiring in HexMapV2.tsx (or `useAgentAnimations` if item 1 landed first).
+7. Tests: unit (one sprite per agent), contract (zoom swap → correct material/scale), integration (hop + settle + zoom out).
+8. Visual verification at `?view=game` with agents in motion across zoom tiers.
 
----
+**Item 3 — Signifier sprites → InstancedMesh with texture atlas:**
+1. Create `buildSignifierAtlas()` — builds one texture atlas per terrain type from the signifier registry. Layout: variants side by side, 2px padding.
+2. Create custom `ShaderMaterial` — vertex shader reads per-instance UV rect attribute (`aUvRect` vec4), fragment shader samples atlas with transparency discard.
+3. Add per-instance `aFogAlpha` float attribute for fog culling (1.0 visible, 0.0 hidden, 0.45 explored).
+4. Rewrite `createSignifierMesh` internals — same signature, but creates one `InstancedMesh` per terrain type instead of N sprites. Jitter + rotation encoded in instance matrix.
+5. Update `useFogCulling` (or the fog effect) to write `aFogAlpha` buffer instead of toggling sprite visibility.
+6. Tests: unit (correct instanceCount per terrain type, instance positions match hexToWorld + jitter), performance (draw call count comparison).
+7. Visual verification at `?view=game` at regional zoom — signifiers should look identical to current sprites.
 
-## 2026-03-25: Stream 2 — Attachment Tier Advancement
-
-**Context:** The attachment system design defines a 4-tier rarity system (Mundane → Storied → Mythic → Legendary) that applies universally across all six attachment categories (possessions, conditions, blessings/curses, bestowed powers, agreements, retainers). Tier colors, on-use triggers, tag vocabulary, and acquisition flow are fully designed. Player promotes tiers via Enchant/Empower action templates. Dependencies met (Attachment Action Templates complete).
-
-**What Cowork already did:** Full design doc exists covering the unified attachment model, tier system, possession taxonomy, on-use triggers, encounter-driven acquisition, and UI detail cards.
-
-**Action for Claude Code:**
-- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-10-attachment-system-design.md` (full read — it's comprehensive)
-- [ ] Verify existing graph infrastructure: confirm `artifact`, `possesses`, `bonded_to`, `has_trait` (category: `condition`), `relates_to` edge types exist in `src/types/graph.ts` and `world-model.json`
-- [ ] Add `tier` property (1–4) to attachment-bearing nodes/edges if not present. Add `TIER_COLORS` and `TIER_NAMES` constants (Mundane/silver, Storied/copper, Mythic/violet, Legendary/gold-ember)
-- [ ] Add `tags: string[]` to artifact node properties and agreement edge properties (traits already have it). Create `getByTag()` helper (~15-line pure function) for tag-based resolution
-- [ ] Add `onUseTriggers` array to attachment properties — trigger condition, probability, effect, narrative template, tags. Integrate into resolution engine: check tag overlap, roll PRNG against probability, apply effects additively alongside encounter outcomes
-- [ ] Create attachment detail card UI component with tier-colored border, subcategory icon, flavor text, mechanical summary, tags, source, duration. Render in agent profile panels
-- [ ] Implement Enchant/Empower action templates for tier promotion — player spends essence to advance an attachment's tier. Prerequisites: attachment must be equipped by an agent the player has influence over
-- [ ] Unit tests: tier assignment on acquisition, tier color rendering, tag-based queries, on-use trigger probability, Enchant/Empower prerequisites, detail card with each attachment category
-- [ ] Visual verification at `?view=game`: tier colors visible on attachment items in character sheet, detail card renders for possessions/conditions/agreements
-
-**Design doc:** `Docs/plans/2026-03-10-attachment-system-design.md`
-**Files changed:** `.planning/HANDOVER.md` (this entry)
+**Design doc:** `Docs/plans/2026-03-25-hexmapv2-medium-term-improvements.md`
 
 ---
 
-## 2026-03-25: Stream 3 — Agreement Creation + HexChronicle bug fix
+### 2026-03-25: Agent Spawn Integrity Fixes (TB-030)
 
-**Context (Agreement Creation):** Diplomacy as a direct player verb. Agreements are enriched `relates_to` edges with fulfillment conditions and tick timers. Social encounters enter the agent decision pipeline via the same CRUD framework as location encounters. Bond strength modifies encounter scoring. All dependencies met (Generalized Action Targeting complete).
+**Context:** Assessment + follow-up code audit found six defects in agent creation and tick-loop handling. One is critical: **births are completely broken** due to a wrong edge-type query.
 
-**Context (HexChronicle bug):** When clicking a hex with visible hamlet icons, the location list sometimes shows empty. Suspected: `hexCol`/`hexRow` stored as strings in some worldgen paths, compared with `===` against numbers in `getLocationsInHex()`. Icons render because `GameView.tsx` uses loose `!=` for null checks.
+**Action items (in execution order):**
+1. **CRITICAL — Fix birth edge-type bug:** `agentLifecycle.ts` line 135 queries `getIncomingEdges(locId, 'contains')` but `contains` edges are region→location, not location→agent. Replace with `getIncomingEdges(locId, 'located_at')`. Births never trigger without this fix.
+2. **Fix born agent axiological profiles:** Replace `axiologicalProfile: {}` (line 170) with `generateAxiologicalProfile(rng, cosmology)`. Get cosmology from `state.cosmology` or World-Soul node.
+3. **Verify strategy call:** After #2, ensure `assignCooperationStrategy` (line 162) receives the real profile, not `{} as any`.
+4. **Create `src/engine/agentValidation.ts`** with `validateAgentIntegrity()` — checks node integrity, all 10 axiological pairs, all 9 reaches, location binding, identity properties, edge targets, movement state. Call after world seed and after birth events.
+5. **Add try-catch per-agent wrapping in `phaseMovement.ts`** matching `phaseAgentDecision`'s pattern.
+6. **Null-guard sublocation lookup in `phaseMovement.ts`** — `getNode(sublocationId)` can return null if sublocation dissolved mid-movement.
+7. **Add location consistency check to validator** — warn when `properties.locationId` and `located_at` edge disagree.
+8. **Fix variant edge types:** Replace `'located_in'` → `'located_at'` in `phaseEconomicChronicle.ts` (2 occurrences), `'relationship'` → `'relates_to'` in `agentDetail.ts`. Add `// RESERVED` comments to unused edge types in `graph.ts`. Check `encounter_at` in `movementCandidates.ts`/`threatRating.ts`.
+9. **Tests:** birth triggers with 3+ colocated agents, born agent has full profile, malformed agent doesn't crash movement, validator catches each defect type. Grep for `'located_in'` and `'relationship'` — zero hits in `src/`.
 
-**What Cowork already did:** Social fabric design doc exists with full CRUD mapping, bond scoring formulas, colocation/remote constraints, and target availability rules. Bug documented in backlog.
-
-**Action for Claude Code — HexChronicle bug (do first, quick win):**
-- [ ] Investigate type mismatch: add `console.assert(typeof props.hexCol === 'number')` in `getLocationsInHex()` (`src/engine/hexZoom.ts:28-31`) and run. Check `worldSeed.ts` location creation paths for string vs number writes
-- [ ] Fix: coerce to `Number()` in `getLocationsInHex()` filter, or fix at source in worldgen. Add a type guard or assertion
-- [ ] Also verify: are ring-positioned location icons visually overlapping into adjacent hexes? If so, note as a separate cosmetic issue
-- [ ] Unit test: `getLocationsInHex` returns locations regardless of string/number storage
-
-**Action for Claude Code — Agreement Creation:**
-- [ ] Load `state-of-game-design` skill, then read design doc: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
-- [ ] Add social encounter templates to `ENCOUNTER_TEMPLATES` with `targetCategories: ['agent']` — Create (form bond, recruit), Find (investigate, spy), Change (persuade, negotiate, threaten), Destroy (duel, sabotage), Control (patronage, mentorship). Use reach primaries from the CRUD mapping table in the design doc
-- [ ] Extend agent decision phase to generate social encounter candidates for each visible agent — pull bond data (trust, sentiment, interaction history) into candidates
-- [ ] Implement `bondModifier` scoring: strong positive bonds boost cooperative encounters, strong negative bonds boost destructive, strangers get base penalty unless agent's Heart axis > `STRANGER_CURIOSITY_THRESHOLD` or Eye > `STRANGER_PERCEPTION_THRESHOLD`
-- [ ] Implement agreement node creation on successful social encounter resolution — `relates_to` edge with `agreement` property block containing type (pact/debt/favour/oath/treaty/bargain), `fulfillmentCondition`, `ticksRemaining`
-- [ ] Handle colocation vs remote constraints per encounter type (duel/recruit require colocation, negotiate/persuade/spy support remote with penalty)
-- [ ] Add all new constants (thresholds, multipliers, modifiers) as named constants in appropriate content file
-- [ ] Unit tests: social encounter template filtering, bond modifier calculation, agreement edge creation, colocation/remote gating, scoring with various bond states
-- [ ] Visual verification at `?view=game`: social encounters appear in action drawer when agents are colocated, agreement creation produces visible bond in agent profile
-
-**Design docs:** `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`, bug in `.planning/BACKLOG.md` (lines 95-101)
-**Files changed:** `.planning/HANDOVER.md` (this entry)
+**Plan:** `Docs/plans/2026-03-25-agent-spawn-integrity-fixes.md`
 
 ---
 
-## 2026-03-23: Implement start page (main menu)
+### 2026-03-25: Graph Schema Enforcement (TB-033)
 
-**Context:** The game currently drops players straight into cosmology setup with no introduction. Designed a full start page with title, lore fragment, main menu (New World / Continue / Settings / Credits), and theme music system. Narrative-mysterious tone — text over the existing title-screen.png art with a darkening gradient. Dark ambient drone plays on first interaction, fades out on "New World". Full design doc with layout mockup, audio system spec, token usage, constants table, NFP compliance, accessibility notes, and implementation file list.
+**Context:** Recurring bugs from variant/redundant edge types (`contains` vs `located_at`, `relationship` vs `relates_to`, `located_in` vs `located_at`). Root cause: graph has no schema enforcement — edge types are unguarded strings, no canonical query functions, no direction documentation. Full audit found 4 variant types in production, 4 dead types, and 26 total edge strings (vs 22 defined).
 
-**What Cowork already did:** Wrote complete design doc at `Docs/plans/2026-03-23-start-page-design.md`.
+**CLAUDE.md already updated** with: edge type governance rule (load-bearing decisions), graph query rule, graph change checklist (pre-commit), graph changes section required in design docs.
 
-**Action for Claude Code:**
-- [ ] Create `StartPage.tsx` component per design doc layout and token spec
-- [ ] Create `startPageConstants.ts` with tunable constants from the design (includes audio constants)
-- [ ] Create `useThemeMusic.ts` hook — HTMLAudioElement, fade-in on first interaction, fade-out on "New World", mute toggle with localStorage persistence, graceful failure on blocked play()
-- [ ] Create stub `SettingsModal.tsx` (master volume slider wired to theme music, fog toggle, version)
-- [ ] Create `CreditsModal.tsx` (scrollable credits list)
-- [ ] Add mute/unmute toggle icon (Lucide Volume2/VolumeX) in bottom-left corner
-- [ ] Create placeholder silent MP3 at `public/audio/theme-drone.mp3` (user will replace with real file)
-- [ ] Modify `App.tsx`: add `start` phase as default, "New World" transitions to `worldgen`, dev view params (`?view=game`, `?view=hexv2`, etc.) skip start page
-- [ ] Write unit tests: renders title/lore/menu, "Continue" hidden without save, "New World" triggers phase change, dev views bypass start page, audio hook fade/mute/failure
-- [ ] Visual verification at 1920×1080: text legible over gradient, menu items respond to hover/focus, image fallback works, mute icon visible
+**Action items (in execution order):**
+1. **Create `src/engine/graphQueries.ts`** — canonical query functions for the 8 most-read edge types (getAgentsAtLocation, getAgentLocation, getFactionMembers, getAgentCultures, getAgentBonds, getAgentTraits, getAgentAmbitions, getAgentWorships, getAvatarsOf, etc.). Unit tests per function.
+2. **Create `src/types/edgeSchema.ts`** — `EDGE_SCHEMA` registry: one entry per `EdgeType` with sourceNodeType, targetNodeType, direction, cardinality, requiredProperties, description.
+3. **Wire schema into `validateAgentIntegrity()`** (from TB-030) — extend validation to check edge source/target type constraints.
+4. **Migrate high-traffic callers** — replace raw edge queries in `agentLifecycle.ts`, `phaseAgentDecision.ts`, `phaseMovement.ts`, `agentDetail.ts`, `phaseEconomicChronicle.ts` with query functions. File-by-file, not big-bang.
+5. **Add dev-mode validation to `addEdge`** in `src/engine/graph.ts` — warn on unknown edge types, wrong source/target, missing required properties. Dev-only, warn-not-throw.
 
-**Files changed:** `Docs/plans/2026-03-23-start-page-design.md` (new + updated with audio), `.planning/HANDOVER.md` (this entry)
+**Design doc:** `Docs/plans/2026-03-25-graph-schema-enforcement-design.md`
 
 ---
+
+### 2026-03-25: Agent Sprite Scale Bug + Zoom Threshold Unification
+
+**Context:** Agent sprites shrink to ~1 world unit after their first hop animation because the settle bounce in `agentAnimationState.ts` sets absolute scale (1.05→1.0) instead of a multiplier relative to each sprite's base size (9.0 for portraits, 3.0 for dots, 5.0 for continental). Additionally, `AGENT_ZOOM_THRESHOLDS` defines hero-local as k≥5 while `ZOOM_TIER_THRESHOLDS` defines it as k≥15, causing the wrong sprite tier to display. The continental group (retinue dots) is never made visible.
+
+**Action items:**
+1. Store base scale in `sprite.userData.baseScale` at creation time in `createAgentSpriteMesh`
+2. Rewrite settle phase in `tickAgentAnimations` to use `baseScale * bounceMultiplier` instead of absolute scale
+3. Delete `AGENT_ZOOM_THRESHOLDS` from `agentSpriteTypes.ts`
+4. Rewrite `updateZoomVisibility` to accept a `ZoomTier` and use `ZOOM_VISIBILITY_MATRIX` entries directly
+5. Update call site in `HexMapV2.tsx` line 610 to pass the already-computed tier
+6. Add contract test: sprite group structure → animation expectations (baseScale present)
+7. Add unit test: full hop + settle cycle preserves sprite base scale
+8. Visual verification at `?view=game` across all three zoom tiers after agents move
+
+**Plan:** `Docs/plans/2026-03-25-agent-sprite-scale-and-zoom-fix.md`
 
 ---
 
 ## Completed
+
+### 2026-03-25: Rendering Module Resilience Refactor (completed 2026-03-25)
+
+Implemented by Claude Code. Shared primitives (hexKey, worldPosition, hexGrouping) extracted to src/lib/, AgentAnimationTarget sprite abstraction layer, isLayerVisible zoom convenience. 31 files, 50+ inline patterns replaced. 3/6 hooks already extracted (TB-016); remaining 3 deferred (tightly coupled with scene init lifecycle).
+
+### 2026-03-25: Attachment Tier Advancement (completed 2026-03-25)
+
+Implemented by Claude Code. 4-tier rarity system, Enchant/Empower action templates, on-use triggers, tag system, detail card UI.
+
+### 2026-03-25: Agreement Creation + HexChronicle bug fix (completed 2026-03-25)
+
+Implemented by Claude Code. Social encounter CRUD templates, bond scoring, agreement node creation, colocation/remote constraints. HexChronicle bug fixed (hexCol/hexRow type coercion).
+
+### 2026-03-23: Start page (completed 2026-03-23)
+
+Implemented by Claude Code. StartPage.tsx, useThemeMusic hook, SettingsModal, CreditsModal, App.tsx phase integration.
+
+### 2026-03-25: Intent Visibility — character sheet (completed 2026-03-25)
+
+Implemented by Claude Code. Agent ambitions surfaced in AgentProfileModal, AgentDetailPanel (IntentSection with category colors, milestone pips, affinity dots), and AgentInfoCard (single-line summary). Knowledge gating structured for future use, prototyped as always-visible. Notification tap-through and pulse animation included.
 
 ### 2026-03-25: Road-Aware Agent Movement (completed 2026-03-25)
 
@@ -207,3 +218,4 @@ Done:
 
 Deferred (when time permits):
 - Write evals for `state-of-game-design` and `engine-architecture` skills
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
