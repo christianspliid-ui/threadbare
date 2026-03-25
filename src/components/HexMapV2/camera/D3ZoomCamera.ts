@@ -9,7 +9,7 @@ import { HEX_CONSTANTS } from '../scene/HexFillMesh';
  */
 export const CAMERA_CONSTANTS = {
   MIN_ZOOM: 0.3,              // Full-world zoom (~10px/hex apparent)
-  MAX_ZOOM: 10,               // Hero-local zoom (~300px/hex apparent)
+  MAX_ZOOM: 15,               // Hero-local zoom (~450px/hex apparent)
   JUMP_TO_DURATION_MS: 500,   // Smooth fly-to duration in ms (CONTEXT.md decision)
   DEFAULT_ZOOM: 1.5,          // Starting zoom level — shows a comfortable region
   ZOOM_TARGET_LERP_IN:  0.4,  // Per-wheel-tick convergence toward selected hex when zooming in

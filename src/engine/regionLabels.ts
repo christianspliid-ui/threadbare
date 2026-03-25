@@ -68,6 +68,19 @@ function hexToWorld(col: number, row: number): { x: number; y: number } {
   return { x, y: -y }; // Y-flip for Three.js y-up coordinate system
 }
 
+/** Compute the world-space bounding box width of a set of hexes. */
+function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
+  if (hexes.length === 0) return 0;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  for (const h of hexes) {
+    const { x } = hexToPixel({ col: h.col, row: h.row }, HEX_SIZE);
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+  }
+  return maxX - minX;
+}
+
 // ─── Label generators ─────────────────────────────────────────────────────────
 
 /**
@@ -82,23 +95,28 @@ function hexToWorld(col: number, row: number): { x: number; y: number } {
 export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
   const labels: RegionLabel[] = [];
 
-  // Kingdom labels — at capital hex position
+  // Kingdom labels — at capital hex position, width from aggregated barony hexes
   for (const k of regionData.kingdoms) {
     try {
       const { x, y } = hexToWorld(k.capitalHex.col, k.capitalHex.row);
+      // Aggregate hexes from all baronies in this kingdom
+      const kingdomHexes = regionData.baronies
+        .filter(b => k.baronyIds.includes(b.id))
+        .flatMap(b => b.hexes);
       labels.push({
         id: `kingdom-${k.id}`,
         tier: 'kingdom',
         text: k.name,
         worldX: x,
         worldY: y,
+        worldWidth: computeHexesWorldWidth(kingdomHexes),
       });
     } catch {
       // Fail-soft: skip malformed kingdom entry
     }
   }
 
-  // Barony labels — at centroid
+  // Barony labels — at centroid, width from barony hexes
   for (const b of regionData.baronies) {
     try {
       const { x, y } = hexToWorld(b.centroid.col, b.centroid.row);
@@ -108,6 +126,7 @@ export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
         text: b.name,
         worldX: x,
         worldY: y,
+        worldWidth: computeHexesWorldWidth(b.hexes),
       });
     } catch {
       // Fail-soft: skip malformed barony entry

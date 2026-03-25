@@ -37,6 +37,12 @@ export const SIGNIFIER_SCALE_OVERRIDES: Record<string, number> = {
   grassland: 2.0,
   steppe: 2.0,
   tundra: 2.0,
+  boreal_forest: 1.3 * 0.9, // 10% smaller than default for better centering
+};
+
+/** Per-terrain position offset (fraction of HEX_SIZE) for hand-tuned centering. */
+export const SIGNIFIER_OFFSET_OVERRIDES: Record<string, { dx: number; dy: number }> = {
+  boreal_forest: { dx: -0.05, dy: -0.05 }, // nudge left and down (y-flipped, so -dy = down)
 };
 
 /** Hand-drawn signifiers that are already precisely positioned — no jitter applied. */
@@ -129,12 +135,17 @@ export function createSignifierMesh(
     const jx = noJitter ? 0 : params.jitterX * HEX_CONSTANTS.HEX_SIZE;
     const jy = noJitter ? 0 : params.jitterY * HEX_CONSTANTS.HEX_SIZE;
 
+    // Per-terrain offset override for hand-tuned centering
+    const offsetOverride = SIGNIFIER_OFFSET_OVERRIDES[registryKey];
+    const ox = offsetOverride ? offsetOverride.dx * HEX_CONSTANTS.HEX_SIZE : 0;
+    const oy = offsetOverride ? offsetOverride.dy * HEX_CONSTANTS.HEX_SIZE : 0;
+
     // Per-terrain scale override (e.g. badlands fills full hex)
     const scale = SIGNIFIER_SCALE_OVERRIDES[registryKey] ?? SIGNIFIER_SPRITE_SCALE;
     const spriteSize = HEX_CONSTANTS.HEX_SIZE * scale;
 
     // Y-flip: SVG is y-down, Three.js world is y-up
-    sprite.position.set(x + jx, -y + jy, SIGNIFIER_Z);
+    sprite.position.set(x + jx + ox, -y + jy + oy, SIGNIFIER_Z);
     sprite.scale.set(spriteSize, spriteSize, 1);
 
     group.add(sprite);

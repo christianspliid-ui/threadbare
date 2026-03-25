@@ -25,7 +25,7 @@ import { STEPPES_HAND_DRAWN_V2 } from './steppesPathData';
 // ── NFP #1: Tunable constants ────────────────────────────────────────────────
 
 /** Position jitter range: ±10% of hex size in each axis */
-const SIGNIFIER_JITTER_RANGE = 0.2;   // full range; jitter = (rng() - 0.5) * RANGE
+const SIGNIFIER_JITTER_RANGE = 0;     // 0 = no jitter (centered in hex)
 
 /** Rotation jitter range: ±15° (π/12 radians) */
 const SIGNIFIER_ROTATION_RANGE = 0;  // 0 = no rotation (locked upright).

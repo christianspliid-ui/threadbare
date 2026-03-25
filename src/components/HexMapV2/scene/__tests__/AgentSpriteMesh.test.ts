@@ -195,15 +195,7 @@ describe('updateZoomVisibility', () => {
     updateZoomVisibility = mod.updateZoomVisibility;
   });
 
-  it('at zoom >= 15 (hero-local): only portraitGroup is visible', () => {
-    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
-    updateZoomVisibility(group, 15);
-    expect(group.portraitGroup.visible).toBe(true);
-    expect(group.dotGroup.visible).toBe(false);
-    expect(group.continentalGroup.visible).toBe(false);
-  });
-
-  it('at zoom 5-14 (regional): only dotGroup is visible', () => {
+  it('at zoom >= 5 (zoomed in): only dotGroup is visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
     updateZoomVisibility(group, 5);
     expect(group.portraitGroup.visible).toBe(false);
@@ -211,7 +203,7 @@ describe('updateZoomVisibility', () => {
     expect(group.continentalGroup.visible).toBe(false);
   });
 
-  it('at zoom 10 (regional): only dotGroup is visible', () => {
+  it('at zoom 10 (max zoom): only dotGroup is visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
     updateZoomVisibility(group, 10);
     expect(group.portraitGroup.visible).toBe(false);
@@ -219,12 +211,20 @@ describe('updateZoomVisibility', () => {
     expect(group.continentalGroup.visible).toBe(false);
   });
 
-  it('at zoom 1.5-4.9 (continental): only continentalGroup is visible', () => {
+  it('at zoom 4.9 (zoomed out): only portraitGroup is visible', () => {
+    const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
+    updateZoomVisibility(group, 4.9);
+    expect(group.portraitGroup.visible).toBe(true);
+    expect(group.dotGroup.visible).toBe(false);
+    expect(group.continentalGroup.visible).toBe(false);
+  });
+
+  it('at zoom 1.5 (continental boundary): only portraitGroup is visible', () => {
     const group = createAgentSpriteMesh([makeAgent('a', 0, 0)]);
     updateZoomVisibility(group, 1.5);
-    expect(group.portraitGroup.visible).toBe(false);
+    expect(group.portraitGroup.visible).toBe(true);
     expect(group.dotGroup.visible).toBe(false);
-    expect(group.continentalGroup.visible).toBe(true);
+    expect(group.continentalGroup.visible).toBe(false);
   });
 
   it('at zoom < 1.5 (full-world): all groups hidden', () => {

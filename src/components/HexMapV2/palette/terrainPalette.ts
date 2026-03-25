@@ -20,7 +20,7 @@ export const TERRAIN_PALETTE: Record<string, string> = {
   woodland:        '#748C48',
   temperate_forest:'#5C783E',
   dense_forest:    '#4C6436',
-  boreal_forest:   '#4A5E3A',
+  boreal_forest:   '#5C783E',
   tropical_forest: '#426440',
 
   // Wet (3)

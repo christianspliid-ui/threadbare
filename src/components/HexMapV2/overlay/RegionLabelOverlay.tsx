@@ -36,6 +36,9 @@ export const ZOOM_THRESHOLDS = {
   FULL_WORLD_MAX: 1.5,
   CONTINENTAL_MAX: 5,
   REGIONAL_MAX: 15,
+  /** Zoom level at which region labels give way to location labels.
+   *  At this zoom, individual locations dominate and region names are clutter. */
+  REGION_LABEL_MAX: 10,
 } as const;
 
 /** Debounce interval for collision detection recomputation (ms) */
@@ -126,6 +129,23 @@ const TIER_STYLES: Record<RegionLabel['tier'], CSSProperties> = {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
+/** Fraction of province width that the label text should span at continental zoom */
+const PROVINCE_LABEL_WIDTH_FRACTION = 0.5;
+
+/** Approximate character width as fraction of font size (for font scaling calc) */
+const LABEL_CHAR_WIDTH = 0.6;
+
+/** Base font sizes per tier (px) — used as minimum; scaled up to fill province width */
+const TIER_BASE_FONT_SIZE: Record<RegionLabel['tier'], number> = {
+  kingdom: 20,
+  barony: 14,
+  geographic: 12,
+  river: 12,
+};
+
+/** Maximum font size cap (px) — prevent labels from becoming absurdly large */
+const MAX_SCALED_FONT_SIZE = 60;
+
 /** Convert a world label to a ScreenLabel using the camera's projection. */
 function projectLabel(
   label: RegionLabel,
@@ -138,6 +158,17 @@ function projectLabel(
     vec.project(camera);
     const sx = (vec.x + 1) / 2 * canvasWidth;
     const sy = (1 - vec.y) / 2 * canvasHeight;
+
+    // Compute screen-space province width if worldWidth is available
+    let screenWidth: number | undefined;
+    if (label.worldWidth && label.worldWidth > 0) {
+      const left = new THREE.Vector3(label.worldX - label.worldWidth / 2, label.worldY, 0);
+      const right = new THREE.Vector3(label.worldX + label.worldWidth / 2, label.worldY, 0);
+      left.project(camera);
+      right.project(camera);
+      screenWidth = ((right.x - left.x) / 2) * canvasWidth; // NDC to pixels
+    }
+
     return {
       id: label.id,
       tier: label.tier,
@@ -145,6 +176,7 @@ function projectLabel(
       screenX: sx,
       screenY: sy,
       visible: true,
+      screenWidth,
     };
   } catch {
     return null;
@@ -154,24 +186,29 @@ function projectLabel(
 /**
  * Determines whether a label tier is visible at the given zoom level.
  *
- * Zoom tier mapping (per CONTEXT.md locked decisions):
- * - Kingdom: continental + full-world (zoomLevel < 15)
- * - Barony: regional + continental (1.5 <= zoom < 15)
- * - Geographic: regional only (5 <= zoom < 15)
- * - River: regional only (5 <= zoom < 15)
+ * Region labels fade out at REGION_LABEL_MAX (k=10) to avoid overlapping
+ * with location labels at higher zoom levels. Previously this was REGIONAL_MAX (k=15)
+ * but MAX_ZOOM was bumped from 10→15, creating a k=10-15 band where both
+ * region and location labels rendered with independent collision detection.
+ *
+ * Zoom tier mapping:
+ * - Kingdom: continental + lower regional (zoomLevel < 10)
+ * - Barony: continental + lower regional (1.5 <= zoom < 10)
+ * - Geographic: lower regional only (5 <= zoom < 10)
+ * - River: lower regional only (5 <= zoom < 10)
  */
 function isTierVisible(tier: RegionLabel['tier'], zoomLevel: number): boolean {
   switch (tier) {
     case 'kingdom':
-      // Visible at continental and full-world (not hero-local)
-      return zoomLevel < ZOOM_THRESHOLDS.REGIONAL_MAX;
+      // Visible at continental and lower regional
+      return zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
     case 'barony':
-      // Visible at regional and continental (not hero-local or full-world)
-      return zoomLevel >= ZOOM_THRESHOLDS.FULL_WORLD_MAX && zoomLevel < ZOOM_THRESHOLDS.REGIONAL_MAX;
+      // Visible at continental and lower regional (not full-world)
+      return zoomLevel >= ZOOM_THRESHOLDS.FULL_WORLD_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
     case 'geographic':
     case 'river':
-      // Visible at regional only
-      return zoomLevel >= ZOOM_THRESHOLDS.CONTINENTAL_MAX && zoomLevel < ZOOM_THRESHOLDS.REGIONAL_MAX;
+      // Visible at lower regional only
+      return zoomLevel >= ZOOM_THRESHOLDS.CONTINENTAL_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
   }
 }
 
@@ -211,6 +248,8 @@ interface ProjectedLabel {
   screenY: number;
   visible: boolean;
   inViewport: boolean;
+  /** Screen-space province width for letter-spacing at continental zoom */
+  screenWidth?: number;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -285,6 +324,7 @@ export function RegionLabelOverlay({
         screenY: sl.screenY,
         visible: sl.visible,
         inViewport: inViewportSet.has(sl.id),
+        screenWidth: sl.screenWidth,
       }));
 
       setProjected(next);
@@ -322,6 +362,18 @@ export function RegionLabelOverlay({
         const tierStyle = TIER_STYLES[pl.tier];
         const opacity = pl.visible ? 1 : 0;
 
+        // At continental zoom (k < 5), scale font size so text fills ~50% of province width
+        let scaledFontSize: number | undefined;
+        if (zoomLevel < ZOOM_THRESHOLDS.CONTINENTAL_MAX && pl.screenWidth && pl.text.length > 0) {
+          const baseFontSize = TIER_BASE_FONT_SIZE[pl.tier];
+          const targetWidth = pl.screenWidth * PROVINCE_LABEL_WIDTH_FRACTION;
+          // fontSize that makes text.length * fontSize * CHAR_WIDTH = targetWidth
+          const needed = targetWidth / (pl.text.length * LABEL_CHAR_WIDTH);
+          if (needed > baseFontSize) {
+            scaledFontSize = Math.min(needed, MAX_SCALED_FONT_SIZE);
+          }
+        }
+
         return (
           <div
             key={pl.id}
@@ -332,6 +384,7 @@ export function RegionLabelOverlay({
               opacity,
               // Collision-hidden labels: visibility hidden (preserves DOM, stable rendering)
               visibility: pl.visible ? 'visible' : 'hidden',
+              ...(scaledFontSize ? { fontSize: `${scaledFontSize}px` } : {}),
             }}
           >
             {displayText(baseLabel)}

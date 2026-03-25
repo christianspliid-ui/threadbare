@@ -30,6 +30,12 @@ interface DebugPanelProps {
   onZoomToLocation?: (locationId: string) => void;
   /** Getter for WebGL diagnostics snapshot from HexMapV2 */
   getWebGLDiagnostics?: () => WebGLDiagnosticsSnapshot | null;
+  /** Getter for current d3-zoom scale (k value) from HexMapV2 */
+  getZoomLevel?: () => number;
+  /** Whether organic shore rendering is enabled */
+  showOrganicShore?: boolean;
+  /** Callback to toggle organic shore rendering */
+  onToggleOrganicShore?: (enabled: boolean) => void;
 }
 
 type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'webgl';
@@ -873,7 +879,7 @@ const SocialTabContent = React.memo(function SocialTabContent({
   );
 });
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -1069,7 +1075,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
       <div ref={scrollRef} style={SCROLL_AREA_STYLE} onScroll={handleScroll}>
         {viewMode === 'webgl' ? (
           getWebGLDiagnostics ? (
-            <WebGLDebugTab getDiagnostics={getWebGLDiagnostics} />
+            <WebGLDebugTab getDiagnostics={getWebGLDiagnostics} getZoomLevel={getZoomLevel} showOrganicShore={showOrganicShore} onToggleOrganicShore={(v) => onToggleOrganicShore?.(v)} />
           ) : (
             <div style={EMPTY_STATE_STYLE}>No renderer connected.</div>
           )

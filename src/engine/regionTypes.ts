@@ -75,6 +75,9 @@ export interface RegionLabel {
   worldX: number;
   /** World-space Y coordinate (Three.js scene space) */
   worldY: number;
+  /** Approximate world-space width of the province/region this label belongs to.
+   *  Used to scale letter-spacing so labels span a fraction of their region. */
+  worldWidth?: number;
 }
 
 // ─── Aggregate ───────────────────────────────────────────────────

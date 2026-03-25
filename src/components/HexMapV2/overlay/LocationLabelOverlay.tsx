@@ -18,7 +18,19 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import * as THREE from 'three';
 import { hexToPixel } from '../../../lib/hexMath';
+import { getFixedSlotOffset } from '../../../lib/movementPath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
+import {
+  LOCATION_ICON_REGISTRY,
+  LOCATION_SIZE_SCALE,
+  CENTERED_SIZE_CLASSES,
+} from '../locations/locationIconRegistry';
+import {
+  SLOT_RING_RADIUS,
+  VERTEX_ANGLES_DEG,
+  LOCATION_RING_SCALE_FACTOR,
+  MAX_RING_LOCATIONS,
+} from '../../../data/agent-visual-content';
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
 import { removeOverlaps, type ScreenLabel } from './labelCollision';
 
@@ -26,24 +38,24 @@ import { removeOverlaps, type ScreenLabel } from './labelCollision';
 
 /**
  * Font sizes (px) per location importance tier.
- * Per UI-SPEC: capital=13, city/town=11, small=9.
+ * capital=16, city/town=13, small=11.
  */
 export const LOCATION_LABEL_FONT_SIZES: Record<LocationImportance, number> = {
-  capital: 13,
-  city:    11,
-  town:    11,
-  small:   9,
+  capital: 16,
+  city:    13,
+  town:    13,
+  small:   11,
 };
 
 /**
  * Font weights per location importance tier.
- * Capital uses bold (700); others use regular (400).
+ * All tiers use bold (700).
  */
 export const LOCATION_LABEL_FONT_WEIGHTS: Record<LocationImportance, number> = {
   capital: 700,
-  city:    400,
-  town:    400,
-  small:   400,
+  city:    700,
+  town:    700,
+  small:   700,
 };
 
 /**
@@ -52,6 +64,9 @@ export const LOCATION_LABEL_FONT_WEIGHTS: Record<LocationImportance, number> = {
  * At regional+ (k >= 5): labels appear based on importance tier.
  */
 export const LOCATION_MIN_ZOOM = ZOOM_THRESHOLDS.CONTINENTAL_MAX; // 5
+
+/** Extra padding (px) between projected icon bottom and label top */
+const ICON_LABEL_GAP_PX = 2;
 
 /** Debounce interval for collision detection recomputation (ms) */
 const COLLISION_DEBOUNCE_MS = 60;
@@ -68,6 +83,8 @@ export interface LocationLabelData {
   hexCol: number;
   hexRow: number;
   importance: LocationImportance;
+  /** Raw location type — needed to compute icon position (centered vs ring) */
+  locationType: string;
 }
 
 interface LocationLabelOverlayProps {
@@ -110,20 +127,19 @@ const LABEL_BASE: CSSProperties = {
  * Determines whether a location importance tier should show a text label
  * at the given zoom level.
  *
- * Zoom tier mapping per UI-SPEC:
- * - hero-local (k >= 15): all locations
- * - regional (5 <= k < 15): capital, city, town (not small)
- * - continental (1.5 <= k < 5): no text labels (icons only)
- * - full-world (k < 1.5): nothing
+ * Zoom tier mapping:
+ * - k >= 10 (REGION_LABEL_MAX): all locations (region labels gone, room for small)
+ * - k >= 5 (regional): capital, city, town (not small — region labels still present)
+ * - k < 5 (continental/full-world): no text labels (icons only)
  */
 function isLabelVisible(importance: LocationImportance, zoomLevel: number): boolean {
   // Below regional: no text labels
   if (zoomLevel < ZOOM_THRESHOLDS.CONTINENTAL_MAX) return false;
-  // Regional: capital, city, town visible; small hidden
-  if (zoomLevel < ZOOM_THRESHOLDS.REGIONAL_MAX) {
+  // Lower regional (region labels still showing): hide small
+  if (zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX) {
     return importance !== 'small';
   }
-  // Hero-local: all visible
+  // Upper regional + hero-local (region labels gone): all visible
   return true;
 }
 
@@ -137,6 +153,57 @@ interface ProjectedLocationLabel {
   screenY: number;
   visible: boolean;
   inViewport: boolean;
+}
+
+// ── Projection helper ────────────────────────────────────────────────────────
+
+/** Project a location label to screen space, positioned below its icon. */
+function projectLocationLabel(
+  loc: LocationLabelData,
+  offsetX: number,
+  offsetY: number,
+  iconHalfSize: number,
+  camera: THREE.OrthographicCamera,
+  canvasWidth: number,
+  canvasHeight: number,
+  screenLabels: ScreenLabel[],
+  inViewportSet: Set<string>,
+): void {
+  try {
+    const { x, y } = hexToPixel(
+      { col: loc.hexCol, row: loc.hexRow },
+      HEX_CONSTANTS.HEX_SIZE,
+    );
+    // Icon center in world space (Three.js y-up, ring offset y is flipped)
+    const iconCenterX = x + offsetX;
+    const iconCenterY = -y - offsetY;
+    // Label anchor = bottom of icon + gap
+    const labelAnchorY = iconCenterY - iconHalfSize - 0.5;
+
+    const vec = new THREE.Vector3(iconCenterX, labelAnchorY, 0);
+    vec.project(camera);
+    const sx = (vec.x + 1) / 2 * canvasWidth;
+    const sy = (1 - vec.y) / 2 * canvasHeight + ICON_LABEL_GAP_PX;
+
+    // Viewport culling — 100px margin
+    const inViewport =
+      sx >= -100 && sx <= canvasWidth + 100 &&
+      sy >= -100 && sy <= canvasHeight + 100;
+
+    if (inViewport) {
+      screenLabels.push({
+        id: loc.id,
+        tier: importanceToTier(loc.importance),
+        text: loc.name,
+        screenX: sx,
+        screenY: sy,
+        visible: true,
+      });
+      inViewportSet.add(loc.id);
+    }
+  } catch {
+    // NFP #4: skip malformed locations
+  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -178,40 +245,51 @@ export function LocationLabelOverlay({
         loc => isLabelVisible(loc.importance, zoomLevel),
       );
 
+      // Group by hex to replicate LocationIconMesh ring layout logic
+      const hexGroups = new Map<string, LocationLabelData[]>();
+      for (const loc of visibleLocations) {
+        const key = `${loc.hexCol},${loc.hexRow}`;
+        if (!hexGroups.has(key)) hexGroups.set(key, []);
+        hexGroups.get(key)!.push(loc);
+      }
+
       const screenLabels: ScreenLabel[] = [];
       const inViewportSet = new Set<string>();
 
-      for (const loc of visibleLocations) {
-        try {
-          const { x, y } = hexToPixel(
-            { col: loc.hexCol, row: loc.hexRow },
-            HEX_CONSTANTS.HEX_SIZE,
-          );
-          const vec = new THREE.Vector3(x, -y, 0);
-          vec.project(camera);
-          const sx = (vec.x + 1) / 2 * canvasWidth;
-          // Offset 4px below the icon center (icon is roughly half a hex size tall)
-          const sy = (1 - vec.y) / 2 * canvasHeight + 4;
-
-          // Viewport culling — 100px margin for labels partially at edge
-          const inViewport =
-            sx >= -100 && sx <= canvasWidth + 100 &&
-            sy >= -100 && sy <= canvasHeight + 100;
-
-          if (inViewport) {
-            const sl: ScreenLabel = {
-              id: loc.id,
-              tier: importanceToTier(loc.importance),
-              text: loc.name,
-              screenX: sx,
-              screenY: sy,
-              visible: true,
-            };
-            screenLabels.push(sl);
-            inViewportSet.add(loc.id);
+      for (const hexLocs of hexGroups.values()) {
+        // Partition centered vs ring — same logic as LocationIconMesh
+        const centered: LocationLabelData[] = [];
+        const ringEligible: LocationLabelData[] = [];
+        for (const loc of hexLocs) {
+          const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+          if (iconDef && CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
+            centered.push(loc);
+          } else {
+            ringEligible.push(loc);
           }
-        } catch {
-          // NFP #4: skip malformed locations
+        }
+        // Sort ring-eligible by name for deterministic slot assignment (NFP #3)
+        ringEligible.sort((a, b) => a.name.localeCompare(b.name));
+        const ringVisible = ringEligible.slice(0, MAX_RING_LOCATIONS);
+
+        // Process centered locations (icon at hex center)
+        for (const loc of centered) {
+          const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+          const iconHalfSize = iconDef
+            ? HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] / 2
+            : HEX_CONSTANTS.HEX_SIZE * 0.3;
+          projectLocationLabel(loc, 0, 0, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
+        }
+
+        // Process ring locations (icon at ring offset)
+        for (let i = 0; i < ringVisible.length; i++) {
+          const loc = ringVisible[i];
+          const offset = getFixedSlotOffset(i, ringVisible.length, VERTEX_ANGLES_DEG, SLOT_RING_RADIUS);
+          const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
+          const iconHalfSize = iconDef
+            ? HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * LOCATION_RING_SCALE_FACTOR / 2
+            : HEX_CONSTANTS.HEX_SIZE * 0.15;
+          projectLocationLabel(loc, offset.x, offset.y, iconHalfSize, camera, canvasWidth, canvasHeight, screenLabels, inViewportSet);
         }
       }
 

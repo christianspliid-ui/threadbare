@@ -45,8 +45,8 @@ describe('RETINUE_BORDER_ALT_COLOR', () => {
 });
 
 describe('AGENT_ZOOM_THRESHOLDS', () => {
-  it('has HERO_LOCAL = 15', () => {
-    expect(AGENT_ZOOM_THRESHOLDS.HERO_LOCAL).toBe(15);
+  it('has HERO_LOCAL = 5', () => {
+    expect(AGENT_ZOOM_THRESHOLDS.HERO_LOCAL).toBe(5);
   });
 
   it('has REGIONAL = 5', () => {
