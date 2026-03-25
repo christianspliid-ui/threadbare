@@ -21,7 +21,9 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import type { RegionData } from '../../../engine/regionTypes';
-import { hexToPixel, hexNeighbors } from '../../../lib/hexMath';
+import { hexNeighbors } from '../../../lib/hexMath';
+import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
@@ -197,7 +199,7 @@ export function createBorderMesh(
   // Build fast tile set for O(1) lookup (only need existence check)
   const tileSet = new Set<string>();
   for (const tile of tiles) {
-    tileSet.add(`${tile.coord.col},${tile.coord.row}`);
+    tileSet.add(hexKeyFromCoord(tile.coord));
   }
 
   // Edge dedup: canonical key per edge so we never draw the same border twice
@@ -207,29 +209,27 @@ export function createBorderMesh(
 
   for (const tile of tiles) {
     const { col, row } = tile.coord;
-    const hexKey = `${col},${row}`;
+    const hKey = hexKeyFn(col, row);
 
-    const baronyA = hexBaronyId.get(hexKey);
-    const kingdomA = hexKingdomId.get(hexKey);
+    const baronyA = hexBaronyId.get(hKey);
+    const kingdomA = hexKingdomId.get(hKey);
 
     // Skip hexes with no political assignment (NFP #4 Fail-soft)
     if (baronyA === undefined) continue;
 
-    const svgCenter = hexToPixel({ col, row }, size);
-    // Y-flip: SVG y-down → Three.js y-up
-    const hexCenter: Point2D = { x: svgCenter.x, y: -svgCenter.y };
+    const hexCenter: Point2D = hexToWorld({ col, row }, size);
 
     const neighbors = hexNeighbors({ col, row });
 
     // Check all 6 directions to form a complete ring around regions
     for (let dirIdx = 0; dirIdx < 6; dirIdx++) {
       const neighbor = neighbors[dirIdx];
-      const neighborKey = `${neighbor.col},${neighbor.row}`;
+      const neighborKey = hexKeyFn(neighbor.col, neighbor.row);
 
       // Canonical edge key for dedup (lower key first)
-      const edgeKey = hexKey < neighborKey
-        ? `${hexKey}|${neighborKey}`
-        : `${neighborKey}|${hexKey}`;
+      const edgeKey = hKey < neighborKey
+        ? `${hKey}|${neighborKey}`
+        : `${neighborKey}|${hKey}`;
       if (processedEdges.has(edgeKey)) continue;
 
       const neighborExists = tileSet.has(neighborKey);

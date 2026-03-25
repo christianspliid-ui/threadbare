@@ -17,7 +17,8 @@
  */
 
 import * as THREE from 'three';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { getFixedSlotOffset } from '../../../lib/movementPath';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -127,7 +128,7 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
   // Group locations by hex key for ring layout computation
   const hexGroups = new Map<string, LocationNode[]>();
   for (const loc of locations) {
-    const key = `${loc.hexCol},${loc.hexRow}`;
+    const key = hexKeyFn(loc.hexCol, loc.hexRow);
     if (!hexGroups.has(key)) hexGroups.set(key, []);
     hexGroups.get(key)!.push(loc);
   }
@@ -208,7 +209,7 @@ function addLocationSprite(
   if (!texture) return; // NFP #4: skip missing texture
 
   const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * scaleFactor;
-  const { x, y } = hexToPixel({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+  const { x: wx, y: wy } = hexToWorld({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
 
   const material = new THREE.SpriteMaterial({
     map: texture,
@@ -216,8 +217,8 @@ function addLocationSprite(
     depthWrite: false,
   });
   const sprite = new THREE.Sprite(material);
-  // Y-flip: SVG y-down, Three.js y-up. Ring offset Y is also flipped.
-  sprite.position.set(x + offsetX, -y - offsetY, LOCATION_ICON_Z);
+  // Ring offset Y is flipped (SVG offset convention)
+  sprite.position.set(wx + offsetX, wy - offsetY, LOCATION_ICON_Z);
   sprite.scale.set(spriteSize, spriteSize, 1);
   group.add(sprite);
 }
@@ -237,7 +238,7 @@ function addCapitalRing(
   if (!iconDef) return;
 
   const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass];
-  const { x, y } = hexToPixel({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
+  const { x: wx, y: wy } = hexToWorld({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
 
   const ringMaterial = new THREE.SpriteMaterial({
     map: capitalRingTexture,
@@ -245,7 +246,7 @@ function addCapitalRing(
     depthWrite: false,
   });
   const ringSprite = new THREE.Sprite(ringMaterial);
-  ringSprite.position.set(x + offsetX, -y - offsetY, LOCATION_ICON_Z + 0.001);
+  ringSprite.position.set(wx + offsetX, wy - offsetY, LOCATION_ICON_Z + 0.001);
   ringSprite.scale.set(spriteSize, spriteSize, 1);
   group.add(ringSprite);
 }

@@ -19,6 +19,7 @@ import {
   type HistoricalCultureTemplate,
 } from '../data/historical-culture-content';
 import { hexNeighbors } from '../lib/hexMath';
+import { hexKeyFromCoord } from '../lib/hexKey';
 import type { RegionCluster } from './regionDetection';
 
 /** Pick a random element */
@@ -120,13 +121,13 @@ export function assignHistoricalTerritories(
   for (let ri = 0; ri < clusters.length; ri++) {
     regionAdj.set(ri, new Set());
     for (const h of clusters[ri].hexes) {
-      hexToRegionIdx.set(`${h.col},${h.row}`, ri);
+      hexToRegionIdx.set(hexKeyFromCoord(h), ri);
     }
   }
   for (let ri = 0; ri < clusters.length; ri++) {
     for (const h of clusters[ri].hexes) {
       for (const n of hexNeighbors(h)) {
-        const nri = hexToRegionIdx.get(`${n.col},${n.row}`);
+        const nri = hexToRegionIdx.get(hexKeyFromCoord(n));
         if (nri !== undefined && nri !== ri) {
           regionAdj.get(ri)!.add(nri);
         }

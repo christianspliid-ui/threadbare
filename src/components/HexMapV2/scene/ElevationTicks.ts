@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
-import { hexToPixel, hexNeighbors } from '../../../lib/hexMath';
+import { hexNeighbors } from '../../../lib/hexMath';
+import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
@@ -125,7 +127,7 @@ export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
   // O(1) tile lookup: "col,row" → HexTile
   const tileMap = new Map<string, HexTile>();
   for (const tile of tiles) {
-    tileMap.set(`${tile.coord.col},${tile.coord.row}`, tile);
+    tileMap.set(hexKeyFromCoord(tile.coord), tile);
   }
 
   const processedPairs = new Set<string>();
@@ -168,13 +170,12 @@ export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
     // Only plateau hexes get elevation ticks
     if (tile.terrain !== 'plateau') continue;
 
-    const { x: cx, y: cy } = hexToPixel(tile.coord, size);
-    const worldCY = -cy; // Y-flip
+    const { x: cx, y: worldCY } = hexToWorld(tile.coord, size);
 
     const neighbors = hexNeighbors(tile.coord);
 
     for (const neighbor of neighbors) {
-      const neighborTile = tileMap.get(`${neighbor.col},${neighbor.row}`);
+      const neighborTile = tileMap.get(hexKeyFn(neighbor.col, neighbor.row));
       if (!neighborTile) continue;
 
       // Skip if neighbor is also plateau
@@ -197,8 +198,7 @@ export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
       processedPairs.add(pairKey);
 
       // Get shared edge
-      const { x: ncx, y: ncy } = hexToPixel(neighbor, size);
-      const worldNCY = -ncy;
+      const { x: ncx, y: worldNCY } = hexToWorld(neighbor, size);
 
       const edge = sharedEdgeVertices(cx, worldCY, ncx, worldNCY, size);
       if (!edge) continue;

@@ -1,6 +1,7 @@
 import type { HexCoord } from '../types';
 import type { WorldGenData } from './worldGenData';
 import { hexNeighbors } from '../lib/hexMath';
+import { hexKey } from '../lib/hexKey';
 import { LAKE_OUTFLOW_MIN_LENGTH } from './worldGenData';
 
 function inBounds(col: number, row: number, cols: number, rows: number): boolean {
@@ -114,12 +115,12 @@ export function generateLakeOutflows(data: WorldGenData): void {
     // Start routing from pour-point
     path.push({ col: pourCol, row: pourRow });
     const visited = new Set<string>();
-    visited.add(`${pourCol},${pourRow}`);
+    visited.add(hexKey(pourCol, pourRow));
     // Mark lake hexes as visited to prevent backflow
     for (const idx of lake.hexes) {
       const c = idx % cols;
       const r = Math.floor(idx / cols);
-      visited.add(`${c},${r}`);
+      visited.add(hexKey(c, r));
     }
 
     let currentCol = pourCol;
@@ -139,7 +140,7 @@ export function generateLakeOutflows(data: WorldGenData): void {
       let bestElev = elev[currentIdx];
 
       for (const n of neighbors) {
-        const key = `${n.col},${n.row}`;
+        const key = hexKey(n.col, n.row);
         if (visited.has(key)) continue;
         const nIdx = n.row * cols + n.col;
         if (elev[nIdx] < bestElev) {
@@ -151,7 +152,7 @@ export function generateLakeOutflows(data: WorldGenData): void {
       // Try flat traversal if no downhill
       if (!bestNeighbor) {
         for (const n of neighbors) {
-          const key = `${n.col},${n.row}`;
+          const key = hexKey(n.col, n.row);
           if (visited.has(key)) continue;
           const nIdx = n.row * cols + n.col;
           if (elev[nIdx] <= elev[currentIdx] + 0.01) {
@@ -164,7 +165,7 @@ export function generateLakeOutflows(data: WorldGenData): void {
       if (!bestNeighbor) break;
 
       path.push(bestNeighbor);
-      visited.add(`${bestNeighbor.col},${bestNeighbor.row}`);
+      visited.add(hexKey(bestNeighbor.col, bestNeighbor.row));
       currentCol = bestNeighbor.col;
       currentRow = bestNeighbor.row;
 

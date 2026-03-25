@@ -647,7 +647,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           diagnosticsRef.current.recordFrame();
           // Advance agent bezier hop animations (no-op if no active animations)
           const spriteGroup = agentSpriteGroupRef.current;
-          if (spriteGroup) tickAgentAnimations(animStates, spriteGroup.spriteMap);
+          if (spriteGroup) tickAgentAnimations(animStates, spriteGroup.animationTargets);
           // Fade and dispose expired movement trail segments
           const tGroup = trailGroupRef.current;
           if (tGroup) updateTrails(tGroup);

@@ -1,6 +1,7 @@
 import { createNoise2D } from 'simplex-noise';
 import { type CosmologyProfile, type GeoParams } from '../types';
 import { mulberry32 } from '../lib/prng';
+import { hexKey } from '../lib/hexKey';
 
 // ─── Noise generation parameters (NFP #1: Tunability) ────────
 // Change terrain character by adjusting these values — no logic rewrites needed.
@@ -127,7 +128,7 @@ export function generateGeoField(
 
       moisture = Math.max(0, Math.min(1, moisture));
 
-      result.set(`${col},${row}`, { elevation, temperature, moisture });
+      result.set(hexKey(col, row), { elevation, temperature, moisture });
     }
   }
 

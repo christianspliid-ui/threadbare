@@ -15,7 +15,8 @@
 
 import * as THREE from 'three';
 import type { RegionData } from '../../../engine/regionTypes';
-import { hexToPixel } from '../../../lib/hexMath';
+import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
@@ -55,21 +56,18 @@ export function createCapitalMarkers(regionData: RegionData): THREE.Group {
   // Determine which baronies are kingdom capitals
   const kingdomCapitalHexKeys = new Set<string>();
   for (const kingdom of kingdoms) {
-    kingdomCapitalHexKeys.add(`${kingdom.capitalHex.col},${kingdom.capitalHex.row}`);
+    kingdomCapitalHexKeys.add(hexKeyFromCoord(kingdom.capitalHex));
   }
 
   const kingdomPositions: number[] = [];
   const baronyPositions: number[] = [];
 
   for (const barony of baronies) {
-    const svgPos = hexToPixel(barony.capitalHex, size);
-    // Y-flip: SVG y-down → Three.js y-up
-    const wx = svgPos.x;
-    const wy = -svgPos.y;
+    const { x: wx, y: wy } = hexToWorld(barony.capitalHex, size);
 
-    const hexKey = `${barony.capitalHex.col},${barony.capitalHex.row}`;
+    const hKey = hexKeyFn(barony.capitalHex.col, barony.capitalHex.row);
 
-    if (kingdomCapitalHexKeys.has(hexKey)) {
+    if (kingdomCapitalHexKeys.has(hKey)) {
       kingdomPositions.push(wx, wy, CAPITAL_Z);
     } else {
       baronyPositions.push(wx, wy, CAPITAL_Z);

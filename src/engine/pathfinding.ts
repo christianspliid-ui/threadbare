@@ -12,6 +12,7 @@ import { WorldGraph } from './graph';
 import { computeEdgeCost } from './movementCost';
 import type { HexCoord, HexTile } from '../types';
 import { hexNeighbors, hexDistance } from '../lib/hexMath';
+import { hexKey, hexKeyFromCoord } from '../lib/hexKey';
 import { getTerrainTax, ROAD_MAJOR_COST_MULTIPLIER, ROAD_TRAIL_COST_MULTIPLIER, MIN_EDGE_COST } from '../data/movement-content';
 import { BASE_EDGE_TRAVERSAL_COST } from '../types/movement';
 
@@ -213,6 +214,8 @@ function computeRoadEdgeCost(
 
   if (typeof totalCost !== 'number' || !isFinite(totalCost)) return null;
   if (roadType !== 'major' && roadType !== 'trail') return null;
+  // Fail-soft: road edge without hexPath data can't support hex-by-hex traversal — skip it
+  if (!hexPath || hexPath.length < 2) return null;
 
   const multiplier = roadType === 'major' ? ROAD_MAJOR_COST_MULTIPLIER : ROAD_TRAIL_COST_MULTIPLIER;
   const discountedCost = Math.max(MIN_EDGE_COST, totalCost * multiplier);
@@ -306,10 +309,10 @@ export function findHexPath(
   // Build a fast terrain lookup: "col,row" → TerrainType
   const terrainMap = new Map<string, string>();
   for (const tile of tiles) {
-    terrainMap.set(`${tile.coord.col},${tile.coord.row}`, tile.terrain);
+    terrainMap.set(hexKeyFromCoord(tile.coord), tile.terrain);
   }
 
-  const key = (c: HexCoord) => `${c.col},${c.row}`;
+  const key = hexKeyFromCoord;
 
   // Check destination is passable
   const destTerrain = terrainMap.get(key(to));
