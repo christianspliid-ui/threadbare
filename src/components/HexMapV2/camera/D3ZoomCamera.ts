@@ -16,6 +16,8 @@ export const CAMERA_CONSTANTS = {
   ZOOM_TARGET_LERP_OUT: 0.15, // Per-wheel-tick convergence toward selected hex when zooming out (slower)
   INITIAL_CENTER_COL: 48,     // Starting view centers on this hex column
   INITIAL_CENTER_ROW: 90,     // Starting view centers on this hex row
+  WHEEL_DELTA_SCALE: 0.002,   // Wheel scroll sensitivity multiplier (deltaMode 0)
+  FIT_PADDING: 0.85,          // Show grid at 85% of canvas, leaving edge padding
 } as const;
 
 /**
@@ -110,7 +112,7 @@ export function setupD3Zoom(
     const [minK, maxK] = zoom.scaleExtent();
 
     // Compute new scale (same delta logic as d3-zoom: -deltaY * 0.002)
-    const delta = -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : 0.002);
+    const delta = -event.deltaY * (event.deltaMode === 1 ? 0.05 : event.deltaMode ? 1 : CAMERA_CONSTANTS.WHEEL_DELTA_SCALE);
     const newK = Math.max(minK, Math.min(maxK, currentTransform.k * Math.pow(2, delta)));
     if (newK === currentTransform.k) return;
 
@@ -177,7 +179,7 @@ export function setupD3Zoom(
   // Compute initial zoom to fit grid within the canvas (with padding).
   // Grid world extent: cols * HEX_SCALE_X * hexSize wide, rows * HEX_SCALE_Y * hexSize tall.
   // Zoom k means 1 world unit = k screen pixels, so we need k = canvasPx / worldUnits.
-  const FIT_PADDING = 0.85; // Show grid at 85% of canvas, leaving edge padding
+  const FIT_PADDING = CAMERA_CONSTANTS.FIT_PADDING;
   let k = CAMERA_CONSTANTS.DEFAULT_ZOOM;
   if (gridCols != null && gridRows != null) {
     const worldW = gridCols * HEX_SCALE_X * HEX_CONSTANTS.HEX_SIZE;

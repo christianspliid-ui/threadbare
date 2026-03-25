@@ -4,7 +4,7 @@ import type { RiverPath } from '../../../engine/worldGenData';
 import { hexToPixel } from '../../../lib/hexMath';
 import { SimplexNoise } from '../../../lib/simplexNoise';
 import { WATER_PALETTE } from '../palette/waterPalette';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
 // ─── River rendering constants (NFP #1: all named, all tunable) ──────────────
@@ -23,8 +23,8 @@ const RIVER_MEANDER_AMPLITUDE = 0.35;
 const RIVER_SMOOTH_PASSES = 2;
 /** Added to seed so river noise differs from coastline noise */
 const RIVER_SEED_OFFSET = 5501;
-/** Z position to sit above coastline (0.02) and grid (GRID=2) layers */
-const RIVER_Z_OFFSET = 0.03;
+/** Z position — from centralized LAYER_Z (monotonic with renderOrder) */
+const RIVER_Z_OFFSET = LAYER_Z.RIVERS;
 /** Bias from hex center toward the exit/entry edge for terminus points */
 const RIVER_TERMINUS_EDGE_BIAS = 0.6;
 

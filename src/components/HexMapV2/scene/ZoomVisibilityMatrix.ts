@@ -59,6 +59,18 @@ export function getZoomTier(k: number): ZoomTier {
   return 'full-world';
 }
 
+// ── Layer Name Type ──────────────────────────────────────────────────────────
+
+/** All layer keys used in the visibility matrix. Literal union prevents typo bugs. */
+export const LAYER_NAMES = [
+  'hex_fill', 'coastline', 'grid_lines', 'elev_ticks',
+  'rivers', 'roads', 'borders_kingdom', 'borders_barony',
+  'signifiers', 'locations', 'agents_portrait', 'agents_dot',
+  'agents_retinue', 'events', 'labels', 'fog',
+] as const;
+
+export type LayerName = typeof LAYER_NAMES[number];
+
 // ── Visibility Matrix ────────────────────────────────────────────────────────
 
 /**
@@ -71,7 +83,7 @@ export function getZoomTier(k: number): ZoomTier {
  *
  * NFP #2: Complete table — every layer x tier combination is explicit.
  */
-export const ZOOM_VISIBILITY_MATRIX: Record<string, Record<ZoomTier, boolean>> = {
+export const ZOOM_VISIBILITY_MATRIX: Record<LayerName, Record<ZoomTier, boolean>> = {
   /** Base terrain fill — always visible */
   hex_fill: {
     'hero-local': true,

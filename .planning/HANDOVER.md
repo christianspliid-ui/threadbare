@@ -9,6 +9,8 @@
 
 ---
 
+---
+
 ## 2026-03-23: Implement start page (main menu)
 
 **Context:** The game currently drops players straight into cosmology setup with no introduction. Designed a full start page with title, lore fragment, main menu (New World / Continue / Settings / Credits), and theme music system. Narrative-mysterious tone — text over the existing title-screen.png art with a darkening gradient. Dark ambient drone plays on first interaction, fades out on "New World". Full design doc with layout mockup, audio system spec, token usage, constants table, NFP compliance, accessibility notes, and implementation file list.
@@ -34,6 +36,17 @@
 ---
 
 ## Completed
+
+### 2026-03-25: HexMapV2 quick wins — consistency & type safety (completed 2026-03-25)
+
+All action items done:
+- Added `LAYER_Z` constant block in `RenderLayers.ts` (monotonic with RENDER_ORDER)
+- Updated 8 mesh files to import Z positions from `LAYER_Z` instead of local constants
+- Added `LAYER_NAMES` const array and `LayerName` type to `ZoomVisibilityMatrix.ts`; typed the matrix as `Record<LayerName, ...>`
+- Moved `0.002` (wheel delta) and `0.85` (fit padding) into `CAMERA_CONSTANTS` in `D3ZoomCamera.ts`
+- Deleted unused `WATER_TYPES` constant from `ElevationTicks.ts`
+- Updated RoadMesh test (Z_OFFSET value changed 0.025→0.030 for monotonic ordering)
+- `npx tsc --noEmit` clean, all tests pass (1 pre-existing unrelated failure in AgentDots)
 
 ### 2026-03-25: Fixed-slot hex layout (completed 2026-03-25)
 

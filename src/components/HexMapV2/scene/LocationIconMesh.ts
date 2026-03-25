@@ -19,7 +19,7 @@
 import * as THREE from 'three';
 import { hexToPixel } from '../../../lib/hexMath';
 import { getFixedSlotOffset } from '../../../lib/movementPath';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import {
   LOCATION_ICON_REGISTRY,
@@ -36,8 +36,8 @@ import {
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
 
-/** Z offset for location icon sprites — above SIGNIFIER_Z (0.07), below agents. */
-export const LOCATION_ICON_Z = 0.08;
+/** Z offset for location icon sprites — from centralized LAYER_Z */
+export const LOCATION_ICON_Z = LAYER_Z.LOCATIONS;
 
 /**
  * Minimum zoom level (d3-zoom k) at which location icons are visible.

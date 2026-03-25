@@ -15,7 +15,7 @@ import {
   TRAIL_OPACITY_MAX,
   TRAIL_OPACITY_MIN,
 } from '../../../data/agent-visual-content';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -26,11 +26,8 @@ import { RENDER_ORDER } from './RenderLayers';
  */
 export const TRAIL_FADE_DURATION = 2000;
 
-/**
- * Z position for trail line geometry.
- * Below agent sprites (AGENT_SPRITE_Z = 0.09) so trails render behind agents.
- */
-const TRAIL_Z = 0.085;
+/** Z position for trail line geometry — from centralized LAYER_Z */
+const TRAIL_Z = LAYER_Z.TRAILS;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 

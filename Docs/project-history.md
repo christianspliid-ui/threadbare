@@ -186,6 +186,7 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - V1 Agent Dot Behavior Restoration: ✅ Complete (2026-03-24) — Restored V1 zoom tiers (dots at regional, portraits at hero-local only), bezier hop animations with ring slot offsets, 150ms settle tweens for same-hex ring rearrangement, eye icon Y-flip fix, located_at edge resolution for retinue/agentDetail.
 - Organic Trail Rendering: ✅ Complete (2026-03-25) — Trails use terrain-aware wobble + Catmull-Rom spline at 60% intensity (TRAIL_WOBBLE_SCALE), matching major roads' organic feel.
+- HexMapV2 Quick Wins — Consistency & Type Safety: ✅ Complete (2026-03-25) — Centralized LAYER_Z constants in RenderLayers.ts (monotonic with renderOrder), typed LayerName union for ZoomVisibilityMatrix keys, named WHEEL_DELTA_SCALE/FIT_PADDING in CAMERA_CONSTANTS, removed dead WATER_TYPES. 12 files changed, zero behavior changes.
 
 - Kokoro TTS Narration Prototype: ✅ Complete (2026-03-23) — Client-side text-to-speech using kokoro-js (82M param Kokoro model, q8 quantized ~92 MB, Apache 2.0). Runs entirely in-browser via WASM, no API key or server. NarrationWorker (Web Worker for kokoro-js inference, off main thread), NarrationService (singleton wrapping worker + AudioContext playback), useNarration hook (useSyncExternalStore). Narrate button in HexChronicle hero section: Volume2 (idle) → Loader2 spinner (loading model) → Square (playing/stop). Auto-stops on hex selection change. Feature-flagged off by default (NARRATION_ENABLED = false in narrationConstants.ts). 5,798 tests pass.
 

@@ -10,6 +10,8 @@
  *   an agent appears in a particular visual state.
  */
 
+import { LAYER_Z } from '../scene/RenderLayers';
+
 // ── Agent Render Data ────────────────────────────────────────────────────────
 
 /**
@@ -89,11 +91,11 @@ export const AGENT_ZOOM_THRESHOLDS = {
 // ── Z Offsets ────────────────────────────────────────────────────────────────
 
 /**
- * Z position for agent sprites.
- * Must be above LOCATION_ICON_Z (0.08) so agents render over location icons.
+ * Z position for agent sprites — from centralized LAYER_Z.
+ * Must be above LOCATION_ICON_Z so agents render over location icons.
  * NFP #1: named constant, no magic numbers at use sites.
  */
-export const AGENT_SPRITE_Z = 0.09;
+export const AGENT_SPRITE_Z = LAYER_Z.AGENTS;
 
 // ── Texture Sizes ────────────────────────────────────────────────────────────
 

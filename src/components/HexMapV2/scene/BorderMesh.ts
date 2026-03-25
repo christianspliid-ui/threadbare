@@ -22,7 +22,7 @@ import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import type { RegionData } from '../../../engine/regionTypes';
 import { hexToPixel, hexNeighbors } from '../../../lib/hexMath';
-import { RENDER_ORDER } from './RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
 // ─── Border rendering constants (NFP #1: Tunability) ─────────────────────────
@@ -39,8 +39,8 @@ const EDGE_EXTENSION = 0.35;
 /** Border opacity (0–1). Slightly transparent to blend with terrain. */
 const BORDER_OPACITY = 0.7;
 
-/** Z position for border vertices — above rivers (0.03), below signifiers */
-const BORDER_Z = 0.035;
+/** Z position for border vertices — from centralized LAYER_Z */
+const BORDER_Z = LAYER_Z.BORDERS;
 
 /** Border color: red, matches capital marker color */
 const BORDER_COLOR = 0xC83030;

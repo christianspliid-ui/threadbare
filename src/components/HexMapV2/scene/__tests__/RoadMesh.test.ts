@@ -13,7 +13,7 @@ import {
   ROAD_CONSTANTS,
   createRoadMesh,
 } from '../RoadMesh';
-import { RENDER_ORDER } from '../RenderLayers';
+import { RENDER_ORDER, LAYER_Z } from '../RenderLayers';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -45,8 +45,8 @@ describe('ROAD_CONSTANTS', () => {
     expect(ROAD_CONSTANTS.TRAIL_HALF_WIDTH).toBe(0.1);
   });
 
-  it('Z_OFFSET is 0.025', () => {
-    expect(ROAD_CONSTANTS.Z_OFFSET).toBe(0.025);
+  it('Z_OFFSET matches LAYER_Z.ROADS', () => {
+    expect(ROAD_CONSTANTS.Z_OFFSET).toBe(LAYER_Z.ROADS);
   });
 });
 
