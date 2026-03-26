@@ -18,7 +18,7 @@ Tick loop has no try/catch — phase failures are silent. Several GameState arra
 
 ---
 
-## 📐▶ TB-056 · Agent Encounter Tuning — Idle Death Spiral Fix (2026-03-26)
+## ✅ TB-056 · Agent Encounter Tuning — Idle Death Spiral Fix (2026-03-26)
 
 Agents are 95%+ idle across 72 ticks. Three compounding bugs: (1) `domainCapabilities` generated at init but never read by `computeRawScore()` — agents start with ~2% capability, (2) floor-clamped probabilities (0.05) cascade into zero scores below `IDLE_SCORE_THRESHOLD`, (3) filter pipeline starves some locations of all candidates. Root cause fix: wire `domainCapabilities` into `computeRawScore()`. Tuning pass: lower `DIFFICULTY_BASE` 35→25, `IDLE_SCORE_THRESHOLD` 0.001→0.0001, `ENCOUNTER_ABANDON_COOLDOWN` 20→8, `IDLE_TRIVIAL_PREFERENCE` 0.8→0.5, `THREAT_FLOOR_FILTER` true→false. Handover: `.planning/HANDOVER.md`.
 
