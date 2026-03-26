@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-039**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-041**.
 
 ---
 
@@ -269,14 +269,51 @@ Deep research into what kinds of origin-story dilemmas resonate across mythology
 
 **Research brief:** `Docs/plans/2026-03-26-dilemma-research-brief.md`
 **Depends on:** TB-035 design doc (for system integration spec)
-**Needs:** Full creative attention — quality of these stories directly determines the emotional impact of the game's most important moment
+**Needs:** Full creative attention — quality of these stories directly determines the e
 
 ---
 
-## 💡 TB-034 · Browser-Side TTS Fallback (kokoro-js)
+## 📋 TB-039 · Increase Max Zoom from 15 to 20
 
-When deployed to Vercel (or any host without the local `tts-server.py`), narration silently fails because the TTS endpoint at `localhost:3001` is unreachable. Add a fallback path using the existing `kokoro-js` dependency and `NarrationWorker.ts` to run Kokoro TTS inference entirely in the browser via WebAssembly/WebGPU. The local server path remains preferred when available (lower latency, GPU-accelerated); the browser path activates automatically when the server health-check fails.
+Raise `MAX_ZOOM` from 15 → 20 (~600px/hex apparent) to allow deeper close-up inspection of hexes.
 
-**Scope:** `NarrationService.ts`, `NarrationWorker.ts`, `narrationConstants.ts`
-**Depends on:** TB-010 (✅ Kokoro TTS Narration)
-**Trade-offs:** ~50 MB model download on first use; heavier client CPU/GPU; needs loading indicator
+**Scope:**
+
+- Bump `MAX_ZOOM` in `D3ZoomCamera.ts` (one constant)
+- Keep four zoom tiers — hero-local threshold stays at k=15, giving a wider hero-local band (k=15–20) rather than adding a fifth tier
+- Verify agent portrait textures don't pixelate unacceptably at k=20 (~33% larger than current max); add sprite scale soft-cap in `AgentSpriteMesh` if needed
+- Verify signifier/location art resolution holds at ~600px/hex
+- Visual check of label overlays (region/location) at k=15–20
+- No performance concern — fewer hexes on screen at higher zoom means lower GPU load
+
+**Key files:** `D3ZoomCamera.ts`, `ZoomVisibilityMatrix.ts` (no change expected), `AgentSpriteMesh.ts` (possible scale cap), `RegionLabelOverlay.tsx`, `LocationLabelOverlay.tsx`
+**Needs design:** No — constants change + visual verification
+
+---
+
+## 📋 TB-040 · TB-035 Integration Sweep — Wire Engine to UI
+
+TB-035 engine modules are implemented and tested but multiple subsystems are not connected to the player-facing game. This ticket wires everything up so the features are actually playable.
+
+**Disconnected systems (audit 2026-03-26):**
+
+1. **MeetingEncounterModal** — Imported in GameView, state managed, but JSX never rendered. Modal cannot appear.
+2. **JourneyVignetteModal** — Vignette queue populated by engine, auto-pause logic works, but modal never rendered. Vignettes fire invisibly.
+3. **Encounter notifications** — Generated every tick by `phaseEncounterVisibility`, stored in `gameState.encounterNotifications`, but no component reads the array. Player never sees them.
+4. **Prose enrichment** — `enrichProse()` fully implemented (placeholder resolution, conditionals, NarrativeContext gathering) but never imported outside tests. All encounter/vignette prose displayed without enrichment.
+5. **Trace emission** — `return_resolution` and `ripple_consequence` categories defined in type system but never emitted. DebugPanel can't show what nothing produces.
+6. **Attention mode toggle** — `toggleAttentionMode()` exists with essence cost calculation, but no UI control exposes it to the player.
+
+**Scope:**
+
+- Render `MeetingEncounterModal` in GameView JSX (it already has state + handler, just needs the `<MeetingEncounterModal ... />` element)
+- Render `JourneyVignetteModal` in GameView JSX (same — state exists, JSX missing)
+- Surface `encounterNotifications` in a player-facing component (ToastStack, NarrativeLog, or new notification widget)
+- Call `enrichProse()` in vignette/encounter rendering paths before displaying text
+- Emit `return_resolution` and `ripple_consequence` traces from returnEngine.ts where outcomes are computed
+- Add attention mode toggle UI to agent thread panel or encounter notification (thread tier gated)
+- Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
+
+**Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
+**Depends on:** TB-035 (✅)
+**Needs design:** No — all engine APIs exist, this is pure UI wiring + trace emission

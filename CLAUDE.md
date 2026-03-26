@@ -72,6 +72,7 @@ Four surfaces, each with a distinct purpose. Full ownership rules and duplicatio
 - Social Fabric & Faction Formation: `Docs/plans/2026-03-18-social-fabric-and-faction-formation-design.md`
 - Social Fabric Visibility Spec: `Docs/plans/2026-03-18-social-fabric-visibility-spec.md`
 - Implementation Ordering Guide: `Docs/plans/2026-03-18-implementation-ordering-guide.md`
+- Integration wiring checklist: `Docs/plans/wiring-checklist.md`
 - Impediment log: `Docs/impediments.md`
 - Retrospective reports: `Docs/retrospectives/`
 
@@ -192,13 +193,41 @@ Each system within a design document must include these inline (not as a separat
 - **Fail-soft** — table of failure cases and fallback behavior (NFP #4)
 - **PRNG callouts** — where seeded randomness is needed, called out at the point of use (NFP #3)
 
+### Required wiring section in every design document
+
+Every design document must include a **Wiring** section that maps each new module to the game's integration surfaces. This prevents the pattern of building engine modules that are tested in isolation but never connected to the player-facing game. Reference `Docs/plans/wiring-checklist.md` for the canonical list of integration surfaces.
+
+The wiring section must answer for each new module:
+
+1. **Orchestrator:** Which phase calls it? New phase needed? At what position?
+2. **UI rendering:** Which component displays its output? Already rendered in GameView JSX, or needs adding?
+3. **GameState flow:** What fields written? What component reads each?
+4. **Traces:** What categories emitted? From which functions?
+5. **Debug visibility:** How does a developer inspect the state?
+6. **Prose pipeline:** Does it display text through `enrichProse()`?
+7. **Player controls:** What UI element triggers/toggles it?
+
+An engine module that is only imported by test files is not integrated. A UI component that is imported but not rendered in JSX is not integrated. **Both count as incomplete work.**
+
+### Wiring checklist maintenance
+
+`Docs/plans/wiring-checklist.md` is a living document. Update it when:
+
+- A new orchestrator phase is added (update the phase table)
+- A new modal/overlay is added to GameView (update the rendered components table)
+- A new GameState field is added (update the consumption table)
+- A new trace category is defined (update the category list)
+- A new player-facing control is added (update the controls table)
+
+**This is part of the Definition of Done for both design plans and implementation.**
+
 ### Required summary at end of design document
 
 An NFP Compliance Summary table with one row per priority showing PASS / PASS with note. If any row shows a genuine trade-off (not just "needs tuning"), explain it so the user can make the call.
 
 ### When reviewing an existing design
 
-If an older plan in `Docs/plans/` lacks inline NFP compliance, add it before building from it.
+If an older plan in `Docs/plans/` lacks inline NFP compliance, add it before building from it. If it lacks a wiring section, add one before implementing from it.
 
 ## Load-Bearing Architectural Decisions
 
@@ -246,8 +275,9 @@ When implementation is complete and tests pass, **do all of these automatically 
 
 This is non-negotiable. Work is not "done" until it is deployed and documented. Do not present options, do not ask for confirmation on these steps, do not stop at "ready to push?" — just do it.
 
-6. **Log impediments** — If you encountered *any* blockers, workarounds, or friction during the session, verify they are all logged in `Docs/impediments.md`. Load the `impediment-reporter` skill for format details. This is mandatory — unlogged friction is invisible friction.
-7. **Close out** — When all steps above are complete, explicitly tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."* This is the signal that the session can be safely closed.
+6. **Verify wiring** — Check every new module against `Docs/plans/wiring-checklist.md`. Confirm: engine modules called from orchestrator (not just tests), modals rendered in GameView JSX (not just imported), GameState fields consumed by UI components, traces emitted from production code, player controls connected. Update the wiring checklist if new integration surfaces were added.
+7. **Log impediments** — If you encountered *any* blockers, workarounds, or friction during the session, verify they are all logged in `Docs/impediments.md`. Load the `impediment-reporter` skill for format details. This is mandatory — unlogged friction is invisible friction.
+8. **Close out** — When all steps above are complete, explicitly tell the user: *"Session ready to archive — all work is tested, deployed, and documented. No loose ends."* This is the signal that the session can be safely closed.
 
 ## Session Workflow
 
