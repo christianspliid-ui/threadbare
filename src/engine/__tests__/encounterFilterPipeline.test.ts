@@ -199,68 +199,26 @@ describe('filterByPrerequisites', () => {
 // ─── Stage 4: Threat ────────────────────────────────────────────
 
 describe('filterByThreat', () => {
-  it('filters deadly encounter for low-capability agent', () => {
-    // raw=5 → capability ~0.119 → 11.9 on 0-100 scale
-    // This falls in trivial [0,20] and easy [15,40] bands
-    // deadly has tierIndex 4, tolerance range [3,5] (hard-deadly)
-    // Agent's capability 11.9 doesn't fall in hard [50,80] or deadly [70,100]
+  // THREAT_FLOOR_FILTER is currently false (TB-056 tuning: let scoring handle
+  // threat avoidance instead of hard-filtering). When disabled, filterByThreat
+  // passes all entries through unchanged.
+
+  it('passes all entries through when THREAT_FLOOR_FILTER is disabled', () => {
     const graph = buildAgentGraph('agent-1', { iron: 5 });
-    const entries = [makeEntry({ threatRating: 'deadly', reachPrimary: 'iron' as ReachDomain })];
+    const entries = [
+      makeEntry({ threatRating: 'deadly', reachPrimary: 'iron' as ReachDomain }),
+      makeEntry({ threatRating: 'moderate', reachPrimary: 'iron' as ReachDomain }),
+      makeEntry({ threatRating: 'easy', reachPrimary: 'iron' as ReachDomain }),
+    ];
     const result = filterByThreat(entries, 'agent-1', graph);
-    expect(result).toHaveLength(0);
+    expect(result).toHaveLength(3);
   });
 
-  it('passes moderate encounter for mid-capability agent', () => {
-    // raw=10 → capability 0.5 → 50 on 0-100 scale
-    // moderate tierIndex=2, tolerance range [1,3] (easy-hard)
-    // 50 falls in moderate [30,60] ✓
-    const graph = buildAgentGraph('agent-1', { iron: 10 });
-    const entries = [makeEntry({ threatRating: 'moderate', reachPrimary: 'iron' as ReachDomain })];
-    const result = filterByThreat(entries, 'agent-1', graph);
-    expect(result).toHaveLength(1);
-  });
-
-  it('courage expands threat tolerance upward', () => {
-    // raw=10 → capability 0.5 → 50 on 0-100 scale
-    // deadly tierIndex=4, base tolerance range [3,5] (hard-deadly)
-    // courage > 0.3 → maxTier = min(4, 5+1) = still 4 (no effect since already at edge)
-    // But let's test hard: tierIndex=3, base tolerance [2,4]
-    // With courage, maxTier expands to min(4,4+1)=4
-    // capability 50 falls in moderate [30,60] which is tier 2
-    // So tolerance range is [2,4] → includes moderate [30,60] where 50 lands ✓
-    const graph = buildAgentGraph('agent-1', { iron: 10 }, { courage: 0.5 });
-    const entries = [makeEntry({ threatRating: 'hard', reachPrimary: 'iron' as ReachDomain })];
-    const result = filterByThreat(entries, 'agent-1', graph);
-    expect(result).toHaveLength(1);
-  });
-
-  it('prudent agent has restricted tolerance', () => {
-    // raw=10 → capability 0.5 → 50 on 0-100 scale
-    // moderate tierIndex=2, base tolerance [1,3]
-    // prudence < -0.3 → minTier bumps up: max(0, 1+1) = 2
-    // So tolerance range becomes [2,3] = moderate/hard
-    // 50 still falls in moderate [30,60] ✓ — moderate still passes
-    // But let's test: easy tierIndex=1, base tolerance [0,2]
-    // prudence → minTier = max(0, 0+1) = 1
-    // tolerance range [1,2] = easy/moderate
-    // 50 falls in moderate [30,60] ✓ — should still pass
-    // Instead, test that a low-cap agent can't see easy when prudent:
-    // raw=5 → cap ~12, easy tierIndex=1, base tol [0,2]
-    // prudence → minTier=1, tolerance [1,2] = easy/moderate
-    // 12 falls in easy [15,40]? No, 12 < 15 → does NOT fall in easy
-    // 12 falls in trivial [0,20] ✓ but trivial (index 0) not in [1,2]
-    // So result is filtered out!
-    const graph = buildAgentGraph('agent-1', { iron: 5 }, { courage: -0.5 });
-    const entries = [makeEntry({ threatRating: 'easy', reachPrimary: 'iron' as ReachDomain })];
-    const result = filterByThreat(entries, 'agent-1', graph);
-    expect(result).toHaveLength(0);
-  });
-
-  it('returns empty when agent not found', () => {
+  it('passes entries even when agent not found (filter disabled)', () => {
     const graph = new WorldGraph();
     const entries = [makeEntry()];
     const result = filterByThreat(entries, 'nonexistent', graph);
-    expect(result).toHaveLength(0);
+    expect(result).toHaveLength(1);
   });
 });
 
@@ -365,7 +323,7 @@ describe('runFilterPipeline', () => {
 
     const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, dm, 5);
 
-    // Deadly should be filtered out by threat stage
+    // With THREAT_FLOOR_FILTER=false, all entries pass threat stage — scoring handles threat avoidance
     expect(result.candidates.length).toBeLessThanOrEqual(MAX_SCORED_CANDIDATES);
     expect(result.trace.category).toBe('encounter_filter');
     expect(result.trace.agentId).toBe('agent-1');

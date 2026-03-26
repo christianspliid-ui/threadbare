@@ -26,7 +26,7 @@ export interface EncounterDifficultyTier {
 // ─── Tunable Constants ──────────────────────────────────────────
 
 /** Difficulty progression within a template (escalates per step) */
-const DIFFICULTY_BASE = 35;
+const DIFFICULTY_BASE = 25;
 const DIFFICULTY_STEP = 10;
 
 // ─── System 6 Constants (Economic Encounters) ────────────────────────

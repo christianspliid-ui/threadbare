@@ -180,7 +180,7 @@ describe('resolveIdleBehavior', () => {
   it('content agent with local trivial encounters does trivial_local when rng < threshold', () => {
     const graph = buildTestGraph({ loyaltyAmbition: 0.5 });
     const dm = buildDistanceMatrix(graph);
-    // rng returns 0.1, which is < IDLE_TRIVIAL_PREFERENCE (0.8)
+    // rng returns 0.1, which is < IDLE_TRIVIAL_PREFERENCE (0.5)
     const rng = mockRng([0.1]);
 
     const entries = [
@@ -203,7 +203,7 @@ describe('resolveIdleBehavior', () => {
   it('content agent stays when rng exceeds trivial preference', () => {
     const graph = buildTestGraph({ loyaltyAmbition: 0.5 });
     const dm = buildDistanceMatrix(graph);
-    // rng returns 0.9, which is > IDLE_TRIVIAL_PREFERENCE (0.8)
+    // rng returns 0.9, which is > IDLE_TRIVIAL_PREFERENCE (0.5)
     const rng = mockRng([0.9]);
 
     const entries = [

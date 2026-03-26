@@ -28,6 +28,7 @@ interface Contributor {
 
 /**
  * Compute the raw score for a single domain by walking:
+ * - domainCapabilities base value from node properties (innate aptitude)
  * - has_trait edges → trait domainContributions × level
  * - possesses/bonded_to edges → artifact domainContributions
  * - controls edges → resource domainContributions
@@ -37,7 +38,10 @@ export function computeRawScore(
   nodeId: string,
   domain: ReachDomain,
 ): number {
-  let total = 0;
+  // Start with innate domain capability if present on the node
+  const node = graph.getNode(nodeId);
+  const caps = node?.properties.domainCapabilities as Record<string, number> | undefined;
+  let total = caps?.[domain] ?? 0;
 
   // Walk trait edges
   const traitEdges = graph.getOutgoingEdges(nodeId, 'has_trait');
