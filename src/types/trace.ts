@@ -2,6 +2,8 @@ import type { SphereName } from './index';
 import type { ReachDomain } from './traits';
 import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
+import type { LapseReason } from './controlEffect';
+import type { NarrativeLayer } from './unifiedAction';
 
 /** Base shape for all trace entries */
 export interface TraceBase {
@@ -421,6 +423,66 @@ export interface RippleConsequenceTrace extends TraceBase {
   consequence: string;
 }
 
+/** Trace: control effect ticked (per-tick drain, income, threshold check) */
+export interface ControlEffectTickTrace extends TraceBase {
+  category: 'control_effect';
+  type: 'control_effect_tick';
+  effectId: string;
+  templateId: string;
+  targetHex: { col: number; row: number };
+  essenceDrained: Partial<Record<SphereName, number>>;
+  essenceGenerated: Partial<Record<SphereName, number>>;
+  thresholdChecked: boolean;
+  thresholdPassed: boolean;
+  active: boolean;
+  ticksActive: number;
+}
+
+/** Trace: control effect lapsed (essence depleted, threshold failed, etc.) */
+export interface ControlEffectLapseTrace extends TraceBase {
+  category: 'control_effect';
+  type: 'control_effect_lapsed';
+  effectId: string;
+  templateId: string;
+  targetHex: { col: number; row: number };
+  lapseReason: LapseReason;
+  totalTicksActive: number;
+  totalEssenceDrained: Partial<Record<SphereName, number>>;
+}
+
+/** Trace: control effect established after successful sustained action */
+export interface ControlEffectEstablishedTrace extends TraceBase {
+  category: 'control_effect';
+  type: 'control_effect_established';
+  effectId: string;
+  templateId: string;
+  ownerId: string;
+  targetHex: { col: number; row: number };
+  ritualEssenceInvested: number;
+  encounterNodeId?: string;
+}
+
+/** Trace: narrative layer revealed on a hex via Find action */
+export interface LayerRevealedTrace extends TraceBase {
+  category: 'revelation';
+  type: 'layer_revealed';
+  hexCol: number;
+  hexRow: number;
+  layer: NarrativeLayer;
+  revealedBy: string;  // action template ID or encounter ID
+}
+
+/** Trace: hidden sublocation discovered on a hex */
+export interface HiddenSiteRevealedTrace extends TraceBase {
+  category: 'revelation';
+  type: 'hidden_site_revealed';
+  hexCol: number;
+  hexRow: number;
+  sublocationId: string;
+  sublocationName: string;
+  hasElderMagic: boolean;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -453,7 +515,12 @@ export type TraceEntry =
   | RoadHexTransitionTrace
   | AgentRerouteTrace
   | ReturnResolutionTrace
-  | RippleConsequenceTrace;
+  | RippleConsequenceTrace
+  | ControlEffectTickTrace
+  | ControlEffectLapseTrace
+  | ControlEffectEstablishedTrace
+  | LayerRevealedTrace
+  | HiddenSiteRevealedTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -488,6 +555,8 @@ export const TRACE_CATEGORIES = [
   'agent_reroute',
   'return_resolution',
   'ripple_consequence',
+  'control_effect',
+  'revelation',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

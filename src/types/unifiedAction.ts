@@ -5,9 +5,26 @@ import type { ActorType } from './graph';
 import type { ValuePair } from './agent';
 import type { GraphOp } from './graphOp';
 import type { TargetCategory } from './targetContext';
+import type { ControlSpec } from './controlEffect';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
+
+// ─── Layer Revelation ────────────────────────────────────────────────────────
+
+/** The four narrative layers a hex can reveal independently. */
+export type NarrativeLayer = 'land' | 'soul' | 'people' | 'ruins';
+
+/** Per-layer revelation state for a single hex. */
+export type HexRevelation = Record<NarrativeLayer, boolean>;
+
+/** All narrative layers, for iteration. */
+export const NARRATIVE_LAYERS: readonly NarrativeLayer[] = ['land', 'soul', 'people', 'ruins'];
+
+/** Create a default (all unrevealed) HexRevelation. */
+export function createDefaultHexRevelation(): HexRevelation {
+  return { land: false, soul: false, people: false, ruins: false };
+}
 export type StepFailBehavior = 'fail_action' | 'continue_weakened';
 
 export interface ActionStep {
@@ -63,6 +80,29 @@ export interface UnifiedActionTemplate {
    * Omit or empty → no trait restriction.
    */
   readonly requiredTargetTraits?: readonly string[];
+
+  // ── Layer revelation gating ─────────────────────────────────────
+
+  /**
+   * Which narrative layer this template belongs to.
+   * Used for Gate 7 (revelation gating) in getTargetActionSlots().
+   * Templates without this field are not revelation-gated (backward compatible).
+   */
+  readonly narrativeLayer?: NarrativeLayer;
+
+  /**
+   * If true, this template bypasses layer revelation gating. Default: false.
+   * Typically true for Create actions — you're bringing something new into existence.
+   */
+  readonly bypassRevelationGate?: boolean;
+
+  // ── Duration mode ──────────────────────────────────────────────
+
+  /** 'instant' (default) = fire-and-forget. 'sustained' = spawns ControlEffect on success. */
+  readonly durationMode?: 'instant' | 'sustained';
+
+  /** Only for durationMode: 'sustained'. Defines the persistent effect. */
+  readonly controlSpec?: ControlSpec;
 
   // Contestation
   readonly contestsWith?: readonly string[];

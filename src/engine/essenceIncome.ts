@@ -16,6 +16,7 @@ import {
   TIER_MAINTENANCE,
 } from '../types/influence';
 import type { WorldGraph } from './graph';
+import type { ControlEffect } from '../types/controlEffect';
 
 function emptyPool(): EssencePool {
   return Object.fromEntries(SPHERE_NAMES.map(s => [s, 0])) as EssencePool;
@@ -42,7 +43,11 @@ function distributeByAlignment(total: number, alignment: SphereAlignment): Essen
  * Compute net per-sphere essence income per tick (gross generation minus maintenance).
  * Maintenance is charged against the primary sphere.
  */
-export function computeEssenceIncome(graph: WorldGraph, ascendantId: string): EssencePool {
+export function computeEssenceIncome(
+  graph: WorldGraph,
+  ascendantId: string,
+  controlEffects?: readonly ControlEffect[],
+): EssencePool {
   const node = graph.getNode(ascendantId);
   if (!node) return emptyPool();
 
@@ -73,5 +78,19 @@ export function computeEssenceIncome(graph: WorldGraph, ascendantId: string): Es
 
   const net = { ...gross };
   net[alignment.primary] = gross[alignment.primary] - totalMaintenance;
+
+  // Control effect income (per-sphere, not distributed by alignment)
+  if (controlEffects) {
+    for (const effect of controlEffects) {
+      if (!effect.active || !effect.perTickIncome) continue;
+      for (const [sphere, income] of Object.entries(effect.perTickIncome)) {
+        const s = sphere as SphereName;
+        if (SPHERE_NAMES.includes(s)) {
+          net[s] = (net[s] ?? 0) + (income as number);
+        }
+      }
+    }
+  }
+
   return net;
 }

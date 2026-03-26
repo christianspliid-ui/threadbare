@@ -13,6 +13,8 @@
  *   #4 Fail-soft: unknown template ID returns empty array, no crash
  */
 import type { HexMutation } from '../types/hexMutation';
+import type { RevelationMutation } from './revelationResolver';
+import { resolveRevelation } from './revelationResolver';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -100,6 +102,30 @@ export function resolveHexAction(
   } as any);
 
   return mutations;
+}
+
+// ─── Combined Resolution ─────────────────────────────────────────────────────
+
+export interface HexActionResult {
+  hexMutations: HexMutation[];
+  revelationMutations: RevelationMutation[];
+}
+
+/**
+ * Resolve a hex action into both hex mutations and revelation mutations.
+ * This is the preferred entry point — produces all side effects of a hex action.
+ */
+export function resolveHexActionFull(
+  templateId: string,
+  col: number,
+  row: number,
+  outcome: 'success' | 'failure',
+  tick: number,
+): HexActionResult {
+  return {
+    hexMutations: resolveHexAction(templateId, col, row, outcome, tick),
+    revelationMutations: resolveRevelation(templateId, col, row, outcome, tick),
+  };
 }
 
 /**

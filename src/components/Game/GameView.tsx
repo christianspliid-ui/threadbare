@@ -296,8 +296,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   // ── Essence income (view-layer, pure computation) ──
   const essenceIncome = useMemo(
-    () => computeEssenceIncome(gameState.graph, gameState.ascendantId),
-    [gameState.graph, gameState.ascendantId, gameState.tick],
+    () => computeEssenceIncome(gameState.graph, gameState.ascendantId, gameState.controlEffects),
+    [gameState.graph, gameState.ascendantId, gameState.tick, gameState.controlEffects],
   );
 
   // ── Non-agent target context (hex-zoom and location views) ──
@@ -467,11 +467,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [closeAllAgentOverlays, handleAvatarScryClick]);
 
   // NFP #1: Named constant for retinue eye-icon zoom level.
-  // Hero-local tier (k=10, MAX_ZOOM) — portraits render at full 1.0× scale, maximum detail.
-  const RETINUE_EYE_ZOOM_SCALE = 10;
+  // Maximum zoom — agent eye icon zooms in tight to the agent's hex.
+  const RETINUE_EYE_ZOOM_SCALE = 20;
 
-  // Zoom camera to an agent's location hex at regional zoom (both eye icons use this)
-  const handleZoomToLocation = useCallback((locationId: string) => {
+  // Eye icon next to agent name: zoom camera to agent's hex at max zoom
+  const handleCenterOnHex = useCallback((locationId: string) => {
     const locNode = gameState.graph.getNode(locationId);
     if (!locNode) return;
     const props = (locNode.properties ?? {}) as Record<string, unknown>;
@@ -484,8 +484,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     }
   }, [gameState.graph, hexMapRef]);
 
-  // Both eye icons now do the same thing — zoom camera to agent at regional zoom
-  const handleCenterOnHex = handleZoomToLocation;
+  // Eye icon next to location name: navigate to the location detail view
+  const handleZoomToLocation = useCallback((locationId: string) => {
+    handleLocationClick(locationId);
+  }, [handleLocationClick]);
 
   // ── Encounter vignette modal ──
   const [vignetteEncounter, setVignetteEncounter] = useState<{

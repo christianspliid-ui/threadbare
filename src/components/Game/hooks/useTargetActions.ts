@@ -38,6 +38,7 @@ export function useTargetActions({
         archetype.sphereAlignment.primary,
         archetype.sphereAlignment.secondary,
       ],
+      hexRevelation: gameState.hexRevelation,
     });
-  }, [target, drawerOpen, gameState.essencePool, archetype]);
+  }, [target, drawerOpen, gameState.essencePool, archetype, gameState.hexRevelation]);
 }

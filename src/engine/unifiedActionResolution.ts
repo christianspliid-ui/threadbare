@@ -35,8 +35,10 @@ import {
   detectContestations,
   resolveContestationPair,
 } from './contestation';
-import { resolveHexAction, isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import { resolveHexActionFull, isHexTargetId, parseHexTargetId } from './hexActionBridge';
 import type { HexMutation } from '../types/hexMutation';
+import type { RevelationMutation } from './revelationResolver';
+import { applyRevelationMutations } from './revelationResolver';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
 
@@ -256,6 +258,7 @@ export function phaseUnifiedActionProgress(
 ): Partial<GameState> {
   const events: TickEvent[] = [];
   const hexMutations: HexMutation[] = [];
+  const revelationMutations: RevelationMutation[] = [];
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
   let actions = progressAllActions(state.unifiedActions ?? []);
@@ -336,14 +339,15 @@ export function phaseUnifiedActionProgress(
       const coords = parseHexTargetId(completing_action.targetId);
       if (coords) {
         const finalOutcome = updatedAction.outcome === 'success' ? 'success' : 'failure';
-        const mutations = resolveHexAction(
+        const result = resolveHexActionFull(
           completing_action.templateId,
           coords.col,
           coords.row,
           finalOutcome,
           state.tick,
         );
-        hexMutations.push(...mutations);
+        hexMutations.push(...result.hexMutations);
+        revelationMutations.push(...result.revelationMutations);
       }
     }
 
@@ -362,5 +366,8 @@ export function phaseUnifiedActionProgress(
       ...(state.pendingHexMutations ?? []),
       ...hexMutations,
     ],
+    ...(revelationMutations.length > 0
+      ? { hexRevelation: applyRevelationMutations(state.hexRevelation, revelationMutations) }
+      : {}),
   };
 }
