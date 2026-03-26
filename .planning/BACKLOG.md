@@ -12,7 +12,7 @@
 
 ---
 
-## 📐 TB-054 · Avatar Portrait & Hex Map Visibility (2026-03-26)
+## ✅ TB-054 · Avatar Portrait & Hex Map Visibility (2026-03-26)
 
 Player's avatar is invisible on HexMapV2 — renders as indistinguishable faction dot. Three fixes: (1) generate 8 sphere-specific avatar portraits via mcp-image, (2) extend AgentRenderData with `isAvatar` + `avatarSphereColor`, (3) add pulsing sphere ring + scale boost in AgentSpriteMesh. Design: `Docs/plans/2026-03-26-avatar-portrait-and-hex-visibility-design.md`.
 
