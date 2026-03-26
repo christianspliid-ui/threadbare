@@ -1,6 +1,6 @@
 # Cowork Ways of Working
 
-> Added 2026-03-16. Updated 2026-03-22: added handover protocol, removed Notion references, clarified Cowork's role.
+> Added 2026-03-16. Updated 2026-03-26: both agents can write coordination files with snapshot versioning. Removed "Cowork must not touch tracked files" restriction for `.planning/` coordination files.
 
 ## Cowork's Role
 
@@ -15,8 +15,9 @@
 - Codebase research and analysis (read-only)
 - Game design brainstorming and critique
 - Obsidian vault updates (MCP access works)
-- `.planning/BACKLOG.md` updates (backlog prioritization, adding new items)
+- `.planning/BACKLOG.md` updates (backlog prioritization, adding new items, marking completion)
 - `.planning/HANDOVER.md` updates (see Handover Protocol below)
+- `.planning/ROADMAP.md` updates
 - Code review and analysis
 
 ## What Cowork Does NOT Do
@@ -25,6 +26,26 @@
 - Run `git add`, `git commit`, `git push`, or any git operation
 - Run `npm test`, `npm run build`, or other build/test commands (sandbox lacks native modules)
 - Attempt to "just quickly fix" something in the codebase
+
+## Coordination File Versioning
+
+Both agents (Cowork and Claude Code) can read and write `.planning/` coordination files: `BACKLOG.md`, `HANDOVER.md`, `ROADMAP.md`. To guard against VM filesystem corruption, **snapshot before every write**.
+
+**Protocol — both agents must follow this:**
+
+1. Before modifying a coordination file, copy it to `.planning/.versions/{filename}-{YYYY-MM-DD}T{HH-MM}.md`
+2. Make the edit
+3. Prune old snapshots if there are more than 10 for a given file (keep newest 10)
+
+**Example (bash):**
+```bash
+cp .planning/BACKLOG.md ".planning/.versions/BACKLOG-$(date +%Y-%m-%dT%H-%M).md"
+# then edit BACKLOG.md
+```
+
+**Recovery:** If a file is corrupted, restore from the most recent clean snapshot in `.planning/.versions/`.
+
+**What's versioned:** `.planning/.versions/` is gitignored — snapshots stay local, never committed. The coordination files themselves remain git-tracked so Claude Code can commit meaningful state changes.
 
 ## Handover Protocol
 
@@ -78,6 +99,7 @@ The Cowork sandbox runs in a VM with:
 | Pattern | What happens | Do this instead |
 |---------|-------------|-----------------|
 | Cowork writes to `src/` | Files land on disk but aren't properly committed; Claude Code may commit them under wrong message | Write an implementation plan; let Claude Code do the coding |
+| Cowork edits coordination file without snapshot | If VM sync corrupts the file, no recovery possible | Always snapshot to `.planning/.versions/` before writing |
 | Cowork runs `git commit` | Hits `.git/index.lock` permission error | Don't touch git at all |
 | Cowork runs `git push` | Fails with "could not read Username" — no credentials | Don't touch git at all |
 | Cowork runs `npm test` | Fails with missing native module error | Type-check with `npx tsc --noEmit` only, or skip verification entirely |
