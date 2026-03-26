@@ -7,6 +7,7 @@ import {
   type OnUseTrigger,
   type AgreementProperties,
   type RewardPoolRecipe,
+  type ResolvedRewardRecipe,
 } from '../attachments';
 
 describe('Attachment Types', () => {
@@ -268,13 +269,51 @@ describe('Attachment Types', () => {
     });
   });
 
-  describe('RewardPoolRecipe', () => {
-    it('should create a valid recipe', () => {
+  describe('RewardPoolRecipe (template-level)', () => {
+    it('should create a valid template recipe with only category weights', () => {
       const recipe: RewardPoolRecipe = {
         categoryWeights: {
           possession: 0.5,
           blessing: 0.3,
           condition: 0.2,
+        },
+        tagFilters: ['combat', 'beneficial'],
+        sphereTint: 'War',
+      };
+
+      expect(recipe.categoryWeights.possession).toBe(0.5);
+      expect(recipe.tagFilters).toContain('combat');
+    });
+
+    it('should support partial category weights', () => {
+      const recipe: RewardPoolRecipe = {
+        categoryWeights: {
+          possession: 0.8,
+        },
+      };
+
+      expect(recipe.categoryWeights.possession).toBe(0.8);
+      expect(recipe.categoryWeights.blessing).toBeUndefined();
+    });
+
+    it('should allow optional tagFilters and sphereTint', () => {
+      const recipe: RewardPoolRecipe = {
+        categoryWeights: {
+          agreement: 1.0,
+        },
+      };
+
+      expect(recipe.tagFilters).toBeUndefined();
+      expect(recipe.sphereTint).toBeUndefined();
+    });
+  });
+
+  describe('ResolvedRewardRecipe (runtime)', () => {
+    it('should extend RewardPoolRecipe with tierCurve and badOutcomeChance', () => {
+      const recipe: ResolvedRewardRecipe = {
+        categoryWeights: {
+          possession: 0.5,
+          blessing: 0.3,
         },
         tierCurve: {
           1: 0.4,
@@ -282,8 +321,6 @@ describe('Attachment Types', () => {
           3: 0.2,
           4: 0.05,
         },
-        tagFilters: ['combat', 'beneficial'],
-        sphereTint: 'War',
         badOutcomeChance: 0.1,
       };
 
@@ -292,26 +329,8 @@ describe('Attachment Types', () => {
       expect(recipe.badOutcomeChance).toBe(0.1);
     });
 
-    it('should support partial category weights', () => {
-      const recipe: RewardPoolRecipe = {
-        categoryWeights: {
-          possession: 0.8,
-        },
-        tierCurve: {
-          1: 1.0,
-          2: 0,
-          3: 0,
-          4: 0,
-        },
-        badOutcomeChance: 0,
-      };
-
-      expect(recipe.categoryWeights.possession).toBe(0.8);
-      expect(recipe.categoryWeights.blessing).toBeUndefined();
-    });
-
     it('should require tierCurve for all tiers', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: {},
         tierCurve: {
           1: 0.25,
@@ -326,24 +345,6 @@ describe('Attachment Types', () => {
       expect(recipe.tierCurve[2]).toBeDefined();
       expect(recipe.tierCurve[3]).toBeDefined();
       expect(recipe.tierCurve[4]).toBeDefined();
-    });
-
-    it('should allow optional tagFilters and sphereTint', () => {
-      const recipe: RewardPoolRecipe = {
-        categoryWeights: {
-          agreement: 1.0,
-        },
-        tierCurve: {
-          1: 0,
-          2: 0,
-          3: 0,
-          4: 1.0,
-        },
-        badOutcomeChance: 0.5,
-      };
-
-      expect(recipe.tagFilters).toBeUndefined();
-      expect(recipe.sphereTint).toBeUndefined();
     });
   });
 });
