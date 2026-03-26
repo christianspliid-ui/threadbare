@@ -6,6 +6,7 @@
 **TB-035 Meet The First** — All 7 phases complete. Full system implemented.
 
 **Recent completions:**
+- ✅ TB-040: Integration sweep (2026-03-26) — encounter notifications surfaced in UI, enrichProse wired into Return/ripple prose, attention mode toggle in RetinuePanel, Journey debug tab
 - ✅ TB-039: Max zoom 15→20 (2026-03-26) — wider hero-local band for deeper hex inspection
 - ✅ Fix signifier InstancedMesh regression (2026-03-26) — TB-016 shared geometry bug caused invisible terrain signifiers
 - ✅ TB-035 Phases 3-6 (2026-03-26) — The Return (convergence algorithm, 6 outcomes, ripple consequences), Universal Encounter Visibility (court-position-based prose depth, intervention choices, attention mode toggle), Dynamic Prose Enrichment (narrative context, placeholder system, meeting callbacks, pronoun system), Content & Polish (19 journey templates, 61 dilemma templates, archetype tone overlays, ascendant lens prose)
