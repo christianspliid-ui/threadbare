@@ -163,5 +163,6 @@ export interface UnifiedAction {
   // Resolution
   readonly resolved: boolean;
   readonly outcome?: UnifiedActionOutcome;
+  readonly completedAtTick?: number; // tick when resolved became true (set by orchestrator cleanup)
   readonly stepOutcomes: readonly StepOutcome[]; // per-step results
 }
