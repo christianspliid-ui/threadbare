@@ -12,7 +12,7 @@
 
 ---
 
-## 📐▶ TB-057 · Tick Health Monitor & Crash Log (2026-03-26)
+## ✅ TB-057 · Tick Health Monitor & Crash Log (2026-03-26)
 
 Tick loop has no try/catch — phase failures are silent. Several GameState arrays (`encounterNotifications`, `unifiedActions`) grow without bound. Add: (1) `validateTickOutput()` health checker with 12 structural checks run after every tick, (2) try/catch wrap around `runTick` body (crashed tick → return previous state unchanged), (3) crash log buffer + `exportDiagnostics()` on `window.__DEBUG`, (4) state cleanup for unbounded arrays. Also: restore truncated `orchestrator.ts` (VM corruption deleted 81 lines). Handover: `.planning/HANDOVER.md`.
 

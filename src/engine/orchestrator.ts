@@ -87,6 +87,7 @@ import {
   resolveRewardRecipe,
   BAD_OUTCOME_CATEGORY_WEIGHTS,
 } from './rewardPool';
+import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 
@@ -106,6 +107,14 @@ export function resetDecisionCache(): void {
 export function getEncounterCacheManager(): EncounterCacheManager | null {
   return encounterCache;
 }
+
+// ─── State Cleanup Constants ──────────────────────────────────────
+
+/** Trim encounterNotifications older than this many ticks */
+const NOTIFICATION_RETENTION_TICKS = 50;
+
+/** Prune resolved unifiedActions older than this many ticks */
+const RESOLVED_ACTION_RETENTION_TICKS = 100;
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -927,6 +936,7 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
 // ─── Master Tick ──────────────────────────────────────────────────
 
 export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = []): GameState {
+  try {
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [], prosperityShocks: [] };
 
@@ -1192,5 +1202,68 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     mandateProgress,
   });
 
+  // ─── State Cleanup ─────────────────────────────────────────────
+
+  // Trim encounterNotifications older than NOTIFICATION_RETENTION_TICKS
+  if (s.encounterNotifications && s.encounterNotifications.length > 0) {
+    s = {
+      ...s,
+      encounterNotifications: s.encounterNotifications.filter(
+        n => n.createdTick >= s.tick - NOTIFICATION_RETENTION_TICKS,
+      ),
+    };
+  }
+
+  // Stamp completedAtTick on newly-resolved actions, then prune old resolved ones
+  if (s.unifiedActions && s.unifiedActions.length > 0) {
+    const stamped = s.unifiedActions.map(a =>
+      a.resolved && a.completedAtTick == null ? { ...a, completedAtTick: s.tick } : a,
+    );
+    s = {
+      ...s,
+      unifiedActions: stamped.filter(a =>
+        !a.resolved || a.completedAtTick == null || s.tick - a.completedAtTick < RESOLVED_ACTION_RETENTION_TICKS,
+      ),
+    };
+  }
+
+  // ─── Health Validation ─────────────────────────────────────────
+
+  const report = validateTickOutput(state, s);
+  if (!report.healthy) {
+    appendCrashLog({
+      type: 'health_check_failed',
+      tick: s.tick,
+      timestamp: Date.now(),
+      findings: report.findings,
+    });
+    emitTrace({
+      tick: s.tick,
+      category: 'tick_health',
+      summary: `Health check failed: ${report.findings.map(f => f.check).join(', ')}`,
+      findings: report.findings,
+    } as TraceEntry);
+  }
+
   return s;
+
+  } catch (err) {
+    // Fail-soft: crashed tick is a no-op, not a corruption
+    const entry = {
+      type: 'tick_exception' as const,
+      tick: state.tick,
+      error: err instanceof Error ? err.message : String(err),
+      stack: err instanceof Error ? err.stack : undefined,
+      timestamp: Date.now(),
+    };
+    appendCrashLog(entry);
+    emitTrace({
+      tick: state.tick,
+      category: 'tick_crash',
+      summary: entry.error,
+      ...entry,
+    } as TraceEntry);
+    console.error('[Orchestrator] Tick crashed, returning previous state:', err);
+    return state; // fail-soft: return unchanged state
+  }
 }
