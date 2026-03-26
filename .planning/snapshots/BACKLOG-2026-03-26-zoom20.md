@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-050**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-039**.
 
 ---
 
@@ -244,124 +244,13 @@ The god's relationship system and hero's journey arc. 9 interconnected subsystem
 
 ---
 
-## 📐▶ TB-036 · Hex Actions Expansion & Control Mechanic
+## 📋 TB-036 · Hex Actions Expansion & Control Mechanic
 
-Expand from 5 hex action templates to 43 across all 4 narrative layers (Land, Soul, People, Ruins) using 5 action verbs (Create, Find, Change, Destroy, Control). The Control verb is a new sustained-commitment mechanic — ongoing effects with per-tick costs, economic constraints, and LIFO lapse ordering. No artificial slot caps — you can hold whatever you can afford.
+Expand from 4 hex action templates to full coverage across all 4 narrative layers (Land, Soul, People, Ruins) using 5 action verbs (Create, Find, Change, Destroy, Control). The Control verb is a new sustained-commitment mechanic — ongoing effects that tie up resources/attention, distinct from one-time Change actions. Control is the god-game signature: you don't just *do* things, you *hold* things.
 
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md`
 **Brainstorm:** `brainstorm-hex-actions-and-control-mechanic.md`
-**Open questions doc:** `Docs/plans/2026-03-26-meet-the-first-open-questions.md` (items #7, #8 touch TB-036 interface points)
-**Depends on:** Generalized Action Targeting (✅), Mutable Hex State (✅)
-**Design complete:** 2026-03-26 — decomposed into TB-041 through TB-049
-
-**Key design decisions:**
-- No control slots — pure economic constraint (essence income vs. drain)
-- Creation spheres from character generation (tall vs. wide), elder magic discovered through ruins
-- Layer revelation system: Find actions soft-gate Change/Control/Destroy
-- Control effects spawn persistent encounter nodes for contestation (usurp inherits investment)
-- Immediate lapse + notify (no grace period)
-- Thread-based effects cheaper at higher tiers (15% discount per tier)
-- Discovery timing depends on attention mode (pause = immediate, auto_resolve = queued)
-- God doesn't enter ruins personally but can perceive/create/consecrate from outside
-
----
-
-## 📐▶ TB-041 · ControlEffect Runtime & Tick Phase
-
-New `ControlEffect` type on `GameState.controlEffects[]`. New `phaseControlEffects` tick phase running after `phaseEssence`. Implements: threshold checking, per-tick essence drain (oldest-first payment), LIFO lapse ordering, per-tick mutations/GraphOps application, income crediting for income-generating effects. Extend `computeEssenceGeneration()` to include control effect income.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 1
-**Parent:** TB-036
-**Depends on:** None (foundational)
-**Needs design:** No
-
----
-
-## 📐▶ TB-042 · Layer Revelation System
-
-New `GameState.hexRevelation` map tracking per-hex, per-layer visibility (land/soul/people/ruins). Seventh filter gate in `getTargetActionSlots()` / `targetActions.ts`. Land auto-reveals with fog of war. Soul/People/Ruins require Find actions. Create actions bypass.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 3
-**Parent:** TB-036
-**Depends on:** None (foundational)
-**Needs design:** No
-
----
-
-## 📐▶ TB-043 · Hidden Sites & Discovery Seeding
-
-Add `hidden: boolean` to sublocation nodes. Seed hidden sites in worldgen (resource deposits, elder magic traces). Find actions and agent encounters flip visibility. Discovery timing depends on attention mode (pause = immediate, auto_resolve = queued).
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 3 (Hidden Sites)
-**Parent:** TB-036
-**Depends on:** TB-042 (layer revelation)
-**Needs design:** No
-
----
-
-## 📐▶ TB-044 · Control Template Extension & durationMode
-
-Extend `UnifiedActionTemplate` with `durationMode: 'instant' | 'sustained'` and `controlSpec: ControlSpec`. Spawn `ControlEffect` on sustained action success. ActionCard control variant visual (recurring cost indicator). WheelSlot extension.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 1 (Template Extension)
-**Parent:** TB-036
-**Depends on:** TB-041 (ControlEffect runtime)
-**Needs design:** No
-
----
-
-## 📐▶ TB-045 · Control Effect Contestation & Persistent Encounter Nodes
-
-Persistent encounter nodes for active control effects. Implement `filterByPrerequisites()` in encounter pipeline (currently no-op). Usurp (transfer ownership, inherit investment) and destroy resolution paths. Difficulty scales with effect age.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 4
-**Parent:** TB-036
-**Depends on:** TB-041 + TB-044
-**Needs design:** No
-
----
-
-## 📐▶ TB-046 · One-Shot Templates: Land & Soul Layers
-
-Author ~13 one-shot templates for Land and Soul layers (Create/Find/Change/Destroy verbs). Wire Find actions to set layer revelation flags. Land: Raise Landmark, Dowse for Resources, Sense the Leylines, Shift Season, Scorch Earth, Rend the Earth. Soul: Attune Leyline, Forge Seer's Token, Read the Currents, Shift Dominion, Amplify the Flow, Sever the Flow, Dispel the Wild.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 5
-**Parent:** TB-036
-**Depends on:** TB-042 (layer revelation)
-**Needs design:** No — templates fully specified
-
----
-
-## 📐▶ TB-047 · One-Shot Templates: People & Ruins Layers
-
-Author ~20 one-shot templates for People and Ruins. Includes artifact creation via GraphOp (Forge Seer's Token, Forge Divine Instrument), ambition assignment (Plant a Dream), agent spawning (Send a Herald). Ruins actions reflect "god doesn't enter personally" principle — most work through agents.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 5
-**Parent:** TB-036
-**Depends on:** TB-042 + TB-043 (Ruins Find actions need hidden sites)
-**Needs design:** No — templates fully specified. GraphOp artifact creation is new plumbing.
-
----
-
-## 📐▶ TB-048 · Control Templates: All 4 Layers
-
-Author ~15 Control verb templates across all layers with full `ControlSpec` (sustain conditions, per-tick costs, income, contestation prerequisites). Includes thread-tier cost scaling (cheaper at high tier, 15% discount/tier). Land: Claim Dominion, Cultivate, Claim Resource. Soul: Anchor the Sphere, Tap the Source, Attune Thread, Channel the Current. People: Shepherd the Flock, Install a Champion, Strengthen Thread, Impose Decree. Ruins: Bind the Echoes, Compel Exploration, Seal the Tomb, Ward Against the Deep.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 5 (Control rows)
-**Parent:** TB-036
-**Depends on:** TB-041 + TB-044 + TB-045
-**Needs design:** No — templates fully specified
-
----
-
-## 📐▶ TB-049 · Hex Control Panel UI & Active Effects Display
-
-UI for active control effects on hexes (section in HexChronicle or dedicated panel). Shows effect name, owner, per-tick cost, sustain status, ticks active, contestability. "Release" button for voluntary lapse. Extend EssencePanel with control effect drain/income breakdown. DebugPanel tabs for Control Effects and Revelation state.
-
-**Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → Wiring
-**Parent:** TB-036
-**Depends on:** TB-041 + TB-044
-**Needs design:** No
+**Depends on:** Generalized Action Targeting (✅)
+**Needs design:** Yes — brainstorm has verb taxonomy and control mechanic sketched, needs full design doc
 
 ---
 
@@ -381,50 +270,3 @@ Deep research into what kinds of origin-story dilemmas resonate across mythology
 **Research brief:** `Docs/plans/2026-03-26-dilemma-research-brief.md`
 **Depends on:** TB-035 design doc (for system integration spec)
 **Needs:** Full creative attention — quality of these stories directly determines the e
-
----
-
-## ✅ TB-039 · Increase Max Zoom from 15 to 20 (completed 2026-03-26)
-
-Raise `MAX_ZOOM` from 15 → 20 (~600px/hex apparent) to allow deeper close-up inspection of hexes.
-
-**Scope:**
-
-- Bump `MAX_ZOOM` in `D3ZoomCamera.ts` (one constant)
-- Keep four zoom tiers — hero-local threshold stays at k=15, giving a wider hero-local band (k=15–20) rather than adding a fifth tier
-- Verify agent portrait textures don't pixelate unacceptably at k=20 (~33% larger than current max); add sprite scale soft-cap in `AgentSpriteMesh` if needed
-- Verify signifier/location art resolution holds at ~600px/hex
-- Visual check of label overlays (region/location) at k=15–20
-- No performance concern — fewer hexes on screen at higher zoom means lower GPU load
-
-**Key files:** `D3ZoomCamera.ts`, `ZoomVisibilityMatrix.ts` (no change expected), `AgentSpriteMesh.ts` (possible scale cap), `RegionLabelOverlay.tsx`, `LocationLabelOverlay.tsx`
-**Needs design:** No — constants change + visual verification
-
----
-
-## ✅ TB-040 · TB-035 Integration Sweep — Wire Engine to UI (completed 2026-03-26)
-
-TB-035 engine modules are implemented and tested but multiple subsystems are not connected to the player-facing game. This ticket wires everything up so the features are actually playable.
-
-**Disconnected systems (audit 2026-03-26):**
-
-1. **MeetingEncounterModal** — Imported in GameView, state managed, but JSX never rendered. Modal cannot appear.
-2. **JourneyVignetteModal** — Vignette queue populated by engine, auto-pause logic works, but modal never rendered. Vignettes fire invisibly.
-3. **Encounter notifications** — Generated every tick by `phaseEncounterVisibility`, stored in `gameState.encounterNotifications`, but no component reads the array. Player never sees them.
-4. **Prose enrichment** — `enrichProse()` fully implemented (placeholder resolution, conditionals, NarrativeContext gathering) but never imported outside tests. All encounter/vignette prose displayed without enrichment.
-5. **Trace emission** — `return_resolution` and `ripple_consequence` categories defined in type system but never emitted. DebugPanel can't show what nothing produces.
-6. **Attention mode toggle** — `toggleAttentionMode()` exists with essence cost calculation, but no UI control exposes it to the player.
-
-**Scope:**
-
-- Render `MeetingEncounterModal` in GameView JSX (it already has state + handler, just needs the `<MeetingEncounterModal ... />` element)
-- Render `JourneyVignetteModal` in GameView JSX (same — state exists, JSX missing)
-- Surface `encounterNotifications` in a player-facing component (ToastStack, NarrativeLog, or new notification widget)
-- Call `enrichProse()` in vignette/encounter rendering paths before displaying text
-- Emit `return_resolution` and `ripple_consequence` traces from returnEngine.ts where outcomes are computed
-- Add attention mode toggle UI to agent thread panel or encounter notification (thread tier gated)
-- Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
-
-**Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅)
-**Needs design:** No — all engine APIs exist, this is pure UI wiring + trace emission.
