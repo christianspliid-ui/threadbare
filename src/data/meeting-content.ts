@@ -580,6 +580,89 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
       },
     ],
   },
+
+  // ── Phase 6 additions: flesh reach dilemmas ──
+  {
+    id: 'flesh_survival',
+    reach: 'flesh',
+    title: 'The Body\'s Price',
+    sceneProse: 'The candidate has pushed past every physical limit. Their body is a map of scars, each one a lesson in survival. Now they face a trial that demands not skill but raw endurance — the kind that breaks bones and tests the will to live.',
+    tensionProse: 'The body screams to stop. Every fiber begs for mercy. But something deeper — something primal — refuses to yield.',
+    choices: [
+      {
+        id: 'flesh_1_endure',
+        text: 'The candidate pushes through the pain. Their body will remember this.',
+        godAction: 'You feel the thread vibrate with their agony — and their refusal to surrender.',
+        axiologicalShifts: { courage_prudence: 0.15, sacrifice_selfishness: 0.1 },
+        reachChanges: { flesh: 0.08 },
+        gateTags: ['endured_agony', 'body_tested'],
+        traitSeeds: ['resilient'],
+      },
+      {
+        id: 'flesh_1_adapt',
+        text: 'They find another way — not through the wall but around it.',
+        godAction: 'Cleverness over brute force. The body is preserved, the lesson different.',
+        axiologicalShifts: { courage_prudence: -0.1 },
+        reachChanges: { flesh: 0.03, eye: 0.03 },
+        gateTags: ['adapted'],
+        traitSeeds: ['adaptive'],
+      },
+    ],
+  },
+  {
+    id: 'flesh_healing',
+    reach: 'flesh',
+    title: 'The Healer\'s Burden',
+    sceneProse: 'Someone lies dying. The candidate has the knowledge — crude, hard-won, written in scar tissue — to save them. But the effort will cost something. Healing always does, when it comes from the flesh rather than from magic.',
+    tensionProse: 'Blood for blood. Life for life. The oldest transaction in the world waits to be completed.',
+    choices: [
+      {
+        id: 'flesh_2_heal',
+        text: 'The candidate gives their own vitality to save the dying. The price is paid in years.',
+        godAction: 'You watch them diminish so another might live. The thread aches with the beauty of it.',
+        axiologicalShifts: { sacrifice_selfishness: 0.2, mercy_ruthlessness: 0.15 },
+        reachChanges: { flesh: 0.08, heart: 0.03 },
+        gateTags: ['showed_mercy', 'body_tested'],
+        traitSeeds: ['scarred-healer'],
+      },
+      {
+        id: 'flesh_2_refuse',
+        text: 'The candidate walks away. They cannot save everyone.',
+        godAction: 'A harsh lesson, but survival requires it. Not everyone can be saved.',
+        axiologicalShifts: { mercy_ruthlessness: -0.15, sacrifice_selfishness: -0.1 },
+        reachChanges: { flesh: 0.03 },
+        gateTags: ['pragmatic'],
+        traitSeeds: ['hardened'],
+      },
+    ],
+  },
+  {
+    id: 'star_communion',
+    reach: 'star',
+    title: 'The Voice from Above',
+    sceneProse: 'In a place of ancient worship, the candidate kneels — not from obedience but from the weight of something pressing down from the sky. The divine presence is overwhelming here, almost unbearable.',
+    tensionProse: 'To open oneself to the divine is to risk being consumed by it. Faith is not safety. It is the willingness to be unmade and remade.',
+    choices: [
+      {
+        id: 'star_3_open',
+        text: 'The candidate opens themselves fully. Whatever comes, they will receive it.',
+        godAction: 'For one blazing instant, mortal and divine share the same breath.',
+        axiologicalShifts: { sacrifice_selfishness: 0.15, tradition_novelty: 0.1 },
+        reachChanges: { star: 0.08 },
+        gateTags: ['divine_communion', 'transcendent_moment'],
+        traitSeeds: ['star-touched'],
+      },
+      {
+        id: 'star_3_shield',
+        text: 'The candidate shields their mind. They accept the divine — on their own terms.',
+        godAction: 'Boundaries. Even with a god. Admirable — or infuriating.',
+        axiologicalShifts: { humility_pride: -0.1 },
+        reachChanges: { star: 0.03, eye: 0.02 },
+        gateTags: ['independent_faith'],
+        traitSeeds: ['wary-devout'],
+      },
+    ],
+  },
 ];
 
 // ─── Spark Investment Options ─────────────────────────────────────

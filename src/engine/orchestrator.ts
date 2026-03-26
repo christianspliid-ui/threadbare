@@ -74,6 +74,7 @@ import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
+import { phaseEncounterVisibility } from './encounterVisibility';
 import { EncounterCacheManager } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
@@ -889,6 +890,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
   s = { ...s, ...phaseEncounterProgressionV2(s) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.6: Encounter Visibility — generate notifications for threaded agents in encounters
+  const encVisResult = phaseEncounterVisibility(s);
+  s = {
+    ...s,
+    tickEvents: [...s.tickEvents, ...encVisResult.events],
+    encounterNotifications: [
+      ...(s.encounterNotifications ?? []),
+      ...encVisResult.notifications,
+    ],
+  };
+  phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)

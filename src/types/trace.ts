@@ -400,6 +400,27 @@ export interface AgentRerouteTrace extends TraceBase {
   newScore: number;
 }
 
+/** Trace: Return convergence resolved for The First */
+export interface ReturnResolutionTrace extends TraceBase {
+  category: 'return_resolution';
+  agentId: string;
+  outcome: string;
+  ordealOutcome: string;
+  eligibleOutcomes: string[];
+  scores: Record<string, number>;
+}
+
+/** Trace: ripple consequence applied to a connection */
+export interface RippleConsequenceTrace extends TraceBase {
+  category: 'ripple_consequence';
+  sourceAgentId: string;
+  returnOutcome: string;
+  targetNodeId: string;
+  targetName: string;
+  targetType: string;
+  consequence: string;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -430,7 +451,9 @@ export type TraceEntry =
   | MovementTrace
   | IdleDecisionTrace
   | RoadHexTransitionTrace
-  | AgentRerouteTrace;
+  | AgentRerouteTrace
+  | ReturnResolutionTrace
+  | RippleConsequenceTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -463,6 +486,8 @@ export const TRACE_CATEGORIES = [
   'idle_decision',
   'road_hex_transition',
   'agent_reroute',
+  'return_resolution',
+  'ripple_consequence',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

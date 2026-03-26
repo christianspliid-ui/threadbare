@@ -12,8 +12,8 @@ import type {
 import { TRACE_CATEGORIES } from '../trace';
 
 describe('TraceEntry types', () => {
-  it('TRACE_CATEGORIES has 29 categories', () => {
-    expect(TRACE_CATEGORIES).toHaveLength(29);
+  it('TRACE_CATEGORIES has 31 categories', () => {
+    expect(TRACE_CATEGORIES).toHaveLength(31);
     expect(TRACE_CATEGORIES).toContain('action_selection');
     expect(TRACE_CATEGORIES).toContain('narrative_generation');
     expect(TRACE_CATEGORIES).toContain('context_harvest');

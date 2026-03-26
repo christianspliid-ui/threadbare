@@ -39,6 +39,8 @@ import {
 } from './graphQueries';
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
+import { executeReturn } from './returnEngine';
+import type { ReturnResolutionResult } from '../types/returnEngine';
 
 // ─── Phase Boundary Logic ──────────────────────────────────────────
 
@@ -402,6 +404,50 @@ export function phaseJourneyBeat(
     const beatCheck = shouldBeatFire(doomProgress, prevDoomProgress, storyPhase, beatHistory);
 
     if (!beatCheck.shouldFire) continue;
+
+    // ── Return Phase: trigger convergence algorithm instead of normal vignette ──
+    if (beatCheck.phase === 'return') {
+      const returnResult = executeReturn(state, threadEdge.target, threadEdge.id, threadProps);
+
+      // Add return events
+      newEvents.push(...returnResult.events);
+
+      // Update thread edge with return state
+      graph.updateEdge(threadEdge.id, {
+        properties: { ...returnResult.threadUpdate },
+      });
+
+      // Build a special return vignette for the UI to display
+      const returnVignetteData: JourneyVignetteData = {
+        agentId: threadEdge.target,
+        agentName: agentNode.name,
+        phase: 'return',
+        doomClockPercent: doomProgress,
+        beatIndex: 0,
+        templateId: 'return_convergence',
+        variantKey: returnResult.result.outcome,
+        setupProse: returnResult.result.returnProse,
+        tensionProse: returnResult.result.rippleResults.map(r => r.prose).join('\n\n'),
+        choices: [], // No choices — the Return is algorithmic
+        stateSnapshot: buildStateSnapshot(graph, threadEdge.target, threadProps),
+        isOrdeal: false,
+        tick,
+      };
+
+      newVignettes.push({
+        id: `vignette_return_${threadEdge.target}_${tick}`,
+        data: returnVignetteData,
+        priority: 100,
+        queuedTick: tick,
+      });
+
+      // Store the return result on the pending vignette for UI consumption
+      // The UI can read returnOutcome from variantKey
+
+      continue; // Skip normal vignette flow
+    }
+
+    // ── Normal beat flow (Call, Road of Trials, Crisis, Ordeal) ──
 
     // Build state snapshot
     const snapshot = buildStateSnapshot(graph, threadEdge.target, threadProps);
