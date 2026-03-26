@@ -80,17 +80,26 @@ import { phaseEncounterVisibility } from './encounterVisibility';
 import { EncounterCacheManager } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
+import {
+  assembleRewardPool,
+  drawFromPool,
+  instantiateReward,
+  resolveRewardRecipe,
+  BAD_OUTCOME_CATEGORY_WEIGHTS,
+} from './rewardPool';
 import type { DistanceMatrix } from './distanceMatrix';
+import { clearTimelines } from './encounterTimeline';
 
 // ─── Decision Cache (lazy-initialized) ────────────────────────────
 
 let encounterCache: EncounterCacheManager | null = null;
 let distanceMatrix: DistanceMatrix | null = null;
 
-/** Reset the encounter cache and distance matrix (useful for game restart). */
+/** Reset the encounter cache, distance matrix, and timeline (useful for game restart). */
 export function resetDecisionCache(): void {
   encounterCache = null;
   distanceMatrix = null;
+  clearTimelines();
 }
 
 /** Read-only access to the current encounter cache (for debug tooling). */
@@ -161,11 +170,20 @@ function getActorHexCoords(graph: WorldGraph, actorId: string): { col: number; r
   return { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number };
 }
 
+/** Simple string hash for deterministic PRNG seeding */
+function hashString(s: string): number {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) {
+    h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
+  }
+  return h;
+}
+
 /**
  * Build a short suffix describing encounter outcome rewards/penalties.
  * Returns empty string if nothing notable, or " — gained X, learned Y" etc.
  */
-function summarizeOutcome(outcome: EncounterOutcome, success: boolean): string {
+function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardName?: string): string {
   const parts: string[] = [];
   if (outcome.reputationDelta && outcome.reputationDelta !== 0) {
     parts.push(outcome.reputationDelta > 0 ? 'gained reputation' : 'lost reputation');
@@ -173,7 +191,9 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean): string {
   if (outcome.traitChanges && outcome.traitChanges.length > 0) {
     parts.push(outcome.traitChanges.join(', '));
   }
-  if (outcome.rewardPool) {
+  if (rewardName) {
+    parts.push(success ? `earned ${rewardName}` : `suffered ${rewardName}`);
+  } else if (outcome.rewardPool) {
     parts.push(success ? 'earned a reward' : 'lost equipment');
   }
   if (outcome.tierPromotionEligible) {
@@ -202,6 +222,65 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     const result = resolveEncounter(state, progress);
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // ── Reward processing (runs on encounter completion/abandonment) ──
+    let rewardName: string | undefined;
+    if ((progress.status === 'completed' || progress.status === 'abandoned') && result.outcome.rewardPool) {
+      const rng = mulberry32(state.seed + state.tick * 41 + hashString(progress.actorId));
+      const resolved = resolveRewardRecipe(result.outcome.rewardPool, result.outcomeType);
+
+      // Bad outcome check
+      const badRoll = rng();
+      const isBadOutcome = badRoll < resolved.badOutcomeChance;
+
+      const effectiveRecipe = isBadOutcome
+        ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS }
+        : resolved;
+
+      const pool = assembleRewardPool(state.graph, effectiveRecipe);
+
+      if (pool.length > 0) {
+        const drawRoll = rng();
+        const templateId = drawFromPool(pool, drawRoll);
+
+        if (templateId) {
+          const instantiation = instantiateReward(state.graph, templateId, progress.actorId, state.tick);
+
+          if (instantiation) {
+            const instanceNode = state.graph.getNode(instantiation.instanceId);
+            rewardName = instanceNode?.name;
+            const templateNode = state.graph.getNode(templateId);
+            const tier = (templateNode?.properties?.tier as number) ?? 1;
+
+            emitTrace({
+              category: 'encounter',
+              tick: state.tick,
+              agentId: progress.actorId,
+              agentName: state.graph.getNode(progress.actorId)?.name ?? '?',
+              event: isBadOutcome ? 'reward_bad_outcome' : 'reward_drawn',
+              templateId,
+              instanceId: instantiation.instanceId,
+              templateName: templateNode?.name ?? '?',
+              tier,
+              attachmentCategory: instantiation.category,
+              poolSize: pool.length,
+              roll: drawRoll,
+              summary: `${state.graph.getNode(progress.actorId)?.name ?? '?'} ${isBadOutcome ? 'suffered' : 'earned'} ${templateNode?.name ?? '?'} (T${tier} ${instantiation.category})`,
+            } as TraceEntry);
+          }
+        }
+      } else {
+        emitTrace({
+          category: 'encounter',
+          tick: state.tick,
+          agentId: progress.actorId,
+          agentName: state.graph.getNode(progress.actorId)?.name ?? '?',
+          event: 'reward_pool_empty',
+          encounterId: progress.encounterId,
+          summary: `Reward pool empty for ${progress.encounterId} (${result.outcomeType})`,
+        } as TraceEntry);
+      }
+    }
 
     // Return agent to parent location if encounter ended and they're at a sublocation
     if (progress.status === 'completed' || progress.status === 'abandoned') {
@@ -265,7 +344,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       .some(e => e.source === state.ascendantId);
 
     if (progress.status === 'completed') {
-      const details = summarizeOutcome(result.outcome, true);
+      const details = summarizeOutcome(result.outcome, true, rewardName);
       events.push({
         id: nextEventId(),
         tick: state.tick,
@@ -280,7 +359,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         }),
       });
     } else if (progress.status === 'abandoned') {
-      const details = summarizeOutcome(result.outcome, false);
+      const details = summarizeOutcome(result.outcome, false, rewardName);
       events.push({
         id: nextEventId(),
         tick: state.tick,

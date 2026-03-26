@@ -12,11 +12,14 @@ import type { EncounterCacheEntry } from '../../engine/encounterCache';
 import type { EncounterProgress } from '../../types/encounter';
 import type { WebGLDiagnosticsSnapshot } from '../HexMapV2/diagnostics/WebGLDiagnostics';
 import { WebGLDebugTab } from './debug/WebGLDebugTab';
+import type { RetinueAgent } from '../../engine/retinue';
 
 interface DebugPanelProps {
   currentTick: number;
   followAgentId?: string;
   graph?: WorldGraph;
+  /** All retinue agents for the agent-follow dropdown selector */
+  retinueAgents?: readonly RetinueAgent[];
   onClose?: () => void;
   /** Callback to toggle bond overlay on the hex map */
   onToggleBonds?: (enabled: boolean) => void;
@@ -40,6 +43,8 @@ interface DebugPanelProps {
   encounterNotifications?: readonly import('../../types/encounterVisibility').EncounterNotification[];
   /** Pending journey vignettes (TB-040) */
   pendingVignettes?: readonly import('../../types/journeyEngine').PendingVignette[];
+  /** World seed for encounter log export */
+  seed?: number;
 }
 
 type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl';
@@ -975,7 +980,7 @@ function JourneyDebugContent({
   );
 }
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -984,6 +989,12 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
   const [isScrolledUp, setIsScrolledUp] = useState(false);
   const [showBonds, setShowBonds] = useState(false);
   const [showDecisionVectors, setShowDecisionVectors] = useState(false);
+  // Local override for agent selection within the debug panel dropdown.
+  // null = follow external selection (from RetinuePanel click).
+  const [overrideAgentId, setOverrideAgentId] = useState<string | null>(null);
+
+  // The effective agent ID: local override wins, then external followAgentId
+  const effectiveAgentId = overrideAgentId ?? followAgentId;
 
   // FE-17: Auto-switch to agent-follow only when followAgentId itself changes,
   // not when the user manually switches tabs. Previous version had viewMode in deps,
@@ -993,6 +1004,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
     if (followAgentId !== prevFollowAgentId.current) {
       prevFollowAgentId.current = followAgentId;
       if (followAgentId) {
+        setOverrideAgentId(null); // Reset override when external selection changes
         setViewMode('agent-follow');
       } else {
         setViewMode((prev) => prev === 'agent-follow' ? 'feed' : prev);
@@ -1022,14 +1034,14 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
     traces = traces.filter((t) => enabledCategories.has(t.category as TraceCategory));
 
     // Filter by view mode
-    if (viewMode === 'agent-follow' && followAgentId) {
-      traces = traces.filter((t) => t.agentId === followAgentId);
+    if (viewMode === 'agent-follow' && effectiveAgentId) {
+      traces = traces.filter((t) => t.agentId === effectiveAgentId);
     } else if (viewMode === 'tick-inspector') {
       traces = traces.filter((t) => t.tick === selectedTick);
     }
 
     return traces;
-  }, [allTraces, enabledCategories, viewMode, followAgentId, selectedTick]);
+  }, [allTraces, enabledCategories, viewMode, effectiveAgentId, selectedTick]);
 
   const tickGroups = useMemo(() => {
     const groups = new Map<number, TraceEntry[]>();
@@ -1076,6 +1088,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
       <div style={HEADER_STYLE}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '14px' }}>Debug Trace</span>
+          <span style={{ fontSize: '12px', color: PANEL_STYLES.tickColor, marginLeft: '8px' }}>tick = {currentTick}</span>
           {onClose && (
             <button
               onClick={onClose}
@@ -1120,10 +1133,30 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         </button>
       </div>
 
-      {/* Agent Follow Header */}
-      {viewMode === 'agent-follow' && followAgentId && (
-        <div style={{ ...HEADER_STYLE, background: `${TRACE_CATEGORY_COLORS.narrative_generation}1a` }}>
-          Following: <span style={{ color: TRACE_CATEGORY_COLORS.narrative_generation, fontWeight: 600 }}>{followAgentId}</span>
+      {/* Agent Follow Header with dropdown selector */}
+      {viewMode === 'agent-follow' && (
+        <div style={HEADER_STYLE}>
+          <select
+            value={effectiveAgentId ?? ''}
+            onChange={(e) => setOverrideAgentId(e.target.value || null)}
+            style={{
+              width: '100%',
+              padding: '6px 8px',
+              background: 'var(--bg-raised)',
+              border: `1px solid var(--border-subtle)`,
+              color: 'var(--text-primary)',
+              borderRadius: '3px',
+              fontSize: '12px',
+              cursor: 'pointer',
+            }}
+          >
+            <option value="">— Select a hero —</option>
+            {(retinueAgents ?? []).map((agent) => (
+              <option key={agent.id} value={agent.id}>
+                {agent.name} ({agent.tierName}) — {agent.locationName}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
@@ -1156,6 +1189,12 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
       {/* Category Filters */}
       {viewMode === 'feed' && (
         <div style={FILTER_AREA_STYLE}>
+          <button
+            onClick={() => setEnabledCategories(prev => prev.size === 0 ? new Set(TRACE_CATEGORIES) : new Set())}
+            style={{ fontSize: '10px', padding: '2px 6px', marginBottom: '4px', cursor: 'pointer', background: 'var(--bg-raised)', color: 'var(--text-muted)', border: '1px solid var(--border-subtle)', borderRadius: '3px' }}
+          >
+            {enabledCategories.size === 0 ? 'Enable All' : 'Disable All'}
+          </button>
           {TRACE_CATEGORIES.map((category) => (
             <label key={category} style={CHECKBOX_LABEL_STYLE}>
               <input
@@ -1189,13 +1228,14 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             cacheEntries={cacheEntries ?? []}
             encounterProgress={encounterProgress ?? []}
             currentTick={currentTick}
-            followAgentId={followAgentId}
+            followAgentId={effectiveAgentId}
             onZoomToLocation={onZoomToLocation}
             graph={graph}
+            seed={seed != null ? String(seed) : undefined}
           />
         ) : viewMode === 'social' ? (
           <SocialTabContent
-            followAgentId={followAgentId}
+            followAgentId={effectiveAgentId}
             graph={graph}
             traces={allTraces as TraceEntry[]}
             showBonds={showBonds}

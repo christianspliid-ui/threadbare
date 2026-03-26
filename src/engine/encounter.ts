@@ -14,12 +14,14 @@ import {
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
 import { resolveAction } from './resolution';
+import type { OutcomeType } from '../types/resolution';
 import { computeResolutionModifiers } from './resolutionModifiers';
 import { emitTrace } from './traceBuffer';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
 import type { GrowthResult } from './capabilityGrowth';
 import type { PromotionResult } from './tierPromotion';
+import { appendEvent } from './encounterTimeline';
 
 // ────────────────────────────────────────────────────────────────────────
 // PUBLIC API
@@ -70,6 +72,16 @@ export function initiateEncounter(
 
   emitTrace(trace);
 
+  // Timeline: ENCOUNTER_START
+  appendEvent(actorId, {
+    phase: 'ENCOUNTER_START',
+    tick,
+    encounter: encounterId,
+    steps: encounter?.steps.length ?? 0,
+    threat: (firstStep?.difficulty ?? 0) / 100,
+    reach: firstStep?.reach ?? 'unknown',
+  });
+
   return progress;
 }
 
@@ -82,12 +94,13 @@ export function resolveEncounter(
   state: GameState,
   progress: EncounterProgress,
   deterministicRoll?: number,
-): { success: boolean; outcome: EncounterOutcome; growth?: GrowthResult; promotion?: PromotionResult } {
+): { success: boolean; outcome: EncounterOutcome; outcomeType: OutcomeType; growth?: GrowthResult; promotion?: PromotionResult } {
   const encounter = getAnyEncounterById(progress.encounterId);
   if (!encounter) {
     // Graceful fallback: failed encounter with placeholder outcome
     return {
       success: false,
+      outcomeType: 'failure',
       outcome: { narrative: 'The encounter dissolves into shadow.' },
     };
   }
@@ -96,6 +109,7 @@ export function resolveEncounter(
   if (!step) {
     return {
       success: false,
+      outcomeType: 'failure',
       outcome: { narrative: 'No further trial awaits.' },
     };
   }
@@ -149,6 +163,19 @@ export function resolveEncounter(
 
   emitTrace(trace);
 
+  // Timeline: ENCOUNTER_STEP
+  appendEvent(progress.actorId, {
+    phase: 'ENCOUNTER_STEP',
+    tick: state.tick,
+    step: `${progress.currentEncounterIndex + 1}/${encounter!.steps.length}`,
+    reach: step.reach,
+    diff: step.difficulty,
+    cap: Math.round(capability * 100),
+    prob: probability,
+    roll: resolution.roll,
+    result: success ? 'PASS' : 'FAIL',
+  });
+
   // Apply capability growth from encounter step resolution
   const tierPromotionEligible = (success && outcome.tierPromotionEligible) ?? false;
   const growth = applyEncounterGrowth(
@@ -171,7 +198,7 @@ export function resolveEncounter(
     );
   }
 
-  return { success, outcome, growth, promotion };
+  return { success, outcome, outcomeType: resolution.outcome, growth, promotion };
 }
 
 /**
@@ -239,6 +266,16 @@ export function advanceEncounter(
   };
 
   emitTrace(trace);
+
+  // Timeline: ENCOUNTER_END (only when encounter actually finishes)
+  if (progress.status === 'completed' || progress.status === 'abandoned') {
+    appendEvent(progress.actorId, {
+      phase: 'ENCOUNTER_END',
+      tick,
+      encounter: progress.encounterId,
+      status: progress.status,
+    });
+  }
 }
 
 /**

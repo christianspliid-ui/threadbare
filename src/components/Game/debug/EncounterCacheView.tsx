@@ -4,6 +4,8 @@ import type { EncounterProgress } from '../../../types/encounter';
 import { ENCOUNTER_ABANDON_COOLDOWN, ENCOUNTER_COMPLETION_COOLDOWN } from '../../../types/encounter';
 import { getAnyEncounterById } from '../../../data/encounter-content';
 import type { WorldGraph } from '../../../engine/graph';
+import { getTimeline, getTrackedAgentIds } from '../../../engine/encounterTimeline';
+import { formatEncounterLog, makeFilename } from '../../../engine/encounterLogExporter';
 
 // ─── Styles ─────────────────────────────────────────────────────
 
@@ -94,6 +96,8 @@ export interface EncounterCacheViewProps {
   onZoomToLocation?: (locationId: string) => void;
   /** World graph for looking up location names */
   graph?: WorldGraph;
+  /** World seed for log export header */
+  seed?: string;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────
@@ -119,12 +123,53 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
   followAgentId,
   onZoomToLocation,
   graph,
+  seed,
 }: EncounterCacheViewProps) {
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
+  const [selectedExportAgent, setSelectedExportAgent] = useState<string | null>(null);
 
   const toggleLocation = useCallback((locId: string) => {
     setExpandedLocation(prev => prev === locId ? null : locId);
   }, []);
+
+  // Build agent list for export dropdown from graph (all individual actors)
+  const exportAgents = useMemo(() => {
+    if (!graph) return [];
+    const actors = graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual')
+      .map(n => ({ id: n.id, name: n.name }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+    return actors;
+  }, [graph]);
+
+  // Auto-select followed agent or first tracked agent
+  const effectiveExportAgent = selectedExportAgent ?? followAgentId ?? null;
+
+  const handleExportLog = useCallback(() => {
+    if (!effectiveExportAgent) return;
+    const timeline = getTimeline(effectiveExportAgent);
+    const agentNode = graph?.getNode(effectiveExportAgent);
+    const agentName = agentNode?.name ?? effectiveExportAgent;
+    const seedStr = seed != null ? String(seed) : 'unknown';
+    const tickRange: [number, number] = timeline.length > 0
+      ? [timeline[0].tick, timeline[timeline.length - 1].tick]
+      : [0, 0];
+
+    const tsv = formatEncounterLog(timeline, {
+      agentId: effectiveExportAgent,
+      agentName,
+      seed: seedStr,
+      tickRange,
+    });
+
+    const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = makeFilename(seedStr, agentName);
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [effectiveExportAgent, graph, seed]);
 
   // Map templateId → locationId for encounter progress lookups
   const templateToLocation = useMemo(() => {
@@ -171,6 +216,50 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
 
   return (
     <div data-testid="encounter-cache-view">
+      {/* Export Controls */}
+      <div style={{ ...SECTION_STYLE, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <label style={{ ...LABEL_STYLE, minWidth: 'auto', fontSize: '11px' }}>Export Log:</label>
+        <select
+          value={effectiveExportAgent ?? ''}
+          onChange={(e) => setSelectedExportAgent(e.target.value || null)}
+          style={{
+            flex: 1,
+            background: 'var(--bg-deep)',
+            color: 'var(--text-primary)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '3px',
+            padding: '3px 6px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+          }}
+        >
+          <option value="">Select agent...</option>
+          {exportAgents.map(a => (
+            <option key={a.id} value={a.id}>{a.name} ({a.id})</option>
+          ))}
+        </select>
+        <button
+          onClick={handleExportLog}
+          disabled={!effectiveExportAgent}
+          title={effectiveExportAgent ? 'Export encounter timeline as TSV' : 'Select an agent'}
+          style={{
+            background: effectiveExportAgent ? 'var(--accent-gold)' : 'var(--bg-deep)',
+            color: effectiveExportAgent ? 'var(--bg-deep)' : 'var(--text-muted)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '3px',
+            padding: '3px 10px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            fontWeight: 600,
+            cursor: effectiveExportAgent ? 'pointer' : 'not-allowed',
+            opacity: effectiveExportAgent ? 1 : 0.5,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Export TSV
+        </button>
+      </div>
+
       {/* Summary Stats */}
       <div style={SECTION_STYLE}>
         <div style={HEADING_STYLE}>Cache Summary</div>

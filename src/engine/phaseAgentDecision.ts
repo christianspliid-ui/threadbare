@@ -41,6 +41,7 @@ import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/m
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
 import { getAgentLocationId } from './graphQueries';
+import { appendEvent } from './encounterTimeline';
 
 /**
  * Filter out candidates whose encounter template is on cooldown for this agent.
@@ -175,6 +176,15 @@ export function phaseAgentDecision(
                   summary: `${actor.name} reroutes from ${graph.getNode(oldDestId)?.name ?? '?'} to ${graph.getNode(bestAltLocationId)?.name ?? '?'}`,
                 } as AgentRerouteTrace & { agentName: string; summary: string });
 
+                // Timeline: REROUTE event
+                appendEvent(agentId, {
+                  phase: 'REROUTE',
+                  tick: state.tick,
+                  oldTarget: graph.getNode(oldDestId)?.name ?? oldDestId,
+                  newTarget: graph.getNode(bestAltLocationId)?.name ?? bestAltLocationId,
+                  reason: 'better_encounter',
+                });
+
                 const firstEdgeCost = computeEdgeCost(graph, agentId, agentLocId, graphPath.path[0]).totalCost;
                 const newMovState = initMovementState(
                   bestAltLocationId,
@@ -214,6 +224,15 @@ export function phaseAgentDecision(
               newScore: 0,
               summary: `${actor.name} abandons invalid target, will idle on arrival`,
             } as AgentRerouteTrace & { agentName: string; summary: string });
+
+            // Timeline: REROUTE (target invalid)
+            appendEvent(agentId, {
+              phase: 'REROUTE',
+              tick: state.tick,
+              oldTarget: graph.getNode(movementState.destinationId)?.name ?? movementState.destinationId,
+              newTarget: graph.getNode(agentLocId)?.name ?? agentLocId,
+              reason: 'target_invalid',
+            });
 
             // Clear target encounter — agent will pick a new one on arrival
             const updatedState: MovementState = {
@@ -299,6 +318,21 @@ export function phaseAgentDecision(
 
       if (decision.selected) {
         const sel = decision.selected;
+        // Timeline: DECIDE event
+        const selCandidate = decision.topCandidates.find(c => c.templateId === sel.entry.templateId);
+        const targetLocNode = graph.getNode(sel.entry.locationId);
+        const targetHexCol = (targetLocNode?.properties?.hexCol as number) ?? 0;
+        const targetHexRow = (targetLocNode?.properties?.hexRow as number) ?? 0;
+        appendEvent(agentId, {
+          phase: 'DECIDE',
+          tick: state.tick,
+          targetEncounter: sel.entry.templateId,
+          targetLocation: targetLocNode?.name ?? sel.entry.locationId,
+          targetHex: [targetHexCol, targetHexRow],
+          score: selCandidate?.finalScore ?? 0,
+          travelCost: selCandidate?.travelCost ?? 0,
+          completionProb: selCandidate?.completionProb ?? 0,
+        });
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
           // Start the encounter — create EncounterProgress
@@ -342,7 +376,7 @@ export function phaseAgentDecision(
                      (seg.toId === locationId && seg.fromId === graphPath.path[0]),
             );
             const firstEdgeCost = firstSeg
-              ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length)
+              ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
               : computeEdgeCost(graph, agentId, locationId, graphPath.path[0]).totalCost;
             movState = initMovementState(
               sel.entry.locationId,
@@ -466,6 +500,15 @@ export function phaseAgentDecision(
           driftTargetName: driftTargetNode?.name ?? undefined,
           summary: `${actor.name} idles (${idleReason}): ${idle.action}${idle.targetLocationId ? ` → ${driftTargetNode?.name ?? idle.targetLocationId}` : ''}${bestScore !== null ? ` [best=${bestScore.toFixed(3)}, threshold=${IDLE_SCORE_THRESHOLD}]` : ''}`,
         } as TraceEntry);
+
+        // Timeline: IDLE event
+        appendEvent(agentId, {
+          phase: 'IDLE',
+          tick: state.tick,
+          reason: idleReason,
+          idleAction: idle.action,
+          driftTarget: driftTargetNode?.name ?? idle.targetLocationId ?? undefined,
+        });
 
         if (idle.action === 'drift' && idle.targetLocationId) {
           // Hex-by-hex A* pathfinding for idle drift (same as encounter movement)
