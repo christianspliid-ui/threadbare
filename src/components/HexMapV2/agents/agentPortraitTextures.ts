@@ -142,7 +142,11 @@ export async function loadPortraitTexture(
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.clip();
-      ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
+      // Cover crop: extract centered square from non-square source
+      const minDim = Math.min(img.width, img.height);
+      const sx = (img.width - minDim) / 2;
+      const sy = (img.height - minDim) / 2;
+      ctx.drawImage(img, sx, sy, minDim, minDim, cx - radius, cy - radius, radius * 2, radius * 2);
       ctx.restore();
 
       if (isRetinue) {
