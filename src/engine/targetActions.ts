@@ -201,6 +201,16 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     const slotId = `${TARGET_ACTION_CONSTANTS.SLOT_ID_PREFIX}${template.id}`;
     const angleDeg = (slots.length * TARGET_ACTION_CONSTANTS.ANGLE_STEP_DEG) % 360;
 
+    // Build per-tick cost label for sustained actions (TB-044)
+    let perTickCostLabel: string | undefined;
+    if (template.durationMode === 'sustained' && template.controlSpec) {
+      const parts: string[] = [];
+      for (const [sphere, cost] of Object.entries(template.controlSpec.perTickCost)) {
+        if (cost && cost > 0) parts.push(`${cost} ${sphere}`);
+      }
+      if (parts.length > 0) perTickCostLabel = `${parts.join(' + ')}/tick`;
+    }
+
     slots.push({
       id: slotId,
       label: template.name,
@@ -215,6 +225,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       rangeStatus,
       hexDistance: hexDist,
       description: template.narrativeTemplates.initiation,
+      durationMode: template.durationMode,
+      perTickCostLabel,
     });
   }
 

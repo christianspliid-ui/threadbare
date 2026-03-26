@@ -94,6 +94,23 @@ export const SUBTYPE_SUBLOCATION_MAP: Record<string, SublocationTypeDef[]> = {
   ],
 };
 
+// ── Hidden Site Seeding Constants ────────────────────────────────────────────
+// NFP #1 (Tunability): Change these to adjust hidden site frequency.
+
+/** Probability that a sublocation in a ruin-type location is seeded as hidden. */
+export const HIDDEN_SITE_RUINS_PROBABILITY = 0.60;
+
+/** Probability that a sublocation in a non-ruin location is seeded as hidden. */
+export const HIDDEN_SITE_DEFAULT_PROBABILITY = 0.15;
+
+/**
+ * Location subtypes where hidden sites are more likely.
+ * These represent ancient or remote places where secrets lurk.
+ */
+export const HIGH_HIDDEN_SUBTYPES: ReadonlySet<string> = new Set([
+  'ruins', 'ruined_tower', 'ruined_city', 'unexplored_poi',
+]);
+
 // ── Task 2: ensureSublocations ──────────────────────────────────────────────
 
 /**
@@ -189,10 +206,18 @@ export function ensureSublocations(
 
     // Create sublocation instance node
     const persistence: SublocationPersistence = { type: 'permanent' };
+
+    // Determine if this sublocation should be hidden (NFP #3: seeded PRNG)
+    const hiddenProb = HIGH_HIDDEN_SUBTYPES.has(locationSubtype)
+      ? HIDDEN_SITE_RUINS_PROBABILITY
+      : HIDDEN_SITE_DEFAULT_PROBABILITY;
+    const isHidden = rng() < hiddenProb;
+
     const properties: SublocationProperties & Record<string, unknown> = {
       sublocationTypeId: def.id,
       parentLocationId: locationId,
       persistence,
+      ...(isHidden ? { hidden: true } : {}),
     };
 
     // Copy parent's hex coordinates so getLocationsInHex() finds sublocations

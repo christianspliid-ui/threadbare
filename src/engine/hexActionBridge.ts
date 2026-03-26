@@ -13,9 +13,10 @@
  *   #4 Fail-soft: unknown template ID returns empty array, no crash
  */
 import type { HexMutation } from '../types/hexMutation';
-import type { RevelationMutation } from './revelationResolver';
-import { resolveRevelation } from './revelationResolver';
+import type { RevelationMutation, HiddenSiteRevealResult } from './revelationResolver';
+import { resolveRevelation, resolveHiddenSiteReveals } from './revelationResolver';
 import { emitTrace } from './traceBuffer';
+import type { WorldGraph } from './graph';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -109,11 +110,14 @@ export function resolveHexAction(
 export interface HexActionResult {
   hexMutations: HexMutation[];
   revelationMutations: RevelationMutation[];
+  hiddenSiteReveals: HiddenSiteRevealResult[];
 }
 
 /**
- * Resolve a hex action into both hex mutations and revelation mutations.
+ * Resolve a hex action into hex mutations, revelation mutations, and hidden site reveals.
  * This is the preferred entry point — produces all side effects of a hex action.
+ *
+ * @param graph WorldGraph — needed for hidden site discovery (TB-043). Optional for backward compat.
  */
 export function resolveHexActionFull(
   templateId: string,
@@ -121,10 +125,16 @@ export function resolveHexActionFull(
   row: number,
   outcome: 'success' | 'failure',
   tick: number,
+  graph?: WorldGraph,
 ): HexActionResult {
+  const hiddenSiteReveals = (outcome === 'success' && graph)
+    ? resolveHiddenSiteReveals(graph, templateId, col, row, tick)
+    : [];
+
   return {
     hexMutations: resolveHexAction(templateId, col, row, outcome, tick),
     revelationMutations: resolveRevelation(templateId, col, row, outcome, tick),
+    hiddenSiteReveals,
   };
 }
 

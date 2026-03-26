@@ -47,6 +47,10 @@ export interface WheelSlot {
   hexDistance: number | null;
   /** Brief description of what this action does */
   description: string;
+  /** Duration mode: 'instant' (default) or 'sustained' (spawns ControlEffect on success) */
+  durationMode?: 'instant' | 'sustained';
+  /** Per-tick essence cost summary string for sustained actions (e.g. "0.5 force/tick") */
+  perTickCostLabel?: string;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────
