@@ -24,7 +24,7 @@ Per-tick, per-agent encounter lifecycle log exported from the debug panel as TSV
 
 ---
 
-## 📐 TB-052 · Encounter Reward Wiring — Items from Encounters (2026-03-26)
+## ✅ TB-052 · Encounter Reward Wiring — Items from Encounters (2026-03-26)
 
 Reward pool engine and attachment types exist but nothing connects them to the live game. Zero encounters define rewards, orchestrator doesn't call pool assembly, no artifact instantiation, no UI. Design wires all four gaps: template-clone instantiation, orchestrator integration, artifact catalog expansion (~50 items), content pass on ~30 encounters, event message enrichment.
 
