@@ -8,7 +8,13 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-050**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-051**.
+
+---
+
+## ✅ TB-050 · Retinue Panel Eye Icons — Wrong Behavior (2026-03-26)
+
+Already fixed in committed code. Agent eye icon zooms camera to hex at z=20 (`handleCenterOnHex`), location eye icon navigates to location detail view (`handleZoomToLocation` → `handleLocationClick`). Cowork handover was stale.
 
 ---
 
@@ -422,5 +428,4 @@ TB-035 engine modules are implemented and tested but multiple subsystems are not
 - Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
 
 **Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅)
-**Needs design:** No — all engine APIs exist, this is pure UI wiring + trace emission.
+**Depends on:** TB-035 (✅

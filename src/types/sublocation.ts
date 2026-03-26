@@ -40,6 +40,8 @@ export interface SublocationProperties {
   parentLocationId: string;
   persistence: SublocationPersistence;
   divineOrigin?: DivineOrigin;
+  /** When true, sublocation is invisible until discovered by a Find action or agent encounter. */
+  hidden?: boolean;
 }
 
 // ── Constants ───────────────────────────────────────────────

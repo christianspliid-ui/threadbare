@@ -169,6 +169,23 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
         {slot.description}
       </p>
 
+      {/* Sustained action badge (TB-044) */}
+      {slot.durationMode === 'sustained' && (
+        <div
+          data-testid="action-card-sustained-badge"
+          className="flex items-center gap-1.5 mb-1.5 px-1.5 py-0.5 rounded"
+          style={{
+            fontSize: 'var(--text-xs)',
+            backgroundColor: sphereColor ? `${sphereColor}15` : 'var(--bg-raised)',
+            border: `1px solid ${sphereColor ? `${sphereColor}40` : 'var(--border-medium)'}`,
+            color: sphereColor || 'var(--text-secondary)',
+          }}
+        >
+          <span style={{ fontSize: '0.625rem' }}>&#x21BB;</span>
+          <span>{slot.perTickCostLabel || 'Sustained'}</span>
+        </div>
+      )}
+
       {/* Cost + Risk + Range row */}
       <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
         {/* Cost zone */}

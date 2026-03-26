@@ -1,12 +1,14 @@
 /**
- * Revelation Resolver — applies layer revelation mutations from Find actions.
+ * Revelation Resolver — applies layer revelation mutations from Find actions
+ * and hidden site discovery.
  *
  * When a hex-targeting Find action resolves successfully, this module updates
- * the hexRevelation map to mark the appropriate layer as revealed.
+ * the hexRevelation map to mark the appropriate layer as revealed. It also
+ * handles hidden sublocation discovery via GraphOp (TB-043).
  *
  * NFP compliance:
  *   #1 Tunability: revelation mapping is data-driven (TEMPLATE_REVELATION_MAP)
- *   #2 Inspectability: LayerRevealedTrace emitted per reveal
+ *   #2 Inspectability: LayerRevealedTrace + HiddenSiteRevealedTrace emitted per reveal
  *   #3 Determinism: pure lookup, no randomness
  *   #4 Fail-soft: unknown template → no reveal (not an error); missing hex → creates entry
  */
@@ -14,6 +16,8 @@ import type { NarrativeLayer, HexRevelation } from '../types/unifiedAction';
 import { createDefaultHexRevelation } from '../types/unifiedAction';
 import { hexKey } from '../lib/hexKey';
 import { emitTrace } from './traceBuffer';
+import type { WorldGraph } from './graph';
+import type { GraphNode } from '../types/graph';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -119,4 +123,108 @@ export function revealLayer(
   layer: NarrativeLayer,
 ): Record<string, HexRevelation> {
   return applyRevelationMutations(current, [{ col, row, layer, source: 'auto' }]);
+}
+
+// ─── Hidden Site Discovery (TB-043) ──────────────────────────────────────────
+
+/**
+ * Result of a hidden site reveal operation.
+ */
+export interface HiddenSiteRevealResult {
+  readonly sublocationId: string;
+  readonly sublocationName: string;
+  readonly hexCol: number;
+  readonly hexRow: number;
+  readonly hasElderMagic: boolean;
+}
+
+/**
+ * Templates that can reveal hidden sites on success.
+ * Maps template ID → true if the template can reveal hidden sublocations.
+ * NFP #1 (Tunability): add new Find templates here.
+ */
+export const HIDDEN_SITE_REVEAL_TEMPLATES: ReadonlySet<string> = new Set([
+  'hex.survey',           // Land survey can find hidden ruins
+  'hex.sense_threads',    // Soul sensing can detect hidden sites
+  'hex.explore_ruins',    // Direct ruins exploration
+  'hex.divine_sight',     // Divine perception pierces all concealment
+]);
+
+/**
+ * Reveal hidden sublocations at a hex when a qualifying Find action succeeds.
+ *
+ * Finds all hidden sublocations at the hex (via graph query), flips their
+ * `hidden` property to `false`, and emits HiddenSiteRevealedTrace for each.
+ *
+ * @param graph WorldGraph instance (mutated — hidden flags flipped)
+ * @param templateId The template that resolved successfully
+ * @param col Hex column coordinate
+ * @param row Hex row coordinate
+ * @param tick Current tick for tracing
+ * @returns Array of reveal results (empty if no hidden sites found or template doesn't reveal)
+ */
+export function resolveHiddenSiteReveals(
+  graph: WorldGraph,
+  templateId: string,
+  col: number,
+  row: number,
+  tick: number,
+): HiddenSiteRevealResult[] {
+  // Only qualifying templates reveal hidden sites
+  if (!HIDDEN_SITE_REVEAL_TEMPLATES.has(templateId)) return [];
+
+  // Find all location nodes at this hex
+  const locations = graph.getNodesByType('location').filter(node => {
+    const props = node.properties;
+    return props.hexCol === col && props.hexRow === row;
+  });
+
+  const results: HiddenSiteRevealResult[] = [];
+
+  for (const location of locations) {
+    // Check sublocations (children via 'contains' edges)
+    const containsEdges = graph.getOutgoingEdges(location.id, 'contains');
+    for (const edge of containsEdges) {
+      const subloc = graph.getNode(edge.target);
+      if (!subloc || subloc.type !== 'location') continue;
+      if (subloc.properties.hidden !== true) continue;
+
+      // Reveal the hidden site — flip hidden to false
+      // updateNode merges properties, so we only need to pass the changed field
+      try {
+        graph.updateNode(subloc.id, { properties: { hidden: false } });
+      } catch {
+        // Fail-soft: skip if update fails
+        continue;
+      }
+
+      const hasElderMagic = subloc.properties.divineOrigin != null
+        || subloc.name.toLowerCase().includes('elder');
+
+      const result: HiddenSiteRevealResult = {
+        sublocationId: subloc.id,
+        sublocationName: subloc.name,
+        hexCol: col,
+        hexRow: row,
+        hasElderMagic,
+      };
+
+      // Emit trace (NFP #2: Inspectability)
+      emitTrace({
+        tick,
+        category: 'revelation',
+        type: 'hidden_site_revealed',
+        summary: `Hidden site '${subloc.name}' revealed at hex (${col},${row}) by ${templateId}`,
+        hexCol: col,
+        hexRow: row,
+        sublocationId: subloc.id,
+        sublocationName: subloc.name,
+        hasElderMagic,
+      } as any);
+
+      results.push(result);
+    }
+  }
+
+  return results;
 }

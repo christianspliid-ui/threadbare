@@ -5,7 +5,7 @@ import type { EncounterTemplate, EncounterProgress } from '../../types/encounter
 import type { SublocationProperties, SublocationPersistence } from '../../types/sublocation';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { getAgentColor } from '../../data/sphereIcons';
-import { getSubLocations, getActorsAtLocation } from '../../engine/viewLevel';
+import { getVisibleSubLocations, getActorsAtLocation } from '../../engine/viewLevel';
 import { ensureSublocations } from '../../engine/sublocation';
 import { EncounterLog } from './EncounterLog';
 import { generateEntityProse } from '../../engine/proseGenerator';
@@ -801,7 +801,7 @@ export const LocationView = memo(function LocationView({
     const sublocationSeed = seed ?? 42;
     ensureSublocations(graph, location.id, sublocationSeed);
 
-    const subs = getSubLocations(graph, location.id);
+    const subs = getVisibleSubLocations(graph, location.id);
     if (subs.length === 0) {
       return { sublocations: [], groupedAgents: new Map() };
     }

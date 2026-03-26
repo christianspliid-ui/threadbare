@@ -47,6 +47,17 @@ export function getSubLocations(graph: WorldGraph, locationId: string): GraphNod
 }
 
 /**
+ * Get visible (non-hidden) sub-locations within a location.
+ * Hidden sublocations (properties.hidden === true) are filtered out.
+ * Used by UI to prevent displaying undiscovered sites.
+ */
+export function getVisibleSubLocations(graph: WorldGraph, locationId: string): GraphNode[] {
+  return getSubLocations(graph, locationId).filter(
+    node => node.properties.hidden !== true
+  );
+}
+
+/**
  * Get all actors at a specific location (find 'located_at' edges targeting this location).
  */
 export function getActorsAtLocation(graph: WorldGraph, locationId: string): GraphNode[] {

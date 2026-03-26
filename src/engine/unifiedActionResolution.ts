@@ -41,6 +41,8 @@ import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
+import type { ControlEffect } from '../types/controlEffect';
+import { spawnControlEffect } from './controlEffectSpawn';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -259,6 +261,7 @@ export function phaseUnifiedActionProgress(
   const events: TickEvent[] = [];
   const hexMutations: HexMutation[] = [];
   const revelationMutations: RevelationMutation[] = [];
+  const spawnedEffects: ControlEffect[] = [];
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
   let actions = progressAllActions(state.unifiedActions ?? []);
@@ -306,6 +309,22 @@ export function phaseUnifiedActionProgress(
       return a;
     });
 
+    // Spawn ControlEffect for contested winners (TB-044)
+    if (updAtk.resolved && updAtk.outcome === 'success' && atkTemplate.durationMode === 'sustained') {
+      const spawnResult = spawnControlEffect(updAtk, atkTemplate, state.tick);
+      if (spawnResult) {
+        spawnedEffects.push(spawnResult.effect);
+        events.push(spawnResult.event);
+      }
+    }
+    if (updDef.resolved && updDef.outcome === 'success' && defTemplate.durationMode === 'sustained') {
+      const spawnResult = spawnControlEffect(updDef, defTemplate, state.tick);
+      if (spawnResult) {
+        spawnedEffects.push(spawnResult.effect);
+        events.push(spawnResult.event);
+      }
+    }
+
     events.push(...atkEvents, ...defEvents);
     contestedIds.add(pair.attackerActionId);
     contestedIds.add(pair.defenderActionId);
@@ -345,9 +364,19 @@ export function phaseUnifiedActionProgress(
           coords.row,
           finalOutcome,
           state.tick,
+          state.graph,
         );
         hexMutations.push(...result.hexMutations);
         revelationMutations.push(...result.revelationMutations);
+      }
+    }
+
+    // Spawn ControlEffect for successful sustained actions (TB-044)
+    if (updatedAction.resolved && updatedAction.outcome === 'success') {
+      const spawnResult = spawnControlEffect(updatedAction, template, state.tick);
+      if (spawnResult) {
+        spawnedEffects.push(spawnResult.effect);
+        events.push(spawnResult.event);
       }
     }
 
@@ -368,6 +397,10 @@ export function phaseUnifiedActionProgress(
     ],
     ...(revelationMutations.length > 0
       ? { hexRevelation: applyRevelationMutations(state.hexRevelation, revelationMutations) }
+      : {}),
+    // TB-044: Append spawned control effects from successful sustained actions
+    ...(spawnedEffects.length > 0
+      ? { controlEffects: [...(state.controlEffects ?? []), ...spawnedEffects] }
       : {}),
   };
 }
