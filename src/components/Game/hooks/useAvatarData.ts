@@ -4,7 +4,8 @@ import type { WorldGraph } from '../../../types/graph';
 import type { LocationSubtype } from '../../../types';
 import { getAvatarHexPosition } from '../../../engine/visibility';
 import { getAvatarMovementState } from '../../../engine/avatarMove';
-import { hexToPixel } from '../../../lib/hexMath';
+import { HEX_CONSTANTS } from '../../HexMapV2/scene/HexFillMesh';
+import { hexToWorld } from '../../../lib/worldPosition';
 import { enableTracing, disableTracing } from '../../../engine/traceBuffer';
 import { getSphereColor } from '../../../data/sphereIcons';
 
@@ -94,11 +95,13 @@ export function useAvatarData({
 
   const avatarTargetHex = avatarRoute ? avatarRoute[avatarRoute.length - 1] : null;
 
-  // Avatar pixel position for initial zoom
+  // Avatar world position for camera centering (used by handleCenterOnAvatar).
+  // Uses hexToWorld (y-flipped for Three.js) with HEX_CONSTANTS.HEX_SIZE — NOT the
+  // legacy SVG HEX_SIZE=30 / hexToPixel that was used by the deleted V1 hex map.
+  // centerOn() expects Three.js world coordinates (y-up), so hexToWorld is correct here.
   const avatarPixelPos = useMemo(() => {
     if (!avatarPos) return null;
-    const HEX_SIZE = 30; // matches HexMap default
-    return hexToPixel(avatarPos, HEX_SIZE);
+    return hexToWorld(avatarPos, HEX_CONSTANTS.HEX_SIZE);
   }, [avatarPos]);
 
   // Debug panel state
