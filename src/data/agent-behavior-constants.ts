@@ -32,7 +32,7 @@ export const GROWTH_REWARD_WEIGHT = 0.4;
 
 /** Below this finalScore, the agent idles instead of acting.
  * @range 0.0001–0.1 (lower = agents attempt more marginal encounters) */
-export const IDLE_SCORE_THRESHOLD = 0.001;
+export const IDLE_SCORE_THRESHOLD = 0.0001;
 
 /** Flat boost when an active ambition's reach matches the encounter's primary reach.
  * @range 0.0–0.5 (higher = ambitions more strongly steer encounter selection) */
@@ -101,7 +101,7 @@ export const MIN_DIVERSITY_SLOTS = 1;
 
 /** Whether the threat-tolerance stage is active.
  * Set false to disable threat filtering entirely. */
-export const THREAT_FLOOR_FILTER = true;
+export const THREAT_FLOOR_FILTER = false;
 
 // ═══════════════════════════════════════════════════════════════════
 // RESOLUTION MODIFIERS — Contextual modifiers for encounter steps (resolutionModifiers.ts)
@@ -213,7 +213,7 @@ export const IDLE_DRIFT_SPEED = 1;
 
 /** Probability a loyal/neutral agent picks a trivial local encounter.
  * @range 0.3–1.0 (1.0 = always picks trivial if available) */
-export const IDLE_TRIVIAL_PREFERENCE = 0.8;
+export const IDLE_TRIVIAL_PREFERENCE = 0.5;
 
 /** Maximum hops to consider when searching for idle drift targets.
  * @range 3–10 */

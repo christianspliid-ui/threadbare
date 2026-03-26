@@ -66,7 +66,7 @@ export const ENCOUNTER_BASE_DIFFICULTY = 40;
 export const ENCOUNTER_DIFFICULTY_ESCALATION = 10;
 
 /** Ticks before an agent can reattempt an abandoned encounter */
-export const ENCOUNTER_ABANDON_COOLDOWN = 20;
+export const ENCOUNTER_ABANDON_COOLDOWN = 8;
 
 /** Ticks before an agent can reattempt a completed encounter */
 export const ENCOUNTER_COMPLETION_COOLDOWN = 8;
