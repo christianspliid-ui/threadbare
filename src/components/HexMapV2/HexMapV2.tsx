@@ -24,7 +24,7 @@ import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
 import type { LocationNode } from './scene/LocationIconMesh';
-import { createAgentSpriteMesh, loadAgentPortraits } from './scene/AgentSpriteMesh';
+import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { tickAgentAnimations } from './agents/agentAnimationState';
@@ -642,12 +642,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
 
         // Render loop
+        const clock = new THREE.Clock();
         function animate() {
           rafId = requestAnimationFrame(animate);
           diagnosticsRef.current.recordFrame();
           // Advance agent bezier hop animations (no-op if no active animations)
           const spriteGroup = agentSpriteGroupRef.current;
-          if (spriteGroup) tickAgentAnimations(animStates, spriteGroup.animationTargets);
+          if (spriteGroup) {
+            tickAgentAnimations(animStates, spriteGroup.animationTargets);
+            tickAvatarPulse(spriteGroup, clock.getElapsedTime());
+          }
           // Fade and dispose expired movement trail segments
           const tGroup = trailGroupRef.current;
           if (tGroup) updateTrails(tGroup);

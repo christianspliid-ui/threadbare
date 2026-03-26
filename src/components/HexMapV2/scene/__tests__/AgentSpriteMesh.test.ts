@@ -75,6 +75,10 @@ function makeAgent(id: string, hexCol: number, hexRow: number, factionIndex = 0,
   return { id, hexCol, hexRow, factionIndex, isRetinue };
 }
 
+function makeAvatarAgent(id: string, hexCol: number, hexRow: number, sphereColor = '#ff6b6b'): AgentRenderData {
+  return { id, hexCol, hexRow, factionIndex: 0, isRetinue: false, isAvatar: true, avatarSphereColor: sphereColor };
+}
+
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
 describe('createAgentSpriteMesh', () => {
@@ -252,5 +256,115 @@ describe('loadAgentPortraits', () => {
     ];
     const result = createAgentSpriteMesh(agents);
     await expect(loadAgentPortraits(result, agents)).resolves.toBeUndefined();
+  });
+});
+
+describe('avatar visual treatment', () => {
+  let createAgentSpriteMesh: typeof import('../AgentSpriteMesh').createAgentSpriteMesh;
+  let updateZoomVisibility: typeof import('../AgentSpriteMesh').updateZoomVisibility;
+  let tickAvatarPulse: typeof import('../AgentSpriteMesh').tickAvatarPulse;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    const mod = await import('../AgentSpriteMesh');
+    createAgentSpriteMesh = mod.createAgentSpriteMesh;
+    updateZoomVisibility = mod.updateZoomVisibility;
+    tickAvatarPulse = mod.tickAvatarPulse;
+  });
+
+  it('avatar sprite gets AVATAR_SCALE_MULTIPLIER (1.3×) scale boost', () => {
+    const agents = [makeAvatarAgent('avatar-1', 5, 3)];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('avatar-1')!;
+    // Normal portrait scale = AGENT_PORTRAIT_RADIUS(4.5) × 2 = 9
+    // Avatar = 9 × 1.3 = 11.7
+    expect(entry.scales.portrait).toBeCloseTo(11.7, 1);
+    expect(entry.isAvatar).toBe(true);
+  });
+
+  it('avatar sprite gets z-bump above normal agents', () => {
+    const normal = [makeAgent('normal-1', 5, 3)];
+    const avatar = [makeAvatarAgent('avatar-1', 5, 3)];
+    const normalResult = createAgentSpriteMesh(normal);
+    const avatarResult = createAgentSpriteMesh(avatar);
+    const normalZ = normalResult.spriteMap.get('normal-1')!.sprite.position.z;
+    const avatarZ = avatarResult.spriteMap.get('avatar-1')!.sprite.position.z;
+    expect(avatarZ).toBeGreaterThan(normalZ);
+  });
+
+  it('avatar gets a pulse ring sprite', () => {
+    const agents = [makeAvatarAgent('avatar-1', 5, 3, '#ff6b6b')];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('avatar-1')!;
+    expect(entry.pulseRingSprite).toBeDefined();
+    expect(entry.pulseRingSprite).toBeInstanceOf(THREE.Sprite);
+  });
+
+  it('non-avatar agents have no pulse ring sprite', () => {
+    const agents = [makeAgent('agent-1', 5, 3)];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('agent-1')!;
+    expect(entry.pulseRingSprite).toBeUndefined();
+  });
+
+  it('pulse ring sprite tracks avatar sprite position', () => {
+    const agents = [makeAvatarAgent('avatar-1', 5, 3)];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('avatar-1')!;
+    const mainPos = entry.sprite.position;
+    const ringPos = entry.pulseRingSprite!.position;
+    expect(ringPos.x).toBe(mainPos.x);
+    expect(ringPos.y).toBe(mainPos.y);
+    expect(ringPos.z).toBeLessThan(mainPos.z); // Ring behind portrait
+  });
+
+  it('pulse ring visibility tracks portrait tier visibility', () => {
+    const agents = [makeAvatarAgent('avatar-1', 0, 0)];
+    const result = createAgentSpriteMesh(agents);
+    const entry = result.spriteMap.get('avatar-1')!;
+
+    updateZoomVisibility(result, 'hero-local');
+    expect(entry.pulseRingSprite!.visible).toBe(true);
+
+    updateZoomVisibility(result, 'full-world');
+    expect(entry.pulseRingSprite!.visible).toBe(false);
+  });
+
+  it('tickAvatarPulse updates ring opacity over time', () => {
+    const agents = [makeAvatarAgent('avatar-1', 0, 0)];
+    const result = createAgentSpriteMesh(agents);
+    updateZoomVisibility(result, 'hero-local');
+    const entry = result.spriteMap.get('avatar-1')!;
+    const ringMat = entry.pulseRingSprite!.material as THREE.SpriteMaterial;
+
+    // Pulse at t=0 — sine(0) = 0, so t=0.5, opacity = 0.6 + 0.4*0.5 = 0.8
+    tickAvatarPulse(result, 0);
+    const op0 = ringMat.opacity;
+
+    // Pulse at t=0.5 (quarter period) — sine(π/2) = 1, opacity = 1.0
+    tickAvatarPulse(result, 0.5);
+    const op1 = ringMat.opacity;
+
+    expect(op1).toBeGreaterThan(op0);
+    expect(op1).toBeCloseTo(1.0, 1);
+  });
+
+  it('dispose cleans up pulse ring material', () => {
+    const agents = [makeAvatarAgent('avatar-1', 0, 0)];
+    const result = createAgentSpriteMesh(agents);
+    expect(() => result.dispose()).not.toThrow();
+  });
+
+  it('avatar animation target moves both main sprite and pulse ring', () => {
+    const agents = [makeAvatarAgent('avatar-1', 5, 3)];
+    const result = createAgentSpriteMesh(agents);
+    const target = result.animationTargets.get('avatar-1')!;
+    const entry = result.spriteMap.get('avatar-1')!;
+
+    target.setPosition(100, 200, 5);
+    expect(entry.sprite.position.x).toBe(100);
+    expect(entry.sprite.position.y).toBe(200);
+    expect(entry.pulseRingSprite!.position.x).toBe(100);
+    expect(entry.pulseRingSprite!.position.y).toBe(200);
   });
 });

@@ -39,6 +39,10 @@ export interface AgentRenderData {
   currentRoadType?: 'major' | 'trail';
   /** Number of remaining hexes in the road queue (0 or undefined = last hop or not on road) */
   roadHexQueueLength?: number;
+  /** true = this is the player's avatar. Renders with sphere-colored highlight. */
+  isAvatar?: boolean;
+  /** Sphere color hex for avatar highlight ring (only set when isAvatar) */
+  avatarSphereColor?: string;
 }
 
 // ── Faction Heraldic Colors ──────────────────────────────────────────────────
@@ -93,3 +97,20 @@ export const PORTRAIT_TEXTURE_SIZE = 128;
  * NFP #1: change this to adjust dot texture quality.
  */
 export const FACTION_DOT_TEXTURE_SIZE = 64;
+
+// ── Avatar Visual Treatment ──────────────────────────────────────────────────
+
+/** Scale multiplier for the avatar sprite relative to normal agents */
+export const AVATAR_SCALE_MULTIPLIER = 1.3;
+
+/** Pulsing ring animation period in seconds */
+export const AVATAR_PULSE_PERIOD_S = 2.0;
+
+/** Pulsing ring opacity range [min, max] */
+export const AVATAR_PULSE_OPACITY: [number, number] = [0.6, 1.0];
+
+/** Z-offset bump for avatar to render above other agents */
+export const AVATAR_Z_BUMP = 0.01;
+
+/** Width of the avatar sphere-colored ring as fraction of sprite radius */
+export const AVATAR_RING_WIDTH_FRACTION = 0.12;
