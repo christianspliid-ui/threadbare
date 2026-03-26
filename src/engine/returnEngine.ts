@@ -51,6 +51,7 @@ import {
 import { emitTrace } from './traceBuffer';
 import { mulberry32 } from '../lib/prng';
 import { RETURN_OUTCOME_PROSE, RIPPLE_CONSEQUENCE_PROSE } from '../data/return-content';
+import { enrichProse, gatherNarrativeContext } from './proseEnrichment';
 
 // ─── Founding Gates ────────────────────────────────────────────────
 
@@ -387,9 +388,14 @@ export function applyRippleConsequences(
       ?? RIPPLE_CONSEQUENCE_PROSE[`${outcome}_default`]
       ?? `The return echoes through ${target.name}.`;
 
-    const filledProse = prose
-      .replace(/{name}/g, agentName)
-      .replace(/{target}/g, target.name);
+    let filledProse: string;
+    try {
+      const ctx = gatherNarrativeContext(graph, agentId);
+      filledProse = enrichProse(prose.replace(/{target}/g, target.name), ctx);
+    } catch {
+      // Fail-soft: simple replacement
+      filledProse = prose.replace(/{name}/g, agentName).replace(/{target}/g, target.name);
+    }
 
     const graphOps: RippleGraphOp[] = [];
 
@@ -754,8 +760,10 @@ export function executeReturn(
     meetingRecord, ordealOutcome, relationship, archetypeId, beatHistory,
   );
 
-  // Generate return prose
-  const returnProse = getReturnProse(outcome, agentName, archetypeId);
+  // Generate return prose (enriched with full narrative context)
+  const returnProse = getReturnProse(
+    outcome, agentName, archetypeId, graph, agentId, meetingRecord, beatHistory,
+  );
 
   // Apply primary outcome
   const { events: outcomeEvents, threadUpdate } = applyReturnOutcome(
@@ -803,9 +811,23 @@ export function executeReturn(
 
 // ─── Helpers ───────────────────────────────────────────────────────
 
-function getReturnProse(outcome: ReturnOutcome, agentName: string, archetypeId: string): string {
+function getReturnProse(
+  outcome: ReturnOutcome,
+  agentName: string,
+  archetypeId: string,
+  graph: WorldGraph,
+  agentId: string,
+  meetingRecord?: MeetingChoiceRecord,
+  beatHistory?: BeatOutcome[],
+): string {
   const prose = RETURN_OUTCOME_PROSE[outcome] ?? 'The journey reaches its conclusion.';
-  return prose.replace(/{name}/g, agentName);
+  try {
+    const ctx = gatherNarrativeContext(graph, agentId, meetingRecord, beatHistory);
+    return enrichProse(prose, ctx);
+  } catch {
+    // Fail-soft: fall back to simple name replacement
+    return prose.replace(/{name}/g, agentName);
+  }
 }
 
 function hashSeed(gameSeed: number, agentId: string, salt: string): number {

@@ -54,6 +54,15 @@ export interface RetinueAgent {
 
   /** Current activity label for sidebar display (e.g., "Idling", "Going to Thornwall", "Explore (2/3)") */
   activityLabel: string;
+
+  /** Court position (the_first, retinue, watched) */
+  courtPosition: import('../types/influence').CourtPosition | null;
+
+  /** Attention mode — 'pause' interrupts the game, 'auto_resolve' does not */
+  attentionMode: 'pause' | 'auto_resolve';
+
+  /** Thread edge ID — needed for toggling attention mode */
+  threadEdgeId: string;
 }
 
 /**
@@ -144,6 +153,9 @@ export function getRetinueAgents(graph: WorldGraph, ascendantId: string): Retinu
       portraitUrl,
       primaryDomain,
       activityLabel: 'Idling',
+      courtPosition: (influenceProps.courtPosition as import('../types/influence').CourtPosition) ?? null,
+      attentionMode: (influenceProps.attentionMode as 'pause' | 'auto_resolve') ?? 'auto_resolve',
+      threadEdgeId: edge.id,
     });
   }
 
