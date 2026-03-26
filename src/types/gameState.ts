@@ -16,6 +16,7 @@ import type { EncounterProgress } from './encounter';
 import type { UnifiedAction } from './unifiedAction';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
+import type { PendingVignette } from './journeyEngine';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -46,7 +47,9 @@ export interface TickEvent {
     | 'encounter_completed' | 'encounter_step_success' | 'encounter_step_failure'
     // Social fabric events
     | 'faction_founded' | 'faction_dissolved' | 'trust_shattered' | 'trust_deepened'
-    | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social';
+    | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social'
+    // Journey events
+    | 'journey_beat' | 'journey_phase_change';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -116,6 +119,9 @@ export interface GameState {
 
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];
+
+  // Journey vignettes — queued by journey beat phase, consumed by UI
+  pendingVignettes?: PendingVignette[];
 
   // Prosperity shocks — one-time deltas pushed by other phases, consumed by phaseProsperity
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)

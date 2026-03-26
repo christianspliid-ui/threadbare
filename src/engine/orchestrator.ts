@@ -72,6 +72,8 @@ import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
+import { phaseJourneyBeat } from './journeyEngine';
+import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { EncounterCacheManager } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
@@ -870,6 +872,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 1: Doom
   s = { ...s, ...phaseDoom(s) };
   phaseEventCounts['doom'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 1.5: Journey Beat — check if doom clock crossed a beat threshold for The First
+  s = { ...s, ...phaseJourneyBeat(s, JOURNEY_BEAT_TEMPLATES) };
+  phaseEventCounts['journey_beat'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───

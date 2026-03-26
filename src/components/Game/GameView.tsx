@@ -57,7 +57,12 @@ import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
 import { EncounterVignetteModal } from './EncounterVignetteModal';
 import { MeetingEncounterModal } from './MeetingEncounterModal';
+import { JourneyVignetteModal } from './JourneyVignetteModal';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
+import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
+import { applyBeatChoice } from '../../engine/journeyEngine';
+import { getThreadsFrom } from '../../engine/graphQueries';
+import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
 import { useNotifications } from './hooks/useNotifications';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
@@ -544,6 +549,45 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
+  // ── Journey vignette (auto-interrupt for The First) ──
+  const activeVignette: PendingVignette | null = useMemo(() => {
+    const pending = gameState.pendingVignettes;
+    if (!pending || pending.length === 0) return null;
+    // Highest priority first (already sorted by engine)
+    return pending[0];
+  }, [gameState.pendingVignettes]);
+
+  // Auto-pause simulation when a vignette is pending
+  useEffect(() => {
+    if (activeVignette && running) {
+      setRunning(false);
+    }
+  }, [activeVignette, running, setRunning]);
+
+  const handleJourneyChoice = useCallback((choiceId: string) => {
+    if (!activeVignette) return;
+    const vignetteData = activeVignette.data;
+
+    // Find the thread edge for this agent
+    const threads = getThreadsFrom(gameState.graph, gameState.ascendantId);
+    const threadEdge = threads.find(e => e.target === vignetteData.agentId);
+    if (!threadEdge) return;
+
+    const threadProps = threadEdge.properties as ThreadEdgeProperties;
+
+    // Apply beat choice — updates thread edge properties + records outcome
+    const { updatedProps } = applyBeatChoice(threadProps, vignetteData, choiceId);
+
+    // Update the thread edge in the graph
+    gameState.graph.updateEdge(threadEdge.id, { properties: updatedProps });
+
+    // Remove this vignette from the queue
+    setGameState(prev => ({
+      ...prev,
+      pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+    }));
+  }, [activeVignette, gameState.graph, gameState.ascendantId, setGameState]);
+
   // IX-013: Wrapped location click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
@@ -987,6 +1031,28 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           locationSubtype={(gameState.graph.getNode(meetingState.locationId)?.properties.locationSubtype as string) ?? 'village'}
           seed={gameState.seed}
           tick={gameState.tick}
+        />
+      )}
+
+      {/* Journey vignette modal (auto-interrupt for The First) */}
+      {activeVignette && (
+        <JourneyVignetteModal
+          open={true}
+          onClose={() => {
+            // Dismissing = step back choice (withdrawn)
+            const fallbackChoice = activeVignette.data.choices.find(c => c.effects.interventionType === 'withdrawn');
+            if (fallbackChoice) {
+              handleJourneyChoice(fallbackChoice.id);
+            } else {
+              // No withdrawn choice available — just dismiss
+              setGameState(prev => ({
+                ...prev,
+                pendingVignettes: (prev.pendingVignettes ?? []).filter(v => v.id !== activeVignette.id),
+              }));
+            }
+          }}
+          onChoice={handleJourneyChoice}
+          vignette={activeVignette.data}
         />
       )}
 

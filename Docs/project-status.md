@@ -1,14 +1,14 @@
 # Project Status
 
-> Updated 2026-03-25. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
+> Updated 2026-03-26. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Backlog triage** — TB-033 complete, next item TBD.
+**TB-035 Meet The First** — Phase 2 (Journey Engine) complete, Phase 3 (The Return) next.
 
 **Recent completions:**
-- ✅ Graph schema enforcement (2026-03-25) — 30 canonical query functions, EDGE_SCHEMA registry for all 22 edge types, dev-mode validated addEdge, 5 files migrated, 45 new tests
-- ✅ Rendering module resilience refactor (2026-03-25) — Shared primitives (hexKey, worldPosition, hexGrouping), AgentAnimationTarget sprite abstraction, isLayerVisible zoom convenience. 31 files, 50+ inline patterns replaced.
-- ✅ HexMapV2 medium-term improvements (2026-03-25) — Hook extraction (1256→1033 lines), signifier InstancedMesh with texture atlas (~4K→~20 draw calls), single sprite per agent with material swap (67% draw call reduction)
+- ✅ TB-035 Phase 2: Journey Engine (2026-03-26) — Doom-clock phase boundaries, beat scheduling, 4-axis state snapshot, template variant selection, 9 structural templates with 15 variants, JourneyVignetteModal auto-interrupt, orchestrator integration, GameView vignette queue + auto-pause, 49 new tests
+- ✅ TB-035 Phase 1: Meeting encounter foundation (2026-03-26) — Types, engine, 81 archetype names, 16 dilemma templates, 4-step modal UI, LocationView "Meet The First" button, 35 new tests
+- ✅ TB-035 Phase 0: Thread edge migration (2026-03-26) — worships→thread rename, direction flip god→mortal, 45+ files updated, 0 regressions
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
