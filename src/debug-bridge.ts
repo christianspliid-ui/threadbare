@@ -12,5 +12,9 @@ if (import.meta.env.DEV) {
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),
     isTracingEnabled: () => import('./engine/traceBuffer').then((m) => m.isTracingEnabled()),
     clearTraces: () => import('./engine/traceBuffer').then((m) => m.clearTraces()),
+    getCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.getCrashLog()),
+    clearCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.clearCrashLog()),
+    getHealthReport: () => import('./engine/tickHealthMonitor').then((m) => m.getLatestReport()),
+    exportDiagnostics: () => import('./engine/tickHealthMonitor').then((m) => m.exportDiagnostics()),
   };
 }

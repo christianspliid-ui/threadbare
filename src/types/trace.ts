@@ -474,6 +474,25 @@ export interface LayerRevealedTrace extends TraceBase {
   revealedBy: string;  // action template ID or encounter ID
 }
 
+/** Trace: tick health check failed (structural problem detected post-tick) */
+export interface TickHealthTrace extends TraceBase {
+  category: 'tick_health';
+  findings: Array<{
+    check: string;
+    severity: 'critical' | 'error' | 'warning';
+    message: string;
+    detail?: unknown;
+  }>;
+}
+
+/** Trace: unhandled exception during tick execution (fail-soft: previous state returned) */
+export interface TickCrashTrace extends TraceBase {
+  category: 'tick_crash';
+  type: 'tick_exception';
+  error: string;
+  stack?: string;
+}
+
 /** Trace: hidden sublocation discovered on a hex */
 export interface HiddenSiteRevealedTrace extends TraceBase {
   category: 'revelation';
@@ -522,7 +541,9 @@ export type TraceEntry =
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace
   | LayerRevealedTrace
-  | HiddenSiteRevealedTrace;
+  | HiddenSiteRevealedTrace
+  | TickHealthTrace
+  | TickCrashTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -559,6 +580,8 @@ export const TRACE_CATEGORIES = [
   'ripple_consequence',
   'control_effect',
   'revelation',
+  'tick_health',
+  'tick_crash',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
