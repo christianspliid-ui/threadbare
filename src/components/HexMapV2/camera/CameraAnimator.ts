@@ -36,11 +36,12 @@ export function animateCameraTo(
   const scale = targetScale ?? currentTransform.k;
 
   // Construct target d3 transform that centers (targetWorldX, targetWorldY) on screen.
-  // d3.zoomIdentity.translate(tx, ty).scale(k) => {k, x: tx*k, y: ty*k}
-  // We need x = -targetWorldX * k, y = targetWorldY * k
-  // => tx = -targetWorldX, ty = targetWorldY
+  // syncCameraToZoom derives: cx = -transform.x / k, cy = transform.y / k
+  // We need transform.x = -targetWorldX * k, transform.y = targetWorldY * k
+  // d3.zoomIdentity.translate(tx, ty).scale(k) stores {k, x: tx, y: ty}
+  // so tx = -targetWorldX * k, ty = targetWorldY * k
   const targetTransform = d3.zoomIdentity
-    .translate(-targetWorldX, targetWorldY)
+    .translate(-targetWorldX * scale, targetWorldY * scale)
     .scale(scale);
 
   d3.select(canvas)
