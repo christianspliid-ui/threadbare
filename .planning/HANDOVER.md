@@ -9,6 +9,433 @@
 
 ---
 
+### 2026-03-26: URGENT — Restore Truncated orchestrator.ts
+
+**Context:** Cowork VM filesystem corruption has truncated `src/engine/orchestrator.ts` from 1196 lines to 1119. The file is cut mid-word at `phaseInflue` on line 1119. This is almost certainly causing the game instability the user reported — without the return statement, `runTick()` returns `undefined`, and 7 phases plus visibility recalculation, event merging, and trace emission are all missing.
+
+**Fix:** Restore from git HEAD:
+
+```bash
+git checkout HEAD -- src/engine/orchestrator.ts
+```
+
+Then verify: `wc -l src/engine/orchestrator.ts` should show 1196. Run `npx tsc --noEmit` and `npm test` to confirm nothing else was corrupted.
+
+**Action items for Claude Code:**
+- [ ] Restore `src/engine/orchestrator.ts` from git HEAD
+- [ ] Run `npx tsc --noEmit` — verify type-check clean
+- [ ] Run `npm test` — verify all tests pass
+- [ ] Run `npx vite build` — verify prod build succeeds
+- [ ] Check other large files for truncation (`git diff --stat` to see if anything else diverges from HEAD)
+
+---
+
+### 2026-03-26: TB-057 — Tick Health Monitor & Crash Log
+
+**Context:** The orchestrator truncation went undetected because there's no runtime validation of tick output. The tick loop has no try/catch, so phase failures are silent. Additionally, several GameState arrays grow without bound over long sessions. This ticket adds a lightweight tick health monitor that catches silent degradation, plus cleanup for unbounded state growth.
+
+**Design — Three components:**
+
+#### Component 1: Tick Health Validator (`src/engine/tickHealthMonitor.ts`)
+
+A pure function `validateTickOutput(prev: GameState, next: GameState): TickHealthReport` that runs after every `runTick()` call and catches structural problems before they propagate. This is NOT the trace system (which records what happened) — this catches things that *shouldn't* happen.
+
+**Checks:**
+
+| Check | Condition | Severity |
+|-------|-----------|----------|
+| `tick_advanced` | `next.tick === prev.tick + 1` | critical |
+| `state_defined` | `next !== undefined && next !== null` | critical |
+| `graph_intact` | `next.graph` exists and has >0 nodes | critical |
+| `agents_present` | At least 1 agent node in graph | error |
+| `events_produced` | `next.tickEvents.length > 0` (warning only — some ticks may legitimately be empty) | warning |
+| `recent_events_bounded` | `next.recentEvents.length <= MAX_RECENT_EVENTS + 10` | error |
+| `encounter_notifications_bounded` | `(next.encounterNotifications?.length ?? 0) < 500` | warning |
+| `unified_actions_bounded` | `(next.unifiedActions?.length ?? 0) < 1000` | warning |
+| `control_effects_bounded` | `(next.controlEffects?.length ?? 0) < 200` | warning |
+| `doom_not_negative` | `next.doomClock.currentProgress >= 0` | error |
+| `essence_not_nan` | No NaN values in `next.essencePool` | critical |
+| `no_duplicate_agents` | Agent node IDs are unique | error |
+
+**Output type:**
+```typescript
+interface TickHealthReport {
+  tick: number;
+  timestamp: number;
+  healthy: boolean;           // true if no critical/error findings
+  findings: TickHealthFinding[];
+}
+
+interface TickHealthFinding {
+  check: string;              // check name from table above
+  severity: 'critical' | 'error' | 'warning';
+  message: string;            // human-readable description
+  detail?: unknown;           // optional diagnostic payload (e.g. actual vs expected tick)
+}
+```
+
+**Constants table:**
+| Constant | Default | Purpose |
+|----------|---------|---------|
+| `ENCOUNTER_NOTIFICATION_WARN_THRESHOLD` | 500 | Warn when notifications exceed this |
+| `UNIFIED_ACTIONS_WARN_THRESHOLD` | 1000 | Warn when actions exceed this |
+| `CONTROL_EFFECTS_WARN_THRESHOLD` | 200 | Warn when effects exceed this |
+| `HEALTH_LOG_BUFFER_SIZE` | 100 | Rolling buffer of health reports |
+
+**Tracing:** Emits a new `tick_health` trace category when any finding has severity `error` or `critical`.
+
+**Fail-soft table:**
+| Failure case | Fallback |
+|---|---|
+| `validateTickOutput` itself throws | Catch internally, log `console.error`, return `{ healthy: false, findings: [{ check: 'validator_error', severity: 'critical' }] }` |
+| `prev` state undefined (first tick) | Skip delta checks (tick_advanced), run structural checks only |
+
+**PRNG:** None needed — purely deterministic structural validation.
+
+#### Component 2: Tick Loop Hardening (in orchestrator.ts)
+
+Wrap the `runTick` function body in a try/catch that:
+1. Catches any thrown error
+2. Logs it to a new `crashLog` array on window (dev only, via debug-bridge)
+3. Returns the *previous* state unchanged (fail-soft: a crashed tick is a no-op, not a corruption)
+4. Emits a `tick_crash` trace with the error message and stack
+
+```typescript
+// In runTick:
+try {
+  // ... all existing phase code ...
+  const report = validateTickOutput(state, s);
+  if (!report.healthy) {
+    appendCrashLog({ type: 'health_check_failed', tick: s.tick, findings: report.findings });
+  }
+  return s;
+} catch (err) {
+  const entry = {
+    type: 'tick_exception' as const,
+    tick: state.tick,
+    error: err instanceof Error ? err.message : String(err),
+    stack: err instanceof Error ? err.stack : undefined,
+    timestamp: Date.now(),
+  };
+  appendCrashLog(entry);
+  emitTrace({ tick: state.tick, category: 'tick_crash', summary: entry.error, ...entry });
+  console.error('[Orchestrator] Tick crashed, returning previous state:', err);
+  return state; // fail-soft: return unchanged state
+}
+```
+
+#### Component 3: State Cleanup (in orchestrator.ts phases)
+
+Fix the three unbounded arrays:
+
+1. **`encounterNotifications`** — Add a trim after the encounter visibility phase. Keep only notifications from the last 50 ticks:
+```typescript
+encounterNotifications: (s.encounterNotifications ?? []).filter(n => n.tick >= s.tick - 50)
+```
+(Requires `tick` field on `EncounterNotification` — if not present, add it as an additive field with `?? s.tick` default.)
+
+2. **`unifiedActions`** — After the unified actions phase, prune completed/abandoned actions older than 100 ticks:
+```typescript
+unifiedActions: s.unifiedActions.filter(a =>
+  a.status === 'active' || a.completedAtTick == null || s.tick - a.completedAtTick < 100
+)
+```
+(Requires `completedAtTick` field — add it, set when status changes to completed/abandoned.)
+
+3. **`controlEffects`** — Already has lifecycle management (lapse). Just add the bounded check in the health monitor (already in table above). If it ever hits the threshold, it's a real design issue, not just accumulation.
+
+**Debug bridge extension:**
+
+Extend `window.__DEBUG` with:
+```typescript
+getCrashLog: () => import('./engine/tickHealthMonitor').then(m => m.getCrashLog()),
+clearCrashLog: () => import('./engine/tickHealthMonitor').then(m => m.clearCrashLog()),
+getHealthReport: () => import('./engine/tickHealthMonitor').then(m => m.getLatestReport()),
+exportDiagnostics: () => import('./engine/tickHealthMonitor').then(m => m.exportDiagnostics()),
+```
+
+`exportDiagnostics()` returns a JSON blob containing: last 100 health reports, crash log entries, current GameState size metrics (array lengths for all monitored fields), trace buffer snapshot, and WebGL diagnostics if available. This is the "crash log" the user can export when something feels wrong.
+
+**Wiring (per wiring-checklist.md):**
+
+| Surface | Connection |
+|---------|-----------|
+| **Orchestrator** | `validateTickOutput()` called at end of `runTick`, inside the new try/catch. No new phase. |
+| **UI rendering** | No new UI component in v1. Diagnostics accessible via `window.__DEBUG.exportDiagnostics()` in console. Future: health indicator icon in debug panel. |
+| **GameState flow** | Reads all fields (validation). Writes nothing to GameState (health reports stored in module-level buffer). |
+| **Traces** | New categories: `tick_health` (warning/error findings), `tick_crash` (unhandled exception). |
+| **Debug visibility** | `window.__DEBUG` extensions. Console-accessible. |
+| **Prose pipeline** | None. |
+| **Player controls** | None in v1. Export via console only. |
+
+**NFP Compliance:**
+
+| Priority | Verdict |
+|----------|---------|
+| 1. Tunability | PASS — All thresholds are named constants |
+| 2. Inspectability | PASS — Health reports + crash log + exportDiagnostics |
+| 3. Determinism | PASS — Validator is pure; no PRNG needed |
+| 4. Fail-soft | PASS — Validator catches its own errors; crashed ticks return previous state |
+| 5. Narrative | N/A |
+| 6. Additive | PASS — No existing fields/functions modified (except try/catch wrap and array trims) |
+| 7. Performance | PASS with note — validateTickOutput runs per-tick but checks are O(1) or O(n) over small arrays |
+
+**Implementation order:**
+1. Restore truncated orchestrator.ts first (see URGENT entry above)
+2. `tickHealthMonitor.ts` — types, validate function, crash log buffer, export function + unit tests
+3. Orchestrator try/catch wrap + validateTickOutput call
+4. State cleanup: encounterNotifications trim, unifiedActions prune (add `completedAtTick` field)
+5. Debug bridge extensions
+6. Contract test: run 200 ticks, verify health reports are all healthy, verify crash log is empty
+7. Fault injection test: mock a phase to throw, verify fail-soft returns previous state and crash log captures it
+
+**Action items for Claude Code:**
+- [ ] FIRST: Restore `orchestrator.ts` from git HEAD (see URGENT entry)
+- [ ] Read this design
+- [ ] Implement steps 2–7 in order
+- [ ] Pre-commit verification: `npm test`, `npx tsc --noEmit`, `npx vite build`
+- [ ] Update wiring checklist with new trace categories
+- [ ] Update BACKLOG.md: add TB-057 as ✅
+
+---
+
+### 2026-03-26: TB-056 — Agent Encounter Tuning (Idle Death Spiral Fix)
+
+**Context:** User exported encounter logs for all 8 agents over 72 ticks (seed 42). Results: ~95% of all agent-ticks are IDLE. Only 2 encounter steps passed across the entire run (Dara and Isolde each passed one step 1, both failed step 2). Every encounter attempt shows `prob=0.05` (the floor clamp) and `score=0.00`. Three compounding bugs create a death spiral where agents can never do anything meaningful.
+
+**Diagnosis — three root causes:**
+
+**1. Vestigial `domainCapabilities` — agents start effectively powerless.**
+`worldSeed.ts` generates `domainCapabilities` scores of 10–40 per reach domain per agent, but `computeRawScore()` in `domainCapability.ts` never reads them. It only sums trait/artifact/resource edge contributions, which at game start total ~0–2 raw score. Through the sigmoid (midpoint=10, k=0.4), that gives capability values of 0.02–0.06. The log confirms: `cap=2`, `cap=3`, `cap=4`, `cap=6` (displayed as ×100 percentages).
+
+**2. Floor-clamped probabilities cascade into zero scores.**
+With capability ~0.03 and `DIFFICULTY_BASE=35` (i.e. 0.35 normalized), per-step probability = `0.03 - 0.35 + STEP_PROBABILITY_OFFSET(0.6)` = 0.28 in the scoring estimate, but actual resolution uses `capability + modifiers - difficulty/100` without the offset, giving `0.03 + 0 - 0.35 = -0.32 → clamped to 0.05`. For 2-step encounters: `0.05 × 0.05 = 0.0025` completion probability. Score = tiny completionProb × reward / cost → well under `IDLE_SCORE_THRESHOLD=0.001`.
+
+**3. Filter pipeline starves some locations of all candidates.**
+Kael (Ironguard), Thorne (start hex), Dara (Barrow Hollow after tick 8), Hestia (New Raventon / Forge of Sorrow) all get `no_candidates_after_filter` for 100% of their ticks. The awareness filter (`AWARENESS_THRESHOLD=0.05`, `BASE_AWARENESS_HOPS=1`) or threat tolerance filter (`THREAT_FLOOR_FILTER=true`) eliminates everything at their locations. With near-zero capabilities, the threat filter treats every encounter as too dangerous.
+
+**Resulting pathologies visible in logs:**
+- Varn: idle at Forge of Sorrow for 66/72 ticks, retries `market_day_festival` every ~22 ticks (cooldown=20), always fails step 1 at 95%
+- Kael: 100% idle at Ironguard — zero candidates ever pass filter
+- Thorne: 100% idle — zero candidates ever pass filter
+- Ashara: ping-pongs between Black Windwatch and Free Widegate every tick (drift loop), attempts same 2 encounters every ~22 ticks, always fails
+- Hestia: same drift loop between New Raventon and Forge of Sorrow, zero candidates pass filter
+- Brynn: idle at Frost Camp, retries `toll_bridge` every ~22 ticks, always fails
+- Dara: one partial success at Fair Windtown (tick 4), then travels to Barrow Hollow and is permanently stuck with zero candidates
+- Isolde: best agent — cycles through 4-5 encounter types at Ironbridge, one step pass at tick 51, but still fails ~95% of attempts
+
+**Fix — Layer A (root cause):**
+
+In `src/engine/domainCapability.ts`, `computeRawScore()` should include the agent's stored `domainCapabilities[domain]` as a base term before summing trait contributions. This shifts starting raw scores from ~0–2 to ~10–40, giving sigmoid capabilities of ~0.50–0.95. This is almost certainly the original design intent — the initialization code carefully generates these values with boost logic but nothing reads them.
+
+**Fix — Layer B (tuning constants for better feel):**
+
+| Constant | File | Current | Recommended | Rationale |
+|----------|------|---------|-------------|-----------|
+| `DIFFICULTY_BASE` | `encounter-content.ts` | 35 | 25 | First encounter steps should be accessible for starting agents |
+| `IDLE_SCORE_THRESHOLD` | `agent-behavior-constants.ts` | 0.001 | 0.0001 | Agents should attempt marginal encounters rather than idle endlessly |
+| `ENCOUNTER_ABANDON_COOLDOWN` | `types/encounter.ts` | 20 | 8 | Match completion cooldown — 20 ticks lockout is too punishing |
+| `IDLE_TRIVIAL_PREFERENCE` | `agent-behavior-constants.ts` | 0.8 | 0.5 | More movement variety when idle — drift should happen more often |
+| `THREAT_FLOOR_FILTER` | `encounterFilterPipeline.ts` | true | false | At low capabilities this eliminates everything — let scoring handle threat avoidance instead |
+
+**Implementation order:**
+1. Layer A fix in `domainCapability.ts` — add `domainCapabilities` base term
+2. Layer B constant tweaks (all 5 values)
+3. Run `npm test` — fix any tests that assert on old constant values or old capability calculations
+4. Run seed-42 encounter log export again with the fixes and compare idle rates
+5. Visual verification at `?view=game` — agents should move around and attempt encounters regularly
+
+**Action items for Claude Code:**
+- [ ] Read `src/engine/domainCapability.ts` — understand `computeRawScore()` and where to add base capabilities
+- [ ] Read `src/engine/worldSeed.ts` — verify `domainCapabilities` is stored on agent graph nodes
+- [ ] Implement Layer A: add `domainCapabilities[domain]` base term to `computeRawScore()`
+- [ ] Implement Layer B: update 5 constants per table above
+- [ ] Run tests, fix assertions broken by new values
+- [ ] Re-export encounter logs at seed 42 (or run orchestrator integration test) to verify improvement
+- [ ] Pre-commit verification: `npm test`, `npx tsc --noEmit`, `npx vite build`
+
+---
+
+### 2026-03-26: TB-055 — Tiered Encounter Modal (Chronicle Narrator)
+
+**Context:** The current `EncounterVignetteModal` is a passive read-and-close modal: it shows labeled sections (Scene / Lens / Stakes / Forecast), has no intervention choices, and treats all encounters identically regardless of thread tier. A Cowork design session produced a comprehensive React prototype (`encounter-modal-prototype.jsx` in repo root) for a new encounter modal that replaces it. The prototype was iterated through 4+ rounds of user feedback and is considered design-final.
+
+**Prototype location:** `encounter-modal-prototype.jsx` (repo root)
+
+**What the new modal does — overview:**
+
+The modal is a tiered, multi-step encounter viewer with intervention controls. The player navigates between encounter steps (past, current, future), reads flowing chronicle-style prose at a depth determined by thread tier, and makes intervention choices on the current step.
+
+**Thread tiers (replaces court position terminology in the UI):**
+
+| Tier | Internal ID | Prose depth | Choices | Auto-interrupt | Special UI |
+|------|------------|-------------|---------|----------------|------------|
+| Strongly Threaded | `strong` | `full` (3+ paragraphs) | 3 (supportive/coercive/withdrawn) | Yes (pauses game) | God-voice quote on selection |
+| Lightly Threaded | `light` | `medium` (1-2 paragraphs) | 2 (supportive/withdrawn) | No | Auto-resolve countdown bar |
+| Watched | `watched` | `peek` (1 sentence) | 0 (essence boost only) | No | Peek gate (1 essence to open), boost slider |
+
+**Key design decisions:**
+
+1. **Chronicle narrator prose** — No section labels (Scene/Lens/Stakes/Forecast are gone). Prose flows as a story with drop-cap first letters, italic serif font (`var(--font-prose)`), and gold left-border for divine outcome text. This mirrors `HexChronicle.tsx` rendering style.
+
+2. **Multi-step navigation** — All tiers support step navigation via clickable dots + ‹ › arrows. Past steps are read-only and show the resolved outcome woven into the prose. Current step shows live intervention choices. Future steps are locked (dimmed dots, not clickable).
+
+3. **Action icons** — Each intervention choice has a small square icon showing its type at a glance: shield+plus (supportive), lightning bolt (coercive), circle+slash (withdrawn). Fallback is diamond pips based on cost.
+
+4. **TTS Narrate button** — In the header next to Reach/Threat badges. Reads all `.chronicle-prose` elements from a `proseContainerRef` using the same pattern as `HexChronicle` → `useNarration()` → `narrateChronicle(containerEl)`. In production, call the real `speakSections()`.
+
+5. **Optional 16:9 scene image** — Slot above the prose body, shown when available. Currently a procedural SVG placeholder; production would use generated hex tile art or encounter-specific imagery.
+
+6. **God-voice** — When the player selects a Strongly Threaded intervention, a gold-accented italic quote appears below the choice: the god's internal voice reacting to their decision.
+
+**How this connects to the notification system:**
+
+The existing notification flow (`phaseEncounterVisibility` → `encounterNotifications[]` on GameState → `useEncounterNotifications` hook → `ToastStack`) currently creates a toast per encounter notification. Clicking the toast should open this new modal instead of the current `EncounterVignetteModal`. The connection points:
+
+1. **Toast → Modal trigger:** `useEncounterNotifications` currently creates `ToastItem` objects but has no `onClick` handler. Add an `onClick` callback to each toast that calls a new `handleEncounterNotificationClick(notification)` in GameView, which sets the modal state.
+
+2. **EncounterLog card → Modal trigger:** `EncounterLog` already has an `onClick` prop. The `handleEncounterClick` handler in GameView (line ~518) currently opens `EncounterVignetteModal` via `setVignetteEncounter()`. Rewire this to open the new modal instead.
+
+3. **RetinuePanel per-agent encounter badge → Modal trigger:** Retinue agents with active encounters should also be clickable to open this modal for that agent's encounter.
+
+4. **Auto-interrupt for Strongly Threaded:** When `phaseEncounterVisibility` emits a notification for a `the_first` (Strongly Threaded) agent, the game should auto-pause and open this modal immediately — not wait for the player to click a toast. This mirrors how `JourneyVignetteModal` auto-opens for The First's journey beats.
+
+5. **Thread tier mapping:** The engine uses `CourtPosition` (`the_first` / `retinue` / `watched`). The modal uses `threadTier` (`strong` / `light` / `watched`). Map at the boundary: `the_first → strong`, `retinue → light`, `watched → watched`.
+
+**What this replaces:**
+
+- `EncounterVignetteModal.tsx` — The new modal is a superset. The old modal becomes dead code once this ships. Delete it and its import from GameView.
+- The encounter notification → toast flow remains, but toasts gain click-to-open-modal behavior.
+
+**Integration wiring (per wiring-checklist.md):**
+
+| Surface | Connection |
+|---------|-----------|
+| **Orchestrator** | No new phases. Consumes existing output from `phaseEncounterVisibility` (phase 2a.6) and `phaseEncounterProgressionV2` (phase 2a.3). |
+| **GameView rendering** | New `<TieredEncounterModal />` replaces `<EncounterVignetteModal />` in JSX. Same conditional slot. |
+| **GameState flow** | Reads: `encounterNotifications`, `encounterProgress`, `graph`. Writes: intervention choice → dispatch to encounter resolution engine. |
+| **Traces** | Emits existing `encounter_intervention` trace type (already defined in `encounterVisibility.ts`). |
+| **Debug visibility** | Existing `encounters` tab in DebugPanel already shows cache/notifications. No new tab needed. |
+| **Prose pipeline** | Prose paragraphs come from encounter templates → `enrichProse()`. The modal renders them via ChronicleNarrator component. Must call `enrichProse()` before display. |
+| **Player controls** | Toast click, EncounterLog click, RetinuePanel agent badge click, auto-interrupt for Strongly Threaded. |
+| **Narration** | `useNarration()` hook for TTS. Button in header reads `.chronicle-prose` elements. |
+
+**Engine type changes needed:**
+
+1. `EncounterNotification` needs per-step prose at each depth tier (currently has a single `prose: string`). Either:
+   - Expand `EncounterNotification` to carry `steps[]` with `prose: { full, medium, peek }` per step, OR
+   - Keep notification lightweight and look up step prose from `EncounterProgress` + `EncounterTemplate` at render time (preferred — avoids duplicating data on GameState).
+
+2. `EncounterInterventionChoice` already has `interventionType`, `essenceCost`, `probabilityBoost`, `godVoice` — these map directly to the prototype's `ChoiceButton` props.
+
+3. `ToastItem` needs an optional `onClick` callback so encounter toasts can open the modal.
+
+**Implementation order:**
+
+1. **New component file:** `src/components/Game/TieredEncounterModal.tsx` — port the prototype's components (ChronicleNarrator, DropCap, StepNav, ChoiceButton, ActionIcon, BoostSlider, AutoResolveBar, PeekGate, NarrateButton) into production TypeScript. Use existing design system CSS vars instead of hardcoded tokens. Use the shared `Modal` primitive for the outer shell.
+
+2. **Thread tier mapping utility:** Small function in `encounterVisibility.ts`: `courtPositionToThreadTier(pos: CourtPosition): 'strong' | 'light' | 'watched'`.
+
+3. **Toast onClick:** Extend `ToastItem` with optional `onClick`. Update `useEncounterNotifications` to pass `onClick` that sets encounter modal state. Update `ToastStack` to call `onClick` when a toast is clicked.
+
+4. **GameView rewiring:** Replace `vignetteEncounter` state with `tieredEncounterState` (holding agentId, encounterId, threadTier). Wire `handleEncounterClick`, `handleEncounterNotificationClick`, and auto-interrupt logic. Remove `EncounterVignetteModal` import and JSX.
+
+5. **Intervention dispatch:** When the player clicks "Intervene" or "Commit", dispatch the choice to the encounter resolution engine. This should update `GameState.encounterProgress` and emit an `encounter_intervention` trace.
+
+6. **TTS integration:** Wire `NarrateButton` to real `useNarration()` hook. Ensure `.chronicle-prose` className is on all prose paragraphs.
+
+7. **Tests:** Unit tests for new components, contract test for notification → modal data flow, visual verification at `?view=game`.
+
+8. **Cleanup:** Delete `EncounterVignetteModal.tsx`, remove its import from GameView, update wiring checklist.
+
+**Action items for Claude Code:**
+- [x] Read this handover + the prototype file `encounter-modal-prototype.jsx` ✅
+- [x] Read encounter visibility types and GameView wiring for context ✅
+- [x] Implement steps 1–8: TieredEncounterModal.tsx, thread tier mapping, toast onClick, GameView rewiring, intervention dispatch, TTS, cleanup ✅
+- [x] Run full pre-commit verification (tests, tsc, vite build) ✅
+- [x] Delete `encounter-modal-prototype.jsx` from repo root ✅
+- [x] Update changelog, project-status, project-history, backlog ✅
+
+---
+
+### 2026-03-26: TB-054 — Avatar Portrait & Hex Map Visibility
+
+**Context:** User noticed their ascendant's avatar is invisible on HexMapV2. Investigation found three missing pieces: (1) avatar actor has no `narrativeArchetype` so no portrait loads, (2) `AgentRenderData` has no `isAvatar` flag, (3) `AgentSpriteMesh` has no avatar-specific visual treatment (V1 SVG had pulsing sphere ring but it was never ported to V2).
+
+**Design:** `Docs/plans/2026-03-26-avatar-portrait-and-hex-visibility-design.md`
+
+**Key decisions:**
+- Generate 8 sphere-specific avatar portraits via `mcp-image` (one per Creation Sphere, divine figure woven from sphere-colored threads per STYLE.md)
+- Avatar gets sphere-colored pulsing ring + 1.3× scale boost + z-bump on HexMapV2
+- New `avatar-portrait-assets.ts` registry maps `SphereName → portrait URL`
+- `AgentRenderData` extended with `isAvatar` + `avatarSphereColor`
+
+**Action items for Claude Code:**
+- [ ] Generate 8 avatar portraits using `mcp-image generate_image` (prompts in design doc)
+- [ ] Create `src/data/avatar-portrait-assets.ts`
+- [ ] Extend `AgentRenderData` in `agentSpriteTypes.ts` with `isAvatar` + `avatarSphereColor`
+- [ ] Update `GameView.tsx` agent adapter to detect avatar and set portrait/flags
+- [ ] Update `AgentSpriteMesh.ts` — pulsing ring, scale boost, z-bump
+- [ ] Add explicit ascendant actor skip in render loop
+- [ ] Tests: unit + contract + visual verification at `?view=game`
+
+---
+
+### 2026-03-26: TB-053 — Encounter Log Exporter
+
+**Context:** User wants a debug tool to export per-agent encounter lifecycle logs for tuning encounters between games. Trace buffer's 500-entry ring buffer is too small — early-game data gets evicted before export. Design introduces a separate, unbounded timeline accumulator alongside a TSV exporter and UI controls in the debug panel.
+
+**Design:** `Docs/plans/2026-03-26-encounter-log-exporter-design.md`
+
+**Key decisions:**
+- Separate `encounterTimeline.ts` module (append-only Map, not the ring buffer) to avoid eviction
+- TSV format with `#`-prefixed header (seed, agent, date) and tab-separated `TICK | PHASE | DETAIL` columns
+- `DETAIL` uses pipe-separated `key=value` pairs — self-documenting, grep-friendly, spreadsheet-importable
+- One optional field added to `EncounterResolutionTrace`: `rewardSummary?: string`
+- No new orchestrator phases — hooks into existing `phaseAgentDecision`, `phaseMovement`, `phaseEncounterProgressionV2`
+
+**Implementation order:**
+1. `encounterTimeline.ts` — types + accumulator + unit tests
+2. `encounterLogExporter.ts` — pure formatter + unit tests
+3. Emission wiring — `appendEvent` calls in 3 existing phases + `clearTimelines()` on reset
+4. `rewardSummary` field on `EncounterResolutionTrace` (additive, optional)
+5. UI — agent dropdown + export button in `EncounterCacheView.tsx`, thread props from `DebugPanel.tsx`
+6. Contract test — real orchestrator run → exporter → valid TSV
+
+**Action items for Claude Code:**
+- [ ] Read the design doc
+- [ ] Implement steps 1–6 in order
+- [ ] Ensure `clearTimelines()` is called wherever `clearTraces()` is called (game reset, new world)
+
+---
+
+### 2026-03-26: TB-052 — Encounter Reward Wiring
+
+**Context:** User asked whether any encounters award items. Answer: zero. The reward pool engine (`rewardPool.ts`) and attachment type system are complete and tested, but nothing connects them to gameplay. No encounters define `rewardPool` recipes, the orchestrator doesn't call pool assembly, and there's no artifact instantiation (drawing an existing artifact would share it between agents).
+
+**Design:** `Docs/plans/2026-03-26-encounter-reward-wiring-design.md`
+
+**Key architecture decision:** Clone-from-template. `drawFromPool` selects a template node ID, then a new `instantiateReward` function clones it with a unique ID and creates the appropriate edge (possesses for artifacts, has_trait for conditions/bestowed). Template stays unowned and reusable.
+
+**Critical design points (from original attachment brainstorm review):**
+- **Failures also produce rewards** — bad rewards (wounds, curses, diseases). The `badOutcomeChance` field drives this. Tier curves shift by resolution outcome quality (crit success → great loot, crit failure → 85% chance of curse/wound).
+- **`rewardPool` goes on BOTH `onSuccess` and `onFailure`** — same recipe, different tier curves applied at resolution time.
+- **Three drawable categories** — possessions, conditions, and bestowed powers. ~86 templates total.
+- **God Nudge window** deferred to v2 — but structure the draw step so nudge can be inserted later.
+
+**Implementation order:**
+1. `instantiateReward` function in `rewardPool.ts` + unit tests (handles all 3 edge shapes)
+2. `getTierCurveForOutcome` + bad outcome routing + unit tests
+3. Orchestrator wiring in `phaseEncounterProgressionV2` + contract test
+4. Attachment catalog (`reward-attachment-catalog.ts`, ~86 templates across 3 categories)
+5. Content pass — add `rewardPool` to both onSuccess and onFailure on ~30 encounter final steps
+6. Event message enrichment — specific attachment name in `summarizeOutcome`
+7. Agent possessions UI section (can be separate backlog item)
+
+**Action items for Claude Code:**
+- [ ] Read the full design doc — especially tier curve table and bad outcome routing
+- [ ] Implement steps 1–6 in order
+- [ ] Step 7 (attachment UI) can be deferred to a separate ticket if needed
 
 ---
 

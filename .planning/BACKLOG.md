@@ -8,7 +8,25 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-055**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-058**.
+
+---
+
+## 📐▶ TB-057 · Tick Health Monitor & Crash Log (2026-03-26)
+
+Tick loop has no try/catch — phase failures are silent. Several GameState arrays (`encounterNotifications`, `unifiedActions`) grow without bound. Add: (1) `validateTickOutput()` health checker with 12 structural checks run after every tick, (2) try/catch wrap around `runTick` body (crashed tick → return previous state unchanged), (3) crash log buffer + `exportDiagnostics()` on `window.__DEBUG`, (4) state cleanup for unbounded arrays. Also: restore truncated `orchestrator.ts` (VM corruption deleted 81 lines). Handover: `.planning/HANDOVER.md`.
+
+---
+
+## 📐▶ TB-056 · Agent Encounter Tuning — Idle Death Spiral Fix (2026-03-26)
+
+Agents are 95%+ idle across 72 ticks. Three compounding bugs: (1) `domainCapabilities` generated at init but never read by `computeRawScore()` — agents start with ~2% capability, (2) floor-clamped probabilities (0.05) cascade into zero scores below `IDLE_SCORE_THRESHOLD`, (3) filter pipeline starves some locations of all candidates. Root cause fix: wire `domainCapabilities` into `computeRawScore()`. Tuning pass: lower `DIFFICULTY_BASE` 35→25, `IDLE_SCORE_THRESHOLD` 0.001→0.0001, `ENCOUNTER_ABANDON_COOLDOWN` 20→8, `IDLE_TRIVIAL_PREFERENCE` 0.8→0.5, `THREAT_FLOOR_FILTER` true→false. Handover: `.planning/HANDOVER.md`.
+
+---
+
+## ✅ TB-055 · Tiered Encounter Modal — Chronicle Narrator (2026-03-26)
+
+Replace passive `EncounterVignetteModal` with tiered encounter modal: chronicle-style prose (drop-cap, no section labels), multi-step navigation, intervention choices per thread tier (Strongly/Lightly/Watched), action icons, TTS narrate button, peek gate, auto-resolve timer. Prototype: `encounter-modal-prototype.jsx`. Handover: `.planning/HANDOVER.md`.
 
 ---
 
@@ -471,4 +489,4 @@ TB-035 engine modules are implemented and tested but multiple subsystems are not
 - Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
 
 **Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅
+**Depends on:** TB-035 (✅      
