@@ -9,6 +9,7 @@ import type { SphereName } from './index';
 import type { AxiologicalProfile } from './agent';
 import type { ReachDomain } from './traits';
 import type { MeetingChoiceRecord } from './meetingEncounter';
+import type { BeatOutcome, OrdealOutcome } from './journeyEngine';
 
 // ─── Influence Essence ───────────────────────────────────────────────
 
@@ -77,11 +78,11 @@ export interface ThreadEdgeProperties {
   /** Current Campbellian journey phase. */
   storyPhase?: CampbellianPhase;
   /** Ordeal beat outcome (Phase 3+). */
-  ordealOutcome?: string;
+  ordealOutcome?: OrdealOutcome;
   /** Record of choices made during the meeting encounter (Phase 1+). */
   meetingChoiceRecord?: MeetingChoiceRecord;
   /** History of journey beat outcomes (Phase 2+). */
-  beatHistory?: Array<Record<string, unknown>>;
+  beatHistory?: BeatOutcome[];
 
   // ── Intervention tracking (Phase 4+) ──────────────────────
   interventionTracking?: Record<string, unknown>;
