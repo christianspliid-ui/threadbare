@@ -28,9 +28,20 @@ import type { GraphNode } from '../types/graph';
 export const TEMPLATE_REVELATION_MAP: Readonly<Record<string, NarrativeLayer>> = {
   // Land layer
   'hex.survey': 'land',
+  'hex.dowse_resources': 'land',
+  'hex.sense_leylines': 'land',    // partial — existence only, not detail
 
   // Soul layer
   'hex.sense_threads': 'soul',
+  'hex.read_currents': 'soul',     // full detail
+
+  // People layer (TB-047)
+  'hex.divine_populace': 'people', // full detail
+  'hex.scry_factions': 'people',   // partial — factions only
+
+  // Ruins layer (TB-047)
+  'hex.read_stones': 'ruins',      // full detail — expensive direct divine action
+  'hex.whisper_intuition': 'ruins', // partial — through agent encounter
 };
 
 // ─── Revelation Mutation ──────────────────────────────────────────────────────
@@ -144,10 +155,14 @@ export interface HiddenSiteRevealResult {
  * NFP #1 (Tunability): add new Find templates here.
  */
 export const HIDDEN_SITE_REVEAL_TEMPLATES: ReadonlySet<string> = new Set([
-  'hex.survey',           // Land survey can find hidden ruins
-  'hex.sense_threads',    // Soul sensing can detect hidden sites
-  'hex.explore_ruins',    // Direct ruins exploration
-  'hex.divine_sight',     // Divine perception pierces all concealment
+  'hex.survey',             // Land survey can find hidden ruins
+  'hex.sense_threads',      // Soul sensing can detect hidden sites
+  'hex.explore_ruins',      // Direct ruins exploration
+  'hex.divine_sight',       // Divine perception pierces all concealment
+  'hex.dowse_resources',    // TB-046: Resource dowsing reveals hidden deposits
+  'hex.read_currents',      // TB-046: Full soul reading detects hidden sites
+  'hex.read_stones',        // TB-047: Direct divine ruins perception
+  'hex.divine_populace',    // TB-047: Full people reading detects hidden agents
 ]);
 
 /**

@@ -148,4 +148,34 @@ describe('TEMPLATE_REVELATION_MAP', () => {
     expect(TEMPLATE_REVELATION_MAP['hex.corrupt_land']).toBeUndefined();
     expect(TEMPLATE_REVELATION_MAP['hex.seed_life']).toBeUndefined();
   });
+
+  // TB-046: New Find action revelation mappings
+  it('maps hex.dowse_resources to land', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.dowse_resources']).toBe('land');
+  });
+
+  it('maps hex.sense_leylines to land', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.sense_leylines']).toBe('land');
+  });
+
+  it('maps hex.read_currents to soul', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.read_currents']).toBe('soul');
+  });
+
+  // TB-047: People & Ruins revelation mappings (pre-registered)
+  it('maps hex.divine_populace to people', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.divine_populace']).toBe('people');
+  });
+
+  it('maps hex.scry_factions to people', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.scry_factions']).toBe('people');
+  });
+
+  it('maps hex.read_stones to ruins', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.read_stones']).toBe('ruins');
+  });
+
+  it('maps hex.whisper_intuition to ruins', () => {
+    expect(TEMPLATE_REVELATION_MAP['hex.whisper_intuition']).toBe('ruins');
+  });
 });

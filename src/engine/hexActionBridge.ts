@@ -25,6 +25,22 @@ export const HEX_CORRUPT_CORRUPTION_DELTA = 0.25;
 export const HEX_SEED_INFLUENCE_DELTA = 0.5;
 export const HEX_SURVEY_VISIBILITY_RADIUS = 1;
 
+// TB-046: Land & Soul one-shot deltas
+export const HEX_RAISE_LANDMARK_INFLUENCE_DELTA = 0.4;
+export const HEX_SHIFT_SEASON_INFLUENCE_DELTA = 0.15;
+export const HEX_SCORCH_EARTH_CORRUPTION_DELTA = 0.4;
+export const HEX_REND_EARTH_CORRUPTION_DELTA = 0.6;
+export const HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA = 0.35;
+export const HEX_SEVER_FLOW_CORRUPTION_DELTA = 0.3;
+export const HEX_DISPEL_WILD_INFLUENCE_DELTA = 0.2;
+
+// TB-047: People & Ruins one-shot deltas
+export const HEX_SCATTER_CORRUPTION_DELTA = 0.15;
+export const HEX_SMITE_CORRUPTION_DELTA = 0.1;
+export const HEX_CONSECRATE_PAST_INFLUENCE_DELTA = 0.3;
+export const HEX_BURY_PAST_CORRUPTION_DELTA = 0.2;
+export const HEX_DESECRATE_CORRUPTION_DELTA = 0.35;
+
 // ─── Mutation Definitions ─────────────────────────────────────────────────────
 
 interface HexActionMutationDef {
@@ -50,6 +66,95 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     failureDelta: 0,
   },
   // hex.survey has no mutation — it's an observation action (visibility effect)
+
+  // TB-046: Land one-shots
+  'hex.raise_landmark': {
+    field: 'divineInfluence',
+    successDelta: HEX_RAISE_LANDMARK_INFLUENCE_DELTA,
+    failureDelta: 0,
+  },
+  'hex.shift_season': {
+    field: 'divineInfluence',
+    successDelta: HEX_SHIFT_SEASON_INFLUENCE_DELTA,
+    failureDelta: 0,
+  },
+  'hex.scorch_earth': {
+    field: 'corruption',
+    successDelta: HEX_SCORCH_EARTH_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  'hex.rend_earth': {
+    field: 'corruption',
+    successDelta: HEX_REND_EARTH_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  // hex.dowse_resources — no mutation (observation only, like survey)
+  // hex.sense_leylines — no mutation (observation only)
+
+  // TB-046: Soul one-shots
+  'hex.attune_leyline': {
+    field: 'divineInfluence',
+    successDelta: HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA,
+    failureDelta: 0,
+  },
+  'hex.sever_flow': {
+    field: 'corruption',
+    successDelta: HEX_SEVER_FLOW_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  'hex.dispel_wild': {
+    field: 'divineInfluence',
+    successDelta: HEX_DISPEL_WILD_INFLUENCE_DELTA,
+    failureDelta: 0,
+  },
+  // hex.forge_seer_token — no hex mutation (creates artifact, deferred)
+  // hex.read_currents — no mutation (observation only)
+  // hex.shift_dominion — no mutation (sphere rebalancing, needs sphere influence system)
+  // hex.amplify_flow — no mutation (magicalSaturation boost on locations, not hex tiles)
+
+  // TB-047: People one-shots
+  'hex.scatter': {
+    field: 'corruption',
+    successDelta: HEX_SCATTER_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  'hex.smite': {
+    field: 'corruption',
+    successDelta: HEX_SMITE_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  // hex.send_herald — no hex mutation (spawns agent via GraphOp, deferred)
+  // hex.forge_instrument — no hex mutation (creates artifact, deferred)
+  // hex.spark_encounter — no hex mutation (creates encounter node, deferred)
+  // hex.divine_populace — no mutation (observation only)
+  // hex.scry_factions — no mutation (observation only)
+  // hex.stir_people — no hex mutation (shifts faction disposition, deferred)
+  // hex.summon_congregation — no hex mutation (agent movement, deferred)
+  // hex.bestow_vision — no hex mutation (agent ambition, deferred)
+  // hex.incite_exodus — no hex mutation (agent departure + prosperity, deferred)
+
+  // TB-047: Ruins one-shots
+  'hex.consecrate_past': {
+    field: 'divineInfluence',
+    successDelta: HEX_CONSECRATE_PAST_INFLUENCE_DELTA,
+    failureDelta: 0,
+  },
+  'hex.bury_past': {
+    field: 'corruption',
+    successDelta: HEX_BURY_PAST_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  'hex.desecrate': {
+    field: 'corruption',
+    successDelta: HEX_DESECRATE_CORRUPTION_DELTA,
+    failureDelta: 0,
+  },
+  // hex.mark_ground — no hex mutation (exploration hook, deferred)
+  // hex.plant_dream — no hex mutation (agent ambition, deferred)
+  // hex.read_stones — no mutation (observation only)
+  // hex.whisper_intuition — no mutation (observation only)
+  // hex.restore_fragment — no hex mutation (sublocation creation, deferred)
+  // hex.rewrite_history — no hex mutation (cultural legacy, deferred)
 };
 
 // ─── Bridge Function ──────────────────────────────────────────────────────────

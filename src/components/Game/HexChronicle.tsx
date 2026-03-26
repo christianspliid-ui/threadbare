@@ -21,6 +21,7 @@ import type { ResourceInstance } from '../../types/resource';
 import { getAbundanceLabel, RESOURCE_ICONS } from '../../types/resource';
 import { RESOURCE_PROSE } from '../../data/resource-content';
 import { pickConceptArt } from '../../data/concept-art-assets';
+import type { ControlEffect } from '../../types/controlEffect';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -84,6 +85,10 @@ interface HexChronicleProps {
   onAgentClick: (agentId: string) => void;
   graph: WorldGraph;
   seed: number;
+  /** Active control effects on this hex (TB-049). */
+  controlEffects?: readonly ControlEffect[];
+  /** Callback to voluntarily release a control effect (TB-049). */
+  onReleaseEffect?: (effectId: string) => void;
 }
 
 export const HexChronicle = memo(function HexChronicle({
@@ -101,6 +106,8 @@ export const HexChronicle = memo(function HexChronicle({
   onAgentClick,
   graph,
   seed,
+  controlEffects,
+  onReleaseEffect,
 }: HexChronicleProps) {
   // ── Narration ─────────────────────────────────────────────────────
 
@@ -825,6 +832,74 @@ export const HexChronicle = memo(function HexChronicle({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ─── DIVINE PRESENCE (control effects, TB-049) ──────────────────── */}
+      {controlEffects && controlEffects.length > 0 && (
+        <div className="chronicle-layer" style={{
+          marginBottom: '40px',
+          animation: 'fadeIn 0.6s ease-out 0.5s both',
+        }}>
+          <div className="chronicle-marker" style={markerStyle}>
+            <div style={ruleStyle} />
+            <span style={labelStyle}>Divine Presence</span>
+            <div style={ruleStyle} />
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {controlEffects.map(effect => (
+              <div
+                key={effect.effectId}
+                style={{
+                  background: 'var(--bg-raised)',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '6px',
+                  padding: '12px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <div>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--text-sm)', color: 'var(--text-primary)' }}>
+                      {effect.templateId.replace('hex.', '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                    </div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      {effect.narrativeTemplates.active}
+                    </div>
+                  </div>
+                  {onReleaseEffect && (
+                    <button
+                      onClick={() => onReleaseEffect(effect.effectId)}
+                      style={{
+                        background: 'var(--bg-deep)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '4px',
+                        padding: '2px 8px',
+                        fontSize: 'var(--text-xs)',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                      }}
+                      title="Voluntarily release this effect"
+                    >
+                      Release
+                    </button>
+                  )}
+                </div>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '8px', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' }}>
+                  <span>
+                    Cost: {Object.entries(effect.perTickCost).map(([sphere, cost]) => `${cost}/${sphere}`).join(', ') || 'free'}/tick
+                  </span>
+                  {effect.perTickIncome && Object.keys(effect.perTickIncome).length > 0 && (
+                    <span style={{ color: 'var(--accent-gold)' }}>
+                      Income: {Object.entries(effect.perTickIncome).map(([sphere, inc]) => `+${inc}/${sphere}`).join(', ')}/tick
+                    </span>
+                  )}
+                  <span>{effect.ticksActive} ticks active</span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

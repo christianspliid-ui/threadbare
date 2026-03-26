@@ -240,3 +240,260 @@ describe('divine templates', () => {
     expect(interventionTypes).toContain('afflict_bless');
   });
 });
+
+// ─── TB-046: Land & Soul hex action templates ─────────────────────
+
+describe('TB-046 hex action templates', () => {
+  const TB046_LAND_IDS = [
+    'hex.raise_landmark', 'hex.dowse_resources', 'hex.sense_leylines',
+    'hex.shift_season', 'hex.scorch_earth', 'hex.rend_earth',
+  ];
+
+  const TB046_SOUL_IDS = [
+    'hex.attune_leyline', 'hex.forge_seer_token', 'hex.read_currents',
+    'hex.shift_dominion', 'hex.amplify_flow', 'hex.sever_flow', 'hex.dispel_wild',
+  ];
+
+  const ALL_TB046_IDS = [...TB046_LAND_IDS, ...TB046_SOUL_IDS];
+
+  it('all 13 new templates are registered', () => {
+    for (const id of ALL_TB046_IDS) {
+      expect(getUnifiedTemplateById(id)).toBeDefined();
+    }
+  });
+
+  it('all land templates have narrativeLayer: land', () => {
+    for (const id of TB046_LAND_IDS) {
+      expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('land');
+    }
+  });
+
+  it('all soul templates have narrativeLayer: soul', () => {
+    for (const id of TB046_SOUL_IDS) {
+      expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('soul');
+    }
+  });
+
+  it('all target hex category', () => {
+    for (const id of ALL_TB046_IDS) {
+      expect(getUnifiedTemplateById(id)!.targetCategories).toContain('hex');
+    }
+  });
+
+  it('all are ascendant-only', () => {
+    for (const id of ALL_TB046_IDS) {
+      expect(getUnifiedTemplateById(id)!.actorAffinities).toContain('ascendant');
+    }
+  });
+
+  it('Create actions bypass revelation gate', () => {
+    const createIds = ALL_TB046_IDS.filter(id => {
+      const t = getUnifiedTemplateById(id)!;
+      return t.crudType === 'create';
+    });
+    expect(createIds.length).toBeGreaterThan(0);
+    for (const id of createIds) {
+      expect(getUnifiedTemplateById(id)!.bypassRevelationGate).toBe(true);
+    }
+  });
+
+  it('Find actions have crudType read', () => {
+    const findIds = ['hex.dowse_resources', 'hex.sense_leylines', 'hex.read_currents'];
+    for (const id of findIds) {
+      expect(getUnifiedTemplateById(id)!.crudType).toBe('read');
+    }
+  });
+
+  it('all have at least 1 motivation', () => {
+    for (const id of ALL_TB046_IDS) {
+      expect(getUnifiedTemplateById(id)!.motivations.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('essence costs match design doc', () => {
+    expect(getUnifiedTemplateById('hex.raise_landmark')!.essenceCost).toBe(8);
+    expect(getUnifiedTemplateById('hex.dowse_resources')!.essenceCost).toBe(2);
+    expect(getUnifiedTemplateById('hex.sense_leylines')!.essenceCost).toBe(1);
+    expect(getUnifiedTemplateById('hex.shift_season')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.scorch_earth')!.essenceCost).toBe(7);
+    expect(getUnifiedTemplateById('hex.rend_earth')!.essenceCost).toBe(12);
+    expect(getUnifiedTemplateById('hex.attune_leyline')!.essenceCost).toBe(5);
+    expect(getUnifiedTemplateById('hex.forge_seer_token')!.essenceCost).toBe(8);
+    expect(getUnifiedTemplateById('hex.read_currents')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.shift_dominion')!.essenceCost).toBe(4);
+    expect(getUnifiedTemplateById('hex.amplify_flow')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.sever_flow')!.essenceCost).toBe(6);
+    expect(getUnifiedTemplateById('hex.dispel_wild')!.essenceCost).toBe(4);
+  });
+});
+
+// ─── TB-047: People & Ruins hex action templates ──────────────────
+
+describe('TB-047 hex action templates', () => {
+  const TB047_PEOPLE_IDS = [
+    'hex.send_herald', 'hex.forge_instrument', 'hex.spark_encounter',
+    'hex.divine_populace', 'hex.scry_factions', 'hex.stir_people',
+    'hex.summon_congregation', 'hex.bestow_vision',
+    'hex.scatter', 'hex.smite', 'hex.incite_exodus',
+  ];
+
+  const TB047_RUINS_IDS = [
+    'hex.mark_ground', 'hex.plant_dream', 'hex.read_stones',
+    'hex.whisper_intuition', 'hex.consecrate_past', 'hex.restore_fragment',
+    'hex.rewrite_history', 'hex.bury_past', 'hex.desecrate',
+  ];
+
+  const ALL_TB047_IDS = [...TB047_PEOPLE_IDS, ...TB047_RUINS_IDS];
+
+  it('all 20 new templates are registered', () => {
+    for (const id of ALL_TB047_IDS) {
+      expect(getUnifiedTemplateById(id)).toBeDefined();
+    }
+  });
+
+  it('all people templates have narrativeLayer: people', () => {
+    for (const id of TB047_PEOPLE_IDS) {
+      expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('people');
+    }
+  });
+
+  it('all ruins templates have narrativeLayer: ruins', () => {
+    for (const id of TB047_RUINS_IDS) {
+      expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('ruins');
+    }
+  });
+
+  it('all target hex category', () => {
+    for (const id of ALL_TB047_IDS) {
+      expect(getUnifiedTemplateById(id)!.targetCategories).toContain('hex');
+    }
+  });
+
+  it('all are ascendant-only', () => {
+    for (const id of ALL_TB047_IDS) {
+      expect(getUnifiedTemplateById(id)!.actorAffinities).toContain('ascendant');
+    }
+  });
+
+  it('Create actions bypass revelation gate', () => {
+    const createIds = ALL_TB047_IDS.filter(id => {
+      const t = getUnifiedTemplateById(id)!;
+      return t.crudType === 'create';
+    });
+    expect(createIds.length).toBeGreaterThan(0);
+    for (const id of createIds) {
+      expect(getUnifiedTemplateById(id)!.bypassRevelationGate).toBe(true);
+    }
+  });
+
+  it('essence costs match design doc', () => {
+    expect(getUnifiedTemplateById('hex.send_herald')!.essenceCost).toBe(7);
+    expect(getUnifiedTemplateById('hex.forge_instrument')!.essenceCost).toBe(10);
+    expect(getUnifiedTemplateById('hex.spark_encounter')!.essenceCost).toBe(4);
+    expect(getUnifiedTemplateById('hex.divine_populace')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.scry_factions')!.essenceCost).toBe(2);
+    expect(getUnifiedTemplateById('hex.stir_people')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.summon_congregation')!.essenceCost).toBe(5);
+    expect(getUnifiedTemplateById('hex.bestow_vision')!.essenceCost).toBe(2);
+    expect(getUnifiedTemplateById('hex.scatter')!.essenceCost).toBe(5);
+    expect(getUnifiedTemplateById('hex.smite')!.essenceCost).toBe(15);
+    expect(getUnifiedTemplateById('hex.incite_exodus')!.essenceCost).toBe(4);
+    expect(getUnifiedTemplateById('hex.mark_ground')!.essenceCost).toBe(1);
+    expect(getUnifiedTemplateById('hex.plant_dream')!.essenceCost).toBe(3);
+    expect(getUnifiedTemplateById('hex.read_stones')!.essenceCost).toBe(8);
+    expect(getUnifiedTemplateById('hex.whisper_intuition')!.essenceCost).toBe(2);
+    expect(getUnifiedTemplateById('hex.consecrate_past')!.essenceCost).toBe(5);
+    expect(getUnifiedTemplateById('hex.restore_fragment')!.essenceCost).toBe(8);
+    expect(getUnifiedTemplateById('hex.rewrite_history')!.essenceCost).toBe(6);
+    expect(getUnifiedTemplateById('hex.bury_past')!.essenceCost).toBe(6);
+    expect(getUnifiedTemplateById('hex.desecrate')!.essenceCost).toBe(4);
+  });
+
+  it('Smite is the most expensive people action', () => {
+    const peopleCosts = TB047_PEOPLE_IDS.map(id => getUnifiedTemplateById(id)!.essenceCost ?? 0);
+    expect(Math.max(...peopleCosts)).toBe(15); // Smite
+  });
+});
+
+// ─── TB-048: Control (sustained) hex action templates ─────────────
+
+describe('TB-048 control templates', () => {
+  const TB048_LAND_IDS = ['hex.claim_dominion', 'hex.cultivate', 'hex.claim_resource'];
+  const TB048_SOUL_IDS = ['hex.anchor_sphere', 'hex.tap_source', 'hex.attune_thread', 'hex.channel_current'];
+  const TB048_PEOPLE_IDS = ['hex.shepherd_flock', 'hex.install_champion', 'hex.strengthen_thread', 'hex.impose_decree'];
+  const TB048_RUINS_IDS = ['hex.bind_echoes', 'hex.compel_exploration', 'hex.seal_tomb', 'hex.ward_against_deep'];
+  const ALL_TB048_IDS = [...TB048_LAND_IDS, ...TB048_SOUL_IDS, ...TB048_PEOPLE_IDS, ...TB048_RUINS_IDS];
+
+  it('all 15 control templates are registered', () => {
+    for (const id of ALL_TB048_IDS) {
+      expect(getUnifiedTemplateById(id)).toBeDefined();
+    }
+  });
+
+  it('all have durationMode sustained', () => {
+    for (const id of ALL_TB048_IDS) {
+      expect(getUnifiedTemplateById(id)!.durationMode).toBe('sustained');
+    }
+  });
+
+  it('all have controlSpec with perTickCost', () => {
+    for (const id of ALL_TB048_IDS) {
+      const t = getUnifiedTemplateById(id)!;
+      expect(t.controlSpec).toBeDefined();
+      expect(Object.keys(t.controlSpec!.perTickCost).length).toBeGreaterThan(0);
+    }
+  });
+
+  it('all have controlSpec.narrativeTemplates with required fields', () => {
+    for (const id of ALL_TB048_IDS) {
+      const nt = getUnifiedTemplateById(id)!.controlSpec!.narrativeTemplates;
+      expect(nt.established).toBeTruthy();
+      expect(nt.active).toBeTruthy();
+      expect(nt.lapsed).toBeTruthy();
+    }
+  });
+
+  it('all have contestPrerequisites with at least one path', () => {
+    for (const id of ALL_TB048_IDS) {
+      const prereqs = getUnifiedTemplateById(id)!.controlSpec!.contestPrerequisites;
+      expect(prereqs).toBeDefined();
+      expect(prereqs!.usurp || prereqs!.destroy).toBeDefined();
+    }
+  });
+
+  it('income-generating effects have perTickIncome', () => {
+    const incomeEffects = ['hex.tap_source', 'hex.claim_resource'];
+    for (const id of incomeEffects) {
+      const spec = getUnifiedTemplateById(id)!.controlSpec!;
+      expect(spec.perTickIncome).toBeDefined();
+      const totalIncome = Object.values(spec.perTickIncome!).reduce((a, b) => a + b, 0);
+      expect(totalIncome).toBeGreaterThan(0);
+    }
+  });
+
+  it('Tap the Source generates net positive income', () => {
+    const spec = getUnifiedTemplateById('hex.tap_source')!.controlSpec!;
+    const totalCost = Object.values(spec.perTickCost).reduce((a, b) => a + b, 0);
+    const totalIncome = Object.values(spec.perTickIncome!).reduce((a, b) => a + b, 0);
+    expect(totalIncome).toBeGreaterThan(totalCost);
+  });
+
+  it('layer assignments are correct', () => {
+    for (const id of TB048_LAND_IDS) expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('land');
+    for (const id of TB048_SOUL_IDS) expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('soul');
+    for (const id of TB048_PEOPLE_IDS) expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('people');
+    for (const id of TB048_RUINS_IDS) expect(getUnifiedTemplateById(id)!.narrativeLayer).toBe('ruins');
+  });
+
+  it('all target hex category', () => {
+    for (const id of ALL_TB048_IDS) {
+      expect(getUnifiedTemplateById(id)!.targetCategories).toContain('hex');
+    }
+  });
+
+  it('all are ascendant-only', () => {
+    for (const id of ALL_TB048_IDS) {
+      expect(getUnifiedTemplateById(id)!.actorAffinities).toContain('ascendant');
+    }
+  });
+});
