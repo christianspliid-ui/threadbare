@@ -9,6 +9,82 @@
 
 ---
 
+### 2026-03-26: Agent Portrait Stretch Bug — Cover Crop Fix
+
+**Context:** Agent portraits on the hex map appear stretched/squished. Root cause identified: all portrait source images are **896×1200** (3:4 aspect ratio), but `loadPortraitTexture()` in `agentPortraitTextures.ts` draws the full non-square image into a square canvas area without aspect-ratio correction.
+
+**Root cause — line 145 of `src/components/HexMapV2/agents/agentPortraitTextures.ts`:**
+```typescript
+// Current (broken): stretches 896×1200 into 128×128 square
+ctx.drawImage(img, cx - radius, cy - radius, radius * 2, radius * 2);
+```
+
+This squishes the 3:4 portrait horizontally to fit a 1:1 circle, making faces look compressed.
+
+**Fix:** Replace line 145 with cover-crop logic that extracts the largest centered square from the source image before drawing:
+```typescript
+// Cover crop: extract centered square from non-square source
+const minDim = Math.min(img.width, img.height);
+const sx = (img.width - minDim) / 2;
+const sy = (img.height - minDim) / 2;
+ctx.drawImage(img, sx, sy, minDim, minDim, cx - radius, cy - radius, radius * 2, radius * 2);
+```
+
+This takes the center 896×896 square from the 896×1200 source (cropping ~152px from top and bottom), then draws that square into the circular clip area. No stretching, faces render at natural proportions.
+
+**Why it "reverted":** The previous fix likely targeted a different rendering path (old V1 SVG map or CSS-based portraits). The Three.js canvas texture pipeline in `agentPortraitTextures.ts` has never had cover-crop logic — it was written with the naive single-arg `drawImage` from the start.
+
+**Action for Claude Code:**
+- [ ] Apply the cover-crop fix to `loadPortraitTexture()` in `src/components/HexMapV2/agents/agentPortraitTextures.ts` (replace the `ctx.drawImage` call at line 145)
+- [ ] Visual verification at `?view=game` — portraits should appear with natural face proportions inside circular clips
+- [ ] Consider adding a unit test that verifies `loadPortraitTexture` calls `drawImage` with the 9-arg form (source rect + dest rect) rather than the 5-arg form
+
+**File to change:** `src/components/HexMapV2/agents/agentPortraitTextures.ts` (single line change)
+
+---
+
+### 2026-03-26: Hex Actions Expansion & Control Mechanic — Full Design (TB-036)
+
+**Context:** TB-036 design review completed. Full system design covers 5 subsystems: Control verb runtime (sustained effects with per-tick economic drain), essence economy expansion (creation spheres from chargen, elder magic discovered through ruins), layer revelation system (Find-gates Change/Control), visibility & contestation (control effects as persistent encounter nodes), and 43 action templates across 5 verbs × 4 narrative layers.
+
+**Key design decisions resolved:**
+- No control slots — pure economic constraint (you hold what you can afford)
+- LIFO lapse ordering, oldest-first payment, immediate lapse with notification
+- Creation spheres chosen at chargen (tall vs wide). Elder magic ("elder magic" = foundation spheres) discovered through ruins — zero at start
+- Thread-based effects cheaper at higher tiers (15% discount/tier)
+- Discovery timing depends on attention mode (pause = immediate, auto_resolve = queued)
+- God doesn't enter ruins personally (expensive direct actions exist but agent-mediated is the intended path)
+- Artifacts losable via encounter consequences, transferable via social encounters
+- Usurp inherits investment (the pre-work is done, you just steal the operation)
+
+**What Cowork did:**
+- Wrote full design doc: `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md`
+- Comprehensive integration audit (all 8 dependent systems assessed — what's ready, what needs extension, what's missing)
+- Decomposed TB-036 into 9 implementation tickets: TB-041 through TB-049
+- Updated `.planning/BACKLOG.md`: TB-036 status → `📐▶`, added TB-041–TB-049, next ID → TB-050
+
+**Implementation ordering (dependency chain):**
+1. **TB-041** (ControlEffect runtime + tick phase) — foundational, no deps
+2. **TB-042** (Layer revelation system) — foundational, no deps
+3. **TB-043** (Hidden sites & discovery seeding) — depends on TB-042
+4. **TB-044** (Template extension + durationMode) — depends on TB-041
+5. **TB-045** (Contestation + persistent encounters) — depends on TB-041, TB-044
+6. **TB-046** (One-shot templates: Land & Soul) — depends on TB-042
+7. **TB-047** (One-shot templates: People & Ruins) — depends on TB-042, TB-043
+8. **TB-048** (Control templates: all layers) — depends on TB-041, TB-044, TB-045
+9. **TB-049** (UI: Hex Control Panel + active effects) — depends on TB-041, TB-044
+
+**Parallelizable:** TB-041 and TB-042 can be built simultaneously. TB-046 and TB-047 can be built simultaneously once TB-042 lands.
+
+**Action for Claude Code:**
+- [ ] Commit all Cowork changes: design doc, BACKLOG.md updates, HANDOVER.md
+- [ ] When implementing, start with TB-041 and TB-042 in parallel (both foundational, no deps)
+- [ ] Follow design doc's integration assessment — specifically: ActionCard needs control variant, encounter `filterByPrerequisites()` is a no-op placeholder that must be implemented, `computeEssenceGeneration()` needs control effect income extension
+
+**Files changed:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` (new), `.planning/BACKLOG.md` (updated), `.planning/HANDOVER.md` (this entry)
+
+---
+
 ### 2026-03-26: Integration Wiring Checklist & Process Updates
 
 **Context:** Audit of TB-035 revealed a systemic pattern: engine modules built and tested in isolation but never connected to the player-facing game (modals imported but not rendered, GameState fields written but never read by UI, traces defined but never emitted). New process guardrails added to prevent this from recurring, plus a backlog item to fix the existing gaps.
@@ -334,4 +410,4 @@ Done:
 
 Deferred (when time permits):
 - Write evals for `state-of-game-design` and `engine-architecture` skills
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
