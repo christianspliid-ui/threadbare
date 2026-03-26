@@ -290,25 +290,24 @@ NarrativeLayer type (land/soul/people/ruins) with per-hex revelation state on `G
 
 ---
 
-## 📐▶ TB-043 · Hidden Sites & Discovery Seeding
+## ✅ TB-043 · Hidden Sites & Discovery Seeding (completed 2026-03-26)
 
-Add `hidden: boolean` to sublocation nodes. Seed hidden sites in worldgen (resource deposits, elder magic traces). Find actions and agent encounters flip visibility. Discovery timing depends on attention mode (pause = immediate, auto_resolve = queued).
+`hidden?: boolean` on SublocationProperties. Seeded during worldgen (60% ruins, 15% default). `getVisibleSubLocations()` filters hidden sites from UI. `resolveHiddenSiteReveals()` flips hidden→false on qualifying Find actions via hexActionBridge. HiddenSiteRevealedTrace emitted. 24 tests.
 
 **Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 3 (Hidden Sites)
 **Parent:** TB-036
 **Depends on:** TB-042 (layer revelation)
-**Needs design:** No
 
 ---
 
-## 📐▶ TB-044 · Control Template Extension & durationMode
+## ✅ TB-044 · Control Template Extension & durationMode (2026-03-26)
 
 Extend `UnifiedActionTemplate` with `durationMode: 'instant' | 'sustained'` and `controlSpec: ControlSpec`. Spawn `ControlEffect` on sustained action success. ActionCard control variant visual (recurring cost indicator). WheelSlot extension.
 
 **Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 1 (Template Extension)
 **Parent:** TB-036
 **Depends on:** TB-041 (ControlEffect runtime)
-**Needs design:** No
+**Completed:** 2026-03-26 — spawnControlEffect(), phaseUnifiedActionProgress wiring, WheelSlot durationMode/perTickCostLabel, ActionCard sustained badge. 12 tests.
 
 ---
 
