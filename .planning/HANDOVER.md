@@ -35,7 +35,7 @@ This takes the center 896×896 square from the 896×1200 source (cropping ~152px
 **Why it "reverted":** The previous fix likely targeted a different rendering path (old V1 SVG map or CSS-based portraits). The Three.js canvas texture pipeline in `agentPortraitTextures.ts` has never had cover-crop logic — it was written with the naive single-arg `drawImage` from the start.
 
 **Action for Claude Code:**
-- [ ] Apply the cover-crop fix to `loadPortraitTexture()` in `src/components/HexMapV2/agents/agentPortraitTextures.ts` (replace the `ctx.drawImage` call at line 145)
+- [x] Apply the cover-crop fix to `loadPortraitTexture()` in `src/components/HexMapV2/agents/agentPortraitTextures.ts` ✅
 - [ ] Visual verification at `?view=game` — portraits should appear with natural face proportions inside circular clips
 - [ ] Consider adding a unit test that verifies `loadPortraitTexture` calls `drawImage` with the 9-arg form (source rect + dest rect) rather than the 5-arg form
 
@@ -77,9 +77,11 @@ This takes the center 896×896 square from the 896×1200 source (cropping ~152px
 **Parallelizable:** TB-041 and TB-042 can be built simultaneously. TB-046 and TB-047 can be built simultaneously once TB-042 lands.
 
 **Action for Claude Code:**
-- [ ] Commit all Cowork changes: design doc, BACKLOG.md updates, HANDOVER.md
-- [ ] When implementing, start with TB-041 and TB-042 in parallel (both foundational, no deps)
-- [ ] Follow design doc's integration assessment — specifically: ActionCard needs control variant, encounter `filterByPrerequisites()` is a no-op placeholder that must be implemented, `computeEssenceGeneration()` needs control effect income extension
+- [x] Commit all Cowork changes: design doc, BACKLOG.md updates, HANDOVER.md ✅
+- [x] TB-041 and TB-042 implemented in parallel (both foundational, no deps) ✅
+- [x] `computeEssenceGeneration()` extended for control effect income ✅
+- [ ] ActionCard needs control variant (TB-044)
+- [ ] Encounter `filterByPrerequisites()` is a no-op placeholder that must be implemented (TB-045)
 
 **Files changed:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` (new), `.planning/BACKLOG.md` (updated), `.planning/HANDOVER.md` (this entry)
 
