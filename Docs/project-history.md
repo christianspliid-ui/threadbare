@@ -103,6 +103,10 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 
 - Dynamic Kanban Board: ✅ Complete (2026-03-25) — kanban.html now parses BACKLOG.md at load time via fetch(), extracts emoji states → kanban columns, TB-IDs, titles, dates, links (Plan/Design doc/Skill/Review), dependencies, ice box markers. Zero manual sync — single source of truth.
 
+- TB-041 ControlEffect Runtime & Tick Phase: ✅ Complete (2026-03-26) — phaseControlEffects tick phase with per-tick essence drain (oldest-first payment), LIFO lapse ordering, hex/location threshold checks, mutation queueing, income crediting, owner validation (fail-soft). Extended computeEssenceGeneration and computeEssenceIncome for control effect income. ControlEffect type, ControlSpec, SustainThreshold, HexMutationSpec types. 3 trace types, 19 tests.
+
+- TB-042 Layer Revelation System: ✅ Complete (2026-03-26) — NarrativeLayer type (land/soul/people/ruins) with per-hex revelation state. Gate 7 in getTargetActionSlots filters unrevealed layer templates. Create actions bypass revelation gate. revelationResolver maps Find action success to layer reveals. Auto-reveal land on fog lift. 27 tests.
+
 - TB-040 Integration Sweep: ✅ Complete (2026-03-26) — Wire TB-035 engine to UI. Encounter notifications surfaced via useEncounterNotifications hook → ToastStack, enrichProse() wired into Return/ripple prose (NarrativeContext enrichment with fail-soft), attention mode toggle in RetinuePanel (courtPosition/attentionMode/threadEdgeId on RetinueAgent), Journey debug tab in DebugPanel (pending vignettes + encounter notifications).
 
 - HexMapV2 Medium-Term Improvements: ✅ Complete (2026-03-25) — TB-016. Three items: (1) extracted useAgentAnimations, useFogCulling, useZoomLayerVisibility hooks from God component (1256→1033 lines), (2) signifier InstancedMesh with texture atlas + custom GLSL shaders (~4K→~20 draw calls), per-instance UV rect + fog alpha attributes, (3) single sprite per agent with material swap on zoom change (67% agent draw call reduction). 25 signifier tests, 32 agent sprite tests, 16 animation tests.
