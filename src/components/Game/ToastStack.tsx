@@ -42,7 +42,9 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent }: ToastStackProps
                 borderBottom: '1px solid var(--border-subtle)',
               }}
               onClick={() => {
-                if (isAgentLinked) {
+                if (toast.onClick) {
+                  toast.onClick();
+                } else if (isAgentLinked) {
                   onSelectAgent!(toast.actorId!);
                 }
                 onDismiss(toast.id);

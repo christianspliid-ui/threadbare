@@ -1,11 +1,12 @@
 /**
- * useEncounterNotifications — TB-040
+ * useEncounterNotifications — TB-040 / TB-055
  *
  * Converts gameState.encounterNotifications into ToastItems for the ToastStack.
  * Marks notifications as viewed after processing, and clears resolved ones.
+ * Toast clicks open the TieredEncounterModal via the onOpenEncounter callback.
  */
 
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useCallback } from 'react';
 import type { ToastItem } from '../../../types/notification';
 import type { EncounterNotification } from '../../../types/encounterVisibility';
 import type { GameState } from '../../../types/gameState';
@@ -14,6 +15,8 @@ import { TOAST_DURATION_MS } from '../../../types/notification';
 interface UseEncounterNotificationsParams {
   encounterNotifications: EncounterNotification[] | undefined;
   setGameState: React.Dispatch<React.SetStateAction<GameState>>;
+  /** Called when a toast is clicked — opens the encounter modal for this notification */
+  onOpenEncounter?: (notification: EncounterNotification) => void;
 }
 
 /**
@@ -23,9 +26,15 @@ interface UseEncounterNotificationsParams {
 export function useEncounterNotifications({
   encounterNotifications,
   setGameState,
+  onOpenEncounter,
 }: UseEncounterNotificationsParams): ToastItem[] {
   const seenIdsRef = useRef<Set<string>>(new Set());
   const toastMapRef = useRef<Map<string, ToastItem>>(new Map());
+
+  // Stable callback that captures the notification by ID
+  const makeOnClick = useCallback((notif: EncounterNotification) => {
+    return () => onOpenEncounter?.(notif);
+  }, [onOpenEncounter]);
 
   return useMemo(() => {
     const notifications = encounterNotifications ?? [];
@@ -55,6 +64,7 @@ export function useEncounterNotifications({
         createdTick: notif.createdTick,
         expiresAt: now + TOAST_DURATION_MS * 2, // Encounter toasts last longer
         actorId: notif.agentId,
+        onClick: onOpenEncounter ? makeOnClick(notif) : undefined,
       });
     }
 
@@ -69,5 +79,5 @@ export function useEncounterNotifications({
     }
 
     return Array.from(toastMapRef.current.values());
-  }, [encounterNotifications, setGameState]);
+  }, [encounterNotifications, setGameState, onOpenEncounter, makeOnClick]);
 }

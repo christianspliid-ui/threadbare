@@ -33,6 +33,8 @@ export interface ToastItem {
   expiresAt: number;
   /** Agent ID — if set, clicking the toast selects this agent on the map */
   actorId?: string;
+  /** Custom click handler — if set, overrides default agent-select behavior */
+  onClick?: () => void;
 }
 
 export interface AlertItem {

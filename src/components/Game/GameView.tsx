@@ -56,7 +56,7 @@ import { AlertBar } from './AlertBar';
 import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
-import { EncounterVignetteModal } from './EncounterVignetteModal';
+import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
 import { MeetingEncounterModal } from './MeetingEncounterModal';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
@@ -287,10 +287,40 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     visibilityMap: effectiveVisibilityMap,
   });
 
-  // ── Encounter notification surfacing (TB-040) ──
+  // ── Tiered encounter modal (TB-055) ──
+  const [tieredEncounterState, setTieredEncounterState] = useState<{
+    notification: EncounterNotification;
+    progress: EncounterProgress;
+    template: EncounterTemplate;
+    agentId: string;
+    agentName: string;
+    threadTier: ReturnType<typeof courtPositionToThreadTier>;
+  } | null>(null);
+
+  // ── Encounter notification surfacing (TB-040 / TB-055) ──
+  /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
+  const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification) => {
+    const progress = gameState.encounterProgress.find(
+      p => p.actorId === notif.agentId && p.encounterId === notif.encounterId && p.status === 'active',
+    );
+    if (!progress) return;
+    const template = getAnyEncounterById(notif.encounterId);
+    if (!template) return;
+    const threadTier = courtPositionToThreadTier(notif.courtPosition);
+    setTieredEncounterState({
+      notification: notif,
+      progress,
+      template,
+      agentId: notif.agentId,
+      agentName: notif.agentName,
+      threadTier,
+    });
+  }, [gameState.encounterProgress]);
+
   const encounterToasts = useEncounterNotifications({
     encounterNotifications: gameState.encounterNotifications,
     setGameState,
+    onOpenEncounter: handleOpenEncounterFromNotification,
   });
 
   // ── Keyboard hotkeys ──
@@ -497,14 +527,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleLocationClick(locationId);
   }, [handleLocationClick]);
 
-  // ── Encounter vignette modal ──
-  const [vignetteEncounter, setVignetteEncounter] = useState<{
-    progress: EncounterProgress;
-    template: EncounterTemplate;
-    agentId: string;
-    agentName: string;
-  } | null>(null);
-
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {
@@ -515,18 +537,121 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     return map;
   }, [gameState.encounterProgress]);
 
+  /** Open the tiered encounter modal from RetinuePanel or EncounterLog click */
   const handleEncounterClick = useCallback((
     agentId: string,
     progress: EncounterProgress,
     template: EncounterTemplate,
   ) => {
-    const agentName = gameState.graph.getNode(agentId)?.name ?? 'Unknown';
-    setVignetteEncounter({ progress, template, agentId, agentName });
-  }, [gameState.graph]);
+    // Look up the notification for this encounter to get court position + choices
+    const notif = (gameState.encounterNotifications ?? []).find(
+      n => n.agentId === agentId && n.encounterId === progress.encounterId && !n.resolved,
+    );
+    // Build a synthetic notification if none exists (e.g., for non-threaded agents)
+    const notification: EncounterNotification = notif ?? {
+      id: `synthetic-${agentId}-${progress.encounterId}`,
+      agentId,
+      agentName: gameState.graph.getNode(agentId)?.name ?? 'Unknown',
+      courtPosition: null,
+      encounterId: progress.encounterId,
+      encounterName: template.name,
+      prose: template.steps[progress.currentEncounterIndex]?.narrative ?? '',
+      choices: [],
+      createdTick: progress.startedTick,
+      autoResolveTick: null,
+      viewed: true,
+      resolved: false,
+    };
+    const threadTier = courtPositionToThreadTier(notification.courtPosition);
+    setTieredEncounterState({
+      notification,
+      progress,
+      template,
+      agentId,
+      agentName: notification.agentName,
+      threadTier,
+    });
+  }, [gameState.graph, gameState.encounterNotifications]);
 
-  const handleVignetteClose = useCallback(() => {
-    setVignetteEncounter(null);
+  const handleEncounterClose = useCallback(() => {
+    setTieredEncounterState(null);
   }, []);
+
+  /** Intervention handler — player chose an intervention for the current encounter step */
+  const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {
+    if (!tieredEncounterState) return;
+    const { notification, agentId } = tieredEncounterState;
+    const choice = notification.choices.find(c => c.id === choiceId);
+    if (!choice) return;
+
+    // Deduct essence from primary sphere
+    if (essenceSpent > 0) {
+      setGameState(prev => {
+        const newPool = { ...prev.essencePool };
+        newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - essenceSpent);
+        return { ...prev, essencePool: newPool };
+      });
+    }
+
+    // Mark notification as resolved
+    setGameState(prev => ({
+      ...prev,
+      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+        n.id === notification.id ? { ...n, resolved: true } : n,
+      ),
+    }));
+
+    // Emit trace
+    console.debug('[TieredEncounterModal] Intervention:', {
+      agentId,
+      encounterId: notification.encounterId,
+      choiceId,
+      essenceSpent,
+      interventionType: choice.interventionType,
+      probabilityBoost: choice.probabilityBoost,
+    });
+  }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
+
+  /** Boost handler — Watched tier essence boost */
+  const handleEncounterBoost = useCallback((essenceSpent: number) => {
+    if (!tieredEncounterState || essenceSpent <= 0) return;
+
+    setGameState(prev => {
+      const newPool = { ...prev.essencePool };
+      newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - essenceSpent);
+      return { ...prev, essencePool: newPool };
+    });
+
+    // Mark notification as resolved
+    setGameState(prev => ({
+      ...prev,
+      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+        n.id === tieredEncounterState.notification.id ? { ...n, resolved: true } : n,
+      ),
+    }));
+  }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
+
+  /** Peek handler — Watched tier peek gate (costs 1 essence) */
+  const handleEncounterPeek = useCallback(() => {
+    setGameState(prev => {
+      const newPool = { ...prev.essencePool };
+      newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - 1);
+      return { ...prev, essencePool: newPool };
+    });
+  }, [setGameState, archetype.sphereAlignment.primary]);
+
+  // Auto-interrupt for Strongly Threaded encounters (the_first)
+  useEffect(() => {
+    const notifications = gameState.encounterNotifications ?? [];
+    for (const notif of notifications) {
+      if (notif.viewed || notif.resolved) continue;
+      if (notif.courtPosition !== 'the_first') continue;
+      // Auto-open and pause
+      handleOpenEncounterFromNotification(notif);
+      if (running) setRunning(false);
+      break; // Only one auto-interrupt at a time
+    }
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, running, setRunning]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
@@ -1039,18 +1164,23 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         )}
       </AnimateMount>
 
-      {/* Encounter vignette modal */}
-      {vignetteEncounter && (
-        <EncounterVignetteModal
+      {/* Tiered encounter modal (TB-055) */}
+      {tieredEncounterState && (
+        <TieredEncounterModal
           open={true}
-          onClose={handleVignetteClose}
-          progress={vignetteEncounter.progress}
-          template={vignetteEncounter.template}
-          agentName={vignetteEncounter.agentName}
-          agentId={vignetteEncounter.agentId}
+          onClose={handleEncounterClose}
+          notification={tieredEncounterState.notification}
+          progress={tieredEncounterState.progress}
+          template={tieredEncounterState.template}
+          agentName={tieredEncounterState.agentName}
+          agentId={tieredEncounterState.agentId}
           graph={gameState.graph}
-          ascendantSphere={archetype.sphereAlignment.primary}
-          seed={gameState.seed}
+          threadTier={tieredEncounterState.threadTier}
+          essence={SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0)}
+          tick={gameState.tick}
+          onIntervene={handleEncounterIntervene}
+          onBoost={handleEncounterBoost}
+          onPeek={handleEncounterPeek}
         />
       )}
 
