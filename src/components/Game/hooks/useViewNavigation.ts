@@ -6,6 +6,23 @@ import { moveAvatarToHex } from '../../../engine/avatarMove';
 import type { ScryState } from '../../../types/scry';
 import { visKey } from '../../../types/visibility';
 
+/**
+ * View level state machine:
+ *
+ *   world  ──(hex click)──▶  hex-zoom  ──(location click)──▶  location
+ *     ▲                         ▲                                │
+ *     └──(back to world)────────┴──────(back to hex)─────────────┘
+ *
+ * **Direct jump:** The retinue panel eye icon calls handleLocationClick from
+ * 'world' view, skipping 'hex-zoom'. handleLocationClick MUST derive and set
+ * focusedHex from the location node — otherwise LocationView's guard
+ * (viewLevel === 'location' && focusedHex) fails and nothing renders.
+ *
+ * State invariants:
+ * - 'hex-zoom' and 'location' require focusedHex to be set
+ * - 'location' additionally requires focusedLocationId to be set
+ * - 'world' clears both focusedHex and focusedLocationId
+ */
 export type ViewLevel = 'world' | 'hex-zoom' | 'location';
 
 interface UseViewNavigationParams {
