@@ -273,7 +273,7 @@ Deep research into what kinds of origin-story dilemmas resonate across mythology
 
 ---
 
-## 📋 TB-039 · Increase Max Zoom from 15 to 20
+## ✅ TB-039 · Increase Max Zoom from 15 to 20 (completed 2026-03-26)
 
 Raise `MAX_ZOOM` from 15 → 20 (~600px/hex apparent) to allow deeper close-up inspection of hexes.
 
