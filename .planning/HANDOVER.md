@@ -21,9 +21,9 @@
 - Created TB-040 in BACKLOG.md — integration sweep to wire all disconnected TB-035 modules
 
 **Action for Claude Code:**
-- [ ] Commit all changes: `CLAUDE.md`, `Docs/plans/wiring-checklist.md`, `.planning/BACKLOG.md`, `.planning/HANDOVER.md`
-- [ ] When implementing TB-040, use `Docs/plans/wiring-checklist.md` as the verification guide
-- [ ] For all future implementations, follow the new wiring verification step in Definition of Done
+- [x] Commit all changes: `CLAUDE.md`, `Docs/plans/wiring-checklist.md`, `.planning/BACKLOG.md`, `.planning/HANDOVER.md` ✅
+- [x] When implementing TB-040, use `Docs/plans/wiring-checklist.md` as the verification guide ✅
+- [x] For all future implementations, follow the new wiring verification step in Definition of Done ✅
 
 **Files changed:** `CLAUDE.md`, `Docs/plans/wiring-checklist.md` (new), `.planning/BACKLOG.md`, `.planning/HANDOVER.md`
 

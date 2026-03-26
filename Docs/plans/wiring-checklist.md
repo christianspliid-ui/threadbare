@@ -78,13 +78,13 @@ Every player-facing modal or overlay must appear in the GameView JSX return bloc
 | `ActionDrawer` (×2) | Agent & non-agent intervention |
 | `DebugPanel` | Debug trace sidebar |
 
-**Known disconnected (TB-040):**
+**All modals connected (TB-040, 2026-03-26):**
 
-| Component | Status | Issue |
-|-----------|--------|-------|
-| `MeetingEncounterModal` | Imported, state managed, NOT rendered | Needs JSX element |
-| `JourneyVignetteModal` | Imported, state managed, NOT rendered | Needs JSX element |
-| `EncounterVignetteModal` | Imported, NOT rendered | Needs JSX element |
+| Component | Status |
+|-----------|--------|
+| `MeetingEncounterModal` | ✅ Rendered in JSX (TB-035 Phase 1) |
+| `JourneyVignetteModal` | ✅ Rendered in JSX (TB-035 Phase 2) |
+| `EncounterVignetteModal` | ✅ Rendered in JSX (TB-035 Phase 4) |
 
 **Verification:** For each modal/overlay in your feature, confirm `<ComponentName` appears in the JSX return block of GameView (not just in the imports).
 
@@ -98,7 +98,7 @@ Engine phases write to GameState fields. UI components must read them. An engine
 |----------------|----------------|-------------------|--------|
 | `recentEvents` | Multiple phases | `NarrativeLog` | ✅ Connected |
 | `pendingVignettes` | `phaseJourneyBeat` | `JourneyVignetteModal` (state logic) | ⚠️ State managed but modal not rendered |
-| `encounterNotifications` | `phaseEncounterVisibility` | — | ❌ No consumer |
+| `encounterNotifications` | `phaseEncounterVisibility` | `useEncounterNotifications` → `ToastStack` | ✅ Connected (TB-040) |
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |
 
@@ -110,13 +110,13 @@ Every system should emit traces for inspectability (NFP #2). A trace category th
 
 **Current trace categories (31):** action_selection, narrative_generation, context_harvest, dilemma_resolution, tick_summary, encounter_resolution, familiarity_change, intervention_effect, action_execution, modifier_resolution, prosperity_tick, wealth_delta, trade_route_volume_change, trade_route_dissolved, settlement_tier_change, target_action_filter, hex_state, unrest_tick, saturation_tick, economic_chronicle, encounter_awareness, faction_awareness, encounter_cache, encounter_filter, encounter_scoring, movement, idle_decision, road_hex_transition, agent_reroute, return_resolution, ripple_consequence
 
-**Known unemitted (TB-040):** `return_resolution`, `ripple_consequence` — defined but never pushed to trace buffer.
+**All categories emitted (TB-040, 2026-03-26).** `return_resolution` and `ripple_consequence` emitted from `returnEngine.ts`.
 
 **Verification:** For each trace category your feature defines, `grep 'category: "your_category"' src/engine/` must have at least one non-test hit.
 
 ### 5. DebugPanel Tabs (`src/components/Game/DebugPanel.tsx`)
 
-Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `webgl`
+Current ViewMode values: `feed`, `agent-follow`, `tick-inspector`, `social`, `encounters`, `journey`, `webgl`
 
 Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, `WebGLDebugTab`
 
@@ -126,7 +126,7 @@ Sub-components: `DecisionBreakdown`, `RelationshipGraph`, `EncounterCacheView`, 
 
 Any system that displays narrative text to the player should call `enrichProse()` with a `NarrativeContext` before rendering. Without enrichment, prose templates display raw placeholders.
 
-**Current callers:** None (disconnected as of 2026-03-26).
+**Current callers:** `returnEngine.ts` (Return prose + ripple consequence prose, TB-040).
 
 **Should be called by:** MeetingEncounterModal, JourneyVignetteModal, EncounterVignetteModal, any future vignette/prose display component.
 
@@ -142,8 +142,8 @@ Engine capabilities that are player-toggleable need UI controls. An engine funct
 | Organic shore toggle | DebugPanel checkbox | ✅ |
 | Bond overlay | DebugPanel checkbox | ✅ |
 | Decision vector overlay | DebugPanel checkbox | ✅ |
-| Attention mode toggle | `toggleAttentionMode()` in encounterVisibility.ts | ❌ No UI control |
-| Meet The First action | `handleStartMeeting()` in GameView | ⚠️ Handler exists, trigger exists in LocationView, but modal not rendered |
+| Attention mode toggle | `toggleAttentionMode()` in encounterVisibility.ts | ✅ RetinuePanel per-agent toggle (TB-040) |
+| Meet The First action | `handleStartMeeting()` in GameView | ✅ Rendered in JSX (TB-035 Phase 1) |
 
 **Verification:** For each player-facing toggle or action in your feature, name the UI element that triggers it.
 

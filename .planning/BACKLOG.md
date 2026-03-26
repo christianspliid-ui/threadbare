@@ -291,7 +291,7 @@ Raise `MAX_ZOOM` from 15 → 20 (~600px/hex apparent) to allow deeper close-up i
 
 ---
 
-## 📋 TB-040 · TB-035 Integration Sweep — Wire Engine to UI
+## ✅ TB-040 · TB-035 Integration Sweep — Wire Engine to UI (completed 2026-03-26)
 
 TB-035 engine modules are implemented and tested but multiple subsystems are not connected to the player-facing game. This ticket wires everything up so the features are actually playable.
 
