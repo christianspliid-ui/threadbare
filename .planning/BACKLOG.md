@@ -250,7 +250,7 @@ The god's relationship system and hero's journey arc. 9 interconnected subsystem
 
 ---
 
-## 📐▶ TB-036 · Hex Actions Expansion & Control Mechanic
+## ✅ TB-036 · Hex Actions Expansion & Control Mechanic (2026-03-26)
 
 Expand from 5 hex action templates to 43 across all 4 narrative layers (Land, Soul, People, Ruins) using 5 action verbs (Create, Find, Change, Destroy, Control). The Control verb is a new sustained-commitment mechanic — ongoing effects with per-tick costs, economic constraints, and LIFO lapse ordering. No artificial slot caps — you can hold whatever you can afford.
 
@@ -311,7 +311,7 @@ Extend `UnifiedActionTemplate` with `durationMode: 'instant' | 'sustained'` and 
 
 ---
 
-## 📐▶ TB-045 · Control Effect Contestation & Persistent Encounter Nodes
+## ✅ TB-045 · Control Effect Contestation (completed 2026-03-26)
 
 Persistent encounter nodes for active control effects. Implement `filterByPrerequisites()` in encounter pipeline (currently no-op). Usurp (transfer ownership, inherit investment) and destroy resolution paths. Difficulty scales with effect age.
 
@@ -322,7 +322,7 @@ Persistent encounter nodes for active control effects. Implement `filterByPrereq
 
 ---
 
-## 📐▶ TB-046 · One-Shot Templates: Land & Soul Layers
+## ✅ TB-046 · One-Shot Templates: Land & Soul Layers (completed 2026-03-26)
 
 Author ~13 one-shot templates for Land and Soul layers (Create/Find/Change/Destroy verbs). Wire Find actions to set layer revelation flags. Land: Raise Landmark, Dowse for Resources, Sense the Leylines, Shift Season, Scorch Earth, Rend the Earth. Soul: Attune Leyline, Forge Seer's Token, Read the Currents, Shift Dominion, Amplify the Flow, Sever the Flow, Dispel the Wild.
 
@@ -333,7 +333,7 @@ Author ~13 one-shot templates for Land and Soul layers (Create/Find/Change/Destr
 
 ---
 
-## 📐▶ TB-047 · One-Shot Templates: People & Ruins Layers
+## ✅ TB-047 · One-Shot Templates: People & Ruins Layers (completed 2026-03-26)
 
 Author ~20 one-shot templates for People and Ruins. Includes artifact creation via GraphOp (Forge Seer's Token, Forge Divine Instrument), ambition assignment (Plant a Dream), agent spawning (Send a Herald). Ruins actions reflect "god doesn't enter personally" principle — most work through agents.
 
@@ -344,7 +344,7 @@ Author ~20 one-shot templates for People and Ruins. Includes artifact creation v
 
 ---
 
-## 📐▶ TB-048 · Control Templates: All 4 Layers
+## ✅ TB-048 · Control Templates: All 4 Layers (completed 2026-03-26)
 
 Author ~15 Control verb templates across all layers with full `ControlSpec` (sustain conditions, per-tick costs, income, contestation prerequisites). Includes thread-tier cost scaling (cheaper at high tier, 15% discount/tier). Land: Claim Dominion, Cultivate, Claim Resource. Soul: Anchor the Sphere, Tap the Source, Attune Thread, Channel the Current. People: Shepherd the Flock, Install a Champion, Strengthen Thread, Impose Decree. Ruins: Bind the Echoes, Compel Exploration, Seal the Tomb, Ward Against the Deep.
 
@@ -355,7 +355,7 @@ Author ~15 Control verb templates across all layers with full `ControlSpec` (sus
 
 ---
 
-## 📐▶ TB-049 · Hex Control Panel UI & Active Effects Display
+## ✅ TB-049 · Hex Control Panel UI & Active Effects Display (completed 2026-03-26)
 
 UI for active control effects on hexes (section in HexChronicle or dedicated panel). Shows effect name, owner, per-tick cost, sustain status, ticks active, contestability. "Release" button for voluntary lapse. Extend EssencePanel with control effect drain/income breakdown. DebugPanel tabs for Control Effects and Revelation state.
 
