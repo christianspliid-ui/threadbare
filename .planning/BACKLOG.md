@@ -8,7 +8,27 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-051**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-055**.
+
+---
+
+## 📐 TB-054 · Avatar Portrait & Hex Map Visibility (2026-03-26)
+
+Player's avatar is invisible on HexMapV2 — renders as indistinguishable faction dot. Three fixes: (1) generate 8 sphere-specific avatar portraits via mcp-image, (2) extend AgentRenderData with `isAvatar` + `avatarSphereColor`, (3) add pulsing sphere ring + scale boost in AgentSpriteMesh. Design: `Docs/plans/2026-03-26-avatar-portrait-and-hex-visibility-design.md`.
+
+## ✅ TB-053 · Encounter Log Exporter — Debug Tool for Tuning (2026-03-26)
+
+Per-tick, per-agent encounter lifecycle log exported from the debug panel as TSV. Shows decisions, movement, encounter tests, and outcomes in a format readable by humans and AI. Separate timeline accumulator (not trace buffer) to avoid ring-buffer eviction. Agent dropdown + export button in encounters debug tab.
+
+**Plan:** `Docs/plans/2026-03-26-encounter-log-exporter-design.md`
+
+---
+
+## 📐 TB-052 · Encounter Reward Wiring — Items from Encounters (2026-03-26)
+
+Reward pool engine and attachment types exist but nothing connects them to the live game. Zero encounters define rewards, orchestrator doesn't call pool assembly, no artifact instantiation, no UI. Design wires all four gaps: template-clone instantiation, orchestrator integration, artifact catalog expansion (~50 items), content pass on ~30 encounters, event message enrichment.
+
+**Plan:** `Docs/plans/2026-03-26-encounter-reward-wiring-design.md`
 
 ---
 
@@ -222,6 +242,30 @@ Several of these may already be done — verify before starting.
 
 - **TB-024** · Content authoring UI (CMS at `?view=cms` exists but read-only)
 - **TB-025** · Constants tuning panel with live editing
+
+---
+
+## 💡 TB-051 · Monster Encounters — Design Pass
+
+Hostile creature encounters in the world. Monsters as graph entities with territorial behavior, threat levels, and encounter templates. Needs full design covering: monster archetypes and taxonomy (beasts, undead, elemental, corrupted), spawn rules (terrain-gated, sphere-influenced, ruin-adjacent), encounter resolution (agent capability checks vs monster threat tier), player intervention options during monster encounters, loot/consequence tables, and how monsters interact with existing systems (control effects, hex state, agent decision-making, social fabric).
+
+**Existing infrastructure to leverage:**
+- **Province roles already computed:** Every hex is classified as `capital` / `heartland` / `borderland` during worldgen Pass 01 (`provinceRoles` in `WorldGenContext`, types in `worldgen/types.ts`, assignment in `pass01-provinces.ts`). Proportional: bottom 15% capital, next 40% heartland, remaining ~45% borderland. Currently unused by any downstream system — monster encounters could be the first consumer.
+- **Culture settlement distinction:** `cultureId` null = wilderness province (unclaimed), non-null = settled. Gives a second danger axis on top of province roles.
+- **Political region types in world-model.json:** `region.wilderness`, `region.contested-zone`, `region.tribal-lands` etc. — narrative region flavors that could map to monster density or type pools.
+- **Natural danger gradient:** capital (safe) → heartland (occasional threats) → borderland (frequent) → wilderness/unclaimed (dominant). This is ready-made infrastructure, not something that needs to be built from scratch.
+
+**Key design questions:**
+- Are monsters persistent graph nodes or transient encounter events?
+- Do monsters have territory (hex presence) or roam via movement system?
+- How do monsters interact with the layer revelation system (e.g., ruins monsters only after ruins layer revealed)?
+- Can the player create/summon monsters via hex actions, or only encounter them?
+- How does monster threat scale with world age / tick count?
+- Relationship to the Nine Reaches — do monsters have domain capabilities, or a simpler threat model?
+- How to wire province roles into GameState so the danger gradient is available at runtime (currently only in WorldGenContext)?
+
+**Depends on:** Encounter system (✅), Layer Revelation (TB-042 ✅), Hex Actions (TB-036 ✅)
+**Needs design:** Yes — full design pass required
 
 ---
 
