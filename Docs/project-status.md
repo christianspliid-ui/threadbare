@@ -6,11 +6,10 @@
 **TB-036 Hex Actions Expansion & Control Mechanic** — Design complete, implementation in progress (TB-041 through TB-049).
 
 **Recent completions:**
-- ✅ TB-041: ControlEffect runtime & tick phase (2026-03-26) — phaseControlEffects with per-tick drain/income/threshold/LIFO lapse, wired into orchestrator after phaseEssence. 19 tests.
-- ✅ TB-042: Layer revelation system (2026-03-26) — Gate 7 in targetActions, revelation resolver, auto-reveal land on fog lift, hexRevelation on GameState. 27 tests.
-- ✅ Portrait stretch fix (2026-03-26) — Cover-crop agent portraits for correct proportions in circular clips
-- ✅ TB-040: Integration sweep (2026-03-26) — encounter notifications surfaced in UI, enrichProse wired into Return/ripple prose, attention mode toggle in RetinuePanel, Journey debug tab
-- ✅ TB-039: Max zoom 15→20 (2026-03-26)
+- ✅ TB-044: Control template extension & durationMode (2026-03-26) — spawnControlEffect bridges sustained actions to ControlEffect runtime, WheelSlot durationMode/perTickCostLabel, ActionCard sustained badge. 12 tests.
+- ✅ TB-043: Hidden site discovery (2026-03-26) — Hidden site seeding in sublocations, resolveHiddenSiteReveals, hexActionBridge graph integration, ViewLevel filtering.
+- ✅ TB-041: ControlEffect runtime & tick phase (2026-03-26)
+- ✅ TB-042: Layer revelation system (2026-03-26)
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
