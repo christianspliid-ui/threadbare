@@ -21,10 +21,10 @@ describe('Stealth + Mandate integration', () => {
     graph.addNode({ id: 'actor_rival', type: 'actor', name: 'The Iron Judge', properties: { actorType: 'ascendant' } });
     graph.addNode({ id: 'loc_north', type: 'location', name: 'Northern Reach', properties: { locationType: 'region' } });
 
-    // 4 worshippers at various tiers
+    // 4 threaded agents at various tiers
     for (let i = 1; i <= 4; i++) {
       graph.addNode({ id: `actor_agent_${i}`, type: 'actor', name: `Agent ${i}`, properties: { actorType: 'individual' } });
-      graph.addEdge({ id: `edge_worship_${i}`, source: `actor_agent_${i}`, target: 'actor_asc', type: 'worships', properties: { tier: i <= 2 ? 2 : 3 } });
+      graph.addEdge({ id: `edge_thread_${i}`, source: 'actor_asc', target: `actor_agent_${i}`, type: 'thread', properties: { tier: i <= 2 ? 2 : 3 } });
       graph.addEdge({ id: `edge_loc_${i}`, source: `actor_agent_${i}`, target: 'loc_north', type: 'located_at', properties: {} });
     }
 
@@ -59,29 +59,29 @@ describe('Stealth + Mandate integration', () => {
       stages: [
         {
           stage: 'setup',
-          description: 'Recruit worshippers',
+          description: 'Recruit threaded agents',
           conditions: [{
-            type: 'node_count',
-            description: '2+ worshippers',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 1, minCount: 2 },
+            type: 'actor_tier',
+            description: '2+ threaded agents',
+            params: { minTier: 1, minCount: 2 },
           }],
         },
         {
           stage: 'escalation',
           description: 'Elevate champions',
           conditions: [{
-            type: 'node_count',
+            type: 'actor_tier',
             description: '2+ champions (tier 3)',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 3, minCount: 2 },
+            params: { minTier: 3, minCount: 2 },
           }],
         },
         {
           stage: 'culmination',
           description: 'Dominate the region',
           conditions: [{
-            type: 'node_count',
-            description: '4+ worshippers',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 2, minCount: 4 },
+            type: 'actor_tier',
+            description: '4+ threaded agents',
+            params: { minTier: 2, minCount: 4 },
           }],
         },
       ],
@@ -90,7 +90,7 @@ describe('Stealth + Mandate integration', () => {
     // Start at setup
     let state = createMandateState('mandate_cult', 0);
 
-    // Evaluate setup: 4 worshippers at tier 2+ → meets "2+ worshippers" condition
+    // Evaluate setup: 4 threaded agents at tier 2+ → meets "2+ threaded agents" condition
     state = evaluateMandate(graph, mandate, state, 'actor_asc', 10);
     expect(state.progress).toBe(1.0);
 
@@ -106,7 +106,7 @@ describe('Stealth + Mandate integration', () => {
     state = advanceMandateStage(state, 20);
     expect(state.currentStage).toBe('culmination');
 
-    // Evaluate culmination: 4 worshippers at tier 2+ → meets "4+ worshippers" condition
+    // Evaluate culmination: 4 threaded agents at tier 2+ → meets "4+ threaded agents" condition
     state = evaluateMandate(graph, mandate, state, 'actor_asc', 30);
     expect(state.progress).toBe(1.0);
 

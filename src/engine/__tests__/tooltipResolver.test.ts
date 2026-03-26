@@ -340,13 +340,13 @@ describe('resolveTooltip', () => {
             }
             return null;
           },
-          getOutgoingEdges: (agentId: string, edgeType: string) => {
-            if (agentId === 'known-id' && edgeType === 'worships') {
-              return [{ target: 'my-god', properties: { tier: 1 } }] as any;
+          getIncomingEdges: (agentId: string, edgeType: string) => {
+            if (agentId === 'known-id' && edgeType === 'thread') {
+              return [{ source: 'my-god', properties: { tier: 1 } }] as any;
             }
             return [];
           },
-          getIncomingEdges: () => [],
+          getOutgoingEdges: () => [],
         } as any,
         familiarityMap: new Map([['known-id', 0.35]]),
         ascendantId: 'my-god',

@@ -72,9 +72,9 @@ function buildTestWorld(): WorldGraph {
   // Location
   graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
 
-  // Worship edges (retinue membership)
-  graph.addEdge({ id: 'w.k', source: 'agent.kael', target: 'asc', type: 'worships', properties: { tier: 2 } });
-  graph.addEdge({ id: 'w.m', source: 'agent.mara', target: 'asc', type: 'worships', properties: { tier: 1 } });
+  // Thread edges (retinue membership)
+  graph.addEdge({ id: 'w.k', source: 'asc', target: 'agent.kael', type: 'thread', properties: { tier: 2 } });
+  graph.addEdge({ id: 'w.m', source: 'asc', target: 'agent.mara', type: 'thread', properties: { tier: 1 } });
 
   // Relationship edge between them
   graph.addEdge({

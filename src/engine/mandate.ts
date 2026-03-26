@@ -52,17 +52,19 @@ export function evaluateCondition(
         minCount: number;
       };
 
-      // Find all edges of the specified type pointing to the target
+      // Find all edges of the specified type connected to the target (both directions)
       const targetNode = graph.getNode(edgeTarget as string);
       if (!targetNode) return false;
 
-      const incomingEdges = graph.getIncomingEdges(edgeTarget as string)
-        .filter(e => e.type === edgeType);
+      const connectedEdges = [
+        ...graph.getIncomingEdges(edgeTarget as string),
+        ...graph.getOutgoingEdges(edgeTarget as string),
+      ].filter(e => e.type === edgeType);
 
       // Filter by tier if specified
       const qualifying = minTier != null
-        ? incomingEdges.filter(e => (e.properties.tier as number) >= minTier)
-        : incomingEdges;
+        ? connectedEdges.filter(e => (e.properties.tier as number) >= minTier)
+        : connectedEdges;
 
       return qualifying.length >= (minCount as number);
     }
@@ -81,9 +83,9 @@ export function evaluateCondition(
         minTier: number;
         minCount: number;
       };
-      const worshipEdges = graph.getIncomingEdges(ascendantId)
-        .filter(e => e.type === 'worships' && (e.properties.tier as number) >= minTier);
-      return worshipEdges.length >= minCount;
+      const threadEdges = graph.getOutgoingEdges(ascendantId)
+        .filter(e => e.type === 'thread' && (e.properties.tier as number) >= minTier);
+      return threadEdges.length >= minCount;
     }
 
     case 'sphere_weight': {

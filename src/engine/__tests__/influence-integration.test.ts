@@ -79,12 +79,12 @@ describe('Ascendant Lifecycle Integration', () => {
     const canRecruit = spendEssence(pool, alignment.primary, RECRUIT_COST);
     expect(canRecruit).toBe(true);
 
-    // Establish worships edge at tier 1
+    // Establish thread edge at tier 1
     graph.addEdge({
-      id: 'edge.worship.warrior',
-      source: 'actor.warrior',
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread.warrior',
+      source: ascendantId,
+      target: 'actor.warrior',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -99,10 +99,10 @@ describe('Ascendant Lifecycle Integration', () => {
     // ── Process maintenance for 30 ticks (enough to promote to tier 2) ──
     for (let tick = 11; tick <= 40; tick++) {
       // Generate essence multiple times per tick to ensure the primary sphere
-      // accumulates enough for tier-1 maintenance (0.5/tick). With 1 worshipper,
+      // accumulates enough for tier-1 maintenance (0.5/tick). With 1 threaded agent,
       // total generation is 1.1/tick, but the primary sphere only gets 35% = 0.385,
       // which is below the 0.5 maintenance cost. In a real game, places of power
-      // or more worshippers would cover this gap.
+      // or more threaded agents would cover this gap.
       for (let i = 0; i < 5; i++) {
         const gen = computeEssenceGeneration(graph, ascendantId);
         generateEssence(pool, gen, computeMaxEssence(graph, ascendantId));

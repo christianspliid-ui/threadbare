@@ -142,15 +142,15 @@ describe('computeSphereAlignmentBonus', () => {
     expect(result).toBe(0);
   });
 
-  it('resolves sphere from worships edge to ascendant', () => {
+  it('resolves sphere from thread edge to ascendant', () => {
     const graph = makeGraph();
     addAgent(graph, 'a1'); // no direct sphere
     addAscendant(graph, 'asc1', 'mind');
     graph.addEdge({
       id: edgeId(),
-      source: 'a1',
-      target: 'asc1',
-      type: 'worships',
+      source: 'asc1',
+      target: 'a1',
+      type: 'thread',
       properties: {},
     });
 

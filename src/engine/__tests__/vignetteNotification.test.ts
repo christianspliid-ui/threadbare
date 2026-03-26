@@ -24,10 +24,10 @@ function makeGraph(): WorldGraph {
 
 function bondAgent(graph: WorldGraph, agentId: string): void {
   graph.addEdge({
-    id: `edge.${agentId}.worships`,
-    source: agentId,
-    target: 'ascendant.1',
-    type: 'worships',
+    id: `edge.${agentId}.thread`,
+    source: 'ascendant.1',
+    target: agentId,
+    type: 'thread',
     properties: { tier: 2, ticksAtCurrentTier: 5, establishedTick: 0, totalEssenceSpent: 10, maintenanceCurrent: true, readBackstoryTier: 0 },
   });
 }

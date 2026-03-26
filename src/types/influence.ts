@@ -33,11 +33,25 @@ export type InfluenceTier = 0 | 1 | 2 | 3 | 4;
 
 // ─── Influence Relationship Properties ───────────────────────────────
 
+/** Court position within the divine court spectrum. */
+export type CourtPosition = 'the_first' | 'retinue' | 'watched';
+
+/** Campbellian journey phase for The First's hero arc. */
+export type CampbellianPhase = 'call' | 'road_of_trials' | 'crisis' | 'ordeal' | 'return';
+
 /**
- * Properties stored on 'worships' edges between actor → ascendant.
- * Tracks the influence relationship state.
+ * Properties stored on 'thread' edges (ascendant → mortal).
+ * The god reaches down; the mortal is the subject.
+ *
+ * Migrated from InfluenceRelationshipProperties (worships edge).
+ * Direction flipped: was mortal→god, now god→mortal.
  */
-export interface InfluenceRelationshipProperties {
+export interface ThreadEdgeProperties {
+  // ── Court position (Phase 1+) ───────────────────────────────
+  /** Position in the divine court. null = thread exists but no named position. */
+  courtPosition?: CourtPosition | null;
+
+  // ── Investment depth (carried from InfluenceRelationshipProperties) ──
   tier: InfluenceTier;
   /** Ticks of continuous maintained influence at current tier. */
   ticksAtCurrentTier: number;
@@ -47,9 +61,33 @@ export interface InfluenceRelationshipProperties {
   totalEssenceSpent: number;
   /** Whether maintenance was paid this tick. */
   maintenanceCurrent: boolean;
-  /** How many backstory tiers the player has read for this worshipper. Default 0. */
+
+  // ── Mortal's experience of the thread ───────────────────────
+  /** How the mortal perceives the divine connection. */
+  awareness?: 'unaware' | 'intuition' | 'faith' | 'communion';
+  /** How many backstory tiers the player has read. Default 0. */
   readBackstoryTier: 0 | 1 | 2 | 3 | 4;
+
+  // ── Attention mode (Phase 4+) ──────────────────────────────
+  /** Determines vignette behavior: 'pause' = auto-interrupt, 'auto_resolve' = background. */
+  attentionMode?: 'pause' | 'auto_resolve';
+
+  // ── Journey state (Phase 2+, only for The First) ───────────
+  /** Current Campbellian journey phase. */
+  storyPhase?: CampbellianPhase;
+  /** Ordeal beat outcome (Phase 3+). */
+  ordealOutcome?: string;
+  /** Record of choices made during the meeting encounter (Phase 1+). */
+  meetingChoiceRecord?: Record<string, unknown>;
+  /** History of journey beat outcomes (Phase 2+). */
+  beatHistory?: Array<Record<string, unknown>>;
+
+  // ── Intervention tracking (Phase 4+) ──────────────────────
+  interventionTracking?: Record<string, unknown>;
 }
+
+/** @deprecated Use ThreadEdgeProperties instead. Alias for backward compatibility. */
+export type InfluenceRelationshipProperties = ThreadEdgeProperties;
 
 // ─── Ascendant ───────────────────────────────────────────────────────
 
@@ -120,9 +158,11 @@ export interface AscendantCreationConfig {
 // Re-export content data for backward compatibility
 export {
   BASE_ESSENCE_PER_TICK,
+  ESSENCE_PER_THREAD,
   ESSENCE_PER_WORSHIPPER,
   ESSENCE_PER_PLACE_OF_POWER,
   BASE_MAX_ESSENCE,
+  MAX_ESSENCE_PER_THREAD,
   MAX_ESSENCE_PER_WORSHIPPER,
   TIER_NAMES,
   TIER_MAINTENANCE,

@@ -141,17 +141,17 @@ function buildGraphWithTrait(): { graph: WorldGraph; agentId: string } {
   return { graph, agentId };
 }
 
-function buildGraphWithWorships(
+function buildGraphWithThread(
   totalEssenceSpent = 30,
   ticksAtCurrentTier = 50,
 ): { graph: WorldGraph; agentId: string } {
   const { graph, agentId } = buildBaseGraph();
   graph.addNode(makeAscendant());
   graph.addEdge({
-    id: 'edge_worships',
-    source: 'agent_0',
-    target: 'asc_0',
-    type: 'worships',
+    id: 'edge_thread',
+    source: 'asc_0',
+    target: 'agent_0',
+    type: 'thread',
     properties: {
       tier: 2,
       totalEssenceSpent,
@@ -595,7 +595,7 @@ describe('hiddenMotiveResolver', () => {
 
 describe('storyArcResolver', () => {
   it('returns BackstoryLayer with stratum 4, priority 100, category tension', () => {
-    const { graph, agentId } = buildGraphWithWorships();
+    const { graph, agentId } = buildGraphWithThread();
     const layers = storyArcResolver(agentId, graph, 42);
 
     expect(layers.length).toBeGreaterThan(0);
@@ -608,7 +608,7 @@ describe('storyArcResolver', () => {
   });
 
   it('replaces {name} and {arc_phase} placeholders', () => {
-    const { graph, agentId } = buildGraphWithWorships();
+    const { graph, agentId } = buildGraphWithThread();
     const layers = storyArcResolver(agentId, graph, 42);
     expect(layers[0].text).not.toContain('{name}');
     expect(layers[0].text).not.toContain('{arc_phase}');
@@ -626,13 +626,13 @@ describe('storyArcResolver', () => {
   });
 
   it('is deterministic', () => {
-    const { graph, agentId } = buildGraphWithWorships();
+    const { graph, agentId } = buildGraphWithThread();
     const a = storyArcResolver(agentId, graph, 4);
     const b = storyArcResolver(agentId, graph, 4);
     expect(a[0].text).toBe(b[0].text);
   });
 
-  it('works without a worships edge (falls back to default arc phase)', () => {
+  it('works without a thread edge (falls back to default arc phase)', () => {
     const { graph, agentId } = buildBaseGraph();
     const layers = storyArcResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
@@ -643,7 +643,7 @@ describe('storyArcResolver', () => {
 
 describe('divineTransformationResolver', () => {
   it('returns BackstoryLayer with stratum 4, priority 80, category character', () => {
-    const { graph, agentId } = buildGraphWithWorships(30);
+    const { graph, agentId } = buildGraphWithThread(30);
     const layers = divineTransformationResolver(agentId, graph, 42);
 
     expect(layers.length).toBeGreaterThan(0);
@@ -656,37 +656,37 @@ describe('divineTransformationResolver', () => {
   });
 
   it('replaces {name} and {ascendant_sphere} placeholders', () => {
-    const { graph, agentId } = buildGraphWithWorships(30);
+    const { graph, agentId } = buildGraphWithThread(30);
     const layers = divineTransformationResolver(agentId, graph, 42);
     expect(layers[0].text).not.toContain('{name}');
     expect(layers[0].text).not.toContain('{ascendant_sphere}');
   });
 
   it('selects "low" bracket when totalEssenceSpent < 20', () => {
-    const { graph, agentId } = buildGraphWithWorships(10);
+    const { graph, agentId } = buildGraphWithThread(10);
     const layers = divineTransformationResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
   });
 
   it('selects "medium" bracket when totalEssenceSpent is 20-49', () => {
-    const { graph, agentId } = buildGraphWithWorships(35);
+    const { graph, agentId } = buildGraphWithThread(35);
     const layers = divineTransformationResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
   });
 
   it('selects "high" bracket when totalEssenceSpent is 50-99', () => {
-    const { graph, agentId } = buildGraphWithWorships(75);
+    const { graph, agentId } = buildGraphWithThread(75);
     const layers = divineTransformationResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
   });
 
   it('selects "massive" bracket when totalEssenceSpent >= 100', () => {
-    const { graph, agentId } = buildGraphWithWorships(150);
+    const { graph, agentId } = buildGraphWithThread(150);
     const layers = divineTransformationResolver(agentId, graph, 42);
     expect(layers.length).toBeGreaterThan(0);
   });
 
-  it('returns [] when no worships edge exists', () => {
+  it('returns [] when no thread edge exists', () => {
     const { graph, agentId } = buildBaseGraph();
     expect(divineTransformationResolver(agentId, graph, 42)).toEqual([]);
   });
@@ -697,7 +697,7 @@ describe('divineTransformationResolver', () => {
   });
 
   it('is deterministic', () => {
-    const { graph, agentId } = buildGraphWithWorships(30);
+    const { graph, agentId } = buildGraphWithThread(30);
     const a = divineTransformationResolver(agentId, graph, 9);
     const b = divineTransformationResolver(agentId, graph, 9);
     expect(a[0].text).toBe(b[0].text);

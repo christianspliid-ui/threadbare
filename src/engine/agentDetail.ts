@@ -219,11 +219,11 @@ export function getAgentDetail(
 
   const props = agentNode.properties as Record<string, unknown>;
 
-  const worshipsEdges = graph.getOutgoingEdges(agentId, 'worships');
-  const worshipEdge = worshipsEdges.find(e => e.target === ascendantId);
-  if (!worshipEdge) return null;
+  const threadEdges = graph.getIncomingEdges(agentId, 'thread');
+  const threadEdge = threadEdges.find(e => e.source === ascendantId);
+  if (!threadEdge) return null;
 
-  const tier = (worshipEdge.properties as Record<string, unknown>).tier as InfluenceTier;
+  const tier = (threadEdge.properties as Record<string, unknown>).tier as InfluenceTier;
   const profile = (props.axiologicalProfile as AxiologicalProfile) || {} as AxiologicalProfile;
   const domainCapabilities = (props.domainCapabilities as Record<ReachDomain, number>) || {} as Record<ReachDomain, number>;
   // Resolve location via located_at edge (authoritative), fallback to legacy property
@@ -408,7 +408,7 @@ function getAgentIntents(graph: WorldGraph, agentId: string): ActiveIntent[] {
 
 /**
  * Get info card data for an agent, filtered by knowledge level.
- * Returns null if agent not found or has no worships edge to ascendant.
+ * Returns null if agent not found or has no thread edge from ascendant.
  */
 export function getAgentInfoCard(
   graph: WorldGraph,
@@ -456,10 +456,10 @@ export function getAgentInfoCard(
   if (knowledgeLevel !== 'stranger') {
     card.influenceTier = detail.tier;
     if (detail.tier >= 1) {
-      // Read readBackstoryTier from the worships edge
-      const worshipsEdges = graph.getOutgoingEdges(agentId, 'worships');
-      const worshipEdge = worshipsEdges.find(e => e.target === ascendantId);
-      const readBackstoryTier = ((worshipEdge?.properties as Record<string, unknown>)?.readBackstoryTier as number) ?? 0;
+      // Read readBackstoryTier from the thread edge
+      const threadEdges = graph.getIncomingEdges(agentId, 'thread');
+      const threadEdge = threadEdges.find(e => e.source === ascendantId);
+      const readBackstoryTier = ((threadEdge?.properties as Record<string, unknown>)?.readBackstoryTier as number) ?? 0;
       card.backstory = generateTieredBackstory(agentId, graph, seed, detail.tier, readBackstoryTier as 0 | 1 | 2 | 3 | 4);
     }
   }

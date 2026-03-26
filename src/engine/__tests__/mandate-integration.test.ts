@@ -40,7 +40,7 @@ describe('mandate integration — full lifecycle', () => {
     // Add 2 agents at tier 2
     for (let i = 1; i <= 2; i++) {
       graph.addNode({ id: `agent.${i}`, type: 'actor', name: `Agent ${i}`, properties: { actorType: 'individual' } });
-      graph.addEdge({ id: `wor.${i}`, source: `agent.${i}`, target: 'asc', type: 'worships', properties: { tier: 2 } });
+      graph.addEdge({ id: `wor.${i}`, source: 'asc', target: `agent.${i}`, type: 'thread', properties: { tier: 2 } });
     }
 
     state = evaluateMandate(graph, mandate, state, 'asc', 10);
@@ -54,7 +54,7 @@ describe('mandate integration — full lifecycle', () => {
     graph.getEdge('wor.1')!.properties.tier = 3;
     graph.getEdge('wor.2')!.properties.tier = 3;
     graph.addNode({ id: 'agent.3', type: 'actor', name: 'Agent 3', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'wor.3', source: 'agent.3', target: 'asc', type: 'worships', properties: { tier: 3 } });
+    graph.addEdge({ id: 'wor.3', source: 'asc', target: 'agent.3', type: 'thread', properties: { tier: 3 } });
 
     state = evaluateMandate(graph, mandate, state, 'asc', 20);
     expect(state.progress).toBe(1.0);
@@ -65,9 +65,9 @@ describe('mandate integration — full lifecycle', () => {
 
     // Culmination needs 5 at tier 3+ — add 2 more
     graph.addNode({ id: 'agent.4', type: 'actor', name: 'Agent 4', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'wor.4', source: 'agent.4', target: 'asc', type: 'worships', properties: { tier: 3 } });
+    graph.addEdge({ id: 'wor.4', source: 'asc', target: 'agent.4', type: 'thread', properties: { tier: 3 } });
     graph.addNode({ id: 'agent.5', type: 'actor', name: 'Agent 5', properties: { actorType: 'individual' } });
-    graph.addEdge({ id: 'wor.5', source: 'agent.5', target: 'asc', type: 'worships', properties: { tier: 3 } });
+    graph.addEdge({ id: 'wor.5', source: 'asc', target: 'agent.5', type: 'thread', properties: { tier: 3 } });
 
     state = evaluateMandate(graph, mandate, state, 'asc', 30);
     expect(state.progress).toBe(1.0);

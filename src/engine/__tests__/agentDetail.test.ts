@@ -43,7 +43,7 @@ describe('getAgentDetail', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 2 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 2 } });
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc');
     expect(detail).not.toBeNull();
@@ -67,7 +67,7 @@ describe('getAgentDetail', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.topValues).toHaveLength(3);
@@ -82,7 +82,7 @@ describe('getAgentDetail', () => {
       properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
     for (let i = 2; i <= 7; i++) {
       graph.addNode({ id: `agent.${i}`, type: 'actor', name: `Agent ${i}`, properties: { actorType: 'individual' } });
       graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i}`, type: 'relates_to', properties: { sentiment: (i % 2 === 0) ? 0.5 : -0.3, strength: 0.4 + i * 0.05, basis: 'friendship' } });
@@ -99,7 +99,7 @@ describe('getAgentDetail', () => {
       properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.archetype).toBeNull();
   });
@@ -113,7 +113,7 @@ describe('getAgentDetail', () => {
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
     graph.addNode({ id: 'fac.1', type: 'actor', name: 'Iron Brotherhood', properties: { actorType: 'faction' } });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 3 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 3 } });
     graph.addEdge({ id: 'm.1', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: { role: 'member' } });
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.factionName).toBe('Iron Brotherhood');
@@ -134,7 +134,7 @@ describe('getAgentDetail', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.cooperationStrategy).toBe('tit-for-tat');
@@ -149,7 +149,7 @@ describe('getAgentDetail', () => {
       properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.cooperationStrategy).toBeNull();
@@ -173,7 +173,7 @@ describe('getAgentDetail', () => {
     graph.addNode({ id: 'agent.2', type: 'actor', name: 'Mara', properties: { actorType: 'individual' } });
     graph.addNode({ id: 'agent.3', type: 'actor', name: 'Zorn', properties: { actorType: 'individual' } });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 2 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 2 } });
 
     const log1: InteractionRecord[] = [
       { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },
@@ -204,7 +204,7 @@ describe('getAgentDetail', () => {
       properties: { actorType: 'individual', axiologicalProfile: makeProfile(), domainCapabilities: makeDomainCaps(), locationId: 'loc.1' },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Here', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const detail = getAgentDetail(graph, 'agent.1', 'asc')!;
     expect(detail.recentInteractions).toHaveLength(0);
@@ -227,7 +227,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'stranger');
     expect(card).not.toBeNull();
@@ -257,7 +257,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
     graph.addNode({ id: 'fac.1', type: 'actor', name: 'Iron Brotherhood', properties: { actorType: 'faction' } });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
     graph.addEdge({ id: 'm.1', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: { role: 'member' } });
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'recognised');
@@ -289,7 +289,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       graph.addNode({ id: `agent.${i + 1}`, type: 'actor', name: `Agent ${i + 1}`, properties: { actorType: 'individual' } });
       graph.addEdge({ id: `rel.${i}`, source: 'agent.1', target: `agent.${i + 1}`, type: 'relates_to', properties: { sentiment: 0.5, strength: 0.7 - i * 0.1, basis: 'friendship' } });
     }
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'known');
     expect(card).not.toBeNull();
@@ -320,7 +320,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     graph.addNode({ id: 'trait.1', type: 'trait', name: 'Resilient', properties: {} });
     graph.addNode({ id: 'trait.2', type: 'trait', name: 'Protective', properties: {} });
     graph.addNode({ id: 'culture.1', type: 'actor', name: 'The Ironborn', properties: { actorType: 'culture' } });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
     graph.addEdge({ id: 'ht.1', source: 'agent.1', target: 'trait.1', type: 'has_trait', properties: {} });
     graph.addEdge({ id: 'ht.2', source: 'agent.1', target: 'trait.2', type: 'has_trait', properties: {} });
     graph.addEdge({ id: 'bt.1', source: 'agent.1', target: 'culture.1', type: 'belongs_to', properties: { culturalStrength: 0.8 } });
@@ -353,7 +353,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'transparent');
     expect(card).not.toBeNull();
@@ -375,7 +375,7 @@ describe('getAgentFullProfile (familiarity-gated)', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const profile = getAgentFullProfile(graph, 'agent.1', 'asc', 'stranger');
     expect(profile).toBeUndefined();
@@ -396,7 +396,7 @@ describe('getAgentFullProfile (familiarity-gated)', () => {
       },
     });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const profile = getAgentFullProfile(graph, 'agent.1', 'asc', 'intimate');
     expect(profile).not.toBeUndefined();
@@ -423,7 +423,7 @@ describe('getAgentFullProfile (familiarity-gated)', () => {
     });
     graph.addNode({ id: 'agent.2', type: 'actor', name: 'Mara', properties: { actorType: 'individual' } });
     graph.addNode({ id: 'loc.1', type: 'location', name: 'Ashvale', properties: {} });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 1 } });
 
     const log: InteractionRecord[] = [
       { tick: 10, actorMove: 'cooperate', targetMove: 'cooperate', context: 'trade', stakes: 'low' },

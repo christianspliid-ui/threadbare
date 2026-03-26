@@ -175,17 +175,38 @@ export function getAgentAmbitions(
 
 // ─── Cosmology / Divine ──────────────────────────────────────────
 
-/** Get the god/ascendant an agent worships */
-export function getAgentWorships(graph: WorldGraph, agentId: string): GraphNode | undefined {
-  const edges = graph.getOutgoingEdges(agentId, 'worships');
-  return edges.length > 0 ? graph.getNode(edges[0].target) : undefined;
+/** Get the thread edge from an ascendant to this agent (if any) */
+export function getThreadTo(graph: WorldGraph, agentId: string): GraphEdge | undefined {
+  const edges = graph.getIncomingEdges(agentId, 'thread');
+  return edges.length > 0 ? edges[0] : undefined;
 }
 
-/** Get all worshippers of a god/ascendant */
-export function getWorshippers(graph: WorldGraph, deityId: string): GraphNode[] {
-  return graph.getIncomingEdges(deityId, 'worships')
-    .map(e => graph.getNode(e.source))
+/** Get the ascendant that has a thread to this agent */
+export function getThreadAscendant(graph: WorldGraph, agentId: string): GraphNode | undefined {
+  const edge = getThreadTo(graph, agentId);
+  return edge ? graph.getNode(edge.source) : undefined;
+}
+
+/** Get all thread edges from an ascendant to their mortals */
+export function getThreadsFrom(graph: WorldGraph, ascendantId: string): GraphEdge[] {
+  return graph.getOutgoingEdges(ascendantId, 'thread');
+}
+
+/** Get all threaded mortal nodes for an ascendant */
+export function getThreadedAgents(graph: WorldGraph, ascendantId: string): GraphNode[] {
+  return graph.getOutgoingEdges(ascendantId, 'thread')
+    .map(e => graph.getNode(e.target))
     .filter((n): n is GraphNode => n != null);
+}
+
+/** @deprecated Use getThreadAscendant instead */
+export function getAgentWorships(graph: WorldGraph, agentId: string): GraphNode | undefined {
+  return getThreadAscendant(graph, agentId);
+}
+
+/** @deprecated Use getThreadedAgents instead */
+export function getWorshippers(graph: WorldGraph, deityId: string): GraphNode[] {
+  return getThreadedAgents(graph, deityId);
 }
 
 /** Get all avatars of an ascendant */

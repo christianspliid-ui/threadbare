@@ -129,14 +129,14 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Actor/location belongs to a culture. Edge properties: culturalStrength, cultureLayer.',
   },
-  worships: {
-    type: 'worships',
+  thread: {
+    type: 'thread',
     sourceNodeType: 'actor',
     targetNodeType: 'actor',
     direction: 'directed',
-    cardinality: 'many-to-one',
+    cardinality: 'one-to-many',
     requiredProperties: [],
-    description: 'Actor worships a god or ascendant.',
+    description: 'Divine thread from ascendant to mortal. Source = ascendant/god, target = mortal agent. The god reaches down.',
   },
 
   // ── Enchantment (RESERVED — not yet implemented) ───────────

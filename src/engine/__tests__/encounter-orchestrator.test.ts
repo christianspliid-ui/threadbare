@@ -143,9 +143,9 @@ describe('phaseEncounterProgressionV2 — retinue notifications', () => {
 
   function makeRetinueAgent(state: GameState, actorId: string) {
     state.graph.addEdge({
-      source: actorId,
-      target: state.ascendantId,
-      type: 'worships',
+      source: state.ascendantId,
+      target: actorId,
+      type: 'thread',
       properties: { tier: 1 },
     });
   }

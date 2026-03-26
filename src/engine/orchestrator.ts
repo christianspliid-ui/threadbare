@@ -255,9 +255,9 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     const encounter = getAnyEncounterById(progress.encounterId);
     const encounterName = encounter?.name ?? 'an encounter';
 
-    // Check if actor is in the player's retinue (worships the ascendant)
-    const isRetinue = state.graph.getOutgoingEdges(progress.actorId, 'worships')
-      .some(e => e.target === state.ascendantId);
+    // Check if actor is in the player's retinue (has thread from ascendant)
+    const isRetinue = state.graph.getIncomingEdges(progress.actorId, 'thread')
+      .some(e => e.source === state.ascendantId);
 
     if (progress.status === 'completed') {
       const details = summarizeOutcome(result.outcome, true);
