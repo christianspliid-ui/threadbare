@@ -859,6 +859,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                       onAgentClick={handleAgentSelect}
                       graph={gameState.graph}
                       seed={gameState.seed}
+                      controlEffects={(gameState.controlEffects ?? []).filter(
+                        e => e.active && e.targetHexCol === focusedHex.col && e.targetHexRow === focusedHex.row
+                      )}
                     />
                   </div>
                 </div>
