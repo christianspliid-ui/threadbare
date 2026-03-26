@@ -81,9 +81,22 @@ export function useViewNavigation({
   }, []);
 
   const handleLocationClick = useCallback((locationId: string) => {
+    // Derive the hex coordinates from the location node so that
+    // focusedHex is always set — even when jumping directly from
+    // the world view (e.g. retinue eye icon) without going through hex-zoom first.
+    const node = gameState.graph.getNode(locationId);
+    if (node) {
+      const props = (node.properties ?? {}) as Record<string, unknown>;
+      const col = props.hexCol as number | undefined;
+      const row = props.hexRow as number | undefined;
+      if (col != null && row != null) {
+        setFocusedHex({ col, row });
+        setSelectedHex({ col, row });
+      }
+    }
     setViewLevel('location');
     setFocusedLocationId(locationId);
-  }, []);
+  }, [gameState.graph]);
 
   const handleCenterOnAvatar = useCallback(() => {
     if (avatarPixelPos && hexMapRef.current) {
