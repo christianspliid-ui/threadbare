@@ -266,25 +266,21 @@ Expand from 5 hex action templates to 43 across all 4 narrative layers (Land, So
 
 ---
 
-## 📐▶ TB-041 · ControlEffect Runtime & Tick Phase
+## ✅ TB-041 · ControlEffect Runtime & Tick Phase (completed 2026-03-26)
 
-New `ControlEffect` type on `GameState.controlEffects[]`. New `phaseControlEffects` tick phase running after `phaseEssence`. Implements: threshold checking, per-tick essence drain (oldest-first payment), LIFO lapse ordering, per-tick mutations/GraphOps application, income crediting for income-generating effects. Extend `computeEssenceGeneration()` to include control effect income.
+New `ControlEffect` type on `GameState.controlEffects[]`. New `phaseControlEffects` tick phase running after `phaseEssence`. Implements: threshold checking (hex + location), per-tick essence drain (oldest-first payment), LIFO lapse ordering, per-tick mutations/GraphOps application, income crediting for income-generating effects, owner validation (fail-soft). Extended `computeEssenceGeneration()` and `computeEssenceIncome()` to include control effect income. 3 trace types, 19 tests.
 
 **Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 1
 **Parent:** TB-036
-**Depends on:** None (foundational)
-**Needs design:** No
 
 ---
 
-## 📐▶ TB-042 · Layer Revelation System
+## ✅ TB-042 · Layer Revelation System (completed 2026-03-26)
 
-New `GameState.hexRevelation` map tracking per-hex, per-layer visibility (land/soul/people/ruins). Seventh filter gate in `getTargetActionSlots()` / `targetActions.ts`. Land auto-reveals with fog of war. Soul/People/Ruins require Find actions. Create actions bypass.
+NarrativeLayer type (land/soul/people/ruins) with per-hex revelation state on `GameState.hexRevelation`. Gate 7 in `getTargetActionSlots()` filters templates by revealed layers. Create actions bypass revelation gate. revelationResolver maps Find action success to layer reveals. Auto-reveal land layer when fog of war lifts. 27 tests.
 
 **Design doc:** `Docs/plans/2026-03-26-hex-actions-expansion-and-control-mechanic-design.md` → System 3
 **Parent:** TB-036
-**Depends on:** None (foundational)
-**Needs design:** No
 
 ---
 
