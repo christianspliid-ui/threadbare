@@ -129,10 +129,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} crosses the abyss with {adj} determination, claiming the artifact that rests in shadow below.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#ancient', '#underground'],
+          },
         },
         onFailure: {
           narrative: 'The abyss {verb} and {actor} is cast back, {adj} and broken, to the light above.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#ancient', '#underground'],
+          },
         },
       },
     ],
@@ -192,10 +200,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} transforms base material into legend, and the master nods in {adj} approval.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
         onFailure: {
           narrative: 'The forge rejects {actor}\'s touch. The metal {verb}s away, and mastery recedes.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
       },
     ],
@@ -254,10 +268,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} touches infinity and returns {adj}, forever changed, carrying the weight of eternity.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#spirit', '#mystic'],
+          },
         },
         onFailure: {
           narrative: 'The vision overwhelms {actor}. They stumble back into flesh and breath, {adj} and diminished.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#spirit', '#mystic'],
+          },
         },
       },
     ],
@@ -316,10 +338,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} refuses the gambit with {adj} rhetoric, earning the market\'s respect for integrity.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: '{actor} accepts the deal. The cargo is seized, and scandal blackens their name.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -378,10 +406,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} becomes shadow itself, {adj} and deadly, claiming {their} prize and leaving no trace.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
         onFailure: {
           narrative: 'The stronghold erupts. {actor} flees {adj} and wounded, the job left incomplete.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
       },
     ],
@@ -440,10 +476,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} achieves a {adj} insight that reshapes the academy\'s understanding of reality itself.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s synthesis collapses into {adj} contradiction. The academy rejects the work.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+          },
         },
       },
     ],
@@ -502,10 +544,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} stands victorious over the {adj} warlord, the fortress now {their} own, {adj} and glorious.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor} is cast down. The warlord {verb}s and they are cast into chains, {adj} and defeated.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -565,10 +613,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} stands {adj} at the end, having pulled the city back from the brink through {adj} devotion.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor} falls to the plague {they} were fighting. {Their} sacrifice is remembered, but unfulfilled.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -691,10 +745,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} steps through the {adj} door, transformed and {adj}, bearing the stars\' blessing.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#celestial', '#mystic'],
+          },
         },
         onFailure: {
           narrative: '{actor} falters in the liminal space. The door closes, and {they} return {adj} but incomplete.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
+            tagFilters: ['#celestial', '#mystic'],
+          },
         },
       },
     ],
@@ -757,10 +819,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} outbids {their} rival with a {adj} flourish. The merchant {verb}s the goods to {actor} with {adj} respect.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
         onFailure: {
           narrative: '{actor} is outmaneuvered. The rival claims the goods, and {actor} leaves the market {adj} and empty-handed.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
       },
     ],
@@ -820,10 +888,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} races through the crumbling stone, the relic {adj} in {their} grasp, and emerges triumphant.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
         onFailure: {
           narrative: 'The relic slips from {actor}\'s hands into the chasm. {They} emerge from the ruins {adj}, {their} prize lost.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
       },
     ],
@@ -882,10 +956,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} discovers and secures the {adj} surplus, blessing the settlement and {their} own wealth.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#nature', '#survival'],
+          },
         },
         onFailure: {
           narrative: '{actor} finds the surplus but cannot carry it. Rival claimants arrive, and the prize is {adj} lost.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#nature', '#survival'],
+          },
         },
       },
     ],
@@ -944,10 +1026,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} accepts the spell\'s power with {adj} grace. The binding completes, and {they} emerge {adj} transformed.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
         onFailure: {
           narrative: 'The magic {verb}s against {actor}\'s will. The binding fails, and {they} collapse {adj} and broken.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
       },
     ],
@@ -1007,10 +1095,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} stands {adj} with the trophy in {their} grip, all challengers cowed by {their} {adj} aura.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
         onFailure: {
           narrative: 'The trophy\'s power {verb}s from {actor}\'s grasp. It is lost to the chaos, and {actor} emerges {adj} and diminished.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
       },
     ],
@@ -1069,10 +1163,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} accepts the {adj} price with {adj} courage. The blessing flows through {them}, transforming {their} fate.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
         onFailure: {
           narrative: '{actor} cannot pay the price. The blessing {verb}s away, and {they} are left {adj} and cursed.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+          },
         },
       },
     ],
@@ -1131,10 +1231,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the material safely to market, claiming a {adj} fortune for {their} prize.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#nature', '#survival'],
+          },
         },
         onFailure: {
           narrative: 'Thieves or disaster strike. {actor} arrives with {adj} material or none at all, {their} profit {adj}.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#nature', '#survival'],
+          },
         },
       },
     ],
@@ -1193,10 +1301,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the tome\'s resistance and {verb}s free with the {adj} prize, knowledge itself now {their}s.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#ancient', '#arcane'],
+          },
         },
         onFailure: {
           narrative: 'The tome\'s curse {verb}s at {actor}. {They} flee with {adj} wounds, the tome lost to the darkness.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#ancient', '#arcane'],
+          },
         },
       },
     ],
@@ -1258,10 +1374,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} bottles a {adj} potion, {adj} and alive with power, a masterwork of the brewer\'s art.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane', '#nature'],
+          },
         },
         onFailure: {
           narrative: 'The potion {verb}s during distillation. {actor} is left with only {adj} residue.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane', '#nature'],
+          },
         },
       },
     ],
@@ -1320,10 +1444,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s ritual {verb}s and the ward {verb}s {adj} and eternal, protection secured.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane'],
+          },
         },
         onFailure: {
           narrative: 'The activation {verb}s the ward\'s structure. {actor}\'s work {verb}s into {adj} ruin.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane'],
+          },
         },
       },
     ],
@@ -1382,10 +1514,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s voice {verb}s through the crowd. The saga becomes {adj} legend, and the people {verb} in tears.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s performance is {adj}. The crowd grows {adj} and silent, the saga forgotten.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
       },
     ],
@@ -1444,10 +1582,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s oath {verb}s and the talisman becomes {adj} and alive, ready to serve.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane', '#mystic'],
+          },
         },
         onFailure: {
           narrative: 'The binding {verb}s. The spirit flees, and {actor} is left with an {adj} husk.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#arcane', '#mystic'],
+          },
         },
       },
     ],
@@ -1506,10 +1652,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s dedication {verb}s true. The monument becomes {adj} legend, standing against time itself.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s dedication falls {adj}. The monument {verb}s under its own weight, incomplete.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+          },
         },
       },
     ],
@@ -1946,10 +2098,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the tavern keeper\'s anger with {adj} words. {They} pay for damages and leave {adj} and respected.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor} cannot appease the keeper. {They} are thrown out, banned from the tavern {adj} and ashamed.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -2008,10 +2166,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s final spell {verb}s {adj} and unstoppable. The mage {verb}s defeated, acknowledging {actor}\'s {adj} mastery.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+            tagFilters: ['#arcane'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s final spell {verb}s away. The mage\'s counterattack {verb}s true, and {actor} {verb}s defeated.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+            tagFilters: ['#arcane'],
+          },
         },
       },
     ],
@@ -2070,10 +2236,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} raises {their} arms {adj} in victory. The crowd {verb}s in {adj} celebration—a legend is born.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} collapse {verb}s the crowd\'s cheers. {They} drag {actor} {adj} from the arena.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -2132,10 +2304,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} pursuit {verb}s the assassin {adj} to ground. {They} emerge {adj} and victorious.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s pursuit {verb}s into {adj} darkness. The assassin {verb}s away {adj}, escaping into {adj} night.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -2194,10 +2372,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} victory {verb}s the court\'s {adj} judgment. {They} are declared innocent and {adj} freed.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: 'The court {verb}s {actor}\'s {adj} victory as {adj}. {They} {verb} a {adj} sentence for {their} crimes.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -2256,10 +2440,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} skill {verb}s the noble {adj} down. {Their} honor is {adj} restored, and {the} court {verb}s in {adj} approval.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor} is {adj} defeated. {Their} honor {verb}s even {adj}, and {they} {verb} {adj} and {adj} shamed.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+          },
         },
       },
     ],
@@ -2321,10 +2511,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s fingers {verb} {adj} and {adj}. The prize is {their}s, and the mark {verb}s nothing.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s fingers slip. The mark feels {their} touch and {verb}s in anger.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
       },
     ],
@@ -2383,10 +2579,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the {adj} guards and {verb}s into the {adj} night with the prize {adj} in {their} hands.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s escape {verb}s. The prize is reclaimed, and {they} barely escape with {their} life.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
       },
     ],
@@ -2445,10 +2647,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} seizes the treasures and {verb}s from the grave {adj}, escaping {their} curses.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#ancient', '#underground'],
+          },
         },
         onFailure: {
           narrative: '{actor} is caught by the curse. {They} flee {adj} and cursed, the treasures left behind.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#ancient', '#underground'],
+          },
         },
       },
     ],
@@ -2507,10 +2717,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} completes the {adj} delivery with {adj} precision. The payment is {adj} received.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s delivery {verb}s into ambush. The buyer {verb}s or authorities {verb}, and {actor} flees {adj} empty.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
       },
     ],
@@ -2569,10 +2785,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the palace {adj} and {adj}, the secrets {adj} in {their} grasp.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#arcane', '#shadow'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s escape {verb}s. Guards {verb} {them} and {they} are {adj} captured, the secrets lost.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#arcane', '#shadow'],
+          },
         },
       },
     ],
@@ -2634,10 +2858,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} exchange {verb}s flawlessly. Both parties benefit, and a {adj} partnership {verb}s.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s exchange {verb}s into {adj} dispute. Goods are disputed, and {actor} loses {their} investment.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -2696,10 +2926,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s contract {verb}s {adj} and {adj}. The guild master {verb}s with {adj} respect.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s contract {verb}s into {adj} dispute. The guild master {verb}s the deal.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -2758,10 +2994,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s pact {verb}s {adj} and eternal. The smuggler and {actor} are now {adj} partners.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s pact {verb}s {adj}. The smuggler {verb}s {actor} and {verb}s into the night.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
       },
     ],
@@ -2820,10 +3064,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} commitment {verb}s {adj} and {adj}. The ruler {verb}s {their} blessing {adj}.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} commitment {verb}s {adj}. The ruler {verb}s {their} offer and {actor} {verb}s {adj} humiliated.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -2882,10 +3132,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} resourcefulness {verb}s {them} through. {They} emerge {adj} but {adj} alive.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#survival'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s supplies {verb} out. {They} {verb} the wilderness {adj} and {adj}, barely {verb}ing.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#survival'],
+          },
         },
       },
     ],
@@ -2944,10 +3202,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} blessings {verb} {them} {adj} and {adj}. {They} {verb} {adj} transformed.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#mystic', '#arcane'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} blessings {verb} {adj}. {They} {verb} {adj} and {adj} cursed instead.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+            tagFilters: ['#mystic', '#arcane'],
+          },
         },
       },
     ],
@@ -3009,10 +3275,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} efforts {verb} the refugees {adj}. {They} {verb} renewed, {adj} grateful.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s stores {verb} {adj}. The refugees {verb} hungrier, {adj} and desperate.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -3071,10 +3343,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} presence {verb}s the patients {adj} through. {They} {verb} alive, {adj} grateful.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} vigil {verb}s {adj}. The patients {verb} {adj} and lost.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -3133,10 +3411,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} valor {verb}s the militia {adj}. {They} {verb} the {adj} foe.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} efforts {verb} {adj}. The militia {verb} broken, {adj} defeated.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -3195,10 +3479,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} diligence {verb}s the knowledge {adj}. It {verb}s eternal, {adj} preserved.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} efforts {verb} {adj}. The knowledge {verb} lost to {adj} time.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -3257,10 +3547,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor}\'s {adj} efforts {verb} the guild {adj}. {They} {verb} {adj} and thriving.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s {adj} restoration {verb}s {adj}. The guild {verb} {adj} and lost.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -4137,10 +4433,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'Hands clasp. The deal is struck at {actor}\'s terms — not all of them, but enough. Both walk away {adj} richer for the sparring.',
           reputationDelta: 0.12,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: 'The merchant pulls back at the last. {actor} leaves the stall {adj}-handed, the deal dead in the dust.',
           reputationDelta: -0.06,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -4183,10 +4485,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s the right words at the right moment. A stranger becomes a contact; a contact becomes something more.',
           reputationDelta: 0.09,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: '{actor} {verb}s too {adj}ly and the connection {verb}s into awkward silence. The festival ends without its promise kept.',
           reputationDelta: -0.03,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -4248,10 +4556,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} reads the rock\'s {adj} warning and braces the shaft in time. The ore comes out, and everyone comes out with it.',
           reputationDelta: 0.14,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#underground', '#survival'],
+          },
         },
         onFailure: {
           narrative: 'The shaft {verb}s with terrible finality. {actor} escapes, but the ore is buried and {they} carry a {adj} injury for their boldness.',
           reputationDelta: -0.10,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#underground', '#survival'],
+          },
         },
       },
     ],
@@ -4342,10 +4658,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} bridges the {adj} gap with {adj} gold and a trader\'s instinct. The goods change hands at {adj} fair terms.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
         onFailure: {
           narrative: 'Something {verb}s in translation. {actor} overpays, or misses what the captain was actually offering. The goods are {adj}, but the price is worse.',
           reputationDelta: -0.05,
+          rewardPool: {
+            categoryWeights: { possession: 0.9, condition: 0.1 },
+          },
         },
       },
     ],
@@ -4405,10 +4727,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} drives them into the water with {adj} fury. The harbor will not be struck again this season.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+            tagFilters: ['#beast', '#survival'],
+          },
         },
         onFailure: {
           narrative: 'The {adj} second wave crashes over the defences. {actor} survives, but the raid leaves the harbor {adj} gutted.',
           reputationDelta: -0.12,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, possession: 0.4 },
+            tagFilters: ['#beast', '#survival'],
+          },
         },
       },
     ],
@@ -4453,10 +4783,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The agreement is struck. Both parties sign with {adj} purpose, and the debt is recorded as what it is: a {adj} obligation freely made.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s judgment {verb}s. The borrower signs, but the {adj} terms breed resentment before the ink is dry.',
           reputationDelta: -0.04,
+          rewardPool: {
+            categoryWeights: { blessing: 0.6, condition: 0.4 },
+          },
         },
       },
     ],
@@ -4547,10 +4883,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} completes the exchange with {adj} economy of movement. No names. No receipts. The goods are worth the {adj} risk.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
         onFailure: {
           narrative: 'Something {verb}s wrong. The goods are seized, or {actor} is marked as a buyer. The {adj} exposure will cost more than coin.',
           reputationDelta: -0.10,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+            tagFilters: ['#shadow', '#stealth'],
+          },
         },
       },
     ],
@@ -4593,10 +4937,16 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} {verb}s {adj}ly through the {adj} alleys and back into the light. No footprints. No witnesses.',
           reputationDelta: 0.07,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
         onFailure: {
           narrative: '{actor}\'s departure {verb}s. A constable {verb}s a {adj} glance; a neighbour {verb}s {their} face. The coin was earned — the attention was not.',
           reputationDelta: -0.06,
+          rewardPool: {
+            categoryWeights: { possession: 0.7, condition: 0.3 },
+          },
         },
       },
     ],

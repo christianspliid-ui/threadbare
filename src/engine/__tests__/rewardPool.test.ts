@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { assembleRewardPool, drawFromPool } from '../rewardPool';
 import { WorldGraph } from '../graph';
-import type { RewardPoolRecipe } from '../../types/attachments';
+import type { ResolvedRewardRecipe } from '../../types/attachments';
 
 describe('rewardPool', () => {
   let graph: WorldGraph;
@@ -65,7 +65,7 @@ describe('rewardPool', () => {
 
   describe('assembleRewardPool', () => {
     it('assembles pool from possession category matching tier 1', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -86,7 +86,7 @@ describe('rewardPool', () => {
     });
 
     it('filters by tags (#eye) with tier 1 = 1.0, tier 2 = 0 → empty', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         tagFilters: ['eye'],
@@ -100,7 +100,7 @@ describe('rewardPool', () => {
     });
 
     it('includes condition traits when recipe includes condition category', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { condition: 1.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -115,7 +115,7 @@ describe('rewardPool', () => {
     });
 
     it('returns empty when nothing matches (all tier weights = 0)', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0 },
         tierCurve: { 1: 0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -126,7 +126,7 @@ describe('rewardPool', () => {
     });
 
     it('applies correct category weight multiplier', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 2.0 },
         tierCurve: { 1: 0.5, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -142,7 +142,7 @@ describe('rewardPool', () => {
     });
 
     it('combines multiple categories with different weights', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0, condition: 2.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -160,7 +160,7 @@ describe('rewardPool', () => {
     });
 
     it('skips categories with zero or negative weight', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0, condition: 0, blessing: -1.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -284,7 +284,7 @@ describe('rewardPool', () => {
 
   describe('integration: assembleRewardPool + drawFromPool', () => {
     it('assembles a pool and draws from it deterministically', () => {
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0 },
         tierCurve: { 1: 1.0, 2: 0, 3: 0, 4: 0 },
         badOutcomeChance: 0,
@@ -317,7 +317,7 @@ describe('rewardPool', () => {
         },
       });
 
-      const recipe: RewardPoolRecipe = {
+      const recipe: ResolvedRewardRecipe = {
         categoryWeights: { possession: 1.0 },
         tierCurve: { 1: 10.0, 2: 5.0, 3: 1.0, 4: 0.5 },
         badOutcomeChance: 0,

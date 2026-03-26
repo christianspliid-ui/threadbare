@@ -125,10 +125,23 @@ export type AttachmentCategory =
   | 'possession' | 'condition' | 'blessing' | 'curse'
   | 'bestowed_power' | 'agreement';
 
+/**
+ * Template-level reward recipe — what encounter templates specify.
+ * Only declares category weights and optional filters.
+ * Tier curve and bad outcome chance are resolved at runtime from outcome quality.
+ */
 export interface RewardPoolRecipe {
   categoryWeights: Partial<Record<AttachmentCategory, number>>;
-  tierCurve: Record<AttachmentTier, number>;
   tagFilters?: string[];
   sphereTint?: string;
+}
+
+/**
+ * Fully resolved recipe — constructed at resolution time by combining
+ * a template RewardPoolRecipe with outcome-determined tier curve and bad outcome chance.
+ * This is what assembleRewardPool consumes.
+ */
+export interface ResolvedRewardRecipe extends RewardPoolRecipe {
+  tierCurve: Record<AttachmentTier, number>;
   badOutcomeChance: number;
 }

@@ -10,6 +10,11 @@
 
 import type { WorldGraph } from './graph';
 import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../data/starter-attachments';
+import {
+  REWARD_POSSESSIONS,
+  REWARD_CONDITIONS,
+  REWARD_BESTOWED_POWERS,
+} from '../data/reward-attachment-catalog';
 import type { TraitDefinitionProperties } from '../types/traits';
 
 export function seedAttachments(graph: WorldGraph): void {
@@ -18,6 +23,17 @@ export function seedAttachments(graph: WorldGraph): void {
     graph.addNode(node);
   }
   for (const node of STARTER_CONDITIONS) {
+    graph.addNode(node);
+  }
+
+  // ── Add reward catalog templates (unowned, used by reward pool) ──
+  for (const node of REWARD_POSSESSIONS) {
+    graph.addNode(node);
+  }
+  for (const node of REWARD_CONDITIONS) {
+    graph.addNode(node);
+  }
+  for (const node of REWARD_BESTOWED_POWERS) {
     graph.addNode(node);
   }
 
