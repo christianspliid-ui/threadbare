@@ -260,6 +260,178 @@ describe('getTargetActionSlots — range gate (filter 6)', () => {
   });
 });
 
+function hexTarget(overrides?: Partial<TargetContext>): TargetContext {
+  return {
+    nodeId: 'hex_3_5',
+    nodeType: 'location',
+    displayName: 'Hex (3,5)',
+    displayLabel: 'hex',
+    subtype: 'hex',
+    traitIds: [],
+    sphereAffinity: null,
+    position: { col: 3, row: 5 },
+    properties: {},
+    ...overrides,
+  };
+}
+
+describe('getTargetActionSlots — revelation gate (filter 7)', () => {
+  const REVEALED_HEX = { '3,5': { land: true, soul: true, people: true, ruins: true } };
+  const UNREVEALED_HEX = { '3,5': { land: false, soul: false, people: false, ruins: false } };
+  const LAND_ONLY_HEX = { '3,5': { land: true, soul: false, people: false, ruins: false } };
+
+  it('filters out non-Create templates when layer is not revealed', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.corrupt', name: 'Corrupt', targetCategories: ['hex'], crudType: 'delete', narrativeLayer: 'land' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('passes non-Create templates when layer IS revealed', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.corrupt', name: 'Corrupt', targetCategories: ['hex'], crudType: 'delete', narrativeLayer: 'land' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: REVEALED_HEX,
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].label).toBe('Corrupt');
+  });
+
+  it('Create actions bypass revelation gate even when layer is unrevealed', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.bless', name: 'Bless', targetCategories: ['hex'], crudType: 'create', narrativeLayer: 'land' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('bypassRevelationGate: true skips gate for non-Create templates', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.special', name: 'Special', targetCategories: ['hex'], crudType: 'update', narrativeLayer: 'soul', bypassRevelationGate: true }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('templates without narrativeLayer are not revelation-gated (backward compatible)', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.generic', name: 'Generic', targetCategories: ['hex'], crudType: 'update' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('missing hexRevelation map treats all layers as unrevealed (fail-soft)', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.corrupt', name: 'Corrupt', targetCategories: ['hex'], crudType: 'delete', narrativeLayer: 'land' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      // hexRevelation omitted
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('only gates the specific layer — soul unrevealed does not block land actions', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.corrupt', name: 'Corrupt Land', targetCategories: ['hex'], crudType: 'delete', narrativeLayer: 'land' }),
+      makeTemplate({ id: 'hex.soul_change', name: 'Change Soul', targetCategories: ['hex'], crudType: 'update', narrativeLayer: 'soul' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: LAND_ONLY_HEX,
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].label).toBe('Corrupt Land');
+  });
+
+  it('non-hex targets skip revelation gating (no position check)', () => {
+    const templates = [
+      makeTemplate({ id: 'loc.ward', name: 'Ward', targetCategories: ['location'], crudType: 'update', narrativeLayer: 'people' }),
+    ];
+    const slots = getTargetActionSlots({
+      target: locationTarget({ position: null }),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('Read actions (Find) are NOT filtered by revelation gate — they reveal layers', () => {
+    const templates = [
+      makeTemplate({ id: 'hex.survey', name: 'Survey', targetCategories: ['hex'], crudType: 'read', narrativeLayer: 'land' }),
+    ];
+    // Read actions are not 'create' but they are Find actions — they should NOT be gated
+    // because the design says only Change/Control/Destroy are gated.
+    // In our implementation: crudType 'read' != 'create', so it WOULD be gated.
+    // BUT: hex.survey's purpose is to reveal land — it should always be available.
+    // The design says "Create actions bypass" — but Read/Find actions also need to bypass
+    // since they're the mechanism for revealing. Let's verify our implementation handles this.
+    // Read actions with narrativeLayer that are Find actions should either:
+    // 1. Have bypassRevelationGate: true, OR
+    // 2. The gate should exempt 'read' crudType too
+    // Per design: "Change, Control, and Destroy only appear if layer is revealed"
+    // Read is explicitly NOT in that list — it should pass through.
+    const slots = getTargetActionSlots({
+      target: hexTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+      hexRevelation: UNREVEALED_HEX,
+    });
+    // Current implementation gates all non-create. Read should NOT be gated per design.
+    // This test will fail if read is gated — indicating we need to fix the gate.
+    expect(slots).toHaveLength(1);
+  });
+});
+
 describe('getTargetActionSlots — MAX_SLOTS cap', () => {
   it('returns at most MAX_SLOTS slots', () => {
     const templates = Array.from({ length: 30 }, (_, i) =>

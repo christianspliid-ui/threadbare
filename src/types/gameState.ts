@@ -17,6 +17,8 @@ import type { UnifiedAction } from './unifiedAction';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
+import type { ControlEffect } from './controlEffect';
+import type { HexRevelation } from './unifiedAction';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -51,7 +53,9 @@ export interface TickEvent {
     // Journey events
     | 'journey_beat' | 'journey_phase_change'
     // Return events
-    | 'return_resolved' | 'ripple_consequence';
+    | 'return_resolved' | 'ripple_consequence'
+    // Control effect events
+    | 'control_effect_established' | 'control_effect_lapsed';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -127,6 +131,13 @@ export interface GameState {
 
   // Encounter notifications — queued by encounter visibility phase, consumed by UI
   encounterNotifications?: import('./encounterVisibility').EncounterNotification[];
+
+  // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
+  controlEffects?: ControlEffect[];
+
+  // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
+  // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.
+  hexRevelation?: Record<string, HexRevelation>;
 
   // Prosperity shocks — one-time deltas pushed by other phases, consumed by phaseProsperity
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)

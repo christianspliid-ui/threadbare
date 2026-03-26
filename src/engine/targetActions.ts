@@ -11,15 +11,17 @@
  *   4. Sphere gate     — template.sphereAffinity is null OR in accessibleSpheres
  *   5. Essence gate    — player can afford template.essenceCost
  *   6. Range gate      — target in range from avatar (if positions available)
+ *   7. Revelation gate — template.narrativeLayer revealed on target hex (if applicable)
  */
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
 import type { WheelSlot } from './wheel';
-import type { UnifiedActionTemplate } from '../types/unifiedAction';
+import type { UnifiedActionTemplate, HexRevelation } from '../types/unifiedAction';
 import type { SphereName } from '../types/index';
 import type { EssencePool } from '../types/influence';
 import type { HexPosition } from './delivery';
 import { hexDistance } from './delivery';
+import { hexKey } from '../lib/hexKey';
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -51,6 +53,8 @@ export interface TargetActionParams {
   avatarPos?: HexPosition;
   /** Player's accessible spheres (for sphere gating) */
   accessibleSpheres: readonly SphereName[];
+  /** Per-hex layer revelation state. Key: hexKey(col,row). Omit to skip revelation gating. */
+  hexRevelation?: Readonly<Record<string, HexRevelation>>;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -63,6 +67,7 @@ interface FilterCounts {
   bySphere: number;
   byEssence: number;
   byRange: number;
+  byRevelation: number;
 }
 
 // ─── Main function ───────────────────────────────────────────────────────────
@@ -74,7 +79,7 @@ interface FilterCounts {
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
 export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
-  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres } = params;
+  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation } = params;
 
   const counts: FilterCounts = {
     considered: 0,
@@ -84,6 +89,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     bySphere: 0,
     byEssence: 0,
     byRange: 0,
+    byRevelation: 0,
   };
 
   const slots: WheelSlot[] = [];
@@ -123,6 +129,31 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       if (!allPresent) {
         counts.byTraits++;
         continue;
+      }
+    }
+
+    // 7. Revelation gate — must come before sphere/essence/range so unrevealed
+    //    templates are fully hidden (not shown as locked)
+    //    Design: "Change, Control, and Destroy only appear if layer is revealed"
+    //    Create and Read (Find) actions are exempt — they bypass the gate.
+    if (template.narrativeLayer && !template.bypassRevelationGate) {
+      const isGatedCrudType = template.crudType !== 'create' && template.crudType !== 'read';
+      if (isGatedCrudType) {
+        if (hexRevelation && target.position) {
+          const key = hexKey(target.position.col, target.position.row);
+          const revelation = hexRevelation[key];
+          const layerRevealed = revelation?.[template.narrativeLayer] ?? false;
+          if (!layerRevealed) {
+            counts.byRevelation++;
+            continue;
+          }
+        } else if (!hexRevelation) {
+          // Fail-soft: missing hexRevelation map → treat all layers as unrevealed
+          // This means non-Create layer-gated templates are hidden until revelation is initialized
+          counts.byRevelation++;
+          continue;
+        }
+        // If target has no position, skip revelation gating (non-hex targets)
       }
     }
 

@@ -762,6 +762,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 0.5,
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
+    narrativeLayer: 'soul',
     motivations: [],
     narrativeTemplates: {
       initiation: 'reaches out to feel the threads of essence woven through this land',
@@ -787,6 +788,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 3,
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
+    narrativeLayer: 'land',
+    bypassRevelationGate: true,
     motivations: ['tradition_novelty', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'extends divine favor over this land',
@@ -813,6 +816,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'entropy',
     targetCategories: ['hex'],
+    narrativeLayer: 'land',
     motivations: ['mercy_ruthlessness', 'humility_pride'],
     narrativeTemplates: {
       initiation: 'reaches into the foundations of this land with corrupting intent',
@@ -838,6 +842,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     essenceCost: 0,
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
+    narrativeLayer: 'land',
     motivations: ['courage_prudence'],
     narrativeTemplates: {
       initiation: 'casts divine sight across this territory',
@@ -864,6 +869,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'life',
     targetCategories: ['hex'],
+    narrativeLayer: 'land',
+    bypassRevelationGate: true,
     targetSubtypes: [
       'desert', 'rocky_desert', 'tundra', 'badlands', 'dead_forest',
       'broken_lands', 'sand_dunes', 'moor_bog',

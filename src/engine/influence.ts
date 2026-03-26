@@ -18,6 +18,7 @@ import {
   TIER_PROMOTION_THRESHOLDS,
 } from '../types/influence';
 import type { WorldGraph } from './graph';
+import type { ControlEffect } from '../types/controlEffect';
 import { assignTrait } from './traits';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
@@ -89,10 +90,12 @@ function distributeByAlignment(total: number, alignment: SphereAlignment): Essen
  * 1. Base generation: 1.0 essence/tick distributed by sphere alignment
  * 2. Threaded mortals: +0.1 per thread (thread edges from ascendant)
  * 3. Places of power: +0.5 per controlled place of power
+ * 4. Control effect income: sum of perTickIncome from active ControlEffects
  */
 export function computeEssenceGeneration(
   graph: WorldGraph,
-  ascendantId: string
+  ascendantId: string,
+  controlEffects?: readonly ControlEffect[],
 ): EssenceGeneration {
   const node = graph.getNode(ascendantId);
   if (!node) throw new Error(`Ascendant node not found: ${ascendantId}`);
@@ -116,7 +119,22 @@ export function computeEssenceGeneration(
     }
   }
 
-  return distributeByAlignment(totalRate, alignment);
+  const gen = distributeByAlignment(totalRate, alignment);
+
+  // 4. Control effect income (per-sphere, not distributed by alignment)
+  if (controlEffects) {
+    for (const effect of controlEffects) {
+      if (!effect.active || !effect.perTickIncome) continue;
+      for (const [sphere, income] of Object.entries(effect.perTickIncome)) {
+        const s = sphere as SphereName;
+        if (SPHERE_NAMES.includes(s)) {
+          gen[s] = (gen[s] ?? 0) + (income as number);
+        }
+      }
+    }
+  }
+
+  return gen;
 }
 
 /**

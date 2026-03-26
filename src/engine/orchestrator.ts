@@ -68,10 +68,12 @@ import { phaseSublocations } from './phaseSublocations';
 import { phaseSettlementPromotion } from './phaseSettlementPromotion';
 import { phaseEconomicChronicle } from './phaseEconomicChronicle';
 import { phaseHexState } from './phaseHexState';
+import { revealLayer } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
+import { phaseControlEffects } from './phaseControlEffects';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
@@ -650,7 +652,7 @@ export function phaseEssence(state: GameState): Partial<GameState> {
 
   const pool = { ...state.essencePool };
   const max = computeMaxEssence(state.graph, state.ascendantId);
-  const gen = computeEssenceGeneration(state.graph, state.ascendantId);
+  const gen = computeEssenceGeneration(state.graph, state.ascendantId, state.controlEffects);
   generateEssence(pool, gen, max);
 
   const events: TickEvent[] = [];
@@ -984,6 +986,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['essence'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 6.1: Control Effects (sustained divine effects — drain/income/threshold/lapse)
+  s = { ...s, ...phaseControlEffects(s) };
+  phaseEventCounts['control_effects'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
   // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
   phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
@@ -1070,7 +1077,21 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     rows: Math.max(...s.tiles.map(t => t.coord.row)) + 1,
   };
   const visibilityMap = recalcVisibility(s.visibilityMap, losSources, s.graph, s.tick, gridSize.cols, gridSize.rows);
-  s = { ...s, visibilityMap };
+
+  // Auto-reveal land layer for any hex that is now visible (fog of war lifted).
+  // Simpler: any hex with state === 'visible' should have land revealed.
+  {
+    let rev = s.hexRevelation;
+    for (const [key, entry] of visibilityMap) {
+      if (entry.state === 'visible' && !rev?.[key]?.land) {
+        const commaIdx = key.indexOf(',');
+        const col = Number(key.slice(0, commaIdx));
+        const row = Number(key.slice(commaIdx + 1));
+        rev = revealLayer(rev, col, row, 'land');
+      }
+    }
+    s = { ...s, visibilityMap, hexRevelation: rev };
+  }
 
   // Merge tick events into recent events (ring buffer)
   const MAX = 100;
