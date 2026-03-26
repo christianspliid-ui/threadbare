@@ -95,6 +95,8 @@ export interface EncounterResolutionTrace extends TraceBase {
   success: boolean;
   status: 'active' | 'completed' | 'abandoned' | 'initiated';
   traitChanges: string[];
+  /** Summary of reward granted on completion (populated by encounter resolution) */
+  rewardSummary?: string;
 }
 
 /** Trace: familiarity gained with an actor */

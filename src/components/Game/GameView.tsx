@@ -25,6 +25,7 @@ import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
+import { getAvatarPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
@@ -206,6 +207,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
+      // Skip ascendant nodes — they are divine entities, not map actors
+      if (n.properties.actorType === 'ascendant') continue;
       // Resolve hex position: check actor properties first, then follow located_at edge
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
@@ -232,21 +235,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         hexRow = movState.currentHexPosition.row;
       }
 
+      const isAvatar = n.id === avatarNodeId;
       const archetypeId = n.properties.narrativeArchetype as string | undefined;
       result.push({
         id: n.id,
         hexCol,
         hexRow,
-        portraitUrl: getPortraitUrl(archetypeId) ?? undefined,
+        portraitUrl: isAvatar
+          ? getAvatarPortraitUrl(archetype.sphereAlignment.primary)
+          : (getPortraitUrl(archetypeId) ?? undefined),
         factionIndex: i % 6,
         isRetinue: retinueIds.has(n.id),
+        isAvatar,
+        avatarSphereColor: isAvatar ? sphereColor : undefined,
         name: n.name,
         currentRoadType: movState?.currentRoadType as 'major' | 'trail' | undefined,
         roadHexQueueLength: Array.isArray(movState?.roadHexQueue) ? movState.roadHexQueue.length : undefined,
       });
     }
     return result;
-  }, [gameState.graph, gameState.ascendantId, gameState.tick]);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   const locationNodes = useMemo<LocationNode[]>(() => {
@@ -924,6 +932,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             followAgentId={selectedAgentId ?? undefined}
             onClose={handleToggleDebug}
             graph={gameState.graph}
+            retinueAgents={retinueAgents}
             cacheEntries={getEncounterCacheManager()?.getAllEntries()}
             encounterProgress={gameState.encounterProgress}
             onZoomToLocation={handleZoomToLocation}
@@ -933,6 +942,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             onToggleOrganicShore={setShowOrganicShore}
             encounterNotifications={gameState.encounterNotifications}
             pendingVignettes={gameState.pendingVignettes}
+            seed={gameState.seed}
           />
         ) : (
           <div

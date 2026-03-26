@@ -19,6 +19,7 @@ import type { AxiologicalProfile } from '../types/agent';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, RoadHexTransitionTrace } from '../types/trace';
 import { getAvatarAscendant, getAgentLocationId } from './graphQueries';
+import { appendEvent } from './encounterTimeline';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -89,6 +90,16 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           hexCost: result.updatedState.roadHexCost ?? 0,
           summary: `${actor.name} walks ${result.roadHexTransition.roadType} road (${result.roadHexTransition.hexProgress}/${result.roadHexTransition.hexTotal})`,
         } as RoadHexTransitionTrace & { summary: string });
+
+        // Timeline: MOVE event (road hex transition)
+        appendEvent(actorId, {
+          phase: 'MOVE',
+          tick: state.tick,
+          fromHex: [result.roadHexTransition.fromHex.col, result.roadHexTransition.fromHex.row],
+          toHex: [result.roadHexTransition.toHex.col, result.roadHexTransition.toHex.row],
+          cost: `${result.roadHexTransition.hexProgress}/${result.roadHexTransition.hexTotal}`,
+          road: result.roadHexTransition.roadType,
+        });
       }
 
       // Emit event on movement transition (skip for avatar — player controls avatar)
@@ -124,6 +135,18 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             ? `${actor.name} arrives at ${destNode?.name ?? '?'}`
             : `${actor.name} moves to ${destNode?.name ?? '?'} (${result.updatedState.movementQueue.length} hops left)`,
         } as TraceEntry);
+
+        // Timeline: ARRIVE event
+        if (result.arrivedAtDestination) {
+          const arrHexCol = (destNode?.properties?.hexCol as number) ?? 0;
+          const arrHexRow = (destNode?.properties?.hexRow as number) ?? 0;
+          appendEvent(actorId, {
+            phase: 'ARRIVE',
+            tick: state.tick,
+            location: destNode?.name ?? '?',
+            hex: [arrHexCol, arrHexRow],
+          });
+        }
       }
 
       // --- Sublocation entry on arrival ---
@@ -209,7 +232,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
                          (seg.toId === currentLocId && seg.fromId === graphPath.path[0]),
                 );
                 const firstEdgeCost = firstSeg
-                  ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length)
+                  ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
                   : computeEdgeCost(state.graph, actorId, currentLocId, graphPath.path[0]).totalCost;
                 switchedState = initMovementState(
                   newCandidates[0].destinationId,
@@ -259,6 +282,15 @@ export function phaseMovement(state: GameState): Partial<GameState> {
                   queueLength: switchedState.movementQueue.length,
                   summary: `${actor.name} reroutes from ${oldDest?.name ?? '?'} to ${newDest?.name ?? '?'}`,
                 } as TraceEntry);
+
+                // Timeline: REROUTE event (mid-path)
+                appendEvent(actorId, {
+                  phase: 'REROUTE',
+                  tick: state.tick,
+                  oldTarget: oldDest?.name ?? result.updatedState.destinationId,
+                  newTarget: newDest?.name ?? newCandidates[0].destinationId,
+                  reason: 'movement_reroute',
+                });
 
                 state.graph.updateNode(actorId, {
                   properties: { ...actor.properties, movementState: switchedState },
