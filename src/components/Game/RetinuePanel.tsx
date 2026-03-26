@@ -17,9 +17,10 @@ interface RetinuePanelProps {
   onZoomToLocation?: (locationId: string) => void;
   activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
   onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
 
-export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick }: RetinuePanelProps) {
+export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedAgentId, onAgentSelect, onCenterOnHex, onZoomToLocation, activeEncounters, onEncounterClick, onToggleAttentionMode }: RetinuePanelProps) {
   if (agents.length === 0) {
     return (
       <div
@@ -167,6 +168,37 @@ export const RetinuePanel = React.memo(function RetinuePanel({ agents, selectedA
                 >
                   {agent.activityLabel}
                 </div>
+
+                {/* Attention mode toggle (thread tier gated — TB-040) */}
+                {agent.courtPosition && onToggleAttentionMode && (
+                  <button
+                    className="flex items-center gap-1 mt-0.5 text-left rounded px-1 py-0.5 transition-colors"
+                    style={{
+                      fontSize: 'var(--text-xs)',
+                      color: agent.attentionMode === 'pause' ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+                      backgroundColor: 'transparent',
+                      cursor: 'pointer',
+                      border: 'none',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = 'rgba(212,175,55,0.1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = 'transparent';
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onToggleAttentionMode(agent.threadEdgeId);
+                    }}
+                    aria-label={`Toggle attention mode for ${agent.name}`}
+                    title={agent.attentionMode === 'pause'
+                      ? 'Pause mode — encounters interrupt the game. Click to switch to auto-resolve.'
+                      : 'Auto-resolve — encounters resolve silently. Click to switch to pause.'}
+                  >
+                    <span>{agent.attentionMode === 'pause' ? '⏸' : '▶'}</span>
+                    <span>{agent.attentionMode === 'pause' ? 'Pause' : 'Auto'}</span>
+                  </button>
+                )}
 
                 {/* Encounter badge (fourth line — only when active encounter exists) */}
                 {(() => {

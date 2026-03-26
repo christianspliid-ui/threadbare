@@ -65,6 +65,8 @@ import { getThreadsFrom } from '../../engine/graphQueries';
 import type { ThreadEdgeProperties } from '../../types/influence';
 import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
 import { useNotifications } from './hooks/useNotifications';
+import { useEncounterNotifications } from './hooks/useEncounterNotifications';
+import { toggleAttentionMode } from '../../engine/encounterVisibility';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
@@ -275,6 +277,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     running,
     setRunning,
     visibilityMap: effectiveVisibilityMap,
+  });
+
+  // ── Encounter notification surfacing (TB-040) ──
+  const encounterToasts = useEncounterNotifications({
+    encounterNotifications: gameState.encounterNotifications,
+    setGameState,
   });
 
   // ── Keyboard hotkeys ──
@@ -549,6 +557,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
 
+  // ── Attention mode toggle (TB-040) ──
+  const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
+    const result = toggleAttentionMode(
+      gameState.graph, threadEdgeId, gameState.ascendantId, gameState.tick,
+    );
+    if (result) {
+      // Deduct essence cost
+      setGameState(prev => ({
+        ...prev,
+        essence: Math.max(0, (prev.essence ?? 0) - result.essenceCost),
+      }));
+    }
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState]);
+
   // ── Journey vignette (auto-interrupt for The First) ──
   const activeVignette: PendingVignette | null = useMemo(() => {
     const pending = gameState.pendingVignettes;
@@ -714,7 +736,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             {/* NarrativeLog overlay */}
             <NarrativeLog events={gameState.recentEvents} />
             {/* Toast notifications */}
-            <ToastStack toasts={notificationState.toasts} onDismiss={handleDismissToast} />
+            <ToastStack toasts={[...notificationState.toasts, ...encounterToasts]} onDismiss={handleDismissToast} />
             {viewLevel === 'world' && (
               <>
                 <HexMapV2
@@ -904,6 +926,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             getZoomLevel={() => hexMapRef.current?.getZoomLevel() ?? 1.5}
             showOrganicShore={showOrganicShore}
             onToggleOrganicShore={setShowOrganicShore}
+            encounterNotifications={gameState.encounterNotifications}
+            pendingVignettes={gameState.pendingVignettes}
           />
         ) : (
           <div
@@ -934,6 +958,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   onZoomToLocation={handleZoomToLocation}
                   activeEncounters={retinueActiveEncounters}
                   onEncounterClick={handleEncounterClick}
+                  onToggleAttentionMode={handleToggleAttentionMode}
                 />
               </div>
             ) : (
