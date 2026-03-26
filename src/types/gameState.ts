@@ -49,7 +49,9 @@ export interface TickEvent {
     | 'faction_founded' | 'faction_dissolved' | 'trust_shattered' | 'trust_deepened'
     | 'bond_formed' | 'social_encounter' | 'faction_rank_changed' | 'dilemma_resolved_social'
     // Journey events
-    | 'journey_beat' | 'journey_phase_change';
+    | 'journey_beat' | 'journey_phase_change'
+    // Return events
+    | 'return_resolved' | 'ripple_consequence';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -122,6 +124,9 @@ export interface GameState {
 
   // Journey vignettes — queued by journey beat phase, consumed by UI
   pendingVignettes?: PendingVignette[];
+
+  // Encounter notifications — queued by encounter visibility phase, consumed by UI
+  encounterNotifications?: import('./encounterVisibility').EncounterNotification[];
 
   // Prosperity shocks — one-time deltas pushed by other phases, consumed by phaseProsperity
   // Cleared each tick. Each shock traces back to a discrete cause (encounter, route loss, etc.)

@@ -602,25 +602,558 @@ const RETURN_CONVERGENCE: JourneyBeatTemplate = {
   ],
 };
 
+// ─── Phase 6: Additional Call Templates ──────────────────────────────
+
+const CALL_DIVINE_SPARK: JourneyBeatTemplate = {
+  id: 'call_divine_spark',
+  validPhases: ['call'],
+  description: 'The thread ignites — the mortal feels the god\'s attention for the first time.',
+  variants: [
+    {
+      key: 'spark_devoted',
+      label: 'The Devoted Spark',
+      score: scoreDivineBond,
+      setupProse: 'It begins as warmth. Not physical — something deeper, as though the soul itself has been touched by a hand that spans the cosmos. The First looks up and, for a single heartbeat, sees the world as the divine sees it.',
+      tensionProse: 'The vision fades but the warmth remains. They know, now, that they are not alone — and that this connection comes with a purpose they cannot yet fathom.',
+      choices: [
+        {
+          id: 'spark_reveal',
+          text: 'Reveal more of yourself — show them the scope of what is at stake',
+          godVoice: 'I have watched worlds rise and fall. This one — your world — matters to me.',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { sacrifice_selfishness: 0.1 },
+            reachChanges: { star: 0.05 },
+            consequenceProse: 'The First glimpses the cosmic tapestry. They see their own thread, small but bright, woven into something immense.',
+          },
+        },
+        {
+          id: 'spark_mystery',
+          text: 'Remain mysterious — let wonder drive them forward',
+          godVoice: '...',
+          effects: {
+            interventionType: 'withdrawn',
+            reachChanges: { eye: 0.03 },
+            consequenceProse: 'The divine presence recedes into mystery. The First is left with questions that burn brighter than answers.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const CALL_BURDEN: JourneyBeatTemplate = {
+  id: 'call_burden',
+  validPhases: ['call'],
+  description: 'The call arrives as a weight — responsibility, not invitation.',
+  variants: [
+    {
+      key: 'burden_influential',
+      label: 'The Weight of Expectations',
+      score: scoreInfluenceHigh,
+      setupProse: 'They already carry the hopes of others. Now comes another weight: the thread, pulling toward a destiny far grander and more terrible than any mortal obligation.',
+      tensionProse: 'The people who depend on them cannot know what this thread means. The call demands a choice between the duties they chose and the destiny that chose them.',
+      choices: [
+        {
+          id: 'burden_ease',
+          text: 'Lighten their burden — arrange mortal affairs to free them',
+          godVoice: 'Your old life will not suffer. I have seen to it.',
+          effects: {
+            interventionType: 'supportive',
+            reachChanges: { heart: 0.05 },
+            consequenceProse: 'Circumstances shift. Responsibilities find new shoulders. The First is freed, slowly, to pursue the greater calling.',
+          },
+        },
+        {
+          id: 'burden_demand',
+          text: 'Demand they choose — the thread or the world',
+          godVoice: 'You cannot serve two masters. Choose.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { sacrifice_selfishness: 0.15 },
+            consequenceProse: 'The ultimatum hangs in the air. The First stares at everything they built and wonders what it was all for.',
+          },
+        },
+        {
+          id: 'burden_let_carry',
+          text: 'Let them carry both — mortal and divine',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'No relief comes. The First must find a way to hold two worlds together — or watch one collapse.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const CALL_PROPHECY: JourneyBeatTemplate = {
+  id: 'call_prophecy',
+  validPhases: ['call'],
+  description: 'An omen arrives — the mortal sees their future reflected in the world.',
+  variants: [
+    {
+      key: 'prophecy_generic',
+      label: 'The Omen',
+      score: (s: StateSnapshot) => scoreGeneric(s) * 0.5 + scoreAmbitious(s) * 0.5,
+      setupProse: 'A dead bird on the threshold. A mirror that shows a stranger\'s face. A dream of fire that leaves ash on the pillow. The omens arrive before the understanding does.',
+      tensionProse: 'The world is speaking in symbols, and the First is learning to listen. The thread hums with the urgency of a message not yet received.',
+      choices: [
+        {
+          id: 'prophecy_interpret',
+          text: 'Help them interpret the signs',
+          godVoice: 'Look closer. The answer is already there.',
+          effects: {
+            interventionType: 'supportive',
+            reachChanges: { eye: 0.05 },
+            consequenceProse: 'The symbols resolve into meaning. The First sees the shape of what is coming — and finds, surprisingly, that they are not afraid.',
+          },
+        },
+        {
+          id: 'prophecy_obscure',
+          text: 'Deepen the mystery — let the omens grow stranger',
+          godVoice: 'Not yet. You are not ready to understand.',
+          effects: {
+            interventionType: 'coercive',
+            reachChanges: { veil: 0.03 },
+            consequenceProse: 'The signs multiply but refuse to clarify. The First walks in a world pregnant with hidden meaning.',
+          },
+        },
+        {
+          id: 'prophecy_silence',
+          text: 'Send no guidance — let them wrestle with uncertainty',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The omens remain opaque. The First must decide for themselves what it all means.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ─── Phase 6: Additional Trials Templates ────────────────────────────
+
+const TRIALS_BOND_TEST: JourneyBeatTemplate = {
+  id: 'trials_bond_test',
+  validPhases: ['road_of_trials'],
+  description: 'A key relationship is tested. The First must choose between loyalty and progress.',
+  variants: [
+    {
+      key: 'bond_divine',
+      label: 'The Bond Tested',
+      score: scoreDivineBond,
+      setupProse: 'The journey has brought the First close to someone unexpected — a companion whose presence changes the calculus of every decision. Now circumstance conspires to tear them apart.',
+      tensionProse: 'The companion stands at a crossroads that leads away from the First\'s path. To follow would mean abandoning the thread\'s pull. To stay the course means losing something precious.',
+      choices: [
+        {
+          id: 'bond_preserve',
+          text: 'Bend the thread — allow a detour to preserve the bond',
+          godVoice: 'The journey can wait. This cannot.',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { mercy_ruthlessness: 0.1 },
+            reachChanges: { heart: 0.05 },
+            consequenceProse: 'The path bends. Time is lost, but something more valuable is preserved.',
+          },
+        },
+        {
+          id: 'bond_break',
+          text: 'Tighten the thread — the mission comes first',
+          godVoice: 'You were chosen for a reason. That reason is not friendship.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { sacrifice_selfishness: 0.1 },
+            consequenceProse: 'The First turns away from the companion. The thread hums with purpose — but something within the First goes quiet.',
+          },
+        },
+        {
+          id: 'bond_let_choose',
+          text: 'Let them decide — this is a mortal choice',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The First stands at the fork and chooses with nothing but their own heart to guide them.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const TRIALS_DISCOVERY: JourneyBeatTemplate = {
+  id: 'trials_discovery',
+  validPhases: ['road_of_trials'],
+  description: 'The First discovers a hidden truth about themselves or the world.',
+  variants: [
+    {
+      key: 'discovery_power',
+      label: 'The Hidden Talent',
+      score: (s: StateSnapshot) => scorePowerHigh(s) * 0.3 + scoreAmbitious(s) * 0.7,
+      setupProse: 'In the heat of a trial, something unexpected happens. A power stirs that the First did not know they possessed — raw, untrained, and dangerous.',
+      tensionProse: 'The new ability could change everything, but it comes without a manual. Using it recklessly could destroy as easily as it saves.',
+      choices: [
+        {
+          id: 'discovery_guide',
+          text: 'Guide the awakening — shape it before it spirals',
+          godVoice: 'Easy. Slowly. Let me show you what you are.',
+          effects: {
+            interventionType: 'supportive',
+            reachChanges: { veil: 0.05 },
+            consequenceProse: 'Under divine tutelage, the wild power finds form. It is small yet, but controlled — and growing.',
+          },
+        },
+        {
+          id: 'discovery_unleash',
+          text: 'Let it explode — see what they become without limits',
+          godVoice: 'Let go.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { courage_cowardice: 0.1 },
+            consequenceProse: 'The power erupts. The trial ends in devastation — the enemy, the terrain, and something inside the First are all remade.',
+          },
+        },
+        {
+          id: 'discovery_suppress',
+          text: 'Let them figure it out naturally',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The power flickers and subsides, untamed. The First files it away — a weapon for another day.',
+          },
+        },
+      ],
+    },
+    {
+      key: 'discovery_secret',
+      label: 'The World\'s Secret',
+      score: (s: StateSnapshot) => scoreGeneric(s) * 0.5 + scoreLoneWolf(s) * 0.5,
+      setupProse: 'A scroll found in ruins. A dying stranger\'s confession. A pattern in the stars that only the First can see. The world cracks open and reveals a truth that was never meant for mortal eyes.',
+      tensionProse: 'The knowledge is dangerous. Others have died for it, or killed to keep it hidden. The First must decide what to do with a truth that burns.',
+      choices: [
+        {
+          id: 'secret_protect',
+          text: 'Help them understand the danger — and protect the knowledge',
+          godVoice: 'That truth has teeth. Guard it carefully.',
+          effects: {
+            interventionType: 'supportive',
+            reachChanges: { eye: 0.05 },
+            axiologicalShifts: { honesty_deception: 0.05 },
+            consequenceProse: 'The First learns to hold a secret that could reshape the world — and begins to understand why some truths are kept hidden.',
+          },
+        },
+        {
+          id: 'secret_share',
+          text: 'Encourage them to spread the truth — knowledge should be free',
+          godVoice: 'Secrets are chains. Break them.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { honesty_deception: 0.15 },
+            consequenceProse: 'The First speaks the truth aloud. The world shifts. Allies appear. So do enemies.',
+          },
+        },
+        {
+          id: 'secret_leave',
+          text: 'Let them wrestle with it alone',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The truth sits heavy. The First carries it forward, unsure what to do but unable to put it down.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ─── Phase 6: Additional Crisis Templates ────────────────────────────
+
+const CRISIS_BETRAYAL: JourneyBeatTemplate = {
+  id: 'crisis_betrayal',
+  validPhases: ['crisis'],
+  description: 'A trusted ally turns against the First. Everything built is shaken.',
+  variants: [
+    {
+      key: 'betrayal_social',
+      label: 'The Knife in the Back',
+      score: (s: StateSnapshot) => scoreInfluenceHigh(s) * 0.6 + scoreDivineBond(s) * 0.4,
+      setupProse: 'The betrayal comes from the last person the First expected. Someone they trusted — someone the thread itself seemed to sanction — reveals their true face.',
+      tensionProse: 'Alliances crumble. The network of trust the First built over countless trials is severed at a critical node. The question is not revenge, but survival.',
+      choices: [
+        {
+          id: 'betrayal_heal',
+          text: 'Reveal the betrayer\'s weakness — give the First a chance to understand why',
+          godVoice: 'They did this from fear, not malice. See the whole truth.',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { mercy_ruthlessness: 0.15 },
+            reachChanges: { eye: 0.05 },
+            consequenceProse: 'Understanding does not heal the wound, but it transforms rage into something more useful: clarity.',
+          },
+        },
+        {
+          id: 'betrayal_strike',
+          text: 'Grant them the power to strike back — decisively',
+          godVoice: 'Betrayal demands a response. Make it memorable.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { mercy_ruthlessness: -0.15 },
+            reachChanges: { iron: 0.05 },
+            consequenceProse: 'The First strikes with divine precision. The betrayer falls — and everyone who witnessed it takes note.',
+          },
+        },
+        {
+          id: 'betrayal_endure',
+          text: 'Say nothing — let them process the loss alone',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The silence from above makes the mortal silence louder. The First must rebuild trust from the wreckage on their own.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const CRISIS_FAITH: JourneyBeatTemplate = {
+  id: 'crisis_faith',
+  validPhases: ['crisis'],
+  description: 'The First questions the thread itself. Does divine guidance help or constrain?',
+  variants: [
+    {
+      key: 'faith_distant',
+      label: 'The Crisis of Faith',
+      score: scoreDistant,
+      setupProse: 'The question arrives like a cold wind: has the thread been a blessing or a leash? The First looks back at every choice made under divine influence and wonders how many were truly their own.',
+      tensionProse: 'For the first time, the thread feels heavy. Not warm but binding. The First stands at the precipice of rejecting everything the journey has meant.',
+      choices: [
+        {
+          id: 'faith_honest',
+          text: 'Speak honestly through the thread — acknowledge the tension',
+          godVoice: 'I have guided you. Sometimes poorly. But never with malice.',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { honesty_deception: 0.15, humility_pride: 0.1 },
+            consequenceProse: 'The honesty rings true. The First does not forgive — not yet — but the thread holds.',
+          },
+        },
+        {
+          id: 'faith_reassert',
+          text: 'Reassert your authority — remind them of the stakes',
+          godVoice: 'You may doubt me, but the Doom does not doubt. We do not have time for this.',
+          effects: {
+            interventionType: 'coercive',
+            axiologicalShifts: { humility_pride: -0.1 },
+            consequenceProse: 'The reminder of the Doom\'s approach cuts through the doubt. Purpose returns — but trust does not.',
+          },
+        },
+        {
+          id: 'faith_release',
+          text: 'Loosen the thread entirely — if they stay, it must be by choice',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'The divine presence dims to almost nothing. The First is alone with their doubt — and must find their own reasons to continue.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+const CRISIS_ISOLATION: JourneyBeatTemplate = {
+  id: 'crisis_isolation',
+  validPhases: ['crisis'],
+  description: 'The First is cut off from everything — allies, resources, and perhaps the thread itself.',
+  variants: [
+    {
+      key: 'isolation_lone',
+      label: 'Alone in the Dark',
+      score: scoreLoneWolf,
+      setupProse: 'One by one, the supports have fallen away. The last ally departed, the last safe haven burned. The First stands in darkness, utterly alone save for the thin, trembling line of the thread.',
+      tensionProse: 'This is where heroes are made or unmade. Not in glory but in the silence that comes when everything else is stripped away.',
+      choices: [
+        {
+          id: 'isolation_light',
+          text: 'Blaze the thread to full brightness — be the light in their darkness',
+          godVoice: 'I am still here. I will always be here.',
+          effects: {
+            interventionType: 'supportive',
+            essenceCost: 3,
+            axiologicalShifts: { courage_cowardice: 0.15 },
+            consequenceProse: 'The thread ignites. In the absolute darkness, divine light pours through like dawn. The First weeps — and stands.',
+          },
+        },
+        {
+          id: 'isolation_ember',
+          text: 'Send the smallest pulse — enough to know they are not truly alone',
+          godVoice: '...',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { courage_cowardice: 0.1 },
+            consequenceProse: 'A warmth. Almost imperceptible. But in the total dark, even a spark is a sun.',
+          },
+        },
+        {
+          id: 'isolation_dark',
+          text: 'Let them face the darkness unaided',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'Nothing. The darkness is complete. The First must find the light within themselves, or not at all.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ─── Phase 6: Additional Ordeal Template ─────────────────────────────
+
+const ORDEAL_SACRIFICE: JourneyBeatTemplate = {
+  id: 'ordeal_sacrifice',
+  validPhases: ['ordeal'],
+  description: 'The Ordeal demands a sacrifice — something precious must be given up.',
+  variants: [
+    {
+      key: 'ordeal_cost',
+      label: 'The Ordeal of Sacrifice',
+      score: (s: StateSnapshot) => scoreDivineBond(s) * 0.4 + scoreInfluenceHigh(s) * 0.3 + scoreAmbitious(s) * 0.3,
+      setupProse: 'The ordeal\'s shape becomes clear: there is no path through that does not demand something be left behind. A bond, a belief, a part of themselves they thought was essential.',
+      tensionProse: 'The thread burns with the weight of the moment. This is the pivot on which the entire journey turns. What the First gives up here will define what they become.',
+      choices: [
+        {
+          id: 'ordeal_bear_cost',
+          text: 'Bear the cost yourself — pour essence to shield them from the sacrifice',
+          godVoice: 'I will pay what you cannot. This is what gods are for.',
+          effects: {
+            interventionType: 'coercive',
+            essenceCost: 5,
+            ordealOutcome: 'triumph',
+            consequenceProse: 'Divine energy floods the thread. The sacrifice is paid in essence, not in mortal blood. The First emerges whole — but the god is diminished.',
+          },
+        },
+        {
+          id: 'ordeal_share_burden',
+          text: 'Share the burden — let both god and mortal sacrifice something',
+          godVoice: 'Together. We bear this together.',
+          effects: {
+            interventionType: 'supportive',
+            essenceCost: 3,
+            ordealOutcome: 'scraped_through',
+            consequenceProse: 'The sacrifice is split. Neither god nor mortal carries the full weight. Both are diminished — and both survive.',
+          },
+        },
+        {
+          id: 'ordeal_let_pay',
+          text: 'Let them make the sacrifice — it must be theirs to give',
+          effects: {
+            interventionType: 'withdrawn',
+            ordealOutcome: 'broken',
+            consequenceProse: 'The First gives up something they cannot get back. The ordeal is passed, but the cost is carved into their soul.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
+// ─── Phase 6: Additional Return Template ─────────────────────────────
+
+const RETURN_TRANSFORMATION: JourneyBeatTemplate = {
+  id: 'return_transformation',
+  validPhases: ['return'],
+  description: 'The Return as transformation — the First is no longer who they were.',
+  variants: [
+    {
+      key: 'return_changed',
+      label: 'The Transformed Return',
+      score: (s: StateSnapshot) => scorePowerHigh(s) * 0.3 + scoreDivineBond(s) * 0.4 + scoreAmbitious(s) * 0.3,
+      setupProse: 'The person who returns is not the person who left. The thread has remade them — or perhaps revealed who they always were beneath the surface. Those who knew them before see a stranger wearing a familiar face.',
+      tensionProse: 'The transformation is complete, but its meaning is not yet settled. The First must decide what to do with who they have become.',
+      choices: [
+        {
+          id: 'return_crown',
+          text: 'Crown their transformation — proclaim them as your champion',
+          godVoice: 'Behold what faith and trial have forged. Be proud.',
+          effects: {
+            interventionType: 'supportive',
+            consequenceProse: 'The divine proclamation echoes through the thread. The First stands revealed — transformed, tested, and claimed by something greater.',
+          },
+        },
+        {
+          id: 'return_quiet_end',
+          text: 'Let the transformation speak for itself',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'No fanfare. The First returns quietly, and those who look closely see the change written in their eyes.',
+          },
+        },
+      ],
+    },
+    {
+      key: 'return_broken_beauty',
+      label: 'The Scarred Return',
+      score: (s: StateSnapshot) => scorePowerLow(s) * 0.4 + scoreDistant(s) * 0.3 + scoreLoneWolf(s) * 0.3,
+      setupProse: 'They come back broken. Not destroyed — broken in the way that lets the light through. The ordeal took something essential, but what remains is real in a way nothing was before.',
+      tensionProse: 'The First does not return as a conqueror. They return as a survivor, carrying scars that tell the story of everything the journey cost.',
+      choices: [
+        {
+          id: 'return_mend',
+          text: 'Offer what healing you can through the thread',
+          godVoice: 'I cannot undo what happened. But I can help you carry it.',
+          effects: {
+            interventionType: 'supportive',
+            consequenceProse: 'The thread carries not power but compassion. The First feels the weight shift — not lighter, but shared.',
+          },
+        },
+        {
+          id: 'return_honor_scars',
+          text: 'Honor their scars — make them marks of distinction, not shame',
+          godVoice: 'These wounds are proof that you stood where others would have fled.',
+          effects: {
+            interventionType: 'supportive',
+            axiologicalShifts: { courage_cowardice: 0.1 },
+            consequenceProse: 'The scars begin to shimmer — not healed, but transformed into something that commands respect rather than pity.',
+          },
+        },
+        {
+          id: 'return_let_heal',
+          text: 'Let mortal time do what divine power cannot',
+          effects: {
+            interventionType: 'withdrawn',
+            consequenceProse: 'Some wounds only time can heal. The First begins the slow, quiet work of learning to live with who they have become.',
+          },
+        },
+      ],
+    },
+  ],
+};
+
 // ─── Export ──────────────────────────────────────────────────────────
 
 /**
- * All journey beat templates — Phase 2 starter set.
+ * All journey beat templates — Phase 6 full set.
  * Indexed by ID for quick lookup.
  */
 export const JOURNEY_BEAT_TEMPLATES: JourneyBeatTemplate[] = [
-  // Call (2 templates)
+  // Call (5 templates)
   CALL_AWAKENING,
   CALL_FALLBACK,
-  // Road of Trials (3 templates)
+  CALL_DIVINE_SPARK,
+  CALL_BURDEN,
+  CALL_PROPHECY,
+  // Road of Trials (5 templates)
   TRIALS_RISING_STAR,
   TRIALS_TEMPTATION,
   TRIALS_FALLBACK,
-  // Crisis (2 templates)
+  TRIALS_BOND_TEST,
+  TRIALS_DISCOVERY,
+  // Crisis (5 templates)
   CRISIS_SHADOW,
   CRISIS_FALLBACK,
-  // Ordeal (1 template, 2 variants)
+  CRISIS_BETRAYAL,
+  CRISIS_FAITH,
+  CRISIS_ISOLATION,
+  // Ordeal (2 templates, multiple variants)
   ORDEAL_PEAK,
-  // Return (1 template, 2 variants)
+  ORDEAL_SACRIFICE,
+  // Return (2 templates, multiple variants)
   RETURN_CONVERGENCE,
+  RETURN_TRANSFORMATION,
 ];

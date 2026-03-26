@@ -230,14 +230,14 @@ Ideas that need significant design work or aren't urgent.
 
 ---
 
-## 🏗️ TB-035 · Meet The First — Agent Generation Encounter
+## ✅ TB-035 · Meet The First — Agent Generation Encounter (2026-03-26)
 
 The god's relationship system and hero's journey arc. 9 interconnected subsystems: **Divine Court & Thread Edge** (replaces `worships` with `thread`, flips direction god→mortal, defines court spectrum: The First / Retinue / Watched), **Court Slot** (The First with narrative cooldowns), **Meeting Encounter** (intent-driven 4-step choice encounter — declare destiny, observe dilemmas, reveal + invest, confirm spark), **Choice-Point Step Type** (new encounter step for player decisions), **Hero's Journey Arc** (doom-clock-scheduled branching story tree — beats fire on schedule, world state picks variants, no failure state), **Journey Vignettes & Universal Encounter Visibility** (auto-interrupt for First, clickable encounters for all threaded agents, two interaction modes: encounter interventions vs strategic actions), **The Return** (peak-end convergence with Founding Gates + Ripple Consequences, 6 divergent outcomes), **Unified Vignette Engine** (layered templates: structure + axis selector + dynamic enrichment + archetype tone), **Dynamic Prose Enrichment** (world-state queries inject titles, artifacts, allies into prose).
 
 **Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-meet-the-first.md`
 **Design doc:** `Docs/plans/2026-03-26-meet-the-first-design.md` (v2 — post-review rewrite)
 **Depends on:** Encounter system, Generalized Action Targeting (✅), Ambition system (needs assessment), Archetype content (exists), Cooperation strategy (exists), Axiological profile (exists)
-**Implementation:** 7 phases — Phase 0: Thread Edge Migration ✅ → Phase 1: Foundation ✅ → Phase 2: Journey Engine ✅ → Phase 3: The Return → Phase 4: Universal Encounter Visibility → Phase 5: Dynamic Prose Enrichment → Phase 6: Content & Polish
+**Implementation:** 7 phases — Phase 0: Thread Edge Migration ✅ → Phase 1: Foundation ✅ → Phase 2: Journey Engine ✅ → Phase 3: The Return ✅ → Phase 4: Universal Encounter Visibility ✅ → Phase 5: Dynamic Prose Enrichment ✅ → Phase 6: Content & Polish ✅
 **Phase 0 complete:** Thread edge migration (worships→thread, direction flip, 45+ files). Commit: e0f8824
 **Phase 1 complete:** Meeting encounter types, engine (candidate gen, dilemma selection, agent creation), 81 archetype names, 16 dilemma templates, 4-step modal UI, LocationView integration. 35 new tests. Commit: 7477d2e
 **Phase 2 complete:** Journey engine — doom-clock phase boundaries (5 Campbellian phases), beat scheduling, 4-axis state snapshot (power/influence/relationship/ambition), template variant selection, 9 structural templates with 15 variants across all phases, JourneyVignetteModal auto-interrupt UI, orchestrator phase integration, GameView vignette queue with auto-pause. Typed BeatOutcome/StateSnapshot replace loose Record types on thread edge. 49 new tests.
@@ -263,7 +263,7 @@ Auto-trigger the Meet The First encounter on the player's first visit to a popul
 
 ---
 
-## 💡 TB-038 · Dilemma Content Research & Authoring
+## ✅ TB-038 · Dilemma Content Research & Authoring (2026-03-26)
 
 Deep research into what kinds of origin-story dilemmas resonate across mythology, fantasy literature, and hero's journey traditions. Output: a complete dilemma content library for the Meet The First encounter system.
 
