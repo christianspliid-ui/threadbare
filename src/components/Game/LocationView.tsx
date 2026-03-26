@@ -32,6 +32,9 @@ interface LocationViewProps {
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
+  // Meet The First action
+  meetTheFirstAvailable?: boolean;
+  onMeetTheFirst?: () => void;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -762,6 +765,8 @@ export const LocationView = memo(function LocationView({
   getEncounterTemplate,
   graph,
   seed,
+  meetTheFirstAvailable,
+  onMeetTheFirst,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -929,6 +934,31 @@ export const LocationView = memo(function LocationView({
           </p>
         </div>
       </div>
+
+      {/* Meet The First action button */}
+      {meetTheFirstAvailable && onMeetTheFirst && agents.length > 0 && (
+        <div className="mx-6 mt-3">
+          <button
+            onClick={onMeetTheFirst}
+            style={{
+              padding: '8px 20px',
+              borderRadius: 8,
+              cursor: 'pointer',
+              background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1))',
+              border: '1px solid var(--accent-gold)',
+              color: 'var(--accent-gold)',
+              fontFamily: 'var(--font-display)',
+              fontSize: 'var(--text-sm)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 'var(--space-2)',
+            }}
+          >
+            <span style={{ fontSize: 'var(--text-base)' }}>★</span>
+            Meet The First
+          </button>
+        </div>
+      )}
 
       {/* Prose + concept art placeholder */}
       {locationProse ? (

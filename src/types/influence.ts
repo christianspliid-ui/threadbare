@@ -8,6 +8,7 @@
 import type { SphereName } from './index';
 import type { AxiologicalProfile } from './agent';
 import type { ReachDomain } from './traits';
+import type { MeetingChoiceRecord } from './meetingEncounter';
 
 // ─── Influence Essence ───────────────────────────────────────────────
 
@@ -78,7 +79,7 @@ export interface ThreadEdgeProperties {
   /** Ordeal beat outcome (Phase 3+). */
   ordealOutcome?: string;
   /** Record of choices made during the meeting encounter (Phase 1+). */
-  meetingChoiceRecord?: Record<string, unknown>;
+  meetingChoiceRecord?: MeetingChoiceRecord;
   /** History of journey beat outcomes (Phase 2+). */
   beatHistory?: Array<Record<string, unknown>>;
 

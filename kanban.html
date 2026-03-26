@@ -277,7 +277,7 @@ const EMOJI_STATE = {
  */
 function parseBacklog(md) {
   const items = [];
-  const lines = md.split('\n');
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
 
   let inIceBox = false;
   let inDeferred = false;
@@ -469,6 +469,9 @@ function renderBoard(items) {
 
   COLUMNS.forEach(col => {
     const colItems = items.filter(i => i.state === col.id);
+    if (col.id === 'done') {
+      colItems.sort((a, b) => (b.date || '0000-00-00').localeCompare(a.date || '0000-00-00'));
+    }
     const div = document.createElement('div');
     div.className = `column col-${col.id}`;
 
@@ -544,44 +547,149 @@ function showDropZone() {
   });
 }
 
-const BACKLOG_PATH = `${REPO_ROOT}/.planning/BACKLOG.md`;
+// ── IndexedDB helpers for persisting file handle ──
+const DB_NAME = 'kanban-db';
+const STORE_NAME = 'file-handles';
+const HANDLE_KEY = 'backlog-handle';
 
-// Try loading via XHR (works for file:// in some browsers/extensions)
-function tryXHR(url) {
+function openDB() {
   return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onload = () => {
-      if (xhr.status === 0 || xhr.status === 200) resolve(xhr.responseText);
-      else reject(new Error(`XHR ${xhr.status}`));
-    };
-    xhr.onerror = () => reject(new Error('XHR failed'));
-    xhr.send();
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
   });
 }
 
-// Load and render
-async function init() {
-  document.getElementById('ts').textContent =
-    'Live from BACKLOG.md \u00B7 ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+async function saveHandle(handle) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  tx.objectStore(STORE_NAME).put(handle, HANDLE_KEY);
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
 
-  // Strategy 1: relative fetch (works when served via HTTP)
+async function loadHandle() {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const req = tx.objectStore(STORE_NAME).get(HANDLE_KEY);
+  return new Promise((resolve) => {
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+// ── File reading via File System Access API ──
+async function readFileHandle(handle) {
+  // Request permission if needed (user sees a one-click prompt)
+  if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+    if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+      throw new Error('Permission denied');
+    }
+  }
+  const file = await handle.getFile();
+  return file.text();
+}
+
+async function pickAndLoadFile() {
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }],
+      startIn: 'documents',
+    });
+    await saveHandle(handle);
+    const md = await readFileHandle(handle);
+    loadFromText(md);
+    updateTimestamp(handle.name);
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      document.getElementById('error').textContent = 'Failed to open file: ' + e.message;
+      document.getElementById('error').style.display = 'block';
+    }
+  }
+}
+
+// ── Auto-refresh: re-read the persisted handle on an interval ──
+let refreshInterval = null;
+function startAutoRefresh(handle) {
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(async () => {
+    try {
+      const md = await readFileHandle(handle);
+      loadFromText(md);
+      updateTimestamp(handle.name);
+    } catch (_) { /* permission revoked or file gone — stop */ clearInterval(refreshInterval); }
+  }, 5000);
+}
+
+function updateTimestamp(filename) {
+  document.getElementById('ts').textContent =
+    `Live from ${filename || 'BACKLOG.md'} \u00B7 ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
+}
+
+// ── Init ──
+async function init() {
+  updateTimestamp();
+
+  // Strategy 1: HTTP fetch (works when served via dev server)
   try {
     const resp = await fetch('.planning/BACKLOG.md');
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const md = await resp.text();
-    loadFromText(md);
-    return;
-  } catch (_) {}
-
-  // Strategy 2: absolute file:// via XHR (works with file:// extensions)
-  try {
-    const md = await tryXHR(`file:///${BACKLOG_PATH}`);
     if (md && md.includes('TB-')) { loadFromText(md); return; }
   } catch (_) {}
 
-  // Strategy 3: drop zone fallback
+  // Strategy 2: Restore persisted file handle from IndexedDB
+  if (window.showOpenFilePicker) {
+    try {
+      const handle = await loadHandle();
+      if (handle) {
+        const md = await readFileHandle(handle);
+        if (md && md.includes('TB-')) {
+          loadFromText(md);
+          updateTimestamp(handle.name);
+          startAutoRefresh(handle);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Strategy 3: Prompt to pick file (one-time, then remembered)
+    showPickerPrompt();
+    return;
+  }
+
+  // Strategy 4: Drop zone fallback (browser without File System Access API)
   showDropZone();
+}
+
+function showPickerPrompt() {
+  const zone = document.getElementById('dropZone');
+  zone.style.display = 'flex';
+  zone.querySelector('.hint').textContent =
+    'First time only — your choice is remembered for next time';
+
+  // Wire up the pick button
+  document.getElementById('pickFile').addEventListener('click', async () => {
+    await pickAndLoadFile();
+    const handle = await loadHandle();
+    if (handle) startAutoRefresh(handle);
+  });
+
+  // Also support drag-and-drop as fallback
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) file.text().then(loadFromText);
+  });
 }
 
 init();

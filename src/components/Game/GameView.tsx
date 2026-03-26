@@ -56,6 +56,9 @@ import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
 import { EncounterVignetteModal } from './EncounterVignetteModal';
+import { MeetingEncounterModal } from './MeetingEncounterModal';
+import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
+import { createMeetingEncounterState, createAgentFromMeeting, isMeetTheFirstAvailable } from '../../engine/meetingEncounter';
 import { useNotifications } from './hooks/useNotifications';
 import { useTopBarHotkeys } from './hooks/useTopBarHotkeys';
 import { computeEssenceIncome } from '../../engine/essenceIncome';
@@ -502,6 +505,45 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     setVignetteEncounter(null);
   }, []);
 
+  // ── Meeting encounter (Meet The First) ──
+  const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
+
+  const handleStartMeeting = useCallback((locationId: string) => {
+    if (!isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick)) return;
+    const state = createMeetingEncounterState(locationId, gameState.ascendantId, gameState.tick);
+    setMeetingState(state);
+  }, [gameState.graph, gameState.ascendantId, gameState.tick]);
+
+  const handleMeetingComplete = useCallback((result: MeetingEncounterResult) => {
+    const agentId = createAgentFromMeeting(gameState.graph, result, gameState.ascendantId, gameState.tick);
+    setMeetingState(null);
+
+    // Update familiarity map for the new agent
+    setGameState(prev => {
+      const newFamiliarityMap = new Map(prev.familiarityMap);
+      newFamiliarityMap.set(agentId, 0.5); // Start with high familiarity (we created them)
+      return {
+        ...prev,
+        familiarityMap: newFamiliarityMap,
+        recentEvents: [
+          ...prev.recentEvents.slice(-99),
+          {
+            id: `evt_meet_first_${prev.tick}_${Date.now()}`,
+            tick: prev.tick,
+            type: 'narrative' as const,
+            message: `The thread of fate is woven. ${result.name} has been claimed as The First.`,
+            significance: 1.0,
+            sphere: archetype.sphereAlignment.primary,
+          },
+        ],
+      };
+    });
+  }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
+
+  const meetTheFirstAvailable = useMemo(() =>
+    isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
+  [gameState.graph, gameState.ascendantId, gameState.tick]);
+
   // IX-013: Wrapped location click closes drawer before drilling down
   const handleLocationClickWithClose = useCallback((locationId: string) => {
     handleDrawerClose();
@@ -771,6 +813,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                 getEncounterTemplate={getAnyEncounterById}
                 graph={gameState.graph}
                 seed={gameState.seed}
+                meetTheFirstAvailable={meetTheFirstAvailable}
+                onMeetTheFirst={() => handleStartMeeting(focusedLocation.id)}
               />
             )}
           </div>
@@ -923,6 +967,26 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           graph={gameState.graph}
           ascendantSphere={archetype.sphereAlignment.primary}
           seed={gameState.seed}
+        />
+      )}
+
+      {/* Meeting encounter modal */}
+      {meetingState && (
+        <MeetingEncounterModal
+          open={true}
+          onClose={() => setMeetingState(null)}
+          onComplete={handleMeetingComplete}
+          state={meetingState}
+          onStateChange={setMeetingState}
+          graph={gameState.graph}
+          ascendantId={gameState.ascendantId}
+          ascendantSphere={archetype.sphereAlignment.primary}
+          ascendantSecondSphere={archetype.sphereAlignment.secondary}
+          locationId={meetingState.locationId}
+          locationCultureId={(gameState.graph.getNode(meetingState.locationId)?.properties.cultureId as string) ?? 'default'}
+          locationSubtype={(gameState.graph.getNode(meetingState.locationId)?.properties.locationSubtype as string) ?? 'village'}
+          seed={gameState.seed}
+          tick={gameState.tick}
         />
       )}
 

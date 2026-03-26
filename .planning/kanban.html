@@ -296,7 +296,7 @@ function parseHeading(line) {
 }
 
 function parseBacklog(text) {
-  const lines = text.split('\n');
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
   const items = [];
   let current = null;
 
@@ -388,7 +388,7 @@ function parseBacklog(text) {
   }
 
   // Parse ice box items
-  const iceBoxStart = text.indexOf('## \ud83e\uddf� Ice Box');
+  const iceBoxStart = text.indexOf('## 🧊 Ice Box');
   if (iceBoxStart !== -1) {
     const iceLines = text.slice(iceBoxStart).split('\n');
     for (const il of iceLines) {
@@ -476,34 +476,154 @@ function renderBoard(items) {
   });
 }
 
+// ── IndexedDB helpers for persisting file handle ──
+const DB_NAME = 'kanban-db';
+const STORE_NAME = 'file-handles';
+const HANDLE_KEY = 'backlog-handle';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveHandle(handle) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  tx.objectStore(STORE_NAME).put(handle, HANDLE_KEY);
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function getSavedHandle() {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const req = tx.objectStore(STORE_NAME).get(HANDLE_KEY);
+  return new Promise((resolve) => {
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+async function readFileHandle(handle) {
+  if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+    if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+      throw new Error('Permission denied');
+    }
+  }
+  const file = await handle.getFile();
+  return file.text();
+}
+
+// ── Loading logic ──
+const status = document.getElementById('load-status');
+let activeHandle = null;
+let refreshInterval = null;
+
+function renderFromText(text, source) {
+  const items = parseBacklog(text);
+  renderBoard(items);
+  status.className = 'status ok';
+  status.textContent = `Loaded ${items.length} items`;
+  document.getElementById('ts').textContent =
+    `Live from ${source} · ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
+}
+
 async function loadBacklog(path) {
-  const status = document.getElementById('load-status');
   try {
     const resp = await fetch(path);
     if (!resp.ok) throw new Error(`${resp.status} ${resp.statusText}`);
     const text = await resp.text();
-    const items = parseBacklog(text);
-    renderBoard(items);
-    status.className = 'status ok';
-    status.textContent = `Loaded ${items.length} items`;
-    document.getElementById('ts').textContent = 'Loaded: ' + new Date().toISOString().slice(0, 16).replace('T', ' ');
+    renderFromText(text, path);
   } catch (err) {
     status.className = 'status err';
     status.textContent = `Error: ${err.message}`;
-    console.error('Failed to load backlog:', err);
   }
 }
 
-// Init
-document.getElementById('reload-btn').addEventListener('click', () => {
-  loadBacklog(document.getElementById('backlog-path').value);
+async function loadFromHandle(handle) {
+  const text = await readFileHandle(handle);
+  renderFromText(text, handle.name);
+  activeHandle = handle;
+}
+
+async function pickFile() {
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }],
+    });
+    await saveHandle(handle);
+    await loadFromHandle(handle);
+    startAutoRefresh(handle);
+    document.getElementById('backlog-path').value = handle.name + ' (remembered)';
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      status.className = 'status err';
+      status.textContent = `Error: ${e.message}`;
+    }
+  }
+}
+
+function startAutoRefresh(handle) {
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(async () => {
+    try { await loadFromHandle(handle); } catch (_) { clearInterval(refreshInterval); }
+  }, 5000);
+}
+
+// ── Init ──
+document.getElementById('reload-btn').addEventListener('click', async () => {
+  if (activeHandle) {
+    await loadFromHandle(activeHandle);
+  } else if (window.showOpenFilePicker) {
+    await pickFile();
+  } else {
+    loadBacklog(document.getElementById('backlog-path').value);
+  }
 });
 document.getElementById('backlog-path').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') loadBacklog(e.target.value);
 });
 
-// Auto-load default backlog
-loadBacklog(DEFAULT_BACKLOG);
+async function init() {
+  // Strategy 1: HTTP fetch (works when served via dev server)
+  try {
+    const resp = await fetch(DEFAULT_BACKLOG);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const text = await resp.text();
+    if (text && text.includes('TB-')) { renderFromText(text, DEFAULT_BACKLOG); return; }
+  } catch (_) {}
+
+  // Strategy 2: Restore persisted file handle from IndexedDB
+  if (window.showOpenFilePicker) {
+    try {
+      const handle = await getSavedHandle();
+      if (handle) {
+        await loadFromHandle(handle);
+        startAutoRefresh(handle);
+        document.getElementById('backlog-path').value = handle.name + ' (remembered)';
+        return;
+      }
+    } catch (_) {}
+
+    // Strategy 3: Prompt to pick file (one-time, then remembered)
+    status.className = 'status err';
+    status.textContent = 'Pick BACKLOG.md — your choice is remembered for next time';
+    document.getElementById('reload-btn').textContent = 'Pick BACKLOG.md...';
+    document.getElementById('reload-btn').onclick = pickFile;
+    return;
+  }
+
+  status.className = 'status err';
+  status.textContent = 'Cannot load via file:// — serve via HTTP or use a Chromium browser';
+}
+
+init();
 </script>
 </body>
 </html>
