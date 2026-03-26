@@ -23,6 +23,10 @@ import {
   FACTION_HERALDIC_COLORS,
   AGENT_SPRITE_Z,
   PORTRAIT_TEXTURE_SIZE,
+  AVATAR_SCALE_MULTIPLIER,
+  AVATAR_Z_BUMP,
+  AVATAR_PULSE_PERIOD_S,
+  AVATAR_PULSE_OPACITY,
 } from '../agents/agentSpriteTypes';
 import type { ZoomTier } from './ZoomVisibilityMatrix';
 import { ZOOM_VISIBILITY_MATRIX } from './ZoomVisibilityMatrix';
@@ -30,6 +34,7 @@ import {
   buildFactionDotTextureCache,
   buildRetinueDotTexture,
   loadPortraitTexture,
+  buildAvatarRingTexture,
 } from '../agents/agentPortraitTextures';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -70,6 +75,10 @@ export interface AgentSpriteEntry {
   };
   /** Whether this agent is a retinue member (has continental tier) */
   isRetinue: boolean;
+  /** Whether this agent is the player's avatar */
+  isAvatar?: boolean;
+  /** Pulsing sphere-colored ring sprite (only for avatar) */
+  pulseRingSprite?: THREE.Sprite;
 }
 
 /**
@@ -183,17 +192,39 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
         });
       }
 
-      // Pre-compute scales
-      const portraitScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS);
-      const dotScale = agentSpriteScale(AGENT_TOKEN_RADIUS);
-      const continentalScale = agent.isRetinue ? agentSpriteScale(AGENT_DOT_RADIUS) : undefined;
+      // Pre-compute scales (avatar gets AVATAR_SCALE_MULTIPLIER boost)
+      const scaleMult = agent.isAvatar ? AVATAR_SCALE_MULTIPLIER : 1;
+      const portraitScale = agentSpriteScale(AGENT_PORTRAIT_RADIUS) * scaleMult;
+      const dotScale = agentSpriteScale(AGENT_TOKEN_RADIUS) * scaleMult;
+      const continentalScale = agent.isRetinue ? agentSpriteScale(AGENT_DOT_RADIUS) * scaleMult : undefined;
+
+      // Avatar z-bump ensures avatar renders above other agents on same hex
+      const spriteZ = agent.isAvatar ? AGENT_SPRITE_Z + AVATAR_Z_BUMP : AGENT_SPRITE_Z;
 
       // Create single sprite — starts with portrait material/scale
       const sprite = new THREE.Sprite(portraitMaterial);
       sprite.scale.set(portraitScale, portraitScale, 1);
       sprite.userData.baseScale = portraitScale;
-      sprite.position.set(wx, wy, AGENT_SPRITE_Z);
+      sprite.position.set(wx, wy, spriteZ);
       group.add(sprite);
+
+      // Avatar gets a pulsing sphere-colored ring overlay
+      let pulseRingSprite: THREE.Sprite | undefined;
+      if (agent.isAvatar && agent.avatarSphereColor) {
+        const ringTexture = buildAvatarRingTexture(agent.avatarSphereColor);
+        const ringMaterial = new THREE.SpriteMaterial({
+          map: ringTexture,
+          transparent: true,
+          depthWrite: false,
+          opacity: AVATAR_PULSE_OPACITY[0],
+        });
+        pulseRingSprite = new THREE.Sprite(ringMaterial);
+        // Ring is slightly larger than the portrait
+        const ringScale = portraitScale * 1.2;
+        pulseRingSprite.scale.set(ringScale, ringScale, 1);
+        pulseRingSprite.position.set(wx, wy, spriteZ - 0.001); // Just behind portrait
+        group.add(pulseRingSprite);
+      }
 
       spriteMap.set(agent.id, {
         sprite,
@@ -208,10 +239,29 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
           continental: continentalScale,
         },
         isRetinue: agent.isRetinue,
+        isAvatar: agent.isAvatar,
+        pulseRingSprite,
       });
 
-      // Build animation target wrapping the sprite
-      animationTargets.set(agent.id, createAnimationTarget(sprite));
+      // Build animation target wrapping the sprite (+ pulse ring if avatar)
+      if (pulseRingSprite) {
+        // Avatar: wrap both main sprite and pulse ring so they move together
+        const baseTarget = createAnimationTarget(sprite);
+        animationTargets.set(agent.id, {
+          setPosition(x: number, y: number, z: number) {
+            baseTarget.setPosition(x, y, z);
+            pulseRingSprite!.position.set(x, y, z - 0.001);
+          },
+          setScaleMultiplier(m: number) {
+            baseTarget.setScaleMultiplier(m);
+          },
+          resetScale() {
+            baseTarget.resetScale();
+          },
+        });
+      } else {
+        animationTargets.set(agent.id, createAnimationTarget(sprite));
+      }
     }
   }
 
@@ -222,6 +272,9 @@ export function createAgentSpriteMesh(agents: AgentRenderData[]): AgentSpriteGro
       entry.materials.dot.dispose();
       if (entry.materials.continental) {
         entry.materials.continental.dispose();
+      }
+      if (entry.pulseRingSprite) {
+        entry.pulseRingSprite.material.dispose();
       }
     }
     spriteMap.clear();
@@ -269,6 +322,10 @@ export function updateZoomVisibility(group: AgentSpriteGroup, tier: ZoomTier): v
     } else {
       entry.sprite.visible = false;
     }
+    // Pulse ring tracks main sprite visibility (only visible at portrait tier)
+    if (entry.pulseRingSprite) {
+      entry.pulseRingSprite.visible = showPortrait;
+    }
   }
 }
 
@@ -294,7 +351,10 @@ export async function loadAgentPortraits(
       if (!entry) return;
 
       const ringColor = FACTION_HERALDIC_COLORS[agent.factionIndex] ?? FACTION_HERALDIC_COLORS[0];
-      const texture = await loadPortraitTexture(agent.portraitUrl!, ringColor, agent.isRetinue);
+      const texture = await loadPortraitTexture(agent.portraitUrl!, ringColor, agent.isRetinue, {
+        isAvatar: agent.isAvatar,
+        avatarSphereColor: agent.avatarSphereColor,
+      });
 
       // Update both portrait and dot materials
       entry.materials.portrait.map = texture;
@@ -352,7 +412,37 @@ export function updateAgentPositions(
       const wx = worldPos.x;
       const wy = worldPos.y;
 
-      entry.sprite.position.set(wx, wy, AGENT_SPRITE_Z);
+      const spriteZ = entry.isAvatar ? AGENT_SPRITE_Z + AVATAR_Z_BUMP : AGENT_SPRITE_Z;
+      entry.sprite.position.set(wx, wy, spriteZ);
+      // Keep pulse ring sprite in sync with main sprite position
+      if (entry.pulseRingSprite) {
+        entry.pulseRingSprite.position.set(wx, wy, spriteZ - 0.001);
+      }
+    }
+  }
+}
+
+// ── Avatar Pulse Animation ────────────────────────────────────────────────────
+
+/**
+ * Updates avatar pulse ring opacity. Call once per frame from the render loop.
+ *
+ * Oscillates the ring's opacity between AVATAR_PULSE_OPACITY[min, max]
+ * using a sine wave with period AVATAR_PULSE_PERIOD_S.
+ *
+ * @param group — the AgentSpriteGroup containing avatar sprites
+ * @param elapsedS — elapsed time in seconds (from THREE.Clock or performance.now)
+ */
+export function tickAvatarPulse(group: AgentSpriteGroup, elapsedS: number): void {
+  const [minOpacity, maxOpacity] = AVATAR_PULSE_OPACITY;
+  const range = maxOpacity - minOpacity;
+  // Sine wave: 0→1→0 over AVATAR_PULSE_PERIOD_S
+  const t = (Math.sin((elapsedS / AVATAR_PULSE_PERIOD_S) * Math.PI * 2) + 1) / 2;
+  const opacity = minOpacity + range * t;
+
+  for (const [, entry] of group.spriteMap) {
+    if (entry.pulseRingSprite && entry.pulseRingSprite.visible) {
+      (entry.pulseRingSprite.material as THREE.SpriteMaterial).opacity = opacity;
     }
   }
 }

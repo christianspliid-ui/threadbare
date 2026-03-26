@@ -17,6 +17,7 @@ import {
   PORTRAIT_TEXTURE_SIZE,
   RETINUE_BORDER_COLOR,
   RETINUE_BORDER_ALT_COLOR,
+  AVATAR_RING_WIDTH_FRACTION,
 } from './agentSpriteTypes';
 
 // ── Dot Texture Builders ─────────────────────────────────────────────────────
@@ -105,8 +106,14 @@ export function buildRetinueDotTexture(
 
 // ── Portrait Texture Loader ──────────────────────────────────────────────────
 
+/** Options for avatar-specific portrait rendering */
+export interface PortraitOptions {
+  isAvatar?: boolean;
+  avatarSphereColor?: string;
+}
+
 /**
- * Loads a portrait image and rasterizes it as a circular clip with a faction/retinue ring.
+ * Loads a portrait image and rasterizes it as a circular clip with a faction/retinue/avatar ring.
  *
  * Async because it waits for the image to load. On failure, falls back to a
  * faction dot texture (fail-soft per NFP #4).
@@ -114,12 +121,14 @@ export function buildRetinueDotTexture(
  * @param url — image URL to load (crossOrigin='anonymous')
  * @param ringColor — faction color or retinue gold for the outer ring
  * @param isRetinue — if true, draws gold ring + white highlight; else draws faction ring
+ * @param options — optional avatar-specific rendering options
  * @returns Promise resolving to THREE.CanvasTexture (always resolves, never rejects)
  */
 export async function loadPortraitTexture(
   url: string,
   ringColor: string,
   isRetinue: boolean,
+  options?: PortraitOptions,
 ): Promise<THREE.CanvasTexture> {
   const size = PORTRAIT_TEXTURE_SIZE;
 
@@ -149,7 +158,24 @@ export async function loadPortraitTexture(
       ctx.drawImage(img, sx, sy, minDim, minDim, cx - radius, cy - radius, radius * 2, radius * 2);
       ctx.restore();
 
-      if (isRetinue) {
+      if (options?.isAvatar && options.avatarSphereColor) {
+        // Avatar sphere-colored ring (thicker than faction, uses AVATAR_RING_WIDTH_FRACTION)
+        const ringWidth = Math.max(2, Math.round(radius * AVATAR_RING_WIDTH_FRACTION));
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = options.avatarSphereColor;
+        ctx.lineWidth = ringWidth;
+        ctx.stroke();
+        ctx.closePath();
+
+        // Inner glow highlight (white, thinner)
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius - ringWidth / 2 - 1, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.closePath();
+      } else if (isRetinue) {
         // Gold retinue ring (thicker)
         ctx.beginPath();
         ctx.arc(cx, cy, radius, 0, Math.PI * 2);
@@ -187,6 +213,52 @@ export async function loadPortraitTexture(
 
     img.src = url;
   });
+}
+
+/**
+ * Builds a sphere-colored ring texture for the avatar pulse overlay.
+ *
+ * Returns a transparent texture with just the sphere-colored ring — used as
+ * a second sprite overlaid on the avatar portrait, animated with pulsing opacity.
+ *
+ * @param sphereColor — CSS color string for the ring
+ * @param size — canvas resolution (default PORTRAIT_TEXTURE_SIZE)
+ */
+export function buildAvatarRingTexture(
+  sphereColor: string,
+  size: number = PORTRAIT_TEXTURE_SIZE,
+): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d')!;
+
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = size / 2 - 2;
+  const ringWidth = Math.max(3, Math.round(radius * AVATAR_RING_WIDTH_FRACTION * 1.5));
+
+  // Outer glow ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = sphereColor;
+  ctx.lineWidth = ringWidth;
+  ctx.stroke();
+  ctx.closePath();
+
+  // Soft inner glow
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius - ringWidth / 2, 0, Math.PI * 2);
+  ctx.strokeStyle = sphereColor;
+  ctx.lineWidth = 2;
+  ctx.globalAlpha = 0.4;
+  ctx.stroke();
+  ctx.closePath();
+  ctx.globalAlpha = 1.0;
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
 }
 
 // ── Texture Cache Builder ────────────────────────────────────────────────────
