@@ -16,8 +16,8 @@ import {
   getIncomingBonds,
   getActorTraits,
   getAgentAmbitions,
-  getAgentWorships,
-  getWorshippers,
+  getThreadAscendant,
+  getThreadedAgents,
   getAvatarsOf,
   getAvatarAscendant,
   getAgentArtifacts,
@@ -87,9 +87,9 @@ function buildGraph(): WorldGraph {
   g.addNode({ id: 'ambition.1', type: 'ambition', name: 'Become King', properties: {} });
   g.addEdge({ id: 'e.a1_amb', source: 'agent.1', target: 'ambition.1', type: 'pursues', properties: { priority: 1, status: 'active' } });
 
-  // Worship
-  g.addEdge({ id: 'e.a1_worship', source: 'agent.1', target: 'god.1', type: 'worships', properties: {} });
-  g.addEdge({ id: 'e.a2_worship', source: 'agent.2', target: 'god.1', type: 'worships', properties: {} });
+  // Thread (divine connection)
+  g.addEdge({ id: 'e.a1_thread', source: 'god.1', target: 'agent.1', type: 'thread', properties: {} });
+  g.addEdge({ id: 'e.a2_thread', source: 'god.1', target: 'agent.2', type: 'thread', properties: {} });
 
   // Avatar
   g.addEdge({ id: 'e.a3_avatar', source: 'agent.3', target: 'ascendant.1', type: 'avatar_of', properties: {} });
@@ -307,23 +307,23 @@ describe('getAgentAmbitions', () => {
 
 // ─── Cosmology / Divine queries ───────────────────────────────────
 
-describe('getAgentWorships', () => {
-  it('returns the deity an agent worships', () => {
+describe('getThreadAscendant', () => {
+  it('returns the deity an agent is threaded to', () => {
     const g = buildGraph();
-    const deity = getAgentWorships(g, 'agent.1');
+    const deity = getThreadAscendant(g, 'agent.1');
     expect(deity?.id).toBe('god.1');
   });
 
-  it('returns undefined for non-worshipper', () => {
+  it('returns undefined for non-threaded agent', () => {
     const g = buildGraph();
-    expect(getAgentWorships(g, 'agent.3')).toBeUndefined();
+    expect(getThreadAscendant(g, 'agent.3')).toBeUndefined();
   });
 });
 
-describe('getWorshippers', () => {
-  it('returns all worshippers of a deity', () => {
+describe('getThreadedAgents', () => {
+  it('returns all agents threaded to a deity', () => {
     const g = buildGraph();
-    const w = getWorshippers(g, 'god.1');
+    const w = getThreadedAgents(g, 'god.1');
     expect(w.map(n => n.id).sort()).toEqual(['agent.1', 'agent.2']);
   });
 });
@@ -480,7 +480,7 @@ describe('null safety', () => {
     expect(getAgentLocationId(g, 'nonexistent')).toBeUndefined();
     expect(getAgentsAtLocation(g, 'nonexistent')).toEqual([]);
     expect(getAgentBonds(g, 'nonexistent')).toEqual([]);
-    expect(getAgentWorships(g, 'nonexistent')).toBeUndefined();
+    expect(getThreadAscendant(g, 'nonexistent')).toBeUndefined();
     expect(getActorTraits(g, 'nonexistent')).toEqual([]);
     expect(getAgentAmbitions(g, 'nonexistent')).toEqual([]);
     expect(getAgentFaction(g, 'nonexistent')).toBeUndefined();

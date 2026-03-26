@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-035**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-039**.
 
 ---
 
@@ -227,6 +227,46 @@ Ideas that need significant design work or aren't urgent.
 - **TB-027** · Bonds/leverage system between agents
 - **TB-028** · Resources system v2 (production chains, scarcity)
 - **TB-029** · Ascendant Creation Experience — guided flow for the player to create and customize Ascendants (powerful former mortals). Domain capability selection, sphere alignment, visual identity, backstory generation within constraints.
+
+---
+
+## 📐▶ TB-035 · Meet The First — Agent Generation Encounter
+
+The god's relationship system and hero's journey arc. 9 interconnected subsystems: **Divine Court & Thread Edge** (replaces `worships` with `thread`, flips direction god→mortal, defines court spectrum: The First / Retinue / Watched), **Court Slot** (The First with narrative cooldowns), **Meeting Encounter** (intent-driven 4-step choice encounter — declare destiny, observe dilemmas, reveal + invest, confirm spark), **Choice-Point Step Type** (new encounter step for player decisions), **Hero's Journey Arc** (doom-clock-scheduled branching story tree — beats fire on schedule, world state picks variants, no failure state), **Journey Vignettes & Universal Encounter Visibility** (auto-interrupt for First, clickable encounters for all threaded agents, two interaction modes: encounter interventions vs strategic actions), **The Return** (peak-end convergence with Founding Gates + Ripple Consequences, 6 divergent outcomes), **Unified Vignette Engine** (layered templates: structure + axis selector + dynamic enrichment + archetype tone), **Dynamic Prose Enrichment** (world-state queries inject titles, artifacts, allies into prose).
+
+**Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-meet-the-first.md`
+**Design doc:** `Docs/plans/2026-03-26-meet-the-first-design.md` (v2 — post-review rewrite)
+**Depends on:** Encounter system, Generalized Action Targeting (✅), Ambition system (needs assessment), Archetype content (exists), Cooperation strategy (exists), Axiological profile (exists)
+**Implementation:** 7 phases — Phase 0: Thread Edge Migration → Phase 1: Foundation → Phase 2: Journey Engine → Phase 3: The Return → Phase 4: Universal Encounter Visibility → Phase 5: Dynamic Prose Enrichment → Phase 6: Content & Polish
+
+---
+
+## 📋 TB-036 · Hex Actions Expansion & Control Mechanic
+
+Expand from 4 hex action templates to full coverage across all 4 narrative layers (Land, Soul, People, Ruins) using 5 action verbs (Create, Find, Change, Destroy, Control). The Control verb is a new sustained-commitment mechanic — ongoing effects that tie up resources/attention, distinct from one-time Change actions. Control is the god-game signature: you don't just *do* things, you *hold* things.
+
+**Brainstorm:** `brainstorm-hex-actions-and-control-mechanic.md`
+**Depends on:** Generalized Action Targeting (✅)
+**Needs design:** Yes — brainstorm has verb taxonomy and control mechanic sketched, needs full design doc
+
+---
+
+## 💡 TB-037 · Meet The First — Onboarding Auto-Trigger
+
+Auto-trigger the Meet The First encounter on the player's first visit to a populated hex. Free re-rolls, tutorial affordances (tooltips explaining encounter flow, archetypes, values, reaches), and a guided first-time experience. Wraps the repeatable TB-035 action in an onboarding shell.
+
+**Depends on:** TB-035 (Meet The First)
+**Needs design:** Yes — deferred from TB-035 design session (2026-03-26)
+
+---
+
+## 💡 TB-038 · Dilemma Content Research & Authoring
+
+Deep research into what kinds of origin-story dilemmas resonate across mythology, fantasy literature, and hero's journey traditions. Output: a complete dilemma content library for the Meet The First encounter system.
+
+**Research brief:** `Docs/plans/2026-03-26-dilemma-research-brief.md`
+**Depends on:** TB-035 design doc (for system integration spec)
+**Needs:** Full creative attention — quality of these stories directly determines the emotional impact of the game's most important moment
 
 ---
 

@@ -86,7 +86,7 @@ export interface ModifierBreakdown {
  * Compute sphere alignment bonus/penalty.
  *
  * 1. Get agent's sphere alignment: check agent node's properties.sphereAlignment,
- *    or walk worships edges to ascendant and read ascendant's sphereAlignment.primary.
+ *    or walk thread edges to ascendant and read ascendant's sphereAlignment.primary.
  * 2. If agent sphere === encounter sphere → +SPHERE_ALIGNMENT_BONUS.
  * 3. If agent sphere is opposite of encounter sphere → +SPHERE_OPPOSITION_PENALTY.
  * 4. Otherwise → 0.
@@ -115,11 +115,11 @@ export function computeSphereAlignmentBonus(
     }
   }
 
-  // If no direct sphere, walk worships edges to ascendant
+  // If no direct sphere, walk thread edges to ascendant
   if (!agentSphere) {
-    const worshipsEdges = graph.getOutgoingEdges(agentId, 'worships');
-    for (const edge of worshipsEdges) {
-      const ascendantNode = graph.getNode(edge.target);
+    const threadEdges = graph.getIncomingEdges(agentId, 'thread');
+    for (const edge of threadEdges) {
+      const ascendantNode = graph.getNode(edge.source);
       if (!ascendantNode) continue;
       const ascSphereAlignment = ascendantNode.properties.sphereAlignment as
         | { primary?: SphereName } | SphereName | undefined;

@@ -58,18 +58,18 @@ describe('progressive disclosure integration', () => {
   // ─── Test 1: Full Flow ───────────────────────────────────────────────
 
   it('full flow: init → stranger → proximity gain → recognised → card shows archetype', () => {
-    // Find a non-worshipper agent (or the least-worshipped)
+    // Find a non-threaded agent (or the least-threaded)
     const allIndividuals = state.graph
       .getNodesByType('actor')
       .filter(node => (node.properties as Record<string, unknown>).actorType === 'individual');
 
     expect(allIndividuals.length).toBeGreaterThan(0);
 
-    // Get worship edges to identify worshippers
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    const worshippersSet = new Set(worshipEdges.map(e => e.source));
+    // Get thread edges to identify threaded agents
+    const threadEdges = state.graph.getEdgesByType('thread');
+    const threadedSet = new Set(threadEdges.map(e => e.target));
 
-    // Find an agent that is NOT a worshipper (or least-known)
+    // Find an agent that is NOT threaded (or least-known)
     let testAgentId = allIndividuals[0].id;
     let lowestFamiliarity = Infinity;
 
@@ -133,7 +133,7 @@ describe('progressive disclosure integration', () => {
   // ─── Test 2: Scry Action Grants Familiarity ──────────────────────
 
   it('scry action grants 0.15 familiarity', () => {
-    // Find a non-worshipper agent
+    // Find a non-threaded agent
     const allIndividuals = state.graph
       .getNodesByType('actor')
       .filter(node => (node.properties as Record<string, unknown>).actorType === 'individual');
@@ -176,21 +176,21 @@ describe('progressive disclosure integration', () => {
   // ─── Test 3: Word Scales Produce No Numeric Values ──────────────────
 
   it('word scales produce no numeric values in UI data', () => {
-    // Find a worshipper so we can get good info card data
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    expect(worshipEdges.length).toBeGreaterThan(0);
+    // Find a threaded agent so we can get good info card data
+    const threadEdges = state.graph.getEdgesByType('thread');
+    expect(threadEdges.length).toBeGreaterThan(0);
 
-    const worshipperId = worshipEdges[0].source;
+    const threadedAgentId = threadEdges[0].target;
 
     // Manually set familiarity to transparent level (0.8+)
     const mapTransparent = new Map(state.familiarityMap);
-    mapTransparent.set(worshipperId, 0.85);
+    mapTransparent.set(threadedAgentId, 0.85);
     state.familiarityMap = mapTransparent;
 
     // Get info card at transparent level
     const transparentCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       state.ascendantId,
       'transparent',
     );
@@ -236,7 +236,7 @@ describe('progressive disclosure integration', () => {
     // Also test getAgentFullProfile at transparent level
     const fullProfile = getAgentFullProfile(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       state.ascendantId,
       'transparent',
     );
@@ -331,16 +331,16 @@ describe('progressive disclosure integration', () => {
   // ─── Test 6: Archetype Revelation By Level ──────────────────────────
 
   it('archetype is revealed at recognised+ but not at stranger', () => {
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    expect(worshipEdges.length).toBeGreaterThan(0);
+    const threadEdges = state.graph.getEdgesByType('thread');
+    expect(threadEdges.length).toBeGreaterThan(0);
 
-    const worshipperId = worshipEdges[0].source;
+    const threadedAgentId = threadEdges[0].target;
     const ascendantId = state.ascendantId;
 
     // Stranger: no archetype
     const strangerCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'stranger',
     );
@@ -349,11 +349,11 @@ describe('progressive disclosure integration', () => {
     // Recognised: archetype visible
     const recognisedCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'recognised',
     );
-    const agentNode = state.graph.getNode(worshipperId);
+    const agentNode = state.graph.getNode(threadedAgentId);
     const archetypeId = agentNode?.properties?.narrativeArchetype;
     if (archetypeId) {
       expect(recognisedCard?.archetypeLabel).toBeDefined();
@@ -362,7 +362,7 @@ describe('progressive disclosure integration', () => {
     // Known: archetype visible
     const knownCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'known',
     );
@@ -373,7 +373,7 @@ describe('progressive disclosure integration', () => {
     // Intimate: archetype visible, plus full profile
     const intimateCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'intimate',
     );
@@ -382,7 +382,7 @@ describe('progressive disclosure integration', () => {
     }
     const intimateProfile = getAgentFullProfile(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'intimate',
     );
@@ -391,7 +391,7 @@ describe('progressive disclosure integration', () => {
     // Transparent: archetype visible, full profile
     const transparentCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'transparent',
     );
@@ -400,7 +400,7 @@ describe('progressive disclosure integration', () => {
     }
     const transparentProfile = getAgentFullProfile(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'transparent',
     );
@@ -410,16 +410,16 @@ describe('progressive disclosure integration', () => {
   // ─── Test 7: Domain Count Progression ────────────────────────────────
 
   it('domain visibility increases with knowledge level', () => {
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    expect(worshipEdges.length).toBeGreaterThan(0);
+    const threadEdges = state.graph.getEdgesByType('thread');
+    expect(threadEdges.length).toBeGreaterThan(0);
 
-    const worshipperId = worshipEdges[0].source;
+    const threadedAgentId = threadEdges[0].target;
     const ascendantId = state.ascendantId;
 
     // Stranger: no domains
     const strangerCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'stranger',
     );
@@ -428,7 +428,7 @@ describe('progressive disclosure integration', () => {
     // Recognised: 1 domain (vague)
     const recognisedCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'recognised',
     );
@@ -437,7 +437,7 @@ describe('progressive disclosure integration', () => {
     // Known: 3 domains
     const knownCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'known',
     );
@@ -446,7 +446,7 @@ describe('progressive disclosure integration', () => {
     // Intimate: all 9 domains
     const intimateCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'intimate',
     );
@@ -455,24 +455,24 @@ describe('progressive disclosure integration', () => {
     // Transparent: all 9 domains
     const transparentCard = getAgentInfoCard(
       state.graph,
-      worshipperId,
+      threadedAgentId,
       ascendantId,
       'transparent',
     );
     expect(transparentCard?.domains?.length).toBe(9);
   });
 
-  // ─── Test 8: Worshipper Familiarity Starts at Recognised ──────────────
+  // ─── Test 8: Threaded Agent Familiarity Starts at Recognised ──────────────
 
-  it('initial worshippers start with recognised familiarity (0.3)', () => {
-    const worshipEdges = state.graph.getEdgesByType('worships');
-    expect(worshipEdges.length).toBeGreaterThan(0);
+  it('initial threaded agents start with recognised familiarity (0.3)', () => {
+    const threadEdges = state.graph.getEdgesByType('thread');
+    expect(threadEdges.length).toBeGreaterThan(0);
 
-    for (const edge of worshipEdges) {
-      const worshipperId = edge.source;
-      const familiarity = getFamiliarity(state.familiarityMap, worshipperId);
+    for (const edge of threadEdges) {
+      const threadedAgentId = edge.target;
+      const familiarity = getFamiliarity(state.familiarityMap, threadedAgentId);
 
-      // Worship tier 1 gives 0.3 familiarity
+      // Thread tier 1 gives 0.3 familiarity
       expect(familiarity).toBe(FAMILIARITY_GAINS.worship_tier_1);
       expect(getKnowledgeLevel(familiarity)).toBe('recognised');
     }

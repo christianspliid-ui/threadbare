@@ -9,6 +9,47 @@
 
 ---
 
+### 2026-03-26: Meet The First — Full System Design v2 (TB-035)
+
+**Context:** Full system design completed for TB-035, then reviewed in detail and rewritten from scratch as v2. The review surfaced fundamental redesigns: `worships` edge replaced by `thread` (god→mortal direction flip), divine court spectrum (First/Retinue/Watched), intent-driven meeting encounter (god declares destiny, not browsing candidates), doom-clock-scheduled branching story tree (beats fire on schedule, world state picks variants, no failure state), universal encounter visibility (all threaded agents have clickable encounters, not just The First), and two distinct interaction modes (encounter interventions in this design vs strategic actions in TB-036). Peak-end convergence for Return outcomes (Ordeal is dominant signal, relationship state is tiebreaker), Founding Gates mechanically gate Return outcomes based on meeting choices, Ripple Consequences propagate through the First's graph connections (artifacts, allies, factions, locations, spouse). Design doc covers 9 systems across 7 implementation phases.
+
+**Key architectural decisions:**
+- `thread` edge replaces `worships` — direction flips from mortal→god to god→mortal. All `ThreadEdgeProperties` (court position, journey state, intervention tracking, attention mode) live on this edge.
+- Two interaction modes: encounter interventions (this design, reactive/dramatic) vs strategic actions (TB-036, tactical/planning). These are architecturally separate.
+- Doom-clock story tree: journey beats fire on a tick schedule, not milestone completion. World state determines which variant fires. No failure state — arc always completes, just tells different stories.
+- Layered vignette templates: structural template (hand-authored dramatic shape) + axis selector (algorithmic from world state) + dynamic enrichment (graph-derived content) + archetype tone (voice overlay).
+- Attention mode on thread edge (`pause` | `auto_resolve`) determines whether vignettes interrupt the game. Default by court position, modifiable by player action (costs essence).
+
+**Prerequisite (RESOLVED):** Ambition system assessed — current system is sufficient. 10 standard + 4 reactive templates, milestone-based progression, `completedMilestones[]` and `status` queryable on `pursues` edge. Journey system can read ambition state as a world-state axis without changes.
+
+**Post-v2 review decisions (see design doc Addendum for full details):**
+- **Co-authorship:** Player picks primary + secondary reach + sphere. Candidates generated from scratch (not from pool). Axiological profile is random, influenced through dilemma choices, never directly edited. Flavor tagging system for appearance/manner (image-constrained). 81 archetype names (one per reach pair).
+- **Dilemma content architecture:** 4 categories — axiological (~50), reach-specific (~45), domain-specific (~35), general/graph (larger pool). ~150+ typed templates total. Each dilemma can produce axiological shifts, reach changes, graph additions. Research task: TB-038.
+- **Step 3 (Spark):** One god-given trait (from filtered list, no essence cost). Ambition set as narrative conclusion of the story, not a menu pick.
+- **Founding Gates validated:** Prose eval demonstrates tags emerge naturally from story choices. See `Docs/plans/2026-03-26-meeting-encounter-prose-eval.md`.
+- **Attention mode:** Reward is access to the choice. Thread thickness gates pause access. Thread tier is also prerequisite for strategic actions (TB-036). Prevents attention spam (no 5-agent pause at turn 5).
+- **Prose quality bar:** Meeting encounter prose eval is the benchmark. Templates must produce this caliber after enrichment.
+
+**What Cowork already did:**
+- Wrote v2 design doc: `Docs/plans/2026-03-26-meet-the-first-design.md` (supersedes v1, includes Addendum with review decisions)
+- Wrote prose eval: `Docs/plans/2026-03-26-meeting-encounter-prose-eval.md` (6 complete meeting paths, one per Return outcome)
+- Wrote dilemma research brief: `Docs/plans/2026-03-26-dilemma-research-brief.md` (TB-038)
+- Updated BACKLOG.md: TB-035 at `📐▶` with v2 scope and 7-phase plan, added TB-038 (dilemma research)
+- Added TB-037 (onboarding auto-trigger) to backlog as deferred item
+
+**Action for Claude Code:**
+- [ ] Phase 0 (Thread Edge Migration): Rename `worships` → `thread` in edge schema, flip direction (ascendant→mortal), extend `ThreadEdgeProperties`, update all callers to canonical query functions, update world seed. **Milestone:** all existing worships functionality works through thread edge.
+- [ ] Phase 1 (Foundation): Choice-point step type in encounter system, court position on thread edge, Meet The First action template, 4-step meeting encounter with co-authorship (Step 1: pick primary+secondary reach+sphere, generate candidate from scratch with flavor tags; Step 2: 4 dilemmas from 4 categories producing axiological shifts + reach changes + graph additions + 2 narrative traits; Step 3: god-given trait pick + ambition derived from story; Step 4: confirm), agent creation from encounter output. **Milestone:** player can trigger Meet The First and get a bonded agent.
+- [ ] Phase 2 (Journey Engine): Doom-clock phase boundaries, beat scheduling system, state snapshot query (4 axes: ambition progress, relationship tier, world impact, thread investment), structural template selection from state, journey vignette modal (auto-interrupt for First), story ambition assignment, beat history tracking on thread edge. **Milestone:** journey beats fire on schedule, variants selected by world state.
+- [ ] Phase 3 (The Return): Founding Gates (meeting choice tags → outcome eligibility), Ordeal beat with capability check, Return convergence algorithm (peak-end model), 6 outcome implementations (Triumphant Return, Reluctant Savior, Loyal Ascension, Bittersweet Sacrifice, Betrayal & Fall, Apotheosis), Ripple Consequences engine (secondary effects on artifacts/allies/factions/locations/spouse), Return vignette + ripple prose, court slot lifecycle (cooldown, position clear). **Milestone:** complete arc from meeting to dramatic conclusion with ripple effects.
+- [ ] Phase 4 (Universal Encounter Visibility): Retinue encounter notifications + medium vignettes, Watched encounter peeks, encounter intervention (essence spending for probability boost), attention mode toggle. **Milestone:** all threaded agents visible during encounters.
+- [ ] Phase 5 (Dynamic Prose Enrichment): `gatherNarrativeContext` world state query, placeholder system with conditionals, enrichment integration into vignette renderer, callback prose system (meeting choices echoed in journey). **Milestone:** vignettes reference actual world state.
+- [ ] Phase 6 (Content & Polish): Full meeting dilemma library (60+ templates), full journey structural templates (25-40 across phases), archetype tone overlays (19 per template), ascendant lens prose (7 spheres × 20 scene keys), Return outcome prose (per-archetype variants), ripple consequence prose. **Milestone:** rich, varied content across all archetypes and locations.
+
+**Files changed:** `Docs/plans/2026-03-26-meet-the-first-design.md` (v2 + Addendum), `Docs/plans/2026-03-26-meeting-encounter-prose-eval.md` (new), `Docs/plans/2026-03-26-dilemma-research-brief.md` (new), `.planning/BACKLOG.md` (updated), `.planning/HANDOVER.md` (this entry)
+
+---
+
 ### 2026-03-25: HexMapV2 Medium-Term Improvements (TB-016)
 
 **Context:** Architectural review identified three medium-effort refactors with high payoff. Design doc has full interface specs, shader code, and fail-soft tables. Quick wins (typed layer keys, Z centralization, D3ZoomCamera constants) already completed in prior session.

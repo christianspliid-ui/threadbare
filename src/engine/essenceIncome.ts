@@ -11,7 +11,7 @@ import type { SphereName } from '../types';
 import type { EssencePool, SphereAlignment, InfluenceTier } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
-  ESSENCE_PER_WORSHIPPER,
+  ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
   TIER_MAINTENANCE,
 } from '../types/influence';
@@ -51,8 +51,8 @@ export function computeEssenceIncome(graph: WorldGraph, ascendantId: string): Es
 
   // Gross generation
   let totalRate = BASE_ESSENCE_PER_TICK;
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
-  totalRate += worshipEdges.length * ESSENCE_PER_WORSHIPPER;
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
+  totalRate += threadEdges.length * ESSENCE_PER_THREAD;
 
   const controlEdges = graph.getOutgoingEdges(ascendantId, 'controls');
   for (const edge of controlEdges) {
@@ -66,7 +66,7 @@ export function computeEssenceIncome(graph: WorldGraph, ascendantId: string): Es
 
   // Maintenance cost (deducted from primary sphere)
   let totalMaintenance = 0;
-  for (const edge of worshipEdges) {
+  for (const edge of threadEdges) {
     const tier = edge.properties.tier as InfluenceTier | undefined;
     totalMaintenance += tier !== undefined ? (TIER_MAINTENANCE[tier] ?? 0) : 0;
   }

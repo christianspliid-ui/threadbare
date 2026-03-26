@@ -66,12 +66,12 @@ export interface VignetteNotification {
 // --- Helpers ---
 
 /**
- * Check if an agent is bonded (has a worships edge to any ascendant).
+ * Check if an agent is bonded (has a thread edge from any ascendant).
  * Fail-soft: returns false if agent not found or no edges.
  */
 export function isAgentBonded(graph: WorldGraph, agentId: string): boolean {
-  const worshipsEdges = graph.getOutgoingEdges(agentId, 'worships');
-  return worshipsEdges.length > 0;
+  const threadEdges = graph.getIncomingEdges(agentId, 'thread');
+  return threadEdges.length > 0;
 }
 
 /**

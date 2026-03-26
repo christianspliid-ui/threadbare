@@ -93,22 +93,22 @@ describe('Essence Generation', () => {
     expect(total).toBeCloseTo(1.0, 5);
   });
 
-  it('worshippers increase generation', () => {
+  it('threaded agents increase generation', () => {
     const baseGen = computeEssenceGeneration(graph, ascendantId);
     const baseTotal = SPHERE_NAMES.reduce((sum, s) => sum + baseGen[s], 0);
 
-    // Add a worshipper
+    // Add a threaded agent
     graph.addNode({
-      id: 'actor.worshipper1',
+      id: 'actor.threaded1',
       type: 'actor',
       name: 'Faithful One',
       properties: { actorType: 'individual' },
     });
     graph.addEdge({
-      id: 'edge.worship1',
-      source: 'actor.worshipper1',
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: 'actor.threaded1',
+      type: 'thread',
       properties: { tier: 1, ticksAtCurrentTier: 0, establishedTick: 0, totalEssenceSpent: 0, maintenanceCurrent: true },
     });
 
@@ -165,9 +165,9 @@ describe('Essence Generation', () => {
     expect(pool.life).toBe(50);
   });
 
-  it('computeMaxEssence scales with worshippers', () => {
+  it('computeMaxEssence scales with threaded agents', () => {
     const base = computeMaxEssence(graph, ascendantId);
-    expect(base).toBe(50); // BASE_MAX_ESSENCE with no worshippers
+    expect(base).toBe(50); // BASE_MAX_ESSENCE with no threaded agents
 
     graph.addNode({
       id: 'actor.w1',
@@ -176,15 +176,15 @@ describe('Essence Generation', () => {
       properties: { actorType: 'individual' },
     });
     graph.addEdge({
-      id: 'edge.w1',
-      source: 'actor.w1',
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.t1',
+      source: ascendantId,
+      target: 'actor.w1',
+      type: 'thread',
       properties: { tier: 1, ticksAtCurrentTier: 0, establishedTick: 0, totalEssenceSpent: 0, maintenanceCurrent: true },
     });
 
     const boosted = computeMaxEssence(graph, ascendantId);
-    expect(boosted).toBe(55); // 50 + 5 per worshipper
+    expect(boosted).toBe(55); // 50 + 5 per threaded agent
   });
 });
 
@@ -219,12 +219,12 @@ describe('Influence Tier Management', () => {
     expect(getInfluenceTier(graph, ascendantId, agentId)).toBe(0);
   });
 
-  it('getInfluenceTier returns current tier from worships edge', () => {
+  it('getInfluenceTier returns current tier from thread edge', () => {
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 2,
         ticksAtCurrentTier: 15,
@@ -242,10 +242,10 @@ describe('Influence Tier Management', () => {
     graph.updateNode(ascendantId, { properties: { ...graph.getNode(ascendantId)!.properties, essencePool: pool } });
 
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -260,7 +260,7 @@ describe('Influence Tier Management', () => {
     expect(result.maintenancePaid).toContain(agentId);
     expect(result.maintenanceFailed).toHaveLength(0);
 
-    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    const edge = graph.getOutgoingEdges(ascendantId, 'thread')[0];
     expect(edge.properties.ticksAtCurrentTier).toBe(1);
     expect(edge.properties.maintenanceCurrent).toBe(true);
   });
@@ -270,10 +270,10 @@ describe('Influence Tier Management', () => {
     graph.updateNode(ascendantId, { properties: { ...graph.getNode(ascendantId)!.properties, essencePool: pool } });
 
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 10,
@@ -286,16 +286,16 @@ describe('Influence Tier Management', () => {
     const result = processInfluenceMaintenance(graph, ascendantId, 11);
     expect(result.maintenanceFailed).toContain(agentId);
 
-    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    const edge = graph.getOutgoingEdges(ascendantId, 'thread')[0];
     expect(edge.properties.maintenanceCurrent).toBe(false);
   });
 
   it('checkTierPromotion promotes when threshold met', () => {
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: TIER_PROMOTION_THRESHOLDS[2],
@@ -308,17 +308,17 @@ describe('Influence Tier Management', () => {
     const promoted = checkTierPromotion(graph, ascendantId);
     expect(promoted).toContain(agentId);
 
-    const edge = graph.getIncomingEdges(ascendantId, 'worships')[0];
+    const edge = graph.getOutgoingEdges(ascendantId, 'thread')[0];
     expect(edge.properties.tier).toBe(2);
     expect(edge.properties.ticksAtCurrentTier).toBe(0);
   });
 
   it('checkTierPromotion does not promote when maintenance failed', () => {
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 999,
@@ -334,10 +334,10 @@ describe('Influence Tier Management', () => {
 
   it('checkTierPromotion does not promote past tier 4', () => {
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 4,
         ticksAtCurrentTier: 999,
@@ -351,12 +351,12 @@ describe('Influence Tier Management', () => {
     expect(promoted).toHaveLength(0);
   });
 
-  it('dropAgent removes worships edge and returns drop result', () => {
+  it('dropAgent removes thread edge and returns drop result', () => {
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 2,
         ticksAtCurrentTier: 50,
@@ -372,7 +372,7 @@ describe('Influence Tier Management', () => {
     expect(result.tierWhenDropped).toBe(2);
     expect(result.narrativeConsequence).toBe('crisis_of_faith');
 
-    const edges = graph.getIncomingEdges(ascendantId, 'worships');
+    const edges = graph.getOutgoingEdges(ascendantId, 'thread');
     expect(edges).toHaveLength(0);
   });
 
@@ -394,10 +394,10 @@ describe('Influence Tier Management', () => {
     });
 
     graph.addEdge({
-      id: 'edge.worship1',
-      source: agentId,
-      target: ascendantId,
-      type: 'worships',
+      id: 'edge.thread1',
+      source: ascendantId,
+      target: agentId,
+      type: 'thread',
       properties: {
         tier: 3,
         ticksAtCurrentTier: 90,

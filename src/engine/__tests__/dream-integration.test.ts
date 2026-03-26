@@ -51,10 +51,10 @@ describe('Dream Interface + Agent Selection integration', () => {
     });
 
     graph.addEdge({
-      id: 'edge_worship_1',
-      source: 'actor_volkar',
-      target: 'actor_ascendant_1',
-      type: 'worships',
+      id: 'edge_thread_1',
+      source: 'actor_ascendant_1',
+      target: 'actor_volkar',
+      type: 'thread',
       properties: {
         tier: 2,
         influence: 50,

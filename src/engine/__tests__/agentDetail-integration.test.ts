@@ -50,7 +50,7 @@ describe('agent detail integration', () => {
         narrativeArchetype: 'seeker',
       },
     });
-    graph.addEdge({ id: 'w.1', source: 'agent.1', target: 'asc', type: 'worships', properties: { tier: 3 } });
+    graph.addEdge({ id: 't.1', source: 'asc', target: 'agent.1', type: 'thread', properties: { tier: 3 } });
     graph.addEdge({ id: 'm.1', source: 'agent.1', target: 'fac.1', type: 'member_of', properties: { role: 'adept' } });
 
     graph.addNode({ id: 'agent.2', type: 'actor', name: 'Bram Ironhand', properties: { actorType: 'individual' } });
@@ -133,10 +133,10 @@ describe('agent detail integration', () => {
         },
       });
       graph.addEdge({
-        id: `w.${arch.id}`,
-        source: agentId,
-        target: 'asc',
-        type: 'worships',
+        id: `t.${arch.id}`,
+        source: 'asc',
+        target: agentId,
+        type: 'thread',
         properties: { tier: 1 },
       });
 

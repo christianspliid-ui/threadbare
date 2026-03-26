@@ -55,12 +55,12 @@ describe('getRetinueAgents', () => {
       },
     });
 
-    // Add worships edge with tier 0
+    // Add thread edge with tier 0
     graph.addEdge({
-      id: 'worships.1',
-      source: 'actor.aware',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.1',
+      source: ascendantId,
+      target: 'actor.aware',
+      type: 'thread',
       properties: {
         tier: 0,
         ticksAtCurrentTier: 0,
@@ -74,8 +74,8 @@ describe('getRetinueAgents', () => {
     expect(result).toHaveLength(0);
   });
 
-  it('excludes agents without worships edge', () => {
-    // Create agent but no worships edge
+  it('excludes agents without thread edge', () => {
+    // Create agent but no thread edge
     graph.addNode({
       id: 'actor.unlinked',
       type: 'actor',
@@ -113,10 +113,10 @@ describe('getRetinueAgents', () => {
       });
 
       graph.addEdge({
-        id: `worships.tier${tier}`,
-        source: agentId,
-        target: ascendantId,
-        type: 'worships',
+        id: `thread.tier${tier}`,
+        source: ascendantId,
+        target: agentId,
+        type: 'thread',
         properties: {
           tier,
           ticksAtCurrentTier: 10,
@@ -145,10 +145,10 @@ describe('getRetinueAgents', () => {
     });
 
     graph.addEdge({
-      id: 'worships.located',
-      source: 'actor.located',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.located',
+      source: ascendantId,
+      target: 'actor.located',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -179,10 +179,10 @@ describe('getRetinueAgents', () => {
     });
 
     graph.addEdge({
-      id: 'worships.profile',
-      source: 'actor.profile',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.profile',
+      source: ascendantId,
+      target: 'actor.profile',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -213,10 +213,10 @@ describe('getRetinueAgents', () => {
     });
 
     graph.addEdge({
-      id: 'worships.caps',
-      source: 'actor.caps',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.caps',
+      source: ascendantId,
+      target: 'actor.caps',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -250,10 +250,10 @@ describe('getRetinueAgents', () => {
       });
 
       graph.addEdge({
-        id: `worships.tiernamed${tier}`,
-        source: agentId,
-        target: ascendantId,
-        type: 'worships',
+        id: `thread.tiernamed${tier}`,
+        source: ascendantId,
+        target: agentId,
+        type: 'thread',
         properties: {
           tier: tier as 1 | 2 | 3 | 4,
           ticksAtCurrentTier: 0,
@@ -310,10 +310,10 @@ describe('getRetinueAgents', () => {
     });
 
     graph.addEdge({
-      id: 'worships.member',
-      source: 'actor.member',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.member',
+      source: ascendantId,
+      target: 'actor.member',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -342,10 +342,10 @@ describe('getRetinueAgents', () => {
     });
 
     graph.addEdge({
-      id: 'worships.nofaction',
-      source: 'actor.nofaction',
-      target: ascendantId,
-      type: 'worships',
+      id: 'thread.nofaction',
+      source: ascendantId,
+      target: 'actor.nofaction',
+      type: 'thread',
       properties: {
         tier: 1,
         ticksAtCurrentTier: 0,
@@ -383,10 +383,10 @@ describe('getRetinueAgents', () => {
       });
 
       graph.addEdge({
-        id: `worships.${agent.id}`,
-        source: agent.id,
-        target: ascendantId,
-        type: 'worships',
+        id: `thread.${agent.id}`,
+        source: ascendantId,
+        target: agent.id,
+        type: 'thread',
         properties: {
           tier: agent.tier as 1 | 2 | 3 | 4,
           ticksAtCurrentTier: 0,

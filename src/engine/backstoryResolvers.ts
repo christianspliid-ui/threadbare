@@ -524,7 +524,7 @@ function getArcPhase(ticksAtCurrentTier: number): string {
  * Category: 'tension'
  * Stratum: 4
  *
- * Agent → narrativeArchetype + worships edge ticksAtCurrentTier (arc phase proxy).
+ * Agent → narrativeArchetype + thread edge ticksAtCurrentTier (arc phase proxy).
  */
 export function storyArcResolver(
   nodeId: string,
@@ -543,10 +543,10 @@ export function storyArcResolver(
   const template = pickTemplate(templates, seed);
   if (!template) return [];
 
-  // Get arc phase from worships edge if available
-  const worshipsEdges = graph.getOutgoingEdges(nodeId, 'worships');
-  const ticksAtCurrentTier = worshipsEdges.length > 0
-    ? ((worshipsEdges[0].properties?.ticksAtCurrentTier as number) ?? 0)
+  // Get arc phase from thread edge if available
+  const threadEdges = graph.getIncomingEdges(nodeId, 'thread');
+  const ticksAtCurrentTier = threadEdges.length > 0
+    ? ((threadEdges[0].properties?.ticksAtCurrentTier as number) ?? 0)
     : 0;
 
   const arcPhase = getArcPhase(ticksAtCurrentTier);
@@ -581,7 +581,7 @@ function getEssenceBracket(totalEssenceSpent: number): string {
  * Category: 'character'
  * Stratum: 4
  *
- * Agent → worships edge → totalEssenceSpent + ascendant primarySphere.
+ * Agent → thread edge → totalEssenceSpent + ascendant primarySphere.
  */
 export function divineTransformationResolver(
   nodeId: string,
@@ -591,14 +591,14 @@ export function divineTransformationResolver(
   const node = graph.getNode(nodeId);
   if (!node) return [];
 
-  const worshipsEdges = graph.getOutgoingEdges(nodeId, 'worships');
-  if (worshipsEdges.length === 0) return [];
+  const threadEdges = graph.getIncomingEdges(nodeId, 'thread');
+  if (threadEdges.length === 0) return [];
 
-  const worshipsEdge = worshipsEdges[0];
-  const totalEssenceSpent = (worshipsEdge.properties?.totalEssenceSpent as number) ?? 0;
+  const threadEdge = threadEdges[0];
+  const totalEssenceSpent = (threadEdge.properties?.totalEssenceSpent as number) ?? 0;
 
   // Get ascendant's primary sphere
-  const ascendantNode = graph.getNode(worshipsEdge.target);
+  const ascendantNode = graph.getNode(threadEdge.source);
   const sphereAlignment = ascendantNode?.properties?.sphereAlignment as
     | { primary?: string }
     | undefined;

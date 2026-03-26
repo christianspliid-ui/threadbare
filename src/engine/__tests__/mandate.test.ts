@@ -56,8 +56,8 @@ describe('mandate evaluation engine', () => {
       graph.addNode({ id: `loc_region_${i}`, type: 'location', name: `Region ${i}`, properties: { locationType: 'region' } });
       graph.addNode({ id: `actor_champion_${i}`, type: 'actor', name: `Champion ${i}`, properties: { actorType: 'individual' } });
 
-      // Worships edge
-      graph.addEdge({ id: `edge_worship_${i}`, source: `actor_champion_${i}`, target: 'actor_asc', type: 'worships', properties: { tier: 2 } });
+      // Thread edge
+      graph.addEdge({ id: `edge_thread_${i}`, source: 'actor_asc', target: `actor_champion_${i}`, type: 'thread', properties: { tier: 2 } });
 
       // Controls edge
       graph.addEdge({ id: `edge_control_${i}`, source: `actor_champion_${i}`, target: `loc_region_${i}`, type: 'controls', properties: {} });
@@ -81,7 +81,7 @@ describe('mandate evaluation engine', () => {
       description: 'Have 3+ devoted champions',
       params: {
         nodeType: 'actor',
-        edgeType: 'worships',
+        edgeType: 'thread',
         edgeTarget: 'actor_asc',
         minTier: 2,
         minCount: 3,
@@ -98,7 +98,7 @@ describe('mandate evaluation engine', () => {
       description: 'Have 5+ devoted champions',
       params: {
         nodeType: 'actor',
-        edgeType: 'worships',
+        edgeType: 'thread',
         edgeTarget: 'actor_asc',
         minTier: 2,
         minCount: 5,
@@ -121,8 +121,8 @@ describe('mandate evaluation engine', () => {
           description: 'Recruit first champion',
           conditions: [{
             type: 'node_count',
-            description: 'Have 1+ worshipper',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 1, minCount: 1 },
+            description: 'Have 1+ retinue member',
+            params: { nodeType: 'actor', edgeType: 'thread', edgeTarget: 'actor_asc', minTier: 1, minCount: 1 },
           }],
         },
         {
@@ -131,7 +131,7 @@ describe('mandate evaluation engine', () => {
           conditions: [{
             type: 'node_count',
             description: 'Have 2+ devoted',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 2, minCount: 2 },
+            params: { nodeType: 'actor', edgeType: 'thread', edgeTarget: 'actor_asc', minTier: 2, minCount: 2 },
           }],
         },
         {
@@ -140,7 +140,7 @@ describe('mandate evaluation engine', () => {
           conditions: [{
             type: 'node_count',
             description: 'Have 3+ devoted',
-            params: { nodeType: 'actor', edgeType: 'worships', edgeTarget: 'actor_asc', minTier: 2, minCount: 3 },
+            params: { nodeType: 'actor', edgeType: 'thread', edgeTarget: 'actor_asc', minTier: 2, minCount: 3 },
           }],
         },
       ],
@@ -148,7 +148,7 @@ describe('mandate evaluation engine', () => {
 
     let state = createMandateState('mandate_1', 0);
 
-    // All stages should be completable with our test graph (3 tier-2 worshippers)
+    // All stages should be completable with our test graph (3 tier-2 retinue members)
     state = evaluateMandate(graph, mandate, state, 'actor_asc', 10);
     // Setup conditions met, should advance
     expect(state.currentStage).toBe('setup');
@@ -180,7 +180,7 @@ describe('mandate evaluation engine', () => {
     const graph = buildTestGraph();
     const condition: MandateCondition = {
       type: 'actor_tier',
-      description: 'Have 2+ tier-2 worshippers',
+      description: 'Have 2+ tier-2 retinue members',
       params: {
         minTier: 2,
         minCount: 2,
@@ -194,7 +194,7 @@ describe('mandate evaluation engine', () => {
     const graph = buildTestGraph();
     const condition: MandateCondition = {
       type: 'actor_tier',
-      description: 'Have 1+ tier-4 worshippers',
+      description: 'Have 1+ tier-4 retinue members',
       params: {
         minTier: 4,
         minCount: 1,

@@ -112,13 +112,13 @@ export function collectLOSSources(
     });
   }
 
-  // Retinue agents (worships edges with tier >= 1)
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
-  for (const edge of worshipEdges) {
+  // Retinue agents (thread edges with tier >= 1)
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
+  for (const edge of threadEdges) {
     const tier = edge.properties.tier as number | undefined;
     if (tier === undefined || tier < 1) continue;
 
-    const agentId = edge.source;
+    const agentId = edge.target;
     const agent = graph.getNode(agentId);
     if (!agent) continue;
 

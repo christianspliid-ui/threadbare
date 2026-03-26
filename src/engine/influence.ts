@@ -10,10 +10,10 @@ import { SPHERE_NAMES } from '../types/index';
 import type { EssencePool, EssenceGeneration, SphereAlignment, InfluenceTier } from '../types/influence';
 import {
   BASE_ESSENCE_PER_TICK,
-  ESSENCE_PER_WORSHIPPER,
+  ESSENCE_PER_THREAD,
   ESSENCE_PER_PLACE_OF_POWER,
   BASE_MAX_ESSENCE,
-  MAX_ESSENCE_PER_WORSHIPPER,
+  MAX_ESSENCE_PER_THREAD,
   TIER_MAINTENANCE,
   TIER_PROMOTION_THRESHOLDS,
 } from '../types/influence';
@@ -87,7 +87,7 @@ function distributeByAlignment(total: number, alignment: SphereAlignment): Essen
  *
  * Sources:
  * 1. Base generation: 1.0 essence/tick distributed by sphere alignment
- * 2. Worshippers: +0.1 per worshipper (actors with 'worships' edge to ascendant)
+ * 2. Threaded mortals: +0.1 per thread (thread edges from ascendant)
  * 3. Places of power: +0.5 per controlled place of power
  */
 export function computeEssenceGeneration(
@@ -103,9 +103,9 @@ export function computeEssenceGeneration(
   // 1. Base generation
   let totalRate = BASE_ESSENCE_PER_TICK;
 
-  // 2. Worshipper bonus
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
-  totalRate += worshipEdges.length * ESSENCE_PER_WORSHIPPER;
+  // 2. Thread bonus (one per threaded mortal)
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
+  totalRate += threadEdges.length * ESSENCE_PER_THREAD;
 
   // 3. Places of power bonus
   const controlEdges = graph.getOutgoingEdges(ascendantId, 'controls');
@@ -121,11 +121,11 @@ export function computeEssenceGeneration(
 
 /**
  * Compute maximum essence pool size for an Ascendant.
- * BASE_MAX_ESSENCE + MAX_ESSENCE_PER_WORSHIPPER per worshipper.
+ * BASE_MAX_ESSENCE + MAX_ESSENCE_PER_THREAD per threaded mortal.
  */
 export function computeMaxEssence(graph: WorldGraph, ascendantId: string): number {
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
-  return BASE_MAX_ESSENCE + worshipEdges.length * MAX_ESSENCE_PER_WORSHIPPER;
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
+  return BASE_MAX_ESSENCE + threadEdges.length * MAX_ESSENCE_PER_THREAD;
 }
 
 // ─── Tier Queries ────────────────────────────────────────────────────
@@ -136,10 +136,10 @@ export function getInfluenceTier(
   ascendantId: string,
   actorId: string
 ): InfluenceTier {
-  const edges = graph.getOutgoingEdges(actorId, 'worships');
-  const worshipEdge = edges.find((e) => e.target === ascendantId);
-  if (!worshipEdge) return 0;
-  return (worshipEdge.properties.tier as InfluenceTier) ?? 0;
+  const edges = graph.getIncomingEdges(actorId, 'thread');
+  const threadEdge = edges.find((e) => e.source === ascendantId);
+  if (!threadEdge) return 0;
+  return (threadEdge.properties.tier as InfluenceTier) ?? 0;
 }
 
 // ─── Maintenance ─────────────────────────────────────────────────────
@@ -167,14 +167,14 @@ export function processInfluenceMaintenance(
   const alignment = ascendant.properties.sphereAlignment as SphereAlignment;
   const primarySphere = alignment.primary;
 
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   const result: MaintenanceResult = {
     maintenancePaid: [],
     maintenanceFailed: [],
     totalEssenceSpent: 0,
   };
 
-  for (const edge of worshipEdges) {
+  for (const edge of threadEdges) {
     const tier = edge.properties.tier as InfluenceTier;
     const cost = TIER_MAINTENANCE[tier];
 
@@ -192,7 +192,7 @@ export function processInfluenceMaintenance(
           maintenanceCurrent: true,
         },
       });
-      result.maintenancePaid.push(edge.source);
+      result.maintenancePaid.push(edge.target);
     } else {
       graph.updateEdge(edge.id, {
         properties: {
@@ -200,7 +200,7 @@ export function processInfluenceMaintenance(
           maintenanceCurrent: false,
         },
       });
-      result.maintenanceFailed.push(edge.source);
+      result.maintenanceFailed.push(edge.target);
     }
   }
 
@@ -220,10 +220,10 @@ export function processInfluenceMaintenance(
  * Returns list of promoted actor IDs.
  */
 export function checkTierPromotion(graph: WorldGraph, ascendantId: string): string[] {
-  const worshipEdges = graph.getIncomingEdges(ascendantId, 'worships');
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   const promoted: string[] = [];
 
-  for (const edge of worshipEdges) {
+  for (const edge of threadEdges) {
     const tier = edge.properties.tier as InfluenceTier;
     const ticks = edge.properties.ticksAtCurrentTier as number;
     const maintenanceCurrent = edge.properties.maintenanceCurrent as boolean;
@@ -242,7 +242,7 @@ export function checkTierPromotion(graph: WorldGraph, ascendantId: string): stri
           ticksAtCurrentTier: 0, // reset counter
         },
       });
-      promoted.push(edge.source);
+      promoted.push(edge.target);
     }
   }
 
@@ -267,7 +267,7 @@ const DROP_CONSEQUENCES: Record<InfluenceTier, DropResult['narrativeConsequence'
 };
 
 /**
- * Drop an agent — remove the worships edge and apply consequences.
+ * Drop an agent — remove the thread edge and apply consequences.
  * Higher-tier drops produce more dramatic narrative consequences.
  */
 export function dropAgent(
@@ -276,18 +276,18 @@ export function dropAgent(
   agentId: string,
   currentTick: number
 ): DropResult {
-  const edges = graph.getIncomingEdges(ascendantId, 'worships');
-  const worshipEdge = edges.find((e) => e.source === agentId);
+  const edges = graph.getOutgoingEdges(ascendantId, 'thread');
+  const threadEdge = edges.find((e) => e.target === agentId);
 
-  if (!worshipEdge) {
+  if (!threadEdge) {
     return { agentId, tierWhenDropped: 0, narrativeConsequence: 'minimal', scarTraitAssigned: false };
   }
 
-  const tier = worshipEdge.properties.tier as InfluenceTier;
+  const tier = threadEdge.properties.tier as InfluenceTier;
   const consequence = DROP_CONSEQUENCES[tier];
 
   // Remove the relationship
-  graph.removeEdge(worshipEdge.id);
+  graph.removeEdge(threadEdge.id);
 
   // Assign scar trait for tier 2+
   let scarAssigned = false;

@@ -86,7 +86,7 @@ export function computeSphereMultiplier(
  * Compute the full intervention cost estimate.
  *
  * desiredBonus: the raw probability bonus the player wants (0.0 to 0.20)
- * agentSphere: the agent's sphere alignment (from worships edge / ascendant)
+ * agentSphere: the agent's sphere alignment (from thread edge / ascendant)
  * encounterSphere: the encounter's sphereAffinity
  * bondTier: the influence tier (0-4)
  * divineAttention: current divine attention state on the agent

@@ -86,7 +86,7 @@ function makeFullGraph(): { graph: WorldGraph; agentId: string } {
     properties: { level: 2 },
   } as GraphEdge);
 
-  // Ascendant + worships
+  // Ascendant + thread
   graph.addNode({
     id: 'asc_0',
     type: 'actor',
@@ -97,10 +97,10 @@ function makeFullGraph(): { graph: WorldGraph; agentId: string } {
     },
   } as GraphNode);
   graph.addEdge({
-    id: 'edge_worships',
-    source: 'agent_0',
-    target: 'asc_0',
-    type: 'worships',
+    id: 'edge_thread',
+    source: 'asc_0',
+    target: 'agent_0',
+    type: 'thread',
     properties: {
       tier: 4,
       totalEssenceSpent: 75,

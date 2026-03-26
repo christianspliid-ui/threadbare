@@ -374,15 +374,15 @@ export function useAgentInteraction({
       setDrawerOpen(false);
       setProfileModalAgentId(selectedAgentId);
 
-      // Update readBackstoryTier on the worships edge to clear New badges
-      const worshipsEdges = gameState.graph.getOutgoingEdges(selectedAgentId, 'worships');
-      const worshipEdge = worshipsEdges.find(e => e.target === gameState.ascendantId);
-      if (worshipEdge) {
-        const tier = (worshipEdge.properties as Record<string, unknown>).tier as number ?? 0;
-        const currentRead = (worshipEdge.properties as Record<string, unknown>).readBackstoryTier as number ?? 0;
+      // Update readBackstoryTier on the thread edge to clear New badges
+      const threadEdges = gameState.graph.getIncomingEdges(selectedAgentId, 'thread');
+      const threadEdge = threadEdges.find(e => e.source === gameState.ascendantId);
+      if (threadEdge) {
+        const tier = (threadEdge.properties as Record<string, unknown>).tier as number ?? 0;
+        const currentRead = (threadEdge.properties as Record<string, unknown>).readBackstoryTier as number ?? 0;
         if (tier > currentRead) {
-          gameState.graph.updateEdge(worshipEdge.id, {
-            properties: { ...worshipEdge.properties, readBackstoryTier: tier },
+          gameState.graph.updateEdge(threadEdge.id, {
+            properties: { ...threadEdge.properties, readBackstoryTier: tier },
           });
           // Trigger re-render so isNew badges clear on next agentInfoCard recompute
           setGameState(s => ({ ...s }));

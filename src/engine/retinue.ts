@@ -8,7 +8,7 @@
 import type { WorldGraph } from './graph';
 import type { AxiologicalProfile } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
-import type { InfluenceTier, InfluenceRelationshipProperties } from '../types/influence';
+import type { InfluenceTier, ThreadEdgeProperties } from '../types/influence';
 import { TIER_NAMES } from '../types/influence';
 import { getPortraitUrl } from '../data/portrait-assets';
 
@@ -64,19 +64,19 @@ export interface RetinueAgent {
  * 2. Name ascending (alphabetical as tiebreaker)
  */
 export function getRetinueAgents(graph: WorldGraph, ascendantId: string): RetinueAgent[] {
-  // Get all incoming 'worships' edges to the ascendant
-  const worshipsEdges = graph.getIncomingEdges(ascendantId, 'worships');
+  // Get all outgoing 'thread' edges from the ascendant (god→mortal)
+  const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
 
   const retinueAgents: RetinueAgent[] = [];
 
-  for (const edge of worshipsEdges) {
-    const agentId = edge.source;
+  for (const edge of threadEdges) {
+    const agentId = edge.target;
     const agentNode = graph.getNode(agentId);
 
     if (!agentNode) continue;
 
     // Get influence properties from the edge
-    const influenceProps = edge.properties as unknown as InfluenceRelationshipProperties;
+    const influenceProps = edge.properties as unknown as ThreadEdgeProperties;
     const tier = influenceProps.tier as InfluenceTier;
 
     // Filter: only include tier >= 1 (exclude tier 0 "Unaware")

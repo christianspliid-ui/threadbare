@@ -9,7 +9,7 @@ function makeGraph(): WorldGraph {
   return new WorldGraph();
 }
 
-/** Add a minimal agent that worships the ascendant */
+/** Add a minimal agent threaded to the ascendant */
 function addAgent(
   graph: WorldGraph,
   agentId: string,
@@ -27,10 +27,10 @@ function addAgent(
   });
   graph.addNode({ id: ascendantId, type: 'actor', name: 'Ascendant', properties: { actorType: 'individual' } });
   graph.addEdge({
-    id: `worships_${agentId}`,
-    source: agentId,
-    target: ascendantId,
-    type: 'worships',
+    id: `thread_${agentId}`,
+    source: ascendantId,
+    target: agentId,
+    type: 'thread',
     properties: { tier: 2 },
   });
 }

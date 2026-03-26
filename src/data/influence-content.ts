@@ -14,15 +14,19 @@ import type { InfluenceTier } from '../types/influence';
 /** Base generation rate: 1 essence per tick. */
 export const BASE_ESSENCE_PER_TICK = 1.0;
 
-/** Essence per worshipper per tick. */
-export const ESSENCE_PER_WORSHIPPER = 0.1;
+/** Essence per threaded mortal per tick. */
+export const ESSENCE_PER_THREAD = 0.1;
+/** @deprecated Use ESSENCE_PER_THREAD */
+export const ESSENCE_PER_WORSHIPPER = ESSENCE_PER_THREAD;
 
 /** Essence bonus per controlled place of power per tick. */
 export const ESSENCE_PER_PLACE_OF_POWER = 0.5;
 
 /** Maximum essence pool scales with total influence level. */
 export const BASE_MAX_ESSENCE = 50;
-export const MAX_ESSENCE_PER_WORSHIPPER = 5;
+export const MAX_ESSENCE_PER_THREAD = 5;
+/** @deprecated Use MAX_ESSENCE_PER_THREAD */
+export const MAX_ESSENCE_PER_WORSHIPPER = MAX_ESSENCE_PER_THREAD;
 
 // ─── Tier Data ────────────────────────────────────────────────────
 

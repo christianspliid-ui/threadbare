@@ -203,22 +203,22 @@ describe('Orchestrator', () => {
   it('phaseMandate does not produce fake progress when conditions not met', () => {
     const state = createTestGameState();
 
-    // Create a mandate that requires 5 worshippers, but none exist yet
+    // Create a mandate that requires 5 threaded agents, but none exist yet
     const mandate = {
       id: 'mandate_test',
       type: 'graph_state' as const,
       name: 'Test Mandate',
-      description: 'Require 5 high-tier worshippers',
+      description: 'Require 5 high-tier threaded agents',
       stages: [
         {
           stage: 'setup' as const,
           description: 'Establish base',
           conditions: [{
             type: 'node_count' as const,
-            description: 'Have 5+ tier-2 worshippers',
+            description: 'Have 5+ tier-2 threaded agents',
             params: {
               nodeType: 'actor',
-              edgeType: 'worships',
+              edgeType: 'thread',
               edgeTarget: state.ascendantId,
               minTier: 2,
               minCount: 5,

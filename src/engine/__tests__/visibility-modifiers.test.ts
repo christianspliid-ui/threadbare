@@ -79,11 +79,11 @@ describe('visibility modifier integration', () => {
   });
 
   it('collectLOSSources returns modified range for retinue agent with terrain', () => {
-    // Set up ascendant + worshipping agent in mountains
+    // Set up ascendant + thread agent in mountains
     graph.addNode({ id: 'asc1', type: 'ascendant', name: 'Player God', properties: {} });
     graph.addNode({ id: 'agent1', type: 'actor', name: 'Scout', properties: {} });
     graph.addNode({ id: 'loc1', type: 'location', name: 'Mountain Peak', properties: { hexCol: 3, hexRow: 3, terrain: 'mountains' } });
-    graph.addEdge({ id: 'e1', source: 'agent1', target: 'asc1', type: 'worships', properties: { tier: 1 } });
+    graph.addEdge({ id: 'e1', source: 'asc1', target: 'agent1', type: 'thread', properties: { tier: 1 } });
     graph.addEdge({ id: 'e2', source: 'agent1', target: 'loc1', type: 'located_at', properties: {} });
 
     const sources = collectLOSSources(graph, 'asc1', []);

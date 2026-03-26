@@ -58,7 +58,7 @@ describe('collectLOSSources', () => {
     const agentLocId = 'loc.agent';
     graph.addNode({ id: agentId, type: 'actor', name: 'Scout', properties: { actorType: 'individual' } });
     graph.addNode({ id: agentLocId, type: 'location', name: 'Outpost', properties: { hexCol: 10, hexRow: 3, locationType: 'settlement' } });
-    graph.addEdge({ id: 'e.worship', source: agentId, target: ascendantId, type: 'worships', properties: { tier: 2, devotion: 50 } });
+    graph.addEdge({ id: 'e.thread', source: ascendantId, target: agentId, type: 'thread', properties: { tier: 2, devotion: 50 } });
     graph.addEdge({ id: 'e.located_at_agent', source: agentId, target: agentLocId, type: 'located_at', properties: {} });
 
     const sources = collectLOSSources(graph, ascendantId, []);

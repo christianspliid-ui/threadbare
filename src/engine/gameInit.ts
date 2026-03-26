@@ -156,13 +156,14 @@ export function initializeGameState(
     },
   });
 
-  // ── Seed initial worshippers ─────────────────────────────────
+  // ── Seed initial threads ─────────────────────────────────
   // Give the player a starting retinue so the action wheel is usable from tick 0.
-  // Pick 3-5 random individuals and establish worships edges at tier 1.
+  // Pick 3-5 random individuals and establish thread edges at tier 1.
+  // Direction: ascendant → mortal (the god reaches down).
   {
     // Use a deterministic sub-PRNG so this doesn't change existing seeding
     let ws = (seed + 13337) | 0;
-    const worshipRng = () => {
+    const threadRng = () => {
       ws = (ws + 0x6d2b79f5) | 0;
       let t = Math.imul(ws ^ (ws >>> 15), 1 | ws);
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
@@ -170,37 +171,37 @@ export function initializeGameState(
     };
 
     const count = INITIAL_WORSHIPPER_COUNT.min +
-      Math.floor(worshipRng() * (INITIAL_WORSHIPPER_COUNT.max - INITIAL_WORSHIPPER_COUNT.min + 1));
+      Math.floor(threadRng() * (INITIAL_WORSHIPPER_COUNT.max - INITIAL_WORSHIPPER_COUNT.min + 1));
     const candidates = [...individualIds];
     // Shuffle candidates deterministically
     for (let i = candidates.length - 1; i > 0; i--) {
-      const j = Math.floor(worshipRng() * (i + 1));
+      const j = Math.floor(threadRng() * (i + 1));
       [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
     }
-    const worshippers = candidates.slice(0, Math.min(count, candidates.length));
-    for (const indId of worshippers) {
+    const threadedAgents = candidates.slice(0, Math.min(count, candidates.length));
+    for (const indId of threadedAgents) {
       graph.addEdge({
-        id: `edge_worship_init_${indId}`,
-        source: indId,
-        target: ascendantId,
-        type: 'worships',
+        id: `edge_thread_init_${indId}`,
+        source: ascendantId,
+        target: indId,
+        type: 'thread',
         properties: { tier: INITIAL_WORSHIPPER_TIER, devotion: 50 },
       });
     }
   }
 
-  // Initialize familiarity map and populate with initial worshipper familiarity
+  // Initialize familiarity map and populate with initial thread familiarity
   const familiarityMap = new Map<string, number>();
   {
-    const worshipEdges = graph.getEdgesByType('worships');
-    for (const edge of worshipEdges) {
-      const worshipperId = edge.source;
+    const threadEdges = graph.getEdgesByType('thread');
+    for (const edge of threadEdges) {
+      const mortalId = edge.target;
       const tier = (edge.properties?.tier ?? 1) as number;
       // Map tier to familiarity gain: tier 1 = 0.3, tier 2 = 0.5, tier 3 = 0.7
       const initialFamiliarity = FAMILIARITY_GAINS[
         `worship_tier_${tier}` as keyof typeof FAMILIARITY_GAINS
       ] ?? FAMILIARITY_GAINS.worship_tier_1;
-      familiarityMap.set(worshipperId, initialFamiliarity);
+      familiarityMap.set(mortalId, initialFamiliarity);
     }
   }
 
