@@ -180,8 +180,8 @@ export interface EncounterProgress {
     success: boolean;
     tick: number;
   }>;
-  /** Current status */
-  status: 'active' | 'abandoned' | 'completed';
+  /** Current status. 'awaiting_choice' = paused at a choice-point step waiting for player input. */
+  status: 'active' | 'abandoned' | 'completed' | 'awaiting_choice';
   /** Tick when the encounter started */
   startedTick: number;
   /**
