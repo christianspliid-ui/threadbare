@@ -84,8 +84,13 @@ export function useZoomLayerVisibility({
     if (currentSignifierGroup?.visible) {
       const alpha = getFadeAlpha(zoomK, ZOOM_TIER_THRESHOLDS.CONTINENTAL, FADE_RANGE * ZOOM_TIER_THRESHOLDS.CONTINENTAL);
       for (const child of currentSignifierGroup.children) {
-        if (child instanceof THREE.Sprite) {
-          (child.material as THREE.SpriteMaterial).opacity = alpha;
+        if (child instanceof THREE.InstancedMesh) {
+          const fogAttr = child.geometry.getAttribute('aFogAlpha') as THREE.InstancedBufferAttribute;
+          if (fogAttr) {
+            const arr = fogAttr.array as Float32Array;
+            for (let i = 0; i < arr.length; i++) arr[i] = alpha;
+            fogAttr.needsUpdate = true;
+          }
         }
       }
     }

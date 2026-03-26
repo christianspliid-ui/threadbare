@@ -262,8 +262,9 @@ export function createSignifierMesh(
   const meshMap = new Map<string, THREE.InstancedMesh>();
   const fogBuffers = new Map<string, Float32Array>();
 
-  // Shared quad geometry for all InstancedMeshes (1×1 plane)
-  const quadGeometry = new THREE.PlaneGeometry(1, 1);
+  // Base quad geometry — cloned per terrain type so each InstancedMesh
+  // gets its own instanced buffer attributes (aUvRect, aFogAlpha).
+  const baseQuadGeometry = new THREE.PlaneGeometry(1, 1);
 
   const matrix = new THREE.Matrix4();
   const position = new THREE.Vector3();
@@ -279,6 +280,9 @@ export function createSignifierMesh(
 
     const instanceCount = instances.length;
 
+    // Clone geometry so each mesh has its own instanced attributes
+    const meshGeometry = baseQuadGeometry.clone();
+
     // Create custom shader material for this terrain type's atlas
     const material = new THREE.ShaderMaterial({
       uniforms: {
@@ -291,9 +295,9 @@ export function createSignifierMesh(
       side: THREE.DoubleSide,
     });
 
-    const mesh = new THREE.InstancedMesh(quadGeometry, material, instanceCount);
+    const mesh = new THREE.InstancedMesh(meshGeometry, material, instanceCount);
     mesh.renderOrder = RENDER_ORDER.SIGNIFIERS;
-    mesh.frustumCulled = true;
+    mesh.frustumCulled = false;
 
     // Per-instance UV rect attribute (vec4)
     const uvRectData = new Float32Array(instanceCount * 4);
@@ -324,10 +328,10 @@ export function createSignifierMesh(
       hexInstanceMap.set(inst.hexKey, { terrainKey, instanceIndex: i });
     }
 
-    // Attach instanced buffer attributes
-    mesh.geometry.setAttribute('aUvRect',
+    // Attach instanced buffer attributes to this mesh's own geometry
+    meshGeometry.setAttribute('aUvRect',
       new THREE.InstancedBufferAttribute(uvRectData, 4));
-    mesh.geometry.setAttribute('aFogAlpha',
+    meshGeometry.setAttribute('aFogAlpha',
       new THREE.InstancedBufferAttribute(fogAlphaData, 1));
 
     mesh.instanceMatrix.needsUpdate = true;
