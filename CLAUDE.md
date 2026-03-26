@@ -2,7 +2,7 @@ This folder contains The Fantasy World Simulator — a systemic god-game/rogue-l
 
 ## Cowork vs Claude Code — Read This First
 
-**If you are running in Cowork mode:** You must NOT write code, modify tracked files, or run git commands. Read `Docs/cowork-ways-of-working.md` for the full rules. Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
+**If you are running in Cowork mode:** You must NOT write code or run git commands. You CAN write to `.planning/` coordination files (BACKLOG.md, HANDOVER.md, ROADMAP.md) — **snapshot before every write** (see `Docs/cowork-ways-of-working.md` → "Coordination File Versioning"). Your job is design, research, documentation (via MCP), and implementation plans. Hand coding tasks to Claude Code with a plan link.
 
 **If you are running in Claude Code:** You do the coding, testing, committing, and pushing. Check for implementation plans in `Docs/plans/` before starting work.
 
