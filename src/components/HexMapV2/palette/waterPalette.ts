@@ -81,23 +81,29 @@ export const WATER_TERRAIN_KEYS = new Set([
 /**
  * Maps existing TerrainType water variants to WATER_PALETTE keys.
  * Returns null if the terrain is not a water type.
+ * Optional `overrides` object (from PaletteTheme.waterOverrides) is checked first.
  */
-export function getWaterColor(terrain: string): string | null {
+export function getWaterColor(
+  terrain: string,
+  overrides?: Readonly<Record<string, string>>,
+): string | null {
+  const lookup = (key: string): string =>
+    overrides?.[key] ?? WATER_PALETTE[key];
   switch (terrain) {
     case 'ocean':
     case 'tropical_ocean':
-      return WATER_PALETTE['ocean'];
+      return lookup('ocean');
     case 'deep_ocean':
-      return WATER_PALETTE['deep_ocean'];
+      return lookup('deep_ocean');
     case 'lake':
-      return WATER_PALETTE['lake'];
+      return lookup('lake');
     case 'river':
-      return WATER_PALETTE['river'];
+      return lookup('river');
     case 'shallows':
     case 'coastal_shallows':
     case 'coast':
     case 'reef':
-      return WATER_PALETTE['shallows'];
+      return lookup('shallows');
     default:
       return null;
   }

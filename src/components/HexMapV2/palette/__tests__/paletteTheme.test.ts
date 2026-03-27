@@ -63,6 +63,26 @@ describe('paletteTheme', () => {
   it('themes are visually distinct (scene backgrounds differ)', () => {
     expect(GOLDEN_HOUR.sceneBackground).not.toBe(DARK_PARCHMENT.sceneBackground);
   });
+
+  it('dark-parchment has terrain overrides for all base terrain types', () => {
+    const overrides = DARK_PARCHMENT.terrainOverrides;
+    // Should have at least 20 terrain type overrides for a visible difference
+    expect(Object.keys(overrides).length).toBeGreaterThanOrEqual(20);
+  });
+
+  it('dark-parchment has water overrides for all water types', () => {
+    const overrides = DARK_PARCHMENT.waterOverrides;
+    expect(overrides['ocean']).toBeDefined();
+    expect(overrides['deep_ocean']).toBeDefined();
+    expect(overrides['shallows']).toBeDefined();
+    expect(overrides['lake']).toBeDefined();
+    expect(overrides['river']).toBeDefined();
+  });
+
+  it('golden-hour has empty overrides (uses base palettes)', () => {
+    expect(Object.keys(GOLDEN_HOUR.terrainOverrides).length).toBe(0);
+    expect(Object.keys(GOLDEN_HOUR.waterOverrides).length).toBe(0);
+  });
 });
 
 describe('resolvePaletteThemeId', () => {
