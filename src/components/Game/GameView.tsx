@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import type { CosmologyProfile } from '../../types';
+import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { resumeTheme } from '../../audio/themeAudio';
 import type { ScryState } from '../../types/scry';
