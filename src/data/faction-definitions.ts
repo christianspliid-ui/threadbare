@@ -148,7 +148,12 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
   reputationDecayPerTick: FACTION_REPUTATION_DECAY_PER_TICK,
   joinEncounterTemplateId: 'ag.join',
   promotionEncounterTemplateId: 'ag.promotion',
-  questTemplateIds: [],     // populated in Phase 2 (TB-060)
+  questTemplateIds: [
+    'ag.quest.ruin_delve', 'ag.quest.monster_hunt', 'ag.quest.wilderness_survey',
+    'ag.quest.escort_caravan', 'ag.quest.recover_artifact',
+    'ag.senior.deep_expedition', 'ag.senior.bounty_hunt', 'ag.senior.map_uncharted',
+    'ag.elite.dragon_lair', 'ag.elite.lost_city',
+  ],
   socialTemplateIds: [],    // populated in Phase 4 (TB-062)
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },
