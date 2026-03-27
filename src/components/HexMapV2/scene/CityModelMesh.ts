@@ -25,10 +25,10 @@ import type { LocationNode } from './LocationIconMesh';
 export const CITY_MODEL_CONSTANTS = {
   /**
    * Uniform scale applied to the loaded GLTF.
-   * Blender model base hex radius ≈ 1.85 units → scale 4.6 → ≈ 8.5 world units
-   * (≈ 85% of HEX_SIZE 10, leaving a small border inside the hex edge).
+   * Blender model base hex radius ≈ 1.85 units → scale 5.4 → fills the full
+   * hex (HEX_SIZE 10). 10 / 1.85 ≈ 5.405.
    */
-  MODEL_SCALE: 4.6,
+  MODEL_SCALE: 5.4,
 
   /**
    * Z position of the model base — between signifiers (0.070) and location
@@ -44,6 +44,13 @@ export const CITY_MODEL_CONSTANTS = {
    * with towers pointing toward the camera.
    */
   ROTATION_X: Math.PI / 2,
+
+  /**
+   * Z-axis rotation to align the Blender hex base with the game's flat-top hex.
+   * Blender default cylinder(vertices=6) places a vertex at +X (pointy-side).
+   * Rotate 30° (π/6) to convert to flat-top alignment matching the hex grid.
+   */
+  ROTATION_Z: Math.PI / 6,  // 30° — converts Blender pointy-top hex to flat-top
 
   /** Location subtypes that get a 3D city model instead of a plain sprite. */
   CITY_TYPES: new Set<string>(['city', 'capital']),
@@ -96,24 +103,33 @@ export function createCityModelMesh(
         if (!matCache.has(orig)) {
           matCache.set(orig, new THREE.MeshBasicMaterial({
             color: orig.color.clone(),
-            side: THREE.FrontSide,
+            side: THREE.DoubleSide,
           }));
         }
         child.material = matCache.get(orig)!;
       });
 
       // ── Place one clone per city/capital hex ─────────────────────────────
+      // Wrap in a pivot group: inner group handles rotation/scale, outer
+      // handles map-plane positioning. This avoids centering-before-rotation issues.
       for (const loc of cityLocations) {
         const { x, y } = hexToWorld(
           { col: loc.hexCol, row: loc.hexRow },
           HEX_CONSTANTS.HEX_SIZE,
         );
 
+        // Outer pivot sits at the hex world position
+        const pivot = new THREE.Group();
+        pivot.position.set(x, y, CITY_MODEL_CONSTANTS.MODEL_Z);
+
+        // Inner clone gets rotation + scale; centering done in model-local space
         const clone = gltf.scene.clone(true);
         clone.rotation.x = CITY_MODEL_CONSTANTS.ROTATION_X;
+        clone.rotation.z = CITY_MODEL_CONSTANTS.ROTATION_Z;
         clone.scale.setScalar(CITY_MODEL_CONSTANTS.MODEL_SCALE);
-        clone.position.set(x, y, CITY_MODEL_CONSTANTS.MODEL_Z);
-        group.add(clone);
+
+        pivot.add(clone);
+        group.add(pivot);
       }
     },
 
