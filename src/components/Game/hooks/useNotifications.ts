@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { TickEvent } from '../../../types/gameState';
-import type { NotificationState, PopupItem } from '../../../types/notification';
+import type { NotificationState, PopupItem, NotificationPreferences } from '../../../types/notification';
 import type { VisibilityMap } from '../../../types/visibility';
 import { routeNotifications } from '../../../engine/notificationRouter';
 import { filterEventsByVisibility } from '../../../engine/notificationVisibilityFilter';
@@ -37,6 +37,8 @@ interface UseNotificationsParams {
   running: boolean;
   setRunning: (running: boolean) => void;
   visibilityMap: VisibilityMap;
+  /** Notification preferences — controls which categories are shown and duration mode */
+  preferences?: NotificationPreferences;
 }
 
 export interface UseNotificationsReturn {
@@ -53,6 +55,7 @@ export function useNotifications({
   running,
   setRunning,
   visibilityMap,
+  preferences,
 }: UseNotificationsParams): UseNotificationsReturn {
   const [state, setState] = useState<NotificationState>({
     toasts: [],
@@ -75,8 +78,8 @@ export function useNotifications({
     prevTickEventsRef.current = tickEvents;
     const now = Date.now();
     const filtered = filterEventsByVisibility(tickEvents, visibilityMap);
-    setState(prev => routeNotifications(filtered, prev, now));
-  }, [tickEvents]);
+    setState(prev => routeNotifications(filtered, prev, now, preferences));
+  }, [tickEvents, preferences]);
 
   // Toast expiry timer — pauses when sim is paused
   useEffect(() => {

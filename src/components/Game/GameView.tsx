@@ -55,6 +55,8 @@ import { AvatarHUD } from './AvatarHUD';
 import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
+import { useNotificationNavigation } from './hooks/useNotificationNavigation';
+import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
@@ -282,6 +284,20 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
 
+  // ── Notification preferences hook ──
+  const {
+    preferences: notificationPrefs,
+    toggleCategory: toggleNotifCategory,
+    setMode: setNotifMode,
+    resetToDefaults: resetNotifPrefs,
+  } = useNotificationPreferences();
+
+  // ── Notification navigation hook ──
+  const handleNotificationNavigate = useNotificationNavigation({
+    onSelectAgent: handleAgentSelect,
+    onFocusHex: () => { /* TODO: hex camera focus not yet implemented */ },
+  });
+
   // ── Notification system hook ──
   const {
     notificationState,
@@ -295,6 +311,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     running,
     setRunning,
     visibilityMap: effectiveVisibilityMap,
+    preferences: notificationPrefs,
   });
 
   // ── Tiered encounter modal (TB-055) ──
@@ -864,6 +881,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           <AlertBar
             alerts={notificationState.alerts}
             onDismiss={handleDismissAlert}
+            onSelectAgent={handleAgentSelect}
+            onNavigate={handleNotificationNavigate}
           />
           <RivalsButton
             definitions={gameState.rivalDefinitions}
@@ -887,6 +906,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
               onToggleDebug={handleToggleDebug}
               showOrganicShore={showOrganicShore}
               onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
+              notificationPrefs={notificationPrefs}
+              onToggleNotificationCategory={toggleNotifCategory}
+              onSetNotificationMode={setNotifMode}
+              onResetNotificationPrefs={resetNotifPrefs}
             />
           </div>
         </div>
@@ -900,7 +923,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             {/* NarrativeLog overlay */}
             <NarrativeLog events={gameState.recentEvents} />
             {/* Toast notifications */}
-            <ToastStack toasts={[...notificationState.toasts, ...encounterToasts]} onDismiss={handleDismissToast} />
+            <ToastStack
+              toasts={[...notificationState.toasts, ...encounterToasts]}
+              onDismiss={handleDismissToast}
+              onSelectAgent={handleAgentSelect}
+              onNavigate={handleNotificationNavigate}
+            />
             {viewLevel === 'world' && (
               <>
                 <HexMapV2
