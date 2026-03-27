@@ -42,6 +42,7 @@ import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 import { computeBondModifier } from './socialEncounterGeneration';
+import { getScoringBoost } from './factionRankBonus';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -311,10 +312,13 @@ export function scoreAndSelect(
       desireMultiplier *= (1.0 + bondMod);
     }
 
-    // 10. Final score
-    const finalScore = valuePerTick * desireMultiplier;
+    // 10. Faction scoring boost (TB-062) — additive for faction encounters
+    const factionScoringBoost = getScoringBoost(graph, agentId, entry.templateId);
 
-    // 11. Action classification
+    // 11. Final score
+    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost;
+
+    // 12. Action classification
     let action: ScoredCandidate['action'];
     if (distance === 0) {
       action = 'start_local';
