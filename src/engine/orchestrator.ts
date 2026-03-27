@@ -88,6 +88,7 @@ import {
   BAD_OUTCOME_CATEGORY_WEIGHTS,
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
+import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 
@@ -231,6 +232,16 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     const result = resolveEncounter(state, progress);
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // ── Faction reputation processing (TB-060) ──
+    processFactionEncounterReputation(
+      state.graph,
+      progress.actorId,
+      progress.encounterId,
+      result.success,
+      progress.status === 'completed',
+      state.tick,
+    );
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
     let rewardName: string | undefined;
@@ -1083,6 +1094,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.5: Reputation Decay
   s = { ...s, ...phaseReputationDecay(s) };
   phaseEventCounts['reputation_decay'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.55: Faction Reputation Decay (TB-060)
+  s = { ...s, ...phaseFactionReputationDecay(s) };
+  phaseEventCounts['faction_reputation_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6: Divine Influence Decay
