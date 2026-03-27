@@ -12,7 +12,7 @@
 
 ---
 
-## 📐▶ TB-067 · Notification Expansion — Clickable Nav, Right-Click Dismiss, Preferences Panel (2026-03-27)
+## ✅ TB-067 · Notification Expansion — Clickable Nav, Right-Click Dismiss, Preferences Panel (2026-03-27)
 
 Three features expanding the notification system: (1) clickable notifications that navigate to the relevant game entity (encounter modal, hex, location, faction, journey), with channel-specific behavior (toast: navigate+dismiss, alert: navigate only); (2) right-click instant dismiss on toasts and alerts; (3) notifications section in SettingsPanel with per-category on/off and permanent/temporary toggles, persisting across sessions via localStorage with per-game overrides. Three implementation phases: A (right-click dismiss), B (navigation targets), C (preferences panel).
 
@@ -29,6 +29,12 @@ Runtime-switchable hex map color palettes via Settings panel and URL param. Intr
 **Design doc:** `Docs/plans/2026-03-27-palette-theme-system-design.md`
 **Visual reference:** `Design/palette-experiment.html` (open in browser to compare 6 palettes side by side)
 **Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
+
+---
+
+## ✅ TB-066 · Palette Theme System — Feature-Flagged Color Scheme (2026-03-27)
+
+Feature-flagged color scheme for HexMapV2 with two shipped themes: Golden Hour (warm default) and Dark Parchment (cool/dark alt). PaletteTheme interface with 17 color slots covering scene, roads, borders, capitals, grid, elevation, fog, and labels. activePalette singleton with URL param (`?palette=dark-parchment`) and change listener API. Settings panel dropdown for runtime palette switching. 11 scene/overlay files refactored from hardcoded colors to `getActivePalette()`. 51 new tests.
 
 ---
 
