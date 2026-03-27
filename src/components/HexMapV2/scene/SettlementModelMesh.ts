@@ -136,7 +136,6 @@ export function createSettlementModelMesh(
             matCache.set(orig, new THREE.MeshBasicMaterial({
               color: orig.color.clone(),
               side: THREE.DoubleSide,
-              depthTest: false,  // Render order controls layering, not Z depth
             }));
           }
           child.material = matCache.get(orig)!;
