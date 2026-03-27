@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
-import {
-  getActivePaletteId,
-  setActivePalette,
-} from '../HexMapV2/palette/activePalette';
-import {
-  PALETTE_THEMES,
-  type PaletteThemeId,
-} from '../HexMapV2/palette/paletteTheme';
+import type { NotificationPreferences, NotificationCategoryKey, NotificationMode } from '../../types/notification';
+import { NOTIFICATION_CATEGORY_ORDER, NOTIFICATION_CATEGORY_LABELS } from '../../types/notification';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -20,6 +14,11 @@ interface SettingsPanelProps {
   onToggleDebug: () => void;
   showOrganicShore: boolean;
   onToggleOrganicShore: () => void;
+  // Notification preferences
+  notificationPrefs?: NotificationPreferences;
+  onToggleNotificationCategory?: (key: NotificationCategoryKey) => void;
+  onSetNotificationMode?: (key: NotificationCategoryKey, mode: NotificationMode) => void;
+  onResetNotificationPrefs?: () => void;
 }
 
 export function SettingsPanel({
@@ -31,9 +30,12 @@ export function SettingsPanel({
   onToggleDebug,
   showOrganicShore,
   onToggleOrganicShore,
+  notificationPrefs,
+  onToggleNotificationCategory,
+  onSetNotificationMode,
+  onResetNotificationPrefs,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
 
   // Handle Escape key and click-outside
   useEffect(() => {
@@ -66,20 +68,6 @@ export function SettingsPanel({
   }, [open, onClose]);
 
   if (!open) return null;
-
-  const handlePaletteChange = (id: PaletteThemeId) => {
-    if (id === paletteId) return;
-    setPaletteId(id);
-    // Palette change requires full reload because module-level constants
-    // (label halos, label colors) are computed at import time.
-    const url = new URL(window.location.href);
-    if (id === 'golden-hour') {
-      url.searchParams.delete('palette');
-    } else {
-      url.searchParams.set('palette', id);
-    }
-    window.location.href = url.toString();
-  };
 
   const panelStyle: React.CSSProperties = {
     position: 'fixed',
@@ -171,20 +159,6 @@ export function SettingsPanel({
     transform: enabled ? 'translateX(8px)' : 'translateX(-8px)',
   });
 
-  const selectStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(30, 30, 36, 0.9)',
-    color: 'var(--text-primary)',
-    border: '1px solid rgba(212, 175, 55, 0.25)',
-    borderRadius: '4px',
-    padding: '4px 8px',
-    fontSize: '12px',
-    fontFamily: 'var(--font-body)',
-    cursor: 'pointer',
-    outline: 'none',
-  };
-
-  const paletteOptions = Object.values(PALETTE_THEMES);
-
   return (
     <div
       ref={panelRef}
@@ -220,20 +194,92 @@ export function SettingsPanel({
               <div style={toggleDotStyle(!fogDisabled)} />
             </button>
           </div>
-          <div style={settingRowStyle}>
-            <label style={settingLabelStyle}>Map Palette</label>
-            <select
-              value={paletteId}
-              onChange={(e) => handlePaletteChange(e.target.value as PaletteThemeId)}
-              style={selectStyle}
-              aria-label="Select map color palette"
-            >
-              {paletteOptions.map((t) => (
-                <option key={t.id} value={t.id}>{t.displayName}</option>
-              ))}
-            </select>
-          </div>
         </div>
+
+        {/* Notifications Section */}
+        {notificationPrefs && onToggleNotificationCategory && onSetNotificationMode && (
+          <div style={sectionStyle}>
+            <div style={sectionHeaderStyle}>Notifications</div>
+            {NOTIFICATION_CATEGORY_ORDER.map(key => {
+              const catPrefs = notificationPrefs[key];
+              return (
+                <div key={key} style={settingRowStyle}>
+                  <label style={{ ...settingLabelStyle, fontSize: '12px' }}>
+                    {NOTIFICATION_CATEGORY_LABELS[key]}
+                  </label>
+                  {/* On/Off toggle */}
+                  <button
+                    onClick={() => onToggleNotificationCategory(key)}
+                    style={toggleStyle(catPrefs.enabled)}
+                    aria-label={`Toggle ${NOTIFICATION_CATEGORY_LABELS[key]} notifications`}
+                    title={catPrefs.enabled ? 'Enabled' : 'Disabled'}
+                  >
+                    <div style={toggleDotStyle(catPrefs.enabled)} />
+                  </button>
+                  {/* Mode toggle: ⏱ temporary / 📌 permanent */}
+                  <div style={{ display: 'flex', gap: '2px', marginLeft: '6px' }}>
+                    <button
+                      onClick={() => onSetNotificationMode(key, 'temporary')}
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
+                        border: 'none',
+                        cursor: catPrefs.enabled ? 'pointer' : 'default',
+                        background: catPrefs.mode === 'temporary' ? 'var(--accent-gold-glow)' : 'transparent',
+                        color: catPrefs.mode === 'temporary' ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+                        opacity: catPrefs.enabled ? 1 : 0.4,
+                      }}
+                      disabled={!catPrefs.enabled}
+                      title="Auto-expire"
+                      aria-label={`Set ${NOTIFICATION_CATEGORY_LABELS[key]} to temporary mode`}
+                    >
+                      ⏱
+                    </button>
+                    <button
+                      onClick={() => onSetNotificationMode(key, 'permanent')}
+                      style={{
+                        fontSize: '12px',
+                        padding: '2px 4px',
+                        borderRadius: '3px',
+                        border: 'none',
+                        cursor: catPrefs.enabled ? 'pointer' : 'default',
+                        background: catPrefs.mode === 'permanent' ? 'var(--accent-gold-glow)' : 'transparent',
+                        color: catPrefs.mode === 'permanent' ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+                        opacity: catPrefs.enabled ? 1 : 0.4,
+                      }}
+                      disabled={!catPrefs.enabled}
+                      title="Stay until dismissed"
+                      aria-label={`Set ${NOTIFICATION_CATEGORY_LABELS[key]} to permanent mode`}
+                    >
+                      📌
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+            {onResetNotificationPrefs && (
+              <div style={{ padding: '8px 16px' }}>
+                <button
+                  onClick={onResetNotificationPrefs}
+                  style={{
+                    fontSize: '11px',
+                    color: 'var(--text-tertiary)',
+                    background: 'none',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '4px',
+                    padding: '4px 10px',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-body)',
+                  }}
+                  aria-label="Reset notification preferences to defaults"
+                >
+                  Reset to Defaults
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Debug Section */}
         <div style={sectionStyle}>
