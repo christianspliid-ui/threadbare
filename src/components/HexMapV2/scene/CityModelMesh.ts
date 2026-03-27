@@ -110,26 +110,17 @@ export function createCityModelMesh(
       });
 
       // ── Place one clone per city/capital hex ─────────────────────────────
-      // Wrap in a pivot group: inner group handles rotation/scale, outer
-      // handles map-plane positioning. This avoids centering-before-rotation issues.
       for (const loc of cityLocations) {
         const { x, y } = hexToWorld(
           { col: loc.hexCol, row: loc.hexRow },
           HEX_CONSTANTS.HEX_SIZE,
         );
 
-        // Outer pivot sits at the hex world position
-        const pivot = new THREE.Group();
-        pivot.position.set(x, y, CITY_MODEL_CONSTANTS.MODEL_Z);
-
-        // Inner clone gets rotation + scale; centering done in model-local space
         const clone = gltf.scene.clone(true);
-        clone.rotation.x = CITY_MODEL_CONSTANTS.ROTATION_X;
-        clone.rotation.z = CITY_MODEL_CONSTANTS.ROTATION_Z;
+        // No rotation — model imported as-is from Blender/GLTF
         clone.scale.setScalar(CITY_MODEL_CONSTANTS.MODEL_SCALE);
-
-        pivot.add(clone);
-        group.add(pivot);
+        clone.position.set(x, y, CITY_MODEL_CONSTANTS.MODEL_Z);
+        group.add(clone);
       }
     },
 
