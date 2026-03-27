@@ -9,10 +9,8 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type { MovementState } from '../types/movement';
 import { DECISION_REEVALUATION_TICKS } from '../types/movement';
-import { tickMovement, initMovementState } from './movementExecution';
+import { tickMovement } from './movementExecution';
 import { generateMovementCandidates, scoreMovementCandidate } from './movementCandidates';
-import { computeEdgeCost } from './movementCost';
-import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
 import { MOVEMENT_SCORE_THRESHOLD, MOVEMENT_EVENT_SIGNIFICANCE } from '../data/movement-content';
 import type { AxiologicalProfile } from '../types/agent';
@@ -220,51 +218,41 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             );
 
             if (newCandidates[0].score > currentRemainingScore * 2) {
-              // Switch to new destination — use road-aware pathfinding with hex-by-hex fallback
-              // (matches phaseAgentDecision's movement initiation logic)
-              let switchedState: MovementState | null = null;
+              // Switch to new destination — pathfind from the NEXT graph node
+              // (movementQueue[0]), not currentLocId which is the stale located_at.
+              // Using located_at would teleport the agent back to their origin.
+              const rerouteFromId = result.updatedState.movementQueue[0] ?? currentLocId;
+              const graphPath = findShortestPath(state.graph, actorId, rerouteFromId, newCandidates[0].destinationId);
 
-              const graphPath = findShortestPath(state.graph, actorId, currentLocId, newCandidates[0].destinationId);
-              if (graphPath && graphPath.roadSegments && graphPath.roadSegments.length > 0 && graphPath.path.length > 0) {
-                // Road-aware path: use graph-level path with road segments
-                const firstSeg = graphPath.roadSegments.find(
-                  seg => (seg.fromId === currentLocId && seg.toId === graphPath.path[0]) ||
-                         (seg.toId === currentLocId && seg.fromId === graphPath.path[0]),
-                );
-                const firstEdgeCost = firstSeg
-                  ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
-                  : computeEdgeCost(state.graph, actorId, currentLocId, graphPath.path[0]).totalCost;
-                switchedState = initMovementState(
-                  newCandidates[0].destinationId,
-                  graphPath.path,
-                  firstEdgeCost,
-                  state.tick,
-                  graphPath.roadSegments,
-                  currentLocId,
-                );
-              } else {
-                // Fall back to hex-by-hex A*
-                const hexPath = buildHexMovementPath(
-                  state.graph,
-                  currentLocId,
-                  newCandidates[0].destinationId,
-                  state.tiles,
-                );
-                if (hexPath) {
-                  switchedState = initMovementState(
-                    hexPath.destinationId,
-                    hexPath.locationIds,
-                    hexPath.firstEdgeCost,
-                    state.tick,
-                  );
-                }
-              }
-
-              if (switchedState) {
-                // Preserve movement history from current state
-                switchedState.movementHistory = result.updatedState.movementHistory;
-                // Track the original motivation pull for future re-evaluations
-                switchedState.motivationPull = newCandidates[0].motivationPull;
+              if (graphPath) {
+                // Build new movement state preserving current road hex progress.
+                // Agent stays at their current hex and continues walking the
+                // current road segment — only the downstream queue changes.
+                const switchedState: MovementState = {
+                  destinationId: newCandidates[0].destinationId,
+                  movementQueue: [rerouteFromId, ...graphPath.path],
+                  ticksAccumulated: result.updatedState.ticksAccumulated,
+                  currentEdgeCost: result.updatedState.currentEdgeCost,
+                  lastDecisionTick: state.tick,
+                  movementHistory: result.updatedState.movementHistory,
+                  motivationPull: newCandidates[0].motivationPull,
+                  // Preserve current road traversal state
+                  currentHexPosition: result.updatedState.currentHexPosition,
+                  roadHexQueue: result.updatedState.roadHexQueue,
+                  roadHexCost: result.updatedState.roadHexCost,
+                  currentRoadType: result.updatedState.currentRoadType,
+                  // Merge road segments: current + new path segments
+                  roadSegments: [
+                    ...(result.updatedState.roadSegments ?? []),
+                    ...(graphPath.roadSegments ?? []).map(s => ({
+                      fromId: s.fromId,
+                      toId: s.toId,
+                      roadType: s.roadType,
+                      hexPath: s.hexPath.map(h => ({ col: h.col, row: h.row })),
+                      discountedCost: s.discountedCost,
+                    })),
+                  ],
+                };
 
                 // Trace: reroute
                 const oldDest = state.graph.getNode(result.updatedState.destinationId);
