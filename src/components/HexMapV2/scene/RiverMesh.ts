@@ -4,6 +4,7 @@ import type { RiverPath } from '../../../engine/worldGenData';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { SimplexNoise } from '../../../lib/simplexNoise';
 import { WATER_PALETTE } from '../palette/waterPalette';
+import { getActivePalette } from '../palette/activePalette';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 
@@ -288,7 +289,7 @@ function buildQuadStripGeometry(
  * NFP #7: All river paths merged into one BufferGeometry (minimal draw calls).
  *
  * @param riverPaths - River paths from worldgen (RiverPath[])
- * @param tiles - Tile array for lookup (currently unused but retained for future signifier hooks)
+ * @param tiles - Tile array for lookup (retained for future use)
  * @param seed - World seed for deterministic meander noise
  */
 export function createRiverMesh(
@@ -346,7 +347,7 @@ export function createRiverMesh(
   mergedGeo.setIndex(allIndices);
 
   const mat = new THREE.MeshBasicMaterial({
-    color: new THREE.Color(WATER_PALETTE['river']),
+    color: new THREE.Color(getActivePalette().waterOverrides['deep_ocean'] ?? WATER_PALETTE['deep_ocean']),
     side: THREE.DoubleSide,
     depthTest: false,
   });
