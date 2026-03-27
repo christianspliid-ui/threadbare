@@ -32,6 +32,12 @@ Runtime-switchable hex map color palettes via Settings panel and URL param. Intr
 
 ---
 
+## ✅ TB-066 · Palette Theme System — Feature-Flagged Color Scheme (2026-03-27)
+
+Feature-flagged color scheme for HexMapV2 with two shipped themes: Golden Hour (warm default) and Dark Parchment (cool/dark alt). PaletteTheme interface with 17 color slots covering scene, roads, borders, capitals, grid, elevation, fog, and labels. activePalette singleton with URL param (`?palette=dark-parchment`) and change listener API. Settings panel dropdown for runtime palette switching. 11 scene/overlay files refactored from hardcoded colors to `getActivePalette()`. 51 new tests.
+
+---
+
 ## ✅ TB-065 · Encounter Modal Prose Variables Unresolved — bug (2026-03-27)
 
 TieredEncounterModal renders raw `{actor}`, `{adj}`, `{verb}`, `{noun}` placeholders. The modal calls `enrichProse()` but that function doesn't handle encounter-specific variables — only agent-narrative ones (`{name}`, `{location}`, etc.). Fix: extend `enrichProse()` with encounter variable resolution, extract shared word pools from orchestrator dilemma logic.
