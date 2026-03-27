@@ -78,6 +78,7 @@ import { computeEssenceIncome } from '../../engine/essenceIncome';
 import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/targetContextBuilders';
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
+import type { WheelSlot } from '../../engine/wheel';
 import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
@@ -407,7 +408,42 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   });
 
   // Handle target_action slot clicks from non-agent detail views (Phase 5)
+  // ── Meet The First as action card slot ──
+  const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
+
+  // Inject Meet The First card into non-agent slots when on a location view
+  const enrichedNonAgentSlots = useMemo(() => {
+    const base = nonAgentSlots ?? [];
+    if (viewLevel !== 'location' || !meetTheFirstAvailable || !focusedLocation) return base;
+    // Only show if there are agents at the location
+    if (focusedLocationAgents.length === 0) return base;
+    const meetSlot: WheelSlot = {
+      id: MEET_THE_FIRST_SLOT_ID,
+      label: 'Meet The First',
+      type: 'intervention',
+      angleDeg: 0,
+      available: true,
+      lockedReason: null,
+      essenceCost: 0,
+      detectionRisk: 0,
+      sphere: archetype.sphereAlignment.primary,
+      interventionType: null,
+      rangeStatus: 'unlimited',
+      hexDistance: null,
+      description: 'Claim a mortal as your champion — The First to carry your will.',
+    };
+    return [meetSlot, ...base];
+  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary]);
+
   const handleNonAgentSlotClick = useCallback((slotId: string) => {
+    // Intercept Meet The First special slot
+    if (slotId === MEET_THE_FIRST_SLOT_ID) {
+      if (focusedLocation) {
+        handleStartMeeting(focusedLocation.id);
+      }
+      return;
+    }
+
     if (!nonAgentTargetContext) return;
 
     const templateId = templateIdFromSlotId(slotId);
@@ -467,7 +503,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     } catch (err) {
       console.warn('[targetAction] failed to create action:', err);
     }
-  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState]);
+  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
 
   // ── Hex zoom derived data ──
   const {
@@ -1075,8 +1111,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                 getEncounterTemplate={getAnyEncounterById}
                 graph={gameState.graph}
                 seed={gameState.seed}
-                meetTheFirstAvailable={meetTheFirstAvailable}
-                onMeetTheFirst={() => handleStartMeeting(focusedLocation.id)}
               />
             )}
           </div>
@@ -1095,10 +1129,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           )}
 
           {/* ActionDrawer overlay — non-agent (hex / location) path */}
-          {nonAgentSlots && nonAgentSlots.length > 0 && nonAgentDrawerOpen && !selectedAgentId && (
+          {enrichedNonAgentSlots && enrichedNonAgentSlots.length > 0 && nonAgentDrawerOpen && !selectedAgentId && (
             <ActionDrawer
               open={nonAgentDrawerOpen}
-              slots={nonAgentSlots}
+              slots={enrichedNonAgentSlots}
               targetName={nonAgentTargetContext?.displayName ?? ''}
               targetLabel={nonAgentTargetContext?.displayLabel ?? ''}
               playingCardId={null}
