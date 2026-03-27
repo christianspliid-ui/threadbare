@@ -49,7 +49,7 @@ export function resetMovementEventCounter(): void {
 export function phaseMovement(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
 
-  // Get all individual agents
+  // Get all individual agents (includes avatar — avatar player-initiated movement must still tick)
   const agents = state.graph.getNodesByType('actor')
     .filter(actor => actor.properties?.actorType === 'individual');
 
