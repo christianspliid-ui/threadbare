@@ -31,6 +31,7 @@ export interface UseZoomLayerVisibilityParams {
   groups: {
     signifiers: React.MutableRefObject<THREE.Group | null>;
     locations: React.MutableRefObject<THREE.Group | null>;
+    cityModels: React.MutableRefObject<THREE.Group | null>;
     roads: React.MutableRefObject<THREE.Group | null>;
     rivers: React.MutableRefObject<THREE.Group | null>;
     gridLines: React.MutableRefObject<THREE.Mesh | null>;
@@ -62,6 +63,7 @@ export function useZoomLayerVisibility({
     // Layer visibility from matrix
     if (groups.signifiers.current) groups.signifiers.current.visible = ZOOM_VISIBILITY_MATRIX.signifiers[tier];
     if (groups.locations.current) groups.locations.current.visible = ZOOM_VISIBILITY_MATRIX.locations[tier];
+    if (groups.cityModels.current) groups.cityModels.current.visible = ZOOM_VISIBILITY_MATRIX.locations[tier];
     if (groups.elevTicks.current) groups.elevTicks.current.visible = ZOOM_VISIBILITY_MATRIX.elev_ticks[tier];
     if (groups.rivers.current) groups.rivers.current.visible = ZOOM_VISIBILITY_MATRIX.rivers[tier];
     if (groups.roads.current) groups.roads.current.visible = ZOOM_VISIBILITY_MATRIX.roads[tier];
