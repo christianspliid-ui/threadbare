@@ -917,7 +917,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
         <div className="flex items-center gap-2.5">
           <span style={{ fontSize: 13, color: 'var(--accent-gold)' }}>◆</span>
           <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>
-            {essence}
+            {Math.round(essence)}
           </span>
         </div>
         <div className="flex gap-2">
