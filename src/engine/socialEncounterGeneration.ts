@@ -39,6 +39,10 @@ import type { WorldGraph } from './graph';
 import type { DistanceMatrix } from './distanceMatrix';
 import { computeRewardEstimate, computeTotalTickCost } from './encounterCache';
 import { SOCIAL_ENCOUNTER_TEMPLATES } from '../data/social-encounter-content';
+import { FACTION_SOCIAL_TEMPLATES } from '../data/faction-encounter-content';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import type { MemberOfEdgeProperties } from '../types/disposition';
+import type { EncounterTemplate } from '../types/encounter';
 import { getTrust } from './trustMechanics';
 import { computeCapability } from './domainCapability';
 import { emitTrace } from './traceBuffer';
@@ -114,8 +118,16 @@ export function generateSocialCandidates(
       tmpl.locationTypes.includes(locationType),
     );
 
+    // Add faction-scoped social templates if agents share a faction (TB-062)
+    const factionTemplates = getSharedFactionSocialTemplates(
+      graph, agentId, targetAgentId, locationType,
+    );
+
+    // Combine: location-based first, then faction-scoped
+    const combinedTemplates = [...matchingTemplates, ...factionTemplates];
+
     // Take up to MAX_SOCIAL_CANDIDATES_PER_AGENT templates
-    const selectedTemplates = matchingTemplates.slice(0, MAX_SOCIAL_CANDIDATES_PER_AGENT);
+    const selectedTemplates = combinedTemplates.slice(0, MAX_SOCIAL_CANDIDATES_PER_AGENT);
 
     for (const tmpl of selectedTemplates) {
       candidates.push({
@@ -240,4 +252,59 @@ function findVisibleAgents(
   }
 
   return results;
+}
+
+/**
+ * Find faction-scoped social templates for two agents who share faction membership.
+ * Returns templates from all shared factions' socialTemplateIds that match the location type.
+ *
+ * TB-062: Faction Social Encounters
+ */
+export function getSharedFactionSocialTemplates(
+  graph: WorldGraph,
+  agentId: string,
+  targetAgentId: string,
+  locationType: string,
+): EncounterTemplate[] {
+  const agentFactions = graph.getOutgoingEdges(agentId, 'member_of');
+  const targetFactions = graph.getOutgoingEdges(targetAgentId, 'member_of');
+
+  // Build set of factionDefIds for the target agent
+  const targetFactionDefIds = new Set<string>();
+  for (const edge of targetFactions) {
+    const props = edge.properties as Partial<MemberOfEdgeProperties>;
+    if (props.factionDefId) targetFactionDefIds.add(props.factionDefId);
+  }
+
+  // Find shared factionDefIds
+  const sharedDefIds: string[] = [];
+  for (const edge of agentFactions) {
+    const props = edge.properties as Partial<MemberOfEdgeProperties>;
+    if (props.factionDefId && targetFactionDefIds.has(props.factionDefId)) {
+      sharedDefIds.push(props.factionDefId);
+    }
+  }
+
+  if (sharedDefIds.length === 0) return [];
+
+  // Collect social templates from all shared factions
+  const templates: EncounterTemplate[] = [];
+  const templateIdSet = new Set<string>();
+
+  for (const defId of sharedDefIds) {
+    const definition = FACTION_DEFINITIONS.get(defId);
+    if (!definition) continue;
+
+    for (const templateId of definition.socialTemplateIds) {
+      if (templateIdSet.has(templateId)) continue;
+      templateIdSet.add(templateId);
+
+      const tmpl = FACTION_SOCIAL_TEMPLATES.find(t => t.id === templateId);
+      if (tmpl && tmpl.locationTypes.includes(locationType)) {
+        templates.push(tmpl);
+      }
+    }
+  }
+
+  return templates;
 }
