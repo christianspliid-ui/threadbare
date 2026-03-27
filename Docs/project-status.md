@@ -6,14 +6,11 @@
 **TB-058: Faction Vertical Slice (Adventuring Guild)** — All 5 phases complete.
 
 **Recent completions:**
+- ✅ Avatar autonomous movement fix (2026-03-27) — excluded avatar from phaseAgentDecision so player character no longer moves autonomously after entering hexes with other agents.
 - ✅ TB-063: Faction UI & Visibility (2026-03-27) — agent profile faction section, faction TickEvents (join/promotion/demotion), alert glyphs, debug panel Factions tab. 16 tests.
 - ✅ TB-065: Encounter Modal Prose Variables (2026-03-27) — resolve {actor}, {adj}, {verb}, {noun}, {action} placeholders in TieredEncounterModal.
 - ✅ TB-064: In-Game Settings Panel (2026-03-27) — single gear icon dropdown replaces fog+debug buttons.
 - ✅ Reroute teleportation fix (2026-03-27) — agents no longer teleport back to origin on reroute.
-- ✅ TB-062: Faction Social Encounters & Rank Bonuses (2026-03-27) — 6 faction-scoped social templates, shared-faction filter, 3 rank bonus types wired. 25 tests.
-- ✅ TB-061: Join & Promotion Encounters (2026-03-27) — lifecycle candidates, not_faction visibility filter, partial-success promotion. 32 tests.
-- ✅ TB-060: Quest Board & Reputation (2026-03-27) — 10 quest templates, reputation gain/decay/rank recalc.
-- ✅ TB-059: Schema & Seeding (2026-03-27) — FactionDefinition types, guild seeder, guild hall placement.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
