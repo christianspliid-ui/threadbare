@@ -43,6 +43,13 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
   ['ag.senior.map_uncharted', { factionDefId: 'adventuring_guild', minRank: 'sergeant', reputationReward: 0.05, questType: 'senior' }],
   ['ag.elite.dragon_lair', { factionDefId: 'adventuring_guild', minRank: 'lieutenant', reputationReward: 0.08, questType: 'elite' }],
   ['ag.elite.lost_city', { factionDefId: 'adventuring_guild', minRank: 'lieutenant', reputationReward: 0.08, questType: 'elite' }],
+  // Social encounters (TB-062)
+  ['ag.social.sparring', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
+  ['ag.social.tavern_tales', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
+  ['ag.social.mentor', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
+  ['ag.social.bounty_plan', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
+  ['ag.social.share_maps', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
+  ['ag.social.rivalry', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.03, questType: 'standard' }],
 ]);
 
 // ─── Templates ───────────────────────────────────────────────────────────
@@ -515,6 +522,228 @@ export const FACTION_PROMOTION_TEMPLATE: EncounterTemplate = {
   questPriority: 7.0, // Very high — promotion is a major milestone
 };
 
+// ─── Faction Social Templates (TB-062) ──────────────────────────────────
+
+const FACTION_SOCIAL_DIFFICULTY_BASE = 25;
+const FACTION_SOCIAL_DIFFICULTY_STEP = 10;
+
+/**
+ * 6 faction-scoped social encounters — only visible between agents
+ * who share faction membership. These model guild camaraderie,
+ * mentorship, competition, and shared purpose.
+ */
+export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
+  // 1. Sparring Match — iron/flesh, cooperative training
+  {
+    id: 'ag.social.sparring',
+    name: 'Guild Sparring Match',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'iron',
+    reachSecondary: 'flesh',
+    encounterType: 'duel',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
+    questPriority: 2.0,
+    steps: [
+      {
+        id: 'ag.social.sparring.1',
+        name: 'Challenge a Guildmate',
+        narrative: 'In the guild yard, practice blades are drawn. A fellow adventurer meets your eye and nods.',
+        reach: 'iron',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
+        duration: 1,
+        onSuccess: { narrative: 'Blades clash in a rhythm of give and take. Both fighters sharpen their edge.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'Your guard drops and a practice blade taps your shoulder. A lesson learned.', reputationDelta: -0.01 },
+      },
+      {
+        id: 'ag.social.sparring.2',
+        name: 'Test Your Mettle',
+        narrative: 'The bout intensifies. Guild members gather to watch.',
+        reach: 'flesh',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
+        duration: 1,
+        onSuccess: { narrative: 'A clean victory — both fighters bow, mutual respect deepened.', reputationDelta: 0.04, tierPromotionEligible: true },
+        onFailure: { narrative: 'Exhaustion takes hold. The bout ends without a clear winner.', reputationDelta: -0.01 },
+      },
+    ],
+  },
+
+  // 2. Tavern Tales — heart/eye, sharing stories
+  {
+    id: 'ag.social.tavern_tales',
+    name: 'Share Tavern Tales',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'heart',
+    reachSecondary: 'eye',
+    encounterType: 'assist',
+    threatRating: 'trivial',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    questPriority: 1.5,
+    steps: [
+      {
+        id: 'ag.social.tavern_tales.1',
+        name: 'Buy a Round',
+        narrative: 'The guild common room is warm and loud. A fellow adventurer waves you over.',
+        reach: 'heart',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE - 10,
+        duration: 1,
+        onSuccess: { narrative: 'Drinks flow and tongues loosen. Stories of the road emerge.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'The conversation falters. Your companion seems preoccupied.', reputationDelta: -0.01 },
+      },
+      {
+        id: 'ag.social.tavern_tales.2',
+        name: 'Trade Stories',
+        narrative: 'The tales grow taller with each telling. Useful details hide among the embellishments.',
+        reach: 'eye',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
+        duration: 1,
+        onSuccess: { narrative: 'A nugget of genuine intelligence surfaces — a location, a weakness, a name.', reputationDelta: 0.04 },
+        onFailure: { narrative: 'Nothing but tall tales tonight. Entertaining, but not useful.', reputationDelta: -0.01 },
+      },
+    ],
+  },
+
+  // 3. Mentor Session — eye/heart, knowledge transfer
+  {
+    id: 'ag.social.mentor',
+    name: 'Guild Mentorship',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'eye',
+    reachSecondary: 'heart',
+    encounterType: 'assist',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.assist,
+    questPriority: 2.5,
+    steps: [
+      {
+        id: 'ag.social.mentor.1',
+        name: 'Offer Guidance',
+        narrative: 'A guildmate struggles with a technique. Experience has its obligations.',
+        reach: 'eye',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
+        duration: 2,
+        onSuccess: { narrative: 'Your instruction lands. The student\'s form improves visibly.', reputationDelta: 0.04 },
+        onFailure: { narrative: 'The lesson doesn\'t take. Perhaps a different approach is needed.', reputationDelta: -0.01 },
+      },
+      {
+        id: 'ag.social.mentor.2',
+        name: 'Forge Understanding',
+        narrative: 'Knowledge passes between guild members — the living tradition of the adventurer\'s craft.',
+        reach: 'heart',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
+        duration: 1,
+        onSuccess: { narrative: 'A bond of mentor and student forms. The guild grows stronger.', reputationDelta: 0.05, tierPromotionEligible: true },
+        onFailure: { narrative: 'Frustration wins out. The session ends with both parties dissatisfied.', reputationDelta: -0.02 },
+      },
+    ],
+  },
+
+  // 4. Bounty Planning — shadow/iron, tactical coordination
+  {
+    id: 'ag.social.bounty_plan',
+    name: 'Plan a Guild Bounty',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'iron',
+    encounterType: 'lead',
+    threatRating: 'easy',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+    questPriority: 2.5,
+    steps: [
+      {
+        id: 'ag.social.bounty_plan.1',
+        name: 'Study the Board',
+        narrative: 'The bounty board is thick with postings. A fellow guild member leans in to compare notes.',
+        reach: 'shadow',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
+        duration: 1,
+        onSuccess: { narrative: 'Together you piece together a pattern the board alone doesn\'t show.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'The postings are contradictory. No clear plan emerges.', reputationDelta: -0.01 },
+      },
+      {
+        id: 'ag.social.bounty_plan.2',
+        name: 'Coordinate the Hunt',
+        narrative: 'A plan takes shape — who approaches from where, who watches the escape routes.',
+        reach: 'iron',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
+        duration: 2,
+        onSuccess: { narrative: 'The plan is solid. Both guild members know their role for the hunt ahead.', reputationDelta: 0.05, tierPromotionEligible: true },
+        onFailure: { narrative: 'Disagreement on tactics. The plan dissolves into argument.', reputationDelta: -0.02 },
+      },
+    ],
+  },
+
+  // 5. Share Maps — eye/gold, information exchange
+  {
+    id: 'ag.social.share_maps',
+    name: 'Exchange Guild Intelligence',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'eye',
+    reachSecondary: 'gold',
+    encounterType: 'trade',
+    threatRating: 'trivial',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.trade,
+    questPriority: 1.5,
+    steps: [
+      {
+        id: 'ag.social.share_maps.1',
+        name: 'Compare Notes',
+        narrative: 'Two guild members spread their maps across a table, comparing routes and warnings.',
+        reach: 'eye',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE - 5,
+        duration: 1,
+        onSuccess: { narrative: 'Gaps in each map are filled by the other. Both sets of notes improve.', reputationDelta: 0.03 },
+        onFailure: { narrative: 'The maps cover different regions. Little overlap to exploit.', reputationDelta: 0.0 },
+      },
+      {
+        id: 'ag.social.share_maps.2',
+        name: 'Strike a Fair Trade',
+        narrative: 'Good intelligence has value. The terms of exchange must satisfy both parties.',
+        reach: 'gold',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
+        duration: 1,
+        onSuccess: { narrative: 'A fair exchange — both adventurers leave better informed than they arrived.', reputationDelta: 0.04 },
+        onFailure: { narrative: 'One party feels shortchanged. The exchange ends awkwardly.', reputationDelta: -0.02 },
+      },
+    ],
+  },
+
+  // 6. Guild Rivalry — iron/heart, competitive tension
+  {
+    id: 'ag.social.rivalry',
+    name: 'Guild Rivalry',
+    locationTypes: ['town', 'city', 'capital'],
+    reachPrimary: 'iron',
+    reachSecondary: 'heart',
+    encounterType: 'duel',
+    threatRating: 'moderate',
+    motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
+    questPriority: 3.0,
+    steps: [
+      {
+        id: 'ag.social.rivalry.1',
+        name: 'The Challenge',
+        narrative: 'Tension simmers between guild members. A public challenge is issued — who is the better adventurer?',
+        reach: 'iron',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
+        duration: 1,
+        onSuccess: { narrative: 'Your demonstration of skill silences the doubters.', reputationDelta: 0.04 },
+        onFailure: { narrative: 'Your rival\'s display outshines your own. The crowd murmurs.', reputationDelta: -0.03 },
+      },
+      {
+        id: 'ag.social.rivalry.2',
+        name: 'Settle the Score',
+        narrative: 'The rivalry demands resolution. Only one can walk away with the guild\'s respect.',
+        reach: 'heart',
+        difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP * 2,
+        duration: 2,
+        onSuccess: { narrative: 'Grudging respect replaces hostility. The rivalry becomes a spur to excellence.', reputationDelta: 0.06, tierPromotionEligible: true },
+        onFailure: { narrative: 'The rivalry festers. Both parties lose standing in the guild\'s eyes.', reputationDelta: -0.04 },
+      },
+    ],
+  },
+];
+
 // ─── Lookup ──────────────────────────────────────────────────────────────
 
 /** All faction lifecycle templates (join, promotion) — separate from quest templates. */
@@ -528,7 +757,8 @@ export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
  */
 export function getFactionEncounterById(id: string): EncounterTemplate | undefined {
   return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
-    ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id);
+    ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
+    ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id);
 }
 
 /**
