@@ -33,8 +33,13 @@ scripts/playtest.mjs
 # Git worktrees
 .worktrees/
 
-# Coordination file version snapshots
+# Coordination file version snapshots & backups
 .planning/.versions/
+.planning/.snapshots/
+.planning/.backlog-snapshots/
+.planning/snapshots/
+.planning/*.bak*
+.planning/*.snapshot-*
 
 .vercel
 .env*.local
