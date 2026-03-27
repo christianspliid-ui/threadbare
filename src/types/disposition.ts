@@ -81,7 +81,7 @@ export interface RelatesToEdgeProperties {
  * Stored on GraphEdge.properties for edges of type 'member_of'.
  */
 export interface MemberOfEdgeProperties {
-  /** Membership role (e.g., 'member', 'adept', 'leader') */
+  /** Membership role (e.g., 'member', 'adept', 'leader') — derived from rank tier ID */
   role: string;
   /**
    * Rank within the faction: 0 (recruit) to 1 (leader).
@@ -93,6 +93,17 @@ export interface MemberOfEdgeProperties {
    * Used for seniority calculations.
    */
   joinedTick: number;
+  /**
+   * Faction reputation: 0.0 to 1.0. The single lever that drives rank,
+   * access, bonuses, and expulsion. Decays per tick without activity.
+   * Optional for backward-compat with pre-faction member_of edges (defaults to 0).
+   */
+  reputation?: number;
+  /**
+   * Links to FactionDefinition.id for lookup of rank tiers, decay rates, etc.
+   * Optional for backward-compat with pre-faction member_of edges (economic guilds).
+   */
+  factionDefId?: string;
 }
 
 // ─── Trust Constants ────────────────────────────────────────────

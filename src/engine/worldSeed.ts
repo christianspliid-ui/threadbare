@@ -33,6 +33,8 @@ import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
 import { seedAttachments } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
+import { seedAllFactions } from './factionSeeding';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { ensureSublocations } from './sublocation';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
@@ -254,6 +256,7 @@ export interface SeedResult {
   individualIds: string[];
   factionIds: string[];
   guildIds: string[];
+  factionDefIds: string[];
   locationIds: string[];
   artifactIds: string[];
   cultureIds: string[];
@@ -772,5 +775,11 @@ export function seedWorld(
   // and after factions/individuals exist (for graph integrity).
   const guildIds = seedGuilds(graph, locationIds, seed + 31337);
 
-  return { graph, individualIds, factionIds, guildIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
+  // ── Faction Definitions (TB-058) ────────────────────────────
+  // Separate PRNG stream (seed + 41449) — avoids collision with other streams.
+  // Seeds data-driven factions (Adventuring Guild, etc.) with guild hall sublocations.
+  const factionDefResults = seedAllFactions(graph, FACTION_DEFINITIONS, locationIds, seed + 41449);
+  const factionDefIds = factionDefResults.map(r => r.factionId);
+
+  return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
