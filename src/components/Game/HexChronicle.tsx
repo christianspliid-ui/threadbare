@@ -1,5 +1,5 @@
 import { memo, useCallback, useEffect, useMemo, useRef } from 'react';
-import { Volume2, Square, Loader2 } from 'lucide-react';
+import { Play, Square, Loader2 } from 'lucide-react';
 import type { TerrainType, SphereName } from '../../types';
 import type { LineOfSight, SphereInfluence, HexCultureSummary, HexFactionSummary } from '../../engine/hexZoom';
 import type { HexRegionData } from '../../engine/hexRegion';
@@ -112,7 +112,12 @@ export const HexChronicle = memo(function HexChronicle({
   // ── Narration ─────────────────────────────────────────────────────
 
   const chronicleRef = useRef<HTMLDivElement>(null);
-  const { enabled: narrationEnabled, status: narrationStatus, isLoading, isSpeaking, narrateChronicle, stop: stopNarration } = useNarration();
+  const landRef = useRef<HTMLDivElement>(null);
+  const soulRef = useRef<HTMLDivElement>(null);
+  const peopleRef = useRef<HTMLDivElement>(null);
+  const placesRef = useRef<HTMLDivElement>(null);
+  const ruinsRef = useRef<HTMLDivElement>(null);
+  const { enabled: narrationEnabled, isLoading, isSpeaking, narrateChronicle, stop: stopNarration } = useNarration();
 
   // Stop narration when hex changes
   const prevHexKey = useRef(`${hexCol},${hexRow}`);
@@ -126,11 +131,11 @@ export const HexChronicle = memo(function HexChronicle({
     }
   }, [hexCol, hexRow, isSpeaking, isLoading, stopNarration]);
 
-  const handleNarrate = useCallback(() => {
+  const handleNarrateChapter = useCallback((ref: React.RefObject<HTMLDivElement | null>) => {
     if (isSpeaking || isLoading) {
       stopNarration();
     } else {
-      narrateChronicle(chronicleRef.current);
+      narrateChronicle(ref.current);
     }
   }, [isSpeaking, isLoading, stopNarration, narrateChronicle]);
 
@@ -390,6 +395,40 @@ export const HexChronicle = memo(function HexChronicle({
     whiteSpace: 'nowrap',
   };
 
+  const playBtnStyle: React.CSSProperties = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '22px',
+    height: '22px',
+    background: 'none',
+    border: '1px solid var(--border-subtle)',
+    borderRadius: '50%',
+    cursor: isLoading ? 'wait' : 'pointer',
+    color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+    padding: 0,
+    flexShrink: 0,
+    transition: 'color 0.2s, border-color 0.2s',
+  };
+
+  const renderPlayBtn = (ref: React.RefObject<HTMLDivElement | null>, chapterName: string) =>
+    narrationEnabled ? (
+      <button
+        onClick={() => handleNarrateChapter(ref)}
+        title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading...' : `Narrate ${chapterName}`}
+        aria-label={isSpeaking ? 'Stop narration' : `Narrate ${chapterName}`}
+        style={playBtnStyle}
+      >
+        {isLoading ? (
+          <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
+        ) : isSpeaking ? (
+          <Square size={8} />
+        ) : (
+          <Play size={10} style={{ marginLeft: '1px' }} />
+        )}
+      </button>
+    ) : null;
+
   return (
     <div
       className="flex-1 overflow-y-auto"
@@ -460,51 +499,17 @@ export const HexChronicle = memo(function HexChronicle({
           background: 'linear-gradient(90deg, transparent, var(--border-gold-strong), transparent)',
         }} />
 
-        {/* Narrate button — only visible when NARRATION_ENABLED = true */}
-        {narrationEnabled && (
-          <button
-            onClick={handleNarrate}
-            title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading narrator...' : 'Narrate this chronicle'}
-            aria-label={isSpeaking ? 'Stop narration' : isLoading ? 'Loading narrator' : 'Narrate chronicle'}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              marginTop: '12px',
-              padding: '6px 14px',
-              background: 'var(--bg-surface)',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: '16px',
-              cursor: isLoading ? 'wait' : 'pointer',
-              color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
-              fontFamily: 'var(--font-body)',
-              fontSize: 'var(--text-xs)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              transition: 'color 0.2s, border-color 0.2s',
-            }}
-          >
-            {isLoading ? (
-              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} />
-            ) : isSpeaking ? (
-              <Square size={12} />
-            ) : (
-              <Volume2 size={14} />
-            )}
-            <span>{isLoading ? 'Loading...' : isSpeaking ? 'Stop' : 'Narrate'}</span>
-          </button>
-        )}
       </div>
 
       {/* ─── THE LAND ─────────────────────────────────────────────────────── */}
-      <div className="chronicle-layer" style={{
+      <div ref={landRef} className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.1s both',
       }}>
         <div className="chronicle-marker" style={markerStyle}>
           <div style={ruleStyle} />
           <span style={labelStyle}>The Land</span>
+          {renderPlayBtn(landRef, 'The Land')}
           <div style={ruleStyle} />
         </div>
         <p className="chronicle-prose drop-cap" style={proseStyle}>
@@ -563,13 +568,14 @@ export const HexChronicle = memo(function HexChronicle({
       </div>
 
       {/* ─── THE SOUL ─────────────────────────────────────────────────────── */}
-      <div className="chronicle-layer" style={{
+      <div ref={soulRef} className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.2s both',
       }}>
         <div className="chronicle-marker" style={markerStyle}>
           <div style={ruleStyle} />
           <span style={labelStyle}>The Soul</span>
+          {renderPlayBtn(soulRef, 'The Soul')}
           <div style={ruleStyle} />
         </div>
 
@@ -631,13 +637,14 @@ export const HexChronicle = memo(function HexChronicle({
       </div>
 
       {/* ─── THE PEOPLE ───────────────────────────────────────────────────── */}
-      <div className="chronicle-layer" style={{
+      <div ref={peopleRef} className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.3s both',
       }}>
         <div className="chronicle-marker" style={markerStyle}>
           <div style={ruleStyle} />
           <span style={labelStyle}>The People</span>
+          {renderPlayBtn(peopleRef, 'The People')}
           <div style={ruleStyle} />
         </div>
 
@@ -666,13 +673,14 @@ export const HexChronicle = memo(function HexChronicle({
 
       {/* ─── THE PLACES ──────────────────────────────────────────────────── */}
       {(parentLocations.length > 0 || orphanSublocations.length > 0) && (
-      <div className="chronicle-layer" style={{
+      <div ref={placesRef} className="chronicle-layer" style={{
         marginBottom: '40px',
         animation: 'fadeIn 0.6s ease-out 0.35s both',
       }}>
         <div className="chronicle-marker" style={markerStyle}>
           <div style={ruleStyle} />
           <span style={labelStyle}>The Places</span>
+          {renderPlayBtn(placesRef, 'The Places')}
           <div style={ruleStyle} />
         </div>
 
@@ -796,13 +804,14 @@ export const HexChronicle = memo(function HexChronicle({
 
       {/* ─── THE RUINS (conditional) ──────────────────────────────────────── */}
       {regionData?.historicalCulture && (
-        <div className="chronicle-layer" style={{
+        <div ref={ruinsRef} className="chronicle-layer" style={{
           marginBottom: '40px',
           animation: 'fadeIn 0.6s ease-out 0.4s both',
         }}>
           <div className="chronicle-marker" style={markerStyle}>
             <div style={ruleStyle} />
             <span style={labelStyle}>The Ruins</span>
+            {renderPlayBtn(ruinsRef, 'The Ruins')}
             <div style={ruleStyle} />
           </div>
 
