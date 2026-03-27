@@ -96,10 +96,10 @@ describe('createAgentSpriteMesh', () => {
     expect(result.group).toBeInstanceOf(THREE.Group);
   });
 
-  it('group.renderOrder equals RENDER_ORDER.AGENTS (9)', () => {
+  it('group.renderOrder equals RENDER_ORDER.AGENTS (10)', () => {
     const result = createAgentSpriteMesh([]);
     expect(result.group.renderOrder).toBe(RENDER_ORDER.AGENTS);
-    expect(result.group.renderOrder).toBe(9);
+    expect(result.group.renderOrder).toBe(10);
   });
 
   it('returns empty group for empty agents array', () => {

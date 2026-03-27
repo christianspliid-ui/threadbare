@@ -36,6 +36,7 @@ export interface UseZoomLayerVisibilityParams {
     rivers: React.MutableRefObject<THREE.Group | null>;
     gridLines: React.MutableRefObject<THREE.Mesh | null>;
     elevTicks: React.MutableRefObject<THREE.Mesh | null>;
+    geoBorder: React.MutableRefObject<THREE.LineSegments | null>;
     borderKingdom: React.MutableRefObject<THREE.Mesh | null>;
     borderBarony: React.MutableRefObject<THREE.Mesh | null>;
     coastline: React.MutableRefObject<THREE.Group | null>;
@@ -68,6 +69,7 @@ export function useZoomLayerVisibility({
     if (groups.rivers.current) groups.rivers.current.visible = ZOOM_VISIBILITY_MATRIX.rivers[tier];
     if (groups.roads.current) groups.roads.current.visible = ZOOM_VISIBILITY_MATRIX.roads[tier];
     if (groups.gridLines.current) groups.gridLines.current.visible = ZOOM_VISIBILITY_MATRIX.grid_lines[tier];
+    if (groups.geoBorder.current) groups.geoBorder.current.visible = ZOOM_VISIBILITY_MATRIX.geo_borders[tier];
     if (groups.borderKingdom.current) groups.borderKingdom.current.visible = ZOOM_VISIBILITY_MATRIX.borders_kingdom[tier];
     if (groups.borderBarony.current) groups.borderBarony.current.visible = ZOOM_VISIBILITY_MATRIX.borders_barony[tier];
 

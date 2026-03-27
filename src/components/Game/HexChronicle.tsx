@@ -7,7 +7,7 @@ import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
 import { LocationCard, SoulCard, AgentEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
-import { historicalCultureResolver, regionEtymologyResolver } from '../../engine/proseResolvers';
+import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { mulberry32 } from '../../lib/prng';
 import { useNarration } from '../../services/narration/useNarration';
@@ -197,6 +197,13 @@ export const HexChronicle = memo(function HexChronicle({
       : proseSet.scarce;
     return pickFromArray([...templates], hexSeed + 300);
   }, [hexResources, hexSeed]);
+
+  // ── LAND: Geographic region prose ─────────────────────────────
+
+  const geoRegionLayers = useMemo(() => {
+    if (!regionData?.regionId) return [];
+    return geographicRegionResolver(regionData.regionId, graph, hexSeed);
+  }, [regionData, graph, hexSeed]);
 
   // ── SOUL: Rich sphere prose + strength labels ──────────────────
 
@@ -518,6 +525,13 @@ export const HexChronicle = memo(function HexChronicle({
         {landProse2 && (
           <p className="chronicle-prose" style={proseStyle}>
             {landProse2}
+          </p>
+        )}
+
+        {/* Geographic region prose */}
+        {geoRegionLayers.length > 0 && (
+          <p className="chronicle-prose" style={proseStyle}>
+            {geoRegionLayers[0].text}
           </p>
         )}
 

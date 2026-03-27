@@ -142,7 +142,7 @@ describe('createMovementTrailMesh', () => {
   it('sets renderOrder to RENDER_ORDER.AGENTS', () => {
     const group = createMovementTrailMesh();
     expect(group.renderOrder).toBe(RENDER_ORDER.AGENTS);
-    expect(group.renderOrder).toBe(9);
+    expect(group.renderOrder).toBe(10);
   });
 
   it('starts with no children', () => {

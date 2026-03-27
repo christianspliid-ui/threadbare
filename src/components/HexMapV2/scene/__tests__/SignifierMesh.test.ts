@@ -113,10 +113,10 @@ describe('SignifierMesh', () => {
     expect(group).toBeInstanceOf(THREE.Group);
   });
 
-  it('group.renderOrder equals RENDER_ORDER.SIGNIFIERS (7)', () => {
+  it('group.renderOrder equals RENDER_ORDER.SIGNIFIERS (8)', () => {
     const group = createSignifierMesh([], 42);
     expect(group.renderOrder).toBe(RENDER_ORDER.SIGNIFIERS);
-    expect(group.renderOrder).toBe(7);
+    expect(group.renderOrder).toBe(8);
   });
 
   it('empty tiles array returns empty group with no meta', () => {

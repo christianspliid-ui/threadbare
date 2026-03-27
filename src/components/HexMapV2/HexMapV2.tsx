@@ -20,6 +20,7 @@ import { createCoastlineMesh } from './scene/CoastlineMesh';
 import { createRiverMesh } from './scene/RiverMesh';
 import { createElevationTicks } from './scene/ElevationTicks';
 import { createBorderMesh } from './scene/BorderMesh';
+import { createGeoBorderMesh } from './scene/GeoBorderMesh';
 import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
@@ -314,6 +315,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const elevTicksRef       = useRef<THREE.Mesh | null>(null);
     const borderKingdomRef   = useRef<THREE.Mesh | null>(null);
     const borderBaronyRef    = useRef<THREE.Mesh | null>(null);
+    const geoBorderRef       = useRef<THREE.LineSegments | null>(null);
     const coastlineRef       = useRef<THREE.Group | null>(null);
 
     // Follow mode ref — mutable state, does not trigger re-renders
@@ -466,8 +468,17 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
         riverGroupRef.current = riverMesh;
 
+        // Build geographic region borders — dim, ephemeral borders between geographic regions
+        // Renders at RENDER_ORDER.GEO_BORDERS, below political borders
+        let geoBorderMesh: THREE.Mesh | null = null;
+        if (regionData && regionData.hexRegionId.size > 0) {
+          geoBorderMesh = createGeoBorderMesh(regionData, tiles);
+          scene.add(geoBorderMesh);
+        }
+        geoBorderRef.current = geoBorderMesh;
+
         // Build political border polylines — red quad-strip borders for kingdoms and baronies (Plan 04-02)
-        // Renders at RENDER_ORDER.BORDERS (6), above rivers and elevation ticks.
+        // Renders at RENDER_ORDER.BORDERS, above geographic borders.
         // Geographic-only differences produce no geometry (REGN-06).
         let borderKingdomMesh: THREE.Mesh | null = null;
         let borderBaronyMesh: THREE.Mesh | null = null;
@@ -723,6 +734,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           elevTicksRef.current = null;
           borderKingdomRef.current = null;
           borderBaronyRef.current = null;
+          geoBorderRef.current = null;
           scene.clear();
           fillResult.landMesh.geometry.dispose();
           fillResult.landMesh.material instanceof THREE.Material && fillResult.landMesh.material.dispose();
@@ -874,6 +886,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         rivers: riverGroupRef,
         gridLines: gridLinesRef,
         elevTicks: elevTicksRef,
+        geoBorder: geoBorderRef,
         borderKingdom: borderKingdomRef,
         borderBarony: borderBaronyRef,
         coastline: coastlineRef,
