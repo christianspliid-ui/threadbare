@@ -23,6 +23,9 @@ import type { LocationNode } from './LocationIconMesh';
 
 // ── NFP #1: All tunable values named ─────────────────────────────────────────
 
+/** Placement strategy for a settlement model. */
+type PlacementMode = 'center' | 'edge';
+
 /** Configuration for a single settlement model type. */
 interface SettlementModelConfig {
   /** URL of the GLB relative to the Vite public root. */
@@ -34,6 +37,8 @@ interface SettlementModelConfig {
   scale: number;
   /** Location subtypes that get this model. */
   types: Set<string>;
+  /** Where to place the model within the hex. */
+  placement: PlacementMode;
 }
 
 export const SETTLEMENT_MODEL_CONSTANTS = {
@@ -44,6 +49,19 @@ export const SETTLEMENT_MODEL_CONSTANTS = {
    */
   MODEL_Z: LAYER_Z.LOCATIONS - 0.005,
 
+  /**
+   * Distance from hex center for edge-placed models.
+   * Matches SLOT_RING_RADIUS from agent-visual-content.ts (6 world units).
+   */
+  EDGE_OFFSET_RADIUS: 6,
+
+  /**
+   * Fixed angle (degrees) for edge-placed village models.
+   * 0° = right vertex of flat-top hex. Using 240° (bottom-left) to avoid
+   * overlap with location label text which sits below hex center.
+   */
+  EDGE_ANGLE_DEG: 240,
+
   /** Per-settlement-type configurations. */
   CONFIGS: {
     city: {
@@ -51,18 +69,23 @@ export const SETTLEMENT_MODEL_CONSTANTS = {
       // Blender model base radius ≈ 1.85 → scale 5.4 → fills full hex (HEX_SIZE 10).
       scale: 5.4,
       types: new Set<string>(['city', 'capital']),
+      placement: 'center' as PlacementMode,
     },
     town: {
       glbPath: '/models/town.glb',
-      // Blender model footprint radius ≈ 0.75 → scale 8.0 → fills ~60% of hex.
-      scale: 8.0,
+      // Blender model footprint radius ≈ 0.75. Target: small centered model
+      // (~2.5 world units radius = 25% of hex). Scale = 2.5 / 0.75 ≈ 3.3.
+      scale: 3.3,
       types: new Set<string>(['town', 'castle', 'fort']),
+      placement: 'center' as PlacementMode,
     },
     village: {
       glbPath: '/models/village.glb',
-      // Blender model footprint radius ≈ 0.29 → scale 8.6 → edge-icon sized (~25% of hex).
-      scale: 8.6,
+      // Blender model footprint radius ≈ 0.29. Target: 1/3 of town world size
+      // (~0.83 world units radius). Scale = 0.83 / 0.29 ≈ 2.9.
+      scale: 2.9,
       types: new Set<string>(['hamlet', 'camp']),
+      placement: 'edge' as PlacementMode,
     },
   } satisfies Record<string, SettlementModelConfig>,
 } as const;
@@ -119,6 +142,15 @@ export function createSettlementModelMesh(
         });
 
         // ── Place one clone per matching location ─────────────────────────
+        // Edge-placed models get an offset from hex center.
+        const edgeAngleRad = SETTLEMENT_MODEL_CONSTANTS.EDGE_ANGLE_DEG * Math.PI / 180;
+        const edgeOffsetX = config.placement === 'edge'
+          ? Math.cos(edgeAngleRad) * SETTLEMENT_MODEL_CONSTANTS.EDGE_OFFSET_RADIUS
+          : 0;
+        const edgeOffsetY = config.placement === 'edge'
+          ? Math.sin(edgeAngleRad) * SETTLEMENT_MODEL_CONSTANTS.EDGE_OFFSET_RADIUS
+          : 0;
+
         for (const loc of matchingLocations) {
           const { x, y } = hexToWorld(
             { col: loc.hexCol, row: loc.hexRow },
@@ -128,7 +160,11 @@ export function createSettlementModelMesh(
           const clone = gltf.scene.clone(true);
           // No rotation — model rotation baked into GLB geometry in Blender
           clone.scale.setScalar(config.scale);
-          clone.position.set(x, y, SETTLEMENT_MODEL_CONSTANTS.MODEL_Z);
+          clone.position.set(
+            x + edgeOffsetX,
+            y + edgeOffsetY,
+            SETTLEMENT_MODEL_CONSTANTS.MODEL_Z,
+          );
           group.add(clone);
         }
       },
