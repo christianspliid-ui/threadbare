@@ -38,6 +38,6 @@ export const LAYER_Z = {
   SIGNIFIERS:      0.070,
   LOCATIONS:       0.080,
   TRAILS:          0.085,
-  AGENTS:          0.090,
-  EVENTS:          0.100,
+  AGENTS:          6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
+  EVENTS:          6.100,
 } as const;
