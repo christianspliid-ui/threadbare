@@ -89,6 +89,7 @@ import {
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
+import { processFactionOutcome } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 
@@ -242,6 +243,12 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       progress.status === 'completed',
       state.tick,
     );
+
+    // ── Faction join/promotion outcome processing (TB-061) ──
+    if (progress.status === 'completed') {
+      const outcomeRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
+      processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
+    }
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
     let rewardName: string | undefined;
