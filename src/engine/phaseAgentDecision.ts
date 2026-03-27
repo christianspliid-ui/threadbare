@@ -30,7 +30,7 @@ import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
-import { generateFactionQuestCandidates } from './factionQuestGeneration';
+import { generateFactionQuestCandidates, generateFactionLifecycleCandidates } from './factionQuestGeneration';
 import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
@@ -306,9 +306,17 @@ export function phaseAgentDecision(
         state.tick,
       );
 
-      // Merge static cache entries with dynamic social + faction entries
-      const mergedEntries = (socialEntries.length > 0 || factionEntries.length > 0)
-        ? [...allEntries, ...socialEntries, ...factionEntries]
+      // Generate faction lifecycle candidates: join & promotion (TB-061)
+      const lifecycleEntries = generateFactionLifecycleCandidates(
+        graph,
+        agentId,
+        locationId,
+      );
+
+      // Merge static cache entries with dynamic social + faction + lifecycle entries
+      const dynamicEntries = [...socialEntries, ...factionEntries, ...lifecycleEntries];
+      const mergedEntries = dynamicEntries.length > 0
+        ? [...allEntries, ...dynamicEntries]
         : allEntries;
 
       // Run filter pipeline
