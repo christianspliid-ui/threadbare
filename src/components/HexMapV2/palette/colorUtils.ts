@@ -2,6 +2,7 @@ import { createNoise2D } from 'simplex-noise';
 import { mulberry32 } from '../../../lib/prng';
 import { TERRAIN_PALETTE, FALLBACK_TERRAIN_COLOR } from './terrainPalette';
 import { getWaterColor, WATER_PALETTE, WATER_TERRAIN_KEYS } from './waterPalette';
+import { getActivePalette } from './activePalette';
 
 /** NFP #1: Brightness noise range (±5% per TERR-05). */
 export const BRIGHTNESS_NOISE_RANGE = 0.05;
@@ -85,24 +86,32 @@ export function getHexColor(
   },
 ): [number, number, number] {
   const { elevation, lakeId } = options ?? {};
+  const theme = getActivePalette();
+  const tOverrides = theme.terrainOverrides;
+  const wOverrides = theme.waterOverrides;
+  const fallback = theme.fallbackTerrainColor;
+
+  // Helper: resolve water key with theme override
+  const waterColor = (key: string): string =>
+    wOverrides[key] ?? WATER_PALETTE[key] ?? fallback;
 
   // Priority 1: Lake hex — use lake color regardless of terrain
   let colorHex: string;
   if (lakeId !== undefined && lakeId >= 0) {
-    colorHex = WATER_PALETTE['lake'];
+    colorHex = waterColor('lake');
   }
   // Priority 2: Ocean terrain → uniform deep_ocean color (darkest blue)
   // Organic contour fills layer on top to create depth gradient: deep → mid → shallows
   else if (DEPTH_BAND_TERRAINS.has(terrain)) {
-    colorHex = WATER_PALETTE['deep_ocean'];
+    colorHex = waterColor('deep_ocean');
   }
   // Priority 3: Other water terrain → flat water palette
   else if (WATER_TERRAIN_KEYS.has(terrain)) {
-    colorHex = getWaterColor(terrain) ?? FALLBACK_TERRAIN_COLOR;
+    colorHex = getWaterColor(terrain, wOverrides) ?? fallback;
   }
-  // Priority 4: Land terrain
+  // Priority 4: Land terrain (theme override → base palette → fallback)
   else {
-    colorHex = TERRAIN_PALETTE[terrain] ?? FALLBACK_TERRAIN_COLOR;
+    colorHex = tOverrides[terrain] ?? TERRAIN_PALETTE[terrain] ?? fallback;
   }
 
   // Parse to float RGB

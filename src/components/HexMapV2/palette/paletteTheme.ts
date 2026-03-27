@@ -64,6 +64,20 @@ export interface PaletteTheme {
   readonly labelHaloOpacity: number;
   /** Label halo opacity (secondary — 2px offset) */
   readonly labelHaloOpacityOuter: number;
+
+  // ── Terrain & Water Overrides ──────────────────────────────────────────
+  /**
+   * Per-terrain color overrides (#RRGGBB). Keys match terrainPalette.ts.
+   * Missing keys fall through to the base TERRAIN_PALETTE.
+   */
+  readonly terrainOverrides: Readonly<Record<string, string>>;
+  /**
+   * Per-water-type color overrides (#RRGGBB). Keys match waterPalette.ts.
+   * Missing keys fall through to the base WATER_PALETTE.
+   */
+  readonly waterOverrides: Readonly<Record<string, string>>;
+  /** Fallback color for unknown terrain types (#RRGGBB). */
+  readonly fallbackTerrainColor: string;
 }
 
 // ─── Theme Definitions ───────────────────────────────────────────────────────
@@ -91,6 +105,9 @@ export const GOLDEN_HOUR: PaletteTheme = {
   labelHaloColor:       '240,235,220',  // RGB triplet for rgba()
   labelHaloOpacity:     0.9,
   labelHaloOpacityOuter: 0.6,
+  terrainOverrides:     {},  // Golden Hour uses base terrainPalette as-is
+  waterOverrides:       {},  // Golden Hour uses base waterPalette as-is
+  fallbackTerrainColor: '#888888',
 } as const;
 
 /**
@@ -116,6 +133,57 @@ export const DARK_PARCHMENT: PaletteTheme = {
   labelHaloColor:       '12,12,16',  // RGB triplet for rgba()
   labelHaloOpacity:     0.85,
   labelHaloOpacityOuter: 0.5,
+  // Dark Parchment: cool-shifted, desaturated moonlit terrain
+  terrainOverrides: {
+    // Lowland — muted sage/steel greens
+    grassland:       '#6A7A58',
+    savanna:         '#7A7854',
+    steppe:          '#8A9068',
+    floodplain:      '#5E6E50',
+    // Forest — deep blue-greens
+    light_forest:    '#5A7048',
+    woodland:        '#4C6240',
+    temperate_forest:'#3E5436',
+    dense_forest:    '#344A30',
+    boreal_forest:   '#3E5436',
+    tropical_forest: '#2E4A38',
+    // Wet — dark olive/slate
+    marsh:           '#5E6450',
+    swamp:           '#4E5A3C',
+    moor_bog:        '#5A7A64',
+    // Highland — cool stone/slate
+    hills:           '#8A7A58',
+    forested_hills:  '#4A5C3C',
+    mountains:       '#6A5A40',
+    high_mountains:  '#686468',
+    plateau:         '#7A6A48',
+    mountain_pass:   '#6E6448',
+    // Desert — dusty lavender/grey
+    sand_desert:     '#A0906A',
+    sand_dunes:      '#968858',
+    rocky_desert:    '#8A7050',
+    hardened_clay:   '#907060',
+    badlands:        '#7A5844',
+    // Cold — blue-grey ice
+    tundra:          '#B0B4B8',
+    snow_fields:     '#A8ACB0',
+    glacier:         '#909CA8',
+    // Volcanic — charcoal/ember
+    volcanic:        '#585458',
+    volcano:         '#5C3430',
+    lava:            '#8A4830',
+    // Special
+    broken_lands:    '#6A6460',
+    dead_forest:     '#606060',
+  },
+  waterOverrides: {
+    shallows:   '#4A7A90',
+    ocean:      '#305878',
+    deep_ocean: '#1E4060',
+    lake:       '#2A5878',
+    river:      '#4A7A90',
+  },
+  fallbackTerrainColor: '#606060',
 } as const;
 
 // ─── Registry ────────────────────────────────────────────────────────────────

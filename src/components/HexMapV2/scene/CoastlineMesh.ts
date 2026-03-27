@@ -26,10 +26,16 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 import { RENDER_ORDER } from './RenderLayers';
 import { WATER_PALETTE } from '../palette/waterPalette';
 import { hexToThreeColor } from '../palette/colorUtils';
+import { getActivePalette } from '../palette/activePalette';
 
 // ─── Constants (NFP #1) ───────────────────────────────────────────
 
-/** Coastal band color — the blue painted between the two curves. */
+/** Coastal band color — reads from active palette (theme override → base water palette). */
+export function getCoastalBandColor(): string {
+  const overrides = getActivePalette().waterOverrides;
+  return overrides['ocean'] ?? WATER_PALETTE['ocean'];
+}
+/** @deprecated Use getCoastalBandColor() — kept for backward compat */
 export const COASTAL_BAND_COLOR = WATER_PALETTE['ocean'];
 
 /**
@@ -174,7 +180,7 @@ export function createCoastlineMesh(
   // Blue fill for the outer curve shape, but only where stencil≠1.
   // This paints blue between the two curves (the coastal band)
   // and doesn't touch the land interior (stencil=1).
-  const [r, g, b] = hexToThreeColor(COASTAL_BAND_COLOR);
+  const [r, g, b] = hexToThreeColor(getCoastalBandColor());
   const coastalBandMat = new THREE.MeshBasicMaterial({
     color: new THREE.Color(r, g, b),
     depthTest: false,
