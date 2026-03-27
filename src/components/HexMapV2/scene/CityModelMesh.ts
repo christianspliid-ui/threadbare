@@ -104,7 +104,6 @@ export function createCityModelMesh(
           matCache.set(orig, new THREE.MeshBasicMaterial({
             color: orig.color.clone(),
             side: THREE.DoubleSide,
-            depthWrite: false,  // Don't occlude higher-renderOrder layers (agents, events)
           }));
         }
         child.material = matCache.get(orig)!;
