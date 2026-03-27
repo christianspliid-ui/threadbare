@@ -30,6 +30,7 @@ import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { generateSocialCandidates } from './socialEncounterGeneration';
+import { generateFactionQuestCandidates } from './factionQuestGeneration';
 import { initMovementState } from './movementExecution';
 import { buildHexMovementPath } from './hexMovementPath';
 import { findShortestPath } from './pathfinding';
@@ -276,9 +277,17 @@ export function phaseAgentDecision(
         distanceMatrix,
       );
 
-      // Merge static cache entries with dynamic social entries
-      const mergedEntries = socialEntries.length > 0
-        ? [...allEntries, ...socialEntries]
+      // Generate faction quest candidates (TB-060)
+      const factionEntries = generateFactionQuestCandidates(
+        graph,
+        agentId,
+        locationId,
+        state.tick,
+      );
+
+      // Merge static cache entries with dynamic social + faction entries
+      const mergedEntries = (socialEntries.length > 0 || factionEntries.length > 0)
+        ? [...allEntries, ...socialEntries, ...factionEntries]
         : allEntries;
 
       // Run filter pipeline
