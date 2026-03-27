@@ -1,6 +1,6 @@
 ---
 name: gamedocumenter
-description: Use after completing any implementation work on The Fantasy World Simulator to update all three documentation layers (Docs/changelog.md + Docs/project-status.md, Obsidian vault system notes, Notion backlog). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". This skill encodes critical workarounds for Obsidian MCP API quirks and Notion editing patterns that will save you from wasting time on failed API calls.
+description: Use after completing any implementation work on The Fantasy World Simulator to update all documentation layers (Docs/changelog.md + Docs/project-status.md + .planning/BACKLOG.md, and Obsidian vault system notes). Trigger whenever you finish a phase, task, or group of commits — even small ones. Also trigger when someone says "update docs", "document this", "update the backlog", or "update obsidian". Note: Notion backlog was archived 2026-03-22 — all tracking now lives in .planning/BACKLOG.md. This skill encodes critical workarounds for Obsidian MCP API quirks that will save you from wasting time on failed API calls.
 ---
 
 # Game Documenter
