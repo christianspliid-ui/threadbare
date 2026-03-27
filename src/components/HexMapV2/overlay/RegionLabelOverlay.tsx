@@ -20,6 +20,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import * as THREE from 'three';
 import type { RegionLabel } from '../../../engine/regionTypes';
 import { removeOverlaps, type ScreenLabel } from './labelCollision';
+import { getActivePalette, buildLandHalo, buildRiverHalo } from '../palette/activePalette';
 
 // ─── Zoom tier thresholds (NFP #1: Tunability) ───────────────────────────────
 
@@ -46,25 +47,9 @@ const COLLISION_DEBOUNCE_MS = 60;
 
 // ─── Label style definitions (per UI-SPEC.md) ─────────────────────────────────
 
-/** Shared halo text-shadow for land labels (dark text on varied terrain) */
-const LAND_HALO = [
-  '1px 0 0 rgba(240,235,220,0.9)',
-  '-1px 0 0 rgba(240,235,220,0.9)',
-  '0 1px 0 rgba(240,235,220,0.9)',
-  '0 -1px 0 rgba(240,235,220,0.9)',
-  '2px 0 0 rgba(240,235,220,0.6)',
-  '-2px 0 0 rgba(240,235,220,0.6)',
-].join(', ');
-
-/** Slightly softer halo for river labels */
-const RIVER_HALO = [
-  '1px 0 0 rgba(240,235,220,0.85)',
-  '-1px 0 0 rgba(240,235,220,0.85)',
-  '0 1px 0 rgba(240,235,220,0.85)',
-  '0 -1px 0 rgba(240,235,220,0.85)',
-  '2px 0 0 rgba(240,235,220,0.6)',
-  '-2px 0 0 rgba(240,235,220,0.6)',
-].join(', ');
+/** Halo text-shadows — built from active palette theme */
+const LAND_HALO = buildLandHalo();
+const RIVER_HALO = buildRiverHalo();
 
 /** Shared positioning and transition properties for all label tiers */
 const LABEL_BASE: CSSProperties = {
@@ -76,6 +61,8 @@ const LABEL_BASE: CSSProperties = {
   userSelect: 'none',
 };
 
+const palette = getActivePalette();
+
 const KINGDOM_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
@@ -83,7 +70,7 @@ const KINGDOM_STYLE: CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
-  color: '#1a1410',
+  color: palette.labelLandColor,
   textShadow: LAND_HALO,
   lineHeight: '1.1',
 };
@@ -93,7 +80,7 @@ const BARONY_STYLE: CSSProperties = {
   fontFamily: 'var(--font-display)',
   fontSize: '14px',
   fontWeight: 400,
-  color: '#1a1410',
+  color: palette.labelLandColor,
   textShadow: LAND_HALO,
   lineHeight: '1.2',
 };
@@ -104,7 +91,7 @@ const GEOGRAPHIC_STYLE: CSSProperties = {
   fontSize: '12px',
   fontWeight: 400,
   fontStyle: 'italic',
-  color: '#1a1410',
+  color: palette.labelLandColor,
   textShadow: LAND_HALO,
   lineHeight: '1.2',
 };
@@ -115,7 +102,7 @@ const RIVER_STYLE: CSSProperties = {
   fontSize: '12px',
   fontWeight: 400,
   fontStyle: 'italic',
-  color: '#1a4070',
+  color: palette.labelRiverColor,
   textShadow: RIVER_HALO,
   lineHeight: '1.2',
 };

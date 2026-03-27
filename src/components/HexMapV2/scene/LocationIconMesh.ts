@@ -28,6 +28,7 @@ import {
   CENTERED_SIZE_CLASSES,
 } from '../locations/locationIconRegistry';
 import { buildLocationIconTextureCache } from '../locations/locationIconTextures';
+import { getActivePalette } from '../palette/activePalette';
 import {
   SLOT_RING_RADIUS,
   VERTEX_ANGLES_DEG,
@@ -47,7 +48,7 @@ export const LOCATION_ICON_Z = LAYER_Z.LOCATIONS;
 export const LOCATION_ICON_THRESHOLD = 5;
 
 /** Red color for capital location ring markers (hex string for canvas). */
-const CAPITAL_RING_COLOR = '#cc3333';
+const CAPITAL_RING_COLOR_DEFAULT = '#cc3333';
 
 /** Canvas size for the capital ring texture. */
 const CAPITAL_RING_SIZE = 128;
@@ -88,7 +89,7 @@ function buildCapitalRingTexture(): THREE.CanvasTexture {
       0,
       Math.PI * 2,
     );
-    ctx.strokeStyle = CAPITAL_RING_COLOR;
+    ctx.strokeStyle = getActivePalette().capitalRingColor;
     ctx.lineWidth = 6;
     ctx.stroke();
   }

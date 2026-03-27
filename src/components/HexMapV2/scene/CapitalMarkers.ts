@@ -19,6 +19,7 @@ import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { getActivePalette } from '../palette/activePalette';
 
 // ─── Capital marker constants (NFP #1: Tunability) ────────────────────────────
 
@@ -31,8 +32,8 @@ const BARONY_CAPITAL_SIZE = 3;
 /** Z offset: above borders (0.035), below labels */
 const CAPITAL_Z = 0.04;
 
-/** Color: red — same as border lines */
-const CAPITAL_COLOR = 0xC83030;
+/** Color — reads from active palette theme (default: red, matches border lines) */
+const CAPITAL_COLOR_DEFAULT = 0xC83030;
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
@@ -81,7 +82,7 @@ export function createCapitalMarkers(regionData: RegionData): THREE.Group {
     geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
 
     const mat = new THREE.PointsMaterial({
-      color: CAPITAL_COLOR,
+      color: getActivePalette().capitalColor,
       size: dotSize,
       sizeAttenuation: false,
       vertexColors: false,

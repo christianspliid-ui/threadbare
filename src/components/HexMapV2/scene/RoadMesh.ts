@@ -16,6 +16,7 @@ import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
 import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { hexToWorld } from '../../../lib/worldPosition';
+import { getActivePalette } from '../palette/activePalette';
 
 // Re-export types from engine for backward compat
 export type { RoadPath, RoadType } from '../../../engine/roadNetwork';
@@ -37,7 +38,9 @@ import type { RoadPath } from '../../../engine/roadNetwork';
  * | TRAIL_GAP_SIZE     | 0.5         | World units per gap between dashes            |
  */
 export const ROAD_CONSTANTS = {
+  /** @deprecated Use getActivePalette().roadMajor — kept for constant table docs only */
   MAJOR_COLOR:       '#6b5a40',
+  /** @deprecated Use getActivePalette().roadTrail — kept for constant table docs only */
   TRAIL_COLOR:       '#4a3d2c',
   MAJOR_HALF_WIDTH:  0.4,
   TRAIL_HALF_WIDTH:  0.1,
@@ -423,7 +426,7 @@ export function createRoadMesh(
       geo.setIndex(allMajorIndices);
 
       const mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(ROAD_CONSTANTS.MAJOR_COLOR),
+        color: new THREE.Color(getActivePalette().roadMajor),
         transparent: true,
         opacity: 0.85,
         side: THREE.DoubleSide,
@@ -467,7 +470,7 @@ export function createRoadMesh(
       geo.setIndex(allTrailIndices);
 
       const mat = new THREE.MeshBasicMaterial({
-        color: new THREE.Color(ROAD_CONSTANTS.TRAIL_COLOR),
+        color: new THREE.Color(getActivePalette().roadTrail),
         transparent: true,
         opacity: 0.7,
         side: THREE.DoubleSide,
