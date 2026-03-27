@@ -891,6 +891,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
+                  overlayOpen={scryVisible || harvestResult !== null}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
                 />

@@ -149,6 +149,8 @@ export interface HexMapV2Props {
   fogEnabled?: boolean;
   /** Whether to render the organic shore (coastline) mesh. Default true. */
   showOrganicShore?: boolean;
+  /** When true, suppresses label overlays (region/location). Use when a full-screen overlay covers the map. */
+  overlayOpen?: boolean;
 }
 
 export interface HexMapV2Handle {
@@ -254,7 +256,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false, showOrganicShore = true },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1010,7 +1012,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             hasRiver={tooltip.hasRiver}
           />
         )}
-        {regionLabels.length > 0 && (
+        {!overlayOpen && regionLabels.length > 0 && (
           <RegionLabelOverlay
             labels={regionLabels}
             cameraRef={cameraRef}
@@ -1019,7 +1021,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             zoomLevel={zoomLevel}
           />
         )}
-        {locationLabels.length > 0 && (
+        {!overlayOpen && locationLabels.length > 0 && (
           <LocationLabelOverlay
             locations={locationLabels}
             cameraRef={cameraRef}
