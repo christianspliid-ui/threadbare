@@ -71,9 +71,9 @@ describe('GameView debug panel integration', () => {
     expect(screen.queryByTestId('debug-panel')).toBeNull();
   });
 
-  it('shows Debug toggle button in top bar', () => {
+  it('shows Settings toggle button in top bar', () => {
     render(<GameView {...defaultProps} />);
-    expect(screen.getByTestId('debug-toggle')).toBeTruthy();
+    expect(screen.getByTestId('settings-toggle')).toBeTruthy();
   });
 
   it('toggles debug panel with backtick keyboard shortcut', () => {
@@ -84,12 +84,10 @@ describe('GameView debug panel integration', () => {
     expect(screen.queryByTestId('debug-panel')).toBeNull();
   });
 
-  it('toggles debug panel with top-bar button click', () => {
+  it('opens settings panel on gear icon click', () => {
     render(<GameView {...defaultProps} />);
-    fireEvent.click(screen.getByTestId('debug-toggle'));
-    expect(screen.getByTestId('debug-panel')).toBeTruthy();
-    fireEvent.click(screen.getByTestId('debug-toggle'));
-    expect(screen.queryByTestId('debug-panel')).toBeNull();
+    fireEvent.click(screen.getByTestId('settings-toggle'));
+    expect(screen.getByRole('menu', { name: 'Settings' })).toBeTruthy();
   });
 
   it('hides right sidebar when debug panel is open', () => {
@@ -100,13 +98,13 @@ describe('GameView debug panel integration', () => {
     expect(screen.getByTestId('debug-panel')).toBeTruthy();
   });
 
-  it('changes debug button style when panel is active', () => {
+  it('settings panel contains Display and Debug sections', () => {
     render(<GameView {...defaultProps} />);
-    const btn = screen.getByTestId('debug-toggle');
-    // Debug button uses gold color when active (now a ⚙ icon, no glowing dot)
-    expect(btn).toBeTruthy();
-    fireEvent.keyDown(document, { key: '`' });
-    const activeBtn = screen.getByTestId('debug-toggle');
-    expect(activeBtn).toBeTruthy();
+    fireEvent.click(screen.getByTestId('settings-toggle'));
+    expect(screen.getByText('Display')).toBeTruthy();
+    expect(screen.getByText('Debug')).toBeTruthy();
+    expect(screen.getByText('Fog of War')).toBeTruthy();
+    expect(screen.getByText('Debug Trace Panel')).toBeTruthy();
+    expect(screen.getByText('Organic Shore')).toBeTruthy();
   });
 });
