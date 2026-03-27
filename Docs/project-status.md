@@ -1,15 +1,18 @@
 # Project Status
 
-> Updated 2026-03-26. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
+> Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Debug & Tuning Tooling**
+**TB-058: Faction Vertical Slice (Adventuring Guild)**
+
+**In progress:**
+- 🏗️ TB-063: Faction UI & Visibility (Phase 5) — agent profile faction section, chronicle events, alert notifications, debug panel tab, guild hall signifier
 
 **Recent completions:**
-- ✅ TB-057: Tick Health Monitor & Crash Log (2026-03-26) — validateTickOutput() with 12 structural checks, try/catch tick loop hardening, crash log buffer, exportDiagnostics(), state cleanup (notification trim, resolved action pruning with completedAtTick), 2 new trace categories, 23 tests.
-- ✅ TB-056: Agent Encounter Tuning (2026-03-26) — idle death spiral fix. Wired domainCapabilities into computeRawScore(), tuned 5 constants (DIFFICULTY_BASE, IDLE_SCORE_THRESHOLD, ENCOUNTER_ABANDON_COOLDOWN, IDLE_TRIVIAL_PREFERENCE, THREAT_FLOOR_FILTER).
-- ✅ TB-055: Tiered Encounter Modal (2026-03-26) — chronicle narrator with thread-tier visibility (strong/light/watched), multi-step navigation, intervention choices, TTS narrate, peek gate, auto-interrupt, boost slider. Replaces EncounterVignetteModal.
-- ✅ TB-052: Encounter Reward Wiring (2026-03-26) — items from encounters. 86-entry catalog, clone-from-template instantiation, orchestrator wiring, 52 encounters rewired, 42 new tests.
+- ✅ TB-062: Faction Social Encounters & Rank Bonuses (2026-03-27) — 6 faction-scoped social templates, shared-faction filter in social generation, 3 rank bonus types wired (reward multiplier, scoring boost, reputation walk). 25 tests.
+- ✅ TB-061: Join & Promotion Encounters (2026-03-27) — join/promotion lifecycle candidates, not_faction visibility filter, partial-success promotion mechanic, 32 tests.
+- ✅ TB-060: Quest Board & Reputation (2026-03-27) — 10 quest templates, reputation gain/decay/rank recalc, orchestrator wiring.
+- ✅ TB-059: Schema & Seeding (2026-03-27) — FactionDefinition types, Adventuring Guild definition, faction seeder, guild hall placement.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
