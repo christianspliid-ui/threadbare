@@ -23,6 +23,7 @@ npm run dev    # start Vite dev server with hot reload
 | `npm run validate-model` | Validate world-model.json integrity |
 | `npm run generate-vault` | Regenerate Obsidian vault from world-model.json |
 | `npm run generate-hex` | Generate a hex tile image (requires Python + API key) |
+| `npm run cli` | Interactive REPL for headless game testing (see below) |
 
 **Dev Quick-Start URLs** (append to `http://localhost:5173`):
 
@@ -36,6 +37,23 @@ npm run dev    # start Vite dev server with hot reload
 **For all testing, use `?view=game`** — this skips the multi-click entry flow and loads the full game with HexMapV2. Only test the worldgen/selection screens when those screens are the subject of the test.
 
 **Note for Cowork/Claude sessions:** The sandbox VM has isolated networking. Use `npx tsc --noEmit`, `npx vite build`, and `npm test` to verify. The user must run `npm run dev` on their own machine.
+
+### Headless CLI (`npm run cli`)
+
+An interactive REPL for testing the game engine without a browser. **Use this for verifying engine behavior after changes** — it runs the real `initializeGameState` → `runTick` pipeline headlessly.
+
+```bash
+npm run cli                          # default seed 42, medium map
+npm run cli -- --seed 99 --map small # custom seed + map size
+```
+
+Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
+
+**When to use the CLI:**
+- After modifying tick phases or orchestrator logic — run `tick 30` and check `status` + `events`
+- After changing agent decision/movement — inspect with `agents` and `agent <name>`
+- For pipeline throughput checks (NFP #7 in Pre-Commit Checklist) — `run 5` for 30+ ticks, then `encounters`, `factions`, `traces`
+- Quick smoke test after engine changes when you can't run the browser
 
 ## Documentation Strategy
 
@@ -317,6 +335,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Hex map renderer | `hexmap-developer` | Writing any code in `src/components/HexMapV2/` or hex-related engine code. Architecture, coordinates, scene layers, zoom, coastline, stencil, signifiers, testing, debugging. Comprehensive developer onboarding guide. |
 | Hex map decisions | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns from Phases 1-8. Lighter than `hexmap-developer`. |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
+| Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
 | Creative prose & content | `cw-*` (platform) | `cw-brainstorming` for ideas, `cw-prose-writing` for drafts, `cw-official-docs` for wiki, `cw-story-critique` for review |
 | Post-implementation docs | `gamedocumenter` | Notion/Obsidian/changelog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
@@ -332,12 +351,4 @@ Two skills form a feedback loop:
 1. **`impediment-reporter`** — Every agent logs friction as it happens → `Docs/impediments.md`
 2. **`retrospective`** — Periodically analyze the log, implement quick wins, backlog bigger fixes → `Docs/retrospectives/`
 
-Repetitive workflows → propose a skill. Use `skill-creator` to build and eval new skills.
-
-## Project Status
-
-Current focus: **`Docs/project-status.md`** · Completed milestones: **`Docs/project-history.md`**
-
-- Current phase: **Phase 8 Integration** (final) — V1 SVG hex map deleted, HexMapV2 is the sole renderer. See `.planning/ROADMAP.md` for phase details, `.planning/BACKLOG.md` for future work.
-- Engine: ~325 modules, ~70,800+ lines, ~5,119+ tests across 352+ test files
-- Content: 244 graph nodes, 371 typed edges, 18 categories, 19 content packages, 975+ data tests
+Repetitive workflows → propose a skill. Use `skill-creator` to build and eval 
