@@ -15,6 +15,7 @@ import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 import { FACTION_DEFINITIONS, FACTION_REPUTATION_COMPLETION_BONUS } from '../data/faction-definitions';
 import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
 import type { GameState } from '../types/gameState';
 
@@ -183,23 +184,29 @@ export function processFactionEncounterReputation(
 
   if (!factionEdge) return; // Agent not a member of this faction
 
-  // Apply per-step reputation gain
+  // Apply encounter_reward_multiplier rank bonus (TB-062)
+  const rewardMultiplier = getEncounterRewardMultiplier(graph, agentId, encounterId);
+  if (rewardMultiplier !== 1.0) {
+    emitFactionBonusTrace(tick, agentId, factionEdge.target, 'encounter_reward_multiplier', rewardMultiplier, encounterId);
+  }
+
+  // Apply per-step reputation gain (multiplied by rank bonus)
   applyFactionReputationGain(
     graph,
     agentId,
     factionEdge.target,
-    meta.reputationReward,
+    meta.reputationReward * rewardMultiplier,
     tick,
     'quest_step',
   );
 
-  // Apply bonus for full quest completion
+  // Apply bonus for full quest completion (also multiplied)
   if (encounterCompleted) {
     applyFactionReputationGain(
       graph,
       agentId,
       factionEdge.target,
-      FACTION_REPUTATION_COMPLETION_BONUS,
+      FACTION_REPUTATION_COMPLETION_BONUS * rewardMultiplier,
       tick,
       'quest_complete',
     );

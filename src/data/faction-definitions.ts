@@ -154,7 +154,10 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
     'ag.senior.deep_expedition', 'ag.senior.bounty_hunt', 'ag.senior.map_uncharted',
     'ag.elite.dragon_lair', 'ag.elite.lost_city',
   ],
-  socialTemplateIds: [],    // populated in Phase 4 (TB-062)
+  socialTemplateIds: [
+    'ag.social.sparring', 'ag.social.tavern_tales', 'ag.social.mentor',
+    'ag.social.bounty_plan', 'ag.social.share_maps', 'ag.social.rivalry',
+  ],
   expulsionConsequences: [
     { type: 'remove_encounters', params: {} },
   ],
