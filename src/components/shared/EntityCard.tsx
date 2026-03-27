@@ -228,14 +228,6 @@ export const EntityCard = React.memo(function EntityCard({
           borderBottom: '1px solid var(--border-subtle)',
         }}
       >
-        <button
-          onClick={onBack}
-          aria-label="back"
-          className="transition-colors text-lg px-1"
-          style={{ color: 'var(--accent-gold)', fontSize: '1.1875rem' }}
-        >
-          ←
-        </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <h2
@@ -271,6 +263,14 @@ export const EntityCard = React.memo(function EntityCard({
             </div>
           )}
         </div>
+        <button
+          onClick={onBack}
+          aria-label="close"
+          className="transition-colors text-lg px-2 ml-2 flex-shrink-0"
+          style={{ color: 'var(--accent-gold)' }}
+        >
+          ✕
+        </button>
       </div>
 
       {/* Icon/Flag */}

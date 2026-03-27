@@ -117,7 +117,7 @@ function populateRoadFields(
   state.roadHexQueue = queue;
   state.roadHexCost = Math.max(
     MIN_ROAD_HEX_COST,
-    segment.discountedCost / hexPath.length,
+    segment.discountedCost / queue.length,
   );
   state.currentRoadType = segment.roadType;
   // Override currentEdgeCost to use per-hex road cost
@@ -181,7 +181,7 @@ function setupNextLeg(
     const queue = hexPath.slice(1);
     if (queue.length > 0) {
       nextState.roadHexQueue = queue;
-      nextState.roadHexCost = Math.max(MIN_ROAD_HEX_COST, segment.discountedCost / hexPath.length);
+      nextState.roadHexCost = Math.max(MIN_ROAD_HEX_COST, segment.discountedCost / queue.length);
       nextState.currentRoadType = segment.roadType;
       return nextState.roadHexCost;
     }

@@ -473,15 +473,6 @@ const SublocationDetailView = memo(function SublocationDetailView({
           borderColor: 'var(--border-gold)',
         }}
       >
-        <button
-          onClick={onBack}
-          aria-label={`Back to ${parentLocationName}`}
-          className="transition-colors text-xl px-2 cursor-pointer"
-          style={{ color: 'var(--accent-gold)' }}
-        >
-          ←
-        </button>
-
         <div
           className="w-10 h-10 rounded-full border flex-shrink-0 flex items-center justify-center"
           style={{
@@ -527,6 +518,15 @@ const SublocationDetailView = memo(function SublocationDetailView({
         >
           {badgeText}
         </span>
+
+        <button
+          onClick={onBack}
+          aria-label="close"
+          className="transition-colors text-xl px-2 ml-2 cursor-pointer flex-shrink-0"
+          style={{ color: 'var(--accent-gold)' }}
+        >
+          ✕
+        </button>
       </div>
 
       {/* Concept art (16:9 landscape, left) + optional prose (right) */}
@@ -895,15 +895,6 @@ export const LocationView = memo(function LocationView({
           borderColor: 'var(--border-gold)',
         }}
       >
-        <button
-          onClick={onBack}
-          aria-label="Back to hex view"
-          className="transition-colors text-xl px-2 cursor-pointer"
-          style={{ color: 'var(--accent-gold)' }}
-        >
-          ←
-        </button>
-
         {/* Location icon placeholder */}
         <div
           className="w-10 h-10 rounded-full border flex-shrink-0"
@@ -913,7 +904,7 @@ export const LocationView = memo(function LocationView({
           }}
         />
 
-        <div>
+        <div className="flex-1">
           <h2
             className="font-semibold tracking-wide"
             style={{
@@ -933,6 +924,15 @@ export const LocationView = memo(function LocationView({
             {locType} · in {terrainLabel} Hex ({hexCol}, {hexRow})
           </p>
         </div>
+
+        <button
+          onClick={onBack}
+          aria-label="close"
+          className="transition-colors text-xl px-2 cursor-pointer flex-shrink-0"
+          style={{ color: 'var(--accent-gold)' }}
+        >
+          ✕
+        </button>
       </div>
 
       {/* Meet The First action button */}

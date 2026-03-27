@@ -96,15 +96,6 @@ export function HexBreadcrumb({
         borderColor: 'var(--border-gold)',
       }}
     >
-      <button
-        onClick={onBack}
-        aria-label="back"
-        className="transition-colors text-lg px-2"
-        style={{ color: 'var(--accent-gold)' }}
-      >
-        ←
-      </button>
-
       {/* Terrain dot */}
       <div
         className="w-3 h-3 rounded-full flex-shrink-0"
@@ -176,6 +167,15 @@ export function HexBreadcrumb({
       >
         {SIGHT_LABELS[lineOfSight]}
       </span>
+
+      <button
+        onClick={onBack}
+        aria-label="close"
+        className="transition-colors text-lg px-2 ml-2"
+        style={{ color: 'var(--accent-gold)' }}
+      >
+        ✕
+      </button>
     </div>
   );
 }
