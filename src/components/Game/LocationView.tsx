@@ -1,4 +1,4 @@
-import { memo, useMemo, useState, useCallback } from 'react';
+import { memo, useMemo, useState, useCallback, useRef } from 'react';
 import type { GraphNode } from '../../types/graph';
 import type { WorldGraph } from '../../engine/graph';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
@@ -13,6 +13,8 @@ import { Tooltip } from '../shared/Tooltip';
 import { SectionHeading } from '../shared/SectionHeading';
 import { StepDots } from '../shared/StepDots';
 import { getSublocationConceptArt, getLocationConceptArt } from '../../data/sublocation-concept-art';
+import { useNarration } from '../../services/narration/useNarration';
+import { Play, Square, Loader2 } from 'lucide-react';
 
 interface LocationViewProps {
   location: GraphNode;
@@ -32,9 +34,6 @@ interface LocationViewProps {
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
-  // Meet The First action
-  meetTheFirstAvailable?: boolean;
-  onMeetTheFirst?: () => void;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -765,8 +764,6 @@ export const LocationView = memo(function LocationView({
   getEncounterTemplate,
   graph,
   seed,
-  meetTheFirstAvailable,
-  onMeetTheFirst,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -791,6 +788,18 @@ export const LocationView = memo(function LocationView({
     if (!graph || seed === undefined) return '';
     return generateEntityProse(location.id, graph, seed, 'full');
   }, [location.id, graph, seed]);
+
+  // ── TTS narration ──
+  const proseRef = useRef<HTMLDivElement>(null);
+  const { enabled: narrationEnabled, isLoading, isSpeaking, speak, stop: stopNarration } = useNarration();
+
+  const handleNarrateProse = useCallback(() => {
+    if (isSpeaking || isLoading) {
+      stopNarration();
+    } else if (locationProse) {
+      speak(locationProse);
+    }
+  }, [isSpeaking, isLoading, stopNarration, speak, locationProse]);
 
   // Lazily ensure sublocations exist, then read them from graph (memoized)
   const sublocationData = useMemo(() => {
@@ -935,42 +944,52 @@ export const LocationView = memo(function LocationView({
         </button>
       </div>
 
-      {/* Meet The First action button */}
-      {meetTheFirstAvailable && onMeetTheFirst && agents.length > 0 && (
-        <div className="mx-6 mt-3">
-          <button
-            onClick={onMeetTheFirst}
-            style={{
-              padding: '8px 20px',
-              borderRadius: 8,
-              cursor: 'pointer',
-              background: 'linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1))',
-              border: '1px solid var(--accent-gold)',
-              color: 'var(--accent-gold)',
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--text-sm)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 'var(--space-2)',
-            }}
-          >
-            <span style={{ fontSize: 'var(--text-base)' }}>★</span>
-            Meet The First
-          </button>
-        </div>
-      )}
-
       {/* Prose + concept art placeholder */}
       {locationProse ? (
         <div className="mx-6 mt-5 flex gap-4" style={{ minHeight: '160px', maxHeight: '220px', maxWidth: '820px' }}>
           {/* Prose column */}
           <div
-            className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto"
+            ref={proseRef}
+            className="flex-1 min-w-0 rounded-lg border p-4 overflow-y-auto relative"
             style={{
               backgroundColor: 'var(--bg-raised)',
               borderColor: 'var(--border-gold)',
             }}
           >
+            {/* TTS narrate button */}
+            {narrationEnabled && (
+              <button
+                onClick={handleNarrateProse}
+                title={isSpeaking ? 'Stop narration' : isLoading ? 'Loading...' : 'Narrate description'}
+                aria-label={isSpeaking ? 'Stop narration' : 'Narrate description'}
+                style={{
+                  position: 'absolute',
+                  top: '8px',
+                  right: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '22px',
+                  height: '22px',
+                  background: 'none',
+                  border: '1px solid var(--border-subtle)',
+                  borderRadius: '50%',
+                  cursor: isLoading ? 'wait' : 'pointer',
+                  color: isSpeaking ? 'var(--accent-gold)' : 'var(--text-tertiary)',
+                  padding: 0,
+                  flexShrink: 0,
+                  transition: 'color 0.2s, border-color 0.2s',
+                }}
+              >
+                {isLoading ? (
+                  <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
+                ) : isSpeaking ? (
+                  <Square size={8} />
+                ) : (
+                  <Play size={10} style={{ marginLeft: '1px' }} />
+                )}
+              </button>
+            )}
             <div className="space-y-3">
               {locationProse.split('\n\n').map((para, idx) => (
                 <p
