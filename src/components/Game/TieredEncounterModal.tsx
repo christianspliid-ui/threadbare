@@ -25,6 +25,7 @@ import type { WorldGraph } from '../../engine/graph';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
 import { DOMAIN_COLORS, DEFAULT_AGENT_COLOR } from '../../data/agent-visual-content';
 import { enrichProse, gatherNarrativeContext } from '../../engine/proseEnrichment';
+import { resolveEncounterNarrative } from '../../data/encounter-content';
 import { useNarration } from '../../services/narration/useNarration';
 
 // ── Thread Tier ──────────────────────────────────────────────────
@@ -695,9 +696,11 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
     if (!step) return [];
     const depth = proseDepthForTier(threadTier);
 
-    // The notification may carry tiered prose, but we use the step narrative
-    // enriched through the prose pipeline as the primary source
-    const raw = step.narrative;
+    // Resolve encounter-specific variables ({actor}, {adj}, {verb}, {noun}, {action})
+    // first, then enrich with agent narrative context ({name}, {location}, etc.)
+    const raw = resolveEncounterNarrative(
+      step.narrative, agentName, step.id, template.threatRating,
+    );
     const enriched = enrichProse(raw, narrativeCtx);
 
     // Split into paragraphs. For full depth, provide 3 variants if available;
@@ -711,7 +714,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
       case 'medium': return parts.length > 1 ? parts.slice(0, 2) : [enriched];
       case 'peek': return [parts[0]?.split('.').slice(0, 2).join('.') + '.' || enriched];
     }
-  }, [template.steps, viewIndex, threadTier, narrativeCtx]);
+  }, [template.steps, template.threatRating, viewIndex, threadTier, agentName, narrativeCtx]);
 
   // Outcome prose for resolved steps
   const outcomeProse = useMemo(() => {
@@ -723,8 +726,11 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
     const succeeded = historyEntry?.success ?? true;
     const outcome = succeeded ? step.onSuccess : step.onFailure;
     if (!outcome?.narrative) return null;
-    return enrichProse(outcome.narrative, narrativeCtx);
-  }, [isViewingPast, template.steps, viewIndex, progress, narrativeCtx]);
+    const resolved = resolveEncounterNarrative(
+      outcome.narrative, agentName, step.id, template.threatRating,
+    );
+    return enrichProse(resolved, narrativeCtx);
+  }, [isViewingPast, template.steps, template.threatRating, viewIndex, progress, agentName, narrativeCtx]);
 
   // Choices available for this tier
   const choices = notification.choices;
