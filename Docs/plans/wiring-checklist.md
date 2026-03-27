@@ -160,6 +160,19 @@ Every design document in `Docs/plans/` must include a **Wiring** section that an
 5. **Debug visibility:** How does a developer inspect this feature's state? Existing DebugPanel tab or new one?
 6. **Prose pipeline:** Does this feature display narrative text? If yes, does it go through `enrichProse()`?
 7. **Player controls:** Does the player need to trigger, toggle, or configure anything? What UI element provides that?
+8. **Prerequisite health:** What upstream systems must be producing output for this feature to fire? List each dependency and how to verify it's alive (e.g., "encounters must complete → check encounterProgress has status:'completed' entries within 50 ticks"). If the upstream is known to be broken or untested at scale, flag it as a blocker.
+
+### Throughput Gate
+
+Features that depend on upstream pipeline throughput (not just correct wiring) must declare a **throughput expectation** in their design doc:
+
+| What to declare | Example |
+|-----------------|---------|
+| **Upstream dependency** | "Requires agents to arrive at locations with encounter cache entries" |
+| **Expected throughput** | "At least 1 encounter completion per 50 ticks on a seeded world" |
+| **Verification method** | "Pipeline liveness integration test (`encounter-liveness.contract.test.ts`)" |
+
+A feature that is correctly wired but receives zero upstream input is functionally dead. The throughput gate catches this before implementation is marked complete.
 
 ---
 
