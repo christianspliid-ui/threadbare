@@ -14,6 +14,7 @@
 import * as THREE from 'three';
 import type { HexTile } from '../../../types';
 import { getHexColor } from '../palette/colorUtils';
+import { getActivePalette } from '../palette/activePalette';
 import { hexNeighbors } from '../../../lib/hexMath';
 import type { HexVisibilityState, VisibilityMap, LOSSource } from '../../../types/visibility';
 import { visKey } from '../../../types/visibility';
@@ -25,7 +26,7 @@ import { visKey } from '../../../types/visibility';
  * NFP #1: Every magic number is named here.
  */
 export const FOG_CONSTANTS = {
-  /** Color applied to unexplored hex fills (matches V1 HexTile dark fog). */
+  /** @deprecated Use getActivePalette().fogUnexploredColor — kept for constant table docs */
   UNEXPLORED_HEX_COLOR: '#0a0a0c',
   /** Default sight range for the avatar (own hex only). Matches AVATAR_SIGHT_RANGE. */
   DEFAULT_SIGHT_RANGE: 0,
@@ -40,7 +41,17 @@ export const FOG_CONSTANTS = {
 
 // ── Module-level reusable color objects (avoid per-call allocation) ──────────
 
-const FOG_COLOR = new THREE.Color(FOG_CONSTANTS.UNEXPLORED_HEX_COLOR);
+/** Lazily cached fog color — refreshed when palette changes. */
+let _fogColor: THREE.Color | null = null;
+function getFogColor(): THREE.Color {
+  if (!_fogColor) {
+    _fogColor = new THREE.Color(getActivePalette().fogUnexploredColor);
+  }
+  return _fogColor;
+}
+// Reset cache when palette changes
+import { onPaletteChange } from '../palette/activePalette';
+onPaletteChange(() => { _fogColor = null; });
 const _restoreColor = new THREE.Color();
 
 // ── Fog Layer Type ───────────────────────────────────────────────────────────
@@ -144,7 +155,7 @@ export function updateFogColors(
     if (idx === undefined) continue; // fail-soft: unknown hex key
 
     if (hexVis.state === 'unexplored') {
-      fillMesh.setColorAt(idx, FOG_COLOR);
+      fillMesh.setColorAt(idx, getFogColor());
     } else {
       const r = originalColors[idx * 3 + 0];
       const g = originalColors[idx * 3 + 1];

@@ -1,11 +1,11 @@
 import * as THREE from 'three';
+import { getActivePalette } from '../palette/activePalette';
 
 /**
  * Scene-level constants for the Three.js hex renderer.
  * NFP #1: Every magic number is named here.
  */
 export const SCENE_CONSTANTS = {
-  BACKGROUND_COLOR: 0x0a0a0c,  // Matches --bg-abyss; dark canvas background
   PIXEL_RATIO_CAP:  2,          // Prevent extreme DPI scaling on high-resolution displays
   NEAR_PLANE:       0.1,
   FAR_PLANE:        10000,
@@ -44,7 +44,7 @@ export function createHexScene(
   renderer.outputColorSpace = THREE.SRGBColorSpace;
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color(SCENE_CONSTANTS.BACKGROUND_COLOR);
+  scene.background = new THREE.Color(getActivePalette().sceneBackground);
 
   const halfW = width / 2;
   const halfH = height / 2;

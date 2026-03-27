@@ -23,6 +23,7 @@ import type { HexTile } from '../../../types';
 import type { RegionData } from '../../../engine/regionTypes';
 import { hexNeighbors } from '../../../lib/hexMath';
 import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
+import { getActivePalette } from '../palette/activePalette';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
@@ -44,8 +45,8 @@ const BORDER_OPACITY = 0.7;
 /** Z position for border vertices — from centralized LAYER_Z */
 const BORDER_Z = LAYER_Z.BORDERS;
 
-/** Border color: red, matches capital marker color */
-const BORDER_COLOR = 0xC83030;
+/** Border color — reads from active palette theme */
+const BORDER_COLOR_DEFAULT = 0xC83030;
 
 /**
  * Correct mapping from hexNeighbors() direction index to the shared hex edge.
@@ -268,7 +269,7 @@ export function createBorderMesh(
   }
 
   const mat = new THREE.MeshBasicMaterial({
-    color: BORDER_COLOR,
+    color: getActivePalette().borderColor,
     side: THREE.DoubleSide,
     transparent: true,
     opacity: BORDER_OPACITY,

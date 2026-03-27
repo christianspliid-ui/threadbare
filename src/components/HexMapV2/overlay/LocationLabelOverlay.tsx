@@ -33,6 +33,7 @@ import {
 } from '../../../data/agent-visual-content';
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
 import { removeOverlaps, type ScreenLabel } from './labelCollision';
+import { getActivePalette, buildLandHalo } from '../palette/activePalette';
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
 
@@ -97,15 +98,8 @@ interface LocationLabelOverlayProps {
 
 // ── Label styles ──────────────────────────────────────────────────────────────
 
-/** Shared halo text-shadow for location labels (identical to LAND_HALO in RegionLabelOverlay) */
-const LAND_HALO = [
-  '1px 0 0 rgba(240,235,220,0.9)',
-  '-1px 0 0 rgba(240,235,220,0.9)',
-  '0 1px 0 rgba(240,235,220,0.9)',
-  '0 -1px 0 rgba(240,235,220,0.9)',
-  '2px 0 0 rgba(240,235,220,0.6)',
-  '-2px 0 0 rgba(240,235,220,0.6)',
-].join(', ');
+/** Halo text-shadow — built from active palette theme */
+const LAND_HALO = buildLandHalo();
 
 /** Shared base style for all location labels. */
 const LABEL_BASE: CSSProperties = {
@@ -116,7 +110,7 @@ const LABEL_BASE: CSSProperties = {
   transition: 'opacity 200ms ease',
   userSelect: 'none',
   fontFamily: 'var(--font-display)',
-  color: '#1a1a1a',
+  color: getActivePalette().labelLocationColor,
   textShadow: LAND_HALO,
   lineHeight: '1.2',
 };

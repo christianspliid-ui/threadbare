@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { IconButton } from '../shared/IconButton';
+import {
+  getActivePaletteId,
+  setActivePalette,
+} from '../HexMapV2/palette/activePalette';
+import {
+  PALETTE_THEMES,
+  type PaletteThemeId,
+} from '../HexMapV2/palette/paletteTheme';
 
 interface SettingsPanelProps {
   open: boolean;
@@ -25,6 +33,7 @@ export function SettingsPanel({
   onToggleOrganicShore,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [paletteId, setPaletteId] = useState<PaletteThemeId>(getActivePaletteId());
 
   // Handle Escape key and click-outside
   useEffect(() => {
@@ -57,6 +66,20 @@ export function SettingsPanel({
   }, [open, onClose]);
 
   if (!open) return null;
+
+  const handlePaletteChange = (id: PaletteThemeId) => {
+    if (id === paletteId) return;
+    setPaletteId(id);
+    // Palette change requires full reload because module-level constants
+    // (label halos, label colors) are computed at import time.
+    const url = new URL(window.location.href);
+    if (id === 'golden-hour') {
+      url.searchParams.delete('palette');
+    } else {
+      url.searchParams.set('palette', id);
+    }
+    window.location.href = url.toString();
+  };
 
   const panelStyle: React.CSSProperties = {
     position: 'fixed',
@@ -148,6 +171,20 @@ export function SettingsPanel({
     transform: enabled ? 'translateX(8px)' : 'translateX(-8px)',
   });
 
+  const selectStyle: React.CSSProperties = {
+    backgroundColor: 'rgba(30, 30, 36, 0.9)',
+    color: 'var(--text-primary)',
+    border: '1px solid rgba(212, 175, 55, 0.25)',
+    borderRadius: '4px',
+    padding: '4px 8px',
+    fontSize: '12px',
+    fontFamily: 'var(--font-body)',
+    cursor: 'pointer',
+    outline: 'none',
+  };
+
+  const paletteOptions = Object.values(PALETTE_THEMES);
+
   return (
     <div
       ref={panelRef}
@@ -182,6 +219,19 @@ export function SettingsPanel({
             >
               <div style={toggleDotStyle(!fogDisabled)} />
             </button>
+          </div>
+          <div style={settingRowStyle}>
+            <label style={settingLabelStyle}>Map Palette</label>
+            <select
+              value={paletteId}
+              onChange={(e) => handlePaletteChange(e.target.value as PaletteThemeId)}
+              style={selectStyle}
+              aria-label="Select map color palette"
+            >
+              {paletteOptions.map((t) => (
+                <option key={t.id} value={t.id}>{t.displayName}</option>
+              ))}
+            </select>
           </div>
         </div>
 
