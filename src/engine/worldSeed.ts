@@ -63,6 +63,19 @@ export const LOCATION_COUNT = { min: 4, max: 6 }; // legacy fallback only
 export const LOCATION_DENSITY = { min: 0.30, max: 0.50 };
 export const ARTIFACT_COUNT = { min: 1, max: 2 };
 
+/**
+ * Minimum hex distance between settlements by subtype.
+ * Prevents clusters of large settlements. The rule is bidirectional:
+ * when placing a new settlement, the enforced gap is the MAX of the
+ * new settlement's spacing and each existing settlement's spacing.
+ */
+export const SETTLEMENT_MIN_SPACING: Partial<Record<LocationSubtype, number>> = {
+  capital: 4,
+  city:    4,
+  town:    2,
+  hamlet:  1,
+};
+
 /** Initial prosperity by settlement subtype — larger settlements start wealthier */
 export const INITIAL_PROSPERITY: Partial<Record<LocationSubtype, number>> = {
   capital: 65,
@@ -404,21 +417,58 @@ export function seedWorld(
     [shuffledTiles[i], shuffledTiles[j]] = [shuffledTiles[j], shuffledTiles[i]];
   }
 
-  const usedLocationNames = new Set<string>();
+  // Pre-roll subtypes for each candidate tile so we can sort by placement tier.
+  // Placement order: capital/city → town → hamlet → everything else.
+  // This ensures large settlements claim space first, preventing small settlements
+  // from blocking prime locations.
+  const candidates: Array<{ tile: HexTile; subtype: LocationSubtype; sortOrder: number }> = [];
+  for (let i = 0; i < Math.min(locCount * 2, shuffledTiles.length); i++) {
+    const subtype = pickLocationSubtype(rng, shuffledTiles[i].terrain, i, locCount);
+    let sortOrder: number;
+    if (subtype === 'capital' || subtype === 'city') sortOrder = 0;
+    else if (subtype === 'town') sortOrder = 1;
+    else if (subtype === 'hamlet') sortOrder = 2;
+    else sortOrder = 3;
+    candidates.push({ tile: shuffledTiles[i], subtype, sortOrder });
+  }
+  // Stable sort by tier (preserves shuffled order within each tier)
+  candidates.sort((a, b) => a.sortOrder - b.sortOrder);
 
-  for (let i = 0; i < Math.min(locCount, shuffledTiles.length); i++) {
-    const id = `loc_${i}`;
-    const tile = shuffledTiles[i];
+  const usedLocationNames = new Set<string>();
+  const usedHexes = new Set<string>();
+
+  // Track placed settlements for minimum-spacing enforcement
+  const placedSettlements: Array<{ col: number; row: number; subtype: LocationSubtype }> = [];
+
+  let locIndex = 0;
+  for (const { tile, subtype: locationSubtype } of candidates) {
+    if (locIndex >= locCount) break;
+
+    // No two locations on the same hex
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    if (usedHexes.has(hexKey)) continue;
+
+    // ── Settlement spacing enforcement ──────────────────────
+    // The required gap is the MAX of the new settlement's spacing
+    // and each existing settlement's spacing (bidirectional rule).
+    const newSpacing = SETTLEMENT_MIN_SPACING[locationSubtype] ?? 0;
+    const tooClose = placedSettlements.some(placed => {
+      const requiredGap = Math.max(newSpacing, SETTLEMENT_MIN_SPACING[placed.subtype] ?? 0);
+      if (requiredGap === 0) return false;
+      const dist = hexDistance(tile.coord, { col: placed.col, row: placed.row });
+      return dist <= requiredGap;
+    });
+    if (tooClose) continue; // skip this tile, try next candidate
 
     const locInjection = injections?.find(inj => inj.injection.injectionType === 'location_feature');
     const sphereBiases = locInjection ? { ...locInjection.injection.sphereBiases } : {};
 
-    const locationSubtype = pickLocationSubtype(rng, tile.terrain, i, locCount);
+    const id = `loc_${locIndex}`;
 
     // Use handcrafted names first, then procedural generation
     let name: string;
-    if (i < LOCATION_NAMES.length) {
-      name = LOCATION_NAMES[i];
+    if (locIndex < LOCATION_NAMES.length) {
+      name = LOCATION_NAMES[locIndex];
     } else {
       name = generateLocationName(rng, tile.terrain, locationSubtype, usedLocationNames);
     }
@@ -429,6 +479,9 @@ export function seedWorld(
     for (const sp of SPHERE_NAMES) {
       sphereInfluence[sp] = (sphereBiases as Record<string, number>)[sp] ?? (rng() * 0.1);
     }
+
+    usedHexes.add(hexKey);
+    placedSettlements.push({ col: tile.coord.col, row: tile.coord.row, subtype: locationSubtype });
 
     graph.addNode({
       id,
@@ -446,6 +499,7 @@ export function seedWorld(
       },
     });
     locationIds.push(id);
+    locIndex++;
   }
 
   // Add bidirectional adjacency edges between locations that are hex-neighbors.

@@ -6,8 +6,10 @@ import {
   LOCATION_COUNT,
   LOCATION_DENSITY,
   ARTIFACT_COUNT,
+  SETTLEMENT_MIN_SPACING,
 } from '../worldSeed';
-import type { CosmologyProfile, HexTile } from '../../types/index';
+import type { CosmologyProfile, HexTile, LocationSubtype } from '../../types/index';
+import { hexDistance } from '../../lib/hexMath';
 import { SPHERE_NAMES } from '../../types/index';
 import type { ActiveInjection } from '../echo';
 import { CULTURE_COUNT } from '../../types/culture';
@@ -18,10 +20,10 @@ function balancedCosmology(): CosmologyProfile {
   return c;
 }
 
-function mockTiles(): HexTile[] {
+function mockTiles(size = 10): HexTile[] {
   const tiles: HexTile[] = [];
-  for (let col = 0; col < 5; col++) {
-    for (let row = 0; row < 5; row++) {
+  for (let col = 0; col < size; col++) {
+    for (let row = 0; row < size; row++) {
       tiles.push({
         coord: { col, row },
         geoParams: { elevation: 0.5, temperature: 0.5, moisture: 0.5 },
@@ -39,14 +41,9 @@ describe('seedWorld', () => {
     expect(result.individualIds.length).toBeGreaterThanOrEqual(INDIVIDUAL_COUNT.min);
     expect(result.individualIds.length).toBeLessThanOrEqual(INDIVIDUAL_COUNT.max);
     expect(result.factionIds.length).toBeGreaterThanOrEqual(FACTION_COUNT.min);
-    // Density-based: at least 30% of habitable hexes should have locations
-    const habitableCount = tiles.filter(t =>
-      t.terrain !== 'ocean' && t.terrain !== 'deep_ocean'
-      && t.terrain !== 'coastal_shallows' && t.terrain !== 'lake'
-    ).length;
-    expect(result.locationIds.length).toBeGreaterThanOrEqual(
-      Math.max(LOCATION_COUNT.min, Math.floor(habitableCount * LOCATION_DENSITY.min))
-    );
+    // Spacing enforcement may reduce placement on small maps, but we should
+    // still get at least the hard minimum number of locations
+    expect(result.locationIds.length).toBeGreaterThanOrEqual(LOCATION_COUNT.min);
     expect(result.artifactIds.length).toBeGreaterThanOrEqual(ARTIFACT_COUNT.min);
   });
 
@@ -58,6 +55,46 @@ describe('seedWorld', () => {
       const key = `${node.properties.hexCol},${node.properties.hexRow}`;
       expect(hexKeys.has(key)).toBe(false);
       hexKeys.add(key);
+    }
+  });
+
+  it('enforces minimum spacing between settlements by size tier', () => {
+    // Use a larger grid so spacing constraints are meaningful
+    const largeTiles: HexTile[] = [];
+    for (let col = 0; col < 20; col++) {
+      for (let row = 0; row < 20; row++) {
+        largeTiles.push({
+          coord: { col, row },
+          geoParams: { elevation: 0.5, temperature: 0.5, moisture: 0.5 },
+          terrain: 'grassland',
+        });
+      }
+    }
+    const result = seedWorld(balancedCosmology(), largeTiles, 42);
+
+    // Collect all placed locations with their coords and subtypes
+    const locations = result.locationIds.map(id => {
+      const node = result.graph.getNode(id)!;
+      return {
+        col: node.properties.hexCol as number,
+        row: node.properties.hexRow as number,
+        subtype: node.properties.locationSubtype as LocationSubtype,
+      };
+    });
+
+    // For every pair, verify spacing is respected
+    for (let i = 0; i < locations.length; i++) {
+      for (let j = i + 1; j < locations.length; j++) {
+        const a = locations[i];
+        const b = locations[j];
+        const dist = hexDistance({ col: a.col, row: a.row }, { col: b.col, row: b.row });
+        const spacingA = SETTLEMENT_MIN_SPACING[a.subtype] ?? 0;
+        const spacingB = SETTLEMENT_MIN_SPACING[b.subtype] ?? 0;
+        const requiredGap = Math.max(spacingA, spacingB);
+        if (requiredGap > 0) {
+          expect(dist).toBeGreaterThan(requiredGap);
+        }
+      }
     }
   });
 
@@ -104,10 +141,15 @@ describe('seedWorld', () => {
     expect(relEdges.length).toBeGreaterThan(0);
   });
 
-  it('creates location adjacency edges', () => {
+  it('creates location adjacency edges for hex-neighbor locations', () => {
     const result = seedWorld(balancedCosmology(), mockTiles(), 42);
     const adjEdges = result.graph.getEdgesByType('adjacent');
-    expect(adjEdges.length).toBeGreaterThanOrEqual(result.locationIds.length - 1);
+    // With settlement spacing, locations may not be hex-adjacent.
+    // Verify that any adjacency edges that do exist connect valid location pairs.
+    for (const edge of adjEdges) {
+      expect(result.graph.getNode(edge.source)?.type).toBe('location');
+      expect(result.graph.getNode(edge.target)?.type).toBe('location');
+    }
   });
 
   it('applies cultural_template echo injection to actor traits', () => {
