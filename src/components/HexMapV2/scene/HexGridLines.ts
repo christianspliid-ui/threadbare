@@ -3,14 +3,15 @@ import type { HexTile } from '../../../types';
 import { hexToPixel } from '../../../lib/hexMath';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { getActivePalette } from '../palette/activePalette';
 
 // ─── Grid line constants (NFP #1: Tunability) ───────────────────────────────
 
 /** Half-width of hex grid lines in world units (visual width = 2 * GRID_LINE_HALF_WIDTH) */
 const GRID_LINE_HALF_WIDTH = 0.30;
 
-/** Grid line color — cool mid-grey */
-const GRID_LINE_COLOR = 0x5D5E66;
+/** Grid line color — reads from active palette theme */
+const GRID_LINE_COLOR_DEFAULT = 0x5D5E66;
 
 /** Z position for grid line vertices — from centralized LAYER_Z */
 const GRID_LINE_Z = LAYER_Z.GRID;
@@ -126,7 +127,7 @@ export function createHexGridLines(tiles: HexTile[]): THREE.Mesh {
   geo.setIndex(indices);
 
   const mat = new THREE.MeshBasicMaterial({
-    color:       GRID_LINE_COLOR,
+    color:       getActivePalette().gridLineColor,
     transparent: true,
     opacity:     HEX_CONSTANTS.GRID_LINE_OPACITY,
     side:        THREE.DoubleSide,

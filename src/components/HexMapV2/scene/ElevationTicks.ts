@@ -5,6 +5,7 @@ import { hexKeyFromCoord, hexKey as hexKeyFn } from '../../../lib/hexKey';
 import { hexToWorld } from '../../../lib/worldPosition';
 import { RENDER_ORDER, LAYER_Z } from './RenderLayers';
 import { HEX_CONSTANTS } from './HexFillMesh';
+import { getActivePalette } from '../palette/activePalette';
 
 /**
  * Elevation tick constants.
@@ -19,7 +20,7 @@ export const ELEVATION_TICK_CONSTANTS = {
   TICK_WIDTH:        0.12,
   /** Number of tick lines evenly spaced along each hex edge (excludes corners). */
   TICKS_PER_EDGE:    4,
-  /** Dark brown — blends with mountain/highland terrain. */
+  /** @deprecated Use getActivePalette().elevationTickColor — kept for constant table docs */
   TICK_COLOR:        0x2a1a0a,
   /** Tick mark opacity (0–1). */
   TICK_OPACITY:      0.7,
@@ -113,9 +114,9 @@ export function createElevationTicks(tiles: HexTile[]): THREE.Mesh {
     TICK_LENGTH_FRAC,
     TICK_WIDTH,
     TICKS_PER_EDGE,
-    TICK_COLOR,
     TICK_OPACITY,
   } = ELEVATION_TICK_CONSTANTS;
+  const TICK_COLOR = getActivePalette().elevationTickColor;
 
   const size = HEX_CONSTANTS.HEX_SIZE;
 
