@@ -1,0 +1,14 @@
+# Force LF line endings everywhere to prevent CRLF corruption from Windows/VM sync
+* text=auto eol=lf
+
+# Binary files — don't touch line endings
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.svg text eol=lf
