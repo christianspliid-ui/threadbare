@@ -914,6 +914,27 @@ export const REGION_ETYMOLOGY_PROSE: string[] = [
   "The name {regionName} derives from their cartography — maps that outlasted the mapmakers, carrying a dead people's words into living mouths.",
 ];
 
+// ─── Geographic Region Prose ─────────────────────────────────────────────────
+// Displayed in HexChronicle "The Land" section when the hex belongs to a named
+// geographic region. Two pools: claimed (historical culture present) and
+// unclaimed (wilderness). Placeholders: {regionName}, {featureLabel}, {cultureName}, {sphereName}.
+
+/** Prose for geographic regions claimed by a historical culture */
+export const GEOGRAPHIC_REGION_CLAIMED_PROSE: string[] = [
+  'This stretch of {featureLabel} is known as {regionName}. The name carries the mark of the {cultureName}, who drew power from {sphereName} and left their vocabulary pressed into the landscape like a seal in wax.',
+  'The {cultureName} once held dominion here. They named this land {regionName}, and though their fires have long gone cold, the word persists — a ghost of {sphereName} woven into every traveller\'s directions.',
+  '{regionName}. The name was old when the current settlers arrived. It belongs to the {cultureName}, who shaped their world through {sphereName} and branded the {featureLabel} with a word that refuses to be forgotten.',
+  'You stand in {regionName}, {featureLabel} that still bear the linguistic fingerprints of the {cultureName}. Their affinity for {sphereName} coloured everything they touched — including what they called the ground beneath their feet.',
+];
+
+/** Prose for unclaimed wilderness regions */
+export const GEOGRAPHIC_REGION_WILDERNESS_PROSE: string[] = [
+  'The locals call this expanse {regionName}, though no one remembers who first gave the {featureLabel} that name. It belongs to the land itself now.',
+  '{regionName} — a name that travellers use and cartographers record, though its origins have been worn away by wind and repetition.',
+  'This stretch of {featureLabel} has come to be known as {regionName}. The name emerged from common usage, passed between travellers like a coin that lost its stamp.',
+  'The {featureLabel} here are called {regionName}. No culture claims the naming — it simply is what the land calls itself when no one is arguing over titles.',
+];
+
 // ─── Trade Route Prose ──────────────────────────────────────────────────────
 // Prose fragments for trade routes connected to a location.
 // Composed by tradeRouteResolver: volume tier + goods type + status modifier.

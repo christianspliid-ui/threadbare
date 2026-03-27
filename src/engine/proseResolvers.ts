@@ -32,6 +32,8 @@ import {
   TRADE_ROUTE_HIGH_VOLUME_THRESHOLD,
   TRADE_ROUTE_MEDIUM_VOLUME_THRESHOLD,
   TRADE_ROUTE_CROSSROADS_THRESHOLD,
+  GEOGRAPHIC_REGION_CLAIMED_PROSE,
+  GEOGRAPHIC_REGION_WILDERNESS_PROSE,
 } from '../data/prose-layer-content';
 import { getProsperityTier } from './phaseProsperity';
 import { getWealthTier } from './wealth';
@@ -573,6 +575,89 @@ export function regionEtymologyResolver(regionId: string, graph: WorldGraph, see
       priority: 25,
       category: 'history',
       source: 'regionEtymologyResolver',
+    },
+  ];
+}
+
+// ─── Geographic Region Resolver ──────────────────────────────────
+
+/** Human-readable labels for feature types (matches regionNaming.ts) */
+const GEO_FEATURE_LABELS: Record<string, string> = {
+  mountain_range: 'mountains',
+  hill_country: 'hills',
+  forest: 'forests',
+  plains: 'plains',
+  desert: 'desert',
+  wetland: 'marshes',
+  tundra: 'wastes',
+  river: 'river',
+  lake: 'lake',
+  sea: 'sea',
+};
+
+/** Sphere display names for prose */
+const SPHERE_DISPLAY_NAMES: Record<string, string> = {
+  force: 'Force', matter: 'Matter', energy: 'Energy', life: 'Life',
+  mind: 'Mind', spirit: 'Spirit', time: 'Time', entropy: 'Entropy',
+};
+
+/**
+ * geographicRegionResolver — describes the geographic region this hex belongs to.
+ * Explains the region name's cultural origin (claimed) or wilderness nature (unclaimed).
+ * Priority: 20 (land layer, after biome prose)
+ * Category: 'land'
+ *
+ * Takes a regionId and checks for historical culture. Picks from claimed or
+ * wilderness template pools accordingly.
+ */
+export function geographicRegionResolver(regionId: string, graph: WorldGraph, seed: number): ProseLayer[] {
+  const regionNode = graph.getNode(regionId);
+  if (!regionNode || regionNode.type !== 'region') return [];
+
+  const regionName = regionNode.name.replace(/^The\s+/i, '');
+  const featureType = (regionNode.properties.featureType as string) ?? 'plains';
+  const featureLabel = GEO_FEATURE_LABELS[featureType] ?? featureType;
+
+  // Check for historical culture
+  const outEdges = graph.getOutgoingEdges(regionId, 'belongs_to');
+  const histEdge = outEdges.find((e) => e.properties?.cultureLayer === 'historical');
+
+  let text: string;
+
+  if (histEdge) {
+    const histNode = graph.getNode(histEdge.target);
+    if (!histNode) return [];
+
+    const cultureName = histNode.name.replace(/^The\s+/i, '');
+    const identity = histNode.properties.cultureIdentity as
+      | { veneratedSpheres?: string[] }
+      | undefined;
+    const primarySphere = identity?.veneratedSpheres?.[0];
+    const sphereName = primarySphere
+      ? SPHERE_DISPLAY_NAMES[primarySphere] ?? primarySphere
+      : 'forgotten forces';
+
+    const template = pickTemplate(GEOGRAPHIC_REGION_CLAIMED_PROSE, seed + 42);
+    if (!template) return [];
+
+    text = replacePlaceholder(template, 'regionName', regionName);
+    text = replacePlaceholder(text, 'featureLabel', featureLabel);
+    text = replacePlaceholder(text, 'cultureName', cultureName);
+    text = replacePlaceholder(text, 'sphereName', sphereName);
+  } else {
+    const template = pickTemplate(GEOGRAPHIC_REGION_WILDERNESS_PROSE, seed + 42);
+    if (!template) return [];
+
+    text = replacePlaceholder(template, 'regionName', regionName);
+    text = replacePlaceholder(text, 'featureLabel', featureLabel);
+  }
+
+  return [
+    {
+      text,
+      priority: 20,
+      category: 'land',
+      source: 'geographicRegionResolver',
     },
   ];
 }

@@ -38,6 +38,8 @@ export interface PaletteTheme {
   readonly capitalColor: number;
   /** Capital ring overlay color (#RRGGBB) for canvas texture */
   readonly capitalRingColor: string;
+  /** Geographic region border color (THREE.Color hex int) — dim, historical */
+  readonly geoBorderColor: number;
 
   // ── Grid ─────────────────────────────────────────────────────────────────
   /** Hex grid line color (THREE.Color hex int) */
@@ -96,6 +98,7 @@ export const GOLDEN_HOUR: PaletteTheme = {
   borderColor:          0xC83030,
   capitalColor:         0xC83030,
   capitalRingColor:     '#cc3333',
+  geoBorderColor:       0x000000,   // black — crisp historical borders
   gridLineColor:        0x5D5E66,
   elevationTickColor:   0x2a1a0a,
   fogUnexploredColor:   '#0a0a0c',
@@ -124,6 +127,7 @@ export const DARK_PARCHMENT: PaletteTheme = {
   borderColor:          0x3088A0,
   capitalColor:         0x3088A0,
   capitalRingColor:     '#3090a8',
+  geoBorderColor:       0x000000,   // black — crisp historical borders
   gridLineColor:        0x484a52,
   elevationTickColor:   0x1a1a2a,
   fogUnexploredColor:   '#08080a',

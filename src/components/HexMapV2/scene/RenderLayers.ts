@@ -1,6 +1,6 @@
 /**
  * Render layer ordering for the Three.js hex renderer.
- * All 13 layers are established here as named constants.
+ * All layers are established here as named constants.
  * Phase 1 activates layers 0 (HEX_FILL) and 2 (GRID).
  * Remaining layers are scaffold-only — constants exist, geometry populated in later phases.
  *
@@ -14,13 +14,14 @@ export const RENDER_ORDER = {
   ELEVATION_TICKS:3,
   RIVERS:         4,
   ROADS:          5,
-  BORDERS:        6,
-  SIGNIFIERS:     7,
-  LOCATIONS:      8,
-  AGENTS:         9,
-  EVENTS:         10,
-  LABELS:         11,
-  FOG:            12,
+  GEO_BORDERS:    6,
+  BORDERS:        7,
+  SIGNIFIERS:     8,
+  LOCATIONS:      9,
+  AGENTS:         10,
+  EVENTS:         11,
+  LABELS:         12,
+  FOG:            13,
 } as const;
 
 export type RenderLayerName = keyof typeof RENDER_ORDER;
@@ -34,6 +35,7 @@ export const LAYER_Z = {
   ELEVATION_TICKS: 0.020,
   RIVERS:          0.025,
   ROADS:           0.030,
+  GEO_BORDERS:     0.032,
   BORDERS:         0.035,
   SIGNIFIERS:      0.070,
   LOCATIONS:       0.080,

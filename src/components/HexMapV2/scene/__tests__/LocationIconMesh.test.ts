@@ -82,7 +82,7 @@ describe('createLocationIconMesh', () => {
     const group = createLocationIconMesh([]);
     expect(group).toBeInstanceOf(THREE.Group);
     expect(group.renderOrder).toBe(RENDER_ORDER.LOCATIONS);
-    expect(group.renderOrder).toBe(8);
+    expect(group.renderOrder).toBe(9);
   });
 
   it('returns empty group when locations array is empty', () => {
