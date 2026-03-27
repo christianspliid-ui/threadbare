@@ -54,6 +54,7 @@ import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { RivalsButton } from './RivalsButton';
+import { SettingsPanel } from './SettingsPanel';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
@@ -126,6 +127,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   // ── Debug: organic shore toggle ──
   const [showOrganicShore, setShowOrganicShore] = useState(false);
+
+  // ── Settings panel ──
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
 
   // ── View navigation hook ──
   const {
@@ -842,22 +846,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             definitions={gameState.rivalDefinitions}
             states={gameState.rivalStates}
           />
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1" style={{ position: 'relative' }}>
             <IconButton
-              data-testid="fog-toggle"
-              icon={<span>{fogDisabled ? '☀' : '🌫'}</span>}
-              active={fogDisabled}
-              onClick={() => setFogDisabled(v => !v)}
-              title="Toggle fog of war (debug)"
-              aria-label="Toggle fog of war"
-            />
-            <IconButton
-              data-testid="debug-toggle"
+              data-testid="settings-toggle"
               icon={<span>⚙</span>}
-              active={debugPanelOpen}
-              onClick={handleToggleDebug}
-              title="Toggle debug trace panel (`)"
-              aria-label="Toggle debug trace panel"
+              active={settingsPanelOpen}
+              onClick={() => setSettingsPanelOpen(v => !v)}
+              title="Settings"
+              aria-label="Settings"
+            />
+            <SettingsPanel
+              open={settingsPanelOpen}
+              onClose={() => setSettingsPanelOpen(false)}
+              fogDisabled={fogDisabled}
+              onToggleFog={() => setFogDisabled(v => !v)}
+              debugPanelOpen={debugPanelOpen}
+              onToggleDebug={handleToggleDebug}
+              showOrganicShore={showOrganicShore}
+              onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
             />
           </div>
         </div>
