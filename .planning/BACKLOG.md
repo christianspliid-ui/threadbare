@@ -8,7 +8,27 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-066**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-068**.
+
+---
+
+## 📐▶ TB-067 · Notification Expansion — Clickable Nav, Right-Click Dismiss, Preferences Panel (2026-03-27)
+
+Three features expanding the notification system: (1) clickable notifications that navigate to the relevant game entity (encounter modal, hex, location, faction, journey), with channel-specific behavior (toast: navigate+dismiss, alert: navigate only); (2) right-click instant dismiss on toasts and alerts; (3) notifications section in SettingsPanel with per-category on/off and permanent/temporary toggles, persisting across sessions via localStorage with per-game overrides. Three implementation phases: A (right-click dismiss), B (navigation targets), C (preferences panel).
+
+**Design doc:** `Docs/plans/2026-03-27-notification-expansion-design.md`
+**Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
+**Depends on:** SettingsPanel (TB-064, ✅)
+
+---
+
+## 📐▶ TB-066 · Palette Theme System — Feature-Flagged Color Schemes (2026-03-27)
+
+Runtime-switchable hex map color palettes via Settings panel and URL param. Introduces "Dark Parchment" alternative (aged sepia/umber, 15–45% brightness) alongside existing "Golden Hour". Module-level palette singleton, no React context — consumed deep in Three.js mesh builders. Theme switch triggers full hex map rebuild. 13 files touched, no new tick phases.
+
+**Design doc:** `Docs/plans/2026-03-27-palette-theme-system-design.md`
+**Visual reference:** `Design/palette-experiment.html` (open in browser to compare 6 palettes side by side)
+**Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
 
 ---
 
@@ -21,7 +41,7 @@ TieredEncounterModal renders raw `{actor}`, `{adj}`, `{verb}`, `{noun}` placehol
 
 ---
 
-## 📐▶ TB-058 · Faction Vertical Slice — Adventuring Guild (2026-03-27)
+## ✅ TB-058 · Faction Vertical Slice — Adventuring Guild (2026-03-27)
 
 End-to-end faction system using a prototype Adventuring Guild. Proves the full loop: discover guild halls → join via encounter → do faction quests → build reputation → get promoted via encounter → access rank-gated content. Data-driven and generalizable for procedural faction generation. Four phases decomposed into TB-059–TB-062.
 
@@ -31,7 +51,7 @@ End-to-end faction system using a prototype Adventuring Guild. Proves the full l
 
 ---
 
-## 📐▶ TB-059 · Faction Definition Schema & Guild Seeding (Phase 1)
+## ✅ TB-059 · Faction Definition Schema & Guild Seeding (Phase 1)
 
 FactionDefinition type with rank tiers, reach weights, encounter access, expulsion consequences. member_of edge extension (reputation, factionDefId). Adventuring Guild definition data. Generic `seedFactionFromDefinition()` that places guild hall sublocations at qualifying towns. Test signal: guild halls visible on map, faction node with reachPreferences in graph.
 
@@ -40,7 +60,7 @@ FactionDefinition type with rank tiers, reach weights, encounter access, expulsi
 
 ---
 
-## 📐▶ TB-060 · Quest Board & Reputation Tracking (Phase 2)
+## ✅ TB-060 · Quest Board & Reputation Tracking (Phase 2)
 
 10 quest templates (explore ruins, hunt monsters, survey wilds, escort, recover artifacts + senior/elite variants). `generateFactionQuestCandidates()` in agent decision phase — rank-gated, reach-weighted. Reputation gain on quest completion, per-tick decay via new orchestrator phase 7.15. Rank auto-computed from reputation thresholds. Test signal: agents receive faction quests, reputation changes visible in traces, decay observable over time.
 
@@ -50,7 +70,7 @@ FactionDefinition type with rank tiers, reach weights, encounter access, expulsi
 
 ---
 
-## 📐▶ TB-061 · Join & Promotion Encounters (Phase 3)
+## ✅ TB-061 · Join & Promotion Encounters (Phase 3)
 
 Join encounter at guild halls (creates member_of edge with starting reputation). Promotion encounter (threshold-triggered, narrative tension, partial success with complications). `factionOutcome.ts` for GraphOps on join/promote. `excludeIfMemberOf` filter for join encounter visibility. Test signal: agents organically join guild, promotions fire with varied outcomes, rank changes traced.
 
@@ -60,7 +80,7 @@ Join encounter at guild halls (creates member_of edge with starting reputation).
 
 ---
 
-## 📐▶ TB-062 · Faction Social Encounters & Rank Bonuses (Phase 4)
+## ✅ TB-062 · Faction Social Encounters & Rank Bonuses (Phase 4)
 
 6 faction-scoped social templates (sparring, tavern, mentorship, rivalry, guild politics, joint expedition). Shared-faction filter in social encounter generation. Rank bonus application at integration points (reward multiplier, reputation walk bonus, scoring boost). Test signal: guild members interact socially, higher ranks get tangible bonuses, full loop running.
 
@@ -70,17 +90,13 @@ Join encounter at guild halls (creates member_of edge with starting reputation).
 
 ---
 
-## 📐▶ TB-063 · Faction UI & Visibility (Phase 5)
+## ✅ TB-063 · Faction UI & Visibility (Phase 5)
 
 Agent profile faction section (knowledge-gated: name → rank → reputation bar → full detail). HexChronicle faction events (joined, rank change, expelled, quest complete, promotion). AlertBar faction notifications (⚜ glyph, amber). DebugPanel factions tab (faction list, member table, reputation histogram, per-agent faction view). Guild hall signifier on HexMapV2. Test signal: player sees faction membership on agents, faction events in chronicle, developer can inspect full faction state.
 
 **Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 5
 **Parent:** TB-058
 **Depends on:** TB-059 (can start after Phase 1, expands as later phases land)
-
-**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 4
-**Parent:** TB-058
-**Depends on:** TB-059 (can run parallel with TB-061)
 
 ---
 
@@ -569,4 +585,4 @@ TB-035 engine modules are implemented and tested but multiple subsystems are not
 - Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
 
 **Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅                                                                                                                
+**Depends on:** TB-035 (✅                                                                                                                    
