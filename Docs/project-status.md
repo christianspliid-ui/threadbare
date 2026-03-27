@@ -3,15 +3,19 @@
 > Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Debug & Tuning Tooling**
+**TB-058: Faction Vertical Slice (Adventuring Guild)**
+
+**In progress:**
+- 🏗️ TB-063: Faction UI & Visibility (Phase 5) — agent profile faction section, chronicle events, alert notifications, debug panel tab, guild hall signifier
 
 **Recent completions:**
 - ✅ TB-065: Encounter Modal Prose Variables (2026-03-27) — resolve {actor}, {adj}, {verb}, {noun}, {action} placeholders in TieredEncounterModal.
-- ✅ TB-064: In-Game Settings Panel (2026-03-27) — single gear icon dropdown replaces fog+debug buttons. Display and Debug toggle sections. Escape/click-outside dismiss.
+- ✅ TB-064: In-Game Settings Panel (2026-03-27) — single gear icon dropdown replaces fog+debug buttons.
 - ✅ Reroute teleportation fix (2026-03-27) — agents no longer teleport back to origin on reroute.
-- ✅ TB-059: Faction Definition Schema & Guild Seeding (2026-03-27)
-- ✅ TB-057: Tick Health Monitor & Crash Log (2026-03-26)
-- ✅ TB-056: Agent Encounter Tuning (2026-03-26)
+- ✅ TB-062: Faction Social Encounters & Rank Bonuses (2026-03-27) — 6 faction-scoped social templates, shared-faction filter, 3 rank bonus types wired. 25 tests.
+- ✅ TB-061: Join & Promotion Encounters (2026-03-27) — lifecycle candidates, not_faction visibility filter, partial-success promotion. 32 tests.
+- ✅ TB-060: Quest Board & Reputation (2026-03-27) — 10 quest templates, reputation gain/decay/rank recalc.
+- ✅ TB-059: Schema & Seeding (2026-03-27) — FactionDefinition types, guild seeder, guild hall placement.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
