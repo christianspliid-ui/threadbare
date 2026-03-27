@@ -23,7 +23,7 @@ import { createBorderMesh } from './scene/BorderMesh';
 import { createCapitalMarkers } from './scene/CapitalMarkers';
 import { createSignifierMesh } from './scene/SignifierMesh';
 import { createLocationIconMesh, LOCATION_ICON_THRESHOLD } from './scene/LocationIconMesh';
-import { createCityModelMesh, disposeCityModelMesh } from './scene/CityModelMesh';
+import { createSettlementModelMesh, disposeSettlementModelMesh } from './scene/SettlementModelMesh';
 import type { LocationNode } from './scene/LocationIconMesh';
 import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
@@ -307,7 +307,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Scene group refs for fog layer culling and zoom matrix
     const signifierGroupRef  = useRef<THREE.Group | null>(null);
     const locationGroupRef   = useRef<THREE.Group | null>(null);
-    const cityModelGroupRef  = useRef<THREE.Group | null>(null);
+    const settlementModelGroupRef  = useRef<THREE.Group | null>(null);
     const roadGroupRef       = useRef<THREE.Group | null>(null);
     const riverGroupRef      = useRef<THREE.Group | null>(null);
     const gridLinesRef       = useRef<THREE.Mesh | null>(null);
@@ -542,9 +542,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Renders at same zoom tier as location icons (regional+).
         // Group is added to scene immediately; GLTF instances appear once loaded.
         if (locations && locations.length > 0) {
-          const cityModelGroup = createCityModelMesh(locations, scene);
-          cityModelGroup.visible = false; // Hidden until zoom reaches regional tier
-          cityModelGroupRef.current = cityModelGroup;
+          const settlementModelGroup = createSettlementModelMesh(locations, scene);
+          settlementModelGroup.visible = false; // Hidden until zoom reaches regional tier
+          settlementModelGroupRef.current = settlementModelGroup;
         }
 
         // Build agent sprites — single sprite per agent with material swap (Plan 06-04)
@@ -712,9 +712,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           tileIndexByKeyRef.current = null;
           signifierGroupRef.current = null;
           locationGroupRef.current = null;
-          if (cityModelGroupRef.current) {
-            disposeCityModelMesh(cityModelGroupRef.current);
-            cityModelGroupRef.current = null;
+          if (settlementModelGroupRef.current) {
+            disposeSettlementModelMesh(settlementModelGroupRef.current);
+            settlementModelGroupRef.current = null;
           }
           roadGroupRef.current = null;
           riverGroupRef.current = null;
@@ -869,7 +869,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       groups: {
         signifiers: signifierGroupRef,
         locations: locationGroupRef,
-        cityModels: cityModelGroupRef,
+        cityModels: settlementModelGroupRef,
         roads: roadGroupRef,
         rivers: riverGroupRef,
         gridLines: gridLinesRef,
