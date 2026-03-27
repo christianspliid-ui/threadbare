@@ -8,7 +8,34 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-068**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-072**.
+
+---
+
+## 💡 TB-071 · Economy Second Pass — Dynamic System Connections (2026-03-27)
+
+Make the economy dynamic by connecting encounters, factions, locations, and actions into the prosperity/wealth/trade systems. Key opportunities: encounter outcomes generating prosperity shocks, economic context modifying encounter scoring, wealth spending crossover actions (Gold→Iron/Shadow/Heart/Stone), trade route lifecycle driven by agent behavior (bandits, patrols, guild competition), unrest from economic causes (inequality, monopoly), divine economic interventions, and resource consumption creating scarcity pressure.
+
+**Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-economy-second-pass.md`
+**Depends on:** Gold Reach Phase 1-2 (✅), Faction Vertical Slice (✅), Control Effects (✅), Encounter Reward Wiring (✅)
+
+---
+
+## 📐 TB-070 · Agent Character Sheet Overhaul — Tabbed Layout & Narrative Revelation (2026-03-27)
+
+Overhaul the agent character sheet (AgentProfileModal) from a long-scroll list of sections to a 5-tab layout (Overview, Prowess, Bonds, Journey, Chronicle). Replace scalar familiarity-gated visibility with a multi-faceted knowledge model (`AgentKnowledge`) where individual data points — values, domains, bonds, ambitions — are revealed through specific narrative interactions (witnessing encounters, divine actions, gossip, co-location) rather than crossing a number threshold. Includes new action cards for deliberate discovery (Observe, Scry, Whisper Insight, Dream Sending) and an `interactionDepth` accumulator. Backward-compatible with existing familiarity system.
+
+**Design doc:** `Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`
+**Depends on:** Familiarity system (✅), Encounter system (✅), Social Fabric design (✅), Faction Vertical Slice (✅)
+**Implementation phases:** 4 phases (knowledge facet infrastructure → tabbed modal UI → revelation notifications → action cards)
+
+---
+
+## 💡 TB-069 · Location Non-Agent Characters (NPCs) (2026-03-27)
+
+Locations should be populated with non-agent characters — named or unnamed NPCs that give places a sense of life and population without being full graph-walking agents. Think innkeepers, market vendors, town guards, wandering scholars, shrine keepers. They provide flavor, potential encounter hooks, quest givers, and a sense that the world exists beyond the player's spotlight agents. Design questions: how are NPCs represented (lightweight graph nodes? location properties? a new sublocation feature?), how do they interact with encounters and the action system, can agents have relationships with them, and do they ever "graduate" to full agent status?
+
+**Brainstorm:** `brainstorm-location-npcs.md`
 
 ---
 
@@ -19,16 +46,6 @@ Three features expanding the notification system: (1) clickable notifications th
 **Design doc:** `Docs/plans/2026-03-27-notification-expansion-design.md`
 **Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
 **Depends on:** SettingsPanel (TB-064, ✅)
-
----
-
-## 📐▶ TB-066 · Palette Theme System — Feature-Flagged Color Schemes (2026-03-27)
-
-Runtime-switchable hex map color palettes via Settings panel and URL param. Introduces "Dark Parchment" alternative (aged sepia/umber, 15–45% brightness) alongside existing "Golden Hour". Module-level palette singleton, no React context — consumed deep in Three.js mesh builders. Theme switch triggers full hex map rebuild. 13 files touched, no new tick phases.
-
-**Design doc:** `Docs/plans/2026-03-27-palette-theme-system-design.md`
-**Visual reference:** `Design/palette-experiment.html` (open in browser to compare 6 palettes side by side)
-**Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
 
 ---
 
@@ -397,6 +414,7 @@ Ideas that need significant design work or aren't urgent.
 - **TB-027** · Bonds/leverage system between agents
 - **TB-028** · Resources system v2 (production chains, scarcity)
 - **TB-029** · Ascendant Creation Experience — guided flow for the player to create and customize Ascendants (powerful former mortals). Domain capability selection, sphere alignment, visual identity, backstory generation within constraints.
+- **TB-068** · Tilted Camera View — Middle-mouse pitch control for 3/4 oblique map view. Major arch change: camera math, d3-zoom coord mapping, frustum calc, sprite billboarding, hex picking. Needs design decisions on dynamic vs fixed tilt, ortho vs perspective, angle limits.
 
 ---
 
@@ -587,8 +605,4 @@ TB-035 engine modules are implemented and tested but multiple subsystems are not
 - Surface `encounterNotifications` in a player-facing component (ToastStack, NarrativeLog, or new notification widget)
 - Call `enrichProse()` in vignette/encounter rendering paths before displaying text
 - Emit `return_resolution` and `ripple_consequence` traces from returnEngine.ts where outcomes are computed
-- Add attention mode toggle UI to agent thread panel or encounter notification (thread tier gated)
-- Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
-
-**Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅                                                                                                                    
+- Add attention mode toggle UI to agent thread panel or encou

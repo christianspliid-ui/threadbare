@@ -9,6 +9,47 @@
 
 ---
 
+### 2026-03-27: TB-070 Agent Character Sheet Overhaul — Design Complete
+
+**Context:** Full audit of all agent-relevant information across implemented systems and design docs, followed by a design for overhauling the character sheet with tabbed layout and narrative revelation.
+
+**What Cowork did:**
+- Audited all 15+ sections of current AgentProfileModal, all engine systems, and 8 design docs
+- Wrote comprehensive design doc: `Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`
+- Added TB-070 to BACKLOG.md at 📐 state
+
+**Key design decisions:**
+1. **Tabs not scroll** — 5 tabs (Overview, Prowess, Bonds, Journey, Chronicle) replace the single scrolling modal
+2. **Knowledge facets** — New `AgentKnowledge` type with per-facet revelation (values, domains, bonds, ambitions each tracked independently)
+3. **Narrative discovery** — Facets earned through witnessing encounters, divine actions, gossip, co-location — not familiarity thresholds
+4. **Backward compatible** — Existing `familiarityMap` preserved as base layer; `AgentKnowledge` is additive overlay
+5. **New orchestrator phase** — `phaseInteractionDepth` at position 4.6
+
+**Action for Claude Code:**
+- [ ] Review design doc, raise any concerns
+- [ ] Implement Phase 1 (knowledge facet infrastructure) when ready
+- [ ] Four implementation phases documented in design — can be done incrementally
+
+---
+
+### 2026-03-27: Weekly hygiene sweep findings (automated)
+
+**Context:** Automated weekly hygiene run found two corrupted coordination files and one duplicate BACKLOG entry. Cowork fixed the files. See below for follow-up actions needed from Claude Code.
+
+**What Cowork already did:**
+- Restored `HANDOVER.md` from clean palette backup (`HANDOVER.md.bak.2026-03-27-palette`, 75,021 bytes, 0 null bytes). The corrupted version had 12,103 null bytes starting at byte 69,176.
+- Stripped 222 trailing null bytes from `ROADMAP.md`.
+- Removed duplicate `📐▶ TB-066` entry from `BACKLOG.md` (the `✅ TB-066` entry was retained).
+- All three fixes were snapshotted to `.planning/.versions/` before write.
+
+**Action for Claude Code:**
+- [ ] **Archive acted-on HANDOVER entries:** All active entries below this one (TB-064, TB-058, TB-056, TB-055, and older entries from 2026-03-26) are already ✅ in BACKLOG.md. Move them to the "Completed" section at the bottom of this file.
+- [ ] **Verify TB-067 coverage:** The restored HANDOVER.md predates TB-067 (Notification Expansion). Confirm all TB-067 work is shipped (it is per project-status.md — no action needed, just verify and check off).
+- [ ] **Run `/retrospective`:** 12+ impediments logged, no retrospective ever run. The impediment log has patterns worth addressing (VM corruption recurrence, GSD subagent missing-file commits). Suggest scheduling this soon.
+- [ ] **Log new impediment:** Add an entry to `Docs/impediments.md` for the HANDOVER.md + ROADMAP.md corruption event (2026-03-27). Category: environment. Root cause: same VM sync null-byte issue as impediment #11. Consider whether `.gitattributes` (added in latest commit) mitigates or whether coordination files need post-write integrity checks.
+
+**Files changed by Cowork:** `HANDOVER.md` (restored), `ROADMAP.md` (null bytes stripped), `BACKLOG.md` (duplicate removed). All need committing.
+
 ---
 
 ### 2026-03-27: TB-064 — In-Game Settings Panel (⚙ gear menu, top-right)
@@ -858,6 +899,48 @@ This takes the center 896×896 square from the 896×1200 source (cropping ~152px
 8. Visual verification at `?view=game` across all three zoom tiers after agents move
 
 **Plan:** `Docs/plans/2026-03-25-agent-sprite-scale-and-zoom-fix.md`
+
+---
+
+### 2026-03-27: TB-065 — Encounter Modal Prose Variables Unresolved (bug fix)
+
+**Context:** The newly implemented TieredEncounterModal renders raw template placeholders (`{actor}`, `{adj}`, `{verb}`, `{noun}`, `{target}`) instead of resolved prose. The modal correctly calls `enrichProse()` at lines ~700-726, but `enrichProse()` was designed for agent-narrative context (`{name}`, `{location}`, `{culture}`, pronouns, artifacts, allies) and does NOT handle encounter-specific placeholders.
+
+The orchestrator already has working resolution logic for these exact variables in the dilemma path (lines ~540-553 in `orchestrator.ts`) — it uses `DILEMMA_ADJ_POOL`, `DILEMMA_NOUN_POOL`, `DILEMMA_VERB_POOL` with seeded PRNG index selection. But this code only runs for dilemma resolution events, not for encounter template rendering.
+
+**Root cause:** Two incompatible placeholder vocabularies — encounter templates (`encounter-content.ts`, `culture-content.ts`) use `{actor}/{target}/{adj}/{verb}/{noun}` while `enrichProse()` (`proseEnrichment.ts`) handles `{name}/{location}/{culture}/{they}/{them}` etc. The encounter system was wired to enrichProse but its templates were authored with a different variable convention.
+
+**Fix approach — extend `enrichProse()` to handle encounter variables:**
+
+1. **Map `{actor}` → agent name.** In `enrichProse()`, add `.replace(/{actor}/g, ctx.agentName)` (same as `{name}` but different token). Similarly `{target}` → could default to empty or accept an optional `targetName` on `NarrativeContext`.
+
+2. **Add word pool resolution for `{adj}`, `{verb}`, `{noun}`.** Extract the pool arrays from `orchestrator.ts` dilemma logic into a shared location (e.g. `src/data/prose-word-pools.ts` or add to `prose-layer-content.ts`). In `enrichProse()`, select from pools using seeded PRNG (agent ID hash or encounter step index as seed) — exactly how the dilemma path already does it.
+
+3. **Verify `{target}` context.** Some encounter templates reference `{target}` for a second actor. Check whether `NarrativeContext` needs a new optional `targetName?: string` field, populated from the encounter's participant list.
+
+4. **DRY up the orchestrator.** Once `enrichProse()` handles these variables, the dilemma-specific `.replace()` chain in `orchestrator.ts` (~540-553) can be removed — just call `enrichProse()` instead.
+
+**Files to modify:**
+- `src/engine/proseEnrichment.ts` — add `{actor}`, `{target}`, `{adj}`, `{verb}`, `{noun}` resolution
+- `src/types/prose.ts` — optionally extend `NarrativeContext` with `targetName?`
+- `src/engine/orchestrator.ts` — extract word pools, DRY up dilemma path
+- `src/data/prose-layer-content.ts` or new `prose-word-pools.ts` — shared word pool arrays
+
+**NFP compliance:**
+- Tunability: word pools are data arrays, easily extended
+- Determinism: PRNG-seeded index selection (already proven in dilemma path)
+- Inspectability: enrichProse already emits traces; new variables will appear in resolved output
+- Fail-soft: unresolved `{actor}` should fallback to empty string or "someone", not crash
+
+**Action items for Claude Code:**
+- [ ] Read this handover + inspect `proseEnrichment.ts` and `orchestrator.ts` dilemma logic (~540-553)
+- [ ] Extract word pools from orchestrator into shared data file
+- [ ] Extend `enrichProse()` with `{actor}`, `{target}`, `{adj}`, `{verb}`, `{noun}` resolution
+- [ ] Add/extend `NarrativeContext` with optional `targetName` if needed for `{target}`
+- [ ] DRY up orchestrator dilemma path to use enrichProse
+- [ ] Test: unit test that enrichProse resolves all encounter placeholder types
+- [ ] Test: contract test — real encounter template from encounter-content.ts → enrichProse → no unresolved `{...}` tokens
+- [ ] Visual verification at `?view=game` — trigger an encounter, confirm prose renders with resolved names/adjectives
 
 ---
 
