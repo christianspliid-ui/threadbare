@@ -13,6 +13,9 @@ import type { EncounterProgress } from '../../types/encounter';
 import type { WebGLDiagnosticsSnapshot } from '../HexMapV2/diagnostics/WebGLDiagnostics';
 import { WebGLDebugTab } from './debug/WebGLDebugTab';
 import type { RetinueAgent } from '../../engine/retinue';
+import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
+import type { MemberOfEdgeProperties } from '../../types/disposition';
+import { computeRankFromReputation } from '../../types/faction';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -47,7 +50,7 @@ interface DebugPanelProps {
   seed?: number;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -980,6 +983,110 @@ function JourneyDebugContent({
   );
 }
 
+// ─── Faction Debug Tab ──────────────────────────────────────────────
+
+function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
+  if (!graph) return <div style={EMPTY_STATE_STYLE}>No graph loaded.</div>;
+
+  const factionData = useMemo(() => {
+    const results: Array<{
+      defId: string;
+      name: string;
+      factionNodeId: string;
+      members: Array<{ id: string; name: string; rank: string; reputation: number }>;
+    }> = [];
+
+    for (const [defId, def] of FACTION_DEFINITIONS) {
+      // Find faction node
+      const factionNodes = graph.getNodesByType('actor')
+        .filter(n => n.properties.factionDefId === defId);
+      if (factionNodes.length === 0) continue;
+
+      const factionNode = factionNodes[0];
+
+      // Find all member_of edges pointing to this faction
+      const memberEdges = graph.getIncomingEdges(factionNode.id, 'member_of');
+      const members = memberEdges.map(edge => {
+        const agentNode = graph.getNode(edge.source);
+        const props = edge.properties as Partial<MemberOfEdgeProperties>;
+        const rep = props.reputation ?? 0;
+        const rank = computeRankFromReputation(rep, def);
+        return {
+          id: edge.source,
+          name: agentNode?.name ?? '?',
+          rank: rank.name,
+          reputation: rep,
+        };
+      }).sort((a, b) => b.reputation - a.reputation);
+
+      results.push({
+        defId,
+        name: factionNode.name,
+        factionNodeId: factionNode.id,
+        members,
+      });
+    }
+    return results;
+  }, [graph]);
+
+  if (factionData.length === 0) {
+    return <div style={EMPTY_STATE_STYLE}>No factions found in graph.</div>;
+  }
+
+  return (
+    <div data-testid="factions-tab-content">
+      {factionData.map(faction => (
+        <div key={faction.defId} style={{ marginBottom: '16px' }}>
+          <div style={{ padding: '8px 12px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '8px' }}>
+            <div style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '13px' }}>
+              {faction.name}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '2px' }}>
+              {faction.members.length} member{faction.members.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+          {faction.members.length === 0 ? (
+            <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+              No members
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {faction.members.map(member => (
+                <div
+                  key={member.id}
+                  style={{
+                    padding: '6px 12px',
+                    background: PANEL_STYLES.detailBg,
+                    border: `1px solid ${PANEL_STYLES.detailBorder}`,
+                    borderRadius: '4px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontSize: '12px',
+                  }}
+                >
+                  <div>
+                    <span style={{ color: 'var(--text-primary)' }}>{member.name}</span>
+                    <span style={{ color: 'var(--text-tertiary)', marginLeft: '8px' }}>{member.rank}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ width: '60px', height: '4px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{ width: `${Math.round(member.reputation * 100)}%`, height: '100%', background: 'var(--accent-gold)', borderRadius: '2px' }} />
+                    </div>
+                    <span style={{ color: 'var(--text-tertiary)', fontSize: '10px', fontVariantNumeric: 'tabular-nums' }}>
+                      {(member.reputation * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -1131,6 +1238,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'webgl')} onClick={() => setViewMode('webgl')}>
           WebGL
         </button>
+        <button style={getTabButtonStyle(viewMode === 'factions')} onClick={() => setViewMode('factions')}>
+          Factions
+        </button>
       </div>
 
       {/* Agent Follow Header with dropdown selector */}
@@ -1233,6 +1343,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             graph={graph}
             seed={seed != null ? String(seed) : undefined}
           />
+        ) : viewMode === 'factions' ? (
+          <FactionDebugContent graph={graph} />
         ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={effectiveAgentId}
