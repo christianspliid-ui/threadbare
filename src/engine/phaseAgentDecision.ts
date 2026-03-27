@@ -41,7 +41,7 @@ import { IDLE_SCORE_THRESHOLD } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
-import { getAgentLocationId } from './graphQueries';
+import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 
 /**
@@ -89,9 +89,17 @@ export function phaseAgentDecision(
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
 
-  // Get all individual actors
+  // Build set of avatar IDs to exclude from autonomous decision-making
+  const avatarNodeIds = new Set<string>();
+  if (state.ascendantId) {
+    for (const a of getAvatarsOf(graph, state.ascendantId)) {
+      avatarNodeIds.add(a.id);
+    }
+  }
+
+  // Get all individual actors, excluding the player's avatar
   const actors = graph.getNodesByType('actor').filter(
-    (n) => n.properties.actorType === 'individual',
+    (n) => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id),
   );
 
   for (const actor of actors) {
