@@ -61,16 +61,17 @@ function Header({ title, count, onBack, trailing }: HeaderProps) {
         borderBottom: '1px solid var(--border-subtle)',
       }}
     >
-      {onBack && (
-        <IconButton
-          icon={<span>←</span>}
-          size="sm"
-          aria-label="Back"
-          onClick={onBack}
-        />
-      )}
       <SectionHeading count={count}>{title}</SectionHeading>
       {trailing && <div style={{ marginLeft: 'auto' }}>{trailing}</div>}
+      {onBack && (
+        <IconButton
+          icon={<span>✕</span>}
+          size="sm"
+          aria-label="Close"
+          onClick={onBack}
+          style={{ marginLeft: trailing ? undefined : 'auto' }}
+        />
+      )}
     </div>
   );
 }

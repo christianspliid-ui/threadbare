@@ -11,7 +11,6 @@ import { getAttachmentGlyph } from './attachmentGlyphs';
 import { ProgressBar } from '../shared/ProgressBar';
 import { SectionHeading } from '../shared/SectionHeading';
 import { Modal } from '../shared/Modal';
-import { Button } from '../shared/Button';
 import { AttachmentDetailView } from './AttachmentDetailView';
 import type { AttachmentDetailData } from './AttachmentDetailView';
 import type { AttachmentFullEntry } from '../../engine/agentAttachments';
@@ -199,7 +198,15 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
   return (
     <Modal open={true} onClose={onClose} maxWidth={960}>
       {/* Header Zone */}
-      <div className="border-b p-6 pb-4" style={{ borderColor: 'var(--border-subtle)' }}>
+      <div className="border-b p-6 pb-4 relative" style={{ borderColor: 'var(--border-subtle)' }}>
+        <button
+          onClick={onClose}
+          aria-label={`Close profile for ${card.name}`}
+          className="absolute top-4 right-4 transition-colors text-lg"
+          style={{ color: 'var(--accent-gold)' }}
+        >
+          ✕
+        </button>
         <div className="flex gap-4 mb-3">
           {/* Portrait — 3:4 aspect ratio, click to expand */}
           <div
@@ -616,16 +623,6 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
         </div>
       )}
 
-      {/* Close Button */}
-      <Modal.Footer>
-        <Button
-          variant="secondary"
-          onClick={onClose}
-          aria-label={`Close profile for ${card.name}`}
-        >
-          Close
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 }

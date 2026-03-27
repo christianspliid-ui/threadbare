@@ -8,7 +8,87 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-058**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-066**.
+
+---
+
+## 📐▶ TB-065 · Encounter Modal Prose Variables Unresolved — bug (2026-03-27)
+
+TieredEncounterModal renders raw `{actor}`, `{adj}`, `{verb}`, `{noun}` placeholders. The modal calls `enrichProse()` but that function doesn't handle encounter-specific variables — only agent-narrative ones (`{name}`, `{location}`, etc.). Fix: extend `enrichProse()` with encounter variable resolution, extract shared word pools from orchestrator dilemma logic.
+
+**Handover:** `.planning/HANDOVER.md` → 2026-03-27 entry
+**Severity:** Visible to player — prose reads as broken templates
+
+---
+
+## 📐▶ TB-058 · Faction Vertical Slice — Adventuring Guild (2026-03-27)
+
+End-to-end faction system using a prototype Adventuring Guild. Proves the full loop: discover guild halls → join via encounter → do faction quests → build reputation → get promoted via encounter → access rank-gated content. Data-driven and generalizable for procedural faction generation. Four phases decomposed into TB-059–TB-062.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md`
+**Brainstorm:** `brainstorm-faction-vertical-slice.md`
+**Depends on:** Encounter system (✅), Social Fabric design (✅), Guild Seeding (✅), Tier Promotion (✅)
+
+---
+
+## 📐▶ TB-059 · Faction Definition Schema & Guild Seeding (Phase 1)
+
+FactionDefinition type with rank tiers, reach weights, encounter access, expulsion consequences. member_of edge extension (reputation, factionDefId). Adventuring Guild definition data. Generic `seedFactionFromDefinition()` that places guild hall sublocations at qualifying towns. Test signal: guild halls visible on map, faction node with reachPreferences in graph.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 1
+**Parent:** TB-058
+
+---
+
+## 📐▶ TB-060 · Quest Board & Reputation Tracking (Phase 2)
+
+10 quest templates (explore ruins, hunt monsters, survey wilds, escort, recover artifacts + senior/elite variants). `generateFactionQuestCandidates()` in agent decision phase — rank-gated, reach-weighted. Reputation gain on quest completion, per-tick decay via new orchestrator phase 7.15. Rank auto-computed from reputation thresholds. Test signal: agents receive faction quests, reputation changes visible in traces, decay observable over time.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 2
+**Parent:** TB-058
+**Depends on:** TB-059
+
+---
+
+## 📐▶ TB-061 · Join & Promotion Encounters (Phase 3)
+
+Join encounter at guild halls (creates member_of edge with starting reputation). Promotion encounter (threshold-triggered, narrative tension, partial success with complications). `factionOutcome.ts` for GraphOps on join/promote. `excludeIfMemberOf` filter for join encounter visibility. Test signal: agents organically join guild, promotions fire with varied outcomes, rank changes traced.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 3
+**Parent:** TB-058
+**Depends on:** TB-060
+
+---
+
+## 📐▶ TB-062 · Faction Social Encounters & Rank Bonuses (Phase 4)
+
+6 faction-scoped social templates (sparring, tavern, mentorship, rivalry, guild politics, joint expedition). Shared-faction filter in social encounter generation. Rank bonus application at integration points (reward multiplier, reputation walk bonus, scoring boost). Test signal: guild members interact socially, higher ranks get tangible bonuses, full loop running.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 4
+**Parent:** TB-058
+**Depends on:** TB-059 (can run parallel with TB-061)
+
+---
+
+## 📐▶ TB-063 · Faction UI & Visibility (Phase 5)
+
+Agent profile faction section (knowledge-gated: name → rank → reputation bar → full detail). HexChronicle faction events (joined, rank change, expelled, quest complete, promotion). AlertBar faction notifications (⚜ glyph, amber). DebugPanel factions tab (faction list, member table, reputation histogram, per-agent faction view). Guild hall signifier on HexMapV2. Test signal: player sees faction membership on agents, faction events in chronicle, developer can inspect full faction state.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 5
+**Parent:** TB-058
+**Depends on:** TB-059 (can start after Phase 1, expands as later phases land)
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md` → Phase 4
+**Parent:** TB-058
+**Depends on:** TB-059 (can run parallel with TB-061)
+
+---
+
+## ✅ TB-064 · In-Game Settings Panel (2026-03-27)
+
+Single ⚙ gear icon in the top-right topbar opens a dropdown panel with categorized toggle settings. Replaces the separate fog + debug icon buttons. Sections: Display (Fog of War toggle), Debug (Debug Trace Panel, Organic Shore). Panel closes on Escape or click-outside. Extensible for future settings.
+
+**Depends on:** None
 
 ---
 
@@ -489,4 +569,4 @@ TB-035 engine modules are implemented and tested but multiple subsystems are not
 - Add DebugPanel support: new tab or entries for journey state, encounter notifications, prose enrichment context
 
 **Wiring checklist:** `Docs/plans/wiring-checklist.md` (verify all integration points connected)
-**Depends on:** TB-035 (✅      
+**Depends on:** TB-035 (✅                                                                                                                

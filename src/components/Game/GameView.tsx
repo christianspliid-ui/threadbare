@@ -30,6 +30,8 @@ import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
 import { EssencePanel } from './EssencePanel';
 import { SimulationControls } from './SimulationControls';
 import { DoomBar } from './DoomBar';
+import { DoomClockDetail } from './DoomClockDetail';
+import { MandateDetail } from './MandateDetail';
 import { ActionDrawer } from './ActionDrawer';
 import { NarrativeLog } from './NarrativeLog';
 import { HarvestScreen } from './HarvestScreen';
@@ -54,9 +56,9 @@ import { WorldPulse } from './WorldPulse';
 import { ToastStack } from './ToastStack';
 import { AlertBar } from './AlertBar';
 import { RivalsButton } from './RivalsButton';
-import { SettingsPanel } from './SettingsPanel';
 import { IdentityChip } from './IdentityChip';
 import { EventPopup } from './EventPopup';
+import { SettingsPanel } from './SettingsPanel';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
 import { MeetingEncounterModal } from './MeetingEncounterModal';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
@@ -128,8 +130,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Debug: organic shore toggle ──
   const [showOrganicShore, setShowOrganicShore] = useState(false);
 
-  // ── Settings panel ──
+  // ── Settings panel state ──
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
+
+  // ── Doom clock and mandate detail modals ──
+  const [doomDetailOpen, setDoomDetailOpen] = useState(false);
+  const [mandateDetailOpen, setMandateDetailOpen] = useState(false);
 
   // ── View navigation hook ──
   const {
@@ -826,15 +832,32 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             backgroundColor: 'rgba(10, 10, 14, 0.4)',
           }}
         >
-          <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+          <div
+            role="button" tabIndex={0}
+            onClick={() => setDoomDetailOpen(true)}
+            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDoomDetailOpen(true); } }}
+            className="cursor-pointer"
+            style={{ minWidth: '140px' }}
+            aria-label="View doom clock details"
+          >
+            <DoomBar definition={gameState.doomDefinition} state={gameState.doomClock} />
+          </div>
           {gameState.mandateDefinition && gameState.mandateState && (
             <>
               <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
-              <div style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden' }}>
-                <MandateTracker
-                  definition={gameState.mandateDefinition}
-                  state={gameState.mandateState}
-                />
+              <div
+                style={{ maxWidth: '180px', minWidth: 0, overflow: 'hidden', cursor: 'pointer' }}
+                role="button" tabIndex={0}
+                onClick={() => setMandateDetailOpen(true)}
+                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMandateDetailOpen(true); } }}
+                aria-label="View mandate details"
+              >
+                <div style={{ pointerEvents: 'none' }}>
+                  <MandateTracker
+                    definition={gameState.mandateDefinition}
+                    state={gameState.mandateState}
+                  />
+                </div>
               </div>
             </>
           )}
@@ -1230,6 +1253,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           }}
           onChoice={handleJourneyChoice}
           vignette={activeVignette.data}
+        />
+      )}
+
+      {/* Doom clock detail modal */}
+      <DoomClockDetail
+        open={doomDetailOpen}
+        onClose={() => setDoomDetailOpen(false)}
+        definition={gameState.doomDefinition}
+        state={gameState.doomClock}
+      />
+
+      {/* Mandate detail modal */}
+      {gameState.mandateDefinition && gameState.mandateState && (
+        <MandateDetail
+          open={mandateDetailOpen}
+          onClose={() => setMandateDetailOpen(false)}
+          definition={gameState.mandateDefinition}
+          state={gameState.mandateState}
         />
       )}
 

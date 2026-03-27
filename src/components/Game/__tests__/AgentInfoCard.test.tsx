@@ -242,13 +242,13 @@ describe('AgentInfoCard', () => {
 
   it('shows back button', () => {
     render(<AgentInfoCard card={knownCard} onViewProfile={vi.fn()} onBack={vi.fn()} />);
-    expect(screen.getByRole('button', { name: /back|←/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /close|✕/ })).toBeInTheDocument();
   });
 
   it('calls onBack when back button clicked', () => {
     const onBack = vi.fn();
     render(<AgentInfoCard card={knownCard} onViewProfile={vi.fn()} onBack={onBack} />);
-    const backButton = screen.getByRole('button', { name: /back|←/ });
+    const backButton = screen.getByRole('button', { name: /close|✕/ });
     fireEvent.click(backButton);
     expect(onBack).toHaveBeenCalledOnce();
   });

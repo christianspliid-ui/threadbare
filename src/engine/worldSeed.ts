@@ -28,6 +28,7 @@ import {
 } from './culturalTraits';
 import type { CultureIdentity } from '../types/culture';
 import { detectRegions } from './regionDetection';
+import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
 import { generateRegionName } from './regionNaming';
 import { seedLocationResources } from './resourceSeeding';
@@ -447,22 +448,37 @@ export function seedWorld(
     locationIds.push(id);
   }
 
-  // Add bidirectional adjacency edges between locations
-  for (let i = 0; i < locationIds.length - 1; i++) {
-    graph.addEdge({
-      id: `edge_adj_${i}_fwd`,
-      source: locationIds[i],
-      target: locationIds[i + 1],
-      type: 'adjacent',
-      properties: {},
-    });
-    graph.addEdge({
-      id: `edge_adj_${i}_rev`,
-      source: locationIds[i + 1],
-      target: locationIds[i],
-      type: 'adjacent',
-      properties: {},
-    });
+  // Add bidirectional adjacency edges between locations that are hex-neighbors.
+  // Two locations are adjacent if their hex distance is exactly 1.
+  let adjEdgeIdx = 0;
+  for (let i = 0; i < locationIds.length; i++) {
+    const nodeA = graph.getNode(locationIds[i]);
+    if (!nodeA) continue;
+    const colA = nodeA.properties.hexCol as number;
+    const rowA = nodeA.properties.hexRow as number;
+    for (let j = i + 1; j < locationIds.length; j++) {
+      const nodeB = graph.getNode(locationIds[j]);
+      if (!nodeB) continue;
+      const colB = nodeB.properties.hexCol as number;
+      const rowB = nodeB.properties.hexRow as number;
+      if (hexDistance({ col: colA, row: rowA }, { col: colB, row: rowB }) === 1) {
+        graph.addEdge({
+          id: `edge_adj_${adjEdgeIdx}_fwd`,
+          source: locationIds[i],
+          target: locationIds[j],
+          type: 'adjacent',
+          properties: {},
+        });
+        graph.addEdge({
+          id: `edge_adj_${adjEdgeIdx}_rev`,
+          source: locationIds[j],
+          target: locationIds[i],
+          type: 'adjacent',
+          properties: {},
+        });
+        adjEdgeIdx++;
+      }
+    }
   }
 
   // ── Region → Location contains edges ────────────────────

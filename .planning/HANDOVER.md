@@ -11,6 +11,333 @@
 
 ---
 
+### 2026-03-27: TB-064 — In-Game Settings Panel (⚙ gear menu, top-right)
+
+**Context:** User wants a settings panel accessible from the top-right corner. A single ⚙ gear icon replaces the existing fog + debug icon buttons. Clicking the gear opens a dropdown panel with categorized toggle settings. The panel was prototyped in Cowork but lost to VM sync — code below is the exact implementation to apply.
+
+**Action items:**
+
+1. **Create `src/components/Game/SettingsPanel.tsx`** — paste the full component below
+2. **Modify `src/components/Game/GameView.tsx`** — three changes:
+   - Add import: `import { SettingsPanel } from './SettingsPanel';`
+   - Add state (near line 128, after `showOrganicShore`): `const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);`
+   - Replace the fog+debug icon `<div>` block (the `<div className="flex items-center gap-1">` containing the two `IconButton`s for fog-toggle and debug-toggle) with the settings gear + panel JSX below
+3. **Verify:** `npx tsc --noEmit`, `npx vite build`, `npm test`, visual check at `?view=game`
+
+**SettingsPanel.tsx — full file:**
+
+```tsx
+import { useEffect, useRef, useState } from 'react';
+import { IconButton } from '../shared/IconButton';
+
+interface SettingsPanelProps {
+  open: boolean;
+  onClose: () => void;
+  // Display settings
+  fogDisabled: boolean;
+  onToggleFog: () => void;
+  // Debug settings
+  debugPanelOpen: boolean;
+  onToggleDebug: () => void;
+  showOrganicShore: boolean;
+  onToggleOrganicShore: () => void;
+}
+
+export function SettingsPanel({
+  open,
+  onClose,
+  fogDisabled,
+  onToggleFog,
+  debugPanelOpen,
+  onToggleDebug,
+  showOrganicShore,
+  onToggleOrganicShore,
+}: SettingsPanelProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  // Handle Escape key and click-outside
+  useEffect(() => {
+    if (!open) {
+      setIsVisible(false);
+      return;
+    }
+
+    setIsVisible(true);
+
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [open, onClose]);
+
+  if (!isVisible) return null;
+
+  const panelStyle: React.CSSProperties = {
+    position: 'fixed',
+    top: '52px',
+    right: '8px',
+    width: '280px',
+    maxHeight: '85vh',
+    backgroundColor: 'rgba(10, 10, 14, 0.95)',
+    border: '1px solid rgba(212, 175, 55, 0.3)',
+    borderRadius: '8px',
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4)',
+    zIndex: 50,
+    display: 'flex',
+    flexDirection: 'column',
+    overflowY: 'auto',
+    fontFamily: 'var(--font-body)',
+  };
+
+  const headerStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '12px 16px',
+    borderBottom: '1px solid rgba(212, 175, 55, 0.2)',
+    flexShrink: 0,
+  };
+
+  const headerTitleStyle: React.CSSProperties = {
+    fontSize: '14px',
+    fontWeight: 600,
+    color: 'var(--text-primary)',
+  };
+
+  const contentStyle: React.CSSProperties = {
+    padding: '12px 0',
+    overflow: 'auto',
+  };
+
+  const sectionStyle: React.CSSProperties = {
+    paddingBottom: '8px',
+  };
+
+  const sectionHeaderStyle: React.CSSProperties = {
+    padding: '8px 16px 4px 16px',
+    fontSize: '11px',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.5px',
+    color: 'var(--text-tertiary)',
+  };
+
+  const settingRowStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: '8px 16px',
+    borderBottom: '1px solid rgba(212, 175, 55, 0.1)',
+  };
+
+  const settingLabelStyle: React.CSSProperties = {
+    fontSize: '13px',
+    color: 'var(--text-primary)',
+    flex: 1,
+  };
+
+  const toggleStyle = (enabled: boolean): React.CSSProperties => ({
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '36px',
+    height: '20px',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    backgroundColor: enabled
+      ? 'var(--accent-gold-glow)'
+      : 'rgba(100, 100, 110, 0.3)',
+    border: `1px solid ${
+      enabled ? 'var(--accent-gold-dim)' : 'rgba(100, 100, 110, 0.4)'
+    }`,
+    transition: 'background-color var(--anim-fast) ease, border-color var(--anim-fast) ease',
+  });
+
+  const toggleDotStyle = (enabled: boolean): React.CSSProperties => ({
+    width: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    backgroundColor: enabled ? 'var(--accent-gold)' : 'rgba(200, 200, 210, 0.5)',
+    transition: 'transform var(--anim-fast) ease',
+    transform: enabled ? 'translateX(8px)' : 'translateX(-8px)',
+  });
+
+  return (
+    <div
+      ref={panelRef}
+      style={panelStyle}
+      role="menu"
+      aria-label="Settings"
+    >
+      {/* Header */}
+      <div style={headerStyle}>
+        <h2 style={headerTitleStyle}>Settings</h2>
+        <IconButton
+          icon={<span>×</span>}
+          variant="close"
+          size="sm"
+          onClick={onClose}
+          aria-label="Close settings"
+        />
+      </div>
+
+      {/* Content */}
+      <div style={contentStyle}>
+        {/* Display Section */}
+        <div style={sectionStyle}>
+          <div style={sectionHeaderStyle}>Display</div>
+          <div style={settingRowStyle}>
+            <label style={settingLabelStyle}>Fog of War</label>
+            <button
+              onClick={onToggleFog}
+              style={toggleStyle(!fogDisabled)}
+              aria-label="Toggle fog of war"
+              title={fogDisabled ? 'Fog is off' : 'Fog is on'}
+            >
+              <div style={toggleDotStyle(!fogDisabled)} />
+            </button>
+          </div>
+        </div>
+
+        {/* Debug Section */}
+        <div style={sectionStyle}>
+          <div style={sectionHeaderStyle}>Debug</div>
+          <div style={settingRowStyle}>
+            <label style={settingLabelStyle}>Debug Trace Panel</label>
+            <button
+              onClick={onToggleDebug}
+              style={toggleStyle(debugPanelOpen)}
+              aria-label="Toggle debug trace panel"
+              title={debugPanelOpen ? 'Debug panel is open' : 'Debug panel is closed'}
+            >
+              <div style={toggleDotStyle(debugPanelOpen)} />
+            </button>
+          </div>
+          <div style={settingRowStyle}>
+            <label style={settingLabelStyle}>Organic Shore</label>
+            <button
+              onClick={onToggleOrganicShore}
+              style={toggleStyle(showOrganicShore)}
+              aria-label="Toggle organic shore"
+              title={showOrganicShore ? 'Organic shore is on' : 'Organic shore is off'}
+            >
+              <div style={toggleDotStyle(showOrganicShore)} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+**GameView.tsx — replacement JSX for the icon block:**
+
+Find this block (the `<div className="flex items-center gap-1">` containing fog-toggle and debug-toggle IconButtons) and replace with:
+
+```tsx
+<div className="flex items-center gap-1" style={{ position: 'relative' }}>
+  <IconButton
+    data-testid="settings-toggle"
+    icon={<span>⚙</span>}
+    active={settingsPanelOpen}
+    onClick={() => setSettingsPanelOpen(v => !v)}
+    title="Settings"
+    aria-label="Settings"
+  />
+  <SettingsPanel
+    open={settingsPanelOpen}
+    onClose={() => setSettingsPanelOpen(false)}
+    fogDisabled={fogDisabled}
+    onToggleFog={() => setFogDisabled(v => !v)}
+    debugPanelOpen={debugPanelOpen}
+    onToggleDebug={handleToggleDebug}
+    showOrganicShore={showOrganicShore}
+    onToggleOrganicShore={() => setShowOrganicShore(v => !v)}
+  />
+</div>
+```
+
+---
+
+### 2026-03-27: TB-058 — Faction Vertical Slice (Adventuring Guild)
+
+**Context:** User wants an end-to-end faction system using a prototype Adventuring Guild. Brainstormed extensively — covers discovery, joining, quests, reputation, decay/expulsion, promotion encounters, hierarchy, faction social encounters, and dynamic quest generation. The system must be data-driven and generalizable for procedural faction generation.
+
+**Design doc:** `Docs/plans/2026-03-27-faction-vertical-slice-design.md`
+**Brainstorm:** `brainstorm-faction-vertical-slice.md`
+
+**Action items — implement in order:**
+
+1. **TB-059 (Phase 1): Faction Definition Schema & Guild Seeding**
+   - New `src/types/faction.ts` with `FactionDefinition`, `FactionRankTier`, `FactionRankBonus`, `ExpulsionConsequence`
+   - New `src/data/faction-definitions.ts` with `ADVENTURING_GUILD_DEFINITION`
+   - Extend `MemberOfEdgeProperties` with `reputation: number` and `factionDefId: string`
+   - New `src/engine/factionSeeding.ts` — generic `seedFactionFromDefinition()` that creates faction node + guild hall sublocations at qualifying towns
+   - Call from `seedWorld()` to seed Adventuring Guild
+   - Existing `guildSeeding.ts` has the pattern (creates sublocations, derives reachPreferences) — follow that model
+   - Test: guild halls appear at 3–5 towns, faction node has reachPreferences, no agents pre-assigned
+
+2. **TB-060 (Phase 2): Quest Board & Reputation Tracking**
+   - New `src/data/faction-encounter-content.ts` with 10 Adventuring Guild quest templates (standard EncounterTemplate shape + FactionEncounterMeta)
+   - New `src/engine/factionQuestGeneration.ts` — called from `phaseAgentDecision`, generates faction quest candidates for members, rank-gated, reach-weighted
+   - New `src/engine/factionReputation.ts` — reputation gain on quest completion, decay per tick, rank recalculation
+   - New orchestrator phase 7.15 `phaseFactionReputationDecay`
+   - Wire reputation gain into encounter resolution path (when a faction quest step completes)
+   - Test: agents with member_of edges see faction quests in candidate list. Reputation changes visible in traces. Decay observable over 50+ ticks.
+
+3. **TB-061 (Phase 3): Join & Promotion Encounters**
+   - `ag.join` encounter template at guild hall sublocations — visible only to non-members
+   - `ag.promotion` encounter template — visible when reputation >= next tier threshold
+   - New `src/engine/factionOutcome.ts` — creates member_of edge on join success, updates rank on promotion success
+   - Partial success mechanic: roll within 0.10 of threshold → promoted with complication trait
+   - Wire into encounter resolution (after step completion, check if faction outcome needed)
+   - Test: agents travel to guild halls, join through gameplay, promotions fire with narrative variety
+
+4. **TB-062 (Phase 4): Faction Social & Rank Bonuses** (can parallel Phase 3)
+   - 6 faction-scoped social templates in social-encounter-content.ts
+   - Extend `generateSocialCandidates()` with shared-faction filter
+   - Apply rank bonuses from FactionDefinition at integration points: encounter rewards, reputation walk, scoring
+   - Test: guild members interact socially, higher ranks get measurable bonuses
+
+5. **TB-063 (Phase 5): Faction UI & Visibility** (can start after Phase 1, expand as later phases land)
+   - AgentProfileModal: new "Faction" section between Bonds and Traits, knowledge-gated (Touched=name, Drawn=+rank, Devoted=+reputation bar, Exalted=full detail)
+   - AgentDetailPanel: replace inline faction tag with small card (name + rank title + thin reputation bar)
+   - HexChronicle: faction event entries (joined, rank change, expelled, quest complete, promotion trial)
+   - AlertBar: new ⚜ glyph (#D4A574 amber) for faction events, notification tiers per event type
+   - DebugPanel: new "factions" tab (8th) — faction list, member table with reputation, histogram, per-agent faction view
+   - HexMapV2: guild hall signifier on signifier layer for guild_hall sublocation type
+   - Test: player sees faction membership on agents, events appear in chronicle, developer can inspect all faction state
+
+**Key design decisions (settled, do not revisit):**
+- Reputation is the single lever — rank, access, bonuses, expulsion all follow from it
+- Guild membership does NOT change how agents score non-guild encounters ("it's a job, not an identity")
+- Reputation decays naturally — no explicit expulsion mechanic needed
+- At reputation=0, membership is functionally dead (encounters disappear, bonuses stop)
+- Promotion is an encounter with tension — partial success grants promotion with complication
+- Quest board uses reach-weighted scoring (Layer 1). Leader priorities (Layer 2) and divine patronage (Layer 3) are future scope.
+- Adventuring Guild expulsion is mild (lose access). Other factions can have harsher consequences (data-driven).
+
+**Pre-implementation check:** Run the game for 30+ ticks and verify agents are not 95%+ idle (TB-056 fix). The faction system needs agents to actually move and do things.
+
+---
+
 ### 2026-03-26: TB-056 — Agent Encounter Tuning (Idle Death Spiral Fix)
 
 **Context:** User exported encounter logs for all 8 agents over 72 ticks (seed 42). Results: ~95% of all agent-ticks are IDLE. Only 2 encounter steps passed across the entire run (Dara and Isolde each passed one step 1, both failed step 2). Every encounter attempt shows `prob=0.05` (the floor clamp) and `score=0.00`. Three compounding bugs create a death spiral where agents can never do anything meaningful.

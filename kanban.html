@@ -149,13 +149,27 @@
     margin-top: 6px;
     flex-wrap: wrap;
   }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2px;
+  }
   .card-id {
     font-size: 10px;
     font-family: monospace;
     color: #fff;
     font-weight: 700;
-    margin-bottom: 2px;
     letter-spacing: 0.5px;
+  }
+  .card-relation {
+    font-size: 10px;
+    font-family: monospace;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: right;
+    white-space: nowrap;
   }
   .tag {
     font-size: 10px;
@@ -334,7 +348,7 @@ function parseBacklog(md) {
         if (emojiClean === emoji) { state = s; break; }
       }
 
-      currentItem = { id, state, title, desc: '', date, ready, frozen: false, dep: null, links: [] };
+      currentItem = { id, state, title, desc: '', date, ready, frozen: false, dep: null, parent: null, links: [] };
       continue;
     }
 
@@ -355,6 +369,7 @@ function parseBacklog(md) {
           ready: false,
           frozen: inIceBox,
           dep: null,
+          parent: null,
           links: [],
         };
         continue;
@@ -372,6 +387,7 @@ function parseBacklog(md) {
           ready: false,
           frozen: inIceBox,
           dep: null,
+          parent: null,
           links: [],
         };
         continue;
@@ -403,6 +419,13 @@ function parseBacklog(md) {
         }
       }
       if (isMetaLine) continue;
+
+      // Parent
+      const parentMatch = line.match(/\*\*Parent:\*\*\s*(TB-\d+)/);
+      if (parentMatch) {
+        currentItem.parent = parentMatch[1];
+        continue;
+      }
 
       // Dependencies
       const depMatch = line.match(/\*\*Depends on:\*\*\s*(.+)/);
@@ -467,6 +490,15 @@ function renderBoard(items) {
   const board = document.getElementById('board');
   board.innerHTML = '';
 
+  // Build parent→children map
+  const childrenOf = {}; // parentId → [{id, state}]
+  for (const item of items) {
+    if (item.parent) {
+      if (!childrenOf[item.parent]) childrenOf[item.parent] = [];
+      childrenOf[item.parent].push({ id: item.id, state: item.state });
+    }
+  }
+
   COLUMNS.forEach(col => {
     const colItems = items.filter(i => i.state === col.id);
     if (col.id === 'done') {
@@ -484,9 +516,22 @@ function renderBoard(items) {
       <div class="column-body">
         ${colItems.length === 0
           ? '<div class="empty-state">No items</div>'
-          : colItems.map(item => `
+          : colItems.map(item => {
+            // Build relation label
+            let relationHtml = '';
+            const children = childrenOf[item.id];
+            if (children) {
+              const doneCount = children.filter(c => c.state === 'done').length;
+              relationHtml = `<span class="card-relation">(${doneCount}/${children.length} done)</span>`;
+            } else if (item.parent) {
+              relationHtml = `<span class="card-relation">Child of ${item.parent}</span>`;
+            }
+            return `
             <div class="card">
-              ${item.id ? `<div class="card-id">${item.id}</div>` : ''}
+              <div class="card-header">
+                ${item.id ? `<span class="card-id">${item.id}</span>` : '<span></span>'}
+                ${relationHtml}
+              </div>
               <div class="card-title">${escHtml(item.title)}</div>
               ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
               <div class="card-meta">
@@ -497,7 +542,7 @@ function renderBoard(items) {
                 ${item.frozen ? '<span class="tag" style="background:#1a1a2a;color:#6a6a8a;">\u{1F9CA} ice box</span>' : ''}
               </div>
             </div>
-          `).join('')
+          `; }).join('')
         }
       </div>
     `;

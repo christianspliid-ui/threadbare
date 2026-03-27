@@ -123,7 +123,11 @@ export function buildHexMovementPath(
   const firstLocId = locationIds[0];
   const firstLocNode = graph.getNode(firstLocId);
   const firstTerrain = firstLocNode?.properties.terrain as TerrainType | undefined;
-  const firstEdgeCost = BASE_EDGE_TRAVERSAL_COST + (firstTerrain ? getTerrainTax(firstTerrain) : 0);
+  // 2-edge model: departure + arrival = 2 × BASE_EDGE_TRAVERSAL_COST + terrain tax
+  const srcTerrain = srcNode.properties.terrain as TerrainType | undefined;
+  const departureTax = srcTerrain ? getTerrainTax(srcTerrain) : 0;
+  const arrivalTax = firstTerrain ? getTerrainTax(firstTerrain) : 0;
+  const firstEdgeCost = Math.max(0.5, 2 * BASE_EDGE_TRAVERSAL_COST + departureTax + arrivalTax);
 
   const destinationId = locationIds[locationIds.length - 1];
 

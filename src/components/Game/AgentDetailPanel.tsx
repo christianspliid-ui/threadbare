@@ -76,8 +76,6 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
     <div className="flex flex-col h-full bg-stone-900 overflow-y-auto">
       {/* Header Bar */}
       <div className="flex items-center gap-3 px-4 py-3 bg-stone-800/90 border-b border-amber-900/30 flex-shrink-0">
-        <IconButton icon={<span>←</span>} size="sm" aria-label="back" onClick={onBack} />
-
         {/* Portrait thumbnail */}
         {detail.portraitUrl && (
           <div className="w-8 h-10 rounded overflow-hidden flex-shrink-0">
@@ -106,6 +104,8 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <span className="text-xs text-amber-400/80">{detail.tierName}</span>
           </div>
         </div>
+
+        <IconButton icon={<span>✕</span>} size="sm" aria-label="close" onClick={onBack} />
       </div>
 
       {/* Scrollable content */}

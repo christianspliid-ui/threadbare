@@ -448,12 +448,12 @@ const TitlePickerPanel = memo(function TitlePickerPanel({
           <h3 className="text-lg font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>Select Title for {agent.name}</h3>
           <button
             onClick={onBack}
-            aria-label="Back to Agent Picker"
-            title="Back"
+            aria-label="close"
+            title="Close"
             className="text-xl"
             style={{ color: 'var(--text-tertiary)' }}
           >
-            ←
+            ✕
           </button>
         </div>
 
