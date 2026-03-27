@@ -68,6 +68,12 @@ export interface TickEvent {
   hexCoords?: { col: number; row: number };
   /** Agent ID associated with this event — enables click-to-select on notifications */
   actorId?: string;
+  /** Encounter ID — populated by encounter phases for notification navigation */
+  encounterId?: string;
+  /** Faction ID — populated by social fabric phases for notification navigation */
+  factionId?: string;
+  /** Journey ID — populated by journey phases for notification navigation */
+  journeyId?: string;
 }
 
 // ─── Game State ─────────────────────────────────────────────────
