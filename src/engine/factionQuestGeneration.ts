@@ -6,17 +6,27 @@
  * by rank access, and produces EncounterCacheEntry candidates that merge into the
  * normal scoring pipeline.
  *
- * Design doc: Docs/plans/2026-03-27-faction-vertical-slice-design.md — Phase 2
+ * Also generates join and promotion lifecycle candidates (TB-061):
+ * - Join: visible to non-members at guild hall locations
+ * - Promotion: visible to members near next rank threshold
+ *
+ * Design doc: Docs/plans/2026-03-27-faction-vertical-slice-design.md — Phases 2-3
  * NFP: Tunability (questPriority, reach weights), Determinism (seeded PRNG),
  *       Fail-soft (missing data → skip), Inspectability (traces).
  */
 
 import type { WorldGraph } from './graph';
 import type { EncounterCacheEntry } from './encounterCache';
+import type { EncounterTemplate } from '../types/encounter';
 import type { FactionDefinition, FactionRankTier } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
-import { FACTION_DEFINITIONS } from '../data/faction-definitions';
-import { FACTION_ENCOUNTER_TEMPLATES, FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { FACTION_DEFINITIONS, PROMOTION_PARTIAL_SUCCESS_MARGIN } from '../data/faction-definitions';
+import {
+  FACTION_ENCOUNTER_TEMPLATES,
+  FACTION_ENCOUNTER_META,
+  FACTION_JOIN_TEMPLATE,
+  FACTION_PROMOTION_TEMPLATE,
+} from '../data/faction-encounter-content';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 
 // ─── Main Generator ──────────────────────────────────────────────────────
@@ -62,29 +72,12 @@ export function generateFactionQuestCandidates(
     for (const template of accessibleTemplates) {
       const meta = FACTION_ENCOUNTER_META.get(template.id);
 
-      // Compute total tick cost from step durations
-      const totalTickCost = template.steps.reduce(
-        (sum, step) => sum + (step.duration ?? 1), 0,
-      );
-
-      candidates.push({
-        templateId: template.id,
-        locationId,
-        sublocationId: null,
-        sublocationTypeId: null,
-        reachPrimary: template.reachPrimary,
-        reachSecondary: template.reachSecondary,
-        threatRating: template.threatRating,
-        encounterType: template.encounterType,
-        motivations: template.motivations,
+      candidates.push(buildCacheEntry(template, locationId, {
         visibleTo: [`faction:${edge.target}`],
-        requiresPresence: false, // Faction quests don't require location presence
-        remotePenalty: 0,
-        sphereAffinity: template.sphereAffinity,
+        requiresPresence: false,
         questPriority: template.questPriority ?? (meta?.questType === 'elite' ? 8.0 : meta?.questType === 'senior' ? 5.0 : 3.0),
-        totalTickCost,
         successRewardEstimate: meta?.reputationReward ?? 0.04,
-      });
+      }));
     }
   }
 
@@ -92,6 +85,41 @@ export function generateFactionQuestCandidates(
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────
+
+/**
+ * Build an EncounterCacheEntry from an encounter template with overrides.
+ */
+function buildCacheEntry(
+  template: EncounterTemplate,
+  locationId: string,
+  overrides: Partial<EncounterCacheEntry>,
+): EncounterCacheEntry {
+  const totalTickCost = template.steps.reduce(
+    (sum, step) => sum + (step.duration ?? 1), 0,
+  );
+
+  return {
+    templateId: template.id,
+    locationId,
+    sublocationId: null,
+    sublocationTypeId: null,
+    reachPrimary: template.reachPrimary,
+    reachSecondary: template.reachSecondary,
+    threatRating: template.threatRating,
+    encounterType: template.encounterType,
+    motivations: template.motivations,
+    requiresPresence: false,
+    remotePenalty: 0,
+    sphereAffinity: template.sphereAffinity,
+    questPriority: template.questPriority ?? 3.0,
+    totalTickCost,
+    successRewardEstimate: 0.04,
+    stepCount: template.steps.length,
+    stepDifficulties: template.steps.map(s => s.difficulty),
+    stepReaches: template.steps.map(s => s.reach),
+    ...overrides,
+  };
+}
 
 /**
  * Filter faction quest templates by rank access.
@@ -111,4 +139,92 @@ function getAccessibleTemplates(
     // Check if template ID matches any access prefix
     return accessPrefixes.some(prefix => template.id.startsWith(prefix));
   });
+}
+
+// ─── Lifecycle Candidates (Join & Promotion) — TB-061 ────────────────────
+
+/**
+ * Generate faction join and promotion lifecycle candidates for a given agent.
+ *
+ * Join candidates:
+ *   - Generated for ALL agents (not just members) at locations with guild halls
+ *   - Uses `not_faction:<defId>` visibility filter so members are excluded
+ *
+ * Promotion candidates:
+ *   - Generated for members whose reputation is within striking distance
+ *     of the next rank threshold (within PROMOTION_PARTIAL_SUCCESS_MARGIN)
+ *   - Must be at a location with a guild hall sublocation
+ */
+export function generateFactionLifecycleCandidates(
+  graph: WorldGraph,
+  agentId: string,
+  locationId: string,
+): EncounterCacheEntry[] {
+  const candidates: EncounterCacheEntry[] = [];
+
+  // Check if current location has any guild hall sublocations
+  const sublocations = graph.getOutgoingEdges(locationId, 'contains')
+    .map(e => graph.getNode(e.target))
+    .filter(n => n && n.properties?.locationSubtype === 'guild-hall');
+
+  if (sublocations.length === 0) return candidates;
+
+  // Find the guild hall's sublocation ID (first one)
+  const guildHallNode = sublocations[0]!;
+  const guildHallId = guildHallNode.id;
+
+  // Determine which faction this guild hall belongs to
+  const factionDefId = guildHallNode.properties?.factionDefId as string | undefined;
+  if (!factionDefId) return candidates;
+
+  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  if (!definition) return candidates;
+
+  // Check if agent is already a member of this faction
+  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+    .filter(e => {
+      const props = e.properties as Partial<MemberOfEdgeProperties>;
+      return props.factionDefId === factionDefId;
+    });
+
+  const isMember = memberEdges.length > 0;
+
+  if (!isMember) {
+    // ── Join candidate ──
+    candidates.push(buildCacheEntry(FACTION_JOIN_TEMPLATE, locationId, {
+      sublocationId: guildHallId,
+      sublocationTypeId: 'sublocation-type.guild-hall',
+      visibleTo: [`not_faction:${factionDefId}`],
+      requiresPresence: true,
+      questPriority: FACTION_JOIN_TEMPLATE.questPriority ?? 6.0,
+      successRewardEstimate: 0.05,
+    }));
+  } else {
+    // ── Promotion candidate (members only) ──
+    const edge = memberEdges[0];
+    const props = edge.properties as Partial<MemberOfEdgeProperties>;
+    const reputation = props.reputation ?? 0;
+    const currentRank = computeRankFromReputation(reputation, definition);
+
+    // Find next rank tier
+    const currentTierIndex = definition.rankTiers.indexOf(currentRank);
+    if (currentTierIndex >= 0 && currentTierIndex < definition.rankTiers.length - 1) {
+      const nextTier = definition.rankTiers[currentTierIndex + 1];
+      const gap = nextTier.minReputation - reputation;
+
+      // Only offer promotion if within partial-success margin of next threshold
+      if (gap <= PROMOTION_PARTIAL_SUCCESS_MARGIN) {
+        candidates.push(buildCacheEntry(FACTION_PROMOTION_TEMPLATE, locationId, {
+          sublocationId: guildHallId,
+          sublocationTypeId: 'sublocation-type.guild-hall',
+          visibleTo: [`faction:${edge.target}`],
+          requiresPresence: true,
+          questPriority: FACTION_PROMOTION_TEMPLATE.questPriority ?? 7.0,
+          successRewardEstimate: 0.05,
+        }));
+      }
+    }
+  }
+
+  return candidates;
 }

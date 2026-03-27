@@ -19,6 +19,8 @@ const FACTION_DIFFICULTY_BASE = 25;
 const FACTION_DIFFICULTY_STEP = 10;
 const FACTION_SENIOR_BASE = 35;
 const FACTION_ELITE_BASE = 45;
+const FACTION_JOIN_DIFFICULTY = 20;
+const FACTION_PROMOTION_DIFFICULTY = 35;
 
 // ─── Faction Encounter Metadata Registry ─────────────────────────────────
 
@@ -27,6 +29,10 @@ const FACTION_ELITE_BASE = 45;
  * Keyed separately from the template so EncounterTemplate stays standard.
  */
 export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> = new Map([
+  // Join & Promotion (TB-061)
+  ['ag.join', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.0, questType: 'standard' }],
+  ['ag.promotion', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.0, questType: 'standard' }],
+  // Standard quests
   ['ag.quest.ruin_delve', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.04, questType: 'standard' }],
   ['ag.quest.monster_hunt', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.04, questType: 'standard' }],
   ['ag.quest.wilderness_survey', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.04, questType: 'standard' }],
@@ -429,13 +435,100 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   },
 ];
 
-// ─── Lookup ──────────────────────────────────────────────────────────────
+// ─── Join & Promotion Templates (TB-061) ────────────────────────────────
 
 /**
- * Look up a faction encounter template by ID.
+ * Faction join encounter — appears at guild hall sublocations,
+ * visible only to non-members (excludeIfMemberOf filter in questVisibility).
+ */
+export const FACTION_JOIN_TEMPLATE: EncounterTemplate = {
+  id: 'ag.join',
+  name: 'Petition the Adventurers Guild',
+  locationTypes: ['town', 'city', 'capital'],
+  sublocationTypes: ['sublocation-type.guild-hall'],
+  steps: [
+    {
+      id: 'ag.join.1',
+      name: 'Present Yourself',
+      narrative: 'The guild hall buzzes with activity. A clerk looks up from the ledger as you approach.',
+      reach: 'heart',
+      difficulty: FACTION_JOIN_DIFFICULTY,
+      duration: 1,
+      onSuccess: { narrative: 'The clerk nods. "You look capable enough. Sign the charter."' },
+      onFailure: { narrative: 'The clerk shakes their head. "Come back when you have something to show for yourself."' },
+    },
+    {
+      id: 'ag.join.2',
+      name: 'Sign the Charter',
+      narrative: 'The guild charter lists the rights and obligations of membership. Your quill hovers.',
+      reach: 'eye',
+      difficulty: FACTION_JOIN_DIFFICULTY,
+      duration: 1,
+      onSuccess: { narrative: 'Your name joins the register. You are now a Journeyman of the Adventurers Guild.' },
+      onFailure: { narrative: 'A veteran objects to your admission. The clerk withdraws the charter.' },
+    },
+  ],
+  reachPrimary: 'heart',
+  reachSecondary: 'eye',
+  encounterType: 'hire',
+  threatRating: 'easy',
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.hire,
+  questPriority: 6.0, // High priority — joining a faction is an important life event
+};
+
+/**
+ * Faction promotion encounter — appears when reputation >= next tier threshold.
+ * Partial success mechanic: roll within PROMOTION_PARTIAL_SUCCESS_MARGIN of threshold → promoted with complication.
+ */
+export const FACTION_PROMOTION_TEMPLATE: EncounterTemplate = {
+  id: 'ag.promotion',
+  name: 'Guild Promotion Trial',
+  locationTypes: ['town', 'city', 'capital'],
+  sublocationTypes: ['sublocation-type.guild-hall'],
+  steps: [
+    {
+      id: 'ag.promotion.1',
+      name: 'The Trial Begins',
+      narrative: 'The guild masters have summoned you. Your deeds speak well, but the trial must be passed.',
+      reach: 'iron',
+      difficulty: FACTION_PROMOTION_DIFFICULTY,
+      duration: 2,
+      onSuccess: { narrative: 'Your blade and resolve impress the judges.' },
+      onFailure: { narrative: 'The trial reveals gaps in your readiness. Not yet.' },
+    },
+    {
+      id: 'ag.promotion.2',
+      name: 'Prove Your Worth',
+      narrative: 'A final test — not of skill alone, but of character.',
+      reach: 'heart',
+      difficulty: FACTION_PROMOTION_DIFFICULTY + FACTION_DIFFICULTY_STEP,
+      duration: 2,
+      onSuccess: { narrative: 'The guild masters rise. "You have earned this. Welcome to your new rank."', tierPromotionEligible: true },
+      onFailure: { narrative: 'The masters confer in whispers. "Not this time. Continue to prove yourself."' },
+    },
+  ],
+  reachPrimary: 'iron',
+  reachSecondary: 'heart',
+  encounterType: 'lead',
+  threatRating: 'moderate',
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+  questPriority: 7.0, // Very high — promotion is a major milestone
+};
+
+// ─── Lookup ──────────────────────────────────────────────────────────────
+
+/** All faction lifecycle templates (join, promotion) — separate from quest templates. */
+export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
+  FACTION_JOIN_TEMPLATE,
+  FACTION_PROMOTION_TEMPLATE,
+];
+
+/**
+ * Look up a faction encounter template by ID (quests + lifecycle).
  */
 export function getFactionEncounterById(id: string): EncounterTemplate | undefined {
-  return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id);
+  return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
+    ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id);
 }
 
 /**
