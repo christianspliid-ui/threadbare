@@ -6,6 +6,7 @@
 **TB-058: Faction Vertical Slice (Adventuring Guild)** — All 5 phases complete.
 
 **Recent completions:**
+- ✅ TB-066: Palette Theme System (2026-03-27) — feature-flagged color scheme with Golden Hour and Dark Parchment themes. 11 scene files refactored, settings panel selector, ?palette= URL param. 51 tests.
 - ✅ Avatar autonomous movement fix (2026-03-27) — excluded avatar from phaseAgentDecision so player character no longer moves autonomously after entering hexes with other agents.
 - ✅ TB-063: Faction UI & Visibility (2026-03-27) — agent profile faction section, faction TickEvents (join/promotion/demotion), alert glyphs, debug panel Factions tab. 16 tests.
 - ✅ TB-065: Encounter Modal Prose Variables (2026-03-27) — resolve {actor}, {adj}, {verb}, {noun}, {action} placeholders in TieredEncounterModal.
