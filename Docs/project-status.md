@@ -6,6 +6,7 @@
 **Debug & Tuning Tooling**
 
 **Recent completions:**
+- ✅ TB-065: Encounter Modal Prose Variables (2026-03-27) — resolve {actor}, {adj}, {verb}, {noun}, {action} placeholders in TieredEncounterModal.
 - ✅ TB-064: In-Game Settings Panel (2026-03-27) — single gear icon dropdown replaces fog+debug buttons. Display and Debug toggle sections. Escape/click-outside dismiss.
 - ✅ Reroute teleportation fix (2026-03-27) — agents no longer teleport back to origin on reroute.
 - ✅ TB-059: Faction Definition Schema & Guild Seeding (2026-03-27)

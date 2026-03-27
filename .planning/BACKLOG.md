@@ -12,7 +12,7 @@
 
 ---
 
-## 📐▶ TB-065 · Encounter Modal Prose Variables Unresolved — bug (2026-03-27)
+## ✅ TB-065 · Encounter Modal Prose Variables Unresolved — bug (2026-03-27)
 
 TieredEncounterModal renders raw `{actor}`, `{adj}`, `{verb}`, `{noun}` placeholders. The modal calls `enrichProse()` but that function doesn't handle encounter-specific variables — only agent-narrative ones (`{name}`, `{location}`, etc.). Fix: extend `enrichProse()` with encounter variable resolution, extract shared word pools from orchestrator dilemma logic.
 
