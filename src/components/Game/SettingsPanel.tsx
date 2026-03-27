@@ -25,16 +25,10 @@ export function SettingsPanel({
   onToggleOrganicShore,
 }: SettingsPanelProps) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
 
   // Handle Escape key and click-outside
   useEffect(() => {
-    if (!open) {
-      setIsVisible(false);
-      return;
-    }
-
-    setIsVisible(true);
+    if (!open) return;
 
     const handleEscapeKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -49,15 +43,20 @@ export function SettingsPanel({
     };
 
     document.addEventListener('keydown', handleEscapeKey);
-    document.addEventListener('click', handleClickOutside);
+    // Defer click-outside listener so the opening click doesn't
+    // immediately trigger close via event propagation.
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 0);
 
     return () => {
+      clearTimeout(timeoutId);
       document.removeEventListener('keydown', handleEscapeKey);
-      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [open, onClose]);
 
-  if (!isVisible) return null;
+  if (!open) return null;
 
   const panelStyle: React.CSSProperties = {
     position: 'fixed',
