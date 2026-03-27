@@ -137,6 +137,7 @@ These must exist. If a change breaks one, the failure names which integration is
 Write a full-orchestrator integration test (multiple ticks, real graph, real agents) when:
 
 - Adding a new tick phase or modifying phase ordering
+- **Wiring new behavior into an existing phase** (e.g., adding reward processing to encounter progression)
 - Changing how phases communicate (e.g., movement → encounter detection)
 - Modifying `MovementState`, `EncounterProgress`, or `GameState` shape
 - Any change that touches 3+ files across `src/engine/` and `src/components/`
@@ -158,6 +159,7 @@ Before committing changes to `src/engine/` or `src/components/HexMapV2/`:
 4. If movement/pathfinding changed → verify contract tests in `__tests__/contracts/` pass
 5. If any tick phase changed → run orchestrator integration suite
 6. If HexMapV2 changed → visual verification at `?view=game` (world, continental, hero-local zoom)
+7. **If feature depends on upstream pipeline throughput** (e.g., rewards depend on encounters completing) → run the sim for 30+ ticks at `?view=game` and confirm the upstream triggers are firing. Unit tests passing is not sufficient — the pipeline must produce real throughput in context.
 
 ## Viewport Contract (1920×1080)
 
@@ -192,6 +194,19 @@ Each system within a design document must include these inline (not as a separat
 - **Tracing** — what trace types the system emits, with TypeScript interface definitions (NFP #2)
 - **Fail-soft** — table of failure cases and fallback behavior (NFP #4)
 - **PRNG callouts** — where seeded randomness is needed, called out at the point of use (NFP #3)
+
+### Required UI/visibility phase in every design document
+
+**Every design that produces new state, events, or agent behavior MUST include a UI phase.** An engine system with no player-facing visibility is invisible — the player can't see it, can't react to it, and can't enjoy it. A system without dev visibility can't be tuned.
+
+The UI phase must cover:
+
+1. **Player-facing display** — Where does the player see the new state? Agent profile section? Chronicle events? Map overlay? Notifications? Knowledge-gated by influence tier where appropriate.
+2. **Event notifications** — What TickEvents does the system emit? Which get alerts vs toasts vs silent chronicle entries? What glyph and color?
+3. **Debug inspection** — How does a developer see the raw state? New DebugPanel tab? Extension to existing tab? What data is shown?
+4. **Visual presence** — Does the system need signifiers, map overlays, or other spatial indicators on HexMapV2?
+
+If the design audit finds no UI phase, **add one before presenting the design.** This is not optional polish — it is a required phase alongside engine, content, and integration work.
 
 ### Required wiring section in every design document
 
@@ -286,7 +301,8 @@ This is non-negotiable. Work is not "done" until it is deployed and documented. 
 3. Read Obsidian `Index.md` via MCP, follow links to the relevant system
 4. Check `.planning/BACKLOG.md` for backlog and `.planning/ROADMAP.md` for active milestone
 5. Read relevant design doc in `Docs/plans/` before writing code
-6. After completing work, follow the **Definition of Done** above
+6. **Pre-implementation upstream health check:** If the feature depends on upstream pipeline throughput (e.g., rewards require encounters to complete, encounters require agents to arrive at locations), verify the upstream pipeline is actually producing output before starting implementation. Run the liveness integration test or inspect traces/state. A feature wired to a dead pipeline is wasted work — catch it before coding, not after.
+7. After completing work, follow the **Definition of Done** above
 
 ## Domain Skills
 
