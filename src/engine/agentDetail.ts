@@ -38,6 +38,9 @@ import {
   getAgentAmbitions,
 } from './graphQueries';
 import type { SphereName } from '../types';
+import type { MemberOfEdgeProperties } from '../types/disposition';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { computeRankFromReputation } from '../types/faction';
 
 // ─── Seeded PRNG ─────────────────────────────────────────────────
 
@@ -162,6 +165,12 @@ export interface AgentInfoCardData {
   archetypeId?: string;
   archetypeLabel?: string;
   factionName?: string;
+  /** Faction rank display name (e.g. 'Journeyman', 'Sergeant') — set when knowledge >= 'recognised' */
+  factionRank?: string;
+  /** Faction reputation 0–1 — set when knowledge >= 'known' */
+  factionReputation?: number;
+  /** Faction definition ID for lookups — set when factionName is set */
+  factionDefId?: string;
   cultureName?: string;
   topValues?: { pair: ValuePair; word: string }[];
   domains?: { domain: ReachDomain; word: string }[];
@@ -475,6 +484,29 @@ export function getAgentInfoCard(
     }
     if (detail.factionName) {
       card.factionName = detail.factionName;
+      // Populate faction rank/reputation from member_of edge
+      const factionResult = getAgentFaction(graph, agentId);
+      if (factionResult) {
+        const memberEdges = graph.getOutgoingEdges(agentId, 'member_of')
+          .filter(e => e.target === factionResult.faction.id);
+        if (memberEdges.length > 0) {
+          const memberProps = memberEdges[0].properties as Partial<MemberOfEdgeProperties>;
+          const factionDefId = memberProps.factionDefId;
+          if (factionDefId) {
+            card.factionDefId = factionDefId;
+            const def = FACTION_DEFINITIONS.get(factionDefId);
+            if (def) {
+              const rep = memberProps.reputation ?? 0;
+              const rank = computeRankFromReputation(rep, def);
+              card.factionRank = rank.name;
+              // known+ gets reputation number
+              if (knowledgeLevel !== 'recognised') {
+                card.factionReputation = rep;
+              }
+            }
+          }
+        }
+      }
     }
 
     // Top 1 value for recognised

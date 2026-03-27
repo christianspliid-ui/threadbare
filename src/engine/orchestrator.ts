@@ -244,10 +244,11 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       state.tick,
     );
 
-    // ── Faction join/promotion outcome processing (TB-061) ──
+    // ── Faction join/promotion outcome processing (TB-061, TB-063 events) ──
     if (progress.status === 'completed') {
       const outcomeRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
-      processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
+      const factionEvents = processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
+      events.push(...factionEvents);
     }
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
