@@ -348,6 +348,36 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata }:
             </section>
           )}
 
+          {/* Faction Section (recognised+ if member) */}
+          {hasKnowledge(card.knowledgeLevel, 'recognised') && card.factionName && card.factionRank && (
+            <section data-testid="modal-faction">
+              <SectionHeading as="h2">Guild</SectionHeading>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.factionName}</span>
+                  <span className="text-sm" style={{ color: 'var(--accent-gold)' }}>{card.factionRank}</span>
+                </div>
+                {hasKnowledge(card.knowledgeLevel, 'known') && card.factionReputation != null && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: 'var(--border-subtle)' }}>
+                      <div
+                        className="h-full rounded-full transition-all"
+                        style={{
+                          width: `${Math.round(card.factionReputation * 100)}%`,
+                          backgroundColor: 'var(--accent-gold)',
+                          opacity: 0.8,
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs tabular-nums" style={{ color: 'var(--text-tertiary)' }}>
+                      {Math.round(card.factionReputation * 100)}%
+                    </span>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
           {/* Bonds Section (known+) */}
           {hasKnowledge(card.knowledgeLevel, 'known') && card.topBonds && card.topBonds.length > 0 && (
             <section>

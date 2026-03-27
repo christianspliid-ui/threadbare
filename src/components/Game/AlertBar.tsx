@@ -18,6 +18,9 @@ const ALERT_GLYPHS: Record<AlertIcon, string> = {
   dilemma:    '⚖',
   harvest:    '⟡',
   revelation: '📖',
+  social:     '🤝',
+  faction:    '⚜',
+  trust:      '🔗',
 };
 
 function getGlyph(icon: AlertIcon): string {

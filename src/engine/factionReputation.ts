@@ -109,6 +109,7 @@ export function applyFactionReputationGain(
 export function phaseFactionReputationDecay(state: GameState): Partial<GameState> {
   const graph = state.graph;
   const tick = state.tick;
+  const events: import('../types/gameState').TickEvent[] = [];
 
   // Iterate all member_of edges
   const memberEdges = graph.getEdgesByType('member_of');
@@ -143,10 +144,23 @@ export function phaseFactionReputationDecay(state: GameState): Partial<GameState
         role: newRank.id,
         rank: definition.rankTiers.indexOf(newRank) / Math.max(definition.rankTiers.length - 1, 1),
       };
+
+      // Emit rank change event (TB-063)
+      const agentName = graph.getNode(edge.source)?.name ?? '?';
+      const factionName = graph.getNode(edge.target)?.name ?? '?';
+      events.push({
+        id: `faction_decay_rank_${tick}_${edge.source}`,
+        tick,
+        type: 'faction_rank_changed',
+        message: `${agentName} has been demoted to ${newRank.name} in ${factionName}.`,
+        significance: 0.5,
+        notification: { channel: 'toast', icon: 'faction' },
+        actorId: edge.source,
+      });
     }
   }
 
-  return {};
+  return events.length > 0 ? { tickEvents: [...state.tickEvents, ...events] } : {};
 }
 
 // ─── Encounter Reputation Hook ───────────────────────────────────────────

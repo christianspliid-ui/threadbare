@@ -461,9 +461,9 @@ describe('processFactionOutcome', () => {
   it('routes ag.join to join processor', () => {
     const progress = makeProgress('ag.join', 'agent_1', 'completed');
 
-    const result = processFactionOutcome(graph, progress, 10, makeRng());
+    const events = processFactionOutcome(graph, progress, 10, makeRng());
 
-    expect(result).toBe(true);
+    expect(events.length).toBeGreaterThan(0);
     expect(graph.getOutgoingEdges('agent_1', 'member_of')).toHaveLength(1);
   });
 
@@ -472,24 +472,24 @@ describe('processFactionOutcome', () => {
     joinFaction(graph, 'agent_1', factionId, 0.55);
     const progress = makeProgress('ag.promotion', 'agent_1', 'completed');
 
-    const result = processFactionOutcome(graph, progress, 10, makeRng());
+    const events = processFactionOutcome(graph, progress, 10, makeRng());
 
-    expect(result).toBe(true);
+    expect(events.length).toBeGreaterThan(0);
   });
 
-  it('returns false for non-faction encounters', () => {
+  it('returns empty for non-faction encounters', () => {
     const progress = makeProgress('explore.ancient_ruins', 'agent_1', 'completed');
 
-    const result = processFactionOutcome(graph, progress, 10, makeRng());
+    const events = processFactionOutcome(graph, progress, 10, makeRng());
 
-    expect(result).toBe(false);
+    expect(events).toEqual([]);
   });
 
-  it('returns false for abandoned encounters', () => {
+  it('returns empty for abandoned encounters', () => {
     const progress = makeProgress('ag.join', 'agent_1', 'abandoned');
 
-    const result = processFactionOutcome(graph, progress, 10, makeRng());
+    const events = processFactionOutcome(graph, progress, 10, makeRng());
 
-    expect(result).toBe(false);
+    expect(events).toEqual([]);
   });
 });

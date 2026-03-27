@@ -15,6 +15,7 @@ import type { EncounterProgress } from '../types/encounter';
 import type { FactionPromotionTrace } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import type { MemberOfEdgeProperties } from '../types/disposition';
+import type { TickEvent } from '../types/gameState';
 import {
   FACTION_DEFINITIONS,
   FACTION_JOIN_STARTING_REPUTATION,
@@ -243,36 +244,79 @@ function selectComplication(rng: () => number): string {
 
 // ─── Dispatcher ─────────────────────────────────────────────────────────
 
+/** Unique ID counter for faction tick events */
+let factionEventSeq = 0;
+
 /**
  * Top-level dispatcher: given a completed faction encounter, route to
  * the appropriate outcome processor. Called from phaseEncounterProgressionV2.
  *
- * @returns true if any faction outcome was processed
+ * @returns Array of TickEvents to append to state (empty if no faction outcome)
  */
 export function processFactionOutcome(
   graph: WorldGraph,
   progress: EncounterProgress,
   tick: number,
   rng: () => number,
-): boolean {
-  if (progress.status !== 'completed') return false;
+): TickEvent[] {
+  if (progress.status !== 'completed') return [];
 
   // Check if this is a faction encounter at all
   const meta = FACTION_ENCOUNTER_META.get(progress.encounterId);
-  if (!meta) return false;
+  if (!meta) return [];
 
   const definition = FACTION_DEFINITIONS.get(meta.factionDefId);
-  if (!definition) return false;
+  if (!definition) return [];
+
+  const events: TickEvent[] = [];
+  const agentName = graph.getNode(progress.actorId)?.name ?? '?';
+  const factionNodes = graph.getNodesByType('actor')
+    .filter(n => n.properties.factionDefId === definition.id);
+  const factionName = factionNodes.length > 0 ? factionNodes[0].name : definition.nameTemplate;
+
+  // Get hex coords for the agent's location
+  const locEdges = graph.getOutgoingEdges(progress.actorId, 'located_at');
+  const locNode = locEdges.length > 0 ? graph.getNode(locEdges[0].target) : undefined;
+  const hexCoords = locNode?.properties?.hexCol != null
+    ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }
+    : undefined;
 
   // Route to appropriate processor
   if (progress.encounterId === definition.joinEncounterTemplateId) {
-    return processFactionJoinOutcome(graph, progress, tick);
+    const joined = processFactionJoinOutcome(graph, progress, tick);
+    if (joined) {
+      events.push({
+        id: `faction_join_${tick}_${++factionEventSeq}`,
+        tick,
+        type: 'faction_founded', // closest existing type for "joined faction"
+        message: `${agentName} has joined ${factionName}.`,
+        significance: 0.6,
+        notification: { channel: 'toast', icon: 'faction' },
+        hexCoords,
+        actorId: progress.actorId,
+      });
+    }
+    return events;
   }
 
   if (progress.encounterId === definition.promotionEncounterTemplateId) {
     const result = processFactionPromotionOutcome(graph, progress, tick, rng);
-    return result !== null && result.promoted;
+    if (result !== null && result.promoted) {
+      const nextRankDef = definition.rankTiers.find(r => r.id === result.toRank);
+      const rankName = nextRankDef?.name ?? result.toRank;
+      events.push({
+        id: `faction_promote_${tick}_${++factionEventSeq}`,
+        tick,
+        type: 'faction_rank_changed',
+        message: `${agentName} has been promoted to ${rankName} in ${factionName}.`,
+        significance: 0.7,
+        notification: { channel: 'alert', icon: 'faction' },
+        hexCoords,
+        actorId: progress.actorId,
+      });
+    }
+    return events;
   }
 
-  return false;
+  return events;
 }
