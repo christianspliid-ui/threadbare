@@ -407,104 +407,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     drawerOpen: nonAgentDrawerOpen,
   });
 
-  // Handle target_action slot clicks from non-agent detail views (Phase 5)
-  // ── Meet The First as action card slot ──
-  const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
-
-  // Inject Meet The First card into non-agent slots when on a location view
-  const enrichedNonAgentSlots = useMemo(() => {
-    const base = nonAgentSlots ?? [];
-    if (viewLevel !== 'location' || !meetTheFirstAvailable || !focusedLocation) return base;
-    // Only show if there are agents at the location
-    if (focusedLocationAgents.length === 0) return base;
-    const meetSlot: WheelSlot = {
-      id: MEET_THE_FIRST_SLOT_ID,
-      label: 'Meet The First',
-      type: 'intervention',
-      angleDeg: 0,
-      available: true,
-      lockedReason: null,
-      essenceCost: 0,
-      detectionRisk: 0,
-      sphere: archetype.sphereAlignment.primary,
-      interventionType: null,
-      rangeStatus: 'unlimited',
-      hexDistance: null,
-      description: 'Claim a mortal as your champion — The First to carry your will.',
-    };
-    return [meetSlot, ...base];
-  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary]);
-
-  const handleNonAgentSlotClick = useCallback((slotId: string) => {
-    // Intercept Meet The First special slot
-    if (slotId === MEET_THE_FIRST_SLOT_ID) {
-      if (focusedLocation) {
-        handleStartMeeting(focusedLocation.id);
-      }
-      return;
-    }
-
-    if (!nonAgentTargetContext) return;
-
-    const templateId = templateIdFromSlotId(slotId);
-    if (!templateId) return;
-
-    const template = getUnifiedTemplateById(templateId);
-    if (!template) {
-      console.warn(`[targetAction] template not found: ${templateId}`);
-      return;
-    }
-
-    try {
-      const essenceCost = template.essenceCost ?? 0;
-      const sphere = template.sphereAffinity ?? archetype.sphereAlignment.primary;
-
-      const rng = mulberry32(gameState.seed + gameState.tick * 43);
-      const action = createUnifiedAction({
-        actorId: gameState.ascendantId,
-        templateId,
-        targetId: nonAgentTargetContext.nodeId,
-        scale: template.scale,
-        source: 'player',
-        tick: gameState.tick,
-        template,
-        rng,
-        essencePaid: essenceCost,
-      });
-
-      setGameState(prev => {
-        const newPool = { ...prev.essencePool };
-        if (essenceCost > 0) {
-          newPool[sphere] = Math.max(0, (newPool[sphere] ?? 0) - essenceCost);
-        }
-        return {
-          ...prev,
-          essencePool: newPool,
-          unifiedActions: [...(prev.unifiedActions ?? []), action],
-          recentEvents: [
-            ...prev.recentEvents.slice(-99),
-            {
-              id: `evt_target_action_${prev.tick}_${Date.now()}`,
-              tick: prev.tick,
-              type: 'narrative' as const,
-              message: `The Ascendant ${template.narrativeTemplates.initiation}.`,
-              significance: 0.5,
-              sphere,
-              isInterventionBeat: false,
-            },
-          ],
-        };
-      });
-
-      // Briefly show the "playing" state then close
-      setTimeout(() => {
-        setNonAgentDrawerOpen(false);
-      }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
-    } catch (err) {
-      console.warn('[targetAction] failed to create action:', err);
-    }
-  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
-
   // ── Hex zoom derived data ──
   const {
     hexLocations,
@@ -751,9 +653,103 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     });
   }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
 
+  // ── Meet The First as action card slot ──
+  const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
+
   const meetTheFirstAvailable = useMemo(() =>
     isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick),
   [gameState.graph, gameState.ascendantId, gameState.tick]);
+
+  // Inject Meet The First card into non-agent slots when on a location view
+  const enrichedNonAgentSlots = useMemo(() => {
+    const base = nonAgentSlots ?? [];
+    if (viewLevel !== 'location' || !meetTheFirstAvailable || !focusedLocation) return base;
+    if (focusedLocationAgents.length === 0) return base;
+    const meetSlot: WheelSlot = {
+      id: MEET_THE_FIRST_SLOT_ID,
+      label: 'Meet The First',
+      type: 'intervention',
+      angleDeg: 0,
+      available: true,
+      lockedReason: null,
+      essenceCost: 0,
+      detectionRisk: 0,
+      sphere: archetype.sphereAlignment.primary,
+      interventionType: null,
+      rangeStatus: 'unlimited',
+      hexDistance: null,
+      description: 'Claim a mortal as your champion — The First to carry your will.',
+    };
+    return [meetSlot, ...base];
+  }, [nonAgentSlots, viewLevel, meetTheFirstAvailable, focusedLocation, focusedLocationAgents, archetype.sphereAlignment.primary]);
+
+  const handleNonAgentSlotClick = useCallback((slotId: string) => {
+    if (slotId === MEET_THE_FIRST_SLOT_ID) {
+      if (focusedLocation) {
+        handleStartMeeting(focusedLocation.id);
+      }
+      return;
+    }
+
+    if (!nonAgentTargetContext) return;
+
+    const templateId = templateIdFromSlotId(slotId);
+    if (!templateId) return;
+
+    const template = getUnifiedTemplateById(templateId);
+    if (!template) {
+      console.warn(`[targetAction] template not found: ${templateId}`);
+      return;
+    }
+
+    try {
+      const essenceCost = template.essenceCost ?? 0;
+      const sphere = template.sphereAffinity ?? archetype.sphereAlignment.primary;
+
+      const rng = mulberry32(gameState.seed + gameState.tick * 43);
+      const action = createUnifiedAction({
+        actorId: gameState.ascendantId,
+        templateId,
+        targetId: nonAgentTargetContext.nodeId,
+        scale: template.scale,
+        source: 'player',
+        tick: gameState.tick,
+        template,
+        rng,
+        essencePaid: essenceCost,
+      });
+
+      setGameState(prev => {
+        const newPool = { ...prev.essencePool };
+        if (essenceCost > 0) {
+          newPool[sphere] = Math.max(0, (newPool[sphere] ?? 0) - essenceCost);
+        }
+        return {
+          ...prev,
+          essencePool: newPool,
+          unifiedActions: [...(prev.unifiedActions ?? []), action],
+          recentEvents: [
+            ...prev.recentEvents.slice(-99),
+            {
+              id: `evt_target_action_${prev.tick}_${Date.now()}`,
+              tick: prev.tick,
+              type: 'narrative' as const,
+              message: `The Ascendant ${template.narrativeTemplates.initiation}.`,
+              significance: 0.5,
+              sphere,
+              isInterventionBeat: false,
+            },
+          ],
+        };
+      });
+
+      setTimeout(() => {
+        setNonAgentDrawerOpen(false);
+      }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
+    } catch (err) {
+      console.warn('[targetAction] failed to create action:', err);
+    }
+  }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
 
   // ── Attention mode toggle (TB-040) ──
   const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
