@@ -156,8 +156,12 @@ export function phaseAgentDecision(
             // GUARD 3: Reroute threshold — alternative must be dramatically better
             if (bestAltScore >= currentScore * REROUTE_SCORE_MULTIPLIER && bestAltLocationId) {
               // GUARD 4: Only allow queue_movement (moving agents can't start local/remote)
-              const graphPath = findShortestPath(graph, agentId, agentLocId, bestAltLocationId);
-              if (graphPath && graphPath.path.length > 0) {
+              // Pathfind from the NEXT graph node (movementQueue[0]), not agentLocId.
+              // agentLocId is the located_at edge which is stale mid-road — using it
+              // would teleport the agent back to their origin.
+              const rerouteFromId = movementState.movementQueue[0] ?? agentLocId;
+              const graphPath = findShortestPath(graph, agentId, rerouteFromId, bestAltLocationId);
+              if (graphPath) {
                 // Reroute: emit trace, create new movement state
                 const oldDestId = movementState.destinationId;
                 const currentHexPos = movementState.currentHexPosition ?? { col: 0, row: 0 };
@@ -185,17 +189,34 @@ export function phaseAgentDecision(
                   reason: 'better_encounter',
                 });
 
-                const firstEdgeCost = computeEdgeCost(graph, agentId, agentLocId, graphPath.path[0]).totalCost;
-                const newMovState = initMovementState(
-                  bestAltLocationId,
-                  graphPath.path,
-                  firstEdgeCost,
-                  state.tick,
-                  graphPath.roadSegments,
-                  agentLocId,
-                );
-                // Preserve movement history
-                newMovState.movementHistory = movementState.movementHistory;
+                // Build new movement state preserving current road hex progress.
+                // The agent stays at their current hex position and continues walking
+                // their current road segment — only the downstream queue changes.
+                const newMovState: MovementState = {
+                  destinationId: bestAltLocationId,
+                  movementQueue: [rerouteFromId, ...graphPath.path],
+                  ticksAccumulated: movementState.ticksAccumulated,
+                  currentEdgeCost: movementState.currentEdgeCost,
+                  lastDecisionTick: state.tick,
+                  movementHistory: movementState.movementHistory,
+                  motivationPull: bestAltScore,
+                  // Preserve current road traversal state — agent keeps walking
+                  currentHexPosition: movementState.currentHexPosition,
+                  roadHexQueue: movementState.roadHexQueue,
+                  roadHexCost: movementState.roadHexCost,
+                  currentRoadType: movementState.currentRoadType,
+                  // Merge road segments: current + new path segments
+                  roadSegments: [
+                    ...(movementState.roadSegments ?? []),
+                    ...(graphPath.roadSegments ?? []).map(s => ({
+                      fromId: s.fromId,
+                      toId: s.toId,
+                      roadType: s.roadType,
+                      hexPath: s.hexPath.map(h => ({ col: h.col, row: h.row })),
+                      discountedCost: s.discountedCost,
+                    })),
+                  ],
+                };
 
                 graph.updateNode(agentId, {
                   properties: { ...actor.properties, movementState: newMovState },
