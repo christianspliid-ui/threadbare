@@ -48,8 +48,8 @@ describe('AGENT_SPRITE_Z', () => {
     expect(AGENT_SPRITE_Z).toBeGreaterThan(0.08);
   });
 
-  it('is 0.09', () => {
-    expect(AGENT_SPRITE_Z).toBe(0.09);
+  it('is above 3D model geometry (z=6.0)', () => {
+    expect(AGENT_SPRITE_Z).toBe(6.0);
   });
 });
 
