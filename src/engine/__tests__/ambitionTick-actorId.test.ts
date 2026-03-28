@@ -17,6 +17,7 @@ function makeState(graph: WorldGraph, tick: number): GameState {
     tickEvents: [], recentEvents: [], chronicleEntries: [],
     stealthExposure: 0, visibilityMap: new Map() as any,
     familiarityMap: new Map() as any, culturalInsightMap: new Map(),
+    agentKnowledge: new Map(),
     encounterProgress: [], actionsInProgress: [], unifiedActions: [],
     worldSoul: {} as any, echoDefinitions: [], echoStates: [], chronicle: {} as any,
   };
