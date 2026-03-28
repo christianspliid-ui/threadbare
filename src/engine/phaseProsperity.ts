@@ -3,8 +3,8 @@
  *
  * Prosperity (0–100) drifts toward an equilibrium TARGET defined by current
  * conditions (trade routes, faction presence, corruption, unrest, divine
- * influence). If nothing changes, prosperity stays put. Growth and decline
- * always trace to a visible cause.
+ * influence, sphere affinity). If nothing changes, prosperity stays put.
+ * Growth and decline always trace to a visible cause.
  *
  * Two inputs each tick:
  *   1. **Equilibrium drift** — prosperity moves toward target at DRIFT_RATE
@@ -23,7 +23,9 @@ import type { GameState, ProsperityShock } from '../types/gameState';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types/index';
 import type { ResourceInstance } from '../types/resource';
+import type { SphereAffinity } from '../types/sphereAffinity';
 import { emitTrace } from './traceBuffer';
+import { getNodeSphereAffinity } from './sphereAffinity';
 
 // ─── Tier Constants ──────────────────────────────────────────────────────────
 
@@ -125,6 +127,20 @@ export const UPKEEP_CITY = 5;
 
 /** Per-tick target reduction for capitals */
 export const UPKEEP_CAPITAL = 8;
+
+// ─── Sphere Modifier Constants ───────────────────────────────────────────────
+
+/** Prosperity target bonus per point of Life sphere score at the location */
+export const PROSPERITY_LIFE_BONUS = 0.02;
+
+/** Prosperity target bonus per point of Energy sphere score at the location */
+export const PROSPERITY_ENERGY_BONUS = 0.015;
+
+/** Prosperity target penalty per point of Entropy sphere score at the location */
+export const PROSPERITY_ENTROPY_PENALTY = 0.025;
+
+/** Maximum (and minimum negative) sphere modifier to equilibrium target (as 0–1 fraction) */
+export const PROSPERITY_SPHERE_CAP = 0.15;
 
 // ─── Shock Constants (used by upstream phases when pushing shocks) ───────────
 
@@ -267,6 +283,24 @@ function findHexTile(tiles: readonly HexTile[], props: Record<string, unknown>):
 }
 
 /**
+ * Compute the sphere-derived prosperity modifier for a location.
+ * Life and Energy sphere scores boost the equilibrium target; Entropy reduces it.
+ * Returns a value in [-PROSPERITY_SPHERE_CAP, PROSPERITY_SPHERE_CAP] (fractional 0–1 scale).
+ * Multiply by 100 before adding to the 0–100 target.
+ *
+ * Exported for direct testing.
+ * Fail-soft: undefined affinity → 0.
+ */
+export function computeEquilibriumTargetWithSphere(affinity: SphereAffinity | undefined): number {
+  if (!affinity) return 0;
+  const raw =
+    affinity.scores.life * PROSPERITY_LIFE_BONUS
+    + affinity.scores.energy * PROSPERITY_ENERGY_BONUS
+    - affinity.scores.entropy * PROSPERITY_ENTROPY_PENALTY;
+  return Math.min(PROSPERITY_SPHERE_CAP, Math.max(-PROSPERITY_SPHERE_CAP, raw));
+}
+
+/**
  * Compute the equilibrium target for a settlement.
  * This is the prosperity level conditions support — prosperity drifts toward it.
  */
@@ -318,6 +352,14 @@ function computeEquilibriumTarget(
     : subtype === 'city' ? UPKEEP_CITY
     : 0;
   target -= upkeep;
+
+  // Sphere affinity modifier — Life/Energy boost, Entropy penalty
+  // getNodeSphereAffinity fails-soft (undefined) when node has no sphereAffinity
+  const locationNode = graph.getNode(locationId);
+  const locationAffinity = locationNode ? getNodeSphereAffinity(locationNode) : undefined;
+  const sphereModifier = computeEquilibriumTargetWithSphere(locationAffinity);
+  // Scale fractional modifier to 0–100 target range
+  target += sphereModifier * 100;
 
   // Clamp target to 0–100
   target = Math.max(0, Math.min(100, target));
