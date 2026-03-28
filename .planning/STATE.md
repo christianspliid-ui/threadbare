@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 10-sphere-affinity/10-01-PLAN.md
-last_updated: "2026-03-28T17:28:10.333Z"
+stopped_at: Completed 10-sphere-affinity/10-02-PLAN.md
+last_updated: "2026-03-28T17:46:17.640Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 8
-  completed_plans: 1
+  completed_plans: 2
   percent: 93
 ---
 
@@ -154,6 +154,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 09-start-screen P02 | 2 | 1 tasks | 3 files |
 | Phase 09-start-screen P02 | 15 | 2 tasks | 3 files |
 | Phase 10-sphere-affinity P01 | 6 | 2 tasks | 5 files |
+| Phase 10-sphere-affinity P02 | 12 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -234,6 +235,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: SphereName reused from existing types/index.ts, not aliased — keeps type system simple
 - [Phase 10-sphere-affinity]: Sphere seeding in gameInit.ts after seedWorld(), using hex-affinity-by-key map for location inheritance
 - [Phase 10-sphere-affinity]: Faction/culture actors get default (all-zero) SphereAffinity at init — derived aggregation deferred to phaseSphereAggregation
+- [Phase 10-sphere-affinity]: SphereAggregate type lives in types/worldSoul.ts to avoid circular imports with engine layer
+- [Phase 10-sphere-affinity]: isValidSphereAffinity guard in both sphere phases handles legacy bare-string SphereName values from worldSeed.ts artifacts
 
 ### Pending Todos
 
@@ -245,6 +248,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:28:10.331Z
-Stopped at: Completed 10-sphere-affinity/10-01-PLAN.md
+Last session: 2026-03-28T17:46:17.638Z
+Stopped at: Completed 10-sphere-affinity/10-02-PLAN.md
 Resume file: None
