@@ -62,17 +62,19 @@ Global state derived from entity aggregate, not independently maintained:
 
 ### Phase 10: Sphere Affinity — Implementation Plans
 
-**Plans:** 8/8 plans complete
+**Plans:** 7/7 plans complete ✅
 **Requirements:** SPHR-01 through SPHR-27
 
 Plans:
-- [ ] 10-01-PLAN.md — SphereAffinity types, triangle math, entity initialization
-- [ ] 10-02-PLAN.md — Pressure resolution engine + aggregation + orchestrator wiring
-- [ ] 10-03-PLAN.md — Upstream wiring (6 phases push sphere pressure events)
-- [ ] 10-04-PLAN.md — Downstream modifiers (prosperity, encounter, agent decision)
-- [ ] 10-05-PLAN.md — Magic power calculation + overchannel
-- [ ] 10-06-PLAN.md — IPK component, WorldSoulIndicator, HexChronicle Soul, debug panel
-- [ ] 10-07-PLAN.md — Integration smoke test + human visual verification
+- [x] 10-01-PLAN.md — SphereAffinity types, triangle math, entity initialization
+- [x] 10-02-PLAN.md — Pressure resolution engine + aggregation + orchestrator wiring
+- [x] 10-03-PLAN.md — Upstream wiring (6 phases push sphere pressure events)
+- [x] 10-04-PLAN.md — Downstream modifiers (prosperity, encounter, agent decision)
+- [x] 10-05-PLAN.md — Magic power calculation + overchannel
+- [x] 10-06-PLAN.md — IPK component, WorldSoulIndicator, HexChronicle Soul, debug panel
+- [x] 10-07-PLAN.md — Integration smoke test + human visual verification
+
+**Phase 10 complete (2026-03-28).** Sphere pipeline stable over 30+ ticks. Known UI gaps deferred: HexChronicle Soul layer bridge (sphereAffinity→sphereInfluence adapter not built), ProseKeyword tooltips (blocked on bridge), action drawer hover effects (deferred by user).
 
 ---
 
