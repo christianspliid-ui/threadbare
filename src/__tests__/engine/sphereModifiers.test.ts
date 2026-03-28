@@ -100,30 +100,30 @@ describe('Prosperity sphere modifier', () => {
 // ─── 2. Encounter resonance modifier ─────────────────────────────────────────
 
 describe('Encounter resonance modifier', () => {
-  it('computes resonance: Force=4, Energy=1 for Force encounter → (4-1)*0.1 = 0.3', () => {
-    // Force opposes Energy (from SPHERE_OPPOSITES)
-    const hexAffinity = makeSphereAffinity({ force: 4, energy: 1 });
+  it('computes resonance: Force=4, Mind=1 for Force encounter → (4-1)*0.1 = 0.3', () => {
+    // Force opposes Mind (from SPHERE_OPPOSITES)
+    const hexAffinity = makeSphereAffinity({ force: 4, mind: 1 });
     const resonance = computeResonance(hexAffinity, 'force');
     expect(resonance).toBeCloseTo(0.3, 5);
   });
 
   it('caps resonance at ENCOUNTER_RESONANCE_CAP=0.5', () => {
-    // Force=10, Energy=0 → 10*0.1 = 1.0 → capped to 0.5
-    const hexAffinity = makeSphereAffinity({ force: 10, energy: 0 });
+    // Force=10, Mind=0 → 10*0.1 = 1.0 → capped to 0.5
+    const hexAffinity = makeSphereAffinity({ force: 10, mind: 0 });
     const resonance = computeResonance(hexAffinity, 'force');
     expect(resonance).toBe(ENCOUNTER_RESONANCE_CAP);
   });
 
   it('returns negative resonance when opposition sphere dominates', () => {
-    // Force=1, Energy=5 → Force encounter: (1-5)*0.1 = -0.4 (negative resonance)
-    const hexAffinity = makeSphereAffinity({ force: 1, energy: 5 });
+    // Force=1, Mind=5 → Force encounter: (1-5)*0.1 = -0.4 (negative resonance)
+    const hexAffinity = makeSphereAffinity({ force: 1, mind: 5 });
     const resonance = computeResonance(hexAffinity, 'force');
     expect(resonance).toBeCloseTo(-0.4, 5);
   });
 
   it('caps negative resonance at -ENCOUNTER_RESONANCE_CAP', () => {
-    // Force=0, Energy=10 → (0-10)*0.1 = -1.0 → capped to -0.5
-    const hexAffinity = makeSphereAffinity({ force: 0, energy: 10 });
+    // Force=0, Mind=10 → (0-10)*0.1 = -1.0 → capped to -0.5
+    const hexAffinity = makeSphereAffinity({ force: 0, mind: 10 });
     const resonance = computeResonance(hexAffinity, 'force');
     expect(resonance).toBe(-ENCOUNTER_RESONANCE_CAP);
   });

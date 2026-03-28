@@ -30,7 +30,7 @@ import {
   type ArtifactLorePattern,
   type CulturalProsePalette,
 } from '../culture-content';
-import { SPHERE_NAMES } from '../../types/index';
+import { SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types/index';
 import { REACH_DOMAINS } from '../../types/traits';
 
 const ALL_TERRAIN_TYPES = [
@@ -102,14 +102,14 @@ describe('culture-content', () => {
 
     it('covers all 8 creation spheres', () => {
       const spheres = CREATION_SPHERE_MODIFIERS.map(m => m.sphere);
-      for (const sphere of SPHERE_NAMES) {
+      for (const sphere of CREATION_SPHERE_NAMES) {
         expect(spheres).toContain(sphere);
       }
     });
 
     it('each sphere appears exactly once', () => {
       const spheres = CREATION_SPHERE_MODIFIERS.map(m => m.sphere);
-      for (const sphere of SPHERE_NAMES) {
+      for (const sphere of CREATION_SPHERE_NAMES) {
         expect(spheres.filter(s => s === sphere).length).toBe(1);
       }
     });

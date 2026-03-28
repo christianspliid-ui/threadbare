@@ -103,6 +103,12 @@ export const DRIFT_ACTIVATION_THRESHOLD = 0.03;
  * Maps each sphere to its affected axiological pair and direction.
  */
 export const SPHERE_DRIFT_MAP: Record<SphereName, { pair: keyof AxiologicalProfile; direction: number }> = {
+  // Foundation Spheres
+  chaos: { pair: 'mercy_ambition', direction: 0.5 }, // +ambition (disruption)
+  order: { pair: 'loyalty_ambition', direction: -0.5 }, // +loyalty (stability)
+  light: { pair: 'tradition_progress', direction: 0.5 }, // +progress (revelation)
+  darkness: { pair: 'tradition_progress', direction: -0.5 }, // +tradition (mystery)
+  // Creation Spheres
   force: { pair: 'mercy_ambition', direction: 1 }, // +ambition
   matter: { pair: 'loyalty_ambition', direction: -1 }, // +loyalty
   energy: { pair: 'mercy_ambition', direction: 0.5 }, // +ambition (weaker)

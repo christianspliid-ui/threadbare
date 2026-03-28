@@ -5,12 +5,14 @@ import type { CultureIdentity } from '../../types/culture';
 import { CULTURE_COUNT } from '../../types/culture';
 
 function balancedCosmology(): CosmologyProfile {
-  return { force: 0.125, matter: 0.125, energy: 0.125, life: 0.125,
-           mind: 0.125, spirit: 0.125, time: 0.125, entropy: 0.125 };
+  return { chaos: 1/12, order: 1/12, light: 1/12, darkness: 1/12,
+           force: 1/12, matter: 1/12, energy: 1/12, life: 1/12,
+           mind: 1/12, spirit: 1/12, time: 1/12, entropy: 1/12 };
 }
 
 function skewedCosmology(): CosmologyProfile {
-  return { force: 0.4, matter: 0.2, energy: 0.1, life: 0.1,
+  return { chaos: 0.02, order: 0.02, light: 0.02, darkness: 0.02,
+           force: 0.34, matter: 0.18, energy: 0.10, life: 0.10,
            mind: 0.05, spirit: 0.05, time: 0.05, entropy: 0.05 };
 }
 
@@ -85,11 +87,19 @@ describe('culture generation integration', () => {
     expect(forceCount).toBeGreaterThan(entropyCount);
   });
 
-  it('foundation balances bias culture foundation selection', () => {
-    const orderFoundations = { chaos_order: 0.8, light_darkness: 0.0 };
+  it('fundament sphere weights bias culture foundation selection', () => {
+    // Create a fundament with high order weight to bias toward order foundations
+    const orderFundament = {
+      sphereWeights: {
+        chaos: 0.02, order: 0.30, light: 1/12, darkness: 1/12,
+        force: 1/12, matter: 1/12, energy: 1/12, life: 1/12,
+        mind: 1/12, spirit: 1/12, time: 1/12, entropy: 1/12,
+      },
+      cycleCount: 0,
+    };
     const results: string[] = [];
     for (let seed = 0; seed < 10; seed++) {
-      const result = seedWorld(balancedCosmology(), diverseTiles(), seed, undefined, orderFoundations);
+      const result = seedWorld(balancedCosmology(), diverseTiles(), seed, undefined, orderFundament);
       for (const cId of result.cultureIds) {
         const identity = result.graph.getNode(cId)!.properties.cultureIdentity as CultureIdentity;
         results.push(identity.foundationBias);

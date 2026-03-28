@@ -13,6 +13,16 @@ import type { SphereName } from '../types';
 // ─── Creation Sphere Tooltips ─────────────────────────────────────────────────
 
 export const SPHERE_TOOLTIPS: Record<SphereName, string> = {
+  // Foundation Spheres
+  chaos:
+    'The primal foundation of possibility and disorder. Chaos seeds change, breaks the grip of the old order, and opens paths that were never meant to exist. Too much Chaos and nothing endures.',
+  order:
+    'The primal foundation of structure and law. Order builds empires, holds knowledge across generations, and makes promises that bind. Too much Order and nothing ever changes.',
+  light:
+    'The primal foundation of revelation and clarity. Light exposes hidden truths, empowers honest counsel, and burns away deceit. Where Light grows strong, nothing stays secret for long.',
+  darkness:
+    'The primal foundation of mystery and concealment. Darkness nurtures hidden things — secrets, long plans, and the spaces between known truths. Where Darkness spreads, even the gods grow uncertain.',
+  // Creation Spheres
   force:
     'The sphere of strength, conflict, and direct action. Where Force is strong, warriors thrive and the weak are tested. Force opposes Energy and allies with Matter.',
   matter:

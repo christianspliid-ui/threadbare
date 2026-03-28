@@ -90,17 +90,17 @@ describe('computeEffectivePower', () => {
     expect(result.overchannelCost).toBe(0);
   });
 
-  it('strong location opposition floors power to 0: Mind=1, location Mind=0, location Time=4 → power=0', () => {
-    // Mind opposite is Time
+  it('strong location opposition floors power to 0: Mind=1, location Mind=0, location Force=4 → power=0', () => {
+    // Mind opposite is Force (per updated cosmology)
     const caster = makeAffinity({ mind: 1 });
-    const location = makeAffinity({ mind: 0, time: 4 });
+    const location = makeAffinity({ mind: 0, force: 4 });
     const result = computeEffectivePower(caster, location, 'mind');
     expect(result.power).toBe(0); // max(0, 1 + 0 - 4) = 0
   });
 
   it('no overchannel cost when power floors to 0', () => {
     const caster = makeAffinity({ mind: 1 });
-    const location = makeAffinity({ mind: 0, time: 4 });
+    const location = makeAffinity({ mind: 0, force: 4 });
     const result = computeEffectivePower(caster, location, 'mind');
     expect(result.overchannelCost).toBe(0);
   });
@@ -188,16 +188,16 @@ describe('resolveOverchannel', () => {
     expect(result!.sphere).toBe('entropy');
   });
 
-  it('applies opposing sphere: force overchannel → energy damage', () => {
-    // Force opposite is Energy
+  it('applies opposing sphere: force overchannel → mind damage', () => {
+    // Force opposite is Mind (per updated cosmology)
     const result = resolveOverchannel('agent-1', 'force', 3);
-    expect(result!.sphere).toBe('energy');
+    expect(result!.sphere).toBe('mind');
   });
 
-  it('applies opposing sphere: mind overchannel → time damage', () => {
-    // Mind opposite is Time
+  it('applies opposing sphere: mind overchannel → force damage', () => {
+    // Mind opposite is Force (per updated cosmology)
     const result = resolveOverchannel('agent-1', 'mind', 4);
-    expect(result!.sphere).toBe('time');
+    expect(result!.sphere).toBe('force');
   });
 
   it('sourceId includes agent id and sphere', () => {

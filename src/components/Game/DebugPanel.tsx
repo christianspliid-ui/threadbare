@@ -1030,14 +1030,6 @@ function SphereStateTabContent({ aggregate }: { aggregate?: SphereAggregate }) {
           <span style={DETAIL_LABEL_STYLE}>Entity count:</span>
           <span style={DETAIL_VALUE_STYLE}>{aggregate.entityCount}</span>
         </div>
-        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
-          <span style={DETAIL_LABEL_STYLE}>chaos↔order:</span>
-          <span style={DETAIL_VALUE_STYLE}>{aggregate.foundationBalance.chaos_order.toFixed(3)}</span>
-        </div>
-        <div style={DETAIL_ROW_STYLE}>
-          <span style={DETAIL_LABEL_STYLE}>light↔dark:</span>
-          <span style={DETAIL_VALUE_STYLE}>{aggregate.foundationBalance.light_darkness.toFixed(3)}</span>
-        </div>
       </div>
 
       {/* Per-sphere breakdown */}

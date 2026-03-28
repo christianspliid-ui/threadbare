@@ -1,27 +1,11 @@
 import type { SphereName } from './index';
 import type { DoomClockArchetype } from './doomClock';
 
-// ── Foundation Axes ──────────────────────────────────────────────
-
-/** The two opposed pairs of Foundation Spheres */
-export const FOUNDATION_AXES = ['chaos_order', 'light_darkness'] as const;
-export type FoundationAxis = typeof FOUNDATION_AXES[number];
-
-/** Balances on each Foundation axis: -1.0 (first) to +1.0 (second) */
-export type FoundationBalances = Record<FoundationAxis, number>;
-
-export const DEFAULT_FOUNDATION_BALANCES: FoundationBalances = {
-  chaos_order: 0.0,
-  light_darkness: 0.0,
-};
-
 // ── Fundament (Layer 1) ─────────────────────────────────────────
 
 /** The coefficient ledger — numerical world-state that persists across cycles */
 export interface FundamentState {
-  /** Foundation axis balances: -1.0 (chaos/light) to +1.0 (order/darkness) */
-  foundations: FoundationBalances;
-  /** Creation Sphere weights — how much each sphere exists in the cosmos. Sum to ~1.0 */
+  /** All 12 sphere weights — how much each sphere exists in the cosmos. Sum to ~1.0 */
   sphereWeights: Record<SphereName, number>;
   /** Number of completed cycles */
   cycleCount: number;
@@ -38,11 +22,7 @@ export type ShiftSource =
 /** A single nudge to the Fundament */
 export interface FundamentShift {
   source: ShiftSource;
-  /** Which Foundation axis to shift, if any */
-  foundationAxis?: FoundationAxis;
-  /** How much to shift the axis: positive = toward second pole, negative = toward first */
-  foundationDelta?: number;
-  /** Sphere weight deltas — positive increases, negative decreases */
+  /** Sphere weight deltas — positive increases, negative decreases. Works for all 12 spheres. */
   sphereDeltas?: Partial<Record<SphereName, number>>;
 }
 
@@ -95,8 +75,6 @@ export interface SphereAggregate {
   totalBySphere: Record<SphereName, number>;
   /** Sphere with highest total; null if all are zero */
   dominantSphere: SphereName | null;
-  /** Derived Foundation axis balances from the aggregate */
-  foundationBalance: { chaos_order: number; light_darkness: number };
   /** Number of entities that contributed to this aggregate */
   entityCount: number;
 }

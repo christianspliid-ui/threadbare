@@ -28,8 +28,7 @@ import {
   CULTURE_NAME_FRAGMENTS,
 } from '../data/culture-content';
 import type { WorldGraph } from './graph';
-import type { FoundationBalances } from '../types/worldSoul';
-import { DEFAULT_FOUNDATION_BALANCES } from '../types/worldSoul';
+import type { FundamentState } from '../types/worldSoul';
 import { generateCultureFlag } from './cultureFlag';
 
 /** Merge arrays and deduplicate */
@@ -47,14 +46,15 @@ function pick<T>(rng: () => number, arr: readonly T[]): T {
 const FOUNDATION_IDS = ['chaos', 'order', 'light', 'darkness'] as const;
 
 /**
- * Select a foundation bias weighted by current World-Soul foundation balances.
+ * Select a foundation bias weighted by current World-Soul foundation sphere weights.
+ * Higher sphere weight = more likely to be selected as foundation bias.
  */
-function selectFoundation(rng: () => number, foundations: FoundationBalances): string {
+function selectFoundation(rng: () => number, sphereWeights: Record<string, number>): string {
   const weights: Record<string, number> = {
-    chaos: Math.max(0.1, 1.0 - foundations.chaos_order),
-    order: Math.max(0.1, 1.0 + foundations.chaos_order),
-    light: Math.max(0.1, 1.0 - foundations.light_darkness),
-    darkness: Math.max(0.1, 1.0 + foundations.light_darkness),
+    chaos: Math.max(0.1, sphereWeights.chaos ?? (1 / 12)),
+    order: Math.max(0.1, sphereWeights.order ?? (1 / 12)),
+    light: Math.max(0.1, sphereWeights.light ?? (1 / 12)),
+    darkness: Math.max(0.1, sphereWeights.darkness ?? (1 / 12)),
   };
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   let roll = rng() * total;
@@ -233,9 +233,14 @@ export function generateCultures(
   cosmology: CosmologyProfile,
   locationIds: string[],
   rng: () => number,
-  foundations?: FoundationBalances,
+  fundament?: FundamentState,
 ): string[] {
-  const founds = foundations ?? DEFAULT_FOUNDATION_BALANCES;
+  const defaultWeight = 1 / 12;
+  const sphereWeights = fundament?.sphereWeights ?? {
+    chaos: defaultWeight, order: defaultWeight, light: defaultWeight, darkness: defaultWeight,
+    force: defaultWeight, matter: defaultWeight, energy: defaultWeight, life: defaultWeight,
+    mind: defaultWeight, spirit: defaultWeight, time: defaultWeight, entropy: defaultWeight,
+  };
   const cultureCount = CULTURE_COUNT.min + Math.floor(
     rng() * (CULTURE_COUNT.max - CULTURE_COUNT.min + 1)
   );
@@ -245,7 +250,7 @@ export function generateCultures(
 
   for (let i = 0; i < cultureCount; i++) {
     const id = `culture_${i}`;
-    const foundationId = selectFoundation(rng, founds);
+    const foundationId = selectFoundation(rng, sphereWeights);
     const spheres = selectSpheres(rng, cosmology);
 
     let biome: TerrainType = 'grassland';

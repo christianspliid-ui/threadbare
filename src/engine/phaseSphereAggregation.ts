@@ -10,7 +10,6 @@
  * form is mirrored into `FundamentState.sphereWeights` for backward compat
  * with existing systems that read sphere weights from the fundament.
  *
- * Foundation axes are also computed: chaos_order and light_darkness.
  *
  * Design doc: Docs/plans/2026-03-28-world-soul-connection-design.md
  */
@@ -99,26 +98,6 @@ export function normalizeAggregate(
   return result;
 }
 
-// ─── Foundation Balance ───────────────────────────────────────────────
-
-/**
- * Compute Foundation axis balances from weighted aggregate totals.
- *
- * chaos_order = (matter + mind) - (entropy + force)
- *   Positive → order pole; negative → chaos pole
- *
- * light_darkness = (life + spirit) - (entropy + time)
- *   Positive → light pole; negative → darkness pole
- */
-export function computeFoundationBalance(
-  totals: Record<SphereName, number>
-): { chaos_order: number; light_darkness: number } {
-  return {
-    chaos_order: (totals.matter + totals.mind) - (totals.entropy + totals.force),
-    light_darkness: (totals.life + totals.spirit) - (totals.entropy + totals.time),
-  };
-}
-
 // ─── Dominant Sphere ──────────────────────────────────────────────────
 
 /**
@@ -200,13 +179,11 @@ export function phaseSphereAggregation(state: GameState): Partial<GameState> {
 
   // ── Compute aggregate ──────────────────────────────────────────────
   const dominantSphere = getDominantSphere(totals);
-  const foundationBalance = computeFoundationBalance(totals);
   const normalizedWeights = normalizeAggregate(totals);
 
   const aggregate: SphereAggregate = {
     totalBySphere: { ...totals },
     dominantSphere,
-    foundationBalance,
     entityCount,
   };
 
