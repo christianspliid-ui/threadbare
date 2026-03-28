@@ -4,13 +4,13 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 10-sphere-affinity/10-02-PLAN.md
-last_updated: "2026-03-28T17:46:17.640Z"
+last_updated: "2026-03-28T17:53:38.156Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 8
-  completed_plans: 2
+  completed_plans: 3
   percent: 93
 ---
 
@@ -237,6 +237,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: Faction/culture actors get default (all-zero) SphereAffinity at init — derived aggregation deferred to phaseSphereAggregation
 - [Phase 10-sphere-affinity]: SphereAggregate type lives in types/worldSoul.ts to avoid circular imports with engine layer
 - [Phase 10-sphere-affinity]: isValidSphereAffinity guard in both sphere phases handles legacy bare-string SphereName values from worldSeed.ts artifacts
+- [Phase 10-sphere-affinity]: Magic power formula: power = max(0, casterScore + locationScore - locationOppositionScore); overchannel cost routes as SpherePressureEvent through standard pressure pipeline targeting opposite sphere
 
 ### Pending Todos
 
