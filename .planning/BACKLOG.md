@@ -8,7 +8,31 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-072**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-074**.
+
+---
+
+## 💡 TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27)
+
+Wire the World-Soul (fundament, resonance, harmony/entropy) into the tick loop so it responds to player actions, agent behavior, and doom progression. Sphere balance ripples into encounter ecology, prosperity, agent behavior, and (stretch) terrain drift. The World-Soul is the connective tissue between all systems — without it, player actions feel local and isolated.
+
+Four phases: M1.1 tick integration (compute sphere balance from graph state, drift harmony/entropy), M1.2 sphere balance effects (prosperity modifier, encounter weighting, agent behavior bias), M1.3 UI & visibility (HUD indicator, sphere balance viz, chronicle entries, debug tab), M1.4 player interaction (connect existing sphere hex actions to global balance).
+
+**Roadmap:** `.planning/ROADMAP.md` → M1
+**Depends on:** World-Soul engine (✅ built, not wired), Orchestrator (✅), Hex Actions (✅)
+**Needs design:** Yes — design doc for computation model, modifier injection points, constants, fail-soft
+
+---
+
+## 💡 TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27)
+
+Scale up Iron Reach from individual encounters into army-scale conflict visible on the hex map. Armies as graph entities with size/strength/morale/leader, moving with faction goals (capture settlement, raid trade route, defend territory). Battle resolution from skirmishes (encounter-scale) to army clashes (multi-step narrative events). Sieges as multi-tick encounters with escalating stakes. Sacking destroys sublocations, tanks prosperity, displaces population, creates ruins. War disrupts trade routes. Divine intervention in battles. Army supply lines connect to trade routes (M3). Folds in TB-051 (Monster Encounters) as wilderness threats.
+
+Five phases: M2.1 army entities & warfare design, M2.2 battle/siege resolution, M2.3 destruction & consequences, M2.4 army visibility & UI, M2.5 monster encounters integration.
+
+**Roadmap:** `.planning/ROADMAP.md` → M2
+**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅)
+**Needs design:** Yes — full design pass with NFP compliance, new node type (army), wiring section
 
 ---
 
