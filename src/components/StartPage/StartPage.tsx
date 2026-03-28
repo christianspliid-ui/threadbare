@@ -5,6 +5,7 @@ import { SettingsModal } from './SettingsModal';
 import { CreditsModal } from './CreditsModal';
 import {
   START_PAGE_TITLE,
+  START_PAGE_WORDMARK,
   START_PAGE_LORE_LINE_1,
   START_PAGE_LORE_LINE_2,
   START_PAGE_FADE_DURATION_MS,
@@ -69,8 +70,14 @@ export function StartPage({ onNewWorld }: StartPageProps) {
         <div className="start-page__mist start-page__mist--1" />
         <div className="start-page__mist start-page__mist--2" />
         <div className="start-page__shimmer" />
+        <h1 className="start-page__title">
+          <img
+            src={START_PAGE_WORDMARK}
+            alt={START_PAGE_TITLE}
+            className="start-page__wordmark"
+          />
+        </h1>
         <div className="start-page__content">
-          <h1 className="start-page__title">{START_PAGE_TITLE}</h1>
           <p className="start-page__lore">
             {START_PAGE_LORE_LINE_1}
             <br />

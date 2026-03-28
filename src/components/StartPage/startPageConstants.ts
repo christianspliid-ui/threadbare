@@ -5,6 +5,7 @@
 
 // ─── Text Content ────────────────────────────────────────────────
 export const START_PAGE_TITLE = 'THREADBEARER';
+export const START_PAGE_WORDMARK = '/images/threadbearer-wordmark-spheres-final.png';
 export const START_PAGE_LORE_LINE_1 = 'Worlds are woven. Worlds are worn through.';
 export const START_PAGE_LORE_LINE_2 = 'The loom turns. The threads remember.';
 
