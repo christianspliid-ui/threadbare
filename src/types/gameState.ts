@@ -28,6 +28,7 @@ import type { GreatChronicle } from './chronicle';
 import type { WorldGraph } from '../engine/graph';
 import type { VisibilityMap } from './visibility';
 import type { FamiliarityMap } from './familiarity';
+import type { AgentKnowledge } from './agentKnowledge';
 
 // ─── Game Phase ─────────────────────────────────────────────────
 
@@ -120,6 +121,8 @@ export interface GameState {
   // Knowledge Fog of War
   familiarityMap: FamiliarityMap;    // actor ID -> familiarity score (0.0-1.0)
   culturalInsightMap: Map<string, number>;  // culture ID -> insight score (0.0-1.0)
+  /** Per-agent multi-facet knowledge model (additive overlay on familiarityMap) */
+  agentKnowledge: Map<string, AgentKnowledge>;
 
   /** @deprecated Replaced by unifiedActions. Kept for backward compatibility with existing tests. */
   encounterProgress: EncounterProgress[];
