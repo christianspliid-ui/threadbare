@@ -4,6 +4,7 @@ import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
 import { IconButton } from '../shared/IconButton';
 import { Button } from '../shared/Button';
+import { renderProseWithIPK } from '../ProseKeyword';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
@@ -11,6 +12,24 @@ const DRAWER_CONFIG = {
   HEIGHT_PERCENT: 35,
   TRANSITION_MS: 200,
 } as const;
+
+// ─── Sphere Action Prose ────────────────────────────────────────────────────
+
+/**
+ * Narrative consequence descriptions for sphere-aligned actions.
+ * Player-facing: describes the spiritual consequence of acting through this sphere.
+ * Numbers are NEVER shown here — only prose.
+ */
+const SPHERE_ACTION_PROSE: Record<string, string> = {
+  force: 'This act channels **Force** — raw, direct, and unambiguous. Conflict follows.',
+  matter: 'This act channels **Matter** — grounded and enduring. What is built will hold.',
+  energy: 'This act channels **Energy** — restless, radiant, and hard to contain.',
+  life: 'This act channels **Life** — growth, healing, and the patient insistence of living things.',
+  mind: 'This act channels **Mind** — sharp, deliberate, and impossible to un-know.',
+  spirit: 'This act channels **Spirit** — the unseen responds, and the veil shifts.',
+  time: 'This act channels **Time** — patient, inevitable, and weighted with consequence.',
+  entropy: 'This act channels **Entropy** — the old gives way. What comes next is not guaranteed.',
+};
 
 // ─── Props ────────────────────────────────────────────────────────────────
 
@@ -44,6 +63,19 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
   ({ open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose, playingCardId }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
     const [showLocked, setShowLocked] = useState(false);
+
+    // Sphere consequence preview — track which card is hovered
+    const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
+
+    const hoveredSlot = useMemo(
+      () => slots.find(s => s.id === hoveredSlotId) ?? null,
+      [slots, hoveredSlotId],
+    );
+
+    const spherePreviewProse = useMemo(() => {
+      if (!hoveredSlot?.sphere) return null;
+      return SPHERE_ACTION_PROSE[hoveredSlot.sphere] ?? null;
+    }, [hoveredSlot]);
 
     // Handle Escape key
     useEffect(() => {
@@ -111,7 +143,12 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           onWheel={(e) => e.stopPropagation()}
         >
           {availableSlots.map(slot => (
-            <div key={slot.id} className="flex-shrink-0">
+            <div
+              key={slot.id}
+              className="flex-shrink-0"
+              onMouseEnter={() => setHoveredSlotId(slot.id)}
+              onMouseLeave={() => setHoveredSlotId(null)}
+            >
               <ActionCard
                 slot={slot}
                 onClick={onSlotClick}
@@ -138,7 +175,12 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                 </Tooltip>
               </div>
               {showLocked && lockedSlots.map(slot => (
-                <div key={slot.id} className="flex-shrink-0">
+                <div
+                  key={slot.id}
+                  className="flex-shrink-0"
+                  onMouseEnter={() => setHoveredSlotId(slot.id)}
+                  onMouseLeave={() => setHoveredSlotId(null)}
+                >
                   <ActionCard
                     slot={slot}
                     onClick={onSlotClick}
@@ -149,6 +191,25 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             </>
           )}
         </div>
+
+        {/* Sphere consequence preview — appears on card hover */}
+        {spherePreviewProse && (
+          <p
+            data-testid="action-sphere-preview"
+            className="pointer-events-none"
+            style={{
+              fontFamily: 'var(--font-prose, serif)',
+              fontSize: '12px',
+              color: 'var(--text-secondary, #a09880)',
+              fontStyle: 'italic',
+              textAlign: 'center',
+              margin: '6px 0 0 0',
+              lineHeight: 1.5,
+            }}
+          >
+            {renderProseWithIPK(spherePreviewProse)}
+          </p>
+        )}
       </div>
     );
   }
