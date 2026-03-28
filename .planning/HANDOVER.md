@@ -9,6 +9,80 @@
 
 ---
 
+### 2026-03-28: Deploy landing page + product strategy + wordmark + roadmap updates
+
+**Context:** Cowork session created two new static pages and an illuminated wordmark logo for the game. Also updated ROADMAP with Living World Systems milestones and added TB-072/TB-073 to BACKLOG.
+
+**What Cowork did:**
+- Created `public/the-game.html` — marketing landing page with illuminated wordmark over bridge hero image, tagline, CTA, game promises, pillar showcases, concept art
+- Created `public/product-strategy.html` — internal strategy page (philosophy, milestones, gap matrix, strategic DNA)
+- Generated illuminated "Threadbearer" wordmark via image gen, background-removed to transparent PNG
+- Rewrote `.planning/ROADMAP.md` — Living World Systems roadmap (M1 World-Soul → M2 Conflict → M3 Economy)
+- Updated `.planning/BACKLOG.md` — Added TB-072 and TB-073
+
+**Action for Claude Code:**
+- [ ] `rm -f .git/index.lock` (may be stuck from previous session)
+- [ ] Delete duplicate at repo root: `rm -f product-strategy.html`
+- [ ] Stage: `git add public/the-game.html public/product-strategy.html public/images/threadbearer-wordmark.png .planning/ROADMAP.md .planning/BACKLOG.md`
+- [ ] Commit and push to main for Vercel auto-deploy
+- [ ] Verify both pages at deployed URL: `/product-strategy.html` and `/the-game.html`
+
+---
+
+### 2026-03-28: TB-072 World-Soul Connection — Full Design Complete (M1.1–M1.4)
+
+**Context:** Comprehensive design for the first Living World Systems milestone. Audited existing World-Soul engine (fully built, 24 pure functions, 40+ tests, zero orchestrator integration), all three downstream systems (prosperity, encounter scoring, agent axiological profiles), and the cosmology model. Produced a single design doc covering all four M1 phases.
+
+**What Cowork did:**
+- Audited `worldSoul.ts` (engine), `cosmology.ts` (sphere relationships), `phaseProsperity.ts` (equilibrium target), `encounterScoring.ts` (scoring pipeline), `phaseAgentDecision.ts` (axiological profiles)
+- Wrote comprehensive design doc: `Docs/plans/2026-03-28-world-soul-connection-design.md`
+- Updated TB-072 in BACKLOG.md to 📐▶ state
+
+**Key design decisions:**
+1. **Shift accumulator pattern** — New `pendingWorldSoulShifts: FundamentShift[]` on GameState (like `pendingHexMutations`). Upstream phases push shifts; `phaseWorldSoul` consumes and clears.
+2. **Phase position 9.5** — After all action/encounter/doom/mandate phases, before magical saturation.
+3. **Harmony index** — Single scalar (0.0=balanced, 1.0=one sphere dominates) computed from normalized standard deviation of sphere weights.
+4. **Three downstream modifiers:** Prosperity harmonic (±10 target), encounter resonance (additive score), axiological drift (≤0.15 per pair).
+5. **23 named constants** — Every magnitude, threshold, cap, and scale factor is tunable.
+6. **Memory capture** — Automatic resonance memory when spheres cross dominance threshold, doom escalates, mandates complete.
+7. **Terrain drift deferred** — Marked as stretch goal M1.2b, not in initial implementation scope.
+
+**Action for Claude Code:**
+- [ ] Review design doc for concerns (especially shift magnitudes and downstream modifier scales)
+- [ ] Implement M1.1a: `worldSoulModifiers.ts` + `pendingWorldSoulShifts` GameState field
+- [ ] Implement M1.1b: Wire shift registration into 6 upstream phases
+- [ ] Implement M1.1c: `phaseWorldSoul` in orchestrator at position 9.5
+- [ ] Implement M1.2a-c: Three modifier injections (prosperity, encounter, axiological) — can parallelize
+- [ ] Implement M1.3a: WorldSoulIndicator + WorldSoulModal
+- [ ] Implement M1.3b: WorldSoulDebugTab
+- [ ] Implement M1.3c: Chronicle entries + notification channel
+- [ ] Implement M1.4a: Integration test verifying action templates produce shifts
+- [ ] Implement M1.4b: World-Soul awareness prose variables
+- [ ] Full implementation order and critical path in design doc § Implementation Ordering
+
+---
+
+### 2026-03-28: Deploy product strategy + landing page + roadmap updates
+
+**Context:** Cowork session designed and built two new static pages, updated ROADMAP.md with Living World Systems milestones (M1 World-Soul → M2 Conflict → M3 Economy), and added TB-072/TB-073 to BACKLOG.md. Also conducted a full gap analysis of the player journey and established development sequencing.
+
+**What Cowork did:**
+- Created `public/product-strategy.html` — internal strategy visualization (philosophy, milestone sequence, gap matrix, strategic DNA)
+- Created `public/the-game.html` — marketing landing page selling the game vision (hero with title-screen.png, THREADBEARER centered, promises, pillar showcases, concept art, CTA)
+- Rewrote `.planning/ROADMAP.md` — Living World Systems roadmap (M1-M3) replacing completed HexMap V2 roadmap
+- Updated `.planning/BACKLOG.md` — Added TB-072 (World-Soul Connection) and TB-073 (Conflict & Destruction)
+- Created Obsidian note `Product Strategy.md` with wikilinks
+- Appended economy-doom-mandate connections to Obsidian brainstorm note
+
+**Action for Claude Code:**
+- [ ] `rm -f .git/index.lock` (may be stuck from previous session)
+- [ ] Delete duplicate file at repo root: `rm -f product-strategy.html` (real one is in `public/`)
+- [ ] Stage: `git add public/product-strategy.html public/the-game.html .planning/ROADMAP.md .planning/BACKLOG.md`
+- [ ] Commit and push to main for Vercel auto-deploy
+- [ ] Verify both pages load at deployed URL: `/product-strategy.html` and `/the-game.html`
+
+---
+
 ### 2026-03-27: TB-070 Agent Character Sheet Overhaul — Design Complete
 
 **Context:** Full audit of all agent-relevant information across implemented systems and design docs, followed by a design for overhauling the character sheet with tabbed layout and narrative revelation.
