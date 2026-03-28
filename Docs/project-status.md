@@ -3,9 +3,10 @@
 > Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Phase 10: Sphere Affinity System** — Plan 06/7 complete (sphere UI layer).
+**Phase 10: Sphere Affinity System** — All 9 plans complete (including gap-closure bridge).
 
 **Recent completions:**
+- ✅ Phase 10 Plan 08 (gap closure): Bridge adapter in getHexSphereInfluence normalizing sphereAffinity integer scores to 0-1 floats — HexChronicle Soul layer and ProseKeyword tooltips unblocked (2026-03-28).
 - ✅ Phase 10 Plan 06: Sphere affinity UI — ProseKeyword IPK component, WorldSoulIndicator in top bar, HexChronicle Soul IPK paragraph, ActionDrawer sphere consequence preview, DebugPanel Sphere State tab (2026-03-28).
 - ✅ Phase 10 Plan 04: Sphere downstream modifiers — prosperity Life/Energy/Entropy modifier, encounter resonance (sphere vs opposition), agent axiological shift from dominant sphere (2026-03-28).
 - ✅ Phase 10 Plan 02: Opposition-cancellation pressure engine, allied defense, erosion/construction, agent presence buffer, global World-Soul aggregation, both phases wired into orchestrator (2026-03-28).
