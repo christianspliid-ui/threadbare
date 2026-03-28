@@ -12,16 +12,12 @@
 
 ---
 
-## 📐▶ TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27)
+## ✅ TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27, complete 2026-03-29)
 
-Wire the World-Soul (fundament, resonance, harmony/entropy) into the tick loop so it responds to player actions, agent behavior, and doom progression. Sphere balance ripples into encounter ecology, prosperity, agent behavior, and (stretch) terrain drift. The World-Soul is the connective tissue between all systems — without it, player actions feel local and isolated.
+Phase 10 (Sphere Affinity) delivered the full World-Soul connection: per-entity sphere affinity data model (triangle number scale), pressure resolution engine, 6 upstream pressure sources, downstream modifiers (prosperity, encounters, agent decisions), magic as sphere fluency, full UI layer (WorldSoulIndicator, ProseKeyword IPK, HexChronicle Soul, DebugPanel Sphere State tab), TERRAIN_SPHERE_TABLE + LOCATION_SPHERE_TABLE. M1.2 encounter wiring complete (computeEncounterResonance + computeWorldSoulValueDrift). 109 sphere tests.
 
-Four phases: M1.1 tick integration (compute sphere balance from graph state, drift harmony/entropy), M1.2 sphere balance effects (prosperity modifier, encounter weighting, agent behavior bias), M1.3 UI & visibility (HUD indicator, sphere balance viz, chronicle entries, debug tab), M1.4 player interaction (connect existing sphere hex actions to global balance).
-
+**Remaining M1 items (not blocking):** prosperity harmonic (M1.3), terrain drift (stretch goal)
 **Design doc:** `Docs/plans/2026-03-28-world-soul-connection-design.md`
-**Roadmap:** `.planning/ROADMAP.md` → M1
-**Depends on:** World-Soul engine (✅ built, not wired), Orchestrator (✅), Hex Actions (✅)
-**Implementation phases:** 11 sub-phases (M1.1a–M1.4b), critical path: M1.1a→M1.1b→M1.1c→parallel M1.2+M1.3
 
 ---
 
