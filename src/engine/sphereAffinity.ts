@@ -20,6 +20,7 @@ import {
   LOCATION_TYPE_BONUS,
   MAX_SPHERE_SCORE,
 } from '../types/sphereAffinity';
+import type { AxiologicalProfile, ValuePair } from '../types/agent';
 
 // ─── Accessor ────────────────────────────────────────────────────
 
@@ -103,4 +104,63 @@ export function seedLocationSphereAffinity(
     );
   }
   return base;
+}
+
+// ─── Agent Decision Sphere Influence ─────────────────────────────
+
+/** Weight of sphere-derived axiological adjustment applied to agent's profile */
+export const SPHERE_DECISION_WEIGHT = 0.15;
+
+/** Describes a sphere's axiological influence: which pair and which direction */
+export interface SphereAxiologicalMapping {
+  /** The ValuePair to shift */
+  pair: ValuePair;
+  /** +1 = shift toward first pole (virtue); -1 = shift toward second pole (flaw) */
+  direction: 1 | -1;
+}
+
+/**
+ * Maps each sphere to its axiological influence direction.
+ * Force → courage (valor) over prudence; Time → prudence over courage; etc.
+ */
+export const SPHERE_AXIOLOGICAL_MAP: Record<SphereName, SphereAxiologicalMapping> = {
+  force:   { pair: 'courage_prudence',    direction: +1 as 1 },  // Bold, assertive
+  matter:  { pair: 'loyalty_ambition',    direction: +1 as 1 },  // Order over freedom
+  energy:  { pair: 'loyalty_ambition',    direction: -1 as -1 }, // Freedom over order
+  life:    { pair: 'mercy_ruthlessness',  direction: +1 as 1 },  // Compassion, preservation
+  mind:    { pair: 'honesty_cunning',     direction: +1 as 1 },  // Knowledge, transparency
+  spirit:  { pair: 'honesty_cunning',     direction: -1 as -1 }, // Intuition, hidden truth
+  time:    { pair: 'courage_prudence',    direction: -1 as -1 }, // Patient, measured
+  entropy: { pair: 'mercy_ruthlessness',  direction: -1 as -1 }, // Ruthlessness, consumption
+};
+
+/**
+ * Find the sphere with the highest score on an affinity object.
+ * Returns null if all scores are zero (fail-soft).
+ * Deterministic: iterates SPHERE_NAMES in order; first maximum wins.
+ */
+export function getDominantSphere(affinity: SphereAffinity): SphereName | null {
+  let maxScore = 0;
+  let dominant: SphereName | null = null;
+  for (const sphere of SPHERE_NAMES) {
+    if (affinity.scores[sphere] > maxScore) {
+      maxScore = affinity.scores[sphere];
+      dominant = sphere;
+    }
+  }
+  return dominant;
+}
+
+/**
+ * Apply a sphere-derived axiological shift to a profile.
+ * Adds `direction * SPHERE_DECISION_WEIGHT` to the mapped pair, clamped to [-1, 1].
+ * Returns a new profile object — does not mutate the input.
+ */
+export function applyAxiologicalShift(
+  profile: AxiologicalProfile,
+  mapping: SphereAxiologicalMapping,
+): AxiologicalProfile {
+  const current = profile[mapping.pair] ?? 0;
+  const shifted = Math.max(-1, Math.min(1, current + mapping.direction * SPHERE_DECISION_WEIGHT));
+  return { ...profile, [mapping.pair]: shifted };
 }
