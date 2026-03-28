@@ -3,18 +3,13 @@
 > Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Phase 10: Sphere Affinity System** — Plan 06/7 complete (sphere UI layer).
+**Phase 11: Agent Character Sheet Overhaul** — ✅ Complete (2026-03-29). All 6 plans executed, verified 13/13 must-haves.
 
 **Recent completions:**
-- ✅ Phase 10 Plan 06: Sphere affinity UI — ProseKeyword IPK component, WorldSoulIndicator in top bar, HexChronicle Soul IPK paragraph, ActionDrawer sphere consequence preview, DebugPanel Sphere State tab (2026-03-28).
-- ✅ Phase 10 Plan 04: Sphere downstream modifiers — prosperity Life/Energy/Entropy modifier, encounter resonance (sphere vs opposition), agent axiological shift from dominant sphere (2026-03-28).
-- ✅ Phase 10 Plan 02: Opposition-cancellation pressure engine, allied defense, erosion/construction, agent presence buffer, global World-Soul aggregation, both phases wired into orchestrator (2026-03-28).
-- ✅ Phase 10 Plan 01: SphereAffinity type system, triangle math, terrain-to-sphere table, entity seeding during game initialization (2026-03-28).
-- ✅ TB-067: Notification Expansion (2026-03-27) — right-click dismiss, NavigationTarget system with typed nav glyphs, per-category notification preferences in SettingsPanel with localStorage persistence.
-- ✅ TB-066: Palette Theme System (2026-03-27) — feature-flagged color schemes with two shipped themes (Golden Hour warm default, Dark Parchment cool/dark alt). URL param `?palette=dark-parchment`, Settings panel dropdown, 30 terrain + 5 water overrides. 23 tests.
-- ✅ TB-063: Faction UI & Visibility (2026-03-27) — agent profile faction section, faction TickEvents (join/promotion/demotion), alert glyphs, debug panel Factions tab. 16 tests.
-- ✅ TB-065: Encounter Modal Prose Variables (2026-03-27) — resolve {actor}, {adj}, {verb}, {noun}, {action} placeholders in TieredEncounterModal.
-- ✅ TB-064: In-Game Settings Panel (2026-03-27) — single gear icon dropdown replaces fog+debug buttons.
+- ✅ Phase 11 (TB-070): Agent Character Sheet Overhaul (2026-03-29) — 5-tab AgentProfileModal (Overview, Prowess, Bonds, Journey, Chronicle), multi-faceted AgentKnowledge revelation system, interactionDepth accumulator, 4 divine action cards (Observe/Scry/Whisper Insight/Dream Sending), debug panel Revelation Log + Knowledge Comparison tabs. 6 plans, 3 gap closures.
+- ✅ Phase 10: Sphere Affinity System (2026-03-28) — SphereAffinity types, pressure engine, aggregation, downstream modifiers, sphere UI (ProseKeyword IPK, WorldSoulIndicator, ActionDrawer preview, DebugPanel Sphere State tab).
+- ✅ TB-067: Notification Expansion (2026-03-27) — right-click dismiss, NavigationTarget system, per-category notification preferences.
+- ✅ TB-066: Palette Theme System (2026-03-27) — feature-flagged color schemes, two shipped themes.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
