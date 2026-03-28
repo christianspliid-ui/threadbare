@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-agent-character-sheet/11-04-PLAN.md
-last_updated: "2026-03-28T20:55:09.189Z"
+stopped_at: Completed 11-agent-character-sheet/11-05-PLAN.md
+last_updated: "2026-03-28T22:44:07.735Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 2
   completed_phases: 2
-  total_plans: 13
-  completed_plans: 13
+  total_plans: 14
+  completed_plans: 14
   percent: 93
 ---
 
@@ -164,6 +164,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P03 | 9 | 2 tasks | 8 files |
 | Phase 11-agent-character-sheet P02 | 11 | 2 tasks | 9 files |
 | Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
+| Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -268,6 +269,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: Knowledge gating: AgentKnowledge facets used when prop present; KnowledgeLevel-based fallback otherwise (backward compat)
 - [Phase 11-agent-character-sheet]: revelationAction field added to UnifiedActionTemplate type as optional string — extensible without schema change
 - [Phase 11-agent-character-sheet]: REVELATION_ACTION_TEMPLATES array appended to UNIFIED_ACTION_TEMPLATES — 4 new agent-targeting divine action cards available in ActionDrawer
+- [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
 
 ### Pending Todos
 
@@ -279,6 +281,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T20:55:09.186Z
-Stopped at: Completed 11-agent-character-sheet/11-04-PLAN.md
+Last session: 2026-03-28T22:44:07.732Z
+Stopped at: Completed 11-agent-character-sheet/11-05-PLAN.md
 Resume file: None
