@@ -12,15 +12,16 @@
 
 ---
 
-## 💡 TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27)
+## 📐▶ TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27)
 
 Wire the World-Soul (fundament, resonance, harmony/entropy) into the tick loop so it responds to player actions, agent behavior, and doom progression. Sphere balance ripples into encounter ecology, prosperity, agent behavior, and (stretch) terrain drift. The World-Soul is the connective tissue between all systems — without it, player actions feel local and isolated.
 
 Four phases: M1.1 tick integration (compute sphere balance from graph state, drift harmony/entropy), M1.2 sphere balance effects (prosperity modifier, encounter weighting, agent behavior bias), M1.3 UI & visibility (HUD indicator, sphere balance viz, chronicle entries, debug tab), M1.4 player interaction (connect existing sphere hex actions to global balance).
 
+**Design doc:** `Docs/plans/2026-03-28-world-soul-connection-design.md`
 **Roadmap:** `.planning/ROADMAP.md` → M1
 **Depends on:** World-Soul engine (✅ built, not wired), Orchestrator (✅), Hex Actions (✅)
-**Needs design:** Yes — design doc for computation model, modifier injection points, constants, fail-soft
+**Implementation phases:** 11 sub-phases (M1.1a–M1.4b), critical path: M1.1a→M1.1b→M1.1c→parallel M1.2+M1.3
 
 ---
 

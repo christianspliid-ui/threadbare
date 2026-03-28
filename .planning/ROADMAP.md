@@ -167,8 +167,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 
 | Milestone | Design Doc Needed | Status |
 |-----------|------------------|--------|
-| M1.1–M1.2 | World-Soul Tick Integration & Effects | Needs design |
-| M1.3–M1.4 | World-Soul UI & Player Interaction | Needs design |
+| M1.1–M1.4 | World-Soul Connection (all phases) | ✅ Design complete (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
 | M2.1 | Army Entities & Faction Warfare | Needs full design |
 | M2.2 | Battle Resolution & Sieges | Needs full design |
 | M2.3 | Destruction & Consequences | Needs design (partially covered by economy brainstorm) |
