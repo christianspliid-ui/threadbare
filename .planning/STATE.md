@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: "Completed 10-sphere-affinity/10-07-PLAN.md — Phase 10 complete"
-last_updated: "2026-03-28T18:44:00.000Z"
+stopped_at: Completed 10-sphere-affinity/10-08-PLAN.md — gap closure bridge complete
+last_updated: "2026-03-28T20:04:18.984Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
   completed_phases: 1
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 9
+  completed_plans: 9
   percent: 93
 ---
 
@@ -159,6 +159,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 10-sphere-affinity P03 | 10 | 2 tasks | 4 files |
 | Phase 10-sphere-affinity P03b | 17 | 2 tasks | 2 files |
 | Phase 10-sphere-affinity P06 | 7 | 2 tasks | 9 files |
+| Phase 10-sphere-affinity P08 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -254,6 +255,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: graph.nodes is a Map — use Map API (entries(), values(), size) not Object.keys() in CLI evals
 - [Phase 10-sphere-affinity]: Human verification approved with gaps — HexChronicle Soul layer empty due to missing bridge from new sphereAffinity (int scores) to old sphereInfluence (0-1 float) interface; ProseKeyword tooltips blocked on that bridge; action drawer hover effects explicitly deferred by user
 - [Phase 10-sphere-affinity]: Phase 10 complete — all 7 plans executed, sphere pipeline stable over 30+ ticks, UI gaps logged to backlog
+- [Phase 10-sphere-affinity]: getHexSphereInfluence reads sphereAffinity.scores and divides by MAX_SPHERE_SCORE for normalization; legacy fallback to sphereInfluence/sphereBiases preserved; clamping applied post-aggregation
 
 ### Pending Todos
 
@@ -265,6 +267,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:44:00.000Z
-Stopped at: Completed 10-sphere-affinity/10-07-PLAN.md — Phase 10 sphere affinity complete. Three UI gaps deferred: HexChronicle Soul bridge, ProseKeyword tooltips (blocked on bridge), action drawer hover effects.
+Last session: 2026-03-28T20:04:18.982Z
+Stopped at: Completed 10-sphere-affinity/10-08-PLAN.md — gap closure bridge complete
 Resume file: None
