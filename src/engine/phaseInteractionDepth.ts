@@ -23,6 +23,7 @@ import {
 } from '../types/agentKnowledge';
 import { getOrCreateKnowledge } from './revelationHooks';
 import { emitTrace } from './traceBuffer';
+import type { InteractionDepthTrace } from '../types/trace';
 import { getAvatarHexPosition } from './visibility';
 
 // ─── Avatar Lookup ────────────────────────────────────────────────
@@ -115,7 +116,7 @@ export function phaseInteractionDepth(state: GameState): void {
         source: 'co_location',
         depthBefore,
         depthAfter: knowledge.interactionDepth,
-      });
+      } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
     }
 
     if (sharesFacton) {
@@ -132,7 +133,7 @@ export function phaseInteractionDepth(state: GameState): void {
         source: 'faction_ambient',
         depthBefore,
         depthAfter: knowledge.interactionDepth,
-      });
+      } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
     }
   }
 }

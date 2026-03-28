@@ -296,6 +296,7 @@ describe('integration: moveAvatarToHex + phaseMovement', () => {
       visibilityMap: new Map() as unknown as GameState['visibilityMap'],
       familiarityMap: new Map() as unknown as GameState['familiarityMap'],
       culturalInsightMap: new Map(),
+      agentKnowledge: new Map(),
       encounterProgress: [],
       actionsInProgress: [],
       unifiedActions: [],

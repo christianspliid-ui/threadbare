@@ -37,6 +37,7 @@ function makeState(graph: WorldGraph, tick: number): GameState {
     visibilityMap: new Map() as any,
     familiarityMap: new Map() as any,
     culturalInsightMap: new Map(),
+    agentKnowledge: new Map(),
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
