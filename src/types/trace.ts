@@ -504,6 +504,26 @@ export interface HiddenSiteRevealedTrace extends TraceBase {
   hasElderMagic: boolean;
 }
 
+/** Trace: a specific agent knowledge facet revealed to the player */
+export interface RevelationTrace extends TraceBase {
+  category: 'agent_revelation';
+  agentId: string;
+  facetType: 'value' | 'domain' | 'bond' | 'ambition' | 'disposition' | 'possession' | 'power' | 'condition' | 'agreement' | 'threat' | 'chronicle_event';
+  facetId: string;
+  source: 'encounter_observation' | 'divine_action' | 'social_gossip' | 'faction_intel' | 'co_location' | 'public_event' | 'dilemma_witness' | 'first_sighting' | 'power_use_witnessed' | 'agreement_witnessed';
+  interactionDepthBefore: number;
+  interactionDepthAfter: number;
+}
+
+/** Trace: cumulative interaction depth updated for an agent */
+export interface InteractionDepthTrace extends TraceBase {
+  category: 'interaction_depth';
+  agentId: string;
+  source: 'dilemma' | 'encounter_observed' | 'divine_action' | 'social_encounter' | 'co_location' | 'faction_ambient';
+  depthBefore: number;
+  depthAfter: number;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -543,7 +563,9 @@ export type TraceEntry =
   | LayerRevealedTrace
   | HiddenSiteRevealedTrace
   | TickHealthTrace
-  | TickCrashTrace;
+  | TickCrashTrace
+  | RevelationTrace
+  | InteractionDepthTrace;
 
 /** All known trace categories */
 export const TRACE_CATEGORIES = [
@@ -582,6 +604,8 @@ export const TRACE_CATEGORIES = [
   'revelation',
   'tick_health',
   'tick_crash',
+  'agent_revelation',
+  'interaction_depth',
 ] as const;
 
 export type TraceCategory = (typeof TRACE_CATEGORIES)[number];

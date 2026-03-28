@@ -45,6 +45,7 @@ import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
+import { resolveRevelationAction } from './revelationEmitter';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -400,6 +401,16 @@ export function phaseUnifiedActionProgress(
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
+      }
+    }
+
+    // Revelation actions: if template has revelationAction metadata, dispatch
+    // to resolveRevelationAction on successful resolution. Fail-soft wrapped.
+    if (updatedAction.resolved && updatedAction.outcome === 'success' && template.revelationAction) {
+      try {
+        resolveRevelationAction(template.revelationAction, state, completing_action.targetId);
+      } catch (revelationErr) {
+        console.warn('[unifiedActionResolution] revelation action error:', revelationErr);
       }
     }
 

@@ -1192,7 +1192,7 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
   );
 }
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed, sphereAggregate }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed, sphereAggregate, agentKnowledge }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -1349,6 +1349,12 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'spheres')} onClick={() => setViewMode('spheres')}>
           Sphere State
         </button>
+        <button style={getTabButtonStyle(viewMode === 'revelation-log')} onClick={() => setViewMode('revelation-log')}>
+          Revelations
+        </button>
+        <button style={getTabButtonStyle(viewMode === 'knowledge-gaps')} onClick={() => setViewMode('knowledge-gaps')}>
+          Knowledge
+        </button>
       </div>
 
       {/* Agent Follow Header with dropdown selector */}
@@ -1455,6 +1461,16 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
           <FactionDebugContent graph={graph} />
         ) : viewMode === 'spheres' ? (
           <SphereStateTabContent aggregate={sphereAggregate} />
+        ) : viewMode === 'revelation-log' ? (
+          <RevelationLogTab
+            traces={allTraces as TraceEntry[]}
+            agentKnowledge={agentKnowledge ?? new Map()}
+          />
+        ) : viewMode === 'knowledge-gaps' ? (
+          <KnowledgeComparisonTab
+            agentKnowledge={agentKnowledge ?? new Map()}
+            graph={graph}
+          />
         ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={effectiveAgentId}

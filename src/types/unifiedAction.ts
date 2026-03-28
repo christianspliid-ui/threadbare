@@ -104,6 +104,15 @@ export interface UnifiedActionTemplate {
   /** Only for durationMode: 'sustained'. Defines the persistent effect. */
   readonly controlSpec?: ControlSpec;
 
+  // ── Revelation action marker ────────────────────────────────────
+
+  /**
+   * If present, this action triggers resolveRevelationAction on completion.
+   * Values: 'observe' | 'scry' | 'whisper_insight' | 'dream_sending'
+   * (extensible — any string routes to revelationEmitter.resolveRevelationAction)
+   */
+  readonly revelationAction?: string;
+
   // Contestation
   readonly contestsWith?: readonly string[];
 

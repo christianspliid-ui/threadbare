@@ -55,6 +55,8 @@ import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement } from './phaseMovement';
 import { phaseColocationDetection } from './phaseColocationDetection';
+import { phaseInteractionDepth } from './phaseInteractionDepth';
+import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelations } from './revelationEmitter';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
@@ -988,6 +990,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2a.7: Encounter Revelations (knowledge facets from encounter observations)
+  emitEncounterRevelations(s);
+  phaseEventCounts['encounter_revelations'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
   // Phase 2a.6: Encounter Visibility — generate notifications for threaded agents in encounters
   const encVisResult = phaseEncounterVisibility(s);
   s = {
@@ -1018,6 +1025,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
   s = { ...s, ...phaseColocationDetection(s) };
   phaseEventCounts['colocation_detection'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.37: Colocation Revelations (first-sighting possession reveals, faction bond auto-reveals)
+  emitColocationRevelations(s);
+  phaseEventCounts['colocation_revelations'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution
@@ -1055,9 +1067,19 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['dilemma_detection'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2.55: Dilemma Revelations (knowledge facets from witnessed dilemmas)
+  emitDilemmaRevelations(s);
+  phaseEventCounts['dilemma_revelations'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
   // Phase 2.75: Familiarity Gain (Proximity)
   s = { ...s, ...phaseFamiliarityGain(s) };
   phaseEventCounts['familiarity_gain'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.76: Interaction Depth (agent knowledge accumulator)
+  phaseInteractionDepth(s);
+  phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 3: Rival Actions

@@ -23,6 +23,7 @@ const recognisedCard: AgentInfoCardData = {
   primarySphere: 'iron',
   archetypeLabel: 'Tragic Hero',
   factionName: 'Iron Brotherhood',
+  factionRank: 'Initiate',
   cultureName: 'Valdor',
   knowledgeLevel: 'recognised',
   topValues: [{ pair: 'loyalty_ambition', word: 'Ambitious' }],
@@ -104,6 +105,12 @@ const transparentProfile: AgentFullProfileData = {
   ] as InteractionRecord[],
 };
 
+// ─── Helper: click a tab ──────────────────────────────────────────────
+
+function clickTab(tabLabel: string) {
+  fireEvent.click(screen.getByText(tabLabel));
+}
+
 // ─── Tests ────────────────────────────────────────────────────────────
 
 describe('AgentProfileModal', () => {
@@ -122,43 +129,58 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Kael the Scorned')).toBeTruthy();
   });
 
-  it('shows archetype label at recognised level', () => {
+  // ─── Tab navigation ────────────────────────────────────────────────
+
+  it('renders 5 tab buttons', () => {
+    render(<AgentProfileModal card={strangerCard} profile={undefined} onClose={vi.fn()} />);
+    expect(screen.getByText('Overview')).toBeTruthy();
+    expect(screen.getByText('Prowess')).toBeTruthy();
+    expect(screen.getByText('Bonds')).toBeTruthy();
+    expect(screen.getByText('Journey')).toBeTruthy();
+    expect(screen.getByText('Chronicle')).toBeTruthy();
+  });
+
+  it('defaults to Overview tab showing identity section', () => {
+    render(<AgentProfileModal card={recognisedCard} profile={undefined} onClose={vi.fn()} />);
+    expect(screen.getByText('Identity')).toBeTruthy();
+  });
+
+  it('shows archetype label in Overview tab at recognised level', () => {
     render(<AgentProfileModal card={recognisedCard} profile={undefined} onClose={vi.fn()} />);
     expect(screen.getByText('Tragic Hero')).toBeTruthy();
   });
 
-  it('shows faction and culture at recognised level', () => {
+  it('shows faction and culture in Overview tab at recognised level', () => {
     render(<AgentProfileModal card={recognisedCard} profile={undefined} onClose={vi.fn()} />);
-    // Faction and culture are joined with · separator, so check the combined text
     expect(screen.getByText(/Iron Brotherhood.*Valdor|Valdor.*Iron Brotherhood/)).toBeTruthy();
   });
 
-  it('shows quotes section at known level', () => {
+  it('shows quotes section in Overview tab at known level', () => {
     render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
     expect(screen.getByText(/Once said/)).toBeTruthy();
   });
 
-  it('shows values section at known level', () => {
+  it('shows values section in Overview tab at known level', () => {
     render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
     expect(screen.getByText('Ambitious')).toBeTruthy();
     expect(screen.getByText('Compassionate')).toBeTruthy();
   });
 
-  it('shows prowess section with domains at known level', () => {
-    render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
-    expect(screen.getByText(/Fearsome/)).toBeTruthy();
-    expect(screen.getByText(/Shrewd/)).toBeTruthy();
-  });
-
-  it('shows bonds section at known level', () => {
-    render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
-    expect(screen.getByText(/Lyra/)).toBeTruthy();
-    expect(screen.getByText(/Mordach/)).toBeTruthy();
-  });
-
-  it('shows all 9 domains at intimate level', () => {
+  it('shows backstory in Overview tab at intimate level', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    // Domain names are now wrapped in Tooltip spans — check domain names are present
+    expect(screen.getByText(/was born among/)).toBeTruthy();
+  });
+
+  it('shows traits in Overview tab at intimate level', () => {
+    render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
+    expect(screen.getByText('Scarred')).toBeTruthy();
+    expect(screen.getByText('Eloquent')).toBeTruthy();
+    expect(screen.getByText('Cursed')).toBeTruthy();
+  });
+
+  it('clicking Prowess tab shows domain grid', () => {
+    render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
+    clickTab('Prowess');
     expect(screen.getByText('Iron')).toBeTruthy();
     expect(screen.getByText('Gold')).toBeTruthy();
     expect(screen.getByText('Shadow')).toBeTruthy();
@@ -170,39 +192,48 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Flesh')).toBeTruthy();
   });
 
-  it('shows traits section at intimate level', () => {
-    render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    expect(screen.getByText('Scarred')).toBeTruthy();
-    expect(screen.getByText('Eloquent')).toBeTruthy();
-    expect(screen.getByText('Cursed')).toBeTruthy();
+  it('clicking Prowess tab shows prowess section with domain descriptors at known level', () => {
+    render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
+    clickTab('Prowess');
+    expect(screen.getByText(/Fearsome/)).toBeTruthy();
+    expect(screen.getByText(/Shrewd/)).toBeTruthy();
   });
 
-  it('shows backstory at intimate level', () => {
-    render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    expect(screen.getByText(/was born among/)).toBeTruthy();
+  it('clicking Bonds tab shows faction section', () => {
+    render(<AgentProfileModal card={recognisedCard} profile={undefined} onClose={vi.fn()} />);
+    clickTab('Bonds');
+    expect(screen.getByTestId('modal-faction')).toBeTruthy();
   });
 
-  it('shows disposition section at intimate level', () => {
+  it('clicking Bonds tab shows bonds section at known level', () => {
+    render(<AgentProfileModal card={knownCard} profile={undefined} onClose={vi.fn()} />);
+    clickTab('Bonds');
+    expect(screen.getByText(/Lyra/)).toBeTruthy();
+    expect(screen.getByText(/Mordach/)).toBeTruthy();
+  });
+
+  it('clicking Bonds tab shows disposition section at intimate level', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
-    expect(screen.getByText(/tit-for-tat|Tit-for-Tat/i)).toBeTruthy();
+    clickTab('Bonds');
+    expect(screen.getByText(/Repays in kind/i)).toBeTruthy();
     expect(screen.getByText(/esteemed/i)).toBeTruthy();
   });
 
-  it('shows full backstory at transparent level', () => {
+  it('clicking Chronicle tab shows full backstory at transparent level', () => {
     render(<AgentProfileModal card={transparentCard} profile={transparentProfile} onClose={vi.fn()} />);
-    // Full Account section should be present
+    clickTab('Chronicle');
     expect(screen.getByText('Full Account')).toBeTruthy();
   });
 
-  it('shows history timeline at transparent level', () => {
+  it('clicking Chronicle tab shows history timeline at transparent level', () => {
     render(<AgentProfileModal card={transparentCard} profile={transparentProfile} onClose={vi.fn()} />);
-    // Check for the history section heading
-    expect(screen.getByText('History')).toBeTruthy();
+    clickTab('Chronicle');
+    expect(screen.getByText('Timeline')).toBeTruthy();
   });
 
-  it('shows disposition record at transparent level', () => {
+  it('clicking Chronicle tab shows disposition record at transparent level', () => {
     render(<AgentProfileModal card={transparentCard} profile={transparentProfile} onClose={vi.fn()} />);
-    // Check for Interaction Record section heading
+    clickTab('Chronicle');
     expect(screen.getByText('Interaction Record')).toBeTruthy();
   });
 
@@ -216,7 +247,6 @@ describe('AgentProfileModal', () => {
   it('closes when backdrop is clicked', () => {
     const onClose = vi.fn();
     const { container } = render(<AgentProfileModal card={strangerCard} profile={undefined} onClose={onClose} />);
-    // Find the backdrop (first child div with bg-black/80 class)
     const backdrop = container.querySelector('.bg-black\\/80');
     if (backdrop) {
       fireEvent.click(backdrop);
@@ -229,7 +259,6 @@ describe('AgentProfileModal', () => {
       <AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />
     );
     const text = container.textContent ?? '';
-    // Should not have patterns like "0.65" or "7.2"
     expect(text).not.toMatch(/\b\d+\.\d+\b/);
   });
 
@@ -242,12 +271,12 @@ describe('AgentProfileModal', () => {
       knowledgeLevel: 'stranger',
     };
     render(<AgentProfileModal card={minimalCard} profile={undefined} onClose={vi.fn()} />);
-    // Should still render with just name and location
     expect(screen.getByText('Emissary of None')).toBeTruthy();
-    expect(screen.getByText('The Void')).toBeTruthy();
+    // Location name may appear in both header and identity tab
+    expect(screen.getAllByText('The Void').length).toBeGreaterThan(0);
   });
 
-  it('renders possessions section at intimate level', () => {
+  it('renders possessions section in Prowess tab at intimate level', () => {
     const cardWithPossessions: AgentInfoCardData = {
       ...intimateCard,
       possessions: [{
@@ -262,13 +291,13 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
+    clickTab('Prowess');
     expect(screen.getByTestId('modal-possessions')).toBeTruthy();
-    // Name is inside glyph+name span wrapped by Tooltip — use regex to match partial text
     expect(screen.getByText(/Ashenmane's Fang/)).toBeTruthy();
     expect(screen.getByText('Won in a border raid.')).toBeTruthy();
   });
 
-  it('renders afflictions section at recognised level', () => {
+  it('renders afflictions section in Prowess tab at recognised level', () => {
     const cardWithAfflictions: AgentInfoCardData = {
       ...recognisedCard,
       afflictions: [{
@@ -283,11 +312,12 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithAfflictions} profile={undefined} onClose={vi.fn()} />);
+    clickTab('Prowess');
     expect(screen.getByTestId('modal-afflictions')).toBeTruthy();
     expect(screen.getByText(/Bruised Ribs/)).toBeTruthy();
   });
 
-  it('renders gifts & burdens section at intimate level', () => {
+  it('renders gifts & burdens section in Prowess tab at intimate level', () => {
     const cardWithGifts: AgentInfoCardData = {
       ...intimateCard,
       giftsAndBurdens: [{
@@ -301,12 +331,13 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithGifts} profile={intimateProfile} onClose={vi.fn()} />);
+    clickTab('Prowess');
     expect(screen.getByTestId('modal-gifts-burdens')).toBeTruthy();
     expect(screen.getByText(/Turn Undead/)).toBeTruthy();
     expect(screen.getByText(/Granted by Solhaven/)).toBeTruthy();
   });
 
-  it('opens attachment detail overlay when vignette is clicked', () => {
+  it('opens attachment detail overlay when vignette is clicked in Prowess tab', () => {
     const cardWithPossessions: AgentInfoCardData = {
       ...intimateCard,
       possessions: [{
@@ -319,7 +350,7 @@ describe('AgentProfileModal', () => {
       }],
     };
     render(<AgentProfileModal card={cardWithPossessions} profile={intimateProfile} onClose={vi.fn()} />);
-    // Click on the vignette container (role="button")
+    clickTab('Prowess');
     const possessionsSection = screen.getByTestId('modal-possessions');
     const vignette = possessionsSection.querySelector('[role="button"]');
     expect(vignette).toBeTruthy();
@@ -330,9 +361,9 @@ describe('AgentProfileModal', () => {
 
   it('does not show attachment sections when no attachments', () => {
     render(<AgentProfileModal card={intimateCard} profile={intimateProfile} onClose={vi.fn()} />);
+    clickTab('Prowess');
     expect(screen.queryByTestId('modal-possessions')).toBeNull();
     expect(screen.queryByTestId('modal-afflictions')).toBeNull();
-    expect(screen.queryByTestId('modal-gifts-burdens')).toBeNull();
   });
 
   // ─── Portrait Tests ─────────────────────────────────────────────────

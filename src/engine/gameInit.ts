@@ -306,6 +306,7 @@ export function initializeGameState(
     visibilityMap,
     familiarityMap,
     culturalInsightMap: new Map<string, number>(),
+    agentKnowledge: new Map(),
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
