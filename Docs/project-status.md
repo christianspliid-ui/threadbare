@@ -3,14 +3,13 @@
 > Updated 2026-03-29.
 
 ## Current Focus
-**Phase 10: Sphere Affinity — Complete.** All 9 plans (including gap closure) delivered. Sphere pipeline stable.
+**Phase 11: Agent Character Sheet Overhaul** — ✅ Complete (2026-03-29). All 6 plans executed, verified 13/13 must-haves.
 
 **Recent completions:**
-- ✅ Phase 10 fix: Remove LOCATION_HEX_INHERIT_RATIO, add LOCATION_SPHERE_TABLE, fix build errors (2026-03-29)
-- ✅ Phase 10 Plan 08 (gap closure): Bridge adapter in getHexSphereInfluence normalizing sphereAffinity integer scores (2026-03-28)
-- ✅ Phase 10 Plans 01-07: Full sphere affinity system — data model, pressure engine, upstream wiring, downstream modifiers, magic power, UI, verification (2026-03-28)
-- ✅ TB-072 M1.2: Encounter wiring — computeEncounterResonance + computeWorldSoulValueDrift wired into encounterScoring (2026-03-28)
-- ✅ Phase 11: Agent Character Sheet Overhaul — 4 plans complete (2026-03-28)
+- ✅ Phase 11 (TB-070): Agent Character Sheet Overhaul (2026-03-29) — 5-tab AgentProfileModal (Overview, Prowess, Bonds, Journey, Chronicle), multi-faceted AgentKnowledge revelation system, interactionDepth accumulator, 4 divine action cards (Observe/Scry/Whisper Insight/Dream Sending), debug panel Revelation Log + Knowledge Comparison tabs. 6 plans, 3 gap closures.
+- ✅ Phase 10: Sphere Affinity System (2026-03-28) — SphereAffinity types, pressure engine, aggregation, downstream modifiers, sphere UI. All 9 plans including gap closure.
+- ✅ TB-067: Notification Expansion (2026-03-27) — right-click dismiss, NavigationTarget system, per-category notification preferences.
+- ✅ TB-066: Palette Theme System (2026-03-27) — feature-flagged color schemes, two shipped themes.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`

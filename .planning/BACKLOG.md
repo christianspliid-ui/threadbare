@@ -42,13 +42,12 @@ Make the economy dynamic by connecting encounters, factions, locations, and acti
 
 ---
 
-## 📐 TB-070 · Agent Character Sheet Overhaul — Tabbed Layout & Narrative Revelation (2026-03-27)
+## ✅ TB-070 · Agent Character Sheet Overhaul — Tabbed Layout & Narrative Revelation (2026-03-29)
 
-Overhaul the agent character sheet (AgentProfileModal) from a long-scroll list of sections to a 5-tab layout (Overview, Prowess, Bonds, Journey, Chronicle). Replace scalar familiarity-gated visibility with a multi-faceted knowledge model (`AgentKnowledge`) where individual data points — values, domains, bonds, ambitions — are revealed through specific narrative interactions (witnessing encounters, divine actions, gossip, co-location) rather than crossing a number threshold. Includes new action cards for deliberate discovery (Observe, Scry, Whisper Insight, Dream Sending) and an `interactionDepth` accumulator. Backward-compatible with existing familiarity system.
+5-tab AgentProfileModal (Overview, Prowess, Bonds, Journey, Chronicle), multi-faceted AgentKnowledge revelation system with interactionDepth accumulator, 4 divine action cards (Observe/Scry/Whisper Insight/Dream Sending), debug panel Revelation Log + Knowledge Comparison tabs. Phase 11: 6 plans (4 core + 2 gap closure), verified 13/13 must-haves.
 
 **Design doc:** `Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`
-**Depends on:** Familiarity system (✅), Encounter system (✅), Social Fabric design (✅), Faction Vertical Slice (✅)
-**Implementation phases:** 4 phases (knowledge facet infrastructure → tabbed modal UI → revelation notifications → action cards)
+**Phase:** `.planning/phases/11-agent-character-sheet/`
 
 ---
 
