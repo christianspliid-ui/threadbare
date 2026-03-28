@@ -159,6 +159,7 @@ function createMinimalGameState(): GameState {
     visibilityMap: {} as any,
     familiarityMap: {} as any,
     culturalInsightMap: new Map(),
+    agentKnowledge: new Map(),
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
