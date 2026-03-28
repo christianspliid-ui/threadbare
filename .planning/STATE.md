@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-agent-character-sheet/11-02-PLAN.md
-last_updated: "2026-03-28T20:48:01.665Z"
+stopped_at: Completed 11-agent-character-sheet/11-04-PLAN.md
+last_updated: "2026-03-28T20:55:09.189Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 2
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 93
 ---
 
@@ -163,6 +163,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P01 | 485 | 2 tasks | 10 files |
 | Phase 11-agent-character-sheet P03 | 9 | 2 tasks | 8 files |
 | Phase 11-agent-character-sheet P02 | 11 | 2 tasks | 9 files |
+| Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -265,6 +266,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: domain_revealed added to TickEvent type union for revelation notification support
 - [Phase 11-agent-character-sheet]: AgentProfileModal modal shell uses useState<TabId> for active tab; scrollToNewStrata auto-selects Chronicle tab on mount
 - [Phase 11-agent-character-sheet]: Knowledge gating: AgentKnowledge facets used when prop present; KnowledgeLevel-based fallback otherwise (backward compat)
+- [Phase 11-agent-character-sheet]: revelationAction field added to UnifiedActionTemplate type as optional string — extensible without schema change
+- [Phase 11-agent-character-sheet]: REVELATION_ACTION_TEMPLATES array appended to UNIFIED_ACTION_TEMPLATES — 4 new agent-targeting divine action cards available in ActionDrawer
 
 ### Pending Todos
 
@@ -276,6 +279,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T20:48:01.663Z
-Stopped at: Completed 11-agent-character-sheet/11-02-PLAN.md
+Last session: 2026-03-28T20:55:09.186Z
+Stopped at: Completed 11-agent-character-sheet/11-04-PLAN.md
 Resume file: None
