@@ -62,7 +62,7 @@ Global state derived from entity aggregate, not independently maintained:
 
 ### Phase 10: Sphere Affinity — Implementation Plans
 
-**Plans:** 7/7 plans complete ✅
+**Plans:** 8 plans (7 complete, 1 gap closure)
 **Requirements:** SPHR-01 through SPHR-27
 
 Plans:
@@ -73,8 +73,9 @@ Plans:
 - [x] 10-05-PLAN.md — Magic power calculation + overchannel
 - [x] 10-06-PLAN.md — IPK component, WorldSoulIndicator, HexChronicle Soul, debug panel
 - [x] 10-07-PLAN.md — Integration smoke test + human visual verification
+- [ ] 10-08-PLAN.md — Gap closure: HexChronicle Soul layer data bridge (sphereAffinity to sphereInfluence adapter)
 
-**Phase 10 complete (2026-03-28).** Sphere pipeline stable over 30+ ticks. Known UI gaps deferred: HexChronicle Soul layer bridge (sphereAffinity→sphereInfluence adapter not built), ProseKeyword tooltips (blocked on bridge), action drawer hover effects (deferred by user).
+**Phase 10 core complete (2026-03-28).** Sphere pipeline stable over 30+ ticks. Gap closure plan 10-08 addresses HexChronicle Soul layer bridge and ProseKeyword tooltip visibility. Action drawer hover effects deferred by user.
 
 ---
 
