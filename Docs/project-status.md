@@ -3,9 +3,13 @@
 > Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Phase 10: Sphere Affinity System** — All 9 plans complete (including gap-closure bridge).
+**Phase 11: Agent Character Sheet Overhaul** — All 4 plans complete.
 
 **Recent completions:**
+- ✅ Phase 11 Plan 04: Revelation action cards (Observe/Scry/Whisper Insight/Dream Sending) — 4 divine action templates targeting agents in ActionDrawer, resolveRevelationAction wired into phaseUnifiedActionProgress (2026-03-28).
+- ✅ Phase 11 Plan 03: AgentProfileModal tab UI — ProwessTab, BondsTab, ChronicleTab, JourneyTab, OverviewTab, debug tabs (KnowledgeComparisonTab, RevelationLogTab) (2026-03-28).
+- ✅ Phase 11 Plan 02: revelation system wired into game phases (2026-03-28).
+- ✅ Phase 11 Plan 01: AgentKnowledge type system + revelation hooks + phaseInteractionDepth (2026-03-28).
 - ✅ Phase 10 Plan 08 (gap closure): Bridge adapter in getHexSphereInfluence normalizing sphereAffinity integer scores to 0-1 floats — HexChronicle Soul layer and ProseKeyword tooltips unblocked (2026-03-28).
 - ✅ Phase 10 Plan 06: Sphere affinity UI — ProseKeyword IPK component, WorldSoulIndicator in top bar, HexChronicle Soul IPK paragraph, ActionDrawer sphere consequence preview, DebugPanel Sphere State tab (2026-03-28).
 - ✅ Phase 10 Plan 04: Sphere downstream modifiers — prosperity Life/Energy/Entropy modifier, encounter resonance (sphere vs opposition), agent axiological shift from dominant sphere (2026-03-28).
