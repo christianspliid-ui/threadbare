@@ -26,6 +26,12 @@ import { generateMandate } from './mandateGenerator';
 import { createMandateState } from './mandate';
 import { FAMILIARITY_GAINS } from '../types/familiarity';
 import { ACTION_TEMPLATES } from '../data/action-template-content';
+import {
+  seedHexSphereAffinity,
+  seedAgentSphereAffinity,
+  seedLocationSphereAffinity,
+} from './sphereAffinity';
+import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -112,6 +118,57 @@ export function initializeGameState(
         name: template.name,
         properties: { reach: template.reach },
       });
+    }
+  }
+
+  // ── Seed sphere affinity on all hex nodes ─────────────────────────
+  // Map from hex key → hex terrain for location seeding lookup
+  const hexTerrainByKey = new Map<string, string>();
+  const hexAffinityByKey = new Map<string, ReturnType<typeof seedHexSphereAffinity>>();
+  for (const tile of tiles) {
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    const hexAffinity = seedHexSphereAffinity(tile.terrain);
+    hexTerrainByKey.set(hexKey, tile.terrain);
+    hexAffinityByKey.set(hexKey, hexAffinity);
+    // Hex nodes in the graph are locations at those coords — seed via tile lookup
+    // (Hex tiles are not graph nodes themselves; affinity is stored separately
+    // and referenced during location seeding below)
+    void hexTerrainByKey; // used below for location seeding
+  }
+
+  // ── Seed sphere affinity on all location nodes ─────────────────────
+  {
+    const locationNodes = graph.getNodesByType('location');
+    for (const locNode of locationNodes) {
+      const hexCol = locNode.properties.hexCol as number | undefined;
+      const hexRow = locNode.properties.hexRow as number | undefined;
+      let hexAffinity = createDefaultSphereAffinity();
+      if (hexCol !== undefined && hexRow !== undefined) {
+        const key = `${hexCol},${hexRow}`;
+        hexAffinity = hexAffinityByKey.get(key) ?? createDefaultSphereAffinity();
+      }
+      // No thematic sphere bias at init time — can be extended with location subtype later
+      const locAffinity = seedLocationSphereAffinity(hexAffinity);
+      graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
+    }
+  }
+
+  // ── Seed sphere affinity on all actor nodes ─────────────────────────
+  {
+    const actorNodes = graph.getNodesByType('actor');
+    for (const actorNode of actorNodes) {
+      const actorType = actorNode.properties.actorType as string | undefined;
+      let affinity = createDefaultSphereAffinity();
+      if (actorType === 'individual' || actorType === 'ascendant' || actorType === 'god') {
+        // Use sphereAlignment if available, else default
+        const sphereAlignment = actorNode.properties.sphereAlignment as Record<string, number> | undefined;
+        affinity = seedAgentSphereAffinity(sphereAlignment);
+      } else {
+        // Factions, cultures, groups: start with defaults
+        // (derived aggregation computed later by phaseSphereAggregation)
+        affinity = createDefaultSphereAffinity();
+      }
+      graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity } });
     }
   }
 
