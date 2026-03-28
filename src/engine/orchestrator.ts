@@ -11,13 +11,11 @@ import type { WorldGraph } from './graph';
 import { STEALTH_DECAY_PER_TICK } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import { SPHERE_NAMES } from '../types/index';
-import { advanceDoomClock } from './doomClock';
 import {
   computeEssenceGeneration,
   generateEssence,
   computeMaxEssence,
 } from './influence';
-import { evaluateMandate, advanceMandateStage } from './mandate';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { RIVAL_ACTION_TEMPLATES } from '../data/rival-content';
 import {
@@ -76,6 +74,12 @@ import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseControlEffects } from './phaseControlEffects';
+// phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
+// Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
+import { phaseDoom } from './phaseDoom';
+export { phaseDoom } from './phaseDoom';
+import { phaseMandate } from './phaseMandate';
+export { phaseMandate } from './phaseMandate';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
@@ -94,6 +98,8 @@ import { phaseFactionReputationDecay, processFactionEncounterReputation } from '
 import { processFactionOutcome } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
+import type { SpherePressureEvent } from '../types/sphereAffinity';
+import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
 
 // ─── Decision Cache (lazy-initialized) ────────────────────────────
 
@@ -145,33 +151,8 @@ export function resetEventCounter(): void {
 }
 
 // ─── Phase 1: Advance Doom Clock ──────────────────────────────────
-
-export function phaseDoom(state: GameState): Partial<GameState> {
-  const oldStage = state.doomClock.currentStage;
-  const newDoom = advanceDoomClock(state.doomClock);
-  const newStage = newDoom.currentStage;
-  const events: TickEvent[] = [];
-
-  if (newStage > oldStage) {
-    const stageName = state.doomDefinition.stages[newStage - 1]?.name ?? `Stage ${newStage}`;
-    events.push({
-      id: nextEventId(),
-      tick: state.tick,
-      type: 'doom_escalation',
-      message: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
-      significance: 0.9,
-      notification: {
-        channel: 'popup',
-        popup: {
-          title: stageName,
-          body: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,
-        },
-      },
-    });
-  }
-
-  return { doomClock: newDoom, tickEvents: [...state.tickEvents, ...events] };
-}
+// Delegated to phaseDoom.ts — imported at top of file and re-exported via that import.
+// phaseDoom also wires entropy sphere pressure on doom tier escalation.
 
 // ─── Helpers ──────────────────────────────────────────────────────
 
@@ -224,6 +205,7 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardNam
  */
 export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
+  const spherePressures: SpherePressureEvent[] = [];
   let updatedProgress = [...state.encounterProgress];
 
   const activeEncounters = updatedProgress.filter(p => p.status === 'active');
@@ -235,6 +217,26 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     const result = resolveEncounter(state, progress);
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // Sphere pressure: push pressure on the actor's location for each encounter step.
+    // Fail-soft: skip if encounter has no sphere or actor has no location.
+    {
+      const encounter = getAnyEncounterById(progress.encounterId);
+      const encounterSphere = encounter?.sphereAffinity;
+      if (encounterSphere) {
+        const locEdges = state.graph.getOutgoingEdges(progress.actorId, 'located_at');
+        const locationId = locEdges[0]?.target;
+        if (locationId) {
+          spherePressures.push({
+            targetEntityId: locationId,
+            sphere: encounterSphere,
+            magnitude: ENCOUNTER_PRESSURE_PER_STEP,
+            source: 'encounter',
+            sourceId: progress.encounterId,
+          });
+        }
+      }
+    }
 
     // ── Faction reputation processing (TB-060) ──
     processFactionEncounterReputation(
@@ -417,6 +419,9 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
   return {
     tickEvents: [...state.tickEvents, ...events],
     encounterProgress: updatedProgress,
+    ...(spherePressures.length > 0
+      ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
+      : {}),
   };
 }
 
@@ -638,6 +643,7 @@ export function phaseFamiliarityGain(state: GameState): Partial<GameState> {
 export function phaseRivalActions(state: GameState): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 37);
   const events: TickEvent[] = [];
+  const spherePressures: SpherePressureEvent[] = [];
   const newRivalStates = [...state.rivalStates];
 
   for (let i = 0; i < state.rivalDefinitions.length; i++) {
@@ -680,12 +686,28 @@ export function phaseRivalActions(state: GameState): Partial<GameState> {
         significance: 0.7,
         notification: { channel: 'toast' },
       });
+
+      // Sphere pressure: rival acts push pressure in their primary sphere.
+      // Target: rival's own node (their sphere of influence in the world).
+      // Fail-soft: skip if rival has no primarySphere.
+      if (rival.primarySphere) {
+        spherePressures.push({
+          targetEntityId: rival.id,
+          sphere: rival.primarySphere,
+          magnitude: RIVAL_PRESSURE_MAGNITUDE,
+          source: 'rival',
+          sourceId: rival.id,
+        });
+      }
     }
   }
 
   return {
     rivalStates: newRivalStates,
     tickEvents: [...state.tickEvents, ...events],
+    ...(spherePressures.length > 0
+      ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
+      : {}),
   };
 }
 
@@ -888,46 +910,8 @@ export function phaseInfluenceTierPromotion(
 }
 
 // ─── Phase 7: Mandate Check ───────────────────────────────────────
-
-export function phaseMandate(state: GameState): Partial<GameState> {
-  if (!state.mandateState || !state.mandateDefinition || state.mandateState.completed || state.mandateState.failed) {
-    return {};
-  }
-
-  const evaluated = evaluateMandate(
-    state.graph,
-    state.mandateDefinition as any,
-    state.mandateState,
-    state.ascendantId,
-    state.tick,
-  );
-
-  const advanced = evaluated.progress >= 1.0
-    ? advanceMandateStage(evaluated, state.tick)
-    : evaluated;
-
-  const events: TickEvent[] = [];
-
-  // Only emit visible narrative event when mandate is fulfilled (not for intermediate stage transitions)
-  if (advanced.completed && !state.mandateState.completed) {
-    events.push({
-      id: nextEventId(),
-      tick: state.tick,
-      type: 'mandate_progress',
-      message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,
-      significance: 1.0,
-      notification: {
-        channel: 'alert',
-        icon: 'mandate',
-      },
-    });
-  }
-
-  return {
-    mandateState: advanced,
-    tickEvents: [...state.tickEvents, ...events],
-  };
-}
+// Delegated to phaseMandate.ts — imported at top of file and re-exported via that import.
+// phaseMandate also wires sphere pressure on mandate milestones and completion.
 
 // ─── Phase 8: Doom Expiry Check ───────────────────────────────────
 
