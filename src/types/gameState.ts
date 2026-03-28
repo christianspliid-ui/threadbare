@@ -57,7 +57,9 @@ export interface TickEvent {
     // Return events
     | 'return_resolved' | 'ripple_consequence'
     // Control effect events
-    | 'control_effect_established' | 'control_effect_lapsed';
+    | 'control_effect_established' | 'control_effect_lapsed'
+  // Revelation events
+    | 'domain_revealed';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
