@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import {
-  type FoundationAxis,
-  type FoundationBalances,
   type FundamentState,
   type ResonanceMemory,
   type MemoryType,
@@ -14,25 +12,19 @@ import {
   type HarvestOutcome,
   type HarvestType,
   type CycleTransition,
-  FOUNDATION_AXES,
-  DEFAULT_FOUNDATION_BALANCES,
   MAX_RESONANCE_MEMORIES,
   TWILIGHT_TICK_RANGE,
   HARVEST_ECHO_COUNTS,
 } from '../../types/worldSoul';
+import { SPHERE_NAMES } from '../../types/index';
+import type { SphereName } from '../../types/index';
+
+/** Helper: balanced sphere weights for all 12 spheres */
+function balancedWeights(): Record<SphereName, number> {
+  return Object.fromEntries(SPHERE_NAMES.map(s => [s, 1 / SPHERE_NAMES.length])) as Record<SphereName, number>;
+}
 
 describe('worldSoul types', () => {
-  it('exports FOUNDATION_AXES', () => {
-    expect(FOUNDATION_AXES).toEqual(['chaos_order', 'light_darkness']);
-  });
-
-  it('exports DEFAULT_FOUNDATION_BALANCES with neutral values', () => {
-    expect(DEFAULT_FOUNDATION_BALANCES).toEqual({
-      chaos_order: 0.0,
-      light_darkness: 0.0,
-    });
-  });
-
   it('exports MAX_RESONANCE_MEMORIES', () => {
     expect(MAX_RESONANCE_MEMORIES).toBe(10);
   });
@@ -49,16 +41,13 @@ describe('worldSoul types', () => {
     });
   });
 
-  it('can construct a FundamentState', () => {
+  it('can construct a FundamentState with 12 sphere weights', () => {
     const fundament: FundamentState = {
-      foundations: { chaos_order: 0.3, light_darkness: -0.2 },
-      sphereWeights: {
-        force: 0.15, matter: 0.1, energy: 0.12, life: 0.18,
-        mind: 0.1, spirit: 0.1, time: 0.1, entropy: 0.15,
-      },
+      sphereWeights: balancedWeights(),
       cycleCount: 0,
     };
-    expect(fundament.foundations.chaos_order).toBe(0.3);
+    expect(fundament.sphereWeights.chaos).toBeCloseTo(1 / 12);
+    expect(fundament.sphereWeights.force).toBeCloseTo(1 / 12);
     expect(fundament.cycleCount).toBe(0);
   });
 
@@ -91,11 +80,7 @@ describe('worldSoul types', () => {
   it('can construct a WorldSoulState', () => {
     const soul: WorldSoulState = {
       fundament: {
-        foundations: DEFAULT_FOUNDATION_BALANCES,
-        sphereWeights: {
-          force: 0.125, matter: 0.125, energy: 0.125, life: 0.125,
-          mind: 0.125, spirit: 0.125, time: 0.125, entropy: 0.125,
-        },
+        sphereWeights: balancedWeights(),
         cycleCount: 0,
       },
       resonance: {
@@ -108,136 +93,103 @@ describe('worldSoul types', () => {
   });
 });
 
-import type { FundamentState } from '../../types/worldSoul';
 import {
   createDefaultFundament,
   applyFundamentShift,
   applyBatchShifts,
   blendFundaments,
-  clampFoundations,
   normalizeSphereWeights,
 } from '../worldSoul';
 
 describe('Fundament engine', () => {
-  it('createDefaultFundament returns neutral starting state', () => {
+  it('createDefaultFundament returns neutral starting state with 12 sphere weights', () => {
     const f = createDefaultFundament();
-    expect(f.foundations.chaos_order).toBe(0.0);
-    expect(f.foundations.light_darkness).toBe(0.0);
-    expect(f.sphereWeights.force).toBe(0.125);
-    expect(f.sphereWeights.entropy).toBe(0.125);
+    expect(Object.keys(f.sphereWeights)).toHaveLength(12);
+    expect(f.sphereWeights.chaos).toBeCloseTo(1 / 12);
+    expect(f.sphereWeights.order).toBeCloseTo(1 / 12);
+    expect(f.sphereWeights.force).toBeCloseTo(1 / 12);
+    expect(f.sphereWeights.entropy).toBeCloseTo(1 / 12);
     expect(f.cycleCount).toBe(0);
   });
 
-  it('applyFundamentShift nudges a Foundation axis', () => {
+  it('applyFundamentShift nudges sphere weights (including foundation spheres)', () => {
     const f = createDefaultFundament();
     const shifted = applyFundamentShift(f, {
       source: 'resolved_action',
-      foundationAxis: 'chaos_order',
-      foundationDelta: 0.05,
+      sphereDeltas: { chaos: 0.05, order: -0.02 },
     });
-    expect(shifted.foundations.chaos_order).toBeCloseTo(0.05);
-    expect(shifted.foundations.light_darkness).toBe(0.0);
+    expect(shifted.sphereWeights.chaos).toBeCloseTo(1 / 12 + 0.05);
+    expect(shifted.sphereWeights.order).toBeCloseTo(1 / 12 - 0.02);
   });
 
-  it('applyFundamentShift nudges sphere weights', () => {
+  it('applyFundamentShift nudges creation sphere weights', () => {
     const f = createDefaultFundament();
     const shifted = applyFundamentShift(f, {
       source: 'doom_escalation',
       sphereDeltas: { entropy: 0.05, life: -0.05 },
     });
-    expect(shifted.sphereWeights.entropy).toBeCloseTo(0.175);
-    expect(shifted.sphereWeights.life).toBeCloseTo(0.075);
-  });
-
-  it('applyFundamentShift clamps Foundation axes to [-1, 1]', () => {
-    const f = createDefaultFundament();
-    f.foundations.chaos_order = 0.95;
-    const shifted = applyFundamentShift(f, {
-      source: 'mandate_outcome',
-      foundationAxis: 'chaos_order',
-      foundationDelta: 0.2,
-    });
-    expect(shifted.foundations.chaos_order).toBe(1.0);
+    expect(shifted.sphereWeights.entropy).toBeCloseTo(1 / 12 + 0.05);
+    expect(shifted.sphereWeights.life).toBeCloseTo(1 / 12 - 0.05);
   });
 
   it('applyBatchShifts applies multiple shifts in sequence', () => {
     const f = createDefaultFundament();
-    const shifts = [
-      { source: 'resolved_action' as const, foundationAxis: 'chaos_order' as const, foundationDelta: 0.1 },
-      { source: 'resolved_action' as const, foundationAxis: 'chaos_order' as const, foundationDelta: 0.1 },
-      { source: 'doom_escalation' as const, sphereDeltas: { entropy: 0.03 } },
+    const shifts: FundamentShift[] = [
+      { source: 'resolved_action', sphereDeltas: { chaos: 0.1 } },
+      { source: 'resolved_action', sphereDeltas: { chaos: 0.1 } },
+      { source: 'doom_escalation', sphereDeltas: { entropy: 0.03 } },
     ];
     const result = applyBatchShifts(f, shifts);
-    expect(result.foundations.chaos_order).toBeCloseTo(0.2);
-    expect(result.sphereWeights.entropy).toBeCloseTo(0.155);
+    expect(result.sphereWeights.chaos).toBeCloseTo(1 / 12 + 0.2);
+    expect(result.sphereWeights.entropy).toBeCloseTo(1 / 12 + 0.03);
   });
 
   it('normalizeSphereWeights rescales to sum to 1.0', () => {
-    const weights = {
-      force: 0.2, matter: 0.2, energy: 0.2, life: 0.2,
-      mind: 0.2, spirit: 0.2, time: 0.2, entropy: 0.2,
-    };
+    const weights = balancedWeights();
+    // Double all weights — normalization should bring them back to 1/12 each
+    for (const s of SPHERE_NAMES) weights[s] = 0.2;
     const normalized = normalizeSphereWeights(weights);
     const sum = Object.values(normalized).reduce((a, b) => a + b, 0);
     expect(sum).toBeCloseTo(1.0);
-    expect(normalized.force).toBeCloseTo(0.125);
+    expect(normalized.force).toBeCloseTo(1 / 12);
   });
 
   it('normalizeSphereWeights floors negative values to 0.01 before normalizing', () => {
-    const weights = {
-      force: -0.5, matter: 0.2, energy: 0.2, life: 0.2,
-      mind: 0.2, spirit: 0.2, time: 0.2, entropy: 0.2,
-    };
+    const weights = balancedWeights();
+    weights.force = -0.5;
     const normalized = normalizeSphereWeights(weights);
-    // After flooring to 0.01 and normalizing, force will be scaled down
-    // but all values should be positive and sum to 1.0
     expect(normalized.force).toBeGreaterThan(0);
     const sum = Object.values(normalized).reduce((a, b) => a + b, 0);
     expect(sum).toBeCloseTo(1.0);
   });
 
   it('blendFundaments weighted-averages two Fundaments', () => {
-    const existing: FundamentState = {
-      foundations: { chaos_order: 0.6, light_darkness: -0.4 },
-      sphereWeights: {
-        force: 0.2, matter: 0.1, energy: 0.1, life: 0.15,
-        mind: 0.1, spirit: 0.1, time: 0.1, entropy: 0.15,
-      },
-      cycleCount: 3,
-    };
-    const current: FundamentState = {
-      foundations: { chaos_order: -0.2, light_darkness: 0.8 },
-      sphereWeights: {
-        force: 0.1, matter: 0.15, energy: 0.15, life: 0.1,
-        mind: 0.15, spirit: 0.1, time: 0.15, entropy: 0.1,
-      },
-      cycleCount: 3,
-    };
+    const existingWeights = balancedWeights();
+    existingWeights.force = 0.2;
+    existingWeights.life = 0.15;
+    const currentWeights = balancedWeights();
+    currentWeights.force = 0.1;
+    currentWeights.matter = 0.15;
+    const existing: FundamentState = { sphereWeights: existingWeights, cycleCount: 3 };
+    const current: FundamentState = { sphereWeights: currentWeights, cycleCount: 3 };
     const blended = blendFundaments(existing, current, 0.5);
-    expect(blended.foundations.chaos_order).toBeCloseTo(0.2);
-    expect(blended.foundations.light_darkness).toBeCloseTo(0.2);
     expect(blended.cycleCount).toBe(4);
+    // force: (0.2 * 0.5) + (0.1 * 0.5) = 0.15 before normalization
+    const weightSum = Object.values(blended.sphereWeights).reduce((a, b) => a + b, 0);
+    expect(weightSum).toBeCloseTo(1.0);
   });
 
   it('blendFundaments respects blend weight', () => {
-    const existing: FundamentState = {
-      foundations: { chaos_order: 1.0, light_darkness: 0.0 },
-      sphereWeights: {
-        force: 0.125, matter: 0.125, energy: 0.125, life: 0.125,
-        mind: 0.125, spirit: 0.125, time: 0.125, entropy: 0.125,
-      },
-      cycleCount: 1,
-    };
-    const current: FundamentState = {
-      foundations: { chaos_order: 0.0, light_darkness: 0.0 },
-      sphereWeights: {
-        force: 0.125, matter: 0.125, energy: 0.125, life: 0.125,
-        mind: 0.125, spirit: 0.125, time: 0.125, entropy: 0.125,
-      },
-      cycleCount: 1,
-    };
+    const existingWeights = balancedWeights();
+    existingWeights.chaos = 0.3;  // Strongly chaotic
+    const currentWeights = balancedWeights();
+    currentWeights.chaos = 0.05;  // Weakly chaotic
+    const existing: FundamentState = { sphereWeights: existingWeights, cycleCount: 1 };
+    const current: FundamentState = { sphereWeights: currentWeights, cycleCount: 1 };
     const blended = blendFundaments(existing, current, 0.3);
-    expect(blended.foundations.chaos_order).toBeCloseTo(0.7);
+    // With blend weight 0.3: chaos = 0.3*0.7 + 0.05*0.3 = 0.225 (before normalization)
+    // Should lean toward existing's high chaos weight
+    expect(blended.sphereWeights.chaos).toBeGreaterThan(currentWeights.chaos);
   });
 });
 
@@ -468,23 +420,24 @@ describe('Unmaking engine', () => {
   });
 
   it('executeCycleTransition produces a complete CycleTransition', () => {
+    const existingWeights = balancedWeights();
+    existingWeights.force = 0.2;
+    existingWeights.life = 0.15;
+    existingWeights.entropy = 0.15;
     const worldSoul: WorldSoulState = {
       fundament: {
-        foundations: { chaos_order: 0.5, light_darkness: -0.3 },
-        sphereWeights: {
-          force: 0.2, matter: 0.1, energy: 0.1, life: 0.15,
-          mind: 0.1, spirit: 0.1, time: 0.1, entropy: 0.15,
-        },
+        sphereWeights: existingWeights,
         cycleCount: 2,
       },
       resonance: createResonanceState(),
     };
+    const currentWeights = balancedWeights();
+    currentWeights.matter = 0.15;
+    currentWeights.energy = 0.15;
+    currentWeights.mind = 0.15;
+    currentWeights.time = 0.15;
     const currentFundament: FundamentState = {
-      foundations: { chaos_order: -0.2, light_darkness: 0.6 },
-      sphereWeights: {
-        force: 0.1, matter: 0.15, energy: 0.15, life: 0.1,
-        mind: 0.15, spirit: 0.1, time: 0.15, entropy: 0.1,
-      },
+      sphereWeights: currentWeights,
       cycleCount: 2,
     };
     const rng = mulberry32(123);
@@ -529,18 +482,18 @@ describe('World-Soul integration: full cycle lifecycle', () => {
     expect(worldSoul.resonance.memories).toHaveLength(0);
 
     // ── Cycle 1: mandate_complete ──
-    let cycleFundament = { ...worldSoul.fundament };
+    let cycleFundament = { ...worldSoul.fundament, sphereWeights: { ...worldSoul.fundament.sphereWeights } };
     const cycle1Shifts: FundamentShift[] = [
-      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: 0.1 },
-      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: 0.1 },
-      { source: 'resolved_action', foundationAxis: 'light_darkness', foundationDelta: -0.05 },
+      { source: 'resolved_action', sphereDeltas: { order: 0.1 } },
+      { source: 'resolved_action', sphereDeltas: { order: 0.1 } },
+      { source: 'resolved_action', sphereDeltas: { darkness: 0.05 } },
       { source: 'resolved_action', sphereDeltas: { life: 0.03, entropy: -0.02 } },
-      { source: 'doom_escalation', foundationAxis: 'chaos_order', foundationDelta: -0.05 },
+      { source: 'doom_escalation', sphereDeltas: { chaos: 0.05 } },
       { source: 'doom_escalation', sphereDeltas: { entropy: 0.04 } },
     ];
     cycleFundament = applyBatchShifts(cycleFundament, cycle1Shifts);
-    expect(cycleFundament.foundations.chaos_order).toBeCloseTo(0.15);
-    expect(cycleFundament.foundations.light_darkness).toBeCloseTo(-0.05);
+    expect(cycleFundament.sphereWeights.order).toBeCloseTo(1 / 12 + 0.2);
+    expect(cycleFundament.sphereWeights.darkness).toBeCloseTo(1 / 12 + 0.05);
 
     const twilight1 = initiateTwilight('mandate_complete', rng);
     expect(twilight1.active).toBe(true);
@@ -574,15 +527,15 @@ describe('World-Soul integration: full cycle lifecycle', () => {
     expect(transition1.harvest.cosmicEchoIds).toHaveLength(5);
     worldSoul = transition1.nextWorldSoul;
     expect(worldSoul.fundament.cycleCount).toBe(1);
-    expect(worldSoul.fundament.foundations.chaos_order).toBeGreaterThan(0);
-    expect(worldSoul.fundament.foundations.chaos_order).toBeLessThan(0.15);
+    // order was shifted up, should still be above default after blending
+    expect(worldSoul.fundament.sphereWeights.order).toBeGreaterThan(1 / 12);
     expect(worldSoul.resonance.memories).toHaveLength(1);
     expect(worldSoul.resonance.memories[0].id).toBe('memory_cycle1_a');
 
     // ── Cycle 2: doom_expired ──
-    cycleFundament = { ...worldSoul.fundament };
+    cycleFundament = { ...worldSoul.fundament, sphereWeights: { ...worldSoul.fundament.sphereWeights } };
     const cycle2Shifts: FundamentShift[] = [
-      { source: 'resolved_action', foundationAxis: 'light_darkness', foundationDelta: 0.3 },
+      { source: 'resolved_action', sphereDeltas: { light: 0.3 } },
       { source: 'doom_escalation', sphereDeltas: { entropy: 0.1, force: 0.05 } },
     ];
     cycleFundament = applyBatchShifts(cycleFundament, cycle2Shifts);
@@ -615,9 +568,9 @@ describe('World-Soul integration: full cycle lifecycle', () => {
     expect(worldSoul.resonance.memories.find(m => m.id === 'memory_cycle2_a')).toBeDefined();
 
     // ── Cycle 3: player_concession ──
-    cycleFundament = { ...worldSoul.fundament };
+    cycleFundament = { ...worldSoul.fundament, sphereWeights: { ...worldSoul.fundament.sphereWeights } };
     const cycle3Shifts: FundamentShift[] = [
-      { source: 'resolved_action', foundationAxis: 'chaos_order', foundationDelta: -0.2 },
+      { source: 'resolved_action', sphereDeltas: { chaos: 0.2 } },
     ];
     cycleFundament = applyBatchShifts(cycleFundament, cycle3Shifts);
 
@@ -644,9 +597,9 @@ describe('World-Soul integration: full cycle lifecycle', () => {
     const weightSum = Object.values(worldSoul.fundament.sphereWeights).reduce((a, b) => a + b, 0);
     expect(weightSum).toBeCloseTo(1.0);
 
-    expect(worldSoul.fundament.foundations.chaos_order).toBeGreaterThanOrEqual(-1);
-    expect(worldSoul.fundament.foundations.chaos_order).toBeLessThanOrEqual(1);
-    expect(worldSoul.fundament.foundations.light_darkness).toBeGreaterThanOrEqual(-1);
-    expect(worldSoul.fundament.foundations.light_darkness).toBeLessThanOrEqual(1);
+    // All 12 sphere weights should be positive
+    for (const s of SPHERE_NAMES) {
+      expect(worldSoul.fundament.sphereWeights[s]).toBeGreaterThan(0);
+    }
   });
 });

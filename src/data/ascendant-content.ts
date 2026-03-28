@@ -15,6 +15,26 @@ import type { SphereName } from '../types/index';
  * More titles = more variety across runs.
  */
 export const ARCHETYPE_TITLES: Record<SphereName, string[]> = {
+  chaos: [
+    'The Unbound', 'The Storm Without Name', 'The Wildfire Throne',
+    'The Unchained', 'The Shatterer', 'The First Disruption',
+    'The Whirlwind Sovereign', 'The Unwritten',
+  ],
+  order: [
+    'The Law Eternal', 'The Iron Covenant', 'The Structure',
+    'The Unerring', 'The Foundation Imperishable', 'The Measured One',
+    'The Sealed Oath', 'The Architecture',
+  ],
+  light: [
+    'The Exposed Truth', 'The Burning Clarity', 'The Daybreak',
+    'The Unveiled', 'The Luminous Throne', 'The Beacon Eternal',
+    'The Clear-Eyed', 'The Sun\'s Witness',
+  ],
+  darkness: [
+    'The Hidden', 'The Veil Sovereign', 'The Night\'s Counsel',
+    'The Obscured', 'The Shadow Throne', 'The Secret Keeper',
+    'The Unseen Hand', 'The Silence Between',
+  ],
   force: [
     'The Warlord Ascendant', 'The Iron Sovereign', 'The Storm Marshal',
     'The Hammer of Heaven', 'The Unbroken', 'The Siege Eternal',

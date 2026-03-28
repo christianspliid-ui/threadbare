@@ -18,7 +18,7 @@ import type { ActiveInjection } from './echo';
 import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
-import type { FoundationBalances } from '../types/worldSoul';
+import type { FundamentState } from '../types/worldSoul';
 import { generateCultures, assignCulturesToActors } from './cultureGenerator';
 import {
   instantiateFormativeTraits,
@@ -330,7 +330,7 @@ export function seedWorld(
   tiles: HexTile[],
   seed: number,
   injections?: ActiveInjection[],
-  foundations?: FoundationBalances,
+  fundament?: FundamentState,
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
@@ -568,7 +568,7 @@ export function seedWorld(
   generateRoadEdges(graph, tiles, roadCols, roadRows);
 
   // ── Cultures ──────────────────────────────────────────────
-  const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, foundations);
+  const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, fundament);
   cultureIds.push(...generatedCultureIds);
 
   // ── Factions ─────────────────────────────────────────────

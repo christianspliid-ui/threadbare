@@ -2,7 +2,7 @@
  * SphereAffinity — Per-Entity Sphere Scores
  *
  * Every entity (hex, agent, location, faction, culture) tracks its relationship
- * to all 8 creation spheres as integer scores on the triangle number scale.
+ * to all 12 spheres (4 foundation + 8 creation) as integer scores on the triangle number scale.
  *
  * Design doc: Docs/plans/2026-03-28-world-soul-connection-design.md
  */
@@ -123,58 +123,58 @@ export function createDefaultSphereAffinity(): SphereAffinity {
  * Design source: Docs/plans/2026-03-28-world-soul-connection-design.md
  */
 export const TERRAIN_SPHERE_TABLE: Record<string, Partial<Record<SphereName, number>>> = {
-  // Forest
-  forest:      { life: 3, spirit: 1 },
-  // Mountains
-  mountains:   { matter: 3, force: 1 },
-  // Plains / grassland
-  plains:      { energy: 2, life: 1 },
-  // Desert
-  desert:      { force: 2, entropy: 1 },
-  // Swamp / wet
-  swamp:       { entropy: 2, life: 1 },
-  // Coast / ocean
-  coast:       { time: 2, energy: 1 },
-  // Volcanic
-  volcanic:    { force: 3, entropy: 2 },
-  // Tundra / ice
-  tundra:      { entropy: 2, time: 1 },
-  // Sacred / enchanted
-  sacred_grove: { spirit: 3, life: 2 },
-  // Ruins / broken lands
-  ruins:       { time: 2, mind: 1 },
+  // Forest — life domain, subtle darkness (mystery of the deep woods)
+  forest:      { life: 3, spirit: 1, darkness: 1 },
+  // Mountains — matter domain, subtle order (geological permanence)
+  mountains:   { matter: 3, force: 1, order: 1 },
+  // Plains — energy domain, subtle light (open skies)
+  plains:      { energy: 2, life: 1, light: 1 },
+  // Desert — force domain, subtle chaos (unpredictable wasteland)
+  desert:      { force: 2, entropy: 1, chaos: 1 },
+  // Swamp — entropy domain, subtle chaos (formless decay)
+  swamp:       { entropy: 2, life: 1, chaos: 1 },
+  // Coast — time domain, subtle light (the revealing horizon)
+  coast:       { time: 2, energy: 1, light: 1 },
+  // Volcanic — force domain, subtle chaos (violent transformation)
+  volcanic:    { force: 3, entropy: 2, chaos: 1 },
+  // Tundra — entropy domain, subtle darkness (frozen void)
+  tundra:      { entropy: 2, time: 1, darkness: 1 },
+  // Sacred — spirit domain, subtle light (holy radiance)
+  sacred_grove: { spirit: 3, life: 2, light: 1 },
+  // Ruins — time domain, subtle order (echoes of structure)
+  ruins:       { time: 2, mind: 1, order: 1 },
 };
 
 /**
  * Placeholder sphere affinities for location subtypes.
- * Each location gets 1 point in one sphere. All 8 spheres used at least once.
- * Values are intentionally minimal — refine during design pass.
+ * Each location gets 1 point in one creation sphere + optional foundation sphere.
+ * All 12 spheres used at least once. Values are intentionally minimal — refine during design pass.
  */
 export const LOCATION_SPHERE_TABLE: Record<string, Partial<Record<SphereName, number>>> = {
-  // Settlements — life (communities of living people)
+  // Settlements — communities impose order on the world
   hamlet:          { life: 1 },
-  town:            { mind: 1 },
-  city:            { mind: 1 },
-  capital:         { force: 1 },
+  town:            { mind: 1, order: 1 },
+  city:            { mind: 1, order: 1 },
+  capital:         { force: 1, order: 1 },
   // Rural/resource
   camp:            { energy: 1 },
-  farmland:        { life: 1 },
-  // Military
-  castle:          { force: 1 },
+  farmland:        { life: 1, light: 1 },
+  // Military — fortifications are instruments of order
+  castle:          { force: 1, order: 1 },
   fort:            { force: 1 },
   tower:           { mind: 1 },
-  // Religious
-  shrine:          { spirit: 1 },
-  temple:          { spirit: 1 },
+  // Religious — temples channel light or darkness
+  shrine:          { spirit: 1, light: 1 },
+  temple:          { spirit: 1, light: 1 },
   // Industrial
   mining:          { matter: 1 },
-  // Decay
-  ruins:           { time: 1 },
-  ruined_tower:    { time: 1 },
-  ruined_city:     { entropy: 1 },
-  ruined_village:  { entropy: 1 },
-  // Conflict
-  battleground:    { entropy: 1 },
+  // Decay — ruins echo with chaos and darkness
+  ruins:           { time: 1, darkness: 1 },
+  ruined_tower:    { time: 1, darkness: 1 },
+  ruined_city:     { entropy: 1, chaos: 1 },
+  ruined_village:  { entropy: 1, chaos: 1 },
+  // Conflict — battlefields are chaos manifest
+  battleground:    { entropy: 1, chaos: 1 },
   // Refuge
   oasis:           { energy: 1 },
   // Mystery

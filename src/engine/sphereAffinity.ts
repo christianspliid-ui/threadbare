@@ -131,6 +131,12 @@ export interface SphereAxiologicalMapping {
  * Force → courage (valor) over prudence; Time → prudence over courage; etc.
  */
 export const SPHERE_AXIOLOGICAL_MAP: Record<SphereName, SphereAxiologicalMapping> = {
+  // Foundation Spheres
+  chaos:   { pair: 'courage_prudence',    direction: +1 as 1 },  // Boldness, risk-taking
+  order:   { pair: 'courage_prudence',    direction: -1 as -1 }, // Caution, measured action
+  light:   { pair: 'honesty_cunning',     direction: +1 as 1 },  // Transparency, revelation
+  darkness:{ pair: 'honesty_cunning',     direction: -1 as -1 }, // Concealment, subtlety
+  // Creation Spheres
   force:   { pair: 'courage_prudence',    direction: +1 as 1 },  // Bold, assertive
   matter:  { pair: 'loyalty_ambition',    direction: +1 as 1 },  // Order over freedom
   energy:  { pair: 'loyalty_ambition',    direction: -1 as -1 }, // Freedom over order

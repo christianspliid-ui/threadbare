@@ -1,6 +1,19 @@
-/** The 8 Creation Spheres of the world */
-export const SPHERE_NAMES = [
+/** The 4 Foundation Spheres (elder cosmic forces) */
+export const FOUNDATION_SPHERE_NAMES = [
+  'chaos', 'order', 'light', 'darkness'
+] as const;
+export type FoundationSphereName = typeof FOUNDATION_SPHERE_NAMES[number];
+
+/** The 8 Creation Spheres (cosmic energies) */
+export const CREATION_SPHERE_NAMES = [
   'force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'
+] as const;
+export type CreationSphereName = typeof CREATION_SPHERE_NAMES[number];
+
+/** All 12 Spheres — Foundation + Creation */
+export const SPHERE_NAMES = [
+  ...FOUNDATION_SPHERE_NAMES,
+  ...CREATION_SPHERE_NAMES,
 ] as const;
 export type SphereName = typeof SPHERE_NAMES[number];
 

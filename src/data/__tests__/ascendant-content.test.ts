@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { ARCHETYPE_TITLES } from '../ascendant-content';
-import { SPHERE_NAMES } from '../../types/index';
+import { SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types/index';
 
 describe('ascendant-content', () => {
   describe('ARCHETYPE_TITLES', () => {
-    it('contains exactly 8 spheres (one per Creation Sphere)', () => {
-      expect(Object.keys(ARCHETYPE_TITLES).sort()).toEqual(SPHERE_NAMES.sort());
+    it('contains all 12 spheres (foundation + creation)', () => {
+      expect(Object.keys(ARCHETYPE_TITLES).sort()).toEqual([...SPHERE_NAMES].sort());
     });
 
     it('each sphere has at least 3 title options', () => {

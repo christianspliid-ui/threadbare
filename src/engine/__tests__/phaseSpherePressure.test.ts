@@ -122,54 +122,58 @@ describe('netPressuresBySphere', () => {
 // ─── cancelOppositions ──────────────────────────────────────────────
 
 describe('cancelOppositions', () => {
-  it('returns unchanged if no opposing pressure', () => {
-    const net: Record<SphereName, number> = {
+  /** Helper: create zero-valued net for all 12 spheres */
+  function zeroNet(): Record<SphereName, number> {
+    return {
+      chaos: 0, order: 0, light: 0, darkness: 0,
       force: 0, matter: 0, energy: 0, life: 3,
       mind: 0, spirit: 0, time: 0, entropy: 0,
     };
+  }
+
+  it('returns unchanged if no opposing pressure', () => {
+    const net = zeroNet();
     const result = cancelOppositions(net);
     expect(result.life).toBe(3);
     expect(result.entropy).toBe(0);
   });
 
   it('cancels Life vs Entropy: Life +3, Entropy +2 → Life +1, Entropy 0', () => {
-    const net: Record<SphereName, number> = {
-      force: 0, matter: 0, energy: 0, life: 3,
-      mind: 0, spirit: 0, time: 0, entropy: 2,
-    };
+    const net = zeroNet();
+    net.life = 3;
+    net.entropy = 2;
     const result = cancelOppositions(net);
-    // Life dominates (3 > 2), remainder = 1 in Life, Entropy canceled to 0
     expect(result.life).toBe(1);
     expect(result.entropy).toBe(0);
   });
 
-  it('cancels Energy vs Force: equal magnitudes → both 0', () => {
-    const net: Record<SphereName, number> = {
-      force: 3, matter: 0, energy: 3, life: 0,
-      mind: 0, spirit: 0, time: 0, entropy: 0,
-    };
+  it('cancels Force vs Mind: equal magnitudes → both 0', () => {
+    const net = zeroNet();
+    net.life = 0;
+    net.force = 3;
+    net.mind = 3;
     const result = cancelOppositions(net);
     expect(result.force).toBe(0);
-    expect(result.energy).toBe(0);
+    expect(result.mind).toBe(0);
   });
 
-  it('cancels Mind vs Time: Time dominates', () => {
-    const net: Record<SphereName, number> = {
-      force: 0, matter: 0, energy: 0, life: 0,
-      mind: 1, spirit: 0, time: 4, entropy: 0,
-    };
+  it('cancels Matter vs Time: Time dominates', () => {
+    const net = zeroNet();
+    net.life = 0;
+    net.matter = 1;
+    net.time = 4;
     const result = cancelOppositions(net);
-    expect(result.mind).toBe(0);
+    expect(result.matter).toBe(0);
     expect(result.time).toBe(3);
   });
 
-  it('cancels Matter vs Spirit', () => {
-    const net: Record<SphereName, number> = {
-      force: 0, matter: 5, energy: 0, life: 0,
-      mind: 0, spirit: 2, time: 0, entropy: 0,
-    };
+  it('cancels Energy vs Spirit', () => {
+    const net = zeroNet();
+    net.life = 0;
+    net.energy = 5;
+    net.spirit = 2;
     const result = cancelOppositions(net);
-    expect(result.matter).toBe(3);
+    expect(result.energy).toBe(3);
     expect(result.spirit).toBe(0);
   });
 });
@@ -208,31 +212,29 @@ describe('resolveSpherePressure', () => {
   });
 
   it('erosion: pressure 10 against score 3, no allies → excess = 7, new score = max(0, 3-7) = 0, progress reset', () => {
-    // Force pressure against an Energy-bearing entity
-    // Force is opposite to Energy. Energy score = 3.
-    // Net: force = 10 in net pressures. After cancelOppositions(force=10, energy=0) → force stays 10.
-    // Force is destructive to Energy. Energy ally = Life.
-    // With Life=0: threshold = 3 + floor(0/2) = 3. excess = 10-3 = 7. new score = max(0, 3-7) = 0.
-    const affinity = makeAffinity({ energy: 3 }, { energy: 2 });
-    // Force is the opposite of Energy — applying Force pressure is destructive to Energy
-    const pressures = [makePressure('e1', 'force', 10)];
+    // Mind pressure against a Force-bearing entity
+    // Mind is opposite to Force (per updated cosmology). Force score = 3.
+    // Mind=10 is destructive to Force. Force ally = Matter.
+    // With Matter=0: threshold = 3 + floor(0/2) = 3. excess = 10-3 = 7. new score = max(0, 3-7) = 0.
+    const affinity = makeAffinity({ force: 3 }, { force: 2 });
+    const pressures = [makePressure('e1', 'mind', 10)];
     const { updated, traces } = resolveSpherePressure(affinity, pressures, []);
-    expect(updated.scores.energy).toBe(0);
-    expect(updated.progress.energy).toBe(0); // reset
+    expect(updated.scores.force).toBe(0);
+    expect(updated.progress.force).toBe(0); // reset
     const erosionTrace = traces.find(t => t.outcome === 'eroded');
     expect(erosionTrace).toBeDefined();
-    expect(erosionTrace?.sphere).toBe('energy');
+    expect(erosionTrace?.sphere).toBe('force');
   });
 
-  it('allied defense: Force 5 against Energy score 3, Life ally score 4 → threshold=3+2=5 → absorbed', () => {
-    // Energy ally = Life. floor(4/2)=2. threshold = 3+2=5. pressure 5 <= 5 → absorbed.
-    const affinity = makeAffinity({ energy: 3, life: 4 });
-    const pressures = [makePressure('e1', 'force', 5)];
+  it('allied defense: Mind 5 against Force score 3, Matter ally score 4 → threshold=3+2=5 → absorbed', () => {
+    // Force ally = Matter. floor(4/2)=2. threshold = 3+2=5. pressure 5 <= 5 → absorbed.
+    const affinity = makeAffinity({ force: 3, matter: 4 });
+    const pressures = [makePressure('e1', 'mind', 5)];
     const { updated, traces } = resolveSpherePressure(affinity, pressures, []);
-    expect(updated.scores.energy).toBe(3); // no change
+    expect(updated.scores.force).toBe(3); // no change
     const absorbedTrace = traces.find(t => t.outcome === 'absorbed');
     expect(absorbedTrace).toBeDefined();
-    expect(absorbedTrace?.sphere).toBe('energy');
+    expect(absorbedTrace?.sphere).toBe('force');
   });
 
   it('opposition cancellation: Life +3, Entropy +2 same entity → net constructive Life +1', () => {

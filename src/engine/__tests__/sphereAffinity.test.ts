@@ -85,9 +85,9 @@ describe('createDefaultSphereAffinity', () => {
     }
   });
 
-  it('returns exactly 8 sphere entries in scores', () => {
+  it('returns exactly 12 sphere entries in scores', () => {
     const affinity = createDefaultSphereAffinity();
-    expect(Object.keys(affinity.scores)).toHaveLength(8);
+    expect(Object.keys(affinity.scores)).toHaveLength(12);
   });
 
   it('returns a new object each call (no shared reference)', () => {

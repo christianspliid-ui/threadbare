@@ -22,6 +22,39 @@ export type ThreatLevel = 'low' | 'high';
 // ─── Dominant Sphere Prose ────────────────────────────────────────────────────
 
 export const SOUL_PROSE: Record<SphereName, Record<HexSoulLevel, string>> = {
+  // Foundation Spheres
+  chaos: {
+    weak: 'Something here resists certainty — paths shift, and plans feel fragile.',
+    moderate: 'The influence of **Chaos** touches this land. Nothing stays fixed for long.',
+    strong: '**Chaos** runs deep here — the landscape itself seems to rearrange when no one is watching.',
+    dominant:
+      'This is a place of deep **Chaos** — unfixed, unpredictable, and alive with dangerous possibility.',
+  },
+  order: {
+    weak: 'There is a quiet regularity to this place — things fall into pattern easily.',
+    moderate: 'The weight of **Order** settles here. Boundaries hold, and change comes slowly.',
+    strong:
+      '**Order** is strong in this place. The land obeys rules older than memory, and deviation carries cost.',
+    dominant:
+      'This is a place of deep **Order** — rigid, enduring, and absolute. What is built here lasts, but what is new struggles to take root.',
+  },
+  light: {
+    weak: 'The air here feels clear — secrets seem harder to keep.',
+    moderate: 'The touch of **Light** rests on this land. Hidden things surface, and truth carries weight.',
+    strong:
+      '**Light** blazes through this place. Nothing hides, nothing festers unseen.',
+    dominant:
+      'This is a place of deep **Light** — exposed, clarified, and merciless in its honesty. Every shadow is burned away.',
+  },
+  darkness: {
+    weak: 'Shadows linger here longer than they should.',
+    moderate: 'The presence of **Darkness** deepens this land. Secrets take root, and the unseen grows strong.',
+    strong:
+      '**Darkness** saturates this place. The hidden is more powerful than the known, and trust comes hard.',
+    dominant:
+      'This is a place of deep **Darkness** — veiled, uncertain, and layered with secrets that may never surface.',
+  },
+  // Creation Spheres
   force: {
     weak: 'A faint martial restlessness lingers here — old battles, not yet forgotten.',
     moderate: 'The currents of **Force** run through this land. Conflict finds easy footing.',
@@ -88,6 +121,12 @@ export const SOUL_PROSE: Record<SphereName, Record<HexSoulLevel, string>> = {
 // ─── Secondary Sphere Addendum ────────────────────────────────────────────────
 
 export const SOUL_SECONDARY_PROSE: Record<SphereName, string> = {
+  // Foundation Spheres
+  chaos: 'A quiet note of **Chaos** hums beneath the surface — nothing here is entirely settled.',
+  order: 'The presence of **Order** steadies this place — a secondary structure beneath the primary current.',
+  light: 'A trace of **Light** moves here as well — an undercurrent of clarity and exposure.',
+  darkness: 'A quiet veil of **Darkness** lingers beneath the surface — secrets find shelter here.',
+  // Creation Spheres
   force: 'A quiet resonance of **Force** hums beneath the surface — tension held in check.',
   matter: 'The presence of **Matter** grounds this place — a steadiness beneath the primary current.',
   energy: 'A quiet current of **Energy** moves through, lending restlessness to the dominant character.',
@@ -101,6 +140,24 @@ export const SOUL_SECONDARY_PROSE: Record<SphereName, string> = {
 // ─── Threat Prose (opposing sphere pressure) ─────────────────────────────────
 
 export const SOUL_THREAT_PROSE: Record<SphereName, Record<ThreatLevel, string>> = {
+  // Foundation Spheres
+  chaos: {
+    low: 'A restless tremor disturbs the settled order here.',
+    high: '**Chaos** presses hard against this land — certainties crack, and familiar patterns begin to dissolve.',
+  },
+  order: {
+    low: 'Something rigid is hardening at the edges of this place.',
+    high: '**Order** bears down on this land. Freedom contracts, and the weight of law grows heavy.',
+  },
+  light: {
+    low: 'A probing clarity begins to strip away comfortable shadows.',
+    high: '**Light** presses hard against this land — there is nowhere left to hide, and exposure carries its own cruelty.',
+  },
+  darkness: {
+    low: 'Shadows are deepening where they should not.',
+    high: '**Darkness** encroaches on this land. Certainty fades, and what was known becomes doubtful.',
+  },
+  // Creation Spheres
   force: {
     low: 'A distant drumbeat hints at coming conflict.',
     high: '**Force** presses hard against this land — tension approaches a breaking point.',

@@ -19,6 +19,32 @@ import type { SphereName } from '../types';
 export type WorldSoulIntensity = 'whisper' | 'murmur' | 'pulse' | 'storm';
 
 export const WORLD_SOUL_PROSE: Record<SphereName, Record<WorldSoulIntensity, string>> = {
+  // Foundation Spheres
+  chaos: {
+    whisper: 'Something stirs at the edges of the known — a tremor of possibility.',
+    murmur: 'The currents of **Chaos** run through this age. Old certainties loosen their grip.',
+    pulse: '**Chaos** sweeps across the land — borders shift, alliances break, and new paths open where none existed.',
+    storm: '**Chaos** has consumed this age. Nothing holds. Everything is possible, and nothing is safe.',
+  },
+  order: {
+    whisper: 'There is a steadiness in the air — things fall into pattern more easily.',
+    murmur: 'The hand of **Order** shapes this age. Laws hold, promises bind, and the old ways endure.',
+    pulse: '**Order** presses down across the world. Structure hardens, tradition deepens, and deviation carries cost.',
+    storm: '**Order** has seized this age. Every road is mapped, every oath is iron, and freedom is a memory.',
+  },
+  light: {
+    whisper: 'Shadows seem thinner today. Hidden things feel closer to the surface.',
+    murmur: '**Light** touches this age — truths emerge, secrets surface, and counsel is honest.',
+    pulse: '**Light** blazes across the world. Nothing hides for long. Every lie is exposed, every plan laid bare.',
+    storm: '**Light** has consumed this age. There is nowhere to hide, nowhere to scheme, and the raw truth is merciless.',
+  },
+  darkness: {
+    whisper: 'The edges of things seem softer — what was clear grows uncertain.',
+    murmur: '**Darkness** gathers in this age. Secrets multiply, and the unseen grows powerful.',
+    pulse: '**Darkness** spreads its mantle across the world. What is hidden grows stronger than what is known.',
+    storm: '**Darkness** has swallowed this age. The gods themselves are uncertain. Nothing is what it seems.',
+  },
+  // Creation Spheres
   force: {
     whisper: 'A faint martial tremor runs beneath the earth.',
     murmur: 'The drums of **Force** beat steady across the land.',

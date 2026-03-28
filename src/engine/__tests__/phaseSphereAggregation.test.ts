@@ -16,7 +16,6 @@ import { describe, it, expect } from 'vitest';
 import {
   phaseSphereAggregation,
   normalizeAggregate,
-  computeFoundationBalance,
   ENTITY_AGGREGATE_WEIGHT,
 } from '../phaseSphereAggregation';
 import { createDefaultSphereAffinity } from '../../types/sphereAffinity';
@@ -39,10 +38,9 @@ function makeAffinity(scores: Partial<Record<SphereName, number>>): SphereAffini
 
 function makeWorldSoul(): WorldSoulState {
   const sphereWeights = {} as Record<SphereName, number>;
-  for (const s of SPHERE_NAMES) sphereWeights[s] = 0.125;
+  for (const s of SPHERE_NAMES) sphereWeights[s] = 1 / SPHERE_NAMES.length;
   return {
     fundament: {
-      foundations: { chaos_order: 0, light_darkness: 0 },
       sphereWeights,
       cycleCount: 0,
     },
@@ -87,12 +85,12 @@ function makeState(
 // ─── normalizeAggregate ───────────────────────────────────────────────
 
 describe('normalizeAggregate', () => {
-  it('all-zero totals returns equal distribution (0.125 each for 8 spheres)', () => {
+  it('all-zero totals returns equal distribution (1/12 each for 12 spheres)', () => {
     const totals = {} as Record<SphereName, number>;
     for (const s of SPHERE_NAMES) totals[s] = 0;
     const result = normalizeAggregate(totals);
     for (const s of SPHERE_NAMES) {
-      expect(result[s]).toBeCloseTo(1 / 8, 5);
+      expect(result[s]).toBeCloseTo(1 / SPHERE_NAMES.length, 5);
     }
   });
 
@@ -127,42 +125,6 @@ describe('normalizeAggregate', () => {
   });
 });
 
-// ─── computeFoundationBalance ─────────────────────────────────────────
-
-describe('computeFoundationBalance', () => {
-  it('all zeros gives zero balances', () => {
-    const totals = {} as Record<SphereName, number>;
-    for (const s of SPHERE_NAMES) totals[s] = 0;
-    const balance = computeFoundationBalance(totals);
-    expect(balance.chaos_order).toBe(0);
-    expect(balance.light_darkness).toBe(0);
-  });
-
-  it('chaos_order = (matter + mind) - (entropy + force)', () => {
-    const totals = {} as Record<SphereName, number>;
-    for (const s of SPHERE_NAMES) totals[s] = 0;
-    totals.matter = 4;
-    totals.mind = 2;
-    totals.entropy = 1;
-    totals.force = 3;
-    // chaos_order = (4+2) - (1+3) = 6 - 4 = 2
-    const balance = computeFoundationBalance(totals);
-    expect(balance.chaos_order).toBe(2);
-  });
-
-  it('light_darkness = (life + spirit) - (entropy + time)', () => {
-    const totals = {} as Record<SphereName, number>;
-    for (const s of SPHERE_NAMES) totals[s] = 0;
-    totals.life = 5;
-    totals.spirit = 3;
-    totals.entropy = 2;
-    totals.time = 4;
-    // light_darkness = (5+3) - (2+4) = 8 - 6 = 2
-    const balance = computeFoundationBalance(totals);
-    expect(balance.light_darkness).toBe(2);
-  });
-});
-
 // ─── phaseSphereAggregation ─────────────────────────────────────────
 
 describe('phaseSphereAggregation', () => {
@@ -174,7 +136,7 @@ describe('phaseSphereAggregation', () => {
     expect(result.worldSoul!.aggregate!.entityCount).toBe(0);
     // All totals are 0 → normalize gives equal distribution
     const weights = result.worldSoul!.fundament.sphereWeights;
-    expect(weights.life).toBeCloseTo(1 / 8, 5);
+    expect(weights.life).toBeCloseTo(1 / SPHERE_NAMES.length, 5);
   });
 
   it('two location nodes with Life:3 and Life:5 → totalBySphere.life = 8 * 1.0', () => {
@@ -222,16 +184,6 @@ describe('phaseSphereAggregation', () => {
     const weights = result.worldSoul!.fundament.sphereWeights;
     // life has all 8 total score → should dominate the weights
     expect(weights.life).toBeGreaterThan(weights.force);
-  });
-
-  it('foundation balance computed from aggregate totals', () => {
-    const state = makeState([
-      { id: 'loc1', affinity: makeAffinity({ matter: 4, mind: 2, entropy: 1, force: 3 }) },
-    ]);
-    const result = phaseSphereAggregation(state);
-    const agg = result.worldSoul!.aggregate!;
-    // All at weight 1.0. chaos_order = (4+2)-(1+3)=2 (times weight 1.0)
-    expect(agg.foundationBalance.chaos_order).toBeCloseTo(2 * ENTITY_AGGREGATE_WEIGHT.location, 5);
   });
 
   it('skips nodes without sphereAffinity (fail-soft)', () => {

@@ -1,7 +1,6 @@
 import type {
   FundamentState,
   FundamentShift,
-  FoundationBalances,
   ResonanceMemory,
   ResonanceState,
   TwilightState,
@@ -15,7 +14,6 @@ import type { SphereName } from '../types/index';
 import type { DoomClockArchetype } from '../types/doomClock';
 import { SPHERE_NAMES } from '../types/index';
 import {
-  DEFAULT_FOUNDATION_BALANCES,
   MAX_RESONANCE_MEMORIES,
   TWILIGHT_TICK_RANGE,
   HARVEST_ECHO_COUNTS,
@@ -23,24 +21,15 @@ import {
 
 // ── Fundament helpers ───────────────────────────────────────────
 
-/** Create a perfectly neutral Fundament (all axes 0, equal sphere weights) */
+/** Create a perfectly neutral Fundament (equal sphere weights across all 12 spheres) */
 export function createDefaultFundament(): FundamentState {
   const sphereWeights = {} as Record<SphereName, number>;
   for (const s of SPHERE_NAMES) {
     sphereWeights[s] = 1.0 / SPHERE_NAMES.length;
   }
   return {
-    foundations: { ...DEFAULT_FOUNDATION_BALANCES },
     sphereWeights,
     cycleCount: 0,
-  };
-}
-
-/** Clamp a Foundation axis value to [-1.0, 1.0] */
-export function clampFoundations(balances: FoundationBalances): FoundationBalances {
-  return {
-    chaos_order: Math.max(-1, Math.min(1, balances.chaos_order)),
-    light_darkness: Math.max(-1, Math.min(1, balances.light_darkness)),
   };
 }
 
@@ -65,11 +54,6 @@ export function applyFundamentShift(
   fundament: FundamentState,
   shift: FundamentShift
 ): FundamentState {
-  const newFoundations = { ...fundament.foundations };
-  if (shift.foundationAxis && shift.foundationDelta !== undefined) {
-    newFoundations[shift.foundationAxis] += shift.foundationDelta;
-  }
-
   const newWeights = { ...fundament.sphereWeights };
   if (shift.sphereDeltas) {
     for (const [sphere, delta] of Object.entries(shift.sphereDeltas)) {
@@ -78,7 +62,6 @@ export function applyFundamentShift(
   }
 
   return {
-    foundations: clampFoundations(newFoundations),
     sphereWeights: newWeights,
     cycleCount: fundament.cycleCount,
   };
@@ -106,18 +89,12 @@ export function blendFundaments(
   const w = Math.max(0, Math.min(1, blendWeight));
   const ew = 1 - w;
 
-  const foundations: FoundationBalances = {
-    chaos_order: existing.foundations.chaos_order * ew + current.foundations.chaos_order * w,
-    light_darkness: existing.foundations.light_darkness * ew + current.foundations.light_darkness * w,
-  };
-
   const rawWeights = {} as Record<SphereName, number>;
   for (const s of SPHERE_NAMES) {
     rawWeights[s] = existing.sphereWeights[s] * ew + current.sphereWeights[s] * w;
   }
 
   return {
-    foundations: clampFoundations(foundations),
     sphereWeights: normalizeSphereWeights(rawWeights),
     cycleCount: existing.cycleCount + 1,
   };

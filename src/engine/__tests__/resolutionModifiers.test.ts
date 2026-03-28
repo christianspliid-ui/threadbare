@@ -110,10 +110,10 @@ describe('computeSphereAlignmentBonus', () => {
 
   it('returns -0.10 when agent sphere opposes encounter sphere', () => {
     const graph = makeGraph();
-    // force opposes energy
+    // force opposes mind (per updated cosmology)
     addAgent(graph, 'a1', { sphereAlignment: { primary: 'force' } });
 
-    const result = computeSphereAlignmentBonus(graph, 'a1', 'energy');
+    const result = computeSphereAlignmentBonus(graph, 'a1', 'mind');
     expect(result).toBe(SPHERE_OPPOSITION_PENALTY);
   });
 
@@ -430,11 +430,11 @@ describe('computeResolutionModifiers', () => {
 
   it('opposition penalty reduces total modifier', () => {
     const graph = makeGraph();
-    // Agent with force alignment, encounter sphere is energy (opposite of force)
+    // Agent with force alignment, encounter sphere is mind (opposite of force)
     addAgent(graph, 'a1', { sphereAlignment: { primary: 'force' } });
     addLocation(graph, 'loc1', 'plains');
 
-    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', 'energy');
+    const result = computeResolutionModifiers(graph, 'a1', 'loc1', 'iron', 'mind');
 
     expect(result.sphereAlignmentBonus).toBe(SPHERE_OPPOSITION_PENALTY);
     expect(result.totalModifier).toBe(SPHERE_OPPOSITION_PENALTY);

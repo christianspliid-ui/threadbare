@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getAvatarPortraitUrl, AVATAR_PORTRAITS } from '../avatar-portrait-assets';
-import { SPHERE_NAMES } from '../../types';
+import { CREATION_SPHERE_NAMES as SPHERE_NAMES } from '../../types';
 
 describe('avatar-portrait-assets', () => {
   it('returns correct URL for each sphere', () => {
