@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-agent-character-sheet/11-05-PLAN.md
-last_updated: "2026-03-28T22:44:07.735Z"
+stopped_at: Completed 11-agent-character-sheet/11-06-PLAN.md
+last_updated: "2026-03-28T23:14:57.038Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 2
   completed_phases: 2
-  total_plans: 14
-  completed_plans: 14
+  total_plans: 15
+  completed_plans: 15
   percent: 93
 ---
 
@@ -165,6 +165,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P02 | 11 | 2 tasks | 9 files |
 | Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
 | Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
+| Phase 11-agent-character-sheet P06 | 8 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -270,6 +271,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: revelationAction field added to UnifiedActionTemplate type as optional string — extensible without schema change
 - [Phase 11-agent-character-sheet]: REVELATION_ACTION_TEMPLATES array appended to UNIFIED_ACTION_TEMPLATES — 4 new agent-targeting divine action cards available in ActionDrawer
 - [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
+- [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
+- [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
 
 ### Pending Todos
 
@@ -281,6 +284,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T22:44:07.732Z
-Stopped at: Completed 11-agent-character-sheet/11-05-PLAN.md
+Last session: 2026-03-28T23:14:57.036Z
+Stopped at: Completed 11-agent-character-sheet/11-06-PLAN.md
 Resume file: None
