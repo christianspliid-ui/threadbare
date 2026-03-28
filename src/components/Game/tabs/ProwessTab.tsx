@@ -9,7 +9,8 @@ import { SectionHeading } from '../../shared/SectionHeading';
 import { Tooltip } from '../../shared/Tooltip';
 import { ProgressBar } from '../../shared/ProgressBar';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../../types/attachments';
-import type { AttachmentTier, AttachmentFullEntry } from '../../../types/attachments';
+import type { AttachmentTier } from '../../../types/attachments';
+import type { AttachmentFullEntry } from '../../../engine/agentAttachments';
 import { getAttachmentGlyph } from '../attachmentGlyphs';
 import { resolveAttachmentTooltip } from '../../../engine/attachmentTooltip';
 
