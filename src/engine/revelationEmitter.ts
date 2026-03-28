@@ -10,7 +10,8 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
-import type { RevelationTrace, InteractionDepthTrace, TraceEntry } from '../types/trace';
+import type { RevelationTrace, InteractionDepthTrace } from '../types/trace';
+import type { ReachDomain } from '../types/traits';
 import {
   DEPTH_ENCOUNTER_OBSERVED,
   DEPTH_DILEMMA,
@@ -132,7 +133,7 @@ export function emitEncounterRevelations(state: GameState): void {
 
         // Fallback: check if encounter ID contains a known reach domain name
         if (!reach) {
-          const knownReaches = Object.keys(REACH_TO_VALUE_MAP);
+          const knownReaches = Object.keys(REACH_TO_VALUE_MAP) as ReachDomain[];
           reach = knownReaches.find(r => encounterId.includes(r));
         }
 
