@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 10-sphere-affinity/10-06-PLAN.md
-last_updated: "2026-03-28T18:21:49.243Z"
+stopped_at: "Completed 10-sphere-affinity/10-07-PLAN.md (pending checkpoint:human-verify)"
+last_updated: "2026-03-28T18:29:07.891Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 8
-  completed_plans: 7
+  completed_plans: 8
   percent: 93
 ---
 
@@ -251,6 +251,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: ProseKeyword tooltip uses position:relative/absolute inside span — simpler than portal for inline prose contexts
 - [Phase 10-sphere-affinity]: ActionDrawer sphere preview uses per-sphere SPHERE_ACTION_PROSE registry + hoveredSlotId — avoids threading targetHexAffinity through component chain
 - [Phase 10-sphere-affinity]: HexChronicle reuses sphereInfluence (0-1) for SOUL_PROSE level mapping rather than adding new SphereAffinity integer-score prop
+- [Phase 10-sphere-affinity]: graph.nodes is a Map — use Map API (entries(), values(), size) not Object.keys() in CLI evals
 
 ### Pending Todos
 
@@ -262,6 +263,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:21:49.241Z
-Stopped at: Completed 10-sphere-affinity/10-06-PLAN.md
+Last session: 2026-03-28T18:28:59.390Z
+Stopped at: Completed 10-sphere-affinity/10-07-PLAN.md (pending checkpoint:human-verify)
 Resume file: None
