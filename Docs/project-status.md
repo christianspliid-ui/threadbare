@@ -3,9 +3,10 @@
 > Updated 2026-03-27. Split from monolithic status file — see Docs/project-history.md for completed milestone archive.
 
 ## Current Focus
-**Phase 10: Sphere Affinity System** — Plan 02/7 complete (pressure resolution engine + aggregation).
+**Phase 10: Sphere Affinity System** — Plan 04/7 complete (sphere downstream modifiers).
 
 **Recent completions:**
+- ✅ Phase 10 Plan 04: Sphere downstream modifiers — prosperity Life/Energy/Entropy modifier, encounter resonance (sphere vs opposition), agent axiological shift from dominant sphere (2026-03-28).
 - ✅ Phase 10 Plan 02: Opposition-cancellation pressure engine, allied defense, erosion/construction, agent presence buffer, global World-Soul aggregation, both phases wired into orchestrator (2026-03-28).
 - ✅ Phase 10 Plan 01: SphereAffinity type system, triangle math, terrain-to-sphere table, entity seeding during game initialization (2026-03-28).
 - ✅ TB-067: Notification Expansion (2026-03-27) — right-click dismiss, NavigationTarget system with typed nav glyphs, per-category notification preferences in SettingsPanel with localStorage persistence.
