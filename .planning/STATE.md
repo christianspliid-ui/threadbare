@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 10-sphere-affinity/10-02-PLAN.md
-last_updated: "2026-03-28T17:53:38.156Z"
+stopped_at: Completed 10-sphere-affinity/10-03-PLAN.md
+last_updated: "2026-03-28T18:01:50.965Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 8
-  completed_plans: 3
+  completed_plans: 5
   percent: 93
 ---
 
@@ -155,6 +155,8 @@ Progress: [███░░░░░░░] 21%
 | Phase 09-start-screen P02 | 15 | 2 tasks | 3 files |
 | Phase 10-sphere-affinity P01 | 6 | 2 tasks | 5 files |
 | Phase 10-sphere-affinity P02 | 12 | 2 tasks | 6 files |
+| Phase 10-sphere-affinity P04 | 11 | 2 tasks | 4 files |
+| Phase 10-sphere-affinity P03 | 10 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -238,6 +240,11 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: SphereAggregate type lives in types/worldSoul.ts to avoid circular imports with engine layer
 - [Phase 10-sphere-affinity]: isValidSphereAffinity guard in both sphere phases handles legacy bare-string SphereName values from worldSeed.ts artifacts
 - [Phase 10-sphere-affinity]: Magic power formula: power = max(0, casterScore + locationScore - locationOppositionScore); overchannel cost routes as SpherePressureEvent through standard pressure pipeline targeting opposite sphere
+- [Phase 10-sphere-affinity]: Sphere modifier uses fractional scale multiplied by 100 when injected into 0-100 prosperity target
+- [Phase 10-sphere-affinity]: SPHERE_AXIOLOGICAL_MAP maps Force to courage_prudence, Life to mercy_ruthlessness, Mind to honesty_cunning as closest VALUE_PAIR matches
+- [Phase 10-sphere-affinity]: Control effect sphere derived from perTickCost keys; targetNodeId required for pressure; fail-soft skip when absent
+- [Phase 10-sphere-affinity]: Doom entropy pressure pushed to ALL location nodes on tier escalation — world-wide burst
+- [Phase 10-sphere-affinity]: phaseDoom/phaseMandate extracted from orchestrator.ts to separate files; orchestrator re-exports for backward compat
 
 ### Pending Todos
 
@@ -249,6 +256,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:46:17.638Z
-Stopped at: Completed 10-sphere-affinity/10-02-PLAN.md
+Last session: 2026-03-28T18:01:50.962Z
+Stopped at: Completed 10-sphere-affinity/10-03-PLAN.md
 Resume file: None
