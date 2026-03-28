@@ -1259,6 +1259,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             profile={agentFullProfile}
             onClose={handleCloseProfile}
             scrollToNewStrata={agentInfoCard.backstory?.strata.some(s => s.isNew) ?? false}
+            knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
           />
         )}
       </AnimateMount>
