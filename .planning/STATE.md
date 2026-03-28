@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 09-start-screen/09-02-PLAN.md
-last_updated: "2026-03-23T09:30:27.493Z"
+stopped_at: Completed 10-sphere-affinity/10-01-PLAN.md
+last_updated: "2026-03-28T17:28:10.333Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 10
-  completed_phases: 10
-  total_plans: 30
-  completed_plans: 30
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 8
+  completed_plans: 1
   percent: 93
 ---
 
@@ -153,6 +153,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 09-start-screen P01 | 12 | 2 tasks | 6 files |
 | Phase 09-start-screen P02 | 2 | 1 tasks | 3 files |
 | Phase 09-start-screen P02 | 15 | 2 tasks | 3 files |
+| Phase 10-sphere-affinity P01 | 6 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -230,6 +231,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 09-start-screen]: Fog default key threadbare_fog_default stored in localStorage, unchecked by default matching existing ?fog off-by-default behavior
 - [Phase 09-start-screen]: Seed hardcoded as 42 on start screen (no dynamic seed access from start page context)
 - [Phase 09-start-screen]: Tech credits rendered as a list from a const array for easy extensibility
+- [Phase 10-sphere-affinity]: SphereName reused from existing types/index.ts, not aliased — keeps type system simple
+- [Phase 10-sphere-affinity]: Sphere seeding in gameInit.ts after seedWorld(), using hex-affinity-by-key map for location inheritance
+- [Phase 10-sphere-affinity]: Faction/culture actors get default (all-zero) SphereAffinity at init — derived aggregation deferred to phaseSphereAggregation
 
 ### Pending Todos
 
@@ -241,6 +245,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-23T09:18:14.600Z
-Stopped at: Completed 09-start-screen/09-02-PLAN.md
+Last session: 2026-03-28T17:28:10.331Z
+Stopped at: Completed 10-sphere-affinity/10-01-PLAN.md
 Resume file: None
