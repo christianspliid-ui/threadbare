@@ -77,6 +77,18 @@ Plans:
 
 **Phase 10 core complete (2026-03-28).** Sphere pipeline stable over 30+ ticks. Gap closure plan 10-08 addresses HexChronicle Soul layer bridge and ProseKeyword tooltip visibility. Action drawer hover effects deferred by user.
 
+### Phase 11: Agent Character Sheet Overhaul
+
+**Goal:** Overhaul the agent character sheet (AgentProfileModal) from a long-scroll list to a 5-tab layout (Overview, Prowess, Bonds, Journey, Chronicle). Replace scalar familiarity-gated visibility with a multi-faceted knowledge model (AgentKnowledge) where individual data points are revealed through specific narrative interactions. Includes new action cards for deliberate discovery and an interactionDepth accumulator. Backward-compatible with existing familiarity system.
+**Plans:** 4 plans
+**Requirements:** TB-070
+
+Plans:
+- [ ] 11-01-PLAN.md — AgentKnowledge types, revelation hooks, phaseInteractionDepth, traces
+- [ ] 11-02-PLAN.md — Tabbed AgentProfileModal rewrite with 5-tab layout and facet-gated sections
+- [ ] 11-03-PLAN.md — Revelation emitters wired to existing phases, debug panel tabs
+- [ ] 11-04-PLAN.md — Observe/Scry/Whisper Insight/Dream Sending action cards
+
 ---
 
 ## M2: Conflict & Destruction
@@ -180,7 +192,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | **D: World-Soul disconnected** | M1 (primary target) |
 | **E: Economy one-directional** | M3 (primary target) |
 | **F: No danger** | M2 (primary target) |
-| **G: Character sheet** | TB-070 already designed, can land between milestones |
+| **G: Character sheet** | Phase 11 (TB-070) — in progress |
 | **H: Culture seeding** | TB-031/032, can land between milestones |
 | **I: NPCs** | M3 partial (workforce model), full NPC system later |
 | **J: Chain reactions** | TB-017, natural extension after M1 (World-Soul provides the propagation channel) |
@@ -192,6 +204,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | Milestone | Design Doc Needed | Status |
 |-----------|------------------|--------|
 | M1.1–M1.5 | Universal Sphere Affinity (all phases) | ✅ Design complete — rewritten 2026-03-28 with per-entity architecture (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
+| Phase 11 | Agent Character Sheet Overhaul | ✅ Design complete (`Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`) |
 | M2.1 | Army Entities & Faction Warfare | Needs full design |
 | M2.2 | Battle Resolution & Sieges | Needs full design |
 | M2.3 | Destruction & Consequences | Needs design (partially covered by economy brainstorm) |
