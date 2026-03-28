@@ -83,6 +83,7 @@ import { getUnifiedTemplateById } from '../../data/unified-action-templates';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
+import { WorldSoulIndicator } from '../WorldSoulIndicator';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -864,6 +865,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             income={essenceIncome}
             compact
           />
+
+          {/* WorldSoulIndicator — prose description of dominant sphere */}
+          {gameState.worldSoul?.aggregate && (
+            <>
+              <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
+              <WorldSoulIndicator aggregate={gameState.worldSoul.aggregate} />
+            </>
+          )}
         </div>
 
         {/* Group divider */}
@@ -1156,6 +1165,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             encounterNotifications={gameState.encounterNotifications}
             pendingVignettes={gameState.pendingVignettes}
             seed={gameState.seed}
+            sphereAggregate={gameState.worldSoul?.aggregate}
           />
         ) : (
           <div
