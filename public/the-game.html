@@ -55,11 +55,6 @@ body::after {
 .hero {
   height: 100vh;
   min-height: 700px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 0;
   position: relative;
   overflow: hidden;
 }
@@ -87,24 +82,27 @@ body::after {
 }
 
 .hero-content {
-  position: relative;
+  position: absolute;
+  inset: 0;
   z-index: 1;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 0 3rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  padding: 0 3rem;
 }
 
 .hero-wordmark {
-  font-family: 'Cormorant Garamond', serif;
-  font-weight: 300;
-  font-size: clamp(4rem, 10vw, 8rem);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--parchment);
-  line-height: 1;
-  margin-bottom: 1rem;
-  text-shadow: 0 0 80px rgba(196,153,60,0.15);
+  margin-bottom: 1.5rem;
+}
+
+.hero-wordmark img {
+  width: clamp(320px, 55vw, 800px);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  mix-blend-mode: lighten;
 }
 
 .hero-tagline {
@@ -519,7 +517,7 @@ footer {
     <img src="/images/start-page-background.png" alt="Threadbearer — a living world awaits" loading="eager">
   </div>
   <div class="hero-content">
-    <div class="hero-wordmark">Threadbearer</div>
+    <div class="hero-wordmark"><img src="/images/threadbearer-wordmark.png" alt="Threadbearer"></div>
     <div class="hero-tagline">A god-game of emergent myth</div>
     <a href="/?view=game" class="hero-cta">Enter the World</a>
   </div>
