@@ -19,6 +19,7 @@ import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
 import type { ControlEffect } from './controlEffect';
 import type { HexRevelation } from './unifiedAction';
+import type { SpherePressureEvent } from './sphereAffinity';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -131,6 +132,9 @@ export interface GameState {
 
   // Pending hex mutations — accumulated by hex action resolution, consumed by phaseHexState
   pendingHexMutations?: HexMutation[];
+
+  // Pending sphere pressure events — accumulated by action/encounter/doom phases, consumed by phaseSpherePressure
+  pendingSpherePressures?: SpherePressureEvent[];
 
   // Journey vignettes — queued by journey beat phase, consumed by UI
   pendingVignettes?: PendingVignette[];
