@@ -9,6 +9,26 @@
 
 ---
 
+### 2026-03-28: TB-072 M1.2 — Encounter Wiring Implemented (partial verification)
+
+**Context:** Cowork audit found M1.2 encounter wiring was designed but never implemented. Agent implemented it.
+
+**What was done:**
+- `computeEncounterResonance()` and `computeWorldSoulValueDrift()` implemented in `encounterScoring.ts`
+- `fundament` threaded into `scoreAndSelect()` and `resolveProfile()`, callers updated in `phaseAgentDecision.ts`
+- `ScoringTrace` extended with `globalResonance`, `resonance`, `worldSoulDrift` fields
+- 12 unit tests passing, `tsc --noEmit` clean
+- Commit: `72dccb1`
+- Implementation plan: `Docs/plans/2026-03-28-world-soul-encounter-wiring-plan.md`
+
+**Action for Claude Code:** ✅ Complete (2026-03-29)
+- [x] `npx vite build` — passes (after fixing SPHERE_NAMES import + TRACE_CATEGORIES export)
+- [x] Functions verified: `computeEncounterResonance` and `computeWorldSoulValueDrift` wired at encounterScoring.ts:481 and :352. CLI doesn't exist yet — verified via code inspection and test suite.
+- [x] Pushed to main
+- [x] Docs updated (changelog, project-status, project-history, BACKLOG.md)
+
+---
+
 ### 2026-03-28: Deploy landing page + product strategy + wordmark + roadmap updates
 
 **Context:** Cowork session created two new static pages and an illuminated wordmark logo for the game. Also updated ROADMAP with Living World Systems milestones and added TB-072/TB-073 to BACKLOG.
