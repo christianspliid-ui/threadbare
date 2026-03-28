@@ -14,6 +14,7 @@ import type { RevelationTrace, InteractionDepthTrace, TraceEntry } from '../type
 import {
   DEPTH_ENCOUNTER_OBSERVED,
   DEPTH_DILEMMA,
+  DEPTH_DIVINE_ACTION,
   DISPOSITION_DILEMMA_THRESHOLD,
 } from '../types/agentKnowledge';
 import {
@@ -23,6 +24,8 @@ import {
   revealDisposition,
   revealPossession,
   revealBond,
+  revealAmbition,
+  revealThreat,
 } from './revelationHooks';
 import { getAnyEncounterById } from '../data/encounter-content';
 import { emitTrace } from './traceBuffer';
@@ -306,6 +309,291 @@ export function emitDilemmaRevelations(state: GameState): void {
     }
   } catch (err) {
     console.warn('[revelationEmitter] emitDilemmaRevelations error:', err);
+  }
+}
+
+// ─── Emitter 4: Divine Action Revelations ─────────────────────────
+
+/**
+ * Resolve a divine revelation action against the target agent.
+ *
+ * Called by phaseUnifiedActionProgress when a completed action has a
+ * `revelationAction` metadata field. Dispatches to the correct revelation
+ * behavior based on the action type string.
+ *
+ * Action types:
+ * - 'observe': reveals the first unrevealed domain (fixed order), emits domain_revealed
+ * - 'scry': reveals all 9 domains + all bonds (relates_to edges) + all possessions
+ * - 'whisper_insight': reveals one value (by axiological weight) + sets dispositionRevealed
+ * - 'dream_sending': reveals first pursues-edge ambition + sets threatRevealed
+ *
+ * All actions increment interactionDepth by DEPTH_DIVINE_ACTION and emit
+ * RevelationTrace entries for each newly revealed facet.
+ *
+ * Fail-soft: errors caught and logged, never crash the tick loop (NFP #4).
+ */
+export function resolveRevelationAction(
+  actionType: string,
+  state: GameState,
+  targetAgentId: string,
+): void {
+  try {
+    if (!state.agentKnowledge) return;
+
+    const knowledge = getOrCreateKnowledge(state.agentKnowledge, targetAgentId);
+    const agentNode = state.graph.getNode(targetAgentId);
+    const agentName = agentNode?.name ?? targetAgentId;
+    const depthBefore = knowledge.interactionDepth;
+
+    switch (actionType) {
+      case 'observe': {
+        // Reveal the first domain in canonical order that isn't yet revealed
+        const DOMAIN_ORDER = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+        const unrevealed = DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
+
+        if (unrevealed) {
+          revealDomain(knowledge, unrevealed);
+
+          state.tickEvents.push({
+            id: nextRevEventId(),
+            tick: state.tick,
+            type: 'domain_revealed' as TickEvent['type'],
+            message: `${agentName}'s skill in ${unrevealed} becomes apparent through divine sight`,
+            significance: REVELATION_EVENT_SIGNIFICANCE,
+            actorId: targetAgentId,
+          });
+
+          emitTrace({
+            category: 'agent_revelation',
+            tick: state.tick,
+            agentId: targetAgentId,
+            facetType: 'domain',
+            facetId: unrevealed,
+            source: 'divine_action',
+            interactionDepthBefore: depthBefore,
+            interactionDepthAfter: knowledge.interactionDepth,
+            summary: `${agentName}: domain '${unrevealed}' revealed via divine observe action`,
+          } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+        }
+
+        knowledge.interactionDepth += DEPTH_DIVINE_ACTION;
+
+        emitTrace({
+          category: 'interaction_depth',
+          tick: state.tick,
+          agentId: targetAgentId,
+          source: 'divine_action',
+          depthBefore,
+          depthAfter: knowledge.interactionDepth,
+          summary: `${targetAgentId}: depth ${depthBefore.toFixed(2)} → ${knowledge.interactionDepth.toFixed(2)} (observe divine action)`,
+        } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
+        break;
+      }
+
+      case 'scry': {
+        // Reveal ALL 9 domains
+        const ALL_DOMAINS = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+        for (const domain of ALL_DOMAINS) {
+          const newlyRevealed = revealDomain(knowledge, domain);
+          if (newlyRevealed) {
+            emitTrace({
+              category: 'agent_revelation',
+              tick: state.tick,
+              agentId: targetAgentId,
+              facetType: 'domain',
+              facetId: domain,
+              source: 'divine_action',
+              interactionDepthBefore: depthBefore,
+              interactionDepthAfter: knowledge.interactionDepth,
+              summary: `${agentName}: domain '${domain}' revealed via scry`,
+            } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+          }
+        }
+
+        // Reveal ALL bonds (relates_to edges)
+        const bondEdges = state.graph.getOutgoingEdges(targetAgentId, 'relates_to');
+        for (const edge of bondEdges) {
+          try {
+            const newlyRevealed = revealBond(knowledge, edge.target, 'divine');
+            if (newlyRevealed) {
+              emitTrace({
+                category: 'agent_revelation',
+                tick: state.tick,
+                agentId: targetAgentId,
+                facetType: 'bond',
+                facetId: edge.target,
+                source: 'divine_action',
+                interactionDepthBefore: depthBefore,
+                interactionDepthAfter: knowledge.interactionDepth,
+                summary: `${agentName}: bond to '${edge.target}' revealed via scry`,
+              } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+            }
+          } catch (bondErr) {
+            console.warn('[revelationEmitter] scry bond reveal error:', bondErr);
+          }
+        }
+
+        // Reveal all hidden possessions (possesses edges)
+        const possessionEdges = state.graph.getOutgoingEdges(targetAgentId, 'possesses');
+        for (const edge of possessionEdges) {
+          try {
+            const newlyRevealed = revealPossession(knowledge, edge.target);
+            if (newlyRevealed) {
+              emitTrace({
+                category: 'agent_revelation',
+                tick: state.tick,
+                agentId: targetAgentId,
+                facetType: 'possession',
+                facetId: edge.target,
+                source: 'divine_action',
+                interactionDepthBefore: depthBefore,
+                interactionDepthAfter: knowledge.interactionDepth,
+                summary: `${agentName}: possession '${edge.target}' revealed via scry`,
+              } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+            }
+          } catch (posErr) {
+            console.warn('[revelationEmitter] scry possession reveal error:', posErr);
+          }
+        }
+
+        state.tickEvents.push({
+          id: nextRevEventId(),
+          tick: state.tick,
+          type: 'domain_revealed' as TickEvent['type'],
+          message: `Divine sight pierces the veil around ${agentName}, revealing all`,
+          significance: REVELATION_EVENT_SIGNIFICANCE,
+          actorId: targetAgentId,
+        });
+
+        knowledge.interactionDepth += DEPTH_DIVINE_ACTION;
+
+        emitTrace({
+          category: 'interaction_depth',
+          tick: state.tick,
+          agentId: targetAgentId,
+          source: 'divine_action',
+          depthBefore,
+          depthAfter: knowledge.interactionDepth,
+          summary: `${targetAgentId}: depth ${depthBefore.toFixed(2)} → ${knowledge.interactionDepth.toFixed(2)} (scry divine action)`,
+        } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
+        break;
+      }
+
+      case 'whisper_insight': {
+        // Reveal one unrevealed value — pick the highest-weighted pair not yet revealed
+        const axProfile = (agentNode?.properties?.axiologicalProfile ?? {}) as Record<string, number>;
+        const unrevealedPairs = Object.entries(axProfile)
+          .filter(([pairId]) => !knowledge.revealedValues.has(pairId))
+          .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a)); // highest absolute weight first
+
+        if (unrevealedPairs.length > 0) {
+          const [pairId] = unrevealedPairs[0];
+          revealValue(knowledge, pairId);
+
+          state.tickEvents.push({
+            id: nextRevEventId(),
+            tick: state.tick,
+            type: 'domain_revealed' as TickEvent['type'],
+            message: `${agentName}'s ${pairId} nature whispers through the divine connection`,
+            significance: REVELATION_EVENT_SIGNIFICANCE,
+            actorId: targetAgentId,
+          });
+
+          emitTrace({
+            category: 'agent_revelation',
+            tick: state.tick,
+            agentId: targetAgentId,
+            facetType: 'value',
+            facetId: pairId,
+            source: 'divine_action',
+            interactionDepthBefore: depthBefore,
+            interactionDepthAfter: knowledge.interactionDepth,
+            summary: `${agentName}: value '${pairId}' revealed via whisper insight`,
+          } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+        }
+
+        // Always reveal disposition
+        revealDisposition(knowledge);
+
+        knowledge.interactionDepth += DEPTH_DIVINE_ACTION;
+
+        emitTrace({
+          category: 'interaction_depth',
+          tick: state.tick,
+          agentId: targetAgentId,
+          source: 'divine_action',
+          depthBefore,
+          depthAfter: knowledge.interactionDepth,
+          summary: `${targetAgentId}: depth ${depthBefore.toFixed(2)} → ${knowledge.interactionDepth.toFixed(2)} (whisper insight divine action)`,
+        } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
+        break;
+      }
+
+      case 'dream_sending': {
+        // Reveal first ambition from pursues edges
+        const pursuesEdges = state.graph.getOutgoingEdges(targetAgentId, 'pursues');
+        if (pursuesEdges.length > 0) {
+          const firstAmbitionId = pursuesEdges[0].target;
+          const newlyRevealed = revealAmbition(knowledge, firstAmbitionId);
+
+          if (newlyRevealed) {
+            state.tickEvents.push({
+              id: nextRevEventId(),
+              tick: state.tick,
+              type: 'domain_revealed' as TickEvent['type'],
+              message: `${agentName} reveals their driving ambition in a divine dream`,
+              significance: REVELATION_EVENT_SIGNIFICANCE,
+              actorId: targetAgentId,
+            });
+
+            emitTrace({
+              category: 'agent_revelation',
+              tick: state.tick,
+              agentId: targetAgentId,
+              facetType: 'ambition',
+              facetId: firstAmbitionId,
+              source: 'divine_action',
+              interactionDepthBefore: depthBefore,
+              interactionDepthAfter: knowledge.interactionDepth,
+              summary: `${agentName}: ambition '${firstAmbitionId}' revealed via dream sending`,
+            } as Omit<RevelationTrace, 'id' | 'timestamp'>);
+          }
+        }
+
+        // Always reveal threat status
+        const threatNewlyRevealed = revealThreat(knowledge);
+        if (threatNewlyRevealed) {
+          state.tickEvents.push({
+            id: nextRevEventId(),
+            tick: state.tick,
+            type: 'domain_revealed' as TickEvent['type'],
+            message: `Through dreams, you glimpse what ${agentName} fears`,
+            significance: REVELATION_EVENT_SIGNIFICANCE,
+            actorId: targetAgentId,
+          });
+        }
+
+        knowledge.interactionDepth += DEPTH_DIVINE_ACTION;
+
+        emitTrace({
+          category: 'interaction_depth',
+          tick: state.tick,
+          agentId: targetAgentId,
+          source: 'divine_action',
+          depthBefore,
+          depthAfter: knowledge.interactionDepth,
+          summary: `${targetAgentId}: depth ${depthBefore.toFixed(2)} → ${knowledge.interactionDepth.toFixed(2)} (dream sending divine action)`,
+        } as Omit<InteractionDepthTrace, 'id' | 'timestamp'>);
+        break;
+      }
+
+      default:
+        console.warn(`[revelationEmitter] resolveRevelationAction: unknown actionType '${actionType}'`);
+        break;
+    }
+
+  } catch (err) {
+    console.warn('[revelationEmitter] resolveRevelationAction error:', err);
   }
 }
 
