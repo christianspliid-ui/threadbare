@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Fantasy World Simulator — Product Strategy</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Fira+Code:wght@300;400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --parchment: #f4ead5;
+    --parchment-dark: #e8d9b8;
+    --ink: #2c1810;
+    --ink-light: #5a3d2b;
+    --ink-faint: #8b6f5c;
+    --gold: #c4993c;
+    --gold-bright: #e6b84d;
+    --gold-dim: #a07830;
+    --ember: #c44b2f;
+    --ember-glow: #e85d3a;
+    --deep-blue: #1a2744;
+    --cosmos: #0d1520;
+    --cosmos-mid: #162030;
+    --soul-purple: #7b5ea7;
+    --soul-light: #a88fd0;
+    --iron-red: #9e3b3b;
+    --iron-bright: #c45050;
+    --life-green: #4a7c59;
+    --line: rgba(196, 153, 60, 0.15);
+    --line-strong: rgba(196, 153, 60, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--cosmos);
+    color: var(--parchment);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ═══ NOISE TEXTURE ═══ */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ═══ NAVIGATION ═══ */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 1rem 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    background: linear-gradient(180deg, var(--cosmos) 0%, transparent 100%);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-family: 'Fira Code', monospace;
+  }
+  nav a {
+    color: var(--ink-faint);
+    text-decoration: none;
+    transition: color 0.3s;
+    opacity: 0.5;
+  }
+  nav a:hover { color: var(--gold); opacity: 1; }
+  nav .nav-title {
+    color: var(--gold-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: none;
+    opacity: 0.7;
+  }
+
+  /* ═══ HERO ═══ */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(196, 153, 60, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: pulse-glow 8s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+  }
+
+  .hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    color: var(--parchment);
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero .subtitle {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 3rem;
+    opacity: 0.6;
+  }
+
+  .hero .thesis {
+    max-width: 640px;
+    font-size: 1.15rem;
+    color: var(--parchment-dark);
+    line-height: 1.9;
+    position: relative;
+  }
+
+  .hero .thesis strong {
+    color: var(--gold);
+    font-weight: 500;
+  }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: var(--line-strong);
+    margin: 3rem auto;
+  }
+
+  /* ═══ CONCEPT ART ═══ */
+  .art-break {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .art-break img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.5) saturate(0.7);
+    transition: filter 0.6s;
+  }
+
+  .art-break:hover img {
+    filter: brightness(0.6) saturate(0.85);
+  }
+
+  .art-break .art-caption {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 2rem;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--parchment);
+    opacity: 0.35;
+  }
+
+  .art-break::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, var(--cosmos) 0%, transparent 15%, transparent 85%, var(--cosmos) 100%);
+    pointer-events: none;
+  }
+
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+  }
+
+  .hero-art img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.18) saturate(0.5);
+  }
+
+  .hero-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 0%, var(--cosmos) 75%);
+  }
+
+  .milestone-art {
+    margin-top: 1.25rem;
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    max-width: 600px;
+  }
+
+  .milestone-art img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    filter: brightness(0.55) saturate(0.65);
+    transition: filter 0.5s;
+  }
+
+  .milestone-art:hover img {
+    filter: brightness(0.7) saturate(0.85);
+  }
+
+  .milestone-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .milestone-art.art-soul::after {
+    background: linear-gradient(135deg, rgba(123, 94, 167, 0.15) 0%, transparent 60%);
+  }
+  .milestone-art.art-conflict::after {
+    background: linear-gradient(135deg, rgba(158, 59, 59, 0.15) 0%, transparent 60%);
+  }
+  .milestone-art.art-economy::after {
+    background: linear-gradient(135deg, rgba(196, 153, 60, 0.15) 0%, transparent 60%);
+  }
+
+  /* ═══ SECTIONS ═══ */
+  section {
+    padding: 6rem 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 0.75rem;
+    opacity: 0.7;
+  }
+
+  section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 400;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    color: var(--parchment);
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+  }
+
+  section h2 em { color: var(--gold); font-style: italic; }
+
+  section p {
+    max-width: 680px;
+    color: var(--parchment-dark);
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  /* ═══ THE PHILOSOPHY ═══ */
+  .philosophy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .philosophy-card {
+    border: 1px solid var(--line);
+    padding: 2rem;
+    position: relative;
+    transition: border-color 0.4s;
+  }
+
+  .philosophy-card:hover {
+    border-color: var(--line-strong);
+  }
+
+  .philosophy-card .card-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: var(--gold-dim);
+    opacity: 0.3;
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+  }
+
+  .philosophy-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--parchment);
+    margin-bottom: 0.75rem;
+  }
+
+  .philosophy-card p {
+    font-size: 0.9rem;
+    color: var(--ink-faint);
+    max-width: none;
+    line-height: 1.7;
+    margin-bottom: 0;
+  }
+
+  /* ═══ MILESTONE SEQUENCE ═══ */
+  .milestones {
+    margin-top: 3rem;
+  }
+
+  .milestone {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 2.5rem;
+    margin-bottom: 4rem;
+    position: relative;
+  }
+
+  .milestone::after {
+    content: '';
+    position: absolute;
+    left: 40px;
+    top: 80px;
+    bottom: -2rem;
+    width: 1px;
+    background: linear-gradient(180deg, var(--line-strong) 0%, transparent 100%);
+  }
+
+  .milestone:last-child::after { display: none; }
+
+  .milestone-marker {
+    width: 80px;
+    height: 80px;
+    border: 1px solid var(--line-strong);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .milestone-marker .m-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem;
+    font-weight: 300;
+    color: var(--gold);
+  }
+
+  .milestone-marker .m-label {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.5rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.6;
+  }
+
+  .milestone.m-soul .milestone-marker { border-color: var(--soul-purple); }
+  .milestone.m-soul .milestone-marker .m-num { color: var(--soul-light); }
+  .milestone.m-soul h3 { color: var(--soul-light); }
+
+  .milestone.m-conflict .milestone-marker { border-color: var(--iron-red); }
+  .milestone.m-conflict .milestone-marker .m-num { color: var(--iron-bright); }
+  .milestone.m-conflict h3 { color: var(--iron-bright); }
+
+  .milestone.m-economy .milestone-marker { border-color: var(--gold-dim); }
+  .milestone.m-economy .milestone-marker .m-num { color: var(--gold-bright); }
+  .milestone.m-economy h3 { color: var(--gold-bright); }
+
+  .milestone-body h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .milestone-body .m-tagline {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 1rem;
+    opacity: 0.6;
+  }
+
+  .milestone-body p {
+    font-size: 0.95rem;
+    color: var(--parchment-dark);
+    margin-bottom: 1rem;
+    max-width: 600px;
+  }
+
+  .milestone-body .m-delivers {
+    font-size: 0.8rem;
+    color: var(--ink-faint);
+    border-top: 1px solid var(--line);
+    padding-top: 1rem;
+    margin-top: 1rem;
+  }
+
+  .milestone-body .m-delivers strong {
+    color: var(--parchment-dark);
+    font-weight: 500;
+  }
+
+  /* ═══ LAYER DIAGRAM ═══ */
+  .layer-diagram {
+    margin: 4rem auto;
+    max-width: 800px;
+  }
+
+  .layer {
+    padding: 1.5rem 2rem;
+    border-left: 2px solid;
+    margin-bottom: 0;
+    position: relative;
+    transition: background 0.3s;
+  }
+
+  .layer:hover {
+    background: rgba(255,255,255,0.02);
+  }
+
+  .layer-3 { border-color: var(--gold-dim); }
+  .layer-2 { border-color: var(--iron-red); }
+  .layer-1 { border-color: var(--soul-purple); }
+  .layer-0 { border-color: var(--ink-faint); }
+
+  .layer h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .layer-3 h4 { color: var(--gold-bright); }
+  .layer-2 h4 { color: var(--iron-bright); }
+  .layer-1 h4 { color: var(--soul-light); }
+  .layer-0 h4 { color: var(--parchment-dark); }
+
+  .layer .layer-desc {
+    font-size: 0.85rem;
+    color: var(--ink-faint);
+    margin-bottom: 0;
+  }
+
+  .layer .layer-tag {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    opacity: 0.5;
+    margin-bottom: 0.25rem;
+  }
+
+  /* ═══ DNA PRINCIPLES ═══ */
+  .dna-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 3rem;
+    border: 1px solid var(--line);
+  }
+
+  .dna-item {
+    padding: 2rem 2.5rem;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    align-items: baseline;
+    transition: background 0.3s;
+  }
+
+  .dna-item:last-child { border-bottom: none; }
+  .dna-item:hover { background: rgba(255,255,255,0.015); }
+
+  .dna-item .dna-key {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .dna-item .dna-val {
+    font-size: 0.9rem;
+    color: var(--parchment-dark);
+    line-height: 1.7;
+  }
+
+  .dna-item .dna-val em {
+    color: var(--gold);
+    font-style: normal;
+    font-weight: 400;
+  }
+
+  /* ═══ GAPS MATRIX ═══ */
+  .gaps-table {
+    margin-top: 2rem;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  .gaps-table th {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: left;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line-strong);
+    opacity: 0.6;
+  }
+
+  .gaps-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--parchment-dark);
+    vertical-align: top;
+  }
+
+  .gaps-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+  .gap-id {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-faint);
+  }
+
+  .gap-severity {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+  }
+  .gap-critical { background: var(--ember); }
+  .gap-structural { background: var(--gold-dim); }
+  .gap-enrichment { background: var(--ink-faint); }
+
+  .gap-landing {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .gap-m1 { color: var(--soul-light); }
+  .gap-m2 { color: var(--iron-bright); }
+  .gap-m3 { color: var(--gold-bright); }
+  .gap-later { color: var(--ink-faint); }
+
+  /* ═══ FOOTER ═══ */
+  footer {
+    padding: 4rem 2rem;
+    text-align: center;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.4;
+    border-top: 1px solid var(--line);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ═══ RESPONSIVE ═══ */
+  @media (max-width: 768px) {
+    .philosophy-grid { grid-template-columns: 1fr; }
+    .milestone { grid-template-columns: 60px 1fr; gap: 1.5rem; }
+    .dna-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    nav { display: none; }
+  }
+
+  /* ═══ SCROLL ANIMATIONS ═══ */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .fade-in.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-title">Threadbare</span>
+  <a href="#philosophy">Philosophy</a>
+  <a href="#sequence">Sequence</a>
+  <a href="#layers">Layers</a>
+  <a href="#dna">DNA</a>
+  <a href="#gaps">Gaps</a>
+</nav>
+
+<!-- ═══════════════════════════════════════════ HERO ═══ -->
+<div class="hero">
+  <div class="hero-art">
+    <img src="/screens/title-screen.png" alt="The Fantasy World Simulator — cosmic energy streams through ancient ruins" loading="eager">
+  </div>
+  <h1>Build the world first.<br>Find the <em>game</em> inside it.</h1>
+  <div class="subtitle">Product Strategy &mdash; March 2026</div>
+  <div class="divider"></div>
+  <div class="thesis">
+    The Fantasy World Simulator is a systemic god-game where <strong>emergent narrative</strong> comes from the collision of deep, interconnected systems &mdash; not from scripted events. Like CK3 and Stellaris, the simulation comes first. The game emerges from watching systems interact in surprising ways.
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ PHILOSOPHY ═══ -->
+<section id="philosophy">
+  <div class="section-label fade-in">Core Philosophy</div>
+  <h2 class="fade-in">Four truths about <em>what we're building</em></h2>
+
+  <div class="philosophy-grid">
+    <div class="philosophy-card fade-in">
+      <span class="card-num">01</span>
+      <h3>Simulation before game design</h3>
+      <p>Build a world that behaves coherently when nobody's watching. The "game" is a lens the player points at the simulation &mdash; mandates and doom shape each run, but the world underneath is the real product.</p>
+    </div>
+    <div class="philosophy-card fade-in">
+      <span class="card-num">02</span>
+      <h3>Emergent stories, not scripted ones</h3>
+      <p>The best moments will be ones we never designed. A guild war escalating into a siege because one faction hired mercenaries. A trade empire collapsing because the World-Soul shifted. Systems surprising each other.</p>
+    </div>
+    <div class="philosophy-card fade-in">
+      <span class="card-num">03</span>
+      <h3>Prose over numbers</h3>
+      <p>The player reads stories, not spreadsheets. Every mechanical interaction surfaces through narrative prose. Numbers exist under the hood for tunability and determinism, but the player sees a world of language.</p>
+    </div>
+    <div class="philosophy-card fade-in">
+      <span class="card-num">04</span>
+      <h3>Three imperfect systems beat one perfect one</h3>
+      <p>Depth comes from interaction, not polish. A cosmic balance system, a conflict system, and an economy don't need to be individually perfect &mdash; they need to <em>surprise each other</em> when they collide.</p>
+    </div>
+  </div>
+</section>
+
+<div class="art-break fade-in">
+  <img src="/concept-art/mountains.png" alt="Snow-capped mountain peaks with waterfalls" loading="lazy">
+  <span class="art-caption">The world awaits</span>
+</div>
+
+<!-- ═══════════════════════════════════════ SEQUENCE ═══ -->
+<section id="sequence">
+  <div class="section-label fade-in">Development Sequence</div>
+  <h2 class="fade-in">Three milestones to a <em>living world</em></h2>
+  <p class="fade-in">Each milestone makes the world feel more alive and gives the player more meaningful choices. Doom and mandates wait &mdash; they shape runs, but the world must exist first.</p>
+
+  <div class="milestones">
+
+    <div class="milestone m-soul fade-in">
+      <div class="milestone-marker">
+        <span class="m-num">M1</span>
+        <span class="m-label">First</span>
+      </div>
+      <div class="milestone-body">
+        <h3>World-Soul Connection</h3>
+        <div class="m-tagline">The world breathes</div>
+        <p>Wire the cosmic metabolism into the tick loop. Player actions shift sphere balance, which ripples into encounter ecology, prosperity, agent behavior, and terrain. The World-Soul is the butterfly effect engine &mdash; everything downstream gets richer because of it.</p>
+        <p>Without this, player actions feel local and isolated. With it, cursing a hex shifts cosmic balance, which darkens encounters across a region, which dips prosperity, which makes agents more desperate. Thread-pulling in a living tapestry.</p>
+        <div class="m-delivers"><strong>Delivers:</strong> Sphere balance computation from graph state &middot; Prosperity/encounter/behavior modifiers &middot; HUD visibility &middot; Existing hex actions wired to global balance</div>
+        <div class="milestone-art art-soul">
+          <img src="/backgrounds/court/spirit.png" alt="Ethereal purple energy — the World-Soul" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+    <div class="milestone m-conflict fade-in">
+      <div class="milestone-marker">
+        <span class="m-num">M2</span>
+        <span class="m-label">Second</span>
+      </div>
+      <div class="milestone-body">
+        <h3>Conflict & Destruction</h3>
+        <div class="m-tagline">The world breaks</div>
+        <p>Armies march across the hex map. Factions declare war goals. Sieges break cities you built up. Sacking creates ruins from what were once thriving settlements. Refugees flood toward safety. Monsters roam the borderlands.</p>
+        <p>This is where emergent storytelling gets visceral. A guild war that escalates into a siege because one faction hired mercenaries and the other called in allies &mdash; that's the kind of story players screenshot and share. Destruction gives the economy stakes: building a trade network is satisfying, building one you might lose is compelling.</p>
+        <div class="m-delivers"><strong>Delivers:</strong> Army graph entities visible on map &middot; Battle/siege resolution &middot; Location destruction &amp; refugee generation &middot; Trade route disruption &middot; Monster encounters &middot; War as storytelling</div>
+        <div class="milestone-art art-conflict">
+          <img src="/concept-art/locations/battleground.png" alt="Aftermath of a great battle — tattered banners and scorched earth" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+    <div class="milestone m-economy fade-in">
+      <div class="milestone-marker">
+        <span class="m-num">M3</span>
+        <span class="m-label">Third</span>
+      </div>
+      <div class="milestone-body">
+        <h3>Dynamic Economy</h3>
+        <div class="m-tagline">The world trades</div>
+        <p>Connect encounters, factions, and player actions to the prosperity/wealth/trade systems. By the time this lands, sphere balance affects prosperity, armies disrupt trade, sieges destroy infrastructure, and refugees surge populations. The economy won't need artificial drama &mdash; it'll react to real events.</p>
+        <p>Eight phases from low-effort high-impact (encounter &rarr; economy feedback) through to deep systemic connections (resource scarcity, guild activation, wealth-spending crossovers between Reaches).</p>
+        <div class="m-delivers"><strong>Delivers:</strong> Encounter &harr; economy feedback loops &middot; Wealth spending across Reaches &middot; Trade route lifecycle &middot; Unrest from inequality &middot; Active guilds &middot; Gold+Stone player CRUD actions &middot; Resource scarcity</div>
+        <div class="milestone-art art-economy">
+          <img src="/concept-art/locations/town.png" alt="A bustling medieval market town — commerce in motion" loading="lazy">
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════ LAYERS ═══ -->
+<section id="layers">
+  <div class="section-label fade-in">System Architecture</div>
+  <h2 class="fade-in">The four layers of a <em>living world</em></h2>
+  <p class="fade-in">Each layer builds on the one below. The foundation is already built. The three milestones add the layers that make the simulation feel alive.</p>
+
+  <div class="layer-diagram">
+    <div class="layer layer-3 fade-in">
+      <div class="layer-tag">Layer 4 &middot; M3</div>
+      <h4>Commerce & Resources</h4>
+      <div class="layer-desc">Trade routes, wealth, prosperity, guilds, scarcity. The circulatory system. Things are produced, moved, consumed, and fought over.</div>
+    </div>
+    <div class="layer layer-2 fade-in">
+      <div class="layer-tag">Layer 3 &middot; M2</div>
+      <h4>Conflict & Destruction</h4>
+      <div class="layer-desc">Armies, sieges, sacking, monsters, refugees. The immune system. Forces that break and reshape the world through violence.</div>
+    </div>
+    <div class="layer layer-1 fade-in">
+      <div class="layer-tag">Layer 2 &middot; M1</div>
+      <h4>Cosmic Metabolism</h4>
+      <div class="layer-desc">World-Soul, sphere balance, harmony/entropy. The nervous system. Everything that happens shifts the cosmic balance, which shifts everything else.</div>
+    </div>
+    <div class="layer layer-0 fade-in">
+      <div class="layer-tag">Layer 1 &middot; Complete</div>
+      <h4>Simulation Foundation</h4>
+      <div class="layer-desc">Graph world, agents, encounters, movement, factions, hex actions, interventions, mandates, doom clock, prose. The skeleton. Already built.</div>
+    </div>
+  </div>
+</section>
+
+<div class="art-break fade-in">
+  <img src="/concept-art/locations/city.png" alt="A great coastal city at dusk — towers and harbors" loading="lazy">
+  <span class="art-caption">What we're building toward</span>
+</div>
+
+<!-- ═══════════════════════════════════════ DNA ═══ -->
+<section id="dna">
+  <div class="section-label fade-in">Strategic DNA</div>
+  <h2 class="fade-in">Principles that <em>don't change</em></h2>
+  <p class="fade-in">When you feel lost, come back here. These are the load-bearing decisions that define what this project is and isn't.</p>
+
+  <div class="dna-grid fade-in">
+    <div class="dna-item">
+      <div class="dna-key">CK3/Stellaris model</div>
+      <div class="dna-val">The simulation comes first. The "game" emerges from deep systems interacting. We build the world, then discover the fun inside it. We don't design fun and bolt systems onto it.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Graph-native</div>
+      <div class="dna-val">Everything is a node or an edge. No relational tables, no special-cased entity types. Armies, trade routes, curses, alliances &mdash; all graph structures. This is <em>settled and load-bearing</em>.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">World-Soul as backbone</div>
+      <div class="dna-val">The World-Soul is the connective tissue. Every action shifts sphere balance, which ripples into everything else. Without it, systems are isolated islands. With it, they form a living ecosystem.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Destruction matters</div>
+      <div class="dna-val">Building is only compelling when loss is possible. Armies sack cities. Doom erodes infrastructure. Trade routes get severed. The player builds things they might lose, and that's what makes building meaningful.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Prose, not numbers</div>
+      <div class="dna-val">The player reads stories, never spreadsheets. Domain word scales replace stats. Encounters are narratives, not dice rolls. Numbers exist under the hood for <em>tunability and determinism</em>, never for display.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Doom & mandates wait</div>
+      <div class="dna-val">They're the game-shaping layer &mdash; they make each run different. But they need a living world to shape. Build the world first, then tune the lenses that make each playthrough unique.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Collision is the goal</div>
+      <div class="dna-val">Three imperfect systems surprising each other create more emergent narrative than one perfect system. We optimize for <em>interaction surface</em> between systems, not depth within any single one.</div>
+    </div>
+    <div class="dna-item">
+      <div class="dna-key">Economy as third pillar</div>
+      <div class="dna-val">Cosmos, conflict, commerce. Three forces that generate story when they collide. Economy inherits drama from the other two &mdash; it doesn't need to manufacture its own tension.</div>
+    </div>
+  </div>
+</section>
+
+<div class="art-break fade-in">
+  <img src="/concept-art/locations/ruins.png" alt="Overgrown ruins — arches reaching into grey sky" loading="lazy">
+  <span class="art-caption">What remains to be discovered</span>
+</div>
+
+<!-- ═══════════════════════════════════════ GAPS ═══ -->
+<section id="gaps">
+  <div class="section-label fade-in">Journey Audit</div>
+  <h2 class="fade-in">Known gaps and <em>where they land</em></h2>
+  <p class="fade-in">Fourteen gaps identified by tracing the end-to-end player journey. Each one is mapped to the milestone where it naturally resolves.</p>
+
+  <table class="gaps-table fade-in">
+    <thead>
+      <tr>
+        <th>Gap</th>
+        <th>Description</th>
+        <th>Severity</th>
+        <th>Resolves In</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="gap-id">A</span></td>
+        <td>Doom has no mechanical teeth</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-m1">M1</span> + <span class="gap-landing gap-m2">M2</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">B</span></td>
+        <td>Rival gods are inert (text only)</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-m2">M2</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">C</span></td>
+        <td>No onboarding path for new players</td>
+        <td><span class="gap-severity gap-critical"></span>Critical</td>
+        <td><span class="gap-landing gap-later">Post-M3</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">D</span></td>
+        <td>World-Soul not in tick loop</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing gap-m1">M1</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">E</span></td>
+        <td>Economy is one-directional</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing gap-m3">M3</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">F</span></td>
+        <td>No danger in the world (monsters)</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing gap-m2">M2</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">G</span></td>
+        <td>Agent character sheet needs overhaul</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing gap-later">Between milestones</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">H</span></td>
+        <td>Culture/seeding lacks geographic coherence</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing gap-later">Between milestones</span></td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">I</span></td>
+        <td>No NPCs at locations</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing gap-m3">M3</span> partial</td>
+      </tr>
+      <tr>
+        <td><span class="gap-id">J</span></td>
+        <td>No chain reactions from player actions</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing gap-m1">M1</span> foundation</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════ FOOTER ═══ -->
+<footer>
+  The Fantasy World Simulator &middot; Product Strategy &middot; March 2026 &middot; Build the world, find the game
+</footer>
+
+<script>
+  // Simple intersection observer for fade-in animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

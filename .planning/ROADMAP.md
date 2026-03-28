@@ -1,222 +1,189 @@
-# Roadmap: Hex Map V2
+# Roadmap: Living World Systems
 
-## Overview
+> Supersedes Hex Map V2 roadmap (all 9 phases complete, archived to `.snapshots/`).
+> Created 2026-03-27. Three milestones that turn the simulation into a game with cosmic stakes, conflict, and economic depth.
 
-Bottom-up construction of a complete hex map system: start with the Three.js renderer and terrain palette, layer in world generation, water systems, regions, then signifier art and composition, agents, fog/zoom, and finally integrate into the live game. Each phase delivers a verifiable visual capability that builds on the previous.
+## Milestone Overview
 
-**All 8 phases complete.** V1 SVG hex map deleted in Phase 8. HexMapV2 (Three.js) is the sole renderer, integrated into `?view=game`. The standalone `?view=hexv2` route remains for isolated renderer debugging only.
+| # | Milestone | Focus | Key Deliverable |
+|---|-----------|-------|-----------------|
+| M1 | World-Soul Connection | Cosmic metabolism | Player actions shift sphere balance; the world responds systemically |
+| M2 | Conflict & Destruction | Iron Reach scale-up | Armies, sieges, sacking — visible on map, faction-driven, leader-led |
+| M3 | Dynamic Economy | Gold+Stone connections | Economy feeds back through encounters, factions, actions, and player CRUD |
 
-## Phases
+**Guiding principle:** Each milestone makes the world *feel* more alive and gives the player more meaningful choices. Gaps from the journey audit (Gaps A–J) are woven in where they naturally fit rather than treated as separate work items.
 
-**Phase Numbering:**
-- Integer phases (1, 2, 3): Planned milestone work
-- Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
+---
 
-Decimal phases appear between their surrounding integers in numeric order.
+## M1: World-Soul Connection
 
-- [x] **Phase 1: Renderer Foundation** - Three.js orthographic renderer displays 60K colored hexes at 60fps with camera controls ✅ 2026-03-21
-- [x] **Phase 2: World Generation** - Continuous-field worldgen produces realistic heightmap, climate, rivers, and biome assignment (completed 2026-03-21)
-- [x] **Phase 3: Coastlines, Water & Elevation** - Organic coastlines, river overlays, water depth, and elevation visual language (completed 2026-03-21)
-- [x] **Phase 4: Regions & Borders** - Geographic and political regions with borders, labels, and capital markers (completed 2026-03-22)
-- [x] **Phase 5: Hex Composition & Landscape Signifiers** - Slot-based composition system with all 27 terrain signifier sets rendered on map (completed 2026-03-22)
-- [x] **Phase 6: Locations & Agents** - Settlement icons, POI markers, agent portraits, faction colors, and movement animation (completed 2026-03-22)
-- [x] **Phase 7: Fog, Zoom & Grid** - Fog-of-war culling, 4-tier zoom LOD with visibility matrix, and road network (completed 2026-03-22)
-- [x] **Phase 7.1: Stencil Coastline** - INSERTED: WebGL stencil-based organic coastline that clips land hex edges to organic contour (fixes Phase 3 criterion #1) ✅ 2026-03-22 (behind feature flag)
-- [x] **Phase 8: Integration** - New map replaces SVG map in GameView with full game system wiring (completed 2026-03-22)
-- [x] **Phase 9: Start Screen** - Main menu with title art, ambient audio, narrative tone, and navigation to worldgen (completed 2026-03-23)
+**Goal:** The World-Soul is the cosmic metabolism of the world. Player actions, agent behavior, and doom progression shift sphere balance, which ripples into encounter ecology, prosperity, agent behavior, and terrain. The world *reacts* to what happens in it.
 
-## Phase Details
+**Why first:** The World-Soul is the connective tissue between all other systems. Without it, player actions feel local and isolated — you curse a hex and nothing else notices. With it, every action shifts cosmic balance, creating consequences the player can see and respond to. It also provides the infrastructure that doom effects (Gap A) and economic mandates will eventually plug into.
 
-### Phase 1: Renderer Foundation
-**Goal**: Player sees a 200x300 hex grid rendered via Three.js with correct terrain colors and smooth camera controls
-**Depends on**: Nothing (first phase)
-**Requirements**: RNDR-01, RNDR-02, RNDR-03, RNDR-04, RNDR-05, RNDR-06, TERR-01, TERR-02, TERR-03, TERR-04, TERR-05
-**Success Criteria** (what must be TRUE):
-  1. A 200x300 hex grid renders in the browser at 60fps with no visible jank during pan/zoom
-  2. Each hex displays a distinct color matching its terrain type from the 27-type Tait palette
-  3. Camera pans with drag, zooms with scroll/pinch, and jumps to a specific hex via API call
-  4. Hovering a hex shows an HTML tooltip with hex coordinates and terrain type
-  5. Water hexes (shallows, ocean, deep_ocean, lake) use a separate blue palette from terrain
-**Plans:** 2 plans
+**Gap coverage:** Partially addresses Gap A (doom effects can inject through World-Soul modifiers), Gap D (World-Soul disconnection — the primary target).
 
-Plans:
-- [x] 01-01-PLAN.md — Scene scaffold, palette, InstancedMesh hex fill, grid lines, ?view=hexv2 route ✅ 2026-03-21
-- [x] 01-02-PLAN.md — Camera controls (d3-zoom pan/zoom, fly-to), raycasting, tooltip, selected/hovered hex states ✅ 2026-03-21
+### Phases
 
-### Phase 2: World Generation
-**Goal**: A seeded world generator produces organic continents with realistic climate zones, rivers, and biome distribution via a province-first multi-pass pipeline
-**Depends on**: Phase 1
-**Requirements**: WGEN-01, WGEN-02, WGEN-03, WGEN-04, WGEN-05, WGEN-06, WGEN-07, WGEN-08, WGEN-09, WGEN-10, WGEN-11, WGEN-12, WGEN-13
-**Success Criteria** (what must be TRUE):
-  1. Given the same seed, the generator produces an identical world every time
-  2. The world has coherent continents with inland biomes transitioning naturally (tropical near equator, cold at poles, dry in rain shadows)
-  3. Rivers flow from high elevation to the sea, growing wider downstream, with lakes forming in depressions
-  4. Highland areas (hills, mountains, plateaus) form mountain ranges and ridgelines, not random scattered peaks
-  5. Every land hex has a drainage path to the sea (no isolated inland sinks except intentional lakes)
-**Plans:** 3/3 plans complete
+#### M1.1 — World-Soul Tick Integration
+Wire `worldSoul.ts` into the orchestrator. Each tick:
+- Compute current sphere balance from graph state (agent sphere alignments, control effects, divine influence, location sphere properties)
+- Drift harmony/entropy based on player actions vs. natural equilibrium
+- Emit `world_soul_pulse` trace with full sphere breakdown
 
-Plans:
-- [ ] 02-01-PLAN.md — Pipeline scaffold, types, province seeding, elevation with ridges/canyons/coastline, 7-point sampling
-- [ ] 02-02-PLAN.md — Climate fields (temp/moisture/rain shadow), biome classification with all overrides, adjacency smoothing
-- [ ] 02-03-PLAN.md — Hydrology integration (rivers/lakes/drainage/deltas/wetlands), validation pass, game entry point wiring
+**Needs:** Design doc specifying what graph state feeds into sphere balance, drift rate constants, and the computation model.
 
-### Phase 3: Coastlines, Water & Elevation
-**Goal**: Coastlines look organic (not hex-shaped), rivers flow as blue overlays through terrain, and elevation is visually readable
-**Depends on**: Phase 2
-**Requirements**: WATR-01, WATR-02, WATR-03, WATR-04, WATR-05, WATR-06, ELEV-01, ELEV-02, ELEV-03, GRID-01
-**Note**: ELEV-04 (altitude text labels) CUT from this phase -- deferred to later phase.
-**Success Criteria** (what must be TRUE):
-  1. Coastal hexes show their inland biome color with an organic shoreline cutting through (not hex-edge aligned)
-  2. Rivers appear as blue curved lines overlaid on terrain (a forest hex with a river still looks like forest + blue line)
-  3. River width visibly increases from thin mountain streams to wide lowland rivers
-  4. Mountain edges display caterpillar tick marks that get denser on steeper slopes
-  5. Thin hex grid lines are visible at hero-local and regional zoom without obscuring terrain
-**Plans:** 3/3 plans complete
+#### M1.2 — Sphere Balance Effects
+World-Soul sphere balance affects downstream systems:
+- **Prosperity modifier:** Sphere alignment at a location modifies prosperity target (a Life-dominant world boosts food; an Entropy-dominant world decays infrastructure)
+- **Encounter weighting:** Sphere balance shifts which encounter types are more/less common globally (high Force → more combat encounters everywhere; high Spirit → more mystical/social encounters)
+- **Agent behavior bias:** Global sphere tilt adds a small modifier to all agents' axiological scoring (high Order world → agents slightly more tradition-leaning)
+- **Terrain drift (stretch):** Extreme sphere imbalance slowly shifts terrain types (high Entropy → fertile land degrades; high Life → barren land blooms)
 
-Plans:
-- [x] 03-01-PLAN.md — Coastline mask rendering, water depth bands, lake fill, worldgen data threading, STYLE.md color update ✅ 2026-03-21
-- [ ] 03-02-PLAN.md — River overlay rendering with mesh quad strips, width scaling
-- [ ] 03-03-PLAN.md — Elevation tick marks, grid line verification, visual checkpoint
+**Needs:** Design doc specifying the modifier injection points, constants, and fail-soft for each downstream system.
 
-### Phase 4: Regions & Borders
-**Goal**: The world is divided into named geographic and political regions with visible borders, labels, and capital markers
-**Depends on**: Phase 3
-**Requirements**: REGN-01, REGN-02, REGN-03, REGN-04, REGN-05, REGN-06, REGN-07, REGN-08, REGN-09, GRID-02
-**Success Criteria** (what must be TRUE):
-  1. Geographic regions form naturally around terrain features (a forest valley is one region, mountains around it are another)
-  2. Political borders render as red polylines along hex edges, with thicker lines for kingdoms and thinner for baronies
-  3. Region labels appear at region centers: kingdoms bold all-caps, baronies title case, geographic features italic
-  4. Labels do not overlap each other
-  5. Capital cities are marked with red dots distinguishable from terrain at regional zoom
-**Plans:** 3/3 plans complete
+#### M1.3 — World-Soul UI & Player Visibility
+- World-Soul health indicator in the HUD (complements existing DoomBar, EssencePanel)
+- Sphere balance visualization (which spheres are dominant/weak)
+- Chronicle entries when sphere balance shifts significantly
+- Debug panel tab showing full World-Soul state
 
-Plans:
-- [ ] 04-01-PLAN.md — Region type contracts, TERRAIN_TO_FEATURE audit, border-cost watershed detection, WorldGenResult threading
-- [ ] 04-02-PLAN.md — Political region grouping, border mesh (quad-strip polylines), capital markers, HexMapV2 wiring
-- [ ] 04-03-PLAN.md — Region label overlay (HTML/CSS), AABB collision detection, river labels, zoom-tier filtering
+#### M1.4 — World-Soul Player Interaction
+- Connect existing hex actions (Shift Dominion, Attune Leyline, Anchor the Sphere, etc.) to World-Soul: successful sphere actions should shift global balance, not just local hex state
+- New awareness: the player can *feel* the World-Soul's health through prose and visual indicators
+- Foundation for doom effects (M-future): doom archetypes will inject through World-Soul modifiers
 
-### Phase 5: Hex Composition & Landscape Signifiers
-**Goal**: Every terrain hex displays characteristic dark-silhouette signifiers (trees, mountains, dunes, etc.) placed via a slot-based composition system
-**Depends on**: Phase 3
-**Requirements**: COMP-01, COMP-02, COMP-03, COMP-04, LSIG-01, LSIG-02, LSIG-03, LSIG-04, LSIG-05, LART-01, LART-02, LART-03, LART-04, LART-05, LART-06, LART-07, LART-08, LART-09, LART-10, LART-11, LART-12, LART-13, LART-14, LART-15, LART-16, LART-17, LART-18, LART-19, LART-20, LART-21, LART-22, LART-23, LART-24, LART-25, LART-26, LART-27, LART-28, LART-29, LART-30
-**Success Criteria** (what must be TRUE):
-  1. Every terrain type on the map displays a recognizable dark silhouette signifier (trees for forests, peaks for mountains, dunes for deserts, etc.)
-  2. Adjacent hexes of the same terrain show different signifier variants (no two neighboring forests look identical)
-  3. Signifiers have subtle position jitter and rotation, creating an organic hand-placed feel
-  4. Signifiers scale with zoom and disappear below regional zoom threshold
-  5. The composition system correctly assigns signifiers to CENTER slots and handles suppression rules
-**Plans:** 4/4 plans complete
+---
 
-Plans:
-- [ ] 05-01-PLAN.md — Composition system types, resolver, signifier registry with terrain reconciliation
-- [ ] 05-02-PLAN.md — Signifier rendering pipeline (SVG-to-CanvasTexture, SignifierMesh, HexMapV2 wiring)
-- [ ] 05-03-PLAN.md — SVG signifier assets for lowland, forest, wet terrain types (LART-01 through LART-12)
-- [ ] 05-04-PLAN.md — SVG signifier assets for highland, desert, cold, volcanic, special types (LART-13 through LART-30)
+## M2: Conflict & Destruction
 
-### Phase 6: Locations & Agents
-**Goal**: Settlements, POIs, and agents are visible on the map with faction colors, status indicators, and movement animation
-**Depends on**: Phase 5
-**Requirements**: LOCI-01, LOCI-02, LOCI-03, LOCI-04, LOCI-05, LIART-01, LIART-02, LIART-03, LIART-04, LIART-05, LIART-06, LIART-07, LIART-08, LIART-09, LIART-10, LIART-11, LIART-12, LIART-13, LIART-14, LIART-15, LIART-16, LIART-17, COMP-05, AGNT-01, AGNT-02, AGNT-03, AGNT-04, AGNT-05, AGNT-06, AGNT-07, AGNT-08
-**Success Criteria** (what must be TRUE):
-  1. Cities, temples, ruins, and other locations display as recognizable black silhouette icons with name labels readable against any terrain
-  2. Agents appear as circular portrait thumbnails at hero-local zoom and colored dots at regional zoom
-  3. Retinue agents are instantly distinguishable from other agents by their gold/white border
-  4. When an agent moves, it visually hops along a bezier curve from source to destination hex
-  5. Major locations suppress terrain signifiers on their hex (a city replaces tree icons)
-**Plans:** 4/4 plans complete
+**Goal:** Scale up Iron Reach from individual encounters into army-scale conflict. Armies are visible on the map, move with leader agents toward factional goals, and produce large-scale storytelling events: sieges, sacking of cities, great battles. Destruction of locations as a real mechanic.
 
-Plans:
-- [ ] 06-01-PLAN.md — Location icon pipeline (registry, textures, LocationIconMesh), label overlay, COMP-05 RING extension, HexMapV2 wiring
-- [ ] 06-02-PLAN.md — Production SVG location icon art for all 17 types (LIART-01 through LIART-17)
-- [ ] 06-03-PLAN.md — Agent sprite rendering (portraits, faction dots, RING layout, zoom-tier visibility)
-- [ ] 06-04-PLAN.md — Agent animation (bezier hop), activity/event indicators, movement trails, full HexMapV2 wiring
+**Why second:** The world needs danger and stakes. Economy without conflict is a spreadsheet. Agents without adversaries are tourists. Armies give factions teeth, give the player something to fear and fight, and make Iron Reach matter the way Gold Reach matters for commerce.
 
-### Phase 7: Fog, Zoom & Grid
-**Goal**: Fog of war hides unexplored territory, zoom levels show appropriate detail, and roads connect settlements
-**Depends on**: Phase 6
-**Requirements**: FOG-01, FOG-02, FOG-03, FOG-04, FOG-05, FOG-06, ZOOM-01, ZOOM-02, ZOOM-03, ZOOM-04, ZOOM-05, ZOOM-06, GRID-03, GRID-04
-**Success Criteria** (what must be TRUE):
-  1. Unexplored hexes appear as solid dark fill with no terrain detail leaking through
-  2. Explored-but-not-visible hexes show full terrain, signifiers, and locations but NO agents or events
-  3. Zooming smoothly transitions between hero-local, regional, continental, and full-world views with elements fading in/out
-  4. At full-world zoom, only terrain colors and political borders are visible (no signifiers, no agents)
-  5. Camera starts centered on the player's retinue agent and can auto-follow during movement
-**Plans:** 3/3 plans complete
+**Gap coverage:** Addresses Gap F (no danger), partially Gap B (rivals become dangerous when they can field armies). Connects to economy (M3): armies cost wealth, sacking destroys infrastructure, war disrupts trade.
 
-Plans:
-- [ ] 07-01-PLAN.md — Fog culling logic (color override, layer gating, visibility computation) + zoom visibility matrix (tier thresholds, fade alpha)
-- [ ] 07-02-PLAN.md — Road mesh rendering (quad-strip geometry, major/trail styling, bridge icon detection at river crossings)
-- [ ] 07-03-PLAN.md — Full HexMapV2 wiring (fog prop threading, zoom matrix integration, road mesh, follow mode, default camera centering)
+### Phases
 
-### Phase 7.1: Stencil Coastline
-**Goal**: Organic coastline clips land hex edges using the WebGL stencil buffer, so coastal hexes show their inland biome color with an organic shoreline (fixes Phase 3 criterion #1)
-**Depends on**: Phase 7
-**Requirements**: WATR-01
-**Note**: INSERTED — fixes unmet Phase 3 success criterion. Stencil approach chosen over per-hex clip geometry.
-**Success Criteria** (what must be TRUE):
-  1. Coastal land hexes show their terrain color with organic (non-hexagonal) edges at the shoreline
-  2. Water hexes render with organic depth bands (shallows → ocean → deep ocean)
-  3. Lakes render with organic blue fill and organic shoreline edges
-  4. No terrain color is covered or replaced by flat overlay colors
-  5. Performance remains at 60fps (stencil is GPU-native, no extra draw calls beyond the split InstancedMesh)
-**Plans:** 1 plan
+#### M2.1 — Army Entities & Faction Warfare Design
+Full design pass covering:
+- **Army as graph entity:** Army node type with properties (size, strength, morale, leader agent, faction allegiance, current goal). Connected to faction via `commanded_by` edge, to location via `located_at`.
+- **Army movement:** Armies move on the hex map like agents but slower, following roads, visible at all zoom tiers. Movement uses existing pathfinding but with army-specific cost weights.
+- **Faction war goals:** Factions can declare war goals (capture settlement, destroy rival, raid trade route, defend territory). War goals drive army movement decisions.
+- **Army composition:** Drawn from faction members + hired mercenaries (connects to Gold Reach crossover: wealth → hire mercenaries → army grows).
+- **Supply & morale:** Armies need supply lines (trade routes!) — severed supply degrades morale. Morale affects battle outcomes.
 
-Plans:
-- [ ] 07.1-01-PLAN.md — Split HexFillMesh into land/water InstancedMeshes, stencil write pass from coastline contours, depth band fills, HexMapV2 wiring + fog adaptation
+**Needs:** Full design doc with NFP compliance, wiring section, constants tables, trace schemas.
 
-### Phase 8: Integration
-**Goal**: The new hex map fully replaces the old SVG map in the live game with all existing systems working
-**Depends on**: Phase 7
-**Requirements**: INTG-01, INTG-02, INTG-03, INTG-04, INTG-05, INTG-06, WGEN-14
-**Success Criteria** (what must be TRUE):
-  1. Opening the game (?view=game) shows the new Three.js hex map instead of the old SVG map
-  2. Clicking a hex opens the hex chronicle, clicking a location opens location view, clicking an agent opens agent interaction
-  3. All existing agents, locations, and encounters from game state appear on the new map without engine changes
-  4. The fog toggle in the debug panel works with the new renderer
-  5. All pre-existing tests pass without modification
-**Plans:** 4/4 plans complete
+#### M2.2 — Battle Resolution
+- **Encounter-scale battles:** Small skirmishes as multi-step encounters (existing encounter system, new templates). Agent capability checks, Iron Reach resolution.
+- **Army-scale battles:** When two armies meet at the same hex, trigger a battle event. Resolution based on army strength, morale, leader capability, terrain, and sphere alignment. Multi-step with narrative beats.
+- **Sieges:** Army at a settlement triggers siege. Multi-tick encounter with escalating stakes. Defender can sortie, negotiate, or hold. Attacker can assault, starve, or negotiate.
+- **Divine intervention in battle:** Player can spend essence to tip battles (bless army, curse enemy, inspire defenders, break siege).
 
-Plans:
-- [x] 08-01-PLAN.md — WorldGenResult data threading, GameView component swap (HexMap to HexMapV2), agent/location adapters, fog toggle wiring
-- [x] 08-02-PLAN.md — V1 SVG map code deletion, WGEN-14 fantasy overlay pass, App.tsx worldgen screen update, test suite verification
-- [ ] 08-03-PLAN.md — Gap closure: fix HexMapV2 WIP test mismatches (SignifierMesh mock, ElevationTicks rewrite, terrainPalette/coastline constants, delete V1 MovementTrails test)
-- [ ] 08-04-PLAN.md — Gap closure: fix pre-existing engine test failures (movement TRAIL_HISTORY_TICKS, traceBuffer eviction, familiarity setup, MandateTracker pips)
+**Needs:** Design doc for battle/siege resolution math, encounter templates, and divine intervention integration.
 
-### Phase 9: Start Screen
-**Goal**: Player sees an atmospheric title screen with concept art, ambient music, and a clean menu before entering worldgen
-**Depends on**: Phase 8
-**Requirements**: None (new capability)
-**Canonical refs**: `Docs/plans/2026-03-23-start-page-design.md`
-**Success Criteria** (what must be TRUE):
-  1. Opening the game (no URL params) shows the start screen with title art, "THREADBARE" title, lore fragment, and menu
-  2. "New World" transitions to the existing cosmology/worldgen screen with a fade
-  3. Dev view shortcuts (?view=game, ?view=hexv2) skip the start screen entirely
-  4. Dark ambient music loops on user interaction, fades out on "New World", and mute state persists in localStorage
-  5. Settings and Credits modals open as overlays on the start screen
-  6. If title-screen.png or audio file is missing, the page degrades gracefully (solid dark bg, silent)
-**Plans:** 3/3 plans complete
+#### M2.3 — Destruction & Consequences
+- **Sacking:** Victorious army at a settlement can sack it. Destroys sublocations, tanks prosperity, spikes unrest, generates massive chronicle event. Displaced population.
+- **Location destruction:** Settlements can be reduced (city→town→hamlet→ruins). Ruins become explorable sites (connects to existing ruins layer).
+- **Trade route disruption:** Armies on a trade route hex set `threatened: true`. Active warfare severs routes.
+- **Refugee generation:** Sacked settlements produce agent migration toward safe locations (connects to economy — refugees boost receiving settlement population).
+- **War chronicle:** Major battles generate multi-paragraph chronicle entries. Siege narratives unfold over multiple ticks. The player reads war stories, not stat blocks.
 
-Plans:
-- [ ] 09-00-PLAN.md — Wave 0 test scaffolds (StartPage.test.tsx, useThemeMusic.test.ts, App.test.tsx)
-- [ ] 09-01-PLAN.md — StartPage component (layout, CSS, gradient, menu), useThemeMusic hook (with setVolume), App.tsx phase integration, stub modals
-- [ ] 09-02-PLAN.md — Settings modal (volume slider wired to audio, fog toggle, version), Credits modal (title, tech, lore), visual verification checkpoint
+#### M2.4 — Army Visibility & UI
+- Army sprites on HexMapV2 (faction-colored, size-indicating, leader portrait)
+- Army movement animation (marching along roads)
+- Battle indicators on contested hexes
+- Siege visual (encirclement indicator around settlement)
+- War declaration events in notification system
+- Army detail view (strength, morale, leader, goal, supply status)
+- Debug panel: army state, war goals, battle log
 
-## Progress
+#### M2.5 — Monster Encounters Integration
+- Fold TB-051 (Monster Encounters) into the conflict layer
+- Monsters as wilderness threats: territorial creatures on the map, hostile to armies and agents alike
+- Province danger gradient (capital→heartland→borderland→wilderness) drives monster density
+- Monster lairs as locations that must be cleared before settlement
+- Armies can be sent to clear monster threats (faction quest variant)
 
-**Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 (parallel: 5) -> 6 -> 7 -> 7.1 -> 8 -> 9
+---
 
-Note: Phase 5 can run in parallel with Phase 4 (both depend on Phase 3, not each other).
+## M3: Dynamic Economy
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Renderer Foundation | 2/2 | Complete | 2026-03-21 |
-| 2. World Generation | 3/3 | Complete   | 2026-03-21 |
-| 3. Coastlines, Water & Elevation | 3/3 | Complete   | 2026-03-21 |
-| 4. Regions & Borders | 3/3 | Complete   | 2026-03-22 |
-| 5. Hex Composition & Landscape Signifiers | 4/4 | Complete   | 2026-03-22 |
-| 6. Locations & Agents | 4/4 | Complete   | 2026-03-22 |
-| 7. Fog, Zoom & Grid | 3/3 | Complete   | 2026-03-22 |
-| 7.1. Stencil Coastline | 1/1 | Complete (feature flag) | 2026-03-22 |
-| 8. Integration | 4/4 | Complete   | 2026-03-23 |
-| 9. Start Screen | 3/3 | Complete   | 2026-03-23 |
+**Goal:** Connect encounters, factions, locations, and player actions into the prosperity/wealth/trade systems so the economy is dynamic and interactive rather than autonomous. Implement Gold+Stone CRUD actions for building economic infrastructure.
+
+**Why third:** With World-Soul providing cosmic context and conflict providing stakes, the economy becomes the *third pillar* — the thing you build and protect. Economy without conflict is boring; conflict without economy has no logistics; both without World-Soul have no cosmic meaning.
+
+**Gap coverage:** Addresses Gap E (economy one-directional). Partially addresses Gap I (NPCs as workforce), Gap J (chain reactions through economic cascading).
+
+### Phase sequence (from brainstorm priority list)
+
+#### M3.1 — Encounter → Economy Feedback
+Encounter outcomes generate prosperity shocks. A "Rich Vein" boosts local resources, a "Pirate Raid" damages trade routes, a "Labor Dispute" resolved cruelly tanks prosperity. Low effort, high impact — adds shock entries to existing encounter outcome handlers.
+
+#### M3.2 — Economic Context → Encounter Scoring
+Prosperity tiers modify encounter weights. Flourishing settlements favor trade/create/assist encounters. Destitute settlements favor steal/duel/survival encounters. Every settlement *feels* different based on its economic state.
+
+#### M3.3 — Wealth Spending Crossover Actions
+Implement the 5 crossover actions from the Gold Reach design: Hire Mercenaries (Gold→Iron, connects to M2 armies), Commission Assassination (Gold→Shadow), Buy Influence (Gold→Heart), Fund Construction (Gold→Stone), Establish Monopoly (Gold→Gold). Makes wealth meaningful — it's spent to cross Reaches.
+
+#### M3.4 — Trade Route Lifecycle
+Route threatening from encounters and factions (bandits, patrols, army disruption from M2). Trade routes as living infrastructure that agents and the player must actively maintain and defend.
+
+#### M3.5 — Unrest from Economic Causes
+Wealth inequality between co-located factions generates unrest. Monopolies spike unrest. Failed economic encounters push unrest up. Feeds the existing unrest→prosperity feedback loop.
+
+#### M3.6 — Guild Activation
+Make economic guilds active participants: choosing trade/tax/expand actions, competing for route control, reacting to prosperity changes. Guilds as visible economic actors, not static bonuses.
+
+#### M3.7 — Gold+Stone Player CRUD Actions
+Divine economic actions: Found Market, Open Mine, Consecrate Pastureland, Establish Trade Post, Build Harbor (CREATE); Bless Harvest, Fortify Trade Route, Upgrade Settlement (UPDATE); Survey the Land (READ); Raze Structure, Curse the Land, Sever Trade Route (DESTROY). Player builds and destroys economic infrastructure.
+
+#### M3.8 — Resource Consumption & Scarcity
+Resources consumed by trade routes and population. Creates scarcity pressure — the engine for economic drama. Higher effort but drives all other economic dynamics.
+
+---
+
+## Cross-Cutting Concerns (woven into milestones)
+
+These gaps from the journey audit get addressed as part of milestone work, not as standalone items:
+
+| Gap | Where It Lands |
+|-----|---------------|
+| **A: Doom has no teeth** | Post-M1 (doom injects through World-Soul modifiers) + Post-M2 (doom spawns armies/monsters, triggers sieges) |
+| **B: Rivals are inert** | M2 (rivals field armies, declare wars, compete for territory) |
+| **C: No onboarding** | After M1-M3 (onboarding makes sense once the game has content to onboard into) |
+| **D: World-Soul disconnected** | M1 (primary target) |
+| **E: Economy one-directional** | M3 (primary target) |
+| **F: No danger** | M2 (primary target) |
+| **G: Character sheet** | TB-070 already designed, can land between milestones |
+| **H: Culture seeding** | TB-031/032, can land between milestones |
+| **I: NPCs** | M3 partial (workforce model), full NPC system later |
+| **J: Chain reactions** | TB-017, natural extension after M1 (World-Soul provides the propagation channel) |
+
+---
+
+## Open Design Work Needed
+
+| Milestone | Design Doc Needed | Status |
+|-----------|------------------|--------|
+| M1.1–M1.2 | World-Soul Tick Integration & Effects | Needs design |
+| M1.3–M1.4 | World-Soul UI & Player Interaction | Needs design |
+| M2.1 | Army Entities & Faction Warfare | Needs full design |
+| M2.2 | Battle Resolution & Sieges | Needs full design |
+| M2.3 | Destruction & Consequences | Needs design (partially covered by economy brainstorm) |
+| M3.1–M3.2 | Economy feedback loops | Brainstormed (TB-071), needs design doc |
+| M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
+| M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
+
+---
+
+## Estimated Scope
+
+Not calendar estimates — relative sizing:
+
+| Milestone | Relative Size | Notes |
+|-----------|--------------|-------|
+| M1 | Medium | Mostly wiring existing code + modifier injection. World-Soul engine exists. |
+| M2 | Large | New entity type, new movement patterns, battle resolution, destruction mechanics, significant UI. Most new-code-intensive milestone. |
+| M3 | Medium-Large | Many small connections (M3.1–M3.6) plus the CRUD action expansion (M3.7) and resource system (M3.8). |
