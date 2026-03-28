@@ -80,7 +80,7 @@ Plans:
 ### Phase 11: Agent Character Sheet Overhaul
 
 **Goal:** Overhaul the agent character sheet (AgentProfileModal) from a long-scroll list to a 5-tab layout (Overview, Prowess, Bonds, Journey, Chronicle). Replace scalar familiarity-gated visibility with a multi-faceted knowledge model (AgentKnowledge) where individual data points are revealed through specific narrative interactions. Includes new action cards for deliberate discovery and an interactionDepth accumulator. Backward-compatible with existing familiarity system.
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 **Requirements:** TB-070
 
 Plans:
