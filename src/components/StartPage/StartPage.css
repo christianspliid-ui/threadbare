@@ -116,13 +116,20 @@
 }
 
 .start-page__title {
-  font-family: var(--font-display);
-  font-size: 2.5rem;
-  font-weight: 400;
-  letter-spacing: 0.25em;
-  color: var(--accent-gold);
-  text-shadow: 0 0 40px rgba(212, 160, 64, 0.3);
-  margin: 0 0 var(--space-6) 0;
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  margin: 0;
+  line-height: 0;
+}
+
+.start-page__wordmark {
+  width: min(720px, 85vw);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 24px rgba(212, 160, 64, 0.35));
 }
 
 .start-page__lore {
