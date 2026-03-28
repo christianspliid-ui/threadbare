@@ -4,7 +4,7 @@ import type { ModifierResolutionTrace } from '../../types/modifiers';
 import type { WorldGraph } from '../../engine/graph';
 import type { SphereAggregate } from '../../types/worldSoul';
 import { TRACE_CATEGORIES } from '../../types/trace';
-import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
+import { getTraces } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
 import { DecisionBreakdown } from './debug/DecisionBreakdown';
 import { RelationshipGraph } from './debug/RelationshipGraph';
@@ -13,6 +13,9 @@ import type { EncounterCacheEntry } from '../../engine/encounterCache';
 import type { EncounterProgress } from '../../types/encounter';
 import type { WebGLDiagnosticsSnapshot } from '../HexMapV2/diagnostics/WebGLDiagnostics';
 import { WebGLDebugTab } from './debug/WebGLDebugTab';
+import { RevelationLogTab } from './debug/RevelationLogTab';
+import { KnowledgeComparisonTab } from './debug/KnowledgeComparisonTab';
+import type { AgentKnowledge } from '../../types/agentKnowledge';
 import type { RetinueAgent } from '../../engine/retinue';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../../types/disposition';
@@ -54,9 +57,11 @@ interface DebugPanelProps {
   seed?: number;
   /** Global sphere aggregate for the Sphere State debug tab */
   sphereAggregate?: SphereAggregate;
+  /** Per-agent knowledge state for revelation debug tabs */
+  agentKnowledge?: Map<string, AgentKnowledge>;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -902,7 +907,7 @@ const SocialTabContent = React.memo(function SocialTabContent({
 function JourneyDebugContent({
   encounterNotifications,
   pendingVignettes,
-  currentTick,
+  currentTick: _currentTick,
 }: {
   encounterNotifications?: readonly import('../../types/encounterVisibility').EncounterNotification[];
   pendingVignettes?: readonly import('../../types/journeyEngine').PendingVignette[];
@@ -1229,7 +1234,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
   const allTraces = useMemo(() => {
     const raw = getTraces();
     const seen = new Set<number>();
-    const deduped: typeof raw = [];
+    const deduped: TraceEntry[] = [];
     for (const t of raw) {
       if (!seen.has(t.id)) {
         seen.add(t.id);
