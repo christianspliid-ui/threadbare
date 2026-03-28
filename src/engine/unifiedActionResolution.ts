@@ -43,6 +43,8 @@ import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
 import type { ControlEffect } from '../types/controlEffect';
 import { spawnControlEffect } from './controlEffectSpawn';
+import type { SpherePressureEvent } from '../types/sphereAffinity';
+import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -262,6 +264,7 @@ export function phaseUnifiedActionProgress(
   const hexMutations: HexMutation[] = [];
   const revelationMutations: RevelationMutation[] = [];
   const spawnedEffects: ControlEffect[] = [];
+  const spherePressures: SpherePressureEvent[] = [];
 
   // Phase 1: Progress all (defensive: state may not have unifiedActions yet)
   let actions = progressAllActions(state.unifiedActions ?? []);
@@ -325,6 +328,26 @@ export function phaseUnifiedActionProgress(
       }
     }
 
+    // Sphere pressure: contested action resolutions also push pressure
+    if (updAtk.resolved && atkTemplate.sphereAffinity && attacker.targetId) {
+      spherePressures.push({
+        targetEntityId: attacker.targetId,
+        sphere: atkTemplate.sphereAffinity,
+        magnitude: updAtk.outcome === 'success' ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        source: 'divine_action',
+        sourceId: attacker.actionId,
+      });
+    }
+    if (updDef.resolved && defTemplate.sphereAffinity && defender.targetId) {
+      spherePressures.push({
+        targetEntityId: defender.targetId,
+        sphere: defTemplate.sphereAffinity,
+        magnitude: updDef.outcome === 'success' ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        source: 'divine_action',
+        sourceId: defender.actionId,
+      });
+    }
+
     events.push(...atkEvents, ...defEvents);
     contestedIds.add(pair.attackerActionId);
     contestedIds.add(pair.defenderActionId);
@@ -380,6 +403,21 @@ export function phaseUnifiedActionProgress(
       }
     }
 
+    // Sphere pressure: push pressure on action's target entity on resolution.
+    // Fail-soft: skip if template has no sphereAffinity or action has no targetId.
+    if (updatedAction.resolved && template.sphereAffinity && completing_action.targetId) {
+      const magnitude = updatedAction.outcome === 'success'
+        ? ACTION_PRESSURE_SUCCESS
+        : ACTION_PRESSURE_FAILURE;
+      spherePressures.push({
+        targetEntityId: completing_action.targetId,
+        sphere: template.sphereAffinity,
+        magnitude,
+        source: 'divine_action',
+        sourceId: completing_action.actionId,
+      });
+    }
+
     // Replace action in array
     actions = actions.map((a) =>
       a.actionId === updatedAction.actionId ? updatedAction : a,
@@ -401,6 +439,10 @@ export function phaseUnifiedActionProgress(
     // TB-044: Append spawned control effects from successful sustained actions
     ...(spawnedEffects.length > 0
       ? { controlEffects: [...(state.controlEffects ?? []), ...spawnedEffects] }
+      : {}),
+    // Sphere pressure: accumulate events for phaseSpherePressure to consume
+    ...(spherePressures.length > 0
+      ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
   };
 }
