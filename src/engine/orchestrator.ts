@@ -71,6 +71,8 @@ import { phaseHexState } from './phaseHexState';
 import { revealLayer } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
+import { phaseSpherePressure } from './phaseSpherePressure';
+import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseControlEffects } from './phaseControlEffects';
@@ -1147,6 +1149,16 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.638: Magical Saturation (decay)
   s = { ...s, ...phaseMagicalSaturation(s) };
   phaseEventCounts['magical_saturation'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.639: Sphere Pressure Resolution (consumes pendingSpherePressures accumulated by upstream phases)
+  s = { ...s, ...phaseSpherePressure(s), pendingSpherePressures: [] };
+  phaseEventCounts['sphere_pressure'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6395: Sphere Aggregation (computes global World-Soul from entity sphere scores)
+  s = { ...s, ...phaseSphereAggregation(s) };
+  phaseEventCounts['sphere_aggregation'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.64: Influence Tier Promotion (backstory unlock events)
