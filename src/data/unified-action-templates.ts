@@ -2408,6 +2408,121 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   },
 ];
 
+// ─── Revelation Action Card Templates ─────────────────────────────
+//
+// Divine actions targeting actor (agent) nodes to deliberately discover
+// agent information through the revelation system.
+// targetCategories: ['actor'] — only appears in ActionDrawer when an agent is targeted.
+// On completion, revelationAction field routes to resolveRevelationAction().
+
+const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
+  {
+    id: 'observe_agent',
+    name: 'Observe',
+    reach: 'eye',
+    crudType: 'read',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    revelationAction: 'observe',
+    motivations: ['honesty_cunning', 'courage_prudence'],
+    narrativeTemplates: {
+      initiation: 'focuses divine sight on this mortal, reading the truth of their capabilities',
+      success: 'divine sight pierces through — a glimpse of what this mortal can truly do',
+      failure: 'the mortal\'s nature eludes the divine gaze',
+    },
+  },
+  {
+    id: 'scry_agent',
+    name: 'Scry',
+    reach: 'eye',
+    crudType: 'read',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'eye',
+      duration: { min: 2, max: 2 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 15,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    revelationAction: 'scry',
+    motivations: ['honesty_cunning', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'pierces the veil around this mortal, bending all divine sight inward',
+      success: 'the veil parts completely — all capabilities and connections stand revealed',
+      failure: 'even sustained divine scrutiny cannot fully penetrate this mortal\'s nature',
+    },
+  },
+  {
+    id: 'whisper_insight',
+    name: 'Whisper Insight',
+    reach: 'veil',
+    crudType: 'read',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'veil',
+      duration: { min: 1, max: 1 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 5,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    revelationAction: 'whisper_insight',
+    motivations: ['mercy_ruthlessness', 'honesty_cunning'],
+    narrativeTemplates: {
+      initiation: 'sends a whisper into the mortal mind, touching what they truly value',
+      success: 'a truth surfaces — what this person holds dear whispers back through the connection',
+      failure: 'the mortal\'s inner world remains closed, the whisper unheard',
+    },
+  },
+  {
+    id: 'dream_sending',
+    name: 'Dream Sending',
+    reach: 'star',
+    crudType: 'read',
+    scale: 'cosmic',
+    steps: [{
+      reach: 'star',
+      duration: { min: 2, max: 2 },
+      difficulty: 0.0,
+      onSuccess: [],
+      onFailure: [],
+      failBehavior: 'fail_action',
+    }],
+    apCost: 1,
+    essenceCost: 15,
+    actorAffinities: ['ascendant'],
+    targetCategories: ['actor'],
+    revelationAction: 'dream_sending',
+    sphereAffinity: 'mind',
+    motivations: ['mercy_ruthlessness', 'loyalty_ambition'],
+    narrativeTemplates: {
+      initiation: 'visits this mortal in their dreams, drawing out what drives and haunts them',
+      success: 'the dream opens — ambitions and fears surface like shapes from deep water',
+      failure: 'the mortal\'s dreamscape resists intrusion; they wake remembering nothing',
+    },
+  },
+];
+
 // ─── Unified Template Registry ────────────────────────────────────
 
 /**
@@ -2422,6 +2537,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...ATTACHMENT_ACTION_TEMPLATES,
   ...SUBLOCATION_ACTION_TEMPLATES,
   ...HEX_ACTION_TEMPLATES,
+  ...REVELATION_ACTION_TEMPLATES,
 ];
 
 /**
