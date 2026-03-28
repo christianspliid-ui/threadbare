@@ -1166,6 +1166,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             pendingVignettes={gameState.pendingVignettes}
             seed={gameState.seed}
             sphereAggregate={gameState.worldSoul?.aggregate}
+            agentKnowledge={gameState.agentKnowledge}
           />
         ) : (
           <div
