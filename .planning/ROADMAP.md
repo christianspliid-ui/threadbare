@@ -80,14 +80,15 @@ Plans:
 ### Phase 11: Agent Character Sheet Overhaul
 
 **Goal:** Overhaul the agent character sheet (AgentProfileModal) from a long-scroll list to a 5-tab layout (Overview, Prowess, Bonds, Journey, Chronicle). Replace scalar familiarity-gated visibility with a multi-faceted knowledge model (AgentKnowledge) where individual data points are revealed through specific narrative interactions. Includes new action cards for deliberate discovery and an interactionDepth accumulator. Backward-compatible with existing familiarity system.
-**Plans:** 4/4 plans complete
+**Plans:** 5 plans (4 complete + 1 gap closure)
 **Requirements:** TB-070
 
 Plans:
-- [ ] 11-01-PLAN.md — AgentKnowledge types, revelation hooks, phaseInteractionDepth, traces
-- [ ] 11-02-PLAN.md — Tabbed AgentProfileModal rewrite with 5-tab layout and facet-gated sections
-- [ ] 11-03-PLAN.md — Revelation emitters wired to existing phases, debug panel tabs
-- [ ] 11-04-PLAN.md — Observe/Scry/Whisper Insight/Dream Sending action cards
+- [x] 11-01-PLAN.md — AgentKnowledge types, revelation hooks, phaseInteractionDepth, traces
+- [x] 11-02-PLAN.md — Tabbed AgentProfileModal rewrite with 5-tab layout and facet-gated sections
+- [x] 11-03-PLAN.md — Revelation emitters wired to existing phases, debug panel tabs
+- [x] 11-04-PLAN.md — Observe/Scry/Whisper Insight/Dream Sending action cards
+- [ ] 11-05-PLAN.md — Gap closure: DebugPanel wiring, ProwessTab import fix, revelationEmitter type fixes
 
 ---
 
