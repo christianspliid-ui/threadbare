@@ -357,6 +357,7 @@ export function phaseAgentDecision(
         graph,
         distanceMatrix,
         state.tick,
+        state.worldSoul?.fundament,
       );
 
       // Emit scoring trace

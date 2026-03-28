@@ -371,6 +371,9 @@ export interface ScoringTrace extends TraceBase {
     finalScore: number;
     travelCost: number;
     completionProb: number;
+    resonance?: number;
+    globalResonance?: number;
+    worldSoulDrift?: Record<string, number>;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
@@ -561,51 +564,4 @@ export type TraceEntry =
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace
   | LayerRevealedTrace
-  | HiddenSiteRevealedTrace
-  | TickHealthTrace
-  | TickCrashTrace
-  | RevelationTrace
-  | InteractionDepthTrace;
-
-/** All known trace categories */
-export const TRACE_CATEGORIES = [
-  'action_selection',
-  'narrative_generation',
-  'context_harvest',
-  'dilemma_resolution',
-  'tick_summary',
-  'encounter_resolution',
-  'familiarity_change',
-  'intervention_effect',
-  'action_execution',
-  'modifier_resolution',
-  'prosperity_tick',
-  'wealth_delta',
-  'trade_route_volume_change',
-  'trade_route_dissolved',
-  'settlement_tier_change',
-  'target_action_filter',
-  'hex_state',
-  'unrest_tick',
-  'saturation_tick',
-  'economic_chronicle',
-  'encounter_awareness',
-  'faction_awareness',
-  'encounter_cache',
-  'encounter_filter',
-  'encounter_scoring',
-  'movement',
-  'idle_decision',
-  'road_hex_transition',
-  'agent_reroute',
-  'return_resolution',
-  'ripple_consequence',
-  'control_effect',
-  'revelation',
-  'tick_health',
-  'tick_crash',
-  'agent_revelation',
-  'interaction_depth',
-] as const;
-
-export type TraceCategory = (typeof TRACE_CATEGORIES)[number];
+  | HiddenSi
