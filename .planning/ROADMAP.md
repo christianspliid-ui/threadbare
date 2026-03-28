@@ -17,41 +17,62 @@
 
 ## M1: World-Soul Connection
 
-**Goal:** The World-Soul is the cosmic metabolism of the world. Player actions, agent behavior, and doom progression shift sphere balance, which ripples into encounter ecology, prosperity, agent behavior, and terrain. The world *reacts* to what happens in it.
+**Goal:** Every entity in the world tracks its connection to all 8 creation spheres as integer scores on the triangle number scale. The global World-Soul emerges from the aggregate. Player actions, agent behavior, doom progression, and sustained control effects create sphere pressure that builds up or erodes entity scores. Magic is sphere fluency — no separate magic system. The world resists change through homeostasis, and the player must push hard to overcome its inertia.
 
-**Why first:** The World-Soul is the connective tissue between all other systems. Without it, player actions feel local and isolated — you curse a hex and nothing else notices. With it, every action shifts cosmic balance, creating consequences the player can see and respond to. It also provides the infrastructure that doom effects (Gap A) and economic mandates will eventually plug into.
+**Why first:** Per-entity sphere affinity is the connective tissue between all systems. Without it, entities are interchangeable game pieces. With it, every hex, agent, artifact, and location has a unique sphere character that determines its strengths, vulnerabilities, and magical potential. It provides the infrastructure that armies (M2), economy (M3), doom effects, and magic all plug into.
 
-**Gap coverage:** Partially addresses Gap A (doom effects can inject through World-Soul modifiers), Gap D (World-Soul disconnection — the primary target).
+**Gap coverage:** Addresses Gap D (World-Soul disconnection — the primary target). Partially addresses Gap A (doom injects entropy pressure on affected hexes), Gap J (chain reactions through sphere pressure propagation).
 
 ### Phases
 
-#### M1.1 — World-Soul Tick Integration
-Wire `worldSoul.ts` into the orchestrator. Each tick:
-- Compute current sphere balance from graph state (agent sphere alignments, control effects, divine influence, location sphere properties)
-- Drift harmony/entropy based on player actions vs. natural equilibrium
-- Emit `world_soul_pulse` trace with full sphere breakdown
+#### M1.1 — Sphere Pressure Resolution (Data Model + Engine)
+Per-entity sphere affinity data model + pressure resolution:
+- `SphereAffinity` type on all entity graph nodes (8 creation spheres × integer score + construction progress)
+- Starting scores from terrain type (hexes), archetype (agents), type bias (locations)
+- `SpherePressureEvent` accumulator — upstream phases push pressure, `phaseSpherePressure` resolves all at once
+- Opposition cancellation, allied defense (50% of ally score), threshold comparison, erosion, cumulative construction
+- Triangle number scale creates natural homeostasis — higher levels harder to reach and harder to erode
 
-**Needs:** Design doc specifying what graph state feeds into sphere balance, drift rate constants, and the computation model.
-
-#### M1.2 — Sphere Balance Effects
-World-Soul sphere balance affects downstream systems:
-- **Prosperity modifier:** Sphere alignment at a location modifies prosperity target (a Life-dominant world boosts food; an Entropy-dominant world decays infrastructure)
-- **Encounter weighting:** Sphere balance shifts which encounter types are more/less common globally (high Force → more combat encounters everywhere; high Spirit → more mystical/social encounters)
-- **Agent behavior bias:** Global sphere tilt adds a small modifier to all agents' axiological scoring (high Order world → agents slightly more tradition-leaning)
-- **Terrain drift (stretch):** Extreme sphere imbalance slowly shifts terrain types (high Entropy → fertile land degrades; high Life → barren land blooms)
-
-**Needs:** Design doc specifying the modifier injection points, constants, and fail-soft for each downstream system.
+#### M1.2 — Sphere Balance Effects (Downstream Modifiers)
+Per-entity sphere scores feed into existing systems:
+- **Prosperity modifier:** Settlement Life/Energy boost prosperity; Entropy erodes it
+- **Encounter resonance:** Location sphere alignment modifies encounter scoring
+- **Agent decision influence:** Agent's dominant sphere shifts their axiological profile
 
 #### M1.3 — World-Soul UI & Player Visibility
-- World-Soul health indicator in the HUD (complements existing DoomBar, EssencePanel)
-- Sphere balance visualization (which spheres are dominant/weak)
-- Chronicle entries when sphere balance shifts significantly
-- Debug panel tab showing full World-Soul state
+All communicated through prose with IPK (Interactive Prose Keywords), never numbers:
+- `WorldSoulIndicator` — prose status line in top bar from aggregate sphere state
+- HexChronicle Soul layer — per-hex sphere character in narrative prose
+- `ProseKeyword` (IPK) — bold + underline + sphere-colored keywords, tooltippable
+- Action preview prose — sphere consequences of pending actions
+- Debug panel Sphere State tab (numbers for developers only)
 
-#### M1.4 — World-Soul Player Interaction
-- Connect existing hex actions (Shift Dominion, Attune Leyline, Anchor the Sphere, etc.) to World-Soul: successful sphere actions should shift global balance, not just local hex state
-- New awareness: the player can *feel* the World-Soul's health through prose and visual indicators
-- Foundation for doom effects (M-future): doom archetypes will inject through World-Soul modifiers
+#### M1.4 — Magic as Sphere Fluency
+Magic = sphere fluency, not a separate system:
+- Power = caster score + location contribution − location opposition
+- No cap on location draw — overchannel damages caster permanently (agent choice, never forced)
+- Trait design space: Conduit, Glass Cannon, Martyr's Path, Self-Preservation, Sphere Anchor
+- Reaches × Spheres: Reach = domain of application, Sphere = power source
+
+#### M1.5 — Global World-Soul Aggregation
+Global state derived from entity aggregate, not independently maintained:
+- `phaseSphereAggregation` computes global sphere balance from weighted entity scores
+- `FundamentState.sphereWeights` populated from aggregate for backward compatibility
+- Foundation axes (chaos↔order, light↔darkness) = global-only, derived from aggregate
+
+### Phase 10: Sphere Affinity — Implementation Plans
+
+**Plans:** 7 plans
+**Requirements:** SPHR-01 through SPHR-27
+
+Plans:
+- [ ] 10-01-PLAN.md — SphereAffinity types, triangle math, entity initialization
+- [ ] 10-02-PLAN.md — Pressure resolution engine + aggregation + orchestrator wiring
+- [ ] 10-03-PLAN.md — Upstream wiring (6 phases push sphere pressure events)
+- [ ] 10-04-PLAN.md — Downstream modifiers (prosperity, encounter, agent decision)
+- [ ] 10-05-PLAN.md — Magic power calculation + overchannel
+- [ ] 10-06-PLAN.md — IPK component, WorldSoulIndicator, HexChronicle Soul, debug panel
+- [ ] 10-07-PLAN.md — Integration smoke test + human visual verification
 
 ---
 
@@ -167,7 +188,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 
 | Milestone | Design Doc Needed | Status |
 |-----------|------------------|--------|
-| M1.1–M1.4 | World-Soul Connection (all phases) | ✅ Design complete (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
+| M1.1–M1.5 | Universal Sphere Affinity (all phases) | ✅ Design complete — rewritten 2026-03-28 with per-entity architecture (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
 | M2.1 | Army Entities & Faction Warfare | Needs full design |
 | M2.2 | Battle Resolution & Sieges | Needs full design |
 | M2.3 | Destruction & Consequences | Needs design (partially covered by economy brainstorm) |
@@ -183,6 +204,6 @@ Not calendar estimates — relative sizing:
 
 | Milestone | Relative Size | Notes |
 |-----------|--------------|-------|
-| M1 | Medium | Mostly wiring existing code + modifier injection. World-Soul engine exists. |
+| M1 | Medium-Large | New per-entity data model + pressure engine + aggregation + IPK UI + magic/overchannel. Larger scope than original "wire existing engine" estimate. |
 | M2 | Large | New entity type, new movement patterns, battle resolution, destruction mechanics, significant UI. Most new-code-intensive milestone. |
 | M3 | Medium-Large | Many small connections (M3.1–M3.6) plus the CRUD action expansion (M3.7) and resource system (M3.8). |
