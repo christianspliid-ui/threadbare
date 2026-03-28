@@ -77,8 +77,6 @@ export const AGENT_PRESENCE_RATIO = 1.0;
 export const ARCHETYPE_SPHERE_BONUS_PRIMARY = 2;
 /** Bonus to secondary sphere score when seeding an agent from archetype */
 export const ARCHETYPE_SPHERE_BONUS_SECONDARY = 1;
-/** Fraction of hex sphere scores a new location inherits (rounded down) */
-export const LOCATION_HEX_INHERIT_RATIO = 0.5;
 /** Bonus to the location's thematic sphere (e.g., Force for a forge) */
 export const LOCATION_TYPE_BONUS = 2;
 
@@ -145,6 +143,42 @@ export const TERRAIN_SPHERE_TABLE: Record<string, Partial<Record<SphereName, num
   sacred_grove: { spirit: 3, life: 2 },
   // Ruins / broken lands
   ruins:       { time: 2, mind: 1 },
+};
+
+/**
+ * Placeholder sphere affinities for location subtypes.
+ * Each location gets 1 point in one sphere. All 8 spheres used at least once.
+ * Values are intentionally minimal — refine during design pass.
+ */
+export const LOCATION_SPHERE_TABLE: Record<string, Partial<Record<SphereName, number>>> = {
+  // Settlements — life (communities of living people)
+  hamlet:          { life: 1 },
+  town:            { mind: 1 },
+  city:            { mind: 1 },
+  capital:         { force: 1 },
+  // Rural/resource
+  camp:            { energy: 1 },
+  farmland:        { life: 1 },
+  // Military
+  castle:          { force: 1 },
+  fort:            { force: 1 },
+  tower:           { mind: 1 },
+  // Religious
+  shrine:          { spirit: 1 },
+  temple:          { spirit: 1 },
+  // Industrial
+  mining:          { matter: 1 },
+  // Decay
+  ruins:           { time: 1 },
+  ruined_tower:    { time: 1 },
+  ruined_city:     { entropy: 1 },
+  ruined_village:  { entropy: 1 },
+  // Conflict
+  battleground:    { entropy: 1 },
+  // Refuge
+  oasis:           { energy: 1 },
+  // Mystery
+  unexplored_poi:  { spirit: 1 },
 };
 
 /**

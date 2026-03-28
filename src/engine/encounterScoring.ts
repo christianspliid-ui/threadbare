@@ -51,7 +51,8 @@ import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER
 import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
-import { SPHERE_OPPOSITES, SPHERE_NAMES } from './cosmology';
+import { SPHERE_OPPOSITES } from './cosmology';
+import { SPHERE_NAMES } from '../types/index';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {

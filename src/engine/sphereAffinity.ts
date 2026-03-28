@@ -16,8 +16,9 @@ import {
   getTerrainSphereScores,
   ARCHETYPE_SPHERE_BONUS_PRIMARY,
   ARCHETYPE_SPHERE_BONUS_SECONDARY,
-  LOCATION_HEX_INHERIT_RATIO,
+
   LOCATION_TYPE_BONUS,
+  LOCATION_SPHERE_TABLE,
   MAX_SPHERE_SCORE,
 } from '../types/sphereAffinity';
 import type { AxiologicalProfile, ValuePair } from '../types/agent';
@@ -84,24 +85,30 @@ export function seedAgentSphereAffinity(
 
 /**
  * Seed sphere affinity for a location node from:
- * 1. Its hex's sphere affinity (inherited at LOCATION_HEX_INHERIT_RATIO, floor)
- * 2. An optional thematic sphere bonus (e.g., Force for a forge, Spirit for a shrine)
+ * 1. Its hex's sphere affinity (passed through directly)
+ * 2. Location type bonus from LOCATION_SPHERE_TABLE (additive)
  *
  * Scores are clamped to MAX_SPHERE_SCORE.
  */
 export function seedLocationSphereAffinity(
   hexAffinity: SphereAffinity,
-  locationThematicSphere?: SphereName
+  locationSubtype?: string
 ): SphereAffinity {
   const base = createDefaultSphereAffinity();
   for (const sphere of SPHERE_NAMES) {
-    base.scores[sphere] = Math.floor(hexAffinity.scores[sphere] * LOCATION_HEX_INHERIT_RATIO);
+    base.scores[sphere] = hexAffinity.scores[sphere];
   }
-  if (locationThematicSphere) {
-    base.scores[locationThematicSphere] = Math.min(
-      base.scores[locationThematicSphere] + LOCATION_TYPE_BONUS,
-      MAX_SPHERE_SCORE
-    );
+  // Add location-type sphere bonus from table
+  if (locationSubtype) {
+    const typeScores = LOCATION_SPHERE_TABLE[locationSubtype];
+    if (typeScores) {
+      for (const [sphere, score] of Object.entries(typeScores)) {
+        base.scores[sphere as SphereName] = Math.min(
+          base.scores[sphere as SphereName] + (score as number),
+          MAX_SPHERE_SCORE
+        );
+      }
+    }
   }
   return base;
 }

@@ -5,6 +5,20 @@ import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer } from './unifiedAction';
 
+/** Known trace categories for filtering in debug panel */
+export type TraceCategory =
+  | 'action_selection' | 'narrative_generation' | 'context_harvest'
+  | 'dilemma_resolution' | 'tick_summary' | 'encounter_resolution'
+  | 'familiarity_change' | 'movement' | 'intervention_effect'
+  | 'ambition_progress' | 'agent_validation';
+
+export const TRACE_CATEGORIES: TraceCategory[] = [
+  'action_selection', 'narrative_generation', 'context_harvest',
+  'dilemma_resolution', 'tick_summary', 'encounter_resolution',
+  'familiarity_change', 'movement', 'intervention_effect',
+  'ambition_progress', 'agent_validation',
+];
+
 /** Base shape for all trace entries */
 export interface TraceBase {
   id: number;
