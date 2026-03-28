@@ -2,6 +2,7 @@ import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react'
 import type { TraceEntry, TraceCategory, ActionSelectionTrace, NarrativeGenerationTrace, ContextHarvestTrace, DilemmaResolutionTrace, TickSummaryTrace, EncounterResolutionTrace, FamiliarityChangeTrace, InterventionEffectTrace, ActionExecutionTrace, MovementTrace } from '../../types/trace';
 import type { ModifierResolutionTrace } from '../../types/modifiers';
 import type { WorldGraph } from '../../engine/graph';
+import type { SphereAggregate } from '../../types/worldSoul';
 import { TRACE_CATEGORIES } from '../../types/trace';
 import { getTraces, getTracesForAgent } from '../../engine/traceBuffer';
 import { TRACE_CATEGORY_COLORS } from '../../data/uiColorPalette';
@@ -16,6 +17,9 @@ import type { RetinueAgent } from '../../engine/retinue';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import type { MemberOfEdgeProperties } from '../../types/disposition';
 import { computeRankFromReputation } from '../../types/faction';
+import { SPHERE_ICONS } from '../../data/sphereIcons';
+import { SPHERE_TOOLTIPS } from '../../data/sphereTooltips';
+import { MAX_SPHERE_SCORE } from '../../types/sphereAffinity';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -48,9 +52,11 @@ interface DebugPanelProps {
   pendingVignettes?: readonly import('../../types/journeyEngine').PendingVignette[];
   /** World seed for encounter log export */
   seed?: number;
+  /** Global sphere aggregate for the Sphere State debug tab */
+  sphereAggregate?: SphereAggregate;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -983,6 +989,105 @@ function JourneyDebugContent({
   );
 }
 
+// ─── Sphere State Debug Tab ──────────────────────────────────────────
+
+function SphereStateTabContent({ aggregate }: { aggregate?: SphereAggregate }) {
+  if (!aggregate) {
+    return (
+      <div style={EMPTY_STATE_STYLE}>
+        No sphere aggregate yet. Run a tick to compute.
+      </div>
+    );
+  }
+
+  const spheres = Object.keys(SPHERE_ICONS) as Array<keyof typeof SPHERE_ICONS>;
+  const sortedSpheres = [...spheres].sort(
+    (a, b) => (aggregate.totalBySphere[b] ?? 0) - (aggregate.totalBySphere[a] ?? 0),
+  );
+
+  return (
+    <div style={{ ...DETAIL_AREA_STYLE, padding: '16px' }}>
+      {/* Global aggregate summary */}
+      <div style={{ marginBottom: '16px', padding: '10px', background: 'var(--bg-raised)', borderRadius: '4px' }}>
+        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+          <span style={DETAIL_LABEL_STYLE}>Dominant:</span>
+          <span style={{
+            ...DETAIL_VALUE_STYLE,
+            color: aggregate.dominantSphere
+              ? SPHERE_ICONS[aggregate.dominantSphere]?.color ?? DETAIL_VALUE_STYLE.color
+              : DETAIL_VALUE_STYLE.color,
+            fontWeight: 600,
+          }}>
+            {aggregate.dominantSphere ?? '—'}
+          </span>
+        </div>
+        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+          <span style={DETAIL_LABEL_STYLE}>Entity count:</span>
+          <span style={DETAIL_VALUE_STYLE}>{aggregate.entityCount}</span>
+        </div>
+        <div style={{ ...DETAIL_ROW_STYLE, marginBottom: '4px' }}>
+          <span style={DETAIL_LABEL_STYLE}>chaos↔order:</span>
+          <span style={DETAIL_VALUE_STYLE}>{aggregate.foundationBalance.chaos_order.toFixed(3)}</span>
+        </div>
+        <div style={DETAIL_ROW_STYLE}>
+          <span style={DETAIL_LABEL_STYLE}>light↔dark:</span>
+          <span style={DETAIL_VALUE_STYLE}>{aggregate.foundationBalance.light_darkness.toFixed(3)}</span>
+        </div>
+      </div>
+
+      {/* Per-sphere breakdown */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {sortedSpheres.map(sphere => {
+          const total = aggregate.totalBySphere[sphere] ?? 0;
+          const avgScore = aggregate.entityCount > 0 ? total / aggregate.entityCount : 0;
+          const color = SPHERE_ICONS[sphere]?.color ?? '#888';
+          const tooltip = SPHERE_TOOLTIPS[sphere];
+          const barPct = Math.min(100, (avgScore / MAX_SPHERE_SCORE) * 100);
+          const isDominant = aggregate.dominantSphere === sphere;
+
+          return (
+            <div key={sphere} title={tooltip}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                <span style={{
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  color,
+                  fontWeight: isDominant ? 700 : 400,
+                  textTransform: 'capitalize',
+                }}>
+                  {isDominant ? '★ ' : ''}{sphere}
+                </span>
+                <span style={{
+                  fontFamily: 'monospace',
+                  fontSize: '11px',
+                  color: 'var(--text-muted)',
+                }}>
+                  total: {total} | avg: {avgScore.toFixed(2)}
+                </span>
+              </div>
+              <div style={{
+                height: '6px',
+                background: 'var(--bg-raised)',
+                borderRadius: '3px',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  height: '100%',
+                  width: `${barPct}%`,
+                  background: color,
+                  borderRadius: '3px',
+                  transition: 'width 0.3s ease',
+                  opacity: isDominant ? 1 : 0.65,
+                }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ─── Faction Debug Tab ──────────────────────────────────────────────
 
 function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
@@ -1087,7 +1192,7 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
   );
 }
 
-export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed }: DebugPanelProps) {
+export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAgentId, graph, retinueAgents, onClose, onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress, onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true, onToggleOrganicShore, encounterNotifications, pendingVignettes, seed, sphereAggregate }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
   const [expandedTraceId, setExpandedTraceId] = useState<number | null>(null);
@@ -1241,6 +1346,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'factions')} onClick={() => setViewMode('factions')}>
           Factions
         </button>
+        <button style={getTabButtonStyle(viewMode === 'spheres')} onClick={() => setViewMode('spheres')}>
+          Sphere State
+        </button>
       </div>
 
       {/* Agent Follow Header with dropdown selector */}
@@ -1345,6 +1453,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
           />
         ) : viewMode === 'factions' ? (
           <FactionDebugContent graph={graph} />
+        ) : viewMode === 'spheres' ? (
+          <SphereStateTabContent aggregate={sphereAggregate} />
         ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={effectiveAgentId}

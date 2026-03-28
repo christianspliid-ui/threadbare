@@ -22,6 +22,8 @@ import { getAbundanceLabel, RESOURCE_ICONS } from '../../types/resource';
 import { RESOURCE_PROSE } from '../../data/resource-content';
 import { pickConceptArt } from '../../data/concept-art-assets';
 import type { ControlEffect } from '../../types/controlEffect';
+import { SOUL_PROSE, SOUL_SECONDARY_PROSE, type HexSoulLevel } from '../../data/hexSoulProse';
+import { renderProseWithIPK } from '../ProseKeyword';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -62,6 +64,17 @@ function getSphereLabel(value: number): string {
   if (value >= 0.6) return 'strong';
   if (value >= 0.3) return 'faint';
   return 'trace';
+}
+
+/**
+ * Map a sphereInfluence value (0-1 normalized) to SOUL_PROSE intensity level.
+ * Thresholds: weak < 0.2, moderate < 0.4, strong < 0.7, dominant >= 0.7
+ */
+function getSoulLevel(value: number): HexSoulLevel {
+  if (value >= 0.7) return 'dominant';
+  if (value >= 0.4) return 'strong';
+  if (value >= 0.2) return 'moderate';
+  return 'weak';
 }
 
 // ── Fallbacks ────────────────────────────────────────────────────────
@@ -231,6 +244,18 @@ export const HexChronicle = memo(function HexChronicle({
     if (!templates) return null;
     return pickFromArray(templates, hexSeed + 200);
   }, [secondarySphere, hexSeed]);
+
+  // IPK Soul paragraph — uses SOUL_PROSE with renderProseWithIPK
+  const soulAffinityProse = useMemo(() => {
+    if (!dominantSphere || dominantSphere[1] < 0.1) return null;
+    const level = getSoulLevel(dominantSphere[1]);
+    return SOUL_PROSE[dominantSphere[0]]?.[level] ?? null;
+  }, [dominantSphere]);
+
+  const soulSecondaryProse = useMemo(() => {
+    if (!secondarySphere || secondarySphere[1] < 0.2) return null;
+    return SOUL_SECONDARY_PROSE[secondarySphere[0]] ?? null;
+  }, [secondarySphere]);
 
   // ── PEOPLE: Culture + faction prose from content tables ────────
 
@@ -602,6 +627,16 @@ export const HexChronicle = memo(function HexChronicle({
         {secondarySphereProse && (
           <p className="chronicle-prose" style={proseStyle}>
             {secondarySphereProse}
+          </p>
+        )}
+
+        {/* IPK Soul paragraph — sphere names rendered as interactive keywords */}
+        {soulAffinityProse && (
+          <p className="chronicle-prose" data-testid="soul-affinity-prose" style={{ ...proseStyle, marginTop: '4px' }}>
+            {renderProseWithIPK(soulAffinityProse)}
+            {soulSecondaryProse && (
+              <>{' '}{renderProseWithIPK(soulSecondaryProse)}</>
+            )}
           </p>
         )}
 
