@@ -55,6 +55,7 @@ import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
 import { phaseMovement } from './phaseMovement';
 import { phaseColocationDetection } from './phaseColocationDetection';
+import { phaseInteractionDepth } from './phaseInteractionDepth';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
@@ -1058,6 +1059,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.75: Familiarity Gain (Proximity)
   s = { ...s, ...phaseFamiliarityGain(s) };
   phaseEventCounts['familiarity_gain'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.76: Interaction Depth (agent knowledge accumulator)
+  phaseInteractionDepth(s);
+  phaseEventCounts['interaction_depth'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 3: Rival Actions
