@@ -3,15 +3,17 @@
  *
  * Deterministic selection of the highest-scoring candidate from a set
  * of EncounterCacheEntry objects. Each candidate is scored by:
- *   finalScore = valuePerTick * desireMultiplier
+ *   finalScore = valuePerTick * desireMultiplier + resonance
  *
  * ─── Constants ──────────────────────────────────────────────────
- * | Name                  | Default | Purpose                                    |
- * |-----------------------|---------|--------------------------------------------|
- * | MINIMUM_DESIRE        | 0.1     | Floor for desire multiplier (prevents zero) |
- * | GROWTH_REWARD_WEIGHT  | 0.4     | Weight for tier growth value (stub = 0)    |
- * | IDLE_SCORE_THRESHOLD  | 0.05    | Below this, agent idles instead of acting  |
- * | AMBITION_REACH_BOOST  | 0.2     | Flat boost when ambition reach matches     |
+ * | Name                        | Default | Purpose                                    |
+ * |-----------------------------|---------|--------------------------------------------|
+ * | MINIMUM_DESIRE              | 0.1     | Floor for desire multiplier (prevents zero) |
+ * | GROWTH_REWARD_WEIGHT        | 0.4     | Weight for tier growth value (stub = 0)    |
+ * | IDLE_SCORE_THRESHOLD        | 0.05    | Below this, agent idles instead of acting  |
+ * | AMBITION_REACH_BOOST        | 0.2     | Flat boost when ambition reach matches     |
+ * | ENCOUNTER_RESONANCE_MULTIPLIER | 0.1  | Per net-sphere score resonance bonus       |
+ * | ENCOUNTER_RESONANCE_CAP     | 0.5     | Maximum resonance modifier per encounter   |
  *
  * ─── Tracing ────────────────────────────────────────────────────
  * Emits ScoringTrace (category: 'encounter_scoring') with top 5
@@ -25,6 +27,8 @@
  * | computeCapability throws        | Use 0.5 (uncertain)               |
  * | Distance lookup fails           | Infinity travel cost → low score   |
  * | Empty candidates array          | Return null selected immediately   |
+ * | Missing hex sphere affinity     | resonance = 0 (fail-soft)          |
+ * | No encounter sphereAffinity     | resonance = 0 (fail-soft)          |
  *
  * ─── PRNG ───────────────────────────────────────────────────────
  * None — scoring is fully deterministic. Same inputs → same output.
@@ -37,12 +41,16 @@ import type { ScoringTrace } from '../types/trace';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
+import type { SphereName } from '../types/index';
+import type { SphereAffinity } from '../types/sphereAffinity';
 import { computeCapability, computeTier } from './domainCapability';
 import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
+import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
+import { SPHERE_OPPOSITES } from './cosmology';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -60,6 +68,32 @@ import {
   AMBITION_REACH_BOOST,
   STEP_PROBABILITY_OFFSET,
 } from '../data/agent-behavior-constants';
+
+// ─── Sphere Resonance Constants ─────────────────────────────────
+
+/** Score bonus per net sphere alignment point (aligned minus opposed) */
+export const ENCOUNTER_RESONANCE_MULTIPLIER = 0.1;
+
+/** Maximum (and minimum negative) resonance modifier per encounter candidate */
+export const ENCOUNTER_RESONANCE_CAP = 0.5;
+
+/**
+ * Compute the resonance bonus for an encounter at a given hex location.
+ * Compares the encounter's sphere with its opposition sphere at the location.
+ * Positive = aligned location, Negative = opposing location.
+ * Fail-soft: undefined hexAffinity or encounterSphere → 0.
+ */
+export function computeResonance(
+  hexAffinity: SphereAffinity | undefined,
+  encounterSphere: SphereName | undefined,
+): number {
+  if (!hexAffinity || !encounterSphere) return 0;
+  const locationScore = hexAffinity.scores[encounterSphere] ?? 0;
+  const oppositionSphere = SPHERE_OPPOSITES[encounterSphere];
+  const oppositionScore = oppositionSphere ? (hexAffinity.scores[oppositionSphere] ?? 0) : 0;
+  const raw = (locationScore - oppositionScore) * ENCOUNTER_RESONANCE_MULTIPLIER;
+  return Math.min(ENCOUNTER_RESONANCE_CAP, Math.max(-ENCOUNTER_RESONANCE_CAP, raw));
+}
 
 // ─── Result Types ───────────────────────────────────────────────
 
@@ -178,7 +212,7 @@ function getAmbitionBoostForEntry(
 
 /**
  * Build the effective axiological profile for an agent, applying
- * divine influence overlays if present.
+ * divine influence overlays and sphere-derived axiological shift.
  * Fail-soft: returns all-zeros profile if agent/profile missing.
  */
 function resolveProfile(
@@ -199,11 +233,20 @@ function resolveProfile(
 
   // Apply divine influence overlay if present
   const influences = getDivineInfluences(graph, agentId);
-  if (influences.length > 0) {
-    return buildValueOverlay(baseProfile, influences, tick);
+  let profile = influences.length > 0
+    ? buildValueOverlay(baseProfile, influences, tick)
+    : baseProfile;
+
+  // Apply sphere-derived axiological shift from agent's dominant sphere
+  const agentAffinity = getNodeSphereAffinity(node);
+  if (agentAffinity) {
+    const dominant = getDominantSphere(agentAffinity);
+    if (dominant) {
+      profile = applyAxiologicalShift(profile, SPHERE_AXIOLOGICAL_MAP[dominant]);
+    }
   }
 
-  return baseProfile;
+  return profile;
 }
 
 // ─── Main: Score and Select ─────────────────────────────────────
@@ -315,10 +358,15 @@ export function scoreAndSelect(
     // 10. Faction scoring boost (TB-062) — additive for faction encounters
     const factionScoringBoost = getScoringBoost(graph, agentId, entry.templateId);
 
-    // 11. Final score
-    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost;
+    // 11. Sphere resonance bonus — hex sphere alignment with encounter sphere
+    const hexNode = graph.getNode(entry.locationId);
+    const hexAffinity = hexNode ? getNodeSphereAffinity(hexNode) : undefined;
+    const resonance = computeResonance(hexAffinity, entry.sphereAffinity);
 
-    // 12. Action classification
+    // 12. Final score
+    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance;
+
+    // 13. Action classification
     let action: ScoredCandidate['action'];
     if (distance === 0) {
       action = 'start_local';
