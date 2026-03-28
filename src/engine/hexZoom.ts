@@ -10,6 +10,8 @@ import type { GraphNode, GraphEdge } from '../types/graph';
 import type { HexCoord, SphereName } from '../types';
 import { SPHERE_NAMES } from '../types';
 import { hexDistance } from '../lib/hexMath';
+import type { SphereAffinity as SphereAffinityType } from '../types/sphereAffinity';
+import { MAX_SPHERE_SCORE } from '../types/sphereAffinity';
 
 /** Sphere influence totals for a hex. */
 export type SphereInfluence = Record<SphereName, number>;
@@ -46,7 +48,9 @@ export function getAgentsAtLocation(graph: WorldGraph, locationId: string): Grap
 
 /**
  * Aggregated sphere influence from all locations in the hex.
- * Reads sphereInfluence (always populated) with sphereBiases as fallback.
+ * Reads SphereAffinity integer scores (0-MAX_SPHERE_SCORE) and normalizes to 0-1 float.
+ * Falls back to legacy sphereInfluence/sphereBiases if sphereAffinity absent.
+ * Aggregated values are clamped to max 1.0.
  */
 export function getHexSphereInfluence(graph: WorldGraph, col: number, row: number): SphereInfluence {
   const influence = {} as SphereInfluence;
@@ -55,12 +59,27 @@ export function getHexSphereInfluence(graph: WorldGraph, col: number, row: numbe
   const locations = getLocationsInHex(graph, col, row);
   for (const loc of locations) {
     const props = loc.properties as Record<string, unknown>;
-    const sphereData = (props.sphereInfluence ?? props.sphereBiases) as Record<string, number> | undefined;
-    if (sphereData) {
+    const sphereAffinity = props.sphereAffinity as SphereAffinityType | undefined;
+
+    if (sphereAffinity?.scores) {
+      // Phase 10 path: integer scores normalized to 0-1 float
       for (const s of SPHERE_NAMES) {
-        influence[s] += sphereData[s] ?? 0;
+        influence[s] += (sphereAffinity.scores[s] ?? 0) / MAX_SPHERE_SCORE;
+      }
+    } else {
+      // Legacy fallback: sphereInfluence or sphereBiases already 0-1 floats
+      const sphereData = (props.sphereInfluence ?? props.sphereBiases) as Record<string, number> | undefined;
+      if (sphereData) {
+        for (const s of SPHERE_NAMES) {
+          influence[s] += sphereData[s] ?? 0;
+        }
       }
     }
+  }
+
+  // Clamp all values to [0, 1]
+  for (const s of SPHERE_NAMES) {
+    influence[s] = Math.min(1, influence[s]);
   }
 
   return influence;
