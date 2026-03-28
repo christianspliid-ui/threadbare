@@ -43,6 +43,7 @@ import { VALUE_PAIRS } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
+import type { FundamentState } from '../types/worldSoul';
 import { computeCapability, computeTier } from './domainCapability';
 import { getDistance } from './distanceMatrix';
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
@@ -50,7 +51,7 @@ import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER
 import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
-import { SPHERE_OPPOSITES } from './cosmology';
+import { SPHERE_OPPOSITES, SPHERE_NAMES } from './cosmology';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -77,6 +78,40 @@ export const ENCOUNTER_RESONANCE_MULTIPLIER = 0.1;
 /** Maximum (and minimum negative) resonance modifier per encounter candidate */
 export const ENCOUNTER_RESONANCE_CAP = 0.5;
 
+// ─── Global Sphere Resonance Constants (World-Soul) ─────────────
+
+/** Converts sphere weight deviation into encounter score bonus from global World-Soul state */
+export const ENCOUNTER_RESONANCE_SCALE = 2.0;
+
+/** Minimum global resonance score (prevents sphere recession from completely blocking encounters) */
+export const ENCOUNTER_RESONANCE_FLOOR = -0.15;
+
+// ─── Axiological Drift Constants (World-Soul) ─────────────────
+
+/** Converts sphere weight deviation into axiological value shift */
+export const AXIOLOGICAL_DRIFT_SCALE = 1.5;
+
+/** Maximum drift per axiological pair from World-Soul */
+export const AXIOLOGICAL_DRIFT_MAX = 0.15;
+
+/** Minimum sphere weight deviation before drift activates (prevents noise from balanced states) */
+export const DRIFT_ACTIVATION_THRESHOLD = 0.03;
+
+/**
+ * Sphere → Axiological pair drift mapping.
+ * Maps each sphere to its affected axiological pair and direction.
+ */
+export const SPHERE_DRIFT_MAP: Record<SphereName, { pair: keyof AxiologicalProfile; direction: number }> = {
+  force: { pair: 'mercy_ambition', direction: 1 }, // +ambition
+  matter: { pair: 'loyalty_ambition', direction: -1 }, // +loyalty
+  energy: { pair: 'mercy_ambition', direction: 0.5 }, // +ambition (weaker)
+  life: { pair: 'mercy_ambition', direction: -1 }, // +mercy
+  mind: { pair: 'tradition_progress', direction: 1 }, // +progress
+  spirit: { pair: 'tradition_progress', direction: -1 }, // +tradition
+  time: { pair: 'loyalty_ambition', direction: -0.5 }, // +loyalty (weaker)
+  entropy: { pair: 'mercy_ambition', direction: 1 }, // +ambition (ruthlessness)
+};
+
 /**
  * Compute the resonance bonus for an encounter at a given hex location.
  * Compares the encounter's sphere with its opposition sphere at the location.
@@ -95,6 +130,69 @@ export function computeResonance(
   return Math.min(ENCOUNTER_RESONANCE_CAP, Math.max(-ENCOUNTER_RESONANCE_CAP, raw));
 }
 
+/**
+ * Compute global encounter scoring bonus from World-Soul sphere balance.
+ * Encounters whose sphere matches the world's dominant spheres score higher.
+ * Fail-soft: undefined fundament or encounterSphere → 0.
+ */
+export function computeEncounterResonance(
+  encounterSphere: SphereName | undefined,
+  fundament: FundamentState | undefined,
+): number {
+  if (!fundament || !encounterSphere) return 0;
+
+  const weight = fundament.sphereWeights[encounterSphere];
+  if (weight === undefined) return 0;
+
+  const balanced = 1 / SPHERE_NAMES.length;
+  const deviation = weight - balanced;
+
+  // Positive deviation → sphere is dominant → encounters score higher
+  // Negative deviation → sphere is recessive → encounters score lower
+  const raw = deviation * ENCOUNTER_RESONANCE_SCALE;
+
+  // Apply floor but no cap (deviation can be large)
+  return Math.max(ENCOUNTER_RESONANCE_FLOOR, raw);
+}
+
+/**
+ * Compute axiological drift from World-Soul state.
+ * Returns partial axiological profile with drift deltas applied to affected pairs.
+ * Fail-soft: undefined fundament → empty drift object.
+ */
+export function computeWorldSoulValueDrift(
+  fundament: FundamentState | undefined,
+): Partial<AxiologicalProfile> {
+  if (!fundament) return {};
+
+  const drift: Partial<AxiologicalProfile> = {};
+
+  // Clamp helper
+  const clamp = (value: number, min: number, max: number): number =>
+    Math.max(min, Math.min(max, value));
+
+  for (const sphere of SPHERE_NAMES) {
+    const weight = fundament.sphereWeights[sphere];
+    if (weight === undefined) continue;
+
+    const balanced = 1 / SPHERE_NAMES.length;
+    const deviation = weight - balanced;
+
+    // Skip if below activation threshold
+    if (Math.abs(deviation) < DRIFT_ACTIVATION_THRESHOLD) continue;
+
+    const mapping = SPHERE_DRIFT_MAP[sphere];
+    if (!mapping) continue;
+
+    // Accumulate drift for this pair
+    const currentDrift = drift[mapping.pair] ?? 0;
+    const newDrift = currentDrift + deviation * mapping.direction * AXIOLOGICAL_DRIFT_SCALE;
+    drift[mapping.pair] = clamp(newDrift, -AXIOLOGICAL_DRIFT_MAX, AXIOLOGICAL_DRIFT_MAX);
+  }
+
+  return drift;
+}
+
 // ─── Result Types ───────────────────────────────────────────────
 
 export interface ScoredCandidate {
@@ -107,6 +205,8 @@ export interface ScoredCandidate {
   axiologicalScore: number;
   ambitionBoost: number;
   desireMultiplier: number;
+  resonance: number;
+  globalResonance: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -212,13 +312,14 @@ function getAmbitionBoostForEntry(
 
 /**
  * Build the effective axiological profile for an agent, applying
- * divine influence overlays and sphere-derived axiological shift.
+ * divine influence overlays, sphere-derived axiological shift, and World-Soul drift.
  * Fail-soft: returns all-zeros profile if agent/profile missing.
  */
 function resolveProfile(
   graph: WorldGraph,
   agentId: string,
   tick: number,
+  fundament?: FundamentState,
 ): AxiologicalProfile {
   const zeroProfile = Object.fromEntries(
     VALUE_PAIRS.map((p) => [p, 0]),
@@ -246,6 +347,17 @@ function resolveProfile(
     }
   }
 
+  // Apply World-Soul axiological drift
+  const worldSoulDrift = computeWorldSoulValueDrift(fundament);
+  for (const [pair, drift] of Object.entries(worldSoulDrift)) {
+    if (drift !== 0) {
+      profile = {
+        ...profile,
+        [pair]: (profile[pair as keyof AxiologicalProfile] ?? 0) + drift,
+      };
+    }
+  }
+
   return profile;
 }
 
@@ -262,6 +374,7 @@ export function scoreAndSelect(
   graph: WorldGraph,
   distanceMatrix: DistanceMatrix,
   tick: number,
+  fundament?: FundamentState,
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -282,7 +395,7 @@ export function scoreAndSelect(
     };
   }
 
-  const profile = resolveProfile(graph, agentId, tick);
+  const profile = resolveProfile(graph, agentId, tick, fundament);
 
   const scored: ScoredCandidate[] = [];
 
@@ -358,15 +471,18 @@ export function scoreAndSelect(
     // 10. Faction scoring boost (TB-062) — additive for faction encounters
     const factionScoringBoost = getScoringBoost(graph, agentId, entry.templateId);
 
-    // 11. Sphere resonance bonus — hex sphere alignment with encounter sphere
+    // 11. Sphere resonance bonus — hex sphere alignment with encounter sphere (local)
     const hexNode = graph.getNode(entry.locationId);
     const hexAffinity = hexNode ? getNodeSphereAffinity(hexNode) : undefined;
     const resonance = computeResonance(hexAffinity, entry.sphereAffinity);
 
-    // 12. Final score
-    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance;
+    // 12. Global sphere resonance — World-Soul fundament alignment (M1.2)
+    const globalResonance = computeEncounterResonance(entry.sphereAffinity, fundament);
 
-    // 13. Action classification
+    // 13. Final score
+    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
+
+    // 14. Action classification
     let action: ScoredCandidate['action'];
     if (distance === 0) {
       action = 'start_local';
@@ -386,6 +502,8 @@ export function scoreAndSelect(
       axiologicalScore,
       ambitionBoost,
       desireMultiplier,
+      resonance,
+      globalResonance,
       finalScore,
       action,
     });
@@ -429,6 +547,8 @@ function buildTrace(
       finalScore: c.finalScore,
       travelCost: c.travelCost,
       completionProb: c.completionProb,
+      resonance: c.resonance,
+      globalResonance: c.globalResonance,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,

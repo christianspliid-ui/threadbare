@@ -10,10 +10,20 @@ import {
   estimateCompletionProb,
   computeDesireScore,
   scoreAndSelect,
+  computeEncounterResonance,
+  computeWorldSoulValueDrift,
   MINIMUM_DESIRE,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
+  ENCOUNTER_RESONANCE_SCALE,
+  ENCOUNTER_RESONANCE_FLOOR,
+  AXIOLOGICAL_DRIFT_SCALE,
+  AXIOLOGICAL_DRIFT_MAX,
+  DRIFT_ACTIVATION_THRESHOLD,
+  SPHERE_DRIFT_MAP,
 } from '../encounterScoring';
+import type { FundamentState } from '../../types/worldSoul';
+import { SPHERE_NAMES } from '../cosmology';
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -561,5 +571,214 @@ describe('scoreAndSelect', () => {
     );
 
     expect(withPen!.completionProb).toBeLessThan(noPen!.completionProb);
+  });
+});
+
+// ─── M1.2: Global Sphere Resonance ──────────────────────────────
+
+describe('computeEncounterResonance (World-Soul global)', () => {
+  function makeFundament(overrides: Partial<FundamentState> = {}): FundamentState {
+    const balanced = 1 / SPHERE_NAMES.length;
+    const sphereWeights = Object.fromEntries(
+      SPHERE_NAMES.map((s) => [s, balanced])
+    ) as Record<string, number>;
+    return {
+      sphereWeights,
+      foundations: { chaos_order: 0, light_darkness: 0 },
+      cycleCount: 0,
+      ...overrides,
+    };
+  }
+
+  it('returns 0 when fundament is undefined', () => {
+    const result = computeEncounterResonance('force', undefined);
+    expect(result).toBe(0);
+  });
+
+  it('returns 0 when encounterSphere is undefined', () => {
+    const fundament = makeFundament();
+    const result = computeEncounterResonance(undefined, fundament);
+    expect(result).toBe(0);
+  });
+
+  it('returns positive bonus when sphere is dominant', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.25, // dominant (+0.125 deviation)
+        matter: 0.125,
+        energy: 0.125,
+        life: 0.125,
+        mind: 0.125,
+        spirit: 0.0625,
+        time: 0.0625,
+        entropy: 0.0625,
+      },
+    });
+    const result = computeEncounterResonance('force', fundament);
+    const expected = 0.125 * ENCOUNTER_RESONANCE_SCALE;
+    expect(result).toBeCloseTo(expected, 5);
+  });
+
+  it('returns negative bonus when sphere is recessive', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.0,
+        matter: 0.125,
+        energy: 0.125,
+        life: 0.125,
+        mind: 0.125,
+        spirit: 0.25,
+        time: 0.15,
+        entropy: 0.1,
+      },
+    });
+    const result = computeEncounterResonance('force', fundament);
+    const expected = Math.max(
+      ENCOUNTER_RESONANCE_FLOOR,
+      -0.125 * ENCOUNTER_RESONANCE_SCALE
+    );
+    expect(result).toBeCloseTo(expected, 5);
+  });
+
+  it('returns ~0 when sphere is balanced', () => {
+    const fundament = makeFundament(); // All spheres at 0.125
+    const result = computeEncounterResonance('force', fundament);
+    expect(result).toBeCloseTo(0, 5);
+  });
+
+  it('applies floor to prevent extreme negative scores', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.0,
+        matter: 0.25,
+        energy: 0.25,
+        life: 0.25,
+        mind: 0.125,
+        spirit: 0.0625,
+        time: 0.0625,
+        entropy: 0.0625,
+      },
+    });
+    const result = computeEncounterResonance('force', fundament);
+    expect(result).toBeGreaterThanOrEqual(ENCOUNTER_RESONANCE_FLOOR);
+  });
+});
+
+// ─── M1.2: Axiological Drift ────────────────────────────────────
+
+describe('computeWorldSoulValueDrift (World-Soul)', () => {
+  function makeFundament(overrides: Partial<FundamentState> = {}): FundamentState {
+    const balanced = 1 / SPHERE_NAMES.length;
+    const sphereWeights = Object.fromEntries(
+      SPHERE_NAMES.map((s) => [s, balanced])
+    ) as Record<string, number>;
+    return {
+      sphereWeights,
+      foundations: { chaos_order: 0, light_darkness: 0 },
+      cycleCount: 0,
+      ...overrides,
+    };
+  }
+
+  it('returns empty drift when fundament is undefined', () => {
+    const result = computeWorldSoulValueDrift(undefined);
+    expect(result).toEqual({});
+  });
+
+  it('returns empty drift when all spheres are balanced', () => {
+    const fundament = makeFundament();
+    const result = computeWorldSoulValueDrift(fundament);
+    expect(Object.keys(result).length).toBe(0);
+  });
+
+  it('applies drift when force is dominant (mercy_ambition +ambition)', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.25, // +0.125 deviation, above threshold
+        matter: 0.125,
+        energy: 0.125,
+        life: 0.125,
+        mind: 0.125,
+        spirit: 0.0625,
+        time: 0.0625,
+        entropy: 0.0625,
+      },
+    });
+    const result = computeWorldSoulValueDrift(fundament);
+    const expectedDrift = 0.125 * 1 * AXIOLOGICAL_DRIFT_SCALE;
+    expect(result.mercy_ambition).toBeCloseTo(expectedDrift, 5);
+  });
+
+  it('skips drift when deviation is below threshold', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.15, // +0.025 deviation, below 0.03 threshold
+        matter: 0.125,
+        energy: 0.125,
+        life: 0.125,
+        mind: 0.125,
+        spirit: 0.125,
+        time: 0.125,
+        entropy: 0.125,
+      },
+    });
+    const result = computeWorldSoulValueDrift(fundament);
+    expect(result.mercy_ambition ?? 0).toBeLessThan(0.001); // essentially 0
+  });
+
+  it('clamps drift to AXIOLOGICAL_DRIFT_MAX', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.9, // extreme dominance
+        matter: 0.01,
+        energy: 0.01,
+        life: 0.01,
+        mind: 0.01,
+        spirit: 0.01,
+        time: 0.01,
+        entropy: 0.04,
+      },
+    });
+    const result = computeWorldSoulValueDrift(fundament);
+    expect(Math.abs(result.mercy_ambition ?? 0)).toBeLessThanOrEqual(
+      AXIOLOGICAL_DRIFT_MAX
+    );
+  });
+
+  it('applies negative drift when sphere is recessive (life -> mercy)', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.25,
+        matter: 0.25,
+        energy: 0.25,
+        life: 0.01, // very recessive
+        mind: 0.06,
+        spirit: 0.06,
+        time: 0.06,
+        entropy: 0.06,
+      },
+    });
+    const result = computeWorldSoulValueDrift(fundament);
+    // life maps to mercy_ambition with direction -1 (toward mercy)
+    expect(result.mercy_ambition ?? 0).toBeLessThan(0);
+  });
+
+  it('handles multiple sphere drifts in same pair', () => {
+    const fundament = makeFundament({
+      sphereWeights: {
+        force: 0.25, // +ambition: +0.125 * 1 * 1.5 = +0.1875
+        matter: 0.01, // +loyalty: -0.115 * -1 * 1.5 = +0.1725
+        energy: 0.01, // +ambition: -0.115 * 0.5 * 1.5 ≈ -0.08625
+        life: 0.125,
+        mind: 0.125,
+        spirit: 0.125,
+        time: 0.125,
+        entropy: 0.275, // +ambition: +0.15 * 1 * 1.5 = +0.225
+      },
+    });
+    const result = computeWorldSoulValueDrift(fundament);
+    // mercy_ambition should accumulate drifts from force, energy, entropy
+    expect(result.mercy_ambition ?? 0).toBeGreaterThan(0);
+    expect(result.loyalty_ambition ?? 0).toBeGreaterThan(0);
   });
 });
