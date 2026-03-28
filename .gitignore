@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Build cache
+.cache/
+
 # Logs
 logs
 *.log
