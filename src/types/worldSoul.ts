@@ -84,11 +84,30 @@ export interface ResonanceState {
   maxMemories: number;
 }
 
+// ── Sphere Aggregate ───────────────────────────────────────────
+
+/**
+ * Global sphere aggregate computed each tick by phaseSphereAggregation.
+ * Represents the weighted sum of all entity sphere scores in the world.
+ */
+export interface SphereAggregate {
+  /** Weighted sum of all entity sphere scores */
+  totalBySphere: Record<SphereName, number>;
+  /** Sphere with highest total; null if all are zero */
+  dominantSphere: SphereName | null;
+  /** Derived Foundation axis balances from the aggregate */
+  foundationBalance: { chaos_order: number; light_darkness: number };
+  /** Number of entities that contributed to this aggregate */
+  entityCount: number;
+}
+
 // ── World-Soul Aggregate ────────────────────────────────────────
 
 export interface WorldSoulState {
   fundament: FundamentState;
   resonance: ResonanceState;
+  /** Global sphere aggregate computed each tick by phaseSphereAggregation */
+  aggregate?: SphereAggregate;
 }
 
 // ── The Unmaking / Twilight Phase ───────────────────────────────

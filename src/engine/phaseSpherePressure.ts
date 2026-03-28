@@ -32,6 +32,22 @@ import { SPHERE_ALLIES, SPHERE_OPPOSITES } from './cosmology';
 import type { GameState } from '../types/gameState';
 import { getNodeSphereAffinity } from './sphereAffinity';
 
+/**
+ * Type guard: returns true only if the value is a well-formed SphereAffinity
+ * with both `scores` and `progress` Records.
+ *
+ * Guards against legacy data where sphereAffinity is stored as a bare SphereName
+ * string (e.g., legacy artifact nodes created before Plan 01 seeding).
+ */
+function isValidSphereAffinity(value: unknown): value is SphereAffinity {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.scores === 'object' && v.scores !== null &&
+    typeof v.progress === 'object' && v.progress !== null
+  );
+}
+
 // ─── Trace Interface ─────────────────────────────────────────────────
 
 export interface SpherePressureTrace {
@@ -377,7 +393,7 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
       const isAtLocation = locEdges.some(e => e.target === locationId);
       if (isAtLocation) {
         const aff = getNodeSphereAffinity(actor);
-        if (aff) agentAffinities.push(aff);
+        if (isValidSphereAffinity(aff)) agentAffinities.push(aff);
       }
     }
     return agentAffinities;
@@ -392,8 +408,9 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     if (!node) continue; // fail-soft: unknown entity
 
     let entityAffinity = getNodeSphereAffinity(node);
-    if (!entityAffinity) {
+    if (!isValidSphereAffinity(entityAffinity)) {
       // Fail-soft: initialize blank affinity rather than crashing
+      // Handles both missing sphereAffinity and legacy bare-string sphere values
       entityAffinity = createDefaultSphereAffinity();
     }
 
