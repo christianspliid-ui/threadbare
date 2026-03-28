@@ -147,8 +147,8 @@ export function initializeGameState(
         const key = `${hexCol},${hexRow}`;
         hexAffinity = hexAffinityByKey.get(key) ?? createDefaultSphereAffinity();
       }
-      // No thematic sphere bias at init time — can be extended with location subtype later
-      const locAffinity = seedLocationSphereAffinity(hexAffinity);
+      const locSubtype = locNode.properties.locationType as string | undefined;
+      const locAffinity = seedLocationSphereAffinity(hexAffinity, locSubtype);
       graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
     }
   }
