@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 10-sphere-affinity/10-03b-PLAN.md
-last_updated: "2026-03-28T18:09:09.906Z"
+stopped_at: Completed 10-sphere-affinity/10-06-PLAN.md
+last_updated: "2026-03-28T18:21:49.243Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 1
   completed_phases: 0
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 93
 ---
 
@@ -158,6 +158,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 10-sphere-affinity P04 | 11 | 2 tasks | 4 files |
 | Phase 10-sphere-affinity P03 | 10 | 2 tasks | 4 files |
 | Phase 10-sphere-affinity P03b | 17 | 2 tasks | 2 files |
+| Phase 10-sphere-affinity P06 | 7 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -247,6 +248,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 10-sphere-affinity]: Doom entropy pressure pushed to ALL location nodes on tier escalation — world-wide burst
 - [Phase 10-sphere-affinity]: phaseDoom/phaseMandate extracted from orchestrator.ts to separate files; orchestrator re-exports for backward compat
 - [Phase 10-sphere-affinity]: phaseEncounterProgressionV2 and phaseRivalActions sphere pressure wiring was already committed in 10-03 — only unifiedActionResolution.ts needed wiring
+- [Phase 10-sphere-affinity]: ProseKeyword tooltip uses position:relative/absolute inside span — simpler than portal for inline prose contexts
+- [Phase 10-sphere-affinity]: ActionDrawer sphere preview uses per-sphere SPHERE_ACTION_PROSE registry + hoveredSlotId — avoids threading targetHexAffinity through component chain
+- [Phase 10-sphere-affinity]: HexChronicle reuses sphereInfluence (0-1) for SOUL_PROSE level mapping rather than adding new SphereAffinity integer-score prop
 
 ### Pending Todos
 
@@ -258,6 +262,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T18:09:09.903Z
-Stopped at: Completed 10-sphere-affinity/10-03b-PLAN.md
+Last session: 2026-03-28T18:21:49.241Z
+Stopped at: Completed 10-sphere-affinity/10-06-PLAN.md
 Resume file: None
