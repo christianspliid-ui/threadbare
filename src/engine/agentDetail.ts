@@ -124,6 +124,8 @@ export interface AgentDetail {
   intents?: ActiveIntent[];
   /** Archetype-based portrait image path, or null if no portrait available */
   portraitUrl: string | null;
+  /** Quintessence value (0–1.0) — existential health. Undefined if not yet initialized. */
+  quintessence?: number;
 }
 
 // ─── Active Effects (divine influences visible on agent card) ────────
@@ -196,6 +198,8 @@ export interface AgentInfoCardData {
   portraitUrl?: string;
   /** Active divine effects on this agent (always visible — player's own actions) */
   activeEffects?: ActiveEffect[];
+  /** Axiological profile — only populated at intimate+ knowledge (for archetype epithet) */
+  axiologicalProfile?: AxiologicalProfile;
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -342,6 +346,7 @@ export function getAgentDetail(
     powersAndAgreements: powersAndAgreements.length > 0 ? powersAndAgreements : undefined,
     intents: intents.length > 0 ? intents : undefined,
     portraitUrl,
+    quintessence: (props.quintessence as number | undefined),
   };
 }
 
@@ -627,6 +632,12 @@ export function getAgentInfoCard(
     const giftsAndBurdens = [...attachments.powers, ...attachments.agreements];
     if (giftsAndBurdens.length > 0) {
       card.giftsAndBurdens = giftsAndBurdens;
+    }
+
+    // Expose axiological profile for archetype epithet derivation (intimate+)
+    const axioProfile = (agentNode.properties as Record<string, unknown>).axiologicalProfile as AxiologicalProfile | undefined;
+    if (axioProfile) {
+      card.axiologicalProfile = axioProfile;
     }
   }
 

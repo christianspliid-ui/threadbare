@@ -42,7 +42,7 @@ import type { MeetingEncounterResult } from '../../types/meetingEncounter';
 
 const REACH_ICONS: Record<ReachDomain, string> = {
   iron: '⚔', gold: '⚖', shadow: '🗝', veil: '✦',
-  heart: '♥', eye: '◉', stone: '⛰', star: '★', flesh: '⚕',
+  heart: '♥', eye: '◉', stone: '⛰', star: '★',
 };
 
 const SPHERE_LABELS: Record<string, string> = {

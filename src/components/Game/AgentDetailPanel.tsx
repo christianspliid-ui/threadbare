@@ -8,6 +8,10 @@ import { IntentSection } from './IntentSection';
 import { Button } from '../shared/Button';
 import { IconButton } from '../shared/IconButton';
 import { SectionHeading } from '../shared/SectionHeading';
+import { Tooltip } from '../shared/Tooltip';
+import { quintessenceToWord } from '../../types/quintessence';
+import { QUINTESSENCE_TOOLTIPS } from '../../data/quintessence-content';
+import { QUINTESSENCE_LEXICON } from '../../data/quintessence-content';
 
 /** Max attachment rows shown per section before overflow */
 const MAX_ATTACHMENT_ROWS = 5;
@@ -31,7 +35,7 @@ interface AgentDetailPanelProps {
   onAttachmentClick?: (attachmentId: string) => void;
 }
 
-// Domain display names
+// Domain display names — 8 reaches (flesh removed in TB-075)
 const DOMAIN_NAMES: Record<ReachDomain, string> = {
   iron: 'Iron',
   gold: 'Gold',
@@ -41,7 +45,6 @@ const DOMAIN_NAMES: Record<ReachDomain, string> = {
   eye: 'Eye',
   stone: 'Stone',
   star: 'Star',
-  flesh: 'Flesh',
 };
 
 // Strategy display names
@@ -156,42 +159,65 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
           </div>
         )}
 
+        {/* Quintessence IPK — prose-only display, no numeric value (NFP #2: inspectability) */}
+        {detail.quintessence != null && (() => {
+          const qWord = quintessenceToWord(detail.quintessence);
+          const qIdx = QUINTESSENCE_LEXICON.indexOf(qWord);
+          const qTooltip = qIdx >= 0 ? QUINTESSENCE_TOOLTIPS[qIdx] : undefined;
+          return (
+            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+              <span>Their presence is </span>
+              <Tooltip label={qWord} desc={qTooltip ?? ''}>
+                <span
+                  style={{
+                    color: 'var(--text-secondary)',
+                    fontStyle: 'italic',
+                    textDecoration: 'underline',
+                    textDecorationStyle: 'dotted',
+                    cursor: 'help',
+                  }}
+                  role="term"
+                  tabIndex={0}
+                >
+                  {qWord}
+                </span>
+              </Tooltip>
+            </div>
+          );
+        })()}
+
         {/* Domain Grid */}
         <div>
           <SectionHeading>
             Domains
           </SectionHeading>
-          <div className="space-y-2">
-            {DOMAINS_GRID.map((row, rowIdx) => (
-              <div key={rowIdx} className="grid grid-cols-3 gap-2">
-                {row.map(domain => {
-                  const score = detail.domainCapabilities[domain] || 0;
-                  const percentage = Math.min((score / 10) * 100, 100);
-                  const isAffinity = archetypeReaches.includes(domain);
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+            {DOMAINS_GRID.flat().map(domain => {
+              const score = detail.domainCapabilities[domain] || 0;
+              const percentage = Math.min((score / 10) * 100, 100);
+              const isAffinity = archetypeReaches.includes(domain);
 
-                  return (
-                    <div key={domain} className="flex flex-col">
-                      <span
-                        className={`text-xs font-medium mb-1 ${
-                          isAffinity ? 'text-amber-100' : 'text-amber-400/70'
-                        }`}
-                      >
-                        {DOMAIN_NAMES[domain]}
-                      </span>
-                      <div className="bg-stone-700 rounded h-1.5 overflow-hidden">
-                        <div
-                          className="bg-amber-400 h-full transition-all duration-200"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-amber-400/70 mt-0.5">
-                        {score}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            ))}
+              return (
+                <div key={domain} className="flex flex-col">
+                  <span
+                    className={`text-xs font-medium mb-1 ${
+                      isAffinity ? 'text-amber-100' : 'text-amber-400/70'
+                    }`}
+                  >
+                    {DOMAIN_NAMES[domain]}
+                  </span>
+                  <div className="bg-stone-700 rounded h-1.5 overflow-hidden">
+                    <div
+                      className="bg-amber-400 h-full transition-all duration-200"
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-amber-400/70 mt-0.5">
+                    {score}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
