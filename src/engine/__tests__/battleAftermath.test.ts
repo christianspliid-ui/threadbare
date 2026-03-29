@@ -4,11 +4,17 @@ import {
   calculateDestructionSeverity,
   determineCommanderFate,
   applyAftermath,
+  generateRefugeeEncounters,
   TOTAL_DESTRUCTION_THRESHOLD,
   MAJOR_DESTRUCTION_THRESHOLD,
   PROSPERITY_LOSS_MINOR,
   PROSPERITY_LOSS_MAJOR,
   COMMANDER_CAPTURE_DURATION,
+  REFUGEE_GENERATION_MAJOR,
+  REFUGEE_GENERATION_TOTAL,
+  SPHERE_PRESSURE_MINOR_MULTIPLIER,
+  SPHERE_PRESSURE_MAJOR_MULTIPLIER,
+  SPHERE_PRESSURE_TOTAL_MULTIPLIER,
 } from '../battleAftermath';
 import type { BattleState } from '../../types/battle';
 import type { ArmyState } from '../../types/army';
@@ -44,6 +50,9 @@ function setupSettlementBattle(graph: WorldGraph, opts?: {
   addCommander?: boolean;
   loserQ?: number;
   loserQMax?: number;
+  addNeighborSettlement?: boolean;
+  addVictorFactionSphere?: boolean;
+  addControlEdge?: boolean;
 }): void {
   // Settlement
   graph.addNode({
@@ -113,6 +122,41 @@ function setupSettlementBattle(graph: WorldGraph, opts?: {
     const partnerId = `trade_partner_${i}`;
     graph.addNode({ id: partnerId, type: 'actor', name: `Trade Partner ${i}`, properties: { actorType: 'faction' } });
     graph.addEdge({ id: `e_trade_${i}`, source: 'settlement1', target: partnerId, type: 'trades_with', properties: { volume: 10, threatened: false } });
+  }
+
+  // Battle hex (army_a is located here)
+  graph.addNode({ id: 'hex_battle', type: 'location', name: 'Battle Hex', properties: { terrain: 'plains' } });
+  graph.addEdge({ id: 'e_army_a_loc', source: 'army_a', target: 'hex_battle', type: 'located_at', properties: {} });
+
+  // Neighbor settlement (for refugee tests)
+  if (opts?.addNeighborSettlement) {
+    graph.addNode({ id: 'hex_neighbor', type: 'location', name: 'Neighbor Hex', properties: { terrain: 'plains' } });
+    graph.addNode({
+      id: 'settlement_neighbor',
+      type: 'location',
+      name: 'Neighbor Settlement',
+      properties: { locationSubtype: 'town', prosperity: 0.7 },
+    });
+    graph.addEdge({ id: 'e_neighbor_loc', source: 'settlement_neighbor', target: 'hex_neighbor', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'e_adj', source: 'hex_battle', target: 'hex_neighbor', type: 'adjacent', properties: {} });
+  }
+
+  // Victor's faction sphere affinity (for sphere pressure tests)
+  if (opts?.addVictorFactionSphere) {
+    graph.updateNode('f_atk', {
+      properties: {
+        actorType: 'faction',
+        sphereAffinity: {
+          scores: { force: 5, matter: 0, energy: 0, life: 0, mind: 0, spirit: 0, time: 0, entropy: 0, chaos: 0, order: 0, light: 0, darkness: 0 },
+          progress: {},
+        },
+      },
+    });
+  }
+
+  // Controls edge (for power vacuum tests)
+  if (opts?.addControlEdge) {
+    graph.addEdge({ id: 'e_controls', source: 'f_def', target: 'settlement1', type: 'controls', properties: {} });
   }
 }
 
@@ -310,5 +354,157 @@ describe('applyAftermath', () => {
     const bs = makeBattleState({ momentum: TOTAL_DESTRUCTION_THRESHOLD });
 
     expect(() => applyAftermath(state, bs, 'attacker_victory')).not.toThrow();
+  });
+
+  it('removes controls edges on total destruction (power vacuum)', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { loserQ: 2, loserQMax: 30, addControlEdge: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: TOTAL_DESTRUCTION_THRESHOLD });
+
+    // Verify edge exists before
+    expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(1);
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    // Controls edge should be removed
+    expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(0);
+  });
+
+  it('does not remove controls edges on minor/major destruction', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { loserQ: 5, addControlEdge: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: MAJOR_DESTRUCTION_THRESHOLD });
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    // Controls edge should still exist on major (not total)
+    expect(graph.getIncomingEdges('settlement1', 'controls')).toHaveLength(1);
+  });
+
+  it('generates refugee encounters at neighbors on major defeat', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { loserQ: 5, addNeighborSettlement: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: MAJOR_DESTRUCTION_THRESHOLD });
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    // Should have marked the neighbor settlement with pendingRefugeeCount
+    const neighbor = graph.getNode('settlement_neighbor');
+    expect(neighbor?.properties.pendingRefugeeCount).toBe(REFUGEE_GENERATION_MAJOR);
+  });
+
+  it('generates more refugee encounters on total destruction', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { loserQ: 2, loserQMax: 30, addNeighborSettlement: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: TOTAL_DESTRUCTION_THRESHOLD });
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    const neighbor = graph.getNode('settlement_neighbor');
+    expect(neighbor?.properties.pendingRefugeeCount).toBe(REFUGEE_GENERATION_TOTAL);
+  });
+
+  it('does not generate refugees on minor destruction', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { addNeighborSettlement: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: 4 }); // minor
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    const neighbor = graph.getNode('settlement_neighbor');
+    expect(neighbor?.properties.pendingRefugeeCount ?? 0).toBe(0);
+  });
+
+  it('applies sphere pressure from victor faction on attacker victory', () => {
+    const graph = new WorldGraph();
+    setupSettlementBattle(graph, { addVictorFactionSphere: true });
+    const state = makeState(10, graph);
+    const bs = makeBattleState({ momentum: 4 }); // minor
+
+    applyAftermath(state, bs, 'attacker_victory');
+
+    // Sphere pressure events should be in state
+    const pressures = (state.pendingSpherePressures ?? []);
+    expect(pressures.length).toBeGreaterThan(0);
+    const pressure = pressures[0];
+    expect(pressure.sphere).toBe('force'); // dominant sphere from test setup
+    expect(pressure.source).toBe('environmental');
+    // Minor multiplier: base * 1.0
+    expect(pressure.magnitude).toBeGreaterThan(0);
+  });
+
+  it('sphere pressure multiplier scales with severity', () => {
+    // Minor
+    {
+      const graph = new WorldGraph();
+      setupSettlementBattle(graph, { addVictorFactionSphere: true });
+      const state = makeState(10, graph);
+      const bs = makeBattleState({ momentum: 4 });
+      applyAftermath(state, bs, 'attacker_victory');
+      const minorMag = (state.pendingSpherePressures ?? [])[0]?.magnitude ?? 0;
+
+      // Major (new graph)
+      const graph2 = new WorldGraph();
+      setupSettlementBattle(graph2, { addVictorFactionSphere: true, loserQ: 5 });
+      const state2 = makeState(10, graph2);
+      const bs2 = makeBattleState({ momentum: MAJOR_DESTRUCTION_THRESHOLD });
+      applyAftermath(state2, bs2, 'attacker_victory');
+      const majorMag = (state2.pendingSpherePressures ?? [])[0]?.magnitude ?? 0;
+
+      expect(majorMag / minorMag).toBeCloseTo(SPHERE_PRESSURE_MAJOR_MULTIPLIER / SPHERE_PRESSURE_MINOR_MULTIPLIER);
+    }
+  });
+});
+
+// ─── generateRefugeeEncounters Tests ──────────────────────────────────────
+
+describe('generateRefugeeEncounters', () => {
+  it('returns empty array when count is 0', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'hex1', type: 'location', name: 'Hex', properties: {} });
+    const state = makeState(10, graph);
+    expect(generateRefugeeEncounters(state, 'hex1', 0)).toHaveLength(0);
+  });
+
+  it('returns empty array when no neighbors exist', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'hex1', type: 'location', name: 'Hex', properties: {} });
+    const state = makeState(10, graph);
+    expect(generateRefugeeEncounters(state, 'hex1', 3)).toHaveLength(0);
+  });
+
+  it('generates refugees at adjacent settlement', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'hex_src', type: 'location', name: 'Source', properties: {} });
+    graph.addNode({ id: 'hex_adj', type: 'location', name: 'Adjacent', properties: {} });
+    graph.addNode({ id: 'sett_adj', type: 'location', name: 'Adjacent Town', properties: { locationSubtype: 'town' } });
+    graph.addEdge({ id: 'e_adj', source: 'hex_src', target: 'hex_adj', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'e_loc', source: 'sett_adj', target: 'hex_adj', type: 'located_at', properties: {} });
+
+    const state = makeState(10, graph);
+    const result = generateRefugeeEncounters(state, 'hex_src', 1);
+
+    expect(result).toHaveLength(1);
+    expect(graph.getNode('sett_adj')?.properties.pendingRefugeeCount).toBe(1);
+  });
+
+  it('skips ruined settlements when routing refugees', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'hex_src', type: 'location', name: 'Source', properties: {} });
+    graph.addNode({ id: 'hex_adj', type: 'location', name: 'Adjacent', properties: {} });
+    graph.addNode({ id: 'sett_ruins', type: 'location', name: 'Ruins', properties: { locationSubtype: 'ruins' } });
+    graph.addEdge({ id: 'e_adj', source: 'hex_src', target: 'hex_adj', type: 'adjacent', properties: {} });
+    graph.addEdge({ id: 'e_loc', source: 'sett_ruins', target: 'hex_adj', type: 'located_at', properties: {} });
+
+    const state = makeState(10, graph);
+    const result = generateRefugeeEncounters(state, 'hex_src', 1);
+
+    // No valid settlements → no refugees
+    expect(result).toHaveLength(0);
   });
 });
