@@ -91,6 +91,20 @@ Plans:
 - [x] 11-05-PLAN.md — Gap closure: DebugPanel wiring, ProwessTab import fix, revelationEmitter type fixes
 - [ ] 11-06-PLAN.md — Gap closure: phaseInteractionDepth TS2353 fix, agentKnowledge mock in 11 test files
 
+### Phase 12: Conflict & Destruction — Implementation Plans
+
+**Plans:** 7/7 complete
+**Requirements:** TB-073
+
+Plans:
+- [ ] 12-01-PLAN.md — Mercenary Company + faction ambition system (wave 1)
+- [ ] 12-02-PLAN.md — Army entity types + army spawning encounters (wave 2)
+- [ ] 12-03-PLAN.md — Army movement + Quintessence attrition (wave 3)
+- [ ] 12-04-PLAN.md — Battle resolution + spotlight encounters (wave 4)
+- [ ] 12-05-PLAN.md — Siege resolution + regional encounters (wave 4)
+- [ ] 12-06-PLAN.md — Destruction + aftermath consequences (wave 5)
+- [ ] 12-07-PLAN.md — Army visibility + UI + debug panel (wave 6)
+
 ---
 
 ## M2: Conflict & Destruction

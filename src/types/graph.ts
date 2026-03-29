@@ -75,7 +75,10 @@ export type EdgeType =
   // Encounter
   | 'encounter_at'     // encounter_template → location (encounter available at location)
   // Economic
-  | 'trades_with';     // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
+  | 'trades_with'      // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
+  // Military (TB-073)
+  | 'commanded_by'     // army → commander agent (army leadership)
+  | 'participates_in'; // army/agent → battle node (battle participation)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

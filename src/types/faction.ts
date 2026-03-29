@@ -110,6 +110,43 @@ export interface FactionDefinition {
   socialTemplateIds: string[];
   /** What happens when reputation hits 0 */
   expulsionConsequences: ExpulsionConsequence[];
+  /** Ambition type weighting for faction-level ambition selection (TB-073) */
+  ambitionWeights?: Partial<Record<FactionAmbitionType, number>>;
+}
+
+// ─── Faction Ambitions (TB-073) ─────────────────────────────────────────
+
+export type FactionAmbitionType =
+  | 'territorial_expansion'    // Conquest-driven — high conflict potential
+  | 'resource_acquisition'     // Economic — can escalate to conflict
+  | 'defensive_consolidation'  // Fortification — low-medium conflict
+  | 'cultural_dominance'       // Sphere influence spread — friction builds
+  | 'revenge'                  // Retaliation for past grievances — high, emotional
+  | 'divine_mandate';          // Carry out ascendant's will (strongly threaded factions)
+
+export interface FactionAmbition {
+  type: FactionAmbitionType;
+  /** 0–1 urgency */
+  priority: number;
+  /** Target settlement/faction/hex node ID */
+  targetNodeId: string | null;
+  /** For revenge: who wronged us */
+  grievanceSourceId?: string;
+  /** How fast grudge fades (per tick) */
+  grievanceDecay: number;
+  /** Tick this ambition was created */
+  createdTick: number;
+}
+
+/** Ambition types that require military force (armies) */
+export const MILITARY_AMBITION_TYPES: readonly FactionAmbitionType[] = [
+  'territorial_expansion',
+  'revenge',
+];
+
+/** Check if an ambition type requires military force */
+export function requiresMilitaryForce(ambitionType: FactionAmbitionType): boolean {
+  return (MILITARY_AMBITION_TYPES as readonly string[]).includes(ambitionType);
 }
 
 // ─── Trace Types ─────────────────────────────────────────────────────────
@@ -147,6 +184,16 @@ export interface FactionPromotionTrace {
   toRank: string;
   outcome: 'full_success' | 'partial_success' | 'failure';
   complication?: string;
+  summary: string;
+}
+
+export interface FactionAmbitionTrace {
+  tick: number;
+  category: 'faction_ambition';
+  factionId: string;
+  ambitionType: FactionAmbitionType;
+  event: 'created' | 'prioritized' | 'progressed' | 'completed' | 'abandoned';
+  reason: string;
   summary: string;
 }
 

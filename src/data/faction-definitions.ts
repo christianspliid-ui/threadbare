@@ -9,6 +9,7 @@
  */
 
 import type { FactionDefinition } from '../types/faction';
+import { MERCENARY_COMPANY_DEFINITION } from './mercenary-company-definition';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -171,4 +172,5 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
  */
 export const FACTION_DEFINITIONS: ReadonlyMap<string, FactionDefinition> = new Map([
   [ADVENTURING_GUILD_DEFINITION.id, ADVENTURING_GUILD_DEFINITION],
+  [MERCENARY_COMPANY_DEFINITION.id, MERCENARY_COMPANY_DEFINITION],
 ]);
