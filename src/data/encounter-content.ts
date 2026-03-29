@@ -1,5 +1,5 @@
 /**
- * Encounter Content Package — 64 encounter templates with ~192 steps and cultural vocabulary overlays.
+ * Encounter Content Package — 94 encounter templates (76 location-specific + 18 universal) with cultural vocabulary overlays.
  *
  * ═══════════════════════════════════════════════════════════════════
  * CONTENT MANAGER: This is the file you edit to change encounter templates,
@@ -9,6 +9,7 @@
 
 import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
+import type { LocationSubtype } from '../types/index';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
@@ -31,6 +32,28 @@ export interface EncounterDifficultyTier {
 /** Difficulty progression within a template (escalates per step) */
 const DIFFICULTY_BASE = 25;
 const DIFFICULTY_STEP = 10;
+
+/** Difficulty base for universal (fallback) encounters — deliberately lower than standard */
+const UNIVERSAL_DIFFICULTY_BASE = 20;
+/** Difficulty step between stages in universal encounters */
+const UNIVERSAL_DIFFICULTY_STEP = 5;
+/** Difficulty base for reach-agnostic encounters — near-guaranteed pass for any agent */
+const AGNOSTIC_DIFFICULTY_BASE = 15;
+/** Difficulty step for reach-agnostic encounters */
+const AGNOSTIC_DIFFICULTY_STEP = 5;
+
+/**
+ * Every LocationSubtype value — used by universal encounters that should
+ * appear at any settlement regardless of type.
+ */
+const ALL_LOCATION_SUBTYPES: LocationSubtype[] = [
+  'hamlet', 'town', 'city', 'capital',
+  'camp', 'farmland',
+  'castle', 'fort', 'tower', 'shrine', 'temple',
+  'mining', 'ruins', 'ruined_tower', 'ruined_city', 'ruined_village',
+  'battleground', 'oasis', 'unexplored_poi',
+  'wilderness',
+];
 
 // ─── System 6 Constants (Economic Encounters) ────────────────────────
 
@@ -70,11 +93,13 @@ export const ENCOUNTER_DIFFICULTY_TIERS: Record<string, EncounterDifficultyTier>
   },
 };
 
-// ─── 10 Encounter Templates ───────────────────────────────────
+// ─── Encounter Templates ──────────────────────────────────────
 
 /**
- * The 10 encounter archetypes cover all major domains and location types.
- * Each has 3 steps with escalating difficulty (35 → 45 → 55).
+ * 76 location-specific encounter archetypes + 18 universal fallbacks.
+ * Location-specific: 3 steps with escalating difficulty (25 → 35 → 45).
+ * Universal: 2 steps, lower difficulty (20 → 25), available at every location type.
+ * Reach-agnostic: 2 steps, extra-low difficulty (15 → 20), near-guaranteed pass.
  */
 export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
@@ -5061,6 +5086,886 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onFailure: {
           narrative: 'The {adj} final stretch costs too much. Cargo lost, guards shaken. {actor} delivers what {they} can, but the contract {verb}s in failure.',
           reputationDelta: -0.10,
+        },
+      },
+    ],
+  },
+
+  // ─── 18 Universal Encounter Templates ───────────────────────────
+  //
+  // Available at every location type. Low difficulty, 2 steps, minimal
+  // rewards. These exist to prevent content starvation at frontier
+  // settlements that lack archetype-specific encounter templates.
+  //
+  // Coverage: 2 per canonical Reach (Iron, Gold, Shadow, Veil, Heart,
+  // Eye, Stone, Star) + 2 reach-agnostic fallbacks with extra-low
+  // difficulty. No Flesh reach — Flesh is now Quintessence (meta-property).
+
+  // ── Iron (2) ──────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.patrol_perimeter',
+    name: 'Patrol the Perimeter',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'iron',
+    reachSecondary: 'shadow',
+    encounterType: 'lead',
+    threatRating: 'easy',
+    motivations: ['courage_prudence', 'justice_mercy'],
+    steps: [
+      {
+        id: 'patrol_perimeter.walk',
+        name: 'Walk the Boundary',
+        reach: 'iron',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} traces the edge of the settlement, noting every gap in fence and wall. The {adj} routine of vigilance.',
+        onSuccess: {
+          narrative: 'Every approach mapped, every weak point catalogued. {actor} finishes the circuit with {adj} certainty.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The perimeter is too large, the terrain too broken. {actor} covers half the ground and hopes it is enough.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'patrol_perimeter.secure',
+        name: 'Secure the Weak Points',
+        reach: 'shadow',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'A gap in the stones, a trampled section of hedge — {actor} must decide what to fix and what to watch.',
+        onSuccess: {
+          narrative: '{actor} shores up the worst of it and places markers where the rest need attention. The perimeter holds.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'There is too much to fix with too little. {actor} leaves the gaps as they are, uneasy.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.sharpen_blades',
+    name: 'Sharpen Blades',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'iron',
+    reachSecondary: 'stone',
+    encounterType: 'build',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'sharpen_blades.assess',
+        name: 'Inspect the Edge',
+        reach: 'iron',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} draws blade across thumbnail, testing the edge. Nicks, rolls, and dullness all tell {their} own {adj} story.',
+        onSuccess: {
+          narrative: 'The flaws are clear. {actor} knows exactly where steel has failed and where it can be saved.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Hard to tell good steel from bad in this light. {actor} guesses at the damage.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'sharpen_blades.grind',
+        name: 'Work the Whetstone',
+        reach: 'stone',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'The rhythm of stone on steel fills the silence. {actor} works with {adj} patience, stroke after stroke.',
+        onSuccess: {
+          narrative: 'The edge catches light like a thread of silver. Sharp enough. {actor} sheathes the blade with satisfaction.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'The whetstone slips, the angle wrong. {actor} manages a serviceable edge, but nothing more.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+
+  // ── Gold (2) ──────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.barter_supplies',
+    name: 'Barter for Supplies',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'trade',
+    threatRating: 'trivial',
+    motivations: ['loyalty_ambition', 'justice_mercy'],
+    steps: [
+      {
+        id: 'barter_supplies.offer',
+        name: 'Make an Offer',
+        reach: 'gold',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} approaches with something to trade — a skill, a trinket, a day of labor. The {adj} art of exchange begins.',
+        onSuccess: {
+          narrative: 'A nod, a handshake. {actor} gives something of value and receives something needed. Fair dealing.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'No deal. {actor}\'s offer falls flat — too little, too strange, too late in the day.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'barter_supplies.seal',
+        name: 'Seal the Deal',
+        reach: 'heart',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Trust is the final currency. {actor} meets the trader\'s eyes, each measuring the other\'s {adj} intent.',
+        onSuccess: {
+          narrative: 'The exchange is done. Both parties walk away satisfied — a rare thing, and worth remembering.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'Doubt creeps in at the last. The deal collapses, and {actor} leaves with what {they} came with.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.assess_holdings',
+    name: 'Take Stock of Holdings',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'gold',
+    reachSecondary: 'eye',
+    encounterType: 'trade',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'assess_holdings.count',
+        name: 'Count What Remains',
+        reach: 'gold',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} lays out every coin, every scrap of value. The {adj} arithmetic of survival.',
+        onSuccess: {
+          narrative: 'The accounting is done. {actor} knows exactly what {they} have — and what it can buy.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The numbers do not add up. Something was lost or miscounted, and {actor} cannot say what.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'assess_holdings.plan',
+        name: 'Plan the Next Purchase',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Knowing what you have matters less than knowing what you need. {actor} weighs priorities with {adj} care.',
+        onSuccess: {
+          narrative: 'A clear plan forms — what to buy, what to save, what to trade. {actor} is ready for the next exchange.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'Too many needs, too few resources. {actor} sets the ledger aside, no clearer than before.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+
+  // ── Shadow (2) ────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.night_watch',
+    name: 'Keep the Night Watch',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'shadow',
+    reachSecondary: 'iron',
+    encounterType: 'lead',
+    threatRating: 'easy',
+    motivations: ['courage_prudence', 'justice_mercy'],
+    steps: [
+      {
+        id: 'night_watch.vigil',
+        name: 'Stand Vigil',
+        reach: 'shadow',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Darkness settles. {actor} takes the watch, eyes adjusting to the {adj} shapes that move beyond the firelight.',
+        onSuccess: {
+          narrative: '{actor} reads the night like a language — every sound placed, every shadow accounted for. Nothing slips past.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Fatigue wins. {actor} nods off, jerking awake to find the fire low and the perimeter unchecked.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'night_watch.respond',
+        name: 'Respond to a Disturbance',
+        reach: 'iron',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Something stirs at the edge of camp. {actor} rises, hand on weapon, the {adj} tension of the unknown in every muscle.',
+        onSuccess: {
+          narrative: 'A wild animal, a falling branch — nothing worse. {actor} handles it cleanly and the camp sleeps on.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'Too slow, too loud. The disturbance sends the camp into {adj} alarm before {actor} can contain it.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.listen_for_rumors',
+    name: 'Listen for Rumors',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'shadow',
+    reachSecondary: 'eye',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'listen_for_rumors.loiter',
+        name: 'Loiter and Listen',
+        reach: 'shadow',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} lingers where voices gather — a well, a hearth, a crossroads. The {adj} art of seeming disinterested.',
+        onSuccess: {
+          narrative: 'Fragments reach {their} ears — a name dropped carelessly, a warning half-whispered. {actor} files it all away.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The locals are tight-lipped, or the noise is too thick. {actor} hears nothing worth remembering.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'listen_for_rumors.sift',
+        name: 'Sift Truth from Gossip',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Rumor is a river of mud. {actor} pans for the {adj} glint of truth beneath the silt.',
+        onSuccess: {
+          narrative: 'One thread holds up. {actor} has learned something real — where to go, whom to trust, what to avoid.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'All gossip, no substance. {actor} walks away knowing only what everyone already knows.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+      },
+    ],
+  },
+
+  // ── Veil (2) ──────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.ward_the_camp',
+    name: 'Ward the Camp',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'veil',
+    reachSecondary: 'star',
+    encounterType: 'build',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'ward_the_camp.trace',
+        name: 'Trace the Boundary',
+        reach: 'veil',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} walks the edge of camp, fingers brushing stone and bark. The {adj} work of drawing a circle that means something.',
+        onSuccess: {
+          narrative: 'The ward settles — thin as cobweb, but present. {actor} feels the boundary hold against the dark.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The energy dissipates before the circle closes. {actor} has drawn a line in sand, nothing more.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'ward_the_camp.anchor',
+        name: 'Anchor the Ward',
+        reach: 'star',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'A ward without an anchor fades by dawn. {actor} reaches for something deeper — faith, will, the {adj} pulse of the cosmos.',
+        onSuccess: {
+          narrative: 'The ward hums. Not strong, not lasting, but enough to turn away the small evils that creep by night.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'The anchor does not hold. The ward will fade before midnight, and {actor} knows it.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.trace_ley_lines',
+    name: 'Trace the Ley Lines',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'veil',
+    reachSecondary: 'eye',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'trace_ley_lines.sense',
+        name: 'Sense the Current',
+        reach: 'veil',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Beneath the visible lies something older. {actor} opens {their} senses to the {adj} currents beneath the surface.',
+        onSuccess: {
+          narrative: 'There — a pull, faint but unmistakable. The land remembers its channels, and {actor} begins to read them.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Nothing stirs. The {adj} silence holds, and {actor} learns only that some places guard their secrets well.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'trace_ley_lines.map',
+        name: 'Map the Flow',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Sensing a current is one thing. Understanding where it flows — and why — demands {adj} clarity of mind.',
+        onSuccess: {
+          narrative: 'The ley line resolves into a path {actor} can follow. Where it leads, the magic runs stronger.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'The pattern fractures under scrutiny. {actor} loses the thread, left with impressions but no map.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+      },
+    ],
+  },
+
+  // ── Heart (2) ─────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.local_tales',
+    name: 'Gather Local Tales',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'heart',
+    reachSecondary: 'eye',
+    encounterType: 'create',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'local_tales.listen',
+        name: 'Listen to the Locals',
+        reach: 'heart',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Every place has stories. {actor} sits among those who know this land and listens with {adj} attention.',
+        onSuccess: {
+          narrative: 'Words flow freely. {actor} earns a fragment of history — a name, a warning, a half-remembered song.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Suspicion closes mouths. {actor} hears only silence and the {adj} rustle of turned backs.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'local_tales.record',
+        name: 'Commit to Memory',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Details fade fast. {actor} fixes the tales in mind — names, places, the shape of truth beneath the telling.',
+        onSuccess: {
+          narrative: 'The story takes root. {actor} carries something worth more than coin — knowledge of what came before.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'The {adj} details blur and tangle. {actor} remembers the shape of it, but not the substance.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.6, bestowed_power: 0.2, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.tend_the_weary',
+    name: 'Tend the Weary',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'heart',
+    reachSecondary: 'star',
+    encounterType: 'assist',
+    threatRating: 'trivial',
+    motivations: ['justice_mercy', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'tend_the_weary.approach',
+        name: 'Offer Comfort',
+        reach: 'heart',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Someone nearby is struggling — exhaustion, grief, or the {adj} weight of days without rest. {actor} draws near.',
+        onSuccess: {
+          narrative: 'A word, a steady hand, a moment of presence. {actor} eases a burden that was not {their} own.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The weary one flinches away. Some wounds are too raw for a stranger\'s touch.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'tend_the_weary.sustain',
+        name: 'Share What You Have',
+        reach: 'star',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Comfort is not enough. {actor} offers something real — food, warmth, the {adj} gift of attention.',
+        onSuccess: {
+          narrative: 'Color returns to a drawn face. The weary one nods, once, and that is thanks enough.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: '{actor} has too little to share. The gesture is kind but hollow, and both of {them} know it.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+
+  // ── Eye (2) ───────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.study_surroundings',
+    name: 'Study the Surroundings',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'eye',
+    reachSecondary: 'veil',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'study_surroundings.observe',
+        name: 'Observe the Terrain',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} climbs to a vantage point and studies the lay of the land. Every path, every shadow, every {adj} detail.',
+        onSuccess: {
+          narrative: 'Patterns emerge — trade routes, game trails, places where the land folds inward. {actor} maps it all.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Haze and distance defeat the eye. {actor} sees only what anyone could see — nothing of use.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'study_surroundings.sense',
+        name: 'Read the Deeper Signs',
+        reach: 'veil',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'The visible terrain tells one story. {actor} looks for what the land is hiding — the {adj} signs beneath.',
+        onSuccess: {
+          narrative: 'The land whispers back. {actor} feels the pull of ley and root — this place has secrets worth knowing.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'Nothing stirs. The {adj} silence holds, and {actor} learns only that some places guard their secrets well.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.decipher_old_markings',
+    name: 'Decipher Old Markings',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'eye',
+    reachSecondary: 'gold',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'decipher_old_markings.find',
+        name: 'Find the Inscriptions',
+        reach: 'eye',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Old stones bear old marks — trade signs, boundary carvings, warnings worn {adj} by weather. {actor} searches for them.',
+        onSuccess: {
+          narrative: '{actor} finds what time almost erased — scratches in rock, paint faded to ghosts. Something was written here.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'If markings were ever here, the years have taken them. {actor} finds only weathered stone.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'decipher_old_markings.read',
+        name: 'Interpret the Symbols',
+        reach: 'gold',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Letters are meaningless without context. {actor} pieces the symbols together, drawing on {adj} memory and intuition.',
+        onSuccess: {
+          narrative: 'The markings resolve — a trader\'s waypoint, a miner\'s claim, a warning from another age. Knowledge earned.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.5, bestowed_power: 0.2, possession: 0.3 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'The symbols resist interpretation. {actor} copies what {they} can and hopes someone else can read them.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.5, bestowed_power: 0.2, possession: 0.3 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+      },
+    ],
+  },
+
+  // ── Stone (2) ─────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.mend_equipment',
+    name: 'Mend Equipment',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
+    encounterType: 'build',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'mend_equipment.assess',
+        name: 'Assess the Damage',
+        reach: 'stone',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Gear frays and blunts with use. {actor} lays out {their} tools and takes stock of what needs fixing.',
+        onSuccess: {
+          narrative: '{actor} identifies the worst of it — a cracked haft, a loosened strap — and sets to work with {adj} purpose.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The damage runs deeper than expected. {actor} lacks the materials for a proper repair.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'mend_equipment.repair',
+        name: 'Make Repairs',
+        reach: 'iron',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Improvisation is its own craft. {actor} works with what the land provides, bending {adj} skill to necessity.',
+        onSuccess: {
+          narrative: 'Not perfect, but serviceable. {actor} tests the repair — it holds. Good enough for what lies ahead.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'The fix does not hold. {actor} packs the broken thing away, hoping for better tools elsewhere.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.shore_up_shelter',
+    name: 'Shore Up Shelter',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'stone',
+    reachSecondary: 'gold',
+    encounterType: 'build',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'shore_up_shelter.survey',
+        name: 'Survey the Structure',
+        reach: 'stone',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Roof, wall, foundation — {actor} checks each in turn. The {adj} calculus of what will hold and what will not.',
+        onSuccess: {
+          narrative: 'The weak points are clear. A sagging beam here, a crumbling joint there. {actor} knows where to start.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Everything looks equally fragile. {actor} cannot tell what is load-bearing and what is cosmetic.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'shore_up_shelter.reinforce',
+        name: 'Reinforce What Matters',
+        reach: 'gold',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Salvaged timber, borrowed rope, stones wedged into gaps. {actor} makes do with {adj} resourcefulness.',
+        onSuccess: {
+          narrative: 'The shelter holds firmer now. Not beautiful, but solid. {actor} has earned a dry night.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'The materials give out before the work is done. The shelter is no worse, but no better either.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+
+  // ── Star (2) ──────────────────────────────────────────────────────
+
+  {
+    id: 'encounter.commune_with_stars',
+    name: 'Commune with the Stars',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'star',
+    reachSecondary: 'veil',
+    encounterType: 'create',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'commune_with_stars.gaze',
+        name: 'Read the Sky',
+        reach: 'star',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'When the sky clears, {actor} turns {their} face upward. The constellations wheel in {adj} silence overhead.',
+        onSuccess: {
+          narrative: 'The stars speak to those who know how to listen. {actor} reads an omen — faint, but unmistakable.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'Clouds gather, or the mind wanders. {actor} sees only cold light, {adj} and indifferent.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'commune_with_stars.interpret',
+        name: 'Interpret the Omen',
+        reach: 'veil',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'An omen means nothing without understanding. {actor} reaches beyond the visible, seeking the {adj} meaning beneath.',
+        onSuccess: {
+          narrative: 'The pattern resolves. {actor} glimpses a thread of fate — where it leads, only time will tell.',
+          reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#celestial'],
+          },
+        },
+        onFailure: {
+          narrative: 'The meaning slips away like smoke. {actor} is left with questions and the {adj} weight of things unseen.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
+            tagFilters: ['#celestial'],
+          },
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.offer_small_prayer',
+    name: 'Offer a Small Prayer',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'star',
+    reachSecondary: 'heart',
+    encounterType: 'assist',
+    threatRating: 'trivial',
+    motivations: ['justice_mercy', 'tradition_progress'],
+    steps: [
+      {
+        id: 'offer_small_prayer.kneel',
+        name: 'Find a Quiet Place',
+        reach: 'star',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'No temple needed. {actor} kneels where {they} stand, letting the noise of the world fall away to {adj} stillness.',
+        onSuccess: {
+          narrative: 'The silence opens. {actor} speaks — to the sky, to the earth, to whatever listens. The words come easily.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The world intrudes. {actor} cannot find the quiet, and the prayer dies unspoken.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'offer_small_prayer.listen',
+        name: 'Wait for an Answer',
+        reach: 'heart',
+        difficulty: UNIVERSAL_DIFFICULTY_BASE + UNIVERSAL_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Prayer is half speaking, half listening. {actor} waits in {adj} silence, open to whatever comes.',
+        onSuccess: {
+          narrative: 'Something shifts — not a voice, not a vision, but a settling in the chest. {actor} rises with purpose renewed.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'Only silence answers. {actor} rises no worse for the asking, but no better either.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+
+  // ── Reach-Agnostic (2) ────────────────────────────────────────────
+  //
+  // These use common reaches but at extra-low difficulty (15 → 20)
+  // so any agent passes regardless of capability. True fallbacks.
+
+  {
+    id: 'encounter.rest_and_recover',
+    name: 'Rest and Recover',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'heart',
+    reachSecondary: 'stone',
+    encounterType: 'assist',
+    threatRating: 'trivial',
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'rest_and_recover.settle',
+        name: 'Find Shelter',
+        reach: 'heart',
+        difficulty: AGNOSTIC_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} searches for a sheltered spot to rest. The land offers little comfort, but {adj} resolve finds a way.',
+        onSuccess: {
+          narrative: '{actor} settles into a {adj} stillness, letting the weight of the road lift from aching limbs.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'No shelter holds. {actor} {verb}s against the cold, unable to find true rest.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'rest_and_recover.sleep',
+        name: 'Sleep It Off',
+        reach: 'stone',
+        difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Rest is its own kind of work. {actor} surrenders to the {adj} pull of exhaustion.',
+        onSuccess: {
+          narrative: 'Sleep comes deep and dreamless. {actor} wakes stiff but renewed, ready for what comes next.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'The ground is hard, the noises too close. {actor} rises no more rested than when {they} lay down.',
+          reputationDelta: -0.01,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.forage_provisions',
+    name: 'Forage for Provisions',
+    locationTypes: [...ALL_LOCATION_SUBTYPES],
+    reachPrimary: 'eye',
+    reachSecondary: 'stone',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['loyalty_ambition', 'justice_mercy'],
+    steps: [
+      {
+        id: 'forage_provisions.search',
+        name: 'Search the Land',
+        reach: 'eye',
+        difficulty: AGNOSTIC_DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Hunger sharpens the eye. {actor} scans the terrain for anything edible, useful, or overlooked.',
+        onSuccess: {
+          narrative: '{actor} spots what others miss — a cluster of roots, a clean spring, something to sustain {them} another day.',
+          reputationDelta: 0.02,
+        },
+        onFailure: {
+          narrative: 'The land gives nothing. {actor} returns empty-handed, the {adj} search yielding only dust.',
+          reputationDelta: -0.01,
+        },
+      },
+      {
+        id: 'forage_provisions.gather',
+        name: 'Gather and Carry',
+        reach: 'stone',
+        difficulty: AGNOSTIC_DIFFICULTY_BASE + AGNOSTIC_DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'What the eye found, the body must carry. {actor} bends to the {adj} work of gathering.',
+        onSuccess: {
+          narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
+          reputationDelta: 0.03,
+        },
+        onFailure: {
+          narrative: 'Too heavy, too far. {actor} drops half the haul on the way back, the {adj} effort wasted.',
+          reputationDelta: -0.01,
         },
       },
     ],
