@@ -52,32 +52,55 @@ describe('ActionDrawer', () => {
     expect(screen.queryByTestId('action-card-center')).not.toBeInTheDocument();
   });
 
-  it('calls onClose when close button is clicked', () => {
-    const onClose = vi.fn();
-    render(
-      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
-        onSlotClick={vi.fn()} onClose={onClose} />
-    );
-    fireEvent.click(screen.getByTestId('action-drawer-close'));
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it('calls onSlotClick when an action card is clicked', () => {
+  it('two-click flow: first click focuses, second click activates', () => {
     const onSlotClick = vi.fn();
     render(
       <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={onSlotClick} onClose={vi.fn()} />
     );
+    // First click — focuses card (shows backdrop + focused card)
     fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onSlotClick).not.toHaveBeenCalled();
+    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
+
+    // Second click on the focused card — activates
+    // There are now two 'Dream' cards (hand + focused), get the focused one
+    const dreamCards = screen.getAllByTestId('action-card-dream');
+    const focusedCard = dreamCards.find(el => el.closest('.anim-card-fly-up'));
+    fireEvent.click(focusedCard || dreamCards[dreamCards.length - 1]);
     expect(onSlotClick).toHaveBeenCalledWith('dream');
   });
 
-  it('closes on Escape key', () => {
+  it('clicking backdrop dismisses focused card', () => {
+    render(
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    // Focus a card
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
+
+    // Click backdrop
+    fireEvent.click(screen.getByTestId('action-drawer-backdrop'));
+    expect(screen.queryByTestId('action-drawer-backdrop')).not.toBeInTheDocument();
+  });
+
+  it('Escape dismisses focused card first, then closes drawer', () => {
     const onClose = vi.fn();
     render(
       <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
         onSlotClick={vi.fn()} onClose={onClose} />
     );
+    // Focus a card
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(screen.getByTestId('action-drawer-backdrop')).toBeInTheDocument();
+
+    // First Escape — dismisses focus
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByTestId('action-drawer-backdrop')).not.toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
+
+    // Second Escape — closes drawer
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(onClose).toHaveBeenCalled();
   });
