@@ -34,20 +34,24 @@ created: 2026-03-29
 
 4px base. All values are multiples of 4. Use CSS custom property tokens — never raw pixel values.
 
+Standard scale (these are the only declared core tokens):
+
 | Token | Value | Usage |
 |-------|-------|-------|
 | `--space-1` | 4px | Icon gaps, micro padding, inline margins |
 | `--space-2` | 8px | Tight spacing within elements, chip padding |
-| `--space-3` | 12px | Gap between related items (reach cells in grid) |
 | `--space-4` | 16px | Standard panel padding, element spacing |
-| `--space-5` | 20px | Comfortable section spacing |
 | `--space-6` | 24px | Section separation within modals |
 | `--space-8` | 32px | Large separation, between panels |
 
-Exceptions:
-- Reach grid cells in 2×4 layout: `gap: var(--space-2)` (8px) between cells — same as the current 3×3 grid
-- Archetype epithet in agent profile header: `margin-top: var(--space-1)` (4px) below agent name — visually tight to name, not a full section break
-- IPK (Interactive Prose Keyword) spans: `padding: 0 var(--space-1)` (0 4px) — inline, no vertical padding
+Exceptions (per-use justification required — these are not part of the core scale):
+
+| Exception value | Used where | Justification |
+|-----------------|-----------|---------------|
+| 12px (raw or local var) | Reach grid gap — 2×4 layout in 360px sidebar | Pixel math: 4 cells in 360px. At 8px gaps (3 × 8 = 24px overhead) cells are ~84px. At 16px gaps (3 × 16 = 48px) cells drop to ~78px — too narrow for two-line labels. 12px produces ~84px cells with acceptable label wrap. Nearest standard values (8px and 16px) both reduce readability. Exception granted for this one layout context only. |
+| 20px (raw or local var) | Comfortable section spacing between reach grid and archetype details row | 16px feels tight between the grid block and the section below it; 24px creates excess whitespace in the compact sidebar. 20px is the midpoint. Exception granted for this one context only. |
+
+All other spacing in Phase 12 uses the standard scale tokens. Exceptions may not propagate to new use cases without re-justification.
 
 *Source: design-system/tokens.md (pre-populated)*
 
@@ -55,19 +59,19 @@ Exceptions:
 
 ## Typography
 
-All sizes from `Docs/design-system/typography.md`. Phase 12 introduces no new font sizes.
+All sizes from `Docs/design-system/typography.md`. Phase 12 uses exactly 3 font sizes.
 
 | Role | Token | Size | Family | Weight | Line Height | Usage |
 |------|-------|------|--------|--------|-------------|-------|
-| Body prose | `--text-base` | 18px | Alegreya Sans | 400 (regular) | 1.7 | Chronicle prose, Quintessence IPK sentence |
-| Label / metadata | `--text-xs` | 16px | Alegreya Sans | 400 (regular) | 1.2 | Reach badge text, grid cell domain labels, archetype knowledge-gate placeholder |
-| Secondary body | `--text-sm` | 17px | Alegreya Sans | 400 (regular) | 1.4 | Agent name in lists, domain values in grid cells |
+| Body prose | `--text-base` | 18px | Alegreya Sans | 400 (regular) | 1.7 | Chronicle prose, Quintessence IPK sentence, agent name in lists, domain values in reach grid cells, archetype epithet in profile header |
+| Label / metadata | `--text-xs` | 16px | Alegreya Sans | 400 (regular) | 1.2 | Reach badge text, reach grid cell domain labels, archetype knowledge-gate placeholder |
 | Panel heading | `--text-xl` | 26px | Cinzel | 600 (semibold) | 1.1 | AgentProfileModal title (agent name) |
-| Archetype epithet | `--text-sm` | 17px | Cinzel | 400 (regular) | 1.2 | Archetype epithet displayed below agent name in profile header |
 
 **Weights declared (exactly 2):**
 - 400 regular — all body, labels, metadata, archetype epithet
 - 600 semibold — panel titles only (Cinzel headings)
+
+**Collapsed from previous draft:** `--text-sm` (17px) has been removed. All usages previously assigned to `--text-sm` now use `--text-base` (18px) — agent names in lists, domain values in reach grid cells, archetype epithet in profile header. The 1px difference between 16px and 17px, and between 17px and 18px, was imperceptible. Collapsing to 3 sizes (16, 18, 26) improves system coherence.
 
 **Letter spacing:**
 - Cinzel display headings: `0.04em`
@@ -164,12 +168,12 @@ Row 1: [iron]  [gold]  [shadow] [veil]
 Row 2: [heart] [eye]   [stone]  [star]
 ```
 
-- Grid CSS: `display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-2)`
+- Grid CSS: `display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px` (exception — see Spacing)
 - Each cell: `--bg-raised` background, `--border-subtle` border, `border-radius: 4px`
-- Domain label: `--text-xs`, uppercase, `--text-tertiary`, `letter-spacing: 0.12em`
-- Capability tier value: `--text-sm`, `--text-secondary`
+- Domain label: `--text-xs` (16px), uppercase, `--text-tertiary`, `letter-spacing: 0.12em`
+- Capability tier value: `--text-base` (18px), `--text-secondary`
 - Remove `flesh` entry from `DOMAIN_NAMES` constant
-- At 1920×1080: 2-row layout fits within the right sidebar (360px target width) — 4 cells per row at ~82px each with 8px gaps
+- At 1920×1080: 2-row layout fits within the right sidebar (360px target width) — 4 cells per row at ~84px each with 12px gaps
 
 ### ProwessTab.tsx — Grid layout change (mirror of AgentDetailPanel)
 
@@ -186,7 +190,7 @@ Row 2: [heart] [eye]   [stone]  [star]
 **Reveal condition:** Knowledge-gated — only rendered when `knowledge.revealedFacets` includes `'archetype'` or knowledge level is `'intimate'` or higher
 **Hidden state:** No placeholder text shown — absence of epithet is silent when not revealed
 **Format:** "The [Dominant] of [Modifier-domain]" — e.g., "The Protector of Secrets"
-**Typography:** `--text-sm` (17px), Cinzel regular (400), `--accent-gold`, `letter-spacing: 0.04em`
+**Typography:** `--text-base` (18px), Cinzel regular (400), `--accent-gold`, `letter-spacing: 0.04em`
 **Spacing:** `margin-top: var(--space-1)` (4px) below the agent name heading
 
 Visual treatment:
@@ -278,7 +282,7 @@ These labels appear in strand content, backstory content, meeting dilemmas, and 
 | `preservation_transformation` | Preservation | Transformation | Fortress vs Forge — protect the existing vs reshape it |
 | `revelation_discretion` | Revelation | Discretion | Truth-seeker vs Secret-keeper — cost of knowing vs the power of withholding |
 
-**In UI:** Value pair labels appear as `--text-xs` uppercase in the ProwessTab and strand/backstory displays. Use the English label words above, not the key strings.
+**In UI:** Value pair labels appear as `--text-xs` (16px) uppercase in the ProwessTab and strand/backstory displays. Use the English label words above, not the key strings.
 
 ### Destructive Actions
 
@@ -332,8 +336,8 @@ All layout must respect the existing viewport contract: `html, body, #root` at `
 ### Reach Grid at 1920×1080
 
 - Right sidebar target width: 360px (`--sidebar-width`)
-- 2×4 grid at 360px sidebar: 4 cells × ~82px + 3 gaps × 8px = 352px — fits within sidebar
-- At minimum supported width (not specified but at least 1280px): 4 cells × ~58px + 3 gaps × 8px = 256px — fits within 280px sidebar
+- 2×4 grid at 360px sidebar: 4 cells × ~84px + 3 gaps × 12px = 372px — fits within sidebar (exception gap 12px used here)
+- At minimum supported width (not specified but at least 1280px): 4 cells × ~58px + 3 gaps × 12px = 268px — fits within 280px sidebar
 - Both `AgentDetailPanel` and `ProwessTab` must be verified at `?view=game` after grid change
 
 ---
