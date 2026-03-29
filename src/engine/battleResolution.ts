@@ -154,7 +154,7 @@ export function createBattleNode(
       tick: state.tick,
       category: 'faction_ambition',
       summary: `Battle started at ${hexNode.name}: ${attackerNode.name} vs ${defenderNode.name} (momentum: ${initialMomentum.toFixed(1)})`,
-      event: 'battle_started',
+      event: 'started',
       battleId,
       attackerArmyId,
       defenderArmyId,
@@ -286,18 +286,45 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
     properties: { ...battleNode.properties, battleState: updatedBattleState },
   });
 
+  // Emit spotlight_spawned first if a spotlight was selected
+  if (selectedSpotlightId) {
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Battle spotlight at ${battleNode.name}: [${selectedSpotlightId}] momentum shift ${momentumShift > 0 ? '+' : ''}${momentumShift}`,
+      event: 'spotlight_spawned',
+      battleId: battleNodeId,
+      spotlightId: selectedSpotlightId,
+      momentumShift,
+      momentum: newMomentum,
+    });
+  }
+
+  // Emit momentum_shift when momentum actually changed
+  if (momentumShift !== 0) {
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Battle momentum shift at ${battleNode.name}: ${bs.momentum.toFixed(1)}→${newMomentum.toFixed(1)}`,
+      event: 'momentum_shift',
+      battleId: battleNodeId,
+      momentum: newMomentum,
+      momentumShift,
+    });
+  }
+
+  // Always emit a battle_tick trace for inspectability
   emitTrace({
     tick: state.tick,
     category: 'faction_ambition',
-    summary: `Battle tick at ${battleNode.name}: momentum ${bs.momentum.toFixed(1)}→${newMomentum.toFixed(1)}${selectedSpotlightId ? ` [spotlight: ${selectedSpotlightId}]` : ''}`,
-    event: selectedSpotlightId ? 'spotlight_spawned' : 'battle_tick',
+    summary: `Battle tick at ${battleNode.name}: momentum ${bs.momentum.toFixed(1)}→${newMomentum.toFixed(1)}`,
+    event: 'battle_tick',
     battleId: battleNodeId,
     momentum: newMomentum,
     momentumShift,
     ticksElapsed,
     attackerQ: newAttackerQ,
     defenderQ: newDefenderQ,
-    ...(selectedSpotlightId && { spotlightId: selectedSpotlightId }),
   });
 
   // 3. Check resolution conditions
@@ -348,7 +375,7 @@ export function resolveBattle(
     tick: state.tick,
     category: 'faction_ambition',
     summary: `Battle "${battleNode.name}" resolved: ${resolutionType} (final momentum: ${bs.momentum.toFixed(1)})`,
-    event: 'battle_resolved',
+    event: 'resolved',
     battleId: battleNodeId,
     resolutionType,
     finalMomentum: bs.momentum,
