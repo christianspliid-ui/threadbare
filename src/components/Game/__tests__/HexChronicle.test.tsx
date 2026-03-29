@@ -102,7 +102,8 @@ describe('HexChronicle', () => {
 
   it('renders inline soul cards', () => {
     render(<HexChronicle {...makeTestProps()} />);
-    expect(screen.getByText('The Hollow King')).toBeTruthy();
+    // Agent appears as SoulCard in The Soul and as AgentEntry in The Places
+    expect(screen.getAllByText('The Hollow King').length).toBeGreaterThan(0);
   });
 
   it('hides Ruins layer when no historical culture exists', () => {

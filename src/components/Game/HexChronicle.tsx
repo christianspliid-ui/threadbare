@@ -326,6 +326,15 @@ export const HexChronicle = memo(function HexChronicle({
     );
   }, [agentsByLocation]);
 
+  /** Map locationId → location name for SoulCard display. */
+  const locationNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const loc of locations) {
+      map[loc.id] = loc.name;
+    }
+    return map;
+  }, [locations]);
+
   const agentProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const agent of allAgents) {
@@ -679,6 +688,40 @@ export const HexChronicle = memo(function HexChronicle({
                   />
                   {sphereName} · {label}
                 </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Individual souls present at this hex */}
+        {allAgents.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '4px',
+            }}>
+              Souls Present
+            </div>
+            {allAgents.map(agent => {
+              const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+              const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+              const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+              const locName = locationNameById[agent.locationId] ?? 'wandering';
+              const flavor = agentProse[agent.id] ?? '';
+              return (
+                <SoulCard
+                  key={agent.id}
+                  name={agent.name}
+                  locationName={locName}
+                  sphereColor={sphereColor}
+                  archetypeName={archetypeName}
+                  flavorText={flavor}
+                  onClick={() => onAgentClick(agent.id)}
+                />
               );
             })}
           </div>
