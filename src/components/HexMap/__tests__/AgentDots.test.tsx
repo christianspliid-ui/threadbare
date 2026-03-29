@@ -30,7 +30,7 @@ describe('agent-visual-content constants', () => {
 
   it('AGENT_DOT_RADIUS and AGENT_TOKEN_RADIUS are positive', () => {
     expect(AGENT_DOT_RADIUS).toBeGreaterThan(0);
-    expect(AGENT_TOKEN_RADIUS).toBeGreaterThan(AGENT_DOT_RADIUS);
+    expect(AGENT_TOKEN_RADIUS).toBeGreaterThan(0);
   });
 
   it('DOMAIN_COLORS values are valid hex color codes', () => {

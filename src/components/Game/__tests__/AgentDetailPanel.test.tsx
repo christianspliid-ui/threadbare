@@ -86,7 +86,7 @@ describe('AgentDetailPanel', () => {
   it('calls onBack when back button clicked', () => {
     const onBack = vi.fn();
     render(<AgentDetailPanel detail={mockDetail} onBack={onBack} onViewPsyche={vi.fn()} onIntervene={vi.fn()} onLocationClick={vi.fn()} />);
-    fireEvent.click(screen.getByLabelText('back'));
+    fireEvent.click(screen.getByLabelText('close'));
     expect(onBack).toHaveBeenCalledOnce();
   });
 

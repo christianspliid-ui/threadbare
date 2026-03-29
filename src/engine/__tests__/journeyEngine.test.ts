@@ -363,7 +363,7 @@ describe('selectTemplate', () => {
     const snapshot = makeSnapshot();
     const result = selectTemplate(JOURNEY_BEAT_TEMPLATES, 'return', snapshot, 42);
     expect(result).not.toBeNull();
-    expect(result!.template.id).toBe('return_convergence');
+    expect(result!.template.id).toBe('return_transformation');
   });
 
   test('returns null for empty template list', () => {

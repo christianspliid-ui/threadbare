@@ -71,7 +71,7 @@ describe('EntityCard', () => {
     render(
       <EntityCard header={mockHeader} sections={mockSections} onBack={() => { called = true; }} onViewCodex={() => {}} />
     );
-    fireEvent.click(screen.getByLabelText('back'));
+    fireEvent.click(screen.getByLabelText('close'));
     expect(called).toBe(true);
   });
 

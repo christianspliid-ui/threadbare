@@ -299,6 +299,22 @@ export const MAX_SOCIAL_CANDIDATES_PER_AGENT = 3;
  * @range 1–4 */
 export const VISIBLE_AGENT_MAX_HOPS = 2;
 
+/** Trust gain on successful cooperative encounter completion.
+ * @range 0.01–0.2 */
+export const SOCIAL_COOPERATE_TRUST_BONUS = 0.05;
+
+/** Trust loss on successful destructive encounter completion.
+ * @range -0.2–-0.01 */
+export const SOCIAL_DESTRUCTIVE_TRUST_PENALTY = -0.10;
+
+/** Default duration in ticks for agreement edges.
+ * @range 10–100 */
+export const AGREEMENT_DEFAULT_TICKS = 30;
+
+/** Minimum trust required to create an agreement edge.
+ * @range -1.0–0.0 */
+export const AGREEMENT_MIN_TRUST = -0.5;
+
 // ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER CACHE — Pre-computed scoring data (encounterCache.ts)
 // ═══════════════════════════════════════════════════════════════════

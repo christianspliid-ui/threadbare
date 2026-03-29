@@ -10,13 +10,33 @@ export type TraceCategory =
   | 'action_selection' | 'narrative_generation' | 'context_harvest'
   | 'dilemma_resolution' | 'tick_summary' | 'encounter_resolution'
   | 'familiarity_change' | 'movement' | 'intervention_effect'
-  | 'ambition_progress' | 'agent_validation';
+  | 'action_execution' | 'modifier_resolution'
+  | 'prosperity_tick' | 'wealth_delta'
+  | 'trade_route_volume_change' | 'trade_route_dissolved'
+  | 'settlement_tier_change' | 'target_action_filter'
+  | 'hex_state' | 'unrest_tick' | 'saturation_tick'
+  | 'economic_chronicle' | 'encounter_awareness' | 'faction_awareness'
+  | 'encounter_cache' | 'encounter_filter' | 'idle_decision'
+  | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
+  | 'return_resolution' | 'ripple_consequence' | 'control_effect'
+  | 'revelation' | 'tick_health' | 'tick_crash'
+  | 'agent_revelation' | 'interaction_depth';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
   'dilemma_resolution', 'tick_summary', 'encounter_resolution',
   'familiarity_change', 'movement', 'intervention_effect',
-  'ambition_progress', 'agent_validation',
+  'action_execution', 'modifier_resolution',
+  'prosperity_tick', 'wealth_delta',
+  'trade_route_volume_change', 'trade_route_dissolved',
+  'settlement_tier_change', 'target_action_filter',
+  'hex_state', 'unrest_tick', 'saturation_tick',
+  'economic_chronicle', 'encounter_awareness', 'faction_awareness',
+  'encounter_cache', 'encounter_filter', 'idle_decision',
+  'encounter_scoring', 'road_hex_transition', 'agent_reroute',
+  'return_resolution', 'ripple_consequence', 'control_effect',
+  'revelation', 'tick_health', 'tick_crash',
+  'agent_revelation', 'interaction_depth',
 ];
 
 /** Base shape for all trace entries */

@@ -52,7 +52,7 @@ describe('Card', () => {
         <Card.Header title="Detail" onBack={fn} />
       </Card>,
     );
-    fireEvent.click(screen.getByLabelText('Back'));
+    fireEvent.click(screen.getByLabelText('Close'));
     expect(fn).toHaveBeenCalledOnce();
   });
 

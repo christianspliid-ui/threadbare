@@ -118,7 +118,7 @@ describe('AttachmentDetailView', () => {
   it('calls onBack when back button clicked', () => {
     const onBack = vi.fn();
     render(<AttachmentDetailView attachment={basePossession} onBack={onBack} />);
-    fireEvent.click(screen.getByLabelText('back'));
+    fireEvent.click(screen.getByLabelText('close'));
     expect(onBack).toHaveBeenCalledOnce();
   });
 });
