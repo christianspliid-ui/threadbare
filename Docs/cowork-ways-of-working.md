@@ -15,7 +15,7 @@
 - Codebase research and analysis (read-only)
 - Game design brainstorming and critique
 - Obsidian vault updates (MCP access works)
-- `.planning/BACKLOG.md` updates (backlog prioritization, adding new items, marking completion)
+- `.planning/BACKLOG.md` updates (backlog prioritization, adding new items, marking completion). Completed `✅` items are archived to `.planning/BACKLOG_HISTORY.md`.
 - `.planning/HANDOVER.md` updates (see Handover Protocol below)
 - `.planning/ROADMAP.md` updates
 - Code review and analysis
@@ -29,7 +29,7 @@
 
 ## Coordination File Versioning
 
-Both agents (Cowork and Claude Code) can read and write `.planning/` coordination files: `BACKLOG.md`, `HANDOVER.md`, `ROADMAP.md`. To guard against VM filesystem corruption, **snapshot before every write**.
+Both agents (Cowork and Claude Code) can read and write `.planning/` coordination files: `BACKLOG.md`, `BACKLOG_HISTORY.md`, `HANDOVER.md`, `ROADMAP.md`. To guard against VM filesystem corruption, **snapshot before every write**.
 
 **Protocol — both agents must follow this:**
 

@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-075**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-078**.
 
 ---
 
@@ -18,13 +18,44 @@ Fix the 7 root causes from encounter log analysis (seed 42): content deserts, ze
 
 5 phases (A–E), 4 recommended Claude Code sessions.
 - ✅ **Session 1** (2026-03-29): Phase A (template coverage ≥8 per location type) + Phase E.2 (score display fix) + Phase E.1 (dynamic cooldowns)
-- 📋 **Session 2**: B.1 + B.2 + B.3 + D.1 (movement pressure + personality — scoring overhaul)
+- ✅ **Session 2** (2026-03-29): B.1 (familiarity discount) + B.2 (exploration bonus) + B.3 (travel cost dampening) + D.1 (personality amplification)
 - 📋 **Session 3**: D.2 + C.1 (born-later spawn fix + difficulty escalation)
 - 📋 **Session 4**: C.2 (encounter chains)
 
 **Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md`
 **Analysis source:** `Docs/analysis/2026-03-29-encounter-log-analysis-seed42.md`
 **Depends on:** Encounter system (✅), Agent Decision Pipeline (✅), Sphere Affinity (✅)
+
+---
+
+## 📋 TB-075 · Born-Later Spawn & Difficulty Escalation (TB-074 Session 3)
+
+Phase D.2: `selectSpawnLocation()` prefers locations with encounter cache entries so born-later agents spawn near content, not empty wilderness. Constants: `BORN_LATER_PREFER_CONTENT_LOCATIONS=true`, `BORN_LATER_MIN_TEMPLATES=3`.
+
+Phase C.1: `selectDifficultyTier()` applies early/mid/late difficulty scaling based on tick thresholds, applied during encounter cache rebuild. Constants: `EARLY_GAME_THRESHOLD=40`, `MID_GAME_THRESHOLD=120`, `DIFFICULTY_TIER_MULTIPLIERS={early:0.8, mid:1.0, late:1.3}`.
+
+**Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md` → Phases D.2, C.1
+**Depends on:** Encounter system (✅), Agent spawn pipeline (✅), TB-074 Sessions 1-2 (✅)
+
+---
+
+## 📋 TB-076 · Encounter Chains (TB-074 Session 4)
+
+Phase C.2: Multi-stage encounter sequences that create narrative arcs. `EncounterChain` data type with ordered template stage IDs, `ChainProgress` agent property tracking `chainId→stageIndex`, wired into `filterByPrerequisites` (Stage 3 placeholder). 3 starter chains: Scholar's Path, Rise Through the Ranks, Merchant's Gambit. Constants: `CHAIN_COMPLETION_CAPABILITY_BONUS=0.05`, `CHAIN_STAGE_SCORE_BONUS=0.15`, `MAX_ACTIVE_CHAINS=2`.
+
+**Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md` → Phase C.2
+**Depends on:** Encounter system (✅), TB-074 Sessions 1-2 (✅)
+
+---
+
+## 📐▶ TB-077 · Graph-Native Encounter Lifecycle (2026-03-29)
+
+Promote encounter outcomes from ephemeral flat-array state to durable `event` nodes in the world graph. Creates `participated_in` (agent → event) and `occurred_at` (event → location) edges, enabling graph-queryable encounter history for prose enrichment, location flavor, and agent biography. Three layers designed: L1 encounter event nodes (immediate), L2 goal edges (deferred), L3 active encounter projection (deferred pending UnifiedAction migration).
+
+4 phases: 1A type definitions + event creation wiring, 1B graph query utilities, 1C prose resolver integration, 1D debug visibility.
+
+**Design doc:** `Docs/plans/2026-03-29-graph-native-encounter-lifecycle-design.md`
+**Depends on:** Encounter system (✅), Graph engine (✅), Encounter Reward Wiring (✅)
 
 ---
 
@@ -37,7 +68,7 @@ Five phases: M2.1 army entities & warfare design, M2.2 battle/siege resolution, 
 **Roadmap:** `.planning/ROADMAP.md` → M2
 **Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
 **Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-conflict-and-destruction.md`
-**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅), TB-072 Sphere Affinity (✅ Phase 10 core), Quintessence/TB-075 (⚠️ designed, not built — interim vitality score needed)
+**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅), TB-072 Sphere Affinity (✅)
 **Needs:** Implementation plans (7 phases estimated: faction ambitions → army entities → movement/attrition → battle resolution → siege → destruction/aftermath → UI/visibility)
 
 ---
@@ -133,40 +164,3 @@ Several of these may already be done — verify before starting.
 - [ ] Attachment reachBonus backfill — Add `reachBonus` to existing attachments
 - [ ] Trait resolutionBonus backfill — Add `resolutionBonus` to existing traits
 - [ ] Promotion trait names — 45 entries (5 per reach × 9 reaches) for tier signifiers
-
-*Items completed during March 18 sessions:* axiological vocabulary alignment ✅, sphere opposition table ✅, 14 social encounter templates ✅, shortest-path graph utility ✅, deprecated reputationScore migration ✅
-
----
-
-## Deferred Items
-
-### From Hex Chronicle Redesign (2026-03-15)
-
-- **TB-019 · Exploration Hook Generation** — Design a system that generates hooks from ruin locations, unexplored POIs, encounter seeds, sphere anomalies, historical artifacts
-- **TB-020 · Soul Layer Prose Enrichment** — Cross-sphere prose templates for how spheres interact in the same hex
-
-### Content Backlog
-
-- **TB-021** · SVG resource icons to replace emoji placeholders (🪵🪨⛏️💧🐟🌾🌽🟤)
-
-### Frontend Polish
-
-- **TB-022** · Responsive layout (currently viewport-locked to 1920×1080)
-- **TB-023** · Onboarding / first-minute clarity pass
-
-### Developer Tools
-
-- **TB-024** · Content authoring UI (CMS at `?view=cms` exists but read-only)
-- **TB-025** · Constants tuning panel with live editing
-
----
-
-## 🧊 Ice Box
-
-Ideas that need significant design work or aren't urgent.
-
-- **TB-026** · OCEAN personality model for agents
-- **TB-027** · Bonds/leverage system between agents
-- **TB-028** · Resources system v2 (production chains, scarcity)
-- **TB-029** · Ascendant Creation Experience — guided flow for the player to create and customize Ascendants (powerful former mortals). Domain capability selection, sphere alignment, visual identity, backstory generation within constraints.
-- **TB-068** · Tilted Camera View — Middle-mouse pitch control for 3/4 oblique map view. Major arch change: camera math, d3-zoom coord mapping, frustum calc, sprite billboarding, hex picking. Needs design decisions on dynamic vs fixed tilt, ortho vs perspective, angle limits.

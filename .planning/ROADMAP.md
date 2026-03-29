@@ -207,9 +207,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 |-----------|------------------|--------|
 | M1.1–M1.5 | Universal Sphere Affinity (all phases) | ✅ Design complete — rewritten 2026-03-28 with per-entity architecture (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
 | Phase 11 | Agent Character Sheet Overhaul | ✅ Design complete (`Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`) |
-| M2.1 | Army Entities & Faction Warfare | Needs full design |
-| M2.2 | Battle Resolution & Sieges | Needs full design |
-| M2.3 | Destruction & Consequences | Needs design (partially covered by economy brainstorm) |
+| M2.1–M2.4 | Conflict & Destruction (unified) | ✅ Design complete — `Docs/plans/2026-03-29-conflict-and-destruction-design.md`. Covers army entities, battle/siege resolution, destruction/aftermath, UI/visibility. M2.5 (monsters) still needs separate brainstorm |
 | M3.1–M3.2 | Economy feedback loops | Brainstormed (TB-071), needs design doc |
 | M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
 | M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
