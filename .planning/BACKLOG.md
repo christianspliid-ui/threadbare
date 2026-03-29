@@ -8,7 +8,9 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-078**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-080**.
+
+---
 
 ---
 
@@ -27,19 +29,24 @@ Promote encounter outcomes from ephemeral flat-array state to durable `event` no
 
 Scale up Iron Reach from individual encounters into army-scale conflict visible on the hex map. Armies as graph entities with size/strength/morale/leader, moving with faction goals (capture settlement, raid trade route, defend territory). Battle resolution from skirmishes (encounter-scale) to army clashes (multi-step narrative events). Sieges as multi-tick encounters with escalating stakes. Sacking destroys sublocations, tanks prosperity, displaces population, creates ruins. War disrupts trade routes. Divine intervention in battles. Army supply lines connect to trade routes (M3). Folds in TB-051 (Monster Encounters) as wilderness threats.
 
+Five phases: M2.1 army entities & warfare design, M2.2 battle/siege resolution, M2.3 destruction & consequences, M2.4 army visibility & UI, M2.5 monster encounters integration.
+
 **Roadmap:** `.planning/ROADMAP.md` → M2
 **Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
 **Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-conflict-and-destruction.md`
 **Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅), TB-072 Sphere Affinity (✅)
+**Status:** 📐▶ Design complete and reviewed. Ready for Claude Code to write implementation plans and begin coding.
+**Estimated phases:** 7 (merc company + faction ambitions → army entities → movement/attrition → battle resolution → siege → destruction/aftermath → UI/visibility)
 
-**Plans:** 7/7 complete (`.planning/phases/12-conflict-destruction/`)
-- [x] 12-01-PLAN.md — Mercenary Company + faction ambition system
-- [x] 12-02-PLAN.md — Army entity types + army spawning encounters
-- [x] 12-03-PLAN.md — Army movement + Quintessence attrition
-- [x] 12-04-PLAN.md — Battle resolution + spotlight encounters
-- [x] 12-05-PLAN.md — Siege resolution + regional encounters
-- [x] 12-06-PLAN.md — Destruction + aftermath consequences
-- [x] 12-07-PLAN.md — Army visibility + UI + debug panel
+---
+
+## 🎨 TB-079 · Flesh → Quintessence Migration (2026-03-29)
+
+Flesh was elevated from a Reach to Quintessence (meta-property: coherence of being, phase-transition threshold) per 2026-03-28 design decision. Codebase still has Flesh as a Reach in ReachDomain type, REACH_DOMAINS array, NARRATIVE_LEXICON, DOMAIN_NAMES, action templates, encounter templates, axiological pairs, and world-model.json. Content migration: lexicon→Quintessence, actions redistributed to other reaches. Extensive design documentation exists in Obsidian.
+
+**Obsidian:** `TheFantasyWorldSimulator/Brainstorms/brainstorm-quintessence.md` + related sphere/reach design notes
+**Depends on:** Phase 10 Sphere Affinity (✅)
+**Scope:** Type changes, constant updates, template redistribution, world-model update, test updates
 
 ---
 
