@@ -44,6 +44,7 @@ import {
   THREAT_COURAGE_THRESHOLD,
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
+import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -126,16 +127,28 @@ export function filterByVisibility(
 // ─── Stage 3: Prerequisites (placeholder) ───────────────────────
 
 /**
- * Placeholder — prerequisite traits on encounter templates are not yet
- * implemented. This stage exists in the pipeline for completeness and
- * will be wired up in a future phase.
+ * Filter entries by chain prerequisites — later stages in an encounter
+ * chain are only visible to agents who have completed the previous stage.
+ * Non-chain encounters pass through unfiltered.
+ * Fail-soft: missing chainProgress → treat as empty (all first stages visible).
  */
 export function filterByPrerequisites(
   entries: readonly EncounterCacheEntry[],
-  _agentId: string,
-  _graph: WorldGraph,
+  agentId: string,
+  graph: WorldGraph,
 ): EncounterCacheEntry[] {
-  return [...entries];
+  const agentNode = graph.getNode(agentId);
+  if (!agentNode) return [...entries];
+
+  const progress = getChainProgress(agentNode.properties as Record<string, unknown>);
+
+  const result: EncounterCacheEntry[] = [];
+  for (const entry of entries) {
+    if (isChainStageUnlocked(entry.templateId, progress)) {
+      result.push(entry);
+    }
+  }
+  return result;
 }
 
 // ─── Stage 4: Threat tolerance ──────────────────────────────────

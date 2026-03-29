@@ -85,7 +85,7 @@ export { phaseMandate } from './phaseMandate';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
-import { EncounterCacheManager } from './encounterCache';
+import { EncounterCacheManager, selectDifficultyTier } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
@@ -98,6 +98,7 @@ import {
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { processFactionOutcome } from './factionOutcome';
+import { recordChainStageCompletion, getChainProgress, CHAIN_COMPLETION_CAPABILITY_BONUS } from './encounterChains';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
@@ -255,6 +256,47 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       const outcomeRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
       const factionEvents = processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
       events.push(...factionEvents);
+
+      // ── C.2: Encounter chain progression ──
+      const actorNode = state.graph.getNode(progress.actorId);
+      if (actorNode) {
+        const currentProgress = getChainProgress(actorNode.properties as Record<string, unknown>);
+        const chainResult = recordChainStageCompletion(progress.encounterId, currentProgress);
+
+        // Update chain progress on the agent
+        if (JSON.stringify(chainResult.updatedProgress) !== JSON.stringify(currentProgress)) {
+          state.graph.updateNode(progress.actorId, {
+            properties: { ...actorNode.properties, chainProgress: chainResult.updatedProgress },
+          });
+
+          // Emit trace for chain progression
+          emitTrace({
+            category: 'chain_progress',
+            tick: state.tick,
+            agentId: progress.actorId,
+            templateId: progress.encounterId,
+            isChainComplete: chainResult.completedChains.length > 0,
+            summary: chainResult.completedChains.length > 0
+              ? `${actorNode.name} completed chain: ${chainResult.completedChains.map(c => c.chainId).join(', ')}`
+              : `${actorNode.name} progressed in encounter chain via ${progress.encounterId}`,
+          } as any);
+        }
+
+        // Apply capability bonus for completed chains
+        for (const completed of chainResult.completedChains) {
+          const caps = (actorNode.properties?.domainCapabilities ?? {}) as Record<string, number>;
+          const currentCap = caps[completed.primaryReach] ?? 0;
+          state.graph.updateNode(progress.actorId, {
+            properties: {
+              ...state.graph.getNode(progress.actorId)!.properties,
+              domainCapabilities: {
+                ...caps,
+                [completed.primaryReach]: currentCap + CHAIN_COMPLETION_CAPABILITY_BONUS,
+              },
+            },
+          });
+        }
+      }
     }
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
@@ -950,7 +992,21 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Lazy-init encounter cache and distance matrix
   if (!encounterCache) {
     encounterCache = new EncounterCacheManager();
-    encounterCache.buildFullCache(s.graph);
+    encounterCache.buildFullCache(s.graph, s.tick);
+  } else {
+    // C.1: Rebuild cache when difficulty tier advances (tick thresholds crossed)
+    const newTier = selectDifficultyTier(s.tick);
+    const oldTier = encounterCache.getCurrentTier();
+    if (newTier !== oldTier) {
+      encounterCache.buildFullCache(s.graph, s.tick);
+      emitTrace({
+        category: 'difficulty_tier_change',
+        tick: s.tick,
+        oldTier,
+        newTier,
+        summary: `Difficulty tier advanced to ${newTier} at tick ${s.tick}`,
+      } as any);
+    }
   }
   if (!distanceMatrix) {
     distanceMatrix = buildDistanceMatrix(s.graph);
@@ -1188,7 +1244,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
-  s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
+  s = { ...s, ...phaseAgentLifecycle(s, nextEventId, encounterCache ?? undefined) };
   phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 

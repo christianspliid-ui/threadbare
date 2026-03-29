@@ -21,6 +21,8 @@ import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import { validateAgentIntegrity } from './agentValidation';
 import { emitTrace } from './traceBuffer';
 import { getAvatarsOf, getAgentLocation, getAgentsAtLocation, getActorCultures } from './graphQueries';
+import type { EncounterCacheManager } from './encounterCache';
+import { BORN_LATER_PREFER_CONTENT_LOCATIONS, BORN_LATER_MIN_TEMPLATES } from '../data/agent-behavior-constants';
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
@@ -80,7 +82,11 @@ export function resetLifecycleCounter(): void {
 
 // ─── Phase: Agent Lifecycle ──────────────────────────────────────
 
-export function phaseAgentLifecycle(state: GameState, nextEventId: () => string): Partial<GameState> {
+export function phaseAgentLifecycle(
+  state: GameState,
+  nextEventId: () => string,
+  encounterCache?: EncounterCacheManager,
+): Partial<GameState> {
   const rng = mulberry32(state.seed + state.tick * 71);
   const events: TickEvent[] = [];
   const graph = state.graph;
@@ -146,7 +152,16 @@ export function phaseAgentLifecycle(state: GameState, nextEventId: () => string)
   // ── Births ─────────────────────────────────────────────
   // Only if no death occurred this tick (population balance)
   if (!deathOccurred) {
-    const locationIds = graph.getNodesByType('location').map(n => n.id);
+    // D.2: Prefer content-rich locations for born-later agents
+    let locationIds: string[];
+    if (BORN_LATER_PREFER_CONTENT_LOCATIONS && encounterCache && state.tick > 0) {
+      const contentLocations = encounterCache.getLocationsWithMinEntries(BORN_LATER_MIN_TEMPLATES);
+      locationIds = contentLocations.length > 0
+        ? contentLocations
+        : graph.getNodesByType('location').map(n => n.id);
+    } else {
+      locationIds = graph.getNodesByType('location').map(n => n.id);
+    }
 
     for (const locId of locationIds) {
       // Count agents at this location

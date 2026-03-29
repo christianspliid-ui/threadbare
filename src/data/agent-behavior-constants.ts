@@ -368,6 +368,54 @@ export const COOLDOWN_FULL_POOL_SIZE = 15;
 export const COOLDOWN_MINIMUM = 2;
 
 // ═══════════════════════════════════════════════════════════════════
+// BORN-LATER SPAWN — Prefer content-rich locations (agentLifecycle.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Whether born-later agents prefer spawning at locations with encounter content.
+ * @range boolean */
+export const BORN_LATER_PREFER_CONTENT_LOCATIONS = true;
+
+/** Minimum encounter templates at a location for it to qualify as a content-rich spawn.
+ * @range 1–10 */
+export const BORN_LATER_MIN_TEMPLATES = 3;
+
+// ═══════════════════════════════════════════════════════════════════
+// DIFFICULTY ESCALATION — Tick-based tier scaling (encounterCache.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Ticks before difficulty shifts from early to mid.
+ * @range 20–80 */
+export const EARLY_GAME_THRESHOLD = 40;
+
+/** Ticks before difficulty shifts from mid to late.
+ * @range 60–200 */
+export const MID_GAME_THRESHOLD = 120;
+
+/** Multipliers applied to step difficulties per game tier.
+ * early = easier encounters, late = harder. */
+export const DIFFICULTY_TIER_MULTIPLIERS: Record<string, number> = {
+  early: 0.8,
+  mid: 1.0,
+  late: 1.3,
+};
+
+// ═══════════════════════════════════════════════════════════════════
+// ENCOUNTER CHAINS — Sequential narrative encounters (encounterChains.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** One-time capability boost on completing an entire chain.
+ * @range 0.02–0.10 */
+export const CHAIN_COMPLETION_CAPABILITY_BONUS = 0.05;
+
+/** Flat scoring bonus for the next stage in an active chain.
+ * @range 0.05–0.30 */
+export const CHAIN_STAGE_SCORE_BONUS = 0.15;
+
+/** Maximum concurrent chain progressions per agent.
+ * @range 1–5 */
+export const MAX_ACTIVE_CHAINS = 2;
+
+// ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER CACHE — Pre-computed scoring data (encounterCache.ts)
 // ═══════════════════════════════════════════════════════════════════
 

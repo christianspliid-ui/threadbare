@@ -50,6 +50,7 @@ import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
+import { getChainProgress, computeChainBonus } from './encounterChains';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
 import { SPHERE_OPPOSITES } from './cosmology';
 import { SPHERE_NAMES } from '../types/index';
@@ -275,6 +276,7 @@ export interface ScoredCandidate {
   desireMultiplier: number;
   familiarityPenalty: number;
   explorationBonus: number;
+  chainBonus: number;
   resonance: number;
   globalResonance: number;
   finalScore: number;
@@ -470,6 +472,7 @@ export function scoreAndSelect(
   // Read agent tracking records (fail-soft: treat missing as empty)
   const familiarityRecord = agentNode.properties?.familiarityRecord as FamiliarityRecord | undefined;
   const explorationRecord = agentNode.properties?.explorationRecord as ExplorationRecord | undefined;
+  const chainProgress = getChainProgress(agentNode.properties as Record<string, unknown>);
 
   const scored: ScoredCandidate[] = [];
 
@@ -562,11 +565,14 @@ export function scoreAndSelect(
     // 14. B.2: Exploration bonus — unvisited locations score higher
     const explorationBonus = computeExplorationBonus(explorationRecord, entry.locationId, tick);
 
-    // 15. Final score (B.1: multiply by familiarity factor, B.2: add exploration bonus)
-    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
-    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus;
+    // 15. C.2: Chain bonus — next stage in an active encounter chain
+    const chainBonus = computeChainBonus(entry.templateId, chainProgress);
 
-    // 16. Action classification
+    // 16. Final score (B.1: multiply by familiarity factor, B.2: add exploration bonus, C.2: add chain bonus)
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
+    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus;
+
+    // 17. Action classification
     let action: ScoredCandidate['action'];
     if (distance === 0) {
       action = 'start_local';
@@ -588,6 +594,7 @@ export function scoreAndSelect(
       desireMultiplier,
       familiarityPenalty,
       explorationBonus,
+      chainBonus,
       resonance,
       globalResonance,
       finalScore,
@@ -632,6 +639,7 @@ function buildTrace(
       desireMultiplier: c.desireMultiplier,
       familiarityPenalty: c.familiarityPenalty,
       explorationBonus: c.explorationBonus,
+      chainBonus: c.chainBonus,
       finalScore: c.finalScore,
       travelCost: c.travelCost,
       completionProb: c.completionProb,

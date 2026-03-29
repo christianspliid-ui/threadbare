@@ -332,7 +332,8 @@ describe('EncounterCacheEntry field correctness', () => {
       const tmpl = templateMap.get(entry.templateId)!;
       expect(tmpl).toBeDefined();
       expect(entry.stepCount).toBe(tmpl.steps.length);
-      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => s.difficulty));
+      // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early' with 0.8 multiplier
+      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * 0.8)));
       expect(entry.stepReaches).toEqual(tmpl.steps.map(s => s.reach));
     }
   });

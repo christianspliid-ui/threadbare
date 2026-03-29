@@ -34,6 +34,9 @@ export {
   REPUTATION_REWARD_WEIGHT,
   LOOT_REWARD_WEIGHT,
   DOMAIN_EXERCISE_WEIGHT,
+  EARLY_GAME_THRESHOLD,
+  MID_GAME_THRESHOLD,
+  DIFFICULTY_TIER_MULTIPLIERS,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -41,7 +44,31 @@ import {
   REPUTATION_REWARD_WEIGHT,
   LOOT_REWARD_WEIGHT,
   DOMAIN_EXERCISE_WEIGHT,
+  EARLY_GAME_THRESHOLD,
+  MID_GAME_THRESHOLD,
+  DIFFICULTY_TIER_MULTIPLIERS,
 } from '../data/agent-behavior-constants';
+
+// ─── Difficulty Tier ────────────────────────────────────────────
+
+/**
+ * Determine the current difficulty tier based on tick count.
+ * Used to scale encounter difficulties over the course of a game.
+ * Fail-soft: invalid tick → 'early'.
+ */
+export function selectDifficultyTier(tick: number): string {
+  if (!Number.isFinite(tick) || tick < EARLY_GAME_THRESHOLD) return 'early';
+  if (tick < MID_GAME_THRESHOLD) return 'mid';
+  return 'late';
+}
+
+/**
+ * Get the difficulty multiplier for the current tier.
+ * Fail-soft: unknown tier → 1.0.
+ */
+export function getDifficultyMultiplier(tier: string): number {
+  return DIFFICULTY_TIER_MULTIPLIERS[tier] ?? 1.0;
+}
 
 // ─── Cache Entry ────────────────────────────────────────────────
 
@@ -142,6 +169,7 @@ function buildEntry(
   locationId: string,
   sublocationId: string | null,
   sublocationTypeId: string | null,
+  difficultyMultiplier: number = 1.0,
 ): EncounterCacheEntry {
   return {
     templateId: tmpl.id,
@@ -162,7 +190,7 @@ function buildEntry(
     totalTickCost: computeTotalTickCost(tmpl),
     successRewardEstimate: computeRewardEstimate(tmpl),
     stepCount: tmpl.steps.length,
-    stepDifficulties: tmpl.steps.map(s => s.difficulty),
+    stepDifficulties: tmpl.steps.map(s => Math.round(s.difficulty * difficultyMultiplier)),
     stepReaches: tmpl.steps.map(s => s.reach),
   };
 }
@@ -176,6 +204,7 @@ function buildEntriesForLocationAndSublocations(
   graph: WorldGraph,
   locationId: string,
   locationType: string,
+  difficultyMultiplier: number = 1.0,
 ): EncounterCacheEntry[] {
   const sublocations = getSublocations(graph, locationId);
   const entries: EncounterCacheEntry[] = [];
@@ -185,13 +214,13 @@ function buildEntriesForLocationAndSublocations(
       const subTypeId = (sub.properties as Record<string, unknown>).sublocationTypeId as string;
       const templates = getEncountersBySublocationAndLocation(subTypeId, locationType);
       for (const tmpl of templates) {
-        entries.push(buildEntry(tmpl, locationId, sub.id, subTypeId));
+        entries.push(buildEntry(tmpl, locationId, sub.id, subTypeId, difficultyMultiplier));
       }
     }
   } else {
     const templates = getEncountersByLocationType(locationType);
     for (const tmpl of templates) {
-      entries.push(buildEntry(tmpl, locationId, null, null));
+      entries.push(buildEntry(tmpl, locationId, null, null, difficultyMultiplier));
     }
   }
 
@@ -219,20 +248,33 @@ export class EncounterCacheManager {
   /** locationId → entries for that location */
   private byLocation = new Map<string, EncounterCacheEntry[]>();
 
+  /** Current difficulty tier — updated on each full cache rebuild */
+  private currentTier: string = 'early';
+
   /**
    * Build the full cache from scratch by scanning all location nodes.
+   * Applies difficulty tier multiplier based on the current tick.
    */
-  buildFullCache(graph: WorldGraph): void {
+  buildFullCache(graph: WorldGraph, tick: number = 0): void {
     this.byLocation.clear();
+    const newTier = selectDifficultyTier(tick);
+    const multiplier = getDifficultyMultiplier(newTier);
+    this.currentTier = newTier;
+
     const locations = graph.getNodesByType('location');
     for (const loc of locations) {
       const locationType = getLocationType(graph, loc.id);
       if (!locationType) continue;
-      const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType);
+      const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType, multiplier);
       if (entries.length > 0) {
         this.byLocation.set(loc.id, entries);
       }
     }
+  }
+
+  /** Current difficulty tier string ('early' | 'mid' | 'late'). */
+  getCurrentTier(): string {
+    return this.currentTier;
   }
 
   /**
@@ -314,5 +356,19 @@ export class EncounterCacheManager {
       count += entries.length;
     }
     return count;
+  }
+
+  /**
+   * Return location IDs that have at least `minEntries` cached encounter templates.
+   * Used by born-later spawn logic to prefer content-rich locations.
+   */
+  getLocationsWithMinEntries(minEntries: number): string[] {
+    const result: string[] = [];
+    for (const [locationId, entries] of this.byLocation) {
+      if (entries.length >= minEntries) {
+        result.push(locationId);
+      }
+    }
+    return result;
   }
 }
