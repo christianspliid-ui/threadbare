@@ -2,7 +2,7 @@
   "meta": {
     "version": "1.0.0",
     "generated": "2026-03-08T09:22:00.283Z",
-    "nodeCount": 252,
+    "nodeCount": 253,
     "edgeCount": 371,
     "categories": [
       "action-template",
@@ -203,6 +203,27 @@
           "arrowHead": false,
           "dashArray": "8,3"
         }
+      }
+    },
+    {
+      "id": "foundation.order",
+      "name": "Order",
+      "category": "foundation-sphere",
+      "description": "The primal foundation of structure, law, and permanence. Order is the principle that binds, categorises, and preserves. It is the weight of tradition, the architecture of empires, and the promise that tomorrow will resemble today. Where Order is absolute, nothing changes; where it is absent, nothing endures.",
+      "properties": {
+        "color": "#c0b283",
+        "symbolicAnimal": "Auroch",
+        "element": "Stone",
+        "associations": [
+          "Law",
+          "Tradition",
+          "Hierarchy",
+          "Permanence",
+          "Structure",
+          "Governance"
+        ],
+        "cosmicPrinciple": "Permanence",
+        "influence": "foundational"
       }
     },
     {
