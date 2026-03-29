@@ -11,25 +11,9 @@
 
 ---
 
-### 2026-03-29: Ascendant Sheet — New Component Ready, Needs Wiring + Commit
+### 2026-03-29: Ascendant Sheet — ✅ Committed and pushed
 
-**Context:** User requested a character sheet for the player's ascendant, accessible by clicking the IdentityChip (name in top-left corner). Built to mirror AgentProfileModal layout exactly so the UI is consistent between mortal and god sheets.
-
-**What Cowork created:**
-- `src/components/Game/AscendantSheet.tsx` — Complete component, type-checks and builds clean. Layout mirrors AgentProfileModal: same header zone (120×160 portrait slot with sphere sigil, name in display font, archetype title, cycle), same `SectionHeading` for sections, same domain grid from ProwessTab (`grid grid-cols-3 gap-2`), same `maxWidth={960}`.
-- Sections: Divine Nature (prose with IPK ProseKeywords on sphere names), Dominion (3×3 reach grid with tooltippable names + narrative lexicon words), Essence (sphere IPKs + prose descriptors like "A whisper" / "A torrent" — no numbers), Divine Threads (prose summary of mortal following + court positions).
-
-**Action for Claude Code:**
-1. **Wire into GameView.tsx** — the IdentityChip's `onClick` currently calls `handleCenterOnAvatar`. Change it to open the AscendantSheet modal:
-   - Add import: `import { AscendantSheet } from './AscendantSheet';`
-   - Add state: `const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);`
-   - Change IdentityChip onClick: `() => setAscendantSheetOpen(true)`
-   - Render the modal (near other modals): `<AscendantSheet open={ascendantSheetOpen} onClose={() => setAscendantSheetOpen(false)} gameState={gameState} archetype={archetype} avatarName={avatarName} sphereColor={sphereColor} />`
-2. **Also restore `src/components/Game/AvatarHUD.tsx`** if it appears truncated — run `git checkout src/components/Game/AvatarHUD.tsx` (VM sync corruption, not an intentional edit)
-3. Run pre-commit checks: `npx tsc --noEmit`, `npx vite build`, `npm test`
-4. Commit, push to main, update docs per Definition of Done
-
-**Design note:** All stats use prose words, never numbers. Sphere names use `<ProseKeyword>` (IPK) for colored, tooltippable keywords. Reach domains use existing `<Tooltip id="reach.{domain}">` pattern from ProwessTab.
+Committed `7081f69` — AscendantSheet.tsx added. GameView wiring was already in a prior commit. AvatarHUD was clean (no corruption). All pre-commit checks passed (tsc, vite build, 458 test files).
 
 ---
 
