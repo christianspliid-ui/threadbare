@@ -78,10 +78,10 @@ describe('Game Initialization', () => {
     expect(tiles.length).toBe(DEFAULT_COLS * DEFAULT_ROWS);
   });
 
-  it('initializes essencePool with all spheres at 0', () => {
+  it('initializes essencePool with all spheres at 50', () => {
     const { state } = initializeGameState(testArchetype, 'Avatar Name', testCosmology, 42);
     for (const sphere of SPHERE_NAMES) {
-      expect(state.essencePool[sphere]).toBe(0);
+      expect(state.essencePool[sphere]).toBe(50);
     }
   });
 
