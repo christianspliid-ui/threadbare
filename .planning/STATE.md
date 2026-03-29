@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-conflict-destruction/12-06-PLAN.md
-last_updated: "2026-03-29T21:04:39.271Z"
+stopped_at: Completed 12-conflict-destruction/12-07-PLAN.md
+last_updated: "2026-03-29T21:20:11.437Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 22
-  completed_plans: 21
+  completed_plans: 22
   percent: 93
 ---
 
@@ -172,6 +172,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-conflict-destruction P05 | 15 | 7 tasks | 5 files |
 | Phase 12-conflict-destruction P04 | 12 | 9 tasks | 6 files |
 | Phase 12-conflict-destruction P12-06 | 15 | 6 tasks | 3 files |
+| Phase 12-conflict-destruction P12-07 | 45 | 9 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -294,6 +295,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12-conflict-destruction]: Refugee count stored as pendingRefugeeCount on settlement node — no new graph node type required
 - [Phase 12-conflict-destruction]: Sphere pressure from battle aftermath uses source 'environmental' via existing pendingSpherePressures pipeline
 - [Phase 12-conflict-destruction]: Power vacuum (controls edge removal) only triggered on total destruction + attacker_victory
+- [Phase 12-conflict-destruction]: ArmyLayer uses THREE.Sprite per army with canvas texture showing faction color dot + size pips
+- [Phase 12-conflict-destruction]: phaseArmyNotifications bridges faction_ambition traces to TickEvents using tick filter; threaded=0.85 significance, unthreaded=0.2
+- [Phase 12-conflict-destruction]: armies and battles passed as pre-computed props to HexMapV2, not queried inside — follows agents/locations pattern
 
 ### Pending Todos
 
@@ -305,6 +309,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T21:04:39.269Z
-Stopped at: Completed 12-conflict-destruction/12-06-PLAN.md
+Last session: 2026-03-29T21:20:11.434Z
+Stopped at: Completed 12-conflict-destruction/12-07-PLAN.md
 Resume file: None
