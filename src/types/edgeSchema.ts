@@ -271,6 +271,25 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Trade route between actors. Edge properties: volume, goodsType, controlledBy, threatened.',
   },
+  // ── Military (TB-073) ──
+  commanded_by: {
+    type: 'commanded_by',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: [],
+    description: 'Army is commanded by this agent. Commander is physically committed to the army.',
+  },
+  participates_in: {
+    type: 'participates_in',
+    sourceNodeType: 'actor',
+    targetNodeType: 'actor',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Army or agent participates in a battle node.',
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────
