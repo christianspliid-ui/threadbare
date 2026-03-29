@@ -12,7 +12,9 @@
 
 import type { GameState } from '../types/gameState';
 import type { FactionAmbitionType } from '../types/faction';
+import { requiresMilitaryForce } from '../types/faction';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { isEligibleForArmySpawn, selectCommander, spawnArmy } from './armySpawning';
 import { emitTrace } from './traceBuffer';
 
 // ─── Constants ───────────────────────────────────────────────────────────
@@ -235,5 +237,14 @@ export function phaseFactionAmbitions(state: GameState): void {
       event: 'created',
       reason: candidates.length === 0 ? 'default_fallback' : 'weighted_selection',
     });
+
+    // ── Army spawning (TB-073 M2-02) ──
+    // If the new ambition requires military force, attempt to spawn an army
+    if (requiresMilitaryForce(ambitionType) && isEligibleForArmySpawn(state, faction.id)) {
+      const commander = selectCommander(state, faction.id);
+      if (commander) {
+        spawnArmy(state, faction.id, commander, ambitionId);
+      }
+    }
   }
 }
