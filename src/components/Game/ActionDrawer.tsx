@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
@@ -11,7 +11,24 @@ import { renderProseWithIPK } from '../ProseKeyword';
 const DRAWER_CONFIG = {
   HEIGHT_PERCENT: 35,
   TRANSITION_MS: 200,
+  /** P3: Max rotation angle for outermost cards in the fan (degrees) */
+  FAN_MAX_ROTATION_DEG: 2,
+  /** P3: Vertical offset for outermost cards in the fan (px) */
+  FAN_MAX_TRANSLATE_Y: 8,
 } as const;
+
+/** P3: Compute fan transform for a card at position `index` in a hand of `total` cards. */
+function cardFanStyle(index: number, total: number): React.CSSProperties {
+  if (total <= 1) return {};
+  // Normalized position: -1 (leftmost) to +1 (rightmost)
+  const t = total === 1 ? 0 : (2 * index / (total - 1)) - 1;
+  const rotation = t * DRAWER_CONFIG.FAN_MAX_ROTATION_DEG;
+  const yOffset = Math.abs(t) * DRAWER_CONFIG.FAN_MAX_TRANSLATE_Y;
+  return {
+    transform: `rotate(${rotation}deg) translateY(${yOffset}px)`,
+    transformOrigin: 'bottom center',
+  };
+}
 
 // ─── Sphere Action Prose ────────────────────────────────────────────────────
 
@@ -77,6 +94,23 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       return SPHERE_ACTION_PROSE[hoveredSlot.sphere] ?? null;
     }, [hoveredSlot]);
 
+    // P5: Scroll overflow detection for edge gradients
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+
+    const updateScrollState = useCallback(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    }, []);
+
+    useEffect(() => {
+      // Check scroll state on mount and when slots change
+      updateScrollState();
+    }, [slots, showLocked, updateScrollState]);
+
     // Handle Escape key
     useEffect(() => {
       if (!open) return;
@@ -97,19 +131,15 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
     }
 
     // RC-028: Memoize slot filtering and sorting
+    // P4: Split into observation / intervention groups for visual divider
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const { availableSlots, lockedSlots } = useMemo(() => {
+    const { observationSlots, interventionSlots, lockedSlots } = useMemo(() => {
       const filtered = slots
-        .filter(slot => slot.type !== 'info') // Exclude center slot
-        .sort((a, b) => {
-          // Sort observations before interventions
-          if (a.type !== b.type) {
-            return a.type === 'observation' ? -1 : 1;
-          }
-          return 0;
-        });
+        .filter(slot => slot.type !== 'info'); // Exclude center slot
+      const available = filtered.filter(s => s.available);
       return {
-        availableSlots: filtered.filter(s => s.available),
+        observationSlots: available.filter(s => s.type === 'observation'),
+        interventionSlots: available.filter(s => s.type !== 'observation'),
         lockedSlots: filtered.filter(s => !s.available),
       };
     }, [slots]);
@@ -136,48 +166,39 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           aria-label="Close action drawer"
         />
 
-        {/* Card hand — centered, no background */}
-        <div
-          className="flex items-end gap-3 pointer-events-auto"
-          onTouchMove={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-        >
-          {availableSlots.map(slot => (
+        {/* P5: Scrollable card hand with edge fade gradients */}
+        <div className="relative pointer-events-auto" style={{ maxWidth: '90vw' }}>
+          {/* P5: Left scroll fade */}
+          {canScrollLeft && (
             <div
-              key={slot.id}
-              className="flex-shrink-0"
-              onMouseEnter={() => setHoveredSlotId(slot.id)}
-              onMouseLeave={() => setHoveredSlotId(null)}
-            >
-              <ActionCard
-                slot={slot}
-                onClick={onSlotClick}
-                playing={slot.id === playingCardId}
-              />
-            </div>
-          ))}
+              className="absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none"
+              style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.6), transparent)' }}
+            />
+          )}
+          {/* P5: Right scroll fade */}
+          {canScrollRight && (
+            <div
+              className="absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none"
+              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }}
+            />
+          )}
 
-          {/* IA-003: Locked actions collapsible section */}
-          {lockedSlots.length > 0 && (
-            <>
-              <div className="flex-shrink-0 flex items-center">
-                <Tooltip id="ui.action_locked">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowLocked(!showLocked)}
-                    aria-expanded={showLocked}
-                    aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
-                    style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
-                  >
-                    {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
-                  </Button>
-                </Tooltip>
-              </div>
-              {showLocked && lockedSlots.map(slot => (
+          <div
+            ref={scrollRef}
+            className="flex items-end gap-2 overflow-x-auto pb-1"
+            style={{ scrollbarWidth: 'none' }}
+            onScroll={updateScrollState}
+            onTouchMove={(e) => e.stopPropagation()}
+            onWheel={(e) => e.stopPropagation()}
+          >
+            {/* P3: Observation cards with fan rotation */}
+            {observationSlots.map((slot, i) => {
+              const totalAvail = observationSlots.length + interventionSlots.length;
+              return (
                 <div
                   key={slot.id}
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 transition-transform duration-150 hover:!transform-none"
+                  style={cardFanStyle(i, totalAvail)}
                   onMouseEnter={() => setHoveredSlotId(slot.id)}
                   onMouseLeave={() => setHoveredSlotId(null)}
                 >
@@ -187,9 +208,72 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
                     playing={slot.id === playingCardId}
                   />
                 </div>
-              ))}
-            </>
-          )}
+              );
+            })}
+
+            {/* P4: Type divider */}
+            {observationSlots.length > 0 && interventionSlots.length > 0 && (
+              <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-1 self-stretch">
+                <div className="flex-1 w-px" style={{ background: 'linear-gradient(to bottom, transparent, var(--border-medium), transparent)' }} />
+                <span style={{ fontSize: '0.5625rem', color: 'var(--text-tertiary)', letterSpacing: '0.1em', writingMode: 'vertical-rl', textOrientation: 'mixed' }}>ACT</span>
+                <div className="flex-1 w-px" style={{ background: 'linear-gradient(to bottom, transparent, var(--border-medium), transparent)' }} />
+              </div>
+            )}
+
+            {/* P3: Intervention cards with fan rotation */}
+            {interventionSlots.map((slot, i) => {
+              const totalAvail = observationSlots.length + interventionSlots.length;
+              return (
+                <div
+                  key={slot.id}
+                  className="flex-shrink-0 transition-transform duration-150 hover:!transform-none"
+                  style={cardFanStyle(observationSlots.length + i, totalAvail)}
+                  onMouseEnter={() => setHoveredSlotId(slot.id)}
+                  onMouseLeave={() => setHoveredSlotId(null)}
+                >
+                  <ActionCard
+                    slot={slot}
+                    onClick={onSlotClick}
+                    playing={slot.id === playingCardId}
+                  />
+                </div>
+              );
+            })}
+
+            {/* IA-003: Locked actions collapsible section */}
+            {lockedSlots.length > 0 && (
+              <>
+                <div className="flex-shrink-0 flex items-center">
+                  <Tooltip id="ui.action_locked">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowLocked(!showLocked)}
+                      aria-expanded={showLocked}
+                      aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
+                      style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
+                    >
+                      {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
+                    </Button>
+                  </Tooltip>
+                </div>
+                {showLocked && lockedSlots.map(slot => (
+                  <div
+                    key={slot.id}
+                    className="flex-shrink-0"
+                    onMouseEnter={() => setHoveredSlotId(slot.id)}
+                    onMouseLeave={() => setHoveredSlotId(null)}
+                  >
+                    <ActionCard
+                      slot={slot}
+                      onClick={onSlotClick}
+                      playing={slot.id === playingCardId}
+                    />
+                  </div>
+                ))}
+              </>
+            )}
+          </div>
         </div>
 
         {/* Sphere consequence preview — appears on card hover */}
