@@ -19,7 +19,7 @@ import { generateRivals, createRivalState } from './rival';
 import { generateDoomClock, createDoomClockState } from './doomClock';
 import { createGreatChronicle } from './chronicle';
 import { createDefaultFundament, createResonanceState } from './worldSoul';
-import { createEmptyEssencePool } from './influence';
+import { createStartingEssencePool } from './influence';
 import { DEFAULT_DOOM_TICKS } from '../types/gameState';
 import { recalcVisibility, collectLOSSources } from './visibility';
 import { generateMandate } from './mandateGenerator';
@@ -270,8 +270,8 @@ export function initializeGameState(
   const doomDef = generateDoomClock('breach', DEFAULT_DOOM_TICKS, seed);
   const doomState = createDoomClockState('breach', DEFAULT_DOOM_TICKS);
 
-  // Initialize empty essence pool
-  const emptyPool = createEmptyEssencePool();
+  // Initialize starting essence pool (50 per sphere)
+  const startingPool = createStartingEssencePool();
 
   // Generate victory mandate
   const mandateDef = generateMandate(cosmology, archetype.sphereAlignment, seed);
@@ -292,7 +292,7 @@ export function initializeGameState(
     tiles,
     clock: { currentTick: 0, ticksPerSeason: DEFAULT_TICKS_PER_SEASON, season: 0, year: 0 },
     ascendantId,
-    essencePool: emptyPool,
+    essencePool: startingPool,
     mandateDefinition: mandateDef,
     mandateState: mandateStateInit,
     rivalDefinitions: rivalDefs,

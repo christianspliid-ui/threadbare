@@ -19,7 +19,7 @@ import type { AxiologicalProfile, ValuePair } from '../types/agent';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
 import type { WorldGraph } from './graph';
-import { createEmptyEssencePool } from './influence';
+import { createStartingEssencePool } from './influence';
 import { ARCHETYPE_TITLES } from '../data/ascendant-content';
 
 // ─── Seeded PRNG (simple mulberry32) ─────────────────────────────────
@@ -124,12 +124,12 @@ export function createAscendant(
   const ascendantId = `asc.${config.archetype.id}`;
   const avatarId = `avatar.${config.archetype.id}`;
 
-  const emptyPool: EssencePool = createEmptyEssencePool();
+  const startingPool: EssencePool = createStartingEssencePool();
 
   const ascendantProperties: AscendantProperties = {
     actorType: 'ascendant',
     sphereAlignment: config.archetype.sphereAlignment,
-    essencePool: emptyPool,
+    essencePool: startingPool,
     maxEssence: BASE_MAX_ESSENCE,
     archetypeId: config.archetype.id,
     interventionHistory: {},
