@@ -6,6 +6,24 @@
 
 ---
 
+## ✅ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29, complete 2026-03-29)
+
+All 4 sessions complete. Fixed 7 root causes from seed-42 encounter analysis. Session 1: template coverage expansion, score display fix, dynamic cooldowns. Session 2: familiarity discount, exploration bonus, travel cost dampening, personality amplification. Session 3: born-later spawn preference (content-rich locations), difficulty escalation (early/mid/late tier multipliers). Session 4: encounter chains (3 starter chains with sequential stage progression, chain scoring bonus, completion capability boost). 48 new constants in agent-behavior-constants.ts. New encounterChains.ts module. Filter pipeline Stage 3 now enforces chain prerequisites.
+
+---
+
+## ✅ TB-075 · Born-Later Spawn & Difficulty Escalation (2026-03-29, complete 2026-03-29)
+
+Completed as TB-074 Session 3. Born-later agents prefer content-rich spawn locations (≥3 templates). Difficulty tier system: early (×0.8), mid (×1.0), late (×1.3). Cache auto-rebuilds on tier change.
+
+---
+
+## ✅ TB-076 · Encounter Chains (2026-03-29, complete 2026-03-29)
+
+Completed as TB-074 Session 4. 3 starter chains (Scholar's Path, Rise Through the Ranks, Merchant's Gambit). Chain progress tracked per-agent, prerequisites enforced in filter pipeline, scoring bonus for next stage, capability boost on chain completion.
+
+---
+
 ## ✅ TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27, complete 2026-03-29)
 
 Phase 10 (Sphere Affinity) delivered the full World-Soul connection: per-entity sphere affinity data model (triangle number scale), pressure resolution engine, 6 upstream pressure sources, downstream modifiers (prosperity, encounters, agent decisions), magic as sphere fluency, full UI layer (WorldSoulIndicator, ProseKeyword IPK, HexChronicle Soul, DebugPanel Sphere State tab), TERRAIN_SPHERE_TABLE + LOCATION_SPHERE_TABLE. M1.2 encounter wiring complete (computeEncounterResonance + computeWorldSoulValueDrift). 109 sphere tests.

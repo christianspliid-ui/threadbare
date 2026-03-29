@@ -12,42 +12,6 @@
 
 ---
 
-## 🏗️ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29)
-
-Fix the 7 root causes from encounter log analysis (seed 42): content deserts, zero movement, small pools, no difficulty escalation, born-later starvation, undifferentiated capability, score display bug. Introduces familiarity discount, exploration bonus, encounter chains, dynamic difficulty, personality amplification, dynamic cooldowns, broader template mapping.
-
-5 phases (A–E), 4 recommended Claude Code sessions.
-- ✅ **Session 1** (2026-03-29): Phase A (template coverage ≥8 per location type) + Phase E.2 (score display fix) + Phase E.1 (dynamic cooldowns)
-- ✅ **Session 2** (2026-03-29): B.1 (familiarity discount) + B.2 (exploration bonus) + B.3 (travel cost dampening) + D.1 (personality amplification)
-- 📋 **Session 3**: D.2 + C.1 (born-later spawn fix + difficulty escalation)
-- 📋 **Session 4**: C.2 (encounter chains)
-
-**Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md`
-**Analysis source:** `Docs/analysis/2026-03-29-encounter-log-analysis-seed42.md`
-**Depends on:** Encounter system (✅), Agent Decision Pipeline (✅), Sphere Affinity (✅)
-
----
-
-## 📋 TB-075 · Born-Later Spawn & Difficulty Escalation (TB-074 Session 3)
-
-Phase D.2: `selectSpawnLocation()` prefers locations with encounter cache entries so born-later agents spawn near content, not empty wilderness. Constants: `BORN_LATER_PREFER_CONTENT_LOCATIONS=true`, `BORN_LATER_MIN_TEMPLATES=3`.
-
-Phase C.1: `selectDifficultyTier()` applies early/mid/late difficulty scaling based on tick thresholds, applied during encounter cache rebuild. Constants: `EARLY_GAME_THRESHOLD=40`, `MID_GAME_THRESHOLD=120`, `DIFFICULTY_TIER_MULTIPLIERS={early:0.8, mid:1.0, late:1.3}`.
-
-**Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md` → Phases D.2, C.1
-**Depends on:** Encounter system (✅), Agent spawn pipeline (✅), TB-074 Sessions 1-2 (✅)
-
----
-
-## 📋 TB-076 · Encounter Chains (TB-074 Session 4)
-
-Phase C.2: Multi-stage encounter sequences that create narrative arcs. `EncounterChain` data type with ordered template stage IDs, `ChainProgress` agent property tracking `chainId→stageIndex`, wired into `filterByPrerequisites` (Stage 3 placeholder). 3 starter chains: Scholar's Path, Rise Through the Ranks, Merchant's Gambit. Constants: `CHAIN_COMPLETION_CAPABILITY_BONUS=0.05`, `CHAIN_STAGE_SCORE_BONUS=0.15`, `MAX_ACTIVE_CHAINS=2`.
-
-**Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md` → Phase C.2
-**Depends on:** Encounter system (✅), TB-074 Sessions 1-2 (✅)
-
----
-
 ## 📐▶ TB-077 · Graph-Native Encounter Lifecycle (2026-03-29)
 
 Promote encounter outcomes from ephemeral flat-array state to durable `event` nodes in the world graph. Creates `participated_in` (agent → event) and `occurred_at` (event → location) edges, enabling graph-queryable encounter history for prose enrichment, location flavor, and agent biography. Three layers designed: L1 encounter event nodes (immediate), L2 goal edges (deferred), L3 active encounter projection (deferred pending UnifiedAction migration).
