@@ -477,7 +477,7 @@ const SPHERE_TO_DOMAIN = {
   force: 'iron',
   matter: 'gold',
   energy: 'veil',
-  life: 'flesh',
+  life: 'gold',
   mind: 'shadow',
   spirit: 'heart',
   time: 'star',

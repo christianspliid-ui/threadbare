@@ -250,7 +250,6 @@ export const INTENT_OPTIONS: IntentOption[] = [
   { reach: 'stone',  label: 'Stone',  text: 'Hands that shape the raw stuff of creation' },
   { reach: 'star',   label: 'Star',   text: 'A soul that burns bright enough to change fate' },
   { reach: 'gold',   label: 'Gold',   text: 'Gold, influence, the levers of mortal power' },
-  { reach: 'flesh',  label: 'Flesh',  text: 'The pulse of living things, bent to your design' },
 ];
 
 // ─── Dilemma Templates (Step 2) ──────────────────────────────────

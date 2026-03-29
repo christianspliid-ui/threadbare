@@ -144,7 +144,7 @@ export const NARRATIVE_ARCHETYPES: NarrativeArchetype[] = [
     name: 'Coming of Age',
     storyShape: 'Innocence, hardening, transformation',
     proseTone: 'Wonder fading to resolve',
-    reachAffinities: ['flesh', 'veil', 'eye'],
+    reachAffinities: ['star', 'veil', 'eye'],
     toneKeywords: {
       adjectives: ['wide-eyed', 'trembling', 'untested', 'bright', 'determined', 'raw'],
       verbs: ['stumbled', 'reached', 'awakened', 'hardened', 'stepped', 'learned'],
@@ -403,7 +403,7 @@ export const NARRATIVE_ARCHETYPES: NarrativeArchetype[] = [
     name: 'Monster',
     storyShape: 'Inhuman acts, possibly with buried humanity',
     proseTone: 'Brutal, unflinching, occasionally tender',
-    reachAffinities: ['iron', 'flesh', 'shadow'],
+    reachAffinities: ['iron', 'star', 'shadow'],
     toneKeywords: {
       adjectives: ['brutal', 'unflinching', 'massive', 'pitiless', 'raw', 'terrible'],
       verbs: ['crushed', 'tore', 'devoured', 'loomed', 'destroyed', 'consumed'],
@@ -790,7 +790,7 @@ export const NARRATIVE_ARCHETYPES: NarrativeArchetype[] = [
     name: 'Maker',
     storyShape: 'Creates something that outlasts them — or destroys them',
     proseTone: 'Patient, hands-on, proud — the craft is sacred',
-    reachAffinities: ['stone', 'flesh', 'eye'],
+    reachAffinities: ['stone', 'gold', 'eye'],
     toneKeywords: {
       adjectives: ['patient', 'meticulous', 'proud', 'calloused', 'devoted', 'precise'],
       verbs: ['shaped', 'forged', 'measured', 'perfected', 'finished', 'created'],
@@ -833,7 +833,7 @@ export const NARRATIVE_ARCHETYPES: NarrativeArchetype[] = [
     name: 'Noble Savage',
     storyShape: 'Primal strength meets civilization, transforms it or is broken',
     proseTone: 'Raw, physical, elemental — contempt for complexity',
-    reachAffinities: ['iron', 'flesh', 'stone'],
+    reachAffinities: ['iron', 'star', 'stone'],
     toneKeywords: {
       adjectives: ['raw', 'primal', 'towering', 'contemptuous', 'elemental', 'fierce'],
       verbs: ['charged', 'roared', 'broke', 'scorned', 'endured', 'crushed'],

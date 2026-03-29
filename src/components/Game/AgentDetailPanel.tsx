@@ -53,11 +53,10 @@ const STRATEGY_DISPLAY: Record<CooperationStrategy, string> = {
   'always-defect': 'Always Defect',
 };
 
-// Grid layout order: 3x3
+// Grid layout order: 2x4 (TB-075 Phase 1: flesh reach removed)
 const DOMAINS_GRID: ReachDomain[][] = [
-  ['iron', 'gold', 'shadow'],
-  ['veil', 'heart', 'eye'],
-  ['stone', 'star', 'flesh'],
+  ['iron', 'gold', 'shadow', 'veil'],
+  ['heart', 'eye', 'stone', 'star'],
 ];
 
 export const AgentDetailPanel = React.memo(function AgentDetailPanel({

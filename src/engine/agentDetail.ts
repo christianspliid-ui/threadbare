@@ -62,10 +62,9 @@ const VALUE_LABELS: Record<ValuePair, [string, string]> = {
   honesty_cunning: ['Honest', 'Cunning'],
   tradition_novelty: ['Traditional', 'Innovative'],
   loyalty_ambition: ['Loyal', 'Ambitious'],
-  frankness_propriety: ['Frank', 'Proper'],
-  humility_pride: ['Humble', 'Proud'],
+  revelation_discretion: ['Revealing', 'Discreet'],
+  preservation_transformation: ['Preserving', 'Transforming'],
   sacrifice_survival: ['Self-Sacrificing', 'Self-Preserving'],
-  stoicism_passion: ['Stoic', 'Passionate'],
   courage_prudence: ['Courageous', 'Prudent'],
 };
 
