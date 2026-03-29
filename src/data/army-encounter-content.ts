@@ -1,8 +1,8 @@
 /**
  * Army Encounter Content — TB-073 Phase 1.
  *
- * Encounter templates for army lifecycle events: threshold encounters
- * that fire when Quintessence degrades, and the army raise encounter.
+ * Encounter templates for army lifecycle events: the army raise encounter
+ * (mc.army.raise) and threshold encounters that fire when Quintessence degrades.
  *
  * Design doc: Docs/plans/2026-03-29-conflict-and-destruction-design.md — Phase 2
  */
@@ -14,6 +14,76 @@ import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 
 const ARMY_DIFFICULTY_BASE = 35;
 const ARMY_DIFFICULTY_STEP = 10;
+const ARMY_RAISE_IRON_DIFFICULTY = 40;   // Muster test (Iron Tier 4+ gate)
+const ARMY_RAISE_GOLD_DIFFICULTY = 45;   // Pay test (Gold Tier 3+ gate)
+
+// ─── Army Encounter Metadata ─────────────────────────────────────────────
+
+/**
+ * Lightweight metadata for army encounter templates.
+ * Describes the lifecycle event category and eligibility gate.
+ */
+export interface ArmyEncounterMeta {
+  /** Lifecycle category: 'raise' | 'threshold' */
+  category: 'raise' | 'threshold';
+  /** Minimum Iron capability tier required (0 = no gate) */
+  minIronTier: number;
+  /** Minimum Gold capability tier required (0 = no gate) */
+  minGoldTier: number;
+}
+
+export const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta> = new Map([
+  ['mc.army.raise',                     { category: 'raise',     minIronTier: 4, minGoldTier: 3 }],
+  ['army.threshold.supply_crisis',      { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+  ['army.threshold.desertion',          { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+  ['army.threshold.mutiny',             { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+  ['army.threshold.disbandment',        { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+]);
+
+// ─── Army Raise Encounter Template ──────────────────────────────────────
+
+/**
+ * mc.army.raise — spawned programmatically when a faction's ambition
+ * requires military force and eligibility checks pass.
+ *
+ * Step 1: Muster the Troops (Iron test) — commander rallies soldiers.
+ * Step 2: March Formation (Gold test) — faction pays to field the army.
+ *
+ * On full success: army spawns.
+ * On any failure: recruitment fails (Gold spent, no army).
+ */
+export const ARMY_RAISE_TEMPLATE: EncounterTemplate = {
+  id: 'mc.army.raise',
+  name: 'Raise an Army',
+  locationTypes: [],  // spawned programmatically
+  steps: [
+    {
+      id: 'mc.army.raise.1',
+      name: 'Muster the Troops',
+      narrative: 'The call goes out across the land. Will soldiers answer?',
+      reach: 'iron',
+      difficulty: ARMY_RAISE_IRON_DIFFICULTY,
+      duration: 2,
+      onSuccess: { narrative: 'Hardened veterans and eager recruits fill the muster ground.' },
+      onFailure: { narrative: 'The response is thin. Too few answer the call.' },
+    },
+    {
+      id: 'mc.army.raise.2',
+      name: 'March Formation',
+      narrative: 'Soldiers must be paid, equipped, and provisioned before they march.',
+      reach: 'gold',
+      difficulty: ARMY_RAISE_GOLD_DIFFICULTY,
+      duration: 1,
+      onSuccess: { narrative: 'Coin flows. The army forms ranks and prepares to march.' },
+      onFailure: { narrative: 'Without coin, even willing soldiers disperse. The army never forms.' },
+    },
+  ],
+  reachPrimary: 'iron',
+  reachSecondary: 'gold',
+  encounterType: 'lead',
+  threatRating: 'hard',
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.lead,
+};
 
 // ─── Threshold Encounter Templates ──────────────────────────────────────
 
@@ -144,6 +214,7 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
 // ─── All Army Templates ─────────────────────────────────────────────────
 
 export const ARMY_ENCOUNTER_TEMPLATES: readonly EncounterTemplate[] = [
+  ARMY_RAISE_TEMPLATE,
   ...ARMY_THRESHOLD_TEMPLATES,
 ];
 
