@@ -112,8 +112,8 @@ describe('GameView', () => {
         seed={42}
       />
     );
-    // DoomBar now shows a glyph (◈ for breach) instead of the archetype text
-    expect(screen.getByText('◈')).toBeInTheDocument();
+    // DoomBar now shows a glyph (◈ for breach) — may appear multiple times in UI
+    expect(screen.getAllByText('◈').length).toBeGreaterThan(0);
   });
 
   it('renders layout with top bar and right sidebar', () => {

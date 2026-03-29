@@ -93,7 +93,7 @@ describe('LocationView', () => {
   it('calls onBack when back button clicked', () => {
     const onBack = vi.fn();
     render(<LocationView {...defaultProps} onBack={onBack} />);
-    fireEvent.click(screen.getByRole('button', { name: /back/i }));
+    fireEvent.click(screen.getByRole('button', { name: /close/i }));
     expect(onBack).toHaveBeenCalledOnce();
   });
 
