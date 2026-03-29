@@ -18,14 +18,14 @@ import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
 // ─── Styling Constants ─────────────────────────────────────────────────────
 
 const CARD_STYLES = {
-  baseCard: 'relative flex flex-col w-40 rounded-lg px-3 py-2.5 transition-all duration-200',
-  availableCard: 'border-l-4 cursor-pointer hover:-translate-y-1 shadow-lg hover:shadow-xl',
+  baseCard: 'group relative flex flex-col w-40 rounded-lg px-3 py-2.5 transition-all duration-200',
+  availableCard: 'border-l-4 cursor-pointer hover:-translate-y-3 hover:scale-105 shadow-lg hover:shadow-2xl',
   lockedCard: 'cursor-not-allowed',
   unavailableText: 'opacity-50',
   availableText: '',
   nameText: 'font-semibold tracking-wide',
   descriptionText: 'leading-tight',
-  costZone: 'flex items-center gap-1.5',
+  costBadge: 'absolute top-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full',
   costDot: 'w-2 h-2 rounded-full',
   riskText: 'tracking-tight',
   rangeText: '',
@@ -67,11 +67,16 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
     .filter(Boolean)
     .join(' ');
 
-  // RC-026: Memoize container style to avoid new object on every render
-  const containerStyle = useMemo<React.CSSProperties>(
-    () => (isAvailable || playing) && sphereColor ? { borderLeftColor: sphereColor } : {},
-    [isAvailable, playing, sphereColor]
-  );
+  // P8: Sphere tint background + border color
+  const containerStyle = useMemo<React.CSSProperties>(() => {
+    const style: React.CSSProperties = {};
+    if ((isAvailable || playing) && sphereColor) {
+      style.borderLeftColor = sphereColor;
+      // P8: Subtle sphere-color gradient on background
+      style.background = `linear-gradient(135deg, ${sphereColor}0A 0%, transparent 60%), var(--bg-raised)`;
+    }
+    return style;
+  }, [isAvailable, playing, sphereColor]);
 
   // RC-026: Memoize click handler
   // FE-16: Shake feedback when clicking a disabled card
@@ -138,29 +143,56 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
           }
         }}
       >
-      {/* Glyph + Name header */}
-      <div className="flex items-start gap-2 mb-1.5">
-        <div
-          className={`leading-none flex-shrink-0 ${playing ? 'glyph-pulse' : ''}`}
-          style={{ color: sphereColor || '#a1a1a1', fontSize: '1.1875rem' }}
-        >
-          {glyph}
-        </div>
-        <h3
-          className={`${CARD_STYLES.nameText} ${isAvailable ? CARD_STYLES.availableText : CARD_STYLES.unavailableText}`}
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: 'var(--text-sm)',
-            color: isAvailable ? 'var(--text-primary)' : 'var(--text-tertiary)',
-          }}
-        >
-          {slot.label}
-        </h3>
+      {/* P2: Cost badge — top-right pill */}
+      <div
+        className={CARD_STYLES.costBadge}
+        style={{
+          backgroundColor: sphereColor ? `${sphereColor}20` : 'rgba(255,255,255,0.08)',
+          border: `1px solid ${sphereColor ? `${sphereColor}50` : 'var(--border-medium)'}`,
+          fontSize: 'var(--text-xs)',
+          color: sphereColor || 'var(--text-primary)',
+          fontWeight: 600,
+        }}
+      >
+        {slot.sphere && (
+          <div
+            className={CARD_STYLES.costDot}
+            style={{ backgroundColor: sphereColor }}
+          />
+        )}
+        <span data-testid="action-card-cost">
+          {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
+        </span>
       </div>
 
-      {/* Description */}
+      {/* P1: Large glyph as card identity */}
+      <div
+        className={`leading-none flex-shrink-0 mb-1 ${playing ? 'glyph-pulse' : ''}`}
+        style={{
+          color: sphereColor || '#a1a1a1',
+          fontSize: '1.75rem',
+          filter: sphereColor ? `drop-shadow(0 0 6px ${sphereColor}60)` : undefined,
+        }}
+      >
+        {glyph}
+      </div>
+
+      {/* Name */}
+      <h3
+        className={`${CARD_STYLES.nameText} mb-1 ${isAvailable ? CARD_STYLES.availableText : CARD_STYLES.unavailableText}`}
+        style={{
+          fontFamily: 'var(--font-display)',
+          fontSize: 'var(--text-sm)',
+          color: isAvailable ? 'var(--text-primary)' : 'var(--text-tertiary)',
+          lineHeight: 1.2,
+        }}
+      >
+        {slot.label}
+      </h3>
+
+      {/* P6: Description — clamped to 2 lines, expands on hover */}
       <p
-        className={`${CARD_STYLES.descriptionText} mb-2`}
+        className={`${CARD_STYLES.descriptionText} mb-2 line-clamp-2 group-hover:line-clamp-none transition-all duration-150`}
         style={{
           fontSize: 'var(--text-xs)',
           color: 'var(--text-secondary)',
@@ -186,27 +218,8 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
         </div>
       )}
 
-      {/* Cost + Risk + Range row */}
-      <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
-        {/* Cost zone */}
-        <div
-          className={CARD_STYLES.costZone}
-          style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-primary)',
-          }}
-        >
-          {slot.sphere && (
-            <div
-              className={CARD_STYLES.costDot}
-              style={{ backgroundColor: sphereColor }}
-            />
-          )}
-          <span data-testid="action-card-cost">
-            {slot.essenceCost === 0 ? 'Free' : Math.round(slot.essenceCost)}
-          </span>
-        </div>
-
+      {/* Risk + Range row */}
+      <div className="flex items-center justify-between gap-2 mt-auto">
         {/* Risk */}
         {slot.detectionRisk > 0 && (
           <span
@@ -217,24 +230,24 @@ export const ActionCard = React.memo(function ActionCard({ slot, onClick, playin
               color: 'var(--text-secondary)',
             }}
           >
-            {Math.round(slot.detectionRisk * 100)}%
+            {Math.round(slot.detectionRisk * 100)}% risk
+          </span>
+        )}
+
+        {/* Range info */}
+        {slot.rangeStatus !== 'unlimited' && slot.hexDistance !== null && (
+          <span
+            className={CARD_STYLES.rangeText}
+            data-testid="action-card-range"
+            style={{
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-secondary)',
+            }}
+          >
+            {slot.hexDistance} hex
           </span>
         )}
       </div>
-
-      {/* Range info */}
-      {slot.rangeStatus !== 'unlimited' && slot.hexDistance !== null && (
-        <div
-          className={CARD_STYLES.rangeText}
-          data-testid="action-card-range"
-          style={{
-            fontSize: 'var(--text-xs)',
-            color: 'var(--text-secondary)',
-          }}
-        >
-          Range: {slot.hexDistance}
-        </div>
-      )}
 
       {/* Lock reason (if unavailable) */}
       {!isAvailable && !playing && slot.lockedReason && (
