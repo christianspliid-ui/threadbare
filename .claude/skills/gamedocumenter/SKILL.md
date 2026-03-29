@@ -9,10 +9,10 @@ description: Use after completing any implementation work on The Fantasy World S
 
 A rigid post-implementation checklist for updating The Fantasy World Simulator's three documentation layers. Every step includes the exact tool calls, known API workarounds, and expected output format. Follow this start-to-finish after completing implementation work — no steps are optional.
 
-The three layers serve different purposes and must stay in sync:
-- **`Docs/changelog.md`** + **`Docs/project-status.md`** (in repo) — changelog + project status. Says "what changed and where we are." CLAUDE.md has compact pointers to these files.
+The documentation layers serve different purposes and must stay in sync:
+- **`Docs/changelog.md`** + **`Docs/project-status.md`** + **`Docs/project-history.md`** (in repo) — changelog + project status. Says "what changed and where we are."
+- **`.planning/BACKLOG.md`** + **`.planning/BACKLOG_HISTORY.md`** (in repo) — backlog and completed items archive. Says "what to build next."
 - **Obsidian vault** (via MCP) — system specs and graph relationships. Says "what the system IS."
-- **Notion backlog** — sprint progress and task tracking. Says "what to build next."
 
 ## When to Run This Checklist
 
@@ -35,7 +35,7 @@ Run the lightweight subset (Steps 1-2 only) for:
 
 **Rules:**
 - One row per logical change (not per file — group related files)
-- "Where" uses short labels: `Repo: src/engine/`, `Obsidian: Systems/`, `Notion: Backlog`
+- "Where" uses short labels: `Repo: src/engine/`, `Obsidian: Systems/`, `Backlog: .planning/`
 - "What changed" is specific: file names, line counts, test counts
 - "Why" references the phase/task that motivated it
 - Date is ISO format (YYYY-MM-DD)
@@ -63,10 +63,7 @@ Run the lightweight subset (Steps 1-2 only) for:
 1. Append a one-line `✅ Complete` entry for each completed feature/system with date, key details, and design doc reference
 2. Update the engine/content stats at the bottom
 
-**Changes needed in `CLAUDE.md` `## Project Status`:**
-1. Update the current in-progress bullet to reflect the new phase/task
-2. Update the "Current phase" line
-3. Update "Engine stats" and "Content stats" summary lines
+**Note:** CLAUDE.md no longer has a `## Project Status` section — project status lives entirely in `Docs/project-status.md`. Do not add status content to CLAUDE.md.
 
 **How to get accurate stats:**
 ```bash
@@ -157,15 +154,11 @@ The meat of the note. Tables, mechanics, rules — whatever describes THIS syste
 
 **What:** Update `.planning/BACKLOG.md` to reflect completed work and any new items discovered.
 
-> **Note:** Notion backlog was archived 2026-03-22. All backlog tracking now lives in `.planning/BACKLOG.md`.
-
 **Actions:**
 1. Read `.planning/BACKLOG.md`
-2. If any backlog items were completed, change their status emoji from 🔲 to ✅ and add a completion date
-3. If the work revealed new future tasks, add them in the appropriate section
-4. If implementation prerequisites were completed, check them off
-
-**This is a simple file edit — no API calls needed.** Much faster than the old Notion workflow.
+2. If any backlog items were completed, change their kanban state to `✅` and add a completion date. Kanban states: `💡` idea · `📋` todo · `🎨` design · `📐` plan · `🏗️` dev · `✅` done
+3. If the work revealed new future tasks, add them with a `TB-XXX` ID (check "Next ID" in the file header)
+4. Periodically move `✅` items to `.planning/BACKLOG_HISTORY.md` to keep the active backlog readable
 
 ### Step 6: Commit Documentation Changes
 
@@ -193,7 +186,7 @@ Commit all repo-level docs: CLAUDE.md, `Docs/changelog.md`, `Docs/project-status
 | `obsidian_list_files_in_dir` | Check what notes exist | Use before creating to avoid duplicates |
 | `git commit` | Commit doc changes | CLAUDE.md + Docs/ + .planning/BACKLOG.md |
 
-> **Note:** Notion tools are no longer needed. Notion backlog was archived 2026-03-22. All tracking is in repo markdown files.
+> **Note:** Notion has some remaining content (not yet migrated to Obsidian) but is not used for active tracking. All backlog and status tracking lives in repo markdown files.
 
 ## Common Mistakes
 

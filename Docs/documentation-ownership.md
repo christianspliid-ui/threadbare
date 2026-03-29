@@ -8,16 +8,16 @@
 | Surface | Owns | Does NOT own |
 |---------|------|--------------|
 | **Obsidian vault** (`TheFantasyWorldSimulator/`) | Domain model: systems, mechanics, relationships, terminology definitions | Task tracking, implementation rationale, project status |
-| **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, backlog, milestone roadmaps | System definitions, visual documentation |
-| **Paper** | UI/system visual documentation — component anatomy, visual style, asset registry, player journey maps, interaction flows | Implementation detail (no file sizes, line counts, or code snippets) |
+| **Repo** (`Docs/`, `.planning/`) | Implementation rationale, design plans, changelog, UI patterns, project status, backlog, milestone roadmaps | System definitions |
 | **`CLAUDE.md`** | Session workflow, architectural decisions, non-functional priorities, skill routing, rejected approaches | Anything duplicated from the above — link, don't copy |
 
 ### Archived surfaces
 
 | Surface | Status | What happened |
 |---------|--------|---------------|
-| **Notion** (`Development Backlog`) | Archived 2026-03-22 | Pending items migrated to `.planning/BACKLOG.md`. Page has deprecation notice. Kept for historical reference only. |
+| **Notion** (`Development Backlog`) | Archived 2026-03-22 | Pending items migrated to `.planning/BACKLOG.md`. Some content not yet migrated to Obsidian. |
 | **Obsidian** `Build Status` note | Deprecated 2026-03-22 | Was frozen at 2026-03-05. Project status lives in `Docs/project-status.md` + `Docs/project-history.md`. |
+| **Paper** | Archived 2026-03-29 | Was planned for visual documentation (component anatomy, style tiles, asset registry). Never actively maintained. Visual docs live in `STYLE.md` and `Design/style-tile.html`. |
 
 ---
 
@@ -30,7 +30,7 @@
 - **Project status** → `Docs/project-status.md` (current focus, ≤60 lines) + `Docs/project-history.md` (append-only archive).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
-- **Visual component shape/anatomy** → Paper only. Obsidian may link to the Paper board; repo docs do not describe component appearance.
+- **Visual style** → `STYLE.md` + `Design/style-tile.html` in repo.
 
 ---
 
@@ -42,7 +42,8 @@
 - Content strategy and narrative archetypes
 
 ### Repo — `.planning/`
-- `BACKLOG.md` — prioritized future work (migrated from Notion 2026-03-22)
+- `BACKLOG.md` — prioritized future work (migrated from Notion 2026-03-22). Completed ✅ items archived to `BACKLOG_HISTORY.md`.
+- `BACKLOG_HISTORY.md` — append-only archive of completed backlog items (split from BACKLOG.md 2026-03-29)
 - `ROADMAP.md` — active milestone phase plan
 - `REQUIREMENTS.md` — milestone requirements
 - `STATE.md` — GSD executor state (machine-generated, not manually maintained)
@@ -59,11 +60,6 @@
 - `changelog.md` — append-only log of changes (date | where | what | why)
 - `ui-patterns.md` — frontend interaction conventions and component patterns
 - `documentation-ownership.md` — this file
-
-### Paper
-- `Threadbare — Style Tile` (to be split per PAPER-02: Brand + Art Direction, UI Tokens + Chrome, Hex Asset Registry, Prompt / Art Pipeline)
-- `HexZoom Component Overview` (concepts only — no file sizes or code shape per PAPER-03)
-- Player Journey Board (to be created alongside PROD-01 Vertical Slice Contract)
 
 ---
 
