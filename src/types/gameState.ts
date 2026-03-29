@@ -59,7 +59,9 @@ export interface TickEvent {
     // Control effect events
     | 'control_effect_established' | 'control_effect_lapsed'
   // Revelation events
-    | 'domain_revealed';
+    | 'domain_revealed'
+  // Army/battle events (TB-073)
+    | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'army_attrition';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
