@@ -37,7 +37,7 @@ import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -45,16 +45,32 @@ import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 
 /**
+ * Compute effective cooldown scaled by available template pool size.
+ * Large pools use full cooldown; small pools get shorter cooldowns
+ * to prevent agents from hitting `all_on_cooldown` repeatedly.
+ */
+function getEffectiveCooldown(baseCooldown: number, availableTemplateCount: number): number {
+  if (availableTemplateCount >= COOLDOWN_FULL_POOL_SIZE) return baseCooldown;
+  const scale = availableTemplateCount / COOLDOWN_FULL_POOL_SIZE;
+  return Math.max(COOLDOWN_MINIMUM, Math.round(baseCooldown * scale));
+}
+
+/**
  * Filter out candidates whose encounter template is on cooldown for this agent.
  * An encounter is on cooldown if the agent has an abandoned or completed progress
  * record whose last history tick is within the cooldown window.
+ * Cooldown duration scales with the available template pool size.
  */
 function filterByCooldown(
   candidates: EncounterCacheEntry[],
   agentId: string,
   encounterProgress: readonly EncounterProgress[],
   tick: number,
+  availableTemplateCount: number,
 ): EncounterCacheEntry[] {
+  const effectiveAbandon = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, availableTemplateCount);
+  const effectiveComplete = getEffectiveCooldown(ENCOUNTER_COMPLETION_COOLDOWN, availableTemplateCount);
+
   // Collect cooldown end ticks per template for this agent
   const cooldownEnd = new Map<string, number>();
   for (const p of encounterProgress) {
@@ -62,11 +78,11 @@ function filterByCooldown(
     if (p.status === 'abandoned') {
       const lastStep = p.history[p.history.length - 1];
       const abandonedAt = lastStep?.tick ?? p.startedTick;
-      cooldownEnd.set(p.encounterId, abandonedAt + ENCOUNTER_ABANDON_COOLDOWN);
+      cooldownEnd.set(p.encounterId, abandonedAt + effectiveAbandon);
     } else if (p.status === 'completed') {
       const lastStep = p.history[p.history.length - 1];
       const completedAt = lastStep?.tick ?? p.startedTick;
-      cooldownEnd.set(p.encounterId, completedAt + ENCOUNTER_COMPLETION_COOLDOWN);
+      cooldownEnd.set(p.encounterId, completedAt + effectiveComplete);
     }
   }
 
@@ -342,11 +358,13 @@ export function phaseAgentDecision(
       emitTrace(filterResult.trace as TraceEntry);
 
       // Filter out encounters on cooldown (abandoned/completed recently)
+      // Pool size for dynamic cooldown = raw candidates after filter pipeline
       const candidates = filterByCooldown(
         rawCandidates,
         agentId,
         state.encounterProgress,
         state.tick,
+        rawCandidates.length,
       );
 
       // Score and select
@@ -379,6 +397,7 @@ export function phaseAgentDecision(
           score: selCandidate?.finalScore ?? 0,
           travelCost: selCandidate?.travelCost ?? 0,
           completionProb: selCandidate?.completionProb ?? 0,
+          desireMultiplier: selCandidate?.desireMultiplier,
         });
 
         if (sel.action === 'start_local' || sel.action === 'attempt_remote') {
@@ -523,6 +542,7 @@ export function phaseAgentDecision(
           : null;
         const driftTargetNode = idle.targetLocationId ? graph.getNode(idle.targetLocationId) : null;
 
+        const effectiveCd = getEffectiveCooldown(ENCOUNTER_ABANDON_COOLDOWN, rawCandidates.length);
         emitTrace({
           category: 'idle_decision',
           tick: state.tick,
@@ -540,12 +560,13 @@ export function phaseAgentDecision(
           },
           candidatesBeforeCooldown: rawCandidates.length,
           candidatesAfterCooldown: candidates.length,
+          effectiveCooldown: effectiveCd,
           bestScore,
           scoreThreshold: IDLE_SCORE_THRESHOLD,
           idleAction: idle.action,
           driftTargetId: idle.targetLocationId,
           driftTargetName: driftTargetNode?.name ?? undefined,
-          summary: `${actor.name} idles (${idleReason}): ${idle.action}${idle.targetLocationId ? ` → ${driftTargetNode?.name ?? idle.targetLocationId}` : ''}${bestScore !== null ? ` [best=${bestScore.toFixed(3)}, threshold=${IDLE_SCORE_THRESHOLD}]` : ''}`,
+          summary: `${actor.name} idles (${idleReason}): ${idle.action}${idle.targetLocationId ? ` → ${driftTargetNode?.name ?? idle.targetLocationId}` : ''}${bestScore !== null ? ` [best=${bestScore.toFixed(3)}, threshold=${IDLE_SCORE_THRESHOLD}]` : ''} [cd=${effectiveCd}]`,
         } as TraceEntry);
 
         // Timeline: IDLE event

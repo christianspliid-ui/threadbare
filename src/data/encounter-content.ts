@@ -78,7 +78,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.deep_descent',
     name: 'The Deep Descent',
-    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining'],
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon'],
     reachPrimary: 'iron',
     reachSecondary: 'shadow',
@@ -837,7 +837,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.relic_hunt',
     name: 'The Relic Hunt',
-    locationTypes: ['ruins', 'ruined_tower', 'ruined_city'],
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'unexplored_poi'],
     sublocationTypes: ['sublocation-type.dungeon', 'sublocation-type.library'],
     reachPrimary: 'eye',
     reachSecondary: 'shadow',
@@ -906,7 +906,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.harvest_bounty',
     name: 'The Harvest Bounty',
-    locationTypes: ['farmland', 'hamlet', 'oasis'],
+    locationTypes: ['farmland', 'hamlet', 'oasis', 'ruined_village'],
     reachPrimary: 'flesh',
     reachSecondary: 'stone',
     encounterType: 'acquire',
@@ -1181,7 +1181,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.rare_material',
     name: 'The Rare Material',
-    locationTypes: ['mining', 'camp', 'wilderness'],
+    locationTypes: ['mining', 'camp', 'wilderness', 'unexplored_poi'],
     reachPrimary: 'stone',
     reachSecondary: 'gold',
     encounterType: 'acquire',
@@ -1324,7 +1324,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.brew_potion',
     name: 'The Brew Potion',
-    locationTypes: ['hamlet', 'shrine', 'camp'],
+    locationTypes: ['hamlet', 'shrine', 'camp', 'ruined_village'],
     reachPrimary: 'flesh',
     reachSecondary: 'veil',
     encounterType: 'create',
@@ -1394,7 +1394,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.inscribe_ward',
     name: 'The Inscribe Ward',
-    locationTypes: ['tower', 'temple', 'ruins'],
+    locationTypes: ['tower', 'temple', 'ruins', 'ruined_tower'],
     reachPrimary: 'veil',
     reachSecondary: 'eye',
     encounterType: 'create',
@@ -1532,7 +1532,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.craft_talisman',
     name: 'The Craft Talisman',
-    locationTypes: ['shrine', 'camp', 'wilderness'],
+    locationTypes: ['shrine', 'camp', 'wilderness', 'unexplored_poi'],
     reachPrimary: 'veil',
     reachSecondary: 'veil',
     encounterType: 'create',
@@ -1673,7 +1673,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.recruit_militia',
     name: 'The Recruit Militia',
-    locationTypes: ['hamlet', 'town', 'farmland'],
+    locationTypes: ['hamlet', 'town', 'farmland', 'ruined_village', 'battleground'],
     reachPrimary: 'heart',
     reachSecondary: 'iron',
     encounterType: 'hire',
@@ -1983,7 +1983,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.hire_guide',
     name: 'The Hire Guide',
-    locationTypes: ['wilderness', 'oasis', 'camp'],
+    locationTypes: ['wilderness', 'oasis', 'camp', 'unexplored_poi'],
     reachPrimary: 'star',
     reachSecondary: 'gold',
     encounterType: 'hire',
@@ -2048,7 +2048,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.tavern_brawl',
     name: 'The Tavern Brawl',
-    locationTypes: ['town', 'hamlet', 'camp'],
+    locationTypes: ['town', 'hamlet', 'camp', 'ruined_village'],
     reachPrimary: 'iron',
     reachSecondary: 'flesh',
     encounterType: 'duel',
@@ -2254,7 +2254,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.shadow_ambush',
     name: 'The Shadow Ambush',
-    locationTypes: ['ruins', 'wilderness', 'camp'],
+    locationTypes: ['ruins', 'wilderness', 'camp', 'unexplored_poi'],
     reachPrimary: 'shadow',
     reachSecondary: 'iron',
     encounterType: 'duel',
@@ -3082,7 +3082,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.barter_survival',
     name: 'The Barter Survival',
-    locationTypes: ['wilderness', 'hamlet', 'camp'],
+    locationTypes: ['wilderness', 'hamlet', 'camp', 'ruined_village', 'oasis'],
     reachPrimary: 'gold',
     reachSecondary: 'flesh',
     encounterType: 'trade',
@@ -3225,7 +3225,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
   {
     id: 'encounter.aid_refugees',
     name: 'The Refugee Aid',
-    locationTypes: ['hamlet', 'town'],
+    locationTypes: ['hamlet', 'town', 'ruined_village'],
     reachPrimary: 'heart',
     reachSecondary: 'flesh',
     encounterType: 'assist',
