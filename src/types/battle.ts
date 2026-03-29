@@ -76,3 +76,32 @@ export const TACTICAL_MAX_MULTIPLIER = 20;
 
 /** Fortification multiplier after breach (30% of original) */
 export const BREACH_FORTIFICATION_REDUCTION = 0.3;
+
+// ─── Siege Constants ────────────────────────────────────────────────────
+
+/** Ticks between spotlights at siege start */
+export const SIEGE_INITIAL_INTERVAL = 5;
+
+/** How many ticks before spotlight interval decreases by 1 */
+export const SIEGE_ACCELERATION_RATE = 6;
+
+/** Maximum siege length before forced resolution */
+export const SIEGE_MAX_DURATION = 40;
+
+/** Higher than field battle — sieges are harder to decide */
+export const SIEGE_RESOLUTION_THRESHOLD = 12;
+
+/** Defenders start with positive momentum (walls help) */
+export const SIEGE_DEFENDER_MOMENTUM_BONUS = 2;
+
+/** Tick at which starvation encounter fires (if not resupplied) */
+export const SIEGE_STARVATION_TICK = 15;
+
+/** How far the siege broadcasts regional encounters (hex distance) */
+export const SIEGE_REGIONAL_ENCOUNTER_RANGE = 5;
+
+/** Attacker Quintessence loss per tick during siege (lower than field — waiting) */
+export const SIEGE_COMBAT_ATTRITION_ATTACKER = 1.0;
+
+/** Defender Quintessence loss per tick during siege (even lower — behind walls) */
+export const SIEGE_COMBAT_ATTRITION_DEFENDER = 0.5;
