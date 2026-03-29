@@ -6,6 +6,12 @@
 
 ---
 
+## ✅ TB-078 · Ascendant Sheet QA Fixes (2026-03-29, complete 2026-03-29)
+
+Tooltip z-index 50→70 (systemic fix for all in-modal tooltips). Added foundation.order to world-model.json. Foundation spheres added to ProseKeyword SPHERE_NAMES_SET. Close buttons migrated to IconButton. Modal aria-label support. Essence section uses semantic ul/li. ProseKeyword migrated to shared Tooltip. Sphere gradient on essence rows. Staggered section animations. Narrative age phrase. Essence split into Creation and Foundation sphere sub-groups.
+
+---
+
 ## ✅ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29, complete 2026-03-29)
 
 All 4 sessions complete. Fixed 7 root causes from seed-42 encounter analysis. Session 1: template coverage expansion, score display fix, dynamic cooldowns. Session 2: familiarity discount, exploration bonus, travel cost dampening, personality amplification. Session 3: born-later spawn preference (content-rich locations), difficulty escalation (early/mid/late tier multipliers). Session 4: encounter chains (3 starter chains with sequential stage progression, chain scoring bonus, completion capability boost). 48 new constants in agent-behavior-constants.ts. New encounterChains.ts module. Filter pipeline Stage 3 now enforces chain prerequisites.
