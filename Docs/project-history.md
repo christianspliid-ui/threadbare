@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-078 AscendantSheet QA fixes — tooltip z-index, foundation.order, IconButton close, a11y, polish (2026-03-29)
 - Discovery phase: ✅ Complete (all 22 DISC items resolved)
 - Phase 1 (Core Logic): ✅ Complete — graph, traits, resolution, temporal, agents, view levels, simulation
 - Phase 2A (Influence & Ascendant): ✅ Complete — influence essence, ascendant creation
