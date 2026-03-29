@@ -385,7 +385,7 @@ describe('generateMeetingCallback', () => {
   });
 
   it('returns callback for each reach domain', () => {
-    const reaches = ['iron', 'heart', 'eye', 'shadow', 'veil', 'stone', 'star', 'gold', 'flesh'] as const;
+    const reaches = ['iron', 'heart', 'eye', 'shadow', 'veil', 'stone', 'star', 'gold', 'gold'] as const;
 
     for (const reach of reaches) {
       const record: MeetingChoiceRecord = {

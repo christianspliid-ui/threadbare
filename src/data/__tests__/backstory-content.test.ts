@@ -38,9 +38,9 @@ const ALL_BOND_BASES = ['friendship', 'rivalry', 'loyalty', 'alliance', 'trade',
 const ALL_TRAIT_CATEGORIES = ['innate', 'mastery', 'reputation', 'scar', 'condition', 'destiny'];
 
 const ALL_VALUE_PAIRS = [
-  'loyalty_ambition', 'courage_prudence', 'mercy_ruthlessness', 'honesty_cunning',
-  'sacrifice_survival', 'loyalty_ambition', 'tradition_novelty', 'humility_pride',
-  'mercy_ruthlessness', 'asceticism_extravagance',
+  'mercy_ruthlessness', 'asceticism_extravagance', 'honesty_cunning',
+  'tradition_novelty', 'loyalty_ambition', 'revelation_discretion',
+  'preservation_transformation', 'sacrifice_survival', 'courage_prudence',
 ];
 
 const ALL_FEAR_KEYS = ALL_VALUE_PAIRS.flatMap((pair) => [`${pair}_positive`, `${pair}_negative`]);
@@ -187,7 +187,7 @@ describe('TURNING_POINT_PROSE', () => {
     });
   });
 
-  test('covers all 10 value pairs', () => {
+  test('covers all 9 value pairs', () => {
     expect(Object.keys(TURNING_POINT_PROSE).length).toBe(ALL_VALUE_PAIRS.length);
   });
 });
@@ -201,7 +201,7 @@ describe('CONTRADICTION_PROSE', () => {
     'CONTRADICTION_PROSE',
   );
 
-  test('covers all 10 value pairs', () => {
+  test('covers all 9 value pairs', () => {
     expect(Object.keys(CONTRADICTION_PROSE).length).toBe(ALL_VALUE_PAIRS.length);
   });
 });
@@ -237,8 +237,8 @@ describe('DECISIVE_NATURE_PROSE', () => {
 // ─── Table 9: FEAR_PROSE ─────────────────────────────────────────────────────
 
 describe('FEAR_PROSE', () => {
-  test('has exactly 20 keys (10 value pairs × 2 poles)', () => {
-    expect(Object.keys(FEAR_PROSE).length).toBe(20);
+  test('has exactly 18 keys (9 value pairs × 2 poles)', () => {
+    expect(Object.keys(FEAR_PROSE).length).toBe(18);
   });
 
   test('has all 20 expected keys', () => {

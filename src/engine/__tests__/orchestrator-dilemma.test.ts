@@ -24,7 +24,7 @@ describe('phaseDilemmaDetection', () => {
       force: 'iron',
       matter: 'gold',
       energy: 'veil',
-      life: 'flesh',
+      life: 'gold',
       mind: 'shadow',
       spirit: 'heart',
       time: 'star',
@@ -35,7 +35,7 @@ describe('phaseDilemmaDetection', () => {
     for (const sphere of Object.keys(sphereToDomainMap)) {
       const domain = sphereToDomainMap[sphere];
       expect(domain).toBeDefined();
-      expect(['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh']).toContain(domain);
+      expect(['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold']).toContain(domain);
     }
   });
 
@@ -44,13 +44,13 @@ describe('phaseDilemmaDetection', () => {
   it('allows non-gold/non-iron spheres to trigger dilemmas when combined with other factors', () => {
     // Base (no additional factors) should not meet threshold
     const veil = computeStakes('veil', 0, false, false);
-    const flesh = computeStakes('flesh', 0, false, false);
+    const star = computeStakes('star', 0, false, false);
     const heart = computeStakes('heart', 0, false, false);
     const shadow = computeStakes('shadow', 0, false, false);
 
     // These don't meet threshold on their own
     expect(veil).toBeLessThan(DILEMMA_STAKES_THRESHOLD);
-    expect(flesh).toBeLessThan(DILEMMA_STAKES_THRESHOLD);
+    expect(star).toBeLessThan(DILEMMA_STAKES_THRESHOLD);
     expect(heart).toBeLessThan(DILEMMA_STAKES_THRESHOLD);
     expect(shadow).toBeLessThan(DILEMMA_STAKES_THRESHOLD);
 

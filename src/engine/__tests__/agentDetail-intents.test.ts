@@ -21,7 +21,7 @@ function addAgent(
     name: 'Test Agent',
     properties: {
       actorType: 'individual',
-      domainCapabilities: { iron: 5, gold: 3, shadow: 2, veil: 1, heart: 1, eye: 1, stone: 1, star: 1, flesh: 1 },
+      domainCapabilities: { iron: 5, gold: 3, shadow: 2, veil: 1, heart: 1, eye: 1, stone: 1, star: 1 },
       axiologicalProfile: { loyalty_ambition: 0.7 },
     },
   });

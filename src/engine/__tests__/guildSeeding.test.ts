@@ -367,9 +367,9 @@ describe('generateGuildDomainCapabilities', () => {
     }
   });
 
-  it('all 9 reach domains are present', () => {
+  it('all 8 reach domains are present', () => {
     const caps = generateGuildDomainCapabilities('traders', rng);
-    const domains = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+    const domains = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
     for (const domain of domains) {
       expect(caps[domain as keyof typeof caps]).toBeGreaterThanOrEqual(0);
     }

@@ -29,7 +29,7 @@ function balancedProfile(): AxiologicalProfile {
     sacrifice_survival: 0,
     loyalty_ambition: 0,
     tradition_novelty: 0,
-    humility_pride: 0,
+    preservation_transformation: 0,
     mercy_ruthlessness: 0,
     asceticism_extravagance: 0,
   };

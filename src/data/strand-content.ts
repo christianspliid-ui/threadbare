@@ -206,7 +206,7 @@ export const REACH_FEAR_LABELS: Record<string, [string, string]> = {
   Eye: ['Ignorance Void', 'Knowledge Curse'],
   Stone: ['Collapse Dread', 'Entombment'],
   Star: ['Lostness', 'Binding'],
-  Flesh: ['Plague Decay', 'Perfection Demand'],
+  // Flesh reach removed in TB-075 Phase 1 — Quintessence will replace it
 };
 
 // ============================================================================
@@ -218,9 +218,9 @@ export const REACH_FEAR_LABELS: Record<string, [string, string]> = {
  * Used in tests to ensure content is sufficiently populated.
  */
 export const CONTENT_COUNTS = {
-  VALUE_LABELS: 10,
-  INTENSITY_VALUE_LABELS: 10,
-  FEAR_DESCRIPTIONS: 10,
-  REACH_BASED_FEARS: 9,
+  VALUE_LABELS: 9,
+  INTENSITY_VALUE_LABELS: 9,
+  FEAR_DESCRIPTIONS: 9,
+  REACH_BASED_FEARS: 8,
   STRAND_SECTION_TITLES: 6,
 } as const;

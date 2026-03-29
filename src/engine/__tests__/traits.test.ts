@@ -21,7 +21,7 @@ function makeTraitNode(id: string, overrides: Partial<TraitDefinitionProperties>
       importance: 0.5,
       maxLevel: 3,
       visibility: 'public',
-      domainContributions: { iron: 2, flesh: 1 },
+      domainContributions: { iron: 2, gold: 1 },
       decayPeriod: 90,
       tags: [],
       flavorText: 'test',
@@ -117,7 +117,7 @@ describe('Trait System', () => {
       reinforceTrait(graph, 'actor.thorin', 'trait.battle_hardened', 20); // level 2
       const contributions = getEffectiveDomainContributions(graph, 'actor.thorin');
       expect(contributions.iron).toBe(4); // 2 per level × 2
-      expect(contributions.flesh).toBe(2); // 1 per level × 2
+      expect(contributions.gold).toBe(2); // 1 per level × 2
     });
 
     it('stacks contributions from multiple traits', () => {
@@ -125,7 +125,7 @@ describe('Trait System', () => {
       assignTrait(graph, 'actor.thorin', 'trait.dragon_slayer', { tick: 15, source: 'event' });
       const contributions = getEffectiveDomainContributions(graph, 'actor.thorin');
       expect(contributions.iron).toBe(4); // 2 + 2
-      expect(contributions.flesh).toBe(1); // 1 + 0
+      expect(contributions.gold).toBe(1); // 1 + 0
       expect(contributions.star).toBe(1); // 0 + 1
     });
   });

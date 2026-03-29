@@ -25,14 +25,14 @@ function makeProfile(overrides: Partial<AxiologicalProfile> = {}): AxiologicalPr
   const base: AxiologicalProfile = {
     loyalty_ambition: 0, courage_prudence: 0, mercy_ruthlessness: 0,
     honesty_cunning: 0, sacrifice_survival: 0, loyalty_ambition: 0,
-    tradition_novelty: 0, humility_pride: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
+    tradition_novelty: 0, preservation_transformation: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
   };
   return { ...base, ...overrides };
 }
 
 function makeDomainCaps() {
   const caps: Record<string, number> = {};
-  for (const d of ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh']) {
+  for (const d of ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold']) {
     caps[d] = 3;
   }
   return caps;

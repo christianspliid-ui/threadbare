@@ -207,11 +207,11 @@ describe('validateAgentIntegrity', () => {
     expect(result.warnings.some(w => w.includes('member_of') && w.includes('location'))).toBe(true);
   });
 
-  it('born agent with all 10 axiological pairs passes profile check', () => {
+  it('born agent with all 9 axiological pairs passes profile check', () => {
     const graph = new WorldGraph();
     const profile = makeProfile();
-    // Verify all 10 pairs are present
-    expect(Object.keys(profile)).toHaveLength(10);
+    // Verify all 9 pairs are present (Flesh reach removed in TB-075)
+    expect(Object.keys(profile)).toHaveLength(9);
 
     graph.addNode({
       id: 'born.1',
