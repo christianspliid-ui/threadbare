@@ -19,6 +19,7 @@ import { SphereIcon } from '../shared/SphereIcon';
 import { SectionHeading } from '../shared/SectionHeading';
 import { ProseKeyword } from '../ProseKeyword';
 import { Tooltip } from '../shared/Tooltip';
+import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 import { getThreadsFrom } from '../../engine/graphQueries';
 
@@ -126,6 +127,15 @@ function cycleToOrdinal(cycle: number): string {
   return `Cycle ${cycle}`;
 }
 
+function tickToNarrativeAge(tick: number): string {
+  if (tick < 10) return 'The world is newly born.';
+  if (tick < 30) return 'The first age stirs.';
+  if (tick < 60) return 'Mortal memory begins to take root.';
+  if (tick < 120) return 'Generations have passed beneath your gaze.';
+  if (tick < 200) return 'Empires have risen and crumbled.';
+  return 'The ages blur into legend.';
+}
+
 function capitalize(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -170,17 +180,18 @@ export function AscendantSheet({
   const naturePhrase = DIVINE_NATURE_PHRASES[primarySphere] ?? DIVINE_NATURE_PHRASES.force;
 
   return (
-    <Modal open={open} onClose={onClose} maxWidth={960}>
+    <Modal open={open} onClose={onClose} maxWidth={960} aria-label="Ascendant character sheet">
       {/* ── Header Zone (mirrors AgentProfileModal) ─────────────────── */}
       <div className="border-b p-6 pb-4 relative" style={{ borderColor: 'var(--border-subtle)' }}>
-        <button
-          onClick={onClose}
-          aria-label="Close ascendant sheet"
-          className="absolute top-4 right-4 transition-colors text-lg"
-          style={{ color: 'var(--accent-gold)' }}
-        >
-          ✕
-        </button>
+        <div className="absolute top-4 right-4">
+          <IconButton
+            icon={<span>✕</span>}
+            variant="close"
+            size="sm"
+            aria-label="Close ascendant sheet"
+            onClick={onClose}
+          />
+        </div>
 
         <div className="flex gap-4 mb-3">
           {/* Sphere sigil — occupies the portrait slot */}
@@ -213,7 +224,7 @@ export function AscendantSheet({
             {/* Metadata */}
             <div className="space-y-1">
               <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                {cycleToOrdinal(gameState.cycle)}
+                {cycleToOrdinal(gameState.cycle)} — {tickToNarrativeAge(gameState.tick)}
               </p>
             </div>
           </div>
@@ -247,7 +258,7 @@ export function AscendantSheet({
         <div className="space-y-4">
 
           {/* Divine Nature — like agent Overview > Identity */}
-          <section>
+          <section className="anim-fade-up-enter" style={{ animationDelay: '0ms' }}>
             <SectionHeading as="h2">Divine Nature</SectionHeading>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               You are a god of{' '}
@@ -259,7 +270,7 @@ export function AscendantSheet({
           </section>
 
           {/* Dominion — matches ProwessTab domain grid exactly */}
-          <section>
+          <section className="anim-fade-up-enter" style={{ animationDelay: '50ms', animationFillMode: 'backwards' }}>
             <SectionHeading as="h2">Dominion</SectionHeading>
             <div className="grid grid-cols-3 gap-2">
               {REACH_DOMAINS.map((reach) => {
@@ -287,9 +298,9 @@ export function AscendantSheet({
 
           {/* Essence — prose descriptors, no numbers */}
           {sortedEssence.length > 0 && (
-            <section>
+            <section className="anim-fade-up-enter" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
               <SectionHeading as="h2">Essence</SectionHeading>
-              <div className="space-y-1">
+              <ul className="space-y-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
                 {sortedEssence.map(([sphere]) => {
                   const sphereName = sphere as SphereName;
                   const amount = gameState.essencePool[sphereName];
@@ -299,12 +310,15 @@ export function AscendantSheet({
                   const isSecondary = sphereName === secondarySphere;
 
                   return (
-                    <div
+                    <li
                       key={sphere}
-                      className="flex items-center gap-2 py-1"
+                      className="flex items-center gap-2 py-1 rounded"
                       style={{
                         borderBottom: '1px solid var(--border-subtle)',
                         opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
+                        background: `linear-gradient(90deg, ${color}12 0%, transparent 60%)`,
+                        paddingLeft: '0.5rem',
+                        paddingRight: '0.5rem',
                       }}
                     >
                       <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
@@ -315,15 +329,15 @@ export function AscendantSheet({
                       >
                         {descriptor}
                       </span>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             </section>
           )}
 
           {/* Divine Threads — like agent Bonds section */}
-          <section>
+          <section className="anim-fade-up-enter" style={{ animationDelay: '150ms', animationFillMode: 'backwards' }}>
             <SectionHeading as="h2">Divine Threads</SectionHeading>
             <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
               {threadsToProseDescriptor(threadEdges.length)}
