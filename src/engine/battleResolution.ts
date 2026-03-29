@@ -23,6 +23,7 @@ import {
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
 import { tickSiege } from './siegeResolution';
+import { applyAftermath } from './battleAftermath';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -323,6 +324,9 @@ export function resolveBattle(
     attackerArmyId: bs.attackerArmyId,
     defenderArmyId: bs.defenderArmyId,
   });
+
+  // Apply aftermath consequences (destruction, commander fate, etc.)
+  applyAftermath(state, bs, resolutionType);
 
   // Remove battle node (cleans up participates_in and located_at edges)
   graph.removeNode(battleNodeId);
