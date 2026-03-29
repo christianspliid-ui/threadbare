@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-conflict-destruction/12-01-PLAN.md
-last_updated: "2026-03-29T20:30:06.998Z"
+stopped_at: Completed 12-conflict-destruction/12-02-PLAN.md
+last_updated: "2026-03-29T20:35:09.321Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 22
-  completed_plans: 16
+  completed_plans: 17
   percent: 93
 ---
 
@@ -167,6 +167,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
 | Phase 11-agent-character-sheet P06 | 8 | 2 tasks | 12 files |
 | Phase 12-conflict-destruction P01 | 0 | 10 tasks | 22 files |
+| Phase 12-conflict-destruction P02 | 8 | 6 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -277,6 +278,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12-conflict-destruction]: Faction ambitions stored as graph nodes (type: ambition) connected via pursues edges — same pattern as agent ambitions, single source of truth
 - [Phase 12-conflict-destruction]: phaseFactionAmbitions placed at position 6.651 (after phaseAmbitionProgress) — faction evaluation is slow (every 5 ticks) and not needed before agent decision on the same tick
 - [Phase 12-conflict-destruction]: Mercenary company reputation decays at 0.004/tick vs guild 0.003/tick — mercs are transactional, faster decay is intentional flavor
+- [Phase 12-conflict-destruction]: Army actor nodes reuse existing actor type with armyState property bag — no new node type required
+- [Phase 12-conflict-destruction]: Army size determined deterministically from faction Gold capability tier; no PRNG
+- [Phase 12-conflict-destruction]: spawnArmy called directly from phaseFactionAmbitions (not through encounter system) — mc.army.raise is narrative template, not spawn trigger
 
 ### Pending Todos
 
@@ -288,6 +292,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:29:51.682Z
-Stopped at: Completed 12-conflict-destruction/12-01-PLAN.md
+Last session: 2026-03-29T20:35:09.319Z
+Stopped at: Completed 12-conflict-destruction/12-02-PLAN.md
 Resume file: None
