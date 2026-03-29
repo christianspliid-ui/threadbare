@@ -65,6 +65,7 @@ import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
+import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
@@ -1037,6 +1038,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.357: Battle Tick (TB-073 — process active battles: attrition, momentum, resolution)
   phaseBattleTick(s);
+
+  // Phase 2.358: Army Notifications (TB-073 — convert army/battle traces to TickEvents)
+  s = { ...s, ...phaseArmyNotifications(s, nextEventId) };
 
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
   s = { ...s, ...phaseColocationDetection(s) };
