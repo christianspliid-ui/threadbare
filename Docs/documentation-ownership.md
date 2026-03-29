@@ -26,7 +26,7 @@
 **One fact, one home.** If the same information exists in two places, one of them is wrong or stale.
 
 - **What to build next** → `.planning/BACKLOG.md` only. Prioritized backlog of future work.
-- **Active milestone tracking** → `.planning/ROADMAP.md` + `.planning/STATE.md`. Phase-level progress and decisions.
+- **Active milestone tracking** → `.planning/ROADMAP.md`. Phase-level progress and decisions. (`.planning/STATE.md` is machine-generated GSD executor state — not manually maintained.)
 - **Project status** → `Docs/project-status.md` (current focus, ≤60 lines) + `Docs/project-history.md` (append-only archive).
 - **System definitions** (e.g. "what is the Doom Clock") → Obsidian only. Other surfaces link to it.
 - **Why a decision was made** → `Docs/plans/` only. CLAUDE.md references the plan doc, not the rationale itself.
@@ -45,7 +45,7 @@
 - `BACKLOG.md` — prioritized future work (migrated from Notion 2026-03-22)
 - `ROADMAP.md` — active milestone phase plan
 - `REQUIREMENTS.md` — milestone requirements
-- `STATE.md` — session continuity, decisions, velocity
+- `STATE.md` — GSD executor state (machine-generated, not manually maintained)
 - `phases/` — per-phase plan documents
 
 ### Repo — `Docs/plans/`
@@ -74,7 +74,7 @@ Some facts change so frequently they must not be documented statically:
 | Fact | Where | How |
 |------|-------|-----|
 | File sizes / line counts | Nowhere static | Check live with `wc -l` |
-| Test counts | `.planning/STATE.md` (approximate) | Updated after each plan completion |
+| Test counts | `.planning/STATE.md` (GSD executor auto-updates) | Approximate; updated after each plan completion |
 | Node/edge counts | `world-model.json` is the source; `CLAUDE.md` note is updated per session | |
 | Engine module count | `CLAUDE.md` project status line only | Updated when meaningfully changed |
 

@@ -43,6 +43,8 @@ cp .planning/BACKLOG.md ".planning/.versions/BACKLOG-$(date +%Y-%m-%dT%H-%M).md"
 # then edit BACKLOG.md
 ```
 
+**Post-write integrity check (recommended):** After writing a coordination file, re-read the last ~20 bytes and verify no null bytes (`\x00`) are present. VM sync corruption typically manifests as trailing null bytes or mid-file truncation. If detected, restore from the snapshot immediately.
+
 **Recovery:** If a file is corrupted, restore from the most recent clean snapshot in `.planning/.versions/`.
 
 **What's versioned:** `.planning/.versions/` is gitignored — snapshots stay local, never committed. The coordination files themselves remain git-tracked so Claude Code can commit meaningful state changes.
