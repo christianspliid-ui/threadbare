@@ -23,11 +23,23 @@ import { assignTrait } from './traits';
 
 // ─── Pool Operations ─────────────────────────────────────────────────
 
+/** Starting essence per sphere for new ascendants. */
+export const INITIAL_ESSENCE_PER_SPHERE = 50;
+
 /** Create an empty essence pool (all spheres at 0). */
 export function createEmptyEssencePool(): EssencePool {
   const pool = {} as EssencePool;
   for (const sphere of SPHERE_NAMES) {
     pool[sphere] = 0;
+  }
+  return pool;
+}
+
+/** Create a starting essence pool (all spheres at INITIAL_ESSENCE_PER_SPHERE). */
+export function createStartingEssencePool(): EssencePool {
+  const pool = {} as EssencePool;
+  for (const sphere of SPHERE_NAMES) {
+    pool[sphere] = INITIAL_ESSENCE_PER_SPHERE;
   }
   return pool;
 }
