@@ -106,7 +106,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
 
     const nodeTypeMatches = (categories as readonly string[]).includes(target.nodeType)
       || (target.nodeType === 'location' && (categories as readonly string[]).includes('sublocation') && target.subtype === 'sublocation')
-      || (target.nodeType === 'location' && (categories as readonly string[]).includes('hex') && target.subtype === 'hex');
+      || (target.nodeType === 'location' && (categories as readonly string[]).includes('hex') && target.subtype !== 'sublocation');
 
     if (!nodeTypeMatches) {
       counts.byNodeType++;
