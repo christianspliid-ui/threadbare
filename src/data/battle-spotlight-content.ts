@@ -9,20 +9,16 @@
  * - A `condition` function that evaluates current battle state
  * - `threshold: true` means it fires at most once per battle
  * - Steps use Iron/Heart/Shadow/Veil reaches for intervention
- * - `momentumShift` in outcome properties is read by battleResolution.ts
+ * - `momentumOnSuccess`/`momentumOnFailure` are read by battleResolution.ts
  *
  * Design doc: Docs/plans/2026-03-29-conflict-and-destruction-design.md — Phase 3
+ *
+ * Note: Condition helper functions are defined inline here (not imported from
+ * battleSpotlights.ts) to avoid a circular dependency between the two modules.
  */
 
 import type { GameState } from '../types/gameState';
 import type { BattleState } from '../types/battle';
-import {
-  armyBelowQPercent,
-  bothCommandersChampionTier,
-  rivalAscendantInvested,
-  momentumNearZero,
-  newArmyArrivedThisTick,
-} from '../engine/battleSpotlights';
 
 // ─── Template Shape ──────────────────────────────────────────────────────────
 
@@ -59,11 +55,85 @@ const SPOTLIGHT_MOMENTUM_MINOR = 1;   // Small nudge
 const SPOTLIGHT_MOMENTUM_MAJOR = 3;   // Significant turn
 const SPOTLIGHT_MOMENTUM_CRITICAL = 4; // Battle-defining
 
+// ─── Condition Helpers (inline — no circular imports) ────────────────────────
+
+/**
+ * Check if a battle participant army has quintessence below a percentage.
+ * Used by last_stand condition.
+ */
+function armyBelowQPercent(state: GameState, armyId: string, pct: number): boolean {
+  const node = state.graph.getNode(armyId);
+  if (!node) return false;
+  const army = node.properties.armyState as { quintessence: number; quintessenceMax: number } | undefined;
+  if (!army || army.quintessenceMax <= 0) return false;
+  return army.quintessence / army.quintessenceMax < pct;
+}
+
+/**
+ * Check if both armies have commanders at Iron Tier 5+.
+ * Used by champion_duel condition.
+ */
+function bothCommandersChampionTier(
+  state: GameState,
+  _battleNodeId: string,
+  bs: BattleState,
+): boolean {
+  return hasCommanderAtTier(state, bs.attackerArmyId, 5)
+    && hasCommanderAtTier(state, bs.defenderArmyId, 5);
+}
+
+function hasCommanderAtTier(state: GameState, armyId: string, minTier: number): boolean {
+  const graph = state.graph;
+  const cmdEdges = graph.getOutgoingEdges(armyId, 'commanded_by');
+  for (const edge of cmdEdges) {
+    const cmdNode = graph.getNode(edge.target);
+    if (!cmdNode) continue;
+    const caps = cmdNode.properties.capabilities as Record<string, { tier: number }> | undefined;
+    const ironTier = caps?.iron?.tier ?? 0;
+    if (ironTier >= minTier) return true;
+  }
+  return false;
+}
+
+/**
+ * Check if a rival ascendant is invested in this battle (has thread to participant).
+ * Used by divine_counterstrike condition.
+ */
+function rivalAscendantInvested(state: GameState, battleNodeId: string): boolean {
+  const graph = state.graph;
+  const myAscendantId = state.ascendantId;
+
+  const rivals = graph.getNodesByType('actor')
+    .filter(n => n.properties.actorType === 'ascendant' && n.id !== myAscendantId);
+
+  const participantEdges = graph.getIncomingEdges(battleNodeId, 'participates_in');
+  const participantIds = new Set(participantEdges.map(e => e.source));
+
+  for (const rival of rivals) {
+    const rivalThreads = graph.getOutgoingEdges(rival.id, 'thread');
+    for (const t of rivalThreads) {
+      if (participantIds.has(t.target)) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * Check if any new army arrived at the battle this tick (joinedTick === state.tick).
+ * "New" requires more than 2 participants (attacker + defender + newcomer).
+ */
+function newArmyArrivedThisTick(state: GameState, battleNodeId: string): boolean {
+  const graph = state.graph;
+  const edges = graph.getIncomingEdges(battleNodeId, 'participates_in');
+  if (edges.length <= 2) return false;
+  return edges.some(e => (e.properties.joinedTick as number | undefined) === state.tick);
+}
+
 // ─── Spotlight Templates ─────────────────────────────────────────────────────
 
 export const BATTLE_SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
 
-  // 1. Commander Peril — attacker's commander is in danger (momentum < -3)
+  // 1. Commander Peril — attacker is losing badly (momentum < -3)
   {
     id: 'battle.spotlight.commander_peril',
     name: 'Commander in Peril',
@@ -81,7 +151,7 @@ export const BATTLE_SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
     name: 'Turning Point',
     narrative: 'The battle hangs in the balance. Both sides are exhausted. A single decisive act could break the deadlock.',
     reaches: ['iron', 'veil'],
-    condition: (_state, _battleNodeId, bs) => momentumNearZero(bs.momentum, 2),
+    condition: (_state, _battleNodeId, bs) => Math.abs(bs.momentum) < 2,
     threshold: false,
     momentumOnSuccess: SPOTLIGHT_MOMENTUM_MAJOR,
     momentumOnFailure: -SPOTLIGHT_MOMENTUM_MINOR,
@@ -99,7 +169,7 @@ export const BATTLE_SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
     momentumOnFailure: -SPOTLIGHT_MOMENTUM_MINOR,
   },
 
-  // 4. Betrayal — unresolved faction grievance erupts mid-battle
+  // 4. Betrayal — treachery erupts in the middle of battle
   {
     id: 'battle.spotlight.betrayal',
     name: 'Betrayal in the Ranks',
@@ -117,8 +187,7 @@ export const BATTLE_SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
     name: 'The Relic Awakens',
     narrative: 'An artifact in the possession of one of the commanders begins to pulse with power. Its influence could reshape the battle — or be turned against its bearer.',
     reaches: ['veil', 'iron'],
-    condition: (state, battleNodeId, bs) => {
-      // Check if any participant has a bonded artifact
+    condition: (state, battleNodeId, _bs) => {
       const graph = state.graph;
       const participantEdges = graph.getIncomingEdges(battleNodeId, 'participates_in');
       for (const edge of participantEdges) {
