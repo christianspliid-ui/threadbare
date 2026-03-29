@@ -59,24 +59,6 @@ Promote encounter outcomes from ephemeral flat-array state to durable `event` no
 
 ---
 
-## 📐▶ TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27, designed 2026-03-29)
-
-Scale up Iron Reach from individual encounters into army-scale conflict visible on the hex map. Armies as graph entities with size/strength/morale/leader, moving with faction goals (capture settlement, raid trade route, defend territory). Battle resolution from skirmishes (encounter-scale) to army clashes (multi-step narrative events). Sieges as multi-tick encounters with escalating stakes. Sacking destroys sublocations, tanks prosperity, displaces population, creates ruins. War disrupts trade routes. Divine intervention in battles. Army supply lines connect to trade routes (M3). Folds in TB-051 (Monster Encounters) as wilderness threats.
-
-**Roadmap:** `.planning/ROADMAP.md` → M2
-**Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
-**Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-conflict-and-destruction.md`
-**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅), TB-072 Sphere Affinity (✅)
-
-**Plans:** 7/7 complete (`.planning/phases/12-conflict-destruction/`)
-- [x] 12-01-PLAN.md — Mercenary Company + faction ambition system
-- [x] 12-02-PLAN.md — Army entity types + army spawning encounters
-- [x] 12-03-PLAN.md — Army movement + Quintessence attrition
-- [x] 12-04-PLAN.md — Battle resolution + spotlight encounters
-- [x] 12-05-PLAN.md — Siege resolution + regional encounters
-- [x] 12-06-PLAN.md — Destruction + aftermath consequences
-- [x] 12-07-PLAN.md — Army visibility + UI + debug panel
-
 ---
 
 ## 💡 TB-071 · Economy Second Pass — Dynamic System Connections (2026-03-27)

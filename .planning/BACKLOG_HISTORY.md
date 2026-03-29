@@ -6,6 +6,15 @@
 
 ---
 
+## ✅ TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27, complete 2026-03-29)
+
+Phase 12 (Conflict & Destruction) delivered the M2 conflict engine: mercenary company faction (4 ranks, 10 encounters, military reach weights), faction ambition system (evaluation every 5 ticks, ambition graph nodes, revenge decay), army types (warband/regiment/host with Quintessence vitality), army spawning (Iron Tier 4+ commander, Gold Tier 3+ faction, MAX_ARMIES_PER_FACTION=1), army movement costs (terrain multipliers, 40% road discount), Quintessence attrition (base+terrain+offRoad+underfunded, threshold encounters at 70/50/30/10%), battle detection (hostile colocation → battle node), momentum-based field battle resolution (log2 size ratio × 1.5, spotlight shifts, ±8 threshold, 5-tick max), siege resolution (accelerating pacing 5→1, fortification 3x/10x/30x, starvation at tick 15, ±12 threshold, 40-tick max), destruction aftermath (minor/major/total severity, prosperity loss, settlement downgrade/ruins, sublocation destruction, trade route severance, commander capture/kill), Armies debug tab. 102 new tests across 7 plans.
+
+**Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
+**Plans:** `.planning/phases/12-conflict-destruction/` (12-01 through 12-07)
+
+---
+
 ## ✅ TB-072 · World-Soul Connection — Cosmic Metabolism (2026-03-27, complete 2026-03-29)
 
 Phase 10 (Sphere Affinity) delivered the full World-Soul connection: per-entity sphere affinity data model (triangle number scale), pressure resolution engine, 6 upstream pressure sources, downstream modifiers (prosperity, encounters, agent decisions), magic as sphere fluency, full UI layer (WorldSoulIndicator, ProseKeyword IPK, HexChronicle Soul, DebugPanel Sphere State tab), TERRAIN_SPHERE_TABLE + LOCATION_SPHERE_TABLE. M1.2 encounter wiring complete (computeEncounterResonance + computeWorldSoulValueDrift). 109 sphere tests.
