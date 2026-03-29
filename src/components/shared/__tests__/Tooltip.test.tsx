@@ -298,7 +298,7 @@ describe('Tooltip', () => {
     const tooltip = screen.getByRole('tooltip');
     expect(tooltip).toHaveStyle('position: fixed');
     expect(tooltip).toHaveStyle('max-width: 280px');
-    expect(tooltip).toHaveStyle('z-index: 50');
+    expect(tooltip).toHaveStyle('z-index: 70');
   });
 
   it('only shows label when desc is not provided', () => {

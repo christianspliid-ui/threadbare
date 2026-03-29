@@ -13,10 +13,10 @@
  * Design doc: Docs/plans/2026-03-28-world-soul-connection-design.md
  */
 
-import { useState, useId, useCallback } from 'react';
 import type { SphereName } from '../types';
 import { getSphereColor } from '../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../data/sphereTooltips';
+import { Tooltip } from './shared/Tooltip';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -27,77 +27,28 @@ interface ProseKeywordProps {
   children: React.ReactNode;
 }
 
-// ─── Tooltip style constants (NFP #1: tunability) ─────────────────────────────
-
-const TOOLTIP_STYLE: React.CSSProperties = {
-  position: 'absolute',
-  bottom: 'calc(100% + 6px)',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 9999,
-  padding: '10px 12px',
-  fontSize: '12px',
-  lineHeight: 1.6,
-  background: 'rgba(10, 10, 14, 0.97)',
-  color: '#e2e0d8',
-  borderRadius: '6px',
-  boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
-  maxWidth: '280px',
-  minWidth: '180px',
-  fontFamily: 'var(--font-prose, serif)',
-  fontStyle: 'italic',
-  fontWeight: 400,
-  textDecoration: 'none',
-  whiteSpace: 'normal',
-  pointerEvents: 'none',
-};
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function ProseKeyword({ sphere, children }: ProseKeywordProps) {
-  const [showTooltip, setShowTooltip] = useState(false);
-  const tooltipId = useId();
   const color = getSphereColor(sphere);
   const tooltipText = SPHERE_TOOLTIPS[sphere];
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowTooltip(false);
-      (e.currentTarget as HTMLElement).blur();
-    }
-  }, []);
-
   return (
-    <span
-      style={{
-        position: 'relative',
-        display: 'inline',
-        color,
-        fontWeight: 700,
-        textDecoration: 'underline',
-        textDecorationColor: `${color}88`,
-        cursor: 'help',
-      }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-      onFocus={() => setShowTooltip(true)}
-      onBlur={() => setShowTooltip(false)}
-      onKeyDown={handleKeyDown}
-      role="term"
-      tabIndex={0}
-      aria-describedby={showTooltip ? tooltipId : undefined}
-    >
-      {children}
-      {showTooltip && tooltipText && (
-        <span
-          id={tooltipId}
-          role="tooltip"
-          style={TOOLTIP_STYLE}
-        >
-          {tooltipText}
-        </span>
-      )}
-    </span>
+    <Tooltip label={sphere} desc={tooltipText}>
+      <span
+        style={{
+          color,
+          fontWeight: 700,
+          textDecoration: 'underline',
+          textDecorationColor: `${color}88`,
+          cursor: 'help',
+        }}
+        role="term"
+        tabIndex={0}
+      >
+        {children}
+      </span>
+    </Tooltip>
   );
 }
 
@@ -116,6 +67,7 @@ export function ProseKeyword({ sphere, children }: ProseKeywordProps) {
 
 const SPHERE_NAMES_SET: ReadonlySet<string> = new Set([
   'force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy',
+  'chaos', 'order', 'light', 'darkness',
 ]);
 
 const PROSE_KEYWORD_RE = /\*\*([^*]+)\*\*/g;
