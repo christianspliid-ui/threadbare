@@ -6,27 +6,12 @@
 
 ---
 
-## ✅ TB-078 · Ascendant Sheet QA Fixes (2026-03-29, complete 2026-03-29)
+## ✅ TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27, complete 2026-03-29)
 
-Tooltip z-index 50→70 (systemic fix for all in-modal tooltips). Added foundation.order to world-model.json. Foundation spheres added to ProseKeyword SPHERE_NAMES_SET. Close buttons migrated to IconButton. Modal aria-label support. Essence section uses semantic ul/li. ProseKeyword migrated to shared Tooltip. Sphere gradient on essence rows. Staggered section animations. Narrative age phrase. Essence split into Creation and Foundation sphere sub-groups.
+Phase 12 (Conflict & Destruction) delivered the M2 conflict engine: mercenary company faction (4 ranks, 10 encounters, military reach weights), faction ambition system (evaluation every 5 ticks, ambition graph nodes, revenge decay), army types (warband/regiment/host with Quintessence vitality), army spawning (Iron Tier 4+ commander, Gold Tier 3+ faction, MAX_ARMIES_PER_FACTION=1), army movement costs (terrain multipliers, 40% road discount), Quintessence attrition (base+terrain+offRoad+underfunded, threshold encounters at 70/50/30/10%), battle detection (hostile colocation → battle node), momentum-based field battle resolution (log2 size ratio × 1.5, spotlight shifts, ±8 threshold, 5-tick max), siege resolution (accelerating pacing 5→1, fortification 3x/10x/30x, starvation at tick 15, ±12 threshold, 40-tick max), destruction aftermath (minor/major/total severity, prosperity loss, settlement downgrade/ruins, sublocation destruction, trade route severance, commander capture/kill), Armies debug tab. 102 new tests across 7 plans.
 
----
-
-## ✅ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29, complete 2026-03-29)
-
-All 4 sessions complete. Fixed 7 root causes from seed-42 encounter analysis. Session 1: template coverage expansion, score display fix, dynamic cooldowns. Session 2: familiarity discount, exploration bonus, travel cost dampening, personality amplification. Session 3: born-later spawn preference (content-rich locations), difficulty escalation (early/mid/late tier multipliers). Session 4: encounter chains (3 starter chains with sequential stage progression, chain scoring bonus, completion capability boost). 48 new constants in agent-behavior-constants.ts. New encounterChains.ts module. Filter pipeline Stage 3 now enforces chain prerequisites.
-
----
-
-## ✅ TB-075 · Born-Later Spawn & Difficulty Escalation (2026-03-29, complete 2026-03-29)
-
-Completed as TB-074 Session 3. Born-later agents prefer content-rich spawn locations (≥3 templates). Difficulty tier system: early (×0.8), mid (×1.0), late (×1.3). Cache auto-rebuilds on tier change.
-
----
-
-## ✅ TB-076 · Encounter Chains (2026-03-29, complete 2026-03-29)
-
-Completed as TB-074 Session 4. 3 starter chains (Scholar's Path, Rise Through the Ranks, Merchant's Gambit). Chain progress tracked per-agent, prerequisites enforced in filter pipeline, scoring bonus for next stage, capability boost on chain completion.
+**Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
+**Plans:** `.planning/phases/12-conflict-destruction/` (12-01 through 12-07)
 
 ---
 

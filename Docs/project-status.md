@@ -3,13 +3,12 @@
 > Updated 2026-03-29.
 
 ## Current Focus
-**TB-077: Graph-Native Encounter Lifecycle** — 📐▶ Ready for implementation.
+**TB-074: Encounter Tuning & Agent Variety** — 🏗️ In progress. Sessions 1-2 of 4 complete. Sessions 3-4 remaining (born-later spawn, difficulty escalation, encounter chains).
 
 **Recent completions:**
-- ✅ TB-078 AscendantSheet QA (2026-03-29) — Tooltip z-index fix (systemic), foundation.order node, IconButton close buttons, a11y, polish, Creation/Foundation essence split.
-- ✅ TB-074 Encounter Tuning complete (2026-03-29) — All 4 sessions: template coverage, scoring overhaul, born-later spawn, difficulty escalation, encounter chains.
+- ✅ TB-073 Conflict & Destruction engine (2026-03-29) — All 7 plans implemented: mercenary company faction, faction ambitions, army types + spawning, army movement + attrition, battle resolution, siege resolution, destruction/aftermath, Armies debug tab. 102 new tests.
 - ✅ AscendantSheet modal (2026-03-29) — Character sheet for player's god.
-- ✅ TB-073 Conflict & Destruction design (2026-03-29) — Full design doc for M2.
+- ✅ TB-074 Sessions 1-2 (2026-03-29) — Template coverage, scoring overhaul, dynamic cooldowns.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`
