@@ -25,7 +25,7 @@ import {
   ENCOUNTER_COMPLETION_COOLDOWN,
 } from '../types/encounter';
 import { runFilterPipeline } from './encounterFilterPipeline';
-import { scoreAndSelect } from './encounterScoring';
+import { scoreAndSelect, type FamiliarityRecord } from './encounterScoring';
 import { resolveIdleBehavior } from './idleBehavior';
 import { isEncounterOccupied } from './encounter';
 import { getAnyEncounterById } from '../data/encounter-content';
@@ -416,6 +416,18 @@ export function phaseAgentDecision(
               occupiedUntilTick: state.tick + firstStepDuration,
             };
             newEncounterProgress.push(progress);
+
+            // B.1: Track familiarity — increment attempt count for this template
+            const existingFamiliarity = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
+            const updatedFamiliarity: FamiliarityRecord = {
+              attemptCount: {
+                ...existingFamiliarity.attemptCount,
+                [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
+              },
+            };
+            graph.updateNode(agentId, {
+              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity },
+            });
 
             const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
             newEvents.push({

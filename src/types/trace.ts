@@ -402,6 +402,8 @@ export interface ScoringTrace extends TraceBase {
     isLocal: boolean;
     valuePerTick: number;
     desireMultiplier: number;
+    familiarityPenalty?: number;
+    explorationBonus?: number;
     finalScore: number;
     travelCost: number;
     completionProb: number;
