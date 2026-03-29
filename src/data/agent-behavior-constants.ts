@@ -54,13 +54,9 @@ export const BASE_AWARENESS_HOPS = 1;
  * @range 0.05–0.3 (lower = awareness extends faster with capability) */
 export const CAPABILITY_PER_HOP = 0.15;
 
-/** Hard cap on awareness range for all reaches except flesh.
+/** Hard cap on awareness range for all reaches.
  * @range 3–10 */
 export const MAX_AWARENESS_HOPS = 5;
-
-/** Flesh reach hard cap — physical encounters are inherently local.
- * @range 1–3 */
-export const FLESH_MAX_HOPS = 1;
 
 // ═══════════════════════════════════════════════════════════════════
 // FACTION INTELLIGENCE — Rank-gated encounter visibility (factionAwareness.ts)
