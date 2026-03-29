@@ -218,11 +218,11 @@ export function ProwessTab({ card, knowledge, onAttachmentClick }: ProwessTabPro
 
   return (
     <div className="space-y-4">
-      {/* Domains — 3x3 grid */}
+      {/* Domains — 2x4 grid (8 reaches, flesh removed in TB-075) */}
       <section>
         <SectionHeading as="h2">Domains</SectionHeading>
         {hasDomainData ? (
-          <div className="grid grid-cols-3 gap-2">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
             {ALL_DOMAINS.map((domain) => {
               const revealed = isDomainRevealed(domain);
               const descriptor = revealed ? domainMap.get(domain) : undefined;
