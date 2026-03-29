@@ -31,6 +31,8 @@ import {
 import { SPHERE_ALLIES, SPHERE_OPPOSITES } from './cosmology';
 import type { GameState } from '../types/gameState';
 import { getNodeSphereAffinity } from './sphereAffinity';
+import type { QuintessenceEvent } from '../types/quintessence';
+import { QUINTESSENCE_OVERCHANNEL_EROSION } from '../types/quintessence';
 
 /**
  * Type guard: returns true only if the value is a well-formed SphereAffinity
@@ -402,6 +404,7 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
   // Process each entity
   let updatedGraph = graph;
   const allTraces: SpherePressureTrace[] = [];
+  const quintessenceEvents: QuintessenceEvent[] = [];
 
   for (const [entityId, entityPressures] of byEntity) {
     const node = updatedGraph.getNode(entityId);
@@ -432,10 +435,24 @@ export function phaseSpherePressure(state: GameState): Partial<GameState> {
     updatedGraph.updateNode(entityId, {
       properties: { sphereAffinity: updated },
     });
+
+    // Emit QuintessenceEvent for overchannel pressure — each overchannel event erodes the caster's quintessence
+    const overchannel = entityPressures.find(p => p.source === 'overchannel');
+    if (overchannel) {
+      quintessenceEvents.push({
+        targetNodeId: entityId,
+        delta: -QUINTESSENCE_OVERCHANNEL_EROSION,
+        source: 'overchannel',
+        tick: state.tick,
+      });
+    }
   }
 
   return {
     graph: updatedGraph,
     pendingSpherePressures: [],
+    ...(quintessenceEvents.length > 0
+      ? { pendingQuintessenceEvents: [...(state.pendingQuintessenceEvents ?? []), ...quintessenceEvents] }
+      : {}),
   };
 }
