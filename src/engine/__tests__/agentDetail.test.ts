@@ -6,13 +6,13 @@ import type { AxiologicalProfile } from '../../types/agent';
 import type { ReachDomain } from '../../types/traits';
 import type { InteractionRecord } from '../../types/disposition';
 
-const ALL_DOMAINS: ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+const ALL_DOMAINS: ReachDomain[] = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold'];
 
 function makeProfile(overrides: Partial<AxiologicalProfile> = {}): AxiologicalProfile {
   const base: AxiologicalProfile = {
     loyalty_ambition: 0, courage_prudence: 0, mercy_ruthlessness: 0,
     honesty_cunning: 0, sacrifice_survival: 0, loyalty_ambition: 0,
-    tradition_novelty: 0, humility_pride: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
+    tradition_novelty: 0, preservation_transformation: 0, mercy_ruthlessness: 0, asceticism_extravagance: 0,
   };
   return { ...base, ...overrides };
 }
@@ -300,7 +300,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
     expect(card!.quotes).toHaveLength(1);
   });
 
-  it('at intimate level: returns full 9 domains, all traits, all quotes, backstory paragraph 1', () => {
+  it('at intimate level: returns full 8 domains, all traits, all quotes, backstory paragraph 1', () => {
     const graph = new WorldGraph();
     graph.addNode({ id: 'asc', type: 'actor', name: 'God', properties: { actorType: 'ascendant' } });
     graph.addNode({
@@ -308,7 +308,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
       properties: {
         actorType: 'individual',
         axiologicalProfile: makeProfile({ loyalty_ambition: 0.8, mercy_ruthlessness: -0.6 }),
-        domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3, veil: 2, gold: 1, eye: 4, stone: 2, star: 3, flesh: 2 }),
+        domainCapabilities: makeDomainCaps({ iron: 7, shadow: 5, heart: 3, veil: 2, gold: 1, eye: 4, stone: 2, star: 3 }),
         locationId: 'loc.1',
         narrativeArchetype: 'tragic_hero',
         primarySphere: 'iron',
@@ -327,7 +327,7 @@ describe('getAgentInfoCard (familiarity-gated)', () => {
 
     const card = getAgentInfoCard(graph, 'agent.1', 'asc', 'intimate');
     expect(card).not.toBeNull();
-    expect(card!.domains).toHaveLength(9);
+    expect(card!.domains).toHaveLength(8);
     expect(card!.quotes).toBeDefined();
     expect(card!.quotes!.length).toBeGreaterThan(0);
     expect(card!.cooperationStrategy).toBe('tit-for-tat');

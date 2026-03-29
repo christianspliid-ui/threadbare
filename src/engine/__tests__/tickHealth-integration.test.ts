@@ -73,7 +73,7 @@ function createTestGameState(): GameState {
         honesty_cunning: 0.0,
         sacrifice_survival: 0.4,
         tradition_novelty: 0.1,
-        humility_pride: -0.2,
+        preservation_transformation: -0.2,
         asceticism_extravagance: 0.3,
       },
       flavorText: 'A test archetype for the watcher',

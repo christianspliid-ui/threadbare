@@ -34,7 +34,7 @@ function makeFullGraph(): { graph: WorldGraph; agentId: string } {
         sacrifice_survival: -0.2,
         loyalty_ambition: 0.4,
         tradition_novelty: -0.1,
-        humility_pride: 0.0,
+        preservation_transformation: 0.0,
         mercy_ruthlessness: 0.3,
         asceticism_extravagance: -0.6,
       },

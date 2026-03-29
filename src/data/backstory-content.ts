@@ -372,6 +372,7 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
   revelation_discretion: [
     'Something shifted in {name} when {value} became a reflex rather than a choice — the moment when speaking or withholding became character rather than tactic.',
     '{name}\'s commitment to {value} was tested in a conversation that could not be taken back. What was said or unsaid in that moment has been the template since.',
+    'The turning point for {name} and {value} arrived through a situation where what they knew could protect someone or destroy them depending on how it was handled. The handling defined them.',
   ],
   preservation_transformation: [
     'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
@@ -382,10 +383,7 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     'Something shifted in {name} the day they chose {value} — a declaration about where their allegiance finally resided that has not been revised since.',
     'The turn toward {value} arrived for {name} in circumstances that forced the question from abstract to immediate. What they chose in that moment was not a statement about belief but about self.',
     '{name}\'s relationship with {value} was established through an event that made the alternative not just undesirable but impossible — a choice that was also a discovery.',
-  ],
-  sacrifice_survival: [
-    'Something shifted in {name} when {value} stopped being temperament and became discipline — the moment emotion was either mastered or surrendered to deliberately.',
-    '{name}\'s relationship with {value} was forged in a crisis that demanded either feeling everything or feeling nothing. What they chose has been their weather since.',
+    'Something shifted in {name} when {value} stopped being temperament and became discipline — the moment endurance was either mastered or surrendered to deliberately.',
   ],
   courage_prudence: [
     'Something shifted in {name} the day they chose {value} — not dramatically, but definitively, in a circumstance that required the thing to be named.',
@@ -428,6 +426,7 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
   revelation_discretion: [
     '{name}\'s {left_pole} and {right_pole} wage constant war — the urge to speak plain and the instinct to smooth things over alternate without resolution.',
     'The contradiction between {left_pole} and {right_pole} in {name} surfaces in every conversation that matters. They say too much and then too little, and neither feels like the right amount.',
+    'What others read as inconsistency in {name} is the genuine tension between {left_pole} and {right_pole} — knowing that every disclosure is also a concealment, and every silence is also a choice.',
   ],
   preservation_transformation: [
     '{name} navigates between {left_pole} and {right_pole} without having resolved which is more natural. Both are genuine; neither is settled.',
@@ -438,10 +437,7 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
     '{name}\'s pull toward {left_pole} and pull toward {right_pole} have reached suspended tension — they cannot fully give themselves over and cannot fully withdraw.',
     'Every bond {name} forms contains the implicit negotiation between {left_pole} and {right_pole} — an internal argument that has not concluded and may not.',
     'What the equal pull of {left_pole} and {right_pole} produces in {name} is a person who enters commitments while holding the exit in view — not intending to use it, but unable to stop keeping it available.',
-  ],
-  sacrifice_survival: [
     '{name}\'s {left_pole} and {right_pole} are locked in a war that produces unpredictable weather — long calms interrupted by sudden storms, and neither state feels entirely chosen.',
-    'The contradiction between {left_pole} and {right_pole} in {name} means they feel everything but show nothing, or show everything and later wish they hadn\'t. There is no middle.',
   ],
   courage_prudence: [
     '{name} is pulled equally toward {left_pole} and {right_pole} — the part that faces danger and the part that calculates it are of equal influence, producing a person who acts and second-guesses with equal facility.',
@@ -581,15 +577,6 @@ export const FEAR_PROSE: Record<string, string[]> = {
   revelation_discretion_negative: [
     'What {name} will never admit is that behind the {value} they practise is the {fear} of exposure — of having the raw, unpolished self seen by someone who matters.',
     'The {value} in {name} sits over the {fear} that without the mask of courtesy, something unacceptable would be visible. The propriety is armour; the {fear} is of going without it.',
-  ],
-  // sacrifice_survival
-  sacrifice_survival_positive: [
-    'What {name} will never admit is that their {value} is maintained against the {fear} of feeling — the specific dread that emotion, once permitted, would not stop at appropriate limits.',
-    'Beneath the {value} in {name} is the {fear} that the calm is not strength but numbness — that one day they will try to feel and discover the mechanism is broken.',
-  ],
-  sacrifice_survival_negative: [
-    'What {name} will never admit is that their {value} contains the {fear} of emptiness — that without the intensity, there is nothing underneath worth finding.',
-    'The {value} in {name} sits over the {fear} that feeling everything is also a way of drowning — that the passion is not chosen but compulsive, and that the silence, when it finally comes, will be permanent.',
   ],
 };
 

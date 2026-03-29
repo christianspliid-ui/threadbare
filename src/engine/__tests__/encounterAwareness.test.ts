@@ -7,7 +7,6 @@ import {
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
-  FLESH_MAX_HOPS,
 } from '../encounterAwareness';
 import type { DistanceMatrix } from '../distanceMatrix';
 import type { EncounterCacheEntry } from '../encounterCache';
@@ -133,18 +132,11 @@ describe('computeAwarenessHops', () => {
     expect(computeAwarenessHops(0.6, 'iron')).toBe(5);
   });
 
-  it('caps at MAX_AWARENESS_HOPS for non-flesh reaches', () => {
+  it('caps at MAX_AWARENESS_HOPS for all reaches', () => {
     // 0.9 / 0.15 = 6 → BASE + 6 = 7 → capped at 5
     expect(computeAwarenessHops(0.9, 'iron')).toBe(MAX_AWARENESS_HOPS);
     expect(computeAwarenessHops(1.0, 'gold')).toBe(MAX_AWARENESS_HOPS);
     expect(computeAwarenessHops(0.99, 'veil')).toBe(MAX_AWARENESS_HOPS);
-  });
-
-  it('caps at FLESH_MAX_HOPS for flesh reach regardless of capability', () => {
-    expect(computeAwarenessHops(0.9, 'flesh')).toBe(FLESH_MAX_HOPS);
-    expect(computeAwarenessHops(0.5, 'flesh')).toBe(FLESH_MAX_HOPS);
-    // Even minimal capability produces BASE (1) which equals FLESH_MAX_HOPS
-    expect(computeAwarenessHops(AWARENESS_THRESHOLD, 'flesh')).toBe(FLESH_MAX_HOPS);
   });
 
   it('correctly computes intermediate values', () => {
@@ -223,27 +215,6 @@ describe('filterByAwareness', () => {
     const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
     expect(result.length).toBe(1);
     expect(result[0].locationId).toBe('loc-near');
-  });
-
-  it('flesh reach capped at FLESH_MAX_HOPS regardless of capability', () => {
-    // raw=20 → sigmoid ~0.982 → flesh capped at 1
-    const graph = buildAgentGraph('agent-1', { flesh: 20 });
-    const dm = makeDistanceMatrix({
-      'loc-home': {
-        'loc-home': 0,
-        'loc-1': 1,
-        'loc-2': 2,
-      },
-    });
-
-    const entries = [
-      makeEntry({ locationId: 'loc-1', reachPrimary: 'flesh', reachSecondary: 'flesh' }),
-      makeEntry({ locationId: 'loc-2', reachPrimary: 'flesh', reachSecondary: 'flesh' }),
-    ];
-
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
-    expect(result.length).toBe(1); // only dist 1
-    expect(result[0].locationId).toBe('loc-1');
   });
 
   it('uses max(primary, secondary) to pick the better visibility channel', () => {

@@ -20,10 +20,9 @@ describe('agent detail integration', () => {
       honesty_cunning: 0.3,
       tradition_novelty: -0.2,
       loyalty_ambition: 0.9,
-      frankness_propriety: 0,
-      humility_pride: 0.4,
+      revelation_discretion: 0,
+      preservation_transformation: 0.4,
       sacrifice_survival: 0.6,
-      stoicism_passion: 0,
       courage_prudence: -0.4,
     };
     const domainCaps: Record<ReachDomain, number> = {
@@ -35,7 +34,6 @@ describe('agent detail integration', () => {
       eye: 7,
       stone: 2,
       star: 5,
-      flesh: 1,
     };
 
     graph.addNode({
@@ -111,10 +109,10 @@ describe('agent detail integration', () => {
             honesty_cunning: 0,
             tradition_novelty: 0,
             loyalty_ambition: 0,
-            frankness_propriety: 0,
-            humility_pride: 0,
+            revelation_discretion: 0,
+            preservation_transformation: 0,
             sacrifice_survival: 0,
-            stoicism_passion: 0,
+            sacrifice_survival: 0,
             courage_prudence: 0,
           },
           domainCapabilities: {
@@ -126,7 +124,6 @@ describe('agent detail integration', () => {
             eye: 0,
             stone: 0,
             star: 0,
-            flesh: 0,
           },
           locationId: 'loc.1',
           narrativeArchetype: arch.id,

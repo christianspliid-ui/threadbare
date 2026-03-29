@@ -26,18 +26,17 @@ describe('Strand Content', () => {
       expect(Object.keys(VALUE_LABELS).length).toBeGreaterThanOrEqual(CONTENT_COUNTS.VALUE_LABELS);
     });
 
-    it('covers all 10 standard value axes', () => {
+    it('covers all 9 standard value axes', () => {
       const expectedAxes = [
-        'loyalty_ambition',
-        'courage_prudence',
-        'mercy_ruthlessness',
-        'honesty_cunning',
-        'sacrifice_survival',
-        'loyalty_ambition',
-        'tradition_novelty',
-        'humility_pride',
         'mercy_ruthlessness',
         'asceticism_extravagance',
+        'honesty_cunning',
+        'tradition_novelty',
+        'loyalty_ambition',
+        'revelation_discretion',
+        'preservation_transformation',
+        'sacrifice_survival',
+        'courage_prudence',
       ];
 
       for (const axis of expectedAxes) {
@@ -151,18 +150,17 @@ describe('Strand Content', () => {
       expect(Object.keys(FEAR_DESCRIPTIONS).length).toBeGreaterThanOrEqual(CONTENT_COUNTS.FEAR_DESCRIPTIONS);
     });
 
-    it('covers all standard value axes', () => {
+    it('covers all 9 standard value axes', () => {
       const expectedAxes = [
-        'loyalty_ambition',
-        'courage_prudence',
-        'mercy_ruthlessness',
-        'honesty_cunning',
-        'sacrifice_survival',
-        'loyalty_ambition',
-        'tradition_novelty',
-        'humility_pride',
         'mercy_ruthlessness',
         'asceticism_extravagance',
+        'honesty_cunning',
+        'tradition_novelty',
+        'loyalty_ambition',
+        'revelation_discretion',
+        'preservation_transformation',
+        'sacrifice_survival',
+        'courage_prudence',
       ];
 
       for (const axis of expectedAxes) {
@@ -213,12 +211,12 @@ describe('Strand Content', () => {
   // ==========================================================================
 
   describe('REACH_BASED_FEARS', () => {
-    it('has at least 9 reaches (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star, Flesh)', () => {
+    it('has at least 8 reaches (Iron, Gold, Shadow, Veil, Heart, Eye, Stone, Star)', () => {
       expect(Object.keys(REACH_BASED_FEARS).length).toBeGreaterThanOrEqual(CONTENT_COUNTS.REACH_BASED_FEARS);
     });
 
-    it('covers all Nine Reaches', () => {
-      const expectedReaches = ['Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star', 'Flesh'];
+    it('covers all Eight Reaches (Flesh removed in TB-075)', () => {
+      const expectedReaches = ['Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star'];
 
       for (const reach of expectedReaches) {
         expect(REACH_BASED_FEARS).toHaveProperty(reach);
@@ -249,7 +247,6 @@ describe('Strand Content', () => {
         Eye: /ignorance|knowledge|blind|unknowable/i,
         Stone: /collapse|structure|foundation|collapse|trapped/i,
         Star: /lost|path|navigation|direction|bound/i,
-        Flesh: /decay|plague|body|perfection|betrayal/i,
       };
 
       for (const [reach, [fear1, fear2]] of Object.entries(REACH_BASED_FEARS)) {
@@ -267,8 +264,8 @@ describe('Strand Content', () => {
   // ==========================================================================
 
   describe('REACH_FEAR_LABELS', () => {
-    it('covers all Nine Reaches', () => {
-      const expectedReaches = ['Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star', 'Flesh'];
+    it('covers all Eight Reaches (Flesh removed in TB-075)', () => {
+      const expectedReaches = ['Iron', 'Gold', 'Shadow', 'Veil', 'Heart', 'Eye', 'Stone', 'Star'];
 
       for (const reach of expectedReaches) {
         expect(REACH_FEAR_LABELS).toHaveProperty(reach);

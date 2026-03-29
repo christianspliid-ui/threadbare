@@ -426,7 +426,7 @@ function createTestProfile(): AxiologicalProfile {
     sacrifice_survival: 0.7,
     loyalty_ambition: 0.9,
     tradition_novelty: 0.1,
-    humility_pride: -0.2,
+    preservation_transformation: -0.2,
     mercy_ruthlessness: 0.4,
     asceticism_extravagance: -0.3,
   };

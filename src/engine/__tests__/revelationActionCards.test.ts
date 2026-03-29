@@ -101,7 +101,6 @@ function buildAgentGraph(targetAgentId: string): WorldGraph {
         eye: 25,
         stone: 15,
         star: 40,
-        flesh: 20,
       },
       axiologicalProfile: {
         mercy_ruthlessness: 0.7,
@@ -290,14 +289,14 @@ describe('resolveRevelationAction', () => {
     expect(domainEvents.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('scry reveals all 9 domains', async () => {
+  it('scry reveals all 8 domains', async () => {
     const { resolveRevelationAction } = await import('../revelationEmitter');
 
     resolveRevelationAction('scry', state, TARGET_AGENT_ID);
 
     const knowledge = state.agentKnowledge!.get(TARGET_AGENT_ID);
     expect(knowledge).toBeDefined();
-    expect(knowledge!.revealedDomains.size).toBe(9);
+    expect(knowledge!.revealedDomains.size).toBe(8);
   });
 
   it('scry reveals bond from relates_to edges', async () => {
@@ -380,14 +379,14 @@ describe('resolveRevelationAction', () => {
     expect(afterSecond).toBe(2); // Idempotent per-call: doesn't re-reveal same domain
   });
 
-  it('scry is idempotent — calling twice does not exceed 9 domains', async () => {
+  it('scry is idempotent — calling twice does not exceed 8 domains', async () => {
     const { resolveRevelationAction } = await import('../revelationEmitter');
 
     resolveRevelationAction('scry', state, TARGET_AGENT_ID);
     resolveRevelationAction('scry', state, TARGET_AGENT_ID);
 
     const knowledge = state.agentKnowledge!.get(TARGET_AGENT_ID);
-    expect(knowledge!.revealedDomains.size).toBe(9); // Same 9, not 18
+    expect(knowledge!.revealedDomains.size).toBe(8); // Same 8, not 16
   });
 
   it('resolveRevelationAction emits RevelationTrace for newly revealed facet', async () => {
