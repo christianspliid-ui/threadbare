@@ -212,6 +212,16 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
 | M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
 
+### Phase 12: flesh reach migration to quintessence
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 11
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 12 to break down)
+
 ---
 
 ## Estimated Scope
