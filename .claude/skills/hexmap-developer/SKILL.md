@@ -648,13 +648,17 @@ All constants are also cataloged in `src/components/CMS/tunableConstants.ts` for
 
 11. **Untracked new files break Vercel builds.** If a subagent creates a new `.ts` file imported by tracked files but doesn't `git add` it, the dev server works (file exists locally) but production build fails. Always verify new files are staged before committing.
 
+### InstancedMesh
+
+12. **NEVER share a single geometry across multiple InstancedMeshes that need per-instance attributes.** Each mesh's `geometry.setAttribute('aUvRect', ...)` overwrites the shared geometry's attribute buffer — only the last mesh's data survives. Clone the base geometry per mesh. Also set `frustumCulled = false` (no bounding sphere computed for instanced draws).
+
 ### Terrain & World Gen
 
-12. **Volcanic placement** uses `mulberry32`-style integer hash, not `fractalNoise` — fractalNoise range with seed 42 never reached the 0.95 threshold.
+13. **Volcanic placement** uses `mulberry32`-style integer hash, not `fractalNoise` — fractalNoise range with seed 42 never reached the 0.95 threshold.
 
-13. **Wetland overrides** only apply below `ELEV.LOWLAND` (0.40) to prevent mid-elevation forest misclassification.
+14. **Wetland overrides** only apply below `ELEV.LOWLAND` (0.40) to prevent mid-elevation forest misclassification.
 
-14. **`generateWorld()` returns `WorldGenResult`, not `HexTile[]`** — all call sites must use `.tiles`.
+15. **`generateWorld()` returns `WorldGenResult`, not `HexTile[]`** — all call sites must use `.tiles`.
 
 ---
 
