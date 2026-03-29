@@ -62,6 +62,7 @@ import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
 import { phaseFactionAmbitions } from './factionAmbitions';
+import { phaseArmyAttrition } from './armyAttrition';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
@@ -1022,6 +1023,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseMovement(s) };
   phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2.355: Army Attrition (TB-073 — Quintessence degradation during march)
+  phaseArmyAttrition(s);
 
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
   s = { ...s, ...phaseColocationDetection(s) };
