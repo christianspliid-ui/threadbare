@@ -274,6 +274,10 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
 - [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
 
+### Roadmap Evolution
+
+- Phase 12 added: flesh reach migration to quintessence
+
 ### Pending Todos
 
 None.
