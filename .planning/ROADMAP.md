@@ -93,7 +93,7 @@ Plans:
 
 ### Phase 12: Conflict & Destruction — Implementation Plans
 
-**Plans:** 3/7 plans executed
+**Plans:** 4/7 plans executed
 **Requirements:** TB-073
 
 Plans:

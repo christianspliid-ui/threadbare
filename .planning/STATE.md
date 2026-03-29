@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-conflict-destruction/12-03-PLAN.md
-last_updated: "2026-03-29T20:43:19.561Z"
+stopped_at: Completed 12-conflict-destruction/12-05-PLAN.md
+last_updated: "2026-03-29T20:52:22.225Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 22
-  completed_plans: 18
+  completed_plans: 19
   percent: 93
 ---
 
@@ -169,6 +169,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-conflict-destruction P01 | 0 | 10 tasks | 22 files |
 | Phase 12-conflict-destruction P02 | 8 | 6 tasks | 6 files |
 | Phase 12-conflict-destruction P03 | 25 | 7 tasks | 3 files |
+| Phase 12-conflict-destruction P05 | 15 | 7 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -283,6 +284,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12-conflict-destruction]: Army size determined deterministically from faction Gold capability tier; no PRNG
 - [Phase 12-conflict-destruction]: spawnArmy called directly from phaseFactionAmbitions (not through encounter system) — mc.army.raise is narrative template, not spawn trigger
 - [Phase 12-conflict-destruction]: phaseArmyMovement kept separate from phaseMovement (individual filter); army edge costs computed locally to avoid circular dep movementCost.ts/armyMovement.ts
+- [Phase 12-conflict-destruction]: generateRegionalEncounters emits traces not encounter nodes — dispatch deferred to encounter system when spotlights integrate
+- [Phase 12-conflict-destruction]: Siege deduplication via siegeRegionalEncountersSent string[] on siege node properties — persists across ticks
+- [Phase 12-conflict-destruction]: Siege detection: phaseBattleDetection checks locationSubtype of hex nodes and co-located location nodes
 
 ### Pending Todos
 
@@ -294,6 +298,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T20:43:19.558Z
-Stopped at: Completed 12-conflict-destruction/12-03-PLAN.md
+Last session: 2026-03-29T20:52:22.223Z
+Stopped at: Completed 12-conflict-destruction/12-05-PLAN.md
 Resume file: None
