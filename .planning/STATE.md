@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 12 context gathered
-last_updated: "2026-03-29T19:45:05.107Z"
+stopped_at: Phase 12 UI-SPEC approved
+last_updated: "2026-03-29T20:05:15.655Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 4
@@ -273,6 +273,11 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
 - [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
 - [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
+- [Phase 12-flesh-reach-migration-to-quintessence]: ReachDomain 9→8 (flesh removed); ValuePair 10→9 (stoicism_passion retired, frankness_propriety→revelation_discretion, humility_pride→preservation_transformation)
+- [Phase 12-flesh-reach-migration-to-quintessence]: Flesh action redistribution: Heal/Cultivate→gold, Diagnose→eye, Plague→shadow
+- [Phase 12-flesh-reach-migration-to-quintessence]: FLESH_MAX_HOPS removed; encounterAwareness now uses uniform MAX_AWARENESS_HOPS cap for all reaches
+- [Phase 12-flesh-reach-migration-to-quintessence]: AgentDetailPanel domain grid 3x3→2x4 for 8 reaches
+- [Phase 12-flesh-reach-migration-to-quintessence]: Python UTF-8 bulk replace used for large data files on Windows to avoid charmap codec errors
 
 ### Roadmap Evolution
 
@@ -288,6 +293,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T19:45:05.105Z
-Stopped at: Phase 12 context gathered
-Resume file: .planning/phases/12-flesh-reach-migration-to-quintessence/12-CONTEXT.md
+Last session: 2026-03-30T00:00:00.000Z
+Stopped at: Completed 12-flesh-reach-migration-to-quintessence/12-01-PLAN.md
+Resume file: .planning/phases/12-flesh-reach-migration-to-quintessence/12-02-PLAN.md
