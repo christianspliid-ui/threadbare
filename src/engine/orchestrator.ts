@@ -63,6 +63,7 @@ import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
 import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseArmyAttrition } from './armyAttrition';
+import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
@@ -1024,6 +1025,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseMovement(s) };
   phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
+  phaseArmyMovement(s);
 
   // Phase 2.355: Army Attrition (TB-073 — Quintessence degradation during march)
   phaseArmyAttrition(s);
