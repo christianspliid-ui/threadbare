@@ -1,29 +1,44 @@
-import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { ActionCard } from './ActionCard';
 import type { WheelSlot } from '../../engine/wheel';
 import { Tooltip } from '../shared/Tooltip';
-import { IconButton } from '../shared/IconButton';
 import { Button } from '../shared/Button';
 import { renderProseWithIPK } from '../ProseKeyword';
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
-const DRAWER_CONFIG = {
-  HEIGHT_PERCENT: 35,
+const HAND_CONFIG = {
+  /** Card width in hand (px) — must match ActionCard w-28 = 112px */
+  CARD_WIDTH_PX: 112,
+  /** Minimum visible portion of each card when overlapping (px) */
+  MIN_OVERLAP_SPACING_PX: 40,
+  /** Max available width for the hand (px) */
+  MAX_HAND_WIDTH_PX: 1000,
+  /** Max fan rotation for outermost cards (degrees) */
+  FAN_MAX_ROTATION_DEG: 3,
+  /** Max vertical arc for outermost cards (px) */
+  FAN_MAX_ARC_PX: 12,
+  /** Drawer slide transition (ms) */
   TRANSITION_MS: 200,
-  /** P3: Max rotation angle for outermost cards in the fan (degrees) */
-  FAN_MAX_ROTATION_DEG: 2,
-  /** P3: Vertical offset for outermost cards in the fan (px) */
-  FAN_MAX_TRANSLATE_Y: 8,
 } as const;
 
-/** P3: Compute fan transform for a card at position `index` in a hand of `total` cards. */
-function cardFanStyle(index: number, total: number): React.CSSProperties {
+/**
+ * Compute overlap spacing so all N cards fit within maxWidth.
+ * Each card is CARD_WIDTH_PX wide; the visible portion per-card is `spacing`.
+ * Total width = CARD_WIDTH_PX + (N-1) * spacing.
+ */
+function computeSpacing(n: number): number {
+  if (n <= 1) return 0;
+  const ideal = (HAND_CONFIG.MAX_HAND_WIDTH_PX - HAND_CONFIG.CARD_WIDTH_PX) / (n - 1);
+  return Math.max(HAND_CONFIG.MIN_OVERLAP_SPACING_PX, Math.min(ideal, HAND_CONFIG.CARD_WIDTH_PX));
+}
+
+/** Compute fan transform for card at `index` of `total`. */
+function cardFanTransform(index: number, total: number): React.CSSProperties {
   if (total <= 1) return {};
-  // Normalized position: -1 (leftmost) to +1 (rightmost)
-  const t = total === 1 ? 0 : (2 * index / (total - 1)) - 1;
-  const rotation = t * DRAWER_CONFIG.FAN_MAX_ROTATION_DEG;
-  const yOffset = Math.abs(t) * DRAWER_CONFIG.FAN_MAX_TRANSLATE_Y;
+  const t = (2 * index / (total - 1)) - 1; // -1 to +1
+  const rotation = t * HAND_CONFIG.FAN_MAX_ROTATION_DEG;
+  const yOffset = Math.abs(t) * HAND_CONFIG.FAN_MAX_ARC_PX;
   return {
     transform: `rotate(${rotation}deg) translateY(${yOffset}px)`,
     transformOrigin: 'bottom center',
@@ -32,11 +47,6 @@ function cardFanStyle(index: number, total: number): React.CSSProperties {
 
 // ─── Sphere Action Prose ────────────────────────────────────────────────────
 
-/**
- * Narrative consequence descriptions for sphere-aligned actions.
- * Player-facing: describes the spiritual consequence of acting through this sphere.
- * Numbers are NEVER shown here — only prose.
- */
 const SPHERE_ACTION_PROSE: Record<string, string> = {
   force: 'This act channels **Force** — raw, direct, and unambiguous. Conflict follows.',
   matter: 'This act channels **Matter** — grounded and enduring. What is built will hold.',
@@ -51,91 +61,57 @@ const SPHERE_ACTION_PROSE: Record<string, string> = {
 // ─── Props ────────────────────────────────────────────────────────────────
 
 export interface ActionDrawerProps {
-  /** Whether the drawer is open */
   open: boolean;
-  /** Wheel slots to display */
   slots: WheelSlot[];
-  /** Target display name (agent name, location name, hex label, etc.) */
   targetName: string;
-  /** Target label (tier name, location subtype, item tier, etc.) */
   targetLabel: string;
-  /** Called when a slot is clicked */
   onSlotClick: (slotId: string) => void;
-  /** Called when the drawer closes */
   onClose: () => void;
-  /** ID of the card currently playing (pulsing animation) */
   playingCardId?: string | null;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
 /**
- * ActionDrawer — Bottom drawer sliding up from the center column.
+ * ActionDrawer — Slay the Spire-style overlapping card hand.
  *
- * Shows a header bar (agent name + tier + close button) and a horizontal
- * scrollable row of ActionCard components. Cards are sorted: available first,
- * locked last. Filters out center slot.
+ * Cards fan out at the bottom of the screen with overlap.
+ * Click a card → it flies to center screen (focused).
+ * Click focused card → activates it (onSlotClick).
+ * Click backdrop or Escape → card returns to hand.
  */
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
   ({ open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose, playingCardId }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
     const [showLocked, setShowLocked] = useState(false);
 
-    // Sphere consequence preview — track which card is hovered
-    const [hoveredSlotId, setHoveredSlotId] = useState<string | null>(null);
+    // StS focus state: which card is centered on screen
+    const [focusedSlotId, setFocusedSlotId] = useState<string | null>(null);
 
-    const hoveredSlot = useMemo(
-      () => slots.find(s => s.id === hoveredSlotId) ?? null,
-      [slots, hoveredSlotId],
-    );
-
-    const spherePreviewProse = useMemo(() => {
-      if (!hoveredSlot?.sphere) return null;
-      return SPHERE_ACTION_PROSE[hoveredSlot.sphere] ?? null;
-    }, [hoveredSlot]);
-
-    // P5: Scroll overflow detection for edge gradients
-    const scrollRef = useRef<HTMLDivElement>(null);
-    const [canScrollLeft, setCanScrollLeft] = useState(false);
-    const [canScrollRight, setCanScrollRight] = useState(false);
-
-    const updateScrollState = useCallback(() => {
-      const el = scrollRef.current;
-      if (!el) return;
-      setCanScrollLeft(el.scrollLeft > 4);
-      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
-    }, []);
-
+    // Clear focus when drawer closes or slots change
     useEffect(() => {
-      // Check scroll state on mount and when slots change
-      updateScrollState();
-    }, [slots, showLocked, updateScrollState]);
+      if (!open) setFocusedSlotId(null);
+    }, [open]);
 
-    // Handle Escape key
+    // Handle Escape key — dismiss focus first, then close drawer
     useEffect(() => {
       if (!open) return;
-
       const handleKeyDown = (e: KeyboardEvent) => {
         if (e.key === 'Escape') {
-          onClose();
+          if (focusedSlotId) {
+            setFocusedSlotId(null);
+          } else {
+            onClose();
+          }
         }
       };
-
       document.addEventListener('keydown', handleKeyDown);
       return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [open, onClose]);
+    }, [open, onClose, focusedSlotId]);
 
-    // Don't render anything if not open
-    if (!open) {
-      return null;
-    }
-
-    // RC-028: Memoize slot filtering and sorting
-    // P4: Split into observation / intervention groups for visual divider
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Slot filtering
     const { observationSlots, interventionSlots, lockedSlots } = useMemo(() => {
-      const filtered = slots
-        .filter(slot => slot.type !== 'info'); // Exclude center slot
+      const filtered = slots.filter(slot => slot.type !== 'info');
       const available = filtered.filter(s => s.available);
       return {
         observationSlots: available.filter(s => s.type === 'observation'),
@@ -144,157 +120,199 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       };
     }, [slots]);
 
+    // All visible cards in order (for hand layout)
+    const handCards = useMemo(() => {
+      const cards = [...observationSlots, ...interventionSlots];
+      if (showLocked) cards.push(...lockedSlots);
+      return cards;
+    }, [observationSlots, interventionSlots, lockedSlots, showLocked]);
+
+    const totalCards = handCards.length;
+    const spacing = useMemo(() => computeSpacing(totalCards), [totalCards]);
+    const handWidth = totalCards <= 1 ? HAND_CONFIG.CARD_WIDTH_PX : HAND_CONFIG.CARD_WIDTH_PX + (totalCards - 1) * spacing;
+
+    // Focused slot data
+    const focusedSlot = useMemo(
+      () => (focusedSlotId ? handCards.find(s => s.id === focusedSlotId) ?? null : null),
+      [focusedSlotId, handCards],
+    );
+
+    const focusedProse = useMemo(() => {
+      if (!focusedSlot?.sphere) return null;
+      return SPHERE_ACTION_PROSE[focusedSlot.sphere] ?? null;
+    }, [focusedSlot]);
+
+    // Hand card click → focus it (don't activate yet)
+    const handleHandCardClick = useCallback((slotId: string) => {
+      // If already playing, ignore
+      if (playingCardId) return;
+      setFocusedSlotId(slotId);
+    }, [playingCardId]);
+
+    // Focused card click → activate it
+    const handleFocusedCardClick = useCallback((slotId: string) => {
+      setFocusedSlotId(null);
+      onSlotClick(slotId);
+    }, [onSlotClick]);
+
+    // Backdrop click → dismiss focus
+    const handleBackdropClick = useCallback(() => {
+      setFocusedSlotId(null);
+    }, []);
+
+    // Index where observations end (for divider positioning)
+    const dividerIndex = observationSlots.length;
+    const hasDivider = observationSlots.length > 0 && interventionSlots.length > 0;
+
+    if (!open) return null;
+
     return (
-      <div
-        data-testid="action-drawer"
-        className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none"
-        style={{
-          transition: `all ${DRAWER_CONFIG.TRANSITION_MS}ms ease-out`,
-          transform: open ? 'translateY(0)' : `translateY(100%)`,
-          zIndex: 40,
-          paddingBottom: '1.5rem',
-        }}
-      >
-        {/* Close button — floating above cards */}
-        <IconButton
-          icon={<span>×</span>}
-          variant="close"
-          size="sm"
-          data-testid="action-drawer-close"
-          onClick={onClose}
-          className="absolute top-0 right-4 pointer-events-auto"
-          aria-label="Close action drawer"
-        />
-
-        {/* P5: Scrollable card hand with edge fade gradients */}
-        <div className="relative pointer-events-auto" style={{ maxWidth: '90vw' }}>
-          {/* P5: Left scroll fade */}
-          {canScrollLeft && (
+      <>
+        {/* ── Focused card overlay ── */}
+        {focusedSlot && !playingCardId && (
+          <>
+            {/* Backdrop */}
             <div
-              className="absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none"
-              style={{ background: 'linear-gradient(to right, rgba(0,0,0,0.6), transparent)' }}
+              data-testid="action-drawer-backdrop"
+              className="fixed inset-0 anim-backdrop-fade pointer-events-auto"
+              style={{ backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 50 }}
+              onClick={handleBackdropClick}
             />
-          )}
-          {/* P5: Right scroll fade */}
-          {canScrollRight && (
+            {/* Centered card */}
             <div
-              className="absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none"
-              style={{ background: 'linear-gradient(to left, rgba(0,0,0,0.6), transparent)' }}
-            />
-          )}
+              className="fixed inset-0 flex flex-col items-center justify-center pointer-events-none"
+              style={{ zIndex: 51 }}
+            >
+              <div className="anim-card-fly-up pointer-events-auto">
+                <ActionCard
+                  slot={focusedSlot}
+                  size="focused"
+                  onClick={handleFocusedCardClick}
+                  playing={false}
+                />
+              </div>
+              {/* Sphere prose below focused card */}
+              {focusedProse && (
+                <p
+                  data-testid="action-sphere-preview"
+                  className="anim-card-fly-up mt-3 pointer-events-none"
+                  style={{
+                    fontFamily: 'var(--font-prose, serif)',
+                    fontSize: '13px',
+                    color: 'var(--text-secondary, #a09880)',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    maxWidth: '360px',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  {renderProseWithIPK(focusedProse)}
+                </p>
+              )}
+            </div>
+          </>
+        )}
 
+        {/* ── Card hand at bottom ── */}
+        <div
+          data-testid="action-drawer"
+          className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none"
+          style={{
+            transition: `transform ${HAND_CONFIG.TRANSITION_MS}ms ease-out`,
+            transform: open ? 'translateY(0)' : 'translateY(100%)',
+            zIndex: 40,
+            paddingBottom: '0.75rem',
+          }}
+        >
+          {/* Hand container — relative positioned, cards absolutely placed */}
           <div
-            ref={scrollRef}
-            className="flex items-end gap-2 overflow-x-auto pb-1"
-            style={{ scrollbarWidth: 'none' }}
-            onScroll={updateScrollState}
-            onTouchMove={(e) => e.stopPropagation()}
-            onWheel={(e) => e.stopPropagation()}
+            className="relative pointer-events-auto"
+            style={{ width: `${handWidth}px`, height: '180px' }}
           >
-            {/* P3: Observation cards with fan rotation */}
-            {observationSlots.map((slot, i) => {
-              const totalAvail = observationSlots.length + interventionSlots.length;
+            {handCards.map((slot, i) => {
+              const isFocused = slot.id === focusedSlotId;
+              const isPlaying = slot.id === playingCardId;
+              const isLocked = !slot.available;
+              // Position: left offset based on spacing
+              const left = i * spacing;
+              const fan = cardFanTransform(i, totalCards);
+
               return (
                 <div
                   key={slot.id}
-                  className="flex-shrink-0 transition-transform duration-150 hover:!transform-none"
-                  style={cardFanStyle(i, totalAvail)}
-                  onMouseEnter={() => setHoveredSlotId(slot.id)}
-                  onMouseLeave={() => setHoveredSlotId(null)}
+                  className="absolute bottom-0 transition-all duration-200"
+                  style={{
+                    left: `${left}px`,
+                    zIndex: isFocused ? 0 : (isPlaying ? totalCards + 2 : i + 1),
+                    opacity: isFocused ? 0 : 1, // hide in hand when focused at center
+                    ...fan,
+                  }}
+                  // Hover: boost z-index above siblings
+                  onMouseEnter={(e) => {
+                    if (!isFocused) (e.currentTarget as HTMLElement).style.zIndex = `${totalCards + 1}`;
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isFocused) (e.currentTarget as HTMLElement).style.zIndex = `${i + 1}`;
+                  }}
                 >
                   <ActionCard
                     slot={slot}
-                    onClick={onSlotClick}
-                    playing={slot.id === playingCardId}
+                    size="hand"
+                    onClick={isLocked ? handleHandCardClick : handleHandCardClick}
+                    playing={isPlaying}
                   />
                 </div>
               );
             })}
 
-            {/* P4: Type divider */}
-            {observationSlots.length > 0 && interventionSlots.length > 0 && (
-              <div className="flex-shrink-0 flex flex-col items-center justify-center gap-1 px-1 self-stretch">
-                <div className="flex-1 w-px" style={{ background: 'linear-gradient(to bottom, transparent, var(--border-medium), transparent)' }} />
-                <span style={{ fontSize: '0.5625rem', color: 'var(--text-tertiary)', letterSpacing: '0.1em', writingMode: 'vertical-rl', textOrientation: 'mixed' }}>ACT</span>
-                <div className="flex-1 w-px" style={{ background: 'linear-gradient(to bottom, transparent, var(--border-medium), transparent)' }} />
+            {/* Locked cards toggle — positioned at right end */}
+            {lockedSlots.length > 0 && !showLocked && (
+              <div
+                className="absolute bottom-0 flex items-end"
+                style={{
+                  left: `${handWidth + 8}px`,
+                  zIndex: totalCards + 3,
+                }}
+              >
+                <Tooltip id="ui.action_locked">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowLocked(true)}
+                    aria-expanded={false}
+                    aria-label={`Show ${lockedSlots.length} locked actions`}
+                    style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
+                  >
+                    {`${lockedSlots.length} locked \u25B8`}
+                  </Button>
+                </Tooltip>
               </div>
             )}
-
-            {/* P3: Intervention cards with fan rotation */}
-            {interventionSlots.map((slot, i) => {
-              const totalAvail = observationSlots.length + interventionSlots.length;
-              return (
-                <div
-                  key={slot.id}
-                  className="flex-shrink-0 transition-transform duration-150 hover:!transform-none"
-                  style={cardFanStyle(observationSlots.length + i, totalAvail)}
-                  onMouseEnter={() => setHoveredSlotId(slot.id)}
-                  onMouseLeave={() => setHoveredSlotId(null)}
-                >
-                  <ActionCard
-                    slot={slot}
-                    onClick={onSlotClick}
-                    playing={slot.id === playingCardId}
-                  />
-                </div>
-              );
-            })}
-
-            {/* IA-003: Locked actions collapsible section */}
-            {lockedSlots.length > 0 && (
-              <>
-                <div className="flex-shrink-0 flex items-center">
-                  <Tooltip id="ui.action_locked">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowLocked(!showLocked)}
-                      aria-expanded={showLocked}
-                      aria-label={`${showLocked ? 'Hide' : 'Show'} ${lockedSlots.length} locked actions`}
-                      style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
-                    >
-                      {showLocked ? '◂ Hide' : `${lockedSlots.length} locked ▸`}
-                    </Button>
-                  </Tooltip>
-                </div>
-                {showLocked && lockedSlots.map(slot => (
-                  <div
-                    key={slot.id}
-                    className="flex-shrink-0"
-                    onMouseEnter={() => setHoveredSlotId(slot.id)}
-                    onMouseLeave={() => setHoveredSlotId(null)}
+            {lockedSlots.length > 0 && showLocked && (
+              <div
+                className="absolute bottom-0 flex items-end"
+                style={{
+                  left: `${handWidth + 8}px`,
+                  zIndex: totalCards + 3,
+                }}
+              >
+                <Tooltip id="ui.action_locked">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setShowLocked(false)}
+                    aria-expanded={true}
+                    aria-label={`Hide ${lockedSlots.length} locked actions`}
+                    style={{ backdropFilter: 'blur(4px)', whiteSpace: 'nowrap' }}
                   >
-                    <ActionCard
-                      slot={slot}
-                      onClick={onSlotClick}
-                      playing={slot.id === playingCardId}
-                    />
-                  </div>
-                ))}
-              </>
+                    {'\u25C2 Hide'}
+                  </Button>
+                </Tooltip>
+              </div>
             )}
           </div>
         </div>
-
-        {/* Sphere consequence preview — appears on card hover */}
-        {spherePreviewProse && (
-          <p
-            data-testid="action-sphere-preview"
-            className="pointer-events-none"
-            style={{
-              fontFamily: 'var(--font-prose, serif)',
-              fontSize: '12px',
-              color: 'var(--text-secondary, #a09880)',
-              fontStyle: 'italic',
-              textAlign: 'center',
-              margin: '6px 0 0 0',
-              lineHeight: 1.5,
-            }}
-          >
-            {renderProseWithIPK(spherePreviewProse)}
-          </p>
-        )}
-      </div>
+      </>
     );
   }
 );
