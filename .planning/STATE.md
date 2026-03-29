@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-agent-character-sheet/11-06-PLAN.md
-last_updated: "2026-03-28T23:19:13.927Z"
+stopped_at: Completed 12-conflict-destruction/12-01-PLAN.md
+last_updated: "2026-03-29T20:30:06.998Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 2
+  total_phases: 4
   completed_phases: 2
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 22
+  completed_plans: 16
   percent: 93
 ---
 
@@ -166,6 +166,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
 | Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
 | Phase 11-agent-character-sheet P06 | 8 | 2 tasks | 12 files |
+| Phase 12-conflict-destruction P01 | 0 | 10 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -273,6 +274,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
 - [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
 - [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
+- [Phase 12-conflict-destruction]: Faction ambitions stored as graph nodes (type: ambition) connected via pursues edges — same pattern as agent ambitions, single source of truth
+- [Phase 12-conflict-destruction]: phaseFactionAmbitions placed at position 6.651 (after phaseAmbitionProgress) — faction evaluation is slow (every 5 ticks) and not needed before agent decision on the same tick
+- [Phase 12-conflict-destruction]: Mercenary company reputation decays at 0.004/tick vs guild 0.003/tick — mercs are transactional, faster decay is intentional flavor
 
 ### Pending Todos
 
@@ -284,6 +288,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T23:14:57.036Z
-Stopped at: Completed 11-agent-character-sheet/11-06-PLAN.md
+Last session: 2026-03-29T20:29:51.682Z
+Stopped at: Completed 12-conflict-destruction/12-01-PLAN.md
 Resume file: None
