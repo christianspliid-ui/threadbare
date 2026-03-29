@@ -7,6 +7,8 @@ interface ModalProps {
   onClose: () => void;
   maxWidth?: number;
   animation?: 'anim-fade' | 'anim-fade-up';
+  /** Accessible label for the dialog (aria-label). */
+  'aria-label'?: string;
   children: React.ReactNode;
 }
 
@@ -18,7 +20,7 @@ interface ModalProps {
  * a new containing block). Instead, the backdrop div handles its own
  * mount/unmount lifecycle and applies animation classes directly.
  */
-function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', children }: ModalProps) {
+function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 'aria-label': ariaLabel, children }: ModalProps) {
   const [shouldRender, setShouldRender] = useState(open);
   const [animClass, setAnimClass] = useState('');
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -89,6 +91,7 @@ function ModalRoot({ open, onClose, maxWidth = 600, animation = 'anim-fade-up', 
       onClick={onClose}
       role="dialog"
       aria-modal="true"
+      aria-label={ariaLabel}
     >
       <div style={panel} onClick={(e) => e.stopPropagation()}>
         {children}

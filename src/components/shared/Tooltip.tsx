@@ -345,12 +345,12 @@ export const Tooltip = React.memo(function Tooltip({
 
   // Outer wrapper style — includes gap-bridge padding for hover continuity.
   const outerStyle: React.CSSProperties = (() => {
-    if (!position) return { position: 'fixed', zIndex: 50 + depth };
+    if (!position) return { position: 'fixed', zIndex: 70 + depth };
     const base: React.CSSProperties = {
       position: 'fixed',
       left: position.left,
       maxWidth: TOOLTIP_MAX_WIDTH,
-      zIndex: 50 + depth,
+      zIndex: 70 + depth,
       pointerEvents: isVisible ? 'auto' : 'none',
     };
 

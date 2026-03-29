@@ -14,6 +14,7 @@ import { ProwessTab } from './tabs/ProwessTab';
 import { BondsTab } from './tabs/BondsTab';
 import { JourneyTab } from './tabs/JourneyTab';
 import { ChronicleTab } from './tabs/ChronicleTab';
+import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 
 export interface AgentProfileModalProps {
@@ -80,14 +81,15 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
     <Modal open={true} onClose={onClose} maxWidth={960}>
       {/* Header Zone */}
       <div className="border-b p-6 pb-4 relative" style={{ borderColor: 'var(--border-subtle)' }}>
-        <button
-          onClick={onClose}
-          aria-label={`Close profile for ${card.name}`}
-          className="absolute top-4 right-4 transition-colors text-lg"
-          style={{ color: 'var(--accent-gold)' }}
-        >
-          ✕
-        </button>
+        <div className="absolute top-4 right-4">
+          <IconButton
+            icon={<span>✕</span>}
+            variant="close"
+            size="sm"
+            aria-label={`Close profile for ${card.name}`}
+            onClick={onClose}
+          />
+        </div>
         <div className="flex gap-4 mb-3">
           {/* Portrait — 3:4 aspect ratio, click to expand */}
           <div
