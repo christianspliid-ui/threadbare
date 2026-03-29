@@ -20,7 +20,8 @@ export type TraceCategory =
   | 'encounter_scoring' | 'road_hex_transition' | 'agent_reroute'
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'revelation' | 'tick_health' | 'tick_crash'
-  | 'agent_revelation' | 'interaction_depth';
+  | 'agent_revelation' | 'interaction_depth'
+  | 'faction_ambition';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -37,6 +38,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'return_resolution', 'ripple_consequence', 'control_effect',
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
+  'faction_ambition',
 ];
 
 /** Base shape for all trace entries */
