@@ -61,7 +61,7 @@ interface DebugPanelProps {
   agentKnowledge?: Map<string, AgentKnowledge>;
 }
 
-type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps';
+type ViewMode = 'feed' | 'agent-follow' | 'tick-inspector' | 'social' | 'encounters' | 'journey' | 'webgl' | 'factions' | 'spheres' | 'revelation-log' | 'knowledge-gaps' | 'armies';
 
 const PANEL_STYLES = {
   background: 'var(--bg-deep)',
@@ -994,6 +994,130 @@ function JourneyDebugContent({
   );
 }
 
+// ─── Armies Debug Tab (TB-073) ──────────────────────────────────────────
+
+function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+  if (!graph) {
+    return <div style={EMPTY_STATE_STYLE}>No graph available.</div>;
+  }
+
+  // Find all armies
+  const armies = graph.getNodesByType('actor')
+    .filter(n => n.properties.armyState != null);
+
+  // Find all active battles/sieges
+  const battles = graph.getNodesByType('actor')
+    .filter(n => n.properties.battleState != null);
+
+  if (armies.length === 0 && battles.length === 0) {
+    return (
+      <div style={EMPTY_STATE_STYLE}>
+        No armies or battles yet. Factions need military ambitions and sufficient Iron+Gold capability.
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ ...DETAIL_AREA_STYLE, padding: '12px' }}>
+      {/* Active Armies */}
+      {armies.length > 0 && (
+        <>
+          <div style={{ ...DETAIL_LABEL_STYLE, fontSize: '13px', marginBottom: '8px', color: '#D4A574' }}>
+            Active Armies ({armies.length})
+          </div>
+          {armies.map((army) => {
+            const as = army.properties.armyState as Record<string, unknown>;
+            const cmdEdges = graph.getOutgoingEdges(army.id, 'commanded_by');
+            const commander = cmdEdges[0] ? graph.getNode(cmdEdges[0].target) : null;
+            const memEdges = graph.getOutgoingEdges(army.id, 'member_of');
+            const faction = memEdges[0] ? graph.getNode(memEdges[0].target) : null;
+            const locEdges = graph.getOutgoingEdges(army.id, 'located_at');
+            const location = locEdges[0] ? graph.getNode(locEdges[0].target) : null;
+            const qPct = ((as.quintessence as number) / Math.max(1, as.quintessenceMax as number) * 100);
+            const ticksActive = currentTick - (as.raisedTick as number);
+
+            return (
+              <div key={army.id} style={{ padding: '8px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '6px', fontSize: '11px' }}>
+                <div style={{ fontWeight: 600, marginBottom: '4px' }}>{army.name}</div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Faction:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{faction?.name ?? '—'}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Commander:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{commander?.name ?? '—'}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Size:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{String(as.size)} ({as.headcount})</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Quintessence:</span>
+                  <span style={{ ...DETAIL_VALUE_STYLE, color: qPct < 30 ? '#f87171' : qPct < 70 ? '#fbbf24' : '#4ade80' }}>
+                    {(as.quintessence as number).toFixed(1)} / {as.quintessenceMax as number} ({qPct.toFixed(0)}%)
+                  </span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Location:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{location?.name ?? '—'}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Active:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{ticksActive} ticks</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Maintenance:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{as.maintenanceCost}/tick</span>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+
+      {/* Active Battles/Sieges */}
+      {battles.length > 0 && (
+        <>
+          <div style={{ ...DETAIL_LABEL_STYLE, fontSize: '13px', marginBottom: '8px', marginTop: '12px', color: '#f87171' }}>
+            Active Battles ({battles.length})
+          </div>
+          {battles.map((battle) => {
+            const bs = battle.properties.battleState as Record<string, unknown>;
+            const ticksElapsed = currentTick - (bs.startedTick as number);
+            const isSiege = bs.battleType === 'siege';
+            const momentum = bs.momentum as number;
+            const threshold = isSiege ? 12 : 8;
+
+            return (
+              <div key={battle.id} style={{ padding: '8px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '6px', fontSize: '11px' }}>
+                <div style={{ fontWeight: 600, marginBottom: '4px' }}>{battle.name}</div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Type:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{isSiege ? 'Siege' : 'Field Battle'}</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Momentum:</span>
+                  <span style={{ ...DETAIL_VALUE_STYLE, color: momentum > 0 ? '#f87171' : momentum < 0 ? '#60a5fa' : '#888' }}>
+                    {momentum.toFixed(1)} / {'\u00B1'}{threshold} ({momentum > 0 ? 'Attacker' : momentum < 0 ? 'Defender' : 'Even'})
+                  </span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Elapsed:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{ticksElapsed} ticks</span>
+                </div>
+                <div style={DETAIL_ROW_STYLE}>
+                  <span style={DETAIL_LABEL_STYLE}>Spotlights:</span>
+                  <span style={DETAIL_VALUE_STYLE}>{(bs.spotlightHistory as string[]).length}</span>
+                </div>
+              </div>
+            );
+          })}
+        </>
+      )}
+    </div>
+  );
+}
+
 // ─── Sphere State Debug Tab ──────────────────────────────────────────
 
 function SphereStateTabContent({ aggregate }: { aggregate?: SphereAggregate }) {
@@ -1352,6 +1476,9 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
         <button style={getTabButtonStyle(viewMode === 'knowledge-gaps')} onClick={() => setViewMode('knowledge-gaps')}>
           Knowledge
         </button>
+        <button style={getTabButtonStyle(viewMode === 'armies')} onClick={() => setViewMode('armies')}>
+          Armies
+        </button>
       </div>
 
       {/* Agent Follow Header with dropdown selector */}
@@ -1468,6 +1595,8 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             agentKnowledge={agentKnowledge ?? new Map()}
             graph={graph}
           />
+        ) : viewMode === 'armies' ? (
+          <ArmiesTabContent graph={graph} currentTick={currentTick} />
         ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={effectiveAgentId}
