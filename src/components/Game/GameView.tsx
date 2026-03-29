@@ -59,6 +59,7 @@ import { useNotificationNavigation } from './hooks/useNotificationNavigation';
 import { useNotificationPreferences } from './hooks/useNotificationPreferences';
 import { RivalsButton } from './RivalsButton';
 import { IdentityChip } from './IdentityChip';
+import { AscendantSheet } from './AscendantSheet';
 import { EventPopup } from './EventPopup';
 import { SettingsPanel } from './SettingsPanel';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
@@ -136,6 +137,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   // ── Settings panel state ──
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(false);
+
+  // ── Ascendant sheet modal state ──
+  const [ascendantSheetOpen, setAscendantSheetOpen] = useState(false);
 
   // ── Doom clock and mandate detail modals ──
   const [doomDetailOpen, setDoomDetailOpen] = useState(false);
@@ -829,14 +833,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       >
         {/* LEFT GROUP: identity · time · essence */}
         <div className="flex items-center flex-1 min-w-0" style={{ gap: 'var(--topbar-gap)' }}>
-          {/* Identity chip — avatar name + archetype, click to center */}
+          {/* Identity chip — avatar name + archetype, click to open sheet */}
           <IdentityChip
             avatarName={avatarName}
             archetypeTitle={archetype.title}
             cycle={gameState.cycle}
             sphereColor={sphereColor}
             primarySphere={archetype.sphereAlignment.primary}
-            onClick={handleCenterOnAvatar}
+            onClick={() => setAscendantSheetOpen(true)}
           />
 
           <div className="w-px self-stretch" style={{ background: 'var(--border-subtle)' }} />
@@ -996,6 +1000,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
                 <AvatarHUD
                   sphereColor={sphereColor}
+                  onCenterOnAvatar={handleCenterOnAvatar}
                   onMoveClick={handleAvatarMoveClick}
                   onWheelClick={handleAvatarActionClick}
                   onScryClick={handleScryWithMutex}
@@ -1325,6 +1330,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           vignette={activeVignette.data}
         />
       )}
+
+      {/* Ascendant Sheet modal (character sheet for the player's god) */}
+      <AscendantSheet
+        open={ascendantSheetOpen}
+        onClose={() => setAscendantSheetOpen(false)}
+        gameState={gameState}
+        archetype={archetype}
+        avatarName={avatarName}
+        sphereColor={sphereColor}
+      />
 
       {/* Doom clock detail modal */}
       <DoomClockDetail

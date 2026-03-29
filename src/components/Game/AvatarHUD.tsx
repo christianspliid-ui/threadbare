@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
+import { IconButton } from '../shared/IconButton';
 
 interface AvatarHUDProps {
   avatarName?: string;
@@ -41,8 +42,17 @@ const MOVE_ACTIVE_STYLE: React.CSSProperties = {
   color: 'var(--text-primary)',
 };
 
+/** Inline eye SVG icon for the "zoom to ascendant" button */
+const EYE_ICON = (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+    <circle cx="12" cy="12" r="3" />
+  </svg>
+);
+
 export function AvatarHUD({
   sphereColor,
+  onCenterOnAvatar,
   onMoveClick,
   onWheelClick,
   onScryClick,
@@ -82,6 +92,16 @@ export function AvatarHUD({
             Investiture
           </Button>
         </Tooltip>
+        {onCenterOnAvatar && (
+          <Tooltip id="ui.avatar_center">
+            <IconButton
+              icon={EYE_ICON}
+              size="sm"
+              onClick={onCenterOnAvatar}
+              aria-label="Zoom to ascendant"
+            />
+          </Tooltip>
+        )}
       </div>
     </div>
   );
