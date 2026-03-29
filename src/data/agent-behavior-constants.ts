@@ -316,6 +316,18 @@ export const AGREEMENT_DEFAULT_TICKS = 30;
 export const AGREEMENT_MIN_TRUST = -0.5;
 
 // ═══════════════════════════════════════════════════════════════════
+// COOLDOWN SCALING — Dynamic cooldowns based on pool size (phaseAgentDecision.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Template pool size at which full cooldown applies. Below this, cooldowns scale down.
+ * @range 8–30 */
+export const COOLDOWN_FULL_POOL_SIZE = 15;
+
+/** Minimum cooldown ticks regardless of pool size.
+ * @range 1–4 */
+export const COOLDOWN_MINIMUM = 2;
+
+// ═══════════════════════════════════════════════════════════════════
 // ENCOUNTER CACHE — Pre-computed scoring data (encounterCache.ts)
 // ═══════════════════════════════════════════════════════════════════
 

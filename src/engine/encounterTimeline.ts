@@ -17,7 +17,7 @@ export const MAX_EVENTS_PER_AGENT = 5000;
 
 /** A single line in the encounter timeline */
 export type TimelineEvent =
-  | { phase: 'DECIDE'; tick: number; targetEncounter: string; targetLocation: string; targetHex: [number, number]; score: number; travelCost: number; completionProb: number }
+  | { phase: 'DECIDE'; tick: number; targetEncounter: string; targetLocation: string; targetHex: [number, number]; score: number; travelCost: number; completionProb: number; desireMultiplier?: number }
   | { phase: 'IDLE'; tick: number; reason: string; idleAction: string; driftTarget?: string }
   | { phase: 'MOVE'; tick: number; fromHex: [number, number]; toHex: [number, number]; cost: string; road?: string }
   | { phase: 'ARRIVE'; tick: number; location: string; hex: [number, number] }

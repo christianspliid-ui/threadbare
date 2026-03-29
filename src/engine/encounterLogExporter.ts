@@ -25,7 +25,7 @@ function formatHex(hex: [number, number]): string {
 function formatDetail(event: TimelineEvent): string {
   switch (event.phase) {
     case 'DECIDE':
-      return `target=${event.targetLocation} | encounter=${event.targetEncounter} | score=${event.score.toFixed(2)} | hex=${formatHex(event.targetHex)} | travelCost=${event.travelCost} | prob=${event.completionProb.toFixed(2)}`;
+      return `target=${event.targetLocation} | encounter=${event.targetEncounter} | score=${event.score.toFixed(4)} | desire=${event.desireMultiplier?.toFixed(2) ?? '?'} | prob=${event.completionProb.toFixed(2)} | travelCost=${event.travelCost} | hex=${formatHex(event.targetHex)}`;
     case 'IDLE':
       return `reason=${event.reason} | action=${event.idleAction}${event.driftTarget ? ` | driftTarget=${event.driftTarget}` : ''}`;
     case 'MOVE':

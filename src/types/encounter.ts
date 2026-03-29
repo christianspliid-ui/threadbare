@@ -65,11 +65,13 @@ export const ENCOUNTER_BASE_DIFFICULTY = 40;
 /** Difficulty increase per subsequent encounter in an encounter sequence */
 export const ENCOUNTER_DIFFICULTY_ESCALATION = 10;
 
-/** Ticks before an agent can reattempt an abandoned encounter */
-export const ENCOUNTER_ABANDON_COOLDOWN = 8;
+/** Base ticks before an agent can reattempt an abandoned encounter.
+ * Effective cooldown may be lower via dynamic scaling (see COOLDOWN_FULL_POOL_SIZE). */
+export const ENCOUNTER_ABANDON_COOLDOWN = 6;
 
-/** Ticks before an agent can reattempt a completed encounter */
-export const ENCOUNTER_COMPLETION_COOLDOWN = 8;
+/** Base ticks before an agent can reattempt a completed encounter.
+ * Effective cooldown may be lower via dynamic scaling (see COOLDOWN_FULL_POOL_SIZE). */
+export const ENCOUNTER_COMPLETION_COOLDOWN = 6;
 
 /** Minimum Maslow tier required to pursue encounters (self-actualization = 5) */
 export const ENCOUNTER_MASLOW_TIER = 5;
