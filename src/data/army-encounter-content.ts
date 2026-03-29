@@ -24,8 +24,8 @@ const ARMY_RAISE_GOLD_DIFFICULTY = 45;   // Pay test (Gold Tier 3+ gate)
  * Describes the lifecycle event category and eligibility gate.
  */
 export interface ArmyEncounterMeta {
-  /** Lifecycle category: 'raise' | 'threshold' */
-  category: 'raise' | 'threshold';
+  /** Lifecycle category: 'raise' | 'threshold' | 'aftermath' */
+  category: 'raise' | 'threshold' | 'aftermath';
   /** Minimum Iron capability tier required (0 = no gate) */
   minIronTier: number;
   /** Minimum Gold capability tier required (0 = no gate) */
@@ -38,6 +38,7 @@ export const ARMY_ENCOUNTER_META: ReadonlyMap<string, ArmyEncounterMeta> = new M
   ['army.threshold.desertion',          { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
   ['army.threshold.mutiny',             { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
   ['army.threshold.disbandment',        { category: 'threshold', minIronTier: 0, minGoldTier: 0 }],
+  ['army.aftermath.refugees',           { category: 'aftermath', minIronTier: 0, minGoldTier: 0 }],
 ]);
 
 // ─── Army Raise Encounter Template ──────────────────────────────────────
@@ -211,11 +212,60 @@ export const ARMY_THRESHOLD_TEMPLATES: EncounterTemplate[] = [
   },
 ];
 
+// ─── Refugee Encounter Templates ──────────────────────────────────────────
+
+const REFUGEE_HEART_DIFFICULTY = 35;
+const REFUGEE_GOLD_DIFFICULTY = 40;
+
+/**
+ * army.aftermath.refugees — spawned at neighboring settlements after
+ * major or total destruction. Displaced survivors arrive in waves.
+ *
+ * Step 1: Welcome the Survivors (Heart test) — community decides to help
+ * Step 2: Resettle the Displaced (Gold test) — resources to house refugees
+ *
+ * On full success: refugees settled, slight prosperity gain from labor.
+ * On failure: refugees strain existing resources, minor prosperity loss.
+ */
+export const REFUGEE_AFTERMATH_TEMPLATE: EncounterTemplate = {
+  id: 'army.aftermath.refugees',
+  name: 'Refugees at the Gates',
+  locationTypes: [],  // spawned programmatically after battle aftermath
+  steps: [
+    {
+      id: 'army.aftermath.refugees.1',
+      name: 'Welcome the Survivors',
+      narrative: 'Haggard figures arrive at the settlement walls — refugees fleeing war-torn lands. The settlement must decide how to respond.',
+      reach: 'heart',
+      difficulty: REFUGEE_HEART_DIFFICULTY,
+      duration: 1,
+      onSuccess: { narrative: 'Compassion opens the gates. The survivors are welcomed with whatever shelter can be offered.' },
+      onFailure: { narrative: 'Fear and scarcity harden hearts. The gates stay closed, but the refugees linger.' },
+    },
+    {
+      id: 'army.aftermath.refugees.2',
+      name: 'Resettle the Displaced',
+      narrative: 'Feeding and housing the displaced requires coin and organization.',
+      reach: 'gold',
+      difficulty: REFUGEE_GOLD_DIFFICULTY,
+      duration: 2,
+      onSuccess: { narrative: 'Resources are stretched but managed. The refugees begin rebuilding their lives, adding hands to the settlement\'s labor pool.' },
+      onFailure: { narrative: 'Without enough coin, the refugees strain food stores and crowd shelters. Tensions rise.' },
+    },
+  ],
+  reachPrimary: 'heart',
+  reachSecondary: 'gold',
+  encounterType: 'discovery',
+  threatRating: 'moderate',
+  motivations: ENCOUNTER_TYPE_MOTIVATIONS.discovery,
+};
+
 // ─── All Army Templates ─────────────────────────────────────────────────
 
 export const ARMY_ENCOUNTER_TEMPLATES: readonly EncounterTemplate[] = [
   ARMY_RAISE_TEMPLATE,
   ...ARMY_THRESHOLD_TEMPLATES,
+  REFUGEE_AFTERMATH_TEMPLATE,
 ];
 
 // ─── Lookup ─────────────────────────────────────────────────────────────
