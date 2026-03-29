@@ -373,11 +373,14 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     'Something shifted in {name} when {value} became a reflex rather than a choice — the moment when speaking or withholding became character rather than tactic.',
     '{name}\'s commitment to {value} was tested in a conversation that could not be taken back. What was said or unsaid in that moment has been the template since.',
     'The turning point for {name} and {value} arrived through a situation where what they knew could protect someone or destroy them depending on how it was handled. The handling defined them.',
+    'The day {name} chose {value} came through holding a dangerous secret — the kind that could topple a person, a house, a quiet arrangement that had lasted decades. How they held it told them what kind of truth-seeker or secret-keeper they were.',
   ],
   preservation_transformation: [
     'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
     'The moment {name} settled into {value} came through a circumstance that offered them a different kind of power than they chose. The declining was the declaration.',
     '{name}\'s commitment to {value} was established through a situation in which the alternative would have been satisfying in the short term and damaging in the long. They chose correctly.',
+    'When the ancient wall crumbled, {name} faced a choice that had no clean answer: shore up the old stones at great cost, or let them fall and build something new. The fortress posture and the forge posture were both available. The one they chose has been their stance since.',
+    'Something shifted in {name} when the structure they had spent years protecting began to fail. Repair or replace, fortress or forge — the choice, and the reasoning behind it, established the kind of builder they were willing to be.',
   ],
   sacrifice_survival: [
     'Something shifted in {name} the day they chose {value} — a declaration about where their allegiance finally resided that has not been revised since.',
