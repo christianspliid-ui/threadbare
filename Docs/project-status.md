@@ -3,13 +3,12 @@
 > Updated 2026-03-29.
 
 ## Current Focus
-**Phase 11: Agent Character Sheet Overhaul** — ✅ Complete (2026-03-29). All 6 plans executed, verified 13/13 must-haves.
+**TB-074: Encounter Tuning & Agent Variety** — 🏗️ In progress. Session 1 of 4 complete (Phase A + E.2 + E.1).
 
 **Recent completions:**
-- ✅ Phase 11 (TB-070): Agent Character Sheet Overhaul (2026-03-29) — 5-tab AgentProfileModal (Overview, Prowess, Bonds, Journey, Chronicle), multi-faceted AgentKnowledge revelation system, interactionDepth accumulator, 4 divine action cards (Observe/Scry/Whisper Insight/Dream Sending), debug panel Revelation Log + Knowledge Comparison tabs. 6 plans, 3 gap closures.
-- ✅ Phase 10: Sphere Affinity System (2026-03-28) — SphereAffinity types, pressure engine, aggregation, downstream modifiers, sphere UI. All 9 plans including gap closure.
-- ✅ TB-067: Notification Expansion (2026-03-27) — right-click dismiss, NavigationTarget system, per-category notification preferences.
-- ✅ TB-066: Palette Theme System (2026-03-27) — feature-flagged color schemes, two shipped themes.
+- ✅ TB-074 Session 1 (2026-03-29) — Template coverage expansion (all location types ≥8 templates), score display fix (.toFixed(4) + desireMultiplier), dynamic cooldowns scaled by pool size (8→6 base, min 2).
+- ✅ Phase 11 (TB-070): Agent Character Sheet Overhaul (2026-03-29) — 5-tab AgentProfileModal, AgentKnowledge revelation, 4 divine action cards, debug panel tabs. 6 plans, 3 gap closures.
+- ✅ Phase 10: Sphere Affinity System (2026-03-28) — SphereAffinity types, pressure engine, aggregation, downstream modifiers, sphere UI.
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`

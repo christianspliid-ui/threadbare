@@ -11,68 +11,60 @@
 
 ---
 
-### 2026-03-29: Wire SoulCard into HexChronicle — verify on main
+### 2026-03-29: TB-073 Conflict & Destruction — Full Design Document Ready
 
-**Context:** The `SoulCard` component was imported but never rendered in HexChronicle's "The Soul" layer. Cowork session wrote the fix (commit `546b99d`): added a "Souls Present" subsection rendering each agent as a `SoulCard` with sphere color, archetype, prose, and click handler. Test updated to handle agent name appearing in both Soul and Places layers. Types clean, all 14 HexChronicle tests pass.
+**Context:** Cowork brainstorm session produced comprehensive narrative-first design for M2 Conflict & Destruction. Covers army entities, battle/siege resolution, destruction/aftermath, UI/visibility. Malazan-inspired: gods influence wars through proxies, not direct command.
+
+**Key design decisions:**
+- Armies are `actor` graph nodes (no new node type) with `ArmyState` property bag
+- Armies are faction-level agents in the encounter system — no separate war system
+- Battles are **persistent encounters** (multi-tick encounters within existing encounter phase) — no new orchestrator phase
+- Spotlights are regular child encounters using existing intervention system
+- Spotlight POV determined by player's threads
+- Army vitality = Quintessence score that silently degrades; threshold crossings spawn encounters
+- Destruction scales with battle outcome (minor/major/total)
+- Prerequisite: faction ambition system (extension of agent ambition to factions)
+
+**What Cowork created:**
+- `Docs/plans/2026-03-29-conflict-and-destruction-design.md` — Full design doc with NFP compliance, constants tables, trace schemas, fail-soft tables, wiring section
+- Obsidian `TheFantasyWorldSimulator/Brainstorms/brainstorm-conflict-and-destruction.md` — Comprehensive brainstorm with content requirements inventory (6 encounter template tables)
+- Updated `BACKLOG.md` — TB-073 promoted to 📐 with design doc link
+- Updated `ROADMAP.md` — M2.1–M2.4 marked design complete
 
 **Action for Claude Code:**
-- [ ] **Verify commit is on main:** `git log --oneline -3` — confirm `546b99d` "Wire SoulCard rendering into HexChronicle Soul layer" is on `main`. If not, cherry-pick or rebase.
-- [ ] **Push to GitHub:** `git push` (Cowork sandbox couldn't authenticate). This triggers Vercel deploy.
-- [ ] **Run full test suite:** `npm test` — confirm no regressions beyond HexChronicle.
-- [ ] **Visual verify:** Open `?view=game`, click a hex with agents, confirm "Souls Present" section appears in The Soul layer with SoulCards. Check all three zoom tiers.
-- [ ] **Update docs:** Mark complete in BACKLOG if there's a related item; append to `Docs/changelog.md`.
-
-**Files changed:**
-- `src/components/Game/HexChronicle.tsx` — added `locationNameById` memo + SoulCard rendering in Soul layer
-- `src/components/Game/__tests__/HexChronicle.test.tsx` — `getByText` → `getAllByText` for agent name
+- No immediate implementation needed — TB-072 (sphere affinity) and Phase 11 (character sheet) are current priorities
+- When M2 implementation begins, start with **Phase 0: Faction Ambition System** — this is a prerequisite for everything else
+- Note Quintessence (TB-075) dependency — army attrition model uses Quintessence as vitality score. If TB-075 isn't built yet, use an interim vitality score
+- M2.5 (Monster Encounters / TB-051) still needs separate brainstorm — not covered by this design
 
 ---
 
-### 2026-03-29: TB-074 — Encounter Tuning & Agent Variety (📐▶ ready for dev)
+### 2026-03-29: TB-074 — Encounter Tuning Sessions 2-4 (remaining)
 
-**Context:** Encounter log analysis (seed 42, 210 ticks, 16 agents) revealed 7 root causes of broken agent behavior: 31% active rate, 0 movement, 85%+ idle, content deserts, no difficulty escalation, born-later starvation. Full design plan written with 5 phases and NFP compliance.
+**Context:** Session 1 complete (Phase A + E.2 + E.1). Three sessions remain.
 
 **Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md`
 
-**Recommended session grouping:**
-
-- [ ] **Session 1 (highest impact, low risk):** Phase A (broaden template locationTypes to ≥8 per location type) + Phase E.2 (score display fix: `.toFixed(4)` in encounterLogExporter) + Phase E.1 (dynamic cooldowns scaled by pool size). After completing: export logs, run `agent-analyser` skill, compare to baseline.
+**Remaining sessions:**
 - [ ] **Session 2 (scoring overhaul):** Phase B.1 (familiarity discount — new `familiarityRecord` agent property + scoring penalty) + B.2 (exploration bonus — new `explorationRecord` agent property + additive bonus) + B.3 (travel cost dampening — `TRAVEL_COST_WEIGHT = 0.5`) + D.1 (personality amplification — `PERSONALITY_SCORE_EXPONENT = 1.5`).
 - [ ] **Session 3 (spawn + progression):** Phase D.2 (born-later spawn at content locations) + C.1 (difficulty tier escalation — early/mid/late based on tick thresholds, applied during cache rebuild).
 - [ ] **Session 4 (encounter chains):** Phase C.2 — `EncounterChain` data type, `chainProgress` agent property, wire into `filterByPrerequisites` (Stage 3 placeholder), 3 starter chains.
 
-**Key files to modify:**
-- `src/data/encounter-content.ts` — expand locationTypes arrays (Phase A)
-- `src/data/agent-behavior-constants.ts` — 15 new constants, 4 modified
-- `src/engine/encounterScoring.ts` — familiarity, exploration, travel cost, personality
-- `src/engine/phaseAgentDecision.ts` — dynamic cooldowns
-- `src/engine/encounterFilterPipeline.ts` — chain prerequisites in Stage 3
-- `src/engine/encounterCache.ts` — difficulty tier multiplier in rebuild
-- `src/engine/encounterLogExporter.ts` — score display fix
-
-**Verification:** After each session, export encounter logs and run the `agent-analyser` skill (new skill in `.claude/skills/agent-analyser/`). Baseline reference in `agent-analyser/references/baseline-seed42.md`.
-
----
-
-### 2026-03-29: Weekly hygiene sweep — items for Claude Code
-
-**Context:** Automated weekly hygiene sweep identified stale handover entries, a loose file, duplicate skills, and documentation fixes.
-
-**What Cowork already did:**
-- Fixed ROADMAP.md Gap G: "in progress" → "✅ complete (2026-03-29)"
-- Fixed `Docs/documentation-ownership.md`: corrected STATE.md description (was described as manually-maintained session doc, actually machine-generated GSD executor state)
-
-**Action for Claude Code:**
-- [ ] **Archive completed HANDOVER entries:** All active entries below this one dated 2026-03-28 and 2026-03-27 are ✅ in BACKLOG. Move them to the "Completed" section. The 2026-03-28 deploy entry (landing page + product strategy) may still have unchecked file staging — verify those files are committed before archiving.
-- [ ] **Delete loose file:** `rm -f image-generation.skill` at repo root (orphan from a plugin build session)
-- [ ] **Remove duplicate Obsidian skills:** Delete `.claude/skills/defuddle/`, `.claude/skills/json-canvas/`, `.claude/skills/obsidian-bases/`, `.claude/skills/obsidian-cli/`, `.claude/skills/obsidian-markdown/` — these duplicate the Obsidian plugin skills in `.agents/skills/` and the plugin versions take precedence. (Cowork couldn't delete — files are read-only in sandbox.)
-- [ ] **Commit Cowork doc fixes:** `git add .planning/ROADMAP.md Docs/documentation-ownership.md .planning/HANDOVER.md` and commit.
-- [ ] **Run `/retrospective`:** 12 impediments logged, zero retrospectives ever run. Patterns worth addressing: VM corruption (#11 + 2026-03-27 event), GSD subagent missing-file commits (#4, 3 occurrences).
-
-**Files changed by Cowork:** `.planning/ROADMAP.md`, `Docs/documentation-ownership.md`, `.planning/HANDOVER.md`, `.claude/skills/hexmap-developer/SKILL.md` (added InstancedMesh lesson #12), `Docs/cowork-ways-of-working.md` (added post-write integrity check), `Docs/impediments.md` (added retro note), `Docs/retrospectives/2026-03-29-retro.md` (new — first retrospective). All need committing.
+**Verification:** After each session, export encounter logs and run the `agent-analyser` skill. Baseline in `agent-analyser/references/baseline-seed42.md`.
 
 ---
 
 ## Completed
 
 > Recent completions only. Full history in `HANDOVER_HISTORY.md`.
+
+### 2026-03-29: TB-074 Session 1 — Template coverage + score display + dynamic cooldowns ✅
+- Phase A: expanded locationTypes on 15 templates — all location types ≥8 matching templates
+- Phase E.2: score display .toFixed(2)→.toFixed(4), added desireMultiplier to DECIDE events
+- Phase E.1: dynamic cooldowns getEffectiveCooldown() + base 8→6 + COOLDOWN_FULL_POOL_SIZE=15 + COOLDOWN_MINIMUM=2
+
+### 2026-03-29: Wire SoulCard into HexChronicle ✅
+Verified on main, pushed, tests pass. Commit `546b99d`.
+
+### 2026-03-29: Ways-of-working overhaul + weekly hygiene ✅
+Cowork docs committed (57ce692), duplicate skills deleted, loose files cleaned, test failures fixed (c8c0676).

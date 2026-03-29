@@ -12,11 +12,15 @@
 
 ---
 
-## 📐▶ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29)
+## 🏗️ TB-074 · Encounter Tuning & Agent Variety — Full Tuning Pass (2026-03-29)
 
 Fix the 7 root causes from encounter log analysis (seed 42): content deserts, zero movement, small pools, no difficulty escalation, born-later starvation, undifferentiated capability, score display bug. Introduces familiarity discount, exploration bonus, encounter chains, dynamic difficulty, personality amplification, dynamic cooldowns, broader template mapping.
 
-5 phases (A–E), 4 recommended Claude Code sessions. Phase A (template coverage expansion) is the highest-impact single change.
+5 phases (A–E), 4 recommended Claude Code sessions.
+- ✅ **Session 1** (2026-03-29): Phase A (template coverage ≥8 per location type) + Phase E.2 (score display fix) + Phase E.1 (dynamic cooldowns)
+- 📋 **Session 2**: B.1 + B.2 + B.3 + D.1 (movement pressure + personality — scoring overhaul)
+- 📋 **Session 3**: D.2 + C.1 (born-later spawn fix + difficulty escalation)
+- 📋 **Session 4**: C.2 (encounter chains)
 
 **Design doc:** `Docs/plans/2026-03-29-encounter-tuning-and-agent-variety-design.md`
 **Analysis source:** `Docs/analysis/2026-03-29-encounter-log-analysis-seed42.md`
@@ -24,15 +28,17 @@ Fix the 7 root causes from encounter log analysis (seed 42): content deserts, ze
 
 ---
 
-## 💡 TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27)
+## 📐 TB-073 · Conflict & Destruction — Armies, Sieges, Battles (2026-03-27, designed 2026-03-29)
 
 Scale up Iron Reach from individual encounters into army-scale conflict visible on the hex map. Armies as graph entities with size/strength/morale/leader, moving with faction goals (capture settlement, raid trade route, defend territory). Battle resolution from skirmishes (encounter-scale) to army clashes (multi-step narrative events). Sieges as multi-tick encounters with escalating stakes. Sacking destroys sublocations, tanks prosperity, displaces population, creates ruins. War disrupts trade routes. Divine intervention in battles. Army supply lines connect to trade routes (M3). Folds in TB-051 (Monster Encounters) as wilderness threats.
 
 Five phases: M2.1 army entities & warfare design, M2.2 battle/siege resolution, M2.3 destruction & consequences, M2.4 army visibility & UI, M2.5 monster encounters integration.
 
 **Roadmap:** `.planning/ROADMAP.md` → M2
-**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅)
-**Needs design:** Yes — full design pass with NFP compliance, new node type (army), wiring section
+**Design doc:** `Docs/plans/2026-03-29-conflict-and-destruction-design.md`
+**Brainstorm:** Obsidian → `TheFantasyWorldSimulator/Brainstorms/brainstorm-conflict-and-destruction.md`
+**Depends on:** Faction system (✅), Encounter system (✅), HexMapV2 (✅), Agent Movement (✅), TB-072 Sphere Affinity (✅ Phase 10 core), Quintessence/TB-075 (⚠️ designed, not built — interim vitality score needed)
+**Needs:** Implementation plans (7 phases estimated: faction ambitions → army entities → movement/attrition → battle resolution → siege → destruction/aftermath → UI/visibility)
 
 ---
 
