@@ -22,6 +22,7 @@ import {
 } from '../types/battle';
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
+import { tickSiege } from './siegeResolution';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -395,13 +396,19 @@ function areHostile(state: GameState, armyA: string, armyB: string): boolean {
 // ─── Battle Tick Phase ──────────────────────────────────────────────────
 
 /**
- * Tick all active battles. Runs each tick.
+ * Tick all active battles and sieges. Runs each tick.
+ * Routes to tickBattle for field battles, tickSiege for sieges.
  */
 export function phaseBattleTick(state: GameState): void {
   const battleNodes = state.graph.getNodesByType('actor')
     .filter(n => n.properties.battleState != null);
 
   for (const battle of battleNodes) {
-    tickBattle(state, battle.id);
+    const bs = battle.properties.battleState as BattleState;
+    if (bs.battleType === 'siege') {
+      tickSiege(state, battle.id);
+    } else {
+      tickBattle(state, battle.id);
+    }
   }
 }
