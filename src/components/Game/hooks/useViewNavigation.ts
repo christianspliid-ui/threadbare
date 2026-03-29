@@ -117,7 +117,7 @@ export function useViewNavigation({
 
   const handleCenterOnAvatar = useCallback(() => {
     if (avatarPixelPos && hexMapRef.current) {
-      hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 3.0);
+      hexMapRef.current.centerOn(avatarPixelPos.x, avatarPixelPos.y, 20);
     }
   }, [avatarPixelPos]);
 
