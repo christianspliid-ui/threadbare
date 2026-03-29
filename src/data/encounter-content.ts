@@ -11,6 +11,7 @@ import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
+import { getMercenaryEncounterById } from './mercenary-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -5394,5 +5395,6 @@ export function getEncounterById(id: string): EncounterTemplate | undefined {
 export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
   return ENCOUNTER_TEMPLATES.find(encounter => encounter.id === id)
     ?? getSocialEncounterById(id)
-    ?? getFactionEncounterById(id);
+    ?? getFactionEncounterById(id)
+    ?? getMercenaryEncounterById(id);
 }

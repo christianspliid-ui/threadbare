@@ -61,6 +61,7 @@ import { phaseUnifiedActionProgress } from './unifiedActionResolution';
 import { phaseIdleSelection } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
+import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
@@ -1242,6 +1243,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseAmbitionProgress(s) };
   phaseEventCounts['ambition_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 6.651: Faction Ambition Evaluation (TB-073 — faction-level ambition creation/update)
+  phaseFactionAmbitions(s);
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
   s = { ...s, ...phaseAgentLifecycle(s, nextEventId, encounterCache ?? undefined) };

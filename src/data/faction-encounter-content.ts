@@ -12,6 +12,10 @@
 import type { EncounterTemplate } from '../types/encounter';
 import { ENCOUNTER_TYPE_MOTIVATIONS } from '../types/encounter';
 import type { FactionEncounterMeta } from '../types/faction';
+import {
+  MERCENARY_ENCOUNTER_META,
+  getMercenaryEncounterById,
+} from './mercenary-encounter-content';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -50,6 +54,8 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
   ['ag.social.bounty_plan', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
   ['ag.social.share_maps', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.02, questType: 'standard' }],
   ['ag.social.rivalry', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.03, questType: 'standard' }],
+  // Mercenary Company (TB-073)
+  ...MERCENARY_ENCOUNTER_META,
 ]);
 
 // ─── Templates ───────────────────────────────────────────────────────────
@@ -758,7 +764,8 @@ export const FACTION_LIFECYCLE_TEMPLATES: readonly EncounterTemplate[] = [
 export function getFactionEncounterById(id: string): EncounterTemplate | undefined {
   return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
     ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
-    ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id);
+    ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
+    ?? getMercenaryEncounterById(id);
 }
 
 /**
