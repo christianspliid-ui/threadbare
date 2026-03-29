@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-078 AscendantSheet QA fixes — tooltip z-index, foundation.order, IconButton close, a11y, polish (2026-03-29)
 - ✅ TB-074 Encounter Tuning & Agent Variety — complete (2026-03-29): All 4 sessions. Template coverage, scoring overhaul, familiarity/exploration, born-later spawn, difficulty escalation, encounter chains.
 - ✅ TB-075 Born-Later Spawn & Difficulty Escalation — complete (2026-03-29): Part of TB-074 Session 3.
 - ✅ TB-076 Encounter Chains — complete (2026-03-29): Part of TB-074 Session 4. 3 starter chains.
