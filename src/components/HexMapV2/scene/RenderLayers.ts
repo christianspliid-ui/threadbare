@@ -18,10 +18,12 @@ export const RENDER_ORDER = {
   BORDERS:        7,
   SIGNIFIERS:     8,
   LOCATIONS:      9,
-  AGENTS:         10,
-  EVENTS:         11,
-  LABELS:         12,
-  FOG:            13,
+  AGENTS:            10,
+  ARMIES:            10.5,  // Above agents (10), below events (11)
+  BATTLE_INDICATORS: 10.8,  // Above armies, below events
+  EVENTS:            11,
+  LABELS:            12,
+  FOG:               13,
 } as const;
 
 export type RenderLayerName = keyof typeof RENDER_ORDER;
@@ -40,6 +42,8 @@ export const LAYER_Z = {
   SIGNIFIERS:      0.070,
   LOCATIONS:       0.080,
   TRAILS:          0.085,
-  AGENTS:          6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
-  EVENTS:          6.100,
+  AGENTS:            6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
+  ARMIES:            6.050,  // Above agents but below events
+  BATTLE_INDICATORS: 6.080,  // Above armies, below events
+  EVENTS:            6.100,
 } as const;
