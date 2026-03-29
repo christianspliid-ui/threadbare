@@ -149,7 +149,8 @@ export function initializeGameState(
       }
       const locSubtype = locNode.properties.locationType as string | undefined;
       const locAffinity = seedLocationSphereAffinity(hexAffinity, locSubtype);
-      graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
+      // Locations with sphere affinity also get quintessence initialized to 1.0
+      graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity, quintessence: 1.0 } });
     }
   }
 
@@ -168,7 +169,8 @@ export function initializeGameState(
         // (derived aggregation computed later by phaseSphereAggregation)
         affinity = createDefaultSphereAffinity();
       }
-      graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity } });
+      // All actor nodes with sphere affinity get quintessence initialized to 1.0
+      graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity, quintessence: 1.0 } });
     }
   }
 
@@ -310,6 +312,7 @@ export function initializeGameState(
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
+    pendingQuintessenceEvents: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

@@ -20,6 +20,7 @@ import type { PendingVignette } from './journeyEngine';
 import type { ControlEffect } from './controlEffect';
 import type { HexRevelation } from './unifiedAction';
 import type { SpherePressureEvent } from './sphereAffinity';
+import type { QuintessenceEvent } from './quintessence';
 
 export type { ChronicleEntry };
 import type { WorldSoulState } from './worldSoul';
@@ -59,7 +60,9 @@ export interface TickEvent {
     // Control effect events
     | 'control_effect_established' | 'control_effect_lapsed'
   // Revelation events
-    | 'domain_revealed';
+    | 'domain_revealed'
+  // Quintessence events
+    | 'dissolution_event';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -140,6 +143,9 @@ export interface GameState {
 
   // Pending sphere pressure events — accumulated by action/encounter/doom phases, consumed by phaseSpherePressure
   pendingSpherePressures?: SpherePressureEvent[];
+
+  // Pending quintessence events — accumulated by overchannel/encounter failure phases, consumed by phaseQuintessence
+  pendingQuintessenceEvents?: QuintessenceEvent[];
 
   // Journey vignettes — queued by journey beat phase, consumed by UI
   pendingVignettes?: PendingVignette[];

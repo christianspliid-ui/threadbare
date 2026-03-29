@@ -72,6 +72,7 @@ import { revealLayer } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
+import { phaseQuintessence } from './phaseQuintessence';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
@@ -103,6 +104,8 @@ import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
+import type { QuintessenceEvent } from '../types/quintessence';
+import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 
 // ─── Decision Cache (lazy-initialized) ────────────────────────────
 
@@ -209,6 +212,7 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardNam
 export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
+  const quintessenceErodes: QuintessenceEvent[] = [];
   let updatedProgress = [...state.encounterProgress];
 
   const activeEncounters = updatedProgress.filter(p => p.status === 'active');
@@ -449,6 +453,13 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           notification: { channel: 'toast' as const },
         }),
       });
+      // Quintessence erosion — narrative-diminishing failure erodes the entity's existential vitality
+      quintessenceErodes.push({
+        targetNodeId: progress.actorId,
+        delta: -QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
+        source: 'encounter_failure',
+        tick: state.tick,
+      });
     } else {
       events.push({
         id: nextEventId(),
@@ -465,6 +476,9 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     encounterProgress: updatedProgress,
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
+      : {}),
+    ...(quintessenceErodes.length > 0
+      ? { pendingQuintessenceEvents: [...(state.pendingQuintessenceEvents ?? []), ...quintessenceErodes] }
       : {}),
   };
 }
@@ -1216,6 +1230,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.639: Sphere Pressure Resolution (consumes pendingSpherePressures accumulated by upstream phases)
   s = { ...s, ...phaseSpherePressure(s), pendingSpherePressures: [] };
   phaseEventCounts['sphere_pressure'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6392: Quintessence (erosion, passive regen, dissolution — after sphere pressure)
+  s = { ...s, ...phaseQuintessence(s), pendingQuintessenceEvents: [] };
+  phaseEventCounts['quintessence'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6395: Sphere Aggregation (computes global World-Soul from entity sphere scores)
