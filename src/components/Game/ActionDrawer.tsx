@@ -8,10 +8,10 @@ import { renderProseWithIPK } from '../ProseKeyword';
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 const HAND_CONFIG = {
-  /** Card width in hand (px) — must match ActionCard w-28 = 112px */
-  CARD_WIDTH_PX: 112,
+  /** Card width in hand (px) — must match ActionCard SIZE_CONFIG.hand.widthPx */
+  CARD_WIDTH_PX: 100,
   /** Minimum visible portion of each card when overlapping (px) */
-  MIN_OVERLAP_SPACING_PX: 40,
+  MIN_OVERLAP_SPACING_PX: 36,
   /** Max available width for the hand (px) */
   MAX_HAND_WIDTH_PX: 1000,
   /** Max fan rotation for outermost cards (degrees) */
@@ -227,7 +227,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
           {/* Hand container — relative positioned, cards absolutely placed */}
           <div
             className="relative pointer-events-auto"
-            style={{ width: `${handWidth}px`, height: '180px' }}
+            style={{ width: `${handWidth}px`, height: '160px' }}
           >
             {handCards.map((slot, i) => {
               const isFocused = slot.id === focusedSlotId;

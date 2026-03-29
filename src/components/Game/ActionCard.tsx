@@ -19,20 +19,23 @@ import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
+/** Standard 5:7 card ratio (poker/tarot-style). Height = width × 1.4 */
+const CARD_ASPECT = 7 / 5; // 1.4
+
 const SIZE_CONFIG = {
   hand: {
-    width: 'w-28',           // 112px — compact for overlap
+    widthPx: 100,            // 100px wide × 140px tall (5:7)
     glyphSize: '1.5rem',     // 24px
     nameSize: 'var(--text-xs)',
     descSize: '0.625rem',    // 10px
     descClamp: 'line-clamp-2',
     costSize: '0.625rem',
-    padding: 'px-2.5 py-2',
+    padding: 'px-2 py-2',
     badgePos: 'top-1.5 right-1.5',
     badgePad: 'px-1 py-0.5',
   },
   focused: {
-    width: 'w-80',           // 320px — full readable
+    widthPx: 280,            // 280px wide × 392px tall (5:7)
     glyphSize: '2.5rem',     // 40px
     nameSize: 'var(--text-base)',
     descSize: 'var(--text-sm)',
@@ -79,8 +82,8 @@ export const ActionCard = React.memo(function ActionCard({
     ? 'hover:-translate-y-3 hover:scale-105 shadow-lg hover:shadow-2xl'
     : 'shadow-2xl'; // focused: no hover lift, already elevated
   const containerClasses = [
-    'group relative flex flex-col rounded-lg transition-all duration-200',
-    cfg.width, cfg.padding,
+    'group relative flex flex-col rounded-lg transition-all duration-200 overflow-hidden',
+    cfg.padding,
     playing ? 'card-pulse opacity-70' : (isAvailable ? `border-l-4 cursor-pointer ${hoverClasses}` : ['cursor-not-allowed', lockedOpacity]),
     shaking ? 'anim-shake-no' : '',
   ]
@@ -131,6 +134,8 @@ export const ActionCard = React.memo(function ActionCard({
         data-testid={`action-card-${slot.id}`}
         className={containerClasses}
         style={{
+          width: `${cfg.widthPx}px`,
+          height: `${Math.round(cfg.widthPx * CARD_ASPECT)}px`,
           backgroundColor: 'var(--bg-raised)',
           borderTop: '1px solid var(--border-medium)',
           borderRight: '1px solid var(--border-medium)',
