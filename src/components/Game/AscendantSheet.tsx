@@ -10,6 +10,7 @@
 
 import { useMemo } from 'react';
 import type { SphereName } from '../../types';
+import { FOUNDATION_SPHERE_NAMES, CREATION_SPHERE_NAMES } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import type { ReachDomain } from '../../types/traits';
 import { NARRATIVE_LEXICON, REACH_DOMAINS } from '../../types/traits';
@@ -154,10 +155,19 @@ export function AscendantSheet({
   const secondarySphere = archetype.sphereAlignment.secondary;
   const secondaryColor = getSphereColor(secondarySphere);
 
-  // Essence pool sorted: primary → secondary → by amount desc; skip zeros
-  const sortedEssence = useMemo(() => {
+  // Essence pool split into Foundation and Creation, each sorted by amount desc; skip zeros
+  const foundationSphereSet = new Set<string>(FOUNDATION_SPHERE_NAMES);
+  const creationSphereSet = new Set<string>(CREATION_SPHERE_NAMES);
+
+  const foundationEssence = useMemo(() => {
     return Object.entries(gameState.essencePool)
-      .filter(([, amount]) => amount > 0)
+      .filter(([s, amount]) => amount > 0 && foundationSphereSet.has(s))
+      .sort(([, a], [, b]) => b - a);
+  }, [gameState.essencePool]);
+
+  const creationEssence = useMemo(() => {
+    return Object.entries(gameState.essencePool)
+      .filter(([s, amount]) => amount > 0 && creationSphereSet.has(s))
       .sort(([a], [b]) => {
         if (a === primarySphere) return -1;
         if (b === primarySphere) return 1;
@@ -296,43 +306,80 @@ export function AscendantSheet({
             </div>
           </section>
 
-          {/* Essence — prose descriptors, no numbers */}
-          {sortedEssence.length > 0 && (
+          {/* Essence — split into Creation and Foundation groups */}
+          {(creationEssence.length > 0 || foundationEssence.length > 0) && (
             <section className="anim-fade-up-enter" style={{ animationDelay: '100ms', animationFillMode: 'backwards' }}>
               <SectionHeading as="h2">Essence</SectionHeading>
-              <ul className="space-y-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                {sortedEssence.map(([sphere]) => {
-                  const sphereName = sphere as SphereName;
-                  const amount = gameState.essencePool[sphereName];
-                  const descriptor = essenceToProseDescriptor(amount);
-                  const color = getSphereColor(sphereName);
-                  const isPrimary = sphereName === primarySphere;
-                  const isSecondary = sphereName === secondarySphere;
 
-                  return (
-                    <li
-                      key={sphere}
-                      className="flex items-center gap-2 py-1 rounded"
-                      style={{
-                        borderBottom: '1px solid var(--border-subtle)',
-                        opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
-                        background: `linear-gradient(90deg, ${color}12 0%, transparent 60%)`,
-                        paddingLeft: '0.5rem',
-                        paddingRight: '0.5rem',
-                      }}
-                    >
-                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
-                      <ProseKeyword sphere={sphereName}>{capitalize(sphereName)}</ProseKeyword>
-                      <span
-                        className="text-sm italic ml-auto"
-                        style={{ color: 'var(--text-secondary)' }}
-                      >
-                        {descriptor}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              {creationEssence.length > 0 && (
+                <>
+                  <p className="text-xs font-medium mb-1 mt-2" style={{ color: 'var(--accent-gold)' }}>Creation</p>
+                  <ul className="space-y-1 mb-3" style={{ listStyle: 'none', margin: 0, padding: 0, marginBottom: '0.75rem' }}>
+                    {creationEssence.map(([sphere]) => {
+                      const sphereName = sphere as SphereName;
+                      const amount = gameState.essencePool[sphereName];
+                      const descriptor = essenceToProseDescriptor(amount);
+                      const color = getSphereColor(sphereName);
+                      const isPrimary = sphereName === primarySphere;
+                      const isSecondary = sphereName === secondarySphere;
+
+                      return (
+                        <li
+                          key={sphere}
+                          className="flex items-center gap-2 py-1 rounded"
+                          style={{
+                            borderBottom: '1px solid var(--border-subtle)',
+                            opacity: isPrimary ? 1 : isSecondary ? 0.9 : 0.7,
+                            background: `linear-gradient(90deg, ${color}12 0%, transparent 60%)`,
+                            paddingLeft: '0.5rem',
+                            paddingRight: '0.5rem',
+                          }}
+                        >
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <ProseKeyword sphere={sphereName}>{capitalize(sphereName)}</ProseKeyword>
+                          <span className="text-sm italic ml-auto" style={{ color: 'var(--text-secondary)' }}>
+                            {descriptor}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+
+              {foundationEssence.length > 0 && (
+                <>
+                  <p className="text-xs font-medium mb-1" style={{ color: 'var(--accent-gold)' }}>Foundation</p>
+                  <ul className="space-y-1" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {foundationEssence.map(([sphere]) => {
+                      const sphereName = sphere as SphereName;
+                      const amount = gameState.essencePool[sphereName];
+                      const descriptor = essenceToProseDescriptor(amount);
+                      const color = getSphereColor(sphereName);
+
+                      return (
+                        <li
+                          key={sphere}
+                          className="flex items-center gap-2 py-1 rounded"
+                          style={{
+                            borderBottom: '1px solid var(--border-subtle)',
+                            opacity: 0.7,
+                            background: `linear-gradient(90deg, ${color}12 0%, transparent 60%)`,
+                            paddingLeft: '0.5rem',
+                            paddingRight: '0.5rem',
+                          }}
+                        >
+                          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+                          <ProseKeyword sphere={sphereName}>{capitalize(sphereName)}</ProseKeyword>
+                          <span className="text-sm italic ml-auto" style={{ color: 'var(--text-secondary)' }}>
+                            {descriptor}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
             </section>
           )}
 
