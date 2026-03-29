@@ -24,7 +24,7 @@ export const STEP_PROBABILITY_OFFSET = 0.6;
 
 /** Floor for desire multiplier — prevents zero scores for neutral encounters.
  * @range 0.01–0.5 (lower = stronger axiological influence on decisions) */
-export const MINIMUM_DESIRE = 0.1;
+export const MINIMUM_DESIRE = 0.05;
 
 /** Weight for tier growth value in expected reward.
  * @range 0.0–1.0 (0 = ignore growth, 1 = growth dominates) */
@@ -36,7 +36,7 @@ export const IDLE_SCORE_THRESHOLD = 0.0001;
 
 /** Flat boost when an active ambition's reach matches the encounter's primary reach.
  * @range 0.0–0.5 (higher = ambitions more strongly steer encounter selection) */
-export const AMBITION_REACH_BOOST = 0.2;
+export const AMBITION_REACH_BOOST = 0.3;
 
 // ═══════════════════════════════════════════════════════════════════
 // AWARENESS — Per-reach distance-limited visibility (encounterAwareness.ts)
@@ -314,6 +314,46 @@ export const AGREEMENT_DEFAULT_TICKS = 30;
 /** Minimum trust required to create an agreement edge.
  * @range -1.0–0.0 */
 export const AGREEMENT_MIN_TRUST = -0.5;
+
+// ═══════════════════════════════════════════════════════════════════
+// FAMILIARITY DISCOUNT — Repetition penalty on encounter scoring (encounterScoring.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Score reduction per repetition of the same encounter template.
+ * @range 0.05–0.25 */
+export const FAMILIARITY_DECAY_PER_ATTEMPT = 0.12;
+
+/** Maximum total familiarity discount (0.7 = repeated encounters score at 30% of base).
+ * @range 0.5–0.9 */
+export const FAMILIARITY_MAX_PENALTY = 0.7;
+
+// ═══════════════════════════════════════════════════════════════════
+// EXPLORATION BONUS — Novelty reward for unvisited locations (encounterScoring.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Flat additive score bonus for encounters at unvisited locations.
+ * @range 0.1–0.6 */
+export const EXPLORATION_NOVELTY_BONUS = 0.3;
+
+/** Ticks after first visit before exploration bonus fully decays (gradual, not cliff).
+ * @range 20–100 */
+export const EXPLORATION_BONUS_DECAY_TICKS = 50;
+
+// ═══════════════════════════════════════════════════════════════════
+// TRAVEL COST — Movement penalty dampening (encounterScoring.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Dampens travel distance impact on scoring. 0.5 = travel costs half as much per tick.
+ * @range 0.2–1.0 */
+export const TRAVEL_COST_WEIGHT = 0.5;
+
+// ═══════════════════════════════════════════════════════════════════
+// PERSONALITY — Axiological amplification (encounterScoring.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Exponent applied to desireMultiplier. >1.0 amplifies differences between liked/disliked encounters.
+ * @range 1.0–2.0 */
+export const PERSONALITY_SCORE_EXPONENT = 1.5;
 
 // ═══════════════════════════════════════════════════════════════════
 // COOLDOWN SCALING — Dynamic cooldowns based on pool size (phaseAgentDecision.ts)

@@ -18,6 +18,7 @@ import { emitTrace } from './traceBuffer';
 import type { TraceEntry, RoadHexTransitionTrace } from '../types/trace';
 import { getAvatarAscendant, getAgentLocationId } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
+import type { ExplorationRecord } from './encounterScoring';
 
 // ─── ID Generator (local) ─────────────────────────────────────────
 
@@ -144,6 +145,23 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             location: destNode?.name ?? '?',
             hex: [arrHexCol, arrHexRow],
           });
+
+          // B.2: Track exploration — record first visit tick for this location
+          const arrivalLocId = result.newLocationId!;
+          // Re-read node to get latest properties (movementState was just updated above)
+          const currentActorNode = state.graph.getNode(actorId);
+          const existingExploration = (currentActorNode?.properties?.explorationRecord as ExplorationRecord | undefined) ?? { visitedLocations: {} };
+          if (existingExploration.visitedLocations[arrivalLocId] === undefined) {
+            const updatedExploration: ExplorationRecord = {
+              visitedLocations: {
+                ...existingExploration.visitedLocations,
+                [arrivalLocId]: state.tick,
+              },
+            };
+            state.graph.updateNode(actorId, {
+              properties: { ...currentActorNode!.properties, explorationRecord: updatedExploration },
+            });
+          }
         }
       }
 

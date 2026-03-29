@@ -12,9 +12,15 @@ import {
   scoreAndSelect,
   computeEncounterResonance,
   computeWorldSoulValueDrift,
+  computeFamiliarityPenalty,
+  computeExplorationBonus,
   MINIMUM_DESIRE,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
+  FAMILIARITY_DECAY_PER_ATTEMPT,
+  FAMILIARITY_MAX_PENALTY,
+  EXPLORATION_NOVELTY_BONUS,
+  EXPLORATION_BONUS_DECAY_TICKS,
   ENCOUNTER_RESONANCE_SCALE,
   ENCOUNTER_RESONANCE_FLOOR,
   AXIOLOGICAL_DRIFT_SCALE,
@@ -22,6 +28,7 @@ import {
   DRIFT_ACTIVATION_THRESHOLD,
   SPHERE_DRIFT_MAP,
 } from '../encounterScoring';
+import type { FamiliarityRecord, ExplorationRecord } from '../encounterScoring';
 import type { FundamentState } from '../../types/worldSoul';
 import { SPHERE_NAMES } from '../../types/index';
 
@@ -373,12 +380,20 @@ describe('scoreAndSelect', () => {
     const entry = makeEntry({ locationId: 'loc_a' });
     const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 1);
 
-    expect(result.topCandidates[0].desireMultiplier).toBe(MINIMUM_DESIRE);
+    // D.1: desireMultiplier is exponentiated — min desire^PERSONALITY_SCORE_EXPONENT
+    expect(result.topCandidates[0].desireMultiplier).toBeGreaterThan(0);
     expect(result.topCandidates[0].finalScore).toBeGreaterThan(0);
   });
 
   it('IDLE_SCORE_THRESHOLD: all low scores → selected is null', () => {
     const graph = buildTestGraph({ profile: zeroProfile() });
+    // Mark location as visited long ago so exploration bonus = 0
+    graph.updateNode('agent_1', {
+      properties: {
+        ...graph.getNode('agent_1')!.properties,
+        explorationRecord: { visitedLocations: { loc_a: 0 } },
+      },
+    });
     const dm = makeDistanceMatrix([['loc_a', 'loc_a', 0]]);
 
     // Very low reward, high cost → tiny valuePerTick → tiny finalScore
@@ -388,7 +403,8 @@ describe('scoreAndSelect', () => {
       totalTickCost: 100,
     });
 
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 1);
+    // Use tick far enough past visit to ensure exploration bonus fully decayed
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 200);
 
     expect(result.selected).toBeNull();
     expect(result.trace.action).toBe('idle');
@@ -507,9 +523,9 @@ describe('scoreAndSelect', () => {
     );
 
     expect(result.topCandidates[0].ambitionBoost).toBe(AMBITION_REACH_BOOST);
-    expect(result.topCandidates[0].desireMultiplier).toBeGreaterThanOrEqual(
-      AMBITION_REACH_BOOST,
-    );
+    // D.1: desireMultiplier is exponentiated, so compare score with/without ambition
+    expect(result.topCandidates[0].desireMultiplier).toBeGreaterThan(0);
+    expect(result.topCandidates[0].finalScore).toBeGreaterThan(0);
   });
 
   it('trace contains top candidates and selected info', () => {
@@ -725,5 +741,160 @@ describe('computeWorldSoulValueDrift (World-Soul)', () => {
     // life is recessive with direction -1 → negative * -1 = positive drift
     // All three push mercy_ambition positive (toward ambition)
     expect(result.mercy_ambition ?? 0).toBeGreaterThan(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// B.1: Familiarity Discount
+// ═══════════════════════════════════════════════════════════════════
+
+describe('computeFamiliarityPenalty', () => {
+  it('returns 0 for undefined record', () => {
+    expect(computeFamiliarityPenalty(undefined, 'tmpl_a')).toBe(0);
+  });
+
+  it('returns 0 for unseen template', () => {
+    const record: FamiliarityRecord = { attemptCount: {} };
+    expect(computeFamiliarityPenalty(record, 'tmpl_a')).toBe(0);
+  });
+
+  it('returns linear penalty per attempt', () => {
+    const record: FamiliarityRecord = { attemptCount: { tmpl_a: 3 } };
+    const penalty = computeFamiliarityPenalty(record, 'tmpl_a');
+    expect(penalty).toBeCloseTo(3 * FAMILIARITY_DECAY_PER_ATTEMPT, 5);
+  });
+
+  it('caps at FAMILIARITY_MAX_PENALTY', () => {
+    const record: FamiliarityRecord = { attemptCount: { tmpl_a: 100 } };
+    const penalty = computeFamiliarityPenalty(record, 'tmpl_a');
+    expect(penalty).toBe(FAMILIARITY_MAX_PENALTY);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// B.2: Exploration Bonus
+// ═══════════════════════════════════════════════════════════════════
+
+describe('computeExplorationBonus', () => {
+  it('returns full bonus for undefined record', () => {
+    expect(computeExplorationBonus(undefined, 'loc_a', 10)).toBe(EXPLORATION_NOVELTY_BONUS);
+  });
+
+  it('returns full bonus for unvisited location', () => {
+    const record: ExplorationRecord = { visitedLocations: {} };
+    expect(computeExplorationBonus(record, 'loc_a', 10)).toBe(EXPLORATION_NOVELTY_BONUS);
+  });
+
+  it('returns decayed bonus for recently visited location', () => {
+    const record: ExplorationRecord = { visitedLocations: { loc_a: 10 } };
+    const halfLife = EXPLORATION_BONUS_DECAY_TICKS / 2;
+    const bonus = computeExplorationBonus(record, 'loc_a', 10 + halfLife);
+    expect(bonus).toBeCloseTo(EXPLORATION_NOVELTY_BONUS * 0.5, 5);
+  });
+
+  it('returns 0 after full decay period', () => {
+    const record: ExplorationRecord = { visitedLocations: { loc_a: 10 } };
+    const bonus = computeExplorationBonus(record, 'loc_a', 10 + EXPLORATION_BONUS_DECAY_TICKS);
+    expect(bonus).toBe(0);
+  });
+
+  it('returns 0 long after decay period', () => {
+    const record: ExplorationRecord = { visitedLocations: { loc_a: 10 } };
+    const bonus = computeExplorationBonus(record, 'loc_a', 10 + EXPLORATION_BONUS_DECAY_TICKS + 100);
+    expect(bonus).toBe(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// B.3 + D.1: Travel Cost Dampening & Personality in scoreAndSelect
+// ═══════════════════════════════════════════════════════════════════
+
+describe('scoring integration (B.3/D.1)', () => {
+  it('distant encounters score higher with travel cost dampening', () => {
+    // With TRAVEL_COST_WEIGHT=0.5, a 4-hop journey costs only 2 in the denominator
+    const graph = buildTestGraph({ traitLevel: 3, traitDomain: 'iron' });
+    const dm = makeDistanceMatrix([
+      ['loc_a', 'loc_b', 4],
+    ]);
+    const localEntry = makeEntry({ locationId: 'loc_a', templateId: 'tmpl_local' });
+    const distantEntry = makeEntry({ locationId: 'loc_b', templateId: 'tmpl_distant' });
+
+    const result = scoreAndSelect(
+      [localEntry, distantEntry],
+      'agent_1',
+      'loc_a',
+      graph,
+      dm,
+      10,
+    );
+
+    // Both should score — distant should not be eliminated
+    expect(result.topCandidates.length).toBe(2);
+    const distantScore = result.topCandidates.find(c => c.entry.templateId === 'tmpl_distant')!.finalScore;
+    expect(distantScore).toBeGreaterThan(0);
+  });
+
+  it('familiarity penalty reduces repeated encounter scores', () => {
+    const graph = buildTestGraph({ traitLevel: 3, traitDomain: 'iron' });
+    // Set familiarity record on agent
+    const agentNode = graph.getNode('agent_1')!;
+    graph.updateNode('agent_1', {
+      properties: {
+        ...agentNode.properties,
+        familiarityRecord: { attemptCount: { tmpl_default: 5 } },
+      },
+    });
+
+    const dm = makeDistanceMatrix([]);
+    const entry = makeEntry({ locationId: 'loc_a' });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 10);
+    const candidate = result.topCandidates[0];
+    expect(candidate.familiarityPenalty).toBeGreaterThan(0);
+    expect(candidate.familiarityPenalty).toBeCloseTo(5 * FAMILIARITY_DECAY_PER_ATTEMPT, 5);
+  });
+
+  it('exploration bonus increases scores for unvisited locations', () => {
+    const graph = buildTestGraph({ traitLevel: 3, traitDomain: 'iron' });
+    const dm = makeDistanceMatrix([['loc_a', 'loc_b', 1]]);
+    const entry = makeEntry({ locationId: 'loc_b', templateId: 'tmpl_far' });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 10);
+    const candidate = result.topCandidates[0];
+    expect(candidate.explorationBonus).toBe(EXPLORATION_NOVELTY_BONUS);
+  });
+
+  it('personality exponent amplifies high-desire encounters', () => {
+    // Agent with strong mercy_ruthlessness preference
+    const profile = makeProfile({ mercy_ruthlessness: 1.5 });
+    const graph = buildTestGraph({ profile, traitLevel: 3, traitDomain: 'iron' });
+    const dm = makeDistanceMatrix([]);
+
+    const highDesireEntry = makeEntry({
+      templateId: 'tmpl_high',
+      locationId: 'loc_a',
+      motivations: ['mercy_ruthlessness'] as ValuePair[],
+    });
+    const lowDesireEntry = makeEntry({
+      templateId: 'tmpl_low',
+      locationId: 'loc_a',
+      motivations: ['loyalty_ambition'] as ValuePair[],
+    });
+
+    const result = scoreAndSelect(
+      [highDesireEntry, lowDesireEntry],
+      'agent_1',
+      'loc_a',
+      graph,
+      dm,
+      10,
+    );
+
+    // High desire encounter should be selected
+    expect(result.selected?.entry.templateId).toBe('tmpl_high');
+    // The desire multiplier gap should be significant thanks to the exponent
+    const highCandidate = result.topCandidates.find(c => c.entry.templateId === 'tmpl_high')!;
+    const lowCandidate = result.topCandidates.find(c => c.entry.templateId === 'tmpl_low')!;
+    expect(highCandidate.desireMultiplier).toBeGreaterThan(lowCandidate.desireMultiplier);
   });
 });

@@ -61,6 +61,12 @@ export {
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
   STEP_PROBABILITY_OFFSET,
+  FAMILIARITY_DECAY_PER_ATTEMPT,
+  FAMILIARITY_MAX_PENALTY,
+  EXPLORATION_NOVELTY_BONUS,
+  EXPLORATION_BONUS_DECAY_TICKS,
+  TRAVEL_COST_WEIGHT,
+  PERSONALITY_SCORE_EXPONENT,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -69,6 +75,12 @@ import {
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
   STEP_PROBABILITY_OFFSET,
+  FAMILIARITY_DECAY_PER_ATTEMPT,
+  FAMILIARITY_MAX_PENALTY,
+  EXPLORATION_NOVELTY_BONUS,
+  EXPLORATION_BONUS_DECAY_TICKS,
+  TRAVEL_COST_WEIGHT,
+  PERSONALITY_SCORE_EXPONENT,
 } from '../data/agent-behavior-constants';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
@@ -200,6 +212,55 @@ export function computeWorldSoulValueDrift(
   return drift;
 }
 
+// ─── Familiarity Discount (B.1) ─────────────────────────────────
+
+/** Tracks how many times an agent has attempted each encounter template. */
+export interface FamiliarityRecord {
+  attemptCount: Record<string, number>;
+}
+
+/**
+ * Compute familiarity penalty for a repeated encounter.
+ * Returns 0..FAMILIARITY_MAX_PENALTY — multiply final score by (1 - penalty).
+ * Fail-soft: missing record → 0 penalty.
+ */
+export function computeFamiliarityPenalty(
+  record: FamiliarityRecord | undefined,
+  templateId: string,
+): number {
+  if (!record) return 0;
+  const count = record.attemptCount[templateId] ?? 0;
+  if (count === 0) return 0;
+  return Math.min(count * FAMILIARITY_DECAY_PER_ATTEMPT, FAMILIARITY_MAX_PENALTY);
+}
+
+// ─── Exploration Bonus (B.2) ────────────────────────────────────
+
+/** Tracks which locations an agent has visited and when. */
+export interface ExplorationRecord {
+  visitedLocations: Record<string, number>;
+}
+
+/**
+ * Compute exploration bonus for an encounter at a given location.
+ * Unvisited = full bonus, recently visited = decaying bonus, long-ago visited = 0.
+ * Fail-soft: missing record → full bonus everywhere (pushes activity).
+ */
+export function computeExplorationBonus(
+  record: ExplorationRecord | undefined,
+  locationId: string,
+  currentTick: number,
+): number {
+  if (!record) return EXPLORATION_NOVELTY_BONUS;
+  const visitTick = record.visitedLocations[locationId];
+  if (visitTick === undefined) return EXPLORATION_NOVELTY_BONUS;
+  const ticksSinceVisit = currentTick - visitTick;
+  if (ticksSinceVisit >= EXPLORATION_BONUS_DECAY_TICKS) return 0;
+  // Linear decay from full bonus to 0
+  const remaining = 1 - ticksSinceVisit / EXPLORATION_BONUS_DECAY_TICKS;
+  return EXPLORATION_NOVELTY_BONUS * remaining;
+}
+
 // ─── Result Types ───────────────────────────────────────────────
 
 export interface ScoredCandidate {
@@ -212,6 +273,8 @@ export interface ScoredCandidate {
   axiologicalScore: number;
   ambitionBoost: number;
   desireMultiplier: number;
+  familiarityPenalty: number;
+  explorationBonus: number;
   resonance: number;
   globalResonance: number;
   finalScore: number;
@@ -404,6 +467,10 @@ export function scoreAndSelect(
 
   const profile = resolveProfile(graph, agentId, tick, fundament);
 
+  // Read agent tracking records (fail-soft: treat missing as empty)
+  const familiarityRecord = agentNode.properties?.familiarityRecord as FamiliarityRecord | undefined;
+  const explorationRecord = agentNode.properties?.explorationRecord as ExplorationRecord | undefined;
+
   const scored: ScoredCandidate[] = [];
 
   for (const entry of candidates) {
@@ -435,7 +502,7 @@ export function scoreAndSelect(
     const expectedReward =
       completionProb * (entry.successRewardEstimate + growthValue);
 
-    // 4. Travel cost
+    // 4. Travel cost (B.3: dampened by TRAVEL_COST_WEIGHT)
     const distance = getDistance(distanceMatrix, agentLocationId, entry.locationId);
     let travelCost: number;
     if (distance === 0) {
@@ -445,7 +512,7 @@ export function scoreAndSelect(
     } else if (!isFinite(distance)) {
       travelCost = 9999; // Unreachable — effectively eliminates candidate
     } else {
-      travelCost = distance;
+      travelCost = distance * TRAVEL_COST_WEIGHT;
     }
 
     // 5. Total cost (floor at 1)
@@ -464,11 +531,14 @@ export function scoreAndSelect(
       entry.reachPrimary,
     );
 
-    // 9. Desire multiplier (with social bond modifier for agent-targeting encounters)
+    // 9. Desire multiplier (D.1: personality exponent + social bond)
     let desireMultiplier = Math.max(
       axiologicalScore + ambitionBoost,
       MINIMUM_DESIRE,
     );
+
+    // D.1: Amplify personality signal — clamp to ≥0.01 before exponentiation to prevent NaN
+    desireMultiplier = Math.pow(Math.max(desireMultiplier, 0.01), PERSONALITY_SCORE_EXPONENT);
 
     if (entry.targetAgentId) {
       const bondMod = computeBondModifier(graph, agentId, entry.targetAgentId);
@@ -486,10 +556,17 @@ export function scoreAndSelect(
     // 12. Global sphere resonance — World-Soul fundament alignment (M1.2)
     const globalResonance = computeEncounterResonance(entry.sphereAffinity, fundament);
 
-    // 13. Final score
-    const finalScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
+    // 13. B.1: Familiarity penalty — repeated encounters score lower
+    const familiarityPenalty = computeFamiliarityPenalty(familiarityRecord, entry.templateId);
 
-    // 14. Action classification
+    // 14. B.2: Exploration bonus — unvisited locations score higher
+    const explorationBonus = computeExplorationBonus(explorationRecord, entry.locationId, tick);
+
+    // 15. Final score (B.1: multiply by familiarity factor, B.2: add exploration bonus)
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
+    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus;
+
+    // 16. Action classification
     let action: ScoredCandidate['action'];
     if (distance === 0) {
       action = 'start_local';
@@ -509,6 +586,8 @@ export function scoreAndSelect(
       axiologicalScore,
       ambitionBoost,
       desireMultiplier,
+      familiarityPenalty,
+      explorationBonus,
       resonance,
       globalResonance,
       finalScore,
@@ -551,6 +630,8 @@ function buildTrace(
       isLocal: c.action === 'start_local',
       valuePerTick: c.valuePerTick,
       desireMultiplier: c.desireMultiplier,
+      familiarityPenalty: c.familiarityPenalty,
+      explorationBonus: c.explorationBonus,
       finalScore: c.finalScore,
       travelCost: c.travelCost,
       completionProb: c.completionProb,
