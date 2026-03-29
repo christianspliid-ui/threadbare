@@ -29,6 +29,12 @@ import type { LocationNode } from './scene/LocationIconMesh';
 import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
+import { createArmyLayer } from './scene/ArmyLayer';
+import type { ArmyLayerGroup } from './scene/ArmyLayer';
+import type { ArmyRenderData } from './scene/ArmyLayer';
+import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
+import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
+import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -145,6 +151,10 @@ export interface HexMapV2Props {
   roadPaths?: import('./scene/RoadMesh').RoadPath[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
   agents?: AgentRenderData[];
+  /** Army render data for army indicator sprites (Plan 12-07+) */
+  armies?: ArmyRenderData[];
+  /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
+  battles?: BattleIndicatorData[];
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
@@ -258,7 +268,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -278,6 +288,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const destroyZoomRef = useRef<(() => void) | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
+
+    // Army and battle layer refs
+    const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
+    const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
 
     // Agent animation state refs — stable across renders, mutated by render loop
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
@@ -569,6 +583,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           void loadAgentPortraits(agentSpriteGroup, agents ?? []);
         }
 
+        // Build army layer — faction-colored size indicators at army locations (Plan 12-07)
+        // Renders at RENDER_ORDER.ARMIES (10.5), above agents, below events.
+        const armyLayerGroup = createArmyLayer(armies ?? []);
+        scene.add(armyLayerGroup.group);
+        armyLayerRef.current = armyLayerGroup;
+
+        // Build battle indicator layer — battle/siege overlays at combat hexes (Plan 12-07)
+        // Renders at RENDER_ORDER.BATTLE_INDICATORS (10.8), above armies, below events.
+        const battleIndicatorGroup = createBattleIndicatorLayer(battles ?? []);
+        scene.add(battleIndicatorGroup.group);
+        battleIndicatorLayerRef.current = battleIndicatorGroup;
+
         // Create movement trail group — Line segments that fade over TRAIL_FADE_DURATION
         const trailGroup = createMovementTrailMesh();
         scene.add(trailGroup);
@@ -679,6 +705,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           // Fade and dispose expired movement trail segments
           const tGroup = trailGroupRef.current;
           if (tGroup) updateTrails(tGroup);
+          // Pulse battle/siege indicators
+          const battleLayer = battleIndicatorLayerRef.current;
+          if (battleLayer && battleLayer.materials.length > 0) {
+            tickBattleIndicators(battleLayer, clock.getElapsedTime());
+          }
           renderer.render(scene, camera);
         }
         animate();
@@ -819,6 +850,15 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
                 child.material.dispose();
               }
             }
+          }
+          // Dispose army and battle indicator layers
+          if (armyLayerRef.current) {
+            armyLayerRef.current.dispose();
+            armyLayerRef.current = null;
+          }
+          if (battleIndicatorLayerRef.current) {
+            battleIndicatorLayerRef.current.dispose();
+            battleIndicatorLayerRef.current = null;
           }
           // Dispose agent sprite groups
           agentSpriteGroup.dispose();
