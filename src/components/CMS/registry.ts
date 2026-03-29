@@ -65,8 +65,14 @@ import { TUNABLE_GROUPS } from './tunableConstants';
 
 // ── Reach domain badge colors (reused across viewers) ────────────
 export const REACH_BADGE_COLORS: Record<string, string> = {
-  iron: '#b91c1c', gold: '#ca8a04', shadow: '#6b21a8', veil: '#7c3aed',
-  heart: '#be185d', eye: '#0891b2', stone: '#78716c', star: '#eab308', flesh: '#dc2626',
+  iron:   '#b91c1c',  // Force (red)
+  gold:   '#166534',  // Life (green, darkened for Threadbare)
+  shadow: '#134e4a',  // Entropy (teal-dark)
+  veil:   '#581c87',  // Spirit (purple)
+  heart:  '#1e3a8a',  // Mind (blue)
+  eye:    '#92400e',  // Energy (amber, darkened for Threadbare)
+  stone:  '#57534e',  // Matter (brown)
+  star:   '#7c2d12',  // Time (orange, darkened for Threadbare)
 };
 
 export const THREAT_BADGE_COLORS: Record<string, string> = {
