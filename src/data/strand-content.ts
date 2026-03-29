@@ -28,10 +28,9 @@ export const VALUE_LABELS: Record<ValuePair, [string, string]> = {
   honesty_cunning: ['Honest', 'Cunning'],
   tradition_novelty: ['Traditional', 'Innovative'],
   loyalty_ambition: ['Loyal', 'Ambitious'],
-  frankness_propriety: ['Frank', 'Proper'],
-  humility_pride: ['Humble', 'Proud'],
+  revelation_discretion: ['Revealing', 'Discreet'],
+  preservation_transformation: ['Preserving', 'Transforming'],
   sacrifice_survival: ['Self-Sacrificing', 'Self-Preserving'],
-  stoicism_passion: ['Stoic', 'Passionate'],
   courage_prudence: ['Courageous', 'Prudent'],
 };
 
@@ -77,25 +76,20 @@ export const INTENSITY_VALUE_LABELS: Record<
     moderate: ['steadfast in allegiance', 'driven to prove themselves'],
     strong: ['bound eternal to their compact', 'consumed by endless ambition'],
   },
-  frankness_propriety: {
-    weak: ['tends toward blunt speech', 'tends toward tactful restraint'],
-    moderate: ['speaks truth regardless of cost', 'chooses careful diplomacy'],
-    strong: ['incapable of holding silence', 'will never break decorum'],
+  revelation_discretion: {
+    weak: ['drawn to uncover hidden things', 'inclined toward careful concealment'],
+    moderate: ['driven to expose what is veiled', 'skilled in keeping secrets'],
+    strong: ['cannot bear a truth left unspoken', 'will guard any secret unto death'],
   },
-  humility_pride: {
-    weak: ['tends to defer to others', 'tends to assert themselves'],
-    moderate: ['content in lesser station', 'commands respect naturally'],
-    strong: ['serves gladly beneath all others', 'must rule all around them'],
+  preservation_transformation: {
+    weak: ['tends to protect what exists', 'tends to reshape what endures'],
+    moderate: ['guardian of inherited forms', 'driven to rebuild better'],
+    strong: ['nothing must change beneath their watch', 'must tear down before they can rest'],
   },
   sacrifice_survival: {
     weak: ['somewhat bound to their cause', 'somewhat resistant to ties'],
     moderate: ['devoted to a higher order', 'fiercely self-directed'],
     strong: ['enslaved by their devotion', 'entirely unto themselves'],
-  },
-  stoicism_passion: {
-    weak: ['tends toward composure', 'tends toward strong feeling'],
-    moderate: ['practises deliberate calm', 'feels everything deeply'],
-    strong: ['impervious to all sensation', 'consumed by every emotion'],
   },
   courage_prudence: {
     weak: ['drawn to face challenges', 'cautious of rash action'],
@@ -128,23 +122,22 @@ export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
   honesty_cunning: ['Fears being outwitted', 'Fears having to deceive'],
   tradition_novelty: ['Fears the loss of the old ways', 'Fears stagnation'],
   loyalty_ambition: ['Fears betrayal by those they trust', 'Fears irrelevance and failure'],
-  frankness_propriety: ['Fears causing harm through bluntness', 'Fears losing their authentic voice'],
-  humility_pride: ['Fears being overlooked', 'Fears losing control through arrogance'],
+  revelation_discretion: ['Fears being kept blind by those they trust', 'Fears the harm their knowledge might cause'],
+  preservation_transformation: ['Fears all they have built crumbling to nothing', 'Fears being enslaved by what they cannot change'],
   sacrifice_survival: ['Fears abandonment by their cause', 'Fears losing freedom'],
-  stoicism_passion: ['Fears becoming emotionally numb', 'Fears being consumed by feeling'],
   courage_prudence: ['Fears showing weakness', 'Fears reckless consequences'],
 
-  // Reach-based fears (primordial terrors from Nine Reaches)
+  // Reach-based fears (primordial terrors from Eight Reaches)
   // Note: These are embedded into existing pairs for structural compatibility.
   // Iron (warfare/violence): integrated into courage_prudence (recklessness) + mercy_ruthlessness (powerlessness)
   // Gold (trade/poverty): integrated into asceticism_extravagance (poverty)
   // Shadow (stealth/exposure): integrated into honesty_cunning (outwitted) + mercy_ruthlessness (vulnerability)
   // Veil (magic/lost magic): can be added as variant fears when magic strength is assessed
   // Heart (social/isolation): integrated into sacrifice_survival (abandonment) + loyalty_ambition (betrayal)
-  // Eye (knowledge/ignorance): integrated into honesty_cunning (sharper mind)
-  // Stone (construction/collapse): integrated into humility_pride (losing control)
+  // Eye (knowledge/blindness): integrated into revelation_discretion
+  // Stone (construction/collapse): integrated into preservation_transformation
   // Star (navigation/being lost): integrated into loyalty_ambition (irrelevance)
-  // Flesh (biology/decay): implicit in all aging/mortality themes
+  // Flesh reach removed (TB-075 Phase 1) — decay/vitality themes migrate to Quintessence runtime property
 };
 
 // ============================================================================
@@ -152,7 +145,7 @@ export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
 // ============================================================================
 
 /**
- * Primordial fears tied to each of the Nine Reaches.
+ * Primordial fears tied to each of the Eight Reaches.
  * These represent deeper, more cosmological anxieties beneath the axiological pairs.
  *
  * Used when depicting agents whose core fears are rooted in the fabric of action itself:
@@ -164,7 +157,7 @@ export const FEAR_DESCRIPTIONS: Record<ValuePair, [string, string]> = {
  * - Eye: Fear of ignorance, blindness, the unknowable
  * - Stone: Fear of collapse, structural failure, the ground giving way
  * - Star: Fear of being lost, untethered, navigation failing
- * - Flesh: Fear of decay, plague, the body's betrayal
+ * (Flesh reach removed in TB-075 Phase 1 — decay/vitality themes migrate to Quintessence)
  */
 export const REACH_BASED_FEARS: Record<string, [string, string]> = {
   Iron: ['Fears being overwhelmed in combat, helpless beneath an enemy', 'Fears the blood never washing clean'],
@@ -175,7 +168,6 @@ export const REACH_BASED_FEARS: Record<string, [string, string]> = {
   Eye: ['Fears ignorance, knowledge forever withheld', 'Fears what they know destroying their peace'],
   Stone: ['Fears collapse, the world\'s foundation cracking beneath them', 'Fears being trapped in stone forever'],
   Star: ['Fears being lost, the path ahead obscured eternally', 'Fears being bound to one place, never moving forward'],
-  Flesh: ['Fears plague and decay, the body\'s slow betrayal', 'Fears perfection demanded until they shatter'],
 };
 
 // ============================================================================

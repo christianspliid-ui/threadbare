@@ -39,13 +39,12 @@ const DOMAIN_NAMES: Record<ReachDomain, string> = {
   eye: 'Eye',
   stone: 'Stone',
   star: 'Star',
-  flesh: 'Flesh',
 };
 
 const ALL_DOMAINS: ReachDomain[] = [
   'iron', 'gold', 'shadow',
   'veil', 'heart', 'eye',
-  'stone', 'star', 'flesh',
+  'stone', 'star',
 ];
 
 // ─── Subcategory visibility ───────────────────────────────────────

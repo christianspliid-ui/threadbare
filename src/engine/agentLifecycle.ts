@@ -185,7 +185,7 @@ export function phaseAgentLifecycle(
 
         const archetype = NARRATIVE_ARCHETYPES[Math.floor(rng() * NARRATIVE_ARCHETYPES.length)];
         const domainCaps: Record<string, number> = {};
-        const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+        const reaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
         for (const r of reaches) {
           domainCaps[r] = 0.1 + rng() * 0.4;
         }

@@ -40,10 +40,9 @@ const VALUE_PAIRS: ValuePair[] = [
   'honesty_cunning',
   'tradition_novelty',
   'loyalty_ambition',
-  'frankness_propriety',
-  'humility_pride',
+  'revelation_discretion',
+  'preservation_transformation',
   'sacrifice_survival',
-  'stoicism_passion',
   'courage_prudence',
 ];
 

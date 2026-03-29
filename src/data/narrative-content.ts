@@ -374,7 +374,7 @@ export const VALUE_FLAVORS: Partial<Record<ValuePair, string[]>> = {
   honesty_cunning: ['with cunning precision', 'through shrewd calculation'],
   tradition_novelty: ['embracing new paths', 'breaking with the old ways'],
   loyalty_ambition: ['loyal to the last', 'driven by ambition', 'with unwavering fidelity'],
-  humility_pride: ['commanding all before them', 'asserting dominion'],
+  preservation_transformation: ['commanding all before them', 'asserting dominion'],
   sacrifice_survival: ['bound by devotion', 'answering a higher call'],
   courage_prudence: ['with fearless resolve', 'bold beyond measure'],
 };

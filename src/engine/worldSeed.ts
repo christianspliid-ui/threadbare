@@ -99,7 +99,7 @@ export const INITIAL_PROSPERITY: Partial<Record<LocationSubtype, number>> = {
 // VALUE_PAIRS imported from types/agent.ts
 
 const REACH_DOMAINS: ReachDomain[] = [
-  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh',
+  'iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star',
 ];
 
 const INDIVIDUAL_NAMES = [

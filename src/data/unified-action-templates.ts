@@ -500,7 +500,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'chaos',
     targetCategories: ['location'],
-    motivations: ['mercy_ruthlessness', 'humility_pride'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'stirs whispers of grievance through this settlement',
       success: 'tensions rise; the people begin to question their rulers',
@@ -527,7 +527,7 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'force',
     targetCategories: ['location'],
     targetSubtypes: ['keep', 'fortress', 'stronghold', 'watchtower', 'garrison'],
-    motivations: ['courage_prudence', 'humility_pride'],
+    motivations: ['courage_prudence', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'breathes martial purpose into the walls of this fortification',
       success: 'the defenses are strengthened by divine will',
@@ -637,7 +637,7 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     sphereAffinity: 'chaos',
     targetCategories: ['artifact', 'artifact_legendary'],
-    motivations: ['mercy_ruthlessness', 'humility_pride'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'binds a curse of misfortune to this object',
       success: 'the curse takes hold — ill fate clings to whoever carries it',
@@ -817,7 +817,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'entropy',
     targetCategories: ['hex'],
     narrativeLayer: 'land',
-    motivations: ['mercy_ruthlessness', 'humility_pride'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'reaches into the foundations of this land with corrupting intent',
       success: 'darkness seeps into the soil — the land begins to wither',
@@ -853,11 +853,11 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.seed_life',
     name: 'Seed Life',
-    reach: 'flesh',
+    reach: 'gold',
     crudType: 'create',
     scale: 'regional',
     steps: [{
-      reach: 'flesh',
+      reach: 'gold',
       duration: { min: 4, max: 8 },
       difficulty: 0.50,
       onSuccess: [],
@@ -905,7 +905,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['hex'],
     narrativeLayer: 'land',
     bypassRevelationGate: true,
-    motivations: ['tradition_novelty', 'humility_pride'],
+    motivations: ['tradition_novelty', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'reaches deep into the foundations of the earth and begins to shape',
       success: 'stone rises from the ground, sculpted by divine will — a new landmark stands where none existed',
@@ -967,11 +967,11 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.shift_season',
     name: 'Shift Season',
-    reach: 'flesh',
+    reach: 'gold',
     crudType: 'update',
     scale: 'regional',
     steps: [{
-      reach: 'flesh',
+      reach: 'gold',
       duration: { min: 2, max: 4 },
       difficulty: 0.35,
       onSuccess: [],
@@ -1011,7 +1011,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'force',
     targetCategories: ['hex'],
     narrativeLayer: 'land',
-    motivations: ['mercy_ruthlessness', 'humility_pride'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'gathers destructive force and turns it upon the earth',
       success: 'fire and ruin sweep the land — resources are consumed, the terrain scarred and barren',
@@ -1149,7 +1149,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
     narrativeLayer: 'soul',
-    motivations: ['tradition_novelty', 'humility_pride'],
+    motivations: ['tradition_novelty', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'grasps the threads of sphere influence and begins to reweave the magical balance',
       success: 'the dominant sphere shifts — one rises as another fades, the magical ecology rebalanced by divine hand',
@@ -1286,7 +1286,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     targetCategories: ['hex'],
     narrativeLayer: 'people',
     bypassRevelationGate: true,
-    motivations: ['humility_pride', 'sacrifice_survival'],
+    motivations: ['preservation_transformation', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'begins shaping raw divine power into a physical instrument of focused purpose',
       success: 'the instrument takes form — a tool of divine making, humming with latent power in the reach it was shaped for',
@@ -1420,7 +1420,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'spirit',
     targetCategories: ['hex'],
     narrativeLayer: 'people',
-    motivations: ['sacrifice_survival', 'humility_pride'],
+    motivations: ['sacrifice_survival', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'sends a divine call across the land, drawing the faithful toward this place',
       success: 'agents from adjacent hexes are drawn inward — a congregation gathers where the call was strongest',
@@ -1501,7 +1501,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'force',
     targetCategories: ['hex'],
     narrativeLayer: 'people',
-    motivations: ['mercy_ruthlessness', 'humility_pride'],
+    motivations: ['mercy_ruthlessness', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'focuses terrible, absolute divine wrath upon a single mortal',
       success: 'divine fire descends — the targeted agent is struck down, a demonstration of ultimate power',
@@ -1666,7 +1666,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     actorAffinities: ['ascendant'],
     targetCategories: ['hex'],
     narrativeLayer: 'ruins',
-    motivations: ['tradition_novelty', 'humility_pride'],
+    motivations: ['tradition_novelty', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'reaches into the ancient ruins and begins to suffuse them with divine sphere influence',
       success: 'the ruins are consecrated — aligned to your sphere, encounter spawning shifts toward your domain',
@@ -1719,7 +1719,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
     sphereAffinity: 'mind',
     targetCategories: ['hex'],
     narrativeLayer: 'ruins',
-    motivations: ['humility_pride', 'tradition_novelty'],
+    motivations: ['preservation_transformation', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'reaches into the memory-traces of the ruins and begins to reshape what happened here',
       success: 'the past shifts — the historical culture legacy is rewritten, and the echoes tell a new story',
@@ -1818,7 +1818,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         destroyed: 'your dominion is shattered — the land is left unclaimed and wild',
       },
     },
-    motivations: ['humility_pride', 'sacrifice_survival'],
+    motivations: ['preservation_transformation', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'reaches deep into the land, claiming it as sovereign divine territory',
       success: 'the land acknowledges its new master — divine influence seeps into the foundations',
@@ -1828,11 +1828,11 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.cultivate',
     name: 'Cultivate',
-    reach: 'flesh',
+    reach: 'gold',
     crudType: 'update',
     scale: 'regional',
     steps: [{
-      reach: 'flesh',
+      reach: 'gold',
       duration: { min: 2, max: 4 },
       difficulty: 0.30,
       onSuccess: [],
@@ -2069,7 +2069,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         destroyed: 'the channel is shattered — a burst of magical energy dissipates harmlessly',
       },
     },
-    motivations: ['tradition_novelty', 'humility_pride'],
+    motivations: ['tradition_novelty', 'preservation_transformation'],
     narrativeTemplates: {
       initiation: 'reaches into the sphere currents and begins bending their flow',
       success: 'the currents obey — a sustained redirection of sphere influence from adjacent hexes',
@@ -2114,7 +2114,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         destroyed: 'the divine call is silenced — the people scatter from the broken covenant',
       },
     },
-    motivations: ['humility_pride', 'mercy_ruthlessness'],
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     narrativeTemplates: {
       initiation: 'begins extending sustained divine attention over the people of this hex',
       success: 'the flock responds — a sustained pressure that draws mortal hearts toward worship',
@@ -2155,7 +2155,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         destroyed: 'the champion is struck down — the faction falls into disarray',
       },
     },
-    motivations: ['humility_pride', 'sacrifice_survival'],
+    motivations: ['preservation_transformation', 'sacrifice_survival'],
     narrativeTemplates: {
       initiation: 'reaches into the political web and begins elevating a chosen agent to leadership',
       success: 'the champion is installed — sustained divine backing holds them in power',
@@ -2235,7 +2235,7 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
         destroyed: 'the decree is broken — the people celebrate their liberation',
       },
     },
-    motivations: ['humility_pride', 'tradition_novelty'],
+    motivations: ['preservation_transformation', 'tradition_novelty'],
     narrativeTemplates: {
       initiation: 'inscribes a divine decree upon the fabric of this place',
       success: 'the decree takes hold — a sustained behavioral constraint on all agents at this hex',

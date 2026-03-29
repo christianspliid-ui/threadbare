@@ -341,7 +341,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'eye_1_reveal',
         text: 'She brings the text to the village square. Let them see. Let them decide.',
         godAction: 'You blow the dust from the pages. Truth serves your design.',
-        axiologicalShifts: { frankness_propriety: 0.15 },
+        axiologicalShifts: { revelation_discretion: 0.15 },
         reachChanges: { eye: 0.05 },
         gateTags: ['truth_seeker', 'iconoclast'],
         traitSeeds: ['truth-seeker'],
@@ -350,7 +350,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'eye_1_keep',
         text: 'She hides the text behind a loose stone. Some truths are too expensive to share. But she remembers.',
         godAction: 'You seal the knowledge in her memory. A secret held is power stored.',
-        axiologicalShifts: { frankness_propriety: -0.1, honesty_cunning: -0.1 },
+        axiologicalShifts: { revelation_discretion: -0.1, honesty_cunning: -0.1 },
         reachChanges: { eye: 0.03, shadow: 0.02 },
         gateTags: ['secret_keeper'],
         traitSeeds: ['perceptive'],
@@ -378,7 +378,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'spirit_1_resist',
         text: 'She wraps her hand in cloth and ignores the glow. Whatever it is, she won\'t be owned.',
         godAction: 'You feel the resistance. Interesting. A thread that fights back.',
-        axiologicalShifts: { humility_pride: -0.15 },
+        axiologicalShifts: { preservation_transformation: -0.15 },
         gateTags: ['defiant_spirit'],
         traitSeeds: ['strong-willed'],
       },
@@ -473,7 +473,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
   {
     id: 'dilemma.axio.humility_1',
     category: 'axiological',
-    targetValuePair: 'humility_pride',
+    targetValuePair: 'preservation_transformation',
     setup: 'She completes the bridge three days ahead of the master builder\'s estimate. The village celebrates the master, who takes full credit. Her work, his name. The bridge will stand for a century.',
     godVoice: 'The bridge endures. Does the builder need the name?',
     choices: [
@@ -481,7 +481,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'humility_1_accept',
         text: 'She says nothing. The bridge is enough. She knows what she built.',
         godAction: 'You plant quiet confidence in her heart. True mastery needs no audience.',
-        axiologicalShifts: { humility_pride: 0.2 },
+        axiologicalShifts: { preservation_transformation: 0.2 },
         gateTags: ['humble_origin', 'quiet_strength'],
         traitSeeds: ['unassuming'],
       },
@@ -489,7 +489,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'humility_1_claim',
         text: 'At the feast, she stands and names every joint she cut, every stone she placed. The silence is deafening.',
         godAction: 'You give her the voice to claim what is hers. Pride is a weapon too.',
-        axiologicalShifts: { humility_pride: -0.2 },
+        axiologicalShifts: { preservation_transformation: -0.2 },
         gateTags: ['pride_awakened'],
         traitSeeds: ['ambitious'],
       },
@@ -584,7 +584,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
   // ── Phase 6 additions: flesh reach dilemmas ──
   {
     id: 'flesh_survival',
-    reach: 'flesh',
+    reach: 'gold',
     title: 'The Body\'s Price',
     sceneProse: 'The candidate has pushed past every physical limit. Their body is a map of scars, each one a lesson in survival. Now they face a trial that demands not skill but raw endurance — the kind that breaks bones and tests the will to live.',
     tensionProse: 'The body screams to stop. Every fiber begs for mercy. But something deeper — something primal — refuses to yield.',
@@ -611,7 +611,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
   },
   {
     id: 'flesh_healing',
-    reach: 'flesh',
+    reach: 'gold',
     title: 'The Healer\'s Burden',
     sceneProse: 'Someone lies dying. The candidate has the knowledge — crude, hard-won, written in scar tissue — to save them. But the effort will cost something. Healing always does, when it comes from the flesh rather than from magic.',
     tensionProse: 'Blood for blood. Life for life. The oldest transaction in the world waits to be completed.',
@@ -656,7 +656,7 @@ export const DILEMMA_TEMPLATES: DilemmaTemplate[] = [
         id: 'star_3_shield',
         text: 'The candidate shields their mind. They accept the divine — on their own terms.',
         godAction: 'Boundaries. Even with a god. Admirable — or infuriating.',
-        axiologicalShifts: { humility_pride: -0.1 },
+        axiologicalShifts: { preservation_transformation: -0.1 },
         reachChanges: { star: 0.03, eye: 0.02 },
         gateTags: ['independent_faith'],
         traitSeeds: ['wary-devout'],
@@ -733,7 +733,7 @@ export const GOD_GIVEN_TRAITS: GodGivenTraitOption[] = [
   { id: 'trait.god.all_seeing',      name: 'All-Seeing',       description: 'Nothing escapes their gaze',            reach: 'eye' },
   { id: 'trait.god.stone_blood',     name: 'Stone Blood',      description: 'Endurance beyond mortal limits',        reach: 'stone' },
   { id: 'trait.god.star_touched',    name: 'Star-Touched',     description: 'A connection to the cosmic order',      reach: 'star' },
-  { id: 'trait.god.vital_surge',     name: 'Vital Surge',      description: 'Life force that overwhelms and heals',  reach: 'flesh' },
+  { id: 'trait.god.vital_surge',     name: 'Vital Surge',      description: 'Life force that overwhelms and heals',  reach: 'gold' },
 ];
 
 /**

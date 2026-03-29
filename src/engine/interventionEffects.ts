@@ -154,10 +154,9 @@ function getValueDirection(pair: ValuePair, seed: number): string {
     honesty_cunning: ['honesty', 'cunning'],
     tradition_novelty: ['tradition', 'novelty'],
     loyalty_ambition: ['loyalty', 'ambition'],
-    frankness_propriety: ['frankness', 'propriety'],
-    humility_pride: ['humility', 'pride'],
+    revelation_discretion: ['revelation', 'discretion'],
+    preservation_transformation: ['preservation', 'transformation'],
     sacrifice_survival: ['sacrifice', 'survival'],
-    stoicism_passion: ['stoicism', 'passion'],
     courage_prudence: ['courage', 'prudence'],
   };
 
@@ -186,10 +185,9 @@ function getAgendaCategory(pair: ValuePair): AgendaConsequenceCategory {
     honesty_cunning: 'cunning',
     tradition_novelty: 'tradition',
     loyalty_ambition: 'loyalty',
-    frankness_propriety: 'loyalty',
-    humility_pride: 'dominance',
+    revelation_discretion: 'loyalty',
+    preservation_transformation: 'dominance',
     sacrifice_survival: 'devotion',
-    stoicism_passion: 'devotion',
     courage_prudence: 'courage',
   };
   return polesMap[pair];

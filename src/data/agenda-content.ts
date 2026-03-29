@@ -135,7 +135,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'persuade_dominance',
       name: 'Urge Command',
-      valuePair: 'humility_pride',
+      valuePair: 'preservation_transformation',
       valueDirection: 'left',
       narrativeHook: 'the rightful authority of the strong over the weak',
       behaviorTag: 'dominance-seeking',
@@ -199,7 +199,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'intimidate_submission',
       name: 'Crush Will',
-      valuePair: 'humility_pride',
+      valuePair: 'preservation_transformation',
       valueDirection: 'right',
       narrativeHook: 'the overwhelming weight of divine wrath',
       behaviorTag: 'submission-seeking',
@@ -399,7 +399,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
       valueDirection: 'right',
       narrativeHook: 'signs of abundance and lasting peace',
       behaviorTag: 'prosperity-seeking',
-      reachBoost: { reach: 'flesh', bonus: 0.25 },
+      reachBoost: { reach: 'gold', bonus: 0.25 },
       archetypeAffinities: ['healer', 'reluctant_leader', 'steadfast_guardian'],
     },
     {
@@ -439,7 +439,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
       valueDirection: 'right',
       narrativeHook: 'the land itself sickens, wells turn bitter, animals behave strangely',
       behaviorTag: 'plague-fearing',
-      reachBoost: { reach: 'flesh', bonus: 0.25 },
+      reachBoost: { reach: 'gold', bonus: 0.25 },
       archetypeAffinities: ['healer', 'sage_hermit', 'reluctant_leader'],
     },
     {
@@ -471,7 +471,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
       valueDirection: 'left',
       narrativeHook: 'divine energy flooding through mortal flesh',
       behaviorTag: 'vitality-blessed',
-      reachBoost: { reach: 'flesh', bonus: 0.3 },
+      reachBoost: { reach: 'gold', bonus: 0.3 },
       archetypeAffinities: ['holy_warrior', 'healer', 'conqueror'],
     },
     {
@@ -491,7 +491,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
       valueDirection: 'right',
       narrativeHook: 'strength draining from limbs like water from cupped hands',
       behaviorTag: 'weakness-cursed',
-      reachBoost: { reach: 'flesh', bonus: -0.2 },
+      reachBoost: { reach: 'gold', bonus: -0.2 },
       archetypeAffinities: ['dark_sorcerer', 'zealot_prophet', 'spy_assassin'],
     },
     {
@@ -507,7 +507,7 @@ export const AGENDA_TEMPLATES: Record<InterventionType, AgendaTemplate[]> = {
     {
       id: 'bless_charisma',
       name: 'Mantle of Authority',
-      valuePair: 'humility_pride',
+      valuePair: 'preservation_transformation',
       valueDirection: 'left',
       narrativeHook: 'an aura of command that makes others bend the knee',
       behaviorTag: 'authority-blessed',

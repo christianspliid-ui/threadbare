@@ -71,7 +71,7 @@ export interface BondsStrandData {
 
 export interface AmbitionsStrandData {
   strandName: 'Ambitions';
-  insights: ValueInsight[]; // from loyalty_ambition, humility_pride, courage_prudence
+  insights: ValueInsight[]; // from loyalty_ambition, preservation_transformation, courage_prudence
 }
 
 export interface BeliefsStrandData {
@@ -108,7 +108,7 @@ const BONDS_PAIRS: ValuePair[] = ['loyalty_ambition', 'sacrifice_survival'];
 
 const AMBITIONS_PAIRS: ValuePair[] = [
   'loyalty_ambition',
-  'humility_pride',
+  'preservation_transformation',
   'courage_prudence',
 ];
 
@@ -175,10 +175,9 @@ function getAxiologicalProfile(graph: WorldGraph, agentId: string): AxiologicalP
       honesty_cunning: 0,
       tradition_novelty: 0,
       loyalty_ambition: 0,
-      frankness_propriety: 0,
-      humility_pride: 0,
+      revelation_discretion: 0,
+      preservation_transformation: 0,
       sacrifice_survival: 0,
-      stoicism_passion: 0,
       courage_prudence: 0,
     };
   }
@@ -191,10 +190,9 @@ function getAxiologicalProfile(graph: WorldGraph, agentId: string): AxiologicalP
       honesty_cunning: 0,
       tradition_novelty: 0,
       loyalty_ambition: 0,
-      frankness_propriety: 0,
-      humility_pride: 0,
+      revelation_discretion: 0,
+      preservation_transformation: 0,
       sacrifice_survival: 0,
-      stoicism_passion: 0,
       courage_prudence: 0,
     }
   );

@@ -304,10 +304,9 @@ export function scoreSublocations(
     honesty_cunning: 0,
     tradition_novelty: 0,
     loyalty_ambition: 0,
-    frankness_propriety: 0,
-    humility_pride: 0,
+    revelation_discretion: 0,
+    preservation_transformation: 0,
     sacrifice_survival: 0,
-    stoicism_passion: 0,
     courage_prudence: 0,
   };
 
@@ -412,10 +411,9 @@ function findValuePairForMotivation(left: string, right: string): ValuePair | un
     honesty_cunning: 'honesty_cunning',
     tradition_novelty: 'tradition_novelty',
     loyalty_ambition: 'loyalty_ambition',
-    frankness_propriety: 'frankness_propriety',
-    humility_pride: 'humility_pride',
+    revelation_discretion: 'revelation_discretion',
+    preservation_transformation: 'preservation_transformation',
     sacrifice_survival: 'sacrifice_survival',
-    stoicism_passion: 'stoicism_passion',
     courage_prudence: 'courage_prudence',
     // Motivation label aliases used in sublocation type data
     devotion_independence: 'sacrifice_survival',
@@ -423,8 +421,8 @@ function findValuePairForMotivation(left: string, right: string): ValuePair | un
     cunning_honesty: 'honesty_cunning',
     cruelty_mercy: 'mercy_ruthlessness',
     duty_freedom: 'loyalty_ambition',
-    authority_rebellion: 'humility_pride',
-    knowledge_ignorance: 'frankness_propriety',
+    authority_rebellion: 'preservation_transformation',
+    knowledge_ignorance: 'revelation_discretion',
     order_chaos: 'tradition_novelty',
   };
 
