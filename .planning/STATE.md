@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 16-04-PLAN.md
-last_updated: "2026-03-30T12:35:26.845Z"
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-03-30T12:36:41.075Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 6
@@ -179,6 +179,7 @@ Progress: [███░░░░░░░] 21%
 | Phase m2.5-monster-encounters P02 | 5 | 2 tasks | 4 files |
 | Phase m2.5-monster-encounters P03 | 483 | 2 tasks | 7 files |
 | Phase 16-expand-retinue-sidebar-threads-area P04 | 15 | 1 tasks | 2 files |
+| Phase 18 P01 | 35 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -319,6 +320,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase m2.5-monster-encounters]: Monster encounter templates registered via getAnyEncounterById fallback chain — 5 templates covering lair, wilderness, settlement threat tiers
 - [Phase m2.5-monster-encounters]: MONSTER_TERRITORY_ATTRITION = 1.2 — additive Q loss, one check per army per tick, cleared_lair does not trigger
 - [Phase 16-expand-retinue-sidebar-threads-area]: Escape handler conditional useEffect: early returns when selectedThreadNode is null, listener only attached when ThreadDetailView is open
+- [Phase 18]: Multi-instance seeding goes through generic seedAllFactions path — no merc-specific seeder
+- [Phase 18]: factionAmbitions reads factionDefId with factionDefinitionId as legacy fallback (both supported)
+- [Phase 18]: seedTimeState partial cast is safe — spawnArmy only reads state.graph and state.tick
 
 ### Pending Todos
 
@@ -330,6 +334,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:35:26.843Z
-Stopped at: Completed 16-04-PLAN.md
+Last session: 2026-03-30T12:36:41.073Z
+Stopped at: Completed 18-01-PLAN.md
 Resume file: None
