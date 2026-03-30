@@ -256,7 +256,7 @@ Plans:
 **Goal:** Integrate monster encounters as a first-class faction system layered onto the Phase 12 conflict infrastructure. Monster factions with armies, lair escalation with sphere feedback, danger gradient from province roles, and full divine targeting of monster entities.
 **Requirements:** M25-TYPES, M25-LAIR-MODEL, M25-LAIR-SEED, M25-DANGER-GRADIENT, M25-MONSTER-FACTIONS, M25-ESCALATION, M25-SPHERE-FEEDBACK, M25-TIER-UPGRADE, M25-REINFESTATION, M25-MONSTER-FACTION-SPAWN, M25-ENCOUNTER-TEMPLATES, M25-ARMY-ATTRITION, M25-BATTLE-REUSE, M25-CLEARING, M25-LAIR-ICON, M25-HEX-SIDEBAR, M25-FACTION-FILTER, M25-DIVINE-TARGET
 **Depends on:** Phase 12, Phase 12.1
-**Plans:** 3/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
 - [ ] m2.5-01-PLAN.md — Monster types, lair graph model, faction definitions, worldgen lair seeding
