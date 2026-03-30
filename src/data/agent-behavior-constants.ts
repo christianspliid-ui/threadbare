@@ -345,6 +345,17 @@ export const EXPLORATION_BONUS_DECAY_TICKS = 50;
  * @range 0.05–0.5 (was 0.5, reduced to enable cross-location movement) */
 export const TRAVEL_COST_WEIGHT = 0.12;
 
+/** Maximum travel cost discount from personality wanderlust.
+ * An agent with maximum curiosity (tradition_progress at -1.0) gets this fraction off travel cost.
+ * @range 0.2–0.6 */
+export const WANDERLUST_MAX_DISCOUNT = 0.4;
+
+/** Axiological pair used to derive wanderlust tendency.
+ * Negative values (progress pole) = more curious/explorative.
+ * Positive values (tradition pole) = more conservative/stay-put.
+ * Read from agent.axiologicalProfile.tradition_progress */
+export const WANDERLUST_PAIR: 'tradition_progress' = 'tradition_progress';
+
 // ═══════════════════════════════════════════════════════════════════
 // PERSONALITY — Axiological amplification (encounterScoring.ts)
 // ═══════════════════════════════════════════════════════════════════
@@ -352,6 +363,25 @@ export const TRAVEL_COST_WEIGHT = 0.12;
 /** Exponent applied to desireMultiplier. >1.0 amplifies differences between liked/disliked encounters.
  * @range 1.0–2.0 */
 export const PERSONALITY_SCORE_EXPONENT = 1.5;
+
+// ═══════════════════════════════════════════════════════════════════
+// ENCOUNTER RETIREMENT — Template exhaustion + outgrowth (phaseAgentDecision.ts, encounterFilterPipeline.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** After this many completions of the same template, it is permanently retired for that agent.
+ * @range 3–10 */
+export const MAX_COMPLETIONS_PER_TEMPLATE = 5;
+
+/** How much higher than template average difficulty (on 0–100 scale) the agent's capability
+ * must be before the encounter is outgrown and filtered out.
+ * Agent capability is 0–1 scaled to 0–100 for comparison.
+ * Example: at threshold 35, an agent with cap=0.55 (55) outgrows diff=20 encounters (55-20=35).
+ * @range 25–50 (lower = more aggressive retirement) */
+export const OUTGROWTH_CAP_THRESHOLD = 35;
+
+/** Whether outgrowth filtering is active. Toggle for tuning.
+ * @range boolean */
+export const OUTGROWTH_FILTER_ENABLED = true;
 
 // ═══════════════════════════════════════════════════════════════════
 // COOLDOWN SCALING — Dynamic cooldowns based on pool size (phaseAgentDecision.ts)
