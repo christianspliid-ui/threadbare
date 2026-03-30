@@ -65,6 +65,7 @@ import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
+import { phaseLairEscalation } from './lairEscalation';
 import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
@@ -1038,6 +1039,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.357: Battle Tick (TB-073 — process active battles: attrition, momentum, resolution)
   phaseBattleTick(s);
+
+  // Phase 2.3575: Lair Escalation (M2.5 — tier upgrades, sphere feedback, spawn)
+  phaseLairEscalation(s);
 
   // Phase 2.358: Army Notifications (TB-073 — convert army/battle traces to TickEvents)
   s = { ...s, ...phaseArmyNotifications(s, nextEventId) };
