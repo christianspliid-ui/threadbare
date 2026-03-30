@@ -55,24 +55,24 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DTRM-01 | — | Pending |
-| DTRM-02 | — | Pending |
-| DTRM-03 | — | Pending |
-| WIRE-01 | — | Pending |
-| WIRE-02 | — | Pending |
-| WIRE-03 | — | Pending |
-| PERF-01 | — | Pending |
-| PERF-02 | — | Pending |
-| PERF-03 | — | Pending |
-| HYGN-01 | — | Pending |
-| HYGN-02 | — | Pending |
-| HYGN-03 | — | Pending |
+| DTRM-01 | Phase 19 | Pending |
+| DTRM-02 | Phase 19 | Pending |
+| DTRM-03 | Phase 19 | Pending |
+| WIRE-01 | Phase 20 | Pending |
+| WIRE-02 | Phase 20 | Pending |
+| WIRE-03 | Phase 20 | Pending |
+| PERF-01 | Phase 21 | Pending |
+| PERF-02 | Phase 21 | Pending |
+| PERF-03 | Phase 21 | Pending |
+| HYGN-01 | Phase 22 | Pending |
+| HYGN-02 | Phase 22 | Pending |
+| HYGN-03 | Phase 22 | Pending |
 
 **Coverage:**
 - v1.1 requirements: 12 total
-- Mapped to phases: 0
-- Unmapped: 12
+- Mapped to phases: 12
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-30*
-*Last updated: 2026-03-30 after initial definition*
+*Last updated: 2026-03-30 — traceability populated after roadmap creation*

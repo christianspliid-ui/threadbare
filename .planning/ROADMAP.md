@@ -3,6 +3,7 @@
 ## Milestones
 
 - ✅ **v1.0 Foundation** — Phases 1-18 + M2.5 (shipped 2026-03-30) → [Archive](milestones/v1.0-ROADMAP.md)
+- 🚧 **v1.1 Low-Hanging Fruit Optimization** — Phases 19-22 (in progress)
 
 <details>
 <summary>✅ v1.0 Foundation (22 phases, 81 plans) — SHIPPED 2026-03-30</summary>
@@ -43,11 +44,77 @@
 
 ---
 
-## Next Milestone
+## 🚧 v1.1 Low-Hanging Fruit Optimization (In Progress)
 
-Not yet planned. Run `/gsd:new-milestone` to start.
+**Milestone Goal:** Fix correctness bugs, wire missing connections, tune performance, and improve code hygiene — targeting only small-to-medium effort items with high impact.
 
-### Future Work (from v1.0 roadmap)
+### Phases
+
+- [ ] **Phase 19: Determinism** — Replace all unseeded Math.random/Date.now with seeded PRNG and verify with integration test
+- [ ] **Phase 20: Wiring** — Connect three stubbed engine→UI paths (hex focus, avatar position, actor attribution)
+- [ ] **Phase 21: Performance** — Cache prose resolver output, tune encounter cache threshold, code-split large data files
+- [ ] **Phase 22: Code Hygiene** — Extract DebugPanel sub-components, audit lodash, extend targetActions filtering
+
+## Phase Details
+
+### Phase 19: Determinism
+**Goal**: The engine produces identical output for the same seed — no Math.random or Date.now calls survive in tick-phase code
+**Depends on**: Nothing (first v1.1 phase)
+**Requirements**: DTRM-01, DTRM-02, DTRM-03
+**Success Criteria** (what must be TRUE):
+  1. Running the same seed twice produces byte-identical tick sequences for 100 ticks
+  2. The previously-skipped determinism integration test passes without modification to its assertions
+  3. No Math.random() call exists in resolution.ts, meetingEncounter.ts, orchestrator.ts, phaseMandate.ts, phaseDoom.ts, phaseControlEffects.ts, or interventionEffects.ts
+  4. Event IDs are tick-local sequence numbers, not wall-clock timestamps — two runs produce the same IDs
+**Plans**: TBD
+
+### Phase 20: Wiring
+**Goal**: Three previously stubbed engine→UI connections are live — clicking a notification pans the camera, avatar position feeds action targeting, and actor IDs appear in traces
+**Depends on**: Nothing (independent of Phase 19)
+**Requirements**: WIRE-01, WIRE-02, WIRE-03
+**Success Criteria** (what must be TRUE):
+  1. Clicking a notification that references a hex causes the camera to animate to that hex (pan + zoom)
+  2. The avatar's current hex position is available in the targetActions context so positional action filtering works
+  3. Chronicle and trace entries for tick events include the actor ID of the originating agent
+**Plans**: TBD
+
+### Phase 21: Performance
+**Goal**: Initial bundle load is faster, prose descriptions stop re-computing on every panel open, and the encounter cache rebuild threshold is documented and tuned
+**Depends on**: Nothing (independent of Phases 19-20)
+**Requirements**: PERF-01, PERF-02, PERF-03
+**Success Criteria** (what must be TRUE):
+  1. Opening an agent detail panel a second time (same agent, no state change) is visibly faster — prose is served from cache, not recomputed
+  2. The encounter-content, action-templates, and culture-content data files load as separate lazy chunks, not in the initial bundle
+  3. The encounter cache rebuild threshold is documented in a named constant with a comment explaining the profiled rationale; a developer can change it in one place
+**Plans**: TBD
+
+### Phase 22: Code Hygiene
+**Goal**: DebugPanel is split into testable sub-components, lodash is consolidated to a single import path, and action template filtering supports required-property constraints
+**Depends on**: Nothing (independent of all other phases)
+**Requirements**: HYGN-01, HYGN-02, HYGN-03
+**Success Criteria** (what must be TRUE):
+  1. DebugPanel.tsx is under 200 lines and delegates all rendering to named sub-components (EncounterCacheView, DecisionBreakdownView, etc.), each in its own file
+  2. No duplicate lodash bundles exist in the production build — npm ls shows a single lodash-es installation and zero bare-lodash references
+  3. Action templates can declare required node properties and targetActions.ts filters them out when the target lacks those properties
+**Plans**: TBD
+
+---
+
+## Progress
+
+**Execution Order:** Phases 19 → 20 → 21 → 22 (all independent; can parallelize 20/21/22 after 19)
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
+| 19. Determinism | v1.1 | 0/TBD | Not started | - |
+| 20. Wiring | v1.1 | 0/TBD | Not started | - |
+| 21. Performance | v1.1 | 0/TBD | Not started | - |
+| 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
+
+---
+
+### Future Work
 
 **M3: Dynamic Economy** — encounter→economy feedback, economic context→encounter scoring, wealth spending crossovers, trade route lifecycle, unrest, guild activation, Gold+Stone CRUD actions, resource consumption & scarcity.
 
