@@ -45,5 +45,6 @@ export const LAYER_Z = {
   AGENTS:            6.000,  // Above 3D model geometry (city towers extend ~5 units above base)
   ARMIES:            6.050,  // Above agents but below events
   BATTLE_INDICATORS: 6.080,  // Above armies, below events
+  PARTICLE_BURST:    6.060,  // Sphere-colored particle effects above battles, below events
   EVENTS:            6.100,
 } as const;
