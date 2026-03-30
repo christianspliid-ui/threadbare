@@ -115,12 +115,14 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
         {/* Archetype Banner */}
         {detail.archetype && (
           <div className="bg-stone-800/50 border border-amber-900/30 rounded px-3 py-2.5">
-            <h3
-              className="text-amber-100 text-sm font-semibold tracking-wide"
-              style={{ fontFamily: 'Cinzel, serif' }}
-            >
-              {detail.archetype.name}
-            </h3>
+            <Tooltip label={detail.archetype.name} desc={detail.archetype.storyShape}>
+              <h3
+                className="text-amber-100 text-sm font-semibold tracking-wide cursor-help"
+                style={{ fontFamily: 'Cinzel, serif', textDecoration: 'underline', textDecorationStyle: 'dotted' }}
+              >
+                {detail.archetype.name}
+              </h3>
+            </Tooltip>
             <p className="text-amber-400/80 text-xs italic mt-1">
               {detail.archetype.storyShape}
             </p>
