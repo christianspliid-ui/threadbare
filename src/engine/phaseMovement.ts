@@ -220,10 +220,9 @@ export function phaseMovement(state: GameState): Partial<GameState> {
             honesty_cunning: 0,
             tradition_novelty: 0,
             loyalty_ambition: 0,
-            frankness_propriety: 0,
-            humility_pride: 0,
+            revelation_discretion: 0,
+            preservation_transformation: 0,
             sacrifice_survival: 0,
-            stoicism_passion: 0,
             courage_prudence: 0,
           };
           const newCandidates = generateMovementCandidates(state.graph, actorId, currentLocId, profile);

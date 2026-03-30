@@ -22,11 +22,11 @@ describe('Ascendant Archetype Generation', () => {
     }
   });
 
-  it('each archetype has a personality seed with all 10 value pairs', () => {
+  it('each archetype has a personality seed with all 9 value pairs', () => {
     const archetypes = generateArchetypes(4, 42);
     for (const a of archetypes) {
       const keys = Object.keys(a.personalitySeed);
-      expect(keys).toHaveLength(10);
+      expect(keys).toHaveLength(9);
       for (const val of Object.values(a.personalitySeed)) {
         expect(val).toBeGreaterThanOrEqual(-1);
         expect(val).toBeLessThanOrEqual(1);

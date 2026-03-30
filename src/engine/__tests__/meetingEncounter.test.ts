@@ -154,19 +154,19 @@ describe('generateCandidates', () => {
 // ─── Intent Filtering ─────────────────────────────────────────────
 
 describe('getFilteredIntentOptions', () => {
-  it('returns all 9 intent options', () => {
+  it('returns all 8 intent options', () => {
     const options = getFilteredIntentOptions(
       { primary: 'force', secondary: 'mind' },
       { iron: 0.8, heart: 0.2 },
       42,
     );
-    expect(options.length).toBe(9);
+    expect(options.length).toBe(8);
   });
 
   it('puts ascendant-aligned options earlier', () => {
     const options = getFilteredIntentOptions(
       { primary: 'force', secondary: 'mind' },
-      { iron: 1.0, gold: 0.0, shadow: 0.0, veil: 0.0, heart: 0.0, eye: 0.0, stone: 0.0, star: 0.0, flesh: 0.0 },
+      { iron: 1.0, gold: 0.0, shadow: 0.0, veil: 0.0, heart: 0.0, eye: 0.0, stone: 0.0, star: 0.0 },
       42,
     );
     // Iron should tend toward the front (high affinity)

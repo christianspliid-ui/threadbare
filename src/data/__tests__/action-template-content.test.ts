@@ -11,13 +11,16 @@ describe('action-template-content', () => {
     expect(ACTION_TEMPLATES).toHaveLength(44);
   });
 
-  it('should have correct templates per reach (gold has 12, others have 4)', () => {
-    const standardReaches = ['iron', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+  it('should have correct templates per reach (gold has 14, shadow/eye have 5, others have 4)', () => {
+    // Gold received Heal+Cultivate from flesh (TB-075). Shadow received Plague. Eye received Diagnose.
+    expect(getActionsByReach('gold')).toHaveLength(14);
+    expect(getActionsByReach('shadow')).toHaveLength(5);
+    expect(getActionsByReach('eye')).toHaveLength(5);
+    const standardReaches = ['iron', 'veil', 'heart', 'stone', 'star'];
     for (const reach of standardReaches) {
       const templates = getActionsByReach(reach);
       expect(templates).toHaveLength(4);
     }
-    expect(getActionsByReach('gold')).toHaveLength(12);
   });
 
   it('should have correct templates per CRUD type', () => {

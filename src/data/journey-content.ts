@@ -241,7 +241,7 @@ const TRIALS_RISING_STAR: JourneyBeatTemplate = {
           godVoice: 'You need no one. You have me.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { humility_pride: -0.1 },
+            axiologicalShifts: { preservation_transformation: -0.1 },
             consequenceProse: 'The First steels themselves. Alone is not the same as weak.',
           },
         },
@@ -355,7 +355,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           effects: {
             interventionType: 'supportive',
             essenceCost: 2,
-            axiologicalShifts: { humility_pride: 0.1 },
+            axiologicalShifts: { preservation_transformation: 0.1 },
             consequenceProse: 'Divine grace softens the blow. The First survives the crisis humbled but intact.',
           },
         },
@@ -365,7 +365,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           godVoice: 'Pain is a teacher I cannot replace.',
           effects: {
             interventionType: 'withdrawn',
-            axiologicalShifts: { humility_pride: 0.15, sacrifice_selfishness: 0.05 },
+            axiologicalShifts: { preservation_transformation: 0.15, sacrifice_selfishness: 0.05 },
             consequenceProse: 'The tower crumbles. The First learns what foundations really hold.',
           },
         },
@@ -405,7 +405,7 @@ const CRISIS_SHADOW: JourneyBeatTemplate = {
           godVoice: 'You have always been enough. Remember.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { humility_pride: -0.05, courage_cowardice: 0.1 },
+            axiologicalShifts: { preservation_transformation: -0.05, courage_cowardice: 0.1 },
             consequenceProse: 'The words echo in the dark. The First reaches inward and finds a flame that was never quite extinguished.',
           },
         },
@@ -930,7 +930,7 @@ const CRISIS_FAITH: JourneyBeatTemplate = {
           godVoice: 'I have guided you. Sometimes poorly. But never with malice.',
           effects: {
             interventionType: 'supportive',
-            axiologicalShifts: { honesty_deception: 0.15, humility_pride: 0.1 },
+            axiologicalShifts: { honesty_deception: 0.15, preservation_transformation: 0.1 },
             consequenceProse: 'The honesty rings true. The First does not forgive — not yet — but the thread holds.',
           },
         },
@@ -940,7 +940,7 @@ const CRISIS_FAITH: JourneyBeatTemplate = {
           godVoice: 'You may doubt me, but the Doom does not doubt. We do not have time for this.',
           effects: {
             interventionType: 'coercive',
-            axiologicalShifts: { humility_pride: -0.1 },
+            axiologicalShifts: { preservation_transformation: -0.1 },
             consequenceProse: 'The reminder of the Doom\'s approach cuts through the doubt. Purpose returns — but trust does not.',
           },
         },

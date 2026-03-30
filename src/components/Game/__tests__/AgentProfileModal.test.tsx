@@ -62,7 +62,6 @@ const intimateCard: AgentInfoCardData = {
     { domain: 'eye', word: 'Perceptive' },
     { domain: 'stone', word: 'Skilled' },
     { domain: 'star', word: 'Fated' },
-    { domain: 'flesh', word: 'Resilient' },
   ],
   cooperationStrategy: 'tit-for-tat',
   reputationWord: 'esteemed',
@@ -189,7 +188,6 @@ describe('AgentProfileModal', () => {
     expect(screen.getByText('Eye')).toBeTruthy();
     expect(screen.getByText('Stone')).toBeTruthy();
     expect(screen.getByText('Star')).toBeTruthy();
-    expect(screen.getByText('Flesh')).toBeTruthy();
   });
 
   it('clicking Prowess tab shows prowess section with domain descriptors at known level', () => {

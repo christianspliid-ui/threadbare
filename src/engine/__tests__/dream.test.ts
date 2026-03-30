@@ -80,7 +80,7 @@ describe('computeAlignmentFactor', () => {
     sacrifice_survival: 0.2,
     loyalty_ambition: 0.4,
     tradition_novelty: -0.1,
-    humility_pride: 0.3,
+    preservation_transformation: 0.3,
     mercy_ruthlessness: -0.2,
     asceticism_extravagance: -0.4,
   };

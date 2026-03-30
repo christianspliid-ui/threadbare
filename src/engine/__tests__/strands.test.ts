@@ -30,10 +30,9 @@ describe('Strand Data Extractors', () => {
       honesty_cunning: -0.2,
       tradition_novelty: 0.8,
       loyalty_ambition: -0.7,
-      frankness_propriety: 0,
-      humility_pride: -0.6,
+      revelation_discretion: 0,
+      preservation_transformation: -0.6,
       sacrifice_survival: 0.5,
-      stoicism_passion: 0,
       courage_prudence: 0.4,
     };
 
@@ -46,7 +45,6 @@ describe('Strand Data Extractors', () => {
       eye: 0.7,
       stone: 0.2,
       star: 0.6,
-      flesh: 0.5,
     };
 
     graph.addNode({
@@ -82,10 +80,9 @@ describe('Strand Data Extractors', () => {
           honesty_cunning: 0.2,
           tradition_novelty: 0.1,
           loyalty_ambition: 0.3,
-          frankness_propriety: 0,
-          humility_pride: 0.2,
+          revelation_discretion: 0,
+          preservation_transformation: 0.2,
           sacrifice_survival: 0.1,
-          stoicism_passion: 0,
           courage_prudence: 0.4,
         },
         domainCapabilities: {
@@ -97,7 +94,6 @@ describe('Strand Data Extractors', () => {
           eye: 0.4,
           stone: 0.5,
           star: 0.3,
-          flesh: 0.4,
         },
         locationId,
       },
@@ -201,13 +197,12 @@ describe('Strand Data Extractors', () => {
             honesty_cunning: 0,
             tradition_novelty: 0,
             loyalty_ambition: 0,
-            frankness_propriety: 0,
-            humility_pride: 0,
+            revelation_discretion: 0,
+            preservation_transformation: 0,
             sacrifice_survival: 0,
-            stoicism_passion: 0,
             courage_prudence: 0,
           },
-          domainCapabilities: { iron: 0.5, gold: 0.5, shadow: 0.5, veil: 0.5, heart: 0.5, eye: 0.5, stone: 0.5, star: 0.5, flesh: 0.5 },
+          domainCapabilities: { iron: 0.5, gold: 0.5, shadow: 0.5, veil: 0.5, heart: 0.5, eye: 0.5, stone: 0.5, star: 0.5 },
         },
       });
       // Agent has no located_at edge — orphaned agent
@@ -298,11 +293,11 @@ describe('Strand Data Extractors', () => {
       expect(ambitionInsight!.label).toBe('Ambitious');
       expect(ambitionInsight!.description).toBe('Notably ambitious');
 
-      // Check humility_pride
-      const dominanceInsight = strand.insights.find(i => i.valuePair === 'humility_pride');
+      // Check preservation_transformation
+      const dominanceInsight = strand.insights.find(i => i.valuePair === 'preservation_transformation');
       expect(dominanceInsight).toBeDefined();
       expect(dominanceInsight!.value).toBe(-0.6);
-      expect(dominanceInsight!.label).toBe('Proud');
+      expect(dominanceInsight!.label).toBe('Transforming');
 
       // Check courage_prudence
       const courageInsight = strand.insights.find(i => i.valuePair === 'courage_prudence');

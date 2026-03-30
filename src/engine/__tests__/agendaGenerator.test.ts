@@ -10,7 +10,7 @@ const defaultProfile: AxiologicalProfile = {
   sacrifice_survival: 0.0,
   loyalty_ambition: 0.3,
   tradition_novelty: 0.0,
-  humility_pride: 0.0,
+  preservation_transformation: 0.0,
   mercy_ruthlessness: 0.0,
   asceticism_extravagance: 0.0,
 };

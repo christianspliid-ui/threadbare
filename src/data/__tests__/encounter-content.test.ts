@@ -38,7 +38,7 @@ describe('encounter-content', () => {
     });
 
     it('every template should have valid reachPrimary and reachSecondary', () => {
-      const validReaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+      const validReaches = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold'];
       for (const template of ENCOUNTER_TEMPLATES) {
         expect(validReaches).toContain(template.reachPrimary);
         expect(validReaches).toContain(template.reachSecondary);

@@ -45,13 +45,13 @@ export const ENCOUNTER_TYPE_MOTIVATIONS: Record<EncounterType, ValuePair[]> = {
   explore:  ['courage_prudence', 'loyalty_ambition'],
   acquire:  ['asceticism_extravagance', 'loyalty_ambition'],
   create:   ['tradition_novelty', 'sacrifice_survival'],
-  hire:     ['humility_pride', 'loyalty_ambition'],
+  hire:     ['preservation_transformation', 'loyalty_ambition'],
   duel:     ['mercy_ruthlessness', 'courage_prudence'],
   steal:    ['honesty_cunning', 'asceticism_extravagance'],
   trade:    ['asceticism_extravagance', 'honesty_cunning'],
   assist:   ['mercy_ruthlessness', 'loyalty_ambition'],
   build:    ['tradition_novelty', 'sacrifice_survival'],
-  lead:     ['humility_pride', 'loyalty_ambition'],
+  lead:     ['preservation_transformation', 'loyalty_ambition'],
 };
 
 // ─── Tunable Constants ──────────────────────────────────────────

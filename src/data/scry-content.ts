@@ -320,10 +320,10 @@ export const WEAKNESS_POOL: WeaknessTemplate[] = [
   },
   {
     type: 'domain_bonus',
-    target: 'flesh',
+    target: 'gold',
     minValue: -2,
     maxValue: -1,
-    description: 'Frail constitution',
+    description: 'Diminished vitality',
     sphereAssociations: ['entropy', 'mind', 'spirit'],
   },
   {

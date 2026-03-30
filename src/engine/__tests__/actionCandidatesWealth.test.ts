@@ -135,10 +135,10 @@ describe('action.gold.establish-monopoly template', () => {
     expect(t!.difficulty).toBeLessThanOrEqual(1);
   });
 
-  it('motivations include asceticism_extravagance and humility_pride', () => {
+  it('motivations include asceticism_extravagance and preservation_transformation', () => {
     const t = ACTION_TEMPLATES.find(t => t.id === 'action.gold.establish-monopoly')!;
     expect(t.motivations).toContain('asceticism_extravagance');
-    expect(t.motivations).toContain('humility_pride');
+    expect(t.motivations).toContain('preservation_transformation');
   });
 
   it('success ops update location and deduct wealth', () => {

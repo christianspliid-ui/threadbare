@@ -11,7 +11,7 @@
  * | BASE_AWARENESS_HOPS   | 1       | Hops granted to any agent above threshold    |
  * | CAPABILITY_PER_HOP    | 0.15    | Additional capability needed per extra hop   |
  * | MAX_AWARENESS_HOPS    | 5       | Hard cap on awareness range                  |
- * | FLESH_MAX_HOPS        | 1       | Flesh reach capped — physical is local       |
+ * | (FLESH_MAX_HOPS removed in TB-075 Phase 1)                                         |
  *
  * ─── Tracing ────────────────────────────────────────────────────
  * This module is a pure filter — it does not emit traces.
@@ -44,7 +44,6 @@ export {
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
-  FLESH_MAX_HOPS,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -52,7 +51,6 @@ import {
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
-  FLESH_MAX_HOPS,
 } from '../data/agent-behavior-constants';
 
 // ─── Public API ─────────────────────────────────────────────────
@@ -62,15 +60,14 @@ import {
  *
  * 1. Below AWARENESS_THRESHOLD → 0 (invisible)
  * 2. BASE_AWARENESS_HOPS + floor(capability / CAPABILITY_PER_HOP)
- * 3. Capped at FLESH_MAX_HOPS for 'flesh', MAX_AWARENESS_HOPS otherwise
+ * 3. Capped at MAX_AWARENESS_HOPS
  */
 export function computeAwarenessHops(capability: number, reach: ReachDomain): number {
   if (capability < AWARENESS_THRESHOLD) return 0;
 
   const hops = BASE_AWARENESS_HOPS + Math.floor(capability / CAPABILITY_PER_HOP);
-  const cap = reach === 'flesh' ? FLESH_MAX_HOPS : MAX_AWARENESS_HOPS;
 
-  return Math.min(hops, cap);
+  return Math.min(hops, MAX_AWARENESS_HOPS);
 }
 
 /**

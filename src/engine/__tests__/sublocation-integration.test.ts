@@ -129,7 +129,7 @@ describe('Integration Test 1: Full pipeline (arrival → creation → selection 
       sacrifice_survival: 0.8, // strong devotion → temple quarter preference
       loyalty_ambition: 0.5,
       tradition_novelty: 0.5,
-      humility_pride: 0.5,
+      preservation_transformation: 0.5,
       mercy_ruthlessness: 0.5,
       asceticism_extravagance: -0.2, // slightly greedy → weak market square preference
     };
