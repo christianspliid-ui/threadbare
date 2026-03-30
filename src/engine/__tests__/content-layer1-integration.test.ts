@@ -225,36 +225,60 @@ describe('Layer 1 content integration', () => {
     expect(events42).not.toBe(events7);
   }, 30000);
 
-  // TODO: Non-determinism likely from Date.now() or unseeded source in tick pipeline — needs investigation
-  it.skip('same seed produces deterministic results', () => {
+  it('same seed produces deterministic results', () => {
+    // Run A: 100 ticks from seed 42 (fresh module cache)
+    resetDecisionCache();
     const { state: state42a } = initializeGameState(
       testArchetype,
       'Test Avatar',
       testCosmology,
       42,
     );
+    let current42a = state42a;
+    const allEventsA: any[] = [];
+    for (let i = 0; i < 100; i++) {
+      current42a = runTick(current42a);
+      allEventsA.push(...current42a.tickEvents);
+    }
 
+    // Run B: 100 ticks from seed 42 (fresh module cache — required for test isolation)
+    resetDecisionCache();
     const { state: state42b } = initializeGameState(
       testArchetype,
       'Test Avatar',
       testCosmology,
       42,
     );
-
-    let current42a = state42a;
     let current42b = state42b;
-
-    for (let i = 0; i < 50; i++) {
-      current42a = runTick(current42a);
+    const allEventsB: any[] = [];
+    for (let i = 0; i < 100; i++) {
       current42b = runTick(current42b);
+      allEventsB.push(...current42b.tickEvents);
     }
 
     // Same seed should produce identical tick counts
     expect(current42a.tick).toBe(current42b.tick);
 
-    // And same chronicle length (deterministic)
+    // Same chronicle length (deterministic event generation)
     expect(current42a.chronicleEntries.length).toBe(current42b.chronicleEntries.length);
-  }, 30000);
+
+    // Byte-identical tick event sequences
+    expect(JSON.stringify(allEventsA)).toBe(JSON.stringify(allEventsB));
+
+    // Verify no wall-clock timestamps leaked into event IDs
+    for (const event of allEventsA) {
+      if (event.id && typeof event.id === 'string') {
+        // Date.now() produces 13-digit numbers like 1711800000000
+        // Tick-local IDs should have small numbers (tick < 10000, seq < 1000)
+        const segments = event.id.split('_');
+        for (const seg of segments) {
+          if (/^\d{13,}$/.test(seg)) {
+            throw new Error(`Event ID "${event.id}" contains a wall-clock timestamp segment: ${seg}`);
+          }
+        }
+      }
+    }
+  }, 60000);
 
   it('agent lifecycle events fire during 100-tick simulation', () => {
     const { state: initialState } = initializeGameState(

@@ -38,6 +38,11 @@ function nextRevEventId(): string {
   return `rev_evt_${++revEventCounter}`;
 }
 
+/** Reset per-tick revelation event counter. Called by orchestrator.resetEventCounters(). */
+export function resetRevEventCounter(): void {
+  revEventCounter = 0;
+}
+
 // ─── Constants ─────────────────────────────────────────────────────
 
 /**

@@ -53,14 +53,14 @@ import { FAMILIARITY_GAINS } from '../types/familiarity';
 import type { DivineInfluenceEntry } from '../types/dream';
 import { getCurrentStrength } from './decayCurve';
 import { checkDissolutions } from './sublocation';
-import { phaseMovement } from './phaseMovement';
-import { phaseColocationDetection } from './phaseColocationDetection';
+import { phaseMovement, resetMovementEventCounter } from './phaseMovement';
+import { phaseColocationDetection, resetColocationEventCounter } from './phaseColocationDetection';
 import { phaseInteractionDepth } from './phaseInteractionDepth';
-import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelations } from './revelationEmitter';
+import { emitEncounterRevelations, emitDilemmaRevelations, emitColocationRevelations, resetRevEventCounter } from './revelationEmitter';
 import { phaseUnifiedActionProgress } from './unifiedActionResolution';
-import { phaseIdleSelection } from './unifiedActionPhases';
+import { phaseIdleSelection, resetPhaseEventCounter } from './unifiedActionPhases';
 import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
-import { phaseAmbitionProgress } from './ambitionTick';
+import { phaseAmbitionProgress, resetAmbitionEventCounter } from './ambitionTick';
 import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseArmyAttrition } from './armyAttrition';
 import { phaseArmyMovement } from './armyMovement';
@@ -105,7 +105,7 @@ import {
 } from './rewardPool';
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
-import { processFactionOutcome } from './factionOutcome';
+import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
@@ -165,13 +165,31 @@ export function resetEventCounter(): void {
  * Reset all per-tick module event counters.
  * Called at the start of each tick to ensure deterministic ID sequences.
  * NFP #3: Determinism — same seed + same tick must produce identical IDs across runs.
+ *
+ * ─── Scope ──────────────────────────────────────────────────────────
+ * Only counters that generate ephemeral TickEvent.id values are reset here.
+ * Counters that generate persistent graph node IDs (e.g. lifecycleCounter,
+ * unifiedAction actionCounter) must NOT be reset per-tick — doing so would
+ * cause duplicate node IDs when re-used across ticks.
  */
 function resetEventCounters(): void {
+  // orchestrator.ts own counter (evt_N tick events)
+  eventCounter = 0;
+  // Phase module counters (Plan 01 wiring — these encode tick in their IDs)
   resetMandateCounter();
   resetDoomCounter();
   resetControlEffectsCounter();
   resetInfluenceCounter();
   resetMeetingCounter();
+  // Additional ephemeral-event counters (Plan 02 — complete DTRM-03 coverage)
+  // Note: resetLifecycleCounter and resetUnifiedActionCounter are intentionally
+  // excluded — those generate persistent graph node / action IDs, not tick events.
+  resetMovementEventCounter();
+  resetColocationEventCounter();
+  resetPhaseEventCounter();
+  resetAmbitionEventCounter();
+  resetRevEventCounter();
+  resetFactionEventSeq();
 }
 
 // ─── Phase 1: Advance Doom Clock ──────────────────────────────────

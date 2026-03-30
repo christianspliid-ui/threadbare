@@ -247,6 +247,11 @@ function selectComplication(rng: () => number): string {
 /** Unique ID counter for faction tick events */
 let factionEventSeq = 0;
 
+/** Reset per-tick faction event counter. Called by orchestrator.resetEventCounters(). */
+export function resetFactionEventSeq(): void {
+  factionEventSeq = 0;
+}
+
 /**
  * Top-level dispatcher: given a completed faction encounter, route to
  * the appropriate outcome processor. Called from phaseEncounterProgressionV2.
