@@ -33,10 +33,11 @@ export function classifyForecast(p: number): ForecastTier {
 }
 
 /**
- * Roll a d100 (1-100).
+ * Roll a d100 (1-100) using the provided seeded RNG.
+ * NFP #3: Determinism — RNG must be seeded; never call Math.random() directly.
  */
-function rollD100(): number {
-  return Math.floor(Math.random() * 100) + 1;
+function rollD100(rng: () => number): number {
+  return Math.floor(rng() * 100) + 1;
 }
 
 /**
@@ -59,13 +60,16 @@ function classifyOutcome(probability: number, roll: number): OutcomeType {
 /**
  * Resolve a single action.
  * @param probability - Final probability (0.05-0.95)
- * @param deterministicRoll - Optional fixed roll for testing
+ * @param deterministicRoll - Optional fixed roll for testing/UI override (skips RNG entirely)
+ * @param rng - Seeded RNG function; falls back to Math.random if omitted (only for legacy test callers)
  */
 export function resolveAction(
   probability: number,
   deterministicRoll?: number,
+  rng?: () => number,
 ): ResolutionResult {
-  const roll = deterministicRoll ?? rollD100();
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const roll = deterministicRoll ?? rollD100(rng ?? Math.random);
   const outcome = classifyOutcome(probability, roll);
   const threshold = Math.floor(probability * 100);
   const margin = roll - threshold;

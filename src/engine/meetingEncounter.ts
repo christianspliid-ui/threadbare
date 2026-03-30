@@ -42,6 +42,18 @@ import {
   ASCENDANT_REACH_BIAS,
 } from '../types/meetingEncounter';
 
+// ─── Per-tick Meeting Counter ─────────────────────────────────────
+
+/**
+ * Per-tick sequence counter for meeting agent IDs.
+ * Reset once per tick by orchestrator via resetMeetingCounter().
+ * NFP #3: Determinism — tick+counter replaces Math.random() for IDs.
+ */
+let meetingCounter = 0;
+export function resetMeetingCounter(): void {
+  meetingCounter = 0;
+}
+
 // ─── Seeded PRNG ──────────────────────────────────────────────────
 
 /** Create a seeded PRNG from a base seed + salt string. */
@@ -419,7 +431,8 @@ export function createAgentFromMeeting(
   ascendantId: string,
   tick: number,
 ): string {
-  const agentId = `ind_meeting_${tick}_${Math.floor(Math.random() * 10000)}`;
+  // NFP #3: Determinism — use tick+sequence counter instead of Math.random() for agent IDs.
+  const agentId = `ind_meeting_${tick}_${meetingCounter++}`;
 
   // Create agent node with standard individual properties
   graph.addNode({

@@ -105,6 +105,8 @@ export function probabilisticSelect(
   if (candidates.length === 0) throw new Error('No candidates to select from');
   if (candidates.length === 1) return candidates[0];
 
+  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
+  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
   const roll = deterministicRoll ?? Math.random();
   let cumulative = 0;
 
@@ -279,6 +281,8 @@ export function runSelectionPipeline(
   });
 
   // Step 6: Probabilistic select
+  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
+  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
   const roll = deterministicRoll ?? Math.random();
   const selected = probabilisticSelect(withProbabilities, roll);
 

@@ -131,6 +131,8 @@ export function selectRivalAction(
   deterministicRoll?: number,
 ): RivalAction {
   const weights = BEHAVIOR_WEIGHTS[rival.behavior];
+  // @deprecated fallback — all production callers must pass deterministicRoll (seeded via RNG).
+  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
   const roll = deterministicRoll ?? Math.random();
 
   const adjustedWeights = { ...weights };

@@ -222,8 +222,10 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     // Skip if agent is still occupied (multi-tick step in progress)
     if (isEncounterOccupied(progress, state.tick)) continue;
 
-    // Resolve current step (includes capability growth + tier promotion)
-    const result = resolveEncounter(state, progress);
+    // Resolve current step (includes capability growth + tier promotion).
+    // NFP #3: Determinism — derive per-encounter seeded roll from world seed + tick + actor ID.
+    const encRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
+    const result = resolveEncounter(state, progress, Math.floor(encRng() * 100) + 1);
     // Capture resolved step index before advance mutates it (TB-077)
     const resolvedStepIndex = progress.currentEncounterIndex;
     // Advance encounter (mutates progress in place)

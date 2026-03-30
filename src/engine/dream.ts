@@ -251,6 +251,8 @@ export function executeIntervention(params: {
 
   essenceSpent[params.sphere] = cost.finalCost;
 
+  // @deprecated fallback — all production callers must pass detectionRoll (seeded via RNG).
+  // Math.random() here is a safety net only; it breaks determinism (NFP #3).
   const roll = params.detectionRoll ?? Math.random();
   const detection = computeDetection(
     params.interventionType,
