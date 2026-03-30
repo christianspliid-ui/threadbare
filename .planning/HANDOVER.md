@@ -11,164 +11,16 @@
 
 ---
 
-### 2026-03-29: TB-078 — Ascendant Sheet QA Fixes (Tooltip z-index + bugs + polish)
+### 2026-03-29: TB-077 Phase 1B — Graph Queries + Prose Integration (remaining)
 
-**Context:** Cowork UI/UX audit of the new AscendantSheet.tsx found 4 bugs, 4 parity gaps vs AgentProfileModal, 3 accessibility issues, and 5 improvement proposals. The most impactful bug affects all tooltips inside all modals globally (z-index conflict).
-
-**Priority order — do all bugs first, then a11y, then improvements if time allows:**
-
-#### Bugs (must fix)
-
-**B1. Tooltip z-index behind modals (SYSTEMIC — affects all modals)**
-- **Root cause:** `Tooltip.tsx` portals to `document.body` at `zIndex: 50 + depth`. `Modal.tsx` backdrop is `zIndex: 60`. Every `<Tooltip>` inside any modal paints behind the overlay.
-- **Fix:** In `src/components/shared/Tooltip.tsx`, change the base z-index from `50` to `70` in the `outerStyle` calculation (~line 348). This makes it `70 + depth`. Tooltips should always be the topmost layer.
-- **Verify:** Open AgentProfileModal, hover the sphere name in the header → tooltip should appear above the modal. Same for AscendantSheet sphere/reach tooltips.
-- **Scope:** Fixes AscendantSheet, AgentProfileModal (line 164), ProwessTab (lines 172, 236), OverviewTab (lines 75, 93), BondsTab (line 164), and all other in-modal tooltips.
-
-**B2. `sphere.order` tooltip resolves to nothing**
-- The tooltip resolver looks for `foundation.order` or `creation.order` in `world-model.json` — neither exists.
-- **Fix:** Add a `foundation.order` node to `world-model.json` with name "Order" and a description matching the other foundation spheres. The `SPHERE_TOOLTIPS` in `src/data/sphereTooltips.ts` already has an entry for `order`, so only the world-model node is missing.
-- **Verify:** In AscendantSheet with primary sphere = order, hover the sphere name → tooltip should appear.
-
-**B3. `ProseKeyword` `SPHERE_NAMES_SET` missing 4 foundation spheres**
-- In `src/components/ProseKeyword.tsx` line 117, `SPHERE_NAMES_SET` only has the 8 creation spheres. The 4 foundation spheres (chaos, order, light, darkness) are missing.
-- **Fix:** Add `'chaos', 'order', 'light', 'darkness'` to the Set. These are valid `SphereName` values and have entries in `SPHERE_TOOLTIPS`.
-- **Impact:** `renderProseWithIPK()` will now render foundation sphere names as interactive keywords instead of plain `<strong>` tags.
-
-**B4. Close button undersized — no minimum touch target**
-- The AscendantSheet close button (line 177-183) is a raw `<button>` with a ✕ character, no padding, no explicit size. Design system requires 32×32px minimum for close buttons.
-- **Fix:** Replace with `<IconButton icon={<span>✕</span>} variant="close" size="sm" aria-label="Close ascendant sheet" onClick={onClose} />` from `src/components/shared/IconButton`. This matches the Modal.Header pattern and gives consistent sizing, hover state, and focus-visible ring.
-- **Note:** AgentProfileModal has the same raw ✕ button pattern (line 84-89). Fix both for consistency.
-
-#### Accessibility (should fix)
-
-**A1. No `aria-labelledby` on the modal dialog**
-- The `<Modal>` renders `role="dialog" aria-modal="true"` but has no label. Add an `id` to the `<h1>` (e.g. `id="ascendant-sheet-title"`) and consider adding an `ariaLabelledBy` prop to `<Modal>` that passes through to the dialog div.
-- If Modal doesn't support this prop yet, the simplest fix is adding `aria-label="Ascendant character sheet"` to the Modal's dialog div. Consider whether this needs a Modal-level change or just an AscendantSheet-level one.
-
-**A2. Essence list needs semantic structure**
-- Wrap the essence rows in `<ul>` / `<li>` instead of `<div>` so screen readers announce "list of N items".
-
-**A3. ProseKeyword tooltip can clip at scroll boundary**
-- ProseKeyword uses absolute positioning (`position: relative` parent + `position: absolute` tooltip) instead of portalling. Inside the modal's `overflow-y: auto` body, tooltips near the top of the scroll area get clipped.
-- **Fix options (pick one):**
-  - (a) Switch ProseKeyword to use the shared `<Tooltip>` component (now that B1 fixes the z-index). Pass `label` as the prose tooltip text. This is the cleanest long-term fix.
-  - (b) Add `overflow: visible` to the ProseKeyword wrapper — but this risks breaking the modal scroll.
-  - Recommended: option (a).
-
-#### Improvements (nice to have — skip if session runs long)
-
-**I1. Essence visual bars** — Add a subtle sphere-colored background gradient (proportional width) behind each essence row for at-a-glance hierarchy. Keep it very subtle (10-15% opacity).
-
-**I2. Divine Threads — show follower names** — If `threadEdges` connect to named agents, show 2-3 names with click-to-open-profile. Use existing `AgentProfileModal` open handler from GameView.
-
-**I3. Archetype flavor text** — Check `src/data/ascendant-content.ts` for archetype lore blurbs. If available, add 1-2 sentences below the archetype title badge in the header.
-
-**I4. Staggered section fade-in** — Apply `anim-fade-up-enter` with staggered `animation-delay` (50ms per section) for a polished open animation.
-
-**I5. Richer cycle/time metadata** — Expand the "First Cycle" line to include a narrative time phrase like "The world has turned N times since your awakening".
-
-**Pre-commit:** `npm test`, `npx tsc --noEmit`, `npx vite build`
-
----
-
-### 2026-03-29: TB-077 — Graph-Native Encounter Lifecycle (Layer 1: Event Nodes)
-
-**Context:** Architecture analysis identified that encounter outcomes vanish from the world state — no graph-queryable history for prose enrichment, location flavor, or agent biography. This is the highest-value, lowest-risk layer: create `event` nodes in the graph when encounters resolve, wire edges to agents and locations.
+**Context:** Phase 1A complete (✅ TB-077). Event nodes + edges working. Phase 1B adds query utilities and prose integration.
 
 **Design doc:** `Docs/plans/2026-03-29-graph-native-encounter-lifecycle-design.md`
 
-**Action for Claude Code — Phase 1A: Types + Event Node Creation (~1 session)**
-
-1. **Add 2 new edge types to `src/types/graph.ts`** (after `encounter_at`):
-   ```typescript
-   | 'participated_in'  // actor → event (encounter history)
-   | 'occurred_at'      // event → location (encounter happened here)
-   ```
-
-2. **Add edge schemas to `src/types/edgeSchema.ts`** (after `encounter_at` block, before `trades_with`):
-   ```typescript
-   participated_in: {
-     type: 'participated_in',
-     sourceNodeType: 'actor',
-     targetNodeType: 'event',
-     direction: 'directed',
-     cardinality: 'many-to-many',
-     requiredProperties: [],
-     description: 'Actor participated in this encounter outcome. Edge properties: role, outcome, tick.',
-   },
-   occurred_at: {
-     type: 'occurred_at',
-     sourceNodeType: 'event',
-     targetNodeType: 'location',
-     direction: 'directed',
-     cardinality: 'many-to-one',
-     requiredProperties: [],
-     description: 'Encounter outcome occurred at this location. Edge properties: sublocationId, tick.',
-   },
-   ```
-
-3. **Create `src/engine/encounterEventNodes.ts`** — new file with:
-   ```typescript
-   export const ENCOUNTER_EVENT_ENABLED = true;
-   export const EVENT_NODE_ID_PREFIX = 'evt_';
-
-   export function createEncounterEventNode(
-     graph: WorldGraph,
-     progress: EncounterProgress,
-     result: { success: boolean; outcome: EncounterOutcome; outcomeType: string; growth?: { tierCrossed: boolean }; promotion?: { traitGranted: string } },
-     step: EncounterStep,
-     template: EncounterTemplate,
-     locationId: string,
-     tick: number,
-   ): string | null
-   ```
-   - Creates event node: `id = evt_{actorId}_{tick}_{stepIndex}`, `type = 'event'`, `name = template.name + ' — ' + step.name`
-   - Properties: `eventType: 'encounter_outcome'`, `templateId`, `templateName`, `encounterType`, `stepIndex`, `stepName`, `outcome` (success/failure/critical_success/critical_failure), `reachTested`, `threatRating`, `sphereAffinity`, `tick`, `tierPromotionOccurred`, `rewardGranted`, `targetAgentId`
-   - Adds `participated_in` edge: source=`progress.actorId`, target=event node, properties: `{ role: 'primary', outcome, tick }`
-   - If `progress.targetAgentId`: adds second `participated_in` edge with `role: 'target'`
-   - Adds `occurred_at` edge: source=event node, target=`locationId`, properties: `{ sublocationId (from progress), tick }`
-   - **Fail-soft:** Wrap all in try/catch. On any failure, log warning via `emitTrace` and return `null`. Encounter resolution must never be affected.
-   - Returns the event node ID on success, `null` on failure
-
-4. **Wire into `src/engine/orchestrator.ts`, `phaseEncounterProgressionV2()`** — insert after line 221 (`advanceEncounter(state, progress, result.success, state.tick);`), before the sphere pressure block (line 223):
-   ```typescript
-   // ── Encounter event node creation (TB-077) ──
-   if (ENCOUNTER_EVENT_ENABLED) {
-     const encounter = getAnyEncounterById(progress.encounterId);
-     const step = encounter?.steps[progress.currentEncounterIndex - 1]; // -1 because advanceEncounter already incremented
-     const locEdges = state.graph.getOutgoingEdges(progress.actorId, 'located_at');
-     const locationId = locEdges[0]?.target;
-     if (encounter && step && locationId) {
-       createEncounterEventNode(
-         state.graph, progress, result, step, encounter, locationId, state.tick,
-       );
-     }
-   }
-   ```
-   **Note on step index:** `advanceEncounter()` mutates `progress.currentEncounterIndex` (increments it), so the step that was just resolved is at `currentEncounterIndex - 1` after the call. If the encounter is now completed/abandoned, `currentEncounterIndex` may equal `steps.length`, so subtract 1 and clamp.
-
-5. **Write tests in `src/engine/__tests__/encounterEventNodes.test.ts`**:
-   - Event node created with correct properties after resolveEncounter + advanceEncounter
-   - `participated_in` edge from agent to event node
-   - `occurred_at` edge from event node to location
-   - Social encounter: two `participated_in` edges (primary + target)
-   - Fail-soft: missing location → no node, no crash
-   - Fail-soft: `ENCOUNTER_EVENT_ENABLED = false` → no node created
-   - Event node ID is deterministic (same inputs → same ID)
-
-6. **Pre-commit:** `npm test`, `npx tsc --noEmit`, `npx vite build`
-7. Commit, push, update docs per Definition of Done
-
-**Phase 1B (separate session): Graph queries + prose integration**
+**Action items:**
 - Add `getLocationEncounterHistory(graph, locationId, maxResults?)` and `getAgentEncounterHistory(graph, agentId, maxResults?)` to `src/engine/graphQueries.ts`
 - Wire into prose resolvers (see design doc Decision 2 for resolver specs)
 - Add event node count + recent events to DebugPanel encounters tab
-
-**Grey zones (decided — see design doc for rationale):**
-- Per-step granularity (one event node per resolved step, not per completed encounter)
-- Single event node for social encounters (two edges, one node)
-- No backfill of pre-existing encounter history
 
 ---
 
@@ -237,5 +89,8 @@ All dependencies are met (TB-072 ✅, Faction ✅, Encounters ✅, HexMapV2 ✅,
 
 ## Completed
 
-> Archived to `HANDOVER_HISTORY.md` on 2026-03-30. See that file for full history.
+- ✅ **TB-078** — AscendantSheet QA Fixes. All 4 bugs (tooltip z-index, sphere.order, ProseKeyword, close button), 3 a11y fixes (aria-label, semantic lists, tooltip portal), and 5 improvements (essence bars, threads prose, archetype title, stagger animation, cycle metadata) verified complete 2026-03-30.
+- ✅ **TB-077 Phase 1A** — Event nodes + participated_in/occurred_at edges + 14 tests. Complete 2026-03-30.
+
+> Older entries archived to `HANDOVER_HISTORY.md` on 2026-03-30.
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
