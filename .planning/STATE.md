@@ -3,11 +3,11 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
-last_updated: "2026-03-30T11:15:16.479Z"
+stopped_at: Phase 16 UI-SPEC approved
+last_updated: "2026-03-30T11:20:00.555Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 10
+  total_phases: 11
   completed_phases: 6
   total_plans: 35
   completed_plans: 28
@@ -22,6 +22,7 @@ progress:
 - Phase 15 added: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
 - Phase 16 added: Expand retinue sidebar to Threads area — show all nodes the Ascendant has threads to
 - Phase 17 added: Add action description fields and player feedback on action activation
+- Phase 18 added: Wire mercenary company seeding and encounters into the runtime pipeline
 
 ---
 gsd_state_version: 1.0
@@ -343,6 +344,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:15:16.477Z
-Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
-Resume file: None
+Last session: 2026-03-30T11:16:12.201Z
+Stopped at: Phase 16 UI-SPEC approved
+Resume file: .planning/phases/16-expand-retinue-sidebar-to-show-all-nodes-the-ascendant-has-threads-to-becomes-a-threads-area-showing-agents-armies-factions-artifacts-locations-anything-being-invested-in/16-UI-SPEC.md
