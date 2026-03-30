@@ -1,0 +1,110 @@
+/** The 4 Foundation Spheres (elder cosmic forces) */
+export const FOUNDATION_SPHERE_NAMES = [
+  'chaos', 'order', 'light', 'darkness'
+] as const;
+export type FoundationSphereName = typeof FOUNDATION_SPHERE_NAMES[number];
+
+/** The 8 Creation Spheres (cosmic energies) */
+export const CREATION_SPHERE_NAMES = [
+  'force', 'matter', 'energy', 'life', 'mind', 'spirit', 'time', 'entropy'
+] as const;
+export type CreationSphereName = typeof CREATION_SPHERE_NAMES[number];
+
+/** All 12 Spheres — Foundation + Creation */
+export const SPHERE_NAMES = [
+  ...FOUNDATION_SPHERE_NAMES,
+  ...CREATION_SPHERE_NAMES,
+] as const;
+export type SphereName = typeof SPHERE_NAMES[number];
+
+/** Geographic parameters normalized 0.0–1.0 */
+export interface GeoParams {
+  elevation: number;
+  temperature: number;
+  moisture: number;
+}
+
+/** The player's cosmology configuration — sphere weights summing to 1.0 */
+export type CosmologyProfile = Record<SphereName, number>;
+
+/** Offset hex coordinates */
+export interface HexCoord {
+  col: number;
+  row: number;
+}
+
+/** Cube hex coordinates (used for distance/neighbor math) */
+export interface CubeCoord {
+  q: number;
+  r: number;
+  s: number;
+}
+
+/** Naturalistic biome types (42 types) */
+export type TerrainType =
+  // Water
+  | 'ocean' | 'deep_ocean' | 'tropical_ocean' | 'coastal_shallows' | 'coast' | 'lake' | 'river' | 'reef'
+  // Lowlands
+  | 'grassland' | 'farmland' | 'savanna' | 'steppe' | 'floodplain'
+  // Forest
+  | 'temperate_forest' | 'dense_forest' | 'boreal_forest' | 'jungle'
+  | 'tropical_forest' | 'evergreen_forest' | 'light_forest' | 'dead_forest'
+  // Wet
+  | 'swamp' | 'marsh' | 'moor_bog'
+  // Elevated
+  | 'hills' | 'mountains' | 'high_mountains' | 'plateau' | 'badlands' | 'mountain_pass'
+  // Elevated + forested
+  | 'forested_hills'
+  // Special
+  | 'great_home_trees' | 'broken_lands' | 'oasis'
+  // Extreme
+  | 'desert' | 'rocky_desert' | 'sand_dunes' | 'tundra' | 'glacier' | 'volcano'
+  | 'arctic' | 'snow_fields';
+
+/** Settlement/structure types for location overlays */
+export type LocationSubtype =
+  | 'hamlet' | 'town' | 'city' | 'capital'
+  | 'camp' | 'farmland'
+  | 'castle' | 'fort' | 'tower' | 'shrine' | 'temple'
+  | 'mining' | 'ruins' | 'ruined_tower' | 'ruined_city' | 'ruined_village'
+  | 'battleground' | 'oasis' | 'unexplored_poi'
+  | 'wilderness';  // default — no overlay icon
+
+/** A single hex tile with all computed properties */
+export interface HexTile {
+  coord: HexCoord;
+  geoParams: GeoParams;
+  terrain: TerrainType;
+  hasRiver?: boolean;      // set by river generation pass
+  regionId?: string;       // set by region naming pass (Phase 2)
+
+  // ── Mutable hex state (set by player actions + tick decay) ──────────────
+  /** Divine influence level (0.0–1.0). Decays per tick. Default 0. */
+  divineInfluence?: number;
+  /** Corruption level (0.0–1.0). Decays per tick (slower). Default 0. */
+  corruption?: number;
+  /** Original terrain before any transformation (for recovery). */
+  baseTerrain?: TerrainType;
+  /** Tick when terrain was last transformed (cooldown guard). */
+  terrainTransformedTick?: number;
+}
+
+/** Force overlay display modes */
+export type OverlayMode = 'none';
+
+/** Grid dimensions */
+export interface GridSize {
+  cols: number;
+  rows: number;
+}
+
+// ── Re-exports: Sublocation System ──────────────────────────
+
+export type {
+  SublocationPersistence,
+  SublocationProperties,
+  TemporalTrigger,
+  DivineOrigin,
+  DivinePurpose,
+} from './sublocation';
+export { DIVINE_PURPOSES } from './sublocation';

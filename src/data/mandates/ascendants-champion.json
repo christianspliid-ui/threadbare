@@ -1,0 +1,65 @@
+{
+  "id": "mandate.ascendants_champion",
+  "type": "narrative",
+  "name": "The Ascendant's Champion",
+  "description": "Raise an agent to Aspect tier. Elevate a mortal to divine status.",
+  "sphereAffinities": ["spirit", "mind"],
+  "stages": [
+    {
+      "stage": "setup",
+      "description": "Elevate 1 agent to Demigod tier (tier 2).",
+      "conditions": [
+        {
+          "type": "actor_tier",
+          "description": "At least 1 worshipper at tier 2 (Demigod) or higher",
+          "params": {
+            "minTier": 2,
+            "minCount": 1
+          }
+        }
+      ]
+    },
+    {
+      "stage": "escalation",
+      "description": "Elevate 1 agent to Divine tier (tier 3) AND have 3 agents at Demigod tier.",
+      "conditions": [
+        {
+          "type": "actor_tier",
+          "description": "At least 1 worshipper at tier 3 (Divine) or higher",
+          "params": {
+            "minTier": 3,
+            "minCount": 1
+          }
+        },
+        {
+          "type": "actor_tier",
+          "description": "At least 3 worshippers at tier 2 (Demigod) or higher",
+          "params": {
+            "minTier": 2,
+            "minCount": 3
+          }
+        }
+      ]
+    },
+    {
+      "stage": "culmination",
+      "description": "Elevate 1 agent to Aspect tier (tier 4), cementing their immortality.",
+      "conditions": [
+        {
+          "type": "actor_tier",
+          "description": "At least 1 worshipper at tier 4 (Aspect)",
+          "params": {
+            "minTier": 4,
+            "minCount": 1
+          }
+        }
+      ]
+    }
+  ],
+  "prose": {
+    "setup_to_escalation": "One mortal rises beyond the veil. Demigod now, they bear your mark. The world begins to see that divinity can be granted.",
+    "escalation_to_culmination": "One ascends to true divinity while three demigodsstand as proof of your power. Your champions multiply. The age of mortals is ending.",
+    "completed": "Aspect tier is achieved. One of your champions now sits among the eternal. They are your eternal voice in the world. Immortality given and received.",
+    "failed": "Your chosen ones fall back to lesser stations. Elevation slips through your fingers. Perhaps mortals were never meant to touch the divine."
+  }
+}

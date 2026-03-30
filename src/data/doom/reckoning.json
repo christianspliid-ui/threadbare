@@ -1,0 +1,6 @@
+{
+  "archetype": "reckoning",
+  "description": "Past debts coming due",
+  "stageNames": ["Old Debts Surface", "Witnesses Gather", "The Accounting", "Judgment Begins", "The Reckoning"],
+  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
+}
