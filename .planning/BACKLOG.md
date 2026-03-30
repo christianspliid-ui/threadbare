@@ -24,14 +24,9 @@ Fixed — `constructed_by` added to EdgeType + EDGE_SCHEMA, `starter_ashenmane_f
 
 ---
 
-## 📋 TB-085 · CLI Stale Field References + Test Timeout (2026-03-30)
+## ✅ TB-085 · CLI Stale Field References + Test Timeout (2026-03-30)
 
-Two minor issues from QA:
-
-1. **CLI doom clock shows `undefined`:** `scripts/cli.ts:248-249` references `state.doomClock.ticksRemaining` and `state.doomDefinition.totalDoomTicks` — fields that don't exist. Actual fields: `currentTick`/`totalTicks` on `DoomClockState`, `totalTicks` on `DoomClockDefinition`.
-2. **Encounter liveness contract test timeout:** `encounter-liveness.contract.test.ts:211` multi-seed test exceeds 5s default. Runs 4 seeds sequentially — needs a higher timeout value.
-
-**Severity:** Low — CLI display bug, flaky test.
+Fixed — CLI `printDoom()` now uses correct `currentTick`/`totalTicks` fields. Multi-seed encounter liveness test gets 20s timeout. See commit `dd4907b`.
 
 ---
 

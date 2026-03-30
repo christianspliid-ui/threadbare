@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-085 CLI doom clock stale field refs + encounter liveness test timeout (2026-03-30)
 - ✅ TB-084 Graph Schema Gaps — `constructed_by` added to EdgeType/EDGE_SCHEMA, `starter_ashenmane_fang` fixed to `artifact_legendary` (2026-03-30)
 - ✅ TB-081 Hex Action Remaining Effects — 8 actions wired via dynamic GraphOp generators, 23 tests (2026-03-30)
 - ✅ TB-077 Graph-Native Encounter Lifecycle Layer 1 — event nodes, participated_in/occurred_at edges, prose resolvers, 14 tests (2026-03-30)
