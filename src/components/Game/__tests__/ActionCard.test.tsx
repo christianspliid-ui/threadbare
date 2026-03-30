@@ -95,10 +95,9 @@ describe('ActionCard — hand layout', () => {
 });
 
 describe('ActionCard — focused layout (MTG frame)', () => {
-  it('renders action name and description in focused mode', () => {
+  it('renders action name in focused mode', () => {
     render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
     expect(screen.getByText('Dream')).toBeInTheDocument();
-    expect(screen.getByText('Manipulate selection probabilities during sleep')).toBeInTheDocument();
   });
 
   it('focused card renders spell name from slot.spellName', () => {
@@ -144,17 +143,8 @@ describe('ActionCard — focused layout (MTG frame)', () => {
     const slot: WheelSlot = { ...baseSlot };
     // No technicalDescription set
     render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
-    // Still renders flavor text
-    expect(screen.getByText('Manipulate selection probabilities during sleep')).toBeInTheDocument();
-  });
-
-  it('focused card renders description (flavor text) in italic element', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
-    // The flavor text should be in an italic-styled element
-    const card = screen.getByTestId('action-card-dream');
-    const italicEl = card.querySelector('p[style*="italic"]');
-    expect(italicEl).toBeTruthy();
-    expect(italicEl?.textContent).toContain('Manipulate selection probabilities during sleep');
+    // Card still renders without error
+    expect(screen.getByTestId('action-card-dream')).toBeInTheDocument();
   });
 
   it('shows detection risk in focused layout', () => {

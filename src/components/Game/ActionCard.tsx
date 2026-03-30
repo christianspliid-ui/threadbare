@@ -410,32 +410,8 @@ export const ActionCard = React.memo(function ActionCard({
           </div>
         )}
 
-        {/* ── 5. Flavor text (narrativeTemplates.initiation) ─────────── */}
-        <div style={{ marginTop: 'auto' }}>
-          {slot.technicalDescription && (
-            <div
-              style={{
-                height: '1px',
-                backgroundColor: 'var(--border-subtle, rgba(255,255,255,0.08))',
-                marginBottom: '4px',
-              }}
-            />
-          )}
-          <p
-            style={{
-              fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
-              fontSize: 'var(--text-sm, 0.875rem)',
-              fontWeight: 400,
-              fontStyle: 'italic',
-              color: 'var(--text-tertiary)',
-              lineHeight: 1.5,
-              margin: 0,
-              overflow: 'hidden',
-            }}
-          >
-            {slot.description}
-          </p>
-        </div>
+        {/* ── 5. Spacer to push stats to bottom ─────────────────────── */}
+        <div style={{ marginTop: 'auto' }} />
 
         {/* ── 6. Stats row (risk + range) ─────────────────────────────── */}
         <div className="flex items-center justify-between gap-2 mt-2">
