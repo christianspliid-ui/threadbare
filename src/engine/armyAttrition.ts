@@ -29,6 +29,9 @@ export const OFF_ROAD_ATTRITION_PENALTY = 0.8;
 /** Extra attrition when faction can't pay maintenance */
 export const UNDERFUNDED_ATTRITION_PENALTY = 1.5;
 
+/** Additional Quintessence loss per tick when army occupies a monster-infested hex (active lair present) */
+export const MONSTER_TERRITORY_ATTRITION = 1.2;
+
 /** Quintessence threshold percentages (fraction of max) */
 export const QUINTESSENCE_THRESHOLDS = {
   strained: 0.70,
@@ -81,6 +84,11 @@ export function phaseArmyAttrition(state: GameState): void {
       const factionId = memberOfEdges[0]?.target;
       const isUnderfunded = checkUnderfunded(state, factionId, armyState.maintenanceCost);
 
+      // Check if hex has an active monster lair (cleared lairs don't count)
+      const hasMonsterTerritory = locationId
+        ? hasActiveLairAtHex(state, locationId)
+        : false;
+
       // Calculate attrition
       const terrainCost = getArmyTerrainCost(terrain);
       const attritionSources = {
@@ -88,11 +96,13 @@ export function phaseArmyAttrition(state: GameState): void {
         terrain: terrainCost === Infinity ? 0 : terrainCost * TERRAIN_ATTRITION_FACTOR,
         offRoad: isOnRoad ? 0 : OFF_ROAD_ATTRITION_PENALTY,
         underfunded: isUnderfunded ? UNDERFUNDED_ATTRITION_PENALTY : 0,
+        monsterTerritory: hasMonsterTerritory ? MONSTER_TERRITORY_ATTRITION : 0,
       };
       const totalAttrition = attritionSources.base
         + attritionSources.terrain
         + attritionSources.offRoad
-        + attritionSources.underfunded;
+        + attritionSources.underfunded
+        + attritionSources.monsterTerritory;
 
       const quintessenceBefore = armyState.quintessence;
       const quintessenceAfter = Math.max(0, quintessenceBefore - totalAttrition);
@@ -172,6 +182,19 @@ function checkUnderfunded(
   // Simple heuristic: if faction prosperity is very low, they're underfunded
   const prosperity = (factionNode.properties.prosperity as number) ?? 0.5;
   return prosperity < 0.2;
+}
+
+/**
+ * Returns true if any active lair node (locationSubtype === 'lair') is located at hexNodeId.
+ * Cleared lairs (locationSubtype === 'cleared_lair') do NOT trigger monster attrition.
+ * One check per army per tick regardless of lair count (additive, not multiplicative).
+ */
+function hasActiveLairAtHex(state: GameState, hexNodeId: string): boolean {
+  return state.graph.getNodesByType('location').some(n =>
+    n.properties.locationSubtype === 'lair' &&
+    state.graph.getOutgoingEdges(n.id, 'located_at')
+      .some(e => e.target === hexNodeId),
+  );
 }
 
 /**
