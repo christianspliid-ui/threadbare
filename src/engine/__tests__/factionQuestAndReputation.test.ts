@@ -8,6 +8,7 @@ import {
 } from '../factionReputation';
 import { ADVENTURING_GUILD_DEFINITION, FACTION_REPUTATION_COMPLETION_BONUS } from '../../data/faction-definitions';
 import { FACTION_ENCOUNTER_TEMPLATES, FACTION_ENCOUNTER_META } from '../../data/faction-encounter-content';
+import { getAnyEncounterById } from '../../data/encounter-content';
 import { computeRankFromReputation } from '../../types/faction';
 import type { GameState } from '../../types/gameState';
 
@@ -152,9 +153,10 @@ describe('faction encounter templates', () => {
     }
   });
 
-  it('questTemplateIds on definition match actual templates', () => {
+  it('questTemplateIds on definition match actual templates (faction or monster encounter pool)', () => {
     for (const id of ADVENTURING_GUILD_DEFINITION.questTemplateIds) {
-      const found = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id);
+      // Check faction templates first, then the full encounter pool (includes monster templates)
+      const found = FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id) ?? getAnyEncounterById(id);
       expect(found).toBeDefined();
     }
   });
