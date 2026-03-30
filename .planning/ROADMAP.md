@@ -247,13 +247,16 @@ Plans:
 
 ### Phase 13: M2 Gap Closure — Aftermath, Army Visuals, Deferred Tests
 
-**Goal:** Close all M2 implementation gaps: implement aftermath sphere pressure and refugee generation in applyAftermath, complete 13 deferred .todo tests across battle/siege plans, and add HexMapV2 army visual layers (army sprites, battle indicators, siege indicators).
-**Requirements**: TBD
+**Goal:** Close all M2 implementation gaps: implement aftermath sphere pressure and refugee trace stub in applyAftermath, complete 13 deferred .todo tests across battle/siege plans, and add HexMapV2 army visual layers (army sprites, battle indicators, siege indicators).
+**Requirements:** GAP-01 (aftermath sphere pressure), GAP-02 (refugee trace stub), GAP-03 (hasThreadToBattle), GAP-04 (selectSpotlight), GAP-05 (generateRegionalEncounters), GAP-06 (army visual layers), GAP-07 (battle/siege indicators)
 **Depends on:** Phase 12
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 13 to break down)
+- [ ] 13-01-PLAN.md — Aftermath sphere pressure + refugee trace stub
+- [ ] 13-02-PLAN.md — Battle thread visibility + spotlight selection (7 tests)
+- [ ] 13-03-PLAN.md — Siege regional encounters (6 tests)
+- [ ] 13-04-PLAN.md — Army visual layers (sprites, battle indicators, siege indicators)
 
 ### Phase 14: Pause game automatically while an encounter modal is open
 
