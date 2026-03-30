@@ -251,6 +251,25 @@ export function initializeGameState(
         properties: { tier: INITIAL_WORSHIPPER_TIER, devotion: 50 },
       });
     }
+
+    // ── Seed faction threads for testing ─────────────────────
+    // Give the player starting threads to the Adventuring Guild and one
+    // mercenary company so faction interactions are testable from tick 0.
+    const INITIAL_FACTION_THREADS = [
+      'faction_def_adventuring_guild',
+      'faction_def_mercenary_company_0',
+    ];
+    for (const factionId of INITIAL_FACTION_THREADS) {
+      if (graph.getNode(factionId)) {
+        graph.addEdge({
+          id: `edge_thread_init_${factionId}`,
+          source: ascendantId,
+          target: factionId,
+          type: 'thread',
+          properties: { tier: 1, devotion: 30 },
+        });
+      }
+    }
   }
 
   // Initialize familiarity map and populate with initial thread familiarity
