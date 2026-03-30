@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 14-pause-game-automatically-while-an-encounter-modal-is-open/14-01-PLAN.md
-last_updated: "2026-03-30T09:56:51.995Z"
+last_updated: "2026-03-30T09:59:44.072Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 8
