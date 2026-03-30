@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 15-fix-encounter-pipeline/15-01-PLAN.md
-last_updated: "2026-03-30T10:49:41.254Z"
+stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-03-PLAN.md
+last_updated: "2026-03-30T11:01:06.015Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 35
-  completed_plans: 26
+  completed_plans: 27
   percent: 93
 ---
 
@@ -184,6 +184,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 13 P04 | 30 | 2 tasks | 7 files |
 | Phase 15 P02 | 7 | 1 tasks | 4 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P01 | 12 | 2 tasks | 5 files |
+| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P03 | 30 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -318,6 +319,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 15]: TRAVEL_COST_WEIGHT reduced 0.5→0.12 to allow distant encounters to compete with local ones
 - [Phase 15]: WANDERLUST_MAX_DISCOUNT=0.4 clamped to [0,1] so extreme tradition_progress values don't over-discount
 - [Phase 15]: LIVENESS_TICK_COUNT increased 50→100 to accommodate agent travel under lower travel cost
+- [Phase 15-03]: plan used 'arcane'/'crown' reach names — substituted 'veil'/'star' (correct ReachDomain values)
+- [Phase 15-03]: hire/lead/build encounterTypes never have rewardPool; onSuccess/onFailure rewardPools must have identical categoryWeights
 
 ### Roadmap Evolution
 
@@ -333,6 +336,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:49:41.251Z
-Stopped at: Completed 15-fix-encounter-pipeline/15-01-PLAN.md
+Last session: 2026-03-30T11:01:06.012Z
+Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-03-PLAN.md
 Resume file: None
