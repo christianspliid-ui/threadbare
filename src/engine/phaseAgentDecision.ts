@@ -19,6 +19,7 @@ import type { GameState, TickEvent } from '../types/gameState';
 import type { EncounterCacheManager } from './encounterCache';
 import type { EncounterCacheEntry } from './encounterCache';
 import type { DistanceMatrix } from './distanceMatrix';
+import { getDistance } from './distanceMatrix';
 import type { EncounterProgress } from '../types/encounter';
 import {
   ENCOUNTER_ABANDON_COOLDOWN,
@@ -37,7 +38,7 @@ import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE, IDLE_FORCED_TRAVEL_THRESHOLD } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -432,8 +433,9 @@ export function phaseAgentDecision(
                 [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
               },
             };
+            // Reset idle counter on any non-idle decision
             graph.updateNode(agentId, {
-              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity },
+              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity, consecutiveIdleTicks: 0 },
             });
 
             const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
@@ -496,10 +498,12 @@ export function phaseAgentDecision(
             movState.targetSublocationId = sel.entry.sublocationId ?? undefined;
             movState.targetEncounterId = sel.entry.templateId;
 
+            // Reset idle counter on any non-idle decision (queue_movement)
             graph.updateNode(agentId, {
               properties: {
                 ...actor.properties,
                 movementState: movState,
+                consecutiveIdleTicks: 0,
               },
             });
             // Get location name for better message
@@ -619,6 +623,72 @@ export function phaseAgentDecision(
               },
             });
           }
+        }
+
+        // Track consecutive idle ticks for forced travel fallback
+        const prevIdleTicks = ((actor.properties?.consecutiveIdleTicks as number | undefined) ?? 0);
+        const idleTicks = prevIdleTicks + 1;
+        graph.updateNode(agentId, {
+          properties: { ...actor.properties, consecutiveIdleTicks: idleTicks },
+        });
+
+        // Forced travel fallback — break content desert after threshold
+        if (idleReason === 'no_candidates_after_filter' && idleTicks >= IDLE_FORCED_TRAVEL_THRESHOLD) {
+          // Find nearest location with available encounter entries
+          let nearestContentLocId: string | null = null;
+          let nearestDist = Infinity;
+          for (const entry of allEntries) {
+            if (entry.locationId === locationId) continue;
+            const dist = getDistance(distanceMatrix, locationId, entry.locationId);
+            if (isFinite(dist) && dist < nearestDist) {
+              nearestDist = dist;
+              nearestContentLocId = entry.locationId;
+            }
+          }
+
+          if (nearestContentLocId) {
+            // Use same pathfinding pattern as queue_movement
+            const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
+            if (graphPath && graphPath.path.length > 0) {
+              const firstSeg = graphPath.roadSegments?.find(
+                seg => (seg.fromId === locationId && seg.toId === graphPath.path[0]) ||
+                       (seg.toId === locationId && seg.fromId === graphPath.path[0]),
+              );
+              const firstEdgeCost = firstSeg
+                ? firstSeg.discountedCost / Math.max(1, firstSeg.hexPath.length - 1)
+                : computeEdgeCost(graph, agentId, locationId, graphPath.path[0]).totalCost;
+              const forcedMovState = initMovementState(
+                nearestContentLocId,
+                graphPath.path,
+                firstEdgeCost,
+                state.tick,
+                graphPath.roadSegments ?? undefined,
+                locationId,
+              );
+              graph.updateNode(agentId, {
+                properties: { ...actor.properties, movementState: forcedMovState, consecutiveIdleTicks: 0 },
+              });
+
+              const destNode = graph.getNode(nearestContentLocId);
+              newEvents.push({
+                id: `decision_forced_travel_${agentId}_${state.tick}`,
+                tick: state.tick,
+                type: 'agent_movement',
+                message: `${actor.name} grows restless and sets out for ${destNode?.name ?? nearestContentLocId}`,
+                significance: 0.3,
+              });
+
+              // Timeline: FORCED_TRAVEL event
+              appendEvent(agentId, {
+                phase: 'IDLE',
+                tick: state.tick,
+                reason: 'forced_travel',
+                idleAction: 'forced_travel',
+                driftTarget: destNode?.name ?? nearestContentLocId,
+              });
+            }
+          }
+          // If no reachable content location → agent stays idle (fail-soft)
         }
       }
     } catch {
