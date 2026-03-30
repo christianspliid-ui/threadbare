@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed m2.5-monster-encounters/m2.5-01-PLAN.md
-last_updated: "2026-03-30T11:52:54.010Z"
+stopped_at: Completed m2.5-monster-encounters/m2.5-02-PLAN.md
+last_updated: "2026-03-30T12:01:42.050Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 5
@@ -176,6 +176,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12.1-ui-review-fixes P01 | 8 | 2 tasks | 2 files |
 | Phase 12.1-ui-review-fixes P02 | 194 | 2 tasks | 2 files |
 | Phase m2.5-monster-encounters P01 | 6 | 2 tasks | 9 files |
+| Phase m2.5-monster-encounters P02 | 5 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -311,6 +312,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase m2.5-monster-encounters]: Lair nodes use location graph node type with locationSubtype='lair' — no new node type needed
 - [Phase m2.5-monster-encounters]: provinceRoles added to WorldGenResult in hexGrid.ts so lairSeeding can access danger zone data
 - [Phase m2.5-monster-encounters]: dominantSphere derived from terrain via seedHexSphereAffinity at seeding time, not from graph
+- [Phase m2.5-monster-encounters]: phaseLairEscalation mutates state in-place at orchestrator position 2.3575 (after phaseBattleTick, before phaseArmyNotifications)
+- [Phase m2.5-monster-encounters]: Sphere pressure emitted to lair node itself (targetEntityId=lairId) — lair IS a location entity, phaseSpherePressure resolves downstream
 
 ### Pending Todos
 
@@ -322,6 +325,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:52:54.007Z
-Stopped at: Completed m2.5-monster-encounters/m2.5-01-PLAN.md
+Last session: 2026-03-30T12:01:42.048Z
+Stopped at: Completed m2.5-monster-encounters/m2.5-02-PLAN.md
 Resume file: None
