@@ -1008,3 +1008,42 @@ export const TRADE_ROUTE_CROSSROADS_PROSE: string[] = [
   'A crossroads of commerce where routes converge and coin changes hands in every direction.',
   'Trade flows in from {count} directions, making this a knot in the wider web of commerce.',
 ];
+
+// ─── Encounter History Prose (TB-077) ───────────────────────────────
+
+/** Location history prose — references past encounter events at a location */
+export const LOCATION_ENCOUNTER_HISTORY_PROSE: Record<string, string[]> = {
+  mixed: [
+    'The ground here remembers {count} trials — not all ended well.',
+    'This place has seen {count} confrontations; the dust still carries their echo.',
+    'Travelers speak of {count} encounters here, each leaving its own mark.',
+  ],
+  success_heavy: [
+    'This is a place of proven mettle — {count} challengers have tested themselves here and prevailed.',
+    'The echoes of {count} triumphs linger here, drawing the ambitious.',
+  ],
+  failure_heavy: [
+    'The entrance bears the marks of {count} failed expeditions.',
+    '{count} have tried their luck here. Few speak of what they found.',
+    'A place of hard lessons — {count} attempts, and the earth remembers each defeat.',
+  ],
+};
+
+/** Agent biography prose — references an agent's encounter history */
+export const AGENT_ENCOUNTER_BIOGRAPHY_PROSE: Record<string, string[]> = {
+  veteran: [
+    '{name} has faced {count} trials and carries the weight of each.',
+    'A survivor of {count} encounters, {name} moves with hard-won certainty.',
+  ],
+  triumphant: [
+    '{name} has prevailed in {count} challenges — a record that precedes {them}.',
+    'With {count} victories behind {them}, {name} is no stranger to success.',
+  ],
+  scarred: [
+    '{name} has been broken {failCount} times, yet still walks forward.',
+    'The scars of {failCount} defeats mark {name}, but have not yet stopped {them}.',
+  ],
+  untested: [
+    '{name} has yet to be truly tested by the world.',
+  ],
+};

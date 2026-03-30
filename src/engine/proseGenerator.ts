@@ -26,6 +26,8 @@ import {
   wealthResolver,
   guildIdentityResolver,
   guildFactionIdentityResolver,
+  locationEncounterHistoryResolver,
+  agentEncounterBiographyResolver,
 } from './proseResolvers';
 
 // ─── Resolver Registry ──────────────────────────────────────────────
@@ -40,6 +42,7 @@ const LOCATION_RESOLVERS: ProseResolver[] = [
   guildIdentityResolver,
   populationResolver,
   tradeRouteResolver,
+  locationEncounterHistoryResolver,
 ];
 
 const ACTOR_RESOLVERS: ProseResolver[] = [
@@ -48,6 +51,7 @@ const ACTOR_RESOLVERS: ProseResolver[] = [
   agentFactionResolver,
   wealthResolver,
   dispositionResolver,
+  agentEncounterBiographyResolver,
 ];
 
 const FACTION_RESOLVERS: ProseResolver[] = [

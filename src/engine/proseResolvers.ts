@@ -34,7 +34,16 @@ import {
   TRADE_ROUTE_CROSSROADS_THRESHOLD,
   GEOGRAPHIC_REGION_CLAIMED_PROSE,
   GEOGRAPHIC_REGION_WILDERNESS_PROSE,
+  LOCATION_ENCOUNTER_HISTORY_PROSE,
+  AGENT_ENCOUNTER_BIOGRAPHY_PROSE,
 } from '../data/prose-layer-content';
+import {
+  getLocationEncounterHistory,
+  getAgentEncounterHistory,
+  EVENT_PROSE_HISTORY_DEPTH,
+  EVENT_PROSE_CALLBACK_CHANCE,
+  EVENT_PROSE_MIN_TICK_GAP,
+} from './encounterEventNode';
 import { getProsperityTier } from './phaseProsperity';
 import { getWealthTier } from './wealth';
 import { readTradeRouteProps } from './tradeRoute';
@@ -1034,6 +1043,143 @@ export function guildFactionIdentityResolver(
       priority: 100,
       category: 'origin',
       source: 'guildFactionIdentityResolver',
+    },
+  ];
+}
+
+// ─── Encounter History Resolvers (TB-077) ──────────────────────────
+
+/**
+ * locationEncounterHistoryResolver — past encounters at this location.
+ * Priority: 40 (atmosphere layer, lower than structural/cultural)
+ *
+ * Walks `occurred_at` incoming edges to find encounter event nodes.
+ * Uses PRNG gating (EVENT_PROSE_CALLBACK_CHANCE) to avoid always
+ * mentioning history.
+ */
+export function locationEncounterHistoryResolver(
+  nodeId: string,
+  graph: WorldGraph,
+  seed: number,
+): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node || node.type !== 'location') return [];
+
+  // PRNG gate: only sometimes reference history
+  const rng = mulberry32(seed + 7700);
+  if (rng() > EVENT_PROSE_CALLBACK_CHANCE) return [];
+
+  const events = getLocationEncounterHistory(graph, nodeId, EVENT_PROSE_HISTORY_DEPTH);
+  if (events.length === 0) return [];
+
+  // Classify: count successes vs failures
+  const successes = events.filter(e =>
+    e.properties.outcome === 'success' || e.properties.outcome === 'critical_success',
+  ).length;
+  const failures = events.length - successes;
+
+  let category: string;
+  if (events.length < 2) {
+    category = 'mixed';
+  } else if (successes > failures * 2) {
+    category = 'success_heavy';
+  } else if (failures > successes * 2) {
+    category = 'failure_heavy';
+  } else {
+    category = 'mixed';
+  }
+
+  const templates = LOCATION_ENCOUNTER_HISTORY_PROSE[category];
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 7701);
+  if (!template) return [];
+
+  const text = replacePlaceholder(template, 'count', String(events.length));
+
+  return [
+    {
+      text,
+      priority: 40,
+      category: 'atmosphere',
+      source: 'locationEncounterHistoryResolver',
+    },
+  ];
+}
+
+/**
+ * agentEncounterBiographyResolver — agent's encounter track record.
+ * Priority: 35 (character layer, below archetype/culture)
+ *
+ * Walks `participated_in` outgoing edges to find encounter event nodes.
+ * Uses PRNG gating to avoid always mentioning biography.
+ */
+export function agentEncounterBiographyResolver(
+  nodeId: string,
+  graph: WorldGraph,
+  seed: number,
+): ProseLayer[] {
+  const node = graph.getNode(nodeId);
+  if (!node || node.type !== 'actor') return [];
+  if (node.properties?.actorType !== 'individual') return [];
+
+  // PRNG gate
+  const rng = mulberry32(seed + 7710);
+  if (rng() > EVENT_PROSE_CALLBACK_CHANCE) return [];
+
+  const events = getAgentEncounterHistory(graph, nodeId, EVENT_PROSE_HISTORY_DEPTH);
+  if (events.length === 0) {
+    // Untested — only mention if agent exists for a while
+    const templates = AGENT_ENCOUNTER_BIOGRAPHY_PROSE.untested;
+    if (!templates || templates.length === 0) return [];
+    const template = pickTemplate(templates, seed + 7711);
+    if (!template) return [];
+    const text = replacePlaceholder(template, 'name', node.name);
+    return [
+      {
+        text,
+        priority: 35,
+        category: 'character',
+        source: 'agentEncounterBiographyResolver',
+      },
+    ];
+  }
+
+  const successes = events.filter(e =>
+    e.properties.outcome === 'success' || e.properties.outcome === 'critical_success',
+  ).length;
+  const failures = events.length - successes;
+
+  let category: string;
+  if (events.length >= 3 && successes > failures * 2) {
+    category = 'triumphant';
+  } else if (events.length >= 3 && failures > successes * 2) {
+    category = 'scarred';
+  } else {
+    category = 'veteran';
+  }
+
+  const templates = AGENT_ENCOUNTER_BIOGRAPHY_PROSE[category];
+  if (!templates || templates.length === 0) return [];
+
+  const template = pickTemplate(templates, seed + 7712);
+  if (!template) return [];
+
+  // Pronouns: default to they/them
+  const gender = node.properties?.gender as string | undefined;
+  const them = gender === 'male' ? 'him' : gender === 'female' ? 'her' : 'them';
+
+  let text = replacePlaceholder(template, 'name', node.name);
+  text = replacePlaceholder(text, 'count', String(events.length));
+  text = replacePlaceholder(text, 'failCount', String(failures));
+  text = replacePlaceholder(text, 'them', them);
+
+  return [
+    {
+      text,
+      priority: 35,
+      category: 'character',
+      source: 'agentEncounterBiographyResolver',
     },
   ];
 }

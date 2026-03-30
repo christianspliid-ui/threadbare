@@ -76,6 +76,9 @@ export type EdgeType =
   | 'encounter_at'     // encounter_template → location (encounter available at location)
   // Economic
   | 'trades_with'      // actor ↔ actor trade route (volume, goodsType, controlledBy, threatened)
+  // Encounter History (TB-077)
+  | 'participated_in'  // actor → event (encounter outcome participation)
+  | 'occurred_at'      // event → location (encounter happened here)
   // Military (TB-073)
   | 'commanded_by'     // army → commander agent (army leadership)
   | 'participates_in'; // army/agent → battle node (battle participation)

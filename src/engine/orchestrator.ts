@@ -108,6 +108,7 @@ import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
+import { createEncounterEventNode } from './encounterEventNode';
 
 // ─── Decision Cache (lazy-initialized) ────────────────────────────
 
@@ -223,6 +224,8 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
 
     // Resolve current step (includes capability growth + tier promotion)
     const result = resolveEncounter(state, progress);
+    // Capture resolved step index before advance mutates it (TB-077)
+    const resolvedStepIndex = progress.currentEncounterIndex;
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
 
@@ -319,6 +322,23 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           encounterId: progress.encounterId,
           summary: `Reward pool empty for ${progress.encounterId} (${result.outcomeType})`,
         } as TraceEntry);
+      }
+    }
+
+    // ── TB-077: Create encounter event node in graph (Layer 1) ──
+    {
+      const encounter = getAnyEncounterById(progress.encounterId);
+      if (encounter) {
+        createEncounterEventNode({
+          graph: state.graph,
+          progress,
+          template: encounter,
+          stepIndex: resolvedStepIndex,
+          outcomeType: result.outcomeType,
+          tick: state.tick,
+          rewardInstanceId: rewardName,
+          tierPromotionOccurred: !!(result.growth?.tierCrossed && result.promotion?.traitGranted),
+        });
       }
     }
 

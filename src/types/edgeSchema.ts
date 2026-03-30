@@ -261,6 +261,26 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     description: 'Encounter template is available at this location.',
   },
 
+  // ── Encounter History (TB-077) ─────────────────────────────
+  participated_in: {
+    type: 'participated_in',
+    sourceNodeType: 'actor',
+    targetNodeType: 'event',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: ['role', 'outcome', 'tick'],
+    description: 'Actor participated in an encounter outcome event. Properties: role (primary/target), outcome, tick.',
+  },
+  occurred_at: {
+    type: 'occurred_at',
+    sourceNodeType: 'event',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-one',
+    requiredProperties: ['tick'],
+    description: 'Encounter event occurred at this location. Properties: tick, sublocationId (optional).',
+  },
+
   // ── Economic ───────────────────────────────────────────────
   trades_with: {
     type: 'trades_with',
