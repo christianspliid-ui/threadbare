@@ -154,6 +154,8 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
     'ag.quest.escort_caravan', 'ag.quest.recover_artifact',
     'ag.senior.deep_expedition', 'ag.senior.bounty_hunt', 'ag.senior.map_uncharted',
     'ag.elite.dragon_lair', 'ag.elite.lost_city',
+    // Monster hunt quests (m2.5) — targets lair and wilderness hexes
+    'monster.hunt.minor', 'monster.hunt.named_elite',
   ],
   socialTemplateIds: [
     'ag.social.sparring', 'ag.social.tavern_tales', 'ag.social.mentor',
