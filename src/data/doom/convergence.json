@@ -1,6 +1,0 @@
-{
-  "archetype": "convergence",
-  "description": "All forces drawn to a single point",
-  "stageNames": ["Distant Pull", "Gathering Forces", "The Drawing", "Convergence Point", "The Singularity"],
-  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
-}

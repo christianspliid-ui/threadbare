@@ -1,6 +1,0 @@
-{
-  "archetype": "ascension",
-  "description": "Something approaching godhood",
-  "stageNames": ["Mortal Spark", "Growing Power", "Threshold Nears", "Divine Trial", "The Ascension"],
-  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
-}

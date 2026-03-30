@@ -1,6 +1,0 @@
-{
-  "archetype": "failing",
-  "description": "A core force of creation weakening",
-  "stageNames": ["Waning Light", "Creeping Entropy", "The Dimming", "Collapse Begins", "The Failing"],
-  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
-}
