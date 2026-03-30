@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 17 UI-SPEC approved
-last_updated: "2026-03-30T11:51:57.002Z"
+stopped_at: Completed 16-01-PLAN.md
+last_updated: "2026-03-30T11:57:33.417Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 11
   completed_phases: 6
   total_plans: 38
-  completed_plans: 28
+  completed_plans: 29
   percent: 93
 ---
 
@@ -189,6 +189,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P03 | 30 | 2 tasks | 2 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 8 | 2 tasks | 3 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 15 | 2 tasks | 4 files |
+| Phase 16-expand-retinue-sidebar-threads-area P01 | 6 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -329,6 +330,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 15-04]: Test helper uses located_at edges (source: agent, target: location) so getAgentLocationId finds agents; void_no_content location type guarantees empty encounter cache
 - [Phase 15]: consecutiveIdleTicks on agent.properties increments each idle tick, resets to 0 on any non-idle decision branch (start_local, attempt_remote, queue_movement)
 - [Phase 15]: Forced travel only triggers for no_candidates_after_filter (true content desert), not below_score_threshold
+- [Phase 16-expand-retinue-sidebar-threads-area]: ThreadsPanel replaces RetinuePanel/AgentInfoCard sidebar; getThreadedNodes classifies all 5 thread node types; faction dominantSphere resolves via multi-strategy lookup
 
 ### Roadmap Evolution
 
@@ -344,6 +346,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:51:57.000Z
-Stopped at: Phase 17 UI-SPEC approved
-Resume file: .planning/phases/17-add-action-description-fields-and-player-feedback-on-action-activation/17-UI-SPEC.md
+Last session: 2026-03-30T11:57:33.415Z
+Stopped at: Completed 16-01-PLAN.md
+Resume file: None
