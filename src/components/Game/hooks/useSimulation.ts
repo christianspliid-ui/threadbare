@@ -60,33 +60,36 @@ export function useSimulation({
   const scryStateRef = useRef(scryState);
   scryStateRef.current = scryState;
 
+  // Ref-based state to prevent React StrictMode double-invocation of runTick.
+  // runTick has side effects (graph mutation, timeline appends, trace emits) that
+  // are not idempotent — calling it twice per tick causes agents to move 2 hexes.
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
+
   // ── Tick ──
   const doTick = useCallback(() => {
-    setGameState(prev => {
-      if (prev.phase === 'playing') {
-        const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
-        return runTick(prev, targets);
+    const prev = gameStateRef.current;
+    if (prev.phase === 'playing') {
+      const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
+      const next = runTick(prev, targets);
+      setGameState(next);
+    } else if (prev.phase === 'twilight') {
+      const result = runTwilightTick(prev);
+      setGameState(result.state);
+      if (result.complete) {
+        const harvest = computeHarvest(result.state);
+        setTimeout(() => {
+          setHarvestResult(harvest);
+          setRunning(false);
+        }, 0);
       }
-      if (prev.phase === 'twilight') {
-        const result = runTwilightTick(prev);
-        if (result.complete) {
-          // Compute harvest and pause for screen
-          const harvest = computeHarvest(result.state);
-          setTimeout(() => {
-            setHarvestResult(harvest);
-            setRunning(false);
-          }, 0);
-        }
-        return result.state;
-      }
-      return prev;
-    });
+    }
   }, []);
 
   // Watch for phase transition to twilight (doom expired)
   useEffect(() => {
     if (gameState.phase === 'twilight' && !harvestResult) {
-      setGameState(prev => startTwilight(prev));
+      setGameState(startTwilight(gameStateRef.current));
     }
   }, [gameState.phase, harvestResult]);
 
@@ -108,10 +111,8 @@ export function useSimulation({
   const handleBeginNextCycle = useCallback(() => {
     if (!harvestResult) return;
     const cosmicEchoes = harvestResult.cosmicEchoCandidates.map(c => c.echoDefinition);
-    setGameState(prev => {
-      const nextState = transitionToNewCycle(prev, cosmicEchoes, [], harvestResult.chronicleSummary);
-      return { ...nextState, phase: 'playing' };
-    });
+    const nextState = transitionToNewCycle(gameStateRef.current, cosmicEchoes, [], harvestResult.chronicleSummary);
+    setGameState({ ...nextState, phase: 'playing' });
     setHarvestResult(null);
     resetEventCounter();
   }, [harvestResult]);
