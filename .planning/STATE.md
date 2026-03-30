@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-03-PLAN.md
-last_updated: "2026-03-30T11:01:06.015Z"
+stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
+last_updated: "2026-03-30T11:12:52.054Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 9
-  completed_phases: 5
+  total_phases: 10
+  completed_phases: 6
   total_plans: 35
-  completed_plans: 27
+  completed_plans: 28
   percent: 93
 ---
 
@@ -21,6 +21,7 @@ progress:
 - Phase 14 added: Pause game automatically while an encounter modal is open
 - Phase 15 added: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
 - Phase 16 added: Expand retinue sidebar to Threads area — show all nodes the Ascendant has threads to
+- Phase 17 added: Add action description fields and player feedback on action activation
 
 ---
 gsd_state_version: 1.0
@@ -185,6 +186,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 15 P02 | 7 | 1 tasks | 4 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P01 | 12 | 2 tasks | 5 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P03 | 30 | 2 tasks | 2 files |
+| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 8 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -321,6 +323,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 15]: LIVENESS_TICK_COUNT increased 50→100 to accommodate agent travel under lower travel cost
 - [Phase 15-03]: plan used 'arcane'/'crown' reach names — substituted 'veil'/'star' (correct ReachDomain values)
 - [Phase 15-03]: hire/lead/build encounterTypes never have rewardPool; onSuccess/onFailure rewardPools must have identical categoryWeights
+- [Phase 15-04]: consecutiveIdleTicks only triggered for no_candidates_after_filter, not below_score_threshold — only genuine content deserts trigger forced travel
+- [Phase 15-04]: Test helper uses located_at edges (source: agent, target: location) so getAgentLocationId finds agents; void_no_content location type guarantees empty encounter cache
 
 ### Roadmap Evolution
 
@@ -336,6 +340,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:01:06.012Z
-Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-03-PLAN.md
+Last session: 2026-03-30T11:12:52.052Z
+Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
 Resume file: None
