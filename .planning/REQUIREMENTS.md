@@ -1,0 +1,375 @@
+# Requirements: Hex Map V2
+
+**Defined:** 2026-03-21
+**Core Value:** Beautiful, readable, performant hex map at 60K hexes — the player's window into the world.
+
+## v1 Requirements
+
+Requirements for the Hex Map V2 milestone. Each maps to roadmap phases.
+
+### Renderer (RNDR)
+
+- [ ] **RNDR-01**: Three.js orthographic camera renders a 200x300 hex grid (60K hexes) at 60fps
+- [x] **RNDR-02**: Hex fills use InstancedMesh with per-instance color attributes (one draw call for all hex fills) ✅ 01-01
+- [x] **RNDR-03**: Frustum culling skips off-screen hexes from all render passes ✅ 01-02
+- [x] **RNDR-04**: Camera supports pan (drag), zoom (scroll/pinch), and jump-to (click notification -> snap to hex) ✅ 01-02
+- [x] **RNDR-05**: HTML overlay tooltips positioned via Three.js project() (world -> screen coords) ✅ 01-02
+- [x] **RNDR-06**: 13-layer render order implemented (hex fill -> coastline -> grid -> ticks -> rivers -> roads -> borders -> signifiers -> locations -> agents -> events -> labels -> fog) ✅ 01-01
+
+### World Generation (WGEN)
+
+- [x] **WGEN-01**: Multi-octave simplex noise produces continuous heightmap function from world seed
+- [x] **WGEN-02**: Sea level threshold classifies land vs ocean from continuous heightmap
+- [x] **WGEN-03**: Latitude-based temperature function with elevation cooling and maritime moderation
+- [x] **WGEN-04**: Precipitation/moisture function with prevailing wind, orographic effect (rain shadow), and temperature influence
+- [x] **WGEN-05**: River generation via flow accumulation on hex grid — precipitation-driven sources, steepest-descent routing, lake formation in depressions
+- [x] **WGEN-06**: Temperature reassessment pass incorporating lake effect and river valley cooling
+- [x] **WGEN-07**: Hex grid overlay samples all continuous fields at 7 points per hex (center + 6 corners)
+- [x] **WGEN-08**: Whittaker diagram maps temperature x moisture to one of 27 base terrain types
+- [x] **WGEN-09**: Elevation overrides assign highland types (hills, mountains, plateau, mountain_pass) based on elevation thresholds
+- [x] **WGEN-10**: Wetland overrides assign marsh/swamp/moor_bog/floodplain based on low elevation + high moisture
+- [x] **WGEN-11**: Desert sub-type selection (sand_desert, sand_dunes, rocky_desert, hardened_clay, badlands) from local noise
+- [x] **WGEN-12**: Drainage guarantee pass ensures every land hex has downhill path to sea
+- [x] **WGEN-13**: Volcanic hex placement via hotspot noise (rare)
+- [x] **WGEN-14**: Fantasy overlay pass converts base biomes to magical variants based on sphere alignment
+
+### Coastline & Water (WATR)
+
+- [x] **WATR-01**: Coastal hexes retain inland biome — coastline rendered as mask, not terrain type
+- [x] **WATR-02**: Marching-squares interpolation within coastal hexes produces organic shoreline from 7-point samples
+- [x] **WATR-03**: Water depth bands render as shallows / mid-ocean / deep-ocean based on elevation below sea level
+- [x] **WATR-04**: Rivers rendered as curved blue overlay lines through hexes (entry edge -> exit edge), not as terrain type
+- [x] **WATR-05**: River width proportional to flow accumulation (thin streams near source, wide near coast)
+- [x] **WATR-06**: Lakes rendered as filled hex regions where drainage pass filled depressions
+
+### Terrain Types & Palette (TERR)
+
+- [x] **TERR-01**: Type system defines exactly 27 base terrain types (lowland 4, forest 5, wet 3, highland 6, desert 5, cold 3, volcanic 2, special 2) ✅ 01-01
+- [x] **TERR-02**: Tait-derived hex color palette maps each terrain type to a distinct, readable hex color ✅ 01-01
+- [x] **TERR-03**: Water palette (shallows, ocean, deep_ocean, lake, river) separate from terrain palette ✅ 01-01
+- [x] **TERR-04**: Hard terrain transitions at hex boundaries — no blending, no gradients between adjacent types ✅ 01-01
+- [x] **TERR-05**: Optional per-hex brightness noise (+/-5%) to break up large uniform regions ✅ 01-01
+
+### Regions (REGN)
+
+- [x] **REGN-01**: Geographic regions auto-detected by flood-fill of similar terrain, bounded by natural features (mountains, rivers, coastline)
+- [x] **REGN-02**: Border cost field assigns weights to hex edges based on terrain difference, elevation change, rivers, mountains
+- [x] **REGN-03**: Watershed segmentation from seed points with size capping (20-200 hexes per geographic region)
+- [x] **REGN-04**: Political regions group geographic regions under factions, defined by travel-time from capital
+- [x] **REGN-05**: Political borders rendered as red polylines along hex edges (3px kingdom, 1.5px barony)
+- [x] **REGN-06**: Geographic features have NO border lines — text labels only
+- [x] **REGN-07**: Region labels placed at centroids with hierarchy: kingdom (bold all-caps), barony (title case), geographic (italic)
+- [x] **REGN-08**: Label collision detection prevents overlapping labels
+- [x] **REGN-09**: Capital markers rendered as red dots/icons at political region seats of power
+
+### Elevation Visual Language (ELEV)
+
+- [x] **ELEV-01**: Terrain color passively communicates elevation (browns/golds = elevated, greens = low)
+- [x] **ELEV-02**: Edge tick marks ("caterpillar" marks) on hex edges where elevation difference exceeds threshold
+- [x] **ELEV-03**: Tick density scales with steepness (3-8 ticks per edge)
+- [ ] **ELEV-04**: Altitude text labels on named peaks and notable elevations (hero-local + regional zoom only)
+
+### Landscape Signifiers (LSIG)
+
+- [x] **LSIG-01**: Each of 27 terrain types has 2-5 SVG signifier variants (dark silhouette icons)
+- [x] **LSIG-02**: Signifier variant selected deterministically per hex (seeded by hex coordinates)
+- [x] **LSIG-03**: Signifiers rendered with slight position jitter (+/-10%) and rotation (+/-15deg) for organic feel
+- [x] **LSIG-04**: Signifier size scales with hex render size (hidden below regional zoom threshold)
+- [x] **LSIG-05**: All signifiers share consistent stroke weight, detail level, and color treatment (stylistic unity)
+
+### Landscape Signifier Content (LART)
+
+- [x] **LART-01**: SVG signifier set for grassland (3 variants: clean, light tufts, wildflowers)
+- [x] **LART-02**: SVG signifier set for savanna (3 variants: single tree, two trees, dry grass)
+- [x] **LART-03**: SVG signifier set for steppe (3 variants: scrub, bent grass, bare)
+- [x] **LART-04**: SVG signifier set for floodplain (2 variants: dry, wet-season marks)
+- [x] **LART-05**: SVG signifier set for woodland (4 variants: 2-tree, 3-tree, single large, mixed)
+- [x] **LART-06**: SVG signifier set for temperate_forest (4 variants: tight cluster, mixed sizes, clearing, full canopy)
+- [x] **LART-07**: SVG signifier set for dense_forest (3 variants: solid canopy, deep shade, ancient trunks)
+- [x] **LART-08**: SVG signifier set for boreal_forest (4 variants: tight conifers, mixed height, snow-dusted, sparse)
+- [x] **LART-09**: SVG signifier set for tropical_forest (3 variants: dense canopy, palms mixed, vine-draped)
+- [x] **LART-10**: SVG signifier set for marsh (3 variants: reeds, water lines, mixed)
+- [x] **LART-11**: SVG signifier set for swamp (3 variants: standing water, dead trees, dense reeds)
+- [x] **LART-12**: SVG signifier set for moor_bog (3 variants: heather, peat, sparse scrub)
+- [x] **LART-13**: SVG signifier set for hills (4 variants: single hill, double hill, rolling, steep)
+- [x] **LART-14**: SVG signifier set for forested_hills (3 variants: deciduous-topped, conifer-topped, mixed)
+- [x] **LART-15**: SVG signifier set for mountains (4 variants: single peak, double peak, ridge, cliff face)
+- [x] **LART-16**: SVG signifier set for high_mountains (3 variants: snow peak, twin peaks, massive single)
+- [x] **LART-17**: SVG signifier set for plateau (3 variants: mesa, cliff edge, stepped)
+- [x] **LART-18**: SVG signifier set for mountain_pass (2 variants: narrow pass, broad saddle)
+- [x] **LART-19**: SVG signifier set for sand_desert (3 variants: clean, wind ripples, scattered dots)
+- [x] **LART-20**: SVG signifier set for sand_dunes (3 variants: rolling dunes, crescent, tall dune)
+- [x] **LART-21**: SVG signifier set for rocky_desert (3 variants: scattered rocks, rock pile, flat rocks)
+- [x] **LART-22**: SVG signifier set for hardened_clay (2 variants: fine cracks, deep cracks)
+- [x] **LART-23**: SVG signifier set for badlands (3 variants: spires, layered, eroded pillars)
+- [x] **LART-24**: SVG signifier set for tundra (3 variants: lichen, scrub, bare)
+- [x] **LART-25**: SVG signifier set for snow_fields (2 variants: clean, drift patterns)
+- [x] **LART-26**: SVG signifier set for glacier (2 variants: crevassed, smooth)
+- [x] **LART-27**: SVG signifier set for volcanic (3 variants: active crater, dormant, vent)
+- [x] **LART-28**: SVG signifier set for lava (2 variants: fresh flow, cooling)
+- [x] **LART-29**: SVG signifier set for broken_lands (2 variants: cracked, rubble)
+- [x] **LART-30**: SVG signifier set for dead_forest (3 variants: standing dead, fallen, charred)
+
+### Location Signifiers (LOCI)
+
+- [x] **LOCI-01**: Location icons rendered as black silhouettes on hex via composition system slots
+- [x] **LOCI-02**: Location icon catalog covers: capital, city, town, hamlet, castle, fort, tower, temple, shrine, ruins variants, mining, camp, battleground, unexplored_poi
+- [x] **LOCI-03**: Location name labels rendered below icons with font size scaling by importance
+- [x] **LOCI-04**: Black text with white halo for readability against all terrain colors
+- [x] **LOCI-05**: Capital markers rendered with red ring/dot per political hierarchy
+
+### Location Icon Content (LIART)
+
+- [x] **LIART-01**: SVG icon for capital (large castle with banner)
+- [x] **LIART-02**: SVG icon for city (castle/walled town silhouette)
+- [x] **LIART-03**: SVG icon for town (building cluster with spire)
+- [x] **LIART-04**: SVG icon for hamlet (small house cluster)
+- [x] **LIART-05**: SVG icon for castle (fortified tower with crenellations)
+- [x] **LIART-06**: SVG icon for fort (square fortification)
+- [x] **LIART-07**: SVG icon for tower (single tall tower)
+- [x] **LIART-08**: SVG icon for temple (domed/spired building)
+- [x] **LIART-09**: SVG icon for shrine (small arch or standing stone)
+- [x] **LIART-10**: SVG icon for ruins (broken building)
+- [x] **LIART-11**: SVG icon for ruined_city (broken castle)
+- [x] **LIART-12**: SVG icon for ruined_tower (broken tower)
+- [x] **LIART-13**: SVG icon for ruined_village (broken houses)
+- [x] **LIART-14**: SVG icon for mining (pick/mine entrance)
+- [x] **LIART-15**: SVG icon for camp (tent silhouette)
+- [x] **LIART-16**: SVG icon for battleground (crossed swords)
+- [x] **LIART-17**: SVG icon for unexplored_poi (question mark / generic marker)
+
+### Hex Composition System (COMP)
+
+- [x] **COMP-01**: Slot-based layout system (CENTER, N, NE, SE, S, SW, NW, FILL, RING) assigns visual entities to hex positions
+- [x] **COMP-02**: HexVisualManifest interface defines preferredSlot, footprint, suppression rules, zoom visibility, priority, fallbacks per entity type
+- [x] **COMP-03**: Composition resolver collects entities per hex, sorts by priority, assigns slots, evaluates suppression
+- [x] **COMP-04**: Major locations suppress terrain signifiers when occupying the same hex
+- [x] **COMP-05**: Agent RING layout distributes agents around hex edge, sorted by ID for stable positions
+
+### Agents & Icons (AGNT)
+
+- [x] **AGNT-01**: Agent portraits rendered as circular thumbnails with colored status ring at hero-local zoom
+- [x] **AGNT-02**: Agents rendered as colored faction-color dots at regional zoom with count badge if >4 per hex
+- [x] **AGNT-03**: Agents hidden at continental and full-world zoom (retinue only at continental as tiny dots)
+- [x] **AGNT-04**: Faction heraldic colors are saturated/bright, distinct from terrain palette (red, blue, purple, magenta, cyan, orange)
+- [x] **AGNT-05**: Retinue agents use fixed gold/white border for instant recognition
+- [x] **AGNT-06**: Movement animation: bezier hop from source to destination hex (~800ms), 150ms settle
+- [x] **AGNT-07**: Activity indicator icons below agent (boot=moving, swords=fighting, hourglass=idle, coin=trading, hammer=building, bandage=injured)
+- [x] **AGNT-08**: Event indicators on hexes (battle, construction, divine intervention, corruption, trade route)
+
+### Fog of War (FOG)
+
+- [x] **FOG-01**: Unexplored hexes render as solid dark fill only — no terrain, signifiers, icons, or grid lines
+- [x] **FOG-02**: Explored hexes render at full color with all static layers (terrain, signifiers, locations, labels) — NO agents or events
+- [x] **FOG-03**: Visible hexes (occupied by retinue agent) render everything including dynamic content (agents, events, activity)
+- [x] **FOG-04**: Default sight range = 0 (own hex only). Elevated positions add +1. Magic/scrying adds variable range.
+- [x] **FOG-05**: Fog implemented as per-hex culling (skip expensive render layers), not post-process overlay
+- [x] **FOG-06**: Reveal animation: unexplored->explored fade-in ~300ms, visible->explored dim-out ~500ms
+
+### Zoom LOD (ZOOM)
+
+- [x] **ZOOM-01**: Four zoom tiers: hero-local (~300px/hex), regional (~100px), continental (~30px), full-world (~10px)
+- [x] **ZOOM-02**: Unified visibility matrix controls which render layers appear at each zoom tier
+- [x] **ZOOM-03**: Smooth fade transitions between zoom tiers (~20% overlap range, no hard pop-in/out)
+- [x] **ZOOM-04**: Elements below visibility threshold are not rendered (not just transparent) — performance skip
+- [x] **ZOOM-05**: Default camera position: centered on player's primary retinue agent, hero-local zoom
+- [x] **ZOOM-06**: Follow mode: camera auto-follows selected agent during movement (toggleable)
+
+### Borders & Grid (GRID)
+
+- [x] **GRID-01**: Thin hex grid lines (0.5-1px, ~12% opacity black) at all zoom levels except full-world
+- [x] **GRID-02**: River labels (blue italic) along major rivers at regional zoom
+- [x] **GRID-03**: Road network connecting settlements via pathfinding (solid for major, dotted for trails)
+- [x] **GRID-04**: Bridge icons where roads cross rivers
+
+### Integration (INTG)
+
+- [x] **INTG-01**: New hex map replaces current SVG hex map in GameView
+- [x] **INTG-02**: Hex click events wire to existing hex chronicle, location view, and agent interaction systems
+- [x] **INTG-03**: Existing game state (agents, locations, encounters) renders on new map without engine changes
+- [x] **INTG-04**: Debug panel fog-of-war toggle works with new renderer
+- [x] **INTG-05**: URL params (?view=game, ?fog) work with new map
+- [x] **INTG-06**: All existing tests pass after integration
+
+## v2 Requirements
+
+Deferred to future milestone. Tracked but not in current roadmap.
+
+### Dynamic Borders
+
+- **DBRD-01**: Political border geometry changes in response to conquest, diplomacy, or faction collapse
+- **DBRD-02**: Region splitting and merging when control shifts
+
+### Fantasy Terrain
+
+- **FANT-01**: Enchanted forest, crystal caves, shadow marshes as runtime terrain transformations
+- **FANT-02**: Corruption spreading visual (dark wisps on newly affected hexes)
+- **FANT-03**: Hex remembers baseTerrain for recovery when overlay condition ends
+
+### Advanced Roads
+
+- **ROAD-01**: Shipping lanes across water
+- **ROAD-02**: Road degradation over time without maintenance
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| 3D perspective camera / WebGL 3D | Rejected 2026-03-21. 2D orthographic only. |
+| Animated terrain (swaying grass, flowing water) | Performance budget. No continuous terrain animation. |
+| Terrain blending between hex types | Hard edges per Tait style. Readability at small sizes. |
+| React Three Fiber | Direct Three.js for full control at 60K hexes. |
+| Voronoi/irregular cells | Engine built on hex coordinates. Organic feel from sub-hex rendering. |
+| Hillshade / color gradients for elevation | Tait style uses signifiers + edge ticks, not shading. |
+
+## Traceability
+
+Which phases cover which requirements. Updated during roadmap creation.
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| RNDR-01 | Phase 1 | Pending (partial: renderer built, 60fps verified in Plan 02) |
+| RNDR-02 | Phase 1 | Complete ✅ 01-01 |
+| RNDR-03 | Phase 1 | Complete ✅ 01-02 |
+| RNDR-04 | Phase 1 | Complete ✅ 01-02 |
+| RNDR-05 | Phase 1 | Complete ✅ 01-02 |
+| RNDR-06 | Phase 1 | Complete ✅ 01-01 |
+| TERR-01 | Phase 1 | Complete ✅ 01-01 |
+| TERR-02 | Phase 1 | Complete ✅ 01-01 |
+| TERR-03 | Phase 1 | Complete ✅ 01-01 |
+| TERR-04 | Phase 1 | Complete ✅ 01-01 |
+| TERR-05 | Phase 1 | Complete ✅ 01-01 |
+| WGEN-01 | Phase 2 | Complete |
+| WGEN-02 | Phase 2 | Complete |
+| WGEN-03 | Phase 2 | Complete |
+| WGEN-04 | Phase 2 | Complete |
+| WGEN-05 | Phase 2 | Complete |
+| WGEN-06 | Phase 2 | Complete |
+| WGEN-07 | Phase 2 | Complete |
+| WGEN-08 | Phase 2 | Complete |
+| WGEN-09 | Phase 2 | Complete |
+| WGEN-10 | Phase 2 | Complete |
+| WGEN-11 | Phase 2 | Complete |
+| WGEN-12 | Phase 2 | Complete |
+| WGEN-13 | Phase 2 | Complete |
+| WATR-01 | Phase 3 | Complete |
+| WATR-02 | Phase 3 | Complete |
+| WATR-03 | Phase 3 | Complete |
+| WATR-04 | Phase 3 | Complete |
+| WATR-05 | Phase 3 | Complete |
+| WATR-06 | Phase 3 | Complete |
+| ELEV-01 | Phase 3 | Complete |
+| ELEV-02 | Phase 3 | Complete |
+| ELEV-03 | Phase 3 | Complete |
+| ELEV-04 | Phase 3 | Pending |
+| GRID-01 | Phase 3 | Complete |
+| REGN-01 | Phase 4 | Complete |
+| REGN-02 | Phase 4 | Complete |
+| REGN-03 | Phase 4 | Complete |
+| REGN-04 | Phase 4 | Complete |
+| REGN-05 | Phase 4 | Complete |
+| REGN-06 | Phase 4 | Complete |
+| REGN-07 | Phase 4 | Complete |
+| REGN-08 | Phase 4 | Complete |
+| REGN-09 | Phase 4 | Complete |
+| GRID-02 | Phase 4 | Complete |
+| COMP-01 | Phase 5 | Complete |
+| COMP-02 | Phase 5 | Complete |
+| COMP-03 | Phase 5 | Complete |
+| COMP-04 | Phase 5 | Complete |
+| LSIG-01 | Phase 5 | Complete |
+| LSIG-02 | Phase 5 | Complete |
+| LSIG-03 | Phase 5 | Complete |
+| LSIG-04 | Phase 5 | Complete |
+| LSIG-05 | Phase 5 | Complete |
+| LART-01 | Phase 5 | Complete |
+| LART-02 | Phase 5 | Complete |
+| LART-03 | Phase 5 | Complete |
+| LART-04 | Phase 5 | Complete |
+| LART-05 | Phase 5 | Complete |
+| LART-06 | Phase 5 | Complete |
+| LART-07 | Phase 5 | Complete |
+| LART-08 | Phase 5 | Complete |
+| LART-09 | Phase 5 | Complete |
+| LART-10 | Phase 5 | Complete |
+| LART-11 | Phase 5 | Complete |
+| LART-12 | Phase 5 | Complete |
+| LART-13 | Phase 5 | Complete |
+| LART-14 | Phase 5 | Complete |
+| LART-15 | Phase 5 | Complete |
+| LART-16 | Phase 5 | Complete |
+| LART-17 | Phase 5 | Complete |
+| LART-18 | Phase 5 | Complete |
+| LART-19 | Phase 5 | Complete |
+| LART-20 | Phase 5 | Complete |
+| LART-21 | Phase 5 | Complete |
+| LART-22 | Phase 5 | Complete |
+| LART-23 | Phase 5 | Complete |
+| LART-24 | Phase 5 | Complete |
+| LART-25 | Phase 5 | Complete |
+| LART-26 | Phase 5 | Complete |
+| LART-27 | Phase 5 | Complete |
+| LART-28 | Phase 5 | Complete |
+| LART-29 | Phase 5 | Complete |
+| LART-30 | Phase 5 | Complete |
+| LOCI-01 | Phase 6 | Complete |
+| LOCI-02 | Phase 6 | Complete |
+| LOCI-03 | Phase 6 | Complete |
+| LOCI-04 | Phase 6 | Complete |
+| LOCI-05 | Phase 6 | Complete |
+| LIART-01 | Phase 6 | Complete |
+| LIART-02 | Phase 6 | Complete |
+| LIART-03 | Phase 6 | Complete |
+| LIART-04 | Phase 6 | Complete |
+| LIART-05 | Phase 6 | Complete |
+| LIART-06 | Phase 6 | Complete |
+| LIART-07 | Phase 6 | Complete |
+| LIART-08 | Phase 6 | Complete |
+| LIART-09 | Phase 6 | Complete |
+| LIART-10 | Phase 6 | Complete |
+| LIART-11 | Phase 6 | Complete |
+| LIART-12 | Phase 6 | Complete |
+| LIART-13 | Phase 6 | Complete |
+| LIART-14 | Phase 6 | Complete |
+| LIART-15 | Phase 6 | Complete |
+| LIART-16 | Phase 6 | Complete |
+| LIART-17 | Phase 6 | Complete |
+| COMP-05 | Phase 6 | Complete |
+| AGNT-01 | Phase 6 | Complete |
+| AGNT-02 | Phase 6 | Complete |
+| AGNT-03 | Phase 6 | Complete |
+| AGNT-04 | Phase 6 | Complete |
+| AGNT-05 | Phase 6 | Complete |
+| AGNT-06 | Phase 6 | Complete |
+| AGNT-07 | Phase 6 | Complete |
+| AGNT-08 | Phase 6 | Complete |
+| FOG-01 | Phase 7 | Complete |
+| FOG-02 | Phase 7 | Complete |
+| FOG-03 | Phase 7 | Complete |
+| FOG-04 | Phase 7 | Complete |
+| FOG-05 | Phase 7 | Complete |
+| FOG-06 | Phase 7 | Complete |
+| ZOOM-01 | Phase 7 | Complete |
+| ZOOM-02 | Phase 7 | Complete |
+| ZOOM-03 | Phase 7 | Complete |
+| ZOOM-04 | Phase 7 | Complete |
+| ZOOM-05 | Phase 7 | Complete |
+| ZOOM-06 | Phase 7 | Complete |
+| GRID-03 | Phase 7 | Complete |
+| GRID-04 | Phase 7 | Complete |
+| INTG-01 | Phase 8 | Complete |
+| INTG-02 | Phase 8 | Complete |
+| INTG-03 | Phase 8 | Complete |
+| INTG-04 | Phase 8 | Complete |
+| INTG-05 | Phase 8 | Complete |
+| INTG-06 | Phase 8 | Complete |
+| WGEN-14 | Phase 8 | Complete |
+
+**Coverage:**
+- v1 requirements: 136 total
+- Mapped to phases: 136
+- Unmapped: 0
+
+---
+*Requirements defined: 2026-03-21*
+*Last updated: 2026-03-21 after roadmap creation*
