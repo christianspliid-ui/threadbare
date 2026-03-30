@@ -125,7 +125,10 @@ export function useSimulation({
   // Derived display values
   const seasonName = SEASONS[gameState.clock.season % 4] ?? 'spring';
   const year = Math.floor(gameState.tick / 120) + 1;
-  const maxEssence = computeMaxEssence(gameState.graph, gameState.ascendantId);
+  const maxEssence = useMemo(
+    () => computeMaxEssence(gameState.graph, gameState.ascendantId),
+    [gameState.graph, gameState.ascendantId],
+  );
 
   return {
     gameState,

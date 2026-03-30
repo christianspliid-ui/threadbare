@@ -123,6 +123,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize });
 
+  // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
+  const tileMap = useMemo(() => {
+    const m = new Map<string, HexTile>();
+    for (const t of tiles) m.set(`${t.coord.col},${t.coord.row}`, t);
+    return m;
+  }, [tiles]);
+  const getTile = useCallback((col: number, row: number) => tileMap.get(`${col},${row}`), [tileMap]);
+
   // ── Avatar data hook (needed before view navigation for avatarPixelPos) ──
   const {
     avatarPos,
@@ -236,6 +244,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     },
   });
 
+  // Cache selected retinue agent lookup (used in ActionDrawer props)
+  const selectedRetinueAgent = useMemo(
+    () => selectedAgentId ? retinueAgents.find(a => a.id === selectedAgentId) : undefined,
+    [retinueAgents, selectedAgentId],
+  );
+
   // When fog is disabled, create a proxy map that returns 'visible' for every key
   const effectiveVisibilityMap = useMemo(() => {
     if (!fogDisabled) return gameState.visibilityMap;
@@ -249,22 +263,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     });
   }, [fogDisabled, gameState.visibilityMap]);
 
+  // ── Shared actor + faction lookups (single graph traversal per tick) ──
+  const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, gameState.tick]);
+  const factionNodes = useMemo(() => gameState.graph.getNodesByType('faction'), [gameState.graph]);
+
   // ── Agent render data adapter (graph → AgentRenderData[]) ──
   const agentRenderData = useMemo<AgentRenderData[]>(() => {
     const retinueIds = new Set(
       getRetinueAgents(gameState.graph, gameState.ascendantId).map(r => r.agentId)
     );
-    const actors = gameState.graph.getNodesByType('actor');
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
-      // Skip ascendant nodes — they are divine entities, not map actors
       if (n.properties.actorType === 'ascendant') continue;
-      // Resolve hex position: check actor properties first, then follow located_at edge
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
       if (hexCol == null || hexRow == null) {
-        // Agents store their location as a located_at edge, not a property
         const locEdges = gameState.graph.getOutgoingEdges(n.id, 'located_at');
         const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
         if (locationId) {
@@ -277,7 +291,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       }
       if (hexCol == null || hexRow == null) continue;
 
-      // Road traversal: use currentHexPosition for visual position if on a road
       const movState = n.properties.movementState as
         | { currentHexPosition?: { col: number; row: number }; currentRoadType?: string; roadHexQueue?: unknown[] }
         | undefined;
@@ -305,13 +318,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       });
     }
     return result;
-  }, [gameState.graph, gameState.ascendantId, gameState.tick, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
+  }, [actors, gameState.graph, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
   const locationNodes = useMemo<LocationNode[]>(() => {
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
-      .filter(n => !n.properties.sublocationTypeId) // Exclude sublocations — they share parent hex coords
+      .filter(n => !n.properties.sublocationTypeId)
       .map(n => ({
         locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
         hexCol: n.properties.hexCol as number,
@@ -324,85 +337,80 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
-  // Plan 13-04: Extract army, battle, and siege state from actor nodes for HexMapV2 rendering.
-  // Armies are actor nodes with armyState property. Battles are actor nodes with battleState property.
-  // NFP #4: Missing/invalid data is silently skipped — never crashes.
-  const armyRenderData = useMemo<ArmyRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
-    const result: ArmyRenderData[] = [];
+  // Single pass over actors for army + battle + siege data (was 3 separate getNodesByType calls)
+  const { armyRenderData, battleRenderData, siegeRenderDataRaw } = useMemo(() => {
+    // Build faction ID → index map once (was inside army loop)
+    const factionIdxMap = new Map<string, number>();
+    for (let i = 0; i < factionNodes.length; i++) {
+      factionIdxMap.set(factionNodes[i].id, i);
+    }
+
+    const armies: ArmyRenderData[] = [];
+    const battles: BattleRenderData[] = [];
+    const sieges: { node: typeof actors[0]; battleState: BattleState }[] = [];
+
     for (const node of actors) {
       const armyState = node.properties.armyState as ArmyState | undefined;
-      if (armyState == null) continue;
+      const battleState = node.properties.battleState as BattleState | undefined;
 
-      // Armies store their location via properties or located_at edge
-      let hexCol = node.properties.hexCol as number | undefined;
-      let hexRow = node.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(node.id, 'located_at');
-        if (locEdges.length > 0) {
-          const loc = gameState.graph.getNode(locEdges[0].target);
-          hexCol = loc?.properties.hexCol as number | undefined;
-          hexRow = loc?.properties.hexRow as number | undefined;
+      // Army data
+      if (armyState != null) {
+        let hexCol = node.properties.hexCol as number | undefined;
+        let hexRow = node.properties.hexRow as number | undefined;
+        if (hexCol == null || hexRow == null) {
+          const locEdges = gameState.graph.getOutgoingEdges(node.id, 'located_at');
+          if (locEdges.length > 0) {
+            const loc = gameState.graph.getNode(locEdges[0].target);
+            hexCol = loc?.properties.hexCol as number | undefined;
+            hexRow = loc?.properties.hexRow as number | undefined;
+          }
+        }
+        if (hexCol != null && hexRow != null) {
+          const memberEdges = gameState.graph.getOutgoingEdges(node.id, 'member_of');
+          const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
+          const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
+          const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
+          armies.push({
+            armyId: node.id, hexCol, hexRow, factionColor,
+            armySize: armyState.headcount ?? ARMY_SIZE_SMALL_MAX,
+            isInBattle: battleState != null,
+          });
         }
       }
-      if (hexCol == null || hexRow == null) continue;
 
-      // Faction color via member_of edge → faction node index in actors list
-      const memberEdges = gameState.graph.getOutgoingEdges(node.id, 'member_of');
-      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-      const factionNodes = gameState.graph.getNodesByType('faction');
-      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
-      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
-
-      // Headcount → size number for scale tiers
-      const headcount = armyState.headcount ?? ARMY_SIZE_SMALL_MAX;
-
-      result.push({
-        armyId: node.id,
-        hexCol,
-        hexRow,
-        factionColor,
-        armySize: headcount,
-        isInBattle: node.properties.battleState != null,
-      });
+      // Battle data
+      if (battleState != null) {
+        const hexCol = node.properties.hexCol as number | undefined;
+        const hexRow = node.properties.hexRow as number | undefined;
+        if (hexCol != null && hexRow != null) {
+          battles.push({ battleNodeId: node.id, hexCol, hexRow });
+        }
+        // Siege candidates
+        if (battleState.battleType === 'siege' && battleState.settlementId) {
+          sieges.push({ node, battleState });
+        }
+      }
     }
-    return result;
-  }, [gameState.graph, gameState.tick]);
-
-  const battleRenderData = useMemo<BattleRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
-    const result: BattleRenderData[] = [];
-    for (const node of actors) {
-      const battleState = node.properties.battleState as BattleState | undefined;
-      if (battleState == null) continue;
-
-      let hexCol = node.properties.hexCol as number | undefined;
-      let hexRow = node.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) continue;
-
-      result.push({ battleNodeId: node.id, hexCol, hexRow });
-    }
-    return result;
-  }, [gameState.graph, gameState.tick]);
+    return { armyRenderData: armies, battleRenderData: battles, siegeRenderDataRaw: sieges };
+  }, [actors, factionNodes, gameState.graph]);
 
   const siegeRenderData = useMemo<SiegeRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
+    // Build faction ID → index map once
+    const factionIdxMap = new Map<string, number>();
+    for (let i = 0; i < factionNodes.length; i++) {
+      factionIdxMap.set(factionNodes[i].id, i);
+    }
     const result: SiegeRenderData[] = [];
-    for (const node of actors) {
-      const battleState = node.properties.battleState as BattleState | undefined;
-      if (battleState?.battleType !== 'siege' || !battleState.settlementId) continue;
-
-      const settlementNode = gameState.graph.getNode(battleState.settlementId);
+    for (const { node, battleState } of siegeRenderDataRaw) {
+      const settlementNode = gameState.graph.getNode(battleState.settlementId!);
       const sCol = settlementNode?.properties.hexCol as number | undefined;
       const sRow = settlementNode?.properties.hexRow as number | undefined;
       if (sCol == null || sRow == null) continue;
 
-      // Attacker faction color
       const attackerNode = gameState.graph.getNode(battleState.attackerArmyId);
       const memberEdges = attackerNode ? gameState.graph.getOutgoingEdges(attackerNode.id, 'member_of') : [];
       const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-      const factionNodes = gameState.graph.getNodesByType('faction');
-      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
+      const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
       const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
 
       result.push({
@@ -413,7 +421,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       });
     }
     return result;
-  }, [gameState.graph, gameState.tick]);
+  }, [siegeRenderDataRaw, factionNodes, gameState.graph]);
 
   // ── Notification preferences hook ──
   const {
@@ -509,9 +517,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   const nonAgentTargetContext = useMemo(() => {
     if (viewLevel === 'hex-zoom' && focusedHex) {
       // Use gameState.tiles for live mutable state (divineInfluence, corruption)
-      const liveTile = gameState.tiles.find(
-        t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row,
-      );
+      const liveTile = getTile(focusedHex.col, focusedHex.row);
       return buildHexTargetContext({
         col: focusedHex.col,
         row: focusedHex.row,
@@ -524,16 +530,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       return buildLocationTargetContext(focusedLocationId, gameState.graph);
     }
     return null;
-  }, [viewLevel, focusedHex, focusedLocationId, tiles, gameState.graph]);
+  }, [viewLevel, focusedHex, focusedLocationId, getTile, gameState.graph]);
 
   // Open non-agent drawer when entering a detail view; close on world return
-  useMemo(() => {
-    if (viewLevel === 'hex-zoom' || viewLevel === 'location') {
-      setNonAgentDrawerOpen(true);
-    } else {
-      setNonAgentDrawerOpen(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setNonAgentDrawerOpen(viewLevel === 'hex-zoom' || viewLevel === 'location');
   }, [viewLevel]);
 
   const nonAgentSlots = useTargetActions({
@@ -1228,7 +1229,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             )}
 
             {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (() => {
-              const focusedTile = tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row);
+              const focusedTile = getTile(focusedHex.col, focusedHex.row);
               const hexTerrain = focusedTile?.terrain ?? 'grassland';
               const hexDangerLevel = focusedTile?.dangerLevel ?? 0;
               return (
@@ -1292,7 +1293,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
               <LocationView
                 location={focusedLocation}
                 agents={focusedLocationAgents}
-                hexTerrain={tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland'}
+                hexTerrain={getTile(focusedHex.col, focusedHex.row)?.terrain ?? 'grassland'}
                 hexCol={focusedHex.col}
                 hexRow={focusedHex.row}
                 onAgentClick={handleAgentSelect}
@@ -1313,8 +1314,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             <ActionDrawer
               open={drawerOpen}
               slots={wheelSlots}
-              targetName={retinueAgents.find(a => a.id === selectedAgentId)?.name ?? ''}
-              targetLabel={retinueAgents.find(a => a.id === selectedAgentId)?.tierName ?? ''}
+              targetName={selectedRetinueAgent?.name ?? ''}
+              targetLabel={selectedRetinueAgent?.tierName ?? ''}
               playingCardId={playingCardId}
               onSlotClick={handleWheelSlotClick}
               onClose={handleDrawerClose}
