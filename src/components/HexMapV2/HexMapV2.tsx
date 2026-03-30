@@ -38,6 +38,8 @@ import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
+import { spawnParticleBurst, tickParticleBursts } from './scene/ParticleBurstMesh';
+import type { ActiveBurst } from './scene/ParticleBurstMesh';
 import { useAgentAnimations } from './hooks/useAgentAnimations';
 import type { AgentPrevPosition } from './hooks/useAgentAnimations';
 import { useFogCulling } from './hooks/useFogCulling';
@@ -186,6 +188,16 @@ export interface HexMapV2Handle {
    * Returns the default zoom if not yet initialized.
    */
   getZoomLevel: () => number;
+  /**
+   * Spawn a sphere-colored particle burst at the given hex coordinate.
+   * Particles expand radially and fade over PARTICLE_CONSTANTS.LIFETIME_MS ms.
+   * No-op if the scene is not yet initialized.
+   *
+   * @param hexCol      - Target hex column
+   * @param hexRow      - Target hex row
+   * @param sphereColor - CSS color string (use getSphereColor from sphereIcons.ts)
+   */
+  spawnParticleBurst: (hexCol: number, hexRow: number, sphereColor: string) => void;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -293,6 +305,9 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
 
+    // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
+    const activeBurstsRef = useRef<ActiveBurst[]>([]);
+
     // Agent animation state refs — stable across renders, mutated by render loop
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
     const animStatesRef = useRef<Map<string, AgentAnimState>>(new Map());
@@ -394,6 +409,19 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       },
       getZoomLevel(): number {
         return zoomLevel;
+      },
+      spawnParticleBurst(hexCol: number, hexRow: number, sphereColor: string): void {
+        const scene = sceneRef.current;
+        if (!scene) return;
+        const burst = spawnParticleBurst(
+          scene,
+          hexCol,
+          hexRow,
+          HEX_CONSTANTS.HEX_SIZE,
+          sphereColor,
+          performance.now(),
+        );
+        activeBurstsRef.current.push(burst);
       },
     }));
 
@@ -710,6 +738,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           if (battleLayer && battleLayer.materials.length > 0) {
             tickBattleIndicators(battleLayer, clock.getElapsedTime());
           }
+          // Tick sphere-colored particle bursts (action activation feedback)
+          if (activeBurstsRef.current.length > 0) {
+            activeBurstsRef.current = tickParticleBursts(
+              scene,
+              activeBurstsRef.current,
+              performance.now(),
+            );
+          }
           renderer.render(scene, camera);
         }
         animate();
@@ -766,6 +802,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           borderKingdomRef.current = null;
           borderBaronyRef.current = null;
           geoBorderRef.current = null;
+          // Dispose remaining particle bursts on unmount
+          for (const burst of activeBurstsRef.current) {
+            scene.remove(burst.points);
+            burst.points.geometry.dispose();
+            (burst.points.material as THREE.PointsMaterial).dispose();
+          }
+          activeBurstsRef.current = [];
           scene.clear();
           fillResult.landMesh.geometry.dispose();
           fillResult.landMesh.material instanceof THREE.Material && fillResult.landMesh.material.dispose();
