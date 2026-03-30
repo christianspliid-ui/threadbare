@@ -20,51 +20,35 @@ const baseSlot: WheelSlot = {
   description: 'Manipulate selection probabilities during sleep',
 };
 
-describe('ActionCard', () => {
-  it('renders action name and description', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
+describe('ActionCard — hand layout', () => {
+  it('renders action name in hand size', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
     expect(screen.getByText('Dream')).toBeInTheDocument();
-    expect(screen.getByText('Manipulate selection probabilities during sleep')).toBeInTheDocument();
   });
 
-  it('shows essence cost and sphere', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
+  it('shows essence cost in hand layout', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
     expect(screen.getByTestId('action-card-cost')).toHaveTextContent('1');
   });
 
-  it('shows detection risk', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
-    expect(screen.getByTestId('action-card-risk')).toHaveTextContent('10%');
+  it('hand card renders name overlay only — description NOT in document', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
+    // The description (flavor text) should NOT appear in hand mode
+    expect(screen.queryByText('Manipulate selection probabilities during sleep')).toBeNull();
   });
 
-  it('calls onClick when available card is clicked', () => {
-    const onClick = vi.fn();
-    render(<ActionCard slot={baseSlot} onClick={onClick} />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(onClick).toHaveBeenCalledWith('dream');
+  it('hand card renders spellName when provided', () => {
+    const slot: WheelSlot = { ...baseSlot, spellName: 'Midnight Reverie' };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
+    expect(screen.getByText('Midnight Reverie')).toBeInTheDocument();
   });
 
-  it('does NOT call onClick when unavailable', () => {
-    const onClick = vi.fn();
-    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-    render(<ActionCard slot={locked} onClick={onClick} />);
-    fireEvent.click(screen.getByTestId('action-card-dream'));
-    expect(onClick).not.toHaveBeenCalled();
+  it('hand card falls back to label when spellName absent', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
+    expect(screen.getByText('Dream')).toBeInTheDocument();
   });
 
-  it('shows locked reason when unavailable', () => {
-    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
-    render(<ActionCard slot={locked} onClick={vi.fn()} />);
-    expect(screen.getByText('Requires tier 2')).toBeInTheDocument();
-  });
-
-  it('shows range info for ranged interventions', () => {
-    const ranged = { ...baseSlot, rangeStatus: 'in_range' as const, hexDistance: 3 };
-    render(<ActionCard slot={ranged} onClick={vi.fn()} />);
-    expect(screen.getByTestId('action-card-range')).toHaveTextContent('3');
-  });
-
-  it('shows free cost for scry (observation)', () => {
+  it('shows free cost for observation (scry)', () => {
     const scry: WheelSlot = {
       ...baseSlot,
       id: 'scry',
@@ -76,19 +60,137 @@ describe('ActionCard', () => {
       interventionType: null,
       description: 'Observe agent psyche and situation',
     };
-    render(<ActionCard slot={scry} onClick={vi.fn()} />);
+    render(<ActionCard slot={scry} onClick={vi.fn()} size="hand" />);
     expect(screen.getByTestId('action-card-cost')).toHaveTextContent('Free');
+  });
+
+  it('calls onClick when available hand card is clicked', () => {
+    const onClick = vi.fn();
+    render(<ActionCard slot={baseSlot} onClick={onClick} size="hand" />);
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onClick).toHaveBeenCalledWith('dream');
+  });
+
+  it('does NOT call onClick when unavailable hand card is clicked', () => {
+    const onClick = vi.fn();
+    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
+    render(<ActionCard slot={locked} onClick={onClick} size="hand" />);
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onClick).not.toHaveBeenCalled();
   });
 
   it('applies dimmed styling when unavailable', () => {
     const locked = { ...baseSlot, available: false, lockedReason: 'Not enough essence' };
-    render(<ActionCard slot={locked} onClick={vi.fn()} />);
+    render(<ActionCard slot={locked} onClick={vi.fn()} size="hand" />);
     const card = screen.getByTestId('action-card-dream');
     expect(card.className).toContain('opacity-');
   });
 
   it('applies sphere color accent when available', () => {
-    render(<ActionCard slot={baseSlot} onClick={vi.fn()} />);
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
+    const card = screen.getByTestId('action-card-dream');
+    // Art background should include sphere gradient
+    expect(card.style.background).toBeTruthy();
+  });
+});
+
+describe('ActionCard — focused layout (MTG frame)', () => {
+  it('renders action name and description in focused mode', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByText('Dream')).toBeInTheDocument();
+    expect(screen.getByText('Manipulate selection probabilities during sleep')).toBeInTheDocument();
+  });
+
+  it('focused card renders spell name from slot.spellName', () => {
+    const slot: WheelSlot = { ...baseSlot, spellName: 'Call to Arms' };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByText('Call to Arms')).toBeInTheDocument();
+  });
+
+  it('focused card falls back to label when spellName absent', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByText('Dream')).toBeInTheDocument();
+  });
+
+  it('focused card renders art frame placeholder (aria-hidden)', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    const artFrame = screen.getByTestId('action-card-dream')
+      .querySelector('[aria-hidden="true"]');
+    expect(artFrame).toBeTruthy();
+  });
+
+  it('focused card renders type line with reach and CRUD type', () => {
+    const targetActionSlot: WheelSlot = {
+      ...baseSlot,
+      id: 'target_action_action.iron.create',
+      type: 'target_action',
+      interventionType: null,
+    };
+    render(<ActionCard slot={targetActionSlot} onClick={vi.fn()} size="focused" />);
+    // Should show reach and crud type
+    expect(screen.getByTestId('action-card-target_action_action.iron.create').textContent)
+      .toMatch(/IRON/);
+    expect(screen.getByTestId('action-card-target_action_action.iron.create').textContent)
+      .toMatch(/CREATE/);
+  });
+
+  it('focused card renders technicalDescription when present', () => {
+    const slot: WheelSlot = { ...baseSlot, technicalDescription: 'Test mechanical description' };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByText('Test mechanical description')).toBeInTheDocument();
+  });
+
+  it('focused card omits technicalDescription section when absent', () => {
+    const slot: WheelSlot = { ...baseSlot };
+    // No technicalDescription set
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    // Still renders flavor text
+    expect(screen.getByText('Manipulate selection probabilities during sleep')).toBeInTheDocument();
+  });
+
+  it('focused card renders description (flavor text) in italic element', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    // The flavor text should be in an italic-styled element
+    const card = screen.getByTestId('action-card-dream');
+    const italicEl = card.querySelector('p[style*="italic"]');
+    expect(italicEl).toBeTruthy();
+    expect(italicEl?.textContent).toContain('Manipulate selection probabilities during sleep');
+  });
+
+  it('shows detection risk in focused layout', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByTestId('action-card-risk')).toHaveTextContent('10%');
+  });
+
+  it('shows range info for ranged interventions in focused layout', () => {
+    const ranged = { ...baseSlot, rangeStatus: 'in_range' as const, hexDistance: 3 };
+    render(<ActionCard slot={ranged} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByTestId('action-card-range')).toHaveTextContent('3');
+  });
+
+  it('shows locked reason when unavailable in focused mode', () => {
+    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
+    render(<ActionCard slot={locked} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByText('Requires tier 2')).toBeInTheDocument();
+  });
+
+  it('calls onClick when available focused card is clicked', () => {
+    const onClick = vi.fn();
+    render(<ActionCard slot={baseSlot} onClick={onClick} size="focused" />);
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onClick).toHaveBeenCalledWith('dream');
+  });
+
+  it('does NOT call onClick when unavailable focused card is clicked', () => {
+    const onClick = vi.fn();
+    const locked = { ...baseSlot, available: false, lockedReason: 'Requires tier 2' };
+    render(<ActionCard slot={locked} onClick={onClick} size="focused" />);
+    fireEvent.click(screen.getByTestId('action-card-dream'));
+    expect(onClick).not.toHaveBeenCalled();
+  });
+
+  it('applies sphere color accent when available in focused mode', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="focused" />);
     const card = screen.getByTestId('action-card-dream');
     const borderLeftColor = (card as HTMLElement).style.borderLeftColor;
     expect(borderLeftColor).toBeTruthy();
