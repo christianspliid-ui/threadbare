@@ -6,6 +6,12 @@
 
 ---
 
+## ✅ TB-083 · Duplicate React Key Errors — Event ID Collisions (2026-03-30, complete 2026-03-30)
+
+All event ID generators now include tick in their format string to prevent cross-tick collisions. Fixed 6 modules: orchestrator, phaseMovement, phaseColocationDetection, journeyEngine, returnEngine, narrative. Eliminates 284+ duplicate React key errors per page load.
+
+---
+
 ## ✅ TB-081 · Hex Action Remaining Effects (2026-03-30, complete 2026-03-30)
 
 All 8 remaining hex action effects wired via dynamic GraphOp generators. Tier 1 (full effects): amplify_flow, shift_dominion, spark_encounter. Tier 2 (lightweight apply_influence with behaviorTags for future TB-069): stir_people, summon_congregation, bestow_vision, incite_exodus, plant_dream. 9 tunable constants, 23 tests.

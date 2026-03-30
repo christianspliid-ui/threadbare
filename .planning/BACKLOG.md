@@ -12,13 +12,9 @@
 
 ---
 
-## 📋 TB-083 · Duplicate React Key Errors — Event ID Collisions (2026-03-30)
+## ✅ TB-083 · Duplicate React Key Errors — Event ID Collisions (2026-03-30)
 
-`orchestrator.ts` resets `eventCounter = 0` every tick (for determinism), producing `evt_1`, `evt_2`, etc. each tick. `NarrativeLog.tsx` renders events across ticks using `key={evt.id}`, causing 284+ duplicate key errors per page load. Other modules (`phaseDoom`, `phaseMandate`) already include tick in their IDs (`doom_evt_${tick}_${n}`).
-
-**Fix:** Change orchestrator ID format to `evt_${tick}_${++eventCounter}`. Also audit `journeyEngine.ts` (uses separate `nextEventId++` counter) and `narrative.ts` (uses `evt_${seed}` which can collide across calls with same seed).
-
-**Severity:** High — floods console, can cause React rendering bugs (duplicated/omitted children).
+Fixed — all event ID generators now include tick in their format string. See commit `7de0e7e`.
 
 ---
 
