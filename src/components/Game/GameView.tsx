@@ -21,7 +21,14 @@ import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
+import { FACTION_HERALDIC_COLORS } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
+import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
+import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
+import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
+import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
+import type { ArmyState } from '../../types/army';
+import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
@@ -289,6 +296,98 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [gameState.graph]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
+
+  // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
+  // Plan 13-04: Extract army, battle, and siege state from actor nodes for HexMapV2 rendering.
+  // Armies are actor nodes with armyState property. Battles are actor nodes with battleState property.
+  // NFP #4: Missing/invalid data is silently skipped — never crashes.
+  const armyRenderData = useMemo<ArmyRenderData[]>(() => {
+    const actors = gameState.graph.getNodesByType('actor');
+    const result: ArmyRenderData[] = [];
+    for (const node of actors) {
+      const armyState = node.properties.armyState as ArmyState | undefined;
+      if (armyState == null) continue;
+
+      // Armies store their location via properties or located_at edge
+      let hexCol = node.properties.hexCol as number | undefined;
+      let hexRow = node.properties.hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) {
+        const locEdges = gameState.graph.getOutgoingEdges(node.id, 'located_at');
+        if (locEdges.length > 0) {
+          const loc = gameState.graph.getNode(locEdges[0].target);
+          hexCol = loc?.properties.hexCol as number | undefined;
+          hexRow = loc?.properties.hexRow as number | undefined;
+        }
+      }
+      if (hexCol == null || hexRow == null) continue;
+
+      // Faction color via member_of edge → faction node index in actors list
+      const memberEdges = gameState.graph.getOutgoingEdges(node.id, 'member_of');
+      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
+      const factionNodes = gameState.graph.getNodesByType('faction');
+      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
+      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
+
+      // Headcount → size number for scale tiers
+      const headcount = armyState.headcount ?? ARMY_SIZE_SMALL_MAX;
+
+      result.push({
+        armyId: node.id,
+        hexCol,
+        hexRow,
+        factionColor,
+        armySize: headcount,
+        isInBattle: node.properties.battleState != null,
+      });
+    }
+    return result;
+  }, [gameState.graph, gameState.tick]);
+
+  const battleRenderData = useMemo<BattleRenderData[]>(() => {
+    const actors = gameState.graph.getNodesByType('actor');
+    const result: BattleRenderData[] = [];
+    for (const node of actors) {
+      const battleState = node.properties.battleState as BattleState | undefined;
+      if (battleState == null) continue;
+
+      let hexCol = node.properties.hexCol as number | undefined;
+      let hexRow = node.properties.hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) continue;
+
+      result.push({ battleNodeId: node.id, hexCol, hexRow });
+    }
+    return result;
+  }, [gameState.graph, gameState.tick]);
+
+  const siegeRenderData = useMemo<SiegeRenderData[]>(() => {
+    const actors = gameState.graph.getNodesByType('actor');
+    const result: SiegeRenderData[] = [];
+    for (const node of actors) {
+      const battleState = node.properties.battleState as BattleState | undefined;
+      if (battleState?.battleType !== 'siege' || !battleState.settlementId) continue;
+
+      const settlementNode = gameState.graph.getNode(battleState.settlementId);
+      const sCol = settlementNode?.properties.hexCol as number | undefined;
+      const sRow = settlementNode?.properties.hexRow as number | undefined;
+      if (sCol == null || sRow == null) continue;
+
+      // Attacker faction color
+      const attackerNode = gameState.graph.getNode(battleState.attackerArmyId);
+      const memberEdges = attackerNode ? gameState.graph.getOutgoingEdges(attackerNode.id, 'member_of') : [];
+      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
+      const factionNodes = gameState.graph.getNodesByType('faction');
+      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
+      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
+
+      result.push({
+        siegeNodeId: node.id,
+        settlementHexCol: sCol,
+        settlementHexRow: sRow,
+        factionColor,
+      });
+    }
+    return result;
+  }, [gameState.graph, gameState.tick]);
 
   // ── Notification preferences hook ──
   const {
@@ -1013,6 +1112,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   locations={locationNodes}
                   roadPaths={roadPaths}
                   agents={agentRenderData}
+                  armies={armyRenderData}
+                  battles={battleRenderData}
+                  sieges={siegeRenderData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
