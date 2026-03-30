@@ -388,7 +388,7 @@ export function phaseJourneyBeat(
 
   const newEvents: TickEvent[] = [];
   const newVignettes: PendingVignette[] = [...(state.pendingVignettes ?? [])];
-  let nextEventId = state.tickEvents.length;
+  let nextEventSeq = 0;
 
   for (const threadEdge of firstThreads) {
     const threadProps = threadEdge.properties as ThreadEdgeProperties;
@@ -490,7 +490,7 @@ export function phaseJourneyBeat(
     if (newPhase !== storyPhase) {
       // Phase transition event
       newEvents.push({
-        id: `evt_${nextEventId++}`,
+        id: `evt_journey_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentNode.name}'s journey enters the ${formatPhaseName(newPhase)} phase`,
@@ -506,7 +506,7 @@ export function phaseJourneyBeat(
 
     // Journey beat event
     newEvents.push({
-      id: `evt_${nextEventId++}`,
+      id: `evt_journey_${tick}_${nextEventSeq++}`,
       tick,
       type: 'journey_beat',
       message: `A moment of destiny unfolds for ${agentNode.name}`,

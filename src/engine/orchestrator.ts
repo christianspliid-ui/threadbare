@@ -30,6 +30,7 @@ import {
   DEFAULT_REPUTATION,
 } from '../types/disposition';
 import { buildNarrativeContext } from './contextBuilder';
+import { resetNarrativeEventCounter } from './narrative';
 import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
 import {
   DILEMMA_STAKES_PROSE,
@@ -152,8 +153,9 @@ function mulberry32(seed: number): () => number {
 // ─── ID Generator ─────────────────────────────────────────────────
 
 let eventCounter = 0;
+let currentTickForIds = 0;
 function nextEventId(): string {
-  return `evt_${++eventCounter}`;
+  return `evt_${currentTickForIds}_${++eventCounter}`;
 }
 
 // Reset for testing
@@ -186,6 +188,7 @@ function resetEventCounters(): void {
   // excluded — those generate persistent graph node / action IDs, not tick events.
   resetMovementEventCounter();
   resetColocationEventCounter();
+  resetNarrativeEventCounter();
   resetPhaseEventCounter();
   resetAmbitionEventCounter();
   resetRevEventCounter();
@@ -1008,6 +1011,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   try {
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [], prosperityShocks: [] };
+
+  // Capture tick for ID generation before any phase runs
+  currentTickForIds = s.tick;
 
   // Reset per-tick event counters for deterministic ID generation (NFP #3).
   // Must happen before any phase runs so all IDs use fresh sequences for this tick.

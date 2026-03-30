@@ -37,6 +37,13 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+// ─── Prose Event Counter ────────────────────────────────────────
+// Monotonically increasing to avoid ID collisions across calls with the same seed.
+let narrativeEventCounter = 0;
+export function resetNarrativeEventCounter(): void {
+  narrativeEventCounter = 0;
+}
+
 // ─── Sphere Word Picker ──────────────────────────────────────────
 
 export function pickSphereWord(
@@ -184,7 +191,7 @@ export function generateRoutineProse(
     text,
     voice: getVoice(eventType),
     tier: 'routine',
-    eventId: `evt_${seed}`,
+    eventId: `evt_prose_${seed}_${narrativeEventCounter++}`,
     sphereColoring: sphere,
   };
 }
@@ -253,7 +260,7 @@ export function generateNotableProse(
     text,
     voice: getVoice(eventType),
     tier: 'notable',
-    eventId: `evt_${seed}`,
+    eventId: `evt_prose_${seed}_${narrativeEventCounter++}`,
     sphereColoring: sphere,
   };
 }

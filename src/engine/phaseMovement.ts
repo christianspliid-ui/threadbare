@@ -24,8 +24,8 @@ import type { ExplorationRecord } from './encounterScoring';
 
 let eventCounterPhaseMovement = 0;
 
-function nextEventId(): string {
-  return `evt_movement_${++eventCounterPhaseMovement}`;
+function nextEventId(tick: number): string {
+  return `evt_movement_${tick}_${++eventCounterPhaseMovement}`;
 }
 
 /**
@@ -106,7 +106,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
         const destNode = state.graph.getNode(result.newLocationId!);
         const finalDestNode = state.graph.getNode(result.updatedState.destinationId);
         events.push({
-          id: nextEventId(),
+          id: nextEventId(state.tick),
           tick: state.tick,
           type: 'agent_movement',
           message: `${actor.name} moves to ${destNode?.name ?? 'a location'}.`,
@@ -329,7 +329,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
     // removed — replaced by encounter-driven scoring in phaseAgentDecision.
    } catch (err) {
     events.push({
-      id: nextEventId(),
+      id: nextEventId(state.tick),
       tick: state.tick,
       type: 'phase_error' as any,
       message: `Movement phase failed for ${actor.id}: ${err}`,

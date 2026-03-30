@@ -533,7 +533,7 @@ export function applyReturnOutcome(
   tick: number,
 ): { events: TickEvent[]; threadUpdate: Partial<ThreadEdgeProperties> } {
   const events: TickEvent[] = [];
-  let nextEventId = 0;
+  let nextEventSeq = 0;
 
   const threadUpdate: Partial<ThreadEdgeProperties> = {
     courtPosition: null, // Clear court slot for all outcomes
@@ -558,7 +558,7 @@ export function applyReturnOutcome(
       // Keep thread as retinue ("The Risen")
       threadUpdate.courtPosition = 'retinue' as CourtPosition;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} ascends — a new Ascendant rises, loyal to their divine patron.`,
@@ -586,7 +586,7 @@ export function applyReturnOutcome(
       // Sever thread
       threadUpdate.courtPosition = null;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} seizes divine power for themselves — a personal antagonist is born.`,
@@ -600,7 +600,7 @@ export function applyReturnOutcome(
       // Thread severed, agent walks away
       threadUpdate.courtPosition = null;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} walks away from the divine thread. Just absence.`,
@@ -627,7 +627,7 @@ export function applyReturnOutcome(
       // Thread severed (dead agent)
       threadUpdate.courtPosition = null;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} makes the ultimate sacrifice. A sacred site marks where they fell.`,
@@ -653,7 +653,7 @@ export function applyReturnOutcome(
       }
       threadUpdate.courtPosition = null;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} transcends mortality, becoming an eternal guardian bound to the land.`,
@@ -680,7 +680,7 @@ export function applyReturnOutcome(
       }
       threadUpdate.courtPosition = null;
       events.push({
-        id: `evt_return_${nextEventId++}`,
+        id: `evt_return_${tick}_${nextEventSeq++}`,
         tick,
         type: 'journey_phase_change',
         message: `${agentName} becomes something terrible — a monster forged from divine ambition gone wrong.`,

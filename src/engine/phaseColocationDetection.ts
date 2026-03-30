@@ -31,8 +31,8 @@ function mulberry32(seed: number): () => number {
 
 // ─── Event Counter ────────────────────────────────────────────────
 let colocationEventCounter = 0;
-function nextEventId(): string {
-  return `evt_colocation_${++colocationEventCounter}`;
+function nextEventId(tick: number): string {
+  return `evt_colocation_${tick}_${++colocationEventCounter}`;
 }
 export function resetColocationEventCounter(): void {
   colocationEventCounter = 0;
@@ -99,7 +99,7 @@ export function phaseColocationDetection(state: GameState): Partial<GameState> {
 
         if (rng() < chance) {
           events.push({
-            id: nextEventId(),
+            id: nextEventId(state.tick),
             tick: state.tick,
             type: 'agent_encounter',
             message: `${observer.name} encounters ${target.name} at ${locNode?.name ?? 'a location'}.`,
