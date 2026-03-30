@@ -36,7 +36,8 @@
 
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
-import type { DistanceMatrix } from './distanceMatrix';
+import { resolveLocationToHex } from './encounterAwareness';
+import { hexDistance } from '../lib/hexMath';
 import type { ScoringTrace } from '../types/trace';
 import type { ValuePair, AxiologicalProfile } from '../types/agent';
 import { VALUE_PAIRS } from '../types/agent';
@@ -45,7 +46,7 @@ import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
 import { computeCapability, computeTier } from './domainCapability';
-import { getDistance } from './distanceMatrix';
+// Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 import { computeBondModifier } from './socialEncounterGeneration';
@@ -448,7 +449,6 @@ export function scoreAndSelect(
   agentId: string,
   agentLocationId: string,
   graph: WorldGraph,
-  distanceMatrix: DistanceMatrix,
   tick: number,
   fundament?: FundamentState,
 ): DecisionResult {
@@ -512,7 +512,10 @@ export function scoreAndSelect(
     // 4. Travel cost (B.3: dampened by TRAVEL_COST_WEIGHT, modulated by personality wanderlust)
     const wanderlust = Math.min(1, Math.max(0, -(profile[WANDERLUST_PAIR] ?? 0))); // clamped 0..1, higher = more curious
     const personalTravelCostWeight = TRAVEL_COST_WEIGHT * (1 - wanderlust * WANDERLUST_MAX_DISCOUNT);
-    const distance = getDistance(distanceMatrix, agentLocationId, entry.locationId);
+    // Hex-distance travel cost: consistent with hex-based awareness model
+    const agentHex = resolveLocationToHex(graph, agentLocationId);
+    const entryHex = resolveLocationToHex(graph, entry.locationId);
+    const distance = (agentHex && entryHex) ? hexDistance(agentHex, entryHex) : Infinity;
     let travelCost: number;
     if (distance === 0) {
       travelCost = 0;

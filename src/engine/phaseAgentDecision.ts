@@ -108,6 +108,14 @@ export function phaseAgentDecision(
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
 
+  // Derive map dimensions for edge hex awareness bonus
+  let mapCols = 0;
+  let mapRows = 0;
+  for (const tile of state.tiles) {
+    if (tile.coord.col >= mapCols) mapCols = tile.coord.col + 1;
+    if (tile.coord.row >= mapRows) mapRows = tile.coord.row + 1;
+  }
+
   // Build set of avatar IDs to exclude from autonomous decision-making
   const avatarNodeIds = new Set<string>();
   if (state.ascendantId) {
@@ -346,13 +354,15 @@ export function phaseAgentDecision(
         ? [...allEntries, ...dynamicEntries]
         : allEntries;
 
-      // Run filter pipeline (hex-distance awareness, no distance matrix needed)
+      // Run filter pipeline (hex-distance awareness with edge hex bonus)
       const filterResult = runFilterPipeline(
         mergedEntries,
         agentId,
         locationId,
         graph,
         state.tick,
+        mapCols,
+        mapRows,
       );
       const rawCandidates = filterResult.candidates;
 
@@ -376,13 +386,12 @@ export function phaseAgentDecision(
         return completions < MAX_COMPLETIONS_PER_TEMPLATE;
       });
 
-      // Score and select
+      // Score and select (hex-distance travel cost, no distance matrix)
       const decision = scoreAndSelect(
         candidates,
         agentId,
         locationId,
         graph,
-        distanceMatrix,
         state.tick,
         state.worldSoul?.fundament,
       );

@@ -79,6 +79,8 @@ function stageAwareness(
   agentId: string,
   agentLocationId: string,
   graph: WorldGraph,
+  mapCols?: number,
+  mapRows?: number,
 ): EncounterCacheEntry[] {
   // Base awareness from hex-distance-limited per-reach visibility
   const awarenessResults = filterByAwareness(
@@ -86,6 +88,8 @@ function stageAwareness(
     agentId,
     agentLocationId,
     graph,
+    mapCols,
+    mapRows,
   );
 
   // Build dedup set from awareness results
@@ -336,6 +340,8 @@ export function runFilterPipeline(
   agentLocationId: string,
   graph: WorldGraph,
   tick: number,
+  mapCols?: number,
+  mapRows?: number,
 ): FilterResult {
   // Fast path: empty input
   if (allEntries.length === 0) {
@@ -356,7 +362,7 @@ export function runFilterPipeline(
   // Stage 1: Awareness + Faction
   let current: EncounterCacheEntry[];
   try {
-    current = stageAwareness(allEntries, agentId, agentLocationId, graph);
+    current = stageAwareness(allEntries, agentId, agentLocationId, graph, mapCols, mapRows);
   } catch {
     current = [];
   }

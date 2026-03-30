@@ -30,28 +30,31 @@ export interface EncounterDifficultyTier {
 
 // ─── Tunable Constants ──────────────────────────────────────────
 
-/** Difficulty progression within a template (escalates per step) */
-const DIFFICULTY_BASE = 25;
-const DIFFICULTY_STEP = 10;
+/** Difficulty progression within a template (escalates per step).
+ * Easy tier: starting agents (cap ~0.05–0.15) can pass step 1 ~10–20% of the time.
+ * Formula: prob = cap + mods - diff/100, clamped [0.05, 0.95].
+ * Design goal: agents always progress slowly, reaching cap ~1.0 around tick 1000. */
+const DIFFICULTY_BASE = 10;
+const DIFFICULTY_STEP = 8;
 
-/** Difficulty base for moderate encounters (mid-game agents) */
-const MODERATE_DIFFICULTY_BASE = 40;
-const MODERATE_DIFFICULTY_STEP = 10;
-/** Difficulty base for hard encounters (experienced agents) */
-const HARD_DIFFICULTY_BASE = 60;
+/** Difficulty base for moderate encounters (mid-game agents, cap ~0.30–0.50) */
+const MODERATE_DIFFICULTY_BASE = 25;
+const MODERATE_DIFFICULTY_STEP = 8;
+/** Difficulty base for hard encounters (experienced agents, cap ~0.50–0.75) */
+const HARD_DIFFICULTY_BASE = 40;
 const HARD_DIFFICULTY_STEP = 10;
-/** Difficulty base for deadly encounters (master-tier agents) */
-const DEADLY_DIFFICULTY_BASE = 80;
+/** Difficulty base for deadly encounters (master-tier agents, cap ~0.75+) */
+const DEADLY_DIFFICULTY_BASE = 60;
 const DEADLY_DIFFICULTY_STEP = 10;
 
-/** Difficulty base for universal (fallback) encounters — deliberately lower than standard */
-const UNIVERSAL_DIFFICULTY_BASE = 20;
+/** Difficulty base for universal (fallback) encounters — accessible to all agents */
+const UNIVERSAL_DIFFICULTY_BASE = 5;
 /** Difficulty step between stages in universal encounters */
 const UNIVERSAL_DIFFICULTY_STEP = 5;
 /** Difficulty base for reach-agnostic encounters — near-guaranteed pass for any agent */
-const AGNOSTIC_DIFFICULTY_BASE = 15;
+const AGNOSTIC_DIFFICULTY_BASE = 3;
 /** Difficulty step for reach-agnostic encounters */
-const AGNOSTIC_DIFFICULTY_STEP = 5;
+const AGNOSTIC_DIFFICULTY_STEP = 3;
 
 /**
  * Every LocationSubtype value — used by universal encounters that should

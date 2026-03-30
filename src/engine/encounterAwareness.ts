@@ -48,6 +48,7 @@ export {
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
+  EDGE_HEX_AWARENESS_BONUS,
 } from '../data/agent-behavior-constants';
 
 import {
@@ -55,7 +56,10 @@ import {
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
+  EDGE_HEX_AWARENESS_BONUS,
 } from '../data/agent-behavior-constants';
+
+import { hexNeighbors } from '../lib/hexMath';
 
 // ─── Hex resolution helpers ─────────────────────────────────────
 
@@ -114,11 +118,23 @@ export function computeAwarenessHops(capability: number, reach: ReachDomain): nu
  * Agent position is resolved to hex coordinates: sublocation → parent → hex.
  * This means an agent at a sublocation sees all encounters on their hex automatically.
  */
+/**
+ * Check if a hex is on the map border (has fewer than 6 valid neighbors).
+ * Uses map dimensions to determine if any neighbor would be out of bounds.
+ */
+function isEdgeHex(hex: { col: number; row: number }, mapCols?: number, mapRows?: number): boolean {
+  if (mapCols === undefined || mapRows === undefined) return false;
+  const neighbors = hexNeighbors(hex);
+  return neighbors.some(n => n.col < 0 || n.row < 0 || n.col >= mapCols || n.row >= mapRows);
+}
+
 export function filterByAwareness(
   entries: readonly EncounterCacheEntry[],
   agentId: string,
   agentLocationId: string,
   graph: WorldGraph,
+  mapCols?: number,
+  mapRows?: number,
 ): EncounterCacheEntry[] {
   // Fail-soft: agent must exist and have a location
   if (!agentLocationId) return [];
@@ -127,6 +143,9 @@ export function filterByAwareness(
   // Resolve agent location (or sublocation) to hex coordinates
   const agentHex = resolveLocationToHex(graph, agentLocationId);
   if (!agentHex) return [];
+
+  // Edge hex bonus: agents on map borders get extra awareness to compensate
+  const edgeBonus = isEdgeHex(agentHex, mapCols, mapRows) ? EDGE_HEX_AWARENESS_BONUS : 0;
 
   // Pre-compute a cache of locationId → hex coords to avoid repeated lookups
   const hexCache = new Map<string, { col: number; row: number } | null>();
@@ -165,7 +184,7 @@ export function filterByAwareness(
     const secondaryRange = entry.reachSecondary
       ? computeAwarenessHops(secondaryCap, entry.reachSecondary)
       : 0;
-    const maxRange = Math.max(primaryRange, secondaryRange);
+    const maxRange = Math.max(primaryRange, secondaryRange) + edgeBonus;
 
     if (dist <= maxRange) {
       result.push(entry);

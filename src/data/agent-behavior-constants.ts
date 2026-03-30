@@ -58,6 +58,11 @@ export const CAPABILITY_PER_HOP = 0.15;
  * @range 3–10 */
 export const MAX_AWARENESS_HOPS = 5;
 
+/** Bonus awareness hops for agents on map edge hexes (fewer than 6 neighbors).
+ * Compensates for the geometric disadvantage of seeing fewer adjacent hexes.
+ * @range 0–2 */
+export const EDGE_HEX_AWARENESS_BONUS = 1;
+
 // ═══════════════════════════════════════════════════════════════════
 // FACTION INTELLIGENCE — Rank-gated encounter visibility (factionAwareness.ts)
 // ═══════════════════════════════════════════════════════════════════

@@ -106,14 +106,14 @@ function buildTestGraph(opts: {
     id: locId,
     type: 'location',
     name: 'Test Location A',
-    properties: { locationType: 'settlement' },
+    properties: { locationType: 'settlement', hexCol: 0, hexRow: 0 },
   });
 
   graph.addNode({
     id: 'loc_b',
     type: 'location',
     name: 'Test Location B',
-    properties: { locationType: 'settlement' },
+    properties: { locationType: 'settlement', hexCol: 3, hexRow: 0 },
   });
 
   graph.addNode({
@@ -281,7 +281,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -302,7 +301,7 @@ describe('scoreAndSelect', () => {
     const dm = makeDistanceMatrix([['loc_a', 'loc_a', 0]]);
 
     const entry = makeEntry({ locationId: 'loc_a' });
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,1);
 
     expect(result.topCandidates[0].completionProb).toBeGreaterThan(0.05);
   });
@@ -325,7 +324,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -354,7 +352,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graphAligned,
-      dm,
       1,
     );
     const neutralResult = scoreAndSelect(
@@ -362,7 +359,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graphNeutral,
-      dm,
       1,
     );
 
@@ -379,7 +375,7 @@ describe('scoreAndSelect', () => {
     const dm = makeDistanceMatrix([['loc_a', 'loc_a', 0]]);
 
     const entry = makeEntry({ locationId: 'loc_a' });
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,1);
 
     // D.1: desireMultiplier is exponentiated — min desire^PERSONALITY_SCORE_EXPONENT
     expect(result.topCandidates[0].desireMultiplier).toBeGreaterThan(0);
@@ -405,7 +401,7 @@ describe('scoreAndSelect', () => {
     });
 
     // Use tick far enough past visit to ensure exploration bonus fully decayed
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 200);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,200);
 
     expect(result.selected).toBeNull();
     expect(result.trace.action).toBe('idle');
@@ -425,8 +421,8 @@ describe('scoreAndSelect', () => {
       makeEntry({ templateId: 'b', locationId: 'loc_b' }),
     ];
 
-    const r1 = scoreAndSelect(candidates, 'agent_1', 'loc_a', graph, dm, 1);
-    const r2 = scoreAndSelect(candidates, 'agent_1', 'loc_a', graph, dm, 1);
+    const r1 = scoreAndSelect(candidates, 'agent_1', 'loc_a', graph,1);
+    const r2 = scoreAndSelect(candidates, 'agent_1', 'loc_a', graph,1);
 
     expect(r1.selected?.entry.templateId).toBe(r2.selected?.entry.templateId);
     expect(r1.selected?.finalScore).toBe(r2.selected?.finalScore);
@@ -460,7 +456,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -483,7 +478,6 @@ describe('scoreAndSelect', () => {
       'nonexistent',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -495,7 +489,7 @@ describe('scoreAndSelect', () => {
     const graph = buildTestGraph({});
     const dm = makeDistanceMatrix([]);
 
-    const result = scoreAndSelect([], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([], 'agent_1', 'loc_a', graph,1);
 
     expect(result.selected).toBeNull();
     expect(result.topCandidates).toHaveLength(0);
@@ -519,7 +513,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -536,7 +529,7 @@ describe('scoreAndSelect', () => {
     const dm = makeDistanceMatrix([['loc_a', 'loc_a', 0]]);
     const entry = makeEntry({ locationId: 'loc_a' });
 
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 10);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,10);
 
     expect(result.trace.category).toBe('encounter_scoring');
     expect(result.trace.agentId).toBe('agent_1');
@@ -576,7 +569,6 @@ describe('scoreAndSelect', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       1,
     );
 
@@ -825,7 +817,6 @@ describe('scoring integration (B.3/D.1)', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       10,
     );
 
@@ -849,7 +840,7 @@ describe('scoring integration (B.3/D.1)', () => {
     const dm = makeDistanceMatrix([]);
     const entry = makeEntry({ locationId: 'loc_a' });
 
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 10);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,10);
     const candidate = result.topCandidates[0];
     expect(candidate.familiarityPenalty).toBeGreaterThan(0);
     expect(candidate.familiarityPenalty).toBeCloseTo(5 * FAMILIARITY_DECAY_PER_ATTEMPT, 5);
@@ -860,7 +851,7 @@ describe('scoring integration (B.3/D.1)', () => {
     const dm = makeDistanceMatrix([['loc_a', 'loc_b', 1]]);
     const entry = makeEntry({ locationId: 'loc_b', templateId: 'tmpl_far' });
 
-    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, dm, 10);
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,10);
     const candidate = result.topCandidates[0];
     expect(candidate.explorationBonus).toBe(EXPLORATION_NOVELTY_BONUS);
   });
@@ -887,7 +878,6 @@ describe('scoring integration (B.3/D.1)', () => {
       'agent_1',
       'loc_a',
       graph,
-      dm,
       10,
     );
 
@@ -924,8 +914,8 @@ describe('wanderlust travel cost modifier', () => {
       requiresPresence: true,
     });
 
-    const progressiveResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', progressiveGraph, dm, 1);
-    const traditionalResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', traditionalGraph, dm, 1);
+    const progressiveResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', progressiveGraph, 1);
+    const traditionalResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', traditionalGraph, 1);
 
     const progressiveCost = progressiveResult.topCandidates[0].travelCost;
     const traditionalCost = traditionalResult.topCandidates[0].travelCost;
@@ -947,7 +937,7 @@ describe('wanderlust travel cost modifier', () => {
       requiresPresence: true,
     });
 
-    const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph,1);
     const travelCost = result.topCandidates[0].travelCost;
 
     // With tradition_progress=0, wanderlust=0, personalTravelCostWeight = TRAVEL_COST_WEIGHT * 1.0
@@ -973,7 +963,7 @@ describe('wanderlust travel cost modifier', () => {
       requiresPresence: true,
     });
 
-    const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph,1);
     const travelCost = result.topCandidates[0].travelCost;
 
     // With wanderlust clamped at 1.0: personalTravelCostWeight = 0.12 * (1 - 1.0 * 0.4) = 0.072
@@ -985,7 +975,7 @@ describe('wanderlust travel cost modifier', () => {
     // Also verify a normal -1.0 profile gives same result (confirming clamp is working)
     const exactProfile = makeProfile({ tradition_progress: -1.0 });
     const exactGraph = buildTestGraph({ agentId: 'agent_1', profile: exactProfile });
-    const exactResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', exactGraph, dm, 1);
+    const exactResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', exactGraph, 1);
     expect(exactResult.topCandidates[0].travelCost).toBeCloseTo(maxDiscountedCost, 5);
   });
 
@@ -1001,7 +991,7 @@ describe('wanderlust travel cost modifier', () => {
       requiresPresence: true,
     });
 
-    const result = scoreAndSelect([localEntry], 'agent_1', 'loc_a', graph, dm, 1);
+    const result = scoreAndSelect([localEntry], 'agent_1', 'loc_a', graph,1);
     expect(result.topCandidates[0].travelCost).toBe(0);
   });
 });
