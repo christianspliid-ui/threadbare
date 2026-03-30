@@ -22,10 +22,10 @@ import type { FactionDefinition, FactionRankTier } from '../types/faction';
 import { computeRankFromReputation } from '../types/faction';
 import { FACTION_DEFINITIONS, PROMOTION_PARTIAL_SUCCESS_MARGIN } from '../data/faction-definitions';
 import {
-  FACTION_ENCOUNTER_TEMPLATES,
   FACTION_ENCOUNTER_META,
   FACTION_JOIN_TEMPLATE,
   FACTION_PROMOTION_TEMPLATE,
+  getFactionEncounterById,
 } from '../data/faction-encounter-content';
 import type { MemberOfEdgeProperties } from '../types/disposition';
 
@@ -124,21 +124,21 @@ function buildCacheEntry(
 /**
  * Filter faction quest templates by rank access.
  * Returns templates whose prefix matches the current rank's encounterAccess list.
+ * Uses the unified FACTION_ENCOUNTER_META registry (covers ag.* and mc.* templates).
  */
 function getAccessibleTemplates(
   definition: FactionDefinition,
   currentRank: FactionRankTier,
-): typeof FACTION_ENCOUNTER_TEMPLATES {
+): EncounterTemplate[] {
   const accessPrefixes = currentRank.encounterAccess;
   if (accessPrefixes.length === 0) return [];
 
-  return FACTION_ENCOUNTER_TEMPLATES.filter(template => {
-    const meta = FACTION_ENCOUNTER_META.get(template.id);
-    if (!meta || meta.factionDefId !== definition.id) return false;
-
-    // Check if template ID matches any access prefix
-    return accessPrefixes.some(prefix => template.id.startsWith(prefix));
-  });
+  return [...FACTION_ENCOUNTER_META.entries()]
+    .filter(([id, meta]) =>
+      meta.factionDefId === definition.id &&
+      accessPrefixes.some(prefix => id.startsWith(prefix)))
+    .map(([id]) => getFactionEncounterById(id))
+    .filter((t): t is EncounterTemplate => t !== undefined);
 }
 
 // ─── Lifecycle Candidates (Join & Promotion) — TB-061 ────────────────────
@@ -162,10 +162,15 @@ export function generateFactionLifecycleCandidates(
 ): EncounterCacheEntry[] {
   const candidates: EncounterCacheEntry[] = [];
 
-  // Check if current location has any guild hall sublocations
+  // Check if current location has any guild/faction hall sublocations.
+  // factionSeeding writes sublocationTypeId: 'sublocation-type.faction-hall';
+  // existing test mocks use locationSubtype: 'guild-hall' — support both.
   const sublocations = graph.getOutgoingEdges(locationId, 'contains')
     .map(e => graph.getNode(e.target))
-    .filter(n => n && n.properties?.locationSubtype === 'guild-hall');
+    .filter(n => n && (
+      n.properties?.sublocationTypeId === 'sublocation-type.faction-hall' ||
+      n.properties?.locationSubtype === 'guild-hall'
+    ));
 
   if (sublocations.length === 0) return candidates;
 
@@ -191,14 +196,19 @@ export function generateFactionLifecycleCandidates(
 
   if (!isMember) {
     // ── Join candidate ──
-    candidates.push(buildCacheEntry(FACTION_JOIN_TEMPLATE, locationId, {
-      sublocationId: guildHallId,
-      sublocationTypeId: 'sublocation-type.guild-hall',
-      visibleTo: [`not_faction:${factionDefId}`],
-      requiresPresence: true,
-      questPriority: FACTION_JOIN_TEMPLATE.questPriority ?? 6.0,
-      successRewardEstimate: 0.05,
-    }));
+    // Use per-faction joinEncounterTemplateId if defined; fall back to ag.join default
+    const joinTemplateId = definition.joinEncounterTemplateId;
+    const joinTemplate = joinTemplateId ? getFactionEncounterById(joinTemplateId) : FACTION_JOIN_TEMPLATE;
+    if (joinTemplate) {
+      candidates.push(buildCacheEntry(joinTemplate, locationId, {
+        sublocationId: guildHallId,
+        sublocationTypeId: 'sublocation-type.guild-hall',
+        visibleTo: [`not_faction:${factionDefId}`],
+        requiresPresence: true,
+        questPriority: joinTemplate.questPriority ?? 6.0,
+        successRewardEstimate: 0.05,
+      }));
+    }
   } else {
     // ── Promotion candidate (members only) ──
     const edge = memberEdges[0];
@@ -206,22 +216,42 @@ export function generateFactionLifecycleCandidates(
     const reputation = props.reputation ?? 0;
     const currentRank = computeRankFromReputation(reputation, definition);
 
+    // Use per-faction promotionEncounterTemplateId if defined; fall back to ag.promotion default
+    const promoTemplateId = definition.promotionEncounterTemplateId;
+    const promoTemplate = promoTemplateId ? getFactionEncounterById(promoTemplateId) : FACTION_PROMOTION_TEMPLATE;
+
     // Find next rank tier
     const currentTierIndex = definition.rankTiers.indexOf(currentRank);
-    if (currentTierIndex >= 0 && currentTierIndex < definition.rankTiers.length - 1) {
+    if (currentTierIndex >= 0 && currentTierIndex < definition.rankTiers.length - 1 && promoTemplate) {
       const nextTier = definition.rankTiers[currentTierIndex + 1];
       const gap = nextTier.minReputation - reputation;
 
       // Only offer promotion if within partial-success margin of next threshold
       if (gap <= PROMOTION_PARTIAL_SUCCESS_MARGIN) {
-        candidates.push(buildCacheEntry(FACTION_PROMOTION_TEMPLATE, locationId, {
+        candidates.push(buildCacheEntry(promoTemplate, locationId, {
           sublocationId: guildHallId,
           sublocationTypeId: 'sublocation-type.guild-hall',
           visibleTo: [`faction:${edge.target}`],
           requiresPresence: true,
-          questPriority: FACTION_PROMOTION_TEMPLATE.questPriority ?? 7.0,
+          questPriority: promoTemplate.questPriority ?? 7.0,
           successRewardEstimate: 0.05,
         }));
+      }
+
+      // Auto-inject promotion at elevated priority when promotionPending flag is set
+      const promotionPending = props.promotionPending as boolean | undefined;
+      if (promotionPending) {
+        const alreadyAdded = candidates.some(c => c.templateId === promoTemplate.id);
+        if (!alreadyAdded) {
+          candidates.push(buildCacheEntry(promoTemplate, locationId, {
+            sublocationId: guildHallId,
+            sublocationTypeId: 'sublocation-type.faction-hall',
+            visibleTo: [`faction:${edge.target}`],
+            requiresPresence: true,
+            questPriority: 9.0, // Elevated priority for auto-triggered promotion
+            successRewardEstimate: 0.05,
+          }));
+        }
       }
     }
   }
