@@ -305,13 +305,14 @@ Plans:
 
 ### Phase 18: Wire mercenary company seeding and encounters into the runtime pipeline
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Connect the already-authored mercenary company definition and encounter templates to the live runtime pipeline: seed 2 opposing companies at maximum-distance settlements, fix the encounter template search to include mc.* templates, fix the factionDefId/factionDefinitionId property key mismatch, wire rank-gated encounter filtering, add promotion auto-triggering on rank threshold crossings, and spawn 1 army per company at seeding time with placeholder commanders.
+**Requirements**: MERC-01 (two-company seeding with distance constraint), MERC-02 (static resource_acquisition ambition per company), MERC-03 (army spawn per company at seed time), MERC-04 (factionDefId key mismatch fix), MERC-05 (flesh reach cleanup in merc definition), MERC-06 (mc.* template access in getAccessibleTemplates), MERC-07 (guild hall sublocation detection fix), MERC-08 (promotion auto-trigger on rank change), MERC-09 (mc pipeline integration tests)
 **Depends on:** Phase 17
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 18 to break down)
+- [ ] 18-01-PLAN.md — Two-company seeding with distance constraint, static ambitions, army spawning, factionDefId fix
+- [ ] 18-02-PLAN.md — Encounter pipeline fixes (mc.* template access, sublocation detection, promotion injection) + tests
 
 ---
 
