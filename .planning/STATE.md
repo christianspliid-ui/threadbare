@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase M2.5 context gathered
-last_updated: "2026-03-30T10:00:28.405Z"
+stopped_at: Completed m2.5-monster-encounters/m2.5-01-PLAN.md
+last_updated: "2026-03-30T11:52:54.010Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 5
@@ -175,6 +175,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-conflict-destruction P12-07 | 45 | 9 tasks | 8 files |
 | Phase 12.1-ui-review-fixes P01 | 8 | 2 tasks | 2 files |
 | Phase 12.1-ui-review-fixes P02 | 194 | 2 tasks | 2 files |
+| Phase m2.5-monster-encounters P01 | 6 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -307,6 +308,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12.1-ui-review-fixes]: useMemo deps include gameState.tick so army/battle data updates every tick; adapters placed adjacent to roadPaths memo
 - [Phase 12.1-ui-review-fixes]: Destruction Log uses locationSubtype === 'ruins' filter — battleAftermath.ts only sets ruins subtype, no destroyedTick/destroyedBy properties
 - [Phase 12.1-ui-review-fixes]: ArmiesTabContent army/battle card containers use Tailwind classes (p-2, rounded, mb-1.5, text-[11px]) — FIELD_BATTLE_COLOR replaces hardcoded #f87171
+- [Phase m2.5-monster-encounters]: Lair nodes use location graph node type with locationSubtype='lair' — no new node type needed
+- [Phase m2.5-monster-encounters]: provinceRoles added to WorldGenResult in hexGrid.ts so lairSeeding can access danger zone data
+- [Phase m2.5-monster-encounters]: dominantSphere derived from terrain via seedHexSphereAffinity at seeding time, not from graph
 
 ### Pending Todos
 
@@ -318,6 +322,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:00:28.403Z
-Stopped at: Phase M2.5 context gathered
-Resume file: .planning/phases/m2.5-monster-encounters/m2.5-CONTEXT.md
+Last session: 2026-03-30T11:52:54.007Z
+Stopped at: Completed m2.5-monster-encounters/m2.5-01-PLAN.md
+Resume file: None
