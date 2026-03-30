@@ -30,28 +30,21 @@ Fixed — CLI `printDoom()` now uses correct `currentTick`/`totalTicks` fields. 
 
 ---
 
-## 🏗️ TB-086 · Mutation Observability — `worldVersion` / `structuralCacheVersion` + Touch API (2026-03-31)
+## ✅ TB-086 · Mutation Observability — `worldVersion` / `structuralCacheVersion` + Touch API (2026-03-31)
 
-Add `worldVersion` and `structuralCacheVersion` counters with exported `touchWorld()` / `touchStructure()` functions. Wire touch calls into orchestrator phases that mutate graph state (`phaseSettlementPromotion`, `phaseSublocations`, `phaseMovement`, `phaseAgentDecision`, `phaseEncounterProgressionV2`, `phaseIdleBehavior`, revelation/visibility) and UI hooks that write properties (`useAgentInteraction`). Fix `useMemo` deps in `GameView.tsx` and `useHexZoomData.ts` to key off versions instead of graph identity. Add contract tests.
-
-**Why now:** Stale-memo bug — player sees world behind reality after settlement promotion or sublocation spawning.
+Fixed — `SimulationRuntime` with `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, 9 contract tests. See commit `ae428c8`.
 
 ---
 
-## 🏗️ TB-087 · Per-Session SimulationRuntime — Move Caches Out of Module Scope (2026-03-31)
+## ✅ TB-087 · Per-Session SimulationRuntime — Move Caches Out of Module Scope (2026-03-31)
 
-Create lightweight `SimulationRuntime` holding `encounterCache`, `distanceMatrix`, version counters, and lazy rebuild logic. `useSimulation` owns the runtime, passes into `runTick`. Remove module-global caches from `orchestrator.ts`.
-
-**Why now:** Module-global caches persist across game sessions without full page reload — session-bleed bug.
-**Depends on:** TB-086 (do together)
+Fixed — `SimulationRuntime` owned by `useSimulation`, caches rebuild lazily from `structuralCacheVersion`. Legacy fallback for tests. See commit `ae428c8`.
 
 ---
 
-## 🏗️ TB-088 · Distance Matrix — Remove Silent Truncation (2026-03-31)
+## ✅ TB-088 · Distance Matrix — Remove Silent Truncation (2026-03-31)
 
-Replace hard cap `MAX_DISTANCE_MATRIX_SIZE = 500` with proportional cap or hybrid approach. `large` (584 locations) and `epic` (805) already exceed the cap. Systems relying on distance lookups silently get no data for a chunk of the world.
-
-**Why now:** Quiet correctness issue affecting large/epic map presets.
+Fixed — `MAX_DISTANCE_MATRIX_SIZE` raised from 500 to 1200, dev-mode warning on cap. See commit `ae428c8`.
 
 ---
 

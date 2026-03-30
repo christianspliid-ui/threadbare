@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-086/087/088 Mutation observability, per-session SimulationRuntime, distance matrix cap raised 500→1200 (2026-03-31)
 - ✅ TB-085 CLI doom clock stale field refs + encounter liveness test timeout (2026-03-30)
 - ✅ TB-084 Graph Schema Gaps — `constructed_by` added to EdgeType/EDGE_SCHEMA, `starter_ashenmane_fang` fixed to `artifact_legendary` (2026-03-30)
 - ✅ TB-081 Hex Action Remaining Effects — 8 actions wired via dynamic GraphOp generators, 23 tests (2026-03-30)

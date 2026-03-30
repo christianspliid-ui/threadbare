@@ -1,6 +1,6 @@
 # Project Status
 
-> Updated 2026-03-30.
+> Updated 2026-03-31.
 
 ## Current Focus
 
@@ -13,6 +13,10 @@
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **Next:** Culture seeding (TB-031), Agent seeding (TB-032), Chain reactions (TB-017), NPCs (TB-069)
+
+## Recent Completions (2026-03-31)
+
+- TB-086/087/088: Mutation observability (`SimulationRuntime` with version counters, `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, per-session cache ownership, distance matrix cap raised 500→1200). 9 contract tests.
 
 ## Recent Completions (2026-03-30)
 
