@@ -13,8 +13,8 @@
 
 ### Wiring
 
-- [ ] **WIRE-01**: Notification hex click triggers camera pan/zoom via animateCameraTo (onFocusHex in GameView.tsx)
-- [ ] **WIRE-02**: Avatar position resolved and passed into targetActions context (useTargetActions.ts TODO)
+- [x] **WIRE-01**: Notification hex click triggers camera pan/zoom via animateCameraTo (onFocusHex in GameView.tsx)
+- [x] **WIRE-02**: Avatar position resolved and passed into targetActions context (useTargetActions.ts TODO)
 - [ ] **WIRE-03**: Actor ID extracted from TickEvent and included in trace/chronicle entries (orchestrator.ts event processing)
 
 ### Performance
@@ -58,8 +58,8 @@
 | DTRM-01 | Phase 19 | Complete (2026-03-30) |
 | DTRM-02 | Phase 19 | Complete (2026-03-30) |
 | DTRM-03 | Phase 19 | Complete |
-| WIRE-01 | Phase 20 | Pending |
-| WIRE-02 | Phase 20 | Pending |
+| WIRE-01 | Phase 20 | Complete |
+| WIRE-02 | Phase 20 | Complete |
 | WIRE-03 | Phase 20 | Pending |
 | PERF-01 | Phase 21 | Pending |
 | PERF-02 | Phase 21 | Pending |
