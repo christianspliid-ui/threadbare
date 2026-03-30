@@ -224,6 +224,7 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | M1.1–M1.5 | Universal Sphere Affinity (all phases) | ✅ Design complete — rewritten 2026-03-28 with per-entity architecture (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
 | Phase 11 | Agent Character Sheet Overhaul | ✅ Design complete (`Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`) |
 | M2.1–M2.4 | Conflict & Destruction (unified) | ✅ Design complete — `Docs/plans/2026-03-29-conflict-and-destruction-design.md`. Covers army entities, battle/siege resolution, destruction/aftermath, UI/visibility. M2.5 (monsters) still needs separate brainstorm |
+| M2.5 | Monster Encounters Integration | ✅ Design complete — context, research, UI-SPEC, validation all in `.planning/phases/m2.5-monster-encounters/` |
 | M3.1–M3.2 | Economy feedback loops | Brainstormed (TB-071), needs design doc |
 | M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
 | M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
@@ -250,3 +251,16 @@ Not calendar estimates — relative sizing:
 Plans:
 - [ ] 12.1-01-PLAN.md — Wire army/battle data into GameView + HexV2View
 - [ ] 12.1-02-PLAN.md — Conflict event colors + ArmiesTab Tailwind refactor + destruction log
+
+### Phase M2.5: Monster Encounters Integration
+
+**Goal:** Integrate monster encounters as a first-class faction system layered onto the Phase 12 conflict infrastructure. Monster factions with armies, lair escalation with sphere feedback, danger gradient from province roles, and full divine targeting of monster entities.
+**Requirements:** M25-TYPES, M25-LAIR-MODEL, M25-LAIR-SEED, M25-DANGER-GRADIENT, M25-MONSTER-FACTIONS, M25-ESCALATION, M25-SPHERE-FEEDBACK, M25-TIER-UPGRADE, M25-REINFESTATION, M25-MONSTER-FACTION-SPAWN, M25-ENCOUNTER-TEMPLATES, M25-ARMY-ATTRITION, M25-BATTLE-REUSE, M25-CLEARING, M25-LAIR-ICON, M25-HEX-SIDEBAR, M25-FACTION-FILTER, M25-DIVINE-TARGET
+**Depends on:** Phase 12, Phase 12.1
+**Plans:** 4 plans
+
+Plans:
+- [ ] m2.5-01-PLAN.md — Monster types, lair graph model, faction definitions, worldgen lair seeding
+- [ ] m2.5-02-PLAN.md — Lair escalation orchestrator phase, sphere feedback, monster faction creation
+- [ ] m2.5-03-PLAN.md — Monster encounter templates, army attrition in monster territory
+- [ ] m2.5-04-PLAN.md — Lair icons on hex map, HexSidebar lair details, ArmiesTab monster faction filter
