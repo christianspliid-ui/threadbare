@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-03-30T13:29:14.783Z"
+stopped_at: Completed 17-04-PLAN.md
+last_updated: "2026-03-30T13:44:50.596Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 6
@@ -184,6 +184,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 18 P02 | 25 | 2 tasks | 5 files |
 | Phase 17 P02 | 35 | 2 tasks | 3 files |
 | Phase 17 P03 | 10 | 3 tasks | 5 files |
+| Phase 17 P04 | 12 | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -334,6 +335,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 17]: ActionTemplateData extended with spellName/description; migrateActionTemplate passes them through to UnifiedActionTemplate
 - [Phase 17]: ActionCard hand layout is art-only (sphere gradient, name overlay); focused layout is MTG frame (spell name, art placeholder, type line, description, flavor, stats)
 - [Phase 17]: target_action audio plays synchronously in click handler; onPushToast callback pattern used instead of notifications field on GameState
+- [Phase 17]: PARTICLE_BURST layer = 6.060 between ARMIES and BATTLE_INDICATORS — fits visually above army layer below battle UI
+- [Phase 17]: onPushToast + actionToasts wired in GameView completing deferred 17-03 wiring; actionToasts state defined before useAgentInteraction hook (React ordering constraint)
 
 ### Pending Todos
 
@@ -345,6 +348,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T13:29:14.780Z
-Stopped at: Completed 17-03-PLAN.md
+Last session: 2026-03-30T13:44:50.594Z
+Stopped at: Completed 17-04-PLAN.md
 Resume file: None
