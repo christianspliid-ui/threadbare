@@ -66,7 +66,10 @@
   2. The previously-skipped determinism integration test passes without modification to its assertions
   3. No Math.random() call exists in resolution.ts, meetingEncounter.ts, orchestrator.ts, phaseMandate.ts, phaseDoom.ts, phaseControlEffects.ts, or interventionEffects.ts
   4. Event IDs are tick-local sequence numbers, not wall-clock timestamps — two runs produce the same IDs
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 19-01-PLAN.md — Replace Math.random() and Date.now() in 15 engine files with seeded PRNG and tick-local IDs
+- [ ] 19-02-PLAN.md — Un-skip and extend determinism integration test to verify 100-tick byte-identical output
 
 ### Phase 20: Wiring
 **Goal**: Three previously stubbed engine→UI connections are live — clicking a notification pans the camera, avatar position feeds action targeting, and actor IDs appear in traces
@@ -107,7 +110,7 @@
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
-| 19. Determinism | v1.1 | 0/TBD | Not started | - |
+| 19. Determinism | v1.1 | 0/2 | Planned | - |
 | 20. Wiring | v1.1 | 0/TBD | Not started | - |
 | 21. Performance | v1.1 | 0/TBD | Not started | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
