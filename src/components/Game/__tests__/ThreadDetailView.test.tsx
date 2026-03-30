@@ -1,0 +1,280 @@
+// @vitest-environment jsdom
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ThreadDetailView } from '../ThreadDetailView';
+import type { ThreadedAgent, ThreadedLocation, ThreadedFaction, ThreadedArmy, ThreadedArtifact } from '../../../engine/retinue';
+import type { AgentInfoCardData } from '../../../engine/agentDetail';
+
+// ─── Test fixtures ─────────────────────────────────────────────────────────────
+
+const makeAgent = (overrides?: Partial<ThreadedAgent>): ThreadedAgent => ({
+  id: 'agent-1',
+  name: 'Seraphel',
+  tier: 2,
+  tierName: 'Acolyte',
+  category: 'agent',
+  threadEdgeId: 'e1',
+  attentionMode: 'auto_resolve',
+  courtPosition: 'retinue',
+  locationId: 'loc-1',
+  locationName: 'Thornwall',
+  activityLabel: 'Recruiting',
+  portraitUrl: null,
+  primaryDomain: 'iron',
+  factionName: 'Iron Legion',
+  ...overrides,
+});
+
+const makeLocation = (overrides?: Partial<ThreadedLocation>): ThreadedLocation => ({
+  id: 'loc-1',
+  name: 'Thornwall',
+  tier: 1,
+  tierName: 'Touched',
+  category: 'location',
+  threadEdgeId: 'e2',
+  attentionMode: 'auto_resolve',
+  courtPosition: null,
+  hexCol: 5,
+  hexRow: 3,
+  prosperityLabel: 'Stable',
+  controllingFaction: 'Iron Legion',
+  ...overrides,
+});
+
+const makeFaction = (overrides?: Partial<ThreadedFaction>): ThreadedFaction => ({
+  id: 'faction-1',
+  name: 'Iron Legion',
+  tier: 3,
+  tierName: 'Champion',
+  category: 'faction',
+  threadEdgeId: 'e3',
+  attentionMode: 'auto_resolve',
+  courtPosition: null,
+  dominantSphere: 'force',
+  territoryCount: 12,
+  memberCount: 48,
+  ...overrides,
+});
+
+const makeArmy = (overrides?: Partial<ThreadedArmy>): ThreadedArmy => ({
+  id: 'army-1',
+  name: 'Iron Vanguard',
+  tier: 2,
+  tierName: 'Acolyte',
+  category: 'army',
+  threadEdgeId: 'e4',
+  attentionMode: 'auto_resolve',
+  courtPosition: null,
+  size: 500,
+  objective: 'Patrol the northern border',
+  factionName: 'Iron Legion',
+  locationName: 'Thornwall',
+  ...overrides,
+});
+
+const makeArtifact = (overrides?: Partial<ThreadedArtifact>): ThreadedArtifact => ({
+  id: 'artifact-1',
+  name: 'Blade of Ruin',
+  tier: 4,
+  tierName: 'Devoted',
+  category: 'artifact',
+  threadEdgeId: 'e5',
+  attentionMode: 'auto_resolve',
+  courtPosition: null,
+  bearerName: 'Seraphel',
+  locationName: null,
+  ...overrides,
+});
+
+const makeAgentInfoCard = (): AgentInfoCardData => ({
+  id: 'agent-1',
+  name: 'Seraphel',
+  locationId: 'loc-1',
+  locationName: 'Thornwall',
+  knowledgeLevel: 'known',
+  primarySphere: 'force',
+  quintessence: 'Vibrant',
+  domains: [
+    { domain: 'iron', word: 'Warrior' },
+    { domain: 'gold', word: 'Merchant' },
+  ],
+  topValues: [],
+  topBonds: [],
+  quotes: [],
+  allTraits: [],
+  activeEffects: [],
+  archetypeLabel: null,
+  archetypeId: null,
+  factionName: 'Iron Legion',
+  cultureName: null,
+  primaryIntentSummary: null,
+  cooperationStrategy: null,
+  reputationWord: null,
+  backstoryParagraph1: null,
+  backstory: null,
+} as AgentInfoCardData);
+
+const noop = vi.fn();
+
+// ─── Tests ─────────────────────────────────────────────────────────────────────
+
+describe('ThreadDetailView', () => {
+  it('renders agent detail with domain capabilities grid when agentInfoCard is provided', () => {
+    const card = makeAgentInfoCard();
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={card}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    // Should show domain names from the card
+    expect(screen.getByText(/Iron:/i)).toBeInTheDocument();
+    expect(screen.getByText(/Gold:/i)).toBeInTheDocument();
+  });
+
+  it('renders agent detail with basic fields when agentInfoCard is null', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        agentInfoCard={null}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText('Seraphel')).toBeInTheDocument();
+    // Should show activity label in fallback path
+    expect(screen.getByText('Recruiting')).toBeInTheDocument();
+  });
+
+  it('renders location detail with prosperity label and controlling faction', () => {
+    render(
+      <ThreadDetailView
+        node={makeLocation()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText('Thornwall')).toBeInTheDocument();
+    expect(screen.getByText('Stable')).toBeInTheDocument();
+    expect(screen.getByText('Iron Legion')).toBeInTheDocument();
+  });
+
+  it('renders faction detail with sphere alignment as FIRST field when dominantSphere is non-null', () => {
+    render(
+      <ThreadDetailView
+        node={makeFaction()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText('Iron Legion')).toBeInTheDocument();
+    // Sphere should appear — check for 'force' text
+    expect(screen.getByText('force')).toBeInTheDocument();
+    // Territory and members should also be present
+    expect(screen.getByText(/12 hexes/i)).toBeInTheDocument();
+    expect(screen.getByText(/48 members/i)).toBeInTheDocument();
+  });
+
+  it('renders faction detail without sphere line when dominantSphere is null', () => {
+    render(
+      <ThreadDetailView
+        node={makeFaction({ dominantSphere: null })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    // Should not find a sphere dot indicator — sphere label not shown
+    expect(screen.queryByText('force')).not.toBeInTheDocument();
+    // But members should still show
+    expect(screen.getByText(/48 members/i)).toBeInTheDocument();
+  });
+
+  it('renders army detail with strength and objective', () => {
+    render(
+      <ThreadDetailView
+        node={makeArmy()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText(/500 strong/i)).toBeInTheDocument();
+    expect(screen.getByText('Patrol the northern border')).toBeInTheDocument();
+  });
+
+  it('renders artifact detail with bearer name', () => {
+    render(
+      <ThreadDetailView
+        node={makeArtifact()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText(/Carried by Seraphel/i)).toBeInTheDocument();
+  });
+
+  it('renders artifact detail with "(location unknown)" when no bearer and no location', () => {
+    render(
+      <ThreadDetailView
+        node={makeArtifact({ bearerName: null, locationName: null })}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    expect(screen.getByText(/\(location unknown\)/i)).toBeInTheDocument();
+  });
+
+  it('close button calls onClose', () => {
+    const onClose = vi.fn();
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        onClose={onClose}
+        onViewProfile={noop}
+      />
+    );
+    fireEvent.click(screen.getByRole('button', { name: /close detail/i }));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('"View Full Profile" link calls onViewProfile with correct nodeId and category', () => {
+    const onViewProfile = vi.fn();
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        onClose={noop}
+        onViewProfile={onViewProfile}
+      />
+    );
+    fireEvent.click(screen.getByText(/View Full Profile/i));
+    expect(onViewProfile).toHaveBeenCalledWith('agent-1', 'agent');
+  });
+
+  it('scroll context isolation: detail view wrapper has overflow-y auto', () => {
+    const { container } = render(
+      <div data-testid="thread-detail-scroll" style={{ overflowY: 'auto' }}>
+        <ThreadDetailView
+          node={makeAgent()}
+          onClose={noop}
+          onViewProfile={noop}
+        />
+      </div>
+    );
+    const scrollWrapper = container.querySelector('[data-testid="thread-detail-scroll"]') as HTMLElement;
+    expect(scrollWrapper).toBeInTheDocument();
+    expect(scrollWrapper.style.overflowY).toBe('auto');
+  });
+
+  it('shows "Agent" category badge for agent nodes', () => {
+    render(
+      <ThreadDetailView
+        node={makeAgent()}
+        onClose={noop}
+        onViewProfile={noop}
+      />
+    );
+    // Category label in small caps — "Agent"
+    expect(screen.getByText('Agent')).toBeInTheDocument();
+  });
+});
