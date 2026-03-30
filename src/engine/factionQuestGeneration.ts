@@ -226,8 +226,20 @@ export function generateFactionLifecycleCandidates(
       const nextTier = definition.rankTiers[currentTierIndex + 1];
       const gap = nextTier.minReputation - reputation;
 
-      // Only offer promotion if within partial-success margin of next threshold
-      if (gap <= PROMOTION_PARTIAL_SUCCESS_MARGIN) {
+      // When promotionPending flag is set, always inject at elevated priority 9.0 —
+      // this takes precedence over the standard partial-success-margin promotion.
+      const promotionPending = props.promotionPending as boolean | undefined;
+      if (promotionPending) {
+        candidates.push(buildCacheEntry(promoTemplate, locationId, {
+          sublocationId: guildHallId,
+          sublocationTypeId: 'sublocation-type.faction-hall',
+          visibleTo: [`faction:${edge.target}`],
+          requiresPresence: true,
+          questPriority: 9.0, // Elevated priority for auto-triggered promotion
+          successRewardEstimate: 0.05,
+        }));
+      } else if (gap <= PROMOTION_PARTIAL_SUCCESS_MARGIN) {
+        // Offer promotion when close to next rank threshold (standard path)
         candidates.push(buildCacheEntry(promoTemplate, locationId, {
           sublocationId: guildHallId,
           sublocationTypeId: 'sublocation-type.guild-hall',
@@ -236,22 +248,6 @@ export function generateFactionLifecycleCandidates(
           questPriority: promoTemplate.questPriority ?? 7.0,
           successRewardEstimate: 0.05,
         }));
-      }
-
-      // Auto-inject promotion at elevated priority when promotionPending flag is set
-      const promotionPending = props.promotionPending as boolean | undefined;
-      if (promotionPending) {
-        const alreadyAdded = candidates.some(c => c.templateId === promoTemplate.id);
-        if (!alreadyAdded) {
-          candidates.push(buildCacheEntry(promoTemplate, locationId, {
-            sublocationId: guildHallId,
-            sublocationTypeId: 'sublocation-type.faction-hall',
-            visibleTo: [`faction:${edge.target}`],
-            requiresPresence: true,
-            questPriority: 9.0, // Elevated priority for auto-triggered promotion
-            successRewardEstimate: 0.05,
-          }));
-        }
       }
     }
   }
