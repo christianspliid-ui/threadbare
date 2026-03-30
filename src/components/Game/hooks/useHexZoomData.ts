@@ -21,6 +21,8 @@ export interface UseHexZoomDataParams {
   focusedLocationId: string | null;
   tiles: HexTile[];
   fogDisabled?: boolean;
+  /** TB-086: Version counter for change detection (graph is mutated in place). */
+  worldVersion?: number;
 }
 
 export interface UseHexZoomDataReturn {
@@ -48,11 +50,16 @@ export function useHexZoomData({
   focusedLocationId,
   tiles,
   fogDisabled,
+  worldVersion = 0,
 }: UseHexZoomDataParams): UseHexZoomDataReturn {
+  // TB-086: All memos depend on worldVersion instead of graph identity.
+  // The graph object never changes (mutated in place), so identity-based
+  // deps would never trigger recomputation after mid-tick mutations.
+
   const hexLocations = useMemo(() => {
     if (!focusedHex) return [];
     return getLocationsInHex(graph, focusedHex.col, focusedHex.row);
-  }, [graph, focusedHex]);
+  }, [graph, focusedHex, worldVersion]);
 
   const hexAgentsByLocation = useMemo(() => {
     const map: Record<string, ReturnType<typeof getAgentsAtLocation>> = {};
@@ -60,22 +67,22 @@ export function useHexZoomData({
       map[loc.id] = getAgentsAtLocation(graph, loc.id);
     }
     return map;
-  }, [graph, hexLocations]);
+  }, [graph, hexLocations, worldVersion]);
 
   const hexConnections = useMemo(() => {
     return getLocationConnections(graph, hexLocations.map(l => l.id));
-  }, [graph, hexLocations]);
+  }, [graph, hexLocations, worldVersion]);
 
   const hexSphereInfluence = useMemo(() => {
     if (!focusedHex) return null;
     return getHexSphereInfluence(graph, focusedHex.col, focusedHex.row);
-  }, [graph, focusedHex]);
+  }, [graph, focusedHex, worldVersion]);
 
   const hexLineOfSight = useMemo(() => {
     if (fogDisabled) return 'full' as const;
     if (!focusedHex) return 'none' as const;
     return getLineOfSight(graph, ascendantId, focusedHex);
-  }, [graph, ascendantId, focusedHex, fogDisabled]);
+  }, [graph, ascendantId, focusedHex, fogDisabled, worldVersion]);
 
   const hexTotalAgents = useMemo(() => {
     return Object.values(hexAgentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
@@ -84,22 +91,22 @@ export function useHexZoomData({
   const hexCultures = useMemo(() => {
     if (!focusedHex) return [];
     return getHexCultures(graph, focusedHex.col, focusedHex.row);
-  }, [graph, focusedHex]);
+  }, [graph, focusedHex, worldVersion]);
 
   const hexFactions = useMemo(() => {
     if (!focusedHex) return [];
     return getHexFactions(graph, focusedHex.col, focusedHex.row);
-  }, [graph, focusedHex]);
+  }, [graph, focusedHex, worldVersion]);
 
   const focusedLocation = useMemo(() => {
     if (!focusedLocationId) return null;
     return graph.getNode(focusedLocationId) ?? null;
-  }, [graph, focusedLocationId]);
+  }, [graph, focusedLocationId, worldVersion]);
 
   const focusedLocationAgents = useMemo(() => {
     if (!focusedLocationId) return [];
     return getAgentsAtLocation(graph, focusedLocationId);
-  }, [graph, focusedLocationId]);
+  }, [graph, focusedLocationId, worldVersion]);
 
   const regionId = useMemo(() => {
     if (!focusedHex) return undefined;
@@ -110,7 +117,7 @@ export function useHexZoomData({
   const hexRegionData = useMemo(() => {
     if (!regionId || !graph) return null;
     return getHexRegionData(graph, regionId);
-  }, [graph, regionId]);
+  }, [graph, regionId, worldVersion]);
 
   return {
     hexLocations,

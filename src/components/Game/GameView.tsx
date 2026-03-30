@@ -121,6 +121,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     gameState, setGameState, tiles, riverPaths, lakeIds, regionData,
     running, speed, harvestResult, doTick, handleBeginNextCycle,
     handleToggleRunning, setRunning, setSpeed, seasonName, year, maxEssence, COLS, ROWS,
+    runtime,
   } = useSimulation({ archetype, avatarName, cosmology, seed, scryState, mapSize });
 
   // O(1) tile lookup by hex coordinate (tiles array is stable — created once at init)
@@ -242,6 +243,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     onParticleBurst: (hexCol, hexRow, sphereColor) => {
       hexMapRef.current?.spawnParticleBurst(hexCol, hexRow, sphereColor);
     },
+    runtime,
   });
 
   // Cache selected retinue agent lookup (used in ActionDrawer props)
@@ -264,8 +266,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [fogDisabled, gameState.visibilityMap]);
 
   // ── Shared actor + faction lookups (single graph traversal per tick) ──
-  const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, gameState.tick]);
-  const factionNodes = useMemo(() => gameState.graph.getNodesByType('faction'), [gameState.graph]);
+  // TB-086: Key off runtime.worldVersion, not graph identity (graph is mutated in place)
+  const actors = useMemo(() => gameState.graph.getNodesByType('actor'), [gameState.graph, runtime.worldVersion]);
+  const factionNodes = useMemo(() => gameState.graph.getNodesByType('faction'), [gameState.graph, runtime.worldVersion]);
 
   // ── Agent render data adapter (graph → AgentRenderData[]) ──
   const agentRenderData = useMemo<AgentRenderData[]>(() => {
@@ -318,9 +321,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       });
     }
     return result;
-  }, [actors, gameState.graph, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
+  }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
+  // TB-086: Key off worldVersion — locationSubtype changes from settlement promotion
+  // must trigger re-render. Graph identity never changes (mutated in place).
   const locationNodes = useMemo<LocationNode[]>(() => {
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
@@ -332,9 +337,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         name: n.name,
         isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
       }));
-  }, [gameState.graph]);
+  }, [gameState.graph, runtime.worldVersion]);
 
-  const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
+  const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph, runtime.structuralCacheVersion]);
 
   // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
   // Single pass over actors for army + battle + siege data (was 3 separate getNodesByType calls)
@@ -564,6 +569,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     focusedLocationId,
     tiles,
     fogDisabled,
+    worldVersion: runtime.worldVersion,
   });
 
   // ── Location encounter data (available + active) ──
@@ -597,7 +603,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // RC-002: Extracted to avoid inline arrow in render
   const getAgentName = useCallback(
     (id: string) => gameState.graph.getNode(id)?.name ?? 'Unknown',
-    [gameState.graph],
+    [gameState.graph, runtime.worldVersion],
   );
 
   // IX-002: Wrapped scry click with cross-hook overlay mutual exclusion

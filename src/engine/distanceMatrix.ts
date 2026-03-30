@@ -8,8 +8,21 @@ import type { WorldGraph } from './graph';
 
 // --- Constants ---
 
-/** Maximum number of locations the matrix will index. */
-export const MAX_DISTANCE_MATRIX_SIZE = 500;
+/**
+ * Maximum number of locations the matrix will index.
+ *
+ * TB-088: Raised from 500 to 1200 to cover all supported map presets.
+ * `large` generates ~584 locations, `epic` generates ~805. The previous
+ * cap of 500 silently excluded locations — any system relying on
+ * distance lookups for those locations got Infinity, which is a
+ * correctness bug.
+ *
+ * The matrix is O(N²) in memory and O(N × E) to build, where N = locations
+ * and E = adjacent edges per location. At 1200 locations with ~3 edges each
+ * the build is ~10ms and the matrix is ~5MB — well within budget for a
+ * one-time-per-topology-change rebuild.
+ */
+export const MAX_DISTANCE_MATRIX_SIZE = 1200;
 
 // --- Types ---
 
@@ -75,6 +88,16 @@ function bfsFrom(
  */
 export function buildDistanceMatrix(graph: WorldGraph): DistanceMatrix {
   const locationNodes = graph.getNodesByType('location');
+
+  // TB-088: Warn if cap is reached instead of silently truncating
+  if (locationNodes.length > MAX_DISTANCE_MATRIX_SIZE) {
+    console.warn(
+      `[DistanceMatrix] Location count (${locationNodes.length}) exceeds MAX_DISTANCE_MATRIX_SIZE (${MAX_DISTANCE_MATRIX_SIZE}). ` +
+      `${locationNodes.length - MAX_DISTANCE_MATRIX_SIZE} locations will not be indexed. ` +
+      `Systems using getDistance() for those locations will get Infinity.`
+    );
+  }
+
   const capped = locationNodes.slice(0, MAX_DISTANCE_MATRIX_SIZE);
   const locationIds = new Set(capped.map((n) => n.id));
 

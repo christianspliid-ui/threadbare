@@ -112,22 +112,36 @@ import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
 import { createEncounterEventNode } from './encounterEventNode';
+import type { SimulationRuntime } from './simulationRuntime';
+import {
+  touchWorld,
+  touchStructure,
+  ensureEncounterCache,
+  ensureDistanceMatrix,
+} from './simulationRuntime';
 
-// ─── Decision Cache (lazy-initialized) ────────────────────────────
+// ─── Legacy Decision Cache (backward-compat shim for tests) ───────
+//
+// TB-087: Caches now live in SimulationRuntime (per-session, owned by useSimulation).
+// These module-level pointers exist only so tests that call resetDecisionCache()
+// and getEncounterCacheManager() keep working. Runtime code uses the runtime object.
 
-let encounterCache: EncounterCacheManager | null = null;
-let distanceMatrix: DistanceMatrix | null = null;
+let legacyEncounterCache: EncounterCacheManager | null = null;
+let legacyDistanceMatrix: DistanceMatrix | null = null;
+let legacyRuntime: SimulationRuntime | null = null;
 
-/** Reset the encounter cache, distance matrix, and timeline (useful for game restart). */
+/** Reset the encounter cache, distance matrix, and timeline (useful for game restart / tests). */
 export function resetDecisionCache(): void {
-  encounterCache = null;
-  distanceMatrix = null;
+  legacyEncounterCache = null;
+  legacyDistanceMatrix = null;
+  legacyRuntime = null;
   clearTimelines();
 }
 
 /** Read-only access to the current encounter cache (for debug tooling). */
 export function getEncounterCacheManager(): EncounterCacheManager | null {
-  return encounterCache;
+  // Prefer runtime-owned cache, fall back to legacy pointer
+  return legacyRuntime?.encounterCache ?? legacyEncounterCache;
 }
 
 // ─── State Cleanup Constants ──────────────────────────────────────
@@ -1009,7 +1023,7 @@ export function phaseDoomExpiry(state: GameState): Partial<GameState> {
 
 // ─── Master Tick ──────────────────────────────────────────────────
 
-export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = []): GameState {
+export function runTick(state: GameState, scryTargets: import('../types').HexCoord[] = [], runtime?: SimulationRuntime): GameState {
   try {
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [], prosperityShocks: [] };
@@ -1021,14 +1035,26 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Must happen before any phase runs so all IDs use fresh sequences for this tick.
   resetEventCounters();
 
-  // Lazy-init encounter cache and distance matrix
-  if (!encounterCache) {
-    encounterCache = new EncounterCacheManager();
-    const dangerMap = buildDangerMap(s.tiles);
-    encounterCache.buildFullCache(s.graph, s.tick, dangerMap);
-  }
-  if (!distanceMatrix) {
-    distanceMatrix = buildDistanceMatrix(s.graph);
+  // TB-087: Use runtime-owned caches when available, fall back to legacy module globals for tests
+  let activeEncounterCache: EncounterCacheManager;
+  let activeDistanceMatrix: DistanceMatrix;
+  if (runtime) {
+    activeEncounterCache = ensureEncounterCache(runtime, s.graph, s.tick, s.tiles);
+    activeDistanceMatrix = ensureDistanceMatrix(runtime, s.graph);
+    // Keep legacy pointer in sync for getEncounterCacheManager()
+    legacyRuntime = runtime;
+  } else {
+    // Legacy path: module-global caches (tests that don't pass a runtime)
+    if (!legacyEncounterCache) {
+      legacyEncounterCache = new EncounterCacheManager();
+      const dangerMap = buildDangerMap(s.tiles);
+      legacyEncounterCache.buildFullCache(s.graph, s.tick, dangerMap);
+    }
+    if (!legacyDistanceMatrix) {
+      legacyDistanceMatrix = buildDistanceMatrix(s.graph);
+    }
+    activeEncounterCache = legacyEncounterCache;
+    activeDistanceMatrix = legacyDistanceMatrix;
   }
 
   // Advance clock
@@ -1086,7 +1112,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
-  s = { ...s, ...phaseAgentDecision(s, encounterCache!, distanceMatrix!, decisionRng) };
+  s = { ...s, ...phaseAgentDecision(s, activeEncounterCache, activeDistanceMatrix, decisionRng) };
   const decisionEvents = s.tickEvents.length - prevEventCount;
   phaseEventCounts['agent_decision'] = decisionEvents;
   agentsProcessed += decisionEvents;
@@ -1231,8 +1257,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)
+  const prePromoEventCount = s.tickEvents.length;
   s = { ...s, ...phaseSettlementPromotion(s) };
-  phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prevEventCount;
+  phaseEventCounts['settlement_tier_change'] = s.tickEvents.length - prePromoEventCount;
+  // TB-086: locationSubtype changes affect encounter scoring via getLocationType() fallback
+  if (runtime && s.tickEvents.length > prePromoEventCount) touchStructure(runtime);
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.636: Hex State (divine influence + corruption decay, terrain transformation)
@@ -1266,8 +1295,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.65: Gold Sublocations (conditional spawn/dissolve based on prosperity and wealth)
-  s = { ...s, ...phaseSublocations(s, encounterCache) };
+  s = { ...s, ...phaseSublocations(s, activeEncounterCache) };
   phaseEventCounts['sublocations'] = s.tickEvents.length - prevEventCount;
+  // TB-086: sublocation spawn/dissolve adds/removes nodes and edges
+  if (runtime && s.tickEvents.length > prevEventCount) touchStructure(runtime);
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.66: Economic Chronicle (generate chronicle entries for economic state changes)
@@ -1296,6 +1327,10 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 8: Doom Expiry
   s = { ...s, ...phaseDoomExpiry(s) };
   phaseEventCounts['doom_expiry'] = s.tickEvents.length - prevEventCount;
+
+  // TB-086: Bump worldVersion at end of tick — catches all property mutations
+  // from agent decision, movement, encounters, familiarity, etc.
+  if (runtime) touchWorld(runtime);
 
   // Recalculate visibility
   const losSources = collectLOSSources(s.graph, s.ascendantId, scryTargets);

@@ -172,7 +172,8 @@ describe('distanceMatrix', () => {
   });
 
   it('MAX_DISTANCE_MATRIX_SIZE caps the number of indexed locations', () => {
-    expect(MAX_DISTANCE_MATRIX_SIZE).toBe(500);
+    // TB-088: Raised from 500 to 1200 to cover large/epic map presets
+    expect(MAX_DISTANCE_MATRIX_SIZE).toBe(1200);
   });
 
   it('diamond graph computes shortest paths', () => {

@@ -8,6 +8,8 @@ import type { RegionData } from '../../../engine/regionTypes';
 import { initializeGameState, MAP_SIZE_PRESETS, DEFAULT_MAP_SIZE } from '../../../engine/gameInit';
 import type { MapSizePreset } from '../../../engine/gameInit';
 import { runTick, resetEventCounter } from '../../../engine/orchestrator';
+import { createSimulationRuntime, resetRuntimeCaches } from '../../../engine/simulationRuntime';
+import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import {
   startTwilight,
   runTwilightTick,
@@ -56,6 +58,9 @@ export function useSimulation({
   const [speed, setSpeed] = useState(1);
   const [harvestResult, setHarvestResult] = useState<HarvestResult | null>(null);
 
+  // TB-087: Per-session runtime owns caches and version counters
+  const runtimeRef = useRef<SimulationRuntime>(createSimulationRuntime());
+
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const scryStateRef = useRef(scryState);
   scryStateRef.current = scryState;
@@ -71,7 +76,7 @@ export function useSimulation({
     const prev = gameStateRef.current;
     if (prev.phase === 'playing') {
       const targets = getScryTargetHexes(scryStateRef.current, prev.graph);
-      const next = runTick(prev, targets);
+      const next = runTick(prev, targets, runtimeRef.current);
       setGameState(next);
     } else if (prev.phase === 'twilight') {
       const result = runTwilightTick(prev);
@@ -115,6 +120,8 @@ export function useSimulation({
     setGameState({ ...nextState, phase: 'playing' });
     setHarvestResult(null);
     resetEventCounter();
+    // TB-087: Reset runtime caches for new cycle (versions persist)
+    resetRuntimeCaches(runtimeRef.current);
   }, [harvestResult]);
 
   // Toggle running
@@ -127,7 +134,8 @@ export function useSimulation({
   const year = Math.floor(gameState.tick / 120) + 1;
   const maxEssence = useMemo(
     () => computeMaxEssence(gameState.graph, gameState.ascendantId),
-    [gameState.graph, gameState.ascendantId],
+    // TB-086: Key off worldVersion, not graph identity (graph is mutated in place)
+    [gameState.graph, gameState.ascendantId, runtimeRef.current.worldVersion],
   );
 
   return {
@@ -150,5 +158,7 @@ export function useSimulation({
     maxEssence,
     COLS,
     ROWS,
+    /** TB-086: Per-session runtime with version counters for change detection */
+    runtime: runtimeRef.current,
   };
 }

@@ -19,6 +19,8 @@ import { templateIdFromSlotId } from '../../../engine/targetActions';
 import { appendEvent } from '../../../engine/encounterTimeline';
 import { mulberry32 } from '../../../lib/prng';
 import type { ToastItem } from '../../../types/notification';
+import type { SimulationRuntime } from '../../../engine/simulationRuntime';
+import { touchWorld } from '../../../engine/simulationRuntime';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -46,6 +48,8 @@ interface UseAgentInteractionParams {
    * Called after target_action dispatch (after the glow delay) at the target agent's hex.
    */
   onParticleBurst?: (hexCol: number, hexRow: number, sphereColor: string) => void;
+  /** TB-086: Per-session runtime for mutation observability */
+  runtime?: SimulationRuntime;
 }
 
 export function useAgentInteraction({
@@ -56,6 +60,7 @@ export function useAgentInteraction({
   scryState,
   onPushToast,
   onParticleBurst,
+  runtime,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -579,6 +584,8 @@ export function useAgentInteraction({
           gameState.graph.updateEdge(threadEdge.id, {
             properties: { ...threadEdge.properties, readBackstoryTier: tier },
           });
+          // TB-086: Non-tick graph mutation — must participate in version system
+          if (runtime) touchWorld(runtime);
           // Trigger re-render so isNew badges clear on next agentInfoCard recompute
           setGameState(s => ({ ...s }));
         }
