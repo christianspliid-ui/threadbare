@@ -51,7 +51,7 @@
 ### Phases
 
 - [x] **Phase 19: Determinism** — Replace all unseeded Math.random/Date.now with seeded PRNG and verify with integration test (completed 2026-03-30)
-- [ ] **Phase 20: Wiring** — Connect three stubbed engine→UI paths (hex focus, avatar position, actor attribution)
+- [x] **Phase 20: Wiring** — Connect three stubbed engine→UI paths (hex focus, avatar position, actor attribution) (completed 2026-03-30)
 - [ ] **Phase 21: Performance** — Cache prose resolver output, tune encounter cache threshold, code-split large data files
 - [ ] **Phase 22: Code Hygiene** — Extract DebugPanel sub-components, audit lodash, extend targetActions filtering
 
@@ -79,7 +79,7 @@ Plans:
   1. Clicking a notification that references a hex causes the camera to animate to that hex (pan + zoom)
   2. The avatar's current hex position is available in the targetActions context so positional action filtering works
   3. Chronicle and trace entries for tick events include the actor ID of the originating agent
-**Plans:** 1/2 plans executed
+**Plans:** 2/2 plans complete
 Plans:
 - [ ] 20-01-PLAN.md — Verify WIRE-01 camera animation chain and WIRE-02 avatar position chain
 - [ ] 20-02-PLAN.md — Add actorId to engine TickEvents and make NarrativeLog entries clickable
@@ -114,7 +114,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
 | 19. Determinism | 2/2 | Complete    | 2026-03-30 | - |
-| 20. Wiring | 1/2 | In Progress|  | - |
+| 20. Wiring | 2/2 | Complete   | 2026-03-30 | - |
 | 21. Performance | v1.1 | 0/TBD | Not started | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
 

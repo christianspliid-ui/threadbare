@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Low-Hanging Fruit Optimization
 status: executing
-stopped_at: Completed 20-wiring 20-01-PLAN.md
-last_updated: "2026-03-30T21:16:36.782Z"
+stopped_at: "Phase 20 Plan 02 complete: WIRE-03 actorId attribution + NarrativeLog click-to-select"
+last_updated: "2026-03-30T21:20:36.002Z"
 last_activity: "2026-03-30 — Plan 01 complete: Math.random() + Date.now() replaced with seeded RNG + tick-local IDs"
 progress:
   total_phases: 4
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 4
-  completed_plans: 3
+  completed_plans: 4
   percent: 10
 ---
 
@@ -49,6 +49,8 @@ Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 - [Phase 19]: Test structure must be sequential (not interleaved) with resetDecisionCache() between runs — interleaved runs share the encounterCache singleton
 - [Phase 19]: resetEventCounters() is the canonical per-tick reset location; lifecycle/unifiedAction counters excluded (they generate persistent graph node IDs)
 - [Phase 20-wiring]: Both WIRE-01 and WIRE-02 chains were already fully wired — tests confirm correctness with no source changes
+- [Phase 20-wiring]: dilemma_resolved uses event.actorId ?? actor.id — prefers propagated actorId from source event, falls back to name-matched actor
+- [Phase 20-wiring]: NarrativeLog renders actor-attributed entries as button elements vs div — structural distinction for keyboard accessibility
 
 ### Pending Todos
 
@@ -62,6 +64,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T21:16:36.780Z
-Stopped at: Completed 20-wiring 20-01-PLAN.md
+Last session: 2026-03-30T21:20:36.000Z
+Stopped at: Phase 20 Plan 02 complete: WIRE-03 actorId attribution + NarrativeLog click-to-select
 Resume file: None
