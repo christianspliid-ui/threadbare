@@ -79,7 +79,10 @@ Plans:
   1. Clicking a notification that references a hex causes the camera to animate to that hex (pan + zoom)
   2. The avatar's current hex position is available in the targetActions context so positional action filtering works
   3. Chronicle and trace entries for tick events include the actor ID of the originating agent
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 20-01-PLAN.md — Verify WIRE-01 camera animation chain and WIRE-02 avatar position chain
+- [ ] 20-02-PLAN.md — Add actorId to engine TickEvents and make NarrativeLog entries clickable
 
 ### Phase 21: Performance
 **Goal**: Initial bundle load is faster, prose descriptions stop re-computing on every panel open, and the encounter cache rebuild threshold is documented and tuned
@@ -111,7 +114,7 @@ Plans:
 |-------|-----------|----------------|--------|-----------|
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
 | 19. Determinism | 2/2 | Complete    | 2026-03-30 | - |
-| 20. Wiring | v1.1 | 0/TBD | Not started | - |
+| 20. Wiring | v1.1 | 0/2 | Planned | - |
 | 21. Performance | v1.1 | 0/TBD | Not started | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
 
