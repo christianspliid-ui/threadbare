@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12.1-ui-review-fixes/12.1-02-PLAN.md
-last_updated: "2026-03-30T09:09:49.321Z"
+stopped_at: Phase M2.5 context gathered
+last_updated: "2026-03-30T10:00:28.405Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 5
@@ -318,6 +318,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:05:07.813Z
-Stopped at: Completed 12.1-ui-review-fixes/12.1-02-PLAN.md
-Resume file: None
+Last session: 2026-03-30T10:00:28.403Z
+Stopped at: Phase M2.5 context gathered
+Resume file: .planning/phases/m2.5-monster-encounters/m2.5-CONTEXT.md
