@@ -97,7 +97,7 @@ export function spawnControlEffect(
     id: 0,
     category: 'control_effect',
     tick,
-    timestamp: Date.now(),
+    timestamp: tick,
     summary: `${template.name} established on hex (${coords.col},${coords.row})`,
     type: 'control_effect_established',
     effectId,

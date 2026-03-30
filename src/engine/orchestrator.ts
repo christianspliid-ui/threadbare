@@ -81,17 +81,19 @@ import { phaseSpherePressure } from './phaseSpherePressure';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
-import { phaseControlEffects } from './phaseControlEffects';
+import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
-import { phaseDoom } from './phaseDoom';
+import { phaseDoom, resetDoomCounter } from './phaseDoom';
 export { phaseDoom } from './phaseDoom';
-import { phaseMandate } from './phaseMandate';
+import { phaseMandate, resetMandateCounter } from './phaseMandate';
 export { phaseMandate } from './phaseMandate';
+import { resetInfluenceCounter } from './interventionEffects';
+import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
-import { EncounterCacheManager } from './encounterCache';
+import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
@@ -157,6 +159,19 @@ function nextEventId(): string {
 // Reset for testing
 export function resetEventCounter(): void {
   eventCounter = 0;
+}
+
+/**
+ * Reset all per-tick module event counters.
+ * Called at the start of each tick to ensure deterministic ID sequences.
+ * NFP #3: Determinism — same seed + same tick must produce identical IDs across runs.
+ */
+function resetEventCounters(): void {
+  resetMandateCounter();
+  resetDoomCounter();
+  resetControlEffectsCounter();
+  resetInfluenceCounter();
+  resetMeetingCounter();
 }
 
 // ─── Phase 1: Advance Doom Clock ──────────────────────────────────
@@ -975,10 +990,15 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Start with clean tick events
   let s: GameState = { ...state, tick: state.tick + 1, tickEvents: [], prosperityShocks: [] };
 
+  // Reset per-tick event counters for deterministic ID generation (NFP #3).
+  // Must happen before any phase runs so all IDs use fresh sequences for this tick.
+  resetEventCounters();
+
   // Lazy-init encounter cache and distance matrix
   if (!encounterCache) {
     encounterCache = new EncounterCacheManager();
-    encounterCache.buildFullCache(s.graph);
+    const dangerMap = buildDangerMap(s.tiles);
+    encounterCache.buildFullCache(s.graph, s.tick, dangerMap);
   }
   if (!distanceMatrix) {
     distanceMatrix = buildDistanceMatrix(s.graph);
@@ -1325,7 +1345,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     appendCrashLog({
       type: 'health_check_failed',
       tick: s.tick,
-      timestamp: Date.now(),
+      timestamp: s.tick,
       findings: report.findings,
     });
     emitTrace({
@@ -1345,7 +1365,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
       tick: state.tick,
       error: err instanceof Error ? err.message : String(err),
       stack: err instanceof Error ? err.stack : undefined,
-      timestamp: Date.now(),
+      timestamp: state.tick,
     };
     appendCrashLog(entry);
     emitTrace({

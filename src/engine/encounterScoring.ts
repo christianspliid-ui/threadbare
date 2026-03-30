@@ -637,7 +637,7 @@ function buildTrace(
   return {
     id: 0,
     tick,
-    timestamp: Date.now(),
+    timestamp: tick,
     category: 'encounter_scoring',
     agentId,
     topCandidates: top5.map((c) => ({

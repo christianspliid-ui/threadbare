@@ -49,8 +49,12 @@ export const CLAIM_RESOURCE_INCOME_MULTIPLIER = 1.0;
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 let nextEventCounter = 0;
-function nextEventId(): string {
-  return `ctrl_evt_${Date.now()}_${nextEventCounter++}`;
+/** Reset per-tick control effects event counter. Called by orchestrator.resetEventCounters() at tick start. */
+export function resetControlEffectsCounter(): void {
+  nextEventCounter = 0;
+}
+function nextEventId(tick: number): string {
+  return `ctrl_evt_${tick}_${nextEventCounter++}`;
 }
 
 /**
@@ -128,7 +132,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         lapseReason: 'voluntarily_released',
       });
       newEvents.push({
-        id: nextEventId(),
+        id: nextEventId(state.tick),
         tick: state.tick,
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,
@@ -163,7 +167,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
         } as any);
 
         newEvents.push({
-          id: nextEventId(),
+          id: nextEventId(state.tick),
           tick: state.tick,
           type: 'control_effect_lapsed',
           message: effect.narrativeTemplates.lapsed,
@@ -305,7 +309,7 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
       } as any);
 
       newEvents.push({
-        id: nextEventId(),
+        id: nextEventId(state.tick),
         tick: state.tick,
         type: 'control_effect_lapsed',
         message: effect.narrativeTemplates.lapsed,

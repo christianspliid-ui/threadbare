@@ -28,8 +28,12 @@ import { evaluateMandate, advanceMandateStage } from './mandate';
 // ─── Helpers ──────────────────────────────────────────────────────
 
 let eventCounter = 0;
-function nextEventId(): string {
-  return `mandate_evt_${Date.now()}_${eventCounter++}`;
+/** Reset per-tick mandate event counter. Called by orchestrator.resetEventCounters() at tick start. */
+export function resetMandateCounter(): void {
+  eventCounter = 0;
+}
+function nextEventId(tick: number): string {
+  return `mandate_evt_${tick}_${eventCounter++}`;
 }
 
 // ─── Phase function ───────────────────────────────────────────────
@@ -89,7 +93,7 @@ export function phaseMandate(state: GameState): Partial<GameState> {
   // Emit visible narrative event only when mandate is fully fulfilled
   if (advanced.completed && !state.mandateState.completed) {
     events.push({
-      id: nextEventId(),
+      id: nextEventId(state.tick),
       tick: state.tick,
       type: 'mandate_progress',
       message: `Victory! Mandate "${state.mandateDefinition.name}" fulfilled!`,

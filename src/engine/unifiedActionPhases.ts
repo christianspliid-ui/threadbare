@@ -132,7 +132,7 @@ export function phaseIdleSelection(
               id: 0,
               category: 'action_execution',
               tick: state.tick,
-              timestamp: Date.now(),
+              timestamp: state.tick,
               summary: `${actor.name} begins ${template.name}`,
               agentId: actor.id,
               templateId: template.id,

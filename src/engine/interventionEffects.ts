@@ -136,9 +136,12 @@ export function buildValueOverlay(
 // ─── Unique ID Generator ────────────────────────────────────────
 
 let influenceIdCounter = 0;
-
-function generateInfluenceId(): string {
-  return `di_${Date.now()}_${influenceIdCounter++}`;
+/** Reset per-tick influence ID counter. Called by orchestrator.resetEventCounters() at tick start. */
+export function resetInfluenceCounter(): void {
+  influenceIdCounter = 0;
+}
+function generateInfluenceId(tick: number): string {
+  return `di_${tick}_${influenceIdCounter++}`;
 }
 
 // ─── Value Direction Label (for consequence messages) ────────────
@@ -412,7 +415,7 @@ function handleDream(
   }
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'dream',
     sphere,
     tickApplied: tick,
@@ -490,7 +493,7 @@ function handlePersuade(
   }
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'persuade',
     sphere,
     tickApplied: tick,
@@ -567,11 +570,11 @@ function handleDeceive(
     effectsSummary.push(`${pair} drift toward ${dir}`);
   }
 
-  const traitId = `trait.deceived.${generateInfluenceId()}`;
+  const traitId = `trait.deceived.${generateInfluenceId(tick)}`;
   effectsSummary.push('Deceived condition applied');
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'deceive',
     sphere,
     tickApplied: tick,
@@ -640,7 +643,7 @@ function handleIntimidate(
   effectsSummary.push(`strategy override: ${strategyOverride}`);
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'intimidate',
     sphere,
     tickApplied: tick,
@@ -699,12 +702,12 @@ function handleInspire(
   const decayParams = DECAY_CONSTANTS.inspire_intervention;
 
   const domain = getDomainLabel(seed);
-  const traitId = `trait.inspired.${generateInfluenceId()}`;
+  const traitId = `trait.inspired.${generateInfluenceId(tick)}`;
   effectsSummary.push(`personality boost: +${boost}`);
   effectsSummary.push(`inspired trait (${domain})`);
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'inspire_intervention',
     sphere,
     tickApplied: tick,
@@ -776,7 +779,7 @@ function handleCoincidence(
 
   // Add minimal divine influence record for actor (for logging)
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'coincidence',
     sphere,
     tickApplied: tick,
@@ -838,7 +841,7 @@ function handleOmen(
   effectsSummary.push(`mercy ← ruthlessness mood drift (omen)`);
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'omen',
     sphere,
     tickApplied: tick,
@@ -899,12 +902,12 @@ function handleAfflictBless(
   const effectType = isBless ? 'Blessed' : 'Afflicted';
   const effectDirection = isBless ? 'strengthened' : 'diminished';
   const domain = getDomainLabel(seed);
-  const traitId = `trait.${isBless ? 'blessed' : 'afflicted'}.${generateInfluenceId()}`;
+  const traitId = `trait.${isBless ? 'blessed' : 'afflicted'}.${generateInfluenceId(tick)}`;
 
   effectsSummary.push(`${effectType} (${domain})`);
 
   const influence: DivineInfluenceEntry = {
-    id: generateInfluenceId(),
+    id: generateInfluenceId(tick),
     interventionType: 'afflict_bless',
     sphere,
     tickApplied: tick,

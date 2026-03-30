@@ -202,7 +202,7 @@ export function executeStepResult(
     id: 0,
     category: 'action_execution',
     tick,
-    timestamp: Date.now(),
+    timestamp: tick,
     summary: `${template.name} step ${action.currentStep} ${outcome}`,
     agentId: action.actorId,
     templateId: action.templateId,

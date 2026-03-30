@@ -24,8 +24,12 @@ import { advanceDoomClock } from './doomClock';
 // ─── Helpers ──────────────────────────────────────────────────────
 
 let eventCounter = 0;
-function nextEventId(): string {
-  return `doom_evt_${Date.now()}_${eventCounter++}`;
+/** Reset per-tick doom event counter. Called by orchestrator.resetEventCounters() at tick start. */
+export function resetDoomCounter(): void {
+  eventCounter = 0;
+}
+function nextEventId(tick: number): string {
+  return `doom_evt_${tick}_${eventCounter++}`;
 }
 
 // ─── Phase function ───────────────────────────────────────────────
@@ -40,7 +44,7 @@ export function phaseDoom(state: GameState): Partial<GameState> {
   if (newStage > oldStage) {
     const stageName = state.doomDefinition.stages[newStage - 1]?.name ?? `Stage ${newStage}`;
     events.push({
-      id: nextEventId(),
+      id: nextEventId(state.tick),
       tick: state.tick,
       type: 'doom_escalation',
       message: `The ${state.doomDefinition.archetype} intensifies — ${stageName}`,

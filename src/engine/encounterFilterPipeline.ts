@@ -435,7 +435,7 @@ function buildTrace(
   return {
     id: 0,
     tick,
-    timestamp: Date.now(),
+    timestamp: tick,
     category: 'encounter_filter',
     agentId,
     cacheSize,
