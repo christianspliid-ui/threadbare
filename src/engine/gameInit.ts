@@ -32,6 +32,7 @@ import {
   seedLocationSphereAffinity,
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
+import { seedMonsterLairs } from './lairSeeding';
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -171,6 +172,11 @@ export function initializeGameState(
       graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity } });
     }
   }
+
+  // ── Seed monster lairs based on danger gradient ─────────────────────────────
+  // Placed after sphere affinity seeding so lairSeeding can read affinity if needed.
+  // Placed before loc.start so lairs don't conflict with the starting shrine.
+  seedMonsterLairs(graph, worldGenResult.provinceRoles, tiles, seed, cols);
 
   // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {
