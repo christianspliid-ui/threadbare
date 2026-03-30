@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { TickEvent } from '../../../types/gameState';
-import type { NotificationState, PopupItem, NotificationPreferences } from '../../../types/notification';
+import type { NotificationState, PopupItem, NotificationPreferences, ToastItem } from '../../../types/notification';
 import type { VisibilityMap } from '../../../types/visibility';
 import { routeNotifications } from '../../../engine/notificationRouter';
 import { filterEventsByVisibility } from '../../../engine/notificationVisibilityFilter';
@@ -48,6 +48,8 @@ export interface UseNotificationsReturn {
   handleDismissAlert: (id: string) => void;
   handleDismissPopup: () => void;
   handlePopupChoice: (effect: string) => void;
+  /** Push a toast directly (bypasses tick event routing — for immediate player feedback). */
+  pushToast: (toast: ToastItem) => void;
 }
 
 export function useNotifications({
@@ -103,6 +105,10 @@ export function useNotifications({
     setState(prev => dismissToast(prev, id));
   }, []);
 
+  const pushToast = useCallback((toast: ToastItem) => {
+    setState(prev => ({ ...prev, toasts: [...prev.toasts, toast] }));
+  }, []);
+
   const handleDismissAlert = useCallback((id: string) => {
     setState(prev => dismissAlert(prev, id));
   }, []);
@@ -133,5 +139,6 @@ export function useNotifications({
     handleDismissAlert,
     handleDismissPopup,
     handlePopupChoice,
+    pushToast,
   };
 }

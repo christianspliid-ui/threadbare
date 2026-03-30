@@ -5,7 +5,7 @@ import { ENCOUNTER_ABANDON_COOLDOWN, ENCOUNTER_COMPLETION_COOLDOWN } from '../..
 import { getAnyEncounterById } from '../../../data/encounter-content';
 import type { WorldGraph } from '../../../engine/graph';
 import { getTimeline, getTrackedAgentIds } from '../../../engine/encounterTimeline';
-import { formatEncounterLog, makeFilename } from '../../../engine/encounterLogExporter';
+import { formatEncounterLog, makeFilename, formatAllAgentsLog, makeAllAgentsFilename } from '../../../engine/encounterLogExporter';
 
 // ─── Styles ─────────────────────────────────────────────────────
 
@@ -171,6 +171,28 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
     URL.revokeObjectURL(url);
   }, [effectiveExportAgent, graph, seed]);
 
+  // Check if any agents have timeline data (recomputed each render — cheap call)
+  const hasTrackedAgents = getTrackedAgentIds().length > 0;
+
+  const handleExportAllLogs = useCallback(() => {
+    const trackedIds = getTrackedAgentIds();
+    if (trackedIds.length === 0) return;
+    const seedStr = seed != null ? String(seed) : 'unknown';
+    const agents = trackedIds.map(id => {
+      const node = graph?.getNode(id);
+      return { id, name: node?.name ?? id, timeline: getTimeline(id) };
+    });
+
+    const tsv = formatAllAgentsLog(agents, seedStr);
+    const blob = new Blob([tsv], { type: 'text/tab-separated-values' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = makeAllAgentsFilename(seedStr);
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [graph, seed]);
+
   // Map templateId → locationId for encounter progress lookups
   const templateToLocation = useMemo(() => {
     const map = new Map<string, string>();
@@ -217,7 +239,7 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
   return (
     <div data-testid="encounter-cache-view">
       {/* Export Controls */}
-      <div style={{ ...SECTION_STYLE, display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ ...SECTION_STYLE, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
         <label style={{ ...LABEL_STYLE, minWidth: 'auto', fontSize: '11px' }}>Export Log:</label>
         <select
           value={effectiveExportAgent ?? ''}
@@ -257,6 +279,26 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
           }}
         >
           Export TSV
+        </button>
+        <button
+          onClick={handleExportAllLogs}
+          disabled={!hasTrackedAgents}
+          title="Export all tracked agents' encounter timelines as a single TSV"
+          style={{
+            background: hasTrackedAgents ? 'var(--accent-gold)' : 'var(--bg-deep)',
+            color: hasTrackedAgents ? 'var(--bg-deep)' : 'var(--text-muted)',
+            border: '1px solid var(--border-subtle)',
+            borderRadius: '3px',
+            padding: '3px 10px',
+            fontSize: '11px',
+            fontFamily: 'monospace',
+            fontWeight: 600,
+            cursor: hasTrackedAgents ? 'pointer' : 'not-allowed',
+            opacity: hasTrackedAgents ? 1 : 0.5,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Export All
         </button>
       </div>
 

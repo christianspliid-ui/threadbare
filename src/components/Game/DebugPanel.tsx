@@ -997,7 +997,7 @@ function JourneyDebugContent({
 
 // ─── Armies Debug Tab (TB-073) ──────────────────────────────────────────
 
-function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentTick: number }) {
+function ArmiesTabContent({ graph, currentTick, onZoomToLocation }: { graph?: WorldGraph; currentTick: number; onZoomToLocation?: (locationId: string) => void }) {
   if (!graph) {
     return <div style={EMPTY_STATE_STYLE}>No graph available.</div>;
   }
@@ -1068,7 +1068,16 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Location:</span>
-                  <span style={DETAIL_VALUE_STYLE}>{location?.name ?? '—'}</span>
+                  <span style={{ ...DETAIL_VALUE_STYLE, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    {location?.name ?? '—'}
+                    {onZoomToLocation && location && (
+                      <button
+                        onClick={() => onZoomToLocation(location.id)}
+                        title={`Zoom to ${location.name}`}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                      >&#x1F441;</button>
+                    )}
+                  </span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Active:</span>
@@ -1247,7 +1256,7 @@ function SphereStateTabContent({ aggregate }: { aggregate?: SphereAggregate }) {
 
 // ─── Faction Debug Tab ──────────────────────────────────────────────
 
-function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
+function FactionDebugContent({ graph, onZoomToLocation }: { graph?: WorldGraph; onZoomToLocation?: (locationId: string) => void }) {
   if (!graph) return <div style={EMPTY_STATE_STYLE}>No graph loaded.</div>;
 
   const factionData = useMemo(() => {
@@ -1255,38 +1264,68 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
       defId: string;
       name: string;
       factionNodeId: string;
-      members: Array<{ id: string; name: string; rank: string; reputation: number }>;
+      members: Array<{ id: string; name: string; rank: string; reputation: number; locationId: string | null; locationName: string | null }>;
+      armies: Array<{ id: string; name: string; locationId: string | null; locationName: string | null }>;
     }> = [];
 
     for (const [defId, def] of FACTION_DEFINITIONS) {
-      // Find faction node
+      // Find faction node(s) — multi-instance factions (e.g. mercenary companies) produce multiple nodes
       const factionNodes = graph.getNodesByType('actor')
         .filter(n => n.properties.factionDefId === defId);
       if (factionNodes.length === 0) continue;
 
-      const factionNode = factionNodes[0];
+      for (const factionNode of factionNodes) {
 
       // Find all member_of edges pointing to this faction
       const memberEdges = graph.getIncomingEdges(factionNode.id, 'member_of');
-      const members = memberEdges.map(edge => {
+      const members = memberEdges
+        .filter(edge => {
+          const node = graph.getNode(edge.source);
+          return node && !node.properties.armyState;
+        })
+        .map(edge => {
         const agentNode = graph.getNode(edge.source);
         const props = edge.properties as Partial<MemberOfEdgeProperties>;
         const rep = props.reputation ?? 0;
         const rank = computeRankFromReputation(rep, def);
+        const locEdges = graph.getOutgoingEdges(edge.source, 'located_at');
+        const locNode = locEdges[0] ? graph.getNode(locEdges[0].target) : null;
         return {
           id: edge.source,
           name: agentNode?.name ?? '?',
           rank: rank.name,
           reputation: rep,
+          locationId: locNode?.id ?? null,
+          locationName: locNode?.name ?? null,
         };
       }).sort((a, b) => b.reputation - a.reputation);
+
+      // Find armies belonging to this faction
+      const armyMembers = memberEdges
+        .filter(edge => {
+          const node = graph.getNode(edge.source);
+          return node && node.properties.armyState != null;
+        })
+        .map(edge => {
+          const armyNode = graph.getNode(edge.source)!;
+          const locEdges = graph.getOutgoingEdges(edge.source, 'located_at');
+          const locNode = locEdges[0] ? graph.getNode(locEdges[0].target) : null;
+          return {
+            id: armyNode.id,
+            name: armyNode.name,
+            locationId: locNode?.id ?? null,
+            locationName: locNode?.name ?? null,
+          };
+        });
 
       results.push({
         defId,
         name: factionNode.name,
         factionNodeId: factionNode.id,
         members,
+        armies: armyMembers,
       });
+      } // end for factionNode
     }
     return results;
   }, [graph]);
@@ -1298,7 +1337,7 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
   return (
     <div data-testid="factions-tab-content">
       {factionData.map(faction => (
-        <div key={faction.defId} style={{ marginBottom: '16px' }}>
+        <div key={faction.factionNodeId} style={{ marginBottom: '16px' }}>
           <div style={{ padding: '8px 12px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '8px' }}>
             <div style={{ fontWeight: 600, color: 'var(--accent-gold)', fontSize: '13px' }}>
               {faction.name}
@@ -1307,12 +1346,50 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
               {faction.members.length} member{faction.members.length !== 1 ? 's' : ''}
             </div>
           </div>
+          {/* Armies */}
+          {faction.armies.length > 0 && (
+            <div style={{ marginBottom: '8px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Armies</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {faction.armies.map(army => (
+                  <div
+                    key={army.id}
+                    style={{
+                      padding: '6px 12px',
+                      background: PANEL_STYLES.detailBg,
+                      border: `1px solid ${PANEL_STYLES.detailBorder}`,
+                      borderRadius: '4px',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-primary)' }}>{army.name}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ color: 'var(--text-tertiary)', fontSize: '10px' }}>{army.locationName ?? '—'}</span>
+                      {onZoomToLocation && army.locationId && (
+                        <button
+                          onClick={() => onZoomToLocation(army.locationId!)}
+                          title={`Zoom to ${army.locationName}`}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                        >&#x1F441;</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Members */}
           {faction.members.length === 0 ? (
             <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
               No members
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', padding: '2px 12px', fontWeight: 600 }}>Members</div>
               {faction.members.map(member => (
                 <div
                   key={member.id}
@@ -1332,6 +1409,18 @@ function FactionDebugContent({ graph }: { graph?: WorldGraph }) {
                     <span style={{ color: 'var(--text-tertiary)', marginLeft: '8px' }}>{member.rank}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    {member.locationName && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: '10px' }}>{member.locationName}</span>
+                        {onZoomToLocation && member.locationId && (
+                          <button
+                            onClick={() => onZoomToLocation(member.locationId!)}
+                            title={`Zoom to ${member.locationName}`}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: '12px', lineHeight: 1 }}
+                          >&#x1F441;</button>
+                        )}
+                      </div>
+                    )}
                     <div style={{ width: '60px', height: '4px', background: 'var(--border-subtle)', borderRadius: '2px', overflow: 'hidden' }}>
                       <div style={{ width: `${Math.round(member.reputation * 100)}%`, height: '100%', background: 'var(--accent-gold)', borderRadius: '2px' }} />
                     </div>
@@ -1618,7 +1707,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             seed={seed != null ? String(seed) : undefined}
           />
         ) : viewMode === 'factions' ? (
-          <FactionDebugContent graph={graph} />
+          <FactionDebugContent graph={graph} onZoomToLocation={onZoomToLocation} />
         ) : viewMode === 'spheres' ? (
           <SphereStateTabContent aggregate={sphereAggregate} />
         ) : viewMode === 'revelation-log' ? (
@@ -1632,7 +1721,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
             graph={graph}
           />
         ) : viewMode === 'armies' ? (
-          <ArmiesTabContent graph={graph} currentTick={currentTick} />
+          <ArmiesTabContent graph={graph} currentTick={currentTick} onZoomToLocation={onZoomToLocation} />
         ) : viewMode === 'social' ? (
           <SocialTabContent
             followAgentId={effectiveAgentId}

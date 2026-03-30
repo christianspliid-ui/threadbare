@@ -422,10 +422,15 @@ User specifies which system to audit (e.g., "audit encounters", "check the hex m
 
 ## Tracing Integration (Mode 1 and 3)
 
-If the game is running in dev mode, `window.__DEBUG` exposes engine trace access:
+If the game is running in dev mode, `window.__DEBUG` exposes engine trace access and debug panel control:
 
 ```javascript
-// In Playwright browser_evaluate:
+// Open the debug panel programmatically (also enables tracing):
+window.__DEBUG.openDebugPanel();
+window.__DEBUG.closeDebugPanel();
+window.__DEBUG.toggleDebugPanel();
+
+// Direct trace access:
 await window.__DEBUG.enableTracing();
 // ... advance ticks ...
 const traces = await window.__DEBUG.getTraces();
@@ -437,7 +442,7 @@ const traces = await window.__DEBUG.getTraces();
 - Follow specific agents through their decision pipeline
 - Detect zero-activity anomalies (no traces for a category = system might be broken)
 
-**Fallback (no bridge):** Click the Debug button via Playwright to enable tracing visually, then read trace entries from the Debug Panel DOM.
+**Preferred approach:** Use `window.__DEBUG.openDebugPanel()` to open the panel — this enables tracing automatically and exposes all debug tabs in the DOM for inspection.
 
 ---
 

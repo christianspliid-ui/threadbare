@@ -107,14 +107,23 @@ export function useAvatarData({
   // Debug panel state
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
 
-  const handleToggleDebug = useCallback(() => {
+  const handleToggleDebug = useCallback((forceOpen?: boolean) => {
     setDebugPanelOpen(prev => {
-      const next = !prev;
+      const next = forceOpen !== undefined ? forceOpen : !prev;
+      if (next === prev) return prev;
       if (next) enableTracing();
       else disableTracing();
       return next;
     });
   }, []);
+
+  // Register with debug bridge so console/Playwright can open the panel
+  useEffect(() => {
+    if (import.meta.env.DEV && window.__DEBUG) {
+      window.__DEBUG._registerDebugPanelToggle(handleToggleDebug);
+      return () => { window.__DEBUG?._registerDebugPanelToggle(() => {}); };
+    }
+  }, [handleToggleDebug]);
 
   // Backtick keyboard shortcut for debug panel
   useEffect(() => {

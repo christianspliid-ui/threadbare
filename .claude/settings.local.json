@@ -65,7 +65,14 @@
       "Bash(sed \"s/[: ]//g\")",
       "Bash(npx tsx -e \":*)",
       "Bash(sed -n '544,552p' C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/data/journey-content.ts)",
-      "Bash(sed -n '1057,1065p' C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/data/journey-content.ts)"
+      "Bash(sed -n '1057,1065p' C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/data/journey-content.ts)",
+      "Bash(echo \"tick 5:*)",
+      "Bash(npx tsx:*)",
+      "Bash(npm run:*)",
+      "Bash(echo \"tick 20:*)",
+      "Bash(echo \"tick 50:*)",
+      "Bash(grep -rn \"parentLocationId\" /c/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/engine/*.ts)",
+      "Bash(echo \"tick 30:*)"
     ]
   }
 }
