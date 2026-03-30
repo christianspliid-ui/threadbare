@@ -245,7 +245,7 @@ Not calendar estimates — relative sizing:
 **Goal:** Wire Phase 12 army/battle layers into GameView for map visibility, add conflict event colors to NarrativeLog, and refactor ArmiesTab to Tailwind with destruction log.
 **Requirements**: UI-REVIEW-P1, UI-REVIEW-P2, UI-REVIEW-P3
 **Depends on:** Phase 12
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 12.1-01-PLAN.md — Wire army/battle data into GameView + HexV2View
