@@ -4,12 +4,12 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Phase 16 UI-SPEC approved
-last_updated: "2026-03-30T11:20:00.555Z"
+last_updated: "2026-03-30T11:29:31.160Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 11
   completed_phases: 6
-  total_plans: 35
+  total_plans: 37
   completed_plans: 28
   percent: 93
 ---
