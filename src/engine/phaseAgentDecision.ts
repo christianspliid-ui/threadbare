@@ -37,7 +37,7 @@ import { findShortestPath } from './pathfinding';
 import { computeEdgeCost } from './movementCost';
 import { emitTrace } from './traceBuffer';
 import type { TraceEntry, IdleDecisionTrace } from '../types/trace';
-import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM } from '../data/agent-behavior-constants';
+import { IDLE_SCORE_THRESHOLD, COOLDOWN_FULL_POOL_SIZE, COOLDOWN_MINIMUM, MAX_COMPLETIONS_PER_TEMPLATE } from '../data/agent-behavior-constants';
 import { REROUTE_SCORE_MULTIPLIER, DECISION_REEVALUATION_TICKS } from '../data/movement-content';
 import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
@@ -359,13 +359,20 @@ export function phaseAgentDecision(
 
       // Filter out encounters on cooldown (abandoned/completed recently)
       // Pool size for dynamic cooldown = raw candidates after filter pipeline
-      const candidates = filterByCooldown(
+      const cooldownCandidates = filterByCooldown(
         rawCandidates,
         agentId,
         state.encounterProgress,
         state.tick,
         rawCandidates.length,
       );
+
+      // C.1: Max completions retirement — permanently exclude templates the agent has exhausted
+      const familiarityRecord = (actor.properties?.familiarityRecord as FamiliarityRecord | undefined) ?? { attemptCount: {} };
+      const candidates = cooldownCandidates.filter(c => {
+        const completions = familiarityRecord.attemptCount[c.templateId] ?? 0;
+        return completions < MAX_COMPLETIONS_PER_TEMPLATE;
+      });
 
       // Score and select
       const decision = scoreAndSelect(
