@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 14 context gathered
-last_updated: "2026-03-30T09:34:26.230Z"
+stopped_at: Completed 14-pause-game-automatically-while-an-encounter-modal-is-open/14-01-PLAN.md
+last_updated: "2026-03-30T09:56:51.995Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 7
-  completed_phases: 3
-  total_plans: 26
-  completed_plans: 19
+  total_phases: 8
+  completed_phases: 4
+  total_plans: 31
+  completed_plans: 20
   percent: 93
 ---
 
@@ -19,6 +19,7 @@ progress:
 ### Roadmap Evolution
 - Phase 13 added: M2 Gap Closure — Aftermath, Army Visuals, Deferred Tests
 - Phase 14 added: Pause game automatically while an encounter modal is open
+- Phase 15 added: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
 
 ---
 gsd_state_version: 1.0
@@ -175,6 +176,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-flesh-reach-migration-to-quintessence P02 | 20 | 3 tasks | 5 files |
 | Phase 12-flesh-reach-migration-to-quintessence P03 | 8 | 2 tasks | 8 files |
 | Phase 12-flesh-reach-migration-to-quintessence P04 | 15 | 2 tasks | 7 files |
+| Phase 14-pause-game-automatically-while-an-encounter-modal-is-open P01 | 3 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -293,6 +295,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12-flesh-reach-migration-to-quintessence]: Encounter abandonment (not step failure) triggers quintessence erosion — only narratively diminishing outcomes erode existential health
 - [Phase 12-flesh-reach-migration-to-quintessence]: deriveArchetypeEpithet: strongest lean wins, ties by VALUE_PAIRS order, courage_prudence excluded, ARCHETYPE_THRESHOLD=0.6
 - [Phase 12-flesh-reach-migration-to-quintessence]: Quintessence IPK prose-only (no meter), agentDetail populates quintessence+axiologicalProfile at intimate+ level, knowledge gate uses axiologicalProfile presence
+- [Phase 14-01]: Used useRef (not useState) for wasRunningBeforeEncounterPause to avoid re-render churn on pre-modal state tracking
+- [Phase 14-01]: Removed courtPosition !== the_first filter from auto-interrupt effect so ALL encounter notifications auto-open their modal
 
 ### Roadmap Evolution
 
@@ -308,6 +312,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:34:26.228Z
-Stopped at: Phase 14 context gathered
-Resume file: .planning/phases/14-pause-game-automatically-while-an-encounter-modal-is-open/14-CONTEXT.md
+Last session: 2026-03-30T09:56:51.993Z
+Stopped at: Completed 14-pause-game-automatically-while-an-encounter-modal-is-open/14-01-PLAN.md
+Resume file: None
