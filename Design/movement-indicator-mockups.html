@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Avatar Movement Indicator Mockups</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1a;
+    color: #e0d8c8;
+    font-family: system-ui, -apple-system, sans-serif;
+    padding: 32px;
+  }
+  h1 {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8a8070;
+    margin-bottom: 32px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    max-width: 1200px;
+  }
+  .option {
+    background: #222;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 24px;
+  }
+  .option h2 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #c8b89a;
+    margin-bottom: 4px;
+  }
+  .option p {
+    font-size: 12px;
+    color: #6a6050;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 12px;
+    font-size: 11px;
+    color: #7a7060;
+  }
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Animations */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+  }
+  @keyframes dash-march {
+    to { stroke-dashoffset: -16; }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { opacity: 0.15; }
+    50% { opacity: 0.35; }
+  }
+  @keyframes dot-march {
+    to { stroke-dashoffset: -12; }
+  }
+  .pulse-ring {
+    animation: breathe 3s ease-in-out infinite;
+  }
+  .dash-ring {
+    animation: dash-march 1.5s linear infinite;
+  }
+  .glow-fill {
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+  .dot-path {
+    animation: dot-march 0.8s linear infinite;
+  }
+</style>
+</head>
+<body>
+
+<h1>Avatar Movement — Target Hex Indicator Options</h1>
+
+<div class="grid">
+
+  <!-- Option A: Dashed Outline -->
+  <div class="option">
+    <h2>A — Dashed Outline on Target</h2>
+    <p>Current hex = pulsing solid ring. Target hex = dashed ring (static color, no pulse). Clean contrast between "here" and "going there."</p>
+    <svg width="100%" viewBox="0 0 400 260">
+      <!-- Background hexes (terrain) -->
+      <g id="hex-bg-a">
+        <!-- Row 1 -->
+        <polygon points="80,30 110,15 140,30 140,60 110,75 80,60" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="140,30 170,15 200,30 200,60 170,75 140,60" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="200,30 230,15 260,30 260,60 230,75 200,60" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="260,30 290,15 320,30 320,60 290,75 260,60" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <!-- Row 2 (offset) -->
+        <polygon points="110,75 140,60 170,75 170,105 140,120 110,105" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="170,75 200,60 230,75 230,105 200,120 170,105" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="230,75 260,60 290,75 290,105 260,120 230,105" fill="#354535" stroke="#3a4a3a" stroke-width="1"/>
+        <!-- Row 3 -->
+        <polygon points="80,120 110,105 140,120 140,150 110,165 80,150" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="140,120 170,105 200,120 200,150 170,165 140,150" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="200,120 230,105 260,120 260,150 230,165 200,150" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="260,120 290,105 320,120 320,150 290,165 260,150" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <!-- Row 4 (offset) -->
+        <polygon points="110,165 140,150 170,165 170,195 140,210 110,195" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="170,165 200,150 230,165 230,195 200,210 170,195" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+        <polygon points="230,165 260,150 290,165 290,195 260,210 230,195" fill="#2a3a2a" stroke="#3a4a3a" stroke-width="1"/>
+      </g>
+
+      <!-- Current hex: pulsing solid ring (sphere color = warm gold) -->
+      <polygon points="140,120 170,105 200,120 200,150 170,165 140,150"
+        fill="none" stroke="#d4a853" stroke-width="3" class="pulse-ring"/>
+
+      <!-- Target hex: dashed outline -->
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="none" stroke="#d4a853" stroke-width="2.5"
+        stroke-dasharray="8,4" class="dash-ring"/>
+
+      <!-- Labels -->
+      <text x="170" y="200" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">CURRENT</text>
+      <text x="290" y="100" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">TARGET</text>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#d4a853"></span> Pulsing solid = current</span>
+      <span><span class="dot" style="border:1.5px dashed #d4a853"></span> Dashed = target</span>
+    </div>
+  </div>
+
+  <!-- Option B: Filled Translucent Overlay -->
+  <div class="option">
+    <h2>B — Translucent Fill on Target</h2>
+    <p>Target hex gets a soft color wash — reads as a waypoint/destination. Current hex keeps the pulsing ring.</p>
+    <svg width="100%" viewBox="0 0 400 260">
+      <use href="#hex-bg-a"/>
+
+      <!-- Current hex: pulsing solid ring -->
+      <polygon points="140,120 170,105 200,120 200,150 170,165 140,150"
+        fill="none" stroke="#d4a853" stroke-width="3" class="pulse-ring"/>
+
+      <!-- Target hex: translucent fill + thin border -->
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="#d4a853" opacity="0.2" class="glow-fill"/>
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="none" stroke="#d4a853" stroke-width="1.5" opacity="0.6"/>
+
+      <text x="170" y="200" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">CURRENT</text>
+      <text x="290" y="100" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">TARGET</text>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#d4a853"></span> Pulsing ring = current</span>
+      <span><span class="dot" style="background:#d4a85355"></span> Color wash = target</span>
+    </div>
+  </div>
+
+  <!-- Option C: Dotted Path Line -->
+  <div class="option">
+    <h2>C — Dotted Path Route</h2>
+    <p>A marching-dots path traces the planned route from current hex through intermediate hexes to the target. Shows the full journey.</p>
+    <svg width="100%" viewBox="0 0 400 260">
+      <use href="#hex-bg-a"/>
+
+      <!-- Current hex: pulsing solid ring -->
+      <polygon points="140,120 170,105 200,120 200,150 170,165 140,150"
+        fill="none" stroke="#d4a853" stroke-width="3" class="pulse-ring"/>
+
+      <!-- Path line: current → intermediate → target -->
+      <polyline points="170,135 200,90 230,90 260,47"
+        fill="none" stroke="#d4a853" stroke-width="2"
+        stroke-dasharray="4,6" stroke-linecap="round" class="dot-path" opacity="0.7"/>
+
+      <!-- Target hex: thin ring -->
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="none" stroke="#d4a853" stroke-width="2" opacity="0.7"/>
+
+      <!-- Intermediate hex highlight -->
+      <polygon points="200,30 230,15 260,30 260,60 230,75 200,60"
+        fill="none" stroke="#d4a853" stroke-width="1" opacity="0.3"/>
+
+      <text x="170" y="200" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">CURRENT</text>
+      <text x="290" y="100" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">TARGET</text>
+      <text x="230" y="100" text-anchor="middle" fill="#d4a85399" font-size="9" font-family="system-ui">route</text>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#d4a853"></span> Pulsing ring = current</span>
+      <span><span class="dot" style="border:1.5px dotted #d4a853"></span> Marching dots = route</span>
+    </div>
+  </div>
+
+  <!-- Option D: Combination -->
+  <div class="option">
+    <h2>D — Combined: Dashed Target + Dotted Route</h2>
+    <p>Full picture: pulsing ring on current, marching-dot path showing the route, dashed ring on the destination. Maximum clarity.</p>
+    <svg width="100%" viewBox="0 0 400 260">
+      <use href="#hex-bg-a"/>
+
+      <!-- Current hex: pulsing solid ring -->
+      <polygon points="140,120 170,105 200,120 200,150 170,165 140,150"
+        fill="none" stroke="#d4a853" stroke-width="3" class="pulse-ring"/>
+
+      <!-- Path line: current → intermediate → target -->
+      <polyline points="170,135 200,90 230,90 260,47"
+        fill="none" stroke="#d4a853" stroke-width="2"
+        stroke-dasharray="4,6" stroke-linecap="round" class="dot-path" opacity="0.5"/>
+
+      <!-- Intermediate hex: subtle highlight -->
+      <polygon points="200,30 230,15 260,30 260,60 230,75 200,60"
+        fill="none" stroke="#d4a853" stroke-width="1" opacity="0.25"/>
+
+      <!-- Target hex: dashed ring + subtle fill -->
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="#d4a853" opacity="0.1"/>
+      <polygon points="260,30 290,15 320,30 320,60 290,75 260,60"
+        fill="none" stroke="#d4a853" stroke-width="2.5"
+        stroke-dasharray="8,4" class="dash-ring"/>
+
+      <text x="170" y="200" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">CURRENT</text>
+      <text x="290" y="100" text-anchor="middle" fill="#d4a853" font-size="10" font-family="system-ui">TARGET</text>
+    </svg>
+    <div class="legend">
+      <span><span class="dot" style="background:#d4a853"></span> Pulse = here</span>
+      <span><span class="dot" style="border:1.5px dotted #d4a85388"></span> Dots = route</span>
+      <span><span class="dot" style="border:1.5px dashed #d4a853"></span> Dashed = target</span>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

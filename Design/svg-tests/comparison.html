@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hex Tile: PNG vs SVG Comparison</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d1a; color: #ccc; font-family: 'Segoe UI', sans-serif; padding: 2rem; }
+  h1 { color: #d4af37; margin-bottom: 0.5rem; font-size: 1.6rem; }
+  .subtitle { color: #888; margin-bottom: 2rem; font-size: 0.9rem; }
+
+  .biome-section { margin-bottom: 3rem; border-bottom: 1px solid #2a2a3a; padding-bottom: 2rem; }
+  .biome-title { color: #ffeb99; font-size: 1.2rem; margin-bottom: 1rem; }
+
+  .row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .card { flex: 1; min-width: 280px; max-width: 400px; }
+  .card-label { font-size: 0.75rem; color: #888; margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.1em; }
+  .card-meta { font-size: 0.7rem; color: #666; margin-top: 0.3rem; }
+
+  .img-wrap {
+    width: 100%; aspect-ratio: 1;
+    border: 1px solid #2a2a3a; border-radius: 4px; overflow: hidden;
+    background: #1e1b2e;
+  }
+  .img-wrap img, .img-wrap object { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* Hex clip for the "in-game" preview */
+  .hex-clip {
+    width: 200px; height: 230px; margin: 0 auto;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    overflow: hidden;
+  }
+  .hex-clip img, .hex-clip object { width: 100%; height: 100%; object-fit: cover; }
+
+  .hex-row { display: flex; gap: 2rem; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 1.5rem; }
+  .hex-card { text-align: center; }
+  .hex-card .card-label { margin-bottom: 0.5rem; }
+
+  .summary { background: #1a1a2e; border: 1px solid #2a2a3a; border-radius: 8px; padding: 1.5rem; margin-top: 2rem; }
+  .summary h2 { color: #d4af37; font-size: 1.1rem; margin-bottom: 1rem; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; color: #ffeb99; padding: 0.4rem 0.6rem; border-bottom: 1px solid #3a3a4a; }
+  td { padding: 0.4rem 0.6rem; border-bottom: 1px solid #1a1a2a; }
+  .good { color: #33ff77; }
+  .bad { color: #ff6b6b; }
+  .neutral { color: #ffb355; }
+</style>
+</head>
+<body>
+
+<h1>Hex Tile Vectorization Test</h1>
+<p class="subtitle">PNG (original Imagen output) vs SVG (Vectorizer.AI conversion) — side-by-side quality & size comparison</p>
+
+<!-- Dense Forest -->
+<div class="biome-section">
+  <div class="biome-title">Dense Forest</div>
+  <div class="row">
+    <div class="card">
+      <div class="card-label">Original PNG (1024×1024)</div>
+      <div class="img-wrap"><img src="../biomes/dense-forest.png" alt="Dense Forest PNG"></div>
+      <div class="card-meta">2.0 MB &bull; Raster &bull; Source from Imagen</div>
+    </div>
+    <div class="card">
+      <div class="card-label">SVG Production (unlimited colors)</div>
+      <div class="img-wrap"><object data="dense-forest-prod.svg" type="image/svg+xml">SVG</object></div>
+      <div class="card-meta">3.1 MB &bull; Vector &bull; 1 credit</div>
+    </div>
+    <div class="card">
+      <div class="card-label">SVG Production (64 colors)</div>
+      <div class="img-wrap"><object data="dense-forest-64col.svg" type="image/svg+xml">SVG</object></div>
+      <div class="card-meta">3.3 MB &bull; Vector &bull; 64-color limit</div>
+    </div>
+  </div>
+
+  <div class="hex-row">
+    <div class="hex-card">
+      <div class="card-label">Hex clip — PNG</div>
+      <div class="hex-clip"><img src="../biomes/dense-forest.png" alt="hex png"></div>
+    </div>
+    <div class="hex-card">
+      <div class="card-label">Hex clip — SVG</div>
+      <div class="hex-clip"><object data="dense-forest-prod.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+    <div class="hex-card">
+      <div class="card-label">Hex clip — SVG 64col</div>
+      <div class="hex-clip"><object data="dense-forest-64col.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+</div>
+
+<!-- Desert -->
+<div class="biome-section">
+  <div class="biome-title">Desert</div>
+  <div class="row">
+    <div class="card">
+      <div class="card-label">Original PNG (1024×1024)</div>
+      <div class="img-wrap"><img src="../biomes/desert.png" alt="Desert PNG"></div>
+      <div class="card-meta">1.7 MB &bull; Raster</div>
+    </div>
+    <div class="card">
+      <div class="card-label">SVG Production</div>
+      <div class="img-wrap"><object data="desert-prod.svg" type="image/svg+xml">SVG</object></div>
+      <div class="card-meta">1.5 MB &bull; Vector</div>
+    </div>
+  </div>
+  <div class="hex-row">
+    <div class="hex-card">
+      <div class="card-label">Hex clip — PNG</div>
+      <div class="hex-clip"><img src="../biomes/desert.png" alt="hex png"></div>
+    </div>
+    <div class="hex-card">
+      <div class="card-label">Hex clip — SVG</div>
+      <div class="hex-clip"><object data="desert-prod.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+</div>
+
+<!-- Glacier -->
+<div class="biome-section">
+  <div class="biome-title">Glacier</div>
+  <div class="row">
+    <div class="card">
+      <div class="card-label">Original PNG (1024×1024)</div>
+      <div class="img-wrap"><img src="../biomes/glacier.png" alt="Glacier PNG"></div>
+      <div class="card-meta">2.0 MB &bull; Raster</div>
+    </div>
+    <div class="card">
+      <div class="card-label">SVG Production</div>
+      <div class="img-wrap"><object data="glacier-prod.svg" type="image/svg+xml">SVG</object></div>
+      <div class="card-meta">3.1 MB &bull; Vector</div>
+    </div>
+  </div>
+  <div class="hex-row">
+    <div class="hex-card">
+      <div class="card-label">Hex clip — PNG</div>
+      <div class="hex-clip"><img src="../biomes/glacier.png" alt="hex png"></div>
+    </div>
+    <div class="hex-card">
+      <div class="card-label">Hex clip — SVG</div>
+      <div class="hex-clip"><object data="glacier-prod.svg" type="image/svg+xml">SVG</object></div>
+    </div>
+  </div>
+</div>
+
+<!-- Summary Table -->
+<div class="summary">
+  <h2>Size Comparison</h2>
+  <table>
+    <tr><th>Biome</th><th>PNG</th><th>SVG (prod)</th><th>SVG 64col</th><th>Ratio</th></tr>
+    <tr><td>Dense Forest</td><td>2.0 MB</td><td>3.1 MB</td><td>3.3 MB</td><td class="bad">1.55× larger</td></tr>
+    <tr><td>Desert</td><td>1.7 MB</td><td>1.5 MB</td><td>—</td><td class="good">0.88× (smaller!)</td></tr>
+    <tr><td>Glacier</td><td>2.0 MB</td><td>3.1 MB</td><td>—</td><td class="bad">1.55× larger</td></tr>
+  </table>
+  <p style="margin-top: 1rem; font-size: 0.8rem; color: #888;">
+    Note: 64-color limit did NOT reduce file size for complex painterly content — it actually increased it slightly.
+    Desert's simpler color palette vectorized smaller than the PNG source.
+  </p>
+</div>
+
+</body>
+</html>

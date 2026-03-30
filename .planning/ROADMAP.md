@@ -225,9 +225,18 @@ Game automatically pauses while encounter modals are open. 1/1 plan, 5/5 must-ha
 
 Score display bug fix, travel cost reduction, wanderlust modifier, encounter retirement (max completions + outgrowth lock), 40 higher-difficulty encounter templates (diff 40-90), forced travel fallback for content desert agents. 4/4 plans, 6/6 must-haves verified.
 
-### Phase 16: Threads Area (Retinue Sidebar Expansion) — ✅ Complete (2026-03-30)
+### Phase 16: Threads Area (Retinue Sidebar Expansion) — Gap Closure
 
-Expanded retinue sidebar to show all thread-connected nodes (agents, armies, factions, artifacts, locations). ThreadsPanel + getThreadedNodes engine query, ThreadDetailView with stub modals, thread-creation action templates for location/faction/army/artifact. 3/3 plans.
+Expanded retinue sidebar to show all thread-connected nodes (agents, armies, factions, artifacts, locations). ThreadsPanel + getThreadedNodes engine query, ThreadDetailView with stub modals, thread-creation action templates for location/faction/army/artifact. 3/3 plans + 1 gap closure.
+
+**Plans:** 4 plans (3 complete + 1 gap closure)
+**Requirements:** THRD-01 through THRD-07
+
+Plans:
+- [x] 16-01-PLAN.md — Engine getThreadedNodes + ThreadsPanel compact rows
+- [x] 16-02-PLAN.md — ThreadDetailView floating detail + stub profile modals
+- [x] 16-03-PLAN.md — Thread-creation action templates
+- [ ] 16-04-PLAN.md — Gap closure: Escape key handler for ThreadDetailView
 
 ### Phase 17: Action Description Fields & Activation Feedback — 📐 Planned
 

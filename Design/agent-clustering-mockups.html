@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Agent Clustering — Three Approaches</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0e0c14;
+    color: #c4b99a;
+    font-family: 'Georgia', serif;
+    padding: 2rem;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: #8b7d5e;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.75rem;
+    color: #4a4338;
+    margin-bottom: 2rem;
+  }
+  .grid {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .panel {
+    background: #15121e;
+    border: 1px solid #2a2438;
+    border-radius: 4px;
+    padding: 1.2rem;
+    width: 340px;
+  }
+  .panel h2 {
+    font-size: 0.85rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #6b5f4a;
+    margin-bottom: 0.3rem;
+    font-weight: 400;
+  }
+  .panel p {
+    font-size: 0.72rem;
+    color: #5a5347;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  svg { display: block; margin: 0 auto; }
+  @keyframes breathe {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1.0; }
+  }
+  .dot-pulse { animation: breathe 2.5s ease-in-out infinite; }
+  .scenario-label {
+    font-size: 0.6rem;
+    color: #3d3730;
+    text-align: center;
+    margin-top: 0.5rem;
+    font-style: italic;
+  }
+  .row { display: flex; gap: 0.8rem; justify-content: center; margin-top: 0.6rem; }
+  .col-label { font-size: 0.55rem; color: #4a4338; text-align: center; margin-bottom: 0.2rem; }
+</style>
+</head>
+<body>
+
+<h1>Agent Clustering at Settlements</h1>
+<div class="subtitle">Each option shown with 3 agents, 5 agents, and 8 agents on one hex</div>
+
+<div class="grid">
+
+<!-- OPTION A: Ring around settlement -->
+<div class="panel">
+  <h2>A — Ring Around Settlement</h2>
+  <p>Dots orbit the settlement icon in a small circle. Predictable, clean. Gets tight above 6-8 agents.</p>
+
+  <div class="row">
+    <!-- 3 agents -->
+    <div>
+      <div class="col-label">3 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <!-- Settlement icon -->
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- 3 dots in ring, r=22 from center -->
+        <circle cx="50" cy="28" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="31" cy="61" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.8s"/>
+        <circle cx="69" cy="61" r="4" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1.5s"/>
+      </svg>
+    </div>
+    <!-- 5 agents -->
+    <div>
+      <div class="col-label">5 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- 5 dots in ring -->
+        <circle cx="50" cy="26" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="73" cy="39" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.5s"/>
+        <circle cx="64" cy="68" r="4" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1s"/>
+        <circle cx="36" cy="68" r="3.5" fill="#9e6b7a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1.5s"/>
+        <circle cx="27" cy="39" r="3.5" fill="#9e916b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:2s"/>
+      </svg>
+    </div>
+    <!-- 8 agents -->
+    <div>
+      <div class="col-label">8 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- 8 dots packed tight in ring -->
+        <circle cx="50" cy="24" r="3.5" fill="#c4956a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse"/>
+        <circle cx="68" cy="30" r="3.5" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.3s"/>
+        <circle cx="76" cy="50" r="3.5" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.6s"/>
+        <circle cx="68" cy="70" r="3.5" fill="#9e6b7a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.9s"/>
+        <circle cx="50" cy="76" r="3.5" fill="#9e916b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.2s"/>
+        <circle cx="32" cy="70" r="3" fill="#6b9e8a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.5s"/>
+        <circle cx="24" cy="50" r="3" fill="#7a6b9e" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.8s"/>
+        <circle cx="32" cy="30" r="3" fill="#9e8a6b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:2.1s"/>
+      </svg>
+    </div>
+  </div>
+  <div class="scenario-label">Orderly. Scales to ~8. Gets cramped beyond that.</div>
+</div>
+
+<!-- OPTION B: Stack with count badge -->
+<div class="panel">
+  <h2>B — Stack + Count Badge</h2>
+  <p>Show 1-2 representative dots plus a count badge when there are more. Never clutters. Less visual personality.</p>
+
+  <div class="row">
+    <!-- 3 agents -->
+    <div>
+      <div class="col-label">3 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- 2 visible dots + badge -->
+        <circle cx="38" cy="34" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="62" cy="34" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.8s"/>
+        <!-- count badge -->
+        <circle cx="62" cy="68" r="7" fill="#1a1826" stroke="#4a4338" stroke-width="0.8"/>
+        <text x="62" y="71" fill="#8b7d5e" font-size="8" text-anchor="middle" font-family="Georgia">3</text>
+      </svg>
+    </div>
+    <!-- 5 agents -->
+    <div>
+      <div class="col-label">5 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <circle cx="38" cy="34" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="62" cy="34" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.8s"/>
+        <circle cx="62" cy="68" r="7" fill="#1a1826" stroke="#4a4338" stroke-width="0.8"/>
+        <text x="62" y="71" fill="#8b7d5e" font-size="8" text-anchor="middle" font-family="Georgia">5</text>
+      </svg>
+    </div>
+    <!-- 8 agents -->
+    <div>
+      <div class="col-label">8 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <circle cx="38" cy="34" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="62" cy="34" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.8s"/>
+        <circle cx="62" cy="68" r="7" fill="#1a1826" stroke="#4a4338" stroke-width="0.8"/>
+        <text x="62" y="71" fill="#8b7d5e" font-size="8" text-anchor="middle" font-family="Georgia">8</text>
+      </svg>
+    </div>
+  </div>
+  <div class="scenario-label">Compact. Scales infinitely. Less alive — feels like a counter.</div>
+</div>
+
+<!-- OPTION C: Scatter within hex -->
+<div class="panel">
+  <h2>C — Organic Scatter</h2>
+  <p>Dots placed at semi-random positions within the hex (seeded by agent ID). Parchment-map feel. May overlap at high counts.</p>
+
+  <div class="row">
+    <!-- 3 agents -->
+    <div>
+      <div class="col-label">3 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- Scattered positions -->
+        <circle cx="35" cy="35" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="65" cy="55" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.8s"/>
+        <circle cx="45" cy="70" r="4" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1.5s"/>
+      </svg>
+    </div>
+    <!-- 5 agents -->
+    <div>
+      <div class="col-label">5 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <circle cx="30" cy="40" r="4" fill="#c4956a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse"/>
+        <circle cx="70" cy="45" r="4" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:0.5s"/>
+        <circle cx="55" cy="72" r="3.5" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1s"/>
+        <circle cx="38" cy="62" r="3.5" fill="#9e6b7a" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:1.5s"/>
+        <circle cx="62" cy="30" r="3.5" fill="#9e916b" stroke="#0e0c14" stroke-width="1.5" class="dot-pulse" style="animation-delay:2s"/>
+      </svg>
+    </div>
+    <!-- 8 agents -->
+    <div>
+      <div class="col-label">8 agents</div>
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#1e1a28" stroke="#2a2438" stroke-width="0.8"/>
+        <rect x="42" y="42" width="16" height="16" fill="#3d3428" rx="2"/>
+        <!-- 8 scattered — some overlap likely -->
+        <circle cx="28" cy="42" r="3.5" fill="#c4956a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse"/>
+        <circle cx="72" cy="38" r="3.5" fill="#7a9e6b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.3s"/>
+        <circle cx="58" cy="72" r="3.5" fill="#6b7a9e" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.6s"/>
+        <circle cx="35" cy="65" r="3" fill="#9e6b7a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:0.9s"/>
+        <circle cx="65" cy="28" r="3" fill="#9e916b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.2s"/>
+        <circle cx="48" cy="30" r="3" fill="#6b9e8a" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.5s"/>
+        <circle cx="75" cy="58" r="3" fill="#7a6b9e" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:1.8s"/>
+        <circle cx="40" cy="78" r="3" fill="#9e8a6b" stroke="#0e0c14" stroke-width="1.2" class="dot-pulse" style="animation-delay:2.1s"/>
+      </svg>
+    </div>
+  </div>
+  <div class="scenario-label">Organic, alive. Some overlap at 8+. Feels like ink marks on parchment.</div>
+</div>
+
+</div>
+
+<div style="text-align:center; margin-top:2rem; font-size:0.7rem; color:#3d3730; letter-spacing:0.1em">
+  All dots have black outlines per design direction · Threadbare palette
+</div>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "input_path": "/sessions/kind-sharp-knuth/mnt/TheFantasyWorldSimulator/Design/hex-crops-v2/ocean.png",
+  "output_path": "/sessions/kind-sharp-knuth/mnt/TheFantasyWorldSimulator/skills/image-manipulation-workspace/iteration-3/single-hex-clip/without_skill/outputs/ocean_clipped.png",
+  "input_size": {
+    "width": 120,
+    "height": 104
+  },
+  "border_excluded_px": 4,
+  "hex_vertices_count": 6,
+  "vertices": [
+    [
+      32.29,
+      100.0
+    ],
+    [
+      87.71,
+      100.0
+    ],
+    [
+      115.43,
+      52.0
+    ],
+    [
+      87.71,
+      4.0
+    ],
+    [
+      32.29,
+      4.0
+    ],
+    [
+      4.57,
+      52.0
+    ]
+  ],
+  "output_format": "PNG with alpha channel",
+  "status": "success"
+}

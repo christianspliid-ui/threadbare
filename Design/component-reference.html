@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Component Reference — The Fantasy World Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #0a0a0e;
+    --bg-dark: #1a1a1f;
+    --bg-mid: #222228;
+    --bg-raised: #2a2a30;
+    --text-light: #e8dcc8;
+    --text-muted: #8a7e70;
+    --text-dim: #5a5248;
+    --gold: #d4a040;
+    --gold-dim: rgba(212, 160, 64, 0.25);
+    --accent-blue: #5b8cb8;
+    --accent-green: #6b9b6b;
+    --accent-purple: #8b6bab;
+    --accent-red: #b85b5b;
+    --accent-teal: #5b9b8b;
+    --accent-amber: #b89b5b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    text-align: center;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-bottom: 0.3rem;
+  }
+
+  .subtitle {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    text-align: center;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .meta {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .search-bar {
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    position: relative;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 0.6rem 1rem 0.6rem 2.4rem;
+    background: var(--bg-dark);
+    border: 1px solid var(--gold-dim);
+    border-radius: 6px;
+    color: var(--text-light);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-bar input::placeholder { color: var(--text-dim); }
+  .search-bar input:focus { border-color: var(--gold); }
+
+  .search-bar::before {
+    content: "\u2315";
+    position: absolute;
+    left: 0.8rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-dim);
+    font-size: 1rem;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    color: var(--gold);
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .category {
+    margin-bottom: 2rem;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--gold-dim);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .category-header:hover { border-bottom-color: var(--gold); }
+
+  .category-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .category-name {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+  }
+
+  .category-count {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-left: auto;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .component-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 4px;
+    transition: background 0.15s;
+  }
+
+  .component-row:hover {
+    background: var(--bg-dark);
+  }
+
+  .component-name {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .component-desc {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .component-path {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    font-family: 'Inter', sans-serif;
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .component-row:hover .component-path { opacity: 1; }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  .tag-legacy { background: rgba(184, 91, 91, 0.2); color: var(--accent-red); }
+  .tag-context { background: rgba(139, 107, 171, 0.2); color: var(--accent-purple); }
+  .tag-modal { background: rgba(91, 140, 184, 0.2); color: var(--accent-blue); }
+  .tag-debug { background: rgba(91, 155, 139, 0.2); color: var(--accent-teal); }
+
+  .legend {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .no-results {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-dim);
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    display: none;
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 800px) {
+    .component-grid { grid-template-columns: 1fr; }
+    .component-path { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Component Reference</h1>
+  <p class="subtitle">Use these names in prompts to target specific UI elements</p>
+  <p class="meta">94 components &middot; Last updated 2026-03-20 &middot; src/components/</p>
+
+  <div class="search-bar">
+    <input type="text" id="search" placeholder="Filter components..." autofocus>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">94</div><div class="stat-label">Components</div></div>
+    <div class="stat"><div class="stat-num">13</div><div class="stat-label">Categories</div></div>
+    <div class="stat"><div class="stat-num">15</div><div class="stat-label">Primitives</div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-blue);"></div>Hex Map</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-green);"></div>Game / HUD</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-purple);"></div>Agents & Social</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-amber);"></div>Narrative & Events</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--accent-teal);"></div>Debug & CMS</div>
+    <div class="legend-item"><div class="legend-dot" style="background: var(--text-muted);"></div>Shared / Misc</div>
+  </div>
+
+  <div id="categories">
+
+    <!-- Hex Map -->
+    <div class="category" data-category="hex-map">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-blue);"></div>
+        <span class="category-name">Hex Map</span>
+        <span class="category-count">9 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="HexMap" data-keywords="hex map grid svg main"><span class="component-name">HexMap</span><span class="component-desc">Main SVG hex grid</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="HexTile" data-keywords="hex tile cell individual"><span class="component-name">HexTile</span><span class="component-desc">Individual hex cell</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="AgentDots" data-keywords="agent dots markers map position"><span class="component-name">AgentDots</span><span class="component-desc">Agent markers on the map</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="GhostDots" data-keywords="ghost dots faded previous position"><span class="component-name">GhostDots</span><span class="component-desc">Faded previous-position markers</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="MovementTrails" data-keywords="movement trails animated lines path"><span class="component-name">MovementTrails</span><span class="component-desc">Animated movement path lines</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="CoastlineOverlay" data-keywords="coastline overlay water edge"><span class="component-name">CoastlineOverlay</span><span class="component-desc">Coastline edge rendering</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="RiverOverlay" data-keywords="river overlay water flow"><span class="component-name">RiverOverlay</span><span class="component-desc">River path rendering</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="RegionLabels" data-keywords="region labels text names"><span class="component-name">RegionLabels</span><span class="component-desc">Region name text labels</span><span class="component-path">HexMap/</span></div>
+        <div class="component-row" data-name="HexDefs" data-keywords="hex defs svg gradients patterns definitions"><span class="component-name">HexDefs</span><span class="component-desc">SVG defs (gradients, patterns)</span><span class="component-path">HexMap/</span></div>
+      </div>
+    </div>
+
+    <!-- Hex Sidebar & Detail -->
+    <div class="category" data-category="hex-sidebar">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-blue);"></div>
+        <span class="category-name">Hex Sidebar & Detail</span>
+        <span class="category-count">7 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="HexSidebar" data-keywords="hex sidebar right panel selected"><span class="component-name">HexSidebar</span><span class="component-desc">Right panel when hex is selected</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="HexFlavorPanel" data-keywords="hex flavor panel description text"><span class="component-name">HexFlavorPanel</span><span class="component-desc">Hex description / flavor text</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="HexPoiPanel" data-keywords="hex poi panel points interest list"><span class="component-name">HexPoiPanel</span><span class="component-desc">Points of interest list</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="HexChronicle" data-keywords="hex chronicle history events log"><span class="component-name">HexChronicle</span><span class="component-desc">Hex history / events</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="HexBreadcrumb" data-keywords="hex breadcrumb location trail navigation"><span class="component-name">HexBreadcrumb</span><span class="component-desc">Location breadcrumb trail</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="HexZoomView" data-keywords="hex zoom view detail zoomed"><span class="component-name">HexZoomView</span><span class="component-desc">Zoomed-in hex detail view</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="LocationView" data-keywords="location view sub detail"><span class="component-name">LocationView</span><span class="component-desc">Sub-location detail view</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Top Bar & HUD -->
+    <div class="category" data-category="hud">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-green);"></div>
+        <span class="category-name">Top Bar & HUD</span>
+        <span class="category-count">7 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="AvatarHUD" data-keywords="avatar hud player status top bar"><span class="component-name">AvatarHUD</span><span class="component-desc">Player avatar status display</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="SimulationControls" data-keywords="simulation controls play pause speed tick"><span class="component-name">SimulationControls</span><span class="component-desc">Play / pause / speed controls</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="DoomBar" data-keywords="doom bar tension progress threat"><span class="component-name">DoomBar</span><span class="component-desc">Doom / tension progress bar</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="EssencePanel" data-keywords="essence panel resource display currency"><span class="component-name">EssencePanel</span><span class="component-desc">Essence resource display</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="MandateTracker" data-keywords="mandate tracker active quest objective"><span class="component-name">MandateTracker</span><span class="component-desc">Active mandate display</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="WorldPulse" data-keywords="world pulse heartbeat indicator tick"><span class="component-name">WorldPulse</span><span class="component-desc">World heartbeat indicator</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AlertBar" data-keywords="alert bar notification warning"><span class="component-name">AlertBar</span><span class="component-desc">Alert / notification bar</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Agent System -->
+    <div class="category" data-category="agents">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-purple);"></div>
+        <span class="category-name">Agent System</span>
+        <span class="category-count">5 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="AgentDetailPanel" data-keywords="agent detail panel info sidebar"><span class="component-name">AgentDetailPanel</span><span class="component-desc">Agent info in sidebar</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AgentInfoCard" data-keywords="agent info card compact"><span class="component-name">AgentInfoCard</span><span class="component-desc">Compact agent card</span><span class="component-path">Game/ + AgentInfoCard/</span></div>
+        <div class="component-row" data-name="AgentProfileModal" data-keywords="agent profile modal full character sheet"><span class="component-name">AgentProfileModal</span> <span class="tag tag-modal">modal</span><span class="component-desc">Full-screen agent profile</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="RetinuePanel" data-keywords="retinue panel list followers"><span class="component-name">RetinuePanel</span><span class="component-desc">Player's retinue list</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="IdentityChip" data-keywords="identity chip badge small agent"><span class="component-name">IdentityChip</span><span class="component-desc">Small agent identity badge</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Social & Attachments -->
+    <div class="category" data-category="social">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-purple);"></div>
+        <span class="category-name">Social & Attachments</span>
+        <span class="category-count">4 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="IntentSection" data-keywords="intent section agent goal plan"><span class="component-name">IntentSection</span><span class="component-desc">Agent intent display</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="StrandView" data-keywords="strand view social bond relationship"><span class="component-name">StrandView</span><span class="component-desc">Social strand visualization</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AttachmentDetailView" data-keywords="attachment detail view card"><span class="component-name">AttachmentDetailView</span><span class="component-desc">Attachment detail card</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AttachmentRow" data-keywords="attachment row list item"><span class="component-name">AttachmentRow</span><span class="component-desc">Attachment list row</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Actions & Intervention -->
+    <div class="category" data-category="actions">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-green);"></div>
+        <span class="category-name">Actions & Intervention</span>
+        <span class="category-count">5 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="ActionDrawer" data-keywords="action drawer slide cards list"><span class="component-name">ActionDrawer</span><span class="component-desc">Slide-out action card list</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="ActionCard" data-keywords="action card individual intervention"><span class="component-name">ActionCard</span><span class="component-desc">Individual action card</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="InterventionConfirm" data-keywords="intervention confirm overlay dialog"><span class="component-name">InterventionConfirm</span><span class="component-desc">Confirm intervention overlay</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AgendaPicker" data-keywords="agenda picker choose agent"><span class="component-name">AgendaPicker</span><span class="component-desc">Choose agent agenda</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="AgentWheel" data-keywords="agent wheel old legacy action"><span class="component-name">AgentWheel</span> <span class="tag tag-legacy">legacy</span><span class="component-desc">Old action wheel (deprecated)</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Narrative & Events -->
+    <div class="category" data-category="narrative">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-amber);"></div>
+        <span class="category-name">Narrative & Events</span>
+        <span class="category-count">7 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="NarrativeFeed" data-keywords="narrative feed main text story"><span class="component-name">NarrativeFeed</span><span class="component-desc">Main narrative text feed</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="NarrativeLog" data-keywords="narrative log full history"><span class="component-name">NarrativeLog</span><span class="component-desc">Full narrative history</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="EventLog" data-keywords="event log list feed"><span class="component-name">EventLog</span><span class="component-desc">Event list</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="EventPopup" data-keywords="event popup notification toast"><span class="component-name">EventPopup</span><span class="component-desc">Popup event notification</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="EncounterLog" data-keywords="encounter log history list"><span class="component-name">EncounterLog</span><span class="component-desc">Encounter history</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="EncounterVignetteModal" data-keywords="encounter vignette modal detail story"><span class="component-name">EncounterVignetteModal</span> <span class="tag tag-modal">modal</span><span class="component-desc">Encounter detail modal</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="ToastStack" data-keywords="toast stack notifications"><span class="component-name">ToastStack</span><span class="component-desc">Toast notification stack</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Scry & Rivals -->
+    <div class="category" data-category="scry-rivals">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-green);"></div>
+        <span class="category-name">Scry & Rivals</span>
+        <span class="category-count">4 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="ScryOverlay" data-keywords="scry overlay observation vision"><span class="component-name">ScryOverlay</span><span class="component-desc">Scry observation UI</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="ScryContext" data-keywords="scry context provider state"><span class="component-name">ScryContext</span> <span class="tag tag-context">context</span><span class="component-desc">React context for scry state</span><span class="component-path">Game/contexts/</span></div>
+        <div class="component-row" data-name="RivalPanel" data-keywords="rival panel detail enemy"><span class="component-name">RivalPanel</span><span class="component-desc">Rival detail panel</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="RivalsButton" data-keywords="rivals button open toggle"><span class="component-name">RivalsButton</span><span class="component-desc">Button to open rivals view</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Chronicle Sub-components -->
+    <div class="category" data-category="chronicle">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-amber);"></div>
+        <span class="category-name">Chronicle Sub-components</span>
+        <span class="category-count">6 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="AgentEntry" data-keywords="agent entry chronicle"><span class="component-name">AgentEntry</span><span class="component-desc">Agent entry in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+        <div class="component-row" data-name="EventBlock" data-keywords="event block chronicle"><span class="component-name">EventBlock</span><span class="component-desc">Event block in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+        <div class="component-row" data-name="ExplorationHook" data-keywords="exploration hook prompt chronicle"><span class="component-name">ExplorationHook</span><span class="component-desc">Exploration prompt in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+        <div class="component-row" data-name="LocationCard" data-keywords="location card chronicle"><span class="component-name">LocationCard</span><span class="component-desc">Location card in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+        <div class="component-row" data-name="SoulCard" data-keywords="soul card character chronicle"><span class="component-name">SoulCard</span><span class="component-desc">Soul / character card in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+        <div class="component-row" data-name="SubLocationEntry" data-keywords="sub location entry chronicle"><span class="component-name">SubLocationEntry</span><span class="component-desc">Sub-location in chronicle</span><span class="component-path">Game/chronicle/</span></div>
+      </div>
+    </div>
+
+    <!-- Cosmology & Selection -->
+    <div class="category" data-category="cosmology">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-green);"></div>
+        <span class="category-name">Cosmology & Selection</span>
+        <span class="category-count">5 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="AscendantSelection" data-keywords="ascendant selection character creation"><span class="component-name">AscendantSelection</span><span class="component-desc">Character creation screen</span><span class="component-path">Ascendant/</span></div>
+        <div class="component-row" data-name="ArchetypeCard" data-keywords="archetype card option selection"><span class="component-name">ArchetypeCard</span><span class="component-desc">Archetype option card</span><span class="component-path">Ascendant/</span></div>
+        <div class="component-row" data-name="CosmologyPanel" data-keywords="cosmology panel visualization spheres"><span class="component-name">CosmologyPanel</span><span class="component-desc">Cosmology visualization panel</span><span class="component-path">Cosmology/</span></div>
+        <div class="component-row" data-name="SphereSlider" data-keywords="sphere slider alignment control"><span class="component-name">SphereSlider</span><span class="component-desc">Sphere alignment slider</span><span class="component-path">Cosmology/</span></div>
+        <div class="component-row" data-name="HarvestScreen" data-keywords="harvest screen reward end"><span class="component-name">HarvestScreen</span><span class="component-desc">Harvest / reward screen</span><span class="component-path">Game/</span></div>
+      </div>
+    </div>
+
+    <!-- Debug -->
+    <div class="category" data-category="debug">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-teal);"></div>
+        <span class="category-name">Debug</span>
+        <span class="category-count">4 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="DebugPanel" data-keywords="debug panel dev overlay"><span class="component-name">DebugPanel</span> <span class="tag tag-debug">debug</span><span class="component-desc">Dev debug overlay</span><span class="component-path">Game/</span></div>
+        <div class="component-row" data-name="BondOverlay" data-keywords="bond overlay visualization debug"><span class="component-name">BondOverlay</span> <span class="tag tag-debug">debug</span><span class="component-desc">Bond visualization overlay</span><span class="component-path">Game/debug/</span></div>
+        <div class="component-row" data-name="DecisionBreakdown" data-keywords="decision breakdown agent trace debug"><span class="component-name">DecisionBreakdown</span> <span class="tag tag-debug">debug</span><span class="component-desc">Agent decision trace</span><span class="component-path">Game/debug/</span></div>
+        <div class="component-row" data-name="RelationshipGraph" data-keywords="relationship graph agent network debug"><span class="component-name">RelationshipGraph</span> <span class="tag tag-debug">debug</span><span class="component-desc">Agent relationship graph</span><span class="component-path">Game/debug/</span></div>
+      </div>
+    </div>
+
+    <!-- CMS / Content Browser -->
+    <div class="category" data-category="cms">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--accent-teal);"></div>
+        <span class="category-name">CMS / Content Browser</span>
+        <span class="category-count">12 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="ContentBrowser" data-keywords="content browser cms management"><span class="component-name">ContentBrowser</span><span class="component-desc">Content management browser</span><span class="component-path">CMS/</span></div>
+        <div class="component-row" data-name="CMSHeader" data-keywords="cms header bar"><span class="component-name">CMSHeader</span><span class="component-desc">CMS header bar</span><span class="component-path">CMS/</span></div>
+        <div class="component-row" data-name="CMSSidebar" data-keywords="cms sidebar navigation"><span class="component-name">CMSSidebar</span><span class="component-desc">CMS navigation sidebar</span><span class="component-path">CMS/</span></div>
+        <div class="component-row" data-name="CMSMainPanel" data-keywords="cms main panel content area"><span class="component-name">CMSMainPanel</span><span class="component-desc">CMS main content area</span><span class="component-path">CMS/</span></div>
+        <div class="component-row" data-name="CMSDetailPanel" data-keywords="cms detail panel view"><span class="component-name">CMSDetailPanel</span><span class="component-desc">CMS detail view</span><span class="component-path">CMS/</span></div>
+        <div class="component-row" data-name="ConstantsViewer" data-keywords="constants viewer game config"><span class="component-name">ConstantsViewer</span><span class="component-desc">Game constants viewer</span><span class="component-path">CMS/viewers/</span></div>
+        <div class="component-row" data-name="ProseViewer" data-keywords="prose viewer content text"><span class="component-name">ProseViewer</span><span class="component-desc">Prose content viewer</span><span class="component-path">CMS/viewers/</span></div>
+        <div class="component-row" data-name="RecordViewer" data-keywords="record viewer data"><span class="component-name">RecordViewer</span><span class="component-desc">Record data viewer</span><span class="component-path">CMS/viewers/</span></div>
+        <div class="component-row" data-name="TableViewer" data-keywords="table viewer data grid"><span class="component-name">TableViewer</span><span class="component-desc">Table data viewer</span><span class="component-path">CMS/viewers/</span></div>
+        <div class="component-row" data-name="TreeViewer" data-keywords="tree viewer structure hierarchy"><span class="component-name">TreeViewer</span><span class="component-desc">Tree structure viewer</span><span class="component-path">CMS/viewers/</span></div>
+        <div class="component-row" data-name="TaxonomyViewer" data-keywords="taxonomy viewer tree browser"><span class="component-name">TaxonomyViewer</span><span class="component-desc">Taxonomy tree browser</span><span class="component-path">TaxonomyViewer/</span></div>
+        <div class="component-row" data-name="NodeDetail" data-keywords="node detail taxonomy"><span class="component-name">NodeDetail</span><span class="component-desc">Taxonomy node detail</span><span class="component-path">TaxonomyViewer/</span></div>
+      </div>
+    </div>
+
+    <!-- Shared Primitives -->
+    <div class="category" data-category="shared">
+      <div class="category-header">
+        <div class="category-dot" style="background: var(--text-muted);"></div>
+        <span class="category-name">Shared Primitives</span>
+        <span class="category-count">17 components</span>
+      </div>
+      <div class="component-grid">
+        <div class="component-row" data-name="Modal" data-keywords="modal dialog wrapper popup"><span class="component-name">Modal</span> <span class="tag tag-modal">modal</span><span class="component-desc">Modal dialog wrapper</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="Button" data-keywords="button click action"><span class="component-name">Button</span><span class="component-desc">Standard button</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="IconButton" data-keywords="icon button small"><span class="component-name">IconButton</span><span class="component-desc">Icon-only button</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="Card" data-keywords="card container panel"><span class="component-name">Card</span><span class="component-desc">Card container</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="Dropdown" data-keywords="dropdown menu select"><span class="component-name">Dropdown</span><span class="component-desc">Dropdown menu</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="Tooltip" data-keywords="tooltip hover info"><span class="component-name">Tooltip</span><span class="component-desc">Hover tooltip</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="ProgressBar" data-keywords="progress bar meter fill"><span class="component-name">ProgressBar</span><span class="component-desc">Progress bar</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="ListRow" data-keywords="list row item standard"><span class="component-name">ListRow</span><span class="component-desc">Standard list row</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="SectionHeading" data-keywords="section heading header title"><span class="component-name">SectionHeading</span><span class="component-desc">Section header</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="EntityCard" data-keywords="entity card generic"><span class="component-name">EntityCard</span><span class="component-desc">Generic entity card</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="AnimateMount" data-keywords="animate mount unmount animation transition"><span class="component-name">AnimateMount</span><span class="component-desc">Mount / unmount animation</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="GameErrorBoundary" data-keywords="error boundary catch fallback"><span class="component-name">GameErrorBoundary</span><span class="component-desc">Error boundary</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="SphereIcon" data-keywords="sphere icon cosmology"><span class="component-name">SphereIcon</span><span class="component-desc">Sphere icon</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="RivalIcon" data-keywords="rival icon enemy"><span class="component-name">RivalIcon</span><span class="component-desc">Rival icon</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="StepDots" data-keywords="step dots indicator progress"><span class="component-name">StepDots</span><span class="component-desc">Step indicator dots</span><span class="component-path">shared/</span></div>
+        <div class="component-row" data-name="InfoPanel" data-keywords="info panel generic"><span class="component-name">InfoPanel</span><span class="component-desc">Generic info panel</span><span class="component-path">UI/</span></div>
+        <div class="component-row" data-name="MagicGlowTiles" data-keywords="magic glow tiles decorative effect"><span class="component-name">MagicGlowTiles</span><span class="component-desc">Decorative glow effect tiles</span><span class="component-path">UI/</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="no-results" id="noResults">No components match your search.</div>
+
+</div>
+
+<script>
+  const searchInput = document.getElementById('search');
+  const categories = document.querySelectorAll('.category');
+  const noResults = document.getElementById('noResults');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    let anyVisible = false;
+
+    categories.forEach(cat => {
+      const rows = cat.querySelectorAll('.component-row');
+      let catVisible = false;
+
+      rows.forEach(row => {
+        const name = row.dataset.name.toLowerCase();
+        const keywords = row.dataset.keywords || '';
+        const catName = cat.dataset.category || '';
+        const match = !q || name.includes(q) || keywords.includes(q) || catName.includes(q);
+        row.classList.toggle('hidden', !match);
+        if (match) catVisible = true;
+      });
+
+      cat.classList.toggle('hidden', !catVisible);
+      if (catVisible) anyVisible = true;
+    });
+
+    noResults.style.display = anyVisible ? 'none' : 'block';
+  });
+</script>
+
+</body>
+</html>

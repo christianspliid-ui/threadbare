@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Terrain Palette v2 Proposals</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0e;
+    color: #e8dcc8;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 40px;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; color: #d4a040; }
+  .subtitle { font-size: 14px; color: #a89880; margin-bottom: 32px; }
+  h2 {
+    font-size: 20px; margin: 40px 0 8px 0;
+    color: #d4a040; border-bottom: 1px solid #3a3530; padding-bottom: 6px;
+  }
+  h3 {
+    font-size: 15px; margin: 20px 0 10px 0;
+    color: #c8b89a;
+  }
+  .description {
+    font-size: 13px; color: #a89880; margin-bottom: 20px; line-height: 1.6;
+    max-width: 900px;
+  }
+  .palette-row {
+    display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px;
+  }
+  .swatch {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .swatch-hex {
+    width: 56px; height: 64px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .swatch-label {
+    font-size: 9px; color: #9a8e7e; text-align: center; line-height: 1.2; width: 60px;
+  }
+  .swatch-code {
+    font-size: 8px; color: #6a6258; font-family: monospace;
+  }
+  .category-label {
+    font-size: 11px; color: #d4a040; text-transform: uppercase; letter-spacing: 1px;
+    margin: 12px 0 6px 0; font-weight: 600;
+  }
+  .comparison {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 32px;
+    margin: 24px 0;
+  }
+  @media (max-width: 1400px) {
+    .comparison { grid-template-columns: 1fr 1fr; }
+  }
+  .palette-column { min-width: 200px; }
+  .palette-column h3 {
+    font-size: 14px; margin: 0 0 12px 0;
+    padding: 8px 12px;
+    background: #1a1a1f;
+    border: 1px solid #3a3530;
+    border-radius: 4px;
+    color: #d4a040;
+  }
+  .notes-box {
+    background: #1a1a1f; border: 1px solid #3a3530; border-radius: 6px;
+    padding: 16px; margin: 24px 0; font-size: 13px; line-height: 1.6; color: #a89880;
+  }
+  .notes-box strong { color: #d4a040; }
+  .ui-ref {
+    display: flex; gap: 4px; align-items: center; margin: 8px 0;
+  }
+  .ui-ref-swatch {
+    width: 20px; height: 20px; border-radius: 3px; border: 1px solid #3a3530;
+  }
+  .ui-ref-label { font-size: 11px; color: #c8b89a; }
+
+  /* Mini map preview */
+  .map-preview {
+    display: grid;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 2px;
+    margin: 16px 0;
+    max-width: 600px;
+  }
+  .map-cell {
+    aspect-ratio: 0.866;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+</style>
+</head>
+<body>
+
+<h1>Hex Terrain Palette v2 Proposals</h1>
+<p class="subtitle">Three approaches to harmonize terrain colors with the Threadbearer UI palette — grounded in nature, warmed toward gold</p>
+
+<div class="notes-box">
+  <strong>Goal:</strong> The current terrain palette is vivid and naturalistic (bright greens, saturated browns). The UI is dark with warm parchment tones and gold accents. These proposals shift the terrain toward the UI's warmth without losing biome readability.<br><br>
+  <strong>UI reference colors:</strong>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#0a0a0e"></div><span class="ui-ref-label">#0a0a0e — bg-abyss</span></div>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#1a1a1f"></div><span class="ui-ref-label">#1a1a1f — bg-surface</span></div>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#e8dcc8"></div><span class="ui-ref-label">#e8dcc8 — text-primary (parchment)</span></div>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#d4a040"></div><span class="ui-ref-label">#d4a040 — accent-gold</span></div>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#c8b89a"></div><span class="ui-ref-label">#c8b89a — text-secondary</span></div>
+  <div class="ui-ref"><div class="ui-ref-swatch" style="background:#a89880"></div><span class="ui-ref-label">#a89880 — text-tertiary</span></div>
+</div>
+
+<!-- ============================================================ -->
+<!-- COMPARISON GRID                                                -->
+<!-- ============================================================ -->
+
+<div class="comparison">
+
+<!-- CURRENT PALETTE -->
+<div class="palette-column">
+  <h3>Current (v1)</h3>
+
+  <div class="category-label">Lowland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#8EB852"></div><div class="swatch-label">Grassland</div><div class="swatch-code">#8EB852</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B8B44E"></div><div class="swatch-label">Savanna</div><div class="swatch-code">#B8B44E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C6DA79"></div><div class="swatch-label">Steppe</div><div class="swatch-code">#C6DA79</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#7EA04A"></div><div class="swatch-label">Floodplain</div><div class="swatch-code">#7EA04A</div></div>
+  </div>
+
+  <div class="category-label">Forest</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#7AAE42"></div><div class="swatch-label">Light</div><div class="swatch-code">#7AAE42</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#6A9E3A"></div><div class="swatch-label">Woodland</div><div class="swatch-code">#6A9E3A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4E8830"></div><div class="swatch-label">Temperate</div><div class="swatch-code">#4E8830</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#3A6E24"></div><div class="swatch-label">Dense</div><div class="swatch-code">#3A6E24</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#3A6830"></div><div class="swatch-label">Boreal</div><div class="swatch-code">#3A6830</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#2E6E2C"></div><div class="swatch-label">Tropical</div><div class="swatch-code">#2E6E2C</div></div>
+  </div>
+
+  <div class="category-label">Highland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#C8A850"></div><div class="swatch-label">Hills</div><div class="swatch-code">#C8A850</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#5C8234"></div><div class="swatch-label">For. Hills</div><div class="swatch-code">#5C8234</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#9E7830"></div><div class="swatch-label">Mountains</div><div class="swatch-code">#9E7830</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#8A8A8A"></div><div class="swatch-label">High Mtn</div><div class="swatch-code">#8A8A8A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B89848"></div><div class="swatch-label">Plateau</div><div class="swatch-code">#B89848</div></div>
+  </div>
+
+  <div class="category-label">Desert</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#D4B878"></div><div class="swatch-label">Sand</div><div class="swatch-code">#D4B878</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#CCAC60"></div><div class="swatch-label">Dunes</div><div class="swatch-code">#CCAC60</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C09050"></div><div class="swatch-label">Rocky</div><div class="swatch-code">#C09050</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C07844"></div><div class="swatch-label">Badlands</div><div class="swatch-code">#C07844</div></div>
+  </div>
+
+  <div class="category-label">Wet / Cold / Water</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#8A9850"></div><div class="swatch-label">Marsh</div><div class="swatch-code">#8A9850</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#6E8838"></div><div class="swatch-label">Swamp</div><div class="swatch-code">#6E8838</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#82C896"></div><div class="swatch-label">Moor/Bog</div><div class="swatch-code">#82C896</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#F0F0F0"></div><div class="swatch-label">Tundra</div><div class="swatch-code">#F0F0F0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#D0DDE8"></div><div class="swatch-label">Glacier</div><div class="swatch-code">#D0DDE8</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#78BCE0"></div><div class="swatch-label">Shallows</div><div class="swatch-code">#78BCE0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#5098D0"></div><div class="swatch-label">Ocean</div><div class="swatch-code">#5098D0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#3A7AB8"></div><div class="swatch-label">Deep</div><div class="swatch-code">#3A7AB8</div></div>
+  </div>
+</div>
+
+<!-- PROPOSAL A -->
+<div class="palette-column">
+  <h3>A: Parchment Wash</h3>
+
+  <div class="category-label">Lowland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#96AD5E"></div><div class="swatch-label">Grassland</div><div class="swatch-code">#96AD5E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B8AE56"></div><div class="swatch-label">Savanna</div><div class="swatch-code">#B8AE56</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C2CC7A"></div><div class="swatch-label">Steppe</div><div class="swatch-code">#C2CC7A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#889A54"></div><div class="swatch-label">Floodplain</div><div class="swatch-code">#889A54</div></div>
+  </div>
+
+  <div class="category-label">Forest</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#82A44E"></div><div class="swatch-label">Light</div><div class="swatch-code">#82A44E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#729646"></div><div class="swatch-label">Woodland</div><div class="swatch-code">#729646</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#58803A"></div><div class="swatch-label">Temperate</div><div class="swatch-code">#58803A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#466830"></div><div class="swatch-label">Dense</div><div class="swatch-code">#466830</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#44623A"></div><div class="swatch-label">Boreal</div><div class="swatch-code">#44623A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#3C6838"></div><div class="swatch-label">Tropical</div><div class="swatch-code">#3C6838</div></div>
+  </div>
+
+  <div class="category-label">Highland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#C4A458"></div><div class="swatch-label">Hills</div><div class="swatch-code">#C4A458</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#647C3E"></div><div class="swatch-label">For. Hills</div><div class="swatch-code">#647C3E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#A07838"></div><div class="swatch-label">Mountains</div><div class="swatch-code">#A07838</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#908A84"></div><div class="swatch-label">High Mtn</div><div class="swatch-code">#908A84</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B8964E"></div><div class="swatch-label">Plateau</div><div class="swatch-code">#B8964E</div></div>
+  </div>
+
+  <div class="category-label">Desert</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#D2B47A"></div><div class="swatch-label">Sand</div><div class="swatch-code">#D2B47A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#CCA864"></div><div class="swatch-label">Dunes</div><div class="swatch-code">#CCA864</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#BE8E54"></div><div class="swatch-label">Rocky</div><div class="swatch-code">#BE8E54</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#BC784A"></div><div class="swatch-label">Badlands</div><div class="swatch-code">#BC784A</div></div>
+  </div>
+
+  <div class="category-label">Wet / Cold / Water</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#8E9458"></div><div class="swatch-label">Marsh</div><div class="swatch-code">#8E9458</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#748442"></div><div class="swatch-label">Swamp</div><div class="swatch-code">#748442</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#84BE90"></div><div class="swatch-label">Moor/Bog</div><div class="swatch-code">#84BE90</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#E8E4DA"></div><div class="swatch-label">Tundra</div><div class="swatch-code">#E8E4DA</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#CCD4DA"></div><div class="swatch-label">Glacier</div><div class="swatch-code">#CCD4DA</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#72AED0"></div><div class="swatch-label">Shallows</div><div class="swatch-code">#72AED0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4C90C2"></div><div class="swatch-label">Ocean</div><div class="swatch-code">#4C90C2</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#3872A8"></div><div class="swatch-label">Deep</div><div class="swatch-code">#3872A8</div></div>
+  </div>
+</div>
+
+<!-- PROPOSAL B -->
+<div class="palette-column">
+  <h3>B: Golden Hour</h3>
+
+  <div class="category-label">Lowland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#9CA85C"></div><div class="swatch-label">Grassland</div><div class="swatch-code">#9CA85C</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B4A654"></div><div class="swatch-label">Savanna</div><div class="swatch-code">#B4A654</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#BCC272"></div><div class="swatch-label">Steppe</div><div class="swatch-code">#BCC272</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#88945A"></div><div class="swatch-label">Floodplain</div><div class="swatch-code">#88945A</div></div>
+  </div>
+
+  <div class="category-label">Forest</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#849A52"></div><div class="swatch-label">Light</div><div class="swatch-code">#849A52</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#748C48"></div><div class="swatch-label">Woodland</div><div class="swatch-code">#748C48</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#5C783E"></div><div class="swatch-label">Temperate</div><div class="swatch-code">#5C783E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4C6436"></div><div class="swatch-label">Dense</div><div class="swatch-code">#4C6436</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4A5E3A"></div><div class="swatch-label">Boreal</div><div class="swatch-code">#4A5E3A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#426440"></div><div class="swatch-label">Tropical</div><div class="swatch-code">#426440</div></div>
+  </div>
+
+  <div class="category-label">Highland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#C0A05A"></div><div class="swatch-label">Hills</div><div class="swatch-code">#C0A05A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#687844"></div><div class="swatch-label">For. Hills</div><div class="swatch-code">#687844</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#A47A3C"></div><div class="swatch-label">Mountains</div><div class="swatch-code">#A47A3C</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#908680"></div><div class="swatch-label">High Mtn</div><div class="swatch-code">#908680</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B69450"></div><div class="swatch-label">Plateau</div><div class="swatch-code">#B69450</div></div>
+  </div>
+
+  <div class="category-label">Desert</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#CEAE72"></div><div class="swatch-label">Sand</div><div class="swatch-code">#CEAE72</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C8A460"></div><div class="swatch-label">Dunes</div><div class="swatch-code">#C8A460</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B88C50"></div><div class="swatch-label">Rocky</div><div class="swatch-code">#B88C50</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B4764A"></div><div class="swatch-label">Badlands</div><div class="swatch-code">#B4764A</div></div>
+  </div>
+
+  <div class="category-label">Wet / Cold / Water</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#8E905A"></div><div class="swatch-label">Marsh</div><div class="swatch-code">#8E905A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#748046"></div><div class="swatch-label">Swamp</div><div class="swatch-code">#748046</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#80B488"></div><div class="swatch-label">Moor/Bog</div><div class="swatch-code">#80B488</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#E2DCD0"></div><div class="swatch-label">Tundra</div><div class="swatch-code">#E2DCD0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C6CCD2"></div><div class="swatch-label">Glacier</div><div class="swatch-code">#C6CCD2</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#6AA2C0"></div><div class="swatch-label">Shallows</div><div class="swatch-code">#6AA2C0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4886B0"></div><div class="swatch-label">Ocean</div><div class="swatch-code">#4886B0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#366A98"></div><div class="swatch-label">Deep</div><div class="swatch-code">#366A98</div></div>
+  </div>
+</div>
+
+<!-- PROPOSAL C -->
+<div class="palette-column">
+  <h3>C: Tapestry</h3>
+
+  <div class="category-label">Lowland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#A0A060"></div><div class="swatch-label">Grassland</div><div class="swatch-code">#A0A060</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#AEA058"></div><div class="swatch-label">Savanna</div><div class="swatch-code">#AEA058</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B4B870"></div><div class="swatch-label">Steppe</div><div class="swatch-code">#B4B870</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#8A9060"></div><div class="swatch-label">Floodplain</div><div class="swatch-code">#8A9060</div></div>
+  </div>
+
+  <div class="category-label">Forest</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#889258"></div><div class="swatch-label">Light</div><div class="swatch-code">#889258</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#78844E"></div><div class="swatch-label">Woodland</div><div class="swatch-code">#78844E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#607242"></div><div class="swatch-label">Temperate</div><div class="swatch-code">#607242</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#50603C"></div><div class="swatch-label">Dense</div><div class="swatch-code">#50603C</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#4E5A3E"></div><div class="swatch-label">Boreal</div><div class="swatch-code">#4E5A3E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#486044"></div><div class="swatch-label">Tropical</div><div class="swatch-code">#486044</div></div>
+  </div>
+
+  <div class="category-label">Highland</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#B89C5A"></div><div class="swatch-label">Hills</div><div class="swatch-code">#B89C5A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#6C7448"></div><div class="swatch-label">For. Hills</div><div class="swatch-code">#6C7448</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#A67C42"></div><div class="swatch-label">Mountains</div><div class="swatch-code">#A67C42</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#8E847A"></div><div class="swatch-label">High Mtn</div><div class="swatch-code">#8E847A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B09250"></div><div class="swatch-label">Plateau</div><div class="swatch-code">#B09250</div></div>
+  </div>
+
+  <div class="category-label">Desert</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#C8A86C"></div><div class="swatch-label">Sand</div><div class="swatch-code">#C8A86C</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C09E5C"></div><div class="swatch-label">Dunes</div><div class="swatch-code">#C09E5C</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#B0884E"></div><div class="swatch-label">Rocky</div><div class="swatch-code">#B0884E</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#AC744A"></div><div class="swatch-label">Badlands</div><div class="swatch-code">#AC744A</div></div>
+  </div>
+
+  <div class="category-label">Wet / Cold / Water</div>
+  <div class="palette-row">
+    <div class="swatch"><div class="swatch-hex" style="background:#8E8C5A"></div><div class="swatch-label">Marsh</div><div class="swatch-code">#8E8C5A</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#747A48"></div><div class="swatch-label">Swamp</div><div class="swatch-code">#747A48</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#7CAA80"></div><div class="swatch-label">Moor/Bog</div><div class="swatch-code">#7CAA80</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#DCD6C8"></div><div class="swatch-label">Tundra</div><div class="swatch-code">#DCD6C8</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#C0C6CA"></div><div class="swatch-label">Glacier</div><div class="swatch-code">#C0C6CA</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#6498B0"></div><div class="swatch-label">Shallows</div><div class="swatch-code">#6498B0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#447CA0"></div><div class="swatch-label">Ocean</div><div class="swatch-code">#447CA0</div></div>
+    <div class="swatch"><div class="swatch-hex" style="background:#346488"></div><div class="swatch-label">Deep</div><div class="swatch-code">#346488</div></div>
+  </div>
+</div>
+
+</div><!-- end .comparison -->
+
+<!-- ============================================================ -->
+<!-- MINI MAP PREVIEWS                                              -->
+<!-- ============================================================ -->
+
+<h2>Mini Map Preview</h2>
+<p class="description">Same hex layout across all four palettes — a representative terrain mix to judge overall map feel at a glance.</p>
+
+<div class="comparison">
+  <div class="palette-column">
+    <h3>Current (v1)</h3>
+    <div class="map-preview" id="map-current"></div>
+  </div>
+  <div class="palette-column">
+    <h3>A: Parchment Wash</h3>
+    <div class="map-preview" id="map-a"></div>
+  </div>
+  <div class="palette-column">
+    <h3>B: Golden Hour</h3>
+    <div class="map-preview" id="map-b"></div>
+  </div>
+  <div class="palette-column">
+    <h3>C: Tapestry</h3>
+    <div class="map-preview" id="map-c"></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DESIGN RATIONALE                                               -->
+<!-- ============================================================ -->
+
+<h2>Design Rationale</h2>
+
+<div class="notes-box">
+  <strong>A: Parchment Wash (subtle)</strong> — Lightest touch. Greens lose ~10-15% saturation, gain a warm yellow bias. Cold tiles shift from pure grey to warm ivory. Browns become slightly more amber. Water desaturates gently toward slate-blue. The map still reads as a vivid nature map, but whites and highlights harmonize with the parchment UI text.<br><br>
+
+  <strong>B: Golden Hour (moderate)</strong> — The sweet spot. Greens shift significantly toward olive/sage (hue rotates ~10-15 degrees toward yellow). Highlands and deserts align more closely with the UI gold accent (#d4a040). Cold tiles gain a distinctly warm cast like aged paper. Water moves toward muted teal-blue, less "cartoon ocean." The overall feel is a map seen in warm lamplight — still readable as nature, but clearly from the same world as the UI.<br><br>
+
+  <strong>C: Tapestry (bold)</strong> — Strongest shift. Greens become distinctly olive/khaki — more aged tapestry than satellite photo. All warm tones converge toward the gold/amber range. Cold tiles match parchment-secondary. Water becomes decidedly muted steel-blue. The map reads like a medieval illuminated chart — beautiful and atmospheric, but biome contrast is reduced. Best paired with stronger signifier icons to compensate for lower color differentiation.<br><br>
+
+  <strong>What changes across all three:</strong><br>
+  - Forests shift the most (bright neon green to warm olive) — this is the biggest visual difference<br>
+  - Deserts/highlands barely change (they're already closest to UI gold)<br>
+  - Cold biomes gain warm ivory tint (pure white to parchment)<br>
+  - Water shifts from vivid cyan-blue toward muted dusty blue<br>
+  - High mountains and broken lands gain warm undertones instead of neutral grey
+</div>
+
+<script>
+const terrainKeys = [
+  'deep','ocean','ocean','shallows','grassland','grassland','light_forest','temperate_forest','dense_forest','hills','mountains','high_mountains','tundra','snow','tundra','mountains',
+  'deep','ocean','shallows','grassland','grassland','savanna','light_forest','woodland','temperate_forest','forested_hills','mountains','plateau','glacier','snow','tundra','high_mountains',
+  'ocean','shallows','grassland','grassland','steppe','savanna','grassland','light_forest','woodland','hills','forested_hills','mountains','mountains','tundra','glacier','mountains',
+  'shallows','grassland','floodplain','steppe','savanna','sand_desert','grassland','marsh','swamp','hills','hills','plateau','mountains','high_mountains','tundra','snow',
+  'ocean','shallows','grassland','grassland','savanna','sand_desert','sand_dunes','marsh','swamp','moor_bog','grassland','hills','mountains','plateau','tundra','glacier',
+  'deep','ocean','shallows','floodplain','grassland','rocky_desert','sand_desert','badlands','swamp','grassland','light_forest','forested_hills','mountains','high_mountains','snow','tundra',
+  'deep','ocean','ocean','shallows','grassland','badlands','rocky_desert','hardened_clay','grassland','woodland','temperate_forest','dense_forest','hills','mountains','tundra','mountains',
+  'deep','deep','ocean','shallows','grassland','sand_dunes','sand_desert','grassland','light_forest','boreal_forest','tropical_forest','dense_forest','volcano','lava','broken_lands','dead_forest',
+];
+
+const palettes = {
+  current: {
+    grassland:'#8EB852',savanna:'#B8B44E',steppe:'#C6DA79',floodplain:'#7EA04A',
+    light_forest:'#7AAE42',woodland:'#6A9E3A',temperate_forest:'#4E8830',dense_forest:'#3A6E24',boreal_forest:'#3A6830',tropical_forest:'#2E6E2C',
+    marsh:'#8A9850',swamp:'#6E8838',moor_bog:'#82C896',
+    hills:'#C8A850',forested_hills:'#5C8234',mountains:'#9E7830',high_mountains:'#8A8A8A',plateau:'#B89848',
+    sand_desert:'#D4B878',sand_dunes:'#CCAC60',rocky_desert:'#C09050',hardened_clay:'#D0A090',badlands:'#C07844',
+    tundra:'#F0F0F0',snow:'#E8E8E8',glacier:'#D0DDE8',
+    volcano:'#8A4430',lava:'#D06830',broken_lands:'#A09888',dead_forest:'#98988A',
+    shallows:'#78BCE0',ocean:'#5098D0',deep:'#3A7AB8',
+  },
+  a: {
+    grassland:'#96AD5E',savanna:'#B8AE56',steppe:'#C2CC7A',floodplain:'#889A54',
+    light_forest:'#82A44E',woodland:'#729646',temperate_forest:'#58803A',dense_forest:'#466830',boreal_forest:'#44623A',tropical_forest:'#3C6838',
+    marsh:'#8E9458',swamp:'#748442',moor_bog:'#84BE90',
+    hills:'#C4A458',forested_hills:'#647C3E',mountains:'#A07838',high_mountains:'#908A84',plateau:'#B8964E',
+    sand_desert:'#D2B47A',sand_dunes:'#CCA864',rocky_desert:'#BE8E54',hardened_clay:'#CC9E8A',badlands:'#BC784A',
+    tundra:'#E8E4DA',snow:'#E0DCD2',glacier:'#CCD4DA',
+    volcano:'#8A4834',lava:'#CC6A38',broken_lands:'#A09688',dead_forest:'#969486',
+    shallows:'#72AED0',ocean:'#4C90C2',deep:'#3872A8',
+  },
+  b: {
+    grassland:'#9CA85C',savanna:'#B4A654',steppe:'#BCC272',floodplain:'#88945A',
+    light_forest:'#849A52',woodland:'#748C48',temperate_forest:'#5C783E',dense_forest:'#4C6436',boreal_forest:'#4A5E3A',tropical_forest:'#426440',
+    marsh:'#8E905A',swamp:'#748046',moor_bog:'#80B488',
+    hills:'#C0A05A',forested_hills:'#687844',mountains:'#A47A3C',high_mountains:'#908680',plateau:'#B69450',
+    sand_desert:'#CEAE72',sand_dunes:'#C8A460',rocky_desert:'#B88C50',hardened_clay:'#C69A84',badlands:'#B4764A',
+    tundra:'#E2DCD0',snow:'#DAD4C8',glacier:'#C6CCD2',
+    volcano:'#884C38',lava:'#C46C3C',broken_lands:'#9C9284',dead_forest:'#929080',
+    shallows:'#6AA2C0',ocean:'#4886B0',deep:'#366A98',
+  },
+  c: {
+    grassland:'#A0A060',savanna:'#AEA058',steppe:'#B4B870',floodplain:'#8A9060',
+    light_forest:'#889258',woodland:'#78844E',temperate_forest:'#607242',dense_forest:'#50603C',boreal_forest:'#4E5A3E',tropical_forest:'#486044',
+    marsh:'#8E8C5A',swamp:'#747A48',moor_bog:'#7CAA80',
+    hills:'#B89C5A',forested_hills:'#6C7448',mountains:'#A67C42',high_mountains:'#8E847A',plateau:'#B09250',
+    sand_desert:'#C8A86C',sand_dunes:'#C09E5C',rocky_desert:'#B0884E',hardened_clay:'#C09680',badlands:'#AC744A',
+    tundra:'#DCD6C8',snow:'#D4CEC0',glacier:'#C0C6CA',
+    volcano:'#84503C',lava:'#BC6E40',broken_lands:'#988E80',dead_forest:'#8E8C7C',
+    shallows:'#6498B0',ocean:'#447CA0',deep:'#346488',
+  }
+};
+
+function renderMiniMap(containerId, palette) {
+  const container = document.getElementById(containerId);
+  terrainKeys.forEach(key => {
+    const cell = document.createElement('div');
+    cell.className = 'map-cell';
+    cell.style.backgroundColor = palette[key] || '#888888';
+    container.appendChild(cell);
+  });
+}
+
+renderMiniMap('map-current', palettes.current);
+renderMiniMap('map-a', palettes.a);
+renderMiniMap('map-b', palettes.b);
+renderMiniMap('map-c', palettes.c);
+</script>
+
+</body>
+</html>

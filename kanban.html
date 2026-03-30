@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Threadbearer — Kanban Board</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: #0f0f0f;
+    color: #e0ddd4;
+    min-height: 100vh;
+    overflow-x: auto;
+  }
+  header {
+    padding: 20px 32px 12px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+  }
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #daa520;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  header .subtitle { font-size: 13px; color: #666; }
+  header .timestamp {
+    margin-left: auto;
+    font-size: 12px;
+    color: #555;
+    font-family: monospace;
+  }
+  .error-banner {
+    background: #3a1a1a;
+    color: #e07070;
+    padding: 10px 32px;
+    font-size: 13px;
+    border-bottom: 1px solid #4a2020;
+    display: none;
+  }
+  .drop-zone {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 60px 40px;
+    margin: 40px auto;
+    max-width: 500px;
+    border: 2px dashed #444;
+    border-radius: 12px;
+    color: #888;
+    font-size: 14px;
+    text-align: center;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .drop-zone.drag-over {
+    border-color: #daa520;
+    background: #1a1800;
+  }
+  .drop-zone button {
+    background: #2a2a2a;
+    color: #daa520;
+    border: 1px solid #444;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .drop-zone button:hover { background: #333; }
+  .drop-zone .hint { font-size: 11px; color: #555; }
+  .board {
+    display: flex;
+    gap: 12px;
+    padding: 20px 24px;
+    min-height: calc(100vh - 60px);
+    align-items: flex-start;
+  }
+  .column {
+    flex: 1;
+    min-width: 200px;
+    max-width: 280px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    border: 1px solid #2a2a2a;
+    overflow: hidden;
+  }
+  .column-header {
+    padding: 12px 14px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border-bottom: 1px solid #2a2a2a;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .column-header .count {
+    margin-left: auto;
+    background: #2a2a2a;
+    color: #888;
+    font-size: 11px;
+    padding: 1px 7px;
+    border-radius: 10px;
+    font-weight: 500;
+  }
+  .column-header .emoji { font-size: 14px; }
+  .col-idea .column-header { color: #a0a0a0; border-bottom-color: #333; }
+  .col-todo .column-header { color: #7ba3c9; border-bottom-color: #2a3f55; }
+  .col-design .column-header { color: #c07be0; border-bottom-color: #3d2a4d; }
+  .col-plan .column-header { color: #e0a040; border-bottom-color: #4d3a1a; }
+  .col-dev .column-header { color: #e08040; border-bottom-color: #4d2a1a; }
+  .col-done .column-header { color: #5ab866; border-bottom-color: #1f3d22; }
+  .column-body {
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .card {
+    background: #222;
+    border-radius: 6px;
+    padding: 10px 12px;
+    border-left: 3px solid #444;
+    cursor: default;
+    transition: background 0.15s;
+  }
+  .card:hover { background: #282828; }
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    margin-bottom: 4px;
+  }
+  .card-desc {
+    font-size: 11px;
+    color: #888;
+    line-height: 1.4;
+  }
+  .card-meta {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+    flex-wrap: wrap;
+  }
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2px;
+  }
+  .card-id {
+    font-size: 10px;
+    font-family: monospace;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .card-relation {
+    font-size: 10px;
+    font-family: monospace;
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .tag {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .tag-date { background: #1e2a1e; color: #5ab866; }
+  .tag-owner { background: #2a2a1e; color: #c9b06a; }
+  .tag-dep { background: #2a1e1e; color: #c07070; }
+  .tag-ready {
+    background: #3d2a00;
+    color: #e0a040;
+    font-weight: 700;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  /* Doc link tags */
+  a.tag-link {
+    text-decoration: none;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  a.tag-link:hover { opacity: 0.8; }
+  .tag-design { background: #1e1e2a; color: #9090d0; }
+  .tag-plan { background: #2a2418; color: #c0a050; }
+  .tag-brainstorm { background: #1e2a24; color: #60b090; }
+  .tag-review { background: #2a1e2a; color: #b070b0; }
+
+  .col-idea .card { border-left-color: #555; }
+  .col-todo .card { border-left-color: #4a7aa0; }
+  .col-design .card { border-left-color: #9050b0; }
+  .col-plan .card { border-left-color: #c08030; }
+  .col-dev .card { border-left-color: #d06020; }
+  .col-done .card { border-left-color: #3a8a45; opacity: 0.7; }
+  .col-done .card:hover { opacity: 0.9; }
+  .empty-state {
+    font-size: 12px;
+    color: #444;
+    text-align: center;
+    padding: 20px 10px;
+    font-style: italic;
+  }
+  .legend {
+    padding: 12px 32px 16px;
+    display: flex;
+    gap: 20px;
+    font-size: 11px;
+    color: #555;
+    border-top: 1px solid #1a1a1a;
+    flex-wrap: wrap;
+  }
+  .legend span { display: flex; align-items: center; gap: 4px; }
+  .legend-dot {
+    width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Threadbearer</h1>
+  <span class="subtitle">Kanban Board — live from .planning/BACKLOG.md</span>
+  <span class="timestamp" id="ts"></span>
+</header>
+
+<div class="error-banner" id="error"></div>
+
+<div class="drop-zone" id="dropZone">
+  <div>Drop <strong>BACKLOG.md</strong> here</div>
+  <div>or</div>
+  <button id="pickFile">Choose file</button>
+  <div class="hint">Opened via file:// — drag .planning/BACKLOG.md onto this page to load the board</div>
+</div>
+
+<div class="board" id="board"></div>
+
+<div class="legend">
+  <span><span class="legend-dot" style="background:#555"></span> idea</span>
+  <span><span class="legend-dot" style="background:#4a7aa0"></span> todo</span>
+  <span><span class="legend-dot" style="background:#9050b0"></span> design</span>
+  <span><span class="legend-dot" style="background:#c08030"></span> plan</span>
+  <span><span class="legend-dot" style="background:#d06020"></span> dev</span>
+  <span><span class="legend-dot" style="background:#3a8a45"></span> done</span>
+  <span style="color:#e0a040;">&#9654; = ready for next agent</span>
+  <span style="color:#9090d0;">design doc = clickable link</span>
+</div>
+
+<script>
+// Repo root on the user's machine — used for file:// links
+const REPO_ROOT = 'C:/Users/chris/Dev/Projects/TheFantasyWorldSimulator';
+
+const COLUMNS = [
+  { id: 'idea', label: 'Idea', emoji: '\u{1F4A1}' },
+  { id: 'todo', label: 'Todo', emoji: '\u{1F4CB}' },
+  { id: 'design', label: 'Design', emoji: '\u{1F3A8}' },
+  { id: 'plan', label: 'Plan', emoji: '\u{1F4D0}' },
+  { id: 'dev', label: 'Dev', emoji: '\u{1F3D7}\uFE0F' },
+  { id: 'done', label: 'Done', emoji: '\u2705' },
+];
+
+// Emoji prefix → kanban state
+const EMOJI_STATE = {
+  '\u{1F4A1}': 'idea',     // 💡
+  '\u{1F4CB}': 'todo',     // 📋
+  '\u{1F3A8}': 'design',   // 🎨
+  '\u{1F4D0}': 'plan',     // 📐
+  '\u{1F3D7}\uFE0F': 'dev',// 🏗️
+  '\u{1F3D7}': 'dev',      // 🏗 (without VS16)
+  '\u2705': 'done',        // ✅
+};
+
+/**
+ * Parse BACKLOG.md text into an array of card objects.
+ * Returns [{id, state, title, desc, date, ready, frozen, dep, links}]
+ */
+function parseBacklog(md) {
+  const items = [];
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+
+  let inIceBox = false;
+  let inDeferred = false;
+  let currentItem = null;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Track sections
+    if (/^## \u{1F9CA}\s*Ice\s*Box/u.test(line)) {
+      flushItem();
+      inIceBox = true;
+      inDeferred = false;
+      continue;
+    }
+    if (/^##\s+Deferred\s+Items/i.test(line)) {
+      flushItem();
+      inDeferred = true;
+      inIceBox = false;
+      continue;
+    }
+    // Skip non-item sections
+    if (/^##\s+Implementation\s+Prerequisites/i.test(line)) {
+      flushItem();
+      inDeferred = false;
+      inIceBox = false;
+      continue;
+    }
+
+    // === H2 items: ## <emoji>[▶] TB-XXX · Title (date) ===
+    const h2Match = line.match(/^## (.+?)\s+(TB-\d+)\s*[·\-]\s*(.+)$/u);
+    if (h2Match) {
+      flushItem();
+      inDeferred = false;
+      inIceBox = false;
+
+      const emojiRaw = h2Match[1].trim();
+      const id = h2Match[2];
+      let title = h2Match[3].trim();
+
+      // Extract date from title parenthetical
+      let date = null;
+      const dateMatch = title.match(/\((\d{4}-\d{2}-\d{2})\)\s*$/);
+      if (dateMatch) {
+        date = dateMatch[1];
+        title = title.replace(/\s*\(\d{4}-\d{2}-\d{2}\)\s*$/, '').trim();
+      }
+
+      // Determine state from emoji
+      const ready = emojiRaw.includes('\u25B6'); // ▶
+      const emojiClean = emojiRaw.replace(/\u25B6/g, '').trim();
+      let state = 'idea';
+      for (const [emoji, s] of Object.entries(EMOJI_STATE)) {
+        if (emojiClean === emoji) { state = s; break; }
+      }
+
+      currentItem = { id, state, title, desc: '', date, ready, frozen: false, dep: null, parent: null, links: [] };
+      continue;
+    }
+
+    // === Bullet items in Deferred or Ice Box sections ===
+    // Format: - **TB-XXX · Title** — description   OR   - **TB-XXX** · Title
+    if ((inDeferred || inIceBox) && line.match(/^\s*-\s+\*\*TB-\d+/)) {
+      flushItem();
+
+      // Try: - **TB-XXX · Title** — desc
+      let bulletMatch = line.match(/^\s*-\s+\*\*(TB-\d+)\s*[·\-]\s*(.+?)\*\*\s*[\u2014\-—]+\s*(.*)$/u);
+      if (bulletMatch) {
+        currentItem = {
+          id: bulletMatch[1],
+          state: 'idea',
+          title: bulletMatch[2].trim(),
+          desc: bulletMatch[3].trim(),
+          date: null,
+          ready: false,
+          frozen: inIceBox,
+          dep: null,
+          parent: null,
+          links: [],
+        };
+        continue;
+      }
+
+      // Try: - **TB-XXX** · Title
+      bulletMatch = line.match(/^\s*-\s+\*\*(TB-\d+)\*\*\s*[·\-]\s*(.+)$/u);
+      if (bulletMatch) {
+        currentItem = {
+          id: bulletMatch[1],
+          state: 'idea',
+          title: bulletMatch[2].trim(),
+          desc: '',
+          date: null,
+          ready: false,
+          frozen: inIceBox,
+          dep: null,
+          parent: null,
+          links: [],
+        };
+        continue;
+      }
+    }
+
+    // === Metadata lines within a current item ===
+    if (currentItem) {
+      // Links: **Plan:** `path`, **Design doc:** `path`, **Skill:** `path`, **Review:** text `path`
+      const linkPatterns = [
+        { re: /\*\*Plan:\*\*\s*`([^`]+)`/, type: 'plan', label: 'Plan' },
+        { re: /\*\*Roadmap:\*\*\s*`([^`]+)`/, type: 'plan', label: 'Roadmap' },
+        { re: /\*\*Design doc:\*\*\s*`([^`]+)`/, type: 'design', label: 'Design' },
+        { re: /\*\*Design:\*\*\s*`([^`]+)`/, type: 'design', label: 'Design' },
+        { re: /\*\*Skill:\*\*\s*`([^`]+)`/, type: 'review', label: 'Skill' },
+        { re: /\*\*Review:\*\*\s*Obsidian\s*→\s*`([^`]+)`/, type: 'review', label: 'Review', vault: true },
+        { re: /\*\*Review:\*\*\s*.*?`([^`]+)`/, type: 'review', label: 'Review' },
+        { re: /\*\*Files:\*\*/, type: null }, // skip, no link
+      ];
+      let isMetaLine = false;
+      for (const lp of linkPatterns) {
+        const m = line.match(lp.re);
+        if (m) {
+          isMetaLine = true;
+          if (lp.type && m[1]) {
+            currentItem.links.push({ type: lp.type, label: lp.label, path: m[1], vault: !!lp.vault });
+          }
+          break;
+        }
+      }
+      if (isMetaLine) continue;
+
+      // Parent
+      const parentMatch = line.match(/\*\*Parent:\*\*\s*(TB-\d+)/);
+      if (parentMatch) {
+        currentItem.parent = parentMatch[1];
+        continue;
+      }
+
+      // Dependencies
+      const depMatch = line.match(/\*\*Depends on:\*\*\s*(.+)/);
+      if (depMatch) {
+        // Strip ✅ markers and clean up
+        currentItem.dep = depMatch[1].replace(/\(✅\)/g, '').replace(/✅/g, '').trim();
+        if (!currentItem.dep) currentItem.dep = null;
+        continue;
+      }
+
+      // Needs design (just note it in desc if present)
+      if (line.match(/\*\*Needs design:\*\*/)) continue;
+      if (line.match(/\*\*Scope:\*\*/)) continue;
+
+      // Accumulate description from body paragraphs (skip blanks, HRs, blockquotes)
+      if (line.match(/^---\s*$/) || line.match(/^>\s/) || line.trim() === '') continue;
+      // Skip numbered list items and other H2/H3 headings
+      if (line.match(/^###?\s/)) continue;
+
+      // Append to description
+      const text = line.trim();
+      if (text && !currentItem.desc) {
+        currentItem.desc = text;
+      } else if (text && currentItem.desc) {
+        currentItem.desc += ' ' + text;
+      }
+    }
+  }
+  flushItem();
+
+  function flushItem() {
+    if (currentItem) {
+      // Trim long descriptions
+      if (currentItem.desc.length > 200) {
+        currentItem.desc = currentItem.desc.slice(0, 197) + '...';
+      }
+      items.push(currentItem);
+      currentItem = null;
+    }
+  }
+
+  return items;
+}
+
+const OBSIDIAN_VAULT = 'Obsidian';
+const OBSIDIAN_SUBFOLDER = 'TheFantasyWorldSimulator';
+
+function renderLink(link) {
+  let href;
+  if (link.vault) {
+    // Obsidian vault note — use obsidian:// URI
+    const notePath = `${OBSIDIAN_SUBFOLDER}/${link.path}`;
+    href = `obsidian://open?vault=${encodeURIComponent(OBSIDIAN_VAULT)}&file=${encodeURIComponent(notePath)}`;
+  } else {
+    href = `file:///${REPO_ROOT}/${link.path}`;
+  }
+  const cls = `tag tag-${link.type}`;
+  return `<a class="tag-link" href="${href}" target="_blank"><span class="${cls}">${link.label} \u2197</span></a>`;
+}
+
+function renderBoard(items) {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  // Build parent→children map
+  const childrenOf = {}; // parentId → [{id, state}]
+  for (const item of items) {
+    if (item.parent) {
+      if (!childrenOf[item.parent]) childrenOf[item.parent] = [];
+      childrenOf[item.parent].push({ id: item.id, state: item.state });
+    }
+  }
+
+  COLUMNS.forEach(col => {
+    const colItems = items.filter(i => i.state === col.id);
+    if (col.id === 'done') {
+      colItems.sort((a, b) => (b.date || '0000-00-00').localeCompare(a.date || '0000-00-00'));
+    }
+    const div = document.createElement('div');
+    div.className = `column col-${col.id}`;
+
+    div.innerHTML = `
+      <div class="column-header">
+        <span class="emoji">${col.emoji}</span>
+        ${col.label}
+        <span class="count">${colItems.length}</span>
+      </div>
+      <div class="column-body">
+        ${colItems.length === 0
+          ? '<div class="empty-state">No items</div>'
+          : colItems.map(item => {
+            // Build relation label
+            let relationHtml = '';
+            const children = childrenOf[item.id];
+            if (children) {
+              const doneCount = children.filter(c => c.state === 'done').length;
+              relationHtml = `<span class="card-relation">(${doneCount}/${children.length} done)</span>`;
+            } else if (item.parent) {
+              relationHtml = `<span class="card-relation">Child of ${item.parent}</span>`;
+            }
+            return `
+            <div class="card">
+              <div class="card-header">
+                ${item.id ? `<span class="card-id">${item.id}</span>` : '<span></span>'}
+                ${relationHtml}
+              </div>
+              <div class="card-title">${escHtml(item.title)}</div>
+              ${item.desc ? `<div class="card-desc">${escHtml(item.desc)}</div>` : ''}
+              <div class="card-meta">
+                ${item.date ? `<span class="tag tag-date">${item.date}</span>` : ''}
+                ${item.dep ? `<span class="tag tag-dep">needs: ${escHtml(item.dep)}</span>` : ''}
+                ${(item.links || []).map(renderLink).join('')}
+                ${item.ready ? '<span class="tag tag-ready">\u25B6 READY</span>' : ''}
+                ${item.frozen ? '<span class="tag" style="background:#1a1a2a;color:#6a6a8a;">\u{1F9CA} ice box</span>' : ''}
+              </div>
+            </div>
+          `; }).join('')
+        }
+      </div>
+    `;
+
+    board.appendChild(div);
+  });
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function loadFromText(md) {
+  const items = parseBacklog(md);
+  document.getElementById('dropZone').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+  renderBoard(items);
+}
+
+// Drop zone + file picker for file:// fallback
+function showDropZone() {
+  const zone = document.getElementById('dropZone');
+  zone.style.display = 'flex';
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) file.text().then(loadFromText);
+  });
+
+  document.getElementById('pickFile').addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.md';
+    input.onchange = () => {
+      if (input.files[0]) input.files[0].text().then(loadFromText);
+    };
+    input.click();
+  });
+}
+
+// ── IndexedDB helpers for persisting file handle ──
+const DB_NAME = 'kanban-db';
+const STORE_NAME = 'file-handles';
+const HANDLE_KEY = 'backlog-handle';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE_NAME);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveHandle(handle) {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  tx.objectStore(STORE_NAME).put(handle, HANDLE_KEY);
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = resolve;
+    tx.onerror = () => reject(tx.error);
+  });
+}
+
+async function loadHandle() {
+  const db = await openDB();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const req = tx.objectStore(STORE_NAME).get(HANDLE_KEY);
+  return new Promise((resolve) => {
+    req.onsuccess = () => resolve(req.result || null);
+    req.onerror = () => resolve(null);
+  });
+}
+
+// ── File reading via File System Access API ──
+async function readFileHandle(handle) {
+  // Request permission if needed (user sees a one-click prompt)
+  if ((await handle.queryPermission({ mode: 'read' })) !== 'granted') {
+    if ((await handle.requestPermission({ mode: 'read' })) !== 'granted') {
+      throw new Error('Permission denied');
+    }
+  }
+  const file = await handle.getFile();
+  return file.text();
+}
+
+async function pickAndLoadFile() {
+  try {
+    const [handle] = await window.showOpenFilePicker({
+      types: [{ description: 'Markdown', accept: { 'text/markdown': ['.md'] } }],
+      startIn: 'documents',
+    });
+    await saveHandle(handle);
+    const md = await readFileHandle(handle);
+    loadFromText(md);
+    updateTimestamp(handle.name);
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      document.getElementById('error').textContent = 'Failed to open file: ' + e.message;
+      document.getElementById('error').style.display = 'block';
+    }
+  }
+}
+
+// ── Auto-refresh: re-read the persisted handle on an interval ──
+let refreshInterval = null;
+function startAutoRefresh(handle) {
+  if (refreshInterval) clearInterval(refreshInterval);
+  refreshInterval = setInterval(async () => {
+    try {
+      const md = await readFileHandle(handle);
+      loadFromText(md);
+      updateTimestamp(handle.name);
+    } catch (_) { /* permission revoked or file gone — stop */ clearInterval(refreshInterval); }
+  }, 5000);
+}
+
+function updateTimestamp(filename) {
+  document.getElementById('ts').textContent =
+    `Live from ${filename || 'BACKLOG.md'} \u00B7 ${new Date().toISOString().slice(0, 16).replace('T', ' ')}`;
+}
+
+// ── Init ──
+async function init() {
+  updateTimestamp();
+
+  // Strategy 1: HTTP fetch (works when served via dev server)
+  try {
+    const resp = await fetch('.planning/BACKLOG.md');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const md = await resp.text();
+    if (md && md.includes('TB-')) { loadFromText(md); return; }
+  } catch (_) {}
+
+  // Strategy 2: Restore persisted file handle from IndexedDB
+  if (window.showOpenFilePicker) {
+    try {
+      const handle = await loadHandle();
+      if (handle) {
+        const md = await readFileHandle(handle);
+        if (md && md.includes('TB-')) {
+          loadFromText(md);
+          updateTimestamp(handle.name);
+          startAutoRefresh(handle);
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Strategy 3: Prompt to pick file (one-time, then remembered)
+    showPickerPrompt();
+    return;
+  }
+
+  // Strategy 4: Drop zone fallback (browser without File System Access API)
+  showDropZone();
+}
+
+function showPickerPrompt() {
+  const zone = document.getElementById('dropZone');
+  zone.style.display = 'flex';
+  zone.querySelector('.hint').textContent =
+    'First time only — your choice is remembered for next time';
+
+  // Wire up the pick button
+  document.getElementById('pickFile').addEventListener('click', async () => {
+    await pickAndLoadFile();
+    const handle = await loadHandle();
+    if (handle) startAutoRefresh(handle);
+  });
+
+  // Also support drag-and-drop as fallback
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('drag-over');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) file.text().then(loadFromText);
+  });
+}
+
+init();
+</script>
+</body>
+</html>

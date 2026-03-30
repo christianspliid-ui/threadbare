@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cosmological Symmetry — Deep Structure</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a12;
+    color: #e0ddd4;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    overflow: hidden;
+    height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    padding: 10px 0 2px;
+    font-size: 17px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a8578;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 11px;
+    color: #5a5548;
+    margin-bottom: 2px;
+  }
+  svg { display: block; margin: 0 auto; }
+
+  .node { cursor: pointer; transition: opacity 0.3s; }
+  .node:hover .node-ring { opacity: 1; }
+  .node-circle { transition: filter 0.2s; }
+  .node:hover .node-circle { filter: brightness(1.3); }
+  .node-label {
+    font-size: 11px;
+    fill: #c0bdb4;
+    text-anchor: middle;
+    pointer-events: none;
+    font-weight: 500;
+  }
+  .node-sublabel {
+    font-size: 9px;
+    fill: #706b60;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+  .layer-label {
+    font-size: 11px;
+    fill: #3a3530;
+    text-anchor: middle;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 300;
+  }
+  .layer-ring {
+    fill: none;
+    stroke-dasharray: 4 8;
+    opacity: 0.2;
+  }
+  .edge {
+    fill: none;
+    transition: opacity 0.3s, stroke-width 0.3s;
+  }
+  .edge.highlighted { opacity: 0.85 !important; stroke-width: 2.5 !important; }
+  .edge.dimmed { opacity: 0.03 !important; }
+  .node.dimmed { opacity: 0.1; }
+  .node.highlighted { opacity: 1; }
+
+  .quadrant-label {
+    font-size: 9px;
+    fill: #2a2825;
+    text-anchor: middle;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    pointer-events: none;
+  }
+
+  .insight-panel {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    width: 310px;
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+    background: rgba(15,15,25,0.92);
+    border: 1px solid #2a2a35;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #a09888;
+  }
+  .insight-panel h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #6a6558;
+    margin-bottom: 6px;
+    font-weight: 400;
+  }
+  .insight-panel p { margin-bottom: 4px; }
+  .quintessence { color: #ff9ecf; font-weight: 600; }
+  .foundation-color { font-weight: 600; }
+  .bridge-label { color: #5a7a5a; font-style: italic; }
+
+  .legend {
+    position: fixed;
+    bottom: 12px;
+    left: 12px;
+    background: rgba(15,15,25,0.9);
+    border: 1px solid #2a2a35;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 10px;
+    line-height: 2;
+    color: #6a6558;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-swatch { width: 20px; height: 2px; border-radius: 1px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<h1>Cosmological Deep Structure</h1>
+<div class="subtitle">Foundation quadrants govern creation sphere pairs — allied bonds bridge foundation boundaries</div>
+<svg id="graph" width="1200" height="720"></svg>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:#556655"></div> Allied pair (bridges foundation boundary)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#663333"></div> Opposition pair (crosses the circle)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#555"></div> Sphere → Reach (1:1 power source)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:#ff9ecf"></div> Quintessence (coherence of being)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:rgba(255,255,255,0.06)"></div> Foundation quadrant (sphere of influence)</div>
+</div>
+
+<div class="insight-panel" id="insights">
+  <h3>Deep Structure Revealed</h3>
+  <p>Each <strong>foundation sphere</strong> governs a quadrant containing two creation spheres.</p>
+  <br>
+  <p><span class="foundation-color" style="color:#d4d4d8">Chaos</span> governs <strong>Force + Entropy</strong> — the engines of change</p>
+  <p><span class="foundation-color" style="color:#fbbf24">Order</span> governs <strong>Matter + Energy</strong> — the engines of stability</p>
+  <p><span class="foundation-color" style="color:#fef3c7">Light</span> governs <strong>Life + Mind</strong> — the engines of illumination</p>
+  <p><span class="foundation-color" style="color:#8b7fbf">Darkness</span> governs <strong>Spirit + Time</strong> — the engines of mystery</p>
+  <br>
+  <p class="bridge-label">Each allied pair bridges two adjacent foundation spheres. Each opposition pair crosses the full circle.</p>
+  <br>
+  <p style="color:#5a5548">Hover over any node to trace its relationships.</p>
+</div>
+
+<script>
+const SVG_NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById('graph');
+const W = 1200, H = 720;
+const CX = W / 2, CY = H / 2 + 8;
+
+// ── Data ──────────────────────────────────────
+
+// Order matters: positions are top, right, bottom, left
+// Opposed pairs must be across from each other (index 0↔2, 1↔3)
+const foundation = [
+  { id: 'chaos',    name: 'Chaos',    color: '#d4d4d8', symbol: '❋',  theme: 'Engines of Change' },
+  { id: 'light',    name: 'Light',    color: '#fef3c7', symbol: '☼',  theme: 'Engines of Illumination' },
+  { id: 'order',    name: 'Order',    color: '#fbbf24', symbol: '◈',  theme: 'Engines of Stability' },
+  { id: 'darkness', name: 'Darkness', color: '#8b7fbf', symbol: '⦿',  theme: 'Engines of Mystery' },
+];
+
+// Ordered so allied pairs are adjacent AND foundation quadrants work
+const creation = [
+  { id: 'force',   name: 'Force',   color: '#ff6b6b', symbol: '✦',
+    magic: 'Kinetics', magicDesc: 'Telekinesis, force barriers, kinetic strikes, gravity wells, martial enchantment',
+    archetype: 'War-Mage', darkSide: 'Unstoppable destruction, force that crushes without discrimination' },
+  { id: 'matter',  name: 'Matter',  color: '#d4a87a', symbol: '⬡',
+    magic: 'Transmutation', magicDesc: 'Alchemy, golem-craft, petrification, material shaping, crystallomancy',
+    archetype: 'Artificer', darkSide: 'Petrification, entombment, reducing the living to raw material' },
+  { id: 'energy',  name: 'Energy',  color: '#ffe44d', symbol: '⊙',
+    magic: 'Revelation', magicDesc: 'Scrying, divination, illumination, true sight, aura reading, detection',
+    archetype: 'Seer', darkSide: 'Blinding radiance, truths that shatter minds, burning away all concealment' },
+  { id: 'life',    name: 'Life',    color: '#33ff77', symbol: '∿',
+    magic: 'Vitalism', magicDesc: 'Healing, growth, fertility, shapeshifting, nature magic, vitality enhancement',
+    archetype: 'Druid', darkSide: 'Plagues, cancerous mutation, uncontrolled growth, forced transformation' },
+  { id: 'mind',    name: 'Mind',    color: '#44aaff', symbol: '◉',
+    magic: 'Enchantment', magicDesc: 'Illusion, telepathy, memory shaping, dream-walking, psychic domination, ritual magic',
+    archetype: 'Enchanter', darkSide: 'Mental domination, identity erasure, memories rewritten, eternal illusions' },
+  { id: 'spirit',  name: 'Spirit',  color: '#cc66ff', symbol: '⟡',
+    magic: 'Communion', magicDesc: 'Binding, warding, soul-linking, empathic resonance, ancestral speech, spiritual projection',
+    archetype: 'Medium', darkSide: 'Soul severance, forced binding, trapping spirits, breaking bonds of devotion' },
+  { id: 'time',    name: 'Time',    color: '#ffb355', symbol: '◈',
+    magic: 'Chronomancy', magicDesc: 'Prophecy, temporal manipulation, aging/youth, prescience, fate-weaving, destiny-reading',
+    archetype: 'Oracle', darkSide: 'Accelerated decay, stolen years, futures foreclosed, fate locked in place' },
+  { id: 'entropy', name: 'Entropy', color: '#8fd4c0', symbol: '◆',
+    magic: 'Dissolution', magicDesc: 'Curses, decay, concealment, dispelling, shadow-stepping, disenchantment, unmaking',
+    archetype: 'Hex-Worker', darkSide: 'Total unraveling, erasure from existence, memory dissolution, name-death' },
+];
+
+const reaches = [
+  { id: 'iron',   name: 'Iron',   color: '#ff6b6b', axiological: 'Mercy ↔ Ruthlessness',     sphere: 'force' },
+  { id: 'stone',  name: 'Stone',  color: '#d4a87a', axiological: 'Humility ↔ Pride',          sphere: 'matter' },
+  { id: 'eye',    name: 'Eye',    color: '#ffe44d', axiological: 'Frankness ↔ Propriety',     sphere: 'energy' },
+  { id: 'gold',   name: 'Gold',   color: '#33ff77', axiological: 'Asceticism ↔ Extravagance', sphere: 'life' },
+  { id: 'veil',   name: 'Veil',   color: '#44aaff', axiological: 'Tradition ↔ Novelty',       sphere: 'mind' },
+  { id: 'heart',  name: 'Heart',  color: '#cc66ff', axiological: 'Loyalty ↔ Ambition',        sphere: 'spirit' },
+  { id: 'star',   name: 'Star',   color: '#ffb355', axiological: 'Sacrifice ↔ Survival',      sphere: 'time' },
+  { id: 'shadow', name: 'Shadow', color: '#8fd4c0', axiological: 'Honesty ↔ Cunning',         sphere: 'entropy' },
+];
+
+const quintessence = {
+  id: 'quintessence', name: 'Quintessence', color: '#ff9ecf',
+  symbol: '◇', subtitle: 'Coherence of Being'
+};
+
+// Foundation governs these creation sphere pairs
+// With Chaos(top)↔Order(bottom) and Light(right)↔Darkness(left):
+const foundationQuadrants = {
+  chaos:    ['force', 'entropy'],   // top quadrant
+  light:    ['matter', 'energy'],   // right quadrant
+  order:    ['life', 'mind'],       // bottom quadrant
+  darkness: ['spirit', 'time'],     // left quadrant
+};
+
+// Allied pairs bridge adjacent foundation spheres
+const alliedPairs = [
+  { pair: ['force', 'matter'],  bridges: ['chaos', 'light'],     label: 'Change → Illumination' },
+  { pair: ['energy', 'life'],   bridges: ['light', 'order'],     label: 'Illumination → Stability' },
+  { pair: ['mind', 'spirit'],   bridges: ['order', 'darkness'],  label: 'Stability → Mystery' },
+  { pair: ['time', 'entropy'],  bridges: ['darkness', 'chaos'],  label: 'Mystery → Change' },
+];
+
+// Opposition pairs cross the circle
+const oppositionPairs = [
+  { a: 'force', b: 'mind',    strength: 3, crosses: ['chaos', 'order'] },
+  { a: 'life',  b: 'entropy', strength: 4, crosses: ['order', 'chaos'] },
+  { a: 'energy', b: 'spirit', strength: 2, crosses: ['light', 'darkness'] },
+  { a: 'matter', b: 'time',   strength: 2, crosses: ['light', 'darkness'] },
+];
+
+const foundationAxes = [
+  ['chaos', 'order'],
+  ['light', 'darkness'],
+];
+
+// ── Layout ─────────────────────────────────────
+const R_FOUNDATION = 78;
+const R_CREATION = 188;
+const R_REACHES = 300;
+
+function posOnRing(index, total, radius, offsetAngle = -Math.PI/2) {
+  const angle = offsetAngle + (2 * Math.PI * index) / total;
+  return { x: CX + radius * Math.cos(angle), y: CY + radius * Math.sin(angle) };
+}
+
+// Foundation: cardinal positions (top/right/bottom/left)
+foundation.forEach((f, i) => {
+  const pos = posOnRing(i, 4, R_FOUNDATION, -Math.PI/2);
+  f.x = pos.x; f.y = pos.y;
+  f.angle = -Math.PI/2 + (2 * Math.PI * i) / 4;
+});
+
+// Creation: 8 positions, ordered for quadrant alignment
+const creationOrder = ['force','matter','energy','life','mind','spirit','time','entropy'];
+creation.sort((a,b) => creationOrder.indexOf(a.id) - creationOrder.indexOf(b.id));
+creation.forEach((c, i) => {
+  const pos = posOnRing(i, 8, R_CREATION, -Math.PI/2);
+  c.x = pos.x; c.y = pos.y;
+  c.angle = -Math.PI/2 + (2 * Math.PI * i) / 8;
+});
+
+// Reaches: aligned with their sphere
+const sphereAngleMap = {};
+creation.forEach(c => { sphereAngleMap[c.id] = c.angle; });
+
+reaches.sort((a, b) => sphereAngleMap[a.sphere] - sphereAngleMap[b.sphere]);
+reaches.forEach(r => {
+  const angle = sphereAngleMap[r.sphere];
+  r.x = CX + R_REACHES * Math.cos(angle);
+  r.y = CY + R_REACHES * Math.sin(angle);
+  r.angle = angle;
+});
+
+quintessence.x = CX;
+quintessence.y = CY;
+
+// ── SVG Helpers ────────────────────────────────
+const allNodes = {};
+
+function createEl(tag, attrs) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+// ── Quadrant wedges (drawn first, behind everything) ──
+const quadrantGroup = createEl('g', { id: 'quadrants' });
+svg.appendChild(quadrantGroup);
+
+foundation.forEach((f, i) => {
+  // Each foundation sphere governs a 90° wedge centered on its position
+  const startAngle = f.angle - Math.PI/4;
+  const endAngle = f.angle + Math.PI/4;
+  const outerR = R_REACHES + 40;
+  const innerR = 40;
+
+  const x1o = CX + outerR * Math.cos(startAngle);
+  const y1o = CY + outerR * Math.sin(startAngle);
+  const x2o = CX + outerR * Math.cos(endAngle);
+  const y2o = CY + outerR * Math.sin(endAngle);
+  const x1i = CX + innerR * Math.cos(endAngle);
+  const y1i = CY + innerR * Math.sin(endAngle);
+  const x2i = CX + innerR * Math.cos(startAngle);
+  const y2i = CY + innerR * Math.sin(startAngle);
+
+  const path = createEl('path', {
+    d: `M ${x1o} ${y1o} A ${outerR} ${outerR} 0 0 1 ${x2o} ${y2o} L ${x1i} ${y1i} A ${innerR} ${innerR} 0 0 0 ${x2i} ${y2i} Z`,
+    fill: f.color,
+    opacity: '0.03',
+    'pointer-events': 'none',
+  });
+  path.dataset.quadrant = f.id;
+  quadrantGroup.appendChild(path);
+
+  // Quadrant theme label between foundation and creation ring
+  const labelR = R_FOUNDATION + 36;
+  const lx = CX + labelR * Math.cos(f.angle);
+  const ly = CY + labelR * Math.sin(f.angle);
+  const label = createEl('text', {
+    x: lx, y: ly + 3,
+    class: 'quadrant-label',
+    fill: f.color,
+    opacity: '0.35',
+    transform: `rotate(${f.angle * 180/Math.PI + 90}, ${lx}, ${ly})`
+  });
+  // Only show for left/right; top/bottom don't need rotation
+  const labelNoRotate = createEl('text', {
+    x: lx, y: ly + 3,
+    class: 'quadrant-label',
+    fill: f.color,
+    opacity: '0.3',
+  });
+  labelNoRotate.textContent = f.theme;
+  quadrantGroup.appendChild(labelNoRotate);
+});
+
+// Quadrant boundary lines (thin, from center outward at 45° offsets)
+for (let i = 0; i < 4; i++) {
+  const angle = -Math.PI/2 + Math.PI/4 + (Math.PI/2 * i);
+  const x1 = CX + 40 * Math.cos(angle);
+  const y1 = CY + 40 * Math.sin(angle);
+  const x2 = CX + (R_REACHES + 40) * Math.cos(angle);
+  const y2 = CY + (R_REACHES + 40) * Math.sin(angle);
+  quadrantGroup.appendChild(createEl('line', {
+    x1, y1, x2, y2,
+    stroke: '#1a1a22', 'stroke-width': 1, opacity: '0.6',
+    'stroke-dasharray': '2 6'
+  }));
+}
+
+// ── Layer rings ────────────────────────────────
+[
+  [R_FOUNDATION, '#2a2825', 'Foundation'],
+  [R_CREATION, '#2a2825', 'Creation'],
+  [R_REACHES, '#2a2825', 'Reaches'],
+].forEach(([r, color, label]) => {
+  svg.appendChild(createEl('circle', {
+    cx: CX, cy: CY, r, class: 'layer-ring', stroke: color
+  }));
+});
+
+// ── Edge layer ─────────────────────────────────
+const edgeGroup = createEl('g', { id: 'edges' });
+svg.appendChild(edgeGroup);
+const allEdges = [];
+
+function drawLine(x1, y1, x2, y2, color, opts = {}) {
+  const el = createEl('line', {
+    x1, y1, x2, y2, stroke: color, class: 'edge',
+    'stroke-width': opts.width || 1.5, opacity: String(opts.opacity || 0.25),
+  });
+  if (opts.dash) el.setAttribute('stroke-dasharray', opts.dash);
+  edgeGroup.appendChild(el);
+  return el;
+}
+
+function drawArc(x1, y1, x2, y2, color, opts = {}) {
+  const mx = (x1+x2)/2, my = (y1+y2)/2;
+  const dx = mx-CX, dy = my-CY;
+  const pull = opts.pull || 0.2;
+  const cx1 = mx - dx*pull, cy1 = my - dy*pull;
+  const el = createEl('path', {
+    d: `M ${x1} ${y1} Q ${cx1} ${cy1} ${x2} ${y2}`,
+    stroke: color, class: 'edge', fill: 'none',
+    'stroke-width': opts.width || 1.5, opacity: String(opts.opacity || 0.25),
+  });
+  if (opts.dash) el.setAttribute('stroke-dasharray', opts.dash);
+  edgeGroup.appendChild(el);
+  return el;
+}
+
+// Foundation axes
+foundationAxes.forEach(([a, b]) => {
+  const fa = foundation.find(f => f.id === a), fb = foundation.find(f => f.id === b);
+  const e = drawLine(fa.x, fa.y, fb.x, fb.y, '#3a3a50', { width: 1.5, opacity: 0.3 });
+  e.dataset.from = a; e.dataset.to = b; e.dataset.type = 'axis';
+  allEdges.push(e);
+});
+
+// Foundation → governed creation spheres (subtle wedge connectors)
+Object.entries(foundationQuadrants).forEach(([fId, sphereIds]) => {
+  const f = foundation.find(x => x.id === fId);
+  sphereIds.forEach(sId => {
+    const s = creation.find(x => x.id === sId);
+    const e = drawLine(f.x, f.y, s.x, s.y, f.color, { width: 0.8, opacity: 0.12, dash: '3 5' });
+    e.dataset.from = fId; e.dataset.to = sId; e.dataset.type = 'governs';
+    allEdges.push(e);
+  });
+});
+
+// Allied pairs (curved, green — bridges between quadrants)
+alliedPairs.forEach(({ pair: [a, b], label }) => {
+  const ca = creation.find(c => c.id === a), cb = creation.find(c => c.id === b);
+  const e = drawArc(ca.x, ca.y, cb.x, cb.y, '#3a6a3a', { width: 2, opacity: 0.25, pull: 0.25 });
+  e.dataset.from = a; e.dataset.to = b; e.dataset.type = 'allied';
+  allEdges.push(e);
+
+  // Bridge label at midpoint
+  const mx = (ca.x+cb.x)/2, my = (ca.y+cb.y)/2;
+  const dx = mx-CX, dy = my-CY;
+  const lx = mx - dx*0.12, ly = my - dy*0.12;
+});
+
+// Opposition pairs (red, cross the circle)
+oppositionPairs.forEach(({ a, b, strength }) => {
+  const ca = creation.find(c => c.id === a), cb = creation.find(c => c.id === b);
+  const e = drawArc(ca.x, ca.y, cb.x, cb.y, '#6a2a2a', { width: strength*0.5, opacity: 0.15, pull: 0.08 });
+  e.dataset.from = a; e.dataset.to = b; e.dataset.type = 'opposition';
+  allEdges.push(e);
+});
+
+// Sphere → Reach (straight radial)
+reaches.forEach(r => {
+  const sphere = creation.find(c => c.id === r.sphere);
+  const e = drawLine(sphere.x, sphere.y, r.x, r.y, sphere.color, { width: 1.8, opacity: 0.25 });
+  e.dataset.from = sphere.id; e.dataset.to = r.id; e.dataset.type = 'pairing';
+  allEdges.push(e);
+});
+
+// Quintessence → creation (subtle)
+creation.forEach(c => {
+  const e = drawLine(CX, CY, c.x, c.y, '#ff9ecf', { width: 0.6, opacity: 0.06, dash: '2 6' });
+  e.dataset.from = 'quintessence'; e.dataset.to = c.id; e.dataset.type = 'quintessence';
+  allEdges.push(e);
+});
+
+// ── Nodes ──────────────────────────────────────
+
+function drawNode(data, radius, layer, sublabel) {
+  const g = createEl('g', { class: 'node', 'data-id': data.id, 'data-layer': layer });
+
+  const glow = createEl('circle', {
+    cx: data.x, cy: data.y, r: radius + 8,
+    fill: data.color, opacity: '0.06', class: 'node-ring'
+  });
+  g.appendChild(glow);
+
+  g.appendChild(createEl('circle', {
+    cx: data.x, cy: data.y, r: radius,
+    fill: data.color + '18', stroke: data.color, 'stroke-width': 1.5,
+    class: 'node-circle'
+  }));
+
+  const sym = createEl('text', {
+    x: data.x, y: data.y + 1,
+    fill: data.color, 'font-size': radius > 20 ? '16px' : radius > 14 ? '13px' : '10px',
+    'text-anchor': 'middle', 'dominant-baseline': 'central',
+    'pointer-events': 'none', opacity: '0.9'
+  });
+  sym.textContent = data.symbol || '';
+  g.appendChild(sym);
+
+  const label = createEl('text', {
+    x: data.x, y: data.y + radius + 14, class: 'node-label'
+  });
+  label.textContent = data.name;
+  g.appendChild(label);
+
+  if (sublabel) {
+    const sub = createEl('text', {
+      x: data.x, y: data.y + radius + 25, class: 'node-sublabel'
+    });
+    sub.textContent = sublabel;
+    g.appendChild(sub);
+  }
+
+  svg.appendChild(g);
+  allNodes[data.id] = { el: g, data, layer };
+  g.addEventListener('mouseenter', () => highlight(data.id));
+  g.addEventListener('mouseleave', clearHighlight);
+}
+
+// Quintessence pulse
+const pulse = createEl('circle', { cx: CX, cy: CY, r: 32, fill: 'none', stroke: '#ff9ecf', 'stroke-width': 1, opacity: '0.12' });
+pulse.innerHTML = '<animate attributeName="r" values="26;40;26" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.12;0.03;0.12" dur="4s" repeatCount="indefinite"/>';
+svg.appendChild(pulse);
+
+drawNode(quintessence, 22, 'quintessence', 'Coherence of Being');
+foundation.forEach(f => drawNode(f, 15, 'foundation', f.theme));
+creation.forEach(c => drawNode(c, 17, 'creation', c.magic));
+reaches.forEach(r => drawNode(r, 14, 'reach', r.axiological));
+
+// ── Interaction ────────────────────────────────
+
+function getConnected(nodeId) {
+  const connected = new Set([nodeId]);
+
+  // Sphere ↔ reach
+  reaches.forEach(r => {
+    if (r.sphere === nodeId) connected.add(r.id);
+    if (r.id === nodeId) connected.add(r.sphere);
+  });
+
+  // Allied
+  alliedPairs.forEach(({ pair: [a, b] }) => {
+    if (a === nodeId) connected.add(b);
+    if (b === nodeId) connected.add(a);
+  });
+
+  // Opposition
+  oppositionPairs.forEach(({ a, b }) => {
+    if (a === nodeId) connected.add(b);
+    if (b === nodeId) connected.add(a);
+  });
+
+  // Foundation axes
+  foundationAxes.forEach(([a, b]) => {
+    if (a === nodeId) connected.add(b);
+    if (b === nodeId) connected.add(a);
+  });
+
+  // Foundation governs
+  Object.entries(foundationQuadrants).forEach(([fId, spheres]) => {
+    if (fId === nodeId) spheres.forEach(s => { connected.add(s); reaches.filter(r => r.sphere === s).forEach(r => connected.add(r.id)); });
+    if (spheres.includes(nodeId)) { connected.add(fId); }
+  });
+
+  // Quintessence
+  if (nodeId === 'quintessence') creation.forEach(c => connected.add(c.id));
+  if (creation.find(c => c.id === nodeId)) connected.add('quintessence');
+
+  // If it's a reach, also connect its foundation
+  const reachNode = reaches.find(r => r.id === nodeId);
+  if (reachNode) {
+    Object.entries(foundationQuadrants).forEach(([fId, spheres]) => {
+      if (spheres.includes(reachNode.sphere)) connected.add(fId);
+    });
+  }
+
+  return connected;
+}
+
+function highlight(nodeId) {
+  const connected = getConnected(nodeId);
+  Object.values(allNodes).forEach(({ el, data }) => {
+    el.classList.toggle('highlighted', connected.has(data.id));
+    el.classList.toggle('dimmed', !connected.has(data.id));
+  });
+  allEdges.forEach(e => {
+    const hit = connected.has(e.dataset.from) && connected.has(e.dataset.to) &&
+                (e.dataset.from === nodeId || e.dataset.to === nodeId ||
+                 // Also highlight edges between connected nodes for foundation hover
+                 (allNodes[nodeId]?.layer === 'foundation' && e.dataset.type !== 'axis'));
+    // For foundation nodes, highlight all edges within the quadrant
+    if (allNodes[nodeId]?.layer === 'foundation') {
+      const governed = foundationQuadrants[nodeId] || [];
+      const govReaches = reaches.filter(r => governed.includes(r.sphere)).map(r => r.id);
+      const allGoverned = [...governed, ...govReaches, nodeId];
+      const isQuadrantEdge = allGoverned.includes(e.dataset.from) && allGoverned.includes(e.dataset.to);
+      const isFoundationEdge = e.dataset.from === nodeId || e.dataset.to === nodeId;
+      e.classList.toggle('highlighted', isQuadrantEdge || isFoundationEdge);
+      e.classList.toggle('dimmed', !isQuadrantEdge && !isFoundationEdge);
+    } else {
+      e.classList.toggle('highlighted', hit);
+      e.classList.toggle('dimmed', !hit);
+    }
+  });
+
+  // Highlight quadrant wedge
+  document.querySelectorAll('[data-quadrant]').forEach(el => {
+    const qId = el.dataset.quadrant;
+    const governed = foundationQuadrants[qId] || [];
+    const isRelevant = qId === nodeId || governed.includes(nodeId) ||
+                       reaches.filter(r => governed.includes(r.sphere)).some(r => r.id === nodeId);
+    el.setAttribute('opacity', isRelevant ? '0.08' : '0.01');
+  });
+
+  updatePanel(nodeId);
+}
+
+function clearHighlight() {
+  Object.values(allNodes).forEach(({ el }) => el.classList.remove('highlighted', 'dimmed'));
+  allEdges.forEach(e => e.classList.remove('highlighted', 'dimmed'));
+  document.querySelectorAll('[data-quadrant]').forEach(el => el.setAttribute('opacity', '0.03'));
+  resetPanel();
+}
+
+function updatePanel(nodeId) {
+  const panel = document.getElementById('insights');
+  const node = allNodes[nodeId];
+  if (!node) return;
+  const d = node.data;
+  let html = `<h3 style="color:${d.color}">${d.name}</h3>`;
+
+  if (node.layer === 'quintessence') {
+    html += `<p class="quintessence">The ninth principle — transcends the sphere/reach duality.</p><br>`;
+    html += `<p>Every entity's structural integrity. How solidly it coheres in the world.</p><br>`;
+    html += `<p><strong>Low quintessence →</strong> Approaching phase transition downward: destruction, death, dissolution, defeat.</p><br>`;
+    html += `<p><strong>High quintessence →</strong> Approaching phase transition upward: ascension, transformation, transcendence.</p><br>`;
+    html += `<p style="color:#5a5548">A city under siege loses quintessence until it phase-transitions into ruins. A hero accumulating power gains quintessence until they transcend into something greater.</p>`;
+
+  } else if (node.layer === 'foundation') {
+    const governed = foundationQuadrants[nodeId];
+    const sphereA = creation.find(c => c.id === governed[0]);
+    const sphereB = creation.find(c => c.id === governed[1]);
+    const reachA = reaches.find(r => r.sphere === governed[0]);
+    const reachB = reaches.find(r => r.sphere === governed[1]);
+    const axis = foundationAxes.find(a => a.includes(nodeId));
+    const opposite = foundation.find(f => f.id === (axis[0] === nodeId ? axis[1] : axis[0]));
+
+    html += `<p style="color:${d.color}; font-style:italic">${d.theme}</p><br>`;
+    html += `<p>Governs two creation spheres:</p>`;
+    html += `<p style="margin-left:8px"><span style="color:${sphereA.color}">● ${sphereA.name}</span> → ${reachA.name} <span style="color:#5a5548">(${reachA.axiological})</span></p>`;
+    html += `<p style="margin-left:8px"><span style="color:${sphereB.color}">● ${sphereB.name}</span> → ${reachB.name} <span style="color:#5a5548">(${reachB.axiological})</span></p>`;
+    html += `<br><p>Opposed axis: <span style="color:${opposite.color}">${opposite.name}</span></p>`;
+
+    // Show which allied pairs bridge this foundation
+    const bridges = alliedPairs.filter(ap => ap.bridges.includes(nodeId));
+    if (bridges.length) {
+      html += `<br><p style="color:#5a7a5a">Allied pairs bridging ${d.name}:</p>`;
+      bridges.forEach(b => {
+        const c1 = creation.find(c => c.id === b.pair[0]);
+        const c2 = creation.find(c => c.id === b.pair[1]);
+        html += `<p style="margin-left:8px; color:#4a6a4a"><span style="color:${c1.color}">${c1.name}</span> + <span style="color:${c2.color}">${c2.name}</span></p>`;
+      });
+    }
+
+  } else if (node.layer === 'creation') {
+    const reach = reaches.find(r => r.sphere === nodeId);
+    const allied = alliedPairs.find(ap => ap.pair.includes(nodeId));
+    const opposed = oppositionPairs.find(op => op.a === nodeId || op.b === nodeId);
+    const myFoundation = Object.entries(foundationQuadrants).find(([,spheres]) => spheres.includes(nodeId));
+    const foundNode = foundation.find(f => f.id === myFoundation[0]);
+
+    // Magic type header
+    html += `<p style="font-size:14px; color:${d.color}; margin-bottom:2px"><strong>${d.magic}</strong></p>`;
+    html += `<p style="color:#706b60; font-size:11px; font-style:italic; margin-bottom:8px">The ${d.archetype}'s sphere</p>`;
+    html += `<p style="color:#8a8578; font-size:11px; margin-bottom:8px">${d.magicDesc}</p>`;
+    html += `<p style="color:#6a3a3a; font-size:10px; margin-bottom:10px"><strong>Dark side:</strong> ${d.darkSide}</p>`;
+
+    html += `<hr style="border:none; border-top:1px solid #2a2a35; margin:8px 0">`;
+    html += `<p>Governed by <span style="color:${foundNode.color}">${foundNode.name}</span></p>`;
+    html += `<p>Powers: <strong style="color:${reach.color}">${reach.name}</strong> Reach <span style="color:#5a5548">(${reach.axiological})</span></p><br>`;
+
+    if (allied) {
+      const other = allied.pair[0] === nodeId ? allied.pair[1] : allied.pair[0];
+      const otherNode = creation.find(c => c.id === other);
+      const otherReach = reaches.find(r => r.sphere === other);
+      html += `<p style="color:#5a7a5a">Allied: <span style="color:${otherNode.color}">${otherNode.name}</span> (${otherNode.magic}) → ${otherReach.name}</p>`;
+      html += `<p style="color:#4a5a4a; font-size:10px; margin-left:8px">Bridges ${allied.bridges.map(b => foundation.find(f => f.id === b).name).join(' ↔ ')}</p>`;
+    }
+    if (opposed) {
+      const other = opposed.a === nodeId ? opposed.b : opposed.a;
+      const otherNode = creation.find(c => c.id === other);
+      const otherReach = reaches.find(r => r.sphere === other);
+      html += `<p style="color:#6a3a3a">Opposed: <span style="color:${otherNode.color}">${otherNode.name}</span> (${otherNode.magic}) → ${otherReach.name}</p>`;
+      html += `<p style="color:#5a3a3a; font-size:10px; margin-left:8px">Crosses ${opposed.crosses.map(b => foundation.find(f => f.id === b).name).join(' ↔ ')} axis</p>`;
+    }
+
+  } else if (node.layer === 'reach') {
+    const sphere = creation.find(c => c.id === d.sphere);
+    const myFoundation = Object.entries(foundationQuadrants).find(([,spheres]) => spheres.includes(d.sphere));
+    const foundNode = foundation.find(f => f.id === myFoundation[0]);
+    const allied = alliedPairs.find(ap => ap.pair.includes(d.sphere));
+    const opposed = oppositionPairs.find(op => op.a === d.sphere || op.b === d.sphere);
+
+    html += `<p style="color:${d.color}">${d.axiological}</p><br>`;
+    html += `<p>Powered by <span style="color:${sphere.color}">${sphere.name}</span> — <strong style="color:${sphere.color}">${sphere.magic}</strong></p>`;
+    html += `<p style="color:#706b60; font-size:11px; font-style:italic">${sphere.archetype}'s domain</p>`;
+    html += `<p>In the quadrant of <span style="color:${foundNode.color}">${foundNode.name}</span></p><br>`;
+
+    if (allied) {
+      const otherSphere = allied.pair[0] === d.sphere ? allied.pair[1] : allied.pair[0];
+      const otherReach = reaches.find(r => r.sphere === otherSphere);
+      html += `<p style="color:#5a7a5a">Allied: <span style="color:${otherReach.color}">${otherReach.name}</span> (${otherSphere === allied.pair[0] ? creation.find(c=>c.id===otherSphere).magic : creation.find(c=>c.id===otherSphere).magic})</p>`;
+    }
+    if (opposed) {
+      const otherSphere = opposed.a === d.sphere ? opposed.b : opposed.a;
+      const otherReach = reaches.find(r => r.sphere === otherSphere);
+      const otherC = creation.find(c => c.id === otherSphere);
+      html += `<p style="color:#6a3a3a">Opposed: <span style="color:${otherReach.color}">${otherReach.name}</span> (${otherC.magic})</p>`;
+    }
+  }
+
+  panel.innerHTML = html;
+}
+
+function resetPanel() {
+  document.getElementById('insights').innerHTML = `
+    <h3>Deep Structure</h3>
+    <p>Each <strong>foundation sphere</strong> governs a quadrant containing two creation spheres.</p>
+    <br>
+    <p><span class="foundation-color" style="color:#d4d4d8">Chaos</span> governs <strong>Force + Entropy</strong> — the engines of change</p>
+    <p><span class="foundation-color" style="color:#fbbf24">Order</span> governs <strong>Life + Mind</strong> — the engines of stability</p>
+    <p><span class="foundation-color" style="color:#fef3c7">Light</span> governs <strong>Matter + Energy</strong> — the engines of illumination</p>
+    <p><span class="foundation-color" style="color:#8b7fbf">Darkness</span> governs <strong>Spirit + Time</strong> — the engines of mystery</p>
+    <br>
+    <p class="bridge-label">Allied pairs bridge adjacent quadrants. Opposition pairs cross the circle diagonally.</p>
+    <br>
+    <p><span class="quintessence">Quintessence</span> at center — the coherence of being that determines phase transitions.</p>
+    <br>
+    <p style="color:#5a5548">Hover over any node to explore.</p>
+  `;
+}
+</script>
+</body>
+</html>

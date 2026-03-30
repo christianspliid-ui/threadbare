@@ -1,0 +1,596 @@
+[
+  {
+    "id": "VS-101",
+    "agent": "visual",
+    "severity": "major",
+    "category": "color-violation",
+    "title": "Left sidebar background too bright (52.5% vs 20-24% spec)",
+    "effort": "S",
+    "location": "LEFT_SIDEBAR"
+  },
+  {
+    "id": "VS-102",
+    "agent": "visual",
+    "severity": "critical",
+    "category": "icon-violation",
+    "title": "Emoji sphere icons instead of sphere-colored vector icons",
+    "effort": "M",
+    "location": "Multiple components"
+  },
+  {
+    "id": "VS-103",
+    "agent": "visual",
+    "severity": "major",
+    "category": "color-violation",
+    "title": "Sphere text colors below 70% brightness threshold",
+    "effort": "S",
+    "location": "EssencePanel, RetinuePanel"
+  },
+  {
+    "id": "VS-104",
+    "agent": "visual",
+    "severity": "minor",
+    "category": "typography",
+    "title": "Serif font usage unclear for narrative vs data",
+    "effort": "S",
+    "location": "NarrativeLog"
+  },
+  {
+    "id": "VS-105",
+    "agent": "visual",
+    "severity": "minor",
+    "category": "color-violation",
+    "title": "Hex tile borders could be darker",
+    "effort": "S",
+    "location": "HexMap"
+  },
+  {
+    "id": "VS-106",
+    "agent": "visual",
+    "severity": "suggestion",
+    "category": "contrast",
+    "title": "Mandate tracker labels low contrast",
+    "effort": "S",
+    "location": "MandateTracker"
+  },
+  {
+    "id": "IA-001",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "redundancy",
+    "title": "Avatar name repeated in three locations",
+    "effort": "S",
+    "location": "LEFT_SIDEBAR, CENTER_MAP, RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-002",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "redundancy",
+    "title": "'Touched' tier label repeated 3 times in retinue list",
+    "effort": "S",
+    "location": "RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-003",
+    "agent": "info-arch",
+    "severity": "minor",
+    "category": "redundancy",
+    "title": "'Location:' and 'Faction:' labels repeated identically in retinue",
+    "effort": "S",
+    "location": "RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-004",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "density_imbalance",
+    "title": "Zero-value displays consuming screen real estate",
+    "effort": "S",
+    "location": "TOP_BAR, LEFT_SIDEBAR"
+  },
+  {
+    "id": "IA-005",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "information_density",
+    "title": "Essence sphere breakdown (8 items) creates bloated left sidebar",
+    "effort": "M",
+    "location": "LEFT_SIDEBAR"
+  },
+  {
+    "id": "IA-006",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "density_imbalance",
+    "title": "Right sidebar domain vastly under-populated vs left sidebar (2.75:1)",
+    "effort": "L",
+    "location": "LEFT_SIDEBAR, RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-007",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "information_architecture",
+    "title": "Narrative feed fully hidden from main view (80+ entries, zero visibility)",
+    "effort": "L",
+    "location": "NARRATIVE_FEED"
+  },
+  {
+    "id": "IA-008",
+    "agent": "info-arch",
+    "severity": "minor",
+    "category": "heading_hierarchy",
+    "title": "Inconsistent heading nesting (H1->H2->H3 with gaps)",
+    "effort": "S",
+    "location": "LEFT_SIDEBAR, RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IA-009",
+    "agent": "info-arch",
+    "severity": "minor",
+    "category": "dead_space",
+    "title": "Center map area underutilized (only 3 HUD buttons)",
+    "effort": "M",
+    "location": "CENTER_MAP"
+  },
+  {
+    "id": "IA-010",
+    "agent": "info-arch",
+    "severity": "major",
+    "category": "content_density",
+    "title": "Rival Gods section shows only labels and spheres, no actionable context",
+    "effort": "M",
+    "location": "LEFT_SIDEBAR"
+  },
+  {
+    "id": "IA-011",
+    "agent": "info-arch",
+    "severity": "minor",
+    "category": "redundancy",
+    "title": "'Ardenmor Keep' location name appears twice in retinue",
+    "effort": "S",
+    "location": "RIGHT_SIDEBAR"
+  },
+  {
+    "id": "IX-001",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "ActionDrawer double-click vulnerability \u2014 cards clickable during animation",
+    "effort": "M",
+    "location": "ActionDrawer"
+  },
+  {
+    "id": "IX-002",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "overlay",
+    "title": "Multiple overlays can open simultaneously \u2014 no mutual exclusion",
+    "effort": "M",
+    "location": "GameView overlays"
+  },
+  {
+    "id": "IX-003",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "ActionDrawer close button doesn't prevent rapid Escape+click closure",
+    "effort": "S",
+    "location": "ActionDrawer"
+  },
+  {
+    "id": "IX-004",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "InterventionConfirm doesn't close when cost exceeds available essence",
+    "effort": "S",
+    "location": "InterventionConfirm"
+  },
+  {
+    "id": "IX-005",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Scry overlay assignments persist when retinue changes mid-session",
+    "effort": "M",
+    "location": "ScryOverlay"
+  },
+  {
+    "id": "IX-006",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "navigation",
+    "title": "Hex zoom breadcrumb back navigation doesn't clear selection state",
+    "effort": "S",
+    "location": "HexBreadcrumb"
+  },
+  {
+    "id": "IX-007",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "ActionDrawer stays open if selectedAgentId cleared while open",
+    "effort": "S",
+    "location": "ActionDrawer, useAgentInteraction"
+  },
+  {
+    "id": "IX-008",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "Agent profile modal can open from sidebar while ActionDrawer is open",
+    "effort": "S",
+    "location": "AgentInfoCard, ActionDrawer"
+  },
+  {
+    "id": "IX-009",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Avatar movement mode doesn't auto-clear if hex out of range",
+    "effort": "S",
+    "location": "useAvatarData"
+  },
+  {
+    "id": "IX-010",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Rapid wheel slot clicks queue multiple interventions",
+    "effort": "S",
+    "location": "useAgentInteraction"
+  },
+  {
+    "id": "IX-011",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "Strand view close button doesn't re-open action drawer",
+    "effort": "S",
+    "location": "StrandView"
+  },
+  {
+    "id": "IX-012",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "overlay",
+    "title": "ScryOverlay backdrop click doesn't close overlay",
+    "effort": "S",
+    "location": "ScryOverlay"
+  },
+  {
+    "id": "IX-013",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "state",
+    "title": "HexZoomView location double-click opens detail without closing drawer",
+    "effort": "S",
+    "location": "HexZoomView"
+  },
+  {
+    "id": "IX-014",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "InterventionConfirm can remain visible during backdrop click + essence deduction",
+    "effort": "S",
+    "location": "InterventionConfirm"
+  },
+  {
+    "id": "IX-015",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "navigation",
+    "title": "Right sidebar doesn't scroll if retinue panel overflows",
+    "effort": "S",
+    "location": "GameView sidebar"
+  },
+  {
+    "id": "IX-016",
+    "agent": "interaction",
+    "severity": "critical",
+    "category": "state",
+    "title": "Momentum scroll closes ActionDrawer unintentionally",
+    "effort": "S",
+    "location": "ActionDrawer"
+  },
+  {
+    "id": "IX-017",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Essence pool updates don't trigger wheel slot recalculation",
+    "effort": "S",
+    "location": "useAgentInteraction"
+  },
+  {
+    "id": "IX-018",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "ActionCard locked reason text may overflow card width",
+    "effort": "S",
+    "location": "ActionCard"
+  },
+  {
+    "id": "IX-019",
+    "agent": "interaction",
+    "severity": "major",
+    "category": "state",
+    "title": "Agent assignment to Scry doesn't clear sidebar selection immediately",
+    "effort": "S",
+    "location": "ScryOverlay, useAgentInteraction"
+  },
+  {
+    "id": "IX-020",
+    "agent": "interaction",
+    "severity": "minor",
+    "category": "feedback",
+    "title": "NarrativeLog toggle may be hidden behind ActionDrawer",
+    "effort": "S",
+    "location": "NarrativeLog, ActionDrawer"
+  },
+  {
+    "id": "RC-026",
+    "agent": "react-code",
+    "severity": "major",
+    "category": "performance",
+    "title": "ActionCard inline style objects & handleClick on every render",
+    "effort": "S",
+    "location": "ActionCard.tsx"
+  },
+  {
+    "id": "RC-027",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "ActionCard inline animation keyframes in JSX",
+    "effort": "S",
+    "location": "ActionCard.tsx"
+  },
+  {
+    "id": "RC-028",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "ActionDrawer does not memoize displaySlots computation",
+    "effort": "S",
+    "location": "ActionDrawer.tsx"
+  },
+  {
+    "id": "RC-029",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "prop-drilling",
+    "title": "GameView passes agentName twice (via find + string)",
+    "effort": "S",
+    "location": "GameView.tsx"
+  },
+  {
+    "id": "RC-030",
+    "agent": "react-code",
+    "severity": "major",
+    "category": "performance",
+    "title": "NarrativeLog TYPE_COLORS re-created from module scope",
+    "effort": "S",
+    "location": "NarrativeLog.tsx"
+  },
+  {
+    "id": "RC-031",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "NarrativeLog close button lacks aria-label",
+    "effort": "S",
+    "location": "NarrativeLog.tsx"
+  },
+  {
+    "id": "RC-032",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "AgentInfoCard hardcoded domain names should be constants",
+    "effort": "M",
+    "location": "AgentInfoCard.tsx"
+  },
+  {
+    "id": "RC-033",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "AgentProfileModal duplicates getSphereColor in local scope",
+    "effort": "S",
+    "location": "AgentProfileModal.tsx"
+  },
+  {
+    "id": "RC-034",
+    "agent": "react-code",
+    "severity": "major",
+    "category": "performance",
+    "title": "AgentProfileModal repeated conditional logic for knowledge gating",
+    "effort": "M",
+    "location": "AgentProfileModal.tsx"
+  },
+  {
+    "id": "RC-035",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "DebugPanel uses extensive inline styles instead of CSS classes",
+    "effort": "M",
+    "location": "DebugPanel.tsx"
+  },
+  {
+    "id": "RC-036",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "DebugPanel TraceEntryItem creates badgeStyle on every render",
+    "effort": "S",
+    "location": "DebugPanel.tsx"
+  },
+  {
+    "id": "RC-037",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "InterventionConfirm uses ternary chains for rangeText",
+    "effort": "S",
+    "location": "InterventionConfirm.tsx"
+  },
+  {
+    "id": "RC-038",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "HexZoomView hardcodes agent color palette and polygon constants",
+    "effort": "M",
+    "location": "HexZoomView.tsx"
+  },
+  {
+    "id": "RC-039",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "agentColor function duplicated in HexZoomView and LocationView",
+    "effort": "S",
+    "location": "HexZoomView.tsx, LocationView.tsx"
+  },
+  {
+    "id": "RC-040",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "HexZoomView keyboard handler doesn't preventDefault for Space",
+    "effort": "S",
+    "location": "HexZoomView.tsx"
+  },
+  {
+    "id": "RC-041",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "LocationView casts properties without type safety",
+    "effort": "S",
+    "location": "LocationView.tsx"
+  },
+  {
+    "id": "RC-042",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "MandateTracker hardcodes stage order and color constants",
+    "effort": "S",
+    "location": "MandateTracker.tsx"
+  },
+  {
+    "id": "RC-043",
+    "agent": "react-code",
+    "severity": "major",
+    "category": "performance",
+    "title": "AvatarHUD creates styles on every render despite useMemo",
+    "effort": "S",
+    "location": "AvatarHUD.tsx"
+  },
+  {
+    "id": "RC-044",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "AvatarHUD inconsistent style constant naming",
+    "effort": "S",
+    "location": "AvatarHUD.tsx"
+  },
+  {
+    "id": "RC-045",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "accessibility",
+    "title": "Tooltip depth tracking doesn't validate max depth",
+    "effort": "S",
+    "location": "Tooltip.tsx"
+  },
+  {
+    "id": "RC-046",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "HexTile uses inline IIFE for location overlay logic",
+    "effort": "S",
+    "location": "HexTile.tsx"
+  },
+  {
+    "id": "RC-047",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "HexMap eslint-disable for zoom setup effect",
+    "effort": "S",
+    "location": "HexMap.tsx"
+  },
+  {
+    "id": "RC-048",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "RetinuePanel and RivalPanel duplicate React.memo pattern",
+    "effort": "S",
+    "location": "RetinuePanel.tsx, RivalPanel.tsx"
+  },
+  {
+    "id": "RC-049",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "RivalPanel hardcodes behavior icons and colors",
+    "effort": "S",
+    "location": "RivalPanel.tsx"
+  },
+  {
+    "id": "RC-050",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "performance",
+    "title": "EssencePanel sorts spheres on every render without useMemo",
+    "effort": "S",
+    "location": "EssencePanel.tsx"
+  },
+  {
+    "id": "RC-051",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "code-hygiene",
+    "title": "SimulationControls hardcodes season icons",
+    "effort": "S",
+    "location": "SimulationControls.tsx"
+  },
+  {
+    "id": "RC-052",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "magic-number",
+    "title": "useViewNavigation has undefined handleLocationClick",
+    "effort": "S",
+    "location": "useViewNavigation.ts"
+  },
+  {
+    "id": "RC-053",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "prop-drilling",
+    "title": "useAgentInteraction hook too large (268 lines), too many concerns",
+    "effort": "L",
+    "location": "useAgentInteraction.ts"
+  },
+  {
+    "id": "RC-054",
+    "agent": "react-code",
+    "severity": "minor",
+    "category": "error-handling",
+    "title": "useInterventionAudio doesn't handle AudioContext errors",
+    "effort": "S",
+    "location": "useInterventionAudio.ts"
+  }
+]

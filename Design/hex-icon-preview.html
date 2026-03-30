@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hex Map Icon Preview — Hand-Drawn v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a1e;
+    color: #e0ddd4;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 40px;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; color: #c4a535; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 32px; }
+  h2 {
+    font-size: 18px; margin: 32px 0 16px 0;
+    color: #a09880; border-bottom: 1px solid #333; padding-bottom: 6px;
+  }
+  .grid { display: flex; flex-wrap: wrap; gap: 24px; }
+  .icon-card { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100px; }
+  .hex-container { position: relative; width: 80px; height: 92px; }
+  .hex-bg { width: 80px; height: 92px; }
+  .hex-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 52px; height: 52px; }
+  .icon-label { font-size: 11px; color: #999; text-align: center; line-height: 1.3; }
+  .size-row { display: flex; align-items: flex-end; gap: 20px; margin: 16px 0; }
+  .notes {
+    background: #222; border: 1px solid #333; border-radius: 6px;
+    padding: 16px; margin: 24px 0; font-size: 13px; line-height: 1.6; color: #aaa;
+  }
+  .notes strong { color: #c4a535; }
+  .color-swatch {
+    display: inline-block; width: 14px; height: 14px;
+    border-radius: 2px; vertical-align: middle; margin-right: 4px;
+  }
+</style>
+
+<!-- SVG FILTER for hand-drawn wobble -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0">
+  <defs>
+    <filter id="sketchy" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="turbulence" baseFrequency="0.03" numOctaves="4" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+</head>
+<body>
+
+<h1>Hex Map Icon Preview — Hand-Drawn v2</h1>
+<p class="subtitle">24 SVG icons with hand-drawn strokes, cross-hatching shadows, and ink-sketch character. Original designs for hex overlay compositing.</p>
+
+<div class="notes">
+  <strong>v2 changes from v1:</strong> Irregular hand-drawn paths (no perfect circles/rectangles). Cross-hatch shading for depth.
+  Varied stroke weights (3–5px). SVG turbulence displacement filter for organic wobble. Stipple dots for texture.
+  <br><br>
+  <strong>Biome colors — "Golden Hour" palette (from terrainPalette.ts / waterPalette.ts):</strong>
+  <span class="color-swatch" style="background:#4C6436"></span>Dense Forest ·
+  <span class="color-swatch" style="background:#849A52"></span>Light Forest ·
+  <span class="color-swatch" style="background:#4A5E3A"></span>Boreal Forest ·
+  <span class="color-swatch" style="background:#9CA85C"></span>Grassland ·
+  <span class="color-swatch" style="background:#BCC272"></span>Steppe ·
+  <span class="color-swatch" style="background:#C0A05A"></span>Hills ·
+  <span class="color-swatch" style="background:#687844"></span>Forested Hills ·
+  <span class="color-swatch" style="background:#A47A3C"></span>Mountains ·
+  <span class="color-swatch" style="background:#908680"></span>High Mountains ·
+  <span class="color-swatch" style="background:#CEAE72"></span>Sand Desert ·
+  <span class="color-swatch" style="background:#B4764A"></span>Badlands ·
+  <span class="color-swatch" style="background:#748046"></span>Swamp ·
+  <span class="color-swatch" style="background:#80B488"></span>Moor/Bog ·
+  <span class="color-swatch" style="background:#E2DCD0"></span>Tundra ·
+  <span class="color-swatch" style="background:#C6CCD2"></span>Glacier ·
+  <span class="color-swatch" style="background:#4886B0"></span>Ocean ·
+  <span class="color-swatch" style="background:#6AA2C0"></span>Shallows ·
+  <span class="color-swatch" style="background:#884C38"></span>Volcano ·
+  <span class="color-swatch" style="background:#9C9284"></span>Broken Lands
+</div>
+
+<!-- ============================================================ -->
+<!-- SVG SYMBOL DEFINITIONS                                        -->
+<!-- ============================================================ -->
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+<defs>
+
+  <!-- TERRAIN -->
+
+  <!-- Mountains — hand-drawn by Spliid in Inkscape, normalized to 100x100 -->
+  <symbol id="icon-mountains" viewBox="0 0 100 100">
+    <path d="M46.8,83.2 L38.9,78.0 L32.8,78.7 L32.8,75.4 L30.6,74.0 L31.2,71.4 L29.9,70.5 L24.1,72.8 L22.1,72.2 L21.4,66.6 L35.7,57.4 L54.2,42.3 L56.8,43.1 L58.7,47.5 L69.6,33.5 L73.6,30.3 L75.5,36.1 L82.8,48.8 L92.8,62.2 L91.2,62.4 L83.9,53.7 L74.4,39.2 L69.2,54.1 L71.0,57.8 L66.4,56.5 L55.9,49.2 L54.4,49.6 L52.6,59.1 L46.5,64.1 L44.8,67.4 L44.7,74.1 L43.5,76.8 L46.7,78.2 L46.6,79.9 L51.4,81.3 L48.5,83.7 L46.8,83.2 Z M71.1,83.5 L70.0,78.0 L73.5,81.7 L71.1,83.5 Z M79.9,79.0 L76.6,76.7 L76.7,73.2 L78.7,75.9 L82.3,77.3 L80.9,79.3 L79.9,79.0 Z M19.6,61.0 L17.1,56.2 L9.0,50.4 L11.5,49.3 L29.7,29.8 L37.2,18.0 L47.3,30.1 L51.7,33.5 L62.2,38.4 L60.1,39.5 L53.7,36.7 L43.8,29.6 L38.4,24.1 L37.8,28.7 L33.2,32.9 L32.3,35.3 L35.7,39.7 L30.0,42.5 L29.7,45.0 L25.4,50.0 L24.4,54.5 L25.3,56.1 L20.9,61.5 L19.6,61.0 Z" fill="#1a1a1a" stroke="none"/>
+  </symbol>
+
+  <!-- Single hill — filled silhouette -->
+  <symbol id="icon-hill" viewBox="0 0 100 100">
+    <path d="M8,74 Q22,62 34,48 Q44,36 50,30 Q56,36 66,48 Q78,62 92,74 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M8,74 Q22,62 34,48 Q44,36 50,30 L50,74 Z" fill="#1a1a1a" opacity="0.3" stroke="none"/>
+  </symbol>
+
+  <!-- Hills — hand-drawn by Spliid in Inkscape, normalized to 100x100 -->
+  <symbol id="icon-hills" viewBox="0 0 100 100">
+    <path d="M32.0,86.3 C31.8,86.2 31.4,85.6 31.1,85.0 C30.3,83.4 29.3,83.3 23.3,84.2 C18.5,84.8 17.1,84.8 17.1,83.9 C17.1,83.0 21.2,81.3 25.2,80.5 C28.4,79.9 41.1,75.7 46.5,73.6 C48.3,72.9 51.0,71.6 52.5,70.7 C55.9,68.6 56.9,68.6 60.6,70.0 C65.9,72.2 72.2,74.3 76.4,75.5 C78.7,76.1 80.9,76.8 81.3,77.0 C81.6,77.2 83.8,77.7 86.2,78.1 C91.5,79.1 93.1,80.0 91.3,80.9 C89.9,81.7 86.3,80.9 72.2,76.9 C67.5,75.5 64.9,74.6 61.7,73.0 C57.4,70.9 56.0,71.2 51.8,74.9 C50.4,76.1 48.5,77.7 47.6,78.5 C46.4,79.5 45.7,80.4 45.1,81.6 C43.6,85.3 42.6,85.9 40.8,84.4 C40.2,83.9 39.6,83.5 39.3,83.5 C38.7,83.5 36.8,84.5 35.3,85.7 C34.2,86.4 33.0,86.7 32.0,86.3 Z M24.0,63.2 C23.0,62.9 21.5,62.8 20.7,62.9 C19.4,63.1 19.0,63.0 18.4,62.4 C17.5,61.4 15.4,61.2 12.3,61.9 C8.0,62.7 5.4,62.5 6.8,61.3 C7.8,60.3 10.5,59.5 14.5,58.9 C19.4,58.2 24.4,56.6 30.4,53.8 C33.2,52.5 36.1,51.3 36.9,51.0 C37.7,50.7 39.3,49.9 40.5,49.2 C43.6,47.3 46.7,46.1 48.4,46.1 C49.5,46.1 51.7,46.8 56.0,48.5 C72.4,54.9 78.2,56.4 85.8,56.4 C87.9,56.4 90.8,56.5 92.2,56.7 C94.8,56.9 94.8,56.9 94.1,57.5 C92.9,58.4 90.8,58.8 87.1,58.8 C79.0,58.7 73.4,57.5 63.3,53.5 C48.3,47.5 47.9,47.4 44.6,49.6 C42.4,51.2 38.6,55.4 36.2,58.9 C35.3,60.3 34.4,61.4 34.1,61.5 C33.9,61.5 32.7,61.5 31.4,61.5 C29.3,61.6 29.0,61.7 27.8,62.6 C26.3,63.8 26.5,63.8 24.0,63.2 Z M20.6,35.8 C20.3,35.6 20.1,35.2 20.2,34.7 C20.4,34.2 20.2,34.0 18.9,33.9 C18.0,33.7 16.8,33.6 16.3,33.6 C15.7,33.6 14.7,33.5 14.0,33.3 C11.9,32.7 13.0,32.2 17.1,32.0 C21.5,31.7 29.8,30.1 34.2,28.6 C37.3,27.6 40.5,26.1 46.6,22.7 C49.9,20.9 50.0,20.9 52.7,20.9 C55.3,20.9 55.8,21.0 58.0,22.1 C59.4,22.8 61.8,24.1 63.3,25.1 C69.7,29.2 71.6,29.8 82.1,30.5 C83.9,30.7 85.6,30.9 86.1,31.0 L86.9,31.2 L85.9,31.8 C83.8,32.9 77.3,33.3 73.2,32.6 C69.3,32.0 59.9,28.1 57.7,26.1 C53.7,22.7 51.9,22.6 49.1,25.6 C46.9,27.9 45.5,30.0 45.3,31.4 C45.1,32.1 44.9,32.9 44.7,33.2 C44.1,33.9 42.5,33.9 42.0,33.2 C41.8,32.9 41.5,32.7 41.3,32.7 C41.2,32.7 39.7,33.4 38.1,34.4 C35.1,36.0 35.1,36.1 33.6,35.6 C30.8,34.9 29.5,34.9 26.7,35.6 C23.7,36.4 21.5,36.5 20.6,35.8 Z" fill="#1a1a1a" stroke="none"/>
+  </symbol>
+
+  <!-- Dense Forest — hand-drawn by Spliid in Inkscape, normalized to 100x100 -->
+  <symbol id="icon-forest-dense" viewBox="0 0 100 100">
+    <path d="M51.6,81.7 L47.2,72.1 L33.6,68.6 L32.7,58.4 L28.4,62.0 L25.0,61.3 L9.0,43.0 L11.5,33.9 L17.0,24.7 L24.4,19.4 L35.3,15.1 L43.7,19.4 L51.3,26.2 L57.8,20.5 L69.1,20.2 L76.4,18.0 L82.7,19.7 L88.2,25.1 L90.6,34.3 L90.6,46.6 L85.9,56.4 L75.6,62.0 L72.4,69.7 L70.1,64.7 L55.1,71.5 L53.3,81.8 L51.6,81.7 Z M54.1,69.7 L51.4,69.2 L54.1,69.7 Z M63.4,66.4 L71.3,56.8 L66.2,46.0 L59.6,38.0 L55.5,41.6 L49.1,43.3 L43.5,48.2 L47.8,54.7 L43.8,54.8 L51.8,62.9 L63.4,66.4 Z M53.9,58.9 L55.6,59.5 L53.9,58.9 Z M80.6,58.4 L89.6,43.2 L88.0,31.6 L84.0,24.3 L84.8,30.1 L80.1,22.3 L78.5,27.6 L78.9,31.8 L73.1,34.0 L75.6,52.1 L78.4,58.2 L80.6,58.4 Z M29.5,51.8 L34.2,48.6 L40.8,40.6 L50.3,35.9 L54.1,31.4 L47.7,23.9 L40.0,25.5 L34.8,31.7 L32.7,26.3 L30.6,27.2 L25.4,41.2 L22.3,44.1 L24.6,47.8 L29.5,51.8 Z M73.1,29.6 L71.3,27.6 L73.1,29.6 Z" fill="#1a1a1a" stroke="none"/>
+  </symbol>
+
+  <!-- Single hill — filled silhouette -->
+  <symbol id="icon-forest-light" viewBox="0 0 100 100">
+    <!-- Two separate deciduous trees, spaced apart -->
+    <path d="M20,76 L20,56 Q12,42 22,32 Q30,24 38,32 Q44,42 38,56 L38,76 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M20,76 L20,56 Q12,42 22,32 L29,56 L38,76 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M56,76 L56,52 Q48,36 58,26 Q66,20 74,28 Q82,38 76,54 L76,76 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M56,76 L56,52 Q48,36 58,26 L66,52 L76,76 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-forest-conifer" viewBox="0 0 100 100">
+    <!-- Three evergreen triangle trees -->
+    <path d="M18,76 L30,28 L42,76 Z" fill="#1a1a1a" opacity="0.45" stroke="none"/>
+    <path d="M18,76 L30,28 L30,76 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M34,76 L50,16 L66,76 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M34,76 L50,16 L50,76 Z" fill="#1a1a1a" opacity="0.25" stroke="none"/>
+    <path d="M56,76 L72,30 L88,76 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M56,76 L72,30 L72,76 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+  </symbol>
+
+  <!-- Grassland/Steppes — hand-drawn by Spliid in Inkscape, normalized to 100x100 -->
+  <symbol id="icon-grassland" viewBox="0 0 100 100">
+    <path d="M27.1,73.0 L26.4,72.5 L27.9,72.6 L28.4,70.8 L30.4,71.3 L30.1,68.6 L32.2,71.6 L27.1,73.0 Z M43.1,72.2 L44.5,69.8 L45.3,71.9 L43.1,72.2 Z M36.3,72.0 L33.6,71.8 L31.1,63.9 L35.0,68.1 L36.1,63.2 L36.5,70.5 L40.0,64.5 L39.4,71.7 L42.4,67.1 L41.3,72.2 L36.3,72.0 Z M63.1,59.3 L64.4,57.1 L66.0,59.3 L64.0,60.2 L63.1,59.3 Z M75.8,59.1 L67.6,58.4 L66.5,55.3 L69.2,57.5 L69.3,56.5 L68.0,51.4 L70.5,55.6 L71.2,50.2 L72.1,54.8 L74.4,52.0 L73.9,57.9 L76.2,55.4 L77.4,56.4 L79.5,55.1 L80.2,58.2 L75.8,59.1 Z M80.9,59.1 L83.3,59.2 L80.9,59.1 Z M49.6,30.3 L48.9,29.0 L50.3,29.8 L51.1,31.5 L49.6,30.3 Z M53.6,31.1 L51.8,27.8 L54.3,29.4 L53.4,24.7 L55.6,30.6 L53.6,31.1 Z M68.6,30.6 L65.4,30.5 L69.5,24.4 L67.7,29.9 L69.7,28.3 L70.1,30.3 L71.9,30.3 L68.6,30.6 Z M62.8,30.4 L57.4,29.4 L56.1,22.7 L58.0,27.8 L60.4,17.0 L60.5,24.4 L61.6,20.4 L62.3,21.3 L62.9,20.4 L62.3,26.4 L65.1,20.9 L63.8,27.0 L66.4,23.5 L65.2,27.9 L62.8,30.4 Z" fill="#1a1a1a" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-desert" viewBox="0 0 100 100">
+    <!-- Sand dune waves as filled shapes -->
+    <path d="M2,56 Q16,40 30,48 Q44,40 58,48 Q72,38 86,46 Q94,40 98,52 L98,58 Q86,50 72,46 Q58,54 44,46 Q30,54 16,46 Q8,50 2,58 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M0,70 Q16,54 34,62 Q48,54 64,62 Q78,52 92,60 Q98,56 100,66 L100,72 Q92,64 78,58 Q64,68 48,60 Q34,68 16,60 Q6,64 0,72 Z" fill="#1a1a1a" opacity="0.65" stroke="none"/>
+    <path d="M6,82 Q22,70 40,76 Q54,70 70,76 Q84,68 96,76 L96,80 Q84,74 70,80 Q54,76 40,80 Q22,76 6,84 Z" fill="#1a1a1a" opacity="0.35" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-swamp" viewBox="0 0 100 100">
+    <!-- Cattails/reeds rising from water -->
+    <path d="M18,76 L20,42 L22,76 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <ellipse cx="20" cy="38" rx="3.5" ry="8" fill="#1a1a1a" opacity="0.7"/>
+    <path d="M34,76 L36,38 L38,76 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <ellipse cx="36" cy="34" rx="3.5" ry="8" fill="#1a1a1a" opacity="0.7"/>
+    <path d="M54,76 L56,44 L58,76 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <ellipse cx="56" cy="40" rx="3.5" ry="8" fill="#1a1a1a" opacity="0.7"/>
+    <path d="M72,76 L74,40 L76,76 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <ellipse cx="74" cy="36" rx="3.5" ry="8" fill="#1a1a1a" opacity="0.7"/>
+    <!-- Water line -->
+    <path d="M6,70 Q18,66 30,70 Q42,74 54,70 Q66,66 78,70 Q86,74 94,70" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M10,78 Q22,74 34,78 Q46,82 58,78 Q70,74 82,78" fill="none" stroke="#1a1a1a" stroke-width="1.8" opacity="0.4"/>
+  </symbol>
+
+  <symbol id="icon-tundra" viewBox="0 0 100 100">
+    <!-- Low rolling ground with boulders and scrub -->
+    <path d="M8,56 Q30,48 52,56 Q70,62 92,54" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+    <path d="M4,68 Q26,60 48,68 Q70,76 94,66" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.5"/>
+    <circle cx="22" cy="42" r="4" fill="#1a1a1a" opacity="0.35"/>
+    <circle cx="56" cy="40" r="3.5" fill="#1a1a1a" opacity="0.3"/>
+    <circle cx="78" cy="46" r="5" fill="#1a1a1a" opacity="0.35"/>
+    <!-- Small scrub -->
+    <path d="M40,52 L42,40 L44,34 L46,42 L48,52" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-badlands" viewBox="0 0 100 100">
+    <!-- Jagged mesa/butte silhouettes -->
+    <path d="M6,76 L16,56 L24,64 L32,42 L42,58 L50,36 L60,54 L68,34 L78,52 L86,42 L94,76 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M32,42 L30,76 L50,76 L50,36 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M68,34 L68,76 L86,76 L86,42 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+  </symbol>
+
+  <!-- SETTLEMENTS -->
+
+  <symbol id="icon-city" viewBox="0 0 100 100">
+    <!-- Walled city circle with buildings -->
+    <path d="M50,18 Q80,18 84,50 Q84,78 50,82 Q18,78 16,50 Q16,20 50,18 Z" fill="#1a1a1a" opacity="0.12" stroke="#1a1a1a" stroke-width="3.5"/>
+    <path d="M34,40 L40,30 L46,40 L46,64 L34,64 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M50,34 L57,22 L64,34 L64,64 L50,64 Z" fill="#1a1a1a" opacity="0.7" stroke="none"/>
+    <path d="M57,22 L57,14" stroke="#1a1a1a" stroke-width="2.5" fill="none"/>
+    <circle cx="57" cy="12" r="2.5" fill="#1a1a1a" opacity="0.6"/>
+    <path d="M44,82 Q50,74 56,82" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="icon-town" viewBox="0 0 100 100">
+    <!-- Two buildings with peaked roofs -->
+    <path d="M20,48 L32,32 L44,48 L44,74 L20,74 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M20,48 L32,32 L32,74 L20,74 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M44,40 L57,22 L70,40 L70,74 L44,74 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M44,40 L57,22 L57,74 L44,74 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <rect x="62" y="24" width="4" height="14" fill="#1a1a1a" opacity="0.5"/>
+    <path d="M16,74 Q50,76 80,74" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+  </symbol>
+
+  <symbol id="icon-village" viewBox="0 0 100 100">
+    <!-- Two small houses -->
+    <path d="M18,52 L29,38 L40,52 L40,70 L18,70 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M18,52 L29,38 L29,70 L18,70 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M48,48 L61,32 L74,48 L74,70 L48,70 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M48,48 L61,32 L61,70 L48,70 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <path d="M14,70 Q46,74 78,70" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+  </symbol>
+
+  <symbol id="icon-castle" viewBox="0 0 100 100">
+    <!-- Two towers with crenellations, wall, gate -->
+    <path d="M16,74 L16,28 L36,28 L36,74 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M64,74 L64,28 L84,28 L84,74 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <!-- Crenellations -->
+    <path d="M14,28 L14,22 L20,22 L20,28 L26,28 L26,22 L32,22 L32,28 L38,28 L38,22" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M62,28 L62,22 L68,22 L68,28 L74,28 L74,22 L80,22 L80,28 L86,28 L86,22" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <!-- Wall -->
+    <path d="M36,44 L64,44" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+    <!-- Gate arch -->
+    <path d="M42,74 L42,54 Q50,44 58,54 L58,74 Z" fill="#1a1a1a" opacity="0.65" stroke="none"/>
+    <!-- Flag -->
+    <path d="M50,18 L50,38" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+    <path d="M50,18 L62,24 L50,28 Z" fill="#1a1a1a" opacity="0.45" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-ruins" viewBox="0 0 100 100">
+    <!-- Broken columns and rubble -->
+    <path d="M20,36 L18,74 L32,74 L34,36 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M20,36 L24,28 L30,30 L34,36 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+    <path d="M62,42 L60,74 L74,74 L76,42 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M62,42 L66,34 L72,36 L76,42 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+    <!-- Broken wall line -->
+    <path d="M36,56 L40,48 L46,52 L52,44 L58,50 L62,44" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+    <!-- Rubble -->
+    <circle cx="42" cy="72" r="3" fill="#1a1a1a" opacity="0.3"/>
+    <circle cx="52" cy="70" r="3.5" fill="#1a1a1a" opacity="0.25"/>
+    <circle cx="48" cy="68" r="2" fill="#1a1a1a" opacity="0.2"/>
+  </symbol>
+
+  <!-- POI -->
+
+  <symbol id="icon-temple" viewBox="0 0 100 100">
+    <!-- Classical temple: pediment + columns + steps -->
+    <path d="M20,42 L50,18 L80,42 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M50,18 L80,42 L50,42 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <path d="M28,42 L28,70 L34,70 L34,42 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M42,42 L42,70 L48,70 L48,42 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M54,42 L54,70 L60,70 L60,42 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M68,42 L68,70 L74,70 L74,42 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M22,70 L78,70 L78,74 L22,74 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M26,74 L74,74 L74,78 L26,78 Z" fill="#1a1a1a" opacity="0.35" stroke="none"/>
+    <path d="M30,78 L70,78 L70,82 L30,82 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-cave" viewBox="0 0 100 100">
+    <!-- Rocky arch with dark opening -->
+    <path d="M12,76 L20,50 Q30,30 42,26 Q50,24 58,28 Q68,34 76,52 L86,76 Z" fill="#1a1a1a" opacity="0.45" stroke="none"/>
+    <path d="M28,76 Q36,52 46,46 Q54,44 60,48 Q68,56 72,76 Z" fill="#1a1a1a" opacity="0.85" stroke="none"/>
+    <!-- Light rock highlight on left -->
+    <path d="M12,76 L20,50 Q26,38 34,32 L28,76 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-tower" viewBox="0 0 100 100">
+    <!-- Square tower with crenellations -->
+    <path d="M34,76 L36,28 L64,28 L66,76 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M34,28 L34,20 L40,20 L40,28 L46,28 L46,20 L52,20 L52,28 L58,28 L58,20 L64,20 L64,28" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <!-- Window -->
+    <path d="M44,42 L44,56 Q50,60 56,56 L56,42 Q50,36 44,42 Z" fill="#1a1a1a" opacity="0.8" stroke="none"/>
+    <!-- Door -->
+    <path d="M44,76 L44,62 Q50,56 56,62 L56,76 Z" fill="#1a1a1a" opacity="0.8" stroke="none"/>
+    <!-- Shadow on right side -->
+    <path d="M50,28 L64,28 L66,76 L50,76 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <path d="M28,76 Q50,78 72,76" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+  </symbol>
+
+  <symbol id="icon-camp" viewBox="0 0 100 100">
+    <!-- Tent with flag, campfire -->
+    <path d="M18,72 L48,22 L78,72 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M48,22 L78,72 L48,72 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <!-- Tent opening -->
+    <path d="M36,72 L48,44 L60,72 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <!-- Flag -->
+    <path d="M48,22 L48,12" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M48,12 L58,18 L48,22 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Campfire -->
+    <path d="M82,72 L84,60 Q86,54 88,60 L90,72 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-mine" viewBox="0 0 100 100">
+    <!-- Mine entrance with timber frame -->
+    <path d="M14,76 L24,46 Q36,28 50,26 Q64,28 76,46 L86,76 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+    <!-- Timber frame -->
+    <path d="M28,76 L30,42 L32,42 L30,76 Z" fill="#1a1a1a" opacity="0.7" stroke="none"/>
+    <path d="M68,76 L70,42 L72,42 L70,76 Z" fill="#1a1a1a" opacity="0.7" stroke="none"/>
+    <path d="M28,44 L50,36 L72,44 L72,42 L50,34 L28,42 Z" fill="#1a1a1a" opacity="0.7" stroke="none"/>
+    <!-- Dark opening -->
+    <path d="M34,76 Q42,54 50,48 Q58,54 66,76 Z" fill="#1a1a1a" opacity="0.85" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-monument" viewBox="0 0 100 100">
+    <!-- Standing stone / obelisk -->
+    <path d="M36,76 L34,36 Q38,22 46,18 Q54,16 60,20 Q66,26 68,38 L66,76 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M50,18 L68,38 L66,76 L50,76 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <!-- Carved symbols -->
+    <path d="M44,34 L52,34 L52,36 L44,36 Z" fill="#fff" opacity="0.3"/>
+    <path d="M47,30 L49,30 L49,44 L47,44 Z" fill="#fff" opacity="0.3"/>
+    <path d="M24,76 Q50,80 76,76" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+  </symbol>
+
+  <symbol id="icon-battlefield" viewBox="0 0 100 100">
+    <!-- Crossed swords with shield -->
+    <path d="M22,74 L60,24 L64,24 L26,74 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M56,30 L66,18 L68,20 L58,32 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M52,34 L60,38 L58,40 L50,36 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M78,74 L40,24 L36,24 L74,74 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M44,30 L34,18 L32,20 L42,32 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M48,34 L40,38 L42,40 L50,36 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Shield -->
+    <path d="M42,42 Q42,36 50,34 Q58,36 58,42 Q58,56 50,62 Q42,56 42,42 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-shrine" viewBox="0 0 100 100">
+    <!-- Small shrine/torii shape -->
+    <path d="M28,56 L26,72 L74,72 L72,56 Z" fill="#1a1a1a" opacity="0.35" stroke="none"/>
+    <path d="M30,72 L28,80 L72,80 L70,72 Z" fill="#1a1a1a" opacity="0.25" stroke="none"/>
+    <path d="M45,56 L45,36 L55,36 L55,56 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M44,36 Q46,22 50,16 Q54,22 56,36 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <!-- Radiance lines -->
+    <path d="M38,28 L32,22" fill="none" stroke="#1a1a1a" stroke-width="2" opacity="0.35"/>
+    <path d="M62,28 L68,22" fill="none" stroke="#1a1a1a" stroke-width="2" opacity="0.35"/>
+    <path d="M50,14 L50,8" fill="none" stroke="#1a1a1a" stroke-width="2" opacity="0.3"/>
+  </symbol>
+
+  <symbol id="icon-volcano" viewBox="0 0 100 100">
+    <!-- Volcanic cone with crater and smoke -->
+    <path d="M8,80 L36,30 L42,38 L58,38 L64,30 L92,80 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M50,38 L64,30 L92,80 L50,80 Z" fill="#1a1a1a" opacity="0.2" stroke="none"/>
+    <!-- Crater -->
+    <ellipse cx="50" cy="36" rx="10" ry="4" fill="#1a1a1a" opacity="0.8"/>
+    <!-- Smoke plumes -->
+    <circle cx="38" cy="12" r="4" fill="#1a1a1a" opacity="0.3"/>
+    <circle cx="48" cy="6" r="3.5" fill="#1a1a1a" opacity="0.25"/>
+    <circle cx="62" cy="14" r="4" fill="#1a1a1a" opacity="0.3"/>
+    <path d="M44,32 Q42,22 38,14" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+    <path d="M50,30 Q50,18 48,8" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+    <path d="M56,32 Q58,22 62,16" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+  </symbol>
+
+  <!-- WATER/SPECIAL -->
+
+  <symbol id="icon-waves" viewBox="0 0 100 100">
+    <!-- Three wave lines -->
+    <path d="M8,34 Q22,26 36,34 Q50,42 64,34 Q78,26 92,34 L92,40 Q78,32 64,40 Q50,48 36,40 Q22,32 8,40 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M8,50 Q22,42 36,50 Q50,58 64,50 Q78,42 92,50 L92,56 Q78,48 64,56 Q50,64 36,56 Q22,48 8,56 Z" fill="#1a1a1a" opacity="0.45" stroke="none"/>
+    <path d="M8,66 Q22,58 36,66 Q50,74 64,66 Q78,58 92,66 L92,72 Q78,64 64,72 Q50,80 36,72 Q22,64 8,72 Z" fill="#1a1a1a" opacity="0.3" stroke="none"/>
+  </symbol>
+
+  <symbol id="icon-port" viewBox="0 0 100 100">
+    <!-- Ship hull with mast and sail -->
+    <path d="M18,60 Q30,74 50,76 Q70,74 82,60 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M50,60 L50,18" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+    <path d="M50,22 Q66,34 50,54 Z" fill="#1a1a1a" opacity="0.4" stroke="none"/>
+    <!-- Flag -->
+    <path d="M50,18 L62,24 L50,28 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Water line -->
+    <path d="M4,80 Q20,74 36,80 Q52,86 68,80 Q82,74 96,80" fill="none" stroke="#1a1a1a" stroke-width="2" opacity="0.4"/>
+  </symbol>
+
+  <symbol id="icon-oasis" viewBox="0 0 100 100">
+    <!-- Palm tree + water pool -->
+    <ellipse cx="50" cy="70" rx="30" ry="10" fill="#1a1a1a" opacity="0.35"/>
+    <path d="M48,66 L50,28 L52,66 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Palm fronds -->
+    <path d="M50,28 Q36,18 22,26" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+    <path d="M50,28 Q40,14 30,12" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M50,28 Q60,14 70,16" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M50,28 Q64,20 76,28" fill="none" stroke="#1a1a1a" stroke-width="3"/>
+  </symbol>
+
+  <symbol id="icon-lighthouse" viewBox="0 0 100 100">
+    <!-- Tapered tower with light beams -->
+    <path d="M38,78 L42,30 L58,30 L62,78 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <path d="M50,30 L58,30 L62,78 L50,78 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <!-- Lamp room -->
+    <path d="M40,22 L40,30 L60,30 L60,22 Z" fill="#1a1a1a" opacity="0.6" stroke="none"/>
+    <path d="M40,22 Q50,12 60,22 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Light beams -->
+    <path d="M36,18 L24,8" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+    <path d="M50,12 L50,2" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+    <path d="M64,18 L76,8" fill="none" stroke="#1a1a1a" stroke-width="2.5" opacity="0.4"/>
+    <!-- Stripes -->
+    <path d="M41,42 L59,42 L60,54 L40,54 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <path d="M39,66 L61,66 L62,78 L38,78 Z" fill="#1a1a1a" opacity="0.15" stroke="none"/>
+    <path d="M30,78 Q50,82 70,78" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+  </symbol>
+
+  <symbol id="icon-bridge" viewBox="0 0 100 100">
+    <!-- Stone bridge arch with pillars -->
+    <path d="M10,58 Q50,24 90,58 L90,62 Q50,28 10,62 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M8,58 L92,58 L92,62 L8,62 Z" fill="#1a1a1a" opacity="0.5" stroke="none"/>
+    <!-- Pillars -->
+    <path d="M32,58 L32,80 L38,80 L38,58 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <path d="M62,58 L62,80 L68,80 L68,58 Z" fill="#1a1a1a" opacity="0.55" stroke="none"/>
+    <!-- Railing supports -->
+    <path d="M24,48 L24,58" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M42,42 L42,58" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M50,40 L50,58" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M58,42 L58,58" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+    <path d="M76,48 L76,58" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+  </symbol>
+
+</defs>
+</svg>
+
+<!-- ============================================================ -->
+<!-- RENDER SECTIONS                                               -->
+<!-- ============================================================ -->
+
+<h2>Terrain Types (10 icons)</h2>
+<div class="grid">
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#A47A3C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-mountains"/></svg></div><span class="icon-label">Mountains</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#C0A05A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-hill"/></svg></div><span class="icon-label">Hill (single)</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#C0A05A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-hills"/></svg></div><span class="icon-label">Hills (rolling)</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4C6436" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-forest-dense"/></svg></div><span class="icon-label">Dense Forest</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#849A52" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-forest-light"/></svg></div><span class="icon-label">Light Forest</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4A5E3A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-forest-conifer"/></svg></div><span class="icon-label">Boreal Forest</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-grassland"/></svg></div><span class="icon-label">Grassland</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#CEAE72" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-desert"/></svg></div><span class="icon-label">Sand Desert</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#748046" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-swamp"/></svg></div><span class="icon-label">Swamp</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#E2DCD0" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-tundra"/></svg></div><span class="icon-label">Tundra</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#B4764A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-badlands"/></svg></div><span class="icon-label">Badlands</span></div>
+</div>
+
+<h2>Settlements (5 icons)</h2>
+<div class="grid">
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-city"/></svg></div><span class="icon-label">City</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#C0A05A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-town"/></svg></div><span class="icon-label">Town</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-village"/></svg></div><span class="icon-label">Village</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#A47A3C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-castle"/></svg></div><span class="icon-label">Castle</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9C9284" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-ruins"/></svg></div><span class="icon-label">Ruins</span></div>
+</div>
+
+<h2>Points of Interest (9 icons)</h2>
+<div class="grid">
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-temple"/></svg></div><span class="icon-label">Temple</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#A47A3C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-cave"/></svg></div><span class="icon-label">Cave</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#687844" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-tower"/></svg></div><span class="icon-label">Tower</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-camp"/></svg></div><span class="icon-label">Camp</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#A47A3C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-mine"/></svg></div><span class="icon-label">Mine</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#C0A05A" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-monument"/></svg></div><span class="icon-label">Standing Stone</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9C9284" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-battlefield"/></svg></div><span class="icon-label">Battlefield</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-shrine"/></svg></div><span class="icon-label">Shrine</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#884C38" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-volcano"/></svg></div><span class="icon-label">Volcano</span></div>
+</div>
+
+<h2>Water & Special (5 icons)</h2>
+<div class="grid">
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4886B0" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-waves"/></svg></div><span class="icon-label">Ocean</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4886B0" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-port"/></svg></div><span class="icon-label">Port</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#CEAE72" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-oasis"/></svg></div><span class="icon-label">Oasis</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#6AA2C0" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-lighthouse"/></svg></div><span class="icon-label">Lighthouse</span></div>
+  <div class="icon-card"><div class="hex-container"><svg class="hex-bg" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#9CA85C" stroke="#333" stroke-width="1.5"/></svg><svg class="hex-icon" viewBox="0 0 100 100"><use href="#icon-bridge"/></svg></div><span class="icon-label">Bridge</span></div>
+</div>
+
+<h2>Size Comparison (Dense Forest at different hex sizes)</h2>
+<div class="size-row">
+  <div style="text-align:center">
+    <div style="position:relative; width:32px; height:37px; display:inline-block;">
+      <svg style="width:32px;height:37px" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4C6436" stroke="#333" stroke-width="2"/></svg>
+      <svg style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:20px;height:20px" viewBox="0 0 100 100"><use href="#icon-forest-dense"/></svg>
+    </div>
+    <div class="icon-label">32px</div>
+  </div>
+  <div style="text-align:center">
+    <div style="position:relative; width:48px; height:55px; display:inline-block;">
+      <svg style="width:48px;height:55px" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4C6436" stroke="#333" stroke-width="2"/></svg>
+      <svg style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:30px;height:30px" viewBox="0 0 100 100"><use href="#icon-forest-dense"/></svg>
+    </div>
+    <div class="icon-label">48px</div>
+  </div>
+  <div style="text-align:center">
+    <div style="position:relative; width:64px; height:74px; display:inline-block;">
+      <svg style="width:64px;height:74px" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4C6436" stroke="#333" stroke-width="2"/></svg>
+      <svg style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:40px;height:40px" viewBox="0 0 100 100"><use href="#icon-forest-dense"/></svg>
+    </div>
+    <div class="icon-label">64px</div>
+  </div>
+  <div style="text-align:center">
+    <div style="position:relative; width:96px; height:110px; display:inline-block;">
+      <svg style="width:96px;height:110px" viewBox="0 0 80 92"><polygon points="40,0 80,23 80,69 40,92 0,69 0,23" fill="#4C6436" stroke="#333" stroke-width="2"/></svg>
+      <svg style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:58px;height:58px" viewBox="0 0 100 100"><use href="#icon-forest-dense"/></svg>
+    </div>
+    <div class="icon-label">96px</div>
+  </div>
+</div>
+
+<div class="notes">
+  <strong>Icon style:</strong> Filled black silhouettes with opacity-based depth. Hand-drawn icons (mountains, hills, dense forest) drawn by Spliid in Inkscape, normalized to 100×100 viewBox. Remaining icons use the same filled-shape approach for visual consistency.
+  <br><br>
+  <strong>Techniques used:</strong>
+  <br>&#8226; <strong>Filled shapes</strong> with <code>fill="#1a1a1a"</code> and varied opacity (0.2–0.85) for depth layering
+  <br>&#8226; <strong>Shadow side fills</strong> — overlapping darker shapes on one side suggest light direction
+  <br>&#8226; <strong>Cutout shapes</strong> — lighter inner paths create openings (cave mouths, windows, tent flaps)
+  <br>&#8226; <strong>Minimal strokes</strong> — only used for thin details (water lines, light beams, ground lines)
+  <br><br>
+  <strong>For React integration:</strong> Each symbol is self-contained in <code>&lt;symbol&gt;</code> tags. All icons use the same 100×100 viewBox. Reference via <code>&lt;use href="#icon-name"/&gt;</code>. Most icons are 200–600 bytes each.
+</div>
+
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "quick-fix",
+  "prompt": "Quick fix: I just changed the AVATAR_SIGHT_RANGE constant from 3 to 4 in src/types/visibility.ts and updated one test. Can you update the docs?",
+  "assertions": [
+    "Recognizes this as a lightweight change requiring only Steps 1-2",
+    "Updates CLAUDE.md changelog with a row for the constant change",
+    "Does NOT create new Obsidian system notes for a constant tweak",
+    "Does NOT update Notion backlog for a minor constant change",
+    "Does NOT attempt obsidian_patch_content on headings with special characters"
+  ]
+}

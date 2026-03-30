@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sphere Relationships — Threadbearer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0e;
+    color: #e8dcc8;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: #d4a040;
+    margin-bottom: 0.3rem;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #7a6e60;
+    margin-bottom: 1.5rem;
+  }
+  svg { display: block; }
+
+  .legend {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #a89880;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .legend-line {
+    width: 36px;
+    height: 3px;
+    border-radius: 2px;
+  }
+  .legend-line.ally { background: #d4a04090; }
+  .legend-line.oppose {
+    background: repeating-linear-gradient(90deg, #ff444480 0 6px, transparent 6px 12px);
+  }
+
+  .note {
+    margin-top: 1.5rem;
+    max-width: 560px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #7a6e60;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>Creation Sphere Relationships</h1>
+<p class="subtitle">Opposition pairs cancel · Allied pairs reinforce</p>
+
+<svg id="diagram" width="700" height="700" viewBox="-350 -350 700 700"></svg>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-line ally"></div>
+    <span>Allied (reinforce for defense)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line oppose"></div>
+    <span>Opposed (cancel each other)</span>
+  </div>
+</div>
+
+<p class="note">
+  Adjacent spheres on the octagon alternate between ally and opposition.
+  Each sphere has exactly one ally and one opposite.
+  The Hamiltonian cycle: Force → Matter → Spirit → Mind → Time → Entropy → Life → Energy → Force.
+</p>
+
+<script>
+const spheres = [
+  // Ordered so adjacent pairs alternate ally/opposite around the ring
+  // Force-Matter(ally), Matter-Spirit(oppose), Spirit-Mind(ally), Mind-Time(oppose),
+  // Time-Entropy(ally), Entropy-Life(oppose), Life-Energy(ally), Energy-Force(oppose)
+  { name: 'Force',   color: '#ff4444', bright: '#ff6b6b' },
+  { name: 'Matter',  color: '#8b6b4a', bright: '#a8886a' },
+  { name: 'Spirit',  color: '#aa44dd', bright: '#cc66ff' },
+  { name: 'Mind',    color: '#2288ff', bright: '#44aaff' },
+  { name: 'Time',    color: '#ff9933', bright: '#ffb355' },
+  { name: 'Entropy', color: '#5a8a7a', bright: '#7aaa9a' },
+  { name: 'Life',    color: '#00cc55', bright: '#33ff77' },
+  { name: 'Energy',  color: '#ffd700', bright: '#ffe44d' },
+];
+
+const allies = [
+  ['Force', 'Matter'],
+  ['Energy', 'Life'],
+  ['Mind', 'Spirit'],
+  ['Time', 'Entropy'],
+];
+
+const opposites = [
+  ['Force', 'Energy'],
+  ['Matter', 'Spirit'],
+  ['Life', 'Entropy'],
+  ['Mind', 'Time'],
+];
+
+const svg = document.getElementById('diagram');
+const ns = 'http://www.w3.org/2000/svg';
+const R = 250;       // main ring radius
+const nodeR = 36;    // node circle radius
+
+// Compute positions
+const positions = {};
+spheres.forEach((s, i) => {
+  const angle = (i / spheres.length) * Math.PI * 2 - Math.PI / 2;
+  positions[s.name] = {
+    x: Math.cos(angle) * R,
+    y: Math.sin(angle) * R,
+    angle,
+    ...s
+  };
+});
+
+// Helper: create SVG element
+function el(tag, attrs = {}) {
+  const e = document.createElementNS(ns, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+
+// --- Draw defs ---
+const defs = el('defs');
+
+// Glow filter for nodes
+const glow = el('filter', { id: 'glow', x: '-50%', y: '-50%', width: '200%', height: '200%' });
+const blur = el('feGaussianBlur', { stdDeviation: '6', result: 'blur' });
+const merge = el('feMerge');
+const mn1 = el('feMergeNode', { in: 'blur' });
+const mn2 = el('feMergeNode', { in: 'SourceGraphic' });
+merge.appendChild(mn1);
+merge.appendChild(mn2);
+glow.appendChild(blur);
+glow.appendChild(merge);
+defs.appendChild(glow);
+
+svg.appendChild(defs);
+
+// --- Draw relationship lines ---
+const linesGroup = el('g');
+
+// Opposition lines (dashed, red-tinted)
+opposites.forEach(([a, b]) => {
+  const pa = positions[a], pb = positions[b];
+  const line = el('line', {
+    x1: pa.x, y1: pa.y,
+    x2: pb.x, y2: pb.y,
+    stroke: '#ff444450',
+    'stroke-width': '2',
+    'stroke-dasharray': '8 6',
+  });
+  linesGroup.appendChild(line);
+
+  // Small "×" at midpoint
+  const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+  const cross = el('text', {
+    x: mx, y: my,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    fill: '#ff444470',
+    'font-size': '16',
+    'font-weight': 'bold',
+  });
+  cross.textContent = '✕';
+  linesGroup.appendChild(cross);
+});
+
+// Ally lines (solid, gold-tinted)
+allies.forEach(([a, b]) => {
+  const pa = positions[a], pb = positions[b];
+  const line = el('line', {
+    x1: pa.x, y1: pa.y,
+    x2: pb.x, y2: pb.y,
+    stroke: '#d4a04060',
+    'stroke-width': '2.5',
+  });
+  linesGroup.appendChild(line);
+
+  // Small link icon at midpoint
+  const mx = (pa.x + pb.x) / 2, my = (pa.y + pb.y) / 2;
+  const link = el('text', {
+    x: mx, y: my,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    fill: '#d4a04080',
+    'font-size': '14',
+  });
+  link.textContent = '⟷';
+  linesGroup.appendChild(link);
+});
+
+svg.appendChild(linesGroup);
+
+// --- Draw octagon outline (faint) ---
+const octPoints = spheres.map((_, i) => {
+  const p = positions[spheres[i].name];
+  return `${p.x},${p.y}`;
+}).join(' ');
+const octagon = el('polygon', {
+  points: octPoints,
+  fill: 'none',
+  stroke: '#2a2a3220',
+  'stroke-width': '1',
+});
+svg.appendChild(octagon);
+
+// --- Draw nodes ---
+const nodesGroup = el('g');
+
+spheres.forEach((s) => {
+  const p = positions[s.name];
+  const g = el('g', { class: 'sphere-node' });
+
+  // Outer glow circle
+  const glowCircle = el('circle', {
+    cx: p.x, cy: p.y, r: nodeR + 8,
+    fill: s.color + '15',
+    stroke: 'none',
+  });
+  g.appendChild(glowCircle);
+
+  // Main circle
+  const circle = el('circle', {
+    cx: p.x, cy: p.y, r: nodeR,
+    fill: '#111114',
+    stroke: s.color,
+    'stroke-width': '2.5',
+    filter: 'url(#glow)',
+  });
+  g.appendChild(circle);
+
+  // Inner filled circle (subtle)
+  const inner = el('circle', {
+    cx: p.x, cy: p.y, r: nodeR - 6,
+    fill: s.color + '18',
+    stroke: 'none',
+  });
+  g.appendChild(inner);
+
+  // Label
+  const labelAngle = p.angle;
+  const labelR = R + nodeR + 22;
+  const lx = Math.cos(labelAngle) * labelR;
+  const ly = Math.sin(labelAngle) * labelR;
+
+  const label = el('text', {
+    x: lx, y: ly,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    fill: s.bright,
+    'font-size': '15',
+    'font-weight': '600',
+    'letter-spacing': '0.06em',
+  });
+  label.textContent = s.name;
+  g.appendChild(label);
+
+  // Sphere symbol inside circle
+  const symbols = {
+    Force: '⚔', Matter: '⛰', Energy: '⚡', Life: '🌿',
+    Mind: '◈', Spirit: '✦', Time: '⏳', Entropy: '☠',
+  };
+  const sym = el('text', {
+    x: p.x, y: p.y,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    fill: s.bright,
+    'font-size': '22',
+  });
+  sym.textContent = symbols[s.name] || '●';
+  g.appendChild(sym);
+
+  nodesGroup.appendChild(g);
+});
+
+svg.appendChild(nodesGroup);
+
+// --- Draw relationship labels on edges ---
+const edgeLabels = el('g');
+
+// Add "ALLY" / "OPPOSE" indicators between adjacent pairs
+spheres.forEach((s, i) => {
+  const next = spheres[(i + 1) % spheres.length];
+  const pa = positions[s.name], pb = positions[next.name];
+  const mx = (pa.x + pb.x) / 2;
+  const my = (pa.y + pb.y) / 2;
+
+  const isAlly = allies.some(([a, b]) =>
+    (a === s.name && b === next.name) || (b === s.name && a === next.name)
+  );
+
+  // Offset label inward slightly
+  const cx = 0, cy = 0;
+  const dx = mx - cx, dy = my - cy;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const inset = 30;
+  const lx = mx - (dx / dist) * inset;
+  const ly = my - (dy / dist) * inset;
+
+  const tag = el('text', {
+    x: lx, y: ly,
+    'text-anchor': 'middle',
+    'dominant-baseline': 'central',
+    fill: isAlly ? '#d4a04050' : '#ff444440',
+    'font-size': '9',
+    'letter-spacing': '0.1em',
+    'font-weight': '500',
+  });
+  tag.textContent = isAlly ? 'ALLY' : 'OPPOSE';
+  edgeLabels.appendChild(tag);
+});
+
+svg.appendChild(edgeLabels);
+
+// --- Animate: subtle pulse on glow circles ---
+let frame = 0;
+function animate() {
+  frame++;
+  const glows = svg.querySelectorAll('.sphere-node circle:first-child');
+  glows.forEach((g, i) => {
+    const phase = (frame + i * 30) * 0.02;
+    const scale = 0.12 + Math.sin(phase) * 0.05;
+    g.setAttribute('fill', spheres[i].color + Math.round(scale * 255).toString(16).padStart(2, '0'));
+  });
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+</body>
+</html>
