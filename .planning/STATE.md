@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed m2.5-monster-encounters/m2.5-02-PLAN.md
-last_updated: "2026-03-30T12:01:42.050Z"
+stopped_at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
+last_updated: "2026-03-30T12:03:54.047Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 5
@@ -177,6 +177,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12.1-ui-review-fixes P02 | 194 | 2 tasks | 2 files |
 | Phase m2.5-monster-encounters P01 | 6 | 2 tasks | 9 files |
 | Phase m2.5-monster-encounters P02 | 5 | 2 tasks | 4 files |
+| Phase m2.5-monster-encounters P03 | 483 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -314,6 +315,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase m2.5-monster-encounters]: dominantSphere derived from terrain via seedHexSphereAffinity at seeding time, not from graph
 - [Phase m2.5-monster-encounters]: phaseLairEscalation mutates state in-place at orchestrator position 2.3575 (after phaseBattleTick, before phaseArmyNotifications)
 - [Phase m2.5-monster-encounters]: Sphere pressure emitted to lair node itself (targetEntityId=lairId) — lair IS a location entity, phaseSpherePressure resolves downstream
+- [Phase m2.5-monster-encounters]: Monster encounter templates registered via getAnyEncounterById fallback chain — 5 templates covering lair, wilderness, settlement threat tiers
+- [Phase m2.5-monster-encounters]: MONSTER_TERRITORY_ATTRITION = 1.2 — additive Q loss, one check per army per tick, cleared_lair does not trigger
 
 ### Pending Todos
 
@@ -325,6 +328,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:01:42.048Z
-Stopped at: Completed m2.5-monster-encounters/m2.5-02-PLAN.md
+Last session: 2026-03-30T12:03:54.044Z
+Stopped at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
 Resume file: None
