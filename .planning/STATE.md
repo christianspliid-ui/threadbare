@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Low-Hanging Fruit Optimization
-status: in-progress
-stopped_at: Phase 19 Plan 01 complete (DTRM-01, DTRM-02)
-last_updated: "2026-03-30T19:50:00Z"
-last_activity: 2026-03-30 — Phase 19 Plan 01 complete: seeded PRNG + tick-local event IDs
+status: executing
+stopped_at: Completed 19-02-PLAN.md (DTRM-03 done)
+last_updated: "2026-03-30T20:22:57.750Z"
+last_activity: "2026-03-30 — Plan 01 complete: Math.random() + Date.now() replaced with seeded RNG + tick-local IDs"
 progress:
   total_phases: 4
-  completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
-  percent: 0
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 2
+  percent: 10
 ---
 
 # Project State
@@ -46,6 +46,8 @@ Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 - [19-01] Per-module reset functions over single global counter to keep module boundaries clean
 - [19-01] Trace timestamps use tick number not wall-clock ms — ordering by tick is semantically correct
 - [19-01] agentSelection/dream/rival Math.random() fallbacks documented as @deprecated — full wiring deferred to DTRM-03
+- [Phase 19]: Test structure must be sequential (not interleaved) with resetDecisionCache() between runs — interleaved runs share the encounterCache singleton
+- [Phase 19]: resetEventCounters() is the canonical per-tick reset location; lifecycle/unifiedAction counters excluded (they generate persistent graph node IDs)
 
 ### Pending Todos
 
@@ -59,6 +61,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T19:50:00Z
-Stopped at: Completed 19-01-PLAN.md (DTRM-01 + DTRM-02 done)
-Resume file: .planning/phases/19-determinism/19-02-PLAN.md (DTRM-03 — un-skip determinism integration test)
+Last session: 2026-03-30T20:22:51.073Z
+Stopped at: Completed 19-02-PLAN.md (DTRM-03 done)
+Resume file: None

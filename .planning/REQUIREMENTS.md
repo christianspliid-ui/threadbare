@@ -9,7 +9,7 @@
 
 - [x] **DTRM-01**: All engine Math.random() calls replaced with seeded PRNG (resolution.ts, meetingEncounter.ts, AscendantSelection.tsx) — done 2026-03-30
 - [x] **DTRM-02**: All Date.now() event ID generation replaced with tick-local sequence numbers (orchestrator.ts, phaseMandate.ts, phaseDoom.ts, phaseControlEffects.ts, interventionEffects.ts) — done 2026-03-30
-- [ ] **DTRM-03**: Determinism integration test un-skipped and passing (same seed produces identical 100-tick sequences)
+- [x] **DTRM-03**: Determinism integration test un-skipped and passing (same seed produces identical 100-tick sequences)
 
 ### Wiring
 
@@ -57,7 +57,7 @@
 |-------------|-------|--------|
 | DTRM-01 | Phase 19 | Complete (2026-03-30) |
 | DTRM-02 | Phase 19 | Complete (2026-03-30) |
-| DTRM-03 | Phase 19 | Pending |
+| DTRM-03 | Phase 19 | Complete |
 | WIRE-01 | Phase 20 | Pending |
 | WIRE-02 | Phase 20 | Pending |
 | WIRE-03 | Phase 20 | Pending |

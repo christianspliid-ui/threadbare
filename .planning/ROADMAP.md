@@ -50,7 +50,7 @@
 
 ### Phases
 
-- [ ] **Phase 19: Determinism** — Replace all unseeded Math.random/Date.now with seeded PRNG and verify with integration test
+- [x] **Phase 19: Determinism** — Replace all unseeded Math.random/Date.now with seeded PRNG and verify with integration test (completed 2026-03-30)
 - [ ] **Phase 20: Wiring** — Connect three stubbed engine→UI paths (hex focus, avatar position, actor attribution)
 - [ ] **Phase 21: Performance** — Cache prose resolver output, tune encounter cache threshold, code-split large data files
 - [ ] **Phase 22: Code Hygiene** — Extract DebugPanel sub-components, audit lodash, extend targetActions filtering
@@ -66,7 +66,7 @@
   2. The previously-skipped determinism integration test passes without modification to its assertions
   3. No Math.random() call exists in resolution.ts, meetingEncounter.ts, orchestrator.ts, phaseMandate.ts, phaseDoom.ts, phaseControlEffects.ts, or interventionEffects.ts
   4. Event IDs are tick-local sequence numbers, not wall-clock timestamps — two runs produce the same IDs
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 Plans:
 - [x] 19-01-PLAN.md — Replace Math.random() and Date.now() in 15 engine files with seeded PRNG and tick-local IDs (DONE 2026-03-30)
 - [ ] 19-02-PLAN.md — Un-skip and extend determinism integration test to verify 100-tick byte-identical output
@@ -110,7 +110,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
-| 19. Determinism | v1.1 | 0/2 | Planned | - |
+| 19. Determinism | 2/2 | Complete   | 2026-03-30 | - |
 | 20. Wiring | v1.1 | 0/TBD | Not started | - |
 | 21. Performance | v1.1 | 0/TBD | Not started | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
