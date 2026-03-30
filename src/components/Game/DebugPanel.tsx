@@ -1002,9 +1002,16 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
     return <div style={EMPTY_STATE_STYLE}>No graph available.</div>;
   }
 
-  // Find all armies
+  // Find all armies — exclude monster faction armies from the player-facing panel
   const armies = graph.getNodesByType('actor')
-    .filter(n => n.properties.armyState != null);
+    .filter(n => n.properties.armyState != null)
+    .filter(n => {
+      // isMonsterFaction: check via member_of edge to faction node
+      const memEdges = graph.getOutgoingEdges(n.id, 'member_of');
+      if (memEdges.length === 0) return true; // no faction — include (defensive)
+      const faction = graph.getNode(memEdges[0].target);
+      return !faction?.properties.isMonsterFaction;
+    });
 
   // Find all active battles/sieges
   const battles = graph.getNodesByType('actor')
