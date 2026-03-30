@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 18 context gathered
-last_updated: "2026-03-30T11:49:14.955Z"
+stopped_at: Phase 17 UI-SPEC approved
+last_updated: "2026-03-30T11:51:57.002Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 11
@@ -344,6 +344,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:49:14.952Z
-Stopped at: Phase 18 context gathered
-Resume file: .planning/phases/18-wire-mercenary-company-seeding-and-encounters-into-the-runtime-pipeline/18-CONTEXT.md
+Last session: 2026-03-30T11:51:57.000Z
+Stopped at: Phase 17 UI-SPEC approved
+Resume file: .planning/phases/17-add-action-description-fields-and-player-feedback-on-action-activation/17-UI-SPEC.md
