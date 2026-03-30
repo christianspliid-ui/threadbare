@@ -245,6 +245,36 @@ Plans:
 
 **Phase 12 Flesh Reach complete (2026-03-30).** All plans executed. 8-reach system, Quintessence runtime, 2x4 grid layout.
 
+### Phase 13: M2 Gap Closure — Aftermath, Army Visuals, Deferred Tests
+
+**Goal:** Close all M2 implementation gaps: implement aftermath sphere pressure and refugee generation in applyAftermath, complete 13 deferred .todo tests across battle/siege plans, and add HexMapV2 army visual layers (army sprites, battle indicators, siege indicators).
+**Requirements**: TBD
+**Depends on:** Phase 12
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 13 to break down)
+
+### Phase 14: Pause game automatically while an encounter modal is open
+
+**Goal:** Auto-pause the tick loop whenever an encounter modal (TieredEncounterModal or MeetingEncounterModal) opens, and auto-resume when the modal closes if the game was previously running. All encounter notifications auto-interrupt regardless of court position.
+**Requirements**: PAUSE-01 (auto-pause on encounter open), PAUSE-02 (conditional auto-resume on close), PAUSE-03 (all encounters auto-interrupt)
+**Depends on:** Phase 13
+**Plans:** 1 plan
+
+Plans:
+- [ ] 14-01-PLAN.md — Auto-pause/resume logic + tests
+
+### Phase 15: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 14
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 15 to break down)
+
 ---
 
 ## Estimated Scope
