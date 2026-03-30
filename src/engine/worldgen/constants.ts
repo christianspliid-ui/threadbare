@@ -31,6 +31,8 @@ export const PASS_SEED_SMOOTHING = 62347;
 export const PASS_SEED_VALIDATION = 70099;
 /** Fantasy overlay pass — sphere-driven biome transformation */
 export const PASS_SEED_FANTASY = 70109;
+/** Lair seeding pass — monster lair placement at worldgen (m2.5) */
+export const PASS_SEED_LAIRS = 90211;
 
 // ─── Province constants ──────────────────────────────────────────
 /** Maximum hexes any single province can claim via flood-fill */

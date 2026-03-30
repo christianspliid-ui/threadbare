@@ -68,7 +68,9 @@ export type LocationSubtype =
   | 'castle' | 'fort' | 'tower' | 'shrine' | 'temple'
   | 'mining' | 'ruins' | 'ruined_tower' | 'ruined_city' | 'ruined_village'
   | 'battleground' | 'oasis' | 'unexplored_poi'
-  | 'wilderness';  // default — no overlay icon
+  | 'wilderness'   // default — no overlay icon
+  | 'lair'         // monster lair (m2.5)
+  | 'cleared_lair'; // lair cleared by a faction (m2.5)
 
 /** A single hex tile with all computed properties */
 export interface HexTile {
