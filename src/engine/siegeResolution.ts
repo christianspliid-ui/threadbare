@@ -348,13 +348,11 @@ export function generateRegionalEncounters(
   const settlementId = siegeState.settlementId;
   if (!settlementId) return [];
 
-  // Get siege hex position via settlement's located_at edge
-  const settlementLocEdges = graph.getOutgoingEdges(settlementId, 'located_at');
-  if (settlementLocEdges.length === 0) return [];
-  const settlementHexNode = graph.getNode(settlementLocEdges[0].target);
-  if (!settlementHexNode) return [];
-  const siegeHexCol = settlementHexNode.properties.hexCol as number | undefined;
-  const siegeHexRow = settlementHexNode.properties.hexRow as number | undefined;
+  // Get siege hex position from settlement node's direct properties (hexCol/hexRow)
+  const settlementNode = graph.getNode(settlementId);
+  if (!settlementNode) return [];
+  const siegeHexCol = settlementNode.properties.hexCol as number | undefined;
+  const siegeHexRow = settlementNode.properties.hexRow as number | undefined;
   if (siegeHexCol === undefined || siegeHexRow === undefined) return [];
   const siegePos = { col: siegeHexCol, row: siegeHexRow };
 
