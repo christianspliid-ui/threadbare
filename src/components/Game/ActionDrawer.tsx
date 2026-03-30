@@ -5,6 +5,17 @@ import { Tooltip } from '../shared/Tooltip';
 import { Button } from '../shared/Button';
 import { renderProseWithIPK } from '../ProseKeyword';
 
+// ─── Layer Filter Types ───────────────────────────────────────────────────
+
+type NarrativeLayer = 'land' | 'soul' | 'people' | 'ruins';
+
+const LAYER_CONFIG: { key: NarrativeLayer; label: string; icon: string }[] = [
+  { key: 'land', label: 'Land', icon: '\u26F0' },  // ⛰
+  { key: 'soul', label: 'Soul', icon: '\u2728' },  // ✨
+  { key: 'people', label: 'People', icon: '\uD83D\uDC64' },  // 👤
+  { key: 'ruins', label: 'Ruins', icon: '\uD83C\uDFDB' },  // 🏛
+];
+
 // ─── Constants ─────────────────────────────────────────────────────────────
 
 const HAND_CONFIG = {
@@ -88,6 +99,36 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
     // StS focus state: which card is centered on screen
     const [focusedSlotId, setFocusedSlotId] = useState<string | null>(null);
 
+    // ── Narrative layer filter ─────────────────────────────────────────────
+    // Detect if this drawer contains hex-targeting cards with narrative layers
+    const layerCounts = useMemo(() => {
+      const counts: Record<NarrativeLayer, number> = { land: 0, soul: 0, people: 0, ruins: 0 };
+      for (const slot of slots) {
+        if (slot.narrativeLayer) counts[slot.narrativeLayer]++;
+      }
+      return counts;
+    }, [slots]);
+
+    const hasLayerCards = useMemo(
+      () => LAYER_CONFIG.some(l => layerCounts[l.key] > 0),
+      [layerCounts],
+    );
+
+    const [selectedLayer, setSelectedLayer] = useState<NarrativeLayer | null>(null);
+
+    // Auto-select first layer with cards when layer cards appear; reset when they vanish
+    useEffect(() => {
+      if (!hasLayerCards) {
+        setSelectedLayer(null);
+        return;
+      }
+      // If current selection is valid and has cards, keep it
+      if (selectedLayer && layerCounts[selectedLayer] > 0) return;
+      // Otherwise pick first non-empty layer
+      const first = LAYER_CONFIG.find(l => layerCounts[l.key] > 0);
+      setSelectedLayer(first?.key ?? null);
+    }, [hasLayerCards, layerCounts]); // eslint-disable-line react-hooks/exhaustive-deps
+
     // Clear focus when drawer closes or slots change
     useEffect(() => {
       if (!open) setFocusedSlotId(null);
@@ -109,16 +150,21 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
       return () => document.removeEventListener('keydown', handleKeyDown);
     }, [open, onClose, focusedSlotId]);
 
-    // Slot filtering
+    // Slot filtering — apply layer filter for hex-targeting cards
     const { observationSlots, interventionSlots, lockedSlots } = useMemo(() => {
-      const filtered = slots.filter(slot => slot.type !== 'info');
+      let filtered = slots.filter(slot => slot.type !== 'info');
+      // When layer tabs are active, only show cards matching the selected layer
+      // (cards without a narrativeLayer pass through — they're non-hex cards like "Meet The First")
+      if (hasLayerCards && selectedLayer) {
+        filtered = filtered.filter(s => !s.narrativeLayer || s.narrativeLayer === selectedLayer);
+      }
       const available = filtered.filter(s => s.available);
       return {
         observationSlots: available.filter(s => s.type === 'observation'),
         interventionSlots: available.filter(s => s.type !== 'observation'),
         lockedSlots: filtered.filter(s => !s.available),
       };
-    }, [slots]);
+    }, [slots, hasLayerCards, selectedLayer]);
 
     // All visible cards in order (for hand layout)
     const handCards = useMemo(() => {
@@ -216,7 +262,7 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
         {/* ── Card hand at bottom ── */}
         <div
           data-testid="action-drawer"
-          className="fixed bottom-0 left-0 right-0 flex justify-center pointer-events-none"
+          className="fixed bottom-0 left-0 right-0 flex flex-col items-center pointer-events-none"
           style={{
             transition: `transform ${HAND_CONFIG.TRANSITION_MS}ms ease-out`,
             transform: open ? 'translateY(0)' : 'translateY(100%)',
@@ -224,6 +270,58 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             paddingBottom: '0.75rem',
           }}
         >
+          {/* ── Layer filter tabs (hex-targeting only) ── */}
+          {hasLayerCards && (
+            <div
+              data-testid="layer-filter-tabs"
+              className="flex gap-1 pointer-events-auto"
+              style={{
+                marginBottom: '6px',
+                padding: '3px 6px',
+                borderRadius: '8px',
+                background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(160, 152, 128, 0.2)',
+              }}
+            >
+              {LAYER_CONFIG.map(({ key, label, icon }) => {
+                const count = layerCounts[key];
+                if (count === 0) return null;
+                const isActive = selectedLayer === key;
+                return (
+                  <button
+                    key={key}
+                    data-testid={`layer-tab-${key}`}
+                    onClick={() => setSelectedLayer(key)}
+                    style={{
+                      padding: '4px 10px',
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-ui, sans-serif)',
+                      fontWeight: isActive ? 600 : 400,
+                      letterSpacing: '0.03em',
+                      color: isActive ? 'var(--text-gold, #d4af37)' : 'var(--text-secondary, #a09880)',
+                      background: isActive ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
+                      transition: 'all 150ms ease',
+                    }}
+                  >
+                    <span style={{ marginRight: '4px' }}>{icon}</span>
+                    {label}
+                    <span style={{
+                      marginLeft: '4px',
+                      fontSize: '10px',
+                      opacity: 0.7,
+                    }}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           {/* Hand container — relative positioned, cards absolutely placed */}
           <div
             className="relative pointer-events-auto"

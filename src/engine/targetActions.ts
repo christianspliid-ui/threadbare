@@ -229,6 +229,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       perTickCostLabel,
       spellName: template.spellName,
       technicalDescription: template.description,
+      narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
     });
   }
 

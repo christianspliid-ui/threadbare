@@ -58,6 +58,9 @@ export interface WheelSlot {
    * The description field (narrativeTemplates.initiation) serves as flavor text.
    * This field carries the new mechanical description. */
   technicalDescription?: string;
+  /** Narrative layer this action belongs to (land, soul, people, ruins).
+   * Used by ActionDrawer to group hex-targeting cards into layer tabs. */
+  narrativeLayer?: 'land' | 'soul' | 'people' | 'ruins';
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

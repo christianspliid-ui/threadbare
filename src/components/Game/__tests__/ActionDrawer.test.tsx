@@ -105,6 +105,72 @@ describe('ActionDrawer', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
+  // ── Layer filter tabs ────────────────────────────────────────────────────
+
+  it('shows layer filter tabs when slots have narrativeLayer', () => {
+    const hexSlots: WheelSlot[] = [
+      {
+        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Bless the land', narrativeLayer: 'land',
+      },
+      {
+        id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Attune leyline', narrativeLayer: 'soul',
+      },
+    ];
+    render(
+      <ActionDrawer open={true} slots={hexSlots} targetName="Hex (3,7)" targetLabel="Desert"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    expect(screen.getByTestId('layer-filter-tabs')).toBeInTheDocument();
+    expect(screen.getByTestId('layer-tab-land')).toBeInTheDocument();
+    expect(screen.getByTestId('layer-tab-soul')).toBeInTheDocument();
+    // People and ruins have 0 cards — tabs should not render
+    expect(screen.queryByTestId('layer-tab-people')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('layer-tab-ruins')).not.toBeInTheDocument();
+  });
+
+  it('does not show layer tabs for agent intervention slots', () => {
+    render(
+      <ActionDrawer open={true} slots={mockSlots} targetName="Kael" targetLabel="Tier 2 Zealot"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    expect(screen.queryByTestId('layer-filter-tabs')).not.toBeInTheDocument();
+  });
+
+  it('filters cards when switching layer tabs', () => {
+    const hexSlots: WheelSlot[] = [
+      {
+        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Bless the land', narrativeLayer: 'land',
+      },
+      {
+        id: 'ta:hex.attune_leyline', label: 'Attune Leyline', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 5, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Attune leyline', narrativeLayer: 'soul',
+      },
+    ];
+    render(
+      <ActionDrawer open={true} slots={hexSlots} targetName="Hex (3,7)" targetLabel="Desert"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    // Land is auto-selected — should show land card, hide soul card
+    expect(screen.getByText('Bless Land')).toBeInTheDocument();
+    expect(screen.queryByText('Attune Leyline')).not.toBeInTheDocument();
+
+    // Switch to soul tab
+    fireEvent.click(screen.getByTestId('layer-tab-soul'));
+    expect(screen.queryByText('Bless Land')).not.toBeInTheDocument();
+    expect(screen.getByText('Attune Leyline')).toBeInTheDocument();
+  });
+
   it('sorts cards: available first, locked last (IA-003 progressive disclosure)', () => {
     const mixedSlots: WheelSlot[] = [
       { ...mockSlots[0] },
