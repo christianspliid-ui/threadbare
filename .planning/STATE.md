@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 13-m2-gap-closure-aftermath-army-visuals-deferred-tests/13-02-PLAN.md
-last_updated: "2026-03-30T10:13:50.617Z"
+stopped_at: Completed 13-m2-gap-closure-aftermath-army-visuals-deferred-tests/13-01-PLAN.md
+last_updated: "2026-03-30T10:15:01.715Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 9
   completed_phases: 4
   total_plans: 31
-  completed_plans: 21
+  completed_plans: 22
   percent: 93
 ---
 
@@ -179,6 +179,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-flesh-reach-migration-to-quintessence P04 | 15 | 2 tasks | 7 files |
 | Phase 14-pause-game-automatically-while-an-encounter-modal-is-open P01 | 3 | 2 tasks | 2 files |
 | Phase 13-m2-gap-closure-aftermath-army-visuals-deferred-tests P02 | 2 | 2 tasks | 2 files |
+| Phase 13 P01 | 10 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -301,6 +302,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 14-01]: Removed courtPosition !== the_first filter from auto-interrupt effect so ALL encounter notifications auto-open their modal
 - [Phase 13-02]: WorldGraph class used as parameter type in battleSpotlights.ts — matches essenceIncome.ts import pattern
 - [Phase 13-02]: Tests use WorldGraph directly (not a mock) for accurate edge traversal behavior in battleThreadVisibility.test.ts
+- [Phase 13]: AFTERMATH_FALLBACK_SPHERE = 'force' (lowercase matching SphereName type); isValidSphereAffinity inlined in battleAftermath.ts; field battles without settlementId skip sphere pressure (fail-soft); REFUGEE_GENERATION constants renamed to *_DEFERRED
 
 ### Roadmap Evolution
 
@@ -316,6 +318,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:13:50.614Z
-Stopped at: Completed 13-m2-gap-closure-aftermath-army-visuals-deferred-tests/13-02-PLAN.md
+Last session: 2026-03-30T10:14:52.924Z
+Stopped at: Completed 13-m2-gap-closure-aftermath-army-visuals-deferred-tests/13-01-PLAN.md
 Resume file: None
