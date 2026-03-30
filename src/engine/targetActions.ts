@@ -227,6 +227,8 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       description: template.narrativeTemplates.initiation,
       durationMode: template.durationMode,
       perTickCostLabel,
+      spellName: template.spellName,
+      technicalDescription: template.description,
     });
   }
 

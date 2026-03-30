@@ -492,3 +492,98 @@ describe('templateIdFromSlotId', () => {
     expect(templateIdFromSlotId('scry')).toBeUndefined();
   });
 });
+
+describe('Phase 17: spellName and technicalDescription population', () => {
+  it('populates spellName from template.spellName when present', () => {
+    const templates = [
+      makeTemplate({ id: 'act.spell', name: 'Invoke Spirit', spellName: 'Vocate Spiritus', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].spellName).toBe('Vocate Spiritus');
+  });
+
+  it('leaves spellName undefined when template lacks spellName', () => {
+    const templates = [
+      makeTemplate({ id: 'act.plain', name: 'Plain Action', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].spellName).toBeUndefined();
+  });
+
+  it('populates technicalDescription from template.description when present', () => {
+    const templates = [
+      makeTemplate({
+        id: 'act.desc',
+        name: 'Describe Action',
+        description: 'Grants the target a boon of clarity, sharpening their perception of hidden truths.',
+        targetCategories: ['actor'],
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].technicalDescription).toBe('Grants the target a boon of clarity, sharpening their perception of hidden truths.');
+  });
+
+  it('leaves technicalDescription undefined when template lacks description', () => {
+    const templates = [
+      makeTemplate({ id: 'act.nodesc', name: 'No Desc Action', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+    expect(slots[0].technicalDescription).toBeUndefined();
+  });
+
+  it('slot.description (flavor) is always narrativeTemplates.initiation regardless of template.description', () => {
+    const templates = [
+      makeTemplate({
+        id: 'act.both',
+        name: 'Both Fields',
+        description: 'Technical mechanical description.',
+        targetCategories: ['actor'],
+        narrativeTemplates: {
+          initiation: 'A whisper travels on the wind.',
+          success: 'it works',
+          failure: 'it fails',
+        },
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates,
+      pool: BASE_POOL,
+      primarySphere: 'mind',
+      accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+    // flavor text unchanged
+    expect(slots[0].description).toBe('A whisper travels on the wind.');
+    // mechanical description in new field
+    expect(slots[0].technicalDescription).toBe('Technical mechanical description.');
+  });
+});
