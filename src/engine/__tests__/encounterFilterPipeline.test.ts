@@ -281,8 +281,7 @@ describe('capWithDiversity', () => {
 describe('runFilterPipeline', () => {
   it('returns empty candidates for empty input', () => {
     const graph = buildAgentGraph('agent-1', { iron: 10 });
-    const dm = makeDistanceMatrix({});
-    const result = runFilterPipeline([], 'agent-1', 'loc-agent', graph, dm, 1);
+    const result = runFilterPipeline([], 'agent-1', 'loc-agent', graph, 1);
     expect(result.candidates).toHaveLength(0);
     expect(result.trace.cacheSize).toBe(0);
     expect(result.trace.afterCap).toBe(0);
@@ -290,9 +289,8 @@ describe('runFilterPipeline', () => {
 
   it('returns empty candidates when agent missing from graph', () => {
     const graph = new WorldGraph();
-    const dm = makeDistanceMatrix({});
     const entries = [makeEntry()];
-    const result = runFilterPipeline(entries, 'nonexistent', 'loc-agent', graph, dm, 1);
+    const result = runFilterPipeline(entries, 'nonexistent', 'loc-agent', graph, 1);
     expect(result.candidates).toHaveLength(0);
     expect(result.trace.cacheSize).toBe(1);
     expect(result.trace.afterAwareness).toBe(0);
@@ -302,19 +300,9 @@ describe('runFilterPipeline', () => {
     // Build graph: agent at loc-agent, high iron capability (raw=10 → cap ~50)
     const graph = buildAgentGraph('agent-1', { iron: 10 });
 
-    // Add adjacent edge between agent and target locations
-    graph.addEdge({
-      id: 'adj-1',
-      type: 'adjacent',
-      source: 'loc-agent',
-      target: 'loc-target',
-      properties: {},
-    });
-
-    const dm = makeDistanceMatrix({
-      'loc-agent': { 'loc-target': 1, 'loc-agent': 0 },
-      'loc-target': { 'loc-agent': 1, 'loc-target': 0 },
-    });
+    // Add hex coordinates to locations so hex-distance awareness works
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
 
     // Create entries at loc-target: some moderate (pass), some deadly (filtered)
     const entries = [
@@ -323,7 +311,7 @@ describe('runFilterPipeline', () => {
       makeEntry({ templateId: 'tmpl-3', threatRating: 'deadly', reachPrimary: 'iron' as ReachDomain }),
     ];
 
-    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, dm, 5);
+    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 5);
 
     // With THREAT_FLOOR_FILTER=false, all entries pass threat stage — scoring handles threat avoidance
     expect(result.candidates.length).toBeLessThanOrEqual(MAX_SCORED_CANDIDATES);
@@ -336,25 +324,16 @@ describe('runFilterPipeline', () => {
   it('trace has correct counts at each stage', () => {
     const graph = buildAgentGraph('agent-1', { iron: 10 });
 
-    graph.addEdge({
-      id: 'adj-1',
-      type: 'adjacent',
-      source: 'loc-agent',
-      target: 'loc-target',
-      properties: {},
-    });
-
-    const dm = makeDistanceMatrix({
-      'loc-agent': { 'loc-target': 1, 'loc-agent': 0 },
-      'loc-target': { 'loc-agent': 1, 'loc-target': 0 },
-    });
+    // Add hex coords to locations for hex-distance awareness
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
 
     const entries = [
       makeEntry({ templateId: 'pass-1', threatRating: 'moderate' }),
       makeEntry({ templateId: 'pass-2', threatRating: 'easy' }),
     ];
 
-    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, dm, 10);
+    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 10);
 
     const trace = result.trace;
     expect(trace.cacheSize).toBe(2);
@@ -406,15 +385,14 @@ describe('runFilterPipeline', () => {
       properties: {},
     });
 
-    // Distance: agent is adjacent to loc-target (1 hop) but NOT to loc-remote
-    const dm = makeDistanceMatrix({
-      'loc-agent': { 'loc-target': 1, 'loc-agent': 0 },
-      'loc-target': { 'loc-agent': 1, 'loc-target': 0 },
-      // loc-remote is NOT reachable from loc-agent via distance
-    });
+    // Add hex coords: loc-agent at (0,0), loc-target at (1,0) = 1 hex away
+    // loc-remote at (10,10) = far away, not reachable via awareness
+    graph.updateNode('loc-agent', { properties: { ...graph.getNode('loc-agent')!.properties, hexCol: 0, hexRow: 0 } });
+    graph.updateNode('loc-target', { properties: { ...graph.getNode('loc-target')!.properties, hexCol: 1, hexRow: 0 } });
+    graph.updateNode('loc-remote', { properties: { ...graph.getNode('loc-remote')!.properties, hexCol: 10, hexRow: 10 } });
 
     const entries = [
-      // Entry at loc-target: visible via awareness (1 hop away)
+      // Entry at loc-target: visible via awareness (1 hex away)
       makeEntry({
         templateId: 'tmpl-local',
         locationId: 'loc-target',
@@ -430,7 +408,7 @@ describe('runFilterPipeline', () => {
       }),
     ];
 
-    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, dm, 1);
+    const result = runFilterPipeline(entries, 'agent-1', 'loc-agent', graph, 1);
 
     // The local entry should pass via awareness.
     // The remote entry should pass via faction awareness (iron faction at loc-remote).

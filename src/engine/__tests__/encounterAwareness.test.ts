@@ -3,31 +3,16 @@ import { WorldGraph } from '../graph';
 import {
   computeAwarenessHops,
   filterByAwareness,
+  resolveLocationToHex,
   AWARENESS_THRESHOLD,
   BASE_AWARENESS_HOPS,
   CAPABILITY_PER_HOP,
   MAX_AWARENESS_HOPS,
 } from '../encounterAwareness';
-import type { DistanceMatrix } from '../distanceMatrix';
 import type { EncounterCacheEntry } from '../encounterCache';
 import type { ReachDomain } from '../../types/traits';
 
 // ─── Helpers ────────────────────────────────────────────────────
-
-/** Build a minimal DistanceMatrix from a distance map */
-function makeDistanceMatrix(
-  distanceMap: Record<string, Record<string, number>>,
-): DistanceMatrix {
-  const distances = new Map<string, Map<string, number>>();
-  for (const [from, targets] of Object.entries(distanceMap)) {
-    const row = new Map<string, number>();
-    for (const [to, dist] of Object.entries(targets)) {
-      row.set(to, dist);
-    }
-    distances.set(from, row);
-  }
-  return { distances, builtAtTick: 0, locationCount: distances.size };
-}
 
 /** Build a minimal encounter cache entry */
 function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCacheEntry {
@@ -51,6 +36,37 @@ function makeEntry(overrides: Partial<EncounterCacheEntry> = {}): EncounterCache
     stepReaches: ['iron' as ReachDomain],
     ...overrides,
   };
+}
+
+/**
+ * Add a location node with hex coordinates to the graph.
+ */
+function addLocation(graph: WorldGraph, id: string, col: number, row: number, extra: Record<string, unknown> = {}): void {
+  graph.addNode({
+    id,
+    type: 'location',
+    name: `Location ${id}`,
+    properties: { hexCol: col, hexRow: row, ...extra },
+  });
+}
+
+/**
+ * Add a sublocation node linked to a parent location.
+ */
+function addSublocation(graph: WorldGraph, id: string, parentId: string): void {
+  graph.addNode({
+    id,
+    type: 'location',
+    name: `Sublocation ${id}`,
+    properties: { parentLocationId: parentId, sublocationTypeId: 'test-sub' },
+  });
+  graph.addEdge({
+    id: `edge-contains-${parentId}-${id}`,
+    type: 'contains',
+    source: parentId,
+    target: id,
+    properties: {},
+  });
 }
 
 /**
@@ -147,43 +163,62 @@ describe('computeAwarenessHops', () => {
   });
 });
 
-// ─── filterByAwareness ──────────────────────────────────────────
+// ─── resolveLocationToHex ────────────────────────────────────────
+
+describe('resolveLocationToHex', () => {
+  it('returns hex coords for a top-level location', () => {
+    const graph = new WorldGraph();
+    addLocation(graph, 'loc-city', 5, 10);
+    expect(resolveLocationToHex(graph, 'loc-city')).toEqual({ col: 5, row: 10 });
+  });
+
+  it('resolves sublocation to parent hex coords', () => {
+    const graph = new WorldGraph();
+    addLocation(graph, 'loc-city', 5, 10);
+    addSublocation(graph, 'sub-temple', 'loc-city');
+    expect(resolveLocationToHex(graph, 'sub-temple')).toEqual({ col: 5, row: 10 });
+  });
+
+  it('returns null for non-existent node', () => {
+    const graph = new WorldGraph();
+    expect(resolveLocationToHex(graph, 'nonexistent')).toBeNull();
+  });
+
+  it('returns null for location without hex coordinates', () => {
+    const graph = new WorldGraph();
+    graph.addNode({ id: 'loc-nohex', type: 'location', name: 'No Hex', properties: {} });
+    expect(resolveLocationToHex(graph, 'loc-nohex')).toBeNull();
+  });
+});
+
+// ─── filterByAwareness (hex-distance based) ─────────────────────
 
 describe('filterByAwareness', () => {
-  it('agent with 0 capability sees only entries within BASE_AWARENESS_HOPS', () => {
-    // raw=0 → sigmoid ~0.018 → below threshold → 0 hops → nothing visible
+  it('agent with 0 capability sees same-hex encounters (distance 0 always visible)', () => {
+    // raw=0 → sigmoid ~0.018 → below threshold → 0 hops
+    // But same-hex encounters are ALWAYS visible (distance 0 rule)
     const graph = buildAgentGraph('agent-1', {});
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0, 'loc-near': 1 },
-    });
+    addLocation(graph, 'loc-home', 3, 3);
+    addLocation(graph, 'loc-near', 4, 3); // 1 hex away
 
     const entries = [
       makeEntry({ locationId: 'loc-home' }),
       makeEntry({ locationId: 'loc-near' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
-    // With no traits, raw=0, sigmoid ~0.018 < 0.05 threshold → 0 hops
-    // Distance 0 is not <= 0 ... actually 0 <= 0 is true
-    // But with 0 hops, distance must be <= 0
-    expect(result.length).toBe(1); // only loc-home at distance 0
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
+    // Distance 0 (same hex) always visible; distance 1 needs capability above threshold
+    expect(result.length).toBe(1);
     expect(result[0].locationId).toBe('loc-home');
   });
 
-  it('agent with high iron capability sees iron encounters at distance 5', () => {
-    // raw=20 → sigmoid ~0.982 → hops = 1 + floor(0.982/0.15) = 1+6 = 7 → capped 5
+  it('agent with high iron capability sees iron encounters at hex distance 5', () => {
+    // raw=20 → sigmoid ~0.982 → hops = 1 + floor(0.982/0.15) = 7 → capped at 5
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    const dm = makeDistanceMatrix({
-      'loc-home': {
-        'loc-home': 0,
-        'loc-1': 1,
-        'loc-2': 2,
-        'loc-3': 3,
-        'loc-4': 4,
-        'loc-5': 5,
-        'loc-6': 6,
-      },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-1', 1, 0);   // hex dist 1
+    addLocation(graph, 'loc-5', 5, 0);   // hex dist 5
+    addLocation(graph, 'loc-6', 6, 0);   // hex dist 6
 
     const entries = [
       makeEntry({ locationId: 'loc-1', reachPrimary: 'iron', reachSecondary: 'gold' }),
@@ -191,28 +226,24 @@ describe('filterByAwareness', () => {
       makeEntry({ locationId: 'loc-6', reachPrimary: 'iron', reachSecondary: 'gold' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
     expect(result.length).toBe(2); // loc-1 (dist 1) and loc-5 (dist 5)
     expect(result.map((e) => e.locationId)).toEqual(['loc-1', 'loc-5']);
   });
 
-  it('agent with low capability sees encounters at distance 1 only', () => {
-    // raw=5 → sigmoid ~0.119 → hops = 1 + floor(0.119/0.15) = 1+0 = 1
+  it('agent with low capability sees encounters at hex distance 1 only', () => {
+    // raw=5 → sigmoid ~0.119 → hops = 1 + floor(0.119/0.15) = 1
     const graph = buildAgentGraph('agent-1', { iron: 5 });
-    const dm = makeDistanceMatrix({
-      'loc-home': {
-        'loc-home': 0,
-        'loc-near': 1,
-        'loc-far': 2,
-      },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-near', 1, 0);  // hex dist 1
+    addLocation(graph, 'loc-far', 2, 0);   // hex dist 2
 
     const entries = [
       makeEntry({ locationId: 'loc-near', reachPrimary: 'iron', reachSecondary: 'gold' }),
       makeEntry({ locationId: 'loc-far', reachPrimary: 'iron', reachSecondary: 'gold' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
     expect(result.length).toBe(1);
     expect(result[0].locationId).toBe('loc-near');
   });
@@ -221,99 +252,103 @@ describe('filterByAwareness', () => {
     // Agent has high gold (raw=20 → ~0.982) but low iron (raw=0 → ~0.018)
     // Entry: primary=iron, secondary=gold
     // Iron cap: 0 hops. Gold cap: 5 hops.
-    // max(0, 5) = 5 → sees at distance 3
+    // max(0, 5) = 5 → sees at hex distance 3
     const graph = buildAgentGraph('agent-1', { gold: 20 });
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0, 'loc-3': 3 },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-3', 3, 0);  // hex dist 3
 
     const entries = [
       makeEntry({ locationId: 'loc-3', reachPrimary: 'iron', reachSecondary: 'gold' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
     expect(result.length).toBe(1);
   });
 
-  it('local encounters (distance 0) visible if capability above threshold', () => {
-    // raw=5 → sigmoid ~0.119 → above threshold → at least 1 hop
-    const graph = buildAgentGraph('agent-1', { iron: 5 });
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0 },
-    });
+  it('same-hex encounters always visible regardless of capability', () => {
+    // Agent has NO capability in any reach → 0 hops
+    // But distance 0 (same hex) always passes
+    const graph = buildAgentGraph('agent-1', {});
+    addLocation(graph, 'loc-home', 5, 5);
 
     const entries = [
       makeEntry({ locationId: 'loc-home', reachPrimary: 'iron', reachSecondary: 'gold' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
+    expect(result.length).toBe(1);
+  });
+
+  it('agent at sublocation sees all encounters on same hex', () => {
+    const graph = buildAgentGraph('agent-1', {});
+    addLocation(graph, 'loc-city', 3, 3);
+    addSublocation(graph, 'sub-temple', 'loc-city');
+
+    // Encounters at the parent location (same hex)
+    const entries = [
+      makeEntry({ locationId: 'loc-city', reachPrimary: 'iron' }),
+    ];
+
+    // Agent is at the sublocation, should resolve to parent hex → distance 0
+    const result = filterByAwareness(entries, 'agent-1', 'sub-temple', graph);
     expect(result.length).toBe(1);
   });
 
   it('returns empty array when agent is not in graph', () => {
     const graph = new WorldGraph();
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0, 'loc-1': 1 },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
 
-    const entries = [makeEntry({ locationId: 'loc-1' })];
+    const entries = [makeEntry({ locationId: 'loc-home' })];
 
-    const result = filterByAwareness(entries, 'nonexistent-agent', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'nonexistent-agent', 'loc-home', graph);
     expect(result).toEqual([]);
   });
 
-  it('entry at unreachable location (Infinity distance) is invisible', () => {
+  it('entry at location without hex coords is invisible', () => {
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    // loc-unreachable not in distance matrix → getDistance returns Infinity
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0 },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    // loc-nohex has no hexCol/hexRow
+    graph.addNode({ id: 'loc-nohex', type: 'location', name: 'No Hex', properties: {} });
 
     const entries = [
-      makeEntry({ locationId: 'loc-unreachable', reachPrimary: 'iron', reachSecondary: 'gold' }),
+      makeEntry({ locationId: 'loc-nohex', reachPrimary: 'iron', reachSecondary: 'gold' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
     expect(result).toEqual([]);
   });
 
   it('returns empty array when agentLocationId is empty string', () => {
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    const dm = makeDistanceMatrix({});
 
     const entries = [makeEntry()];
 
-    const result = filterByAwareness(entries, 'agent-1', '', graph, dm);
+    const result = filterByAwareness(entries, 'agent-1', '', graph);
     expect(result).toEqual([]);
   });
 
   it('skips entries with no reachPrimary', () => {
     const graph = buildAgentGraph('agent-1', { iron: 20 });
-    const dm = makeDistanceMatrix({
-      'loc-home': { 'loc-home': 0, 'loc-target': 1 },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-target', 1, 0);
 
     const brokenEntry = makeEntry({ locationId: 'loc-target' });
     // Force undefined reachPrimary to test fail-soft
     (brokenEntry as Record<string, unknown>).reachPrimary = undefined;
 
-    const result = filterByAwareness([brokenEntry], 'agent-1', 'loc-home', graph, dm);
+    const result = filterByAwareness([brokenEntry], 'agent-1', 'loc-home', graph);
     expect(result).toEqual([]);
   });
 
   it('filters a mix of near and far entries correctly', () => {
     // raw=10 → sigmoid = 0.5 → hops = 1 + floor(0.5/0.15) = 1+3 = 4
     const graph = buildAgentGraph('agent-1', { iron: 10 });
-    const dm = makeDistanceMatrix({
-      'loc-home': {
-        'loc-home': 0,
-        'loc-1': 1,
-        'loc-2': 2,
-        'loc-3': 3,
-        'loc-4': 4,
-        'loc-5': 5,
-      },
-    });
+    addLocation(graph, 'loc-home', 0, 0);
+    addLocation(graph, 'loc-1', 1, 0);  // hex dist 1
+    addLocation(graph, 'loc-2', 2, 0);  // hex dist 2
+    addLocation(graph, 'loc-3', 3, 0);  // hex dist 3
+    addLocation(graph, 'loc-4', 4, 0);  // hex dist 4
+    addLocation(graph, 'loc-5', 5, 0);  // hex dist 5
 
     const entries = [
       makeEntry({ templateId: 'a', locationId: 'loc-1', reachPrimary: 'iron', reachSecondary: 'iron' }),
@@ -323,8 +358,8 @@ describe('filterByAwareness', () => {
       makeEntry({ templateId: 'e', locationId: 'loc-5', reachPrimary: 'iron', reachSecondary: 'iron' }),
     ];
 
-    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph, dm);
-    // Distance 1,2,3,4 are within 4 hops; distance 5 is outside
+    const result = filterByAwareness(entries, 'agent-1', 'loc-home', graph);
+    // Hex distance 1,2,3,4 are within 4 hops; distance 5 is outside
     expect(result.length).toBe(4);
     expect(result.map((e) => e.templateId)).toEqual(['a', 'b', 'c', 'd']);
   });

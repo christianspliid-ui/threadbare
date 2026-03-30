@@ -44,6 +44,8 @@ import type { MovementState } from '../types/movement';
 import type { AgentRerouteTrace } from '../types/trace';
 import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
+import { resolveLocationToHex } from './encounterAwareness';
+import { hexDistance } from '../lib/hexMath';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -344,13 +346,12 @@ export function phaseAgentDecision(
         ? [...allEntries, ...dynamicEntries]
         : allEntries;
 
-      // Run filter pipeline
+      // Run filter pipeline (hex-distance awareness, no distance matrix needed)
       const filterResult = runFilterPipeline(
         mergedEntries,
         agentId,
         locationId,
         graph,
-        distanceMatrix,
         state.tick,
       );
       const rawCandidates = filterResult.candidates;
@@ -592,13 +593,15 @@ export function phaseAgentDecision(
           summary: `${actor.name} idles (${idleReason}): ${idle.action}${idle.targetLocationId ? ` → ${driftTargetNode?.name ?? idle.targetLocationId}` : ''}${bestScore !== null ? ` [best=${bestScore.toFixed(3)}, threshold=${IDLE_SCORE_THRESHOLD}]` : ''} [cd=${effectiveCd}]`,
         } as TraceEntry);
 
-        // Timeline: IDLE event
+        // Timeline: IDLE event (include filter pipeline stage counts for diagnostics)
+        const pipelineStr = `${ft.cacheSize}>${ft.afterAwareness}>${ft.afterVisibility}>${ft.afterPrerequisites}>${ft.afterThreat}>${ft.afterCap}`;
         appendEvent(agentId, {
           phase: 'IDLE',
           tick: state.tick,
           reason: idleReason,
           idleAction: idle.action,
           driftTarget: driftTargetNode?.name ?? idle.targetLocationId ?? undefined,
+          pipeline: pipelineStr,
         });
 
         if (idle.action === 'drift' && idle.targetLocationId) {
@@ -632,15 +635,18 @@ export function phaseAgentDecision(
           properties: { ...actor.properties, consecutiveIdleTicks: idleTicks },
         });
 
-        // Forced travel fallback — break content desert after threshold
-        if (idleReason === 'no_candidates_after_filter' && idleTicks >= IDLE_FORCED_TRAVEL_THRESHOLD) {
-          // Find nearest location with available encounter entries
+        // Forced travel fallback — break content desert or cooldown exhaustion after threshold
+        if ((idleReason === 'no_candidates_after_filter' || idleReason === 'no_candidates_after_cooldown') && idleTicks >= IDLE_FORCED_TRAVEL_THRESHOLD) {
+          // Find nearest location with available encounter entries (using hex distance)
+          const agentHex = resolveLocationToHex(graph, locationId);
           let nearestContentLocId: string | null = null;
           let nearestDist = Infinity;
           for (const entry of allEntries) {
             if (entry.locationId === locationId) continue;
-            const dist = getDistance(distanceMatrix, locationId, entry.locationId);
-            if (isFinite(dist) && dist < nearestDist) {
+            const entryHex = resolveLocationToHex(graph, entry.locationId);
+            if (!agentHex || !entryHex) continue;
+            const dist = hexDistance(agentHex, entryHex);
+            if (dist < nearestDist) {
               nearestDist = dist;
               nearestContentLocId = entry.locationId;
             }

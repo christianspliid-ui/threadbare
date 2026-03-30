@@ -55,6 +55,33 @@ Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-r
 - For pipeline throughput checks (NFP #7 in Pre-Commit Checklist) — `run 5` for 30+ ticks, then `encounters`, `factions`, `traces`
 - Quick smoke test after engine changes when you can't run the browser
 
+### Debug Bridge (`window.__DEBUG`)
+
+Dev-only API exposed on `window.__DEBUG` (tree-shaken in prod). Use from `preview_eval`, `javascript_tool`, or browser console.
+
+```javascript
+// Debug panel control (opens panel + enables tracing automatically):
+window.__DEBUG.openDebugPanel()
+window.__DEBUG.closeDebugPanel()
+window.__DEBUG.toggleDebugPanel()
+
+// Direct trace access:
+await window.__DEBUG.enableTracing()
+const traces = await window.__DEBUG.getTraces()
+await window.__DEBUG.clearTraces()
+
+// Health & diagnostics:
+await window.__DEBUG.getHealthReport()
+await window.__DEBUG.exportDiagnostics()
+await window.__DEBUG.getCrashLog()
+
+// Encounter log export (returns TSV strings):
+const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
+const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, perAgent: [{ tsv, filename }] }
+```
+
+See `src/debug-bridge.ts` for the full API and `src/debug-bridge.d.ts` for types.
+
 ## Documentation Strategy
 
 Three surfaces, each with a distinct purpose. Full ownership rules and duplication policy: **`Docs/documentation-ownership.md`**
@@ -144,6 +171,8 @@ Settled. Do not revisit.
 - **No inventing node types without verification.** If a conversation references a node type that doesn't exist in the current graph schema, **stop and ask the human** before creating it. First confirm it isn't an existing node under a different name. Check `src/types/graph.ts` and `world-model.json` for the canonical list.
 - **New node types require full design before code.** If a genuinely new node type is confirmed, design it before implementing: define its category, required/optional properties, which edge types connect it to existing nodes, how it participates in the tick loop, and what traces it emits. No stub-it-and-figure-it-out-later.
 - **Relationships between entities are graph edges, not property fields.** If two entities have a meaningful relationship (commands, owns, defends, trades with, etc.), model it as an edge type — never as a string ID field in a property bag. Properties are for data internal to a node (scores, statuses, flags). Before adding a new edge type, check `src/types/graph.ts` for existing edges that could serve the same purpose. Before encoding a relationship as a property, justify why graph traversal isn't needed — the default answer is "it is needed."
+- **Agent position is a three-tier model: hex → location → sublocation.** An agent is always on exactly one tier via a single `located_at` edge pointing to the most specific node they occupy. The tiers nest: sublocation sits inside a location, location sits on a hex. Resolution upward: sublocation → `parentLocationId` → parent location → `hexCol`/`hexRow` → hex. All systems that need spatial reasoning must resolve to the hex level.
+- **Encounter awareness is hex-granular.** If an agent can see a hex, they can see everything on it — every location, every sublocation, every encounter. Within-hex visibility is automatic (distance 0). Cross-hex visibility is computed as hex coordinate distance vs. per-reach awareness hops. The distance matrix between locations is NOT used for encounter awareness — use hex distance (`encounterAwareness.ts`). This means an agent at a sublocation sees all encounters across all locations and sublocations on their hex, plus encounters on hexes within their awareness range.
 
 
 ## Rejected Approaches (do not reintroduce)
@@ -158,6 +187,7 @@ Settled. Do not revisit.
 - ❌ React Three Fiber (R3F) — use raw Three.js with canvas ref instead. Direct Three.js gives full control over InstancedMesh, render loop, and d3-zoom integration without R3F abstraction overhead.
 - ❌ KayKit GLTF 3D models — replaced by flat hex grid with 2D signifier art composited per-hex
 - ❌ V1 SVG hex map (HexMap.tsx, HexTile.tsx, AgentDots.tsx, MovementTrails.tsx) — deleted in Phase 8. Replaced by HexMapV2 (Three.js InstancedMesh).
+- ❌ Location-hop awareness (distance matrix BFS between location nodes via `adjacent` edges) — replaced by hex-distance awareness. Location hops were inconsistent (sublocations invisible, same-hex vs cross-hex ambiguous, irregular graph topology). Hex distance is geometric, predictable, and sublocation-agnostic.
 
 ## Change Audit Trail
 

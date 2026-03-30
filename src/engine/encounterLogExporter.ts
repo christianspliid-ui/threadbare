@@ -27,7 +27,7 @@ function formatDetail(event: TimelineEvent): string {
     case 'DECIDE':
       return `target=${event.targetLocation} | encounter=${event.targetEncounter} | score=${event.score.toFixed(4)} | desire=${event.desireMultiplier?.toFixed(2) ?? '?'} | prob=${event.completionProb.toFixed(2)} | travelCost=${event.travelCost} | hex=${formatHex(event.targetHex)}`;
     case 'IDLE':
-      return `reason=${event.reason} | action=${event.idleAction}${event.driftTarget ? ` | driftTarget=${event.driftTarget}` : ''}`;
+      return `reason=${event.reason} | action=${event.idleAction}${event.driftTarget ? ` | driftTarget=${event.driftTarget}` : ''}${event.pipeline ? ` | pipeline=${event.pipeline}` : ''}`;
     case 'MOVE':
       return `${formatHex(event.fromHex)}→${formatHex(event.toHex)} | cost=${event.cost}${event.road ? ` | road=${event.road}` : ''}`;
     case 'ARRIVE':
@@ -75,8 +75,45 @@ export function formatEncounterLog(
   return lines.join('\n');
 }
 
+/** Formats multiple agents' timelines into a single TSV with an AGENT column. */
+export function formatAllAgentsLog(
+  agents: readonly { id: string; name: string; timeline: readonly TimelineEvent[] }[],
+  seed: string,
+): string {
+  const lines: string[] = [];
+
+  lines.push(`# ENCOUNTER LOG — ALL AGENTS`);
+  lines.push(`# Seed: ${seed}`);
+  lines.push(`# Agents: ${agents.length}`);
+  lines.push(`# Exported: ${new Date().toISOString()}`);
+
+  const allEvents = agents.flatMap(a =>
+    a.timeline.map(e => ({ ...e, agentId: a.id, agentName: a.name })),
+  );
+
+  if (allEvents.length === 0) {
+    lines.push(`# (no events recorded)`);
+    return lines.join('\n');
+  }
+
+  allEvents.sort((a, b) => a.tick - b.tick || a.agentName.localeCompare(b.agentName));
+
+  lines.push(`TICK\tAGENT\tPHASE\tDETAIL`);
+
+  for (const event of allEvents) {
+    lines.push(`${event.tick}\t${event.agentName}\t${event.phase}\t${formatDetail(event)}`);
+  }
+
+  return lines.join('\n');
+}
+
 /** Generates the filename for the encounter log. */
 export function makeFilename(seed: string, agentName: string): string {
   const safeName = agentName.replace(/[^a-zA-Z0-9_-]/g, '_');
   return `encounter-log_${seed}_${safeName}.tsv`;
+}
+
+/** Generates the filename for the all-agents encounter log. */
+export function makeAllAgentsFilename(seed: string): string {
+  return `encounter-log_${seed}_all-agents.tsv`;
 }

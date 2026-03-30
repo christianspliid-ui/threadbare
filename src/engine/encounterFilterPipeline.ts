@@ -32,7 +32,6 @@
 
 import type { EncounterCacheEntry } from './encounterCache';
 import type { WorldGraph } from './graph';
-import type { DistanceMatrix } from './distanceMatrix';
 import type { FilterPipelineTrace } from '../types/trace';
 import type { ThreatRating } from '../types/encounter';
 import { filterByAwareness } from './encounterAwareness';
@@ -80,15 +79,13 @@ function stageAwareness(
   agentId: string,
   agentLocationId: string,
   graph: WorldGraph,
-  distanceMatrix: DistanceMatrix,
 ): EncounterCacheEntry[] {
-  // Base awareness from distance-limited per-reach visibility
+  // Base awareness from hex-distance-limited per-reach visibility
   const awarenessResults = filterByAwareness(
     allEntries,
     agentId,
     agentLocationId,
     graph,
-    distanceMatrix,
   );
 
   // Build dedup set from awareness results
@@ -338,7 +335,6 @@ export function runFilterPipeline(
   agentId: string,
   agentLocationId: string,
   graph: WorldGraph,
-  distanceMatrix: DistanceMatrix,
   tick: number,
 ): FilterResult {
   // Fast path: empty input
@@ -360,7 +356,7 @@ export function runFilterPipeline(
   // Stage 1: Awareness + Faction
   let current: EncounterCacheEntry[];
   try {
-    current = stageAwareness(allEntries, agentId, agentLocationId, graph, distanceMatrix);
+    current = stageAwareness(allEntries, agentId, agentLocationId, graph);
   } catch {
     current = [];
   }

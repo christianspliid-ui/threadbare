@@ -161,6 +161,15 @@ function createNamedElite(state: GameState, lairNode: GraphNode): string {
     },
   });
 
+  // Place elite at the lair location so it enters the encounter decision pipeline
+  graph.addEdge({
+    id: `${eliteId}_located_at_${lairNode.id}`,
+    source: eliteId,
+    target: lairNode.id,
+    type: 'located_at',
+    properties: {},
+  });
+
   return eliteId;
 }
 
