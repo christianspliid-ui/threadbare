@@ -215,6 +215,11 @@ export const IDLE_TRIVIAL_PREFERENCE = 0.5;
  * @range 3–10 */
 export const IDLE_MAX_AWARENESS_HOPS = 5;
 
+/** Consecutive idle ticks (no_candidates_after_filter) before agent is forced to travel
+ * to the nearest content-bearing location. Safety net for content deserts.
+ * @range 5–20 */
+export const IDLE_FORCED_TRAVEL_THRESHOLD = 10;
+
 // ═══════════════════════════════════════════════════════════════════
 // TRUST — Edge-level trust tracking (trustMechanics.ts)
 // ═══════════════════════════════════════════════════════════════════

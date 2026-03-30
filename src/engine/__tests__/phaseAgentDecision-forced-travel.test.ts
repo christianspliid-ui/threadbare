@@ -83,7 +83,7 @@ function addAgent(
         courage_prudence: 0,
         loyalty_ambition: 0,
         mercy_justice: 0,
-        tradition_progress: 0,
+        tradition_novelty: 0,
         community_autonomy: 0,
         faith_reason: 0,
         creation_destruction: 0,
@@ -94,12 +94,13 @@ function addAgent(
       ...extraProps,
     },
   });
-  // Link agent to location via contains (location contains agent)
+  // Link agent to location via located_at (agent located_at location)
+  // This is the canonical edge phaseAgentDecision looks for via getAgentLocationId.
   graph.addEdge({
-    id: `contains_${locationId}_${id}`,
-    type: 'contains',
-    source: locationId,
-    target: id,
+    id: `located_at_${id}_${locationId}`,
+    type: 'located_at',
+    source: id,
+    target: locationId,
     properties: {},
   });
 }
@@ -148,7 +149,7 @@ describe('phaseAgentDecision forced travel', () => {
 
   it('does not trigger forced travel below IDLE_FORCED_TRAVEL_THRESHOLD', () => {
     // Agent at an isolated location with no encounters (content desert)
-    addLocation(graph, 'loc_desert', 'Barren Wastes', 'wilderness');
+    addLocation(graph, 'loc_desert', 'Barren Wastes', 'void_no_content');
     // No adjacent locations — truly isolated
     addAgent(graph, 'agent_idle', 'Wanderer', 'loc_desert', {
       consecutiveIdleTicks: IDLE_FORCED_TRAVEL_THRESHOLD - 1,
@@ -165,7 +166,7 @@ describe('phaseAgentDecision forced travel', () => {
 
   it('triggers forced travel after IDLE_FORCED_TRAVEL_THRESHOLD idle ticks with no_candidates_after_filter', () => {
     // Content desert: agent at isolated location with no encounter cache entries
-    addLocation(graph, 'loc_desert', 'Barren Wastes', 'wilderness');
+    addLocation(graph, 'loc_desert', 'Barren Wastes', 'void_no_content');
     // Content-bearing location adjacent to the desert
     addLocation(graph, 'loc_town', 'Prosperous Town', 'town');
     addAdjacentEdge(graph, 'loc_desert', 'loc_town');
@@ -222,7 +223,7 @@ describe('phaseAgentDecision forced travel', () => {
   });
 
   it('resets consecutiveIdleTicks to 0 after forced travel is initiated', () => {
-    addLocation(graph, 'loc_desert', 'Desert Outpost', 'wilderness');
+    addLocation(graph, 'loc_desert', 'Desert Outpost', 'void_no_content');
     addLocation(graph, 'loc_town', 'Nearby Town', 'town');
     addAdjacentEdge(graph, 'loc_desert', 'loc_town');
     addAdjacentEdge(graph, 'loc_town', 'loc_desert');
@@ -248,7 +249,7 @@ describe('phaseAgentDecision forced travel', () => {
 
   it('stays idle when no reachable location has content (fail-soft)', () => {
     // Completely isolated location — no adjacent nodes
-    addLocation(graph, 'loc_isolated', 'Isolated Ruin', 'wilderness');
+    addLocation(graph, 'loc_isolated', 'Isolated Ruin', 'void_no_content');
     addAgent(graph, 'agent_isolated', 'Isolated Agent', 'loc_isolated', {
       consecutiveIdleTicks: IDLE_FORCED_TRAVEL_THRESHOLD + 5,
     });
@@ -267,7 +268,9 @@ describe('phaseAgentDecision forced travel', () => {
   });
 
   it('increments consecutiveIdleTicks on each idle tick', () => {
-    addLocation(graph, 'loc_empty', 'Empty Plains', 'wilderness');
+    // Use a custom location type with no encounter templates in content system
+    // to guarantee agent has no_candidates_after_filter and stays idle
+    addLocation(graph, 'loc_empty', 'Empty Void', 'void_no_content');
     addAgent(graph, 'agent_counting', 'Counting Agent', 'loc_empty', {
       consecutiveIdleTicks: 3,
     });
@@ -279,8 +282,9 @@ describe('phaseAgentDecision forced travel', () => {
     const agentNode = graph.getNode('agent_counting');
     const idleTicks = agentNode?.properties?.consecutiveIdleTicks as number | undefined;
 
-    // After one idle tick, count should be 4 (was 3, incremented by 1)
-    // Unless forced travel was triggered (threshold not yet reached at 3 < 10)
+    // After one idle tick at a content-less location, count should be 4 (was 3 + 1)
+    // The location type 'void_no_content' has no encounter templates so agent
+    // will idle with no_candidates_after_filter (threshold 3 < 10 = no forced travel)
     expect(idleTicks).toBe(4);
   });
 
