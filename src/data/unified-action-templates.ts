@@ -107,6 +107,9 @@ export function migrateActionTemplate(old: ActionTemplateData): UnifiedActionTem
       success: old.narrativeTemplates.success,
       failure: old.narrativeTemplates.failure,
     },
+    // Phase 17: pass through display fields
+    spellName: old.spellName,
+    description: old.description,
   };
 }
 
@@ -155,6 +158,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.dream',
     name: 'Dream',
+    spellName: 'Oneiric Sending',
+    description: 'Reaches into the sleeping mind of a mortal and reshapes their dreaming landscape with divine intent. Desires and motivations shift beneath the surface, nudging the sleeper toward choices the deity favors. The effect lingers as a quiet conviction long after waking.',
     reach: 'heart',
     crudType: 'update',
     scale: 'cosmic',
@@ -188,6 +193,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.persuade',
     name: 'Persuade',
+    spellName: 'Divine Compulsion',
+    description: 'Whispers an irresistible conviction into a mortal\'s soul, making the deity\'s preferred course feel like the only sensible choice. The mortal acts with sudden certainty, unaware of the divine origin of their resolve. The compulsion fades over time as natural doubt reasserts itself.',
     reach: 'heart',
     crudType: 'update',
     scale: 'cosmic',
@@ -221,6 +228,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.deceive',
     name: 'Deceive',
+    spellName: 'Veil of Falsehood',
+    description: 'Drapes a divine illusion over mortal perception, causing the target to see and believe what the deity wills rather than what is real. The deceived mortal acts on false information with absolute confidence in its truth. The veil persists until the divine will withdraws or evidence overwhelms it.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'cosmic',
@@ -254,6 +263,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.intimidate',
     name: 'Intimidate',
+    spellName: 'Wrath Descending',
+    description: 'Presses divine force and terrible authority upon a mortal will, making resistance feel futile against a power that cannot be reasoned with. Fear runs cold through the target as the weight of the divine bears down. The intimidated mortal complies but carries resentment that may later surface.',
     reach: 'iron',
     crudType: 'update',
     scale: 'cosmic',
@@ -287,6 +298,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.inspire',
     name: 'Inspire',
+    spellName: 'Breath of Purpose',
+    description: 'Kindles divine fire within a mortal spirit, igniting a sense of calling and passionate purpose that seems to come from within. The inspired mortal pursues their goals with extraordinary energy and conviction. The flame sustains itself as long as the mortal\'s belief remains unchallenged.',
     reach: 'heart',
     crudType: 'update',
     scale: 'cosmic',
@@ -320,6 +333,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.coincidence',
     name: 'Coincidence',
+    spellName: 'Thread of Fate',
+    description: 'Arranges the threads of probability with divine precision so that events align in a way that seems like mere chance to mortal eyes. Opportunities appear at exactly the right moment, and obstacles dissolve without visible cause. The mortal never suspects the hand behind their good fortune.',
     reach: 'time',
     crudType: 'update',
     scale: 'cosmic',
@@ -353,6 +368,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.omen',
     name: 'Omen',
+    spellName: 'Starfall Omen',
+    description: 'Plants a visible sign in the world — an unusual event, an uncanny coincidence, or a symbol that catches the eye of those who are watching. Mortals who recognize the omen feel its pull and adjust their behavior accordingly. Those who miss or misread the sign remain unaffected.',
     reach: 'stone',
     crudType: 'update',
     scale: 'cosmic',
@@ -386,6 +403,8 @@ const DIVINE_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'divine.afflict_bless',
     name: 'Afflict/Bless',
+    spellName: 'Aegis of Grace',
+    description: 'Reaches directly into mortal flesh and spirit to reshape the target\'s physical condition by divine decree. The touch can grant extraordinary health and resilience, or inflict crippling suffering depending on the deity\'s intent. The change is immediate and unambiguous, leaving no doubt of divine involvement.',
     reach: 'life',
     crudType: 'update',
     scale: 'cosmic',
@@ -427,6 +446,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'loc.ward',
     name: 'Ward',
+    spellName: 'Rune of Warding',
+    description: 'Weaves protective runes into the foundations of a place, erecting an invisible barrier against hostile forces. The ward draws on magical saturation to sustain itself and deflects mundane and supernatural threats alike. The protection holds until the inscribed runes are broken or the magical substrate weakens.',
     reach: 'rune',
     crudType: 'create',
     scale: 'regional',
@@ -455,6 +476,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'loc.place_of_power',
     name: 'Place of Power',
+    spellName: 'Leyline Nexus',
+    description: 'Channels divine essence deep into the ley lines beneath a location, transforming it into a nexus of concentrated magical energy. Practitioners working here find their abilities heightened and their rituals more potent. The awakening draws the attention of those sensitive to such flows of power.',
     reach: 'rune',
     crudType: 'create',
     scale: 'regional',
@@ -482,6 +505,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'loc.incite_unrest',
     name: 'Incite Unrest',
+    spellName: 'Seeds of Discord',
+    description: 'Stirs whispers of grievance through a settlement, amplifying existing frustrations and fanning them into open discontent. Tensions rise as the people begin to question those who rule them and challenge the established order. Unrest that goes unaddressed can spiral into open rebellion.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'regional',
@@ -510,6 +535,8 @@ const LOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'loc.fortify',
     name: 'Fortify',
+    spellName: 'Iron Bulwark',
+    description: 'Breathes martial purpose into the walls of a fortification, strengthening existing defenses through divine will and physical effort. Garrison morale improves and structural weaknesses are reinforced against assault. The effect is most powerful on sites already dedicated to defense.',
     reach: 'iron',
     crudType: 'update',
     scale: 'regional',
@@ -545,6 +572,8 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'artifact.enchant',
     name: 'Enchant',
+    spellName: 'Rune Inscription',
+    description: 'Traces runes of power upon an artifact\'s surface, binding divine intent into the object\'s physical form. The enchanted artifact becomes a vessel for ongoing magical effect that persists in the hands of whoever wields it. Poorly formed runes can destabilize the binding and render the artifact inert.',
     reach: 'rune',
     crudType: 'update',
     scale: 'local',
@@ -570,6 +599,8 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'artifact.attune',
     name: 'Attune',
+    spellName: 'Sphere Resonance',
+    description: 'Harmonizes an artifact\'s magical signature with a specific divine sphere, aligning its latent power to a chosen domain. The attuned artifact responds more readily to sphere-aligned practitioners and enhances relevant capabilities. Misalignment causes the artifact to resist use by those of opposing spheres.',
     reach: 'heart',
     crudType: 'update',
     scale: 'local',
@@ -595,6 +626,8 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'artifact.nullify',
     name: 'Nullify',
+    spellName: 'Void Unraveling',
+    description: 'Systematically unravels every enchantment bound to an artifact, stripping away its magical properties and reducing it to an inert physical object. The nullified item retains its material form but no longer carries any special properties. Resisting enchantments may require greater effort to fully extinguish.',
     reach: 'void',
     crudType: 'delete',
     scale: 'local',
@@ -621,6 +654,8 @@ const ATTACHMENT_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'artifact.curse',
     name: 'Curse',
+    spellName: 'Malediction Bound',
+    description: 'Binds a curse of ill fortune and misfortune into the physical form of an artifact, ensuring the curse travels with whoever possesses it. The affliction activates on contact and spreads its effects to the bearer without their knowledge. Dispelling a well-crafted curse binding requires significant magical effort.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'local',
@@ -655,6 +690,8 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'sub.sanctify',
     name: 'Sanctify',
+    spellName: 'Sacred Ground',
+    description: 'Consecrates a sublocation to divine purpose through extended rites that suffuse the space with spiritual energy. The sanctified site becomes a point of divine presence that draws the faithful and repels hostile forces. The consecration persists until deliberately broken or the sphere influence drains entirely.',
     reach: 'rune',
     crudType: 'create',
     scale: 'local',
@@ -682,6 +719,8 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'sub.trap',
     name: 'Trap',
+    spellName: 'Hidden Snare',
+    description: 'Lays a divine snare within a sublocation that waits patiently for the intended victim to trigger it. The trap is invisible to mortal senses and activates with precision when the right conditions are met. An improperly anchored snare unravels before it can serve its purpose.',
     reach: 'shadow',
     crudType: 'create',
     scale: 'local',
@@ -708,6 +747,8 @@ const SUBLOCATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'sub.vision',
     name: 'Vision',
+    spellName: 'Place Memory',
+    description: 'Casts divine sight deep into a sublocation to read the history and hidden nature encoded in its physical fabric. Ancient events, concealed mechanisms, and supernatural presences reveal themselves to the searching gaze. Places that actively resist scrutiny remain opaque even under sustained divine attention.',
     reach: 'heart',
     crudType: 'read',
     scale: 'local',
@@ -744,6 +785,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.sense_threads',
     name: 'Sense Threads',
+    spellName: 'Thread Sight',
+    description: 'Extends divine perception across a hex to feel the currents of sphere energy woven through the land below. Sphere concentrations and their relative intensities become visible to divine sight. The reading is passive and rapid, offering a quick summary of a territory\'s magical character.',
     reach: 'eye',
     crudType: 'read',
     scale: 'cosmic',
@@ -773,6 +816,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bless_land',
     name: 'Bless the Land',
+    spellName: 'Land\'s Blessing',
+    description: 'Extends divine favor over an entire hex, infusing the soil with benevolent energy that encourages growth and prosperity. The land responds with increased fertility and improved conditions for those who dwell there. The blessing persists as a gentle background influence that enriches the territory.',
     reach: 'star',
     crudType: 'create',
     scale: 'regional',
@@ -800,6 +845,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.corrupt_land',
     name: 'Corrupt the Land',
+    spellName: 'Taint of Entropy',
+    description: 'Reaches into the foundations of a hex with corrupting intent, seeding darkness that spreads through soil and stone over time. The land begins to wither and become hostile to those who dwell there. Left unchecked, the corruption transforms the hex into a blighted zone.',
     reach: 'veil',
     crudType: 'delete',
     scale: 'regional',
@@ -827,6 +874,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.survey',
     name: 'Survey Territory',
+    spellName: 'Divine Survey',
+    description: 'Casts divine sight across a territory to catalogue its features, resources, and notable characteristics. The survey produces a comprehensive understanding of the hex\'s land layer that persists until conditions change significantly. Partial failures still yield fragments of useful information.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -853,6 +902,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.seed_life',
     name: 'Seed Life',
+    spellName: 'Verdant Awakening',
+    description: 'Pours concentrated vital essence into barren or depleted ground, kick-starting ecological recovery where none should be possible. Greenery takes root and spreads, transforming hostile terrain into land capable of supporting life. The process takes time and the new growth requires protection while it establishes itself.',
     reach: 'gold',
     crudType: 'create',
     scale: 'regional',
@@ -888,6 +939,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.raise_landmark',
     name: 'Raise Landmark',
+    spellName: 'Stone\'s Rising',
+    description: 'Reaches deep into the foundations of a hex and shapes the earth itself, raising a permanent landmark from the ground by divine will. The newly created formation stands as a visible marker that mortals will recognize and navigate by for generations. Resistance from the earth requires immense effort to overcome.',
     reach: 'stone',
     crudType: 'create',
     scale: 'regional',
@@ -915,6 +968,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.dowse_resources',
     name: 'Dowse for Resources',
+    spellName: 'Earthen Dowsing',
+    description: 'Sends divine perception deep into the earth to locate and identify valuable resources hidden beneath the surface. Ore veins, underground water, and buried deposits shimmer into divine sight. Partial success reveals the presence of resources without pinpointing their exact nature or extent.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -941,6 +996,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.sense_leylines',
     name: 'Sense the Leylines',
+    spellName: 'Current Reading',
+    description: 'Attunes divine awareness to the deep magical currents flowing beneath a hex, detecting the leylines that carry sphere energy from one place to another. The pattern of flows reveals which spheres hold dominance and how strongly they pulse through the land. Faint or disrupted leylines may resist detection entirely.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -967,6 +1024,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.shift_season',
     name: 'Shift Season',
+    spellName: 'Seasonal Turn',
+    description: 'Breathes change across a territory, compressing or expanding the natural rhythms of growth and decay through divine influence. The land experiences the effects of a season shift — harvests, dormancy, or flooding — in accelerated time. The natural order reasserts itself gradually after the divine pressure lifts.',
     reach: 'gold',
     crudType: 'update',
     scale: 'regional',
@@ -994,6 +1053,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.scorch_earth',
     name: 'Scorch Earth',
+    spellName: 'Iron Scorching',
+    description: 'Gathers devastating divine force and turns it upon a hex, consuming resources and scarring the terrain beyond immediate use. The scorched land becomes a barrier to those who relied on its fertility and a statement of terrifying power. Recovery takes time and the damage is visible to all who pass through.',
     reach: 'iron',
     crudType: 'update',
     scale: 'regional',
@@ -1021,6 +1082,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.rend_earth',
     name: 'Rend the Earth',
+    spellName: 'Earth Sundering',
+    description: 'Seizes the very bones of the ground and tears them apart with catastrophic force, transforming stable terrain into broken and impassable wreckage. The geological violence is irreversible on any human timescale and leaves the territory fundamentally altered. Only the most extreme divine effort can break the earth in this way.',
     reach: 'stone',
     crudType: 'delete',
     scale: 'regional',
@@ -1051,6 +1114,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.attune_leyline',
     name: 'Attune Leyline',
+    spellName: 'Leyline Forging',
+    description: 'Reaches into the magical substrate of a hex and weaves new pathways for sphere energy where none existed before. The freshly ignited leyline begins channeling power through the territory, changing the local magical ecology. The new pathway is fragile at first and must be established against the resistance of existing flows.',
     reach: 'veil',
     crudType: 'create',
     scale: 'regional',
@@ -1078,6 +1143,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.forge_seer_token',
     name: "Forge Seer's Token",
+    spellName: 'Token of Far-Sight',
+    description: 'Condenses divine perceptive power into a physical vessel, creating an object that carries the gift of sphere awareness wherever its bearer travels. The token hums with latent sight, making the invisible sphere currents of any location apparent to a trained eye. Failure causes the essence to dissipate before it can crystallize into form.',
     reach: 'eye',
     crudType: 'create',
     scale: 'personal',
@@ -1106,6 +1173,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.read_currents',
     name: 'Read the Currents',
+    spellName: 'Sphere Cartography',
+    description: 'Opens the inner eye to the full depth of magical flows coursing through a hex, reading sphere intensities and their interactions in precise detail. The soul of the land is laid bare — its magical composition, dominant influences, and hidden undercurrents made legible. Turbulent or conflicting flows can obscure the full picture.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -1133,6 +1202,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.shift_dominion',
     name: 'Shift Dominion',
+    spellName: 'Arcane Rebalance',
+    description: 'Grasps the threads of sphere influence in a hex and begins reweaving the magical balance, elevating one sphere at the expense of another. The dominant sphere shifts as divine will redirects the flow of power through the territory. Deeply entrenched sphere dominance resists the rebalancing and may snap back.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -1159,6 +1230,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.amplify_flow',
     name: 'Amplify the Flow',
+    spellName: 'Current Surge',
+    description: 'Feeds divine essence into the ambient magical currents of a hex, intensifying the power already flowing through it. Every location in the territory experiences a surge of magical saturation that heightens their existing properties. The amplification is temporary but can tip a balanced location into significant magical activity.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -1185,6 +1258,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.sever_flow',
     name: 'Sever the Flow',
+    spellName: 'Arcane Silencing',
+    description: 'Reaches into the magical substrate and cuts every line of sphere power passing through a hex, creating a zone where no magic flows. Locations within the severed territory lose their magical properties and sphere-dependent abilities become ineffective. Deeper leylines may carry power through channels too buried to sever.',
     reach: 'veil',
     crudType: 'delete',
     scale: 'regional',
@@ -1212,6 +1287,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.dispel_wild',
     name: 'Dispel the Wild',
+    spellName: 'Wild Purging',
+    description: 'Gathers divine authority against the uncontrolled magical forces roiling through a territory and drives them out with decisive force. Hostile and chaotic sphere influences dissolve under the sustained divine effort, restoring a degree of magical calm to the hex. Deeply entrenched wild magic may require multiple applications to fully clear.',
     reach: 'veil',
     crudType: 'delete',
     scale: 'regional',
@@ -1241,6 +1318,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.send_herald',
     name: 'Send a Herald',
+    spellName: 'Breath of Purpose',
+    description: 'Shapes a fragment of divine will into mortal form and sends it forth into the world as a herald bearing the deity\'s message and intent. The herald is a living agent aligned to the deity\'s sphere, capable of independent action in pursuit of the divine agenda. Failed manifestation leaves the divine essence formless and dissipated.',
     reach: 'heart',
     crudType: 'create',
     scale: 'regional',
@@ -1269,6 +1348,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.forge_instrument',
     name: 'Forge Divine Instrument',
+    spellName: 'Instrument Forging',
+    description: 'Shapes raw divine power into a physical instrument of focused purpose, imbuing it with the essence of a specific reach domain. The resulting tool amplifies its bearer\'s capabilities in that domain beyond natural limits. The forging is demanding and failure shatters the incomplete instrument entirely.',
     reach: 'star',
     crudType: 'create',
     scale: 'personal',
@@ -1296,6 +1377,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.spark_encounter',
     name: 'Spark an Encounter',
+    spellName: 'Convergence Weaving',
+    description: 'Weaves threads of fate together, drawing mortals toward an unexpected meeting that would not have happened without divine intervention. The convergence creates conditions for significant events as the gathered parties must respond to each other. The spark is subtle but its consequences can ripple outward in unexpected directions.',
     reach: 'shadow',
     crudType: 'create',
     scale: 'local',
@@ -1323,6 +1406,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.divine_populace',
     name: 'Divine the Populace',
+    spellName: 'People Reading',
+    description: 'Turns divine attention to the inhabitants of a hex, reading their collective emotional state, hidden allegiances, and simmering tensions. The social fabric of the territory becomes transparent — faction loyalties, hidden agents, and popular grievances all become visible. Dense or magically shielded populations may still conceal some actors.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -1350,6 +1435,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.scry_factions',
     name: 'Scry the Factions',
+    spellName: 'Faction Scrying',
+    description: 'Probes the web of allegiances and rivalries among factions operating in a hex, mapping their relative influence and territorial presence. The power structure of the territory becomes clear, including which factions dominate and which are struggling to maintain their foothold. Entangled or rapidly shifting allegiances may yield only partial clarity.',
     reach: 'eye',
     crudType: 'read',
     scale: 'local',
@@ -1377,6 +1464,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.stir_people',
     name: 'Stir the People',
+    spellName: 'Heart\'s Stirring',
+    description: 'Whispers into the dreams and waking thoughts of a population, gently shifting the collective emotional and cultural orientation of the territory. Faction dispositions realign and cultural values drift toward or away from the deity\'s sphere as the subtle influence accumulates. Populations with strong cultural identity resist the stirring more effectively.',
     reach: 'heart',
     crudType: 'update',
     scale: 'regional',
@@ -1403,6 +1492,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.summon_congregation',
     name: 'Summon Congregation',
+    spellName: 'Gathering Call',
+    description: 'Sends a divine summons across the land, drawing agents who are receptive to the deity\'s sphere toward a specific gathering point. Those who answer the call converge from adjacent territories, their arrivals feeling to them like personal choice rather than divine compulsion. Mortals with strong opposing sphere alignment are immune to the summons.',
     reach: 'heart',
     crudType: 'update',
     scale: 'regional',
@@ -1430,6 +1521,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bestow_vision',
     name: 'Bestow Vision',
+    spellName: 'Prophetic Sending',
+    description: 'Reaches through a divine thread to plant a vivid vision of purpose in a mortal mind, shaping their ambitions and drawing their attention toward a specific goal the deity wishes pursued. The agent wakes with a burning conviction and a clear image of what they must accomplish. Minds with strong resistance dismiss the vision as nightmare.',
     reach: 'eye',
     crudType: 'update',
     scale: 'personal',
@@ -1457,6 +1550,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.scatter',
     name: 'Scatter',
+    spellName: 'Iron Dispersal',
+    description: 'Unleashes a burst of divine martial force upon the gathered mortals of a territory, driving them apart with irresistible pressure. Agents flee, faction organization collapses, and the hex rapidly empties of coordinated activity. Mortals who are deeply bonded to each other or to the land resist the dispersal more stubbornly.',
     reach: 'iron',
     crudType: 'delete',
     scale: 'regional',
@@ -1484,6 +1579,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.smite',
     name: 'Smite',
+    spellName: 'Divine Smiting',
+    description: 'Focuses terrible and absolute divine wrath upon a single mortal as an unmistakable demonstration of godly power and displeasure. The targeted individual is struck down by an overwhelming force that cannot be evaded by ordinary means. The act is public in its consequence and sends a clear message to those who witness its aftermath.',
     reach: 'iron',
     crudType: 'delete',
     scale: 'personal',
@@ -1511,6 +1608,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.incite_exodus',
     name: 'Incite Exodus',
+    spellName: 'Umbral Exodus',
+    description: 'Plants seeds of fear and dissatisfaction in the minds of a territory\'s inhabitants, slowly poisoning their will to remain until departure feels like the only viable choice. The exodus builds gradually as the sense of dread spreads through the community. Populations with deep cultural roots resist the exodus longer before they finally break.',
     reach: 'shadow',
     crudType: 'delete',
     scale: 'regional',
@@ -1541,6 +1640,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.mark_ground',
     name: 'Mark the Ground',
+    spellName: 'Questing Beacon',
+    description: 'Inscribes a subtle divine mark into the earth of a ruined site that is invisible to casual observers but irresistible to curious and questing minds. Agents who pass through the area feel an unexplained pull toward investigation that overrides other priorities. The mark fades if the ground rejects the inscription before it sets.',
     reach: 'eye',
     crudType: 'create',
     scale: 'local',
@@ -1568,6 +1669,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.plant_dream',
     name: 'Plant a Dream of the Past',
+    spellName: 'Memory Dream',
+    description: 'Reaches through a divine thread to plant vivid visions of ancient ruins and forgotten places in the sleeping mind of a mortal. The agent wakes haunted by compelling images of crumbling towers and sealed vaults, feeling an inexplicable drive to seek the ruins out. The dream is too alien for some minds and they reject it as incoherent nightmare.',
     reach: 'eye',
     crudType: 'create',
     scale: 'personal',
@@ -1596,6 +1699,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.read_stones',
     name: 'Read the Stones',
+    spellName: 'Stone Memory',
+    description: 'Presses divine perception deep into ancient ruins to read the memory encoded in the stone itself, recovering a detailed picture of what once stood and what happened here. Every chamber, hidden passage, and trace of elder magic is revealed to the searching gaze. Too many ages of accumulated forgetting can fragment the memories beyond recovery.',
     reach: 'eye',
     crudType: 'read',
     scale: 'regional',
@@ -1623,6 +1728,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.whisper_intuition',
     name: 'Whisper of Intuition',
+    spellName: 'Ruin Intuition',
+    description: 'Sends a divine hunch along a thread to an agent, nudging their instincts toward the hidden dangers and rewards of a nearby ruin site. The agent proceeds with an uncanny sense of what to avoid and where to look, as if they have been here before. The whisper is subtle enough that most mortals mistake it for their own cleverness.',
     reach: 'eye',
     crudType: 'read',
     scale: 'personal',
@@ -1650,6 +1757,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.consecrate_past',
     name: 'Consecrate the Past',
+    spellName: 'Past Consecration',
+    description: 'Reaches into ancient ruins and suffuses them with a specific sphere\'s divine influence, reinterpreting their historical legacy through the deity\'s domain. Encounters spawned from the ruins begin reflecting the consecrated sphere\'s themes rather than the ruins\' original character. The old powers within the structure may resist being claimed for a new purpose.',
     reach: 'star',
     crudType: 'update',
     scale: 'regional',
@@ -1676,6 +1785,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.restore_fragment',
     name: 'Restore a Fragment',
+    spellName: 'Fragment Restoration',
+    description: 'Undertakes the painstaking work of reassembling a portion of ruins, using divine will to guide the reconstruction of shattered stone and faded enchantment. The restored fragment becomes a functional sublocation that bridges the ancient past and the present day. Damage that is too deep or too diffuse resists even divine restoration efforts.',
     reach: 'stone',
     crudType: 'update',
     scale: 'regional',
@@ -1702,6 +1813,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.rewrite_history',
     name: 'Rewrite History',
+    spellName: 'Memory Revision',
+    description: 'Reaches into the memory-traces saturating ancient ruins and reshapes what happened here, overwriting the historical record that the stones remember and mortals find. The legacy of the site shifts to tell a new story aligned with the deity\'s purposes. The oldest and strongest memories resist revision, anchored too deeply to displace.',
     reach: 'eye',
     crudType: 'update',
     scale: 'regional',
@@ -1729,6 +1842,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bury_past',
     name: 'Bury the Past',
+    spellName: 'Earth Burial',
+    description: 'Commands the ground to close over ruins entirely, swallowing them into darkness and removing their presence from the accessible landscape. The buried ruins become inaccessible to mortals and their resources are denied to all parties indefinitely. Vast or deeply rooted ruins may prove too stubborn to fully conceal.',
     reach: 'stone',
     crudType: 'delete',
     scale: 'regional',
@@ -1756,6 +1871,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.desecrate',
     name: 'Desecrate',
+    spellName: 'Ruin Desecration',
+    description: 'Pours corrupting essence into ancient stones, twisting the character of the ruins from their original nature into something darker and more hostile. The desecrated site becomes a source of dangerous encounters aligned to entropic or chaotic spheres rather than the original historical theme. Protective wards from previous inhabitants may still hold against the corruption.',
     reach: 'veil',
     crudType: 'delete',
     scale: 'regional',
@@ -1786,6 +1903,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.claim_dominion',
     name: 'Claim Dominion',
+    spellName: 'Sovereign Claim',
+    description: 'Drives divine will deep into the land, proclaiming it as sovereign divine territory and sinking the deity\'s sphere influence into the earth\'s foundations as a sustained presence. The claim provides ongoing divine influence that resists natural decay and competing interference. Maintaining the claim requires continuous expenditure of sphere essence.',
     reach: 'star',
     crudType: 'update',
     scale: 'regional',
@@ -1828,6 +1947,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.cultivate',
     name: 'Cultivate',
+    spellName: 'Sustained Bloom',
+    description: 'Pours sustained life-essence into a territory in a continuous effort that encourages growth, fertility, and prosperity over time. The land flourishes under the ongoing divine attention, with settlements gaining prosperity faster and ecological recovery accelerating. Cultivation ends abruptly if the divine will is withdrawn or overcome.',
     reach: 'gold',
     crudType: 'update',
     scale: 'regional',
@@ -1869,6 +1990,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.claim_resource',
     name: 'Claim Resource',
+    spellName: 'Resource Binding',
+    description: 'Binds a discovered resource deposit to the deity\'s divine will, establishing a sustained extraction pipeline that generates essence income each tick. The claim is active as long as the binding holds and rivals do not seize control. A resource node under divine claim produces more reliably than unbound deposits.',
     reach: 'gold',
     crudType: 'update',
     scale: 'local',
@@ -1914,6 +2037,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.anchor_sphere',
     name: 'Anchor the Sphere',
+    spellName: 'Sphere Anchoring',
+    description: 'Drives divine will into the magical substrate of a hex, anchoring the dominant sphere in place against natural drift and rival interference. As long as the anchor holds, the sphere influence cannot shift and competing Shift Dominion attempts are blocked. The anchor requires sustained spirit essence to maintain its grip on the flow.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -1956,6 +2081,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.tap_source',
     name: 'Tap the Source',
+    spellName: 'Source Tapping',
+    description: 'Weaves a sustained siphon into a sphere-aligned source node, drawing essence from the concentrated flow continuously as long as the connection holds. The income generated exceeds the maintenance cost, making the tap a net positive investment that compounds over time. Rivals who discover the siphon may attempt to seize or destroy the source.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -1998,6 +2125,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.attune_thread',
     name: 'Attune Thread',
+    spellName: 'Thread Attunement',
+    description: 'Attunes the divine thread connecting the deity to a threaded agent so that it vibrates with sphere-sensing capability, granting passive awareness of sphere currents wherever the agent travels. The attuned agent becomes an unwitting sensor reporting the magical landscape of every hex they enter. The attunement is severed if the thread itself is destroyed.',
     reach: 'eye',
     crudType: 'update',
     scale: 'personal',
@@ -2037,6 +2166,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.channel_current',
     name: 'Channel the Current',
+    spellName: 'Current Channeling',
+    description: 'Bends the sphere currents flowing through adjacent hexes, redirecting their flow toward a specific territory and increasing its magical saturation over time. The sustained channel creates a growing concentration of divine influence that raises the territory\'s sphere score above what natural flow would produce. Rival divine action can seize or shatter the channel entirely.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -2082,6 +2213,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.shepherd_flock',
     name: 'Shepherd the Flock',
+    spellName: 'Flock Shepherding',
+    description: 'Extends sustained divine presence over the people of a territory, applying constant gentle pressure that draws mortal hearts toward worship of the deity\'s sphere. The conversion pressure accumulates over time, gradually shifting agent devotion and cultural alignment. The shepherd must maintain the effort or the flock drifts back toward independence.',
     reach: 'heart',
     crudType: 'update',
     scale: 'regional',
@@ -2124,6 +2257,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.install_champion',
     name: 'Install a Champion',
+    spellName: 'Champion Installation',
+    description: 'Elevates a chosen agent to faction leadership through sustained divine backing, providing them with the political support and aura of authority needed to hold a difficult position. The champion remains in power as long as the divine support continues and rivals do not mount a successful coup. Abandoning the champion triggers betrayal or deposition.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'personal',
@@ -2165,6 +2300,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.strengthen_thread',
     name: 'Strengthen Thread',
+    spellName: 'Thread Strengthening',
+    description: 'Pours sustained divine energy through the thread connecting the deity to an agent, amplifying their capabilities in a flexible reach domain. The enhanced agent performs beyond their normal limits as long as the divine energy flows. The thread returns to its natural state when the enhancement lapses or is forcibly severed.',
     reach: 'heart',
     crudType: 'update',
     scale: 'personal',
@@ -2204,6 +2341,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.impose_decree',
     name: 'Impose Decree',
+    spellName: 'Divine Decree',
+    description: 'Inscribes a divine behavioral constraint upon the fabric of a territory, establishing a law that agents within it feel compelled to obey as long as the decree holds. Highly independent agents resist the constraint, but most mortals comply with the behavioral directive without understanding its divine origin. A counter-decree from a rival divine can replace or nullify the original.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'regional',
@@ -2248,6 +2387,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.bind_echoes',
     name: 'Bind the Echoes',
+    spellName: 'Echo Binding',
+    description: 'Reaches into the ancient echoes saturating a ruined site and binds them to the deity\'s will, transforming the ruins into a sustained node of divine influence. Bound echoes resist rival interference and generate ongoing divine presence benefits while the binding holds. The echoes of the past break free when the binding is shattered or lapses from neglect.',
     reach: 'veil',
     crudType: 'update',
     scale: 'regional',
@@ -2290,6 +2431,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.compel_exploration',
     name: 'Compel Exploration',
+    spellName: 'Exploration Compulsion',
+    description: 'Weaves a sustained compulsion into the divine threads of nearby agents, creating an irresistible drive to seek out and explore ruins in the surrounding area. The compelled agents pursue this goal with unusual persistence, overriding competing ambitions for as long as the compulsion holds. Strong-willed individuals may shake off the compulsion faster than expected.',
     reach: 'eye',
     crudType: 'update',
     scale: 'regional',
@@ -2330,6 +2473,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.seal_tomb',
     name: 'Seal the Tomb',
+    spellName: 'Tomb Sealing',
+    description: 'Inscribes sealing wards across every entry point to a ruined site, establishing a divine barrier that prevents all interaction with the ruins while the seal holds. The denial is inexpensive to maintain and effective as a strategic play to keep the ruins inaccessible to rivals. The seal also blocks the deity\'s own agents from entering, requiring careful timing.',
     reach: 'shadow',
     crudType: 'update',
     scale: 'regional',
@@ -2369,6 +2514,8 @@ const HEX_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'hex.ward_against_deep',
     name: 'Ward Against the Deep',
+    spellName: 'Delver\'s Ward',
+    description: 'Weaves a protective ward around an agent who is venturing into dangerous ruins, wrapping them in sustained divine protection against the elder-magic dangers lurking within. Encounter difficulty in the ruins is reduced for the warded agent as long as the divine protection holds. The ward is torn apart by sufficiently ancient or powerful forces in the deep.',
     reach: 'veil',
     crudType: 'update',
     scale: 'personal',
@@ -2419,6 +2566,8 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'observe_agent',
     name: 'Observe',
+    spellName: 'Piercing Gaze',
+    description: 'Focuses divine sight upon a mortal to read the surface layer of their capabilities and current situation with clarity. A glimpse of what this individual can truly do becomes available, cutting through the ambiguity of casual observation. The gaze is quick and efficient, suited to initial assessment rather than deep understanding.',
     reach: 'eye',
     crudType: 'read',
     scale: 'cosmic',
@@ -2445,6 +2594,8 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'scry_agent',
     name: 'Scry',
+    spellName: 'Far Sight',
+    description: 'Bends sustained divine attention upon a mortal, peeling back every layer of concealment until all capabilities, connections, and hidden nature stand fully revealed. The comprehensive picture that emerges leaves little about the subject unknown to a god with patience enough to look. The effort is significant but the knowledge gained is thorough.',
     reach: 'eye',
     crudType: 'read',
     scale: 'cosmic',
@@ -2471,6 +2622,8 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'whisper_insight',
     name: 'Whisper Insight',
+    spellName: 'Illuminating Whisper',
+    description: 'Sends a whisper into the mortal\'s inner world, touching the deepest values and motivations that define who they are and what they truly want. The truth that surfaces reveals not what the person does but what they care about, providing a window into their decision-making from the inside. Closed or defended minds hold their inner world private against the whisper.',
     reach: 'veil',
     crudType: 'read',
     scale: 'cosmic',
@@ -2497,6 +2650,8 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'dream_sending',
     name: 'Dream Sending',
+    spellName: 'Prophetic Dream',
+    description: 'Visits a mortal in their dreams and draws out the ambitions, fears, and driving obsessions that shape their waking life, reading them like an open book from within the dreaming mind. Deep psychological truths surface like shapes rising from dark water, legible to a patient divine observer. A dreamscape that actively resists intrusion reveals only fragments before forcing the deity out.',
     reach: 'star',
     crudType: 'read',
     scale: 'cosmic',
@@ -2539,6 +2694,8 @@ const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_location',
     name: 'Bind Thread — Location',
+    spellName: 'Place Thread',
+    description: 'Extends a thread of divine awareness to a location, binding the place\'s fate to the deity\'s attention and enabling ongoing observation and action at a distance. The thread carries information about events at the location back to the deity continuously. Without the thread, divine actions at this location remain blind to its evolving state.',
     reach: 'star',
     crudType: 'create',
     scale: 'cosmic',
@@ -2582,6 +2739,8 @@ const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_faction',
     name: 'Bind Thread — Faction',
+    spellName: 'Faction Thread',
+    description: 'Weaves a thread of divine influence toward a faction, drawing their collective ambitions and movements into the deity\'s sphere of awareness. The thread enables monitoring of the faction\'s activities and unlocks targeted divine actions against their members and operations. A faction\'s collective will can resist the initial binding if it is strong enough.',
     reach: 'star',
     crudType: 'create',
     scale: 'cosmic',
@@ -2626,6 +2785,8 @@ const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_army',
     name: 'Bind Thread — Army',
+    spellName: 'Army Thread',
+    description: 'Casts a thread of awareness over a marching host, following the army\'s movements and activities as they cross the land. The thread enables the deity to track the army\'s current position and state without relying on mortal intelligence networks. Armies that move quickly across territory can sometimes pull the thread taut before it anchors fully.',
     reach: 'star',
     crudType: 'create',
     scale: 'cosmic',
@@ -2675,6 +2836,8 @@ const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_artifact',
     name: 'Bind Thread — Artifact',
+    spellName: 'Artifact Thread',
+    description: 'Reaches out to an artifact and senses its sphere resonance, establishing a thread of cosmic awareness that links the object to the deity\'s divine sight. The thread follows the artifact wherever it travels, keeping the deity informed of its location and the nature of its bearer. Heavily shielded or inert artifacts resist the initial resonance reading.',
     reach: 'star',
     crudType: 'create',
     scale: 'cosmic',
