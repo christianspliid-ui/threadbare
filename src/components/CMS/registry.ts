@@ -52,7 +52,15 @@ import { FOUNDATION_OPPOSITION_MATRIX, CREATION_SPHERE_TENSIONS, ARCHETYPE_FRICT
 // Narrative & Prose
 import { SPHERE_VOCABULARY, ROUTINE_TEMPLATES, NOTABLE_TEMPLATES } from '../../data/narrative-content';
 import { CHRONICLER_VIGNETTES, SUBLOCATION_FLAVOR, ARTIFACT_LORE, LOCATION_TYPE_FLAVOR } from '../../data/chronicler-content';
-import { BIOME_PROSE, SUBTYPE_ESTABLISHING_PROSE } from '../../data/prose-layer-content';
+import {
+  BIOME_PROSE, SUBTYPE_ESTABLISHING_PROSE,
+  ARCHETYPE_PROSE, AGENT_ENCOUNTER_BIOGRAPHY_PROSE, LOCATION_ENCOUNTER_HISTORY_PROSE,
+  CULTURE_LOCATION_PROSE, SPHERE_LOCATION_PROSE, GUILD_IDENTITY_PROSE, FACTION_CONTROL_PROSE,
+  DISPOSITION_PROSE, HISTORICAL_CULTURE_PROSE, GEOGRAPHIC_REGION_CLAIMED_PROSE,
+  GEOGRAPHIC_REGION_WILDERNESS_PROSE, TRADE_ROUTE_CROSSROADS_PROSE, TRADE_ROUTE_GOODS_PROSE,
+  TRADE_ROUTE_STATUS_PROSE, TRADE_ROUTE_VOLUME_PROSE, REGION_ETYMOLOGY_PROSE,
+  POPULATION_PROSE_TEMPLATES, WEALTH_PROSE, PROSPERITY_PROSE, PROSPERITY_TERRAIN_PROSE,
+} from '../../data/prose-layer-content';
 import { TERRAIN_OPENINGS } from '../../data/hex-vignette-content';
 import { VALUE_LABELS, FEAR_DESCRIPTIONS } from '../../data/strand-content';
 
@@ -62,6 +70,70 @@ import * as agentVisual from '../../data/agent-visual-content';
 import * as gameConfig from '../../data/game-config';
 import * as influence from '../../data/influence-content';
 import { TUNABLE_GROUPS } from './tunableConstants';
+
+// Factions & Military
+import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
+import { FACTION_ENCOUNTER_TEMPLATES } from '../../data/faction-encounter-content';
+import { MERCENARY_COMPANY_DEFINITION } from '../../data/mercenary-company-definition';
+import { MERCENARY_ENCOUNTER_TEMPLATES } from '../../data/mercenary-encounter-content';
+import { MONSTER_ENCOUNTER_TEMPLATES } from '../../data/monster-encounter-content';
+import { MONSTER_FACTION_DEFINITIONS } from '../../data/monster-faction-definitions';
+import { ARMY_ENCOUNTER_TEMPLATES } from '../../data/army-encounter-content';
+import { SIEGE_SPOTLIGHT_TEMPLATES, SIEGE_REGIONAL_TEMPLATES } from '../../data/siege-encounter-content';
+import { BATTLE_SPOTLIGHT_TEMPLATES } from '../../data/battle-spotlight-content';
+
+// Mandates & Endgame
+import { MANDATE_TEMPLATES } from '../../data/mandate-content';
+import { DOOM_VOCABULARY, ARCHETYPE_STAGE_NAMES as DOOM_STAGE_NAMES, DEFAULT_THRESHOLDS as DOOM_THRESHOLDS } from '../../data/doom-content';
+
+// Rivals (additional)
+import { RIVAL_PERSONALITY_PROFILES, RIVAL_ACTION_TEMPLATES } from '../../data/rival-content';
+
+// Agent Systems (additional)
+import { ARCHETYPE_TONE_OVERLAYS } from '../../data/archetype-tone-content';
+import { ARCHETYPE_STRATEGY_WEIGHTS } from '../../data/game-theory-content';
+
+// Economy
+import { ECONOMIC_TRAIT_DEFINITIONS } from '../../data/economic-trait-content';
+import { ECONOMIC_CHRONICLE_TEMPLATES } from '../../data/economic-chronicle-content';
+
+// Rewards & Starters
+import { REWARD_POSSESSIONS, REWARD_CONDITIONS, REWARD_BESTOWED_POWERS } from '../../data/reward-attachment-catalog';
+import { STARTER_POSSESSIONS, STARTER_CONDITIONS } from '../../data/starter-attachments';
+import * as attachmentTier from '../../data/attachment-tier-content';
+
+// Divine Feedback (additional)
+import { CONSEQUENCE_TEMPLATES as INTERVENTION_CONSEQUENCES } from '../../data/intervention-feedback-content';
+import { AGENDA_CONSEQUENCE_TEMPLATES } from '../../data/agenda-consequence-templates';
+
+// Backstory & Profile Prose
+import * as backstory from '../../data/backstory-content';
+import * as profileProse from '../../data/profile-content';
+
+// Meeting/Choice
+import { DILEMMA_TEMPLATES, GOD_GIVEN_TRAITS } from '../../data/meeting-content';
+
+// Journey
+import { JOURNEY_BEAT_TEMPLATES } from '../../data/journey-content';
+
+// Quintessence
+import { QUINTESSENCE_LEXICON, QUINTESSENCE_TOOLTIPS } from '../../data/quintessence-content';
+
+// Unified Actions
+import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+
+// Trait Modifiers
+import { LOS_TRAIT_DEFINITIONS } from '../../data/trait-modifiers';
+
+// Hex & World Soul Prose
+import { SOUL_PROSE, SOUL_SECONDARY_PROSE, SOUL_THREAT_PROSE } from '../../data/hexSoulProse';
+import { WORLD_SOUL_PROSE } from '../../data/worldSoulProse';
+
+// Domain Words
+import { DOMAIN_WORD_SCALES } from '../../data/domain-words';
+
+// World Model Taxonomy
+import worldModel from '../../data/world-model.json';
 
 // ── Reach domain badge colors (reused across viewers) ────────────
 export const REACH_BADGE_COLORS: Record<string, string> = {
@@ -735,6 +807,757 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     viewer: 'constants',
     sourceFile: 'src/data/agent-visual-content.ts',
   },
+
+  // ─── Factions & Military ───────────────────────────────────
+  {
+    id: 'faction-definitions',
+    label: 'Faction Definitions',
+    category: 'Factions & Military',
+    description: 'Core faction type definitions with ranks, roles, and behaviors.',
+    data: Array.from(FACTION_DEFINITIONS.values()),
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'type', label: 'Type', render: 'badge' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/faction-definitions.ts',
+  },
+  {
+    id: 'mercenary-company',
+    label: 'Mercenary Company',
+    category: 'Factions & Military',
+    description: 'Mercenary company faction definition with ranks and roles.',
+    data: MERCENARY_COMPANY_DEFINITION,
+    viewer: 'record',
+    sourceFile: 'src/data/mercenary-company-definition.ts',
+  },
+  {
+    id: 'monster-factions',
+    label: 'Monster Factions',
+    category: 'Factions & Military',
+    description: 'Monster faction definitions per creation sphere.',
+    data: MONSTER_FACTION_DEFINITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/monster-faction-definitions.ts',
+  },
+
+  // ─── Additional Encounters ─────────────────────────────────
+  {
+    id: 'faction-encounter-templates',
+    label: 'Faction Encounters',
+    category: 'Encounters',
+    description: 'Encounter templates for faction interactions (join, promotion, social).',
+    data: FACTION_ENCOUNTER_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'encounterType', label: 'Type', render: 'badge', badgeColors: ENCOUNTER_TYPE_COLORS },
+      { key: 'threatRating', label: 'Threat', render: 'badge', badgeColors: THREAT_BADGE_COLORS },
+      { key: 'reachPrimary', label: 'Primary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+    ],
+    searchFields: ['id', 'name', 'encounterType'],
+    sourceFile: 'src/data/faction-encounter-content.ts',
+  },
+  {
+    id: 'mercenary-encounter-templates',
+    label: 'Mercenary Encounters',
+    category: 'Encounters',
+    description: 'Encounter templates for mercenary company interactions.',
+    data: MERCENARY_ENCOUNTER_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'encounterType', label: 'Type', render: 'badge', badgeColors: ENCOUNTER_TYPE_COLORS },
+      { key: 'threatRating', label: 'Threat', render: 'badge', badgeColors: THREAT_BADGE_COLORS },
+      { key: 'reachPrimary', label: 'Primary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+    ],
+    searchFields: ['id', 'name', 'encounterType'],
+    sourceFile: 'src/data/mercenary-encounter-content.ts',
+  },
+  {
+    id: 'monster-encounter-templates',
+    label: 'Monster Encounters',
+    category: 'Encounters',
+    description: 'Encounter templates for monster faction interactions.',
+    data: MONSTER_ENCOUNTER_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'encounterType', label: 'Type', render: 'badge', badgeColors: ENCOUNTER_TYPE_COLORS },
+      { key: 'threatRating', label: 'Threat', render: 'badge', badgeColors: THREAT_BADGE_COLORS },
+      { key: 'reachPrimary', label: 'Primary', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+    ],
+    searchFields: ['id', 'name', 'encounterType'],
+    sourceFile: 'src/data/monster-encounter-content.ts',
+  },
+  {
+    id: 'army-encounter-templates',
+    label: 'Army Encounters',
+    category: 'Encounters',
+    description: 'Encounter templates for military army interactions.',
+    data: ARMY_ENCOUNTER_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'encounterType', label: 'Type', render: 'badge', badgeColors: ENCOUNTER_TYPE_COLORS },
+      { key: 'threatRating', label: 'Threat', render: 'badge', badgeColors: THREAT_BADGE_COLORS },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/army-encounter-content.ts',
+  },
+  {
+    id: 'siege-spotlight-templates',
+    label: 'Siege Spotlights',
+    category: 'Encounters',
+    description: 'Spotlight narrative templates for siege encounters.',
+    data: SIEGE_SPOTLIGHT_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/siege-encounter-content.ts',
+  },
+  {
+    id: 'siege-regional-templates',
+    label: 'Siege Regional',
+    category: 'Encounters',
+    description: 'Regional narrative templates for siege effects.',
+    data: SIEGE_REGIONAL_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/siege-encounter-content.ts',
+  },
+  {
+    id: 'battle-spotlight-templates',
+    label: 'Battle Spotlights',
+    category: 'Encounters',
+    description: 'Spotlight narrative templates for battle encounters.',
+    data: BATTLE_SPOTLIGHT_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/battle-spotlight-content.ts',
+  },
+
+  // ─── Additional Actions ────────────────────────────────────
+  {
+    id: 'unified-action-templates',
+    label: 'Unified Action Templates',
+    category: 'Actions',
+    description: 'Unified action template system combining standard and encounter actions.',
+    data: UNIFIED_ACTION_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'reach', label: 'Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+      { key: 'crudType', label: 'CRUD', render: 'badge' },
+    ],
+    searchFields: ['id', 'name', 'reach'],
+    sourceFile: 'src/data/unified-action-templates.ts',
+  },
+
+  // ─── Additional Agents & Archetypes ────────────────────────
+  {
+    id: 'archetype-tone-overlays',
+    label: 'Archetype Tone Overlays',
+    category: 'Agents & Archetypes',
+    description: 'Per-reach tone overlays with adjectives, verbs, and atmosphere for prose generation.',
+    data: ARCHETYPE_TONE_OVERLAYS,
+    viewer: 'record',
+    sourceFile: 'src/data/archetype-tone-content.ts',
+  },
+  {
+    id: 'archetype-strategy-weights',
+    label: 'Archetype Strategy Weights',
+    category: 'Agents & Archetypes',
+    description: 'Game-theory cooperation strategy weights per archetype (hawk, dove, tit-for-tat, etc.).',
+    data: ARCHETYPE_STRATEGY_WEIGHTS,
+    viewer: 'record',
+    sourceFile: 'src/data/game-theory-content.ts',
+  },
+  {
+    id: 'dilemma-templates',
+    label: 'Dilemma Templates',
+    category: 'Agents & Archetypes',
+    description: 'Dilemma choice templates for agent meeting events.',
+    data: DILEMMA_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/meeting-content.ts',
+  },
+  {
+    id: 'god-given-traits',
+    label: 'God-Given Traits',
+    category: 'Agents & Archetypes',
+    description: 'Divine trait options available during agent creation meetings.',
+    data: GOD_GIVEN_TRAITS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/meeting-content.ts',
+  },
+
+  // ─── Economy & Trade ───────────────────────────────────────
+  {
+    id: 'economic-trait-definitions',
+    label: 'Economic Traits',
+    category: 'Economy & Trade',
+    description: 'Graph nodes defining economic trait types (trade baron, smuggler, etc.).',
+    data: ECONOMIC_TRAIT_DEFINITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/economic-trait-content.ts',
+  },
+  {
+    id: 'economic-chronicle-templates',
+    label: 'Economic Chronicle Templates',
+    category: 'Economy & Trade',
+    description: 'Prose templates for economic events and guild/wealth milestones.',
+    data: ECONOMIC_CHRONICLE_TEMPLATES,
+    viewer: 'prose',
+    sourceFile: 'src/data/economic-chronicle-content.ts',
+  },
+
+  // ─── Additional Cosmology & Divine ─────────────────────────
+  {
+    id: 'mandate-templates',
+    label: 'Mandate Templates',
+    category: 'Cosmology & Divine',
+    description: 'Divine mandate definitions with conditions and scoring.',
+    data: MANDATE_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'type', label: 'Type', render: 'badge' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/mandate-content.ts',
+  },
+  {
+    id: 'doom-vocabulary',
+    label: 'Doom Vocabulary',
+    category: 'Cosmology & Divine',
+    description: 'Archetype-specific doom narrative vocabulary (stages, escalation, metaphors).',
+    data: DOOM_VOCABULARY,
+    viewer: 'record',
+    sourceFile: 'src/data/doom-content.ts',
+  },
+  {
+    id: 'doom-stages',
+    label: 'Doom Stage Names',
+    category: 'Cosmology & Divine',
+    description: 'Per-archetype stage names for doom progression.',
+    data: DOOM_STAGE_NAMES,
+    viewer: 'record',
+    sourceFile: 'src/data/doom-content.ts',
+  },
+  {
+    id: 'doom-thresholds',
+    label: 'Doom Thresholds',
+    category: 'Cosmology & Divine',
+    description: 'Default doom progression thresholds.',
+    data: DOOM_THRESHOLDS,
+    viewer: 'record',
+    sourceFile: 'src/data/doom-content.ts',
+  },
+  {
+    id: 'agenda-consequence-templates',
+    label: 'Agenda Consequences',
+    category: 'Cosmology & Divine',
+    description: 'Consequence message templates per intervention type and agenda category.',
+    data: AGENDA_CONSEQUENCE_TEMPLATES,
+    viewer: 'record',
+    sourceFile: 'src/data/agenda-consequence-templates.ts',
+  },
+  {
+    id: 'intervention-consequence-templates',
+    label: 'Intervention Consequences',
+    category: 'Cosmology & Divine',
+    description: 'Consequence prose templates for divine intervention feedback.',
+    data: INTERVENTION_CONSEQUENCES,
+    viewer: 'prose',
+    sourceFile: 'src/data/intervention-feedback-content.ts',
+  },
+
+  // ─── Additional Rivals & Opposition ────────────────────────
+  {
+    id: 'rival-personality-profiles',
+    label: 'Rival Personality Profiles',
+    category: 'Rivals & Opposition',
+    description: 'Personality profiles defining rival god behavioral patterns.',
+    data: RIVAL_PERSONALITY_PROFILES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/rival-content.ts',
+  },
+  {
+    id: 'rival-action-templates',
+    label: 'Rival Action Templates',
+    category: 'Rivals & Opposition',
+    description: 'Action prose templates per rival action type.',
+    data: RIVAL_ACTION_TEMPLATES,
+    viewer: 'prose',
+    sourceFile: 'src/data/rival-content.ts',
+  },
+
+  // ─── Additional Narrative & Prose ──────────────────────────
+  // Prose Layer (20 additional tables)
+  {
+    id: 'archetype-prose',
+    label: 'Archetype Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments per archetype for the prose layer.',
+    data: ARCHETYPE_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'agent-encounter-biography-prose',
+    label: 'Agent Encounter Biography',
+    category: 'Narrative & Prose',
+    description: 'Biography prose fragments generated from agent encounter history.',
+    data: AGENT_ENCOUNTER_BIOGRAPHY_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'location-encounter-history-prose',
+    label: 'Location Encounter History',
+    category: 'Narrative & Prose',
+    description: 'Prose for locations based on their encounter history.',
+    data: LOCATION_ENCOUNTER_HISTORY_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'culture-location-prose',
+    label: 'Culture Location Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments for locations influenced by nearby cultures.',
+    data: CULTURE_LOCATION_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'sphere-location-prose',
+    label: 'Sphere Location Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments for locations influenced by creation spheres.',
+    data: SPHERE_LOCATION_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'guild-identity-prose',
+    label: 'Guild Identity Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments describing guild identity and culture.',
+    data: GUILD_IDENTITY_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'faction-control-prose',
+    label: 'Faction Control Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments for faction-controlled locations.',
+    data: FACTION_CONTROL_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'disposition-prose',
+    label: 'Disposition Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments describing agent dispositions and personality.',
+    data: DISPOSITION_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'historical-culture-prose',
+    label: 'Historical Culture Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments for historical culture influences on regions.',
+    data: HISTORICAL_CULTURE_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'geographic-region-claimed-prose',
+    label: 'Region Claimed Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose for claimed/settled geographic regions.',
+    data: GEOGRAPHIC_REGION_CLAIMED_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'geographic-region-wilderness-prose',
+    label: 'Region Wilderness Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose for unclaimed/wilderness geographic regions.',
+    data: GEOGRAPHIC_REGION_WILDERNESS_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'trade-route-crossroads-prose',
+    label: 'Trade Crossroads Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose for trade route crossroads and junctions.',
+    data: TRADE_ROUTE_CROSSROADS_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'trade-route-goods-prose',
+    label: 'Trade Goods Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose describing goods flowing through trade routes.',
+    data: TRADE_ROUTE_GOODS_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'trade-route-status-prose',
+    label: 'Trade Status Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose for trade route operational status.',
+    data: TRADE_ROUTE_STATUS_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'trade-route-volume-prose',
+    label: 'Trade Volume Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose describing trade route traffic volume.',
+    data: TRADE_ROUTE_VOLUME_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'region-etymology-prose',
+    label: 'Region Etymology Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments explaining the origins of region names.',
+    data: REGION_ETYMOLOGY_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'population-prose',
+    label: 'Population Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose templates describing settlement population.',
+    data: POPULATION_PROSE_TEMPLATES,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'wealth-prose',
+    label: 'Wealth Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose describing settlement wealth levels.',
+    data: WEALTH_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'prosperity-prose',
+    label: 'Prosperity Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose templates for settlement prosperity descriptions.',
+    data: PROSPERITY_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+  {
+    id: 'prosperity-terrain-prose',
+    label: 'Prosperity Terrain Prose',
+    category: 'Narrative & Prose',
+    description: 'Terrain-specific prosperity prose fragments.',
+    data: PROSPERITY_TERRAIN_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/prose-layer-content.ts',
+  },
+
+  // Backstory & Profile
+  {
+    id: 'backstory-prose',
+    label: 'Backstory Prose',
+    category: 'Narrative & Prose',
+    description: '12 backstory prose tables (origins, bonds, fears, scars, arcs) for agent identity.',
+    data: {
+      surfaceOrigin: backstory.SURFACE_ORIGIN_PROSE,
+      surfaceSphere: backstory.SURFACE_SPHERE_PROSE,
+      traitOrigin: backstory.TRAIT_ORIGIN_PROSE,
+      bondHistory: backstory.BOND_HISTORY_PROSE,
+      bondHistoryNegative: backstory.BOND_HISTORY_NEGATIVE_PROSE,
+      fear: backstory.FEAR_PROSE,
+      hiddenMotive: backstory.HIDDEN_MOTIVE_PROSE,
+      decisiveNature: backstory.DECISIVE_NATURE_PROSE,
+      storyArc: backstory.STORY_ARC_PROSE,
+      turningPoint: backstory.TURNING_POINT_PROSE,
+      contradiction: backstory.CONTRADICTION_PROSE,
+      divineTransformation: backstory.DIVINE_TRANSFORMATION_PROSE,
+    },
+    viewer: 'record',
+    sourceFile: 'src/data/backstory-content.ts',
+  },
+  {
+    id: 'profile-prose',
+    label: 'Profile Prose',
+    category: 'Narrative & Prose',
+    description: 'Agent profile prose — origin, middle, closing templates and sphere flavor.',
+    data: {
+      originTemplates: profileProse.ORIGIN_TEMPLATES,
+      middleTemplates: profileProse.MIDDLE_TEMPLATES,
+      closingTemplates: profileProse.CLOSING_TEMPLATES,
+      quoteTemplates: profileProse.QUOTE_TEMPLATES,
+      sphereFlavor: profileProse.SPHERE_FLAVOR,
+    },
+    viewer: 'record',
+    sourceFile: 'src/data/profile-content.ts',
+  },
+
+  // Journey
+  {
+    id: 'journey-beat-templates',
+    label: 'Journey Beat Templates',
+    category: 'Narrative & Prose',
+    description: 'Narrative beat templates for agent journey events.',
+    data: JOURNEY_BEAT_TEMPLATES,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+    ],
+    searchFields: ['id', 'name'],
+    sourceFile: 'src/data/journey-content.ts',
+  },
+
+  // Hex & World Soul
+  {
+    id: 'hex-soul-prose',
+    label: 'Hex Soul Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments per sphere for hex soul intensity levels.',
+    data: { primary: SOUL_PROSE, secondary: SOUL_SECONDARY_PROSE, threat: SOUL_THREAT_PROSE },
+    viewer: 'record',
+    sourceFile: 'src/data/hexSoulProse.ts',
+  },
+  {
+    id: 'world-soul-prose',
+    label: 'World Soul Prose',
+    category: 'Narrative & Prose',
+    description: 'Prose fragments per sphere for World-Soul intensity levels.',
+    data: WORLD_SOUL_PROSE,
+    viewer: 'prose',
+    sourceFile: 'src/data/worldSoulProse.ts',
+  },
+
+  // Domain Words & Quintessence
+  {
+    id: 'domain-word-scales',
+    label: 'Domain Word Scales',
+    category: 'Narrative & Prose',
+    description: '5-tier word scales per reach domain for capability descriptions.',
+    data: DOMAIN_WORD_SCALES,
+    viewer: 'record',
+    sourceFile: 'src/data/domain-words.ts',
+  },
+  {
+    id: 'quintessence-lexicon',
+    label: 'Quintessence Lexicon',
+    category: 'Narrative & Prose',
+    description: 'Vocabulary word pool for quintessence descriptions.',
+    data: QUINTESSENCE_LEXICON.map((word: string, i: number) => ({ index: i, word })),
+    viewer: 'table',
+    columns: [
+      { key: 'index', label: '#', render: 'number' },
+      { key: 'word', label: 'Word' },
+    ],
+    searchFields: ['word'],
+    sourceFile: 'src/data/quintessence-content.ts',
+  },
+  {
+    id: 'quintessence-tooltips',
+    label: 'Quintessence Tooltips',
+    category: 'Narrative & Prose',
+    description: 'Tooltip text for quintessence UI elements.',
+    data: QUINTESSENCE_TOOLTIPS,
+    viewer: 'record',
+    sourceFile: 'src/data/quintessence-content.ts',
+  },
+
+  // ─── Additional Configuration ──────────────────────────────
+  {
+    id: 'attachment-tier-constants',
+    label: 'Attachment Tier Constants',
+    category: 'Configuration',
+    description: 'Tier advancement costs, durations, and scaling factors.',
+    data: constants(
+      ['MAX_ATTACHMENT_TIER', attachmentTier.MAX_ATTACHMENT_TIER, 'Maximum attachment tier level'],
+      ['TIER_MODIFIER_SCALE_FACTOR', attachmentTier.TIER_MODIFIER_SCALE_FACTOR, 'Modifier scaling per tier'],
+    ),
+    viewer: 'constants',
+    sourceFile: 'src/data/attachment-tier-content.ts',
+  },
+  {
+    id: 'trait-modifiers',
+    label: 'Line-of-Sight Trait Modifiers',
+    category: 'Configuration',
+    description: 'Trait modifier definitions for line-of-sight calculations.',
+    data: LOS_TRAIT_DEFINITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'traitId', label: 'Trait ID' },
+      { key: 'modifier', label: 'Modifier', render: 'number' },
+    ],
+    searchFields: ['traitId'],
+    sourceFile: 'src/data/trait-modifiers.ts',
+  },
+  {
+    id: 'reward-bestowed-powers',
+    label: 'Bestowed Powers',
+    category: 'Configuration',
+    description: 'Available bestowed power rewards for agents.',
+    data: REWARD_BESTOWED_POWERS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/reward-attachment-catalog.ts',
+  },
+  {
+    id: 'reward-conditions',
+    label: 'Reward Conditions',
+    category: 'Configuration',
+    description: 'Available condition rewards for agents.',
+    data: REWARD_CONDITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/reward-attachment-catalog.ts',
+  },
+  {
+    id: 'reward-possessions',
+    label: 'Reward Possessions',
+    category: 'Configuration',
+    description: 'Available possession rewards for agents.',
+    data: REWARD_POSSESSIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/reward-attachment-catalog.ts',
+  },
+  {
+    id: 'starter-possessions',
+    label: 'Starter Possessions',
+    category: 'Configuration',
+    description: 'Initial possessions available for agent starting equipment.',
+    data: STARTER_POSSESSIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/starter-attachments.ts',
+  },
+  {
+    id: 'starter-conditions',
+    label: 'Starter Conditions',
+    category: 'Configuration',
+    description: 'Initial conditions available for agent starting state.',
+    data: STARTER_CONDITIONS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id'],
+    sourceFile: 'src/data/starter-attachments.ts',
+  },
+
+  // ─── World Model Taxonomy ──────────────────────────────────
+  {
+    id: 'world-model-nodes',
+    label: 'Taxonomy Nodes',
+    category: 'World & Geography',
+    description: '253 taxonomy/ontology nodes from world-model.json (spheres, reaches, terrains, traits, etc.).',
+    data: worldModel.nodes,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'category', label: 'Category', render: 'badge' },
+      { key: 'properties.label', label: 'Label' },
+    ],
+    searchFields: ['id', 'category', 'properties.label'],
+    sourceFile: 'src/data/world-model.json',
+  },
+  {
+    id: 'world-model-edges',
+    label: 'Taxonomy Edges',
+    category: 'World & Geography',
+    description: '371 taxonomy relationship edges from world-model.json.',
+    data: worldModel.edges,
+    viewer: 'table',
+    columns: [
+      { key: 'type', label: 'Type', render: 'badge' },
+      { key: 'source', label: 'Source' },
+      { key: 'target', label: 'Target' },
+    ],
+    searchFields: ['type', 'source', 'target'],
+    sourceFile: 'src/data/world-model.json',
+  },
 ];
 
 // ── Derived: categories grouped from registry ────────────────────
@@ -742,8 +1565,9 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
 /** Category order for sidebar display */
 const CATEGORY_ORDER = [
   'World & Geography', 'Locations & Sublocations', 'Encounters', 'Actions',
-  'Agents & Archetypes', 'Culture & Society', 'Cosmology & Divine',
-  'Rivals & Opposition', 'Narrative & Prose', 'Configuration',
+  'Agents & Archetypes', 'Culture & Society', 'Factions & Military',
+  'Economy & Trade', 'Cosmology & Divine', 'Rivals & Opposition',
+  'Narrative & Prose', 'Configuration',
 ];
 
 export function getCategories(): ContentCategory[] {
