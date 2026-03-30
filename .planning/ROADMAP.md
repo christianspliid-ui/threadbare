@@ -5,11 +5,11 @@
 
 ## Milestone Overview
 
-| # | Milestone | Focus | Key Deliverable |
-|---|-----------|-------|-----------------|
-| M1 | World-Soul Connection | Cosmic metabolism | Player actions shift sphere balance; the world responds systemically |
-| M2 | Conflict & Destruction | Iron Reach scale-up | Armies, sieges, sacking — visible on map, faction-driven, leader-led |
-| M3 | Dynamic Economy | Gold+Stone connections | Economy feeds back through encounters, factions, actions, and player CRUD |
+| # | Milestone | Focus | Key Deliverable | Status |
+|---|-----------|-------|-----------------|--------|
+| M1 | World-Soul Connection | Cosmic metabolism | Player actions shift sphere balance; the world responds systemically | ✅ Complete |
+| M2 | Conflict & Destruction | Iron Reach scale-up | Armies, sieges, sacking — visible on map, faction-driven, leader-led | ✅ Core complete |
+| M3 | Dynamic Economy | Gold+Stone connections | Economy feeds back through encounters, factions, actions, and player CRUD | 💡 Design needed |
 
 **Guiding principle:** Each milestone makes the world *feel* more alive and gives the player more meaningful choices. Gaps from the journey audit (Gaps A–J) are woven in where they naturally fit rather than treated as separate work items.
 
@@ -109,51 +109,27 @@ Plans:
 
 **Phase 12 complete (2026-03-29).** Full M2 conflict engine operational. 102 new tests.
 
+**M1 complete.** All 5 sub-goals delivered across Phases 10-11. Sphere affinity pipeline, pressure resolution, downstream modifiers, magic-as-sphere-fluency, World-Soul UI, agent character sheet overhaul.
+
 ---
 
-## M2: Conflict & Destruction
+## M2: Conflict & Destruction — ✅ Core Complete
 
 **Goal:** Scale up Iron Reach from individual encounters into army-scale conflict. Armies are visible on the map, move with leader agents toward factional goals, and produce large-scale storytelling events: sieges, sacking of cities, great battles. Destruction of locations as a real mechanic.
 
-**Why second:** The world needs danger and stakes. Economy without conflict is a spreadsheet. Agents without adversaries are tourists. Armies give factions teeth, give the player something to fear and fight, and make Iron Reach matter the way Gold Reach matters for commerce.
-
 **Gap coverage:** Addresses Gap F (no danger), partially Gap B (rivals become dangerous when they can field armies). Connects to economy (M3): armies cost wealth, sacking destroys infrastructure, war disrupts trade.
 
-### Phases
+**Implementation:** Delivered across Phases 12 (core engine) + 12-Flesh (Quintessence migration) + 13 (gap closure + army visuals).
 
-#### M2.1 — Army Entities & Faction Warfare Design
-Full design pass covering:
-- **Army as graph entity:** Army node type with properties (size, strength, morale, leader agent, faction allegiance, current goal). Connected to faction via `commanded_by` edge, to location via `located_at`.
-- **Army movement:** Armies move on the hex map like agents but slower, following roads, visible at all zoom tiers. Movement uses existing pathfinding but with army-specific cost weights.
-- **Faction war goals:** Factions can declare war goals (capture settlement, destroy rival, raid trade route, defend territory). War goals drive army movement decisions.
-- **Army composition:** Drawn from faction members + hired mercenaries (connects to Gold Reach crossover: wealth → hire mercenaries → army grows).
-- **Supply & morale:** Armies need supply lines (trade routes!) — severed supply degrades morale. Morale affects battle outcomes.
+### Delivered (M2.1–M2.4)
 
-**Needs:** Full design doc with NFP compliance, wiring section, constants tables, trace schemas.
+- ✅ **M2.1 — Army Entities & Faction Warfare:** Army as `actor` graph nodes with `ArmyState`, `commanded_by`/`member_of` edges, faction ambition system, mercenary company vertical slice (Phase 12, plans 12-01/12-02)
+- ✅ **M2.2 — Battle Resolution:** Momentum-based field battles (log2 size ratio), siege resolution (accelerating pacing, fortification multipliers, starvation), spotlight encounters, Quintessence attrition with threshold encounters (Phase 12, plans 12-03/12-04/12-05)
+- ✅ **M2.3 — Destruction & Consequences:** Minor/major/total severity, prosperity loss, settlement downgrade/ruins, sublocation destruction, trade route severance, commander capture/kill (Phase 12, plan 12-06)
+- ✅ **M2.4 — Army Visibility & UI:** Army sprites on HexMapV2, battle/siege indicators, Armies debug tab (Phase 12 plan 12-07 + Phase 13 plan 13-04)
+- ✅ **M2 Gap Closure (Phase 13):** Aftermath sphere pressure, refugee trace stub, 13 deferred tests, army visual layers verified
 
-#### M2.2 — Battle Resolution
-- **Encounter-scale battles:** Small skirmishes as multi-step encounters (existing encounter system, new templates). Agent capability checks, Iron Reach resolution.
-- **Army-scale battles:** When two armies meet at the same hex, trigger a battle event. Resolution based on army strength, morale, leader capability, terrain, and sphere alignment. Multi-step with narrative beats.
-- **Sieges:** Army at a settlement triggers siege. Multi-tick encounter with escalating stakes. Defender can sortie, negotiate, or hold. Attacker can assault, starve, or negotiate.
-- **Divine intervention in battle:** Player can spend essence to tip battles (bless army, curse enemy, inspire defenders, break siege).
-
-**Needs:** Design doc for battle/siege resolution math, encounter templates, and divine intervention integration.
-
-#### M2.3 — Destruction & Consequences
-- **Sacking:** Victorious army at a settlement can sack it. Destroys sublocations, tanks prosperity, spikes unrest, generates massive chronicle event. Displaced population.
-- **Location destruction:** Settlements can be reduced (city→town→hamlet→ruins). Ruins become explorable sites (connects to existing ruins layer).
-- **Trade route disruption:** Armies on a trade route hex set `threatened: true`. Active warfare severs routes.
-- **Refugee generation:** Sacked settlements produce agent migration toward safe locations (connects to economy — refugees boost receiving settlement population).
-- **War chronicle:** Major battles generate multi-paragraph chronicle entries. Siege narratives unfold over multiple ticks. The player reads war stories, not stat blocks.
-
-#### M2.4 — Army Visibility & UI
-- Army sprites on HexMapV2 (faction-colored, size-indicating, leader portrait)
-- Army movement animation (marching along roads)
-- Battle indicators on contested hexes
-- Siege visual (encirclement indicator around settlement)
-- War declaration events in notification system
-- Army detail view (strength, morale, leader, goal, supply status)
-- Debug panel: army state, war goals, battle log
+### Remaining (M2.5)
 
 #### M2.5 — Monster Encounters Integration
 - Fold TB-051 (Monster Encounters) into the conflict layer
@@ -161,6 +137,7 @@ Full design pass covering:
 - Province danger gradient (capital→heartland→borderland→wilderness) drives monster density
 - Monster lairs as locations that must be cleared before settlement
 - Armies can be sent to clear monster threats (faction quest variant)
+- **Status:** 💡 Needs separate brainstorm and design doc
 
 ---
 
@@ -209,10 +186,10 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | **A: Doom has no teeth** | Post-M1 (doom injects through World-Soul modifiers) + Post-M2 (doom spawns armies/monsters, triggers sieges) |
 | **B: Rivals are inert** | M2 (rivals field armies, declare wars, compete for territory) |
 | **C: No onboarding** | After M1-M3 (onboarding makes sense once the game has content to onboard into) |
-| **D: World-Soul disconnected** | M1 (primary target) |
+| **D: World-Soul disconnected** | ✅ M1 complete (Phase 10) |
 | **E: Economy one-directional** | M3 (primary target) |
-| **F: No danger** | M2 (primary target) |
-| **G: Character sheet** | Phase 11 (TB-070) — in progress |
+| **F: No danger** | ✅ M2 core complete (Phase 12 + 13) |
+| **G: Character sheet** | ✅ Phase 11 complete (TB-070) |
 | **H: Culture seeding** | TB-031/032, can land between milestones |
 | **I: NPCs** | M3 partial (workforce model), full NPC system later |
 | **J: Chain reactions** | TB-017, natural extension after M1 (World-Soul provides the propagation channel) |
@@ -221,99 +198,41 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 
 ## Open Design Work Needed
 
-| Milestone | Design Doc Needed | Status |
-|-----------|------------------|--------|
-| M1.1–M1.5 | Universal Sphere Affinity (all phases) | ✅ Design complete — rewritten 2026-03-28 with per-entity architecture (`Docs/plans/2026-03-28-world-soul-connection-design.md`) |
-| Phase 11 | Agent Character Sheet Overhaul | ✅ Design complete (`Docs/plans/2026-03-27-agent-character-sheet-overhaul-design.md`) |
-| M2.1–M2.4 | Conflict & Destruction (unified) | ✅ Design complete — `Docs/plans/2026-03-29-conflict-and-destruction-design.md`. Covers army entities, battle/siege resolution, destruction/aftermath, UI/visibility. M2.5 (monsters) still needs separate brainstorm |
+| Area | Design Doc Needed | Status |
+|------|------------------|--------|
+| M2.5 | Monster Encounters Integration | 💡 Needs brainstorm + design doc (TB-051) |
 | M3.1–M3.2 | Economy feedback loops | Brainstormed (TB-071), needs design doc |
 | M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
 | M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
 
-### Phase 12: Flesh Reach Migration to Quintessence
-
-**Goal:** Remove the Flesh reach entirely (9 reaches to 8), elevate its conceptual space to Quintessence (a derived meta-property tracking existential health as a 0-1.0 runtime value on all entities), replace two axiological pairs (Stone: humility_pride to preservation_transformation, Eye: frankness_propriety to revelation_discretion), retire stoicism_passion, add archetype epithet system with hybrid naming, update reach colors to sphere-derived palette, and update UI grid layout from 3x3 to 2x4.
-**Requirements:** FLSH-01 through FLSH-16
-**Depends on:** Phase 11
-**Plans:** 4/4 plans complete
-
-Plans:
-- [x] 12-01-PLAN.md — Type system changes (ReachDomain 9 to 8, ValuePair 10 to 9) + mechanical propagation across ~100+ files
-- [x] 12-02-PLAN.md — Content rewrite (new Stone/Eye prose, stoicism_passion redistribution, quintessence-content.ts)
-- [x] 12-03-PLAN.md — Quintessence runtime system (types, phaseQuintessence engine, orchestrator wiring, entity initialization)
-- [x] 12-04-PLAN.md — UI polish (2x4 grid, archetype epithets, meeting modal cleanup) + visual verification
-
-**Phase 12 Flesh Reach complete (2026-03-30).** All plans executed. 8-reach system, Quintessence runtime, 2x4 grid layout.
-
-### Phase 13: M2 Gap Closure — Aftermath, Army Visuals, Deferred Tests
-
-**Goal:** Close all M2 implementation gaps: implement aftermath sphere pressure and refugee trace stub in applyAftermath, complete 13 deferred .todo tests across battle/siege plans, and add HexMapV2 army visual layers (army sprites, battle indicators, siege indicators).
-**Requirements:** GAP-01 (aftermath sphere pressure), GAP-02 (refugee trace stub), GAP-03 (hasThreadToBattle), GAP-04 (selectSpotlight), GAP-05 (generateRegionalEncounters), GAP-06 (army visual layers), GAP-07 (battle/siege indicators)
-**Depends on:** Phase 12
-**Plans:** 4/4 plans complete
-
-Plans:
-- [ ] 13-01-PLAN.md — Aftermath sphere pressure + refugee trace stub
-- [ ] 13-02-PLAN.md — Battle thread visibility + spotlight selection (7 tests)
-- [ ] 13-03-PLAN.md — Siege regional encounters (6 tests)
-- [ ] 13-04-PLAN.md — Army visual layers (sprites, battle indicators, siege indicators)
-
-### Phase 14: Pause game automatically while an encounter modal is open
-
-**Goal:** Auto-pause the tick loop whenever an encounter modal (TieredEncounterModal or MeetingEncounterModal) opens, and auto-resume when the modal closes if the game was previously running. All encounter notifications auto-interrupt regardless of court position.
-**Requirements**: PAUSE-01 (auto-pause on encounter open), PAUSE-02 (conditional auto-resume on close), PAUSE-03 (all encounters auto-interrupt)
-**Depends on:** Phase 13
-**Plans:** 1/1 plans complete
-
-Plans:
-- [ ] 14-01-PLAN.md — Auto-pause/resume logic + tests
-
-### Phase 15: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
-
-**Goal:** Fix 5 systemic encounter pipeline problems from the seed-42 analysis: score display bug (c.templateId vs c.entry.templateId), zero agent movement (TRAVEL_COST_WEIGHT too high + no personality wanderlust), encounter round-robin (small pools + no retirement mechanics), no difficulty scaling (no outgrowth lock), and content deserts at 2 locations (insufficient universal encounter templates). Add encounter retirement (max completions + outgrowth lock), personality-driven travel incentives, 50+ new hand-authored encounter templates spanning diff 20-90, and a forced travel fallback for persistent content deserts.
-**Requirements**: ENC-01 (score display bug fix), ENC-02 (movement incentives — travel cost + wanderlust), ENC-03 (max completions retirement), ENC-04 (outgrowth lock), ENC-05 (content expansion — 20+ templates per archetype), ENC-06 (content desert forced travel fallback)
-**Depends on:** Phase 14
-**Plans:** 4/4 plans complete
-
-Plans:
-- [ ] 15-01-PLAN.md — Score display bug fix + travel cost reduction + personality wanderlust
-- [ ] 15-02-PLAN.md — Encounter retirement (max completions + outgrowth lock filter)
-- [ ] 15-03-PLAN.md — Content expansion (30+ location-specific + 15+ universal templates)
-- [ ] 15-04-PLAN.md — Forced travel fallback for content deserts
-
-### Phase 16: Expand retinue sidebar to show all nodes the Ascendant has threads to — becomes a Threads area showing agents, armies, factions, artifacts, locations, anything being invested in
-
-**Goal:** Transform the right sidebar's RetinuePanel into a comprehensive Threads panel showing every graph node the Ascendant has a thread edge to — agents, locations, factions, artifacts, armies — with compact grouped rows, a floating detail view, thread-creation divine actions, and stub profile modals for each non-agent type.
-**Requirements**: THRD-01 (engine getThreadedNodes query), THRD-02 (ThreadsPanel compact grouped rows), THRD-03 (ThreadDetailView floating detail), THRD-04 (GameView layout restructure), THRD-05 (thread-creation action templates), THRD-06 (stub profile modals), THRD-07 (tests)
-**Depends on:** Phase 15
-**Plans:** 3/3 plans complete
-
-Plans:
-- [ ] 16-01-PLAN.md — Engine getThreadedNodes() query + ThreadsPanel compact grouped rows + GameView sidebar wiring
-- [ ] 16-02-PLAN.md — ThreadDetailView floating detail + GameView flex layout restructure + stub profile modals
-- [ ] 16-03-PLAN.md — Thread-creation divine action templates for locations, factions, armies, artifacts
-
-### Phase 17: Add action description fields and player feedback on action activation**Goal:** Add spellName and description fields to all 108+ action templates (Ars Magica style evocative names, qualitative mechanical descriptions), redesign ActionCard to MTG-classic frame layout (spell name + art placeholder + type line + description + flavor text), implement activation feedback parity (glow burst + sphere audio + consequence toast + hex particle burst) for all action types.**Requirements**: PH17-01 (type extension), PH17-02 (WheelSlot wiring), PH17-03 (content migration), PH17-04 (MTG focused layout), PH17-05 (art-only hand layout), PH17-06 (activation feedback), PH17-07 (particle burst)**Depends on:** Phase 16**Plans:** 4 plansPlans:- [ ] 17-01-PLAN.md — Type model extension (UnifiedActionTemplate + WheelSlot + slot wiring)- [ ] 17-02-PLAN.md — Content migration (spell names + descriptions for all 108+ templates)- [ ] 17-03-PLAN.md — ActionCard MTG redesign + glow burst + feedback wiring (audio + toast)- [ ] 17-04-PLAN.md — HexMapV2 particle burst system (reusable WebGL effect)
-
-### Phase 18: Wire mercenary company seeding and encounters into the runtime pipeline
-
-**Goal:** Connect the already-authored mercenary company definition and encounter templates to the live runtime pipeline: seed 2 opposing companies at maximum-distance settlements, fix the encounter template search to include mc.* templates, fix the factionDefId/factionDefinitionId property key mismatch, wire rank-gated encounter filtering, add promotion auto-triggering on rank threshold crossings, and spawn 1 army per company at seeding time with placeholder commanders.
-**Requirements**: MERC-01 (two-company seeding with distance constraint), MERC-02 (static resource_acquisition ambition per company), MERC-03 (army spawn per company at seed time), MERC-04 (factionDefId key mismatch fix), MERC-05 (flesh reach cleanup in merc definition), MERC-06 (mc.* template access in getAccessibleTemplates), MERC-07 (guild hall sublocation detection fix), MERC-08 (promotion auto-trigger on rank change), MERC-09 (mc pipeline integration tests)
-**Depends on:** Phase 17
-**Plans:** 2 plans
-
-Plans:
-- [ ] 18-01-PLAN.md — Two-company seeding with distance constraint, static ambitions, army spawning, factionDefId fix
-- [ ] 18-02-PLAN.md — Encounter pipeline fixes (mc.* template access, sublocation detection, promotion injection) + tests
-
 ---
 
-## Estimated Scope
+## Post-Milestone Implementation Phases
 
-Not calendar estimates — relative sizing:
+### Phase 12-Flesh: Flesh Reach Migration to Quintessence — ✅ Complete (2026-03-30)
 
-| Milestone | Relative Size | Notes |
-|-----------|--------------|-------|
-| M1 | Medium-Large | New per-entity data model + pressure engine + aggregation + IPK UI + magic/overchannel. Larger scope than original "wire existing engine" estimate. |
-| M2 | Large | New entity type, new movement patterns, battle resolution, destruction mechanics, significant UI. Most new-code-intensive milestone. |
-| M3 | Medium-Large | Many small connections (M3.1–M3.6) plus the CRUD action expansion (M3.7) and resource system (M3.8). |
+Removed Flesh reach (9→8 reaches), elevated to Quintessence runtime (0-1.0 entity health), replaced Stone/Eye axiological pairs, retired stoicism_passion, archetype epithet system, 2x4 grid layout. 4/4 plans.
+
+### Phase 13: M2 Gap Closure — ✅ Complete (2026-03-30)
+
+Aftermath sphere pressure, refugee trace stub, 13 deferred tests across battle/siege, HexMapV2 army visual layers (sprites, battle indicators, siege indicators). 4/4 plans, 20/20 must-haves verified.
+
+### Phase 14: Auto-Pause During Encounters — ✅ Complete (2026-03-30)
+
+Game automatically pauses while encounter modals are open. 1/1 plan, 5/5 must-haves verified.
+
+### Phase 15: Encounter Pipeline Fixes — ✅ Complete (2026-03-30)
+
+Score display bug fix, travel cost reduction, wanderlust modifier, encounter retirement (max completions + outgrowth lock), 40 higher-difficulty encounter templates (diff 40-90), forced travel fallback for content desert agents. 4/4 plans, 6/6 must-haves verified.
+
+### Phase 16: Threads Area (Retinue Sidebar Expansion) — ✅ Complete (2026-03-30)
+
+Expanded retinue sidebar to show all thread-connected nodes (agents, armies, factions, artifacts, locations). ThreadsPanel + getThreadedNodes engine query, ThreadDetailView with stub modals, thread-creation action templates for location/faction/army/artifact. 3/3 plans.
+
+### Phase 17: Action Description Fields & Activation Feedback — 📐 Planned
+
+MTG-style ActionCard redesign (art frame + spell name + technical description + flavor text), activation feedback (glow burst + audio + particle burst + consequence toast). 4 plans written across 3 waves. Context gathered, UI-SPEC complete.
+
+### Phase 18: Mercenary Company Runtime Wiring — 📐 Planned
+
+Wire existing mercenary company definition + encounter templates into runtime pipeline: seed 2 opposing companies at distant settlements, encounter cache population, rank-gated filtering, reputation tracking, auto-triggered promotions, 1 army per company. Plans written. Context gathered.
