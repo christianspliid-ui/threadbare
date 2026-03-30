@@ -4,8 +4,10 @@ import type { EncounterProgress } from '../../../types/encounter';
 import { ENCOUNTER_ABANDON_COOLDOWN, ENCOUNTER_COMPLETION_COOLDOWN } from '../../../types/encounter';
 import { getAnyEncounterById } from '../../../data/encounter-content';
 import type { WorldGraph } from '../../../engine/graph';
+import type { GraphNode } from '../../../types/graph';
 import { getTimeline, getTrackedAgentIds } from '../../../engine/encounterTimeline';
 import { formatEncounterLog, makeFilename, formatAllAgentsLog, makeAllAgentsFilename } from '../../../engine/encounterLogExporter';
+import { getLocationEncounterHistory, getAgentEncounterHistory, EVENT_NODE_ID_PREFIX } from '../../../engine/encounterEventNode';
 
 // ─── Styles ─────────────────────────────────────────────────────
 
@@ -67,6 +69,13 @@ const STATUS_COLORS: Record<string, string> = {
   active: '#4ade80',
   abandoned: '#f87171',
   completed: '#60a5fa',
+};
+
+const OUTCOME_COLORS: Record<string, string> = {
+  success: '#4ade80',
+  critical_success: '#facc15',
+  failure: '#f87171',
+  critical_failure: '#ef4444',
 };
 
 const CLICKABLE_NAME_STYLE: React.CSSProperties = {
@@ -410,6 +419,13 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
         )}
       </div>
 
+      {/* Event History (TB-077 Phase 1D) */}
+      <EventHistorySection
+        graph={graph}
+        followAgentId={followAgentId}
+        currentTick={currentTick}
+      />
+
       {/* Cache by Location */}
       <div style={SECTION_STYLE}>
         <div style={HEADING_STYLE}>Cache by Location</div>
@@ -451,6 +467,148 @@ export const EncounterCacheView = React.memo(function EncounterCacheView({
           ))
         )}
       </div>
+    </div>
+  );
+});
+
+// ─── Event History Section (TB-077 Phase 1D) ───────────────────
+
+function formatEventTick(tick: number, currentTick: number): string {
+  const ago = currentTick - tick;
+  return ago === 0 ? 'this tick' : `${ago} tick${ago === 1 ? '' : 's'} ago`;
+}
+
+function EventNodeRow({ event, currentTick }: { event: GraphNode; currentTick: number }) {
+  const outcome = event.properties.outcome as string;
+  const color = OUTCOME_COLORS[outcome] ?? 'var(--text-muted)';
+  return (
+    <div style={{ ...ENCOUNTER_ITEM_STYLE, borderLeftColor: color }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '4px' }}>
+        <span style={{ color: 'var(--text-primary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {event.name}
+        </span>
+        <span style={{ color, fontWeight: 600, whiteSpace: 'nowrap', fontSize: '10px' }}>
+          {outcome?.replace('_', ' ')}
+        </span>
+      </div>
+      <div style={{ color: 'var(--text-muted)', fontSize: '10px' }}>
+        {event.properties.reachTested} | {event.properties.encounterType} | tick {event.properties.tick as number} ({formatEventTick(event.properties.tick as number, currentTick)})
+      </div>
+    </div>
+  );
+}
+
+const EventHistorySection = React.memo(function EventHistorySection({
+  graph,
+  followAgentId,
+  currentTick,
+}: {
+  graph?: WorldGraph;
+  followAgentId?: string;
+  currentTick: number;
+}) {
+  const [expandedLoc, setExpandedLoc] = useState<string | null>(null);
+
+  // Count total event nodes in the graph
+  const eventNodeCount = useMemo(() => {
+    if (!graph) return 0;
+    return graph.getNodesByType('event')
+      .filter(n => n.properties.eventType === 'encounter_outcome').length;
+  }, [graph, currentTick]); // re-count when tick changes
+
+  // Agent encounter history (if following an agent)
+  const agentHistory = useMemo(() => {
+    if (!graph || !followAgentId) return [];
+    return getAgentEncounterHistory(graph, followAgentId, 10);
+  }, [graph, followAgentId, currentTick]);
+
+  // Top locations by event count (most active locations)
+  const topLocations = useMemo(() => {
+    if (!graph) return [];
+    // Find all locations that have occurred_at edges
+    const locationCounts = new Map<string, number>();
+    const eventNodes = graph.getNodesByType('event')
+      .filter(n => n.properties.eventType === 'encounter_outcome');
+    for (const evt of eventNodes) {
+      const edges = graph.getOutgoingEdges(evt.id, 'occurred_at');
+      for (const e of edges) {
+        locationCounts.set(e.target, (locationCounts.get(e.target) ?? 0) + 1);
+      }
+    }
+    return Array.from(locationCounts.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([locId, count]) => ({
+        id: locId,
+        name: graph.getNode(locId)?.name ?? locId,
+        count,
+      }));
+  }, [graph, currentTick]);
+
+  // Events for expanded location
+  const expandedLocEvents = useMemo(() => {
+    if (!graph || !expandedLoc) return [];
+    return getLocationEncounterHistory(graph, expandedLoc, 10);
+  }, [graph, expandedLoc, currentTick]);
+
+  if (!graph) return null;
+
+  return (
+    <div style={SECTION_STYLE}>
+      <div style={HEADING_STYLE}>Event History (Graph Nodes)</div>
+
+      {/* Summary row */}
+      <div style={ROW_STYLE}>
+        <span style={LABEL_STYLE}>Event nodes</span>
+        <span style={VALUE_STYLE}>{eventNodeCount}</span>
+      </div>
+      <div style={ROW_STYLE}>
+        <span style={LABEL_STYLE}>Locations with history</span>
+        <span style={VALUE_STYLE}>{topLocations.length}</span>
+      </div>
+
+      {/* Agent history (when following) */}
+      {followAgentId && (
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ ...HEADING_STYLE, fontSize: '10px', color: 'var(--text-secondary)' }}>
+            Followed Agent History ({agentHistory.length})
+          </div>
+          {agentHistory.length === 0 ? (
+            <div style={{ ...EMPTY_STATE_STYLE, padding: '6px' }}>No encounter history yet</div>
+          ) : (
+            agentHistory.map(evt => (
+              <EventNodeRow key={evt.id} event={evt} currentTick={currentTick} />
+            ))
+          )}
+        </div>
+      )}
+
+      {/* Top locations by event count */}
+      {topLocations.length > 0 && (
+        <div style={{ marginTop: '8px' }}>
+          <div style={{ ...HEADING_STYLE, fontSize: '10px', color: 'var(--text-secondary)' }}>
+            Most Active Locations
+          </div>
+          {topLocations.map(loc => (
+            <div key={loc.id}>
+              <div
+                style={{ ...LOCATION_ROW_STYLE, cursor: 'pointer' }}
+                onClick={() => setExpandedLoc(prev => prev === loc.id ? null : loc.id)}
+              >
+                <span style={{ color: 'var(--text-primary)' }}>
+                  {expandedLoc === loc.id ? '\u25BC' : '\u25B6'} {loc.name}
+                </span>
+                <span style={{ color: 'var(--text-muted)' }}>
+                  {loc.count} event{loc.count === 1 ? '' : 's'}
+                </span>
+              </div>
+              {expandedLoc === loc.id && expandedLocEvents.map(evt => (
+                <EventNodeRow key={evt.id} event={evt} currentTick={currentTick} />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 });
