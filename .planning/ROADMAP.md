@@ -68,7 +68,7 @@
   4. Event IDs are tick-local sequence numbers, not wall-clock timestamps — two runs produce the same IDs
 **Plans:** 2 plans
 Plans:
-- [ ] 19-01-PLAN.md — Replace Math.random() and Date.now() in 15 engine files with seeded PRNG and tick-local IDs
+- [x] 19-01-PLAN.md — Replace Math.random() and Date.now() in 15 engine files with seeded PRNG and tick-local IDs (DONE 2026-03-30)
 - [ ] 19-02-PLAN.md — Un-skip and extend determinism integration test to verify 100-tick byte-identical output
 
 ### Phase 20: Wiring

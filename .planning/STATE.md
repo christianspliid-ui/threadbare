@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Low-Hanging Fruit Optimization
-status: planning
-stopped_at: Phase 19 context gathered
-last_updated: "2026-03-30T19:15:04.893Z"
-last_activity: 2026-03-30 — v1.1 roadmap created (4 phases, 12 requirements mapped)
+status: in-progress
+stopped_at: Phase 19 Plan 01 complete (DTRM-01, DTRM-02)
+last_updated: "2026-03-30T19:50:00Z"
+last_activity: 2026-03-30 — Phase 19 Plan 01 complete: seeded PRNG + tick-local event IDs
 progress:
   total_phases: 4
   completed_phases: 0
@@ -26,11 +26,11 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 19 of 22 (Determinism)
-Plan: 0 of TBD in current phase
-Status: Ready to plan
-Last activity: 2026-03-30 — v1.1 roadmap created (4 phases, 12 requirements mapped)
+Plan: 1 of 2 in current phase
+Status: In progress — Plan 01 complete, Plan 02 pending
+Last activity: 2026-03-30 — Plan 01 complete: Math.random() + Date.now() replaced with seeded RNG + tick-local IDs
 
-Progress: [░░░░░░░░░░] 0% (v1.1 — 0/TBD plans complete)
+Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 
 ## Accumulated Context
 
@@ -41,6 +41,11 @@ Progress: [░░░░░░░░░░] 0% (v1.1 — 0/TBD plans complete)
 - v1.1 phases 19-22; phases 20/21/22 are independent and can parallelize after Phase 19
 - Math.random() acceptable only in UI flavor code (avatar names, particle colors); all engine phases must use seeded mulberry32
 - PERF-02 encounter cache threshold: LOW confidence — profile empirically before setting constant
+- [19-01] rollD100 accepts rng param; resolveAction gains optional rng (third param) preserving deterministicRoll backward compat
+- [19-01] Per-encounter seeded roll: mulberry32(seed + tick*43 + hashString(actorId)) — no shared RNG state between encounters
+- [19-01] Per-module reset functions over single global counter to keep module boundaries clean
+- [19-01] Trace timestamps use tick number not wall-clock ms — ordering by tick is semantically correct
+- [19-01] agentSelection/dream/rival Math.random() fallbacks documented as @deprecated — full wiring deferred to DTRM-03
 
 ### Pending Todos
 
@@ -54,6 +59,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T19:15:04.892Z
-Stopped at: Phase 19 context gathered
-Resume file: .planning/phases/19-determinism/19-CONTEXT.md
+Last session: 2026-03-30T19:50:00Z
+Stopped at: Completed 19-01-PLAN.md (DTRM-01 + DTRM-02 done)
+Resume file: .planning/phases/19-determinism/19-02-PLAN.md (DTRM-03 — un-skip determinism integration test)
