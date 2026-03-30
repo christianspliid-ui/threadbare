@@ -270,13 +270,16 @@ Plans:
 
 ### Phase 15: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Fix 5 systemic encounter pipeline problems from the seed-42 analysis: score display bug (c.templateId vs c.entry.templateId), zero agent movement (TRAVEL_COST_WEIGHT too high + no personality wanderlust), encounter round-robin (small pools + no retirement mechanics), no difficulty scaling (no outgrowth lock), and content deserts at 2 locations (insufficient universal encounter templates). Add encounter retirement (max completions + outgrowth lock), personality-driven travel incentives, 50+ new hand-authored encounter templates spanning diff 20-90, and a forced travel fallback for persistent content deserts.
+**Requirements**: ENC-01 (score display bug fix), ENC-02 (movement incentives — travel cost + wanderlust), ENC-03 (max completions retirement), ENC-04 (outgrowth lock), ENC-05 (content expansion — 20+ templates per archetype), ENC-06 (content desert forced travel fallback)
 **Depends on:** Phase 14
-**Plans:** 0 plans
+**Plans:** 4 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 15 to break down)
+- [ ] 15-01-PLAN.md — Score display bug fix + travel cost reduction + personality wanderlust
+- [ ] 15-02-PLAN.md — Encounter retirement (max completions + outgrowth lock filter)
+- [ ] 15-03-PLAN.md — Content expansion (30+ location-specific + 15+ universal templates)
+- [ ] 15-04-PLAN.md — Forced travel fallback for content deserts
 
 ### Phase 16: Expand retinue sidebar to show all nodes the Ascendant has threads to — becomes a Threads area showing agents, armies, factions, artifacts, locations, anything being invested in
 
