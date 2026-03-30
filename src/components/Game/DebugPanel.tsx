@@ -23,6 +23,7 @@ import { computeRankFromReputation } from '../../types/faction';
 import { SPHERE_ICONS } from '../../data/sphereIcons';
 import { SPHERE_TOOLTIPS } from '../../data/sphereTooltips';
 import { MAX_SPHERE_SCORE } from '../../types/sphereAffinity';
+import { FIELD_BATTLE_COLOR, SIEGE_COLOR } from '../HexMapV2/scene/BattleIndicatorLayer';
 
 interface DebugPanelProps {
   currentTick: number;
@@ -1018,11 +1019,11 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
   }
 
   return (
-    <div style={{ ...DETAIL_AREA_STYLE, padding: '12px' }}>
+    <div className="p-3 text-xs font-mono">
       {/* Active Armies */}
       {armies.length > 0 && (
         <>
-          <div style={{ ...DETAIL_LABEL_STYLE, fontSize: '13px', marginBottom: '8px', color: '#D4A574' }}>
+          <div className="text-sm font-medium mb-2" style={{ color: '#D4A574' }}>
             Active Armies ({armies.length})
           </div>
           {armies.map((army) => {
@@ -1037,8 +1038,8 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
             const ticksActive = currentTick - (as.raisedTick as number);
 
             return (
-              <div key={army.id} style={{ padding: '8px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '6px', fontSize: '11px' }}>
-                <div style={{ fontWeight: 600, marginBottom: '4px' }}>{army.name}</div>
+              <div key={army.id} className="p-2 bg-[var(--bg-raised)] rounded mb-1.5 text-[11px]">
+                <div className="font-semibold mb-1">{army.name}</div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Faction:</span>
                   <span style={DETAIL_VALUE_STYLE}>{faction?.name ?? '—'}</span>
@@ -1053,7 +1054,8 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Quintessence:</span>
-                  <span style={{ ...DETAIL_VALUE_STYLE, color: qPct < 30 ? '#f87171' : qPct < 70 ? '#fbbf24' : '#4ade80' }}>
+                  <span style={{ ...DETAIL_VALUE_STYLE, color: qPct < 30 ? FIELD_BATTLE_COLOR : qPct < 70 ? '#fbbf24' : '#4ade80' }}>
+                    {/* health: danger / warning / good */}
                     {(as.quintessence as number).toFixed(1)} / {as.quintessenceMax as number} ({qPct.toFixed(0)}%)
                   </span>
                 </div>
@@ -1078,7 +1080,7 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
       {/* Active Battles/Sieges */}
       {battles.length > 0 && (
         <>
-          <div style={{ ...DETAIL_LABEL_STYLE, fontSize: '13px', marginBottom: '8px', marginTop: '12px', color: '#f87171' }}>
+          <div className="text-sm font-medium mb-2 mt-3" style={{ color: FIELD_BATTLE_COLOR }}>
             Active Battles ({battles.length})
           </div>
           {battles.map((battle) => {
@@ -1089,15 +1091,15 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
             const threshold = isSiege ? 12 : 8;
 
             return (
-              <div key={battle.id} style={{ padding: '8px', background: 'var(--bg-raised)', borderRadius: '4px', marginBottom: '6px', fontSize: '11px' }}>
-                <div style={{ fontWeight: 600, marginBottom: '4px' }}>{battle.name}</div>
+              <div key={battle.id} className="p-2 bg-[var(--bg-raised)] rounded mb-1.5 text-[11px]">
+                <div className="font-semibold mb-1">{battle.name}</div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Type:</span>
                   <span style={DETAIL_VALUE_STYLE}>{isSiege ? 'Siege' : 'Field Battle'}</span>
                 </div>
                 <div style={DETAIL_ROW_STYLE}>
                   <span style={DETAIL_LABEL_STYLE}>Momentum:</span>
-                  <span style={{ ...DETAIL_VALUE_STYLE, color: momentum > 0 ? '#f87171' : momentum < 0 ? '#60a5fa' : '#888' }}>
+                  <span style={{ ...DETAIL_VALUE_STYLE, color: momentum > 0 ? FIELD_BATTLE_COLOR : momentum < 0 ? '#60a5fa' : '#888' }}>
                     {momentum.toFixed(1)} / {'\u00B1'}{threshold} ({momentum > 0 ? 'Attacker' : momentum < 0 ? 'Defender' : 'Even'})
                   </span>
                 </div>
@@ -1114,6 +1116,33 @@ function ArmiesTabContent({ graph, currentTick }: { graph?: WorldGraph; currentT
           })}
         </>
       )}
+
+      {/* Destruction Log — locations downgraded to ruins by battle aftermath */}
+      <div className="text-sm font-medium mb-2 mt-3" style={{ color: SIEGE_COLOR }}>
+        Destruction Log
+      </div>
+      {(() => {
+        const destroyed = graph.getNodesByType('location')
+          .filter(n => n.properties.locationSubtype === 'ruins');
+        if (destroyed.length === 0) {
+          return <div className="text-[11px] opacity-60 italic">No destruction events yet.</div>;
+        }
+        return destroyed.map(loc => (
+          <div key={loc.id} className="p-2 bg-[var(--bg-raised)] rounded mb-1.5 text-[11px]">
+            <div className="font-semibold mb-1">{loc.name}</div>
+            <div style={DETAIL_ROW_STYLE}>
+              <span style={DETAIL_LABEL_STYLE}>Status:</span>
+              <span style={DETAIL_VALUE_STYLE}>Ruins</span>
+            </div>
+            {loc.properties.prosperity != null && (
+              <div style={DETAIL_ROW_STYLE}>
+                <span style={DETAIL_LABEL_STYLE}>Prosperity:</span>
+                <span style={DETAIL_VALUE_STYLE}>{(loc.properties.prosperity as number).toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+        ));
+      })()}
     </div>
   );
 }
