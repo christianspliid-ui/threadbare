@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 12-conflict-destruction/12-07-PLAN.md
-last_updated: "2026-03-29T21:27:10.653Z"
+stopped_at: Completed 12.1-ui-review-fixes/12.1-01-PLAN.md
+last_updated: "2026-03-30T09:02:02.423Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 4
+  total_phases: 5
   completed_phases: 3
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 24
+  completed_plans: 23
   percent: 93
 ---
 
@@ -173,8 +173,13 @@ Progress: [███░░░░░░░] 21%
 | Phase 12-conflict-destruction P04 | 12 | 9 tasks | 6 files |
 | Phase 12-conflict-destruction P12-06 | 15 | 6 tasks | 3 files |
 | Phase 12-conflict-destruction P12-07 | 45 | 9 tasks | 8 files |
+| Phase 12.1-ui-review-fixes P01 | 8 | 2 tasks | 2 files |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 12.1 inserted after Phase 12: UI review fixes — wire army/battle layers to GameView, add conflict event colors, refactor ArmiesTab to Tailwind (URGENT)
 
 ### Decisions
 
@@ -298,6 +303,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase 12-conflict-destruction]: ArmyLayer uses THREE.Sprite per army with canvas texture showing faction color dot + size pips
 - [Phase 12-conflict-destruction]: phaseArmyNotifications bridges faction_ambition traces to TickEvents using tick filter; threaded=0.85 significance, unthreaded=0.2
 - [Phase 12-conflict-destruction]: armies and battles passed as pre-computed props to HexMapV2, not queried inside — follows agents/locations pattern
+- [Phase 12.1-ui-review-fixes]: useMemo deps include gameState.tick so army/battle data updates every tick; adapters placed adjacent to roadPaths memo
 
 ### Pending Todos
 
@@ -309,6 +315,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-29T21:20:11.434Z
-Stopped at: Completed 12-conflict-destruction/12-07-PLAN.md
+Last session: 2026-03-30T09:02:02.420Z
+Stopped at: Completed 12.1-ui-review-fixes/12.1-01-PLAN.md
 Resume file: None
