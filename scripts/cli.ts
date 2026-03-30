@@ -245,8 +245,8 @@ function printDoom(): void {
   console.log(header('Doom Clock'));
   console.log(`  Archetype:  ${state.doomDefinition.archetype}`);
   console.log(`  Stage:      ${state.doomClock.currentStage} / ${state.doomDefinition.stages.length - 1}`);
-  console.log(`  Ticks left: ${state.doomClock.ticksRemaining}`);
-  console.log(`  Total doom: ${state.doomDefinition.totalDoomTicks}`);
+  console.log(`  Ticks left: ${state.doomClock.totalTicks - state.doomClock.currentTick}`);
+  console.log(`  Total doom: ${state.doomDefinition.totalTicks}`);
 
   for (let i = 0; i < state.doomDefinition.stages.length; i++) {
     const s = state.doomDefinition.stages[i];

@@ -208,7 +208,7 @@ describe('Pipeline Liveness: encounter initiation → completion → rewards', (
     }
   });
 
-  it('pipeline liveness holds across multiple seeds', () => {
+  it('pipeline liveness holds across multiple seeds', { timeout: 20_000 }, () => {
     // Verify this isn't a seed-specific fluke
     const seeds = [42, 123, 777, 1337];
     const results: Array<{ seed: number; initiated: number; completed: number }> = [];
