@@ -15,7 +15,9 @@ import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
+import { templateIdFromSlotId } from '../../../engine/targetActions';
 import { mulberry32 } from '../../../lib/prng';
+import type { ToastItem } from '../../../types/notification';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
 import { generateAgendas } from '../../../engine/agendaGenerator';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../../data/intervention-feedback-content';
@@ -35,6 +37,8 @@ interface UseAgentInteractionParams {
   archetype: AscendantArchetype;
   onOpenScry: () => void;
   scryState?: import('../../../types/scry').ScryState;
+  /** Optional callback to push a toast notification immediately on action dispatch */
+  onPushToast?: (toast: ToastItem) => void;
 }
 
 export function useAgentInteraction({
@@ -43,6 +47,7 @@ export function useAgentInteraction({
   archetype,
   onOpenScry,
   scryState,
+  onPushToast,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -175,7 +180,111 @@ export function useAgentInteraction({
       if (pendingIntervention || playingCardId) return;
 
       const slot = wheelSlots?.find(s => s.id === slotId);
-      if (!slot?.interventionType || !slot.available) return;
+      if (!slot?.available) return;
+
+      // ── target_action feedback path ───────────────────────────────────
+      if (slot.type === 'target_action') {
+        if (!selectedAgentId) return;
+
+        // Step 1: Play sphere audio immediately (must be in click handler for Web Audio API)
+        if (slot.sphere) {
+          playCastSound(slot.sphere, false);
+        }
+
+        // Step 2: Trigger glow burst immediately
+        setPlayingCardId(slotId);
+
+        // Step 3: After animation completes (600ms), dispatch action + feedback + close
+        const capturedTick = gameState.tick;
+        const capturedSeed = gameState.seed;
+        const capturedAgentId = selectedAgentId;
+        const capturedSphere = slot.sphere;
+
+        setTimeout(() => {
+          const templateId = templateIdFromSlotId(slotId);
+          if (!templateId) {
+            setPlayingCardId(null);
+            setDrawerOpen(false);
+            return;
+          }
+          const template = getUnifiedTemplateById(templateId);
+          if (!template) {
+            setPlayingCardId(null);
+            setDrawerOpen(false);
+            return;
+          }
+
+          const rng = mulberry32(capturedSeed + capturedTick * 43);
+          const action = createUnifiedAction({
+            actorId: gameState.ascendantId,
+            templateId,
+            targetId: capturedAgentId,
+            scale: template.scale,
+            source: 'player',
+            tick: capturedTick,
+            template,
+            rng,
+            essencePaid: template.essenceCost ?? 0,
+          });
+
+          // Build consequence message (optimistic on dispatch)
+          const consequenceBody = template.consequenceMessage?.success
+            ?? template.narrativeTemplates?.success
+            ?? 'The action ripples outward.';
+
+          const sphereName = capturedSphere
+            ? capturedSphere.charAt(0).toUpperCase() + capturedSphere.slice(1)
+            : 'Action';
+          const toastTitle = `${sphereName} — Action Invoked`;
+          const toastMessage = `${toastTitle}. ${consequenceBody}`;
+
+          // Push toast (optimistic, dispatch-time feedback)
+          if (onPushToast) {
+            const newToast: ToastItem = {
+              id: `toast_action_${Date.now()}`,
+              message: toastMessage,
+              sphere: capturedSphere ?? undefined,
+              count: 1,
+              createdTick: capturedTick,
+              expiresAt: Date.now() + 4000,
+            };
+            onPushToast(newToast);
+          }
+
+          setGameState(prev => {
+            const newPool = { ...prev.essencePool };
+            const cost = template.essenceCost ?? 0;
+            if (cost > 0 && capturedSphere) {
+              newPool[capturedSphere] = Math.max(0, (newPool[capturedSphere] ?? 0) - cost);
+            }
+            return {
+              ...prev,
+              essencePool: newPool,
+              unifiedActions: [...(prev.unifiedActions ?? []), action],
+              recentEvents: [
+                ...prev.recentEvents.slice(-99),
+                {
+                  id: `evt_action_${prev.tick}_${Date.now()}`,
+                  tick: prev.tick,
+                  type: 'narrative' as const,
+                  message: toastMessage,
+                  significance: 0.5,
+                  sphere: capturedSphere ?? undefined,
+                  isInterventionBeat: true,
+                },
+              ],
+            };
+          });
+
+          setPlayingCardId(null);
+          setDrawerOpen(false);
+        }, DIVINE_INFLUENCE_CONSTANTS.DRAWER_CLOSE_DELAY_MS);
+
+        return;
+      }
+
+      // ── Intervention path ─────────────────────────────────────────────────
+      if (!slot.interventionType) return;
 
       // Generate agendas for this intervention
       const targetNode = gameState.graph.getNode(selectedAgentId!);
@@ -196,7 +305,7 @@ export function useAgentInteraction({
         setPendingIntervention({ slotId, interventionType: slot.interventionType });
       }
     },
-    [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId]
+    [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.ascendantId, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId, playCastSound, onPushToast, setGameState]
   );
 
   const handleAgendaSelect = useCallback((agenda: AgendaTemplate) => {
