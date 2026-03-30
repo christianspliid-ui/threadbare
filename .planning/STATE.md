@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
-last_updated: "2026-03-30T12:03:54.047Z"
+stopped_at: Completed 16-04-PLAN.md
+last_updated: "2026-03-30T12:35:26.845Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 24
-  completed_plans: 24
+  total_phases: 6
+  completed_phases: 5
+  total_plans: 28
+  completed_plans: 28
   percent: 93
 ---
 
@@ -178,6 +178,7 @@ Progress: [███░░░░░░░] 21%
 | Phase m2.5-monster-encounters P01 | 6 | 2 tasks | 9 files |
 | Phase m2.5-monster-encounters P02 | 5 | 2 tasks | 4 files |
 | Phase m2.5-monster-encounters P03 | 483 | 2 tasks | 7 files |
+| Phase 16-expand-retinue-sidebar-threads-area P04 | 15 | 1 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -317,6 +318,7 @@ Progress: [███░░░░░░░] 21%
 - [Phase m2.5-monster-encounters]: Sphere pressure emitted to lair node itself (targetEntityId=lairId) — lair IS a location entity, phaseSpherePressure resolves downstream
 - [Phase m2.5-monster-encounters]: Monster encounter templates registered via getAnyEncounterById fallback chain — 5 templates covering lair, wilderness, settlement threat tiers
 - [Phase m2.5-monster-encounters]: MONSTER_TERRITORY_ATTRITION = 1.2 — additive Q loss, one check per army per tick, cleared_lair does not trigger
+- [Phase 16-expand-retinue-sidebar-threads-area]: Escape handler conditional useEffect: early returns when selectedThreadNode is null, listener only attached when ThreadDetailView is open
 
 ### Pending Todos
 
@@ -328,6 +330,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:03:54.044Z
-Stopped at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
+Last session: 2026-03-30T12:35:26.843Z
+Stopped at: Completed 16-04-PLAN.md
 Resume file: None
