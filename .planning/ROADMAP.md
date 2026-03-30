@@ -273,7 +273,7 @@ Plans:
 **Goal:** Fix 5 systemic encounter pipeline problems from the seed-42 analysis: score display bug (c.templateId vs c.entry.templateId), zero agent movement (TRAVEL_COST_WEIGHT too high + no personality wanderlust), encounter round-robin (small pools + no retirement mechanics), no difficulty scaling (no outgrowth lock), and content deserts at 2 locations (insufficient universal encounter templates). Add encounter retirement (max completions + outgrowth lock), personality-driven travel incentives, 50+ new hand-authored encounter templates spanning diff 20-90, and a forced travel fallback for persistent content deserts.
 **Requirements**: ENC-01 (score display bug fix), ENC-02 (movement incentives — travel cost + wanderlust), ENC-03 (max completions retirement), ENC-04 (outgrowth lock), ENC-05 (content expansion — 20+ templates per archetype), ENC-06 (content desert forced travel fallback)
 **Depends on:** Phase 14
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 Plans:
 - [ ] 15-01-PLAN.md — Score display bug fix + travel cost reduction + personality wanderlust
