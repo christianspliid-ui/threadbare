@@ -38,16 +38,16 @@ created: 2026-03-30
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 18-01-01 | 01 | 1 | Two-company seeding | unit | `npm test -- factionSeeding` | ✅ (extend) | ⬜ pending |
+| 18-01-01 | 01 | 1 | Two-company seeding via generic path | unit | `npm test -- factionSeeding` | ✅ (extend) | ⬜ pending |
 | 18-01-02 | 01 | 1 | Distance constraint | unit | `npm test -- factionSeeding` | ✅ (extend) | ⬜ pending |
 | 18-01-03 | 01 | 1 | factionDefId key fix | unit | `npm test -- factionAmbitions` | ✅ (update) | ⬜ pending |
 | 18-01-04 | 01 | 1 | Static ambition seeding | unit | `npm test -- factionAmbitions` | ✅ (extend) | ⬜ pending |
 | 18-01-05 | 01 | 1 | Army at seed | unit | `npm test -- factionSeeding` | ✅ (extend) | ⬜ pending |
-| 18-02-01 | 02 | 1 | mc.* quest candidates | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
-| 18-02-02 | 02 | 1 | mc.join lifecycle | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
-| 18-02-03 | 02 | 1 | Rank-gated filtering | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
-| 18-03-01 | 03 | 2 | Reputation via mc encounter | unit | `npm test -- factionReputation` | ✅ (extend) | ⬜ pending |
-| 18-03-02 | 03 | 2 | Promotion trigger | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
+| 18-02-01 | 02 | 2 | mc.* quest candidates | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
+| 18-02-02 | 02 | 2 | mc.join lifecycle | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
+| 18-02-03 | 02 | 2 | Rank-gated filtering | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
+| 18-02-04 | 02 | 2 | Reputation via mc encounter | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
+| 18-02-05 | 02 | 2 | Promotion trigger | unit | `npm test -- factionQuestGeneration` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -55,7 +55,7 @@ created: 2026-03-30
 
 ## Wave 0 Requirements
 
-- [ ] `src/engine/__tests__/factionQuestGeneration.test.ts` — new file for mc.* quest candidate generation, rank-gated filtering, join lifecycle, promotion trigger
+- [ ] `src/engine/__tests__/factionQuestGeneration.test.ts` — new file for mc.* quest candidate generation, rank-gated filtering, join lifecycle, promotion trigger, reputation-via-encounter
 - No framework gaps — vitest already installed and configured
 
 *Existing infrastructure covers most phase requirements. Only factionQuestGeneration tests are new.*
