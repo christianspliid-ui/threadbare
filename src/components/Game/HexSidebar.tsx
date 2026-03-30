@@ -17,6 +17,7 @@ import { getSphereColor } from '../../data/sphereIcons';
 import { getHexTileUrl } from '../../data/hex-tile-assets';
 import { hexPolygonPoints } from '../../lib/hexMath';
 import { IconButton } from '../shared/IconButton';
+import { DANGER_ZONE_LABELS } from '../../types/monster';
 
 export interface HexSidebarProps {
   terrain: TerrainType;
@@ -59,6 +60,14 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
 
   // Count total agents across all locations
   const totalAgents = Object.values(props.agentsByLocation).reduce((sum, agents) => sum + agents.length, 0);
+
+  // Detect lair locations in this hex for the MONSTER LAIR detail section
+  const lairLocations = props.locations.filter(
+    loc => loc.properties?.locationSubtype === 'lair' || loc.properties?.locationType === 'lair',
+  );
+  const clearedLairLocations = props.locations.filter(
+    loc => loc.properties?.locationSubtype === 'cleared_lair' || loc.properties?.locationType === 'cleared_lair',
+  );
 
   // Get sphere bars: filter > 0, sort descending, cap at 4
   const sphereBars = props.sphereInfluence
@@ -325,6 +334,165 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               ))}
             </div>
           )}
+
+          {/* Monster Lair Detail Section */}
+          {lairLocations.map((loc) => {
+            const p = loc.properties ?? {};
+            const lairTier = (p.lairTier as string | undefined) ?? 'minor';
+            const dominantSphere = (p.dominantSphere as string | undefined) ?? '';
+            const dangerZone = (p.dangerZone as keyof typeof DANGER_ZONE_LABELS | undefined) ?? 'wilderness';
+            const namedEliteId = p.namedEliteId as string | undefined;
+            const sphereColor = dominantSphere ? getSphereColor(dominantSphere as SphereName) : 'var(--text-tertiary)';
+            const isLegendary = lairTier === 'legendary';
+
+            return (
+              <div
+                key={loc.id}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  borderTop: '1px solid var(--border-subtle)',
+                  paddingTop: '8px',
+                }}
+              >
+                {/* Section header */}
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '9px',
+                    color: 'var(--text-tertiary)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.12em',
+                  }}
+                >
+                  Monster Lair
+                </div>
+                {/* Lair name */}
+                <div
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: '13px',
+                    color: 'var(--text-primary)',
+                    lineHeight: '1.2',
+                  }}
+                >
+                  {loc.name}
+                </div>
+                {/* Tier + Sphere badges */}
+                <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: '9px',
+                      padding: '2px 5px',
+                      background: 'var(--bg-raised)',
+                      border: `1px solid ${isLegendary ? 'var(--accent-gold)' : 'var(--border-subtle)'}`,
+                      borderRadius: '2px',
+                      color: isLegendary ? 'var(--accent-gold)' : 'var(--text-secondary)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.06em',
+                    }}
+                  >
+                    {lairTier === 'minor' ? 'MINOR' : lairTier === 'major' ? 'MAJOR' : 'LEGENDARY'}
+                  </span>
+                  {dominantSphere && (
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        padding: '2px 5px',
+                        background: 'var(--bg-raised)',
+                        border: '1px solid var(--border-subtle)',
+                        borderRadius: '2px',
+                        color: 'var(--text-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: sphereColor,
+                          display: 'inline-block',
+                          flexShrink: 0,
+                        }}
+                      />
+                      {dominantSphere}
+                    </span>
+                  )}
+                </div>
+                {/* Danger zone */}
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: 'var(--text-tertiary)',
+                  }}
+                >
+                  {DANGER_ZONE_LABELS[dangerZone] ?? 'Unknown Zone'}
+                </div>
+                {/* Named elite (if present) */}
+                {namedEliteId && (
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      color: 'var(--text-secondary)',
+                    }}
+                  >
+                    <span style={{ color: 'var(--text-tertiary)' }}>Elite: </span>
+                    <span style={{ fontFamily: 'var(--font-display)' }}>{namedEliteId}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Cleared Lair Section */}
+          {clearedLairLocations.map((loc) => (
+            <div
+              key={loc.id}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '6px',
+                borderTop: '1px solid var(--border-subtle)',
+                paddingTop: '8px',
+              }}
+            >
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '9px',
+                  color: 'var(--text-tertiary)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.12em',
+                }}
+              >
+                Cleared Lair
+              </div>
+              <div
+                style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: '13px',
+                  color: 'var(--text-tertiary)',
+                  lineHeight: '1.2',
+                }}
+              >
+                {loc.name}
+              </div>
+              <div
+                style={{
+                  fontSize: '10px',
+                  color: 'var(--text-tertiary)',
+                  fontStyle: 'italic',
+                }}
+              >
+                Cleared — site may be claimed or will remain vulnerable to reinfestation.
+              </div>
+            </div>
+          ))}
         </>
       ) : (
         <>

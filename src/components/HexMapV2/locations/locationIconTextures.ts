@@ -23,6 +23,25 @@ const LOCATION_FILL_COLOR = '#1a1a1a';
 /** Outline stroke color for location icons — dark outline for legibility over terrain. */
 const LOCATION_OUTLINE_COLOR = '#0a0a0a';
 
+/** Fixed fill color for cleared lair icons — desaturated, muted relative to terrain. */
+export const CLEARED_LAIR_FILL_COLOR = '#2a2520';
+
+/**
+ * Sphere-darkened fill colors for active lair icons.
+ * Base sphere colors darkened to 30–35% lightness in HSL for silhouette readability.
+ * NFP #1: all values are named constants — change sphere identity, change this map.
+ */
+export const LAIR_SPHERE_FILL_COLORS: Record<string, string> = {
+  force:   '#5c1010',
+  matter:  '#3d2f1f',
+  energy:  '#5c4e00',
+  life:    '#004d1f',
+  mind:    '#0d3366',
+  spirit:  '#3d1a52',
+  time:    '#5c3800',
+  entropy: '#1f3330',
+};
+
 /** Outline stroke width in viewBox units (scaled with the icon). */
 const LOCATION_OUTLINE_WIDTH = 2.5;
 
@@ -34,11 +53,17 @@ const LOCATION_OUTLINE_WIDTH = 2.5;
  * Draws all paths with per-path opacity onto a transparent canvas,
  * scaling from viewBox coordinates to the target pixel size.
  *
+ * @param def              Icon definition (paths, viewBox, sizeClass)
+ * @param size             Canvas size in pixels (default: LOCATION_TEXTURE_SIZE)
+ * @param fillColorOverride Optional fill color override — used for lair sphere tints.
+ *                          When provided, replaces LOCATION_FILL_COLOR for all fill passes.
+ *
  * NFP #4: If viewBox is malformed, falls back to 100×100 source dimensions.
  */
 export function buildLocationIconTexture(
   def: LocationIconDef,
   size: number = LOCATION_TEXTURE_SIZE,
+  fillColorOverride?: string,
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -51,6 +76,8 @@ export function buildLocationIconTexture(
   const vbH = parts[3] || 100;
   const scaleX = size / vbW;
   const scaleY = size / vbH;
+
+  const fillColor = fillColorOverride ?? LOCATION_FILL_COLOR;
 
   ctx.save();
   ctx.scale(scaleX, scaleY);
@@ -67,7 +94,7 @@ export function buildLocationIconTexture(
   // Pass 2: fill paths on top of outlines
   for (const path of def.paths) {
     ctx.globalAlpha = path.opacity;
-    ctx.fillStyle = LOCATION_FILL_COLOR;
+    ctx.fillStyle = fillColor;
     ctx.fill(new Path2D(path.d));
   }
   ctx.restore();

@@ -283,13 +283,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
       .filter(n => !n.properties.sublocationTypeId) // Exclude sublocations — they share parent hex coords
-      .map(n => ({
-        locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
-        hexCol: n.properties.hexCol as number,
-        hexRow: n.properties.hexRow as number,
-        name: n.name,
-        isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
-      }));
+      .map(n => {
+        const locationType = (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string;
+        const node: LocationNode = {
+          locationType,
+          hexCol: n.properties.hexCol as number,
+          hexRow: n.properties.hexRow as number,
+          name: n.name,
+          isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
+        };
+        // Pass lair-specific properties for sphere-tinted textures and tier-based sizeClass
+        if (locationType === 'lair') {
+          node.dominantSphere = n.properties.dominantSphere as string | undefined;
+          node.lairTier = n.properties.lairTier as string | undefined;
+        }
+        return node;
+      });
   }, [gameState.graph]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
