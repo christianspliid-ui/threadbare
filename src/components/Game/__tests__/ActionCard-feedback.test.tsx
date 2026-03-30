@@ -156,6 +156,50 @@ describe('ActionCard — playing state transitions', () => {
   });
 });
 
+// ─── Glow Burst Animation (target_action) ───────────────────────────────────
+
+describe('ActionCard — glow burst vs card pulse animation', () => {
+  it('target_action slot uses card-glow-burst class when playing=true', () => {
+    const slot = makeSlot({ type: 'target_action', interventionType: null });
+    render(<ActionCard slot={slot} onClick={() => {}} playing={true} />);
+    const card = screen.getByTestId('action-card-persuade');
+    expect(card.className).toContain('card-glow-burst');
+    expect(card.className).not.toContain('card-pulse');
+  });
+
+  it('intervention slot keeps card-pulse class when playing=true', () => {
+    const slot = makeSlot({ type: 'intervention' });
+    render(<ActionCard slot={slot} onClick={() => {}} playing={true} />);
+    const card = screen.getByTestId('action-card-persuade');
+    expect(card.className).toContain('card-pulse');
+    expect(card.className).not.toContain('card-glow-burst');
+  });
+
+  it('renders cardGlowBurst keyframe in style tag for target_action when playing=true', () => {
+    const slot = makeSlot({ type: 'target_action', interventionType: null });
+    render(<ActionCard slot={slot} onClick={() => {}} playing={true} />);
+    const styles = document.querySelectorAll('style');
+    const hasGlowBurst = Array.from(styles).some(s => s.textContent?.includes('cardGlowBurst'));
+    expect(hasGlowBurst).toBe(true);
+  });
+
+  it('renders cardPulse keyframe in style tag for intervention when playing=true', () => {
+    const slot = makeSlot({ type: 'intervention' });
+    render(<ActionCard slot={slot} onClick={() => {}} playing={true} />);
+    const styles = document.querySelectorAll('style');
+    const hasCardPulse = Array.from(styles).some(s => s.textContent?.includes('cardPulse'));
+    expect(hasCardPulse).toBe(true);
+  });
+
+  it('glow burst duration is 600ms in keyframe definition', () => {
+    const slot = makeSlot({ type: 'target_action', interventionType: null });
+    render(<ActionCard slot={slot} onClick={() => {}} playing={true} />);
+    const styles = document.querySelectorAll('style');
+    const styleContent = Array.from(styles).map(s => s.textContent).join('');
+    expect(styleContent).toContain('600ms');
+  });
+});
+
 // ─── FE-16: Disabled Card Feedback ──────────────────────────────────────────
 
 describe('ActionCard — disabled card feedback (FE-16)', () => {
