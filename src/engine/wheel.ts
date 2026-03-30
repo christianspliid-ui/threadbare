@@ -51,6 +51,13 @@ export interface WheelSlot {
   durationMode?: 'instant' | 'sustained';
   /** Per-tick essence cost summary string for sustained actions (e.g. "0.5 force/tick") */
   perTickCostLabel?: string;
+  /** Evocative spell name — displayed in card name zone (focused).
+   * Falls back to label if absent. */
+  spellName?: string;
+  /** Technical description from template.description.
+   * The description field (narrativeTemplates.initiation) serves as flavor text.
+   * This field carries the new mechanical description. */
+  technicalDescription?: string;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

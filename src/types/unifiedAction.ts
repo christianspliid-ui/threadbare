@@ -126,6 +126,24 @@ export interface UnifiedActionTemplate {
     readonly failure: string;
     readonly contested?: string;
   };
+
+  /** Evocative spell-like display name (Ars Magica style, max 3 words).
+   * Replaces `name` in focused card spell-name zone.
+   * Current `name` is kept for engine/debug identification. */
+  readonly spellName?: string;
+
+  /** Qualitative game-mechanical description — 2-3 sentences, no numbers.
+   * Shown in the focused card description text box.
+   * If absent, ActionCard falls back to slot.description (narrativeTemplates.initiation). */
+  readonly description?: string;
+
+  /** Optional custom consequence message for toast/feed output.
+   * If absent, falls back to narrativeTemplates.success/failure.
+   * Hybrid field: allows selective customization without rewriting all templates. */
+  readonly consequenceMessage?: {
+    readonly success: string;
+    readonly failure: string;
+  };
 }
 
 // Scale priority for tick resolution ordering (lower = resolves first)
