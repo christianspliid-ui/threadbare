@@ -32,6 +32,7 @@ import {
   seedLocationSphereAffinity,
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
+import { seedMonsterLairs } from './lairSeeding';
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -149,8 +150,7 @@ export function initializeGameState(
       }
       const locSubtype = locNode.properties.locationType as string | undefined;
       const locAffinity = seedLocationSphereAffinity(hexAffinity, locSubtype);
-      // Locations with sphere affinity also get quintessence initialized to 1.0
-      graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity, quintessence: 1.0 } });
+      graph.updateNode(locNode.id, { properties: { sphereAffinity: locAffinity } });
     }
   }
 
@@ -169,10 +169,14 @@ export function initializeGameState(
         // (derived aggregation computed later by phaseSphereAggregation)
         affinity = createDefaultSphereAffinity();
       }
-      // All actor nodes with sphere affinity get quintessence initialized to 1.0
-      graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity, quintessence: 1.0 } });
+      graph.updateNode(actorNode.id, { properties: { sphereAffinity: affinity } });
     }
   }
+
+  // ── Seed monster lairs based on danger gradient ─────────────────────────────
+  // Placed after sphere affinity seeding so lairSeeding can read affinity if needed.
+  // Placed before loc.start so lairs don't conflict with the starting shrine.
+  seedMonsterLairs(graph, worldGenResult.provinceRoles, tiles, seed, cols);
 
   // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {
@@ -312,7 +316,6 @@ export function initializeGameState(
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
-    pendingQuintessenceEvents: [],
     worldSoul: {
       fundament: createDefaultFundament(),
       resonance: createResonanceState(),

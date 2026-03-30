@@ -7,6 +7,8 @@ import type { HexMapV2Handle } from './HexMapV2';
 import HexMapV2 from './HexMapV2';
 import type { LocationNode } from './scene/LocationIconMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
+import type { ArmyRenderData } from './scene/ArmyLayer';
+import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { computeVisibilityFromSources, FOG_CONSTANTS } from './scene/FogCulling';
 
 // Read ?fog URL param once (stable — URL doesn't change during session)
@@ -26,6 +28,10 @@ interface HexV2ViewProps {
   locations?: LocationNode[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
   agents?: AgentRenderData[];
+  /** Army render data for army indicator sprites (Plan 12.1-01+) */
+  armies?: ArmyRenderData[];
+  /** Battle indicator data for combat overlays (Plan 12.1-01+) */
+  battles?: BattleIndicatorData[];
 }
 
 /**
@@ -77,7 +83,7 @@ function buildVisibilityMap(agents: AgentRenderData[], tiles: HexTile[], cols: n
  *
  * Layout: h-screen flex flex-col overflow-hidden (viewport contract per CLAUDE.md).
  */
-export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents }: HexV2ViewProps) {
+export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locations, agents, armies, battles }: HexV2ViewProps) {
   const mapRef = useRef<HexMapV2Handle>(null);
   const [selectedHex, setSelectedHex] = useState<HexCoord | null>(null);
   const [hoveredHex, setHoveredHex]   = useState<HexCoord | null>(null);
@@ -190,6 +196,8 @@ export function HexV2View({ tiles, cols, rows, seed, riverPaths, lakeIds, locati
           locations={locations}
           roadPaths={[]}
           agents={agents}
+          armies={armies}
+          battles={battles}
           fogEnabled={fogEnabled}
           visibilityMap={visibilityMap}
         />

@@ -3,26 +3,16 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 16-02-PLAN.md
-last_updated: "2026-03-30T12:08:56.991Z"
+stopped_at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
+last_updated: "2026-03-30T12:03:54.047Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 11
-  completed_phases: 7
-  total_plans: 44
-  completed_plans: 31
+  total_phases: 5
+  completed_phases: 4
+  total_plans: 24
+  completed_plans: 24
   percent: 93
 ---
-
-## Accumulated Context
-
-### Roadmap Evolution
-- Phase 13 added: M2 Gap Closure — Aftermath, Army Visuals, Deferred Tests
-- Phase 14 added: Pause game automatically while an encounter modal is open
-- Phase 15 added: Fix encounter pipeline: scoring, movement, difficulty scaling, round-robin, and content deserts
-- Phase 16 added: Expand retinue sidebar to Threads area — show all nodes the Ascendant has threads to
-- Phase 17 added: Add action description fields and player feedback on action activation
-- Phase 18 added: Wire mercenary company seeding and encounters into the runtime pipeline
 
 ---
 gsd_state_version: 1.0
@@ -176,24 +166,24 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
 | Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
 | Phase 11-agent-character-sheet P06 | 8 | 2 tasks | 12 files |
-| Phase 12-flesh-reach-migration-to-quintessence P02 | 20 | 3 tasks | 5 files |
-| Phase 12-flesh-reach-migration-to-quintessence P03 | 8 | 2 tasks | 8 files |
-| Phase 12-flesh-reach-migration-to-quintessence P04 | 15 | 2 tasks | 7 files |
-| Phase 14-pause-game-automatically-while-an-encounter-modal-is-open P01 | 3 | 2 tasks | 2 files |
-| Phase 13-m2-gap-closure-aftermath-army-visuals-deferred-tests P02 | 2 | 2 tasks | 2 files |
-| Phase 13 P01 | 10 | 2 tasks | 2 files |
-| Phase 13-m2-gap-closure-aftermath-army-visuals-deferred-tests P03 | 5 | 2 tasks | 2 files |
-| Phase 13 P04 | 30 | 2 tasks | 7 files |
-| Phase 15 P02 | 7 | 1 tasks | 4 files |
-| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P01 | 12 | 2 tasks | 5 files |
-| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P03 | 30 | 2 tasks | 2 files |
-| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 8 | 2 tasks | 3 files |
-| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 15 | 2 tasks | 4 files |
-| Phase 16-expand-retinue-sidebar-threads-area P01 | 6 | 2 tasks | 6 files |
-| Phase 16-expand-retinue-sidebar-threads-area P03 | 6 | 1 tasks | 3 files |
-| Phase 16-expand-retinue-sidebar-threads-area P02 | 8 | 2 tasks | 9 files |
+| Phase 12-conflict-destruction P01 | 0 | 10 tasks | 22 files |
+| Phase 12-conflict-destruction P02 | 8 | 6 tasks | 6 files |
+| Phase 12-conflict-destruction P03 | 25 | 7 tasks | 3 files |
+| Phase 12-conflict-destruction P05 | 15 | 7 tasks | 5 files |
+| Phase 12-conflict-destruction P04 | 12 | 9 tasks | 6 files |
+| Phase 12-conflict-destruction P12-06 | 15 | 6 tasks | 3 files |
+| Phase 12-conflict-destruction P12-07 | 45 | 9 tasks | 8 files |
+| Phase 12.1-ui-review-fixes P01 | 8 | 2 tasks | 2 files |
+| Phase 12.1-ui-review-fixes P02 | 194 | 2 tasks | 2 files |
+| Phase m2.5-monster-encounters P01 | 6 | 2 tasks | 9 files |
+| Phase m2.5-monster-encounters P02 | 5 | 2 tasks | 4 files |
+| Phase m2.5-monster-encounters P03 | 483 | 2 tasks | 7 files |
 
 ## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 12.1 inserted after Phase 12: UI review fixes — wire army/battle layers to GameView, add conflict event colors, refactor ArmiesTab to Tailwind (URGENT)
 
 ### Decisions
 
@@ -299,48 +289,34 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
 - [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
 - [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
-- [Phase 12-flesh-reach-migration-to-quintessence]: ReachDomain 9→8 (flesh removed); ValuePair 10→9 (stoicism_passion retired, frankness_propriety→revelation_discretion, humility_pride→preservation_transformation)
-- [Phase 12-flesh-reach-migration-to-quintessence]: Flesh action redistribution: Heal/Cultivate→gold, Diagnose→eye, Plague→shadow
-- [Phase 12-flesh-reach-migration-to-quintessence]: FLESH_MAX_HOPS removed; encounterAwareness now uses uniform MAX_AWARENESS_HOPS cap for all reaches
-- [Phase 12-flesh-reach-migration-to-quintessence]: AgentDetailPanel domain grid 3x3→2x4 for 8 reaches
-- [Phase 12-flesh-reach-migration-to-quintessence]: Python UTF-8 bulk replace used for large data files on Windows to avoid charmap codec errors
-- [Phase 12-flesh-reach-migration-to-quintessence]: Stone dilemma bridge-repair-or-rebuild scenario captures Fortress vs Forge tension for preservation_transformation pair
-- [Phase 12-flesh-reach-migration-to-quintessence]: quintessence-content.ts provides QUINTESSENCE_LEXICON (10 levels: Fraying to Absolute) and QUINTESSENCE_TOOLTIPS for Plan 03 runtime system
-- [Phase 12-flesh-reach-migration-to-quintessence]: phaseQuintessence iterates actor+location node types only for regen/dissolution — these are the only initialized quintessence-bearing types
-- [Phase 12-flesh-reach-migration-to-quintessence]: Encounter abandonment (not step failure) triggers quintessence erosion — only narratively diminishing outcomes erode existential health
-- [Phase 12-flesh-reach-migration-to-quintessence]: deriveArchetypeEpithet: strongest lean wins, ties by VALUE_PAIRS order, courage_prudence excluded, ARCHETYPE_THRESHOLD=0.6
-- [Phase 12-flesh-reach-migration-to-quintessence]: Quintessence IPK prose-only (no meter), agentDetail populates quintessence+axiologicalProfile at intimate+ level, knowledge gate uses axiologicalProfile presence
-- [Phase 14-01]: Used useRef (not useState) for wasRunningBeforeEncounterPause to avoid re-render churn on pre-modal state tracking
-- [Phase 14-01]: Removed courtPosition !== the_first filter from auto-interrupt effect so ALL encounter notifications auto-open their modal
-- [Phase 13-02]: WorldGraph class used as parameter type in battleSpotlights.ts — matches essenceIncome.ts import pattern
-- [Phase 13-02]: Tests use WorldGraph directly (not a mock) for accurate edge traversal behavior in battleThreadVisibility.test.ts
-- [Phase 13]: AFTERMATH_FALLBACK_SPHERE = 'force' (lowercase matching SphereName type); isValidSphereAffinity inlined in battleAftermath.ts; field battles without settlementId skip sphere pressure (fail-soft); REFUGEE_GENERATION constants renamed to *_DEFERRED
-- [Phase 13-03]: Location nodes store hexCol/hexRow as direct properties; located_at edges are actor-only per edge schema
-- [Phase 13-03]: defenderArmyId in siege BattleState must be an army node with member_of edge to faction — not the faction node itself
-- [Phase 13-04]: Army shields use per-faction-color InstancedMesh groups (one mesh per color) — follows SignifierMesh variant pattern
-- [Phase 13-04]: BattleIndicatorMesh uses Sprite not InstancedMesh — single instance per battle, simpler opacity animation via tickBattlePulse
-- [Phase 13-04]: LAYER_Z.ARMIES=0.090, LAYER_Z.BATTLE_INDICATOR=6.050 — armies render on hex surface below agents, battle icon floats above
-- [Phase 15]: filterByOutgrowth placed as Stage 3b (after chain prerequisites, before threat) — outgrown encounters stay filtered even if they pass threat check
-- [Phase 15]: Max completions filter uses existing familiarityRecord.attemptCount — no new state structure needed for encounter retirement
-- [Phase 15]: filterByOutgrowth accepts enabledOverride optional param for testing without mutating module constant
-- [Phase 15]: TRAVEL_COST_WEIGHT reduced 0.5→0.12 to allow distant encounters to compete with local ones
-- [Phase 15]: WANDERLUST_MAX_DISCOUNT=0.4 clamped to [0,1] so extreme tradition_progress values don't over-discount
-- [Phase 15]: LIVENESS_TICK_COUNT increased 50→100 to accommodate agent travel under lower travel cost
-- [Phase 15-03]: plan used 'arcane'/'crown' reach names — substituted 'veil'/'star' (correct ReachDomain values)
-- [Phase 15-03]: hire/lead/build encounterTypes never have rewardPool; onSuccess/onFailure rewardPools must have identical categoryWeights
-- [Phase 15-04]: consecutiveIdleTicks only triggered for no_candidates_after_filter, not below_score_threshold — only genuine content deserts trigger forced travel
-- [Phase 15-04]: Test helper uses located_at edges (source: agent, target: location) so getAgentLocationId finds agents; void_no_content location type guarantees empty encounter cache
-- [Phase 15]: consecutiveIdleTicks on agent.properties increments each idle tick, resets to 0 on any non-idle decision branch (start_local, attempt_remote, queue_movement)
-- [Phase 15]: Forced travel only triggers for no_candidates_after_filter (true content desert), not below_score_threshold
-- [Phase 16-expand-retinue-sidebar-threads-area]: ThreadsPanel replaces RetinuePanel/AgentInfoCard sidebar; getThreadedNodes classifies all 5 thread node types; faction dominantSphere resolves via multi-strategy lookup
-- [Phase 16-03]: Thread edge schema updated to support actor|location|artifact|artifact_legendary targets; bind_thread_army uses group subtype with documented limitation; establishedTick static at 0 in add_edge properties
-- [Phase 16-expand-retinue-sidebar-threads-area]: ThreadDetailView uses flex sibling layout with independent scroll contexts (not parent/child)
-- [Phase 16-expand-retinue-sidebar-threads-area]: handleOpenProfileModal routes agent to AgentProfileModal, non-agent to stub modals
-- [Phase 16-expand-retinue-sidebar-threads-area]: Faction sphere alignment shown FIRST in ThreadDetailView per CONTEXT.md locked decision
-
-### Roadmap Evolution
-
-- Phase 12 added: flesh reach migration to quintessence
+- [Phase 12-conflict-destruction]: Faction ambitions stored as graph nodes (type: ambition) connected via pursues edges — same pattern as agent ambitions, single source of truth
+- [Phase 12-conflict-destruction]: phaseFactionAmbitions placed at position 6.651 (after phaseAmbitionProgress) — faction evaluation is slow (every 5 ticks) and not needed before agent decision on the same tick
+- [Phase 12-conflict-destruction]: Mercenary company reputation decays at 0.004/tick vs guild 0.003/tick — mercs are transactional, faster decay is intentional flavor
+- [Phase 12-conflict-destruction]: Army actor nodes reuse existing actor type with armyState property bag — no new node type required
+- [Phase 12-conflict-destruction]: Army size determined deterministically from faction Gold capability tier; no PRNG
+- [Phase 12-conflict-destruction]: spawnArmy called directly from phaseFactionAmbitions (not through encounter system) — mc.army.raise is narrative template, not spawn trigger
+- [Phase 12-conflict-destruction]: phaseArmyMovement kept separate from phaseMovement (individual filter); army edge costs computed locally to avoid circular dep movementCost.ts/armyMovement.ts
+- [Phase 12-conflict-destruction]: generateRegionalEncounters emits traces not encounter nodes — dispatch deferred to encounter system when spotlights integrate
+- [Phase 12-conflict-destruction]: Siege deduplication via siegeRegionalEncountersSent string[] on siege node properties — persists across ticks
+- [Phase 12-conflict-destruction]: Siege detection: phaseBattleDetection checks locationSubtype of hex nodes and co-located location nodes
+- [Phase 12-conflict-destruction]: Circular import prevented by inlining condition helpers in battle-spotlight-content.ts; battleSpotlights.ts stays import-clean
+- [Phase 12-conflict-destruction]: BattleTrace events: started/resolved/spotlight_spawned/momentum_shift emitted separately for granular inspectability
+- [Phase 12-conflict-destruction]: Refugee count stored as pendingRefugeeCount on settlement node — no new graph node type required
+- [Phase 12-conflict-destruction]: Sphere pressure from battle aftermath uses source 'environmental' via existing pendingSpherePressures pipeline
+- [Phase 12-conflict-destruction]: Power vacuum (controls edge removal) only triggered on total destruction + attacker_victory
+- [Phase 12-conflict-destruction]: ArmyLayer uses THREE.Sprite per army with canvas texture showing faction color dot + size pips
+- [Phase 12-conflict-destruction]: phaseArmyNotifications bridges faction_ambition traces to TickEvents using tick filter; threaded=0.85 significance, unthreaded=0.2
+- [Phase 12-conflict-destruction]: armies and battles passed as pre-computed props to HexMapV2, not queried inside — follows agents/locations pattern
+- [Phase 12.1-ui-review-fixes]: useMemo deps include gameState.tick so army/battle data updates every tick; adapters placed adjacent to roadPaths memo
+- [Phase 12.1-ui-review-fixes]: Destruction Log uses locationSubtype === 'ruins' filter — battleAftermath.ts only sets ruins subtype, no destroyedTick/destroyedBy properties
+- [Phase 12.1-ui-review-fixes]: ArmiesTabContent army/battle card containers use Tailwind classes (p-2, rounded, mb-1.5, text-[11px]) — FIELD_BATTLE_COLOR replaces hardcoded #f87171
+- [Phase m2.5-monster-encounters]: Lair nodes use location graph node type with locationSubtype='lair' — no new node type needed
+- [Phase m2.5-monster-encounters]: provinceRoles added to WorldGenResult in hexGrid.ts so lairSeeding can access danger zone data
+- [Phase m2.5-monster-encounters]: dominantSphere derived from terrain via seedHexSphereAffinity at seeding time, not from graph
+- [Phase m2.5-monster-encounters]: phaseLairEscalation mutates state in-place at orchestrator position 2.3575 (after phaseBattleTick, before phaseArmyNotifications)
+- [Phase m2.5-monster-encounters]: Sphere pressure emitted to lair node itself (targetEntityId=lairId) — lair IS a location entity, phaseSpherePressure resolves downstream
+- [Phase m2.5-monster-encounters]: Monster encounter templates registered via getAnyEncounterById fallback chain — 5 templates covering lair, wilderness, settlement threat tiers
+- [Phase m2.5-monster-encounters]: MONSTER_TERRITORY_ATTRITION = 1.2 — additive Q loss, one check per army per tick, cleared_lair does not trigger
 
 ### Pending Todos
 
@@ -352,6 +328,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:08:56.988Z
-Stopped at: Completed 16-02-PLAN.md
+Last session: 2026-03-30T12:03:54.044Z
+Stopped at: Completed m2.5-monster-encounters/m2.5-03-PLAN.md
 Resume file: None

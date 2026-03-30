@@ -27,6 +27,12 @@ export interface WorldGenResult {
   seed: number;
   /** Geographic region assignments. Optional for backward compat — always set by generateWorld(). */
   regionData?: RegionData;
+  /**
+   * Province role per hex (0=capital, 1=heartland, 2=borderland).
+   * Used by lair seeding pass (m2.5) to apply danger gradient.
+   * Index = col + row * cols.
+   */
+  provinceRoles: Uint8Array;
 }
 
 // ── Simple region naming (no graph required) ─────────────────────────────────
@@ -167,6 +173,7 @@ export function generateWorld(
     rows,
     seed,
     regionData,
+    provinceRoles: ctx.provinceRoles,
   };
 }
 

@@ -1,104 +1,131 @@
 /**
- * Battle Spotlights — Thread-based battle visibility and spotlight selection.
+ * Battle Spotlights — TB-073 Phase 4.
  *
- * When the player's ascendant has a thread-of-fate edge to a battle participant,
- * spotlight encounters are eligible for first-person POV narration.
+ * Handles thread-based POV filtering and spotlight template selection for battles.
+ * Spotlights are narrative beats during battle that the player can intervene in.
+ *
+ * Key contracts:
+ * - No threads to any participant → no spotlights (chronicle-only battle)
+ * - Thread to any participant (army, commander) → spotlight eligible
+ * - Selection is seeded PRNG — deterministic for same seed + tick + battle
  *
  * Design doc: Docs/plans/2026-03-29-conflict-and-destruction-design.md — Phase 3
- * NFP: Determinism (selectSpotlight uses seeded PRNG), Inspectability (clear boolean check),
- *       Fail-soft (missing nodes → false/null).
  */
 
+import type { GameState } from '../types/gameState';
 import type { BattleState } from '../types/battle';
-import { WorldGraph } from './graph';
+import { BATTLE_SPOTLIGHT_TEMPLATES } from '../data/battle-spotlight-content';
+import type { SpotlightTemplate } from '../data/battle-spotlight-content';
 
-// ─── Spotlight Templates ────────────────────────────────────────────────────
-
-/** Minimal spotlight template for battle encounters */
-export interface SpotlightTemplate {
-  id: string;
-  battleTypes: Array<'field_battle' | 'siege'>;
-  /** Minimum absolute momentum for this template to be eligible */
-  minMomentum?: number;
-}
+// ─── Thread Detection ────────────────────────────────────────────────────────
 
 /**
- * Default spotlight encounter template pool.
- * Minimal set — content expansion in future phases.
- */
-export const SPOTLIGHT_TEMPLATES: SpotlightTemplate[] = [
-  { id: 'spotlight.duel', battleTypes: ['field_battle', 'siege'] },
-  { id: 'spotlight.heroic_stand', battleTypes: ['field_battle', 'siege'], minMomentum: 4 },
-  { id: 'spotlight.wall_breach', battleTypes: ['siege'], minMomentum: 3 },
-];
-
-// ─── Thread Visibility ───────────────────────────────────────────────────────
-
-/**
- * Check if the player's ascendant has a thread-of-fate edge to any battle participant.
- * Thread edges go ascendant → mortal (source=ascendant, target=mortal).
- * Battle participants = both army nodes + their commanders.
+ * Determine whether the player (ascendant) has a thread edge to any entity
+ * connected to this battle via `participates_in` or `commanded_by`.
  *
- * Fail-soft: missing nodes → returns false.
+ * "Thread" means a `thread` edge from the ascendant to an agent/army.
+ * If no threads → battle resolves chronicle-only with no spotlight encounters.
  */
-export function hasThreadToBattle(
-  ascendantId: string,
-  battleState: BattleState,
-  graph: WorldGraph,
-): boolean {
-  // Get all mortals the ascendant has threads to
+export function hasThreadToBattle(state: GameState, battleNodeId: string): boolean {
+  const graph = state.graph;
+  const ascendantId = state.ascendantId;
+
+  if (!ascendantId) return false;
+
+  // Get all thread edges from the ascendant
   const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
   if (threadEdges.length === 0) return false;
-  const threadTargetIds = new Set(threadEdges.map(e => e.target));
 
-  // Collect all battle participants: both armies + their commanders
-  const participantIds: string[] = [
-    battleState.attackerArmyId,
-    battleState.defenderArmyId,
-  ];
+  const threadedEntityIds = new Set(threadEdges.map(e => e.target));
 
-  // Add commanders via commanded_by edges (army → commander)
-  for (const armyId of [battleState.attackerArmyId, battleState.defenderArmyId]) {
-    const cmdEdges = graph.getOutgoingEdges(armyId, 'commanded_by');
-    for (const e of cmdEdges) {
-      participantIds.push(e.target);
+  // Check if any threaded entity participates_in this battle (directly)
+  const participantEdges = graph.getIncomingEdges(battleNodeId, 'participates_in');
+  for (const edge of participantEdges) {
+    if (threadedEntityIds.has(edge.source)) return true;
+
+    // Also check if a commander of the participant is threaded
+    const commanderEdges = graph.getOutgoingEdges(edge.source, 'commanded_by');
+    for (const cmdEdge of commanderEdges) {
+      if (threadedEntityIds.has(cmdEdge.target)) return true;
     }
   }
 
-  // Check intersection
-  return participantIds.some(id => threadTargetIds.has(id));
+  return false;
+}
+
+// ─── Spotlight Eligibility ───────────────────────────────────────────────────
+
+/**
+ * Return all spotlight templates eligible for the current battle state.
+ *
+ * Each template has a `condition` field that is evaluated against the battle state.
+ * Templates that pass their condition are returned for selection.
+ *
+ * Fail-soft: if the battle node is missing, returns empty array.
+ */
+export function getEligibleSpotlights(
+  state: GameState,
+  battleNodeId: string,
+): SpotlightTemplate[] {
+  const graph = state.graph;
+  const battleNode = graph.getNode(battleNodeId);
+  if (!battleNode) return [];
+
+  const bs = battleNode.properties.battleState as BattleState | undefined;
+  if (!bs) return [];
+
+  // Filter out already-fired thresholds to prevent repeats
+  const firedIds = new Set(bs.thresholdsFired ?? []);
+
+  return BATTLE_SPOTLIGHT_TEMPLATES.filter(template => {
+    // Skip if this threshold-type spotlight has already fired
+    if (template.threshold && firedIds.has(template.id)) return false;
+
+    // Evaluate the template condition against current battle state
+    return template.condition(state, battleNodeId, bs);
+  });
 }
 
 // ─── Spotlight Selection ─────────────────────────────────────────────────────
 
 /**
- * Select a spotlight encounter template from the eligible pool.
- * Returns null if no templates are eligible or if ascendant has no thread.
+ * Select a spotlight template using seeded PRNG.
  *
- * Selection is deterministic for the same seed and battle state (NFP #3).
+ * 1. Get all eligible templates
+ * 2. If none → return null (skip this tick)
+ * 3. If one → return it directly
+ * 4. If multiple → use seeded PRNG to pick
+ *
+ * PRNG seed: state.seed + tick * 59 + battleNodeId.length (same as battleResolution.ts)
+ * Deterministic: same seed + same tick + same battle = same selection.
  */
 export function selectSpotlight(
-  ascendantId: string,
-  battleState: BattleState,
-  graph: WorldGraph,
-  rng: () => number,
+  state: GameState,
+  battleNodeId: string,
 ): string | null {
-  // No thread → no spotlight
-  if (!hasThreadToBattle(ascendantId, battleState, graph)) return null;
-
-  // Filter eligible templates by battle type and momentum
-  const absMomentum = Math.abs(battleState.momentum);
-  const eligible = SPOTLIGHT_TEMPLATES.filter(t => {
-    if (!t.battleTypes.includes(battleState.battleType)) return false;
-    if (t.minMomentum !== undefined && absMomentum < t.minMomentum) return false;
-    // Exclude already-used templates
-    if (battleState.spotlightHistory.includes(t.id)) return false;
-    return true;
-  });
+  const eligible = getEligibleSpotlights(state, battleNodeId);
 
   if (eligible.length === 0) return null;
+  if (eligible.length === 1) return eligible[0].id;
 
-  // Seeded selection (NFP #3 — determinism)
+  // Seeded PRNG selection
+  const rng = mulberry32(state.seed + state.tick * 59 + battleNodeId.length);
   const index = Math.floor(rng() * eligible.length);
   return eligible[index].id;
 }
+
+// ─── PRNG (local — mirrors battleResolution.ts) ──────────────────────────────
+
+function mulberry32(seed: number): () => number {
+  let s = seed | 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ─── Re-export template type for convenience ─────────────────────────────────
+
+export type { SpotlightTemplate };

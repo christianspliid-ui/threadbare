@@ -22,8 +22,10 @@ import {
 } from '../types/battle';
 import { ARMY_SIZE_HEADCOUNT } from '../types/army';
 import { emitTrace } from './traceBuffer';
-import { tickSiege } from './siegeResolution';
+import { tickSiege, createSiegeNode } from './siegeResolution';
 import { applyAftermath } from './battleAftermath';
+import { selectSpotlight, hasThreadToBattle } from './battleSpotlights';
+import { BATTLE_SPOTLIGHT_TEMPLATES } from '../data/battle-spotlight-content';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -106,6 +108,7 @@ export function createBattleNode(
     initialMomentumOffset: initialMomentum,
     attackerArmyId,
     defenderArmyId,
+    thresholdsFired: [],
   };
 
   try {
@@ -151,7 +154,7 @@ export function createBattleNode(
       tick: state.tick,
       category: 'faction_ambition',
       summary: `Battle started at ${hexNode.name}: ${attackerNode.name} vs ${defenderNode.name} (momentum: ${initialMomentum.toFixed(1)})`,
-      event: 'battle_started',
+      event: 'started',
       battleId,
       attackerArmyId,
       defenderArmyId,
@@ -222,38 +225,95 @@ export function tickBattle(state: GameState, battleNodeId: string): void {
 
   // 2. Spotlight processing
   let momentumShift = 0;
+  let selectedSpotlightId: string | null = null;
+  let newThresholdsFired = bs.thresholdsFired ?? [];
   const newTicksSinceSpotlight = bs.ticksSinceLastSpotlight + 1;
 
   if (newTicksSinceSpotlight >= FIELD_BATTLE_SPOTLIGHT_INTERVAL) {
-    // Spawn a spotlight — simplified: apply a momentum shift based on seeded PRNG
-    const rng = mulberry32(state.seed + state.tick * 59 + battleNodeId.length);
-    // Roll determines which side gains advantage this tick
-    const roll = rng();
-    if (roll < 0.4) {
-      momentumShift = BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE; // attacker gains
-    } else if (roll < 0.8) {
-      momentumShift = -BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE; // defender gains
+    const playerHasThread = hasThreadToBattle(state, battleNodeId);
+
+    if (playerHasThread) {
+      // Thread-connected battle: use spotlight template selection (seeded PRNG, condition-filtered)
+      selectedSpotlightId = selectSpotlight(state, battleNodeId);
+      if (selectedSpotlightId) {
+        // Look up momentum shifts from template
+        const template = BATTLE_SPOTLIGHT_TEMPLATES.find(t => t.id === selectedSpotlightId);
+        if (template) {
+          // Seeded PRNG roll to determine success/failure of this spotlight
+          const rng = mulberry32(state.seed + state.tick * 59 + battleNodeId.length);
+          const roll = rng();
+          // 55% success rate for spotlights (tunable)
+          momentumShift = roll < 0.55
+            ? template.momentumOnSuccess
+            : template.momentumOnFailure;
+
+          // Mark threshold spotlights as fired
+          if (template.threshold) {
+            newThresholdsFired = [...newThresholdsFired, selectedSpotlightId];
+          }
+        }
+      }
+    } else {
+      // No threads → chronicle-only battle: use simple PRNG roll (no spotlight)
+      const rng = mulberry32(state.seed + state.tick * 59 + battleNodeId.length);
+      const roll = rng();
+      if (roll < 0.4) {
+        momentumShift = BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE; // attacker gains
+      } else if (roll < 0.8) {
+        momentumShift = -BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE; // defender gains
+      }
+      // 20% chance of no shift (stalemate tick)
     }
-    // 20% chance of no shift (stalemate tick)
   }
 
   const newMomentum = bs.momentum + momentumShift;
-  const newSpotlightHistory = momentumShift !== 0
-    ? [...bs.spotlightHistory, `tick_${state.tick}_shift_${momentumShift > 0 ? 'attacker' : 'defender'}`]
-    : bs.spotlightHistory;
+  const newSpotlightHistory = selectedSpotlightId
+    ? [...bs.spotlightHistory, selectedSpotlightId]
+    : momentumShift !== 0
+      ? [...bs.spotlightHistory, `tick_${state.tick}_shift_${momentumShift > 0 ? 'attacker' : 'defender'}`]
+      : bs.spotlightHistory;
 
   // Update battle state
   const updatedBattleState: BattleState = {
     ...bs,
     momentum: newMomentum,
-    ticksSinceLastSpotlight: momentumShift !== 0 ? 0 : newTicksSinceSpotlight,
+    ticksSinceLastSpotlight: momentumShift !== 0 || selectedSpotlightId ? 0 : newTicksSinceSpotlight,
     spotlightHistory: newSpotlightHistory,
+    thresholdsFired: newThresholdsFired,
   };
 
   graph.updateNode(battleNodeId, {
     properties: { ...battleNode.properties, battleState: updatedBattleState },
   });
 
+  // Emit spotlight_spawned first if a spotlight was selected
+  if (selectedSpotlightId) {
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Battle spotlight at ${battleNode.name}: [${selectedSpotlightId}] momentum shift ${momentumShift > 0 ? '+' : ''}${momentumShift}`,
+      event: 'spotlight_spawned',
+      battleId: battleNodeId,
+      spotlightId: selectedSpotlightId,
+      momentumShift,
+      momentum: newMomentum,
+    });
+  }
+
+  // Emit momentum_shift when momentum actually changed
+  if (momentumShift !== 0) {
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Battle momentum shift at ${battleNode.name}: ${bs.momentum.toFixed(1)}→${newMomentum.toFixed(1)}`,
+      event: 'momentum_shift',
+      battleId: battleNodeId,
+      momentum: newMomentum,
+      momentumShift,
+    });
+  }
+
+  // Always emit a battle_tick trace for inspectability
   emitTrace({
     tick: state.tick,
     category: 'faction_ambition',
@@ -315,7 +375,7 @@ export function resolveBattle(
     tick: state.tick,
     category: 'faction_ambition',
     summary: `Battle "${battleNode.name}" resolved: ${resolutionType} (final momentum: ${bs.momentum.toFixed(1)})`,
-    event: 'battle_resolved',
+    event: 'resolved',
     battleId: battleNodeId,
     resolutionType,
     finalMomentum: bs.momentum,
@@ -363,21 +423,72 @@ export function phaseBattleDetection(state: GameState): void {
 
   // Check for hostile pairs at each location
   for (const [hexId, armyIds] of armiesByLocation) {
-    if (armyIds.length < 2) continue;
+    if (armyIds.length >= 2) {
+      for (let i = 0; i < armyIds.length; i++) {
+        for (let j = i + 1; j < armyIds.length; j++) {
+          const armyA = armyIds[i];
+          const armyB = armyIds[j];
 
-    for (let i = 0; i < armyIds.length; i++) {
-      for (let j = i + 1; j < armyIds.length; j++) {
-        const armyA = armyIds[i];
-        const armyB = armyIds[j];
+          if (areHostile(state, armyA, armyB)) {
+            // Attacker = army that moved more recently (higher raisedTick or arrived later)
+            const stateA = graph.getNode(armyA)?.properties.armyState as ArmyState | undefined;
+            const stateB = graph.getNode(armyB)?.properties.armyState as ArmyState | undefined;
+            const attackerId = (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
+            const defenderId = attackerId === armyA ? armyB : armyA;
 
-        if (areHostile(state, armyA, armyB)) {
-          // Attacker = army that moved more recently (higher raisedTick or arrived later)
-          const stateA = graph.getNode(armyA)?.properties.armyState as ArmyState | undefined;
-          const stateB = graph.getNode(armyB)?.properties.armyState as ArmyState | undefined;
-          const attackerId = (stateA?.raisedTick ?? 0) >= (stateB?.raisedTick ?? 0) ? armyA : armyB;
-          const defenderId = attackerId === armyA ? armyB : armyA;
+            createBattleNode(state, attackerId, defenderId, hexId);
+          }
+        }
+      }
+    }
 
-          createBattleNode(state, attackerId, defenderId, hexId);
+    // Check for army arriving at hostile settlement — creates siege
+    if (armyIds.length >= 1) {
+      // Find settlements at this hex controlled by a faction hostile to any army here
+      const hexNode = graph.getNode(hexId);
+      if (!hexNode) continue;
+
+      // Look for location nodes at this hex (actor nodes with locationSubtype but no armyState)
+      // or location nodes directly colocated at this hex
+      const settlementNodes = graph.getNodesByType('location').filter(loc => {
+        const locEdges = graph.getOutgoingEdges(loc.id, 'located_at');
+        return locEdges.some(e => e.target === hexId);
+      });
+
+      // Also check if the hex itself IS a settlement (has locationSubtype)
+      const settlementIds: string[] = [];
+      if (hexNode.properties.locationSubtype &&
+          ['hamlet', 'town', 'city', 'capital'].includes(hexNode.properties.locationSubtype as string)) {
+        settlementIds.push(hexId);
+      }
+      for (const s of settlementNodes) {
+        if (['hamlet', 'town', 'city', 'capital'].includes(s.properties.locationSubtype as string ?? '')) {
+          settlementIds.push(s.id);
+        }
+      }
+
+      for (const settlementId of settlementIds) {
+        const settlementFaction = graph.getOutgoingEdges(settlementId, 'controlled_by')[0]?.target
+          ?? graph.getIncomingEdges(settlementId, 'controls')[0]?.source;
+
+        if (!settlementFaction) continue;
+
+        for (const armyId of armyIds) {
+          // Skip if already in a siege/battle
+          const existingBattles = graph.getOutgoingEdges(armyId, 'participates_in');
+          if (existingBattles.length > 0) continue;
+
+          const armyFaction = graph.getOutgoingEdges(armyId, 'member_of')[0]?.target;
+          if (!armyFaction || armyFaction === settlementFaction) continue;
+
+          // Skip if there's already a siege at this settlement
+          const existingSieges = graph.getNodesByType('actor').filter(n => {
+            const nbs = n.properties.battleState as (BattleState & { settlementId?: string }) | undefined;
+            return nbs?.battleType === 'siege' && nbs?.settlementId === settlementId;
+          });
+          if (existingSieges.length > 0) continue;
+
+          createSiegeNode(state, armyId, settlementId, hexId);
         }
       }
     }

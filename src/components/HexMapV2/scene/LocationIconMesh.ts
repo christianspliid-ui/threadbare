@@ -27,7 +27,13 @@ import {
   LOCATION_SIZE_SCALE,
   CENTERED_SIZE_CLASSES,
 } from '../locations/locationIconRegistry';
-import { buildLocationIconTextureCache } from '../locations/locationIconTextures';
+import type { LocationSizeClass } from '../locations/locationIconRegistry';
+import {
+  buildLocationIconTexture,
+  buildLocationIconTextureCache,
+  LAIR_SPHERE_FILL_COLORS,
+  CLEARED_LAIR_FILL_COLOR,
+} from '../locations/locationIconTextures';
 import { getActivePalette } from '../palette/activePalette';
 import {
   SLOT_RING_RADIUS,
@@ -65,7 +71,22 @@ export interface LocationNode {
   hexRow: number;
   name: string;
   isCapital?: boolean;
+  /** Dominant sphere for lair nodes — drives sphere-tinted fill color */
+  dominantSphere?: string;
+  /** Lair escalation tier — drives sizeClass override (minor=small, major=medium, legendary=full) */
+  lairTier?: string;
 }
+
+/**
+ * Lair sizeClass override by tier.
+ * Minor lairs render at 'small', major at 'medium', legendary at 'full'.
+ * NFP #1: constants here — change game feel by changing tier mapping.
+ */
+const LAIR_TIER_SIZE_CLASS: Record<string, LocationSizeClass> = {
+  minor:     'small',
+  major:     'medium',
+  legendary: 'full',
+};
 
 // ── Capital ring texture (built once) ────────────────────────────────────────
 
@@ -120,8 +141,27 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
 
   if (locations.length === 0) return group;
 
-  // Build texture cache once (no per-frame cost)
+  // Build texture cache for standard (non-lair) location types once (no per-frame cost)
   const textureCache = buildLocationIconTextureCache(LOCATION_ICON_REGISTRY);
+
+  // Build sphere-tinted lair textures keyed as "lair:{sphere}" and "cleared_lair"
+  const lairDef = LOCATION_ICON_REGISTRY['lair'];
+  const clearedLairDef = LOCATION_ICON_REGISTRY['cleared_lair'];
+  if (lairDef) {
+    for (const [sphere, fillColor] of Object.entries(LAIR_SPHERE_FILL_COLORS)) {
+      const key = `lair:${sphere}`;
+      if (!textureCache.has(key)) {
+        textureCache.set(key, buildLocationIconTexture(lairDef, undefined, fillColor));
+      }
+    }
+    // Fallback for unknown sphere — use default near-black fill
+    if (!textureCache.has('lair:unknown')) {
+      textureCache.set('lair:unknown', buildLocationIconTexture(lairDef));
+    }
+  }
+  if (clearedLairDef && !textureCache.has('cleared_lair')) {
+    textureCache.set('cleared_lair', buildLocationIconTexture(clearedLairDef, undefined, CLEARED_LAIR_FILL_COLOR));
+  }
 
   // Build capital ring texture lazily (shared across all capitals)
   let capitalRingTexture: THREE.CanvasTexture | null = null;
@@ -148,7 +188,13 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
       const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
       if (!iconDef) continue; // NFP #4: skip unknown type
 
-      if (CENTERED_SIZE_CLASSES.has(iconDef.sizeClass)) {
+      // Lair sizeClass override: use tier-based size, not registry default
+      const effectiveSizeClass: LocationSizeClass =
+        loc.locationType === 'lair' && loc.lairTier
+          ? (LAIR_TIER_SIZE_CLASS[loc.lairTier] ?? iconDef.sizeClass)
+          : iconDef.sizeClass;
+
+      if (CENTERED_SIZE_CLASSES.has(effectiveSizeClass)) {
         centered.push(loc);
       } else {
         ringEligible.push(loc);
@@ -206,10 +252,23 @@ function addLocationSprite(
   const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
   if (!iconDef) return;
 
-  const texture = textureCache.get(loc.locationType);
+  // Lair-specific texture key: "lair:{sphere}" for tinted active lairs
+  let textureKey = loc.locationType;
+  if (loc.locationType === 'lair') {
+    const sphere = loc.dominantSphere ?? 'unknown';
+    textureKey = `lair:${LAIR_SPHERE_FILL_COLORS[sphere] !== undefined ? sphere : 'unknown'}`;
+  }
+
+  const texture = textureCache.get(textureKey);
   if (!texture) return; // NFP #4: skip missing texture
 
-  const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[iconDef.sizeClass] * scaleFactor;
+  // Lair sizeClass override by tier; cleared_lair stays at registry default
+  const effectiveSizeClass: LocationSizeClass =
+    loc.locationType === 'lair' && loc.lairTier
+      ? (LAIR_TIER_SIZE_CLASS[loc.lairTier] ?? iconDef.sizeClass)
+      : iconDef.sizeClass;
+
+  const spriteSize = HEX_CONSTANTS.HEX_SIZE * LOCATION_SIZE_SCALE[effectiveSizeClass] * scaleFactor;
   const { x: wx, y: wy } = hexToWorld({ col: loc.hexCol, row: loc.hexRow }, HEX_CONSTANTS.HEX_SIZE);
 
   const material = new THREE.SpriteMaterial({

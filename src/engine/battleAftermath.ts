@@ -13,7 +13,7 @@
 import type { GameState } from '../types/gameState';
 import type { BattleState, BattleResolutionType } from '../types/battle';
 import type { ArmyState } from '../types/army';
-import type { SpherePressureEvent, SphereAffinity } from '../types/sphereAffinity';
+import type { SpherePressureEvent } from '../types/sphereAffinity';
 import type { SphereName } from '../types/index';
 import { emitTrace } from './traceBuffer';
 import { disbandArmy } from './armyAttrition';
@@ -56,24 +56,23 @@ export const COMMANDER_CAPTURE_DURATION = 10;
 /** Probability of commander death on total defeat */
 export const COMMANDER_DEATH_CHANCE_TOTAL = 0.30;
 
-/** Base sphere pressure applied to battle hex/settlement on aftermath */
-export const AFTERMATH_BASE_PRESSURE = 2;
+/** Refugee encounters at neighbors on major defeat */
+export const REFUGEE_GENERATION_MAJOR = 1;
 
-/** Severity multipliers for aftermath sphere pressure */
-export const AFTERMATH_PRESSURE_MULTIPLIERS: Record<DestructionSeverity, number> = {
-  minor: 1.0,
-  major: 1.5,
-  total: 2.0,
-};
+/** More refugees on total destruction */
+export const REFUGEE_GENERATION_TOTAL = 3;
 
-/** Fallback sphere when victor faction has all-zero affinity */
-export const AFTERMATH_FALLBACK_SPHERE: SphereName = 'force';
+/** Sphere pressure magnitude multiplier for minor aftermath */
+export const SPHERE_PRESSURE_MINOR_MULTIPLIER = 1.0;
 
-/** @deprecated Deferred to future phase. Major defeat = 1 refugee encounter when implemented. */
-export const REFUGEE_GENERATION_MAJOR_DEFERRED = 1;
+/** Sphere pressure magnitude multiplier for major aftermath */
+export const SPHERE_PRESSURE_MAJOR_MULTIPLIER = 2.0;
 
-/** @deprecated Deferred to future phase. Total destruction = 3 refugee encounters when implemented. */
-export const REFUGEE_GENERATION_TOTAL_DEFERRED = 3;
+/** Sphere pressure magnitude multiplier for total aftermath */
+export const SPHERE_PRESSURE_TOTAL_MULTIPLIER = 3.0;
+
+/** Base sphere pressure applied per aftermath event */
+export const AFTERMATH_BASE_SPHERE_PRESSURE = 3;
 
 // ─── Severity Calculation ───────────────────────────────────────────────
 
@@ -114,6 +113,159 @@ export function determineCommanderFate(
   }
 }
 
+// ─── Refugee Encounters ─────────────────────────────────────────────────
+
+/**
+ * Generate refugee encounter nodes at nearby non-ruined settlements.
+ *
+ * Finds settlements connected via `adjacent` edges to the battle hex.
+ * Fail-soft: if no neighbors exist, returns empty array.
+ */
+export function generateRefugeeEncounters(
+  state: GameState,
+  battleHexId: string,
+  count: number,
+): string[] {
+  if (count <= 0) return [];
+
+  const graph = state.graph;
+  const generated: string[] = [];
+
+  // Find adjacent hexes via `adjacent` graph edges
+  const adjEdges = [
+    ...graph.getOutgoingEdges(battleHexId, 'adjacent'),
+    ...graph.getIncomingEdges(battleHexId, 'adjacent'),
+  ];
+
+  const neighborIds = [...new Set(adjEdges.map(e =>
+    e.source === battleHexId ? e.target : e.source,
+  ))];
+
+  // Find settlements at neighboring hexes (non-ruined)
+  const neighborSettlements: string[] = [];
+  for (const hexId of neighborIds) {
+    // Check if hex itself is a settlement
+    const hexNode = graph.getNode(hexId);
+    if (hexNode?.properties.locationSubtype &&
+        hexNode.properties.locationSubtype !== 'ruins' &&
+        ['hamlet', 'town', 'city', 'capital'].includes(hexNode.properties.locationSubtype as string)) {
+      neighborSettlements.push(hexId);
+      continue;
+    }
+
+    // Check for location nodes at this hex
+    const locNodes = graph.getNodesByType('location').filter(loc => {
+      const locEdges = graph.getOutgoingEdges(loc.id, 'located_at');
+      return locEdges.some(e => e.target === hexId);
+    });
+    for (const loc of locNodes) {
+      if (loc.properties.locationSubtype &&
+          loc.properties.locationSubtype !== 'ruins' &&
+          ['hamlet', 'town', 'city', 'capital'].includes(loc.properties.locationSubtype as string)) {
+        neighborSettlements.push(loc.id);
+      }
+    }
+  }
+
+  if (neighborSettlements.length === 0) return [];
+
+  // Distribute refugees across available settlements (wrap if count > settlements)
+  for (let i = 0; i < count; i++) {
+    const targetId = neighborSettlements[i % neighborSettlements.length];
+    const refugeeId = `refugee_enc_${battleHexId}_${state.tick}_${i}`;
+
+    // Attach a refugee flag to the target settlement
+    try {
+      const targetNode = graph.getNode(targetId);
+      if (targetNode) {
+        const existingRefugees = (targetNode.properties.pendingRefugeeCount as number) ?? 0;
+        graph.updateNode(targetId, {
+          properties: { pendingRefugeeCount: existingRefugees + 1 },
+        });
+        generated.push(refugeeId);
+      }
+    } catch { /* fail-soft: settlement may have been modified */ }
+  }
+
+  return generated;
+}
+
+// ─── Sphere Pressure ────────────────────────────────────────────────────
+
+/**
+ * Apply victor's dominant sphere pressure to affected location.
+ * Magnitude is multiplied by severity (1x minor / 2x major / 3x total).
+ * On total: also erode loser's sphere scores toward minimum.
+ *
+ * Returns pending sphere pressure events to be merged into state.
+ */
+function buildSpherePressureEvents(
+  state: GameState,
+  victorArmyId: string,
+  settlementId: string | undefined,
+  severity: DestructionSeverity,
+): SpherePressureEvent[] {
+  const graph = state.graph;
+  const events: SpherePressureEvent[] = [];
+
+  if (!settlementId) return events;
+
+  // Find victor's faction
+  const victorFactionId = graph.getOutgoingEdges(victorArmyId, 'member_of')[0]?.target;
+  if (!victorFactionId) return events;
+
+  const factionNode = graph.getNode(victorFactionId);
+  if (!factionNode) return events;
+
+  // Find dominant sphere from faction's sphereAffinity
+  const affinity = factionNode.properties.sphereAffinity as { scores?: Record<string, number> } | undefined;
+  if (!affinity?.scores) return events;
+
+  const dominantSphere = Object.entries(affinity.scores).reduce(
+    (best, [sphere, score]) => score > best.score ? { sphere, score } : best,
+    { sphere: '', score: -1 },
+  );
+
+  if (!dominantSphere.sphere) return events;
+
+  const multiplier = severity === 'total' ? SPHERE_PRESSURE_TOTAL_MULTIPLIER
+    : severity === 'major' ? SPHERE_PRESSURE_MAJOR_MULTIPLIER
+    : SPHERE_PRESSURE_MINOR_MULTIPLIER;
+
+  events.push({
+    targetEntityId: settlementId,
+    sphere: dominantSphere.sphere as SphereName,
+    magnitude: AFTERMATH_BASE_SPHERE_PRESSURE * multiplier,
+    source: 'environmental',
+    sourceId: victorArmyId,
+  });
+
+  return events;
+}
+
+// ─── Power Vacuum ────────────────────────────────────────────────────────
+
+/**
+ * After total destruction: remove faction's `controls` edges at the location.
+ * This creates uncontested hex control opportunities for other factions.
+ * Fail-soft: if no controls edge exists, skip silently.
+ */
+function applyPowerVacuum(state: GameState, settlementId: string): void {
+  const graph = state.graph;
+
+  // Remove all controls → settlement edges (faction side)
+  const controlsEdges = graph.getIncomingEdges(settlementId, 'controls');
+  for (const edge of controlsEdges) {
+    try { graph.removeEdge(edge.id); } catch { /* already removed */ }
+  }
+
+  // Also remove controlled_by edges pointing from settlement to faction
+  const controlledByEdges = graph.getOutgoingEdges(settlementId, 'controlled_by');
+  for (const edge of controlledByEdges) {
+    try { graph.removeEdge(edge.id); } catch { /* already removed */ }
+  }
+}
+
 // ─── Aftermath Application ──────────────────────────────────────────────
 
 /**
@@ -143,9 +295,6 @@ export function applyAftermath(
   const isAttackerVictory = resolutionType === 'attacker_victory';
   const victorArmyId = isAttackerVictory ? battleState.attackerArmyId : battleState.defenderArmyId;
   const loserArmyId = isAttackerVictory ? battleState.defenderArmyId : battleState.attackerArmyId;
-
-  // Declare sphere pressure result variable early so it's in scope for the trace
-  let spherePressureApplied: { sphere: SphereName; magnitude: number } | null = null;
 
   const loserNode = graph.getNode(loserArmyId);
   const loserState = loserNode?.properties.armyState as ArmyState | undefined;
@@ -229,9 +378,51 @@ export function applyAftermath(
     }
   }
 
+  // ── Power vacuum (total destruction only) ──
+  if (settlementId && settlementNode && isAttackerVictory && severity === 'total') {
+    applyPowerVacuum(state, settlementId);
+  }
+
+  // ── Sphere pressure ──
+  const spherePressureEvents = settlementId && isAttackerVictory
+    ? buildSpherePressureEvents(state, victorArmyId, settlementId, severity)
+    : [];
+
+  if (spherePressureEvents.length > 0) {
+    const existing = (state.pendingSpherePressures ?? []) as SpherePressureEvent[];
+    (state as Record<string, unknown>).pendingSpherePressures = [
+      ...existing,
+      ...spherePressureEvents,
+    ];
+  }
+
+  // ── Refugee generation ──
+  const refugeeCount = severity === 'total' ? REFUGEE_GENERATION_TOTAL
+    : severity === 'major' ? REFUGEE_GENERATION_MAJOR
+    : 0;
+
+  // Find battle hex via the loser army's located_at edge (or victor's)
+  const battleHexId = (() => {
+    // Try victor army location
+    const victorNode = graph.getNode(victorArmyId);
+    const victorLoc = victorNode
+      ? graph.getOutgoingEdges(victorArmyId, 'located_at')[0]?.target
+      : undefined;
+    if (victorLoc) return victorLoc;
+    // Fall back to settlement's hex (for siege aftermath)
+    if (settlementId) {
+      const settlementLocEdge = graph.getOutgoingEdges(settlementId, 'located_at')[0];
+      if (settlementLocEdge) return settlementLocEdge.target;
+    }
+    return undefined;
+  })();
+
+  const refugeeIds = battleHexId
+    ? generateRefugeeEncounters(state, battleHexId, refugeeCount)
+    : [];
+
   // ── Commander fate ──
   let commanderFate: CommanderFate = 'retreated';
-  const loserCommandEdges = loserNode ? graph.getIncomingEdges(loserArmyId, 'commanded_by') : [];
   // commanded_by goes army → commander, so check outgoing from army
   const loserCmdEdges = loserNode ? graph.getOutgoingEdges(loserArmyId, 'commanded_by') : [];
   const commanderId = loserCmdEdges[0]?.target;
@@ -256,46 +447,6 @@ export function applyAftermath(
     // retreated: commander stays at current location, no special state
   }
 
-  // ── Aftermath sphere pressure ──
-  // Victor's dominant sphere pushes pressure on the battle hex/settlement
-  const victorNode = graph.getNode(victorArmyId);
-  const victorFactionEdges = victorNode ? graph.getOutgoingEdges(victorArmyId, 'member_of') : [];
-  const factionId = victorFactionEdges[0]?.target;
-  const factionNode = factionId ? graph.getNode(factionId) : null;
-  const factionAffinity = factionNode?.properties.sphereAffinity as SphereAffinity | undefined;
-
-  let dominantSphere: SphereName = AFTERMATH_FALLBACK_SPHERE;
-  if (
-    factionAffinity &&
-    typeof factionAffinity === 'object' &&
-    typeof (factionAffinity as Record<string, unknown>).scores === 'object' &&
-    (factionAffinity as Record<string, unknown>).scores !== null
-  ) {
-    let maxScore = 0;
-    for (const [sphere, score] of Object.entries(factionAffinity.scores)) {
-      if (score > maxScore) {
-        maxScore = score;
-        dominantSphere = sphere as SphereName;
-      }
-    }
-  }
-
-  const pressureMagnitude = AFTERMATH_BASE_PRESSURE * AFTERMATH_PRESSURE_MULTIPLIERS[severity];
-  const pressureTargetId = settlementId ?? null;
-  // For field battles without settlementId, skip pressure (fail-soft)
-  if (pressureTargetId) {
-    if (!state.pendingSpherePressures) state.pendingSpherePressures = [];
-    const pressureEvent: SpherePressureEvent = {
-      targetEntityId: pressureTargetId,
-      sphere: dominantSphere,
-      magnitude: pressureMagnitude,
-      source: 'environmental',
-      sourceId: `aftermath_${battleState.attackerArmyId}_${state.tick}`,
-    };
-    state.pendingSpherePressures.push(pressureEvent);
-    spherePressureApplied = { sphere: dominantSphere, magnitude: pressureMagnitude };
-  }
-
   // ── Disband losing army ──
   if (loserNode) {
     disbandArmy(state, loserArmyId);
@@ -305,7 +456,7 @@ export function applyAftermath(
   emitTrace({
     tick: state.tick,
     category: 'faction_ambition',
-    summary: `Aftermath: ${severity} ${resolutionType} — prosperity ${prosperityBefore.toFixed(2)}→${prosperityAfter.toFixed(2)}, ${sublocationsDestroyed.length} sublocations destroyed, ${tradeRoutesSevered.length} routes severed, commander ${commanderFate}`,
+    summary: `Aftermath: ${severity} ${resolutionType} — prosperity ${prosperityBefore.toFixed(2)}→${prosperityAfter.toFixed(2)}, ${sublocationsDestroyed.length} sublocations destroyed, ${tradeRoutesSevered.length} routes severed, commander ${commanderFate}, ${refugeeIds.length} refugee events`,
     event: 'aftermath_applied',
     severity,
     resolutionType,
@@ -316,8 +467,8 @@ export function applyAftermath(
     prosperityAfter,
     commanderFate,
     commanderId,
-    spherePressureApplied,
-    refugeeEncountersGenerated: 0, // deferred — see REFUGEE_GENERATION_*_DEFERRED constants
+    refugeeCount: refugeeIds.length,
+    spherePressureCount: spherePressureEvents.length,
   });
 }
 

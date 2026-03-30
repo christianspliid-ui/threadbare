@@ -29,12 +29,12 @@ import type { LocationNode } from './scene/LocationIconMesh';
 import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
-import { createArmySpriteMesh } from './scene/ArmySpriteMesh';
-import type { ArmyRenderData } from './scene/ArmySpriteMesh';
-import { createBattleIndicatorMesh, tickBattlePulse } from './scene/BattleIndicatorMesh';
-import type { BattleRenderData } from './scene/BattleIndicatorMesh';
-import { createSiegeIndicatorMesh } from './scene/SiegeIndicatorMesh';
-import type { SiegeRenderData } from './scene/SiegeIndicatorMesh';
+import { createArmyLayer } from './scene/ArmyLayer';
+import type { ArmyLayerGroup } from './scene/ArmyLayer';
+import type { ArmyRenderData } from './scene/ArmyLayer';
+import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
+import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
+import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -151,12 +151,10 @@ export interface HexMapV2Props {
   roadPaths?: import('./scene/RoadMesh').RoadPath[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
   agents?: AgentRenderData[];
-  /** Army render data for shield sprite rendering (Plan 13-04+) */
+  /** Army render data for army indicator sprites (Plan 12-07+) */
   armies?: ArmyRenderData[];
-  /** Battle render data for crossed-swords indicator sprites (Plan 13-04+) */
-  battles?: BattleRenderData[];
-  /** Siege render data for ring indicator sprites (Plan 13-04+) */
-  sieges?: SiegeRenderData[];
+  /** Battle/siege indicator data for combat overlays (Plan 12-07+) */
+  battles?: BattleIndicatorData[];
   /** Fog-of-war visibility map — keyed by "col,row". undefined = fog disabled (Plan 07-03+) */
   visibilityMap?: VisibilityMap;
   /** Whether the fog-of-war system is active. Default false. (Plan 07-03+) */
@@ -270,7 +268,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, armies, battles, sieges, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -290,6 +288,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const destroyZoomRef = useRef<(() => void) | null>(null);
     const setZoomTargetRef   = useRef<((wx: number, wy: number) => void) | null>(null);
     const clearZoomTargetRef = useRef<(() => void) | null>(null);
+
+    // Army and battle layer refs
+    const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
+    const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
 
     // Agent animation state refs — stable across renders, mutated by render loop
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
@@ -329,11 +331,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const borderBaronyRef    = useRef<THREE.Mesh | null>(null);
     const geoBorderRef       = useRef<THREE.LineSegments | null>(null);
     const coastlineRef       = useRef<THREE.Group | null>(null);
-
-    // Military render layer group refs (Plan 13-04)
-    const armyGroupRef    = useRef<THREE.Group | null>(null);
-    const battleGroupRef  = useRef<THREE.Group | null>(null);
-    const siegeGroupRef   = useRef<THREE.Group | null>(null);
 
     // Follow mode ref — mutable state, does not trigger re-renders
     const followModeRef = useRef<FollowModeState>(createFollowMode());
@@ -586,6 +583,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           void loadAgentPortraits(agentSpriteGroup, agents ?? []);
         }
 
+        // Build army layer — faction-colored size indicators at army locations (Plan 12-07)
+        // Renders at RENDER_ORDER.ARMIES (10.5), above agents, below events.
+        const armyLayerGroup = createArmyLayer(armies ?? []);
+        scene.add(armyLayerGroup.group);
+        armyLayerRef.current = armyLayerGroup;
+
+        // Build battle indicator layer — battle/siege overlays at combat hexes (Plan 12-07)
+        // Renders at RENDER_ORDER.BATTLE_INDICATORS (10.8), above armies, below events.
+        const battleIndicatorGroup = createBattleIndicatorLayer(battles ?? []);
+        scene.add(battleIndicatorGroup.group);
+        battleIndicatorLayerRef.current = battleIndicatorGroup;
+
         // Create movement trail group — Line segments that fade over TRAIL_FADE_DURATION
         const trailGroup = createMovementTrailMesh();
         scene.add(trailGroup);
@@ -693,12 +702,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             tickAgentAnimations(animStates, spriteGroup.animationTargets);
             tickAvatarPulse(spriteGroup, clock.getElapsedTime());
           }
-          // Pulse battle indicator sprites (opacity oscillation)
-          const bGroup = battleGroupRef.current;
-          if (bGroup) tickBattlePulse(bGroup, clock.getElapsedTime() * 1000);
           // Fade and dispose expired movement trail segments
           const tGroup = trailGroupRef.current;
           if (tGroup) updateTrails(tGroup);
+          // Pulse battle/siege indicators
+          const battleLayer = battleIndicatorLayerRef.current;
+          if (battleLayer && battleLayer.materials.length > 0) {
+            tickBattleIndicators(battleLayer, clock.getElapsedTime());
+          }
           renderer.render(scene, camera);
         }
         animate();
@@ -840,13 +851,18 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
               }
             }
           }
+          // Dispose army and battle indicator layers
+          if (armyLayerRef.current) {
+            armyLayerRef.current.dispose();
+            armyLayerRef.current = null;
+          }
+          if (battleIndicatorLayerRef.current) {
+            battleIndicatorLayerRef.current.dispose();
+            battleIndicatorLayerRef.current = null;
+          }
           // Dispose agent sprite groups
           agentSpriteGroup.dispose();
           agentSpriteGroupRef.current = null;
-          // Dispose military layer groups (Plan 13-04)
-          armyGroupRef.current = null;
-          battleGroupRef.current = null;
-          siegeGroupRef.current = null;
           // Dispose movement trail segments
           const finalTrailGroup = trailGroupRef.current;
           if (finalTrailGroup) {
@@ -914,9 +930,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         borderKingdom: borderKingdomRef,
         borderBarony: borderBaronyRef,
         coastline: coastlineRef,
-        armies: armyGroupRef,
-        battleIndicator: battleGroupRef,
-        siegeRing: siegeGroupRef,
       },
       agentSpriteGroup: agentSpriteGroupRef,
       trailGroup: trailGroupRef,
@@ -944,38 +957,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         clearZoomTargetRef.current?.();
       }
     }, [selectedHex]);
-
-    // ── Military layer rebuild — armies, battles, sieges (Plan 13-04) ──
-    // Rebuild mesh groups when military data changes.
-    // Each group is removed and recreated from the latest render data arrays.
-    // NFP #4: sceneRef may be null during init — skip silently.
-    useEffect(() => {
-      const scene = sceneRef.current;
-      if (!scene) return;
-
-      // Remove previous groups
-      if (armyGroupRef.current) { scene.remove(armyGroupRef.current); armyGroupRef.current = null; }
-      if (battleGroupRef.current) { scene.remove(battleGroupRef.current); battleGroupRef.current = null; }
-      if (siegeGroupRef.current) { scene.remove(siegeGroupRef.current); siegeGroupRef.current = null; }
-
-      // Add new groups (only if data provided)
-      if ((armies ?? []).length > 0) {
-        const armyGroup = createArmySpriteMesh(armies!);
-        scene.add(armyGroup);
-        armyGroupRef.current = armyGroup;
-      }
-      if ((battles ?? []).length > 0) {
-        const battleGroup = createBattleIndicatorMesh(battles!);
-        scene.add(battleGroup);
-        battleGroupRef.current = battleGroup;
-      }
-      if ((sieges ?? []).length > 0) {
-        const siegeGroup = createSiegeIndicatorMesh(sieges!);
-        scene.add(siegeGroup);
-        siegeGroupRef.current = siegeGroup;
-      }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [armies, battles, sieges]);
 
     // ── Agent animation — delegated to useAgentAnimations hook ──
     useAgentAnimations({
