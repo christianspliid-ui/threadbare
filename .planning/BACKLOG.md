@@ -18,16 +18,9 @@ Fixed — all event ID generators now include tick in their format string. See c
 
 ---
 
-## 📋 TB-084 · Graph Schema Gaps — `constructed_by` Edge + `bonded_to` Target Mismatch (2026-03-30)
+## ✅ TB-084 · Graph Schema Gaps — `constructed_by` Edge + `bonded_to` Target Mismatch (2026-03-30)
 
-Two schema issues found in QA sweep:
-
-1. **`constructed_by` not in EDGE_SCHEMA:** `worldSeed.ts:628` creates `constructed_by` edges and `mandates/builders-legacy.json` references them, but the type is missing from `EdgeType` in `graph.ts`. Produces ~88 console warnings per load.
-2. **`bonded_to` target type mismatch:** Schema expects target `artifact_legendary` but seed data (`starter_ashenmane_fang`) has node type `artifact`. Produces a validation warning per load.
-
-**Fix:** Add `'constructed_by'` to `EdgeType` union with appropriate source/target constraints. For `bonded_to`, either update seed artifact node type to `artifact_legendary` or relax the schema constraint.
-
-**Severity:** Medium — noisy console, no runtime breakage.
+Fixed — `constructed_by` added to EdgeType + EDGE_SCHEMA, `starter_ashenmane_fang` type corrected to `artifact_legendary`. See commit `cebcfa5`.
 
 ---
 
