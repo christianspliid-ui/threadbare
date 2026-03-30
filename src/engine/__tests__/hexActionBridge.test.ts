@@ -1,8 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { WorldGraph } from '../graph';
 import {
   resolveHexAction,
+  resolveHexActionFull,
   isHexTargetId,
   parseHexTargetId,
+  getAgentIdsAtHex,
+  AMPLIFY_FLOW_SATURATION_BOOST,
+  SHIFT_DOMINION_BOOST,
+  SHIFT_DOMINION_REDUCTION,
   HEX_BLESS_INFLUENCE_DELTA,
   HEX_CORRUPT_CORRUPTION_DELTA,
   HEX_SEED_INFLUENCE_DELTA,
@@ -218,5 +224,193 @@ describe('parseHexTargetId', () => {
     expect(parseHexTargetId('loc_123')).toBeNull();
     expect(parseHexTargetId('hex_a_b')).toBeNull();
     expect(parseHexTargetId('')).toBeNull();
+  });
+});
+
+// ─── TB-081: Dynamic GraphOp Generators ──────────────────────────────────────
+
+describe('TB-081 dynamic GraphOp generators', () => {
+  let graph: WorldGraph;
+
+  /** Set up a hex at (3,5) with 2 locations and 2 agents. */
+  function setupHexWithLocationsAndAgents() {
+    graph = new WorldGraph();
+    graph.addNode({ id: 'loc_a', type: 'location', name: 'Village A', properties: { hexCol: 3, hexRow: 5 } });
+    graph.addNode({ id: 'loc_b', type: 'location', name: 'Ruins B', properties: { hexCol: 3, hexRow: 5 } });
+    graph.addNode({ id: 'loc_other', type: 'location', name: 'Far Away', properties: { hexCol: 9, hexRow: 9 } });
+    graph.addNode({ id: 'agent_1', type: 'actor', name: 'Agent One', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'agent_2', type: 'actor', name: 'Agent Two', properties: { actorType: 'individual' } });
+    graph.addNode({ id: 'agent_far', type: 'actor', name: 'Far Agent', properties: { actorType: 'individual' } });
+    graph.addEdge({ id: 'e1', source: 'agent_1', target: 'loc_a', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'e2', source: 'agent_2', target: 'loc_b', type: 'located_at', properties: {} });
+    graph.addEdge({ id: 'e3', source: 'agent_far', target: 'loc_other', type: 'located_at', properties: {} });
+  }
+
+  beforeEach(() => {
+    setupHexWithLocationsAndAgents();
+  });
+
+  describe('getAgentIdsAtHex helper', () => {
+    it('returns agents at locations on the target hex', () => {
+      const ids = getAgentIdsAtHex(graph, 3, 5);
+      expect(ids).toContain('agent_1');
+      expect(ids).toContain('agent_2');
+      expect(ids).not.toContain('agent_far');
+    });
+
+    it('returns empty for hex with no locations', () => {
+      expect(getAgentIdsAtHex(graph, 99, 99)).toHaveLength(0);
+    });
+  });
+
+  describe('hex.amplify_flow', () => {
+    it('generates update_node ops for all locations on hex', () => {
+      const result = resolveHexActionFull('hex.amplify_flow', 3, 5, 'success', 10, graph);
+      const updateOps = result.graphOps.filter(op => op.op === 'update_node');
+      expect(updateOps).toHaveLength(2);
+      expect(updateOps[0].nodeId).toBe('loc_a');
+      expect(updateOps[0].changes).toEqual({ magicalSaturation: `+${AMPLIFY_FLOW_SATURATION_BOOST}` });
+      expect(updateOps[1].nodeId).toBe('loc_b');
+    });
+
+    it('returns no graphOps on failure', () => {
+      const result = resolveHexActionFull('hex.amplify_flow', 3, 5, 'failure', 10, graph);
+      expect(result.graphOps).toHaveLength(0);
+    });
+
+    it('returns empty ops for hex with no locations', () => {
+      const result = resolveHexActionFull('hex.amplify_flow', 99, 99, 'success', 10, graph);
+      expect(result.graphOps).toHaveLength(0);
+    });
+  });
+
+  describe('hex.shift_dominion', () => {
+    it('boosts resonance and reduces dominant sphere on locations', () => {
+      // Set up sphere influence on location
+      graph.updateNode('loc_a', { properties: { sphereInfluence: { mind: 0.5, entropy: 0.3, resonance: 0.1 } } });
+      const result = resolveHexActionFull('hex.shift_dominion', 3, 5, 'success', 10, graph);
+      const updateOps = result.graphOps.filter(op => op.op === 'update_node');
+      expect(updateOps.length).toBeGreaterThanOrEqual(2); // one per location
+
+      // Check loc_a: mind was dominant, should be reduced; resonance should be boosted
+      const locAOp = updateOps.find(op => op.nodeId === 'loc_a');
+      expect(locAOp).toBeDefined();
+      const si = locAOp!.properties!.sphereInfluence as Record<string, number>;
+      expect(si.resonance).toBeCloseTo(0.1 + SHIFT_DOMINION_BOOST);
+      expect(si.mind).toBeCloseTo(0.5 - SHIFT_DOMINION_REDUCTION);
+    });
+
+    it('handles locations with no existing sphereInfluence', () => {
+      const result = resolveHexActionFull('hex.shift_dominion', 3, 5, 'success', 10, graph);
+      // Should not throw — returns ops with just resonance boost
+      const updateOps = result.graphOps.filter(op => op.op === 'update_node');
+      expect(updateOps).toHaveLength(2);
+      for (const op of updateOps) {
+        const si = op.properties!.sphereInfluence as Record<string, number>;
+        expect(si.resonance).toBeCloseTo(SHIFT_DOMINION_BOOST);
+      }
+    });
+  });
+
+  describe('hex.spark_encounter', () => {
+    it('creates event node and occurred_at edge', () => {
+      const result = resolveHexActionFull('hex.spark_encounter', 3, 5, 'success', 15, graph);
+      expect(result.graphOps).toHaveLength(2);
+
+      const addNode = result.graphOps[0];
+      expect(addNode.op).toBe('add_node');
+      expect(addNode.nodeType).toBe('event');
+      expect(addNode.properties?.eventType).toBe('divine_spark');
+      expect(addNode.properties?.hexCol).toBe(3);
+      expect(addNode.properties?.hexRow).toBe(5);
+      expect(addNode.properties?.tick).toBe(15);
+
+      const addEdge = result.graphOps[1];
+      expect(addEdge.op).toBe('add_edge');
+      expect(addEdge.edgeType).toBe('occurred_at');
+      expect(addEdge.target).toBe('loc_a');
+    });
+
+    it('returns no ops for hex with no locations', () => {
+      const result = resolveHexActionFull('hex.spark_encounter', 99, 99, 'success', 10, graph);
+      expect(result.graphOps).toHaveLength(0);
+    });
+  });
+
+  describe('hex.stir_people', () => {
+    it('applies influence to all agents on hex', () => {
+      const result = resolveHexActionFull('hex.stir_people', 3, 5, 'success', 10, graph);
+      const influenceOps = result.graphOps.filter(op => op.op === 'apply_influence');
+      expect(influenceOps).toHaveLength(2);
+      expect(influenceOps[0].target).toBe('agent_1');
+      expect(influenceOps[1].target).toBe('agent_2');
+      expect(influenceOps[0].influence?.interventionType).toBe('stir_people');
+      expect(influenceOps[0].influence?.behaviorTag).toBe('stirred');
+    });
+  });
+
+  describe('hex.summon_congregation', () => {
+    it('applies summoned influence to agents on hex', () => {
+      const result = resolveHexActionFull('hex.summon_congregation', 3, 5, 'success', 10, graph);
+      const influenceOps = result.graphOps.filter(op => op.op === 'apply_influence');
+      expect(influenceOps).toHaveLength(2);
+      expect(influenceOps[0].influence?.behaviorTag).toBe('summoned');
+      expect(influenceOps[0].influence?.sphere).toBe('spirit');
+    });
+  });
+
+  describe('hex.bestow_vision', () => {
+    it('applies visionary influence to first agent on hex (personal scale)', () => {
+      const result = resolveHexActionFull('hex.bestow_vision', 3, 5, 'success', 10, graph);
+      const influenceOps = result.graphOps.filter(op => op.op === 'apply_influence');
+      expect(influenceOps).toHaveLength(1); // personal scale — first agent only
+      expect(influenceOps[0].target).toBe('agent_1');
+      expect(influenceOps[0].influence?.behaviorTag).toBe('visionary');
+      expect(influenceOps[0].influence?.sphere).toBe('mind');
+    });
+
+    it('returns no ops when no agents present', () => {
+      // Use hex with locations but no agents
+      graph.addNode({ id: 'loc_empty', type: 'location', name: 'Empty', properties: { hexCol: 7, hexRow: 7 } });
+      const result = resolveHexActionFull('hex.bestow_vision', 7, 7, 'success', 10, graph);
+      expect(result.graphOps).toHaveLength(0);
+    });
+  });
+
+  describe('hex.incite_exodus', () => {
+    it('applies exodus_urge influence to all agents on hex', () => {
+      const result = resolveHexActionFull('hex.incite_exodus', 3, 5, 'success', 10, graph);
+      const influenceOps = result.graphOps.filter(op => op.op === 'apply_influence');
+      expect(influenceOps).toHaveLength(2);
+      expect(influenceOps[0].influence?.behaviorTag).toBe('exodus_urge');
+      expect(influenceOps[0].influence?.sphere).toBe('entropy');
+      expect(influenceOps[0].influence?.valueDrifts?.sacrifice_survival).toBe(-0.10);
+    });
+  });
+
+  describe('hex.plant_dream', () => {
+    it('applies dreamer influence to first agent on hex (personal scale)', () => {
+      const result = resolveHexActionFull('hex.plant_dream', 3, 5, 'success', 10, graph);
+      const influenceOps = result.graphOps.filter(op => op.op === 'apply_influence');
+      expect(influenceOps).toHaveLength(1); // personal scale
+      expect(influenceOps[0].target).toBe('agent_1');
+      expect(influenceOps[0].influence?.behaviorTag).toBe('dreamer');
+      expect(influenceOps[0].influence?.valueDrifts?.tradition_novelty).toBe(0.10);
+    });
+  });
+
+  describe('resolveHexActionFull with generators', () => {
+    it('returns no dynamic ops when graph is not provided', () => {
+      // Without graph, generator can't run
+      const result = resolveHexActionFull('hex.amplify_flow', 3, 5, 'success', 10);
+      expect(result.graphOps).toHaveLength(0);
+    });
+
+    it('combines static and dynamic ops when both exist', () => {
+      // hex.rewrite_history has static ops; no generator. Verify it still works.
+      const result = resolveHexActionFull('hex.rewrite_history', 3, 5, 'success', 10, graph);
+      expect(result.graphOps).toHaveLength(1);
+      expect(result.graphOps[0].op).toBe('update_node');
+    });
   });
 });

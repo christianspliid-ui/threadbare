@@ -18,6 +18,8 @@ import { resolveRevelation, resolveHiddenSiteReveals } from './revelationResolve
 import { emitTrace } from './traceBuffer';
 import type { WorldGraph } from './graph';
 import type { GraphOp } from '../types/graphOp';
+import { getLocationsInHex } from './hexZoom';
+import { getAgentsAtLocation } from './graphQueries';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -34,6 +36,17 @@ export const HEX_REND_EARTH_CORRUPTION_DELTA = 0.6;
 export const HEX_ATTUNE_LEYLINE_INFLUENCE_DELTA = 0.35;
 export const HEX_SEVER_FLOW_CORRUPTION_DELTA = 0.3;
 export const HEX_DISPEL_WILD_INFLUENCE_DELTA = 0.2;
+
+// TB-081: Dynamic graph op effect constants
+export const AMPLIFY_FLOW_SATURATION_BOOST = 0.20;
+export const SHIFT_DOMINION_BOOST = 0.15;
+export const SHIFT_DOMINION_REDUCTION = 0.10;
+export const SPARK_ENCOUNTER_INFLUENCE_DELTA = 0.10;
+export const STIR_PEOPLE_DRIFT_STRENGTH = 0.08;
+export const BESTOW_VISION_STRENGTH = 0.6;
+export const INCITE_EXODUS_STRENGTH = 0.5;
+export const PLANT_DREAM_STRENGTH = 0.5;
+export const SUMMON_CONGREGATION_STRENGTH = 0.4;
 
 // TB-047: People & Ruins one-shot deltas
 export const HEX_SCATTER_CORRUPTION_DELTA = 0.15;
@@ -110,8 +123,8 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
   },
   // hex.forge_seer_token — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
   // hex.read_currents — no mutation (observation only)
-  // hex.shift_dominion — no mutation (sphere rebalancing, needs sphere influence system)
-  // hex.amplify_flow — no mutation (magicalSaturation boost on locations, not hex tiles)
+  // hex.shift_dominion — no hex mutation; dynamic GraphOp generator (TB-081)
+  // hex.amplify_flow — no hex mutation; dynamic GraphOp generator (TB-081)
 
   // TB-047: People one-shots
   'hex.scatter': {
@@ -126,13 +139,13 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
   },
   // hex.send_herald — no hex mutation; GraphOp spawns agent (see HEX_ACTION_GRAPH_OPS)
   // hex.forge_instrument — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
-  // hex.spark_encounter — no hex mutation (creates encounter node, needs encounter spawn API)
+  // hex.spark_encounter — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.divine_populace — no mutation (observation only)
   // hex.scry_factions — no mutation (observation only)
-  // hex.stir_people — no hex mutation (shifts faction disposition, needs agent motivation system)
-  // hex.summon_congregation — no hex mutation (agent movement, needs agent motivation system)
-  // hex.bestow_vision — no hex mutation (agent ambition, needs agent motivation system)
-  // hex.incite_exodus — no hex mutation (agent departure + prosperity, needs agent motivation system)
+  // hex.stir_people — no hex mutation; dynamic GraphOp generator (TB-081)
+  // hex.summon_congregation — no hex mutation; dynamic GraphOp generator (TB-081)
+  // hex.bestow_vision — no hex mutation; dynamic GraphOp generator (TB-081)
+  // hex.incite_exodus — no hex mutation; dynamic GraphOp generator (TB-081)
 
   // TB-047: Ruins one-shots
   'hex.consecrate_past': {
@@ -151,7 +164,7 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     failureDelta: 0,
   },
   // hex.mark_ground — no hex mutation (exploration hook, needs exploration system)
-  // hex.plant_dream — no hex mutation (agent ambition, needs agent motivation system)
+  // hex.plant_dream — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.read_stones — no mutation (observation only)
   // hex.whisper_intuition — no mutation (observation only)
   // hex.restore_fragment — no hex mutation; GraphOp creates sublocation (see HEX_ACTION_GRAPH_OPS)
@@ -295,6 +308,196 @@ const HEX_ACTION_GRAPH_OPS: Readonly<Record<string, GraphOp[]>> = {
   ],
 };
 
+// ─── Dynamic GraphOp Generators (TB-081) ────────────────────────────────────
+
+/**
+ * Dynamic GraphOp generators for hex actions that need to query the graph
+ * at resolution time (e.g., iterating locations on a hex, finding agents).
+ * These complement the static HEX_ACTION_GRAPH_OPS for actions whose ops
+ * can't be determined without runtime graph queries.
+ */
+type GraphOpGenerator = (graph: WorldGraph, col: number, row: number, tick: number) => GraphOp[];
+
+/** Helper: collect all individual agent node IDs across all locations on a hex. */
+function getAgentIdsAtHex(graph: WorldGraph, col: number, row: number): string[] {
+  const locations = getLocationsInHex(graph, col, row);
+  const agentIds: string[] = [];
+  for (const loc of locations) {
+    // getAgentsAtLocation already filters for actorType === 'individual'
+    const agents = getAgentsAtLocation(graph, loc.id);
+    for (const a of agents) {
+      agentIds.push(a.id);
+    }
+  }
+  return agentIds;
+}
+
+const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>> = {
+  // ─── Tier 1: Full infrastructure ──────────────────────────────
+
+  'hex.amplify_flow': (graph, col, row) => {
+    const locations = getLocationsInHex(graph, col, row);
+    return locations.map((loc) => ({
+      op: 'update_node' as const,
+      nodeId: loc.id,
+      changes: { magicalSaturation: `+${AMPLIFY_FLOW_SATURATION_BOOST}` },
+    }));
+  },
+
+  'hex.shift_dominion': (graph, col, row) => {
+    const locations = getLocationsInHex(graph, col, row);
+    const ops: GraphOp[] = [];
+    for (const loc of locations) {
+      const sphereInfluence = (loc.properties?.sphereInfluence as Record<string, number>) ?? {};
+      // Find the highest sphere to reduce
+      let highestSphere: string | undefined;
+      let highestValue = -Infinity;
+      for (const [sphere, value] of Object.entries(sphereInfluence)) {
+        if (value > highestValue) {
+          highestValue = value;
+          highestSphere = sphere;
+        }
+      }
+      // Build updated sphereInfluence: boost 'resonance' (default divine sphere), reduce dominant
+      const updated = { ...sphereInfluence };
+      updated['resonance'] = (updated['resonance'] ?? 0) + SHIFT_DOMINION_BOOST;
+      if (highestSphere && highestSphere !== 'resonance') {
+        updated[highestSphere] = Math.max(0, (updated[highestSphere] ?? 0) - SHIFT_DOMINION_REDUCTION);
+      }
+      ops.push({
+        op: 'update_node',
+        nodeId: loc.id,
+        properties: { sphereInfluence: updated },
+      });
+    }
+    return ops;
+  },
+
+  'hex.spark_encounter': (graph, col, row, tick) => {
+    const locations = getLocationsInHex(graph, col, row);
+    if (locations.length === 0) return [];
+    // Create event node at the first location on this hex
+    return [
+      {
+        op: 'add_node',
+        nodeType: 'event',
+        properties: {
+          eventType: 'divine_spark',
+          hexCol: col,
+          hexRow: row,
+          locationId: locations[0].id,
+          tick,
+        },
+      },
+      {
+        op: 'add_edge',
+        edgeType: 'occurred_at',
+        source: '$created_0',
+        target: locations[0].id,
+      },
+    ];
+  },
+
+  // ─── Tier 2: Lightweight agent-motivation effects ─────────────
+
+  'hex.stir_people': (graph, col, row) => {
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    return agentIds.map((id) => ({
+      op: 'apply_influence' as const,
+      target: id,
+      influence: {
+        interventionType: 'stir_people',
+        sphere: 'spirit',
+        initialStrength: STIR_PEOPLE_DRIFT_STRENGTH,
+        decayRate: 0.01,
+        minimumStrength: 0,
+        maxDuration: 20,
+        valueDrifts: { tradition_novelty: 0.05, mercy_ruthlessness: -0.03 },
+        behaviorTag: 'stirred',
+      },
+    }));
+  },
+
+  'hex.summon_congregation': (graph, col, row) => {
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    return agentIds.map((id) => ({
+      op: 'apply_influence' as const,
+      target: id,
+      influence: {
+        interventionType: 'summon_congregation',
+        sphere: 'spirit',
+        initialStrength: SUMMON_CONGREGATION_STRENGTH,
+        decayRate: 0.05,
+        minimumStrength: 0,
+        maxDuration: 10,
+        behaviorTag: 'summoned',
+      },
+    }));
+  },
+
+  'hex.bestow_vision': (graph, col, row) => {
+    // Personal-scale: affects first agent found on this hex
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    if (agentIds.length === 0) return [];
+    return [{
+      op: 'apply_influence' as const,
+      target: agentIds[0],
+      influence: {
+        interventionType: 'bestow_vision',
+        sphere: 'mind',
+        initialStrength: BESTOW_VISION_STRENGTH,
+        decayRate: 0.03,
+        minimumStrength: 0,
+        maxDuration: 30,
+        valueDrifts: { courage_prudence: 0.08, mercy_ruthlessness: -0.04 },
+        behaviorTag: 'visionary',
+      },
+    }];
+  },
+
+  'hex.incite_exodus': (graph, col, row) => {
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    return agentIds.map((id) => ({
+      op: 'apply_influence' as const,
+      target: id,
+      influence: {
+        interventionType: 'incite_exodus',
+        sphere: 'entropy',
+        initialStrength: INCITE_EXODUS_STRENGTH,
+        decayRate: 0.04,
+        minimumStrength: 0,
+        maxDuration: 15,
+        valueDrifts: { sacrifice_survival: -0.10, loyalty_ambition: 0.08 },
+        behaviorTag: 'exodus_urge',
+      },
+    }));
+  },
+
+  'hex.plant_dream': (graph, col, row) => {
+    // Personal-scale: affects first agent found on this hex
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    if (agentIds.length === 0) return [];
+    return [{
+      op: 'apply_influence' as const,
+      target: agentIds[0],
+      influence: {
+        interventionType: 'plant_dream',
+        sphere: 'mind',
+        initialStrength: PLANT_DREAM_STRENGTH,
+        decayRate: 0.03,
+        minimumStrength: 0,
+        maxDuration: 25,
+        valueDrifts: { tradition_novelty: 0.10, courage_prudence: 0.06 },
+        behaviorTag: 'dreamer',
+      },
+    }];
+  },
+};
+
+// Exported for tests
+export { getAgentIdsAtHex };
+export type { GraphOpGenerator };
+
 /**
  * Resolve a hex action into hex mutations, revelation mutations, and hidden site reveals.
  * This is the preferred entry point — produces all side effects of a hex action.
@@ -313,9 +516,21 @@ export function resolveHexActionFull(
     ? resolveHiddenSiteReveals(graph, templateId, col, row, tick)
     : [];
 
+  // Static GraphOps (existing pattern)
   const graphOps = (outcome === 'success' && HEX_ACTION_GRAPH_OPS[templateId])
     ? [...HEX_ACTION_GRAPH_OPS[templateId]]
     : [];
+
+  // Dynamic GraphOps from generators (TB-081)
+  if (outcome === 'success' && graph && HEX_ACTION_GRAPH_OP_GENERATORS[templateId]) {
+    try {
+      const dynamicOps = HEX_ACTION_GRAPH_OP_GENERATORS[templateId](graph, col, row, tick);
+      graphOps.push(...dynamicOps);
+    } catch (err) {
+      // Fail-soft: generator errors don't crash the pipeline
+      console.warn(`[hexActionBridge] generator error for ${templateId}:`, err);
+    }
+  }
 
   return {
     hexMutations: resolveHexAction(templateId, col, row, outcome, tick),
