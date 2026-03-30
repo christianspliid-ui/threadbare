@@ -12,36 +12,6 @@
 
 ---
 
-## 📐 TB-079 · Action Description Fields & Activation Feedback (Phase 17) (2026-03-30)
-
-MTG-style ActionCard redesign: art frame + spell name + technical description + flavor text. Evocative spell-like names (Ars Magica style). Activation feedback: glow burst + audio + particle burst on hex map + consequence toast. Card art generation deferred.
-
-4 plans across 3 waves. Context gathered, UI-SPEC complete.
-
-**Phase:** `.planning/phases/17-add-action-description-fields-and-player-feedback-on-action-activation/`
-**Depends on:** ActionDrawer (✅), UnifiedActionTemplates (✅)
-
----
-
-## 📐 TB-080 · Mercenary Company Runtime Wiring (Phase 18) (2026-03-30)
-
-Wire existing mercenary company definition + encounter templates into runtime: seed 2 opposing companies at max-distance settlements, encounter cache population with mc.* templates, rank-gated filtering, reputation tracking, auto-triggered promotions, 1 army per company. Content exists — this makes it playable.
-
-2 plans. Context gathered, research complete.
-
-**Phase:** `.planning/phases/18-wire-mercenary-company-seeding-and-encounters-into-the-runtime-pipeline/`
-**Depends on:** Faction system (✅), Army spawning (✅), Encounter pipeline (✅)
-
----
-
-## ✅ TB-077 · Graph-Native Encounter Lifecycle — Layer 1 (2026-03-30)
-
-Encounter outcomes now create durable `event` nodes in the world graph with `participated_in` (agent → event) and `occurred_at` (event → location) edges. Graph query utilities + prose resolvers for location history and agent biography. 14 tests. Layers 2 (goal edges) and 3 (active encounter projection) remain deferred.
-
-**Design doc:** `Docs/plans/2026-03-29-graph-native-encounter-lifecycle-design.md`
-
----
-
 ## 💡 TB-071 · Economy Second Pass — Dynamic System Connections (2026-03-27)
 
 Make the economy dynamic by connecting encounters, factions, locations, and actions into the prosperity/wealth/trade systems. Key opportunities: encounter outcomes generating prosperity shocks, economic context modifying encounter scoring, wealth spending crossover actions (Gold→Iron/Shadow/Heart/Stone), trade route lifecycle driven by agent behavior (bandits, patrols, guild competition), unrest from economic causes (inequality, monopoly), divine economic interventions, and resource consumption creating scarcity pressure.
@@ -59,27 +29,17 @@ Locations should be populated with non-agent characters — named or unnamed NPC
 
 ---
 
-## 💡 TB-051 · Monster Encounters — Design Pass
+## 💡 TB-051 · Monster Encounters — Residual Scope (2026-03-27, core delivered in M2.5)
 
-Hostile creature encounters in the world. Monsters as graph entities with territorial behavior, threat levels, and encounter templates. Needs full design covering: monster archetypes and taxonomy (beasts, undead, elemental, corrupted), spawn rules (terrain-gated, sphere-influenced, ruin-adjacent), encounter resolution (agent capability checks vs monster threat tier), player intervention options during monster encounters, loot/consequence tables, and how monsters interact with existing systems (control effects, hex state, agent decision-making, social fabric).
+M2.5 delivered the core monster system: monster types, lair seeding, escalation, sphere feedback, encounter templates, army attrition, lair icons, divine targeting. Remaining scope is stretch/polish:
 
-**Existing infrastructure to leverage:**
-- **Province roles already computed:** Every hex is classified as `capital` / `heartland` / `borderland` during worldgen Pass 01 (`provinceRoles` in `WorldGenContext`, types in `worldgen/types.ts`, assignment in `pass01-provinces.ts`). Proportional: bottom 15% capital, next 40% heartland, remaining ~45% borderland. Currently unused by any downstream system — monster encounters could be the first consumer.
-- **Culture settlement distinction:** `cultureId` null = wilderness province (unclaimed), non-null = settled. Gives a second danger axis on top of province roles.
-- **Political region types in world-model.json:** `region.wilderness`, `region.contested-zone`, `region.tribal-lands` etc. — narrative region flavors that could map to monster density or type pools.
-- **Natural danger gradient:** capital (safe) → heartland (occasional threats) → borderland (frequent) → wilderness/unclaimed (dominant). This is ready-made infrastructure, not something that needs to be built from scratch.
+- Monster roaming (territory patrol, expansion beyond lairs)
+- Graduated threat scaling with world age / tick count
+- Monster taxonomy expansion (beasts, undead, elemental, corrupted subtypes)
+- Province role consumer (danger gradient computed but unused by monsters)
 
-**Key design questions:**
-- Are monsters persistent graph nodes or transient encounter events?
-- Do monsters have territory (hex presence) or roam via movement system?
-- How do monsters interact with the layer revelation system (e.g., ruins monsters only after ruins layer revealed)?
-- Can the player create/summon monsters via hex actions, or only encounter them?
-- How does monster threat scale with world age / tick count?
-- Relationship to the Nine Reaches — do monsters have domain capabilities, or a simpler threat model?
-- How to wire province roles into GameState so the danger gradient is available at runtime (currently only in WorldGenContext)?
-
-**Depends on:** Encounter system (✅), Layer Revelation (TB-042 ✅), Hex Actions (TB-036 ✅)
-**Needs design:** Yes — full design pass required
+**Core delivery:** Phase M2.5 (4 plans, 2026-03-30)
+**Depends on:** Encounter system (✅), Layer Revelation (✅), Hex Actions (✅)
 
 ---
 
@@ -127,9 +87,9 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 ## Implementation Prerequisites (from 2026-03-18 design session)
 
-Several of these may already be done — verify before starting.
+Audited 2026-03-30:
 
-- [ ] Step tick duration backfill — Add `duration` to all 64 encounter template steps
-- [ ] Attachment reachBonus backfill — Add `reachBonus` to existing attachments
-- [ ] Trait resolutionBonus backfill — Add `resolutionBonus` to existing traits
-- [ ] Promotion trait names — 40 entries (5 per reach × 8 reaches) for tier signifiers
+- [x] Step tick duration backfill — `duration?: number` field exists on EncounterStep (optional, defaults to 1)
+- [x] Attachment reachBonus backfill — `reachBonus` populated on all artifact definitions in reward-attachment-catalog.ts
+- [ ] Trait resolutionBonus backfill — Engine reads `resolutionBonus` from trait nodes but no trait definitions populate it yet
+- [x] ~~Promotion trait names~~ — N/A: promotions use TickEvents + tier advancement, not trait acquisition

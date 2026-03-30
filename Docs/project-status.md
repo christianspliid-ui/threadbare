@@ -4,25 +4,31 @@
 
 ## Current Focus
 
-**Phase 17 (TB-079): Action Description Fields & Activation Feedback** — 📐 Plans written, ready for implementation. MTG-style ActionCard redesign, activation feedback system. 4 plans across 3 waves.
+**v1.1 Low-Hanging Fruit Optimization** — Phases 19-22 in progress (separate agent). Determinism, wiring, performance, code hygiene.
 
-**Phase 18 (TB-080): Mercenary Company Runtime Wiring** — 📐 Plans written, ready for implementation. Wires existing merc content into live pipeline. 2 plans.
-
-## Recent Completions (2026-03-30)
-
-- ✅ TB-077 — Graph-Native Encounter Lifecycle Layer 1 complete (event nodes, graph queries, prose resolvers, debug visibility — 14 tests)
-
-- ✅ Phase 16 — Threads Area sidebar (ThreadsPanel, ThreadDetailView, thread-creation templates). 3 plans.
-- ✅ Phase 15 — Encounter pipeline fixes (score bug, travel cost, wanderlust, retirement, 40 new templates, forced travel fallback). 4 plans, 6/6 verified.
-- ✅ Phase 14 — Auto-pause during encounters. 1 plan, 5/5 verified.
-- ✅ Phase 13 — M2 gap closure (aftermath sphere pressure, refugee trace, deferred tests, army visuals). 4 plans, 20/20 verified.
-- ✅ Phase 12-Flesh — Flesh Reach migration to Quintessence (9→8 reaches, 2x4 grid). 4 plans.
+**Cleanup Sprint** — Closing walking skeleton gaps before moving to culture seeding, NPCs, and chain reactions. Doc cleanup, trivial wiring, hex action effects, trait prerequisites.
 
 ## Milestone Status
 
-- **M1 (World-Soul Connection):** ✅ Complete — Phases 10-11
-- **M2 (Conflict & Destruction):** ✅ Core complete — Phases 12-13. M2.5 (monsters) remains as 💡
-- **M3 (Dynamic Economy):** 💡 Design needed — TB-071 brainstormed
+- **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
+- **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
+- **Next:** Culture seeding (TB-031), Agent seeding (TB-032), Chain reactions (TB-017), NPCs (TB-069)
+
+## Recent Completions (2026-03-30)
+
+- v1.0 Foundation milestone shipped (Phases 1-18 + M2.5)
+- TB-077 Graph-Native Encounter Lifecycle Layer 1 (event nodes, graph queries, prose resolvers)
+- Phase 19 Plan 1 committed (PRNG replacement in 15 engine files)
+
+## Active Backlog Ideas
+
+- TB-071 Economy Second Pass (brainstormed, needs design)
+- TB-069 Location NPCs (idea)
+- TB-051 Monster Encounters residual scope (roaming, threat scaling — core delivered in M2.5)
+- TB-037 Onboarding (idea)
+- TB-031/032 Culture & Agent Seeding (preliminary designs exist)
+- TB-017 Chain Reactions (idea, blocked on TB-045 graph ops — now wiring)
+- TB-018 Cosmological Manipulation (idea)
 
 ## Full Backlog
 See: `.planning/BACKLOG.md`

@@ -426,7 +426,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Notification navigation hook ──
   const handleNotificationNavigate = useNotificationNavigation({
     onSelectAgent: handleAgentSelect,
-    onFocusHex: () => { /* TODO: hex camera focus not yet implemented */ },
+    onFocusHex: (col: number, row: number) => {
+      if (hexMapRef.current) {
+        const px = hexToPixel({ col, row }, HEX_CONSTANTS.HEX_SIZE);
+        hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+      }
+    },
+    onOpenLocation: handleLocationClick,
   });
 
   // ── Notification system hook ──

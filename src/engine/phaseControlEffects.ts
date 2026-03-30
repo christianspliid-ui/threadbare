@@ -28,6 +28,8 @@
 
 import type { GameState, TickEvent } from '../types/gameState';
 import type { EssencePool } from '../types/influence';
+import { executeGraphOps } from './graphOpExecutor';
+import type { GraphOpContext } from '../types/graphOp';
 import type { HexMutation } from '../types/hexMutation';
 import type { ControlEffect, LapseReason } from '../types/controlEffect';
 import type { SphereName } from '../types/index';
@@ -218,8 +220,19 @@ export function phaseControlEffects(state: GameState): Partial<GameState> {
       });
     }
 
-    // ─── Step 3d: Apply per-tick graph ops (placeholder — TB-045) ───
-    // effect.perTickGraphOps would be applied here via graph mutation pipeline
+    // ─── Step 3d: Apply per-tick graph ops ───
+    if (effect.perTickGraphOps.length > 0) {
+      const ctx: GraphOpContext = {
+        actorId: effect.ownerId,
+        targetId: effect.targetNodeId ?? `hex:${effect.targetHexCol},${effect.targetHexRow}`,
+        locationId: effect.targetNodeId ?? '',
+        tick: state.tick,
+      };
+      executeGraphOps(state.graph, [...effect.perTickGraphOps], ctx, {
+        tick: state.tick,
+        emitTrace: true,
+      });
+    }
 
     // ─── Step 3e: Credit per-tick income ───
     const generated: Partial<Record<SphereName, number>> = {};

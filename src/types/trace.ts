@@ -603,4 +603,18 @@ export type TraceEntry =
   | ControlEffectLapseTrace
   | ControlEffectEstablishedTrace
   | LayerRevealedTrace
-  | HiddenSi
+  | HiddenSiteRevealedTrace
+  | RevelationTrace
+  | InteractionDepthTrace
+  | GraphOpExecutionTrace;
+
+/** Trace: batch graph operation execution result */
+export interface GraphOpExecutionTrace extends TraceBase {
+  category: 'graph_op_execution';
+  ops: Array<{
+    op: string;
+    success: boolean;
+    error?: string;
+    createdId?: string;
+  }>;
+}

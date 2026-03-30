@@ -24,6 +24,7 @@ import { getFamiliarity, getKnowledgeLevel } from './familiarity';
 import { getAgentDetail } from './agentDetail';
 import type { WorldGraph } from './graph';
 import worldModel from '../data/world-model.json';
+import { MANDATE_TEMPLATES } from '../data/mandate-content';
 
 export interface TooltipResolverContext {
   graph: WorldGraph;
@@ -215,9 +216,12 @@ export function resolveTooltip(id: string, context?: TooltipResolverContext): To
     };
   }
 
-  // ─── Unknown prefix or mandate (not yet implemented) ───────────
+  // ─── Mandate tooltips ──────────────────────────────────────────
   if (prefix === 'mandate') {
-    // Future implementation
+    const template = MANDATE_TEMPLATES.find(t => t.id === suffix);
+    if (template) {
+      return { label: template.name, desc: template.description };
+    }
     return null;
   }
 

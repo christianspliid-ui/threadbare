@@ -58,8 +58,6 @@ export function executeGraphOps(
     const successCount = results.filter((r) => r.success).length;
     const failCount = results.filter((r) => !r.success).length;
 
-    // Emit trace using 'as any' because graph_op_execution is not yet in the
-    // TraceEntry union. This will be properly typed once the trace types are extended.
     emitTrace({
       tick: options.tick ?? 0,
       category: 'graph_op_execution',
@@ -70,7 +68,7 @@ export function executeGraphOps(
         error: r.error,
         createdId: r.createdId,
       })),
-    } as any);
+    });
   }
 
   return batchResult;

@@ -425,6 +425,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         type: 'tier_promotion',
         message: `${agentName} reached ${result.growth.domain} tier ${result.growth.newTier}: "${result.promotion.traitGranted}"`,
         significance: 0.8,
+        actorId: progress.actorId,
       });
     }
 
@@ -796,7 +797,7 @@ export function phaseNarrative(state: GameState): Partial<GameState> {
         description: event.message,
         tick: event.tick,
         sphere: event.sphere,
-        // TODO: extract actorId from event once TickEvent carries it
+        actorId: event.actorId,
       };
 
       const context = buildNarrativeContext(narrativeEvent, state.graph);

@@ -4,6 +4,7 @@ import type { GameState } from '../../../types/gameState';
 import type { AscendantArchetype } from '../../../types/influence';
 import type { WheelSlot } from '../../../engine/wheel';
 import { getTargetActionSlots } from '../../../engine/targetActions';
+import { getAvatarHexPosition } from '../../../engine/visibility';
 import { UNIFIED_ACTION_TEMPLATES } from '../../../data/unified-action-templates';
 
 interface UseTargetActionsParams {
@@ -33,7 +34,7 @@ export function useTargetActions({
       templates: UNIFIED_ACTION_TEMPLATES,
       pool: gameState.essencePool,
       primarySphere: archetype.sphereAlignment.primary,
-      avatarPos: undefined, // TODO: wire from avatar position
+      avatarPos: getAvatarHexPosition(gameState.graph, gameState.ascendantId) ?? undefined,
       accessibleSpheres: [
         archetype.sphereAlignment.primary,
         archetype.sphereAlignment.secondary,

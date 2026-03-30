@@ -17,6 +17,7 @@ import type { RevelationMutation, HiddenSiteRevealResult } from './revelationRes
 import { resolveRevelation, resolveHiddenSiteReveals } from './revelationResolver';
 import { emitTrace } from './traceBuffer';
 import type { WorldGraph } from './graph';
+import type { GraphOp } from '../types/graphOp';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     successDelta: HEX_DISPEL_WILD_INFLUENCE_DELTA,
     failureDelta: 0,
   },
-  // hex.forge_seer_token — no hex mutation (creates artifact, deferred)
+  // hex.forge_seer_token — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
   // hex.read_currents — no mutation (observation only)
   // hex.shift_dominion — no mutation (sphere rebalancing, needs sphere influence system)
   // hex.amplify_flow — no mutation (magicalSaturation boost on locations, not hex tiles)
@@ -123,15 +124,15 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     successDelta: HEX_SMITE_CORRUPTION_DELTA,
     failureDelta: 0,
   },
-  // hex.send_herald — no hex mutation (spawns agent via GraphOp, deferred)
-  // hex.forge_instrument — no hex mutation (creates artifact, deferred)
-  // hex.spark_encounter — no hex mutation (creates encounter node, deferred)
+  // hex.send_herald — no hex mutation; GraphOp spawns agent (see HEX_ACTION_GRAPH_OPS)
+  // hex.forge_instrument — no hex mutation; GraphOp creates artifact (see HEX_ACTION_GRAPH_OPS)
+  // hex.spark_encounter — no hex mutation (creates encounter node, needs encounter spawn API)
   // hex.divine_populace — no mutation (observation only)
   // hex.scry_factions — no mutation (observation only)
-  // hex.stir_people — no hex mutation (shifts faction disposition, deferred)
-  // hex.summon_congregation — no hex mutation (agent movement, deferred)
-  // hex.bestow_vision — no hex mutation (agent ambition, deferred)
-  // hex.incite_exodus — no hex mutation (agent departure + prosperity, deferred)
+  // hex.stir_people — no hex mutation (shifts faction disposition, needs agent motivation system)
+  // hex.summon_congregation — no hex mutation (agent movement, needs agent motivation system)
+  // hex.bestow_vision — no hex mutation (agent ambition, needs agent motivation system)
+  // hex.incite_exodus — no hex mutation (agent departure + prosperity, needs agent motivation system)
 
   // TB-047: Ruins one-shots
   'hex.consecrate_past': {
@@ -149,12 +150,12 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     successDelta: HEX_DESECRATE_CORRUPTION_DELTA,
     failureDelta: 0,
   },
-  // hex.mark_ground — no hex mutation (exploration hook, deferred)
-  // hex.plant_dream — no hex mutation (agent ambition, deferred)
+  // hex.mark_ground — no hex mutation (exploration hook, needs exploration system)
+  // hex.plant_dream — no hex mutation (agent ambition, needs agent motivation system)
   // hex.read_stones — no mutation (observation only)
   // hex.whisper_intuition — no mutation (observation only)
-  // hex.restore_fragment — no hex mutation (sublocation creation, deferred)
-  // hex.rewrite_history — no hex mutation (cultural legacy, deferred)
+  // hex.restore_fragment — no hex mutation; GraphOp creates sublocation (see HEX_ACTION_GRAPH_OPS)
+  // hex.rewrite_history — no hex mutation; GraphOp updates location (see HEX_ACTION_GRAPH_OPS)
 };
 
 // ─── Bridge Function ──────────────────────────────────────────────────────────
@@ -216,7 +217,83 @@ export interface HexActionResult {
   hexMutations: HexMutation[];
   revelationMutations: RevelationMutation[];
   hiddenSiteReveals: HiddenSiteRevealResult[];
+  graphOps: GraphOp[];
 }
+
+// ─── GraphOp Definitions for Deferred Hex Actions ───────────────────────────
+
+/**
+ * Maps hex action template IDs to GraphOps executed on success.
+ * These are actions whose effects are graph mutations rather than hex tile changes.
+ */
+const HEX_ACTION_GRAPH_OPS: Readonly<Record<string, GraphOp[]>> = {
+  'hex.forge_seer_token': [
+    {
+      op: 'add_node',
+      nodeType: 'artifact',
+      properties: { name: "Seer's Token", subtype: 'divination_focus', tier: 'storied' },
+    },
+    {
+      op: 'add_edge',
+      edgeType: 'possessed_by',
+      source: '$created_0',
+      target: '$actor',
+    },
+  ],
+  'hex.send_herald': [
+    {
+      op: 'add_node',
+      nodeType: 'actor',
+      properties: { name: 'Divine Herald', archetype: 'herald', isHerald: true },
+    },
+    {
+      op: 'add_edge',
+      edgeType: 'located_at',
+      source: '$created_0',
+      target: '$location',
+    },
+    {
+      op: 'add_edge',
+      edgeType: 'thread',
+      source: '$actor',
+      target: '$created_0',
+      properties: { tier: 1, attentionMode: 'auto_resolve' },
+    },
+  ],
+  'hex.forge_instrument': [
+    {
+      op: 'add_node',
+      nodeType: 'artifact',
+      properties: { name: 'Divine Instrument', subtype: 'ritual_focus', tier: 'storied' },
+    },
+    {
+      op: 'add_edge',
+      edgeType: 'possessed_by',
+      source: '$created_0',
+      target: '$actor',
+    },
+  ],
+  'hex.restore_fragment': [
+    {
+      op: 'add_node',
+      nodeType: 'sublocation',
+      properties: { name: 'Restored Fragment', subtype: 'restored_ruin', hidden: false },
+    },
+    {
+      op: 'add_edge',
+      edgeType: 'located_at',
+      source: '$created_0',
+      target: '$location',
+    },
+  ],
+  'hex.rewrite_history': [
+    {
+      op: 'update_node',
+      nodeId: '$location',
+      properties: { culturalLegacy: 'rewritten', lastRewriteTick: '$tick' },
+    },
+  ],
+};
 
 /**
  * Resolve a hex action into hex mutations, revelation mutations, and hidden site reveals.
@@ -236,10 +313,15 @@ export function resolveHexActionFull(
     ? resolveHiddenSiteReveals(graph, templateId, col, row, tick)
     : [];
 
+  const graphOps = (outcome === 'success' && HEX_ACTION_GRAPH_OPS[templateId])
+    ? [...HEX_ACTION_GRAPH_OPS[templateId]]
+    : [];
+
   return {
     hexMutations: resolveHexAction(templateId, col, row, outcome, tick),
     revelationMutations: resolveRevelation(templateId, col, row, outcome, tick),
     hiddenSiteReveals,
+    graphOps,
   };
 }
 

@@ -392,6 +392,15 @@ export function phaseUnifiedActionProgress(
         );
         hexMutations.push(...result.hexMutations);
         revelationMutations.push(...result.revelationMutations);
+        // Execute graph ops for hex actions that produce graph mutations (e.g., forge artifacts, spawn agents)
+        if (result.graphOps.length > 0) {
+          executeGraphOps(state.graph, result.graphOps, {
+            actorId: state.ascendantId,
+            targetId: completing_action.targetId,
+            locationId: completing_action.targetId,
+            tick: state.tick,
+          }, { tick: state.tick, emitTrace: true });
+        }
       }
     }
 

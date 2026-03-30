@@ -134,7 +134,7 @@ export function buildStateSnapshot(
     },
     influence: {
       factionsLed: leaderMemberships.length,
-      locationsControlled: 0, // TODO: Phase 3+ will add location control tracking
+      locationsControlled: graph.getOutgoingEdges(agentId, 'controls').filter(e => graph.getNode(e.target)?.type === 'location').length,
       agreementsForged: agreements.length,
       enemiesMade: enemyBonds.length,
     },

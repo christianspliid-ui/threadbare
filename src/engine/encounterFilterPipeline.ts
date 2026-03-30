@@ -44,6 +44,7 @@ import {
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
+import { getAnyEncounterById } from '../data/encounter-content';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -129,13 +130,19 @@ export function filterByVisibility(
   return result;
 }
 
-// ─── Stage 3: Prerequisites (placeholder) ───────────────────────
+// ─── Stage 3: Prerequisites (chains + traits) ──────────────────
 
 /**
- * Filter entries by chain prerequisites — later stages in an encounter
- * chain are only visible to agents who have completed the previous stage.
- * Non-chain encounters pass through unfiltered.
+ * Filter entries by chain prerequisites and trait requirements.
+ *
+ * Chain prerequisites: later stages in an encounter chain are only visible
+ * to agents who have completed the previous stage.
+ *
+ * Trait prerequisites: templates with `requiredTraits` are only visible to
+ * agents who have the required `has_trait` edges with sufficient level.
+ *
  * Fail-soft: missing chainProgress → treat as empty (all first stages visible).
+ * Fail-soft: missing trait edges → agent lacks trait → entry filtered out.
  */
 export function filterByPrerequisites(
   entries: readonly EncounterCacheEntry[],
@@ -147,11 +154,31 @@ export function filterByPrerequisites(
 
   const progress = getChainProgress(agentNode.properties as Record<string, unknown>);
 
+  // Cache agent trait edges for trait prerequisite checks
+  const agentTraitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
+
   const result: EncounterCacheEntry[] = [];
   for (const entry of entries) {
-    if (isChainStageUnlocked(entry.templateId, progress)) {
-      result.push(entry);
+    // Chain gate
+    if (!isChainStageUnlocked(entry.templateId, progress)) continue;
+
+    // Trait gate — look up template for requiredTraits field
+    const template = getAnyEncounterById(entry.templateId);
+    if (template?.requiredTraits && template.requiredTraits.length > 0) {
+      const hasTrait = template.requiredTraits.every(req => {
+        return agentTraitEdges.some(e => {
+          if (e.target !== req.traitId) return false;
+          if (req.minLevel != null) {
+            const level = (e.properties as Record<string, unknown>)?.level;
+            return typeof level === 'number' && level >= req.minLevel;
+          }
+          return true;
+        });
+      });
+      if (!hasTrait) continue;
     }
+
+    result.push(entry);
   }
   return result;
 }

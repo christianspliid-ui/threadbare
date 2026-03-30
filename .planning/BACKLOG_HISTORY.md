@@ -6,6 +6,30 @@
 
 ---
 
+## ✅ TB-080 · Mercenary Company Runtime Wiring (2026-03-30, complete 2026-03-30)
+
+Phase 18: Wired existing merc company definition + encounter templates into runtime. Multi-instance faction seeding, factionDefId key, mc.* encounter pipeline (accessible templates, sublocation detection, promotionPending), rank gating, reputation tracking, auto-triggered promotions. 2 plans.
+
+**Phase:** `.planning/phases/18-wire-mercenary-company-seeding-and-encounters-into-the-runtime-pipeline/`
+
+---
+
+## ✅ TB-079 · Action Description Fields & Activation Feedback (2026-03-30, complete 2026-03-30)
+
+Phase 17: MTG-style ActionCard redesign (art frame + spell name + technical description + flavor text), evocative spell-like names, activation feedback (glow burst + audio + particle burst on hex map + consequence toast). Card art generation deferred. 4 plans across 3 waves.
+
+**Phase:** `.planning/phases/17-add-action-description-fields-and-player-feedback-on-action-activation/`
+
+---
+
+## ✅ TB-077 · Graph-Native Encounter Lifecycle — Layer 1 (2026-03-30, complete 2026-03-30)
+
+Encounter outcomes create durable `event` nodes in world graph with `participated_in` (agent → event) and `occurred_at` (event → location) edges. Graph query utilities + prose resolvers for location history and agent biography. 14 tests. Layers 2 (goal edges) and 3 (active encounter projection) remain deferred.
+
+**Design doc:** `Docs/plans/2026-03-29-graph-native-encounter-lifecycle-design.md`
+
+---
+
 ## ✅ TB-078 · Ascendant Sheet QA Fixes (2026-03-29, complete 2026-03-29)
 
 Tooltip z-index fix (systemic — base z-index 50→70 in Tooltip.tsx, fixes all in-modal tooltips), foundation.order world-model node, ProseKeyword SPHERE_NAMES_SET foundation sphere addition, IconButton close button parity, a11y (aria-labelledby, semantic lists), Creation/Foundation essence split in AscendantSheet. Polish: essence visual bars, staggered fade-in.

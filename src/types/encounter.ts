@@ -163,6 +163,11 @@ export interface EncounterTemplate {
    * Undefined = treated as 1.0 (no boost).
    */
   questPriority?: number;
+  /**
+   * Trait prerequisites — agent must have these traits to see this encounter.
+   * Checked in filterByPrerequisites (Stage 3). Undefined = no trait gate.
+   */
+  requiredTraits?: Array<{ traitId: string; minLevel?: number }>;
 }
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────
