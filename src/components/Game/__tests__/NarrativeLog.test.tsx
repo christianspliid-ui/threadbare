@@ -129,4 +129,71 @@ describe('NarrativeLog', () => {
     rerender(<NarrativeLog events={withBeat} />);
     expect(screen.getByTestId('narrative-log-panel')).toBeInTheDocument();
   });
+
+  describe('click-to-select agent', () => {
+    const eventsWithActor: TickEvent[] = [
+      {
+        id: 'e_with_actor',
+        tick: 5,
+        type: 'agent_movement',
+        message: 'Kael moves to the forest',
+        significance: 0.6,
+        actorId: 'actor_kael_1',
+      },
+      {
+        id: 'e_no_actor',
+        tick: 6,
+        type: 'doom_escalation',
+        message: 'Doom rises in the land',
+        significance: 0.8,
+      },
+    ];
+
+    it('renders event with actorId as a button when onSelectAgent is provided', () => {
+      const onSelectAgent = vi.fn();
+      render(<NarrativeLog events={eventsWithActor} onSelectAgent={onSelectAgent} />);
+      fireEvent.click(screen.getByTestId('narrative-log-toggle'));
+
+      const actorEntry = screen.getByText('Kael moves to the forest').closest('button');
+      expect(actorEntry).not.toBeNull();
+    });
+
+    it('renders event without actorId as a non-button div', () => {
+      const onSelectAgent = vi.fn();
+      render(<NarrativeLog events={eventsWithActor} onSelectAgent={onSelectAgent} />);
+      fireEvent.click(screen.getByTestId('narrative-log-toggle'));
+
+      const nonActorEntry = screen.getByText('Doom rises in the land').closest('button');
+      expect(nonActorEntry).toBeNull();
+    });
+
+    it('calls onSelectAgent with the correct agentId when clicked', () => {
+      const onSelectAgent = vi.fn();
+      render(<NarrativeLog events={eventsWithActor} onSelectAgent={onSelectAgent} />);
+      fireEvent.click(screen.getByTestId('narrative-log-toggle'));
+
+      const actorEntry = screen.getByText('Kael moves to the forest');
+      fireEvent.click(actorEntry);
+      expect(onSelectAgent).toHaveBeenCalledOnce();
+      expect(onSelectAgent).toHaveBeenCalledWith('actor_kael_1');
+    });
+
+    it('does not make event clickable when onSelectAgent is not provided', () => {
+      render(<NarrativeLog events={eventsWithActor} />);
+      fireEvent.click(screen.getByTestId('narrative-log-toggle'));
+
+      // Even event with actorId should render as div when no handler
+      const actorEntry = screen.getByText('Kael moves to the forest').closest('button');
+      expect(actorEntry).toBeNull();
+    });
+
+    it('adds cursor-pointer class to clickable entries', () => {
+      const onSelectAgent = vi.fn();
+      render(<NarrativeLog events={eventsWithActor} onSelectAgent={onSelectAgent} />);
+      fireEvent.click(screen.getByTestId('narrative-log-toggle'));
+
+      const actorEntry = screen.getByText('Kael moves to the forest').closest('button');
+      expect(actorEntry?.className).toContain('cursor-pointer');
+    });
+  });
 });

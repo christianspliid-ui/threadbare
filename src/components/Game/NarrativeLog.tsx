@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { TickEvent } from '../../types/gameState';
 import { getSphereColor } from '../../data/sphereIcons';
 import { TICK_EVENT_COLORS } from '../../data/uiColorPalette';
 
 interface NarrativeLogProps {
   events: TickEvent[];
+  onSelectAgent?: (agentId: string) => void;
 }
 
 const TYPE_COLORS = TICK_EVENT_COLORS;
 
-export function NarrativeLog({ events }: NarrativeLogProps) {
+export function NarrativeLog({ events, onSelectAgent }: NarrativeLogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const lastSeenCountRef = useRef(0);
   const prevCountRef = useRef(events.length);
@@ -143,21 +144,10 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
                 const isInterventionBeat = evt.isInterventionBeat === true;
                 const sphereColor = isInterventionBeat ? getSphereColor(evt.sphere ?? 'mind') : undefined;
                 const isNew = newEntryCount > 0 && i >= events.length - newEntryCount;
+                const isClickable = Boolean(evt.actorId && onSelectAgent);
 
-                return (
-                  <div
-                    key={evt.id}
-                    data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
-                    className={`flex gap-2 py-1 ${isNew ? 'anim-fade-up-enter' : ''} ${
-                      isInterventionBeat
-                        ? 'opacity-100 pl-2 border-l-[3px]'
-                        : `${dimmed ? 'opacity-50' : 'opacity-90'}`
-                    }`}
-                    style={{
-                      fontSize: isInterventionBeat ? 'var(--text-sm)' : 'var(--text-xs)',
-                      ...(isInterventionBeat ? { borderLeftColor: sphereColor } : {}),
-                    }}
-                  >
+                const rowContent = (
+                  <>
                     <span
                       className="font-mono w-8 text-right flex-shrink-0"
                       style={{ color: 'var(--text-muted)' }}
@@ -174,6 +164,39 @@ export function NarrativeLog({ events }: NarrativeLogProps) {
                     >
                       {evt.message}
                     </span>
+                  </>
+                );
+
+                const sharedClasses = `flex gap-2 py-1 ${isNew ? 'anim-fade-up-enter' : ''} ${
+                  isInterventionBeat
+                    ? 'opacity-100 pl-2 border-l-[3px]'
+                    : `${dimmed ? 'opacity-50' : 'opacity-90'}`
+                } ${isClickable ? 'cursor-pointer hover:bg-white/5 rounded' : ''}`;
+
+                const sharedStyle: React.CSSProperties = {
+                  fontSize: isInterventionBeat ? 'var(--text-sm)' : 'var(--text-xs)',
+                  ...(isInterventionBeat ? { borderLeftColor: sphereColor } : {}),
+                };
+
+                return isClickable ? (
+                  <button
+                    key={evt.id}
+                    data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
+                    className={`w-full text-left ${sharedClasses}`}
+                    style={sharedStyle}
+                    onClick={() => onSelectAgent!(evt.actorId!)}
+                    title="Click to view agent"
+                  >
+                    {rowContent}
+                  </button>
+                ) : (
+                  <div
+                    key={evt.id}
+                    data-testid={isInterventionBeat ? 'intervention-beat' : undefined}
+                    className={sharedClasses}
+                    style={sharedStyle}
+                  >
+                    {rowContent}
                   </div>
                 );
               })

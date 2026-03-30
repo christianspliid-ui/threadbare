@@ -1143,7 +1143,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         <div className="flex-1 flex flex-col overflow-hidden relative">
           <div className="flex-1 overflow-hidden relative">
             {/* NarrativeLog overlay */}
-            <NarrativeLog events={gameState.recentEvents} />
+            <NarrativeLog events={gameState.recentEvents} onSelectAgent={handleAgentSelect} />
             {/* Toast notifications */}
             <ToastStack
               toasts={[...notificationState.toasts, ...encounterToasts, ...actionToasts]}
