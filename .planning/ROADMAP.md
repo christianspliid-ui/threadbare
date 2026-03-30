@@ -293,15 +293,7 @@ Plans:
 - [ ] 16-02-PLAN.md — ThreadDetailView floating detail + GameView flex layout restructure + stub profile modals
 - [ ] 16-03-PLAN.md — Thread-creation divine action templates for locations, factions, armies, artifacts
 
-### Phase 17: Add action description fields and player feedback on action activation
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 16
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 17 to break down)
+### Phase 17: Add action description fields and player feedback on action activation**Goal:** Add spellName and description fields to all 108+ action templates (Ars Magica style evocative names, qualitative mechanical descriptions), redesign ActionCard to MTG-classic frame layout (spell name + art placeholder + type line + description + flavor text), implement activation feedback parity (glow burst + sphere audio + consequence toast + hex particle burst) for all action types.**Requirements**: PH17-01 (type extension), PH17-02 (WheelSlot wiring), PH17-03 (content migration), PH17-04 (MTG focused layout), PH17-05 (art-only hand layout), PH17-06 (activation feedback), PH17-07 (particle burst)**Depends on:** Phase 16**Plans:** 4 plansPlans:- [ ] 17-01-PLAN.md — Type model extension (UnifiedActionTemplate + WheelSlot + slot wiring)- [ ] 17-02-PLAN.md — Content migration (spell names + descriptions for all 108+ templates)- [ ] 17-03-PLAN.md — ActionCard MTG redesign + glow burst + feedback wiring (audio + toast)- [ ] 17-04-PLAN.md — HexMapV2 particle burst system (reusable WebGL effect)
 
 ### Phase 18: Wire mercenary company seeding and encounters into the runtime pipeline
 
