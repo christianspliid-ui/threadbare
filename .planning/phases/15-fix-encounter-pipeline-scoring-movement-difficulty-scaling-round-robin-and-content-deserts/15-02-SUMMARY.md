@@ -104,6 +104,20 @@ None - no external service configuration required.
 - Ready for Phase 15 Plan 03 (content deserts / born-later spawn improvements)
 - Pre-existing test failures in encounterScoring.test.ts (wanderlust, from 15-01 RED), encounter-content.test.ts, encounter-reward-wiring.test.ts, and traceBuffer-integration.test.ts are out of scope for this plan
 
+## Self-Check: PASSED
+
+- FOUND: src/data/agent-behavior-constants.ts
+- FOUND: src/engine/encounterFilterPipeline.ts
+- FOUND: src/engine/phaseAgentDecision.ts
+- FOUND: src/engine/__tests__/encounterFilterPipeline.test.ts
+- FOUND: test commit 99ecdc9
+- FOUND: feat commit 2c9a61e
+- PASS: MAX_COMPLETIONS_PER_TEMPLATE=5
+- PASS: OUTGROWTH_CAP_THRESHOLD=35
+- PASS: OUTGROWTH_FILTER_ENABLED=true
+- PASS: max completions filter in phaseAgentDecision
+- PASS: OUTGROWTH_CAP_THRESHOLD in pipeline
+
 ---
 *Phase: 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts*
 *Completed: 2026-03-30*
