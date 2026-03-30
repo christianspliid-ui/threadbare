@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Threadbare — Symmetric Hex Icon Demo</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0d0d1a;
+    color: #c0b89a;
+    font-family: 'Georgia', serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  h1 {
+    font-size: 1.4rem;
+    color: #d4af37;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #6a6050;
+    margin-bottom: 40px;
+    text-align: center;
+    max-width: 600px;
+    line-height: 1.5;
+  }
+  .section-label {
+    font-size: 0.9rem;
+    color: #8a7a60;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 30px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #2a2520;
+    padding-bottom: 6px;
+    width: 100%;
+    max-width: 1100px;
+  }
+  .hex-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    max-width: 1100px;
+  }
+  /* Tiling preview — tight hex grid with no gaps */
+  .tile-grid {
+    display: inline-block;
+    position: relative;
+    margin: 20px 0 40px;
+  }
+  .tile-hex {
+    position: absolute;
+  }
+  .hex-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .hex-card .label {
+    font-size: 0.7rem;
+    color: #8a7a60;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    max-width: 120px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .controls {
+    margin: 20px 0;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background: #2a2520;
+    color: #c0b89a;
+    border: 1px solid #4a4030;
+    padding: 8px 16px;
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.15s;
+  }
+  button:hover { background: #3a3530; border-color: #6a6050; }
+  button.active { background: #3a3020; border-color: #d4af37; color: #d4af37; }
+</style>
+</head>
+<body>
+
+<h1>Symmetric Hex Icons</h1>
+<p class="subtitle">Fixed, symmetric icon compositions for all 22 terrain types.<br>
+Designed to tile beautifully across adjacent hexes.</p>
+
+<div class="controls">
+  <button id="btn-fog" onclick="toggleFog()">Toggle Fog States</button>
+  <button id="btn-tile" onclick="toggleTile()">Toggle Tiling Preview</button>
+</div>
+
+<div id="content"></div>
+
+<script>
+// ============================================================================
+// HEX GEOMETRY — flat-top hex
+// ============================================================================
+const HEX = 64; // radius (center to vertex)
+
+function hexPoly(cx, cy, sz) {
+  const pts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = (Math.PI / 180) * (60 * i);
+    pts.push(`${cx + sz * Math.cos(a)},${cy + sz * Math.sin(a)}`);
+  }
+  return pts.join(' ');
+}
+
+// ============================================================================
+// SHARED CONSTANTS
+// ============================================================================
+const S = '#0a0a08';    // universal dark outline
+const W = 1.1;          // standard stroke width
+const R = HEX * 0.55;   // safe icon radius (inside hex)
+
+let showFogStates = false;
+let showTiling = false;
+
+// ============================================================================
+// ICON BUILDERS — small composable drawing primitives
+// ============================================================================
+
+// Deciduous tree: round crown on trunk at (x, y), size s
+function tree(x, y, s = 1) {
+  const r = 8 * s;
+  const trunk = `<rect x="${x - 1.3*s}" y="${y + r*0.3}" width="${2.6*s}" height="${r*0.7}" fill="#1a1a10" stroke="${S}" stroke-width="0.5" rx="0.7"/>`;
+  const crown = `<circle cx="${x}" cy="${y}" r="${r}" fill="#2d5a1e" stroke="${S}" stroke-width="${W}"/>`;
+  return trunk + crown;
+}
+
+// Dense/dark deciduous tree
+function treeDark(x, y, s = 1) {
+  const r = 7 * s;
+  const trunk = `<rect x="${x - 1*s}" y="${y + r*0.25}" width="${2*s}" height="${r*0.6}" fill="#121208" stroke="${S}" stroke-width="0.4" rx="0.5"/>`;
+  const crown = `<circle cx="${x}" cy="${y}" r="${r}" fill="#1a4012" stroke="${S}" stroke-width="${W}"/>`;
+  return trunk + crown;
+}
+
+// Conifer tree: pointed triangle at (x, y), size s
+function conifer(x, y, s = 1) {
+  const h = 18 * s;
+  const w = h * 0.45;
+  const trunk = `<rect x="${x - 1.2*s}" y="${y}" width="${2.4*s}" height="${h*0.2}" fill="#1a1a10" stroke="${S}" stroke-width="0.4" rx="0.5"/>`;
+  const tri = `<polygon points="${x},${y - h*0.8} ${x - w/2},${y} ${x + w/2},${y}" fill="#1e4a28" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+  return trunk + tri;
+}
+
+// Jungle canopy blob at (x, y), size s
+function canopy(x, y, s = 1) {
+  const r = 8 * s;
+  return `<circle cx="${x}" cy="${y}" r="${r}" fill="#1a5520" stroke="${S}" stroke-width="${W}"/>`;
+}
+
+// Hill bump: half-ellipse arc at (x, y)
+function hill(x, y, rx = 16, ry = 9) {
+  return `<path d="M ${x - rx} ${y} A ${rx} ${ry} 0 0 1 ${x + rx} ${y} Z" fill="#6a6040" stroke="${S}" stroke-width="${W}"/>`;
+}
+
+// Mountain peak: triangle at (x, y) with height h
+function peak(x, y, h = 28, snow = true) {
+  const w = h * 0.75;
+  let svg = `<polygon points="${x},${y - h} ${x - w/2},${y} ${x + w/2},${y}" fill="#5a5550" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+  if (snow) {
+    const cH = h * 0.24, cW = w * 0.3;
+    svg += `<polygon points="${x},${y - h} ${x - cW/2},${y - h + cH} ${x + cW/2},${y - h + cH}" fill="#e0dcd4" stroke="${S}" stroke-width="0.6" stroke-linejoin="round"/>`;
+  }
+  return svg;
+}
+
+// Grass tuft V-shape at (x, y)
+function tuft(x, y, h = 6, sp = 3) {
+  return `<path d="M ${x - sp} ${y} L ${x} ${y - h} L ${x + sp} ${y}" fill="none" stroke="#4a5a2a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>`;
+}
+
+// Wave line at y position, width w
+function wave(y, w = R * 0.7, amp = 3, color = '#5a8aaa') {
+  return `<path d="M ${-w} ${y} Q ${-w*0.5} ${y - amp} 0 ${y} Q ${w*0.5} ${y + amp} ${w} ${y}" fill="none" stroke="${color}" stroke-width="1.3" stroke-linecap="round"/>`;
+}
+
+// Cattail reed at (x, y)
+function reed(x, y) {
+  return `<line x1="${x}" y1="${y}" x2="${x}" y2="${y - 10}" stroke="#2a4a1a" stroke-width="1.2"/>` +
+    `<ellipse cx="${x}" cy="${y - 12}" rx="1.8" ry="3.2" fill="#2a4a1a" stroke="${S}" stroke-width="0.5"/>`;
+}
+
+// Dune arc at y position
+function dune(y, w = R * 0.55, h = 5) {
+  return `<path d="M ${-w} ${y} Q 0 ${y - h} ${w} ${y}" fill="none" stroke="#8a7a50" stroke-width="1.6" stroke-linecap="round"/>`;
+}
+
+// ============================================================================
+// TERRAIN ICON DEFINITIONS — fixed symmetric compositions
+// ============================================================================
+// Each returns an SVG fragment string, centered on (0,0).
+
+const ICONS = {
+
+  // ─── WATER ───
+
+  ocean: () => '', // plain color, no icon
+
+  coastal_shallows: () =>
+    wave(-8, R*0.6, 2.5) + wave(4, R*0.5, 2) + wave(16, R*0.4, 2),
+
+  lake: () =>
+    wave(-6, R*0.45, 2.5, '#5a8ab0') + wave(6, R*0.5, 2, '#5a8ab0'),
+
+  river: () =>
+    `<path d="M -3 ${-R*0.8} Q 5 ${-R*0.3} -2 0 Q 6 ${R*0.3} -3 ${R*0.8}" fill="none" stroke="#5a8ab0" stroke-width="2" stroke-linecap="round"/>` +
+    `<path d="M 4 ${-R*0.8} Q 12 ${-R*0.3} 5 0 Q 13 ${R*0.3} 4 ${R*0.8}" fill="none" stroke="#5a8ab0" stroke-width="1.5" stroke-linecap="round"/>`,
+
+  // ─── LOWLANDS ───
+
+  grassland: () => {
+    // Symmetric ring of 6 tufts + 1 center
+    let s = tuft(0, -2, 7, 3);
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i + Math.PI / 6;
+      const d = R * 0.52;
+      s += tuft(Math.cos(a) * d, Math.sin(a) * d, 5.5, 2.5);
+    }
+    return s;
+  },
+
+  farmland: () => {
+    // Neat parallel crop rows
+    let s = '';
+    const w = R * 0.65;
+    for (let i = 0; i < 5; i++) {
+      const y = -R*0.5 + i * (R*1.0 / 4);
+      s += `<line x1="${-w}" y1="${y}" x2="${w}" y2="${y}" stroke="#5a6a30" stroke-width="1.3" stroke-dasharray="3.5,2.5"/>`;
+    }
+    return s;
+  },
+
+  savanna: () => {
+    // Sparse symmetric tufts + lone flat-topped tree center
+    let s = '';
+    // 4 corner tufts
+    const corners = [[-R*0.4, -R*0.35], [R*0.4, -R*0.35], [-R*0.4, R*0.35], [R*0.4, R*0.35]];
+    for (const [x, y] of corners) s += tuft(x, y, 4, 2);
+    // Flat-topped acacia center
+    s += `<line x1="0" y1="4" x2="0" y2="13" stroke="#3a3010" stroke-width="1.5"/>`;
+    s += `<ellipse cx="0" cy="0" rx="9" ry="5" fill="#4a5a20" stroke="${S}" stroke-width="0.8"/>`;
+    return s;
+  },
+
+  steppe: () => {
+    // Very sparse tufts — symmetric diamond pattern
+    let s = '';
+    const pts = [[0, -R*0.45], [-R*0.4, 0], [R*0.4, 0], [0, R*0.45]];
+    for (const [x, y] of pts) s += tuft(x, y, 4, 2);
+    return s;
+  },
+
+  // ─── FOREST ───
+
+  deciduous_forest: () => {
+    // 5 trees: 1 center + 4 symmetric around it (like legend "Light Forest")
+    let s = tree(0, -2, 1.1);     // center, slightly larger
+    s += tree(-14, -10, 0.85);    // top-left
+    s += tree(14, -10, 0.85);     // top-right
+    s += tree(-14, 12, 0.85);     // bottom-left
+    s += tree(14, 12, 0.85);      // bottom-right
+    return s;
+  },
+
+  dense_forest: () => {
+    // 7 trees: center + inner ring of 6 (like legend "Heavy Forest")
+    let s = treeDark(0, 0, 1.0);
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i - Math.PI / 2;
+      const d = 16;
+      s += treeDark(Math.cos(a) * d, Math.sin(a) * d, 0.85);
+    }
+    return s;
+  },
+
+  taiga: () => {
+    // 5 conifers: symmetric arrangement (like legend "Light Forest Evergreen")
+    let s = conifer(0, 2, 1.1);
+    s += conifer(-14, -6, 0.85);
+    s += conifer(14, -6, 0.85);
+    s += conifer(-10, 14, 0.8);
+    s += conifer(10, 14, 0.8);
+    return s;
+  },
+
+  jungle: () => {
+    // Dense packed canopies — center + tight ring (like legend "Jungle")
+    let s = canopy(0, 0, 1.15);
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      s += canopy(Math.cos(a) * 13, Math.sin(a) * 13, 0.9);
+    }
+    // Extra small canopies fill gaps
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i + Math.PI / 6;
+      s += `<circle cx="${Math.cos(a) * 20}" cy="${Math.sin(a) * 20}" r="5" fill="#226a28" stroke="${S}" stroke-width="0.7"/>`;
+    }
+    return s;
+  },
+
+  // ─── WET ───
+
+  swamp: () => {
+    // 3 wave lines + 3 symmetric cattail reeds (like legend "Swamp")
+    let s = wave(-14, R*0.65, 2.5, '#3a5a50');
+    s += wave(0, R*0.7, 2, '#3a5a50');
+    s += wave(14, R*0.55, 2, '#3a5a50');
+    s += reed(-12, -4);
+    s += reed(0, -8);
+    s += reed(12, -4);
+    return s;
+  },
+
+  bog: () => {
+    // Sparse scrub arcs + small water patches, symmetric
+    let s = '';
+    // 3 scrub arcs
+    const scrubs = [[0, -12], [-14, 6], [14, 6]];
+    for (const [x, y] of scrubs) {
+      s += `<path d="M ${x-6} ${y} Q ${x} ${y-4} ${x+6} ${y}" fill="none" stroke="#3a5a3a" stroke-width="1.2" stroke-linecap="round"/>`;
+    }
+    // 2 water patches
+    s += `<ellipse cx="-8" cy="2" rx="5" ry="2.5" fill="#2a4a4a" stroke="${S}" stroke-width="0.6"/>`;
+    s += `<ellipse cx="8" cy="-2" rx="4" ry="2" fill="#2a4a4a" stroke="${S}" stroke-width="0.6"/>`;
+    return s;
+  },
+
+  // ─── ELEVATED ───
+
+  hills: () => {
+    // 3 overlapping hill bumps, back-to-front (like legend "Hills")
+    let s = hill(-8, 4, 20, 12);   // back-left (drawn first = behind)
+    s += hill(10, 6, 18, 10);      // back-right
+    s += hill(0, 12, 22, 13);      // front-center (drawn last = in front)
+    return s;
+  },
+
+  mountains: () => {
+    // 2 peaks: large center + smaller side (like legend "Mountains")
+    let s = peak(-12, 10, 22, false);  // smaller, no snow, behind
+    s += peak(4, 10, 32, true);        // large center with snow cap
+    return s;
+  },
+
+  plateau: () => {
+    // Flat-topped mesa with cliff face (like legend "Plateau, Cliff")
+    const topW = 28, botW = 36, h = 22;
+    let s = `<polygon points="${-topW/2},${-h/2} ${topW/2},${-h/2} ${botW/2},${h/2} ${-botW/2},${h/2}" fill="#5a5040" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+    // Flat top edge highlight
+    s += `<line x1="${-topW/2}" y1="${-h/2}" x2="${topW/2}" y2="${-h/2}" stroke="#7a7060" stroke-width="1.5"/>`;
+    // Cliff hash marks
+    s += `<line x1="-6" y1="${-h/2 + 3}" x2="-6" y2="${h/2 - 3}" stroke="${S}" stroke-width="0.6"/>`;
+    s += `<line x1="6" y1="${-h/2 + 3}" x2="6" y2="${h/2 - 3}" stroke="${S}" stroke-width="0.6"/>`;
+    return s;
+  },
+
+  badlands: () => {
+    // Symmetric scatter of irregular dark dots (like legend "Badlands")
+    let s = '';
+    // Concentric rings of dots
+    s += `<circle cx="0" cy="0" r="2.5" fill="#2a1a10" stroke="${S}" stroke-width="0.4"/>`;
+    const ring1 = 6;
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i;
+      s += `<circle cx="${Math.cos(a)*ring1 * 1.5}" cy="${Math.sin(a)*ring1 * 1.5}" r="${1.8 + (i%2)*0.8}" fill="#2a1a10" stroke="${S}" stroke-width="0.4"/>`;
+    }
+    const ring2 = 14;
+    for (let i = 0; i < 6; i++) {
+      const a = (Math.PI / 3) * i + Math.PI / 6;
+      s += `<circle cx="${Math.cos(a)*ring2 * 1.3}" cy="${Math.sin(a)*ring2 * 1.3}" r="${1.5 + (i%2)*0.6}" fill="#2a1a10" stroke="${S}" stroke-width="0.3"/>`;
+    }
+    return s;
+  },
+
+  // ─── EXTREME ───
+
+  desert: () => {
+    // 3 symmetric dune arcs (like legend "Sand Dunes")
+    let s = dune(-10, R*0.55, 5);
+    s += dune(2, R*0.6, 6);
+    s += dune(14, R*0.45, 4);
+    return s;
+  },
+
+  tundra: () => {
+    // Symmetric scatter of small rocks/lichen (like legend "Frozen Tundra")
+    let s = '';
+    s += `<ellipse cx="0" cy="0" rx="3.5" ry="2" fill="#6a7a7a" stroke="${S}" stroke-width="0.7"/>`;
+    const pts = [[-12, -8], [12, -8], [-10, 10], [10, 10], [0, -16], [0, 16]];
+    for (const [x, y] of pts) {
+      s += `<ellipse cx="${x}" cy="${y}" rx="${2.5 + Math.abs(x%3)*0.5}" ry="${1.5 + Math.abs(y%3)*0.3}" fill="#6a7a7a" stroke="${S}" stroke-width="0.6"/>`;
+    }
+    return s;
+  },
+
+  glacier: () => {
+    // Symmetric ice crevasse pattern (like legend "Glaciers")
+    let s = '';
+    // Central Y-shaped crack
+    s += `<line x1="0" y1="${-R*0.7}" x2="0" y2="0" stroke="#7aa0b8" stroke-width="1.2" stroke-linecap="round"/>`;
+    s += `<line x1="0" y1="0" x2="${-R*0.5}" y2="${R*0.55}" stroke="#7aa0b8" stroke-width="1.1" stroke-linecap="round"/>`;
+    s += `<line x1="0" y1="0" x2="${R*0.5}" y2="${R*0.55}" stroke="#7aa0b8" stroke-width="1.1" stroke-linecap="round"/>`;
+    // Branch cracks
+    s += `<line x1="-2" y1="${-R*0.35}" x2="${-R*0.4}" y2="${-R*0.15}" stroke="#7aa0b8" stroke-width="0.7" stroke-linecap="round"/>`;
+    s += `<line x1="2" y1="${-R*0.35}" x2="${R*0.4}" y2="${-R*0.15}" stroke="#7aa0b8" stroke-width="0.7" stroke-linecap="round"/>`;
+    return s;
+  },
+
+  volcanic: () => {
+    // Centered volcano with eruption cloud (like legend "Volcano")
+    const h = 28;
+    const w = h * 0.8;
+    let s = '';
+    // Cone body
+    s += `<polygon points="0,${-h*0.5} ${-w/2},${h*0.2} ${w/2},${h*0.2}" fill="#4a4040" stroke="${S}" stroke-width="${W}" stroke-linejoin="round"/>`;
+    // Crater
+    s += `<ellipse cx="0" cy="${-h*0.45}" rx="${w*0.14}" ry="${w*0.07}" fill="#3a1a10" stroke="${S}" stroke-width="0.5"/>`;
+    // Red eruption plume
+    s += `<polygon points="0,${-h*0.82} ${-5},${-h*0.45} ${5},${-h*0.45}" fill="#cc3320" stroke="${S}" stroke-width="0.7" stroke-linejoin="round"/>`;
+    // Smoke puffs — symmetric
+    s += `<circle cx="-3" cy="${-h*0.87}" r="3.5" fill="#aa2a18" stroke="${S}" stroke-width="0.4"/>`;
+    s += `<circle cx="3" cy="${-h*0.87}" r="3.5" fill="#cc3320" stroke="${S}" stroke-width="0.4"/>`;
+    s += `<circle cx="0" cy="${-h*0.95}" r="3" fill="#e8e0d0" stroke="${S}" stroke-width="0.4"/>`;
+    return s;
+  },
+};
+
+// ============================================================================
+// TERRAIN REGISTRY — all 22 types with Threadbare dark base colors
+// ============================================================================
+const TERRAIN_GROUPS = [
+  {
+    label: 'Water',
+    terrains: [
+      { key: 'ocean',             baseColor: '#1a2a3a', label: 'Ocean' },
+      { key: 'coastal_shallows',  baseColor: '#2a3a4a', label: 'Coastal Shallows' },
+      { key: 'lake',              baseColor: '#1e3040', label: 'Lake' },
+      { key: 'river',             baseColor: '#253545', label: 'River' },
+    ],
+  },
+  {
+    label: 'Lowlands',
+    terrains: [
+      { key: 'grassland', baseColor: '#3a3a20', label: 'Grassland' },
+      { key: 'farmland',  baseColor: '#3a3520', label: 'Farmland' },
+      { key: 'savanna',   baseColor: '#3a3520', label: 'Savanna' },
+      { key: 'steppe',    baseColor: '#35351e', label: 'Steppe' },
+    ],
+  },
+  {
+    label: 'Forest',
+    terrains: [
+      { key: 'deciduous_forest', baseColor: '#2a3a1a', label: 'Deciduous Forest' },
+      { key: 'dense_forest',     baseColor: '#1a2a10', label: 'Dense Forest' },
+      { key: 'taiga',            baseColor: '#1a2a1a', label: 'Taiga' },
+      { key: 'jungle',           baseColor: '#1a3a1a', label: 'Jungle' },
+    ],
+  },
+  {
+    label: 'Wet',
+    terrains: [
+      { key: 'swamp', baseColor: '#2a3a1a', label: 'Swamp' },
+      { key: 'bog',   baseColor: '#2a3020', label: 'Bog' },
+    ],
+  },
+  {
+    label: 'Elevated',
+    terrains: [
+      { key: 'hills',     baseColor: '#3a3520', label: 'Hills' },
+      { key: 'mountains', baseColor: '#2a2a2a', label: 'Mountains' },
+      { key: 'plateau',   baseColor: '#3a3020', label: 'Plateau' },
+      { key: 'badlands',  baseColor: '#3a2520', label: 'Badlands' },
+    ],
+  },
+  {
+    label: 'Extreme',
+    terrains: [
+      { key: 'desert',   baseColor: '#3a3020', label: 'Desert' },
+      { key: 'tundra',   baseColor: '#2a3035', label: 'Tundra' },
+      { key: 'glacier',  baseColor: '#2a3a4a', label: 'Glacier' },
+      { key: 'volcanic', baseColor: '#2a1515', label: 'Volcanic' },
+    ],
+  },
+];
+
+// Flat lookup
+const ALL = {};
+for (const g of TERRAIN_GROUPS)
+  for (const t of g.terrains)
+    ALL[t.key] = t;
+
+// ============================================================================
+// HEX RENDERER
+// ============================================================================
+function renderHex(key, fogState = 'visible', size = HEX) {
+  const t = ALL[key];
+  const cx = size + 4;
+  const cy = size + 4;
+  const svgW = (size + 4) * 2;
+  const svgH = (size + 4) * 2;
+  const clipId = `c-${key}-${fogState}-${size}`;
+  const border = 'rgba(139, 105, 60, 0.35)';
+
+  if (fogState === 'unexplored') {
+    return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="${hexPoly(cx, cy, size)}" fill="#1e1b2e" stroke="${border}" stroke-width="0.8"/>
+    </svg>`;
+  }
+
+  const icon = ICONS[key]();
+  const opacity = fogState === 'remembered' ? 0.4 : 1;
+  // Scale icons if hex size differs from default
+  const scale = size / HEX;
+
+  return `<svg width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}" xmlns="http://www.w3.org/2000/svg">
+    <defs><clipPath id="${clipId}"><polygon points="${hexPoly(cx, cy, size - 1)}"/></clipPath></defs>
+    <g opacity="${opacity}">
+      <polygon points="${hexPoly(cx, cy, size)}" fill="${t.baseColor}" stroke="${border}" stroke-width="0.8"/>
+      <g clip-path="url(#${clipId})">
+        <g transform="translate(${cx}, ${cy}) scale(${scale})">
+          ${icon}
+        </g>
+      </g>
+    </g>
+  </svg>`;
+}
+
+// ============================================================================
+// TILING PREVIEW — shows a hex cluster to demonstrate cross-hex continuity
+// ============================================================================
+function renderTilePreview() {
+  // 7-hex rosette: center + 6 neighbors
+  // Flat-top hex: width = 2*size, height = sqrt(3)*size
+  const sz = 48;
+  const w = sz * 2;
+  const h = Math.sqrt(3) * sz;
+  const cx = sz + 4;
+  const cy = sz + 4;
+
+  // Pick a nice terrain mix for the rosette
+  const layout = [
+    { key: 'dense_forest', col: 0, row: 0 },     // center
+    { key: 'deciduous_forest', col: 1, row: 0 },  // E
+    { key: 'deciduous_forest', col: -1, row: 0 },  // W
+    { key: 'hills', col: 0, row: -1 },             // NE-ish
+    { key: 'grassland', col: 1, row: -1 },          // NE
+    { key: 'swamp', col: -1, row: 1 },             // SW
+    { key: 'mountains', col: 0, row: 1 },           // SE-ish
+  ];
+
+  // Flat-top hex pixel positions (odd-q offset)
+  function hexToPixel(col, row) {
+    const x = col * w * 0.75;
+    const y = row * h + (Math.abs(col) % 2 === 1 ? h / 2 : 0);
+    return { x, y };
+  }
+
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  const hexes = layout.map(item => {
+    const pos = hexToPixel(item.col, item.row);
+    const px = pos.x;
+    const py = pos.y;
+    minX = Math.min(minX, px - sz - 4);
+    minY = Math.min(minY, py - sz - 4);
+    maxX = Math.max(maxX, px + sz + 4);
+    maxY = Math.max(maxY, py + sz + 4);
+    return { ...item, px, py };
+  });
+
+  const padX = -minX + 8;
+  const padY = -minY + 8;
+  const totalW = maxX - minX + 16;
+  const totalH = maxY - minY + 16;
+
+  let svg = `<svg width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" xmlns="http://www.w3.org/2000/svg">`;
+  for (const hex of hexes) {
+    const px = hex.px + padX;
+    const py = hex.py + padY;
+    const t = ALL[hex.key];
+    const clipId = `tc-${hex.col}-${hex.row}`;
+    const border = 'rgba(139, 105, 60, 0.35)';
+    const icon = ICONS[hex.key]();
+    const scale = sz / HEX;
+
+    svg += `<defs><clipPath id="${clipId}"><polygon points="${hexPoly(px, py, sz - 1)}"/></clipPath></defs>`;
+    svg += `<polygon points="${hexPoly(px, py, sz)}" fill="${t.baseColor}" stroke="${border}" stroke-width="0.8"/>`;
+    svg += `<g clip-path="url(#${clipId})"><g transform="translate(${px}, ${py}) scale(${scale})">${icon}</g></g>`;
+  }
+  svg += `</svg>`;
+
+  return `<div style="text-align:center;margin:20px 0">
+    <div style="font-size:0.75rem;color:#6a6050;margin-bottom:10px;text-transform:uppercase;letter-spacing:0.08em">Tiling Preview — 7-hex rosette</div>
+    ${svg}
+  </div>`;
+}
+
+// ============================================================================
+// PAGE RENDERING
+// ============================================================================
+function render() {
+  const content = document.getElementById('content');
+  let html = '';
+
+  if (showTiling) {
+    html += renderTilePreview();
+  }
+
+  if (showFogStates) {
+    html += `<h2 class="section-label">Fog of War States (Deciduous Forest)</h2>`;
+    html += `<div class="hex-grid">`;
+    for (const state of ['visible', 'remembered', 'unexplored']) {
+      html += `<div class="hex-card">${renderHex('deciduous_forest', state)}<span class="label">${state}</span></div>`;
+    }
+    html += `</div>`;
+  }
+
+  for (const group of TERRAIN_GROUPS) {
+    html += `<h2 class="section-label">${group.label}</h2>`;
+    html += `<div class="hex-grid">`;
+    for (const t of group.terrains) {
+      html += `<div class="hex-card">${renderHex(t.key)}<span class="label">${t.label}</span></div>`;
+    }
+    html += `</div>`;
+  }
+
+  content.innerHTML = html;
+}
+
+function toggleFog() {
+  showFogStates = !showFogStates;
+  document.getElementById('btn-fog').classList.toggle('active', showFogStates);
+  render();
+}
+
+function toggleTile() {
+  showTiling = !showTiling;
+  document.getElementById('btn-tile').classList.toggle('active', showTiling);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

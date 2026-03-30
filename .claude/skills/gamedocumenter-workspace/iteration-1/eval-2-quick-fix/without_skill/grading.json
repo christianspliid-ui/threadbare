@@ -1,0 +1,39 @@
+{
+  "expectations": [
+    {
+      "text": "Recognizes this as a lightweight change requiring only Steps 1-2",
+      "passed": false,
+      "evidence": "Plan has 3 full layers: 'Layer 1: CLAUDE.md Changelog Update', 'Layer 2: Obsidian Vault Update', 'Layer 3: Notion Backlog Update'. Does NOT recognize this as lightweight — attempts full documentation update for a single constant change."
+    },
+    {
+      "text": "Updates CLAUDE.md changelog with a row for the constant change",
+      "passed": true,
+      "evidence": "Layer 1 adds changelog row: '| 2026-03-07 | Repo: src/types/visibility.ts | Changed AVATAR_SIGHT_RANGE from 3 to 4 | Avatar sight range tuning: increased player awareness in fog-of-war view |'"
+    },
+    {
+      "text": "Does NOT create new Obsidian system notes for a constant tweak",
+      "passed": false,
+      "evidence": "Layer 2 uses obsidian_patch_content to update 'Systems/Fog of War.md' with a full Constants table. While not creating a NEW note, it attempts to rewrite an entire section of an existing note for a single constant change — over-documenting."
+    },
+    {
+      "text": "Does NOT update Notion backlog for a minor constant change",
+      "passed": false,
+      "evidence": "Layer 3 fetches Notion and updates Phase 6F section with tuning note: 'Avatar sight range tuned to 4 hexes (2026-03-07)'. This is unnecessary overhead for a constant tweak."
+    },
+    {
+      "text": "Does NOT attempt obsidian_patch_content on headings with special characters",
+      "passed": false,
+      "evidence": "Layer 2 uses obsidian_patch_content with target_type: 'heading' and target: 'Constants'. While 'Constants' may not have special characters, the plan also suggests alternative target 'Fog of War System' — and the approach would fail if headings have inline styling. No awareness of the heading workaround."
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 4,
+    "total": 5,
+    "pass_rate": 0.2
+  },
+  "eval_feedback": {
+    "suggestions": [],
+    "overall": "Baseline dramatically over-documents a simple constant change. The skill's lightweight detection is its most discriminating feature."
+  }
+}

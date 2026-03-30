@@ -1,0 +1,13 @@
+{
+  "eval_id": 3,
+  "eval_name": "multi-task",
+  "prompt": "I've completed two related tasks: the culture content data implementation (culture-content.ts, 950 lines, 45 tests) and the narrative context builder (narrativeContext.ts, 200 lines, 12 tests). These are part of the Content Strategy & Architecture section in the backlog. Design docs are at Docs/plans/2026-03-07-culture-content-design.md and Docs/plans/2026-03-07-narrative-context-design.md. Update everything please.",
+  "assertions": [
+    "Creates TWO separate Obsidian system notes (one for each task)",
+    "Uses obsidian_append_content for Index.md updates (not patch on headings)",
+    "Fetches Notion backlog before updating",
+    "CLAUDE.md changelog includes rows covering both tasks",
+    "Updates CLAUDE.md engine stats and content stats",
+    "Includes git commit step"
+  ]
+}
