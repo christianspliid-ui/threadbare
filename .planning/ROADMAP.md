@@ -283,13 +283,15 @@ Plans:
 
 ### Phase 16: Expand retinue sidebar to show all nodes the Ascendant has threads to — becomes a Threads area showing agents, armies, factions, artifacts, locations, anything being invested in
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Transform the right sidebar's RetinuePanel into a comprehensive Threads panel showing every graph node the Ascendant has a thread edge to — agents, locations, factions, artifacts, armies — with compact grouped rows, a floating detail view, thread-creation divine actions, and stub profile modals for each non-agent type.
+**Requirements**: THRD-01 (engine getThreadedNodes query), THRD-02 (ThreadsPanel compact grouped rows), THRD-03 (ThreadDetailView floating detail), THRD-04 (GameView layout restructure), THRD-05 (thread-creation action templates), THRD-06 (stub profile modals), THRD-07 (tests)
 **Depends on:** Phase 15
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd:plan-phase 16 to break down)
+- [ ] 16-01-PLAN.md — Engine getThreadedNodes() query + ThreadsPanel compact grouped rows + GameView sidebar wiring
+- [ ] 16-02-PLAN.md — ThreadDetailView floating detail + GameView flex layout restructure + stub profile modals
+- [ ] 16-03-PLAN.md — Thread-creation divine action templates for locations, factions, armies, artifacts
 
 ### Phase 17: Add action description fields and player feedback on action activation
 
