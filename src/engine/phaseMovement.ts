@@ -111,6 +111,7 @@ export function phaseMovement(state: GameState): Partial<GameState> {
           type: 'agent_movement',
           message: `${actor.name} moves to ${destNode?.name ?? 'a location'}.`,
           significance: MOVEMENT_EVENT_SIGNIFICANCE,
+          actorId: actorId,
           hexCoords: destNode?.properties?.hexCol != null
             ? { col: destNode.properties.hexCol as number, row: destNode.properties.hexRow as number }
             : undefined,

@@ -150,6 +150,7 @@ export function phaseIdleSelection(
               message: `${actor.name} begins ${template.name} at ${locationName}.`,
               sphere: template.sphereAffinity ?? (SPHERE_NAMES[Math.floor(rng() * SPHERE_NAMES.length)] as SphereName),
               significance: template.steps.length > 1 ? 0.7 : 0.5,
+              actorId: actor.id,
             });
           }
         } catch {
@@ -178,6 +179,7 @@ export function phaseIdleSelection(
         message: prose.text,
         sphere,
         significance,
+        actorId: actor.id,
       });
 
       // Sphere influence on location
@@ -209,6 +211,7 @@ export function phaseIdleSelection(
       message: prose.text,
       sphere,
       significance: 0.85,
+      actorId: notableActor.id,
     });
   }
 

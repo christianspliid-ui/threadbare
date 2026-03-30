@@ -479,6 +479,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         type: result.success ? 'encounter_step_success' : 'encounter_step_failure',
         message: `${agentName} ${result.success ? 'succeeded' : 'struggled'} in their encounter.`,
         significance: 0.6,
+        actorId: progress.actorId,
       });
     }
   }
@@ -643,6 +644,7 @@ export function phaseDilemmaDetection(state: GameState): Partial<GameState> {
       message,
       sphere: event.sphere,
       significance: Math.max(0.3, stakes),
+      actorId: event.actorId ?? actor.id,
     });
   }
 

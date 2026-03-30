@@ -141,6 +141,7 @@ export function phaseAgentLifecycle(
         type: 'agent_death' as any,
         message: `${actor.name} has departed from the world.`,
         significance: 0.7,
+        actorId: actor.id,
         notification: { channel: 'toast' },
         hexCoords: deathHexCoords,
       });
@@ -310,6 +311,7 @@ export function phaseAgentLifecycle(
           type: 'agent_birth' as any,
           message: `${name} has emerged in ${locNode?.name ?? 'the world'}.`,
           significance: 0.5,
+          actorId: newId,
           notification: { channel: 'toast' },
           hexCoords: locNode?.properties?.hexCol != null
             ? { col: locNode.properties.hexCol as number, row: locNode.properties.hexRow as number }

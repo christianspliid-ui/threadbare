@@ -189,6 +189,7 @@ export function executeStepResult(
           type: 'tier_promotion',
           message: `${agentName} reached ${step.reach} tier ${growthResult.newTier}: "${promotion.traitGranted}"`,
           significance: 0.8,
+          actorId: action.actorId,
         });
       }
     }
@@ -224,6 +225,7 @@ export function executeStepResult(
       type: 'agent_action_resolved',
       message: `${actorName} ${updatedAction.outcome === 'success' ? 'completed' : 'failed'} ${template.name}.`,
       significance: updatedAction.outcome === 'success' ? 0.6 : 0.4,
+      actorId: action.actorId,
     });
   } else {
     // Multi-step: report step progression
@@ -235,6 +237,7 @@ export function executeStepResult(
       type: 'agent_action_resolved',
       message: `${actorName} ${outcome === 'success' ? 'progresses' : 'stumbles'} in ${template.name} (step ${stepNum}/${totalSteps}).`,
       significance: 0.5,
+      actorId: action.actorId,
     });
   }
 
