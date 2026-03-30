@@ -110,7 +110,7 @@ Plans:
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
-| 19. Determinism | 2/2 | Complete   | 2026-03-30 | - |
+| 19. Determinism | 2/2 | Complete    | 2026-03-30 | - |
 | 20. Wiring | v1.1 | 0/TBD | Not started | - |
 | 21. Performance | v1.1 | 0/TBD | Not started | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
