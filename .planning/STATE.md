@@ -4,7 +4,7 @@ milestone: v1.0
 milestone_name: milestone
 status: unknown
 stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
-last_updated: "2026-03-30T11:12:52.054Z"
+last_updated: "2026-03-30T11:15:16.479Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 10
@@ -187,6 +187,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P01 | 12 | 2 tasks | 5 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P03 | 30 | 2 tasks | 2 files |
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 8 | 2 tasks | 3 files |
+| Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 15 | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -325,6 +326,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 15-03]: hire/lead/build encounterTypes never have rewardPool; onSuccess/onFailure rewardPools must have identical categoryWeights
 - [Phase 15-04]: consecutiveIdleTicks only triggered for no_candidates_after_filter, not below_score_threshold — only genuine content deserts trigger forced travel
 - [Phase 15-04]: Test helper uses located_at edges (source: agent, target: location) so getAgentLocationId finds agents; void_no_content location type guarantees empty encounter cache
+- [Phase 15]: consecutiveIdleTicks on agent.properties increments each idle tick, resets to 0 on any non-idle decision branch (start_local, attempt_remote, queue_movement)
+- [Phase 15]: Forced travel only triggers for no_candidates_after_filter (true content desert), not below_score_threshold
 
 ### Roadmap Evolution
 
@@ -340,6 +343,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T11:12:52.052Z
+Last session: 2026-03-30T11:15:16.477Z
 Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-04-PLAN.md
 Resume file: None

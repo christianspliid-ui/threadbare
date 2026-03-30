@@ -31,6 +31,7 @@ key-files:
   modified:
     - src/data/agent-behavior-constants.ts
     - src/engine/phaseAgentDecision.ts
+    - src/engine/siegeResolution.ts
 
 key-decisions:
   - "consecutiveIdleTicks incremented only in idle branch (not when agent is skipped or moving)"
@@ -75,6 +76,7 @@ Each task was committed atomically:
 
 1. **Task 1: Create forced travel test file (Wave 0 RED)** - `66d16ee` (test)
 2. **Task 2: Implement forced travel fallback and idle tick tracking** - `2d08604` (feat)
+3. **Auto-fix: siegeResolution.ts hex position lookup bug** - `dab86ae` (fix)
 
 **Plan metadata:** (docs commit — see below)
 
@@ -84,6 +86,7 @@ _Note: Task 1 is TDD RED (failing tests), Task 2 is TDD GREEN (implementation pa
 - `src/engine/__tests__/phaseAgentDecision-forced-travel.test.ts` - 8 test cases for forced travel behavior
 - `src/data/agent-behavior-constants.ts` - Added IDLE_FORCED_TRAVEL_THRESHOLD = 10 in IDLE BEHAVIOR section
 - `src/engine/phaseAgentDecision.ts` - consecutiveIdleTicks tracking, forced travel fallback, counter reset on non-idle decisions
+- `src/engine/siegeResolution.ts` - Bug fix: read hexCol/hexRow from settlement node.properties directly (not via located_at edge)
 
 ## Decisions Made
 - Forced travel only triggers for `no_candidates_after_filter` not `below_score_threshold` — this ensures only genuine content deserts (zero cache entries) trigger the escape, not agents who have encounters available but score them too low
@@ -113,8 +116,18 @@ _Note: Task 1 is TDD RED (failing tests), Task 2 is TDD GREEN (implementation pa
 
 ---
 
-**Total deviations:** 2 auto-fixed (both Rule 1 - bugs in test setup)
-**Impact on plan:** Both fixes in test file only. Production implementation was correct as specified.
+**3. [Rule 1 - Bug] Fixed siegeResolution.ts hex position lookup**
+- **Found during:** Final cleanup (reviewing unstaged changes at plan close)
+- **Issue:** `generateRegionalEncounters` tried to get hexCol/hexRow via settlement's `located_at` edge, but location nodes store coordinates directly on `node.properties` (Phase 13 decision: "Location nodes store hexCol/hexRow as direct properties; located_at edges are actor-only")
+- **Fix:** Changed to `graph.getNode(settlementId)` and read `node.properties.hexCol/hexRow` directly
+- **Files modified:** `src/engine/siegeResolution.ts`
+- **Verification:** `npx tsc --noEmit` passes, `npm test` passes
+- **Committed in:** `dab86ae`
+
+---
+
+**Total deviations:** 3 auto-fixed (2 Rule 1 - bugs in test setup, 1 Rule 1 - bug in production code)
+**Impact on plan:** Test setup fixes and one production bug fix. No scope creep.
 
 ## Issues Encountered
 None in production code. Test setup issues found and fixed (see Deviations above).
