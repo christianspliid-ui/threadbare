@@ -45,6 +45,11 @@ import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
+import { ThreadDetailView } from './ThreadDetailView';
+import { LocationProfileModal } from './LocationProfileModal';
+import { FactionSheet } from './FactionSheet';
+import { ArmySheet } from './ArmySheet';
+import { ArtifactSheet } from './ArtifactSheet';
 import { AgentProfileModal } from './AgentProfileModal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
@@ -732,6 +737,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
 
+  // ── Stub modal state for non-agent thread types (Plan 16-02) ──
+  const [stubModalState, setStubModalState] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
+
   // ── Auto-pause when encounter modal opens, auto-resume on close ──
   /** Tracks whether the game was running before an encounter modal opened */
   const wasRunningBeforeEncounterPause = useRef<boolean>(false);
@@ -881,6 +889,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       console.warn('[targetAction] failed to create action:', err);
     }
   }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
+
+  // ── Profile modal routing for thread detail view ──
+  const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
+    if (category === 'agent') {
+      // Use existing agent profile modal flow (selectedAgentId must match for agentInfoCard to load)
+      handleViewProfile();
+    } else {
+      setStubModalState({ nodeId, category });
+    }
+  }, [handleViewProfile]);
 
   // ── Attention mode toggle (TB-040) ──
   const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
@@ -1281,7 +1299,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           )}
         </div>
 
-        {/* ── Right sidebar — Debug Panel OR Agent Info Card/Retinue ── */}
+        {/* ── Right panel: Debug Panel OR sidebar (+ detail view) ── */}
         {debugPanelOpen ? (
           <DebugPanel
             currentTick={gameState.tick}
@@ -1303,30 +1321,61 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             agentKnowledge={gameState.agentKnowledge}
           />
         ) : (
-          <div
-            data-testid="right-sidebar"
-            className="flex-shrink-0 overflow-y-auto"
-            style={{
-              width: 'var(--sidebar-width)',
-              background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-              borderLeft: '1px solid var(--border-gold)',
-            }}
-          >
-            <div style={{ padding: 'var(--panel-padding)' }}>
-              {threadedNodes.length > 0 ? (
-                <ThreadsPanel
-                  threadedNodes={threadedNodes}
-                  selectedNodeId={selectedThreadNode?.nodeId ?? null}
-                  onNodeSelect={handleThreadNodeSelect}
-                  onCenterOnHex={handleCenterOnHex}
-                  onZoomToLocation={handleZoomToLocation}
-                  activeEncounters={retinueActiveEncounters}
-                  onEncounterClick={handleEncounterClick}
-                  onToggleAttentionMode={handleToggleAttentionMode}
-                />
-              ) : (
-                <WorldPulse gameState={gameState} />
-              )}
+          <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
+            {/* Detail view — to the LEFT of sidebar, own scroll context */}
+            <AnimateMount show={selectedThreadNode !== null} animation="anim-fade">
+              {selectedThreadNode && (() => {
+                const detailNode = threadedNodes.find(n => n.id === selectedThreadNode.nodeId);
+                if (!detailNode) return null;
+                return (
+                  <div
+                    data-testid="thread-detail-scroll"
+                    style={{
+                      width: 'clamp(240px, 280px, 30vw)',
+                      borderLeft: '1px solid var(--border-gold)',
+                      background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+                      overflowY: 'auto',
+                    }}
+                  >
+                    <ThreadDetailView
+                      node={detailNode}
+                      agentInfoCard={selectedThreadNode.category === 'agent' ? agentInfoCard : null}
+                      onClose={handleThreadDetailClose}
+                      onViewProfile={handleOpenProfileModal}
+                      onZoomToLocation={handleZoomToLocation}
+                      graph={gameState.graph}
+                    />
+                  </div>
+                );
+              })()}
+            </AnimateMount>
+
+            {/* Sidebar — always rendered */}
+            <div
+              data-testid="right-sidebar"
+              className="flex-shrink-0 overflow-y-auto"
+              style={{
+                width: 'var(--sidebar-width)',
+                background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+                borderLeft: '1px solid var(--border-gold)',
+              }}
+            >
+              <div style={{ padding: 'var(--panel-padding)' }}>
+                {threadedNodes.length > 0 ? (
+                  <ThreadsPanel
+                    threadedNodes={threadedNodes}
+                    selectedNodeId={selectedThreadNode?.nodeId ?? null}
+                    onNodeSelect={handleThreadNodeSelect}
+                    onCenterOnHex={handleCenterOnHex}
+                    onZoomToLocation={handleZoomToLocation}
+                    activeEncounters={retinueActiveEncounters}
+                    onEncounterClick={handleEncounterClick}
+                    onToggleAttentionMode={handleToggleAttentionMode}
+                  />
+                ) : (
+                  <WorldPulse gameState={gameState} />
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -1385,6 +1434,27 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             knowledge={profileModalAgentId ? gameState.agentKnowledge.get(profileModalAgentId) : undefined}
           />
         )}
+      </AnimateMount>
+
+      {/* Stub profile modals for non-agent thread types */}
+      <AnimateMount show={stubModalState !== null} animation="anim-fade-up">
+        {stubModalState && (() => {
+          const node = threadedNodes.find(n => n.id === stubModalState.nodeId);
+          if (!node) return null;
+          const onClose = () => setStubModalState(null);
+          switch (stubModalState.category) {
+            case 'location':
+              return <LocationProfileModal name={node.name} onClose={onClose} />;
+            case 'faction':
+              return <FactionSheet name={node.name} onClose={onClose} />;
+            case 'army':
+              return <ArmySheet name={node.name} onClose={onClose} />;
+            case 'artifact':
+              return <ArtifactSheet name={node.name} onClose={onClose} />;
+            default:
+              return null;
+          }
+        })()}
       </AnimateMount>
 
       {/* Tiered encounter modal (TB-055) */}
