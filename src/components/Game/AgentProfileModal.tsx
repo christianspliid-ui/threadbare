@@ -168,7 +168,7 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             {/* Metadata */}
             <div className="space-y-1">
               {card.locationName && (
-                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{card.locationName}</p>
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>Is at {card.locationName}</p>
               )}
             </div>
           </div>
