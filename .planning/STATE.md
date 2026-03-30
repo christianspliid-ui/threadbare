@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Phase 16 context gathered
-last_updated: "2026-03-30T10:39:29.518Z"
+stopped_at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-02-PLAN.md
+last_updated: "2026-03-30T10:45:06.894Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 9
   completed_phases: 5
   total_plans: 35
-  completed_plans: 24
+  completed_plans: 25
   percent: 93
 ---
 
@@ -182,6 +182,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 13 P01 | 10 | 2 tasks | 2 files |
 | Phase 13-m2-gap-closure-aftermath-army-visuals-deferred-tests P03 | 5 | 2 tasks | 2 files |
 | Phase 13 P04 | 30 | 2 tasks | 7 files |
+| Phase 15 P02 | 7 | 1 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -310,6 +311,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 13-04]: Army shields use per-faction-color InstancedMesh groups (one mesh per color) — follows SignifierMesh variant pattern
 - [Phase 13-04]: BattleIndicatorMesh uses Sprite not InstancedMesh — single instance per battle, simpler opacity animation via tickBattlePulse
 - [Phase 13-04]: LAYER_Z.ARMIES=0.090, LAYER_Z.BATTLE_INDICATOR=6.050 — armies render on hex surface below agents, battle icon floats above
+- [Phase 15]: filterByOutgrowth placed as Stage 3b (after chain prerequisites, before threat) — outgrown encounters stay filtered even if they pass threat check
+- [Phase 15]: Max completions filter uses existing familiarityRecord.attemptCount — no new state structure needed for encounter retirement
+- [Phase 15]: filterByOutgrowth accepts enabledOverride optional param for testing without mutating module constant
 
 ### Roadmap Evolution
 
@@ -325,6 +329,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T10:36:00.559Z
-Stopped at: Phase 16 context gathered
-Resume file: .planning/phases/16-expand-retinue-sidebar-to-show-all-nodes-the-ascendant-has-threads-to-becomes-a-threads-area-showing-agents-armies-factions-artifacts-locations-anything-being-invested-in/16-CONTEXT.md
+Last session: 2026-03-30T10:45:06.891Z
+Stopped at: Completed 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts/15-02-PLAN.md
+Resume file: None
