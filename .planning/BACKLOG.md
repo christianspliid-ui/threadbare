@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-081**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-083**.
 
 ---
 
@@ -82,6 +82,28 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 **Depends on:** Generalized Action Targeting (✅), Hex Terrain State
 **Needs design:** Yes
+
+---
+
+## 💡 TB-081 · Hex Action Remaining Effects (2026-03-30)
+
+Cleanup sprint wired 5 of 12 deferred hex actions via GraphOps. Remaining:
+
+**Agent motivation system dependent (5):** `stir_people` (faction disposition), `summon_congregation` (agent movement), `bestow_vision` (agent ambition), `incite_exodus` (agent departure + prosperity), `plant_dream` (agent ambition). Natural fit with NPC/chain reaction features.
+
+**Other blockers (3):** `spark_encounter` (needs encounter spawn API), `shift_dominion` (sphere influence rebalancing), `amplify_flow` (location-level magicalSaturation, not hex tile).
+
+**Observation-only (already working, no effect needed):** survey, dowse_resources, sense_leylines, read_currents, divine_populace, scry_factions, read_stones, whisper_intuition, mark_ground.
+
+**Depends on:** TB-045 graph ops (✅ wired), NPC/agent motivation system (TB-069), Chain reactions (TB-017)
+
+---
+
+## 💡 TB-082 · Notification Navigation — Encounter/Faction/Journey Modals (2026-03-30)
+
+Notification click navigation works for agents, hexes, and locations. Three handlers remain stubbed in `useNotificationNavigation.ts`: `onOpenEncounter` (needs active encounter modal), `onOpenFaction` (needs FactionDetailModal), `onOpenJourney` (needs Journey tab navigation). Each is optional — gracefully no-ops when absent.
+
+**Depends on:** Respective modal implementations
 
 ---
 
