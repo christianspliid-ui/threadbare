@@ -16,10 +16,10 @@
 
 ## Recent Completions (2026-03-30)
 
+- Phase 20 (Wiring) complete — all 3 WIRE requirements done (camera animation, avatar pos gate, actorId attribution + NarrativeLog click-to-select)
 - TB-084 Graph Schema Gaps — `constructed_by` edge type + `bonded_to` target mismatch fixed
 - TB-081 Hex Action Remaining Effects — all 8 wired via dynamic GraphOp generators
 - v1.0 Foundation milestone shipped (Phases 1-18 + M2.5)
-- TB-077 Graph-Native Encounter Lifecycle Layer 1 (event nodes, graph queries, prose resolvers)
 - Phase 19 Plan 1 committed (PRNG replacement in 15 engine files)
 
 ## Active Backlog Ideas
