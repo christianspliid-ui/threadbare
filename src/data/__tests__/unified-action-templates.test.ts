@@ -171,6 +171,70 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
   });
 });
 
+// ─── Phase 17: spellName / description completeness ─────────────────
+
+describe('Phase 17: spellName and description completeness', () => {
+  /**
+   * action.* and divine.* templates must all have spellName and description.
+   * encounter.* templates are excluded — they are generated dynamically
+   * from encounter-content.ts and will be enriched in a future pass.
+   * hex.*, loc.*, artifact.*, sub.*, bind_thread.*, scry_agent, observe_agent etc.
+   * are also covered by this test since they live in unified-action-templates.ts.
+   */
+  const SCOPED_PREFIXES = [
+    'action.',
+    'divine.',
+    'hex.',
+    'loc.',
+    'artifact.',
+    'sub.',
+    'observe_agent',
+    'scry_agent',
+    'whisper_insight',
+    'dream_sending',
+    'bind_thread',
+  ];
+
+  const scopedTemplates = UNIFIED_ACTION_TEMPLATES.filter(t =>
+    SCOPED_PREFIXES.some(prefix => t.id.startsWith(prefix) || t.id === prefix.replace(/\.$/, ''))
+  );
+
+  it('scoped templates include action.* and divine.* and hex.* categories', () => {
+    expect(scopedTemplates.filter(t => t.id.startsWith('action.')).length).toBeGreaterThan(0);
+    expect(scopedTemplates.filter(t => t.id.startsWith('divine.')).length).toBeGreaterThan(0);
+    expect(scopedTemplates.filter(t => t.id.startsWith('hex.')).length).toBeGreaterThan(0);
+  });
+
+  it('every template has spellName and description (Phase 17)', () => {
+    for (const t of scopedTemplates) {
+      expect(t.spellName, `${t.id} missing spellName`).toBeTruthy();
+      expect(t.description, `${t.id} missing description`).toBeTruthy();
+    }
+  });
+
+  it('spellName is max 4 words for all scoped templates', () => {
+    for (const t of scopedTemplates) {
+      if (!t.spellName) continue;
+      expect(t.spellName.split(/\s+/).length, `${t.id} spellName too long`).toBeLessThanOrEqual(4);
+    }
+  });
+
+  it('description has no raw multi-digit numbers', () => {
+    for (const t of scopedTemplates) {
+      if (!t.description) continue;
+      expect(t.description, `${t.id} description contains raw number`).not.toMatch(/\b\d{2,}\b/);
+    }
+  });
+
+  it('migrateActionTemplate passes through spellName and description', () => {
+    const templateWithMeta = ACTION_TEMPLATES.find(t => t.spellName);
+    expect(templateWithMeta).toBeDefined();
+    const unified = migrateActionTemplate(templateWithMeta!);
+    expect(unified.spellName).toBe(templateWithMeta!.spellName);
+    expect(unified.description).toBe(templateWithMeta!.description);
+  });
+});
+
 describe('getUnifiedTemplateById', () => {
   it('returns template by exact id', () => {
     const first = UNIFIED_ACTION_TEMPLATES[0];
