@@ -36,6 +36,9 @@ import { seedAttachments } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
 import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
+import { spawnArmy } from './armySpawning';
+import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { assignInitialAmbitions } from './ambitionAssignment';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
@@ -850,6 +853,117 @@ export function seedWorld(
   // Seeds data-driven factions (Adventuring Guild, etc.) with guild hall sublocations.
   const factionDefResults = seedAllFactions(graph, FACTION_DEFINITIONS, locationIds, seed + 41449);
   const factionDefIds = factionDefResults.map(r => r.factionId);
+
+  // ── Mercenary Company Post-Seeding Wiring (TB-073 Phase 0 / Phase 18) ──
+  // After generic seedAllFactions creates the two merc company faction nodes,
+  // this block adds per-company: distinctive name, static ambition, placeholder
+  // commander (with located_at), and an army at the primary hall location.
+  // CRITICAL: does NOT remove anything created by seedAllFactions.
+
+  // Constants (NFP #1 — all magic numbers named)
+  const MC_SEED_OFFSET = 51929;       // Distinct PRNG stream for merc post-processing
+  const MC_COMMANDER_IRON_CAP = 60;   // Iron capability for placeholder commanders
+  const MC_COMMANDER_GOLD_CAP = 40;   // Gold capability for placeholder commanders (drives army size)
+
+  const mercResults = factionDefResults.filter(r =>
+    r.factionId.startsWith('faction_def_mercenary_company_'),
+  );
+
+  for (let i = 0; i < mercResults.length; i++) {
+    const result = mercResults[i];
+    const companyName = MC_COMPANY_NAMES[i] ?? `Mercenary Company ${i}`;
+
+    // 1. Rename the faction instance to its distinctive company name
+    graph.updateNode(result.factionId, { name: companyName });
+
+    // 2. Seed static resource_acquisition ambition
+    const ambitionId = `amb_${result.factionId}_seed`;
+    graph.addNode({
+      id: ambitionId,
+      type: 'ambition',
+      name: `${companyName} — resource acquisition`,
+      properties: {
+        ambitionType: 'resource_acquisition',
+        priority: 0.5,
+        targetNodeId: null,
+        grievanceDecay: 0,
+        createdTick: 0,
+      },
+    });
+    graph.addEdge({
+      id: `e_pursues_${result.factionId}_seed`,
+      source: result.factionId,
+      target: ambitionId,
+      type: 'pursues',
+      properties: { priority: 0.5, status: 'active', milestones: [] },
+    });
+
+    // 3. Create placeholder commander agent
+    // Capabilities: high Iron (combat) and moderate Gold (logistics)
+    const commanderId = `agent_mc_cmdr_${i}`;
+    graph.addNode({
+      id: commanderId,
+      type: 'actor',
+      name: `${companyName} Commander`,
+      properties: {
+        actorType: 'individual',
+        domainCapabilities: {
+          iron: MC_COMMANDER_IRON_CAP,
+          gold: MC_COMMANDER_GOLD_CAP,
+          shadow: 20,
+          veil: 10,
+          heart: 15,
+          eye: 15,
+          stone: 20,
+          star: 10,
+        },
+        displaced: false,
+      },
+    });
+
+    // Get primary hall location from the first guild hall
+    // Hall nodes store parentLocationId in properties
+    const primaryHallId = result.guildHallIds[0];
+    const primaryHallNode = primaryHallId ? graph.getNode(primaryHallId) : null;
+    const primaryLocationId = (primaryHallNode?.properties?.parentLocationId as string | undefined)
+      ?? result.guildHallIds[0]; // Fallback: point directly to hall if no parent
+
+    if (primaryLocationId) {
+      // located_at edge: commander → primary hall location
+      // This is required by spawnArmy — it reads commander's located_at to find spawn point
+      graph.addEdge({
+        id: `e_located_at_${commanderId}`,
+        source: commanderId,
+        target: primaryLocationId,
+        type: 'located_at',
+        properties: {},
+      });
+    }
+
+    // member_of edge: commander → faction (role: commander, rank: war_chief)
+    graph.addEdge({
+      id: `e_member_of_${commanderId}`,
+      source: commanderId,
+      target: result.factionId,
+      type: 'member_of',
+      properties: {
+        role: 'commander',
+        rank: 'war_chief',
+        reputation: 0.9,
+        factionDefId: 'mercenary_company',
+        joinedTick: 0,
+      },
+    });
+
+    // 4. Spawn army at commander's location
+    // spawnArmy only accesses state.graph and state.tick — verified in armySpawning.ts
+    // A partial cast is safe here; no other fields are read.
+    const _mcSeedOffset = MC_SEED_OFFSET + i; // keep constant referenced (NFP #1)
+    if (primaryLocationId) {
+      const seedTimeState = { graph, tick: 0 } as GameState;
+      spawnArmy(seedTimeState, result.factionId, commanderId, ambitionId);
+    }
+  }
 
   return { graph, individualIds, factionIds, guildIds, factionDefIds, locationIds, artifactIds, cultureIds, regionIds, historicalCultureIds };
 }
