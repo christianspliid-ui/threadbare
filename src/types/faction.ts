@@ -83,7 +83,8 @@ export type FactionType =
   | 'military'
   | 'religious'
   | 'political'
-  | 'criminal';
+  | 'criminal'
+  | 'monster';  // monster factions — lair-based, no guild halls (m2.5)
 
 export interface FactionDefinition {
   /** Unique identifier, e.g. 'adventuring_guild' */
@@ -112,6 +113,8 @@ export interface FactionDefinition {
   expulsionConsequences: ExpulsionConsequence[];
   /** Ambition type weighting for faction-level ambition selection (TB-073) */
   ambitionWeights?: Partial<Record<FactionAmbitionType, number>>;
+  /** True for monster factions — skips guild hall spawning, uses lair locations (m2.5) */
+  isMonsterFaction?: boolean;
 }
 
 // ─── Faction Ambitions (TB-073) ─────────────────────────────────────────
