@@ -286,7 +286,7 @@ Plans:
 **Goal:** Transform the right sidebar's RetinuePanel into a comprehensive Threads panel showing every graph node the Ascendant has a thread edge to — agents, locations, factions, artifacts, armies — with compact grouped rows, a floating detail view, thread-creation divine actions, and stub profile modals for each non-agent type.
 **Requirements**: THRD-01 (engine getThreadedNodes query), THRD-02 (ThreadsPanel compact grouped rows), THRD-03 (ThreadDetailView floating detail), THRD-04 (GameView layout restructure), THRD-05 (thread-creation action templates), THRD-06 (stub profile modals), THRD-07 (tests)
 **Depends on:** Phase 15
-**Plans:** 2/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 16-01-PLAN.md — Engine getThreadedNodes() query + ThreadsPanel compact grouped rows + GameView sidebar wiring

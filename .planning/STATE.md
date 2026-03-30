@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 16-03-PLAN.md
-last_updated: "2026-03-30T12:07:28.282Z"
+stopped_at: Completed 16-02-PLAN.md
+last_updated: "2026-03-30T12:08:56.991Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 11
-  completed_phases: 6
-  total_plans: 43
-  completed_plans: 30
+  completed_phases: 7
+  total_plans: 44
+  completed_plans: 31
   percent: 93
 ---
 
@@ -191,6 +191,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 15-fix-encounter-pipeline-scoring-movement-difficulty-scaling-round-robin-and-content-deserts P04 | 15 | 2 tasks | 4 files |
 | Phase 16-expand-retinue-sidebar-threads-area P01 | 6 | 2 tasks | 6 files |
 | Phase 16-expand-retinue-sidebar-threads-area P03 | 6 | 1 tasks | 3 files |
+| Phase 16-expand-retinue-sidebar-threads-area P02 | 8 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -333,6 +334,9 @@ Progress: [███░░░░░░░] 21%
 - [Phase 15]: Forced travel only triggers for no_candidates_after_filter (true content desert), not below_score_threshold
 - [Phase 16-expand-retinue-sidebar-threads-area]: ThreadsPanel replaces RetinuePanel/AgentInfoCard sidebar; getThreadedNodes classifies all 5 thread node types; faction dominantSphere resolves via multi-strategy lookup
 - [Phase 16-03]: Thread edge schema updated to support actor|location|artifact|artifact_legendary targets; bind_thread_army uses group subtype with documented limitation; establishedTick static at 0 in add_edge properties
+- [Phase 16-expand-retinue-sidebar-threads-area]: ThreadDetailView uses flex sibling layout with independent scroll contexts (not parent/child)
+- [Phase 16-expand-retinue-sidebar-threads-area]: handleOpenProfileModal routes agent to AgentProfileModal, non-agent to stub modals
+- [Phase 16-expand-retinue-sidebar-threads-area]: Faction sphere alignment shown FIRST in ThreadDetailView per CONTEXT.md locked decision
 
 ### Roadmap Evolution
 
@@ -348,6 +352,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:07:28.279Z
-Stopped at: Completed 16-03-PLAN.md
+Last session: 2026-03-30T12:08:56.988Z
+Stopped at: Completed 16-02-PLAN.md
 Resume file: None
