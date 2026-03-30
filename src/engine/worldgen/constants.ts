@@ -52,6 +52,26 @@ export const PROVINCE_CAPITAL_RADIUS = 3;
 /** Hex distance from seed treated as heartland region */
 export const PROVINCE_HEARTLAND_RADIUS = 8;
 
+// ─── Corner wilderness & danger gradient ────────────────────────
+/** Fraction of map diagonal used as corner danger influence radius */
+export const DANGER_CORNER_MARGIN_FRACTION = 0.20;
+/** Peak danger at exact corner hex (0-1) */
+export const DANGER_CORNER_PEAK = 1.0;
+/** Baseline danger along non-corner map edges (0-1) */
+export const DANGER_EDGE_BASELINE = 0.3;
+/** Minimum danger at map center */
+export const DANGER_CENTER_FLOOR = 0.0;
+/** How much dangerLevel boosts encounter difficulty (1.0 danger → +50% difficulty) */
+export const DANGER_DIFFICULTY_SCALE = 0.5;
+/** Hexes inward from corner for wilderness seed placement */
+export const CORNER_WILDERNESS_SEED_INSET = 3;
+/** Number of corner wilderness provinces (one per corner) */
+export const CORNER_WILDERNESS_COUNT = 4;
+/** Additional lair density per point of dangerLevel */
+export const LAIR_DANGER_DENSITY_BOOST = 0.04;
+/** Hard cap on lair spawn density per hex */
+export const MAX_LAIR_DENSITY = 0.15;
+
 // ─── Elevation noise constants ───────────────────────────────────
 /** Spatial scale of base elevation noise (smaller = more zoomed in terrain) */
 export const ELEVATION_SCALE = 0.06;

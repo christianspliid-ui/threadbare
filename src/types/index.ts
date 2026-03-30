@@ -89,6 +89,10 @@ export interface HexTile {
   baseTerrain?: TerrainType;
   /** Tick when terrain was last transformed (cooldown guard). */
   terrainTransformedTick?: number;
+
+  // ── Positional danger (set at worldgen, read-only thereafter) ──
+  /** Positional danger level (0.0–1.0). Higher = harder encounters. */
+  dangerLevel?: number;
 }
 
 /** Force overlay display modes */

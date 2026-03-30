@@ -1222,7 +1222,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             )}
 
             {viewLevel === 'hex-zoom' && focusedHex && hexSphereInfluence && (() => {
-              const hexTerrain = tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row)?.terrain ?? 'grassland';
+              const focusedTile = tiles.find(t => t.coord.col === focusedHex.col && t.coord.row === focusedHex.row);
+              const hexTerrain = focusedTile?.terrain ?? 'grassland';
+              const hexDangerLevel = focusedTile?.dangerLevel ?? 0;
               return (
                 <div className="flex flex-col h-full w-full">
                   <HexBreadcrumb
@@ -1252,6 +1254,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                       lineOfSight={hexLineOfSight}
                       cultures={hexCultures}
                       factions={hexFactions}
+                      dangerLevel={hexDangerLevel}
                     />
 
                     {/* Main: Narrative chronicle */}

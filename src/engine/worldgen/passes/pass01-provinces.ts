@@ -19,6 +19,8 @@ import {
   PROVINCE_CAPITAL_RADIUS,
   PROVINCE_HEARTLAND_RADIUS,
   BIOME_TEMP_BANDS,
+  CORNER_WILDERNESS_SEED_INSET,
+  CORNER_WILDERNESS_COUNT,
 } from '../constants';
 import {
   PROVINCE_ROLE_CAPITAL,
@@ -195,9 +197,40 @@ export function runProvincePass(ctx: WorldGenContext, params: WorldGenParams): v
     }
   }
 
-  // 3. Place wilderness seeds
-  const wildernessCount = WILDERNESS_PROVINCE_COUNT;
-  for (let w = 0; w < wildernessCount; w++) {
+  // 3a. Place corner wilderness seeds (guaranteed frontier regions)
+  const inset = Math.min(CORNER_WILDERNESS_SEED_INSET, Math.floor(Math.min(cols, rows) / 4));
+  const cornerTargets: HexCoord[] = [
+    { col: inset, row: inset },
+    { col: cols - 1 - inset, row: inset },
+    { col: inset, row: rows - 1 - inset },
+    { col: cols - 1 - inset, row: rows - 1 - inset },
+  ];
+  let cornersPlaced = 0;
+  for (const target of cornerTargets) {
+    if (cornersPlaced >= CORNER_WILDERNESS_COUNT) break;
+    // Try the target hex, then nudge diagonally inward if too close to existing seeds
+    let placed = false;
+    for (let nudge = 0; nudge <= 5; nudge++) {
+      const candidate: HexCoord = {
+        col: Math.min(cols - 1, Math.max(0, target.col + (target.col < cols / 2 ? nudge : -nudge))),
+        row: Math.min(rows - 1, Math.max(0, target.row + (target.row < rows / 2 ? nudge : -nudge))),
+      };
+      if (!tooClose(candidate, placedSeeds, PROVINCE_MIN_SEED_DISTANCE)) {
+        addProvince(null, false, candidate, []);
+        cornersPlaced++;
+        placed = true;
+        break;
+      }
+    }
+    // Fail-soft: skip this corner if no valid position found (NFP #4)
+    if (!placed) {
+      // Still try to consume a random wilderness slot
+    }
+  }
+
+  // 3b. Place remaining random wilderness seeds
+  const remainingWilderness = Math.max(0, WILDERNESS_PROVINCE_COUNT - cornersPlaced);
+  for (let w = 0; w < remainingWilderness; w++) {
     const wildCulture: CultureForWorldgen = {
       id: `wilderness_${w}`,
       preferredBiomes: [],

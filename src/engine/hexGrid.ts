@@ -6,6 +6,12 @@ import { detectRegionsBorderCost, type RegionFeatureType } from './regionDetecti
 import { assignPoliticalRegions } from './regionPolitical';
 import type { RegionData, RegionCluster } from './regionTypes';
 import { runFantasyOverlayPass } from './worldgen/passes/pass10-fantasyOverlay';
+import {
+  DANGER_CORNER_MARGIN_FRACTION,
+  DANGER_CORNER_PEAK,
+  DANGER_EDGE_BASELINE,
+  DANGER_CENTER_FLOOR,
+} from './worldgen/constants';
 
 /**
  * The result of world generation — includes tiles for rendering plus
@@ -178,6 +184,32 @@ export function generateWorld(
 }
 
 /**
+ * Compute positional danger level for a hex based on proximity to corners and edges.
+ * Pure function of position — no PRNG, fully deterministic (NFP #3).
+ * Scales automatically with map size via diagonal-fraction radius.
+ */
+function computeDangerLevel(col: number, row: number, cols: number, rows: number): number {
+  const diagonal = Math.sqrt(cols * cols + rows * rows);
+  const cornerRadius = diagonal * DANGER_CORNER_MARGIN_FRACTION;
+
+  // Corner danger: Euclidean distance to nearest corner, linear decay
+  const cornerCoords = [[0, 0], [cols - 1, 0], [0, rows - 1], [cols - 1, rows - 1]];
+  let minCornerDist = Infinity;
+  for (const [cx, cy] of cornerCoords) {
+    const d = Math.sqrt((col - cx) ** 2 + (row - cy) ** 2);
+    if (d < minCornerDist) minCornerDist = d;
+  }
+  const cornerDanger = Math.max(0, 1 - minCornerDist / cornerRadius) * DANGER_CORNER_PEAK;
+
+  // Edge danger: distance to nearest map edge, linear decay
+  const edgeDist = Math.min(col, row, cols - 1 - col, rows - 1 - row);
+  const edgeRadius = Math.min(cols, rows) * 0.25;
+  const edgeDanger = Math.max(0, 1 - edgeDist / edgeRadius) * DANGER_EDGE_BASELINE;
+
+  return Math.min(1.0, Math.max(cornerDanger, edgeDanger, DANGER_CENTER_FLOOR));
+}
+
+/**
  * Convert WorldGenContext to HexTile[] for the Phase 1 renderer.
  * WorldGenContext extends WorldGenData which has all required fields.
  */
@@ -199,6 +231,10 @@ function toHexTilesFromContext(ctx: WorldGenContext): HexTile[] {
       };
       if (hasRiver[i] === 1) {
         tile.hasRiver = true;
+      }
+      const danger = computeDangerLevel(col, row, cols, rows);
+      if (danger > 0) {
+        tile.dangerLevel = danger;
       }
       tiles.push(tile);
     }

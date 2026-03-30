@@ -30,6 +30,8 @@ export interface HexSidebarProps {
   lineOfSight: LineOfSight;
   cultures: HexCultureSummary[];
   factions: HexFactionSummary[];
+  /** Positional danger level (0.0–1.0). 0 = safe center, 1.0 = dangerous corner. */
+  dangerLevel?: number;
 }
 
 /**
@@ -185,6 +187,19 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
               }}
             >
               {terrainLabel(props.terrain)}
+            </div>
+          )}
+
+          {/* Danger Level (only shown when > 0) */}
+          {(props.dangerLevel ?? 0) > 0 && (
+            <div
+              style={{
+                fontSize: '11px',
+                color: (props.dangerLevel ?? 0) >= 0.7 ? 'var(--color-danger, #e55)' : 'var(--text-tertiary)',
+                fontFamily: 'var(--font-display)',
+              }}
+            >
+              Danger: {Math.round((props.dangerLevel ?? 0) * 100)}%
             </div>
           )}
 

@@ -18,7 +18,7 @@
  */
 
 import { mulberry32 } from '../lib/prng';
-import { PASS_SEED_LAIRS } from './worldgen/constants';
+import { PASS_SEED_LAIRS, LAIR_DANGER_DENSITY_BOOST, MAX_LAIR_DENSITY } from './worldgen/constants';
 import {
   PROVINCE_ROLE_CAPITAL,
   PROVINCE_ROLE_HEARTLAND,
@@ -141,14 +141,16 @@ export function seedMonsterLairs(
       continue;
     }
 
-    // Get province role and map to danger zone
+    // Get province role and map to danger zone, boosted by hex dangerLevel
     const idx = col + row * cols;
     const role = provinceRoles[idx] ?? 3; // default to wilderness if out of bounds
     const dangerZone = roleToDangerZone(role);
-    const density = dangerZoneToDensity(dangerZone);
+    const baseDensity = dangerZoneToDensity(dangerZone);
+    const dangerBoost = (tile.dangerLevel ?? 0) * LAIR_DANGER_DENSITY_BOOST;
+    const density = Math.min(baseDensity + dangerBoost, MAX_LAIR_DENSITY);
 
     // Capital zones never get lairs
-    if (density === 0) {
+    if (baseDensity === 0) {
       rng(); // consume RNG to maintain determinism downstream
       continue;
     }

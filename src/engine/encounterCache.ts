@@ -23,10 +23,12 @@
 import type { ReachDomain } from '../types/traits';
 import type { ThreatRating, EncounterType, EncounterTemplate } from '../types/encounter';
 import type { ValuePair } from '../types/agent';
-import type { SphereName } from '../types/index';
+import type { HexTile, SphereName } from '../types/index';
 import type { GraphNode } from '../types/graph';
 import type { WorldGraph } from './graph';
 import { getEncountersByLocationType, getEncountersBySublocationAndLocation } from '../data/encounter-content';
+import { hexKey } from '../lib/hexKey';
+import { DANGER_DIFFICULTY_SCALE } from './worldgen/constants';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -242,6 +244,38 @@ function getLocationType(
   return locSubtype ?? undefined;
 }
 
+// ─── Danger Map ─────────────────────────────────────────────────
+
+/**
+ * Build a hex-key → dangerLevel lookup from tiles.
+ * Used by the encounter cache to scale difficulty at dangerous locations.
+ */
+export function buildDangerMap(tiles: HexTile[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const t of tiles) {
+    const dl = t.dangerLevel ?? 0;
+    if (dl > 0) {
+      map.set(hexKey(t.coord.col, t.coord.row), dl);
+    }
+  }
+  return map;
+}
+
+/**
+ * Resolve a location node's dangerLevel from the danger map.
+ * Falls back to 0 if location has no hex coords or hex has no danger.
+ */
+function locationDangerLevel(graph: WorldGraph, locationId: string, dangerMap?: Map<string, number>): number {
+  if (!dangerMap || dangerMap.size === 0) return 0;
+  const loc = graph.getNode(locationId);
+  if (!loc) return 0;
+  const props = loc.properties as Record<string, unknown>;
+  const col = props.hexCol as number | undefined;
+  const row = props.hexRow as number | undefined;
+  if (col == null || row == null) return 0;
+  return dangerMap.get(hexKey(col, row)) ?? 0;
+}
+
 // ─── Cache Manager ──────────────────────────────────────────────
 
 export class EncounterCacheManager {
@@ -251,20 +285,27 @@ export class EncounterCacheManager {
   /** Current difficulty tier — updated on each full cache rebuild */
   private currentTier: string = 'early';
 
+  /** Cached danger map for incremental updates */
+  private dangerMap?: Map<string, number>;
+
   /**
    * Build the full cache from scratch by scanning all location nodes.
-   * Applies difficulty tier multiplier based on the current tick.
+   * Applies difficulty tier multiplier based on the current tick,
+   * composed with per-hex dangerLevel when provided.
    */
-  buildFullCache(graph: WorldGraph, tick: number = 0): void {
+  buildFullCache(graph: WorldGraph, tick: number = 0, dangerMap?: Map<string, number>): void {
     this.byLocation.clear();
+    this.dangerMap = dangerMap;
     const newTier = selectDifficultyTier(tick);
-    const multiplier = getDifficultyMultiplier(newTier);
+    const baseMult = getDifficultyMultiplier(newTier);
     this.currentTier = newTier;
 
     const locations = graph.getNodesByType('location');
     for (const loc of locations) {
       const locationType = getLocationType(graph, loc.id);
       if (!locationType) continue;
+      const danger = locationDangerLevel(graph, loc.id, dangerMap);
+      const multiplier = baseMult * (1 + danger * DANGER_DIFFICULTY_SCALE);
       const entries = buildEntriesForLocationAndSublocations(graph, loc.id, locationType, multiplier);
       if (entries.length > 0) {
         this.byLocation.set(loc.id, entries);
@@ -279,11 +320,14 @@ export class EncounterCacheManager {
 
   /**
    * Incrementally add cache entries when a new location is created.
+   * Applies cached dangerMap if available.
    */
   onLocationCreated(graph: WorldGraph, locationId: string): void {
     const locationType = getLocationType(graph, locationId);
     if (!locationType) return;
-    const entries = buildEntriesForLocationAndSublocations(graph, locationId, locationType);
+    const danger = locationDangerLevel(graph, locationId, this.dangerMap);
+    const multiplier = 1.0 * (1 + danger * DANGER_DIFFICULTY_SCALE);
+    const entries = buildEntriesForLocationAndSublocations(graph, locationId, locationType, multiplier);
     if (entries.length > 0) {
       this.byLocation.set(locationId, entries);
     }
