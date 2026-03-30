@@ -250,7 +250,7 @@ Plans:
 **Goal:** Close all M2 implementation gaps: implement aftermath sphere pressure and refugee trace stub in applyAftermath, complete 13 deferred .todo tests across battle/siege plans, and add HexMapV2 army visual layers (army sprites, battle indicators, siege indicators).
 **Requirements:** GAP-01 (aftermath sphere pressure), GAP-02 (refugee trace stub), GAP-03 (hasThreadToBattle), GAP-04 (selectSpotlight), GAP-05 (generateRegionalEncounters), GAP-06 (army visual layers), GAP-07 (battle/siege indicators)
 **Depends on:** Phase 12
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
 
 Plans:
 - [ ] 13-01-PLAN.md — Aftermath sphere pressure + refugee trace stub
@@ -277,6 +277,16 @@ Plans:
 
 Plans:
 - [ ] TBD (run /gsd:plan-phase 15 to break down)
+
+### Phase 16: Expand retinue sidebar to show all nodes the Ascendant has threads to — becomes a Threads area showing agents, armies, factions, artifacts, locations, anything being invested in
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 15
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 16 to break down)
 
 ---
 
