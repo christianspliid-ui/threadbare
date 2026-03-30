@@ -270,7 +270,7 @@ function hexTarget(overrides?: Partial<TargetContext>): TargetContext {
     traitIds: [],
     sphereAffinity: null,
     position: { col: 3, row: 5 },
-    properties: {},
+    properties: { terrain: 'hex' },
     ...overrides,
   };
 }

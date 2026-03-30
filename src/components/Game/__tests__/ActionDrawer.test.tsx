@@ -171,6 +171,32 @@ describe('ActionDrawer', () => {
     expect(screen.getByText('Attune Leyline')).toBeInTheDocument();
   });
 
+  it('hides location cards (no narrativeLayer) when layer tabs are active', () => {
+    const mixedSlots: WheelSlot[] = [
+      {
+        id: 'ta:hex.bless_land', label: 'Bless Land', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Bless the land', narrativeLayer: 'land',
+      },
+      {
+        id: 'ta:loc.ward', label: 'Ward', type: 'target_action', angleDeg: 0,
+        available: true, lockedReason: null, essenceCost: 3, detectionRisk: 0,
+        sphere: null, interventionType: null, rangeStatus: 'in_range', hexDistance: 1,
+        description: 'Place a ward', // no narrativeLayer — location card
+      },
+    ];
+    render(
+      <ActionDrawer open={true} slots={mixedSlots} targetName="Hex (3,7)" targetLabel="Desert"
+        onSlotClick={vi.fn()} onClose={vi.fn()} />
+    );
+    // Layer tabs active because hex cards present
+    expect(screen.getByTestId('layer-filter-tabs')).toBeInTheDocument();
+    // Hex card visible, location card hidden
+    expect(screen.getByText('Bless Land')).toBeInTheDocument();
+    expect(screen.queryByText('Ward')).not.toBeInTheDocument();
+  });
+
   it('sorts cards: available first, locked last (IA-003 progressive disclosure)', () => {
     const mixedSlots: WheelSlot[] = [
       { ...mockSlots[0] },

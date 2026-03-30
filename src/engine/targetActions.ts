@@ -104,9 +104,12 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       ? template.targetCategories
       : TARGET_ACTION_CONSTANTS.DEFAULT_TARGET_CATEGORIES;
 
+    // Hex targets are built by buildHexTargetContext which always sets properties.terrain.
+    // Location targets (specific locations) never set properties.terrain.
+    const isHexTarget = target.nodeType === 'location' && !!target.properties.terrain;
     const nodeTypeMatches = (categories as readonly string[]).includes(target.nodeType)
       || (target.nodeType === 'location' && (categories as readonly string[]).includes('sublocation') && target.subtype === 'sublocation')
-      || (target.nodeType === 'location' && (categories as readonly string[]).includes('hex') && target.subtype !== 'sublocation');
+      || (isHexTarget && (categories as readonly string[]).includes('hex'));
 
     if (!nodeTypeMatches) {
       counts.byNodeType++;

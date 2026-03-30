@@ -153,10 +153,15 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
     // Slot filtering — apply layer filter for hex-targeting cards
     const { observationSlots, interventionSlots, lockedSlots } = useMemo(() => {
       let filtered = slots.filter(slot => slot.type !== 'info');
-      // When layer tabs are active, only show cards matching the selected layer
-      // (cards without a narrativeLayer pass through — they're non-hex cards like "Meet The First")
+      // When layer tabs are active (hex-zoom), only show cards matching the selected layer.
+      // target_action cards without a narrativeLayer are location/sublocation templates —
+      // hide them here; they show in location view where layer tabs aren't active.
+      // Non-target_action cards (e.g. "Meet The First" intervention) pass through.
       if (hasLayerCards && selectedLayer) {
-        filtered = filtered.filter(s => !s.narrativeLayer || s.narrativeLayer === selectedLayer);
+        filtered = filtered.filter(s => {
+          if (s.type === 'target_action') return s.narrativeLayer === selectedLayer;
+          return true; // non-target_action slots (observations, interventions) always pass
+        });
       }
       const available = filtered.filter(s => s.available);
       return {
