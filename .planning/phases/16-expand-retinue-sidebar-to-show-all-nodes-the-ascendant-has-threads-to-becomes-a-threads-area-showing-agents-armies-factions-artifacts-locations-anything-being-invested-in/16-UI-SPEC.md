@@ -22,8 +22,8 @@ created: 2026-03-30
 | Preset | not applicable |
 | Component library | custom shared components in `src/components/shared/` |
 | Icon library | inline SVG + Unicode glyphs (existing pattern: eye `👁`, sword `⚔`, boot, coin, etc.) |
-| Font — display | Cinzel (serif), weights 400/600/700 — `var(--font-display)` |
-| Font — body | Alegreya Sans, weights 400/500/700 — `var(--font-body)` |
+| Font — display | Cinzel (serif), weights 400/700 — `var(--font-display)` |
+| Font — body | Alegreya Sans, weights 400/700 — `var(--font-body)` |
 
 Source: `src/index.css` lines 1–12, codebase scan 2026-03-30.
 
@@ -43,7 +43,7 @@ All values are multiples of 4px. Tokens are already declared in `src/index.css` 
 
 Exceptions:
 
-- **Compact row height target: 40px** — achieved via `py-1` (4px top/bottom) + two text lines at `--text-xs`/`--text-sm` with `leading-tight`. This is by design — not a spacing token violation. Source: CONTEXT.md "25% of current card height" + RESEARCH.md Pattern 2.
+- **Compact row height target: 40px** — achieved via `py-1` (4px top/bottom) + two text lines at `--text-xs` with `leading-tight`. This is by design — not a spacing token violation. Source: CONTEXT.md "25% of current card height" + RESEARCH.md Pattern 2.
 - **Left tier border stripe: 3px** — matches existing RetinuePanel pattern. Not a spacing token; it is a border-width value.
 - **Detail view width: `clamp(240px, 280px, 30vw)`** — responsive cap prevents viewport overflow at 1440px. Source: RESEARCH.md Pattern 3 + Pitfall 3.
 
@@ -51,20 +51,27 @@ Exceptions:
 
 ## Typography
 
-Four sizes in use for this phase — the full type scale from `src/index.css` is preserved; only roles consumed by new components are listed here.
+Three sizes in use for this phase. The scale steps from 16px to 18px to 21px — each step is 2–3px, enough for clear role differentiation when combined with weight contrast (400 vs 700) and font-family contrast (Cinzel vs Alegreya Sans).
+
+**Weights declared: 400 (regular) and 700 (bold) only.**
 
 | Role | Size | CSS Var | Weight | Line Height | Usage |
 |------|------|---------|--------|-------------|-------|
-| Row name | 17px | `var(--text-sm)` | 500 (medium) | 1.2 (tight) | Entity name in compact thread row |
-| Row secondary | 16px | `var(--text-xs)` | 400 (regular) | 1.2 (tight) | Secondary info line in compact row (location, type info) |
+| Row name | 16px | `var(--text-xs)` | 700 (bold) | 1.2 (tight) | Entity name in compact thread row — weight contrast over secondary line creates hierarchy within the tight row |
+| Row secondary | 16px | `var(--text-xs)` | 400 (regular) | 1.2 (tight) | Secondary info line in compact row (location, type info) — same size as name, weight 400 creates subordination |
 | Panel heading | 16px | `var(--text-xs)` | 700 (bold) + uppercase | 1 | Section group headers via `.section-heading` class |
 | Detail body | 18px | `var(--text-base)` | 400 (regular) | 1.5 | Detail view field values (capabilities, sphere, status) |
+| Panel title | 21px | `var(--text-lg)` | 700 (bold) | 1.2 | "Threads" panel title at top of ThreadsPanel |
+
+**Size steps:** 16px (row content + section headings) → 18px (detail body) → 21px (panel title). Each step is meaningful: +2px between detail body and row content, +3px between panel title and detail body.
+
+**Within-row hierarchy:** Row name and secondary share 16px but differ by weight (700 vs 400). This is intentional — compact rows are too small for a size step; weight is the differentiator. Name reads first due to bolder stroke.
 
 **Fonts:**
-- Entity names and section headings: `var(--font-display)` (Cinzel)
+- Entity names, section headings, and panel title: `var(--font-display)` (Cinzel)
 - Secondary info and detail body: `var(--font-body)` (Alegreya Sans)
 
-Source: `src/index.css` type scale + existing RetinuePanel/AgentInfoCard patterns.
+Source: `src/index.css` type scale + existing RetinuePanel/AgentInfoCard patterns. Revised 2026-03-30: removed weight 500; resolved 16/17/18 scale into 16/18/21 with clear role assignment.
 
 ---
 
@@ -165,6 +172,7 @@ Source: RESEARCH.md Pattern 3 + Pitfall 1 + Pitfall 3.
 
 ```
 ThreadsPanel (full height, overflow-y-auto)
+  ├── Panel title "Threads" [21px, weight 700, Cinzel]
   ├── SectionHeading "Agents" count={n}           [always expanded by default]
   │   ├── CompactThreadRow (agent) × n
   │   └── [collapsed state: header only, chevron]
@@ -186,15 +194,15 @@ ThreadsPanel (full height, overflow-y-auto)
 
 ```
 ┌─[3px tier stripe]─────────────────────────────────────┐
-│  Name (truncated)                          [eye icon]  │  ~20px
-│  Secondary info (truncated, tertiary color)            │  ~16px
+│  Name (truncated, 16px weight 700)         [eye icon]  │  ~20px
+│  Secondary info (truncated, 16px weight 400)           │  ~16px
 └────────────────────────────────────────────────────────┘
 total height: ~40px including 4px top/bottom padding
 ```
 
 - **Tier stripe:** `borderLeftWidth: '3px'`, `borderLeftColor: TIER_COLORS[tier] || TIER_COLOR_DEFAULT`
 - **Background:** `var(--bg-raised)` default, `var(--bg-hover)` on hover, `ring-2 ring-amber-400/60` when selected
-- **Name:** `var(--font-display)`, `var(--text-sm)`, weight 500, truncate
+- **Name:** `var(--font-display)`, `var(--text-xs)`, weight 700, truncate
 - **Secondary:** `var(--font-body)`, `var(--text-xs)`, weight 400, `var(--text-tertiary)`, truncate
 - **Eye icon:** `IconButton` right-aligned, `onClick: onCenterOnMap`, stops event propagation
 
@@ -218,9 +226,9 @@ Source: CONTEXT.md per-type decision data + RESEARCH.md Pattern 5.
 │ [Tier badge] Tier name                 │
 ├────────────────────────────────────────┤
 │ [Decision data fields — adaptive]      │  body — bg-surface, overflow-y-auto
-│ Only populated fields shown            │
+│ Only populated fields shown            │  18px Alegreya Sans weight 400
 ├────────────────────────────────────────┤
-│ [View Profile →]                       │  footer — links to full modal
+│ [View Full Profile →]                  │  footer — links to full modal
 └────────────────────────────────────────┘
 ```
 
@@ -248,7 +256,7 @@ Source: CONTEXT.md "Per-type decision data" + RESEARCH.md Pattern 3.
 | Click eye icon on row | Centers + zooms map to entity's hex | Stops row click propagation |
 | Click ✕ in detail view | Closes detail view; row deselects | |
 | Click section header | Toggles section collapse/expand | Local state only |
-| Click "View Profile" in detail view | Opens stub profile modal for node type | Modal via Modal shared component |
+| Click "View Full Profile" in detail view | Opens stub profile modal for node type | Modal via Modal shared component |
 | Press Escape | Closes detail view (if open) | Handled by GameView |
 | Click thread-creation action card | Executes thread-creation action via ActionDrawer | Existing Generalized Action Targeting flow |
 
@@ -368,6 +376,7 @@ No third-party registry blocks are used. All components are either existing proj
 | Section defaults (Agents open, others collapsed) | Claude's discretion |
 | Node-type category colors | Derived from existing palette — warm/cool hue mapping |
 | Destructive actions: none | CONTEXT.md scope — thread creation only, no deletion |
+| Typography revision — 2 weights (400/700), 3 sizes (16/18/21px) | Checker revision 2026-03-30: removed weight 500, widened size scale |
 
 ---
 
