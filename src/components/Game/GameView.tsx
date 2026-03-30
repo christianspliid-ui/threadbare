@@ -44,6 +44,7 @@ import { NarrativeLog } from './NarrativeLog';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
+import { ThreadsPanel } from './ThreadsPanel';
 import { AgentProfileModal } from './AgentProfileModal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
@@ -174,6 +175,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Agent interaction hook ──
   const {
     selectedAgentId,
+    selectedThreadNode,
     drawerOpen,
     pendingIntervention,
     profileModalAgentId,
@@ -182,12 +184,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     agendaPickerOpen,
     pendingAgendas,
     retinueAgents,
+    threadedNodes,
     agentDetail,
     agentInfoCard,
     agentFullProfile,
     wheelSlots,
     strandData,
     handleAgentSelect,
+    handleThreadNodeSelect,
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
@@ -1308,33 +1312,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
               borderLeft: '1px solid var(--border-gold)',
             }}
           >
-            {agentInfoCard ? (
-              <AgentInfoCard
-                card={agentInfoCard}
-                onViewProfile={handleViewProfile}
-                onBack={handleBackFromAgentDetail}
-                onZoomToLocation={handleZoomToLocation}
-                graph={gameState.graph}
-                seed={gameState.seed}
-              />
-            ) : retinueAgents.length > 0 ? (
-              <div style={{ padding: 'var(--panel-padding)' }}>
-                <RetinuePanel
-                  agents={retinueAgents}
-                  selectedAgentId={selectedAgentId}
-                  onAgentSelect={handleAgentSelect}
+            <div style={{ padding: 'var(--panel-padding)' }}>
+              {threadedNodes.length > 0 ? (
+                <ThreadsPanel
+                  threadedNodes={threadedNodes}
+                  selectedNodeId={selectedThreadNode?.nodeId ?? null}
+                  onNodeSelect={handleThreadNodeSelect}
                   onCenterOnHex={handleCenterOnHex}
                   onZoomToLocation={handleZoomToLocation}
                   activeEncounters={retinueActiveEncounters}
                   onEncounterClick={handleEncounterClick}
                   onToggleAttentionMode={handleToggleAttentionMode}
                 />
-              </div>
-            ) : (
-              <div style={{ padding: 'var(--panel-padding)' }}>
+              ) : (
                 <WorldPulse gameState={gameState} />
-              </div>
-            )}
+              )}
+            </div>
           </div>
         )}
       </div>
