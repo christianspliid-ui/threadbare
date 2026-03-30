@@ -7,6 +7,7 @@ import {
   OFF_ROAD_ATTRITION_PENALTY,
   UNDERFUNDED_ATTRITION_PENALTY,
   QUINTESSENCE_THRESHOLDS,
+  MONSTER_TERRITORY_ATTRITION,
 } from '../armyAttrition';
 import { getArmyTerrainCost, getArmyMovementCost, ARMY_ROAD_DISCOUNT } from '../armyMovement';
 import type { ArmyState } from '../../types/army';
@@ -101,6 +102,31 @@ function addFaction(graph: WorldGraph, id: string, armyId: string, prosperity: n
 
 function getArmyState(graph: WorldGraph, armyId: string): ArmyState {
   return graph.getNode(armyId)!.properties.armyState as ArmyState;
+}
+
+/**
+ * Add a lair node located at the given hex location.
+ * subtype controls whether it's active ('lair') or cleared ('cleared_lair').
+ */
+function addLair(
+  graph: WorldGraph,
+  lairId: string,
+  locationId: string,
+  subtype: 'lair' | 'cleared_lair' = 'lair',
+): void {
+  graph.addNode({
+    id: lairId,
+    type: 'location',
+    name: `Lair ${lairId}`,
+    properties: { locationSubtype: subtype },
+  });
+  graph.addEdge({
+    id: `e_lair_${lairId}`,
+    source: lairId,
+    target: locationId,
+    type: 'located_at',
+    properties: {},
+  });
 }
 
 // ─── Movement Cost Tests ───────────────────────────────────────────────────
@@ -293,5 +319,76 @@ describe('phaseArmyAttrition', () => {
     expect(() => phaseArmyAttrition(makeState(1, graph))).not.toThrow();
     // Army still exists (just uses plains default)
     expect(graph.getNode('army_orphan')).toBeDefined();
+  });
+});
+
+// ─── Monster Territory Attrition Tests ────────────────────────────────────────
+
+describe('monster territory attrition', () => {
+  let graph: WorldGraph;
+
+  beforeEach(() => {
+    graph = new WorldGraph();
+  });
+
+  it('army at hex with no lair receives standard attrition only (no monster bonus)', () => {
+    addLocation(graph, 'hex1', 'plains', true); // on road, no lair
+    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addFaction(graph, 'f1', 'army1', 0.5);
+
+    phaseArmyAttrition(makeState(1, graph));
+
+    const state = getArmyState(graph, 'army1');
+    // Standard: base + terrain (no off-road, no underfunded, no monster)
+    const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
+    expect(state.quintessence).toBeCloseTo(expectedStandard, 5);
+  });
+
+  it('army at hex with active lair receives standard attrition + MONSTER_TERRITORY_ATTRITION bonus', () => {
+    addLocation(graph, 'hex1', 'plains', true);
+    addLair(graph, 'lair1', 'hex1', 'lair'); // active lair at same hex
+    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addFaction(graph, 'f1', 'army1', 0.5);
+
+    phaseArmyAttrition(makeState(1, graph));
+
+    const state = getArmyState(graph, 'army1');
+    // Should be MORE loss than standard (monster bonus applied)
+    const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
+    const expectedWithMonster = expectedStandard - MONSTER_TERRITORY_ATTRITION;
+    expect(state.quintessence).toBeCloseTo(expectedWithMonster, 5);
+  });
+
+  it('army at hex with cleared_lair receives NO monster attrition', () => {
+    addLocation(graph, 'hex1', 'plains', true);
+    addLair(graph, 'lair1', 'hex1', 'cleared_lair'); // cleared lair — no monster attrition
+    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addFaction(graph, 'f1', 'army1', 0.5);
+
+    phaseArmyAttrition(makeState(1, graph));
+
+    const state = getArmyState(graph, 'army1');
+    // Should match standard attrition only (no monster bonus)
+    const expectedStandard = 30 - (ARMY_BASE_ATTRITION + 1.5 * TERRAIN_ATTRITION_FACTOR);
+    expect(state.quintessence).toBeCloseTo(expectedStandard, 5);
+  });
+
+  it('monster attrition is additive (added to existing attrition, not replacing it)', () => {
+    addLocation(graph, 'hex1', 'plains', false); // no road = off-road penalty
+    addLair(graph, 'lair1', 'hex1', 'lair'); // active lair
+    addArmy(graph, 'army1', 'hex1', { quintessence: 30, quintessenceMax: 30 });
+    addFaction(graph, 'f1', 'army1', 0.5);
+
+    phaseArmyAttrition(makeState(1, graph));
+
+    const state = getArmyState(graph, 'army1');
+    // All penalties stack: base + terrain + off-road + monster
+    const expected = 30 - (
+      ARMY_BASE_ATTRITION +
+      1.5 * TERRAIN_ATTRITION_FACTOR +
+      OFF_ROAD_ATTRITION_PENALTY +
+      MONSTER_TERRITORY_ATTRITION
+    );
+    expect(state.quintessence).toBeCloseTo(expected, 5);
   });
 });
