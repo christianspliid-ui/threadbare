@@ -239,3 +239,14 @@ Not calendar estimates — relative sizing:
 | M1 | Medium-Large | New per-entity data model + pressure engine + aggregation + IPK UI + magic/overchannel. Larger scope than original "wire existing engine" estimate. |
 | M2 | Large | New entity type, new movement patterns, battle resolution, destruction mechanics, significant UI. Most new-code-intensive milestone. |
 | M3 | Medium-Large | Many small connections (M3.1–M3.6) plus the CRUD action expansion (M3.7) and resource system (M3.8). |
+
+### Phase 12.1: UI review fixes — wire army/battle layers, event colors, Tailwind cleanup (INSERTED)
+
+**Goal:** Wire Phase 12 army/battle layers into GameView for map visibility, add conflict event colors to NarrativeLog, and refactor ArmiesTab to Tailwind with destruction log.
+**Requirements**: UI-REVIEW-P1, UI-REVIEW-P2, UI-REVIEW-P3
+**Depends on:** Phase 12
+**Plans:** 2 plans
+
+Plans:
+- [ ] 12.1-01-PLAN.md — Wire army/battle data into GameView + HexV2View
+- [ ] 12.1-02-PLAN.md — Conflict event colors + ArmiesTab Tailwind refactor + destruction log
