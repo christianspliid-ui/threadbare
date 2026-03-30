@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-081 Hex Action Remaining Effects — 8 actions wired via dynamic GraphOp generators, 23 tests (2026-03-30)
 - ✅ TB-077 Graph-Native Encounter Lifecycle Layer 1 — event nodes, participated_in/occurred_at edges, prose resolvers, 14 tests (2026-03-30)
 - ✅ TB-078 AscendantSheet QA fixes — tooltip z-index, foundation.order, IconButton close, a11y, polish, Creation/Foundation essence split (2026-03-29)
 - ✅ TB-074 Encounter Tuning & Agent Variety — complete (2026-03-29): All 4 sessions. Template coverage, scoring overhaul, familiarity/exploration, born-later spawn, difficulty escalation, encounter chains.

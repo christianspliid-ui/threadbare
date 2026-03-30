@@ -16,6 +16,7 @@
 
 ## Recent Completions (2026-03-30)
 
+- TB-081 Hex Action Remaining Effects — all 8 wired via dynamic GraphOp generators
 - v1.0 Foundation milestone shipped (Phases 1-18 + M2.5)
 - TB-077 Graph-Native Encounter Lifecycle Layer 1 (event nodes, graph queries, prose resolvers)
 - Phase 19 Plan 1 committed (PRNG replacement in 15 engine files)

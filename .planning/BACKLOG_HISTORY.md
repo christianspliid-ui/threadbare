@@ -6,6 +6,12 @@
 
 ---
 
+## ✅ TB-081 · Hex Action Remaining Effects (2026-03-30, complete 2026-03-30)
+
+All 8 remaining hex action effects wired via dynamic GraphOp generators. Tier 1 (full effects): amplify_flow, shift_dominion, spark_encounter. Tier 2 (lightweight apply_influence with behaviorTags for future TB-069): stir_people, summon_congregation, bestow_vision, incite_exodus, plant_dream. 9 tunable constants, 23 tests.
+
+---
+
 ## ✅ TB-080 · Mercenary Company Runtime Wiring (2026-03-30, complete 2026-03-30)
 
 Phase 18: Wired existing merc company definition + encounter templates into runtime. Multi-instance faction seeding, factionDefId key, mc.* encounter pipeline (accessible templates, sublocation detection, promotionPending), rank gating, reputation tracking, auto-triggered promotions. 2 plans.

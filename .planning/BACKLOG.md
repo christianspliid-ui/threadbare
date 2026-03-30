@@ -8,7 +8,41 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-083**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-086**.
+
+---
+
+## 📋 TB-083 · Duplicate React Key Errors — Event ID Collisions (2026-03-30)
+
+`orchestrator.ts` resets `eventCounter = 0` every tick (for determinism), producing `evt_1`, `evt_2`, etc. each tick. `NarrativeLog.tsx` renders events across ticks using `key={evt.id}`, causing 284+ duplicate key errors per page load. Other modules (`phaseDoom`, `phaseMandate`) already include tick in their IDs (`doom_evt_${tick}_${n}`).
+
+**Fix:** Change orchestrator ID format to `evt_${tick}_${++eventCounter}`. Also audit `journeyEngine.ts` (uses separate `nextEventId++` counter) and `narrative.ts` (uses `evt_${seed}` which can collide across calls with same seed).
+
+**Severity:** High — floods console, can cause React rendering bugs (duplicated/omitted children).
+
+---
+
+## 📋 TB-084 · Graph Schema Gaps — `constructed_by` Edge + `bonded_to` Target Mismatch (2026-03-30)
+
+Two schema issues found in QA sweep:
+
+1. **`constructed_by` not in EDGE_SCHEMA:** `worldSeed.ts:628` creates `constructed_by` edges and `mandates/builders-legacy.json` references them, but the type is missing from `EdgeType` in `graph.ts`. Produces ~88 console warnings per load.
+2. **`bonded_to` target type mismatch:** Schema expects target `artifact_legendary` but seed data (`starter_ashenmane_fang`) has node type `artifact`. Produces a validation warning per load.
+
+**Fix:** Add `'constructed_by'` to `EdgeType` union with appropriate source/target constraints. For `bonded_to`, either update seed artifact node type to `artifact_legendary` or relax the schema constraint.
+
+**Severity:** Medium — noisy console, no runtime breakage.
+
+---
+
+## 📋 TB-085 · CLI Stale Field References + Test Timeout (2026-03-30)
+
+Two minor issues from QA:
+
+1. **CLI doom clock shows `undefined`:** `scripts/cli.ts:248-249` references `state.doomClock.ticksRemaining` and `state.doomDefinition.totalDoomTicks` — fields that don't exist. Actual fields: `currentTick`/`totalTicks` on `DoomClockState`, `totalTicks` on `DoomClockDefinition`.
+2. **Encounter liveness contract test timeout:** `encounter-liveness.contract.test.ts:211` multi-seed test exceeds 5s default. Runs 4 seeds sequentially — needs a higher timeout value.
+
+**Severity:** Low — CLI display bug, flaky test.
 
 ---
 
@@ -85,17 +119,13 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 ---
 
-## 💡 TB-081 · Hex Action Remaining Effects (2026-03-30)
+## ✅ TB-081 · Hex Action Remaining Effects (2026-03-30)
 
-Cleanup sprint wired 5 of 12 deferred hex actions via GraphOps. Remaining:
+All 8 remaining hex action effects wired via dynamic GraphOp generators (2026-03-30).
 
-**Agent motivation system dependent (5):** `stir_people` (faction disposition), `summon_congregation` (agent movement), `bestow_vision` (agent ambition), `incite_exodus` (agent departure + prosperity), `plant_dream` (agent ambition). Natural fit with NPC/chain reaction features.
+**Tier 1 (full effects):** `amplify_flow` (magicalSaturation boost), `shift_dominion` (sphere rebalancing), `spark_encounter` (divine_spark event node).
 
-**Other blockers (3):** `spark_encounter` (needs encounter spawn API), `shift_dominion` (sphere influence rebalancing), `amplify_flow` (location-level magicalSaturation, not hex tile).
-
-**Observation-only (already working, no effect needed):** survey, dowse_resources, sense_leylines, read_currents, divine_populace, scry_factions, read_stones, whisper_intuition, mark_ground.
-
-**Depends on:** TB-045 graph ops (✅ wired), NPC/agent motivation system (TB-069), Chain reactions (TB-017)
+**Tier 2 (lightweight via apply_influence, full behavior when TB-069 lands):** `stir_people`, `summon_congregation`, `bestow_vision`, `incite_exodus`, `plant_dream` — each applies divine influence with behaviorTags that the agent motivation system will read.
 
 ---
 
