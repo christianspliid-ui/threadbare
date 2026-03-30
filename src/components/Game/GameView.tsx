@@ -177,6 +177,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleAvatarScryClick,
   } = useScry({ gameState, setGameState, archetype, scryState, setScryState });
 
+  // ── Imperative toast state (for action dispatch feedback from useAgentInteraction) ──
+  // Toasts pushed here are merged with notificationState.toasts in ToastStack.
+  // Must be defined before useAgentInteraction since onPushToast is passed to that hook.
+  const [actionToasts, setActionToasts] = useState<import('../../types/notification').ToastItem[]>([]);
+  const handlePushToast = useCallback((toast: import('../../types/notification').ToastItem) => {
+    setActionToasts(prev => {
+      const now = Date.now();
+      const live = prev.filter(t => t.expiresAt > now);
+      return [...live, toast];
+    });
+  }, []);
+
   // ── Agent interaction hook ──
   const {
     selectedAgentId,
@@ -218,6 +230,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     archetype,
     onOpenScry: handleOpenScry,
     scryState,
+    onPushToast: handlePushToast,
+    onParticleBurst: (hexCol, hexRow, sphereColor) => {
+      hexMapRef.current?.spawnParticleBurst(hexCol, hexRow, sphereColor);
+    },
   });
 
   // When fog is disabled, create a proxy map that returns 'visible' for every key
@@ -1124,7 +1140,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             <NarrativeLog events={gameState.recentEvents} />
             {/* Toast notifications */}
             <ToastStack
-              toasts={[...notificationState.toasts, ...encounterToasts]}
+              toasts={[...notificationState.toasts, ...encounterToasts, ...actionToasts]}
               onDismiss={handleDismissToast}
               onSelectAgent={handleAgentSelect}
               onNavigate={handleNotificationNavigate}

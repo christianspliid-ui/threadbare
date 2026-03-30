@@ -30,6 +30,7 @@ import {
   getFearsStrand,
 } from '../../../engine/strands';
 import { useInterventionAudio } from './useInterventionAudio';
+import { getSphereColor } from '../../../data/sphereIcons';
 
 interface UseAgentInteractionParams {
   gameState: GameState;
@@ -39,6 +40,11 @@ interface UseAgentInteractionParams {
   scryState?: import('../../../types/scry').ScryState;
   /** Optional callback to push a toast notification immediately on action dispatch */
   onPushToast?: (toast: ToastItem) => void;
+  /**
+   * Optional callback to trigger a sphere-colored particle burst at a hex.
+   * Called after target_action dispatch (after the glow delay) at the target agent's hex.
+   */
+  onParticleBurst?: (hexCol: number, hexRow: number, sphereColor: string) => void;
 }
 
 export function useAgentInteraction({
@@ -48,6 +54,7 @@ export function useAgentInteraction({
   onOpenScry,
   scryState,
   onPushToast,
+  onParticleBurst,
 }: UseAgentInteractionParams) {
   // ── Hooks ──
   const { playCastSound } = useInterventionAudio();
@@ -200,6 +207,30 @@ export function useAgentInteraction({
         const capturedAgentId = selectedAgentId;
         const capturedSphere = slot.sphere;
 
+        // Capture target hex position for particle burst (resolve via agent props then located_at edge)
+        let capturedHexCol: number | undefined;
+        let capturedHexRow: number | undefined;
+        {
+          const agentNode = gameState.graph.getNode(selectedAgentId);
+          if (agentNode) {
+            let col = agentNode.properties.hexCol as number | undefined;
+            let row = agentNode.properties.hexRow as number | undefined;
+            if (col == null || row == null) {
+              const locEdges = gameState.graph.getOutgoingEdges(agentNode.id, 'located_at');
+              const locationId = locEdges.length > 0 ? locEdges[0].target : undefined;
+              if (locationId) {
+                const loc = gameState.graph.getNode(locationId);
+                if (loc) {
+                  col = loc.properties.hexCol as number | undefined;
+                  row = loc.properties.hexRow as number | undefined;
+                }
+              }
+            }
+            capturedHexCol = col;
+            capturedHexRow = row;
+          }
+        }
+
         setTimeout(() => {
           const templateId = templateIdFromSlotId(slotId);
           if (!templateId) {
@@ -249,6 +280,11 @@ export function useAgentInteraction({
               expiresAt: Date.now() + 4000,
             };
             onPushToast(newToast);
+          }
+
+          // Spawn sphere-colored particle burst at target hex (visual feedback on map)
+          if (onParticleBurst && capturedHexCol != null && capturedHexRow != null && capturedSphere) {
+            onParticleBurst(capturedHexCol, capturedHexRow, getSphereColor(capturedSphere));
           }
 
           setGameState(prev => {
@@ -305,7 +341,7 @@ export function useAgentInteraction({
         setPendingIntervention({ slotId, interventionType: slot.interventionType });
       }
     },
-    [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.ascendantId, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId, playCastSound, onPushToast, setGameState]
+    [selectedAgentId, wheelSlots, onOpenScry, gameState.graph, gameState.ascendantId, gameState.seed, gameState.tick, archetype, pendingIntervention, playingCardId, playCastSound, onPushToast, onParticleBurst, setGameState]
   );
 
   const handleAgendaSelect = useCallback((agenda: AgendaTemplate) => {
