@@ -1,6 +1,0 @@
-{
-  "archetype": "changing",
-  "description": "A new cosmic order replacing the old",
-  "stageNames": ["Old Winds Die", "New Powers Stir", "The Turning", "Power Shifts", "The New Order"],
-  "thresholds": [0.20, 0.40, 0.60, 0.80, 1.0]
-}

@@ -595,6 +595,104 @@
   .gap-m3 { color: var(--gold-bright); }
   .gap-later { color: var(--ink-faint); }
 
+  /* ═══ STATUS BADGES ═══ */
+  .m-status {
+    display: inline-block;
+    font-family: 'Fira Code', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1px;
+    margin-bottom: 0.75rem;
+  }
+  .m-status-complete {
+    background: rgba(74, 124, 89, 0.2);
+    color: var(--life-green);
+    border: 1px solid rgba(74, 124, 89, 0.35);
+  }
+  .m-status-active {
+    background: rgba(196, 153, 60, 0.15);
+    color: var(--gold);
+    border: 1px solid rgba(196, 153, 60, 0.3);
+  }
+  .m-status-design {
+    background: rgba(139, 111, 92, 0.15);
+    color: var(--ink-faint);
+    border: 1px solid rgba(139, 111, 92, 0.3);
+  }
+
+  /* ═══ DEVLOG ═══ */
+  .devlog {
+    margin-top: 3rem;
+  }
+  .devlog-entry {
+    border-left: 2px solid var(--line-strong);
+    padding: 1.25rem 2rem;
+    margin-bottom: 0;
+    position: relative;
+    transition: background 0.3s;
+  }
+  .devlog-entry:hover {
+    background: rgba(255,255,255,0.015);
+  }
+  .devlog-entry .devlog-date {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    opacity: 0.6;
+    margin-bottom: 0.25rem;
+  }
+  .devlog-entry h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--parchment);
+    margin-bottom: 0.35rem;
+  }
+  .devlog-entry p {
+    font-size: 0.85rem;
+    color: var(--parchment-dark);
+    max-width: 600px;
+    margin-bottom: 0;
+    line-height: 1.7;
+  }
+  .devlog-entry.devlog-soul { border-color: var(--soul-purple); }
+  .devlog-entry.devlog-soul h4 { color: var(--soul-light); }
+  .devlog-entry.devlog-conflict { border-color: var(--iron-red); }
+  .devlog-entry.devlog-conflict h4 { color: var(--iron-bright); }
+  .devlog-entry.devlog-system { border-color: var(--gold-dim); }
+  .devlog-entry.devlog-system h4 { color: var(--gold-bright); }
+
+  .devlog-current {
+    margin-top: 2.5rem;
+    padding: 1.5rem 2rem;
+    border: 1px solid var(--line);
+    background: rgba(196, 153, 60, 0.04);
+  }
+  .devlog-current h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 0.75rem;
+  }
+  .devlog-current .wip-item {
+    font-size: 0.85rem;
+    color: var(--parchment-dark);
+    margin-bottom: 0.4rem;
+    padding-left: 1rem;
+    position: relative;
+  }
+  .devlog-current .wip-item::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--gold-dim);
+  }
+
   /* ═══ FOOTER ═══ */
   footer {
     padding: 4rem 2rem;
@@ -636,6 +734,7 @@
   <span class="nav-title">Threadbearer</span>
   <a href="#philosophy">Philosophy</a>
   <a href="#sequence">Sequence</a>
+  <a href="#devlog">Dev Log</a>
   <a href="#layers">Layers</a>
   <a href="#dna">DNA</a>
   <a href="#gaps">Gaps</a>
@@ -647,7 +746,7 @@
     <img src="/screens/title-screen.png" alt="The Fantasy World Simulator — cosmic energy streams through ancient ruins" loading="eager">
   </div>
   <h1>Build the world first.<br>Find the <em>game</em> inside it.</h1>
-  <div class="subtitle">Product Strategy &mdash; March 2026</div>
+  <div class="subtitle">Product Strategy &mdash; Updated 30 March 2026</div>
   <div class="divider"></div>
   <div class="thesis">
     The Fantasy World Simulator is a systemic god-game where <strong>emergent narrative</strong> comes from the collision of deep, interconnected systems &mdash; not from scripted events. Like CK3 and Stellaris, the simulation comes first. The game emerges from watching systems interact in surprising ways.
@@ -703,10 +802,11 @@
       </div>
       <div class="milestone-body">
         <h3>World-Soul Connection</h3>
+        <div class="m-status m-status-complete">Core complete</div>
         <div class="m-tagline">The world breathes</div>
-        <p>Wire the cosmic metabolism into the tick loop. Player actions shift sphere balance, which ripples into encounter ecology, prosperity, agent behavior, and terrain. The World-Soul is the butterfly effect engine &mdash; everything downstream gets richer because of it.</p>
-        <p>Without this, player actions feel local and isolated. With it, cursing a hex shifts cosmic balance, which darkens encounters across a region, which dips prosperity, which makes agents more desperate. Thread-pulling in a living tapestry.</p>
-        <div class="m-delivers"><strong>Delivers:</strong> Sphere balance computation from graph state &middot; Prosperity/encounter/behavior modifiers &middot; HUD visibility &middot; Existing hex actions wired to global balance</div>
+        <p>Every entity in the world tracks its connection to all eight creation spheres. Player actions, agent behavior, doom progression, and sustained control effects create sphere pressure that builds up or erodes entity scores. Magic is sphere fluency &mdash; no separate system. The world resists change through homeostasis, and the player must push hard to overcome its inertia.</p>
+        <p>The sphere pressure engine is operational: six upstream sources push pressure, opposition cancellation and allied defense create natural tension, and the triangle number scale provides built-in homeostasis. Downstream, sphere scores modify prosperity, shift encounter scoring, and influence agent decisions. The World-Soul emerges from the aggregate of all entity scores.</p>
+        <div class="m-delivers"><strong>Delivered:</strong> Per-entity sphere affinity (triangle number scale) &middot; Sphere pressure resolution engine (6 upstream sources) &middot; Downstream modifiers (prosperity, encounters, agent decisions) &middot; Magic as sphere fluency with overchannel &middot; IPK prose keywords &middot; WorldSoulIndicator &middot; Debug panel Sphere State tab &middot; 109 sphere tests</div>
         <div class="milestone-art art-soul">
           <img src="/backgrounds/court/spirit.png" alt="Ethereal purple energy — the World-Soul" loading="lazy">
         </div>
@@ -720,10 +820,11 @@
       </div>
       <div class="milestone-body">
         <h3>Conflict & Destruction</h3>
+        <div class="m-status m-status-complete">Engine complete</div>
         <div class="m-tagline">The world breaks</div>
-        <p>Armies march across the hex map. Factions declare war goals. Sieges break cities you built up. Sacking creates ruins from what were once thriving settlements. Refugees flood toward safety. Monsters roam the borderlands.</p>
-        <p>This is where emergent storytelling gets visceral. A guild war that escalates into a siege because one faction hired mercenaries and the other called in allies &mdash; that's the kind of story players screenshot and share. Destruction gives the economy stakes: building a trade network is satisfying, building one you might lose is compelling.</p>
-        <div class="m-delivers"><strong>Delivers:</strong> Army graph entities visible on map &middot; Battle/siege resolution &middot; Location destruction &amp; refugee generation &middot; Trade route disruption &middot; Monster encounters &middot; War as storytelling</div>
+        <p>The full conflict engine is operational. Mercenary companies form within factions. Faction ambitions drive war goals. Armies spawn, march across the hex map with quintessence attrition, and engage in multi-step battle resolution. Sieges escalate over ticks with sortie, negotiation, and assault options. Victorious armies sack settlements, destroying sublocations, tanking prosperity, and generating refugees. The aftermath reshapes the world.</p>
+        <p>This is where emergent storytelling gets visceral. A guild war that escalates into a siege because one faction hired mercenaries and the other called in allies &mdash; that's the kind of story players screenshot and share. Monster encounters (M2.5) are the next design target for the conflict layer.</p>
+        <div class="m-delivers"><strong>Delivered:</strong> Mercenary company + faction ambition system &middot; Army entities with spawning encounters &middot; Army movement + quintessence attrition &middot; Battle resolution with spotlight encounters &middot; Siege resolution (multi-tick, escalating) &middot; Location destruction + aftermath + refugees &middot; Armies debug tab &middot; 102 conflict tests</div>
         <div class="milestone-art art-conflict">
           <img src="/concept-art/locations/battleground.png" alt="Aftermath of a great battle — tattered banners and scorched earth" loading="lazy">
         </div>
@@ -737,10 +838,11 @@
       </div>
       <div class="milestone-body">
         <h3>Dynamic Economy</h3>
+        <div class="m-status m-status-design">Design phase</div>
         <div class="m-tagline">The world trades</div>
-        <p>Connect encounters, factions, and player actions to the prosperity/wealth/trade systems. By the time this lands, sphere balance affects prosperity, armies disrupt trade, sieges destroy infrastructure, and refugees surge populations. The economy won't need artificial drama &mdash; it'll react to real events.</p>
-        <p>Eight phases from low-effort high-impact (encounter &rarr; economy feedback) through to deep systemic connections (resource scarcity, guild activation, wealth-spending crossovers between Reaches).</p>
-        <div class="m-delivers"><strong>Delivers:</strong> Encounter &harr; economy feedback loops &middot; Wealth spending across Reaches &middot; Trade route lifecycle &middot; Unrest from inequality &middot; Active guilds &middot; Gold+Stone player CRUD actions &middot; Resource scarcity</div>
+        <p>Connect encounters, factions, and player actions to the prosperity/wealth/trade systems. Now that sphere balance affects prosperity and armies can destroy infrastructure, the economy inherits real drama from the other two pillars. It won't need artificial tension &mdash; it reacts to real events.</p>
+        <p>Eight phases from low-effort high-impact (encounter &rarr; economy feedback) through to deep systemic connections (resource scarcity, guild activation, wealth-spending crossovers between Reaches). Design docs are in progress.</p>
+        <div class="m-delivers"><strong>Planned:</strong> Encounter &harr; economy feedback loops &middot; Wealth spending across Reaches &middot; Trade route lifecycle &middot; Unrest from inequality &middot; Active guilds &middot; Gold+Stone player CRUD actions &middot; Resource scarcity</div>
         <div class="milestone-art art-economy">
           <img src="/concept-art/locations/town.png" alt="A bustling medieval market town — commerce in motion" loading="lazy">
         </div>
@@ -750,27 +852,74 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════ DEVLOG ═══ -->
+<section id="devlog">
+  <div class="section-label fade-in">Development Log</div>
+  <h2 class="fade-in">What we've built <em>recently</em></h2>
+  <p class="fade-in">A running record of significant completions, updated weekly.</p>
+
+  <div class="devlog-current fade-in">
+    <h4>Currently in progress</h4>
+    <div class="wip-item">Encounter tuning pass &mdash; born-later agent spawning near content, difficulty escalation by game phase, multi-stage encounter chains (Scholar's Path, Rise Through the Ranks, Merchant's Gambit)</div>
+    <div class="wip-item">Graph-native encounter lifecycle &mdash; promoting encounter outcomes from ephemeral state to durable graph nodes, enabling queryable history for prose enrichment and agent biography</div>
+    <div class="wip-item">M3 economy design &mdash; encounter-to-economy feedback loops, wealth spending crossovers between Reaches</div>
+  </div>
+
+  <div class="devlog">
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">29 March 2026</div>
+      <h4>Encounter Tuning & Agent Variety &mdash; Sessions 1-2</h4>
+      <p>Overhauled encounter scoring: template coverage raised to 8+ per location type, dynamic cooldowns prevent repetition, familiarity discount rewards exploration over staying put, personality amplification makes agents behaviorally distinct. Score display bug fixed.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">29 March 2026</div>
+      <h4>Ascendant Character Sheet</h4>
+      <p>Character sheet modal for the player's god &mdash; creation and foundation sphere affinities, essence reserves, intervention history, and domain influence at a glance.</p>
+    </div>
+    <div class="devlog-entry devlog-conflict fade-in">
+      <div class="devlog-date">29 March 2026</div>
+      <h4>Conflict & Destruction Engine &mdash; All 7 Phases</h4>
+      <p>The full M2 conflict pipeline in a single day: mercenary companies form within factions, faction ambitions drive war goals, armies spawn and march with quintessence attrition, battles resolve through multi-step spotlight encounters, sieges escalate over ticks, and sacking destroys infrastructure with lasting consequences. 102 new tests.</p>
+    </div>
+    <div class="devlog-entry devlog-soul fade-in">
+      <div class="devlog-date">28 March 2026</div>
+      <h4>Sphere Affinity System &mdash; M1 Core</h4>
+      <p>Per-entity sphere affinity on the triangle number scale. Six upstream pressure sources (control effects, doom, mandates, actions, encounters, rivals), downstream modifiers for prosperity, encounter scoring, and agent decisions. Magic as sphere fluency with overchannel risk. Interactive Prose Keywords (IPK) render sphere-colored, tooltippable keywords in all narrative text. 109 tests.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">28 March 2026</div>
+      <h4>Agent Character Sheet Overhaul</h4>
+      <p>Five-tab layout replacing the long scroll: Overview, Prowess, Bonds, Journey, Chronicle. Multi-faceted knowledge model where individual data points are revealed through specific narrative interactions. Four new divine action cards for deliberate discovery: Observe, Scry, Whisper Insight, Dream Sending.</p>
+    </div>
+    <div class="devlog-entry devlog-system fade-in">
+      <div class="devlog-date">27 March 2026</div>
+      <h4>Faction UI, Notifications, Palette Themes</h4>
+      <p>Agent profiles show faction rank and reputation. Faction events surface through the alert bar. Two palette themes ship: Golden Hour (warm) and Dark Parchment (cool). Right-click dismiss and navigation targets for notifications.</p>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════════════ LAYERS ═══ -->
 <section id="layers">
   <div class="section-label fade-in">System Architecture</div>
   <h2 class="fade-in">The four layers of a <em>living world</em></h2>
-  <p class="fade-in">Each layer builds on the one below. The foundation is already built. The three milestones add the layers that make the simulation feel alive.</p>
+  <p class="fade-in">Each layer builds on the one below. Three of the four layers are now operational. The economy layer completes the stack.</p>
 
   <div class="layer-diagram">
     <div class="layer layer-3 fade-in">
-      <div class="layer-tag">Layer 4 &middot; M3</div>
+      <div class="layer-tag">Layer 4 &middot; M3 &middot; Design phase</div>
       <h4>Commerce & Resources</h4>
       <div class="layer-desc">Trade routes, wealth, prosperity, guilds, scarcity. The circulatory system. Things are produced, moved, consumed, and fought over.</div>
     </div>
     <div class="layer layer-2 fade-in">
-      <div class="layer-tag">Layer 3 &middot; M2</div>
+      <div class="layer-tag">Layer 3 &middot; M2 &middot; Engine complete</div>
       <h4>Conflict & Destruction</h4>
-      <div class="layer-desc">Armies, sieges, sacking, monsters, refugees. The immune system. Forces that break and reshape the world through violence.</div>
+      <div class="layer-desc">Armies, sieges, sacking, refugees. The immune system. Forces that break and reshape the world through violence. Engine operational &mdash; monster encounters next.</div>
     </div>
     <div class="layer layer-1 fade-in">
-      <div class="layer-tag">Layer 2 &middot; M1</div>
+      <div class="layer-tag">Layer 2 &middot; M1 &middot; Core complete</div>
       <h4>Cosmic Metabolism</h4>
-      <div class="layer-desc">World-Soul, sphere balance, harmony/entropy. The nervous system. Everything that happens shifts the cosmic balance, which shifts everything else.</div>
+      <div class="layer-desc">World-Soul, sphere balance, harmony/entropy, magic as sphere fluency. The nervous system. Everything that happens shifts the cosmic balance, which shifts everything else.</div>
     </div>
     <div class="layer layer-0 fade-in">
       <div class="layer-tag">Layer 1 &middot; Complete</div>
@@ -836,7 +985,7 @@
 <section id="gaps">
   <div class="section-label fade-in">Journey Audit</div>
   <h2 class="fade-in">Known gaps and <em>where they land</em></h2>
-  <p class="fade-in">Fourteen gaps identified by tracing the end-to-end player journey. Each one is mapped to the milestone where it naturally resolves.</p>
+  <p class="fade-in">Ten gaps identified by tracing the end-to-end player journey. Four are now resolved. Each remaining gap is mapped to the milestone where it naturally resolves.</p>
 
   <table class="gaps-table fade-in">
     <thead>
@@ -844,51 +993,57 @@
         <th>Gap</th>
         <th>Description</th>
         <th>Severity</th>
-        <th>Resolves In</th>
+        <th>Status</th>
       </tr>
     </thead>
     <tbody>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">D</span></td>
+        <td>World-Soul not in tick loop</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; M1</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">F</span></td>
+        <td>No danger in the world</td>
+        <td><span class="gap-severity gap-structural"></span>Structural</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Partially resolved &mdash; M2 armies operational, monsters next</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">G</span></td>
+        <td>Agent character sheet needs overhaul</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Resolved &mdash; Phase 11</span></td>
+      </tr>
+      <tr style="opacity: 0.45;">
+        <td><span class="gap-id">J</span></td>
+        <td>No chain reactions from player actions</td>
+        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
+        <td><span class="gap-landing" style="color: var(--life-green);">Foundation laid &mdash; M1 sphere pressure propagation</span></td>
+      </tr>
       <tr>
         <td><span class="gap-id">A</span></td>
         <td>Doom has no mechanical teeth</td>
         <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-m1">M1</span> + <span class="gap-landing gap-m2">M2</span></td>
+        <td><span class="gap-landing gap-m2">Post-M2</span> &mdash; doom spawns armies/monsters, triggers sieges</td>
       </tr>
       <tr>
         <td><span class="gap-id">B</span></td>
         <td>Rival gods are inert (text only)</td>
         <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-m2">M2</span></td>
+        <td><span class="gap-landing gap-m2">M2</span> &mdash; rivals field armies, declare wars</td>
       </tr>
       <tr>
         <td><span class="gap-id">C</span></td>
         <td>No onboarding path for new players</td>
         <td><span class="gap-severity gap-critical"></span>Critical</td>
-        <td><span class="gap-landing gap-later">Post-M3</span></td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">D</span></td>
-        <td>World-Soul not in tick loop</td>
-        <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing gap-m1">M1</span></td>
+        <td><span class="gap-landing gap-later">Post-M3</span> &mdash; onboarding needs content to onboard into</td>
       </tr>
       <tr>
         <td><span class="gap-id">E</span></td>
         <td>Economy is one-directional</td>
         <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing gap-m3">M3</span></td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">F</span></td>
-        <td>No danger in the world (monsters)</td>
-        <td><span class="gap-severity gap-structural"></span>Structural</td>
-        <td><span class="gap-landing gap-m2">M2</span></td>
-      </tr>
-      <tr>
-        <td><span class="gap-id">G</span></td>
-        <td>Agent character sheet needs overhaul</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing gap-later">Between milestones</span></td>
+        <td><span class="gap-landing gap-m3">M3</span> &mdash; primary target</td>
       </tr>
       <tr>
         <td><span class="gap-id">H</span></td>
@@ -902,19 +1057,13 @@
         <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
         <td><span class="gap-landing gap-m3">M3</span> partial</td>
       </tr>
-      <tr>
-        <td><span class="gap-id">J</span></td>
-        <td>No chain reactions from player actions</td>
-        <td><span class="gap-severity gap-enrichment"></span>Enrichment</td>
-        <td><span class="gap-landing gap-m1">M1</span> foundation</td>
-      </tr>
     </tbody>
   </table>
 </section>
 
 <!-- ═══════════════════════════════════════ FOOTER ═══ -->
 <footer>
-  The Fantasy World Simulator &middot; Product Strategy &middot; March 2026 &middot; Build the world, find the game
+  Threadbearer &middot; Product Strategy &middot; Last updated 30 March 2026 &middot; Build the world, find the game
 </footer>
 
 <script>
