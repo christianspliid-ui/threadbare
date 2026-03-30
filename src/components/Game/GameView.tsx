@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SPHERE_NAMES, type CosmologyProfile } from '../../types';
 import type { AscendantArchetype } from '../../types/influence';
 import { resumeTheme } from '../../audio/themeAudio';
@@ -21,14 +21,11 @@ import { IconButton } from '../shared/IconButton';
 import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
-import { FACTION_HERALDIC_COLORS } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
-import type { ArmyRenderData } from '../HexMapV2/scene/ArmySpriteMesh';
-import { ARMY_SIZE_SMALL_MAX } from '../HexMapV2/scene/ArmySpriteMesh';
-import type { BattleRenderData } from '../HexMapV2/scene/BattleIndicatorMesh';
-import type { SiegeRenderData } from '../HexMapV2/scene/SiegeIndicatorMesh';
-import type { ArmyState } from '../../types/army';
-import type { BattleState } from '../../types/battle';
+import { buildArmyRenderData } from '../HexMapV2/scene/ArmyLayer';
+import type { ArmyRenderData } from '../HexMapV2/scene/ArmyLayer';
+import { buildBattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
+import type { BattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
@@ -44,12 +41,6 @@ import { NarrativeLog } from './NarrativeLog';
 import { HarvestScreen } from './HarvestScreen';
 import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
-import { ThreadsPanel } from './ThreadsPanel';
-import { ThreadDetailView } from './ThreadDetailView';
-import { LocationProfileModal } from './LocationProfileModal';
-import { FactionSheet } from './FactionSheet';
-import { ArmySheet } from './ArmySheet';
-import { ArtifactSheet } from './ArtifactSheet';
 import { AgentProfileModal } from './AgentProfileModal';
 import { StrandView } from './StrandView';
 import { InterventionConfirm } from './InterventionConfirm';
@@ -180,7 +171,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Agent interaction hook ──
   const {
     selectedAgentId,
-    selectedThreadNode,
     drawerOpen,
     pendingIntervention,
     profileModalAgentId,
@@ -189,14 +179,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     agendaPickerOpen,
     pendingAgendas,
     retinueAgents,
-    threadedNodes,
     agentDetail,
     agentInfoCard,
     agentFullProfile,
     wheelSlots,
     strandData,
     handleAgentSelect,
-    handleThreadNodeSelect,
     handleWheelSlotClick,
     handleInterventionConfirm,
     handleInterventionCancel,
@@ -295,108 +283,37 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
       .filter(n => !n.properties.sublocationTypeId) // Exclude sublocations — they share parent hex coords
-      .map(n => ({
-        locationType: (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string,
-        hexCol: n.properties.hexCol as number,
-        hexRow: n.properties.hexRow as number,
-        name: n.name,
-        isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
-      }));
+      .map(n => {
+        const locationType = (n.properties.locationSubtype ?? n.properties.locationType ?? 'unexplored_poi') as string;
+        const node: LocationNode = {
+          locationType,
+          hexCol: n.properties.hexCol as number,
+          hexRow: n.properties.hexRow as number,
+          name: n.name,
+          isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
+        };
+        // Pass lair-specific properties for sphere-tinted textures and tier-based sizeClass
+        if (locationType === 'lair') {
+          node.dominantSphere = n.properties.dominantSphere as string | undefined;
+          node.lairTier = n.properties.lairTier as string | undefined;
+        }
+        return node;
+      });
   }, [gameState.graph]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
 
-  // ── Military render data adapters (graph → ArmyRenderData[], BattleRenderData[], SiegeRenderData[]) ──
-  // Plan 13-04: Extract army, battle, and siege state from actor nodes for HexMapV2 rendering.
-  // Armies are actor nodes with armyState property. Battles are actor nodes with battleState property.
-  // NFP #4: Missing/invalid data is silently skipped — never crashes.
-  const armyRenderData = useMemo<ArmyRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
-    const result: ArmyRenderData[] = [];
-    for (const node of actors) {
-      const armyState = node.properties.armyState as ArmyState | undefined;
-      if (armyState == null) continue;
+  // ── Army render data adapter (graph → ArmyRenderData[]) ──
+  const armyRenderData: ArmyRenderData[] = useMemo(
+    () => buildArmyRenderData(gameState.graph),
+    [gameState.graph, gameState.tick]
+  );
 
-      // Armies store their location via properties or located_at edge
-      let hexCol = node.properties.hexCol as number | undefined;
-      let hexRow = node.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) {
-        const locEdges = gameState.graph.getOutgoingEdges(node.id, 'located_at');
-        if (locEdges.length > 0) {
-          const loc = gameState.graph.getNode(locEdges[0].target);
-          hexCol = loc?.properties.hexCol as number | undefined;
-          hexRow = loc?.properties.hexRow as number | undefined;
-        }
-      }
-      if (hexCol == null || hexRow == null) continue;
-
-      // Faction color via member_of edge → faction node index in actors list
-      const memberEdges = gameState.graph.getOutgoingEdges(node.id, 'member_of');
-      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-      const factionNodes = gameState.graph.getNodesByType('faction');
-      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
-      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
-
-      // Headcount → size number for scale tiers
-      const headcount = armyState.headcount ?? ARMY_SIZE_SMALL_MAX;
-
-      result.push({
-        armyId: node.id,
-        hexCol,
-        hexRow,
-        factionColor,
-        armySize: headcount,
-        isInBattle: node.properties.battleState != null,
-      });
-    }
-    return result;
-  }, [gameState.graph, gameState.tick]);
-
-  const battleRenderData = useMemo<BattleRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
-    const result: BattleRenderData[] = [];
-    for (const node of actors) {
-      const battleState = node.properties.battleState as BattleState | undefined;
-      if (battleState == null) continue;
-
-      let hexCol = node.properties.hexCol as number | undefined;
-      let hexRow = node.properties.hexRow as number | undefined;
-      if (hexCol == null || hexRow == null) continue;
-
-      result.push({ battleNodeId: node.id, hexCol, hexRow });
-    }
-    return result;
-  }, [gameState.graph, gameState.tick]);
-
-  const siegeRenderData = useMemo<SiegeRenderData[]>(() => {
-    const actors = gameState.graph.getNodesByType('actor');
-    const result: SiegeRenderData[] = [];
-    for (const node of actors) {
-      const battleState = node.properties.battleState as BattleState | undefined;
-      if (battleState?.battleType !== 'siege' || !battleState.settlementId) continue;
-
-      const settlementNode = gameState.graph.getNode(battleState.settlementId);
-      const sCol = settlementNode?.properties.hexCol as number | undefined;
-      const sRow = settlementNode?.properties.hexRow as number | undefined;
-      if (sCol == null || sRow == null) continue;
-
-      // Attacker faction color
-      const attackerNode = gameState.graph.getNode(battleState.attackerArmyId);
-      const memberEdges = attackerNode ? gameState.graph.getOutgoingEdges(attackerNode.id, 'member_of') : [];
-      const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
-      const factionNodes = gameState.graph.getNodesByType('faction');
-      const factionIdx = factionId ? factionNodes.findIndex(f => f.id === factionId) : 0;
-      const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
-
-      result.push({
-        siegeNodeId: node.id,
-        settlementHexCol: sCol,
-        settlementHexRow: sRow,
-        factionColor,
-      });
-    }
-    return result;
-  }, [gameState.graph, gameState.tick]);
+  // ── Battle indicator data adapter (graph → BattleIndicatorData[]) ──
+  const battleIndicatorData: BattleIndicatorData[] = useMemo(
+    () => buildBattleIndicatorData(gameState.graph),
+    [gameState.graph, gameState.tick]
+  );
 
   // ── Notification preferences hook ──
   const {
@@ -653,11 +570,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   const handleEncounterClose = useCallback(() => {
     setTieredEncounterState(null);
-    if (wasRunningBeforeEncounterPause.current) {
-      wasRunningBeforeEncounterPause.current = false;
-      setRunning(true);
-    }
-  }, [setRunning]);
+  }, []);
 
   /** Intervention handler — player chose an intervention for the current encounter step */
   const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {
@@ -722,35 +635,21 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     });
   }, [setGameState, archetype.sphereAlignment.primary]);
 
-  // Auto-interrupt for all encounter notifications (not just the_first)
-  // Pause is handled by the general encounterModalOpen useEffect below
+  // Auto-interrupt for Strongly Threaded encounters (the_first)
   useEffect(() => {
     const notifications = gameState.encounterNotifications ?? [];
     for (const notif of notifications) {
       if (notif.viewed || notif.resolved) continue;
-      // Auto-open — all encounters auto-interrupt regardless of court position
+      if (notif.courtPosition !== 'the_first') continue;
+      // Auto-open and pause
       handleOpenEncounterFromNotification(notif);
+      if (running) setRunning(false);
       break; // Only one auto-interrupt at a time
     }
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, running, setRunning]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
-
-  // ── Stub modal state for non-agent thread types (Plan 16-02) ──
-  const [stubModalState, setStubModalState] = useState<{ nodeId: string; category: import('../../engine/retinue').ThreadCategory } | null>(null);
-
-  // ── Auto-pause when encounter modal opens, auto-resume on close ──
-  /** Tracks whether the game was running before an encounter modal opened */
-  const wasRunningBeforeEncounterPause = useRef<boolean>(false);
-  const encounterModalOpen = tieredEncounterState !== null || meetingState !== null;
-
-  useEffect(() => {
-    if (encounterModalOpen && running) {
-      wasRunningBeforeEncounterPause.current = true;
-      setRunning(false);
-    }
-  }, [encounterModalOpen, running, setRunning]);
 
   const handleStartMeeting = useCallback((locationId: string) => {
     if (!isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick)) return;
@@ -783,14 +682,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       };
     });
   }, [gameState.graph, gameState.ascendantId, gameState.tick, setGameState, archetype.sphereAlignment.primary]);
-
-  const handleMeetingClose = useCallback(() => {
-    setMeetingState(null);
-    if (wasRunningBeforeEncounterPause.current) {
-      wasRunningBeforeEncounterPause.current = false;
-      setRunning(true);
-    }
-  }, [setRunning]);
 
   // ── Meet The First as action card slot ──
   const MEET_THE_FIRST_SLOT_ID = 'meet_the_first';
@@ -890,16 +781,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     }
   }, [nonAgentTargetContext, gameState.ascendantId, gameState.seed, gameState.tick, archetype, setGameState, focusedLocation, handleStartMeeting]);
 
-  // ── Profile modal routing for thread detail view ──
-  const handleOpenProfileModal = useCallback((nodeId: string, category: import('../../engine/retinue').ThreadCategory) => {
-    if (category === 'agent') {
-      // Use existing agent profile modal flow (selectedAgentId must match for agentInfoCard to load)
-      handleViewProfile();
-    } else {
-      setStubModalState({ nodeId, category });
-    }
-  }, [handleViewProfile]);
-
   // ── Attention mode toggle (TB-040) ──
   const handleToggleAttentionMode = useCallback((threadEdgeId: string) => {
     const result = toggleAttentionMode(
@@ -928,6 +809,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       setRunning(false);
     }
   }, [activeVignette, running, setRunning]);
+
+  // Close ThreadDetailView on Escape key
+  useEffect(() => {
+    if (!selectedThreadNode) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleThreadDetailClose();
+    };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [selectedThreadNode, handleThreadDetailClose]);
 
   const handleJourneyChoice = useCallback((choiceId: string) => {
     if (!activeVignette) return;
@@ -1135,8 +1026,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   roadPaths={roadPaths}
                   agents={agentRenderData}
                   armies={armyRenderData}
-                  battles={battleRenderData}
-                  sieges={siegeRenderData}
+                  battles={battleIndicatorData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
@@ -1299,7 +1189,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           )}
         </div>
 
-        {/* ── Right panel: Debug Panel OR sidebar (+ detail view) ── */}
+        {/* ── Right sidebar — Debug Panel OR Agent Info Card/Retinue ── */}
         {debugPanelOpen ? (
           <DebugPanel
             currentTick={gameState.tick}
@@ -1321,62 +1211,42 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             agentKnowledge={gameState.agentKnowledge}
           />
         ) : (
-          <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
-            {/* Detail view — to the LEFT of sidebar, own scroll context */}
-            <AnimateMount show={selectedThreadNode !== null} animation="anim-fade">
-              {selectedThreadNode && (() => {
-                const detailNode = threadedNodes.find(n => n.id === selectedThreadNode.nodeId);
-                if (!detailNode) return null;
-                return (
-                  <div
-                    data-testid="thread-detail-scroll"
-                    style={{
-                      width: 'clamp(240px, 280px, 30vw)',
-                      borderLeft: '1px solid var(--border-gold)',
-                      background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <ThreadDetailView
-                      node={detailNode}
-                      agentInfoCard={selectedThreadNode.category === 'agent' ? agentInfoCard : null}
-                      onClose={handleThreadDetailClose}
-                      onViewProfile={handleOpenProfileModal}
-                      onZoomToLocation={handleZoomToLocation}
-                      graph={gameState.graph}
-                    />
-                  </div>
-                );
-              })()}
-            </AnimateMount>
-
-            {/* Sidebar — always rendered */}
-            <div
-              data-testid="right-sidebar"
-              className="flex-shrink-0 overflow-y-auto"
-              style={{
-                width: 'var(--sidebar-width)',
-                background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                borderLeft: '1px solid var(--border-gold)',
-              }}
-            >
+          <div
+            data-testid="right-sidebar"
+            className="flex-shrink-0 overflow-y-auto"
+            style={{
+              width: 'var(--sidebar-width)',
+              background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+              borderLeft: '1px solid var(--border-gold)',
+            }}
+          >
+            {agentInfoCard ? (
+              <AgentInfoCard
+                card={agentInfoCard}
+                onViewProfile={handleViewProfile}
+                onBack={handleBackFromAgentDetail}
+                onZoomToLocation={handleZoomToLocation}
+                graph={gameState.graph}
+                seed={gameState.seed}
+              />
+            ) : retinueAgents.length > 0 ? (
               <div style={{ padding: 'var(--panel-padding)' }}>
-                {threadedNodes.length > 0 ? (
-                  <ThreadsPanel
-                    threadedNodes={threadedNodes}
-                    selectedNodeId={selectedThreadNode?.nodeId ?? null}
-                    onNodeSelect={handleThreadNodeSelect}
-                    onCenterOnHex={handleCenterOnHex}
-                    onZoomToLocation={handleZoomToLocation}
-                    activeEncounters={retinueActiveEncounters}
-                    onEncounterClick={handleEncounterClick}
-                    onToggleAttentionMode={handleToggleAttentionMode}
-                  />
-                ) : (
-                  <WorldPulse gameState={gameState} />
-                )}
+                <RetinuePanel
+                  agents={retinueAgents}
+                  selectedAgentId={selectedAgentId}
+                  onAgentSelect={handleAgentSelect}
+                  onCenterOnHex={handleCenterOnHex}
+                  onZoomToLocation={handleZoomToLocation}
+                  activeEncounters={retinueActiveEncounters}
+                  onEncounterClick={handleEncounterClick}
+                  onToggleAttentionMode={handleToggleAttentionMode}
+                />
               </div>
-            </div>
+            ) : (
+              <div style={{ padding: 'var(--panel-padding)' }}>
+                <WorldPulse gameState={gameState} />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -1436,27 +1306,6 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         )}
       </AnimateMount>
 
-      {/* Stub profile modals for non-agent thread types */}
-      <AnimateMount show={stubModalState !== null} animation="anim-fade-up">
-        {stubModalState && (() => {
-          const node = threadedNodes.find(n => n.id === stubModalState.nodeId);
-          if (!node) return null;
-          const onClose = () => setStubModalState(null);
-          switch (stubModalState.category) {
-            case 'location':
-              return <LocationProfileModal name={node.name} onClose={onClose} />;
-            case 'faction':
-              return <FactionSheet name={node.name} onClose={onClose} />;
-            case 'army':
-              return <ArmySheet name={node.name} onClose={onClose} />;
-            case 'artifact':
-              return <ArtifactSheet name={node.name} onClose={onClose} />;
-            default:
-              return null;
-          }
-        })()}
-      </AnimateMount>
-
       {/* Tiered encounter modal (TB-055) */}
       {tieredEncounterState && (
         <TieredEncounterModal
@@ -1481,7 +1330,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       {meetingState && (
         <MeetingEncounterModal
           open={true}
-          onClose={handleMeetingClose}
+          onClose={() => setMeetingState(null)}
           onComplete={handleMeetingComplete}
           state={meetingState}
           onStateChange={setMeetingState}

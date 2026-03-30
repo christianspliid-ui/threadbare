@@ -22,19 +22,18 @@ import {
   SIEGE_RESOLUTION_THRESHOLD,
   SIEGE_DEFENDER_MOMENTUM_BONUS,
   SIEGE_STARVATION_TICK,
+  SIEGE_REGIONAL_ENCOUNTER_RANGE,
   SIEGE_COMBAT_ATTRITION_ATTACKER,
-  SIEGE_COMBAT_ATTRITION_DEFENDER,
   BATTLE_MOMENTUM_PER_SPOTLIGHT_BASE,
   FORTIFICATION_BASIC,
   FORTIFICATION_GRAND,
   PREPARED_DEFENSE_MULTIPLIER,
-  SIEGE_REGIONAL_ENCOUNTER_RANGE,
+  BREACH_FORTIFICATION_REDUCTION,
 } from '../types/battle';
 import { calculateInitialMomentum, resolveBattle } from './battleResolution';
 import { emitTrace } from './traceBuffer';
-import type { BattleResolutionType } from '../types/battle';
 import { hexDistance } from './delivery';
-import type { SphereAffinity } from '../types/sphereAffinity';
+import type { BattleResolutionType } from '../types/battle';
 
 // ─── PRNG ───────────────────────────────────────────────────────────────
 
@@ -135,6 +134,7 @@ export function createSiegeNode(
     initialMomentumOffset: initialMomentum,
     attackerArmyId,
     defenderArmyId: settlementId, // Settlement acts as "defender army"
+    thresholdsFired: [],
   };
 
   try {
@@ -278,7 +278,10 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
     attackerQ: newAttackerQ,
   });
 
-  // 4. Check resolution
+  // 4. Generate regional encounters for nearby entities
+  generateRegionalEncounters(state, siegeNodeId);
+
+  // 5. Check resolution
   if (Math.abs(newMomentum) >= SIEGE_RESOLUTION_THRESHOLD) {
     const resolutionType: BattleResolutionType = newMomentum > 0
       ? 'attacker_victory' : 'defender_victory';
@@ -298,6 +301,188 @@ export function tickSiege(state: GameState, siegeNodeId: string): void {
   }
 }
 
+// ─── Regional Encounter Generation ─────────────────────────────────────
+
+/**
+ * Generate regional encounters for entities near an active siege.
+ *
+ * Called each tick from tickSiege. Finds actors within SIEGE_REGIONAL_ENCOUNTER_RANGE
+ * hexes and spawns appropriate encounter hooks based on their capabilities.
+ * Deduplicates: one encounter per actor per siege.
+ */
+export function generateRegionalEncounters(state: GameState, siegeNodeId: string): void {
+  const graph = state.graph;
+  const siegeNode = graph.getNode(siegeNodeId);
+  if (!siegeNode) return;
+
+  const bs = siegeNode.properties.battleState as BattleState | undefined;
+  if (!bs) return;
+
+  // Get siege hex position
+  const siegeLocEdge = graph.getOutgoingEdges(siegeNodeId, 'located_at')[0];
+  if (!siegeLocEdge) return;
+  const siegeHexNode = graph.getNode(siegeLocEdge.target);
+  if (!siegeHexNode) return;
+
+  const siegeCol = siegeHexNode.properties.hexCol as number | undefined;
+  const siegeRow = siegeHexNode.properties.hexRow as number | undefined;
+  if (siegeCol === undefined || siegeRow === undefined) return;
+
+  // Track which actors already received a regional encounter from this siege
+  const alreadySent = new Set<string>(
+    (siegeNode.properties.siegeRegionalEncountersSent as string[] | undefined) ?? [],
+  );
+
+  // Collect attacker faction from the attacker army
+  const attackerFaction = graph.getOutgoingEdges(bs.attackerArmyId, 'member_of')[0]?.target;
+
+  // Find all actor nodes that are located at a hex within range
+  const actorNodes = graph.getNodesByType('actor').filter(n => {
+    // Skip battle/siege nodes (they have battleState)
+    if (n.properties.battleState) return false;
+    // Skip armies (they are managed separately)
+    if (n.properties.armyState) return false;
+    // Skip nodes already sent encounters
+    if (alreadySent.has(n.id)) return false;
+    // Skip nodes already in a battle
+    const participatesEdges = graph.getOutgoingEdges(n.id, 'participates_in');
+    if (participatesEdges.length > 0) return false;
+    return true;
+  });
+
+  const newlySent: string[] = [];
+
+  for (const actor of actorNodes) {
+    // Get actor's hex position via located_at
+    const locEdge = graph.getOutgoingEdges(actor.id, 'located_at')[0];
+    if (!locEdge) continue;
+    const hexNode = graph.getNode(locEdge.target);
+    if (!hexNode) continue;
+
+    const col = hexNode.properties.hexCol as number | undefined;
+    const row = hexNode.properties.hexRow as number | undefined;
+    if (col === undefined || row === undefined) continue;
+
+    const dist = hexDistance({ col: siegeCol, row: siegeRow }, { col, row });
+    if (dist > SIEGE_REGIONAL_ENCOUNTER_RANGE) continue;
+
+    // Determine which encounter type this actor is eligible for
+    const encounterType = selectRegionalEncounterType(state, actor.id, bs, attackerFaction);
+    if (!encounterType) continue;
+
+    // Emit trace (encounter spawning is logged; actual encounter node creation
+    // happens through the standard encounter system when templates exist)
+    emitTrace({
+      tick: state.tick,
+      category: 'faction_ambition',
+      summary: `Siege at ${siegeHexNode.name} draws in ${actor.name}: ${encounterType} (${dist} hexes away)`,
+      event: 'siege_regional_encounter',
+      siegeId: siegeNodeId,
+      actorId: actor.id,
+      encounterType,
+      distance: dist,
+    });
+
+    newlySent.push(actor.id);
+  }
+
+  if (newlySent.length > 0) {
+    const updatedSent = [...alreadySent, ...newlySent];
+    graph.updateNode(siegeNodeId, {
+      properties: {
+        ...graph.getNode(siegeNodeId)!.properties,
+        siegeRegionalEncountersSent: updatedSent,
+      },
+    });
+  }
+}
+
+/**
+ * Determine what kind of regional encounter an actor is eligible for.
+ * Returns null if the actor has no relevant connection to the siege.
+ */
+function selectRegionalEncounterType(
+  state: GameState,
+  actorId: string,
+  bs: BattleState,
+  attackerFactionId: string | undefined,
+): string | null {
+  const graph = state.graph;
+  const actorNode = graph.getNode(actorId);
+  if (!actorNode) return null;
+
+  const actorFaction = graph.getOutgoingEdges(actorId, 'member_of')[0]?.target;
+  const properties = actorNode.properties as Record<string, unknown>;
+
+  // Shadow-capable agents near siege can smuggle supplies
+  const isShadowCapable = (properties.shadowCapability as number ?? 0) > 0 ||
+    (properties.domainCapabilities as Record<string, number> | undefined)?.['Shadow'] != null;
+
+  // Heart-capable agents can negotiate terms
+  const isHeartCapable = (properties.heartCapability as number ?? 0) > 0 ||
+    (properties.domainCapabilities as Record<string, number> | undefined)?.['Heart'] != null;
+
+  // Allied with attacker?
+  const isAttackerAllied = attackerFactionId !== undefined && actorFaction === attackerFactionId;
+
+  // Allied with defender?
+  const defenderFaction = graph.getOutgoingEdges(bs.defenderArmyId, 'member_of')[0]?.target;
+  const settleNode = bs.settlementId ? graph.getNode(bs.settlementId) : null;
+  const settleFaction = settleNode
+    ? graph.getOutgoingEdges(bs.settlementId!, 'controlled_by')[0]?.target
+    : undefined;
+  const isDefenderAllied = (actorFaction !== undefined) &&
+    (actorFaction === defenderFaction || actorFaction === settleFaction);
+
+  if (isAttackerAllied) return 'siege.regional.join_attackers';
+  if (isDefenderAllied) return 'siege.regional.call_for_aid';
+  if (isShadowCapable) return 'siege.regional.smuggle_supplies';
+  if (isHeartCapable) return 'siege.regional.negotiate_terms';
+
+  return null;
+}
+
+// ─── Breach Spotlight ───────────────────────────────────────────────────
+
+/**
+ * Apply breach fortification reduction when a breach spotlight resolves.
+ * Reduces the settlement's fortification multiplier property.
+ */
+export function applyBreachFortificationReduction(state: GameState, siegeNodeId: string): void {
+  const graph = state.graph;
+  const siegeNode = graph.getNode(siegeNodeId);
+  if (!siegeNode) return;
+
+  const bs = siegeNode.properties.battleState as BattleState | undefined;
+  if (!bs || !bs.settlementId) return;
+
+  const settlementNode = graph.getNode(bs.settlementId);
+  if (!settlementNode) return;
+
+  const currentFortification = (settlementNode.properties.fortificationMultiplier as number)
+    ?? getFortificationModifier(settlementNode.properties.locationSubtype as string | undefined);
+
+  const reducedFortification = Math.max(1, currentFortification * BREACH_FORTIFICATION_REDUCTION);
+
+  graph.updateNode(bs.settlementId, {
+    properties: {
+      ...settlementNode.properties,
+      fortificationMultiplier: reducedFortification,
+    },
+  });
+
+  emitTrace({
+    tick: state.tick,
+    category: 'faction_ambition',
+    summary: `Breach at ${settlementNode.name}: fortification reduced from ${currentFortification.toFixed(1)}x to ${reducedFortification.toFixed(1)}x`,
+    event: 'siege_breach',
+    siegeId: siegeNodeId,
+    settlementId: bs.settlementId,
+    fortificationBefore: currentFortification,
+    fortificationAfter: reducedFortification,
+  });
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────
 
 function getGarrisonSize(locationSubtype: string | undefined): number {
@@ -308,131 +493,4 @@ function getGarrisonSize(locationSubtype: string | undefined): number {
     case 'hamlet': return 50;
     default: return 50;
   }
-}
-
-// ─── Regional Encounter Types ────────────────────────────────────────────
-
-export type SiegeRegionalEncounterType =
-  | 'siege.regional.call_for_aid'
-  | 'siege.regional.smuggle_supplies'
-  | 'siege.regional.negotiate_terms';
-
-export interface SiegeRegionalEncounter {
-  actorId: string;
-  encounterType: SiegeRegionalEncounterType;
-  siegeSettlementId: string;
-}
-
-// ─── Regional Encounter Generation ───────────────────────────────────────
-
-/**
- * Scan for actors within SIEGE_REGIONAL_ENCOUNTER_RANGE of the siege settlement
- * and generate pull-in encounters based on faction allegiance and sphere capability.
- *
- * Rules:
- * - Allied faction actors → call_for_aid
- * - Actors with Shadow sphere score > 0 → smuggle_supplies
- * - Actors with Heart sphere score > 0 → negotiate_terms
- * - No duplicate encounters per actor per siege (check spotlightHistory for actor ID)
- * - Actors already in battles are excluded
- *
- * NFP #3: Deterministic — no randomness needed (all eligible actors get encounters).
- * NFP #4: Fail-soft — missing location data → skip actor.
- */
-export function generateRegionalEncounters(
-  state: GameState,
-  siegeState: BattleState,
-  _prng: () => number,
-): SiegeRegionalEncounter[] {
-  const graph = state.graph;
-  const settlementId = siegeState.settlementId;
-  if (!settlementId) return [];
-
-  // Get siege hex position from settlement node's direct properties (hexCol/hexRow)
-  const settlementNode = graph.getNode(settlementId);
-  if (!settlementNode) return [];
-  const siegeHexCol = settlementNode.properties.hexCol as number | undefined;
-  const siegeHexRow = settlementNode.properties.hexRow as number | undefined;
-  if (siegeHexCol === undefined || siegeHexRow === undefined) return [];
-  const siegePos = { col: siegeHexCol, row: siegeHexRow };
-
-  // Get defender faction ID (from defender army's member_of edge)
-  const defenderMemberEdges = graph.getOutgoingEdges(siegeState.defenderArmyId, 'member_of');
-  const defenderFactionId = defenderMemberEdges[0]?.target;
-
-  // Build set of actors already encountered in this siege
-  const alreadyEncountered = new Set(siegeState.spotlightHistory);
-
-  // Collect all actor nodes
-  const actors = graph.getNodesByType('actor');
-  const encounters: SiegeRegionalEncounter[] = [];
-
-  for (const actor of actors) {
-    const actorId = actor.id;
-
-    // Skip armies (only interested in individual agents)
-    if (actor.properties.armyState != null) continue;
-
-    // Skip actors already in battles
-    if (actor.properties.battleState != null) continue;
-
-    // Skip actors already encountered in this siege
-    if (alreadyEncountered.has(actorId)) continue;
-
-    // Get actor position via located_at edge
-    const actorLocEdges = graph.getOutgoingEdges(actorId, 'located_at');
-    if (actorLocEdges.length === 0) continue;
-    const actorHexNode = graph.getNode(actorLocEdges[0].target);
-    if (!actorHexNode) continue;
-    const actorHexCol = actorHexNode.properties.hexCol as number | undefined;
-    const actorHexRow = actorHexNode.properties.hexRow as number | undefined;
-    if (actorHexCol === undefined || actorHexRow === undefined) continue;
-
-    // Check range
-    const dist = hexDistance(siegePos, { col: actorHexCol, row: actorHexRow });
-    if (dist > SIEGE_REGIONAL_ENCOUNTER_RANGE) continue;
-
-    // Determine encounter type based on faction allegiance and capability
-    const actorFactionEdges = graph.getOutgoingEdges(actorId, 'member_of');
-    const actorFactionId = actorFactionEdges[0]?.target;
-
-    const affinity = actor.properties.sphereAffinity as SphereAffinity | undefined;
-    const shadowScore = affinity?.scores?.Shadow ?? 0;
-    const heartScore = affinity?.scores?.Heart ?? 0;
-
-    // Allied to defender faction → call_for_aid (highest priority)
-    if (actorFactionId && actorFactionId === defenderFactionId) {
-      encounters.push({
-        actorId,
-        encounterType: 'siege.regional.call_for_aid',
-        siegeSettlementId: settlementId,
-      });
-      alreadyEncountered.add(actorId);
-      continue;
-    }
-
-    // Shadow-capable → smuggle_supplies
-    if (shadowScore > 0) {
-      encounters.push({
-        actorId,
-        encounterType: 'siege.regional.smuggle_supplies',
-        siegeSettlementId: settlementId,
-      });
-      alreadyEncountered.add(actorId);
-      continue;
-    }
-
-    // Heart-capable → negotiate_terms
-    if (heartScore > 0) {
-      encounters.push({
-        actorId,
-        encounterType: 'siege.regional.negotiate_terms',
-        siegeSettlementId: settlementId,
-      });
-      alreadyEncountered.add(actorId);
-      continue;
-    }
-  }
-
-  return encounters;
 }

@@ -63,7 +63,10 @@ import { UNIFIED_ACTION_TEMPLATES } from '../data/unified-action-templates';
 import { phaseAmbitionProgress } from './ambitionTick';
 import { phaseFactionAmbitions } from './factionAmbitions';
 import { phaseArmyAttrition } from './armyAttrition';
+import { phaseArmyMovement } from './armyMovement';
 import { phaseBattleDetection, phaseBattleTick } from './battleResolution';
+import { phaseLairEscalation } from './lairEscalation';
+import { phaseArmyNotifications } from './armyNotifications';
 import { phaseProsperity } from './phaseProsperity';
 import { checkTierPromotion } from './influence';
 import { phaseTradeRouteDecay } from './phaseTradeRouteDecay';
@@ -75,7 +78,6 @@ import { revealLayer } from './revelationResolver';
 import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
-import { phaseQuintessence } from './phaseQuintessence';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
@@ -89,7 +91,7 @@ export { phaseMandate } from './phaseMandate';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
-import { EncounterCacheManager, selectDifficultyTier } from './encounterCache';
+import { EncounterCacheManager } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
@@ -102,13 +104,10 @@ import {
 import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { processFactionOutcome } from './factionOutcome';
-import { recordChainStageCompletion, getChainProgress, CHAIN_COMPLETION_CAPABILITY_BONUS } from './encounterChains';
 import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
-import type { QuintessenceEvent } from '../types/quintessence';
-import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 
 // ─── Decision Cache (lazy-initialized) ────────────────────────────
 
@@ -215,7 +214,6 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardNam
 export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
-  const quintessenceErodes: QuintessenceEvent[] = [];
   let updatedProgress = [...state.encounterProgress];
 
   const activeEncounters = updatedProgress.filter(p => p.status === 'active');
@@ -263,47 +261,6 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       const outcomeRng = mulberry32(state.seed + state.tick * 43 + hashString(progress.actorId));
       const factionEvents = processFactionOutcome(state.graph, progress, state.tick, outcomeRng);
       events.push(...factionEvents);
-
-      // ── C.2: Encounter chain progression ──
-      const actorNode = state.graph.getNode(progress.actorId);
-      if (actorNode) {
-        const currentProgress = getChainProgress(actorNode.properties as Record<string, unknown>);
-        const chainResult = recordChainStageCompletion(progress.encounterId, currentProgress);
-
-        // Update chain progress on the agent
-        if (JSON.stringify(chainResult.updatedProgress) !== JSON.stringify(currentProgress)) {
-          state.graph.updateNode(progress.actorId, {
-            properties: { ...actorNode.properties, chainProgress: chainResult.updatedProgress },
-          });
-
-          // Emit trace for chain progression
-          emitTrace({
-            category: 'chain_progress',
-            tick: state.tick,
-            agentId: progress.actorId,
-            templateId: progress.encounterId,
-            isChainComplete: chainResult.completedChains.length > 0,
-            summary: chainResult.completedChains.length > 0
-              ? `${actorNode.name} completed chain: ${chainResult.completedChains.map(c => c.chainId).join(', ')}`
-              : `${actorNode.name} progressed in encounter chain via ${progress.encounterId}`,
-          } as any);
-        }
-
-        // Apply capability bonus for completed chains
-        for (const completed of chainResult.completedChains) {
-          const caps = (actorNode.properties?.domainCapabilities ?? {}) as Record<string, number>;
-          const currentCap = caps[completed.primaryReach] ?? 0;
-          state.graph.updateNode(progress.actorId, {
-            properties: {
-              ...state.graph.getNode(progress.actorId)!.properties,
-              domainCapabilities: {
-                ...caps,
-                [completed.primaryReach]: currentCap + CHAIN_COMPLETION_CAPABILITY_BONUS,
-              },
-            },
-          });
-        }
-      }
     }
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
@@ -456,13 +413,6 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           notification: { channel: 'toast' as const },
         }),
       });
-      // Quintessence erosion — narrative-diminishing failure erodes the entity's existential vitality
-      quintessenceErodes.push({
-        targetNodeId: progress.actorId,
-        delta: -QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
-        source: 'encounter_failure',
-        tick: state.tick,
-      });
     } else {
       events.push({
         id: nextEventId(),
@@ -480,9 +430,6 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
       : {}),
-    ...(quintessenceErodes.length > 0
-      ? { pendingQuintessenceEvents: [...(state.pendingQuintessenceEvents ?? []), ...quintessenceErodes] }
-      : {}),
   };
 }
 
@@ -494,7 +441,7 @@ const SPHERE_TO_DOMAIN = {
   force: 'iron',
   matter: 'gold',
   energy: 'veil',
-  life: 'gold',
+  life: 'flesh',
   mind: 'shadow',
   spirit: 'heart',
   time: 'star',
@@ -1009,21 +956,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Lazy-init encounter cache and distance matrix
   if (!encounterCache) {
     encounterCache = new EncounterCacheManager();
-    encounterCache.buildFullCache(s.graph, s.tick);
-  } else {
-    // C.1: Rebuild cache when difficulty tier advances (tick thresholds crossed)
-    const newTier = selectDifficultyTier(s.tick);
-    const oldTier = encounterCache.getCurrentTier();
-    if (newTier !== oldTier) {
-      encounterCache.buildFullCache(s.graph, s.tick);
-      emitTrace({
-        category: 'difficulty_tier_change',
-        tick: s.tick,
-        oldTier,
-        newTier,
-        summary: `Difficulty tier advanced to ${newTier} at tick ${s.tick}`,
-      } as any);
-    }
+    encounterCache.buildFullCache(s.graph);
   }
   if (!distanceMatrix) {
     distanceMatrix = buildDistanceMatrix(s.graph);
@@ -1095,6 +1028,9 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['agent_movement'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2.352: Army Movement (TB-073 — armies advance toward objectives)
+  phaseArmyMovement(s);
+
   // Phase 2.355: Army Attrition (TB-073 — Quintessence degradation during march)
   phaseArmyAttrition(s);
 
@@ -1103,6 +1039,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
 
   // Phase 2.357: Battle Tick (TB-073 — process active battles: attrition, momentum, resolution)
   phaseBattleTick(s);
+
+  // Phase 2.3575: Lair Escalation (M2.5 — tier upgrades, sphere feedback, spawn)
+  phaseLairEscalation(s);
+
+  // Phase 2.358: Army Notifications (TB-073 — convert army/battle traces to TickEvents)
+  s = { ...s, ...phaseArmyNotifications(s, nextEventId) };
 
   // Phase 2.36: Colocation Detection (after movement, before sublocation dissolution)
   s = { ...s, ...phaseColocationDetection(s) };
@@ -1244,11 +1186,6 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['sphere_pressure'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
-  // Phase 6.6392: Quintessence (erosion, passive regen, dissolution — after sphere pressure)
-  s = { ...s, ...phaseQuintessence(s), pendingQuintessenceEvents: [] };
-  phaseEventCounts['quintessence'] = s.tickEvents.length - prevEventCount;
-  prevEventCount = s.tickEvents.length;
-
   // Phase 6.6395: Sphere Aggregation (computes global World-Soul from entity sphere scores)
   s = { ...s, ...phaseSphereAggregation(s) };
   phaseEventCounts['sphere_aggregation'] = s.tickEvents.length - prevEventCount;
@@ -1278,7 +1215,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseFactionAmbitions(s);
 
   // Phase 6.75: Agent Lifecycle (death, birth, migration)
-  s = { ...s, ...phaseAgentLifecycle(s, nextEventId, encounterCache ?? undefined) };
+  s = { ...s, ...phaseAgentLifecycle(s, nextEventId) };
   phaseEventCounts['agent_lifecycle'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 

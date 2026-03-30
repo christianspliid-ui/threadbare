@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { WorldGraph } from '../graph';
-import { seedFactionFromDefinition, seedAllFactions } from '../factionSeeding';
+import { seedFactionFromDefinition, seedAllFactions, findMaxDistancePair } from '../factionSeeding';
 import { ADVENTURING_GUILD_DEFINITION, FACTION_DEFINITIONS, FACTION_GUILD_HALL_COUNT_MIN, FACTION_GUILD_HALL_COUNT_MAX } from '../../data/faction-definitions';
+import { MERCENARY_COMPANY_DEFINITION, MC_COMPANY_NAMES } from '../../data/mercenary-company-definition';
 import { computeRankFromReputation } from '../../types/faction';
 import type { FactionDefinition } from '../../types/faction';
 
@@ -291,13 +292,15 @@ describe('seedFactionFromDefinition', () => {
 // ─── seedAllFactions ───────────────────────────────────────────────────────
 
 describe('seedAllFactions', () => {
-  it('seeds one faction per definition in registry', () => {
+  it('seeds one instance per single-instance definition and N instances per multi-instance definition', () => {
     const graph = makeGraph();
     const locationIds = addTownsAndCities(graph, 8);
 
     const results = seedAllFactions(graph, FACTION_DEFINITIONS, locationIds, 42);
 
-    expect(results).toHaveLength(FACTION_DEFINITIONS.size);
+    // adventuring_guild (instanceCount=1) + mercenary_company (instanceCount=2) = 3 total
+    // FACTION_DEFINITIONS.size === 2 definitions, but 3 instances
+    expect(results.length).toBeGreaterThanOrEqual(FACTION_DEFINITIONS.size);
     expect(results[0].factionId).toBe('faction_def_adventuring_guild');
   });
 
@@ -322,6 +325,91 @@ describe('seedAllFactions', () => {
     const capsA = graph.getNode(results[0].factionId)!.properties.domainCapabilities;
     const capsB = graph.getNode(results[1].factionId)!.properties.domainCapabilities;
     expect(capsA).not.toEqual(capsB);
+  });
+});
+
+// ─── mercenary company two-instance seeding ────────────────────────────────
+
+describe('mercenary company two-instance seeding', () => {
+  it('seedFactionFromDefinition with instanceSuffix creates distinct faction IDs', () => {
+    const graph = makeGraph();
+    const locationIds = addTownsAndCities(graph, 8);
+
+    const result0 = seedFactionFromDefinition(graph, MERCENARY_COMPANY_DEFINITION, locationIds, 42, '0');
+    const result1 = seedFactionFromDefinition(graph, MERCENARY_COMPANY_DEFINITION, locationIds, 42 + 7919, '1');
+
+    expect(result0.factionId).toBe('faction_def_mercenary_company_0');
+    expect(result1.factionId).toBe('faction_def_mercenary_company_1');
+    expect(result0.factionId).not.toBe(result1.factionId);
+  });
+
+  it('seedFactionFromDefinition with primaryLocationOverride uses specified location', () => {
+    const graph = makeGraph();
+    const locationIds = addTownsAndCities(graph, 8);
+
+    const primaryId = locationIds[3]; // force a specific primary
+    const result = seedFactionFromDefinition(graph, MERCENARY_COMPANY_DEFINITION, locationIds, 42, '0', primaryId);
+
+    // The primary override should appear as the first selected location
+    expect(result.trace.locationIds[0]).toBe(primaryId);
+  });
+
+  it('findMaxDistancePair selects the most distant pair', () => {
+    const graph = makeGraph();
+    // Create 4 locations at known hexCol/hexRow positions
+    // loc_near_a and loc_near_b are close together; loc_far_a and loc_far_b are far apart
+    graph.addNode({ id: 'loc_near_a', type: 'location', name: 'Near A', properties: { locationSubtype: 'town', hexCol: 0, hexRow: 0 } });
+    graph.addNode({ id: 'loc_near_b', type: 'location', name: 'Near B', properties: { locationSubtype: 'town', hexCol: 1, hexRow: 0 } });
+    graph.addNode({ id: 'loc_far_a', type: 'location', name: 'Far A', properties: { locationSubtype: 'town', hexCol: 0, hexRow: 0 } });
+    graph.addNode({ id: 'loc_far_b', type: 'location', name: 'Far B', properties: { locationSubtype: 'town', hexCol: 50, hexRow: 50 } });
+
+    const [a, b] = findMaxDistancePair(graph, ['loc_near_a', 'loc_near_b', 'loc_far_a', 'loc_far_b']);
+
+    // The most distant pair must include loc_far_b (50,50) paired with a 0,0 location
+    const pairSet = new Set([a, b]);
+    expect(pairSet.has('loc_far_b')).toBe(true);
+    expect(pairSet.has('loc_near_b')).toBe(false); // (1,0) is not the farthest from (50,50)
+  });
+
+  it('seedAllFactions creates two instances for mercenary_company with instanceCount: 2', () => {
+    // Use a definition registry with only mercenary_company to isolate
+    const defs = new Map([[MERCENARY_COMPANY_DEFINITION.id, MERCENARY_COMPANY_DEFINITION]]);
+    const graph = makeGraph();
+    // Add locations with hexCol/hexRow for distance-constrained placement
+    for (let i = 0; i < 8; i++) {
+      graph.addNode({
+        id: `loc_mc_${i}`,
+        type: 'location',
+        name: `Location MC ${i}`,
+        properties: { locationSubtype: 'town', hexCol: i * 5, hexRow: 0 },
+      });
+    }
+    const locationIds = Array.from({ length: 8 }, (_, i) => `loc_mc_${i}`);
+
+    const results = seedAllFactions(graph, defs, locationIds, 42);
+
+    expect(results).toHaveLength(2);
+    expect(results[0].factionId).toBe('faction_def_mercenary_company_0');
+    expect(results[1].factionId).toBe('faction_def_mercenary_company_1');
+    // Both instances should exist as faction nodes in the graph
+    expect(graph.getNode('faction_def_mercenary_company_0')).toBeDefined();
+    expect(graph.getNode('faction_def_mercenary_company_1')).toBeDefined();
+  });
+
+  it('MC_COMPANY_NAMES exports exactly two company names', () => {
+    expect(MC_COMPANY_NAMES).toHaveLength(2);
+    expect(MC_COMPANY_NAMES[0]).toBe('The Iron Wolves');
+    expect(MC_COMPANY_NAMES[1]).toBe('The Scarlet Company');
+  });
+
+  it('mercenary_company definition has no flesh reach weight', () => {
+    const weights = MERCENARY_COMPANY_DEFINITION.reachWeights as Record<string, unknown>;
+    expect(weights['flesh']).toBeUndefined();
+  });
+
+  it('mercenary_company definition has instanceCount: 2 and distanceConstrained: true', () => {
+    expect(MERCENARY_COMPANY_DEFINITION.instanceCount).toBe(2);
+    expect(MERCENARY_COMPANY_DEFINITION.distanceConstrained).toBe(true);
   });
 });
 

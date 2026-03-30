@@ -36,7 +36,9 @@ export type LocationType =
   | 'mining'
   | 'camp'
   | 'battleground'
-  | 'unexplored_poi';
+  | 'unexplored_poi'
+  | 'lair'
+  | 'cleared_lair';
 
 /** Visual size class for a location — determines sprite scale on the hex. */
 export type LocationSizeClass = 'full' | 'medium' | 'small' | 'tiny';
@@ -101,6 +103,8 @@ export const LOCATION_IMPORTANCE_MAP: Record<LocationType, LocationImportance> =
   camp:           'small',
   battleground:   'small',
   unexplored_poi: 'small',
+  lair:           'small',
+  cleared_lair:   'small',
 };
 
 // ── Production SVG paths ───────────────────────────────────────────────────────
@@ -318,6 +322,31 @@ const UNEXPLORED_POI_PATHS: LocationPathDef[] = [
   { d: 'M44 36 L44 30 L56 30 L56 40 L50 46 L50 54 L48 54 L48 46 L54 40 L54 34 L46 34 L46 36 Z M48 58 L52 58 L52 62 L48 62 Z', opacity: 1.0 },
 ];
 
+/**
+ * Lair: Cave entrance silhouette — jagged downward arch with stalagmite teeth.
+ * Sphere-tinted fill is applied at texture build time (sphere fill override).
+ * sizeClass is 'small' as base; LocationIconMesh overrides per lairTier.
+ * 2 layers: outer arch (opacity 1.0) + inner void (opacity 0.7).
+ */
+const LAIR_PATHS: LocationPathDef[] = [
+  // Outer cave arch — rough inverted U with jagged stalactite/stalagmite teeth
+  { d: 'M18 82 L18 58 L22 52 L20 44 L26 40 L24 34 L32 28 L36 24 L42 20 L50 18 L58 20 L64 24 L68 28 L76 34 L74 40 L80 44 L78 52 L82 58 L82 82 Z M26 82 L26 70 L30 62 L34 68 L38 58 L42 66 L46 56 L50 64 L54 56 L58 66 L62 58 L66 68 L70 62 L74 70 L74 82 Z', opacity: 1.0 },
+  // Inner void — dark interior opening
+  { d: 'M30 72 L30 58 L34 54 L36 50 L42 46 L50 44 L58 46 L64 50 L66 54 L70 58 L70 72 Z', opacity: 0.7 },
+];
+
+/**
+ * Cleared Lair: Cracked/broken cave arch — same arch shape but bisected by a horizontal crack.
+ * Fixed 'small' sizeClass, fixed fill #2a2520 (no sphere tint).
+ * 2 layers: partial arch (opacity 1.0) + ghost fill (opacity 0.2).
+ */
+const CLEARED_LAIR_PATHS: LocationPathDef[] = [
+  // Partial arch — bisected by crack (gap between top and bottom halves)
+  { d: 'M18 82 L18 58 L22 52 L20 44 L26 40 L24 34 L32 28 L36 24 L42 20 L50 18 L58 20 L64 24 L68 28 L76 34 L74 40 L80 44 L78 52 L82 58 L82 82 L74 82 L74 70 L70 62 L66 68 L62 58 L58 66 L54 56 L50 64 L46 56 L42 66 L38 58 L34 68 L30 62 L26 70 L26 82 Z M24 50 L76 50 L78 54 L22 54 Z', opacity: 1.0 },
+  // Ghost interior — very faint, communicates "was here, gone now"
+  { d: 'M30 72 L30 58 L34 54 L36 50 L42 46 L50 44 L58 46 L64 50 L66 54 L70 58 L70 72 Z', opacity: 0.2 },
+];
+
 // ── Registry ──────────────────────────────────────────────────────────────────
 
 /**
@@ -349,4 +378,7 @@ export const LOCATION_ICON_REGISTRY: Record<LocationType, LocationIconDef> = {
   camp:           { paths: CAMP_PATHS,           viewBox: '0 0 100 100', sizeClass: 'small'  },
   battleground:   { paths: BATTLEGROUND_PATHS,   viewBox: '0 0 100 100', sizeClass: 'small'  },
   unexplored_poi: { paths: UNEXPLORED_POI_PATHS, viewBox: '0 0 100 100', sizeClass: 'tiny'   },
+  // Monster lairs — sphere-tinted fill applied at texture build time
+  lair:           { paths: LAIR_PATHS,            viewBox: '0 0 100 100', sizeClass: 'small'  },
+  cleared_lair:   { paths: CLEARED_LAIR_PATHS,    viewBox: '0 0 100 100', sizeClass: 'small'  },
 };

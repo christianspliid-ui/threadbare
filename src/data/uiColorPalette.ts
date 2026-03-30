@@ -134,6 +134,13 @@ export const TICK_EVENT_COLORS: Record<TickEvent['type'], string> = {
   phase_change: '#eab308',
   stealth_alert: '#6b7280',
   dilemma_resolved: '#44aaff',
+  domain_revealed: '#a78bfa',      // violet — knowledge/revelation theme
+  army_mobilization: '#f97316',    // orange — military mobilization
+  army_disbanded: '#78716c',       // stone gray — army gone, low emphasis
+  battle_started: '#ef4444',       // red-500 — combat starting
+  battle_resolved: '#dc2626',      // red-600 — combat concluded (slightly darker)
+  siege_established: '#fb923c',    // orange-400 — siege (matches SIEGE_COLOR from BattleIndicatorLayer)
+  army_attrition: '#a8a29e',       // warm gray — degradation, low emphasis
 };
 
 // ============================================================================

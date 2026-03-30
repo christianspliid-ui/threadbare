@@ -14,6 +14,7 @@ import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
+import { getMonsterEncounterById } from './monster-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -8474,5 +8475,6 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? getSocialEncounterById(id)
     ?? getFactionEncounterById(id)
     ?? getMercenaryEncounterById(id)
-    ?? getArmyEncounterById(id);
+    ?? getArmyEncounterById(id)
+    ?? getMonsterEncounterById(id);
 }

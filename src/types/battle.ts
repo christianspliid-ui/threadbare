@@ -31,6 +31,8 @@ export interface BattleState {
   attackerArmyId: string;
   /** Defender army ID */
   defenderArmyId: string;
+  /** Spotlight threshold IDs that have already fired (prevents double-spawn) */
+  thresholdsFired: string[];
 }
 
 export type BattleResolutionType =
