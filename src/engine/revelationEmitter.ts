@@ -349,7 +349,7 @@ export function resolveRevelationAction(
     switch (actionType) {
       case 'observe': {
         // Reveal the first domain in canonical order that isn't yet revealed
-        const DOMAIN_ORDER = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+        const DOMAIN_ORDER = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
         const unrevealed = DOMAIN_ORDER.find(d => !knowledge.revealedDomains.has(d));
 
         if (unrevealed) {
@@ -392,8 +392,8 @@ export function resolveRevelationAction(
       }
 
       case 'scry': {
-        // Reveal ALL 9 domains
-        const ALL_DOMAINS = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+        // Reveal ALL 8 domains
+        const ALL_DOMAINS = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star'];
         for (const domain of ALL_DOMAINS) {
           const newlyRevealed = revealDomain(knowledge, domain);
           if (newlyRevealed) {

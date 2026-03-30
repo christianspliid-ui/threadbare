@@ -369,23 +369,24 @@ export const TURNING_POINT_PROSE: Record<string, string[]> = {
     '{name}\'s relationship with {value} was not always settled. There was a moment when the alternative was genuinely available, and the choice made then has been the organizing fact since.',
     'Something shifted in {name} when {value} was tested against something that made it genuinely costly. The test was passed. The passing left a mark.',
   ],
-  frankness_propriety: [
+  revelation_discretion: [
     'Something shifted in {name} when {value} became a reflex rather than a choice — the moment when speaking or withholding became character rather than tactic.',
     '{name}\'s commitment to {value} was tested in a conversation that could not be taken back. What was said or unsaid in that moment has been the template since.',
+    'The turning point for {name} and {value} arrived through a situation where what they knew could protect someone or destroy them depending on how it was handled. The handling defined them.',
+    'The day {name} chose {value} came through holding a dangerous secret — the kind that could topple a person, a house, a quiet arrangement that had lasted decades. How they held it told them what kind of truth-seeker or secret-keeper they were.',
   ],
-  humility_pride: [
+  preservation_transformation: [
     'Something shifted in {name} the day they chose {value} in a situation where the other posture was available. The choice was a statement about what kind of authority they intended to exercise.',
     'The moment {name} settled into {value} came through a circumstance that offered them a different kind of power than they chose. The declining was the declaration.',
     '{name}\'s commitment to {value} was established through a situation in which the alternative would have been satisfying in the short term and damaging in the long. They chose correctly.',
+    'When the ancient wall crumbled, {name} faced a choice that had no clean answer: shore up the old stones at great cost, or let them fall and build something new. The fortress posture and the forge posture were both available. The one they chose has been their stance since.',
+    'Something shifted in {name} when the structure they had spent years protecting began to fail. Repair or replace, fortress or forge — the choice, and the reasoning behind it, established the kind of builder they were willing to be.',
   ],
   sacrifice_survival: [
     'Something shifted in {name} the day they chose {value} — a declaration about where their allegiance finally resided that has not been revised since.',
     'The turn toward {value} arrived for {name} in circumstances that forced the question from abstract to immediate. What they chose in that moment was not a statement about belief but about self.',
     '{name}\'s relationship with {value} was established through an event that made the alternative not just undesirable but impossible — a choice that was also a discovery.',
-  ],
-  stoicism_passion: [
-    'Something shifted in {name} when {value} stopped being temperament and became discipline — the moment emotion was either mastered or surrendered to deliberately.',
-    '{name}\'s relationship with {value} was forged in a crisis that demanded either feeling everything or feeling nothing. What they chose has been their weather since.',
+    'Something shifted in {name} when {value} stopped being temperament and became discipline — the moment endurance was either mastered or surrendered to deliberately.',
   ],
   courage_prudence: [
     'Something shifted in {name} the day they chose {value} — not dramatically, but definitively, in a circumstance that required the thing to be named.',
@@ -425,11 +426,12 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
     '{name} is neither reliably {left_pole} nor reliably {right_pole} — the near-equal weight of both makes every significant relationship a variable outcome.',
     'The {left_pole} and {right_pole} in {name} are not in conflict so much as in ongoing negotiation about what any given relationship actually merits.',
   ],
-  frankness_propriety: [
+  revelation_discretion: [
     '{name}\'s {left_pole} and {right_pole} wage constant war — the urge to speak plain and the instinct to smooth things over alternate without resolution.',
     'The contradiction between {left_pole} and {right_pole} in {name} surfaces in every conversation that matters. They say too much and then too little, and neither feels like the right amount.',
+    'What others read as inconsistency in {name} is the genuine tension between {left_pole} and {right_pole} — knowing that every disclosure is also a concealment, and every silence is also a choice.',
   ],
-  humility_pride: [
+  preservation_transformation: [
     '{name} navigates between {left_pole} and {right_pole} without having resolved which is more natural. Both are genuine; neither is settled.',
     'The part of {name} that needs to be in charge and the part that needs to not be responsible are in approximate balance, making every situation of authority slightly uncomfortable.',
     '{name}\'s {left_pole} and {right_pole} produce the specific discomfort of someone who is always aware of both options — who cannot take authority without questioning it, and cannot decline it without questioning that too.',
@@ -438,10 +440,7 @@ export const CONTRADICTION_PROSE: Record<string, string[]> = {
     '{name}\'s pull toward {left_pole} and pull toward {right_pole} have reached suspended tension — they cannot fully give themselves over and cannot fully withdraw.',
     'Every bond {name} forms contains the implicit negotiation between {left_pole} and {right_pole} — an internal argument that has not concluded and may not.',
     'What the equal pull of {left_pole} and {right_pole} produces in {name} is a person who enters commitments while holding the exit in view — not intending to use it, but unable to stop keeping it available.',
-  ],
-  stoicism_passion: [
     '{name}\'s {left_pole} and {right_pole} are locked in a war that produces unpredictable weather — long calms interrupted by sudden storms, and neither state feels entirely chosen.',
-    'The contradiction between {left_pole} and {right_pole} in {name} means they feel everything but show nothing, or show everything and later wish they hadn\'t. There is no middle.',
   ],
   courage_prudence: [
     '{name} is pulled equally toward {left_pole} and {right_pole} — the part that faces danger and the part that calculates it are of equal influence, producing a person who acts and second-guesses with equal facility.',
@@ -534,14 +533,14 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What the {value} in {name} is defending against is not the past but the {fear} of meeting its own limit — of pushing into new territory and discovering that innovation runs out before it arrives somewhere stable.',
     '{name} dismantles things that still work and builds replacements that are not always better. The {fear} is not of the past catching them — it is of turning around and discovering they have built something that will outlive its purpose and become the very weight they were running from.',
   ],
-  // humility_pride
-  humility_pride_positive: [
+  // preservation_transformation
+  preservation_transformation_positive: [
     'What {name} will never admit is that the {value} they exercise is maintained partly against the {fear} of losing it — that control, once relinquished, cannot be recovered.',
     'Beneath the {value} in {name} is the {fear} that things without direction will not simply stall but collapse — that the absence of their intervention is not neutrality but catastrophe.',
     'The {fear} behind {name}\'s {value} is visible in its emergency form: the quality of attention given to situations that might escape management — not tyranny, but the specific anxiety of believing that without intervention, things collapse in unrecoverable ways.',
     '{name} cannot delegate without checking. Cannot leave a room without arranging it. Cannot sleep without knowing what happens next. The {fear} is not of others failing — it is of the chaos that {value} keeps at bay being real, and permanent, and patient.',
   ],
-  humility_pride_negative: [
+  preservation_transformation_negative: [
     'What {name} will never admit is that the {value} they display contains the {fear} of being forced into dominance — of authority arriving like a sentence rather than a choice.',
     'The {value} in {name} is maintained against the {fear} that if they occupied more space, they would do damage they could not take back. The restraint is not only principle.',
     'The {fear} at the center of {name}\'s {value} is not of responsibility avoided. It is of what responsibility reveals — the possibility that the capacity they are withholding, exercised, would confirm something about themselves they cannot currently claim is absent.',
@@ -573,23 +572,14 @@ export const FEAR_PROSE: Record<string, string[]> = {
     'What the {value} in {name} sits on top of is not virtue but {fear}: the discovery that at some depth, the same calculus operates that they most dislike in others — that the generosity is generous partly because they are afraid of what they are when it is absent.',
     '{name} gives until it hurts and then gives past the hurting. The {fear} is of the moment they stop — not because stopping is wrong, but because stopping would require them to sit with who they are when they are not giving. And they have not met that person yet.',
   ],
-  // frankness_propriety
-  frankness_propriety_positive: [
+  // revelation_discretion
+  revelation_discretion_positive: [
     'What {name} will never admit is that their {value} is maintained against the {fear} of being silenced — of learning that the truth, spoken plainly, costs more than the silence it replaces.',
     'Beneath the {value} in {name} is the {fear} that bluntness, in the wrong moment, will do damage that diplomacy could have prevented. The {value} continues; the {fear} shapes every word.',
   ],
-  frankness_propriety_negative: [
+  revelation_discretion_negative: [
     'What {name} will never admit is that behind the {value} they practise is the {fear} of exposure — of having the raw, unpolished self seen by someone who matters.',
     'The {value} in {name} sits over the {fear} that without the mask of courtesy, something unacceptable would be visible. The propriety is armour; the {fear} is of going without it.',
-  ],
-  // stoicism_passion
-  stoicism_passion_positive: [
-    'What {name} will never admit is that their {value} is maintained against the {fear} of feeling — the specific dread that emotion, once permitted, would not stop at appropriate limits.',
-    'Beneath the {value} in {name} is the {fear} that the calm is not strength but numbness — that one day they will try to feel and discover the mechanism is broken.',
-  ],
-  stoicism_passion_negative: [
-    'What {name} will never admit is that their {value} contains the {fear} of emptiness — that without the intensity, there is nothing underneath worth finding.',
-    'The {value} in {name} sits over the {fear} that feeling everything is also a way of drowning — that the passion is not chosen but compulsive, and that the silence, when it finally comes, will be permanent.',
   ],
 };
 

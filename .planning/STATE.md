@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 11-agent-character-sheet/11-06-PLAN.md
-last_updated: "2026-03-28T23:19:13.927Z"
+stopped_at: Completed 12-flesh-reach-migration-to-quintessence/12-04-PLAN.md
+last_updated: "2026-03-30T08:18:13.486Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
-  total_phases: 2
-  completed_phases: 2
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 4
+  completed_phases: 3
+  total_plans: 19
+  completed_plans: 19
   percent: 93
 ---
 
@@ -166,6 +166,9 @@ Progress: [███░░░░░░░] 21%
 | Phase 11-agent-character-sheet P04 | 4 | 2 tasks | 5 files |
 | Phase 11-agent-character-sheet P05 | 10 | 2 tasks | 3 files |
 | Phase 11-agent-character-sheet P06 | 8 | 2 tasks | 12 files |
+| Phase 12-flesh-reach-migration-to-quintessence P02 | 20 | 3 tasks | 5 files |
+| Phase 12-flesh-reach-migration-to-quintessence P03 | 8 | 2 tasks | 8 files |
+| Phase 12-flesh-reach-migration-to-quintessence P04 | 15 | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -273,6 +276,21 @@ Progress: [███░░░░░░░] 21%
 - [Phase 11-agent-character-sheet]: ReachDomain narrowing done at knownReaches declaration for clean type source; getTracesForAgent import removed from DebugPanel as unused
 - [Phase 11-agent-character-sheet]: Cast emitTrace object literal as Omit<InteractionDepthTrace, 'id' | 'timestamp'> to resolve TS2353 excess property check on discriminated union Omit
 - [Phase 11-agent-character-sheet]: Add agentKnowledge: new Map() to all mock GameState objects in engine tests — empty Map satisfies type and tests don't exercise agentKnowledge
+- [Phase 12-flesh-reach-migration-to-quintessence]: ReachDomain 9→8 (flesh removed); ValuePair 10→9 (stoicism_passion retired, frankness_propriety→revelation_discretion, humility_pride→preservation_transformation)
+- [Phase 12-flesh-reach-migration-to-quintessence]: Flesh action redistribution: Heal/Cultivate→gold, Diagnose→eye, Plague→shadow
+- [Phase 12-flesh-reach-migration-to-quintessence]: FLESH_MAX_HOPS removed; encounterAwareness now uses uniform MAX_AWARENESS_HOPS cap for all reaches
+- [Phase 12-flesh-reach-migration-to-quintessence]: AgentDetailPanel domain grid 3x3→2x4 for 8 reaches
+- [Phase 12-flesh-reach-migration-to-quintessence]: Python UTF-8 bulk replace used for large data files on Windows to avoid charmap codec errors
+- [Phase 12-flesh-reach-migration-to-quintessence]: Stone dilemma bridge-repair-or-rebuild scenario captures Fortress vs Forge tension for preservation_transformation pair
+- [Phase 12-flesh-reach-migration-to-quintessence]: quintessence-content.ts provides QUINTESSENCE_LEXICON (10 levels: Fraying to Absolute) and QUINTESSENCE_TOOLTIPS for Plan 03 runtime system
+- [Phase 12-flesh-reach-migration-to-quintessence]: phaseQuintessence iterates actor+location node types only for regen/dissolution — these are the only initialized quintessence-bearing types
+- [Phase 12-flesh-reach-migration-to-quintessence]: Encounter abandonment (not step failure) triggers quintessence erosion — only narratively diminishing outcomes erode existential health
+- [Phase 12-flesh-reach-migration-to-quintessence]: deriveArchetypeEpithet: strongest lean wins, ties by VALUE_PAIRS order, courage_prudence excluded, ARCHETYPE_THRESHOLD=0.6
+- [Phase 12-flesh-reach-migration-to-quintessence]: Quintessence IPK prose-only (no meter), agentDetail populates quintessence+axiologicalProfile at intimate+ level, knowledge gate uses axiologicalProfile presence
+
+### Roadmap Evolution
+
+- Phase 12 added: flesh reach migration to quintessence
 
 ### Pending Todos
 
@@ -284,6 +302,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-28T23:14:57.036Z
-Stopped at: Completed 11-agent-character-sheet/11-06-PLAN.md
+Last session: 2026-03-30T08:18:13.484Z
+Stopped at: Completed 12-flesh-reach-migration-to-quintessence/12-04-PLAN.md
 Resume file: None

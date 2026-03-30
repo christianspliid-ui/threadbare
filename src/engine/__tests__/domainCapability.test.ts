@@ -23,18 +23,18 @@ describe('Domain Capability', () => {
       id: 'trait.origin.mountainborn', type: 'trait', name: 'Mountainborn',
       properties: {
         subcategory: 'innate', maxLevel: 1, importance: 1.0, visibility: 'public',
-        domainContributions: { iron: 3, gold: 3, stone: 4, star: 2, flesh: 2, heart: 1, eye: 1 },
+        domainContributions: { iron: 3, gold: 3, stone: 4, star: 2, veil: 2, heart: 1, eye: 1 },
         tags: [], flavorText: 'Born of the mountain.',
       },
     });
     assignTrait(graph, 'actor.thorin', 'trait.origin.mountainborn', { tick: 0, source: 'origin' });
 
-    // Mastery trait: Battle-Hardened (Iron +2, Flesh +1 per level)
+    // Mastery trait: Battle-Hardened (Iron +2, Gold +1 per level)
     graph.addNode({
       id: 'trait.mastery.battle_hardened', type: 'trait', name: 'Battle-Hardened',
       properties: {
         subcategory: 'mastery', maxLevel: 3, importance: 0.7, visibility: 'public',
-        domainContributions: { iron: 2, flesh: 1 },
+        domainContributions: { iron: 2, gold: 1 },
         decayPeriod: 90, tags: [], flavorText: 'Forged in battle.',
       },
     });
@@ -111,9 +111,9 @@ describe('Domain Capability', () => {
   });
 
   describe('computeFullProfile', () => {
-    it('returns a profile for all 9 domains', () => {
+    it('returns a profile for all 8 domains', () => {
       const profile = computeFullProfile(graph, 'actor.thorin');
-      expect(Object.keys(profile)).toHaveLength(9);
+      expect(Object.keys(profile)).toHaveLength(8);
       expect(profile.iron.rawScore).toBe(3);
       expect(profile.stone.rawScore).toBe(4);
     });

@@ -209,10 +209,9 @@ function getPersonalityHint(pair: ValuePair, value: number): string {
     honesty_cunning: ['honest', 'cunning'],
     tradition_novelty: ['traditional', 'innovative'],
     loyalty_ambition: ['loyal', 'ambitious'],
-    frankness_propriety: ['blunt', 'diplomatic'],
-    humility_pride: ['humble', 'proud'],
+    revelation_discretion: ['candid', 'guarded'],
+    preservation_transformation: ['conservative', 'transformative'],
     sacrifice_survival: ['selfless', 'pragmatic'],
-    stoicism_passion: ['stoic', 'passionate'],
     courage_prudence: ['bold', 'cautious'],
   };
   const [virtue, flaw] = HINT_MAP[pair];

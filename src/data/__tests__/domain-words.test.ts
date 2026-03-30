@@ -13,8 +13,8 @@ import { REACH_DOMAINS, type ReachDomain } from '../../types/traits';
 import type { ValuePair } from '../../types/agent';
 
 describe('DOMAIN_WORD_SCALES', () => {
-  it('exports scales for all 9 reaches', () => {
-    expect(Object.keys(DOMAIN_WORD_SCALES)).toHaveLength(9);
+  it('exports scales for all 8 reaches', () => {
+    expect(Object.keys(DOMAIN_WORD_SCALES)).toHaveLength(8);
     for (const domain of REACH_DOMAINS) {
       expect(DOMAIN_WORD_SCALES).toHaveProperty(domain);
     }
@@ -86,11 +86,7 @@ describe('DOMAIN_WORD_SCALES', () => {
     ]);
   });
 
-  it('has correct words for flesh (Frail → Undying)', () => {
-    expect(DOMAIN_WORD_SCALES.flesh).toEqual([
-      'Frail', 'Hardy', 'Resilient', 'Enduring', 'Undying',
-    ]);
-  });
+  // flesh reach removed in TB-075 Phase 1 — no flesh scale test needed
 });
 
 describe('getDomainWord', () => {
@@ -148,7 +144,7 @@ describe('getDomainWord', () => {
     }
   });
 
-  it('works for all 9 domains', () => {
+  it('works for all 8 domains', () => {
     const value = 6;
     expect(getDomainWord('iron', value)).toBe(DOMAIN_WORD_SCALES.iron[3]);
     expect(getDomainWord('gold', value)).toBe(DOMAIN_WORD_SCALES.gold[3]);
@@ -158,13 +154,12 @@ describe('getDomainWord', () => {
     expect(getDomainWord('eye', value)).toBe(DOMAIN_WORD_SCALES.eye[3]);
     expect(getDomainWord('stone', value)).toBe(DOMAIN_WORD_SCALES.stone[3]);
     expect(getDomainWord('star', value)).toBe(DOMAIN_WORD_SCALES.star[3]);
-    expect(getDomainWord('flesh', value)).toBe(DOMAIN_WORD_SCALES.flesh[3]);
   });
 });
 
 describe('VALUE_WORD_MAP', () => {
-  it('exports all 10 value pairs', () => {
-    expect(Object.keys(VALUE_WORD_MAP)).toHaveLength(10);
+  it('exports all 9 value pairs', () => {
+    expect(Object.keys(VALUE_WORD_MAP)).toHaveLength(9);
   });
 
   it('each value pair has [left, right] labels', () => {
@@ -182,17 +177,16 @@ describe('VALUE_WORD_MAP', () => {
     expect(VALUE_WORD_MAP.loyalty_ambition).toEqual(['Loyal', 'Ambitious']);
   });
 
-  it('has correct labels for all 10 pairs', () => {
+  it('has correct labels for all 9 pairs', () => {
     expect(VALUE_WORD_MAP.courage_prudence).toEqual(['Courageous', 'Prudent']);
     expect(VALUE_WORD_MAP.mercy_ruthlessness).toEqual(['Merciful', 'Ruthless']);
     expect(VALUE_WORD_MAP.honesty_cunning).toEqual(['Honest', 'Cunning']);
     expect(VALUE_WORD_MAP.sacrifice_survival).toEqual(['Self-Sacrificing', 'Self-Preserving']);
     expect(VALUE_WORD_MAP.loyalty_ambition).toEqual(['Loyal', 'Ambitious']);
     expect(VALUE_WORD_MAP.tradition_novelty).toEqual(['Traditional', 'Innovative']);
-    expect(VALUE_WORD_MAP.humility_pride).toEqual(['Humble', 'Proud']);
+    expect(VALUE_WORD_MAP.preservation_transformation).toEqual(['Preserving', 'Transforming']);
     expect(VALUE_WORD_MAP.asceticism_extravagance).toEqual(['Ascetic', 'Extravagant']);
-    expect(VALUE_WORD_MAP.frankness_propriety).toEqual(['Frank', 'Proper']);
-    expect(VALUE_WORD_MAP.stoicism_passion).toEqual(['Stoic', 'Passionate']);
+    expect(VALUE_WORD_MAP.revelation_discretion).toEqual(['Revealing', 'Discreet']);
   });
 });
 

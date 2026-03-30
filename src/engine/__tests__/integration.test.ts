@@ -30,7 +30,7 @@ describe('Integration: Headless Simulation Loop', () => {
         sacrifice_survival: -0.1,
         loyalty_ambition: -0.5,
         tradition_novelty: 0.2,
-        humility_pride: 0.4,
+        preservation_transformation: 0.4,
         mercy_ruthlessness: 0.1,
         asceticism_extravagance: -0.2,
       } satisfies AxiologicalProfile,
@@ -92,7 +92,7 @@ describe('Integration: Headless Simulation Loop', () => {
     const nextCandidates: ActionCandidate[] = [
       { templateId: 'patrol', targetId: 'region.north', domain: 'iron', score: 0, motivations: ['courage_prudence'] },
       { templateId: 'trade', targetId: 'loc.fortress', domain: 'gold', score: 0, motivations: ['asceticism_extravagance'] },
-      { templateId: 'recruit', targetId: 'loc.fortress', domain: 'heart', score: 0, motivations: ['loyalty_ambition', 'humility_pride'] },
+      { templateId: 'recruit', targetId: 'loc.fortress', domain: 'heart', score: 0, motivations: ['loyalty_ambition', 'preservation_transformation'] },
     ];
 
     const selectionResult = runSelectionPipeline(

@@ -285,17 +285,17 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     id: 'ambition_escape_cursed_land',
     displayName: 'Escape a Cursed Land',
     category: 'survival',
-    reachFloors: { stone: 0.2, flesh: 0.2 },
+    reachFloors: { stone: 0.2, star: 0.2 },
     requiredTraits: [],
     blockingTraits: [],
     sphereAffinities: ['entropy', 'life'],
     bondModifiers: [{ bondType: 'fellow_refugee', modifier: 0.3 }],
     boostingTraits: ['survivor', 'desperate'],
-    reachAffinity: { stone: 0.6, flesh: 0.7, shadow: 0.4 },
+    reachAffinity: { stone: 0.6, star: 0.7, shadow: 0.4 },
     milestones: [
       {
         id: 'escape_endurance',
-        condition: { type: 'agent_reach_above', reach: 'flesh', threshold: 0.5 },
+        condition: { type: 'agent_reach_above', reach: 'star', threshold: 0.5 },
         prose: ['The body held. Barely, but it held.'],
       },
       {
@@ -307,7 +307,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 2 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_reach_below', reach: 'flesh', threshold: 0.05 },
+        condition: { type: 'agent_reach_below', reach: 'star', threshold: 0.05 },
         prose: ['The land kept what it was owed.'],
       },
     ],
@@ -495,13 +495,13 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     id: 'ambition_greatest_healer',
     displayName: 'Become the Greatest Healer',
     category: 'mastery',
-    reachFloors: { heart: 0.3, flesh: 0.3 },
+    reachFloors: { heart: 0.3, gold: 0.3 },
     requiredTraits: [],
     blockingTraits: ['plague_bearer'],
     sphereAffinities: ['life', 'spirit'],
     bondModifiers: [{ bondType: 'patient', modifier: 0.2 }],
     boostingTraits: ['healer', 'empathic'],
-    reachAffinity: { heart: 0.6, flesh: 0.7, star: 0.4 },
+    reachAffinity: { heart: 0.6, gold: 0.7, star: 0.4 },
     milestones: [
       {
         id: 'healer_bonds',
@@ -510,7 +510,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
       },
       {
         id: 'healer_flesh',
-        condition: { type: 'agent_reach_above', reach: 'flesh', threshold: 0.7 },
+        condition: { type: 'agent_reach_above', reach: 'gold', threshold: 0.7 },
         prose: ['She reads the body like a map — every vein a road, every bruise a story.'],
       },
       {
@@ -522,7 +522,7 @@ export const AMBITION_TEMPLATES: readonly AmbitionTemplate[] = [
     completion: { requires: 2, of: 3 },
     abandonmentTriggers: [
       {
-        condition: { type: 'agent_reach_below', reach: 'flesh', threshold: 0.1 },
+        condition: { type: 'agent_reach_below', reach: 'gold', threshold: 0.1 },
         prose: ['Physician, heal thyself. She could not.'],
       },
     ],

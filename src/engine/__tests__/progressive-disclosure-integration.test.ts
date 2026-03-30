@@ -274,7 +274,7 @@ describe('progressive disclosure integration', () => {
       'eye',
       'stone',
       'star',
-      'flesh',
+      'gold',
     ];
 
     for (const domain of reachDomains) {
@@ -443,23 +443,23 @@ describe('progressive disclosure integration', () => {
     );
     expect(knownCard?.domains?.length).toBe(3);
 
-    // Intimate: all 9 domains
+    // Intimate: all 8 domains
     const intimateCard = getAgentInfoCard(
       state.graph,
       threadedAgentId,
       ascendantId,
       'intimate',
     );
-    expect(intimateCard?.domains?.length).toBe(9);
+    expect(intimateCard?.domains?.length).toBe(8);
 
-    // Transparent: all 9 domains
+    // Transparent: all 8 domains
     const transparentCard = getAgentInfoCard(
       state.graph,
       threadedAgentId,
       ascendantId,
       'transparent',
     );
-    expect(transparentCard?.domains?.length).toBe(9);
+    expect(transparentCard?.domains?.length).toBe(8);
   });
 
   // ─── Test 8: Threaded Agent Familiarity Starts at Recognised ──────────────

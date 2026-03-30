@@ -397,7 +397,7 @@ describe('faction definition constants', () => {
 
   it('all reach domains have weights defined', () => {
     const weights = ADVENTURING_GUILD_DEFINITION.reachWeights;
-    const domains = ['iron', 'eye', 'stone', 'shadow', 'heart', 'gold', 'flesh', 'star', 'veil'];
+    const domains = ['iron', 'eye', 'stone', 'shadow', 'heart', 'gold', 'gold', 'star', 'veil'];
     for (const d of domains) {
       expect(weights[d as keyof typeof weights]).toBeDefined();
       expect(weights[d as keyof typeof weights]).toBeGreaterThan(0);

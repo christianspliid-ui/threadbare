@@ -228,6 +228,19 @@ These gaps from the journey audit get addressed as part of milestone work, not a
 | M3.3 | Wealth spending crossovers | Designed in Gold Reach doc, needs implementation plan |
 | M3.7 | Gold+Stone CRUD actions | Brainstormed (TB-071 section I), needs design doc |
 
+### Phase 12: Flesh Reach Migration to Quintessence
+
+**Goal:** Remove the Flesh reach entirely (9 reaches to 8), elevate its conceptual space to Quintessence (a derived meta-property tracking existential health as a 0-1.0 runtime value on all entities), replace two axiological pairs (Stone: humility_pride to preservation_transformation, Eye: frankness_propriety to revelation_discretion), retire stoicism_passion, add archetype epithet system with hybrid naming, update reach colors to sphere-derived palette, and update UI grid layout from 3x3 to 2x4.
+**Requirements:** FLSH-01 through FLSH-16
+**Depends on:** Phase 11
+**Plans:** 4/4 plans complete
+
+Plans:
+- [ ] 12-01-PLAN.md — Type system changes (ReachDomain 9 to 8, ValuePair 10 to 9) + mechanical propagation across ~100+ files
+- [ ] 12-02-PLAN.md — Content rewrite (new Stone/Eye prose, stoicism_passion redistribution, quintessence-content.ts)
+- [ ] 12-03-PLAN.md — Quintessence runtime system (types, phaseQuintessence engine, orchestrator wiring, entity initialization)
+- [ ] 12-04-PLAN.md — UI polish (2x4 grid, archetype epithets, meeting modal cleanup) + visual verification
+
 ---
 
 ## Estimated Scope

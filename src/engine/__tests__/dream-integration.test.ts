@@ -35,7 +35,7 @@ describe('Dream Interface + Agent Selection integration', () => {
       sacrifice_survival: 0.4,
       loyalty_ambition: 0.5,
       tradition_novelty: -0.2,
-      humility_pride: 0.5,
+      preservation_transformation: 0.5,
       mercy_ruthlessness: 0.2,
       asceticism_extravagance: -0.1,
     };

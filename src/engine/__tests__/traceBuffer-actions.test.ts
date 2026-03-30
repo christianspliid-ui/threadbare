@@ -56,7 +56,7 @@ describe('action_selection trace', () => {
           sacrifice_survival: -0.2,
           loyalty_ambition: -0.6,
           tradition_novelty: 0.0,
-          humility_pride: 0.4,
+          preservation_transformation: 0.4,
           mercy_ruthlessness: -0.3,
           asceticism_extravagance: -0.4,
         },

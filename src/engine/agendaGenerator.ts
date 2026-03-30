@@ -28,11 +28,11 @@ const SPHERE_REACH_AFFINITY: Record<string, string[]> = {
   force: ['iron'],
   matter: ['stone'],
   energy: ['iron', 'star'],
-  life: ['flesh', 'heart'],
+  life: ['gold', 'heart'],
   mind: ['eye', 'shadow'],
   spirit: ['veil', 'heart'],
   time: ['star'],
-  entropy: ['shadow', 'flesh'],
+  entropy: ['shadow', 'star'],
 };
 
 export interface GenerateAgendasInput {

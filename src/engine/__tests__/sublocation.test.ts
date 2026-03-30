@@ -285,10 +285,9 @@ describe('scoreSublocations', () => {
       honesty_cunning: 0.6,
       tradition_novelty: 0.4,
       loyalty_ambition: 0.7,
-      frankness_propriety: 0,
-      humility_pride: -0.3,
-      sacrifice_survival: 0.8, // strong devotion
-      stoicism_passion: 0,
+      revelation_discretion: 0,
+      preservation_transformation: -0.3,
+      sacrifice_survival: 0.8, // strong devotion/self-sacrifice
       courage_prudence: 0.3,
     };
 
@@ -434,10 +433,10 @@ describe('selectSublocation', () => {
       honesty_cunning: 0.5,
       tradition_novelty: 0.5,
       loyalty_ambition: 0.5,
-      frankness_propriety: 0,
-      humility_pride: 0.5,
+      revelation_discretion: 0,
+      preservation_transformation: 0.5,
       sacrifice_survival: 0.9, // strong devotion
-      stoicism_passion: 0,
+      sacrifice_survival: 0,
       courage_prudence: 0.5,
     };
 

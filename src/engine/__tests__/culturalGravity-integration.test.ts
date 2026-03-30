@@ -47,7 +47,7 @@ function getCultureIdentities(result: ReturnType<typeof seedWorld>): Map<string,
 
 describe('cultural gravity integration', () => {
 
-  it('generated cultures produce valid reachPreferences with all 9 domains in [-1, 1]', () => {
+  it('generated cultures produce valid reachPreferences with all 8 domains in [-1, 1]', () => {
     const result = seedWorld(balancedCosmology(), diverseTiles(), 42);
 
     for (const cId of result.cultureIds) {
@@ -64,9 +64,9 @@ describe('cultural gravity integration', () => {
         expect(value).toBeLessThanOrEqual(1);
       }
 
-      // Verify all 9 domains are present
+      // Verify all 8 domains are present
       const domainKeys = Object.keys(identity.reachPreferences) as ReachDomain[];
-      expect(domainKeys).toHaveLength(9);
+      expect(domainKeys).toHaveLength(8);
       for (const d of REACH_DOMAINS) {
         expect(domainKeys).toContain(d);
       }

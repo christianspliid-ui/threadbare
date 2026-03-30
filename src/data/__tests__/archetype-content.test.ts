@@ -29,7 +29,7 @@ const VALID_NARRATIVE_TIERS = ['routine', 'notable', 'chronicle'];
 
 const VALID_REQUIREMENT_CATEGORIES = ['artifact', 'location', 'character', 'faction'];
 
-const VALID_REACH_DOMAINS = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'flesh'];
+const VALID_REACH_DOMAINS = ['iron', 'gold', 'shadow', 'veil', 'heart', 'eye', 'stone', 'star', 'gold'];
 
 describe('archetype-content', () => {
   // ─── Original tests ───────────────────────────────────────────

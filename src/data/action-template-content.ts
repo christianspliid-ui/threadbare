@@ -119,7 +119,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'iron',
     durationRange: { min: 2, max: 3 },
-    motivations: ['humility_pride', 'courage_prudence'],
+    motivations: ['preservation_transformation', 'courage_prudence'],
     onSuccess: [
       {
         op: 'update_node',
@@ -147,7 +147,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'iron',
     durationRange: { min: 3, max: 5 },
-    motivations: ['humility_pride', 'mercy_ruthlessness'],
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'remove_node', nodeId: '$target' },
       { op: 'add_edge', edgeType: 'controls', source: '$actor', target: '$location' },
@@ -292,7 +292,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
-    motivations: ['asceticism_extravagance', 'humility_pride'],
+    motivations: ['asceticism_extravagance', 'preservation_transformation'],
     onSuccess: [
       {
         op: 'update_edge',
@@ -399,7 +399,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 1, max: 3 },
-    motivations: ['asceticism_extravagance', 'honesty_cunning', 'humility_pride'],
+    motivations: ['asceticism_extravagance', 'honesty_cunning', 'preservation_transformation'],
     minWealthRequired: 8, // WEALTH_INFLUENCE_COST
     onSuccess: [
       {
@@ -463,7 +463,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 4, max: 6 },
-    motivations: ['asceticism_extravagance', 'humility_pride', 'loyalty_ambition'],
+    motivations: ['asceticism_extravagance', 'preservation_transformation', 'loyalty_ambition'],
     minWealthRequired: 25, // WEALTH_MONOPOLY_COST
     onSuccess: [
       // Mark the target location as monopoly-controlled by this actor
@@ -674,7 +674,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'create',
     reach: 'heart',
     durationRange: { min: 2, max: 4 },
-    motivations: ['loyalty_ambition', 'mercy_ruthlessness', 'humility_pride'],
+    motivations: ['loyalty_ambition', 'mercy_ruthlessness', 'preservation_transformation'],
     onSuccess: [
       { op: 'add_edge', edgeType: 'allied_with', source: '$actor', target: '$target' },
     ],
@@ -714,7 +714,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'update',
     reach: 'heart',
     durationRange: { min: 2, max: 3 },
-    motivations: ['humility_pride', 'mercy_ruthlessness'],
+    motivations: ['preservation_transformation', 'mercy_ruthlessness'],
     onSuccess: [
       { op: 'update_node', nodeId: '$target', changes: { morale: 0.15 } },
       { op: 'add_edge', edgeType: 'inspired_by', source: '$actor', target: '$target' },
@@ -735,7 +735,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     crudType: 'delete',
     reach: 'heart',
     durationRange: { min: 3, max: 5 },
-    motivations: ['loyalty_ambition', 'humility_pride'],
+    motivations: ['loyalty_ambition', 'preservation_transformation'],
     onSuccess: [
       { op: 'remove_edge', edgeType: 'allied_with', source: '$actor', target: '$target' },
       { op: 'update_node', nodeId: '$target', changes: { morale: -0.20 } },
@@ -1002,12 +1002,12 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     },
   },
 
-  // Flesh (biology) — create, read, update, delete
+  // Former Flesh (biology) actions — redistributed to Gold/Eye/Shadow per TB-075 Phase 1
   {
     id: 'action.flesh.heal',
     name: 'Heal',
     crudType: 'create',
-    reach: 'flesh',
+    reach: 'gold',
     durationRange: { min: 2, max: 4 },
     motivations: ['mercy_ruthlessness', 'sacrifice_survival', 'courage_prudence'],
     onSuccess: [
@@ -1027,7 +1027,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     id: 'action.flesh.diagnose',
     name: 'Diagnose',
     crudType: 'read',
-    reach: 'flesh',
+    reach: 'eye',
     durationRange: { min: 1, max: 2 },
     motivations: ['mercy_ruthlessness', 'honesty_cunning'],
     onSuccess: [
@@ -1047,7 +1047,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     id: 'action.flesh.cultivate',
     name: 'Cultivate',
     crudType: 'update',
-    reach: 'flesh',
+    reach: 'gold',
     durationRange: { min: 2, max: 3 },
     motivations: ['sacrifice_survival', 'mercy_ruthlessness'],
     onSuccess: [
@@ -1067,7 +1067,7 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
     id: 'action.flesh.plague',
     name: 'Plague',
     crudType: 'delete',
-    reach: 'flesh',
+    reach: 'shadow',
     durationRange: { min: 3, max: 5 },
     motivations: ['mercy_ruthlessness', 'mercy_ruthlessness'],
     onSuccess: [

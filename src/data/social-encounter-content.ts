@@ -404,7 +404,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     name: 'Challenge to Duel',
     locationTypes: [...SETTLEMENT_LOCATIONS],
     reachPrimary: 'iron',
-    reachSecondary: 'flesh',
+    reachSecondary: 'gold',
     encounterType: 'duel',
     threatRating: 'hard',
     motivations: ENCOUNTER_TYPE_MOTIVATIONS.duel,
@@ -428,7 +428,7 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
       {
         id: 'challenge_duel.combat',
         name: 'The Crossing of Blades',
-        reach: 'flesh',
+        reach: 'gold',
         difficulty: SOCIAL_DIFFICULTY_BASE + SOCIAL_DIFFICULTY_STEP * 2,
         duration: 1,
         narrative: 'Steel meets steel. {actor} {verb} with {adj} precision against a worthy opponent.',

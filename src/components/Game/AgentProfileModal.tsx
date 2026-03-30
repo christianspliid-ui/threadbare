@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { AgentKnowledge } from '../../types/agentKnowledge';
+import { deriveArchetypeEpithet } from '../../engine/archetypeEpithet';
 import { Tooltip } from '../shared/Tooltip';
 import { Modal } from '../shared/Modal';
 import { AttachmentDetailView } from './AttachmentDetailView';
@@ -138,6 +139,24 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
             >
               {card.name}
             </h1>
+
+            {/* Archetype epithet — knowledge-gated, only when intimate+ (axiologicalProfile present) */}
+            {card.axiologicalProfile && (() => {
+              const epithet = deriveArchetypeEpithet(card.axiologicalProfile!);
+              return epithet ? (
+                <p style={{
+                  fontFamily: 'Cinzel, serif',
+                  fontSize: 'var(--text-base)',
+                  color: 'var(--accent-gold)',
+                  letterSpacing: '0.04em',
+                  fontStyle: 'italic',
+                  marginTop: 'var(--space-1)',
+                  marginBottom: 0,
+                }}>
+                  {epithet}
+                </p>
+              ) : null;
+            })()}
 
             {/* Knowledge level badge */}
             <Tooltip label="Knowledge Level" desc="How well you know this agent. Grows through proximity, worship, scry, and narrative contact.">
