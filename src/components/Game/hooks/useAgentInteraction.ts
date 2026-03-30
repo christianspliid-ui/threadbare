@@ -16,6 +16,7 @@ import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
 import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
 import { templateIdFromSlotId } from '../../../engine/targetActions';
+import { appendEvent } from '../../../engine/encounterTimeline';
 import { mulberry32 } from '../../../lib/prng';
 import type { ToastItem } from '../../../types/notification';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
@@ -258,6 +259,19 @@ export function useAgentInteraction({
             essencePaid: template.essenceCost ?? 0,
           });
 
+          // Timeline: ACTION_START for player-sourced action
+          const targetNode = gameState.graph.getNode(capturedAgentId);
+          appendEvent(gameState.ascendantId, {
+            phase: 'ACTION_START',
+            tick: capturedTick,
+            template: template.name,
+            target: targetNode?.name ?? capturedAgentId,
+            reach: template.reach ?? 'unknown',
+            scale: template.scale,
+            steps: template.steps.length,
+            source: 'player',
+          });
+
           // Build consequence message (optimistic on dispatch)
           const consequenceBody = template.consequenceMessage?.success
             ?? template.narrativeTemplates?.success
@@ -394,6 +408,19 @@ export function useAgentInteraction({
             template: divineTemplate,
             rng,
             essencePaid: result.essenceSpent[slot.sphere!] ?? 0,
+          });
+
+          // Timeline: ACTION_START for divine intervention
+          const divineTargetNode = gameState.graph.getNode(selectedAgentId);
+          appendEvent(gameState.ascendantId, {
+            phase: 'ACTION_START',
+            tick: gameState.tick,
+            template: divineTemplate.name,
+            target: divineTargetNode?.name ?? selectedAgentId,
+            reach: divineTemplate.reach ?? 'unknown',
+            scale: 'cosmic',
+            steps: divineTemplate.steps.length,
+            source: 'player',
           });
 
           // Apply ascendant feedback (intervention history)

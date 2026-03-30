@@ -24,7 +24,10 @@ export type TimelineEvent =
   | { phase: 'ENCOUNTER_START'; tick: number; encounter: string; steps: number; threat: number; reach: string }
   | { phase: 'ENCOUNTER_STEP'; tick: number; step: string; reach: string; diff: number; cap: number; prob: number; roll: number; result: 'PASS' | 'FAIL' }
   | { phase: 'ENCOUNTER_END'; tick: number; encounter: string; status: string; reward?: string }
-  | { phase: 'REROUTE'; tick: number; oldTarget: string; newTarget: string; reason: string };
+  | { phase: 'REROUTE'; tick: number; oldTarget: string; newTarget: string; reason: string }
+  | { phase: 'ACTION_START'; tick: number; template: string; target: string; reach: string; scale: string; steps: number; source: 'agent' | 'player' }
+  | { phase: 'ACTION_STEP'; tick: number; template: string; step: string; reach: string; diff: number; cap: number; prob: number; roll: number; result: 'PASS' | 'FAIL' }
+  | { phase: 'ACTION_END'; tick: number; template: string; status: string; stepResults: string };
 
 // ─── Storage ────────────────────────────────────────────────────
 

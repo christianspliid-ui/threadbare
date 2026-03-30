@@ -40,6 +40,12 @@ function formatDetail(event: TimelineEvent): string {
       return `${event.encounter} | status=${event.status}${event.reward ? ` | reward=${event.reward}` : ''}`;
     case 'REROUTE':
       return `old=${event.oldTarget} | new=${event.newTarget} | reason=${event.reason}`;
+    case 'ACTION_START':
+      return `${event.template} | target=${event.target} | reach=${event.reach} | scale=${event.scale} | steps=${event.steps} | source=${event.source}`;
+    case 'ACTION_STEP':
+      return `${event.template} | step=${event.step} | reach=${event.reach} | diff=${event.diff} | cap=${event.cap} | prob=${event.prob.toFixed(2)} | roll=${event.roll.toFixed(2)} | ${event.result}`;
+    case 'ACTION_END':
+      return `${event.template} | status=${event.status} | steps=${event.stepResults}`;
   }
 }
 

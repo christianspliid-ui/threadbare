@@ -76,7 +76,7 @@ describe('timeline → exporter contract', () => {
       // First column is a number (tick)
       expect(Number.isNaN(Number(cols[0]))).toBe(false);
       // Second column is a known phase
-      expect(['DECIDE', 'IDLE', 'MOVE', 'ARRIVE', 'ENCOUNTER_START', 'ENCOUNTER_STEP', 'ENCOUNTER_END', 'REROUTE']).toContain(cols[1]);
+      expect(['DECIDE', 'IDLE', 'MOVE', 'ARRIVE', 'ENCOUNTER_START', 'ENCOUNTER_STEP', 'ENCOUNTER_END', 'REROUTE', 'ACTION_START', 'ACTION_STEP', 'ACTION_END']).toContain(cols[1]);
     }
 
     // Verify chronological order
@@ -131,6 +131,43 @@ describe('timeline → exporter contract', () => {
     expect(log).toContain('old=Ruins');
     expect(log).toContain('new=Thornwall');
     expect(log).toContain('reason=better_encounter');
+  });
+
+  test('unified action lifecycle produces valid TSV', () => {
+    const agentId = 'agent_bryn';
+
+    const events: TimelineEvent[] = [
+      { phase: 'ACTION_START', tick: 20, template: 'Fortify', target: 'Market', reach: 'stone', scale: 'personal', steps: 2, source: 'agent' },
+      { phase: 'ACTION_STEP', tick: 22, template: 'Fortify', step: '1/2', reach: 'stone', diff: 0.3, cap: 0.5, prob: 0.2, roll: 15, result: 'PASS' },
+      { phase: 'ACTION_STEP', tick: 24, template: 'Fortify', step: '2/2', reach: 'iron', diff: 0.4, cap: 0.45, prob: 0.05, roll: 88, result: 'FAIL' },
+      { phase: 'ACTION_END', tick: 24, template: 'Fortify', status: 'failure', stepResults: 'PF' },
+    ];
+
+    for (const ev of events) {
+      appendEvent(agentId, ev);
+    }
+
+    const tsv = formatEncounterLog(getTimeline(agentId), {
+      agentId,
+      agentName: 'Bryn Ironfist',
+      seed: 'test42',
+      tickRange: [20, 24],
+    });
+
+    const dataLines = tsv.split('\n').filter(l => !l.startsWith('#') && !l.startsWith('TICK') && l.length > 0);
+    expect(dataLines).toHaveLength(4);
+
+    // Each line has 3 tab-separated columns
+    for (const line of dataLines) {
+      const cols = line.split('\t');
+      expect(cols).toHaveLength(3);
+      expect(['ACTION_START', 'ACTION_STEP', 'ACTION_END']).toContain(cols[1]);
+    }
+
+    // Verify content
+    expect(tsv).toContain('Fortify | target=Market');
+    expect(tsv).toContain('step=1/2 | reach=stone');
+    expect(tsv).toContain('status=failure | steps=PF');
   });
 
   test('filename is safe for filesystem', () => {

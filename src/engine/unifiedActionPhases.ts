@@ -21,6 +21,7 @@ import { UNIFIED_ACTION_TEMPLATES, getUnifiedTemplateById } from '../data/unifie
 import { runSelectionPipeline } from './agentSelection';
 import { generateRoutineProse, generateNotableProse } from './narrative';
 import { emitTrace } from './traceBuffer';
+import { appendEvent } from './encounterTimeline';
 
 // ─── Constants ──────────────────────────────────────────────────
 
@@ -126,6 +127,20 @@ export function phaseIdleSelection(
 
             const locationNode = state.graph.getNode(locationId);
             const locationName = locationNode?.name ?? 'the realm';
+            const targetNode = state.graph.getNode(result.selected.targetId);
+            const targetName = targetNode?.name ?? result.selected.targetId;
+
+            // Timeline: ACTION_START event
+            appendEvent(actor.id, {
+              phase: 'ACTION_START',
+              tick: state.tick,
+              template: template.name,
+              target: targetName,
+              reach: template.reach ?? 'unknown',
+              scale: template.scale,
+              steps: template.steps.length,
+              source: 'agent',
+            });
 
             // Emit trace for inspectability
             emitTrace({

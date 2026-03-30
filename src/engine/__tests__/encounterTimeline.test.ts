@@ -79,6 +79,9 @@ describe('encounterTimeline', () => {
       { phase: 'ENCOUNTER_STEP', tick: 6, step: '1/3', reach: 'Warding', diff: 45, cap: 62, prob: 0.71, roll: 0.38, result: 'PASS' },
       { phase: 'ENCOUNTER_END', tick: 7, encounter: 'ancient_ward', status: 'completed', reward: 'Iron Talisman' },
       { phase: 'REROUTE', tick: 8, oldTarget: 'l1', newTarget: 'l3', reason: 'better_encounter' },
+      { phase: 'ACTION_START', tick: 9, template: 'Raise Force', target: 'Market', reach: 'iron', scale: 'personal', steps: 1, source: 'agent' },
+      { phase: 'ACTION_STEP', tick: 10, template: 'Raise Force', step: '1/1', reach: 'iron', diff: 0.3, cap: 0.45, prob: 0.15, roll: 12, result: 'PASS' },
+      { phase: 'ACTION_END', tick: 10, template: 'Raise Force', status: 'success', stepResults: 'P' },
     ];
 
     for (const ev of events) {
@@ -86,9 +89,39 @@ describe('encounterTimeline', () => {
     }
 
     const timeline = getTimeline('agent_a');
-    expect(timeline).toHaveLength(8);
+    expect(timeline).toHaveLength(11);
     expect(timeline.map(e => e.phase)).toEqual([
       'DECIDE', 'IDLE', 'MOVE', 'ARRIVE', 'ENCOUNTER_START', 'ENCOUNTER_STEP', 'ENCOUNTER_END', 'REROUTE',
+      'ACTION_START', 'ACTION_STEP', 'ACTION_END',
     ]);
+  });
+
+  it('records ACTION_START with correct fields', () => {
+    const ev: TimelineEvent = {
+      phase: 'ACTION_START', tick: 5, template: 'Dream', target: 'Alice',
+      reach: 'heart', scale: 'cosmic', steps: 1, source: 'player',
+    };
+    appendEvent('asc-1', ev);
+    const timeline = getTimeline('asc-1');
+    expect(timeline[0]).toEqual(ev);
+  });
+
+  it('records ACTION_STEP with resolution stats', () => {
+    const ev: TimelineEvent = {
+      phase: 'ACTION_STEP', tick: 6, template: 'Fortify', step: '2/3',
+      reach: 'stone', diff: 0.4, cap: 0.55, prob: 0.15, roll: 42, result: 'FAIL',
+    };
+    appendEvent('agent_a', ev);
+    expect(getTimeline('agent_a')[0].phase).toBe('ACTION_STEP');
+  });
+
+  it('records ACTION_END with step results summary', () => {
+    const ev: TimelineEvent = {
+      phase: 'ACTION_END', tick: 8, template: 'Trade Route',
+      status: 'failure', stepResults: 'PPF',
+    };
+    appendEvent('agent_a', ev);
+    const timeline = getTimeline('agent_a');
+    expect(timeline[0]).toEqual(ev);
   });
 });

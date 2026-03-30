@@ -36,6 +36,7 @@ import {
   resolveContestationPair,
 } from './contestation';
 import { resolveHexActionFull, isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import { appendEvent } from './encounterTimeline';
 import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
 import { applyRevelationMutations } from './revelationResolver';
@@ -81,21 +82,29 @@ export function collectCompletions(
  *
  * Returns the step outcome and which GraphOps to execute.
  */
+export interface StepResolutionResult {
+  outcome: StepOutcome;
+  opsToExecute: readonly GraphOp[];
+  capability: number;
+  probability: number;
+  roll: number;
+}
+
 export function resolveUncontestedStep(
   action: UnifiedAction,
   template: UnifiedActionTemplate,
   state: GameState,
   rng: () => number,
-): { outcome: StepOutcome; opsToExecute: readonly GraphOp[] } {
+): StepResolutionResult {
   const step = template.steps[action.currentStep];
   if (!step) {
     // Defensive — should never happen if template is valid
-    return { outcome: 'failure', opsToExecute: [] };
+    return { outcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0 };
   }
 
   // Divine actions (difficulty 0) always succeed
   if (step.difficulty === 0) {
-    return { outcome: 'success', opsToExecute: step.onSuccess };
+    return { outcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0 };
   }
 
   // Compute actor's domain capability for this step's reach
@@ -118,7 +127,7 @@ export function resolveUncontestedStep(
   const outcome: StepOutcome = isSuccess ? 'success' : 'failure';
   const ops = isSuccess ? step.onSuccess : step.onFailure;
 
-  return { outcome, opsToExecute: ops };
+  return { outcome, opsToExecute: ops, capability, probability, roll };
 }
 
 /**
@@ -137,6 +146,7 @@ export function executeStepResult(
   state: GameState,
   rng: () => number,
   tick: number,
+  resolutionStats?: { capability: number; probability: number; roll: number },
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   const events: TickEvent[] = [];
 
@@ -213,6 +223,33 @@ export function executeStepResult(
     opsFailed: outcome === 'failure' ? ops.length : 0,
     duration: action.stepDuration,
   } as any);
+
+  // Timeline: ACTION_STEP event
+  if (step && resolutionStats) {
+    appendEvent(action.actorId, {
+      phase: 'ACTION_STEP',
+      tick,
+      template: template.name,
+      step: `${action.currentStep + 1}/${template.steps.length}`,
+      reach: step.reach,
+      diff: step.difficulty,
+      cap: resolutionStats.capability,
+      prob: resolutionStats.probability,
+      roll: resolutionStats.roll,
+      result: outcome === 'success' ? 'PASS' : 'FAIL',
+    });
+  }
+
+  // Timeline: ACTION_END event when action fully resolves
+  if (updatedAction.resolved) {
+    appendEvent(action.actorId, {
+      phase: 'ACTION_END',
+      tick,
+      template: template.name,
+      status: updatedAction.outcome ?? 'unknown',
+      stepResults: updatedAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
+    });
+  }
 
   // Generate tick event
   const actorNode = state.graph.getNode(action.actorId);
@@ -367,13 +404,14 @@ export function phaseUnifiedActionProgress(
     if (!template) continue; // fail-soft: skip unknown template
 
     // Resolve step
-    const { outcome, opsToExecute } = resolveUncontestedStep(
+    const { outcome, opsToExecute, capability, probability, roll } = resolveUncontestedStep(
       completing_action, template, state, rng,
     );
 
     // Execute and advance
     const { updatedAction, events: stepEvents } = executeStepResult(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
+      { capability, probability, roll },
     );
 
     // If this action targets a hex, route through hexActionBridge to get mutations

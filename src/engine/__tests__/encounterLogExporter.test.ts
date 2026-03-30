@@ -115,6 +115,30 @@ describe('formatEncounterLog', () => {
     expect(result).toContain('old=Ruins of Ashenmoor | new=Thornwall | reason=better_encounter');
   });
 
+  it('formats ACTION_START event', () => {
+    const events: TimelineEvent[] = [
+      { phase: 'ACTION_START', tick: 5, template: 'Raise Force', target: 'Market', reach: 'iron', scale: 'personal', steps: 2, source: 'agent' },
+    ];
+    const result = formatEncounterLog(events, { ...BASE_OPTIONS, tickRange: [5, 5] });
+    expect(result).toContain('Raise Force | target=Market | reach=iron | scale=personal | steps=2 | source=agent');
+  });
+
+  it('formats ACTION_STEP event', () => {
+    const events: TimelineEvent[] = [
+      { phase: 'ACTION_STEP', tick: 7, template: 'Fortify', step: '1/2', reach: 'stone', diff: 0.4, cap: 0.55, prob: 0.15, roll: 42, result: 'PASS' },
+    ];
+    const result = formatEncounterLog(events, { ...BASE_OPTIONS, tickRange: [7, 7] });
+    expect(result).toContain('Fortify | step=1/2 | reach=stone | diff=0.4 | cap=0.55 | prob=0.15 | roll=42.00 | PASS');
+  });
+
+  it('formats ACTION_END event', () => {
+    const events: TimelineEvent[] = [
+      { phase: 'ACTION_END', tick: 8, template: 'Trade Route', status: 'success', stepResults: 'PP' },
+    ];
+    const result = formatEncounterLog(events, { ...BASE_OPTIONS, tickRange: [8, 8] });
+    expect(result).toContain('Trade Route | status=success | steps=PP');
+  });
+
   it('produces tab-separated columns', () => {
     const events: TimelineEvent[] = [
       { phase: 'IDLE', tick: 1, reason: 'test', idleAction: 'stay' },
