@@ -49,6 +49,12 @@ export interface ActionTemplateData {
   // Economic gate: actor must have wealth >= this value to select the action.
   // Wealth is on 0–100 scale. Fail-soft: agents with insufficient wealth skip this action.
   minWealthRequired?: number;
+
+  // Phase 17 display fields
+  /** Evocative spell-like display name (Ars Magica style, max 3 words). */
+  spellName?: string;
+  /** Qualitative game-mechanical description — 2-3 sentences, no numbers. */
+  description?: string;
 }
 
 // ─── 36 Action Templates (4 per reach × 9 reaches) ───────────────
@@ -58,6 +64,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.iron.raise-force',
     name: 'Raise Force',
+    spellName: 'Call to Arms',
+    description: 'Summons the martial will of a willing host, drawing fighters to the banner. Troop cohesion tightens and defensive posture strengthens across the force. Effects are amplified near fortifications and loyal settlements.',
     crudType: 'create',
     reach: 'iron',
     durationRange: { min: 2, max: 4 },
@@ -88,6 +96,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.iron.assess-threat',
     name: 'Assess Threat',
+    spellName: 'Iron Scrutiny',
+    description: 'Studies an enemy formation or opposing force with a martial eye, cataloguing strengths and vulnerabilities. Tactical understanding deepens, revealing the true measure of a threat. A clear assessment allows better counter-strategies to be chosen.',
     crudType: 'read',
     reach: 'iron',
     durationRange: { min: 1, max: 2 },
@@ -116,6 +126,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.iron.fortify',
     name: 'Fortify',
+    spellName: 'Bastion Rite',
+    description: 'Reinforces a location with disciplined military labor, raising walls and sharpening every defensive measure. The site becomes hardened against assault and more difficult for enemies to breach. Sustained effort compounds the fortification over time.',
     crudType: 'update',
     reach: 'iron',
     durationRange: { min: 2, max: 3 },
@@ -144,6 +156,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.iron.conquer',
     name: 'Conquer',
+    spellName: 'Shatter the Line',
+    description: 'Launches a decisive military campaign to break an opposing force and seize their holdings. Victory overwrites the existing order and brings the target location under the conqueror\'s control. Failure carries steep costs in morale and standing.',
     crudType: 'delete',
     reach: 'iron',
     durationRange: { min: 3, max: 5 },
@@ -171,6 +185,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.establish-trade',
     name: 'Establish Trade',
+    spellName: 'Golden Accord',
+    description: 'Opens a formal trade relationship between two parties, creating a channel for ongoing commerce. Wealth flows along the new route and both parties gain access to each other\'s markets. The connection grows more valuable the longer it is maintained.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 4 },
@@ -192,6 +208,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.survey-resources',
     name: 'Survey Resources',
+    spellName: 'Ledger Sight',
+    description: 'Conducts a careful audit of a location\'s economic assets, mapping the full extent of its wealth. Hidden resources and untapped commodities are brought into clear view. This knowledge enables better trade and exploitation strategies.',
     crudType: 'read',
     reach: 'gold',
     durationRange: { min: 1, max: 2 },
@@ -212,6 +230,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.trade',
     name: 'Trade',
+    spellName: 'Gilded Exchange',
+    description: 'Executes a direct exchange of goods or services along an existing trade route, deepening the commercial bond. Both parties profit when the deal is struck honestly, and the route grows more robust over time. Failure exposes the trader to exploitation.',
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
@@ -232,6 +252,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.disrupt-trade',
     name: 'Disrupt Trade',
+    spellName: 'Gilded Ruin',
+    description: 'Sabotages a rival\'s commercial operations through targeted interference, corrupt agents, or blocked routes. Success strips their wealth and severs trade connections they depend on. Exposure carries reputational damage that lingers long after the act.',
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
@@ -256,6 +278,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.negotiate-agreement',
     name: 'Negotiate Agreement',
+    spellName: 'Sealed Compact',
+    description: 'Formalizes an arrangement between two parties through careful diplomacy and contractual ink. The resulting agreement grants both sides structured obligations and protections. A well-struck deal becomes a lasting foundation for cooperation.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 4 },
@@ -289,6 +313,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.tax-trade-route',
     name: 'Tax Trade Route',
+    spellName: 'Tollkeeper\'s Grip',
+    description: 'Asserts economic dominance over an existing trade corridor by stationing collectors and levying fees. Steady wealth flows to the controlling party as long as the route remains active. Merchants resent the imposition, souring goodwill over time.',
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
@@ -316,6 +342,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.break-agreement',
     name: 'Break Agreement',
+    spellName: 'Broken Seal',
+    description: 'Unilaterally dissolves a standing contract or treaty, prioritizing short-term gain over trust. The act carries immediate reputational damage but frees the actor from burdensome obligations. Partners who witness the betrayal become wary of future dealings.',
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 1, max: 2 },
@@ -338,6 +366,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.hire-mercenaries',
     name: 'Hire Mercenaries',
+    spellName: 'Coin of Swords',
+    description: 'Purchases the temporary loyalty of a professional fighting company, bringing their martial expertise under the actor\'s banner. The hired force bolsters military capability for a limited time before their contract expires. Merc bands are effective but unreliable once the gold runs dry.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
@@ -373,6 +403,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.commission-assassination',
     name: 'Commission Assassination',
+    spellName: 'Shadow Contract',
+    description: 'Pays a capable operative to permanently remove a target from the board while keeping the commissioner\'s hands clean. Success eliminates the threat entirely and leaves no visible trail. Discovery invites catastrophic retaliation and lasting infamy.',
     crudType: 'delete',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
@@ -396,6 +428,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.buy-influence',
     name: 'Buy Influence',
+    spellName: 'Whisper of Coin',
+    description: 'Spreads carefully placed payments to win favor, opening doors that would otherwise remain shut. The target\'s disposition warms toward the actor, smoothing future negotiations and cooperation. The effect is genuine but transactional — it fades without reinforcement.',
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 1, max: 3 },
@@ -425,6 +459,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.fund-construction',
     name: 'Fund Construction',
+    spellName: 'Stone of Wealth',
+    description: 'Pours capital into building a new structure that reshapes the economic landscape of a location. The completed building generates opportunity and draws commerce, amplifying the actor\'s grip on local prosperity. Abandoned projects leave only half-built ruins and wasted coin.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 3, max: 5 },
@@ -460,6 +496,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.gold.establish-monopoly',
     name: 'Establish Monopoly',
+    spellName: 'Market Stranglehold',
+    description: 'Systematically buys out rivals and consolidates control over a key commodity or trade corridor. Once dominant, the actor sets prices and terms without competition, extracting maximum value from the market. The act breeds deep resentment among those shut out.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 4, max: 6 },
@@ -489,6 +527,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.shadow.establish-network',
     name: 'Establish Network',
+    spellName: 'Veil of Night',
+    description: 'Builds a covert intelligence network by recruiting trusted operatives and placing them throughout a region. Information flows back through hidden channels, giving the actor an unseen advantage over rivals. Discovery before the network takes root scatters it entirely.',
     crudType: 'create',
     reach: 'shadow',
     durationRange: { min: 2, max: 4 },
@@ -515,6 +555,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.shadow.spy',
     name: 'Spy',
+    spellName: 'Silent Witness',
+    description: 'Dispatches covert agents to observe a target and extract hidden information without detection. Secrets about intentions, capabilities, and vulnerabilities are brought back to the actor. If the agents are caught, the target is alerted and the actor is exposed.',
     crudType: 'read',
     reach: 'shadow',
     durationRange: { min: 1, max: 2 },
@@ -535,6 +577,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.shadow.recruit-agent',
     name: 'Recruit Agent',
+    spellName: 'Umbral Pact',
+    description: 'Turns an individual to secret service through a careful approach of leverage, promise, or shared interest. The recruited agent acts as a hidden operative within their existing position, providing access and information. Rejection reveals the attempt and may trigger retaliation.',
     crudType: 'update',
     reach: 'shadow',
     durationRange: { min: 2, max: 3 },
@@ -555,6 +599,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.shadow.assassinate',
     name: 'Assassinate',
+    spellName: 'Silent Step',
+    description: 'Sends a skilled killer directly after a target, relying on stealth and precision rather than coin. The actor\'s own hand is closer to the act than a commission, carrying greater personal risk but also greater certainty of intent. Failure invites devastating exposure.',
     crudType: 'delete',
     reach: 'shadow',
     durationRange: { min: 3, max: 5 },
@@ -577,6 +623,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.veil.cast-spell',
     name: 'Cast Spell',
+    spellName: 'Arcane Weaving',
+    description: 'Shapes raw magical energy into a directed working that binds a lasting enchantment to the target. The spell anchors the caster\'s will into the fabric of the target, producing persistent effects that endure beyond the moment of casting. Failure bleeds mana and leaves the caster drained.',
     crudType: 'create',
     reach: 'veil',
     durationRange: { min: 2, max: 4 },
@@ -603,6 +651,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.veil.detect-magic',
     name: 'Detect Magic',
+    spellName: 'Mist Parting',
+    description: 'Extends arcane perception to sense the presence and nature of hidden magical workings on or within a target. The invisible becomes visible, exposing enchantments, wards, and bound spirits that would otherwise remain concealed. Failure leaves the caster\'s perceptions dulled.',
     crudType: 'read',
     reach: 'veil',
     durationRange: { min: 1, max: 2 },
@@ -623,6 +673,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.veil.modify-enchantment',
     name: 'Modify Enchantment',
+    spellName: 'Veil Reforged',
+    description: 'Reaches into an existing magical working and reshapes its parameters without fully unraveling it. The modified enchantment emerges stronger or better aligned with the caster\'s intent. Misjudgment of the magical structure can cause the working to destabilize instead.',
     crudType: 'update',
     reach: 'veil',
     durationRange: { min: 2, max: 3 },
@@ -649,6 +701,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.veil.dispel',
     name: 'Dispel',
+    spellName: 'Veil Torn Asunder',
+    description: 'Unmakes an active magical enchantment by disrupting the binding threads that hold it together. The target is freed from the spell\'s influence as the magical working collapses and dissipates. Resistance from a powerful enchantment can exhaust the caster\'s reserves.',
     crudType: 'delete',
     reach: 'veil',
     durationRange: { min: 3, max: 5 },
@@ -671,6 +725,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.heart.forge-alliance',
     name: 'Forge Alliance',
+    spellName: 'Kindred Bond',
+    description: 'Extends a hand of genuine partnership to another party, building a mutual commitment grounded in trust and shared interest. The alliance grants both parties protection, cooperation, and a strengthened social position. Spurned offers leave a quiet wound in the relationship.',
     crudType: 'create',
     reach: 'heart',
     durationRange: { min: 2, max: 4 },
@@ -691,6 +747,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.heart.assess-loyalty',
     name: 'Assess Loyalty',
+    spellName: 'Heart\'s Gaze',
+    description: 'Reads the emotional truth beneath another person\'s words and behavior to determine where their allegiance truly lies. Hidden resentments, divided loyalties, and secret devotions surface under careful scrutiny. Misreading the signs leaves the actor no wiser than before.',
     crudType: 'read',
     reach: 'heart',
     durationRange: { min: 1, max: 2 },
@@ -711,6 +769,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.heart.inspire',
     name: 'Inspire',
+    spellName: 'Heart\'s Refuge',
+    description: 'Speaks with genuine conviction and personal warmth to rekindle another\'s sense of purpose and resilience. The inspired individual\'s morale lifts and their resolve strengthens against adversity. The effect is authentic but requires the speaker\'s own emotional investment.',
     crudType: 'update',
     reach: 'heart',
     durationRange: { min: 2, max: 3 },
@@ -732,6 +792,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.heart.betray',
     name: 'Betray',
+    spellName: 'Pact Severed',
+    description: 'Deliberately breaks trust with an ally or intimate, exploiting access and shared history for personal gain. The betrayal destroys the existing bond and inflicts emotional damage that weakens the target\'s resolve. Discovery before the act is complete turns the weapon back on the betrayer.',
     crudType: 'delete',
     reach: 'heart',
     durationRange: { min: 3, max: 5 },
@@ -755,6 +817,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.eye.research',
     name: 'Research',
+    spellName: 'Unveiling Gaze',
+    description: 'Initiates a sustained investigation into a subject, systematically gathering evidence and cross-referencing sources. The result is a deep, reliable body of knowledge about the target that informs future decisions. Failure wastes the researcher\'s time and yields misleading conclusions.',
     crudType: 'create',
     reach: 'eye',
     durationRange: { min: 2, max: 4 },
@@ -775,6 +839,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.eye.investigate',
     name: 'Investigate',
+    spellName: 'Third Sight',
+    description: 'Asks focused questions and follows evidence threads to reveal the hidden nature of a person, place, or situation. What is concealed rises to the surface under methodical scrutiny. A failed investigation deepens confusion rather than resolving it.',
     crudType: 'read',
     reach: 'eye',
     durationRange: { min: 1, max: 2 },
@@ -795,6 +861,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.eye.refine-knowledge',
     name: 'Refine Knowledge',
+    spellName: 'Lens of Truth',
+    description: 'Returns to an existing body of knowledge with fresh perspective, correcting errors and filling gaps in understanding. The refined picture reveals subtleties that earlier investigation missed. A misguided refinement can entrench false conclusions even deeper.',
     crudType: 'update',
     reach: 'eye',
     durationRange: { min: 2, max: 3 },
@@ -815,6 +883,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.eye.suppress-knowledge',
     name: 'Suppress Knowledge',
+    spellName: 'Blinding Archive',
+    description: 'Actively buries a truth — destroying records, discrediting sources, and pressuring witnesses into silence. The concealed knowledge becomes inaccessible to those who would use it against the actor. Failure allows the suppressed truth to spread further than it would have naturally.',
     crudType: 'delete',
     reach: 'eye',
     durationRange: { min: 3, max: 5 },
@@ -837,6 +907,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.stone.build',
     name: 'Build',
+    spellName: 'Foundation Ward',
+    description: 'Lays the groundwork for a permanent structure that reshapes the landscape and serves as a lasting monument to the builder\'s ambition. The finished building anchors the actor\'s presence in a location and provides ongoing benefits. Collapsed projects drain resources and leave visible evidence of failure.',
     crudType: 'create',
     reach: 'stone',
     durationRange: { min: 2, max: 4 },
@@ -862,6 +934,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.stone.assess-structure',
     name: 'Assess Structure',
+    spellName: 'Unyielding Survey',
+    description: 'Conducts a thorough physical and structural examination of a building or fortification to understand its integrity and potential. Hidden weaknesses, repair needs, and defensive qualities are revealed by the assessment. A flawed survey leaves dangerous gaps in the actor\'s understanding.',
     crudType: 'read',
     reach: 'stone',
     durationRange: { min: 1, max: 2 },
@@ -882,6 +956,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.stone.repair',
     name: 'Repair',
+    spellName: 'Bastion\'s Oath',
+    description: 'Dedicates labor and materials to restoring a damaged structure to its former strength and functionality. The repaired building regains its protective and operational qualities, better serving those who rely on it. Poor workmanship can weaken the structure further instead of mending it.',
     crudType: 'update',
     reach: 'stone',
     durationRange: { min: 2, max: 3 },
@@ -902,6 +978,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.stone.demolish',
     name: 'Demolish',
+    spellName: 'Unyielding Core',
+    description: 'Brings deliberate, systematic destruction to a structure until only rubble remains. The cleared site can be repurposed, or the act serves as a demonstration of power that cannot be ignored. Resistance from the structure or its defenders can exhaust the demolition effort.',
     crudType: 'delete',
     reach: 'stone',
     durationRange: { min: 3, max: 5 },
@@ -924,6 +1002,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.star.consecrate',
     name: 'Consecrate',
+    spellName: 'Celestial Mandate',
+    description: 'Performs sacred rites that bind a location to a higher purpose, infusing the site with divine resonance and marking it as holy ground. Consecrated places attract the faithful and resist corruption. The rites fail when the site resists the specific domain being invoked.',
     crudType: 'create',
     reach: 'star',
     durationRange: { min: 2, max: 4 },
@@ -944,6 +1024,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.star.divine',
     name: 'Divine',
+    spellName: 'Starfall Omen',
+    description: 'Reads the signs and portents available in the sky, the bones, or the entrails to glimpse the likely fate of a target. A successful reading reveals the direction of events and the forces shaping them. A failed reading provides a dangerously false sense of certainty.',
     crudType: 'read',
     reach: 'star',
     durationRange: { min: 1, max: 2 },
@@ -964,6 +1046,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.star.deepen-faith',
     name: 'Deepen Faith',
+    spellName: 'Astral Decree',
+    description: 'Delivers teachings, miracles, or testimony that strengthens a believer\'s connection to their spiritual practice and convictions. The deepened faith makes the individual more resilient to doubt and more devoted to the actor\'s cause. Poorly received teachings can plant seeds of doubt instead.',
     crudType: 'update',
     reach: 'star',
     durationRange: { min: 2, max: 3 },
@@ -984,6 +1068,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.star.desecrate',
     name: 'Desecrate',
+    spellName: 'Profane Star',
+    description: 'Commits deliberate sacrilege against a consecrated site or holy object, severing its divine connection and polluting its spiritual resonance. The desecrated place loses its sacred protection and becomes tainted ground. Divine retribution can strike the perpetrator when the act goes too far.',
     crudType: 'delete',
     reach: 'star',
     durationRange: { min: 3, max: 5 },
@@ -1006,6 +1092,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.flesh.heal',
     name: 'Heal',
+    spellName: 'Mending Touch',
+    description: 'Applies skilled care to a wounded or ailing individual, drawing on knowledge of the body to accelerate recovery. Health returns and the patient is restored to function they had lost. A healer who misjudges the condition can inadvertently worsen the affliction.',
     crudType: 'create',
     reach: 'gold',
     durationRange: { min: 2, max: 4 },
@@ -1026,6 +1114,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.flesh.diagnose',
     name: 'Diagnose',
+    spellName: 'Healer\'s Sight',
+    description: 'Applies careful examination to identify the root cause of a target\'s physical or psychological condition. Once the ailment is named, it becomes possible to treat effectively rather than guess. Misidentification sends subsequent healing efforts in the wrong direction entirely.',
     crudType: 'read',
     reach: 'eye',
     durationRange: { min: 1, max: 2 },
@@ -1046,6 +1136,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.flesh.cultivate',
     name: 'Cultivate',
+    spellName: 'Vital Tending',
+    description: 'Provides sustained care and nourishment that builds a target\'s baseline vitality over time. The effort compounds to produce lasting improvement in health, resilience, and physical capacity. Neglect or incorrect methods can cause regression rather than growth.',
     crudType: 'update',
     reach: 'gold',
     durationRange: { min: 2, max: 3 },
@@ -1066,6 +1158,8 @@ export const ACTION_TEMPLATES: ActionTemplateData[] = [
   {
     id: 'action.flesh.plague',
     name: 'Plague',
+    spellName: 'Cursed Contagion',
+    description: 'Unleashes a targeted curse of sickness and pestilence on an individual or group, degrading their health and fighting ability. The affliction spreads and deepens, weakening the target beyond their capacity to resist. Mishandling the curse risks turning the contagion back on the caster.',
     crudType: 'delete',
     reach: 'shadow',
     durationRange: { min: 3, max: 5 },
