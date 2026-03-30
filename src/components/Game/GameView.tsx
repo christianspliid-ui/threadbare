@@ -22,6 +22,10 @@ import { AnimateMount } from '../shared/AnimateMount';
 import HexMapV2 from '../HexMapV2/HexMapV2';
 import type { AgentRenderData } from '../HexMapV2/agents/agentSpriteTypes';
 import type { LocationNode } from '../HexMapV2/scene/LocationIconMesh';
+import { buildArmyRenderData } from '../HexMapV2/scene/ArmyLayer';
+import type { ArmyRenderData } from '../HexMapV2/scene/ArmyLayer';
+import { buildBattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
+import type { BattleIndicatorData } from '../HexMapV2/scene/BattleIndicatorLayer';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
@@ -289,6 +293,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [gameState.graph]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph]);
+
+  // ── Army render data adapter (graph → ArmyRenderData[]) ──
+  const armyRenderData: ArmyRenderData[] = useMemo(
+    () => buildArmyRenderData(gameState.graph),
+    [gameState.graph, gameState.tick]
+  );
+
+  // ── Battle indicator data adapter (graph → BattleIndicatorData[]) ──
+  const battleIndicatorData: BattleIndicatorData[] = useMemo(
+    () => buildBattleIndicatorData(gameState.graph),
+    [gameState.graph, gameState.tick]
+  );
 
   // ── Notification preferences hook ──
   const {
@@ -990,6 +1006,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   locations={locationNodes}
                   roadPaths={roadPaths}
                   agents={agentRenderData}
+                  armies={armyRenderData}
+                  battles={battleIndicatorData}
                   visibilityMap={fogDisabled ? undefined : effectiveVisibilityMap}
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
