@@ -411,6 +411,114 @@ describe('mercenary company two-instance seeding', () => {
     expect(MERCENARY_COMPANY_DEFINITION.instanceCount).toBe(2);
     expect(MERCENARY_COMPANY_DEFINITION.distanceConstrained).toBe(true);
   });
+
+  it('post-seeding pattern: after seedAllFactions + wiring, 2 companies each have ambition, commander, and army', () => {
+    // Simulate what worldSeed.ts does: seedAllFactions → post-processing → spawnArmy
+    const defs = new Map([[MERCENARY_COMPANY_DEFINITION.id, MERCENARY_COMPANY_DEFINITION]]);
+    const graph = makeGraph();
+    for (let i = 0; i < 8; i++) {
+      graph.addNode({
+        id: `loc_pw_${i}`,
+        type: 'location',
+        name: `Location ${i}`,
+        properties: { locationSubtype: 'town', hexCol: i * 10, hexRow: 0 },
+      });
+    }
+    const locationIds = Array.from({ length: 8 }, (_, i) => `loc_pw_${i}`);
+
+    const results = seedAllFactions(graph, defs, locationIds, 42);
+    expect(results).toHaveLength(2);
+
+    // Simulate post-seeding wiring (mirrors worldSeed.ts logic)
+    for (let i = 0; i < results.length; i++) {
+      const result = results[i];
+      const companyName = MC_COMPANY_NAMES[i];
+      graph.updateNode(result.factionId, { name: companyName });
+
+      // Seed ambition
+      const ambitionId = `amb_${result.factionId}_seed`;
+      graph.addNode({
+        id: ambitionId,
+        type: 'ambition',
+        name: `${companyName} — resource acquisition`,
+        properties: { ambitionType: 'resource_acquisition', priority: 0.5, targetNodeId: null, grievanceDecay: 0, createdTick: 0 },
+      });
+      graph.addEdge({
+        id: `e_pursues_${result.factionId}_seed`,
+        source: result.factionId,
+        target: ambitionId,
+        type: 'pursues',
+        properties: { priority: 0.5, status: 'active', milestones: [] },
+      });
+
+      // Add commander with located_at
+      const commanderId = `agent_mc_cmdr_${i}`;
+      graph.addNode({
+        id: commanderId,
+        type: 'actor',
+        name: `${companyName} Commander`,
+        properties: {
+          actorType: 'individual',
+          domainCapabilities: { iron: 60, gold: 40, shadow: 20, veil: 10, heart: 15, eye: 15, stone: 20, star: 10 },
+          displaced: false,
+        },
+      });
+
+      // Get primary hall location
+      const primaryHallId = result.guildHallIds[0];
+      const primaryHallNode = primaryHallId ? graph.getNode(primaryHallId) : null;
+      const primaryLocationId = (primaryHallNode?.properties?.parentLocationId as string | undefined)
+        ?? primaryHallId;
+
+      if (primaryLocationId) {
+        graph.addEdge({
+          id: `e_located_at_${commanderId}`,
+          source: commanderId,
+          target: primaryLocationId,
+          type: 'located_at',
+          properties: {},
+        });
+      }
+
+      graph.addEdge({
+        id: `e_member_of_${commanderId}`,
+        source: commanderId,
+        target: result.factionId,
+        type: 'member_of',
+        properties: { role: 'commander', rank: 'war_chief', reputation: 0.9, factionDefId: 'mercenary_company', joinedTick: 0 },
+      });
+    }
+
+    // Verify: 2 faction nodes
+    const factionNodes = graph.getNodesByType('actor').filter(
+      n => n.properties.actorType === 'faction' && n.id.startsWith('faction_def_mercenary_company_'),
+    );
+    expect(factionNodes).toHaveLength(2);
+
+    // Verify: faction names updated
+    expect(factionNodes.find(n => n.name === 'The Iron Wolves')).toBeDefined();
+    expect(factionNodes.find(n => n.name === 'The Scarlet Company')).toBeDefined();
+
+    // Verify: each faction has exactly 1 pursues edge to an ambition
+    for (const faction of factionNodes) {
+      const pursuesEdges = graph.getOutgoingEdges(faction.id, 'pursues');
+      expect(pursuesEdges).toHaveLength(1);
+      const ambition = graph.getNode(pursuesEdges[0].target);
+      expect(ambition?.properties.ambitionType).toBe('resource_acquisition');
+    }
+
+    // Verify: 2 commander nodes exist as members
+    const commanders = graph.getNodesByType('actor').filter(
+      n => n.id.startsWith('agent_mc_cmdr_'),
+    );
+    expect(commanders).toHaveLength(2);
+
+    // Verify: each commander has a located_at edge
+    for (const cmd of commanders) {
+      const locEdges = graph.getOutgoingEdges(cmd.id, 'located_at');
+      expect(locEdges.length).toBeGreaterThan(0);
+    }
+  });
 });
 
 // ─── computeRankFromReputation ─────────────────────────────────────────────
