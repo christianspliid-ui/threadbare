@@ -72,6 +72,8 @@ export function applyFactionReputationGain(
       ...edge.properties,
       role: newRank.id,
       rank: definition.rankTiers.indexOf(newRank) / Math.max(definition.rankTiers.length - 1, 1),
+      // Rank increased — set promotionPending to auto-inject promotion encounter candidate
+      promotionPending: amount > 0 ? true : (edge.properties.promotionPending ?? false),
     };
   }
 
@@ -197,6 +199,16 @@ export function processFactionEncounterReputation(
   });
 
   if (!factionEdge) return; // Agent not a member of this faction
+
+  // Clear promotionPending flag if this is a promotion encounter completion
+  const edgeProps = factionEdge.properties as Partial<import('../types/disposition').MemberOfEdgeProperties>;
+  const definition = edgeProps.factionDefId ? FACTION_DEFINITIONS.get(edgeProps.factionDefId) : undefined;
+  if (encounterCompleted && definition?.promotionEncounterTemplateId === encounterId) {
+    factionEdge.properties = {
+      ...factionEdge.properties,
+      promotionPending: false,
+    };
+  }
 
   // Apply encounter_reward_multiplier rank bonus (TB-062)
   const rewardMultiplier = getEncounterRewardMultiplier(graph, agentId, encounterId);

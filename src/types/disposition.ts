@@ -104,6 +104,12 @@ export interface MemberOfEdgeProperties {
    * Optional for backward-compat with pre-faction member_of edges (economic guilds).
    */
   factionDefId?: string;
+  /**
+   * Set to true when reputation crosses a rank threshold, triggering an
+   * auto-injected promotion encounter candidate at elevated priority (9.0).
+   * Cleared when the promotion encounter is completed.
+   */
+  promotionPending?: boolean;
 }
 
 // ─── Trust Constants ────────────────────────────────────────────
