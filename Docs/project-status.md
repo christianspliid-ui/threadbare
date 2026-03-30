@@ -8,9 +8,9 @@
 
 **Phase 18 (TB-080): Mercenary Company Runtime Wiring** — 📐 Plans written, ready for implementation. Wires existing merc content into live pipeline. 2 plans.
 
-**TB-077: Graph-Native Encounter Lifecycle** — 📐▶ Plan ready for Claude Code. Layer 1: event nodes in graph when encounters resolve.
-
 ## Recent Completions (2026-03-30)
+
+- ✅ TB-077 — Graph-Native Encounter Lifecycle Layer 1 (event nodes, participated_in/occurred_at edges, prose resolvers, 14 tests)
 
 - ✅ Phase 16 — Threads Area sidebar (ThreadsPanel, ThreadDetailView, thread-creation templates). 3 plans.
 - ✅ Phase 15 — Encounter pipeline fixes (score bug, travel cost, wanderlust, retirement, 40 new templates, forced travel fallback). 4 plans, 6/6 verified.

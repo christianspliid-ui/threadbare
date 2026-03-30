@@ -34,14 +34,11 @@ Wire existing mercenary company definition + encounter templates into runtime: s
 
 ---
 
-## 📐▶ TB-077 · Graph-Native Encounter Lifecycle (2026-03-29)
+## ✅ TB-077 · Graph-Native Encounter Lifecycle — Layer 1 (2026-03-30)
 
-Promote encounter outcomes from ephemeral flat-array state to durable `event` nodes in the world graph. Creates `participated_in` (agent → event) and `occurred_at` (event → location) edges, enabling graph-queryable encounter history for prose enrichment, location flavor, and agent biography. Three layers designed: L1 encounter event nodes (immediate), L2 goal edges (deferred), L3 active encounter projection (deferred pending UnifiedAction migration).
-
-4 phases: 1A type definitions + event creation wiring, 1B graph query utilities, 1C prose resolver integration, 1D debug visibility.
+Encounter outcomes now create durable `event` nodes in the world graph with `participated_in` (agent → event) and `occurred_at` (event → location) edges. Graph query utilities + prose resolvers for location history and agent biography. 14 tests. Layers 2 (goal edges) and 3 (active encounter projection) remain deferred.
 
 **Design doc:** `Docs/plans/2026-03-29-graph-native-encounter-lifecycle-design.md`
-**Depends on:** Encounter system (✅), Graph engine (✅), Encounter Reward Wiring (✅)
 
 ---
 
