@@ -61,16 +61,16 @@ Exceptions:
 |------|------|--------|-------------|------|-------|
 | Card spell name (focused) | 18px (`--text-base`) | 600 (semibold) | 1.2 | Cinzel (display) | Spell name bar on focused card — evocative Ars Magica title |
 | Card spell name (hand) | 16px (`--text-xs`) | 600 (semibold) | 1.2 | Cinzel (display) | Spell name overlay on art-only hand card |
-| Technical description | 17px (`--text-sm`) | 400 (regular) | 1.5 | Alegreya Sans (body) | Qualitative game-mechanical text box on focused card (2-3 sentences) |
-| Flavor text | 17px (`--text-sm`) | 400 (regular, italic) | 1.5 | Alegreya Sans (body) | Italic flavor text beneath description on focused card — dimmed color |
+| Technical description | 16px (`--text-xs`) | 400 (regular) | 1.5 | Alegreya Sans (body) | Qualitative game-mechanical text box on focused card (2-3 sentences) |
+| Flavor text | 16px (`--text-xs`) | 400 (regular, italic) | 1.5 | Alegreya Sans (body) | Italic flavor text beneath description on focused card — dimmed color |
 | Type line | 16px (`--text-xs`) | 400 (regular) | 1.0 | Alegreya Sans (body) | Reach + CRUD type label, uppercase, letter-spaced |
 | Cost badge / stats row | 16px (`--text-xs`) | 600 (semibold) | 1.0 | Alegreya Sans (body) | Essence cost pill, risk %, range |
-| Toast title | 17px (`--text-sm`) | 600 (semibold) | 1.3 | Alegreya Sans (body) | Action outcome — sphere-colored |
+| Toast title | 16px (`--text-xs`) | 600 (semibold) | 1.3 | Alegreya Sans (body) | Action outcome — sphere-colored |
 | Toast body | 16px (`--text-xs`) | 400 (regular) | 1.4 | Alegreya Sans (body) | Consequence message text |
-| Section heading (card zones) | 16px (`--text-xs`) | 700 (bold) | 1.0 | Cinzel (display) | Optional zone labels — uppercase, gold, letter-spaced 0.14em |
+| Section heading (card zones) | 16px (`--text-xs`) | 600 (semibold) | 1.0 | Cinzel (display) | Optional zone labels — uppercase, gold, letter-spaced 0.14em. Uses existing `.section-heading` utility; in this phase context that utility applies semibold (600), not bold (700). |
 
-**Declared sizes for this phase: 16px, 17px, 18px** (3 sizes within the existing scale)
-**Declared weights: 400 (regular) + 600 (semibold)** — 700 used only for section headings per existing `.section-heading` utility
+**Declared sizes for this phase: 16px, 18px** (2 differentiated sizes — 16px body/chrome, 18px focused spell name display)
+**Declared weights: 400 (regular) + 600 (semibold)**
 
 > Source: `src/index.css` type scale; CONTEXT.md card layout decisions; ActionCard.tsx SIZE_CONFIG
 
@@ -153,12 +153,12 @@ Structure top-to-bottom within the existing 280×392px bounds:
 - Separated from art frame by 1px `--border-gold` horizontal rule above
 
 **Description text box:**
-- Font: Alegreya Sans 17px/400, `--text-secondary`, line-height 1.5
+- Font: Alegreya Sans 16px/400, `--text-secondary`, line-height 1.5
 - 2-3 sentences of qualitative game-mechanical text
 - No numbers/percentages — qualitative language only ("bolsters", "weakens", "severs")
 
 **Flavor text (italic):**
-- Font: Alegreya Sans 17px/400 italic, `--text-tertiary` (dimmer than description), line-height 1.5
+- Font: Alegreya Sans 16px/400 italic, `--text-tertiary` (dimmer than description), line-height 1.5
 - Separated from description by 1px `--border-subtle` rule
 - Source: `narrativeTemplates.initiation` from the action template (existing field)
 
@@ -222,7 +222,7 @@ New WebGL particle system triggered on action activation. Claude's discretion fo
 
 | Element | Copy |
 |---------|------|
-| Primary CTA | "Activate" — shown in focused card hint bar when action is available. Replaces current "Click to activate". |
+| Primary CTA | "Activate" — shown in focused card hint bar when action is available. Single word is intentional: the focused card already displays the spell name in the title zone, making "Activate" contextual within the card-game frame (equivalent to "Play" in MTG). Adding a noun would duplicate information already visible on screen. |
 | Hand card name overlay | Exact spell name (e.g. "Call to Arms", "Bellum Fortis") — no description |
 | Art frame placeholder label | _(none visible)_ — placeholder is purely visual, no text besides the sphere glyph symbol |
 | Type line format | `[REACH NAME] · [CRUD TYPE]` e.g. "IRON · DESTROY" or "GOLD · CREATE" — both uppercase, no extra punctuation |
@@ -338,6 +338,9 @@ No third-party component registries. All components are hand-authored within the
 | Particle Z layer | Claude's discretion | New LAYER_Z.PARTICLE_BURST constant above BATTLE_INDICATOR |
 | Toast duration | Claude's discretion | 4000ms |
 | Spell name guidelines | CONTEXT.md specifics | Ars Magica style, max 3 words, reach-tonal consistency |
+| Typography: 2 sizes only (16px, 18px) | Checker revision 2026-03-30 | Collapsed from 16/17/18 — 17px mid-size removed, description/flavor/toast/chrome at 16px, focused spell name at 18px |
+| Typography: 2 weights only (400, 600) | Checker revision 2026-03-30 | Removed 700 (bold); section heading role reassigned to 600 (semibold) |
+| "Activate" CTA justification | Checker revision 2026-03-30 | Single word is contextual — spell name already visible on focused card |
 
 ---
 
@@ -356,4 +359,5 @@ No third-party component registries. All components are hand-authored within the
 
 *Phase: 17-add-action-description-fields-and-player-feedback-on-action-activation*
 *UI-SPEC generated: 2026-03-30*
+*Revised: 2026-03-30 — checker fixes: removed weight 700, collapsed 3 type sizes to 2 (16px + 18px), added "Activate" CTA justification note*
 *Checker: run gsd-ui-checker to validate and upgrade status to approved*
