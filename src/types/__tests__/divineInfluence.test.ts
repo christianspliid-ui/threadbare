@@ -1,0 +1,71 @@
+import { describe, it, expect } from 'vitest';
+import type { DivineInfluenceEntry } from '../dream';
+import type { InterventionEffectTrace, TraceEntry } from '../trace';
+import { TRACE_CATEGORIES } from '../trace';
+import { DECAY_CONSTANTS } from '../../engine/decayCurve';
+
+describe('DivineInfluenceEntry type', () => {
+  it('can create a value-drift influence', () => {
+    const influence: DivineInfluenceEntry = {
+      id: 'di_001',
+      interventionType: 'dream',
+      sphere: 'mind',
+      tickApplied: 10,
+      ...DECAY_CONSTANTS.dream,
+      valueDrifts: { courage_prudence: 0.12 },
+    };
+    expect(influence.maxDuration).toBe(DECAY_CONSTANTS.dream.maxDuration);
+    expect(influence.valueDrifts?.courage_prudence).toBe(0.12);
+  });
+
+  it('can create a strategy-override influence', () => {
+    const influence: DivineInfluenceEntry = {
+      id: 'di_002',
+      interventionType: 'intimidate',
+      sphere: 'force',
+      tickApplied: 5,
+      ...DECAY_CONSTANTS.intimidate,
+      strategyOverride: 'grudger',
+      valueDrifts: { courage_prudence: -0.30 },
+    };
+    expect(influence.strategyOverride).toBe('grudger');
+  });
+
+  it('can create a personality-boost influence', () => {
+    const influence: DivineInfluenceEntry = {
+      id: 'di_003',
+      interventionType: 'inspire_intervention',
+      sphere: 'spirit',
+      tickApplied: 8,
+      ...DECAY_CONSTANTS.inspire_intervention,
+      personalityBoost: 0.30,
+      traitId: 'condition_divinely_inspired',
+    };
+    expect(influence.personalityBoost).toBe(0.30);
+  });
+});
+
+describe('InterventionEffectTrace', () => {
+  it('is included in TRACE_CATEGORIES', () => {
+    expect(TRACE_CATEGORIES).toContain('intervention_effect');
+  });
+
+  it('can be assigned to TraceEntry', () => {
+    const trace: TraceEntry = {
+      id: 1,
+      tick: 5,
+      timestamp: 1000,
+      category: 'intervention_effect',
+      summary: 'Dream on Kael via mind',
+      interventionType: 'dream',
+      targetAgentId: 'actor.kael',
+      targetAgentName: 'Kael',
+      sphere: 'mind',
+      effects: ['courage_prudence +0.12 for decay'],
+      consequenceMessage: 'Kael will be drawn toward courage.',
+      initialStrength: DECAY_CONSTANTS.dream.initialStrength,
+      maxDuration: DECAY_CONSTANTS.dream.maxDuration,
+    };
+    expect(trace.category).toBe('intervention_effect');
+  });
+});

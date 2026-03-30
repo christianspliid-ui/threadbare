@@ -1,0 +1,57 @@
+{
+  "id": "mandate.threads_of_fate",
+  "type": "simulation_achievable",
+  "name": "Threads of Fate",
+  "description": "Relationships form between mortals. Weave the web of destiny.",
+  "sphereAffinities": ["mind", "spirit"],
+  "stages": [
+    {
+      "stage": "setup",
+      "description": "4 relationships form.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "4+ relates_to edges",
+          "params": {
+            "edgeType": "relates_to",
+            "minCount": 4
+          }
+        }
+      ]
+    },
+    {
+      "stage": "escalation",
+      "description": "8 relationships form.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "8+ relates_to edges",
+          "params": {
+            "edgeType": "relates_to",
+            "minCount": 8
+          }
+        }
+      ]
+    },
+    {
+      "stage": "culmination",
+      "description": "12 relationships form.",
+      "conditions": [
+        {
+          "type": "edge_count",
+          "description": "12+ relates_to edges",
+          "params": {
+            "edgeType": "relates_to",
+            "minCount": 12
+          }
+        }
+      ]
+    }
+  ],
+  "prose": {
+    "setup_to_escalation": "Four mortal hearts find each other. Relationships weave themselves into being. The fabric of destiny hums with new connection.",
+    "escalation_to_culmination": "Eight bonds now link the mortals together. The web grows dense, stronger. Fate becomes tangible—something you can almost touch.",
+    "completed": "Twelve threads bind mortals in intricate webs of relation. The tapestry of destiny is complete. All hearts are woven together now.",
+    "failed": "The threads unravel. Hearts turn away from one another. Fate cannot be written if mortals refuse to listen."
+  }
+}

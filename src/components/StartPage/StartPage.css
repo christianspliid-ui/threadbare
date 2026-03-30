@@ -1,0 +1,210 @@
+.start-page {
+  position: relative;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--bg-abyss);
+}
+
+.start-page__bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 0;
+}
+
+/* ─── Fog wisps — blurred shapes that drift across the canyon ── */
+.start-page__mist {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(60px);
+  will-change: transform;
+}
+
+.start-page__mist--1 {
+  width: 120%;
+  height: 35%;
+  top: 35%;
+  left: -10%;
+  background: rgba(230, 220, 200, 0.45);
+  animation: fog-drift-1 22s ease-in-out infinite;
+}
+
+.start-page__mist--2 {
+  width: 100%;
+  height: 30%;
+  top: 45%;
+  right: -10%;
+  left: auto;
+  background: rgba(220, 210, 190, 0.3);
+  animation: fog-drift-2 30s ease-in-out infinite;
+}
+
+@keyframes fog-drift-1 {
+  0%   { transform: translateX(0%) translateY(0%); opacity: 0.4; }
+  25%  { transform: translateX(15%) translateY(-3%); opacity: 0.7; }
+  50%  { transform: translateX(30%) translateY(2%); opacity: 0.5; }
+  75%  { transform: translateX(12%) translateY(-1%); opacity: 0.65; }
+  100% { transform: translateX(0%) translateY(0%); opacity: 0.4; }
+}
+
+@keyframes fog-drift-2 {
+  0%   { transform: translateX(0%) translateY(0%); opacity: 0.3; }
+  30%  { transform: translateX(-20%) translateY(3%); opacity: 0.55; }
+  60%  { transform: translateX(-35%) translateY(-2%); opacity: 0.35; }
+  100% { transform: translateX(0%) translateY(0%); opacity: 0.3; }
+}
+
+/* ─── Sun shimmer — golden glow that breathes ─────────────────── */
+.start-page__shimmer {
+  position: absolute;
+  top: -10%;
+  left: 25%;
+  width: 50%;
+  height: 50%;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 210, 120, 0.25) 0%,
+    rgba(255, 190, 80, 0.1) 40%,
+    transparent 70%
+  );
+  filter: blur(40px);
+  animation: shimmer-pulse 7s ease-in-out infinite;
+}
+
+@keyframes shimmer-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.1); }
+}
+
+.start-page__gradient {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 35%,
+    rgba(10, 10, 14, 0.4) 50%,
+    rgba(10, 10, 14, 0.85) 75%,
+    rgba(10, 10, 14, 0.95) 100%
+  );
+  /* NOTE: The rgba values are a necessary exception -- CSS linear-gradient() cannot
+     reference custom property colors with partial opacity. These values match
+     --bg-abyss (#0a0a0e) and are captured as named constants
+     START_PAGE_GRADIENT_OPACITY_MID (0.4) and START_PAGE_GRADIENT_OPACITY_LOW (0.95)
+     in startPageConstants.ts. */
+}
+
+.start-page__content {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 3;
+  max-width: 500px;
+  width: 100%;
+}
+
+.start-page__title {
+  position: absolute;
+  top: 22%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  margin: 0;
+  line-height: 0;
+}
+
+.start-page__wordmark {
+  width: min(720px, 85vw);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 2px 24px rgba(212, 160, 64, 0.35));
+}
+
+.start-page__lore {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-8) 0;
+}
+
+.start-page__menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.start-page__menu-item {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  text-decoration: none;
+}
+
+.start-page__menu-item:hover {
+  color: var(--text-primary);
+}
+
+.start-page__menu-item:focus-visible {
+  color: var(--text-primary);
+  outline: none;
+  text-decoration: underline;
+  text-decoration-color: var(--accent-gold);
+  text-underline-offset: 4px;
+  text-decoration-thickness: 2px;
+}
+
+.start-page__mute {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  z-index: 3;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: var(--space-1);
+  transition: color 0.3s ease;
+}
+
+.start-page__mute:hover {
+  color: var(--text-secondary);
+}
+
+.start-page__version {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  z-index: 3;
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Fade-out transition for New World click */
+.start-page--fading {
+  opacity: 0;
+  transition: opacity 600ms ease-out;
+}
