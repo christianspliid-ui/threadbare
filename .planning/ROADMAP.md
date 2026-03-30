@@ -263,7 +263,7 @@ Plans:
 **Goal:** Auto-pause the tick loop whenever an encounter modal (TieredEncounterModal or MeetingEncounterModal) opens, and auto-resume when the modal closes if the game was previously running. All encounter notifications auto-interrupt regardless of court position.
 **Requirements**: PAUSE-01 (auto-pause on encounter open), PAUSE-02 (conditional auto-resume on close), PAUSE-03 (all encounters auto-interrupt)
 **Depends on:** Phase 13
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 14-01-PLAN.md — Auto-pause/resume logic + tests
