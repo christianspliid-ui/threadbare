@@ -65,9 +65,9 @@ describe('starter-attachments', () => {
 
     // ─── Required Fields ───────────────────────────────────────────────
 
-    it('every possession has type "artifact"', () => {
+    it('every possession has an artifact node type', () => {
       for (const possession of STARTER_POSSESSIONS) {
-        expect(possession.type).toBe('artifact');
+        expect(['artifact', 'artifact_legendary']).toContain(possession.type);
       }
     });
 

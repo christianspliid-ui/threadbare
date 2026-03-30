@@ -291,6 +291,17 @@ export const EDGE_SCHEMA: Record<EdgeType, EdgeSchema> = {
     requiredProperties: [],
     description: 'Trade route between actors. Edge properties: volume, goodsType, controlledBy, threatened.',
   },
+  // ── Construction ──────────────────────────────────────────
+  constructed_by: {
+    type: 'constructed_by',
+    sourceNodeType: 'actor',
+    targetNodeType: 'location',
+    direction: 'directed',
+    cardinality: 'many-to-many',
+    requiredProperties: [],
+    description: 'Actor (faction/individual) constructed a structure at this location. Edge properties: structureType.',
+  },
+
   // ── Military (TB-073) ──
   commanded_by: {
     type: 'commanded_by',

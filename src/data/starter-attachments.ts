@@ -47,7 +47,7 @@ export const STARTER_POSSESSIONS: GraphNode[] = [
   },
   {
     id: 'starter_ashenmane_fang',
-    type: 'artifact',
+    type: 'artifact_legendary',
     name: "Ashenmane's Fang",
     properties: {
       subcategory: 'arms',
