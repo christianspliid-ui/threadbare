@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-03-30T12:48:39.216Z"
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-03-30T13:14:40.017Z"
 last_activity: 2026-03-21 — Coastline overlay (marching squares), water depth bands (3-tier), lake fill coloring, WorldGenResult threading
 progress:
   total_phases: 6
@@ -182,6 +182,7 @@ Progress: [███░░░░░░░] 21%
 | Phase 18 P01 | 35 | 2 tasks | 7 files |
 | Phase 17 P01 | 6 | 2 tasks | 4 files |
 | Phase 18 P02 | 25 | 2 tasks | 5 files |
+| Phase 17 P02 | 35 | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -328,6 +329,8 @@ Progress: [███░░░░░░░] 21%
 - [Phase 17]: Fields placed after narrativeTemplates block for logical grouping; slot.description continues to carry narrativeTemplates.initiation as flavor text while technicalDescription is new separate mechanical field
 - [Phase 18]: getAccessibleTemplates uses unified FACTION_ENCOUNTER_META registry so mc.* templates are included alongside ag.*
 - [Phase 18]: promotionPending flag takes priority over partial-success-margin path, always injects at questPriority=9.0
+- [Phase 17]: Completeness test scoped to non-encounter ID prefixes — encounter.* templates excluded until enriched
+- [Phase 17]: ActionTemplateData extended with spellName/description; migrateActionTemplate passes them through to UnifiedActionTemplate
 
 ### Pending Todos
 
@@ -339,6 +342,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-30T12:48:39.214Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-03-30T13:14:27.551Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
