@@ -39,7 +39,20 @@ The world must **feel alive** — every hex, agent, faction, and location has a 
 
 ### Active
 
-See next milestone (not yet planned).
+See REQUIREMENTS.md for v1.1 milestone requirements.
+
+## Current Milestone: v1.1 Low-Hanging Fruit Optimization
+
+**Goal:** Fix correctness bugs, wire missing connections, tune performance, and improve code hygiene across the v1.0 codebase — targeting only small-to-medium effort items with high impact.
+
+**Target features:**
+- Fix determinism failures (unseeded Math.random, Date.now IDs)
+- Wire stubbed connections (onFocusHex, avatar position, actor ID attribution)
+- Tune encounter cache rebuild threshold
+- Cache prose resolver output
+- Extract DebugPanel sub-components (1774 lines)
+- Code-split large data files
+- Lodash audit and dedup
 
 ### Out of Scope
 
@@ -76,4 +89,4 @@ See next milestone (not yet planned).
 - **NFPs**: Tunability > Inspectability > Determinism > Fail-soft > Narrative > Additive > Performance budget.
 
 ---
-*Last updated: 2026-03-30 after v1.0 milestone*
+*Last updated: 2026-03-30 after v1.1 milestone initialization*
