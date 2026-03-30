@@ -958,7 +958,8 @@ describe('wanderlust travel cost modifier', () => {
   });
 
   it('wanderlust: discount does not exceed WANDERLUST_MAX_DISCOUNT (capped at 40%)', () => {
-    // Extreme progressive value (beyond -1 clamped to -1 by max() call)
+    // Extreme progressive value (-2.0) — clamped to -1.0 by implementation
+    // wanderlust = clamp(0, -(-2.0), 1) = 1.0 (maximum wanderlust)
     const extremeProfile = makeProfile({ tradition_progress: -2.0 });
     const graph = buildTestGraph({ agentId: 'agent_1', profile: extremeProfile });
     const dm = makeDistanceMatrix([
@@ -975,10 +976,17 @@ describe('wanderlust travel cost modifier', () => {
     const result = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', graph, dm, 1);
     const travelCost = result.topCandidates[0].travelCost;
 
-    // Maximum discount = WANDERLUST_MAX_DISCOUNT = 0.4
-    // Min travel cost = 3 * 0.12 * (1 - 0.4) = 3 * 0.072 = 0.216
-    const minPossibleCost = 3 * 0.12 * (1 - WANDERLUST_MAX_DISCOUNT);
-    expect(travelCost).toBeGreaterThanOrEqual(minPossibleCost - 0.001);
+    // With wanderlust clamped at 1.0: personalTravelCostWeight = 0.12 * (1 - 1.0 * 0.4) = 0.072
+    // travelCost = 3 * 0.072 = 0.216
+    // Cannot be lower than this (cap enforced)
+    const maxDiscountedCost = 3 * 0.12 * (1 - WANDERLUST_MAX_DISCOUNT);
+    expect(travelCost).toBeCloseTo(maxDiscountedCost, 5);
+
+    // Also verify a normal -1.0 profile gives same result (confirming clamp is working)
+    const exactProfile = makeProfile({ tradition_progress: -1.0 });
+    const exactGraph = buildTestGraph({ agentId: 'agent_1', profile: exactProfile });
+    const exactResult = scoreAndSelect([distantEntry], 'agent_1', 'loc_a', exactGraph, dm, 1);
+    expect(exactResult.topCandidates[0].travelCost).toBeCloseTo(maxDiscountedCost, 5);
   });
 
   it('wanderlust: travelCost is 0 when distance=0 regardless of wanderlust', () => {
