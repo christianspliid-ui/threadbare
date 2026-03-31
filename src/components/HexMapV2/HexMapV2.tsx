@@ -63,7 +63,7 @@ import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
 import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
 import type { FollowModeState } from './camera/FollowMode';
-import { screenToHex, worldToScreen, hexToWorldCenter, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
+import { screenToHex, worldToScreen, hexToWorldCenter, pickAgentAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
@@ -144,6 +144,7 @@ export interface HexMapV2Props {
   selectedHex: HexCoord | null;
   onHexClick: (coord: HexCoord) => void;
   onHexHover: (coord: HexCoord | null) => void;
+  onAgentClick?: (agentId: string) => void;
   /** River paths from worldgen — stored in ref for use by river rendering (Plan 03-02+) */
   riverPaths?: RiverPath[];
   /** Lake hex IDs from worldgen — stored in ref for use by lake coloring (Plan 03-01+) */
@@ -291,7 +292,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, onAgentClick, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -1114,6 +1115,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       const canvas = canvasRef.current;
       const camera = cameraRef.current;
       if (!canvas || !camera) return;
+
+      // Agent sprites are small — try to pick them before falling back to hex.
+      const spriteMap = agentSpriteGroupRef.current?.spriteMap ?? new Map();
+      const agentId = pickAgentAtScreen(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas, spriteMap);
+      if (agentId) {
+        onAgentClick?.(agentId);
+        return;
+      }
 
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
       if (hex) {

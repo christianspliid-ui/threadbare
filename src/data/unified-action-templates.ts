@@ -2690,7 +2690,7 @@ const REVELATION_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
 // does not currently interpolate tick values into add_edge properties. The real tick is
 // captured by the resolution pipeline if needed. Acceptable for tier-1 thread tracking.
 
-const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
+export const THREAD_CREATION_TEMPLATES: UnifiedActionTemplate[] = [
   {
     id: 'bind_thread_location',
     name: 'Bind Thread — Location',

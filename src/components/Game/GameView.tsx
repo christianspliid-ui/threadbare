@@ -1227,6 +1227,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   overlayOpen={scryVisible || harvestResult !== null}
                   onHexClick={handleHexClickMove}
                   onHexHover={setHoveredHex}
+                  onAgentClick={handleAgentSelect}
                 />
 
                 <AvatarHUD

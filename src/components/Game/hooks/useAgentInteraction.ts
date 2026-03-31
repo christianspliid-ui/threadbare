@@ -14,8 +14,10 @@ import { executeIntervention } from '../../../engine/dream';
 import { applyInterventionEffects } from '../../../engine/interventionEffects';
 import { applyAscendantFeedback } from '../../../engine/ascendantFeedback';
 import { createUnifiedAction } from '../../../engine/unifiedActionLifecycle';
-import { getUnifiedTemplateById } from '../../../data/unified-action-templates';
-import { templateIdFromSlotId } from '../../../engine/targetActions';
+import { getUnifiedTemplateById, THREAD_CREATION_TEMPLATES } from '../../../data/unified-action-templates';
+import { templateIdFromSlotId, getTargetActionSlots } from '../../../engine/targetActions';
+import { buildActorTargetContext } from '../../../engine/targetContextBuilders';
+import { getAvatarHexPosition } from '../../../engine/visibility';
 import { appendEvent } from '../../../engine/encounterTimeline';
 import { mulberry32 } from '../../../lib/prng';
 import type { ToastItem } from '../../../types/notification';
@@ -120,12 +122,33 @@ export function useAgentInteraction({
     if (!selectedAgentId || !drawerOpen) return null;
     const agent = retinueAgents.find(a => a.id === selectedAgentId);
     if (!agent) return null;
-    return getAgentWheelSlots({
+
+    const interventionSlots = getAgentWheelSlots({
       tier: agent.tier,
       pool: gameState.essencePool,
       primarySphere: archetype.sphereAlignment.primary,
     });
-  }, [selectedAgentId, drawerOpen, gameState.essencePool, retinueAgents, archetype]);
+
+    // Also run generalized action targeting so templates like bind_thread_agent
+    // surface alongside the legacy divine interventions.
+    const actorCtx = buildActorTargetContext(selectedAgentId, gameState.graph, agent.tier);
+    const targetSlots = actorCtx
+      ? getTargetActionSlots({
+          target: actorCtx,
+          templates: THREAD_CREATION_TEMPLATES,
+          pool: gameState.essencePool,
+          primarySphere: archetype.sphereAlignment.primary,
+          avatarPos: getAvatarHexPosition(gameState.graph, gameState.ascendantId) ?? undefined,
+          accessibleSpheres: [
+            archetype.sphereAlignment.primary,
+            archetype.sphereAlignment.secondary,
+          ],
+          hexRevelation: gameState.hexRevelation,
+        })
+      : [];
+
+    return [...interventionSlots, ...targetSlots];
+  }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype]);
 
   const strandData = useMemo(() => {
     if (!strandViewAgent) return null;

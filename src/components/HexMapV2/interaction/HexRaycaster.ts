@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { HexCoord } from '../../../types';
 import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
+import type { AgentSpriteEntry } from '../scene/AgentSpriteMesh';
 
 /**
  * Interaction constants.
@@ -11,6 +12,7 @@ export const INTERACTION_CONSTANTS = {
   SELECTED_RING_WIDTH: 2.5,     // Ring outline width in world units (2–3px range per UI-SPEC)
   HOVER_OVERLAY_OPACITY: 0.10,  // Subtle white overlay on hovered hex
   TOOLTIP_OFFSET_Y: 12,         // px: tooltip appears this many px above the screen position
+  AGENT_CLICK_RADIUS_PX: 18,    // px: hit radius for agent dot click detection
 } as const;
 
 /**
@@ -90,4 +92,40 @@ export function worldToScreen(
 export function hexToWorldCenter(hex: HexCoord): THREE.Vector3 {
   const { x, y } = hexToPixel(hex, HEX_CONSTANTS.HEX_SIZE);
   return new THREE.Vector3(x, -y, 0);
+}
+
+/**
+ * Distance-based agent picking: returns the agentId of the closest visible
+ * agent sprite whose projected screen position is within AGENT_CLICK_RADIUS_PX
+ * of the click, or null if no agent is close enough.
+ *
+ * Uses screen-space projection rather than Three.js raycasting because Sprite
+ * objects have inconsistent raycaster behaviour with OrthographicCamera at
+ * varying zoom levels. This approach is zoom-invariant — the hit radius is
+ * always 18px regardless of zoom.
+ *
+ * NFP #4 (Fail-soft): returns null on any missing ref rather than throwing.
+ */
+export function pickAgentAtScreen(
+  screenX: number,
+  screenY: number,
+  camera: THREE.OrthographicCamera,
+  canvas: HTMLCanvasElement,
+  spriteMap: Map<string, AgentSpriteEntry>,
+): string | null {
+  let closest: { agentId: string; distPx: number } | null = null;
+  const radius = INTERACTION_CONSTANTS.AGENT_CLICK_RADIUS_PX;
+
+  for (const [agentId, entry] of spriteMap) {
+    if (!entry.sprite.visible) continue;
+    const screen = worldToScreen(entry.sprite.position, camera, canvas);
+    const dx = screenX - screen.x;
+    const dy = screenY - screen.y;
+    const distPx = Math.sqrt(dx * dx + dy * dy);
+    if (distPx <= radius && (!closest || distPx < closest.distPx)) {
+      closest = { agentId, distPx };
+    }
+  }
+
+  return closest?.agentId ?? null;
 }
