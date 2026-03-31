@@ -122,8 +122,20 @@ import { QUINTESSENCE_LEXICON, QUINTESSENCE_TOOLTIPS } from '../../data/quintess
 // Unified Actions
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 
-// Trait Modifiers
+// Traits
 import { LOS_TRAIT_DEFINITIONS } from '../../data/trait-modifiers';
+import { NARRATIVE_LEXICON } from '../../types/traits';
+import { CULTURAL_STRENGTH_THRESHOLDS } from '../../engine/culturalTraits';
+import {
+  ECON_TRAIT_TRADE_BARON_MIN_ROUTES,
+  ECON_TRAIT_GUILD_SWORN_MIN_TICKS,
+  ECON_TRAIT_BANKRUPT_WEALTH_FLOOR,
+  ECON_TRAIT_SMUGGLER_MIN_ENCOUNTERS,
+  ECON_TRAIT_DEBT_LADEN_MIN_DEBTS,
+  ECON_TRAIT_PATRON_MIN_CONSTRUCTIONS,
+  ECON_TRAIT_COIN_CURSED_MIN_LOSSES,
+} from '../../data/economic-trait-content';
+import { TRAIT_BONUS_CAP, TRAIT_PER_BONUS_CAP } from '../../data/agent-behavior-constants';
 
 // Hex & World Soul Prose
 import { SOUL_PROSE, SOUL_SECONDARY_PROSE, SOUL_THREAT_PROSE } from '../../data/hexSoulProse';
@@ -166,6 +178,46 @@ function constants(...entries: [string, unknown, string?][]): ConstantEntry[] {
 function recordToArray<V>(rec: Record<string, V>): Array<{ key: string; value: V }> {
   return Object.entries(rec).map(([key, value]) => ({ key, value }));
 }
+
+// ── Derived: world-model trait nodes for CMS table ────────────────
+const WORLD_MODEL_TRAITS = worldModel.nodes
+  .filter((n: { id: string }) => n.id.startsWith('trait.'))
+  .map((n: { id: string; name: string; category?: string; description?: string; properties?: Record<string, unknown> }) => {
+    const cat = n.id.split('.')[1] ?? 'unknown'; // innate, mastery, reputation, scar, condition, destiny
+    const effects = n.properties?.effects as { actionModifiers?: Record<string, number> } | undefined;
+    const domains = effects?.actionModifiers
+      ? Object.keys(effects.actionModifiers).map(k => k.replace('reach.', '')).join(', ')
+      : '';
+    return {
+      id: n.id,
+      name: n.name,
+      category: cat,
+      description: n.description ?? '',
+      visibility: (n.properties?.visibility as string) ?? 'public',
+      maxLevel: (n.properties?.maxLevel as number) ?? 1,
+      domains,
+      acquisition: (n.properties?.acquisition as { method?: string })?.method ?? '',
+    };
+  });
+
+// ── Derived: narrative lexicon as table rows ───────────────────────
+const NARRATIVE_LEXICON_ROWS = Object.entries(NARRATIVE_LEXICON).map(([reach, tiers]) => ({
+  reach,
+  tier0: tiers[0], tier1: tiers[1], tier2: tiers[2], tier3: tiers[3], tier4: tiers[4],
+  tier5: tiers[5], tier6: tiers[6], tier7: tiers[7], tier8: tiers[8], tier9: tiers[9],
+}));
+
+// ── Trait category badge colors ────────────────────────────────────
+const TRAIT_CATEGORY_COLORS: Record<string, string> = {
+  innate: '#1e40af',     // blue
+  mastery: '#166534',    // green
+  reputation: '#92400e', // amber
+  scar: '#991b1b',       // red
+  condition: '#6b21a8',  // purple
+  destiny: '#7c2d12',    // orange
+  cultural: '#115e59',   // teal
+  bestowed: '#4338ca',   // indigo
+};
 
 // ── The Registry ─────────────────────────────────────────────────
 
@@ -441,7 +493,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'formative-trait-seeds',
     label: 'Formative Trait Seeds',
-    category: 'Culture & Society',
+    category: 'Traits',
     description: 'Cultural formative trait templates that shape agent identity at birth.',
     data: FORMATIVE_TRAIT_SEEDS,
     viewer: 'table',
@@ -457,7 +509,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'behavioral-trait-seeds',
     label: 'Behavioral Trait Seeds',
-    category: 'Culture & Society',
+    category: 'Traits',
     description: 'Cultural behavioral trait templates that influence agent decisions.',
     data: BEHAVIORAL_TRAIT_SEEDS,
     viewer: 'table',
@@ -1013,15 +1065,17 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'god-given-traits',
     label: 'God-Given Traits',
-    category: 'Agents & Archetypes',
-    description: 'Divine trait options available during agent creation meetings.',
+    category: 'Traits',
+    description: 'Divine trait options available during agent creation meetings — one per reach.',
     data: GOD_GIVEN_TRAITS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
       { key: 'name', label: 'Name' },
+      { key: 'description', label: 'Description' },
+      { key: 'reach', label: 'Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
     ],
-    searchFields: ['id', 'name'],
+    searchFields: ['id', 'name', 'description', 'reach'],
     sourceFile: 'src/data/meeting-content.ts',
   },
 
@@ -1029,15 +1083,19 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   {
     id: 'economic-trait-definitions',
     label: 'Economic Traits',
-    category: 'Economy & Trade',
-    description: 'Graph nodes defining economic trait types (trade baron, smuggler, etc.).',
+    category: 'Traits',
+    description: 'Emergent traits from economic activity — mastery, reputation, scar, and condition types.',
     data: ECONOMIC_TRAIT_DEFINITIONS,
     viewer: 'table',
     columns: [
       { key: 'id', label: 'ID' },
-      { key: 'properties.label', label: 'Label' },
+      { key: 'name', label: 'Name' },
+      { key: 'properties.subcategory', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'properties.description', label: 'Description' },
+      { key: 'properties.visibility', label: 'Visibility', render: 'badge' },
+      { key: 'properties.tags', label: 'Tags', render: 'tags' },
     ],
-    searchFields: ['id'],
+    searchFields: ['id', 'name', 'properties.description'],
     sourceFile: 'src/data/economic-trait-content.ts',
   },
   {
@@ -1444,16 +1502,19 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
   },
   {
     id: 'trait-modifiers',
-    label: 'Line-of-Sight Trait Modifiers',
-    category: 'Configuration',
-    description: 'Trait modifier definitions for line-of-sight calculations.',
+    label: 'LOS Trait Modifiers',
+    category: 'Traits',
+    description: 'Traits that modify line-of-sight range (eagle-eyed, night-blind, etc.).',
     data: LOS_TRAIT_DEFINITIONS,
     viewer: 'table',
     columns: [
       { key: 'traitId', label: 'Trait ID' },
-      { key: 'modifier', label: 'Modifier', render: 'number' },
+      { key: 'name', label: 'Name' },
+      { key: 'category', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'description', label: 'Description' },
+      { key: 'modifiers', label: 'Modifiers', render: 'json' },
     ],
-    searchFields: ['traitId'],
+    searchFields: ['traitId', 'name', 'description'],
     sourceFile: 'src/data/trait-modifiers.ts',
   },
   {
@@ -1558,6 +1619,73 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
     searchFields: ['type', 'source', 'target'],
     sourceFile: 'src/data/world-model.json',
   },
+
+  // ─── Traits (additional) ──────────────────────────────────────
+  {
+    id: 'world-model-traits',
+    label: 'World-Model Traits',
+    category: 'Traits',
+    description: '44 trait definition nodes from world-model.json — innate, mastery, reputation, scar, condition, destiny.',
+    data: WORLD_MODEL_TRAITS,
+    viewer: 'table',
+    columns: [
+      { key: 'id', label: 'ID' },
+      { key: 'name', label: 'Name' },
+      { key: 'category', label: 'Category', render: 'badge', badgeColors: TRAIT_CATEGORY_COLORS },
+      { key: 'description', label: 'Description' },
+      { key: 'visibility', label: 'Visibility', render: 'badge' },
+      { key: 'domains', label: 'Domains' },
+      { key: 'acquisition', label: 'Acquisition' },
+    ],
+    searchFields: ['id', 'name', 'category', 'description'],
+    sourceFile: 'src/data/world-model.json',
+  },
+  {
+    id: 'narrative-lexicon',
+    label: 'Narrative Lexicon',
+    category: 'Traits',
+    description: '10-tier narrative expression scale per reach domain (Frail → Cataclysmic, Destitute → Imperial, etc.).',
+    data: NARRATIVE_LEXICON_ROWS,
+    viewer: 'table',
+    columns: [
+      { key: 'reach', label: 'Reach', render: 'badge', badgeColors: REACH_BADGE_COLORS },
+      { key: 'tier0', label: 'T0' },
+      { key: 'tier1', label: 'T1' },
+      { key: 'tier2', label: 'T2' },
+      { key: 'tier3', label: 'T3' },
+      { key: 'tier4', label: 'T4' },
+      { key: 'tier5', label: 'T5' },
+      { key: 'tier6', label: 'T6' },
+      { key: 'tier7', label: 'T7' },
+      { key: 'tier8', label: 'T8' },
+      { key: 'tier9', label: 'T9' },
+    ],
+    searchFields: ['reach'],
+    sourceFile: 'src/types/traits.ts',
+  },
+  {
+    id: 'trait-constants',
+    label: 'Trait Constants',
+    category: 'Traits',
+    description: 'Tunable thresholds for trait acquisition, resolution bonuses, cultural strength, and decay.',
+    data: constants(
+      ['TRAIT_BONUS_CAP', TRAIT_BONUS_CAP, 'Max total trait bonus in encounter resolution'],
+      ['TRAIT_PER_BONUS_CAP', TRAIT_PER_BONUS_CAP, 'Max bonus from a single trait in resolution'],
+      ['ECON_TRAIT_TRADE_BARON_MIN_ROUTES', ECON_TRAIT_TRADE_BARON_MIN_ROUTES, 'Min trade routes for Trade Baron trait'],
+      ['ECON_TRAIT_GUILD_SWORN_MIN_TICKS', ECON_TRAIT_GUILD_SWORN_MIN_TICKS, 'Min ticks of guild membership for Guild-Sworn'],
+      ['ECON_TRAIT_BANKRUPT_WEALTH_FLOOR', ECON_TRAIT_BANKRUPT_WEALTH_FLOOR, 'Wealth floor that triggers Bankrupt'],
+      ['ECON_TRAIT_SMUGGLER_MIN_ENCOUNTERS', ECON_TRAIT_SMUGGLER_MIN_ENCOUNTERS, 'Min smuggling encounters for Smuggler trait'],
+      ['ECON_TRAIT_DEBT_LADEN_MIN_DEBTS', ECON_TRAIT_DEBT_LADEN_MIN_DEBTS, 'Min active debts for Debt-Laden'],
+      ['ECON_TRAIT_PATRON_MIN_CONSTRUCTIONS', ECON_TRAIT_PATRON_MIN_CONSTRUCTIONS, 'Min funded constructions for Patron'],
+      ['ECON_TRAIT_COIN_CURSED_MIN_LOSSES', ECON_TRAIT_COIN_CURSED_MIN_LOSSES, 'Min wealth-loss events for Coin-Cursed'],
+      ['CULTURAL_STRENGTH_FANATICAL', CULTURAL_STRENGTH_THRESHOLDS.fanatical, 'Cultural strength threshold: fanatical expression'],
+      ['CULTURAL_STRENGTH_STRONG', CULTURAL_STRENGTH_THRESHOLDS.strong, 'Cultural strength threshold: strong expression'],
+      ['CULTURAL_STRENGTH_FADING', CULTURAL_STRENGTH_THRESHOLDS.fading, 'Cultural strength threshold: fading expression'],
+      ['CULTURAL_STRENGTH_SILENT', CULTURAL_STRENGTH_THRESHOLDS.silent, 'Cultural strength threshold: zero contributions'],
+    ),
+    viewer: 'constants',
+    sourceFile: 'src/data/economic-trait-content.ts',
+  },
 ];
 
 // ── Derived: categories grouped from registry ────────────────────
@@ -1565,7 +1693,7 @@ export const CONTENT_REGISTRY: ContentRegistryEntry[] = [
 /** Category order for sidebar display */
 const CATEGORY_ORDER = [
   'World & Geography', 'Locations & Sublocations', 'Encounters', 'Actions',
-  'Agents & Archetypes', 'Culture & Society', 'Factions & Military',
+  'Agents & Archetypes', 'Traits', 'Culture & Society', 'Factions & Military',
   'Economy & Trade', 'Cosmology & Divine', 'Rivals & Opposition',
   'Narrative & Prose', 'Configuration',
 ];
