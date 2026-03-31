@@ -1,5 +1,5 @@
 /**
- * Encounter Content Package — 94 encounter templates (76 location-specific + 18 universal) with cultural vocabulary overlays.
+ * Encounter Content Package — 115 encounter templates (76 location-specific + 18 universal + 21 gap-fill) with cultural vocabulary overlays.
  *
  * ═══════════════════════════════════════════════════════════════════
  * CONTENT MANAGER: This is the file you edit to change encounter templates,
@@ -8141,6 +8141,1605 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
             tagFilters: ['#spirit', '#knowledge'],
           },
+        },
+      },
+    ],
+  },
+
+  // ─── Content Audit Gap-Fill (Phase: Variety Pass) ────────────────────
+  // Fills coverage gaps identified in the trivial/easy content audit:
+  // - Veil: zero trivials → 4 added; Star: thin → 4 added; Stone easy gap → 3 added
+  // - Iron/Shadow trivials beyond generic → location-flavored added
+  // - Castle/fort/tower/mining/shrine/ruins/wilderness specifics
+  // - Encounter type diversity (hire, steal, create, duel at trivial)
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  VEIL TRIVIALS & EASY (was: 0 trivials, 3 easy)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.read_the_wards',
+    name: 'Read the Wards',
+    locationTypes: ['castle', 'fort', 'tower', 'temple'],
+    reachPrimary: 'veil',
+    reachSecondary: 'eye',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'tradition_progress'],
+    steps: [
+      {
+        id: 'read_wards.sense',
+        name: 'Sense the Weave',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The stones here hum with old protections. {actor} places a palm flat against the wall and listens with senses beyond hearing.',
+        onSuccess: {
+          narrative: 'The ward-pattern blooms in {actor}\'s mind — layers of intention, each {adj} and deliberate. Someone cared enough to weave this well.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} feels the hum but cannot parse the pattern. The wards remain a {adj} murmur without meaning.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'read_wards.interpret',
+        name: 'Interpret the Purpose',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Understanding the ward\'s shape is one thing. Understanding what it {verb}s against — that requires a {adj} different kind of knowing.',
+        onSuccess: {
+          narrative: '{actor} traces the ward to its anchor and reads its intent: protection against something specific. Knowledge worth having.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The ward\'s purpose slips away like smoke. {actor} knows something is protected, but not from what.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'read_wards.catalogue',
+        name: 'Catalogue the Defences',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: '{actor} attempts to map every ward, every {adj} binding, every sleeping glyph — a complete census of magical defence.',
+        onSuccess: {
+          narrative: 'The full ward-map settles into {actor}\'s memory like a diagram drawn in light. Every vulnerability, every strength, known.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Too many layers. {actor}\'s survey is {adj} incomplete — good enough for caution, not for certainty.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.minor_cantrip',
+    name: 'Practice a Minor Cantrip',
+    locationTypes: ['shrine', 'temple', 'tower', 'ruins'],
+    reachPrimary: 'veil',
+    reachSecondary: 'star',
+    encounterType: 'create',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'revelation_discretion'],
+    steps: [
+      {
+        id: 'minor_cantrip.focus',
+        name: 'Draw the Focus',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'A quiet corner. A steady breath. {actor} traces a {adj} sigil in the air with one finger, willing the smallest thread of power into being.',
+        onSuccess: {
+          narrative: 'Light gathers at {actor}\'s fingertip — faint, trembling, but real. The sigil holds.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The sigil flickers and dissipates. {actor}\'s concentration wavers, and the thread escapes.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'minor_cantrip.sustain',
+        name: 'Hold the Working',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Casting is easy. Holding is hard. The cantrip {verb}s against {actor}\'s will, wanting to unravel.',
+        onSuccess: {
+          narrative: 'Three heartbeats. Five. Ten. The cantrip persists, obedient and {adj}. Small magic, but magic nonetheless.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The working collapses after two breaths. {actor} lets it go with a {adj} sigh. Tomorrow, then.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'minor_cantrip.release',
+        name: 'Shape the Release',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'The cantrip completes when released properly — not dropped, but placed, like setting a {adj} stone into mortar.',
+        onSuccess: {
+          narrative: 'The cantrip settles into the world with a soft click, like a key turning. {actor} feels the {adj} satisfaction of craft done right.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The release is clumsy. The cantrip sputters away harmlessly — no damage done, but no craft achieved.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.hedge_remedy',
+    name: 'Brew a Hedge Remedy',
+    locationTypes: ['wilderness', 'oasis', 'farmland', 'hamlet'],
+    reachPrimary: 'veil',
+    reachSecondary: 'eye',
+    encounterType: 'create',
+    threatRating: 'trivial',
+    motivations: ['justice_mercy', 'tradition_progress'],
+    steps: [
+      {
+        id: 'hedge_remedy.gather',
+        name: 'Gather the Ingredients',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} combs the {adj} undergrowth for the right leaves, the right bark, the right fungus. Folk medicine begins with knowing where to look.',
+        onSuccess: {
+          narrative: 'Yarrow, willow bark, and something with no name that grows only in shadow. {actor} has what {they} need{they}.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Wrong season, wrong soil. {actor} finds substitutes, but substitutes are never quite the same.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'hedge_remedy.prepare',
+        name: 'Prepare the Poultice',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'The line between herbalism and magic blurs in the mortar. {actor} grinds with {adj} intent, whispering the old words.',
+        onSuccess: {
+          narrative: 'The poultice warms under {actor}\'s hands — not quite mundane, not quite magical. The {adj} remedy works.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The mixture turns {adj} and wrong. {actor} discards it before it does more harm than the wound.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'hedge_remedy.apply',
+        name: 'Apply with Care',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'Healing is the gentlest magic and the most {adj} demanding. {actor} lays the remedy on flesh and wills it to take.',
+        onSuccess: {
+          narrative: 'The wound closes, the fever breaks, the cough eases. {actor} wipes {their} hands and says nothing — the remedy speaks.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The remedy helps, but not enough. {actor} knows the limits of hedge magic and {adj} accepts them.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.test_the_seal',
+    name: 'Test a Binding Seal',
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city'],
+    reachPrimary: 'veil',
+    reachSecondary: 'iron',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['revelation_discretion', 'courage_prudence'],
+    steps: [
+      {
+        id: 'test_seal.approach',
+        name: 'Approach the Seal',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Something was sealed here — not by lock and key but by will and sigil. {actor} feels the {adj} pressure of it from ten paces.',
+        onSuccess: {
+          narrative: '{actor} identifies the seal\'s tradition — old, deliberate, and still {adj} angry at intrusion.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The seal\'s pressure pushes {actor} back a step. Its {adj} warning is clear enough without comprehension.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'test_seal.probe',
+        name: 'Probe the Edges',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Testing a seal means finding where it yields — if it yields. {actor} presses against its {adj} boundaries with careful force.',
+        onSuccess: {
+          narrative: 'A hairline weakness. The seal holds, but {actor} knows where it could be opened — or reinforced.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The seal {verb}s back. {actor} withdraws with singed fingers and a {adj} newfound respect.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'test_seal.record',
+        name: 'Record the Findings',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'Knowledge of a seal — its strength, its age, its purpose — is valuable to those who know what to do with it.',
+        onSuccess: {
+          narrative: '{actor} commits the seal\'s full schema to memory: age, tradition, strength, and the {adj} thing it contains.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { condition: 0.5, bestowed_power: 0.5 },
+            tagFilters: ['#mystic', '#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The details blur. {actor} remembers the seal exists but not what it guards. {adj} and frustrating.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  STAR TRIVIALS & EASY (was: 2 trivials, 1 easy)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.shrine_offering',
+    name: 'Leave a Shrine Offering',
+    locationTypes: ['shrine', 'temple', 'ruins'],
+    reachPrimary: 'star',
+    reachSecondary: 'heart',
+    encounterType: 'create',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'shrine_offering.select',
+        name: 'Choose the Gift',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'What do you give a god? {actor} considers what {they} carry, what {they} value, what {they} can afford to lose.',
+        onSuccess: {
+          narrative: '{actor} chooses well — something personal, something meant. The shrine\'s stones seem to lean {adj} closer.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} places something too cheap, too thoughtless. The air around the shrine does not change.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'shrine_offering.place',
+        name: 'Place with Reverence',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'The offering must be placed, not dropped. Intent matters. {actor} kneels before the weathered {adj} stones.',
+        onSuccess: {
+          narrative: 'For a moment — just a moment — the air thickens with something old and vast and {adj}. The offering is accepted.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Nothing happens. Perhaps the gods are elsewhere. {actor} rises with {adj} uncertainty.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'shrine_offering.listen',
+        name: 'Listen for an Answer',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The truly faithful stay after the offering and listen. Most hear nothing. Some hear the {adj} wind. A few hear more.',
+        onSuccess: {
+          narrative: 'A tremor of certainty passes through {actor} — not a voice, not a vision, but a direction. The path ahead is {adj} clearer.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Silence. {actor} waits until the cold drives {them} away. Faith is sometimes its own {adj} reward.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.read_the_stars',
+    name: 'Read the Night Sky',
+    locationTypes: ['wilderness', 'camp', 'oasis', 'battleground'],
+    reachPrimary: 'star',
+    reachSecondary: 'eye',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'tradition_progress'],
+    steps: [
+      {
+        id: 'read_stars.observe',
+        name: 'Chart the Constellations',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Clear sky, no moon. {actor} lies back on cold ground and maps the {adj} familiar patterns — the Forge, the Wanderer, the Broken Crown.',
+        onSuccess: {
+          narrative: 'The stars are where they should be. {actor} marks the season, the direction, and the omens with {adj} precision.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Cloud cover rolls in. {actor} catches half the sky before the {adj} darkness swallows the rest.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'read_stars.interpret',
+        name: 'Read the Portents',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Stars tell time and direction to anyone. They tell fate only to those with the {adj} patience to listen.',
+        onSuccess: {
+          narrative: 'Something in the pattern speaks. {actor} cannot say exactly what, but {their} next three decisions carry a {adj} certainty they didn\'t before.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The stars are just stars tonight. {actor} rises, brushing dew from {their} back. Tomorrow may speak {adj} more clearly.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'read_stars.divine',
+        name: 'Accept the Omen',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'An omen is not a command. It is a {adj} weight on the scales of what might happen next.',
+        onSuccess: {
+          narrative: '{actor} carries the sky\'s message forward: a warning, a promise, or a {adj} question that demands answering.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The omen slips away like a dream at dawn. {actor} knows something was offered and {adj} lost.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.tend_the_dead',
+    name: 'Tend the Resting Dead',
+    locationTypes: ['battleground', 'ruins', 'ruined_village', 'ruined_city'],
+    reachPrimary: 'star',
+    reachSecondary: 'heart',
+    encounterType: 'assist',
+    threatRating: 'easy',
+    motivations: ['justice_mercy', 'tradition_progress'],
+    steps: [
+      {
+        id: 'tend_dead.find',
+        name: 'Find the Unquiet',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Not all the dead rest well. {actor} walks the {adj} killing ground, listening for the whispers of those who linger.',
+        onSuccess: {
+          narrative: '{actor} finds them — not ghosts, not yet, but {adj} echoes of pain caught between world and whatever comes after.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The dead are silent. Perhaps they rest after all. Perhaps {actor} simply cannot {adj} hear them.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'tend_dead.rites',
+        name: 'Speak the Words',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: '{actor} does not know the proper rites for every faith, every culture, every fallen soul. But grief is a {adj} universal language.',
+        onSuccess: {
+          narrative: 'The words are imperfect. The intent is not. Something in the {adj} air eases, and the ground feels lighter underfoot.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s words fall flat. The dead require something {they} cannot give — perhaps a name, a kin, a {adj} truth.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'tend_dead.mark',
+        name: 'Mark the Place',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The last duty: mark the place so others know. A cairn. A carved stone. Something that says: here, people {adj} mattered.',
+        onSuccess: {
+          narrative: '{actor} raises a cairn that will outlast the season. Passers-by will know that someone cared enough to mark the {adj} spot.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The cairn is rough and {adj}. It will not survive the winter. But the attempt was made.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.blessing_of_passage',
+    name: 'Bless the Road',
+    locationTypes: ['camp', 'hamlet', 'oasis', 'farmland'],
+    reachPrimary: 'star',
+    reachSecondary: 'veil',
+    encounterType: 'create',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'bless_road.prepare',
+        name: 'Prepare the Blessing',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Travelers deserve safe roads. {actor} gathers salt, water, and a {adj} word of protection from whatever faith {they} carry.',
+        onSuccess: {
+          narrative: 'The materials are simple and the faith is sincere. {actor} is ready to lay a {adj} blessing on the road ahead.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The faith falters before it reaches {actor}\'s hands. Doubt is the {adj} enemy of all blessing.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'bless_road.walk',
+        name: 'Walk the Boundary',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: '{actor} walks the road\'s edge, scattering salt at crossroads, touching each boundary stone. The {adj} words come unbidden.',
+        onSuccess: {
+          narrative: 'The road feels different underfoot — lighter, {adj}, as if the earth itself relaxes beneath the blessing\'s weight.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The road absorbs the effort without change. {actor} cannot tell if the blessing took or merely {adj} evaporated.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'bless_road.seal',
+        name: 'Seal with Conviction',
+        reach: 'star',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'The final word is the hardest. It must carry enough {adj} conviction to last until the next traveler passes.',
+        onSuccess: {
+          narrative: 'Done. The road carries a blessing that travelers will feel without knowing — a {adj} lightness in their step, a lucky turn in the weather.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The blessing is thin and {adj}. It will fade before the next rain. But for one day, the road was safer.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  STONE EASY & LOCATION-SPECIFIC (was: only 1 easy — temple_expansion)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.patch_the_walls',
+    name: 'Patch the Walls',
+    locationTypes: ['castle', 'fort', 'tower', 'ruined_tower'],
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
+    encounterType: 'build',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'patch_walls.assess',
+        name: 'Survey the Damage',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} runs a hand along the {adj} stonework, testing mortar joints with a thumbnail. Every fortress tells its age in cracks.',
+        onSuccess: {
+          narrative: 'The weak points are catalogued — here, where frost has pried; there, where a siege engine left its {adj} mark.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} misses the deeper cracks, the ones hidden behind moss and {adj} neglect.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'patch_walls.repair',
+        name: 'Mix and Lay',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
+        narrative: 'Mortar, water, aggregate, patience. {actor} works with {adj} hands, pressing new life into old stone.',
+        onSuccess: {
+          narrative: 'The patch holds. Not elegant, but {adj} sound — the wall is whole again where it was failing.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The mortar cures wrong — too wet, too fast. {actor}\'s {adj} patch will need patching.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'patch_walls.reinforce',
+        name: 'Brace the Foundation',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
+        narrative: 'The surface is repaired. But the foundation beneath the {adj} crack — that determines whether the wall stands through winter.',
+        onSuccess: {
+          narrative: '{actor} braces the foundation with cairn-stone and iron pins. This wall will stand another generation at {adj} least.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The foundation shifts under the repair. {actor}\'s work is {adj} adequate above ground but uncertain below.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.dig_a_well',
+    name: 'Dig a Well',
+    locationTypes: ['hamlet', 'farmland', 'camp', 'oasis'],
+    reachPrimary: 'stone',
+    reachSecondary: 'eye',
+    encounterType: 'build',
+    threatRating: 'easy',
+    motivations: ['justice_mercy', 'tradition_progress'],
+    steps: [
+      {
+        id: 'dig_well.divine_water',
+        name: 'Find the Water',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Water is down there. The question is where, and how deep. {actor} reads the {adj} land — the way grass grows greener in one line, the way mud persists after rain.',
+        onSuccess: {
+          narrative: '{actor} drives a stake into the spot. Mud. Good {adj} mud. The water is close.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Dry earth, then more dry earth. {actor} chose the {adj} wrong spot.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'dig_well.dig',
+        name: 'Break the Ground',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
+        narrative: 'Spade, bucket, aching shoulders. {actor} digs with {adj} determination, one load at a time, deeper and deeper.',
+        onSuccess: {
+          narrative: 'Water seeps into the hole — clear, cold, {adj}. {actor} cups a palmful and drinks. The well is true.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The walls of the hole collapse inward. {actor} climbs out, covered in {adj} clay, and considers a different site.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'dig_well.line',
+        name: 'Line and Cap',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 3,
+        narrative: 'A hole is not a well. {actor} lines the shaft with {adj} stones, builds a rim, mounts a windlass. Craft transforms a pit into infrastructure.',
+        onSuccess: {
+          narrative: 'The well is finished. Clean water, close to where people live. {actor} leaves behind something that will {adj} outlast them.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The lining shifts. The well works, but it {adj} leaks — usable, not permanent. Someone else will have to finish it.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.clear_the_rubble',
+    name: 'Clear the Rubble',
+    locationTypes: ['ruins', 'ruined_village', 'ruined_city', 'ruined_tower', 'battleground'],
+    reachPrimary: 'stone',
+    reachSecondary: 'iron',
+    encounterType: 'build',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'clear_rubble.sort',
+        name: 'Sort What Can Be Saved',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} picks through the {adj} wreckage with care — good stone here, rotten timber there, a hinge that still works.',
+        onSuccess: {
+          narrative: 'A tidy pile of salvage grows. {actor} finds enough {adj} sound material to make the clearing worthwhile.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Everything is cracked, warped, or {adj} ruined beyond saving. The rubble gives nothing back.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'clear_rubble.haul',
+        name: 'Haul and Stack',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'The heavy work. {actor} lifts, drags, and stacks with {adj} endurance, turning chaos into cleared ground.',
+        onSuccess: {
+          narrative: 'The site is clear. For the first time in years, the ground beneath the {adj} ruin sees daylight. Something could be built here.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s strength gives out before the job is done. Half-cleared {adj} rubble is worse than untouched rubble.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'clear_rubble.discover',
+        name: 'What Lies Beneath',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'Beneath the rubble, the {adj} original foundation appears — and sometimes, things that were buried with intent.',
+        onSuccess: {
+          narrative: '{actor} uncovers the foundation line, intact and {adj} true. And something else: a sealed compartment, still whole.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.6, condition: 0.4 },
+            tagFilters: ['#ancient', '#ruins'],
+          },
+        },
+        onFailure: {
+          narrative: 'The foundation is too {adj} damaged to tell much. The rubble hid nothing but more rubble.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  IRON TRIVIALS — LOCATION-FLAVORED (was: only generic sharpen_blades)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.drill_the_watch',
+    name: 'Drill the Watch',
+    locationTypes: ['castle', 'fort', 'camp', 'town'],
+    reachPrimary: 'iron',
+    reachSecondary: 'heart',
+    encounterType: 'lead',
+    threatRating: 'trivial',
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'drill_watch.assemble',
+        name: 'Call the Muster',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} rings the bell and watches who comes running and who comes {adj} slowly. Discipline starts with the muster.',
+        onSuccess: {
+          narrative: 'Full turnout. The watch assembles with {adj} speed — not perfect, but present and willing.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Half the watch is late. Two are drunk. {actor}\'s {adj} authority is not yet earned.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'drill_watch.run',
+        name: 'Run the Drill',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Posts, rotations, challenge-and-response. {actor} drills the {adj} basics until they become reflex.',
+        onSuccess: {
+          narrative: 'By the third repetition, the watch moves without thinking. {actor} nods with {adj} satisfaction — this will hold through the night.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Confusion at the third post. The rotation collapses into {adj} argument. {actor} will need to try again tomorrow.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'drill_watch.test',
+        name: 'Test with a Surprise',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: '{actor} stages a {adj} test — a simulated alarm, a false intruder — to see if the drill holds under pressure.',
+        onSuccess: {
+          narrative: 'The watch responds. Not perfectly, but the {adj} drill holds. When the real thing comes, they will be ready enough.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Panic. The watch scatters. {actor} calls a halt and starts from {adj} scratch. Building warriors takes time.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.spar_with_a_stranger',
+    name: 'Spar with a Stranger',
+    locationTypes: ['town', 'city', 'camp', 'fort'],
+    reachPrimary: 'iron',
+    reachSecondary: 'eye',
+    encounterType: 'duel',
+    threatRating: 'trivial',
+    motivations: ['courage_prudence', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'spar_stranger.size_up',
+        name: 'Size Up the Opponent',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'A stranger in the yard. Good stance. Calm eyes. {actor} watches {them} move and reads the {adj} story their body tells.',
+        onSuccess: {
+          narrative: 'Left-handed, favors the riposte, drops the shoulder before striking. {actor} has the {adj} measure of them.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} misjudges the stranger\'s reach. The first exchange will be {adj} educational.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'spar_stranger.cross',
+        name: 'Cross Blades',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'The first touch. Blunt steel rings in the {adj} morning air. {actor} tests, feints, and learns.',
+        onSuccess: {
+          narrative: 'Three exchanges, and {actor} finds the rhythm. The stranger grins — they\'ve found someone {adj} worth the practice.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The stranger is faster than expected. {actor} catches a {adj} bruising hit and adjusts. Learning hurts.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'spar_stranger.respect',
+        name: 'Earn the Nod',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'A sparring match ends when someone {verb}s well enough to earn respect. {actor} presses for the {adj} final exchange.',
+        onSuccess: {
+          narrative: 'The stranger lowers their blade and offers a {adj} nod. No words needed — steel speaks its own language.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The stranger wins the last exchange cleanly. {actor} bows, {adj} and bruised. There is always someone better.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  SHADOW TRIVIALS — LOCATION-FLAVORED (was: only pickpocket)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.case_the_joint',
+    name: 'Case the Joint',
+    locationTypes: ['city', 'capital', 'town', 'castle'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'eye',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'case_joint.observe',
+        name: 'Watch and Count',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} finds a shadow with a view and settles in. How many guards. What hours. Which door doesn\'t quite {adj} close.',
+        onSuccess: {
+          narrative: 'The pattern emerges: shift changes, blind spots, the {adj} servant who props the kitchen door open for a smoke.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} watches, but the picture stays {adj} incomplete. Too many variables, not enough patience.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'case_joint.map',
+        name: 'Map the Approaches',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Knowing the layout is not enough. {actor} walks the approaches — alleys, rooftops, drainage — with {adj} professional interest.',
+        onSuccess: {
+          narrative: 'Three ways in, two ways out, one that nobody would think to watch. {actor} commits the {adj} map to memory.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'A watchman spots {actor} loitering. Time to leave and try from a {adj} different angle tomorrow.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'case_joint.assess',
+        name: 'Judge the Risk',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'Every job has a price in risk. {actor} weighs the {adj} odds: what\'s inside versus what it costs to get caught.',
+        onSuccess: {
+          narrative: '{actor} knows the place like they built it. The {adj} risk is calculated, the reward assessed. Decision time.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The risk is unclear. {actor} can\'t tell if the {adj} prize is worth the price. Uncertainty kills more thieves than guards.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.dead_drop',
+    name: 'Service a Dead Drop',
+    locationTypes: ['town', 'city', 'capital', 'camp'],
+    reachPrimary: 'shadow',
+    reachSecondary: 'heart',
+    encounterType: 'trade',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'dead_drop.approach',
+        name: 'Walk the Route',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} takes the long way. Double back at the fountain, pause at the baker\'s stall, check the {adj} reflection in a puddle. Clean approach.',
+        onSuccess: {
+          narrative: 'No tail. No watching eyes. {actor} reaches the drop site with {adj} confidence.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'A face appears twice in the crowd. Coincidence? {actor} aborts and walks {adj} away.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'dead_drop.exchange',
+        name: 'Make the Exchange',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'The loose brick. The hollow tree. The gap beneath the third step. {actor}\'s hands work with {adj} practiced speed.',
+        onSuccess: {
+          narrative: 'Message left, message taken. {actor} walks away with something small and {adj} valuable — information, always information.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The drop is empty — already serviced, or the signal was wrong. {actor} leaves with {adj} nothing.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'dead_drop.vanish',
+        name: 'Vanish into the Crowd',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'The art is not in arriving or exchanging. The art is in {adj} disappearing afterward, as if you were never there.',
+        onSuccess: {
+          narrative: '{actor} melts into the crowd and becomes nobody. The {adj} drop is complete. Nobody knows.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Someone noticed. Nothing actionable, but a {adj} seed of suspicion planted. Sloppy.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+
+  // ═══════════════════════════════════════════════════════════════════
+  //  LOCATION-GAP FILLS (castle, fort, mining, tower, wilderness)
+  // ═══════════════════════════════════════════════════════════════════
+
+  {
+    id: 'encounter.inspect_the_armoury',
+    name: 'Inspect the Armoury',
+    locationTypes: ['castle', 'fort'],
+    reachPrimary: 'iron',
+    reachSecondary: 'gold',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['courage_prudence', 'tradition_progress'],
+    steps: [
+      {
+        id: 'inspect_armoury.count',
+        name: 'Count the Stock',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} walks the racks — swords, spears, shields, bows. How many fit for use. How many rusted past {adj} saving.',
+        onSuccess: {
+          narrative: 'The inventory is precise: forty-three serviceable blades, eleven shields, and a crossbow that needs {adj} restringing. Enough.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The count is interrupted. {actor} estimates — probably enough, probably — but {adj} estimates lose wars.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'inspect_armoury.test',
+        name: 'Test the Quality',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: '{actor} draws a blade at random and tests the edge, the balance, the {adj} temper. The armoury tells the truth about a garrison.',
+        onSuccess: {
+          narrative: 'Good steel, properly oiled. Whoever runs this armoury takes {adj} pride in their work. The garrison can fight.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Pitted blades, warped shields. The armoury is a {adj} disgrace. Someone hasn\'t been doing their job.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'inspect_armoury.report',
+        name: 'File the Report',
+        reach: 'iron',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'An inspection without a report is a {adj} walk through a weapons shed. {actor} commits the findings to record.',
+        onSuccess: {
+          narrative: 'The report is {adj} thorough and actionable: what to repair, what to replace, what to requisition. The garrison commander will know.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The report is {adj} incomplete. Key details are missing — which rack, which smithy, which budget line. Not useful enough.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.shore_up_the_mine',
+    name: 'Shore Up the Mine',
+    locationTypes: ['mining'],
+    reachPrimary: 'stone',
+    reachSecondary: 'eye',
+    encounterType: 'build',
+    threatRating: 'easy',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'shore_mine.inspect',
+        name: 'Inspect the Timbers',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} taps the support beams, listening. Good wood {verb}s differently from rot. The {adj} mine whispers its warnings.',
+        onSuccess: {
+          narrative: 'Three beams need replacing. One is critical. {actor} marks them with {adj} chalk and moves deeper.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor}\'s ear isn\'t tuned to timber. The mine keeps its {adj} secrets.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'shore_mine.brace',
+        name: 'Cut and Brace',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
+        narrative: 'New timber against old stone. {actor} cuts, fits, and hammers with {adj} urgency — the ceiling groans.',
+        onSuccess: {
+          narrative: 'The new brace takes the weight. The groaning stops. {actor} wipes dust from {their} face and moves to the next beam.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The fit is wrong — too short, too green. {actor} braces it anyway and hopes the {adj} timber holds through winter.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'shore_mine.test',
+        name: 'Test the Load',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The real test: driving a cart through the shored section. If the {adj} timbers hold under load, the mine stays open.',
+        onSuccess: {
+          narrative: 'The cart passes. The timbers hold. The mine earns another season of life, and {actor} earns {adj} respect from miners.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'A timber cracks under load. Not catastrophic, but the {adj} section is restricted. More work tomorrow.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.map_the_passages',
+    name: 'Map the Passages',
+    locationTypes: ['ruins', 'ruined_tower', 'ruined_city', 'mining'],
+    reachPrimary: 'eye',
+    reachSecondary: 'stone',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'tradition_progress'],
+    steps: [
+      {
+        id: 'map_passages.enter',
+        name: 'Mark the Entrance',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} scratches a chalk mark at the entrance and begins. Left hand on the wall, {adj} counting paces.',
+        onSuccess: {
+          narrative: 'The first junction is mapped — three passages, two blind ends, one that {adj} descends. A good start.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} loses the count at the second turning. Chalk marks on {adj} damp stone smear and fade.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'map_passages.chart',
+        name: 'Chart the Depths',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Deeper now. {actor} reads the {adj} rock strata, the air currents, the way water runs. The underground has its own geography.',
+        onSuccess: {
+          narrative: 'A rough but {adj} accurate map takes shape — distances, elevations, and the all-important way out.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The passages loop. {actor}\'s map contradicts itself. The {adj} underground is more complex than expected.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'map_passages.complete',
+        name: 'Complete the Survey',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The final passages. {actor} pushes past fatigue to {adj} complete the chart — every dead end, every promising opening.',
+        onSuccess: {
+          narrative: 'The map is done. Not beautiful, but {adj} reliable. Anyone following this chart will find their way in and — more importantly — out.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Exhaustion wins. {actor} maps the {adj} upper levels but leaves the deepest passages as blank white space.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.catalogue_the_tower',
+    name: 'Catalogue the Tower Library',
+    locationTypes: ['tower'],
+    reachPrimary: 'eye',
+    reachSecondary: 'veil',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['revelation_discretion', 'tradition_progress'],
+    steps: [
+      {
+        id: 'catalogue_tower.inventory',
+        name: 'Take Inventory',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Dust, cobwebs, and the {adj} smell of old vellum. {actor} begins at the bottom shelf and works upward, counting spines.',
+        onSuccess: {
+          narrative: 'Two hundred and thirty texts, fourteen scrolls, and three {adj} sealed cases. {actor} has the scope of it.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The shelving system is {adj} chaotic. {actor} counts the same section twice and misses another entirely.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'catalogue_tower.classify',
+        name: 'Classify the Contents',
+        reach: 'veil',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 3,
+        narrative: 'Not all texts are mundane. {actor} feels for the {adj} ones that hum — the ones with power woven into the binding.',
+        onSuccess: {
+          narrative: 'Seven are enchanted. Three are warded. One is warm to the touch. {actor} handles each with {adj} appropriate respect.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor} cannot distinguish the {adj} mundane from the magical. The tower keeps its library\'s true value hidden.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'catalogue_tower.record',
+        name: 'Record the Finds',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'A catalogue is only as good as its accuracy. {actor} records title, condition, subject, and {adj} magical signature for each text.',
+        onSuccess: {
+          narrative: 'The catalogue is {adj} complete. Future scholars will owe {actor} a debt they\'ll never know about.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The catalogue is {adj} partial. Good enough to avoid duplicating effort, not good enough to find anything specific.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.gather_firewood',
+    name: 'Gather Firewood',
+    locationTypes: ['wilderness', 'camp', 'farmland', 'ruins'],
+    reachPrimary: 'eye',
+    reachSecondary: 'stone',
+    encounterType: 'acquire',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'justice_mercy'],
+    steps: [
+      {
+        id: 'gather_wood.find',
+        name: 'Find the Good Wood',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Not all wood burns clean. {actor} hunts for the {adj} dry stuff — standing deadwood, storm-fallen oak, anything with seasons of drying behind it.',
+        onSuccess: {
+          narrative: '{actor} finds a {adj} windfall — a dead oak, bark-stripped and bone-dry. Enough to burn hot for days.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Green wood, wet wood, {adj} punky wood. {actor} collects what there is, knowing it\'ll smoke more than burn.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'gather_wood.carry',
+        name: 'Bundle and Carry',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Finding wood is easy. Carrying enough back is the {adj} work. {actor} bundles, ties, and shoulders the load.',
+        onSuccess: {
+          narrative: 'A full bundle, well-tied and {adj} balanced. The camp will eat warm tonight because {actor} did the carrying.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The bundle splits halfway back. {actor} arrives with half a load and {adj} aching shoulders.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'gather_wood.stack',
+        name: 'Stack for the Season',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'A proper woodstack is engineering. Air flow, rain cover, {adj} seasoning order. {actor} stacks with care.',
+        onSuccess: {
+          narrative: 'The stack is tight, covered, and {adj} organized. Months of warmth, secured against weather and theft.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The stack collapses twice. {actor} piles it {adj} roughly and hopes rain holds off.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.prospect_the_seam',
+    name: 'Prospect the Seam',
+    locationTypes: ['mining', 'wilderness', 'ruins'],
+    reachPrimary: 'gold',
+    reachSecondary: 'stone',
+    encounterType: 'explore',
+    threatRating: 'easy',
+    motivations: ['revelation_discretion', 'asceticism_extravagance'],
+    steps: [
+      {
+        id: 'prospect_seam.sample',
+        name: 'Take Samples',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} chips at the rock face with a {adj} geologist\'s hammer, examining the grain, the colour, the way the stone fractures.',
+        onSuccess: {
+          narrative: 'Promising. The {adj} vein structure runs deep and the mineral content is right. Worth digging further.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Surface ore only. The {adj} seam pinches out a handspan beneath the face. Not worth a mine.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'prospect_seam.estimate',
+        name: 'Estimate the Yield',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: '{actor} calculates: depth of seam, richness of ore, cost of extraction. The {adj} mathematics of whether it pays to dig.',
+        onSuccess: {
+          narrative: 'The numbers work. The seam could yield enough to justify the dig, the labour, the {adj} risk. It\'s a real find.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Too thin, too deep, too much overburden. The {adj} economics don\'t support a mine here.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'prospect_seam.stake',
+        name: 'Stake the Claim',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'A find is only a find if you hold it. {actor} marks the claim with {adj} cairns and cuts the trees to the boundary.',
+        onSuccess: {
+          narrative: 'The claim is staked, recorded, and {adj} defensible. {actor} owns a piece of the mountain now.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.8, condition: 0.2 },
+            tagFilters: ['#mining', '#wealth'],
+          },
+        },
+        onFailure: {
+          narrative: 'A rival stake is already planted. {actor} arrived {adj} second. The seam belongs to someone else.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.wildcraft_shelter',
+    name: 'Build a Wildcraft Shelter',
+    locationTypes: ['wilderness', 'unexplored_poi', 'battleground'],
+    reachPrimary: 'stone',
+    reachSecondary: 'eye',
+    encounterType: 'build',
+    threatRating: 'trivial',
+    motivations: ['tradition_progress', 'courage_prudence'],
+    steps: [
+      {
+        id: 'wildcraft_shelter.site',
+        name: 'Choose the Site',
+        reach: 'eye',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Not too close to water, not too exposed to wind, not beneath anything that might fall. {actor} reads the {adj} terrain with a survivor\'s eye.',
+        onSuccess: {
+          narrative: 'Good ground: dry, sheltered from the prevailing wind, with a {adj} natural windbreak on two sides.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} picks a spot that looks right but drains poorly. Tomorrow\'s rain will {adj} prove the error.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'wildcraft_shelter.build',
+        name: 'Raise the Shelter',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Branches, bracken, bark. {actor} builds with what the {adj} land offers — no nails, no rope, just knowledge and effort.',
+        onSuccess: {
+          narrative: 'The shelter stands: snug, {adj}, and dry enough. Not comfortable, but alive. {actor} crawls inside with earned satisfaction.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The frame collapses when {actor} adds the roof layer. Back to {adj} basics.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'wildcraft_shelter.improve',
+        name: 'Weatherproof',
+        reach: 'stone',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 2,
+        narrative: 'The difference between surviving the night and surviving the week is {adj} weatherproofing. {actor} layers, seals, and banks.',
+        onSuccess: {
+          narrative: 'Rain drums on the roof. Inside stays dry. {actor} watches the weather from {adj} comfort and allows a rare smile.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Leaks in three places. {actor} spends the night repositioning pots and {adj} cursing the wind.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.negotiate_passage',
+    name: 'Negotiate Safe Passage',
+    locationTypes: ['wilderness', 'camp', 'fort', 'hamlet'],
+    reachPrimary: 'heart',
+    reachSecondary: 'gold',
+    encounterType: 'trade',
+    threatRating: 'easy',
+    motivations: ['justice_mercy', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'negotiate_passage.approach',
+        name: 'Make the Approach',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'Empty hands held high. {actor} approaches the {adj} checkpoint and asks to pass. The answer depends on who\'s asking.',
+        onSuccess: {
+          narrative: '{actor}\'s bearing says \'traveler, not threat.\' The guards lower their spears by a {adj} fraction.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'Suspicion. The guards don\'t lower anything. {actor}\'s approach reads as {adj} wrong.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'negotiate_passage.terms',
+        name: 'Agree the Terms',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'Safe passage has a price. {actor} negotiates: a toll, a favour, a piece of information. The {adj} currency of the road.',
+        onSuccess: {
+          narrative: 'A price is named and paid. {actor} passes through with a {adj} nod — commerce, not conflict.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The price is too high. {actor} cannot or will not pay what\'s asked. The {adj} road remains closed.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'negotiate_passage.honour',
+        name: 'Honour the Agreement',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'The deal is only as {adj} good as the honour behind it. {actor} keeps to the agreed terms, even when the other side watches for betrayal.',
+        onSuccess: {
+          narrative: 'Clean passage. {actor} crosses without incident and leaves behind a {adj} reputation for keeping their word.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Something sours. The passage is grudging, the terms strained. {actor} crosses but leaves no {adj} goodwill behind.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.garrison_gossip',
+    name: 'Garrison Gossip',
+    locationTypes: ['castle', 'fort', 'tower'],
+    reachPrimary: 'heart',
+    reachSecondary: 'shadow',
+    encounterType: 'explore',
+    threatRating: 'trivial',
+    motivations: ['revelation_discretion', 'loyalty_ambition'],
+    steps: [
+      {
+        id: 'garrison_gossip.listen',
+        name: 'Sit and Listen',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: 'The mess hall after dark. {actor} nurses a cup and listens to the {adj} soldiers talk — complaints, boasts, rumours.',
+        onSuccess: {
+          narrative: 'Between the grumbling and the lies, {actor} hears the {adj} truth: who commands respect, who commands fear, and what keeps the garrison awake.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: 'The soldiers clam up when {actor} sits down. Outsider. {adj} Trust takes longer than one night.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'garrison_gossip.steer',
+        name: 'Steer the Conversation',
+        reach: 'shadow',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 1,
+        narrative: 'A casual question, a {adj} sympathetic nod. {actor} nudges the talk toward what {they} actually want to know.',
+        onSuccess: {
+          narrative: 'Without realising it, the soldiers tell {actor} exactly what {they} need: troop strength, supply levels, the {adj} commander\'s weaknesses.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Too obvious. Someone changes the subject. {actor} drinks {their} cup and {adj} lets the silence stretch.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'garrison_gossip.file',
+        name: 'File It Away',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'Information is only as {adj} useful as the mind that holds it. {actor} organises what was overheard into patterns.',
+        onSuccess: {
+          narrative: '{actor} leaves the mess hall knowing more about this garrison than most of its {adj} officers. Knowledge is leverage.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'Too much noise, not enough signal. {actor} has {adj} gossip, not intelligence. There\'s a difference.',
+          reputationDelta: -0.08,
+        },
+      },
+    ],
+  },
+  {
+    id: 'encounter.mend_fishing_nets',
+    name: 'Mend the Fishing Nets',
+    locationTypes: ['hamlet', 'oasis', 'camp'],
+    reachPrimary: 'gold',
+    reachSecondary: 'heart',
+    encounterType: 'assist',
+    threatRating: 'trivial',
+    motivations: ['justice_mercy', 'tradition_progress'],
+    steps: [
+      {
+        id: 'mend_nets.inspect',
+        name: 'Find the Tears',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE,
+        duration: 1,
+        narrative: '{actor} spreads the nets across the {adj} ground and runs fingers along the mesh, feeling for gaps, for weakness, for the places where the catch escapes.',
+        onSuccess: {
+          narrative: 'Seven tears, two worn sections, and a knot that was never {adj} properly tied. {actor} has the full picture.',
+          reputationDelta: 0.05,
+        },
+        onFailure: {
+          narrative: '{actor} misses the subtler damage — the {adj} stretched mesh that will split under the first heavy catch.',
+          reputationDelta: -0.02,
+        },
+      },
+      {
+        id: 'mend_nets.repair',
+        name: 'Tie the Knots',
+        reach: 'heart',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP,
+        duration: 2,
+        narrative: 'Net-mending is rhythmic, {adj} patient work. {actor}\'s fingers learn the pattern: loop, pull, tighten. Repeat.',
+        onSuccess: {
+          narrative: 'The nets are whole again. The fisher at the dock nods {adj} thanks — no words needed between people who understand useful work.',
+          reputationDelta: 0.08,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: '{actor}\'s knots are clumsy — too loose, or the wrong {adj} gauge. Serviceable, but a real net-mender would wince.',
+          reputationDelta: -0.03,
+        },
+      },
+      {
+        id: 'mend_nets.deliver',
+        name: 'Return to the Dock',
+        reach: 'gold',
+        difficulty: DIFFICULTY_BASE + DIFFICULTY_STEP * 2,
+        duration: 1,
+        narrative: 'Good work deserves {adj} fair payment. {actor} returns the mended nets and settles the account.',
+        onSuccess: {
+          narrative: 'A meal, a bed, and the {adj} quiet satisfaction of being useful. Sometimes that\'s enough.',
+          reputationDelta: 0.15,
+          tierPromotionEligible: true,
+        },
+        onFailure: {
+          narrative: 'The fisher finds a flaw {actor} missed. Payment is {adj} docked. Fair enough.',
+          reputationDelta: -0.08,
         },
       },
     ],
