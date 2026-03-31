@@ -237,9 +237,10 @@ export function getAgentDetail(
 
   const threadEdges = graph.getIncomingEdges(agentId, 'thread');
   const threadEdge = threadEdges.find(e => e.source === ascendantId);
-  if (!threadEdge) return null;
-
-  const tier = (threadEdge.properties as Record<string, unknown>).tier as InfluenceTier;
+  // tier defaults to 0 (Stranger) for non-retinue agents — all other detail data is still valid
+  const tier: InfluenceTier = threadEdge
+    ? (threadEdge.properties as Record<string, unknown>).tier as InfluenceTier
+    : 0;
   const profile = (props.axiologicalProfile as AxiologicalProfile) || {} as AxiologicalProfile;
   const domainCapabilities = (props.domainCapabilities as Record<ReachDomain, number>) || {} as Record<ReachDomain, number>;
   // Resolve location via located_at edge (authoritative), fallback to legacy property
