@@ -10,6 +10,12 @@ if (import.meta.env.DEV) {
   let _debugPanelToggle: ((open?: boolean) => void) | null = null;
   // GameView registers this to zoom + select an agent by id/name
   let _gotoAgent: ((id: string) => boolean) | null = null;
+  // GameView registers these to list and fire actions
+  interface ActionBridge {
+    listActions: (agentId?: string) => import('./debug-bridge.d').DebugActionInfo[];
+    fireAction: (agentId: string, templateId: string) => import('./debug-bridge.d').DebugFireResult;
+  }
+  let _actionBridge: ActionBridge | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -22,6 +28,10 @@ if (import.meta.env.DEV) {
     gotoAgent: (id: string) => _gotoAgent?.(id) ?? false,
     /** @internal GameView registers its gotoAgent handler here */
     _registerGotoAgent: (fn: (id: string) => boolean) => { _gotoAgent = fn; },
+    listActions: (agentId?: string) => _actionBridge?.listActions(agentId) ?? [],
+    fireAction: (agentId: string, templateId: string) =>
+      _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
+    _registerActionBridge: (cb) => { _actionBridge = cb as ActionBridge; },
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

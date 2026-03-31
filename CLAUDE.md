@@ -81,6 +81,15 @@ window.__DEBUG.gotoAgent('abc123')          // partial id prefix
 window.__DEBUG.gotoAgent('Serafina')        // partial name match (case-insensitive)
 // Returns true if found, false if no match
 
+// List action templates that can be fired on agents:
+window.__DEBUG.listActions()               // all actor-targeting templates → [{id, name, sphere, reach, essenceCost, steps, scale}]
+window.__DEBUG.listActions('Serafina')     // same list, but returns [] if agent not found (existence check)
+
+// Fire an action on an agent immediately (bypasses UI animations, deducts essence):
+window.__DEBUG.fireAction('Serafina', 'action.charm.heart')   // exact template id
+window.__DEBUG.fireAction('abc123', 'charm')                   // partial template id/name match
+// Returns {success, actionId, templateName, message}
+
 // Encounter log export (returns TSV strings):
 const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
 const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, perAgent: [{ tsv, filename }] }

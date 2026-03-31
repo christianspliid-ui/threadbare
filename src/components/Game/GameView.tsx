@@ -98,7 +98,7 @@ import { buildHexTargetContext, buildLocationTargetContext } from '../../engine/
 import { useTargetActions } from './hooks/useTargetActions';
 import { templateIdFromSlotId } from '../../engine/targetActions';
 import type { WheelSlot } from '../../engine/wheel';
-import { getUnifiedTemplateById } from '../../data/unified-action-templates';
+import { getUnifiedTemplateById, UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
 import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
@@ -753,6 +753,117 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via refs (graphRef) or stable callbacks (handleAgentSelect, hexMapRef)
+
+  // ── Debug bridge: listActions / fireAction ────────────────────────────────
+  // A single ref captures the mutable state slices needed by both commands.
+  // setGameState is a stable React dispatcher — it doesn't need the ref treatment.
+  const _actionStateRef = useRef({
+    graph: gameState.graph,
+    tick: gameState.tick,
+    seed: gameState.seed,
+    ascendantId: gameState.ascendantId,
+  });
+  _actionStateRef.current = {
+    graph: gameState.graph,
+    tick: gameState.tick,
+    seed: gameState.seed,
+    ascendantId: gameState.ascendantId,
+  };
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerActionBridge({
+      listActions: (agentId?: string) => {
+        const { graph } = _actionStateRef.current;
+
+        // If agentId given, verify the agent exists first
+        if (agentId !== undefined) {
+          const actors = graph.getNodesByType('actor');
+          const match = actors.find(n =>
+            n.id === agentId ||
+            n.id.startsWith(agentId) ||
+            ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(agentId.toLowerCase())
+          );
+          if (!match) return [];
+        }
+
+        // Return all actor-targeting templates
+        return UNIFIED_ACTION_TEMPLATES
+          .filter(t => {
+            const cats = (t as { targetCategories?: string[] }).targetCategories ?? ['actor'];
+            return cats.includes('actor');
+          })
+          .map(t => ({
+            id: t.id,
+            name: t.name,
+            sphere: (t.sphereAffinity as string | null | undefined) ?? null,
+            reach: (t as { reach?: string | null }).reach ?? null,
+            essenceCost: t.essenceCost ?? 0,
+            steps: t.steps.length,
+            scale: t.scale,
+          }));
+      },
+
+      fireAction: (agentId: string, templateId: string) => {
+        const { graph, tick, seed, ascendantId } = _actionStateRef.current;
+
+        // Find agent
+        const actors = graph.getNodesByType('actor');
+        const agentMatch = actors.find(n =>
+          n.id === agentId ||
+          n.id.startsWith(agentId) ||
+          ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(agentId.toLowerCase())
+        );
+        if (!agentMatch) return { success: false, message: `No agent matching '${agentId}'` };
+
+        // Find template — exact id first, then partial match
+        let template = getUnifiedTemplateById(templateId);
+        if (!template) {
+          template = UNIFIED_ACTION_TEMPLATES.find(t =>
+            t.id.includes(templateId) ||
+            t.name.toLowerCase().includes(templateId.toLowerCase())
+          );
+        }
+        if (!template) return { success: false, message: `No template matching '${templateId}'` };
+
+        const rng = mulberry32(seed + tick * 43);
+        const action = createUnifiedAction({
+          actorId: ascendantId,
+          templateId: template.id,
+          targetId: agentMatch.id,
+          scale: template.scale,
+          source: 'player',
+          tick,
+          template,
+          rng,
+          essencePaid: template.essenceCost ?? 0,
+        });
+
+        const tpl = template; // stable reference for closure
+        setGameState(prev => {
+          const newPool = { ...prev.essencePool };
+          const cost = tpl.essenceCost ?? 0;
+          if (cost > 0 && tpl.sphereAffinity) {
+            newPool[tpl.sphereAffinity] = Math.max(0, (newPool[tpl.sphereAffinity] ?? 0) - cost);
+          }
+          return {
+            ...prev,
+            essencePool: newPool,
+            unifiedActions: [...(prev.unifiedActions ?? []), action],
+          };
+        });
+
+        const agentName = (agentMatch.properties.name as string | undefined) ?? agentMatch.id;
+        return {
+          success: true,
+          actionId: action.actionId,
+          templateName: tpl.name,
+          message: `Fired '${tpl.name}' on '${agentName}'`,
+        };
+      },
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ Runs once — live deps accessed via _actionStateRef; setGameState is a stable dispatcher
 
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();

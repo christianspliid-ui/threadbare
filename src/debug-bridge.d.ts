@@ -17,6 +17,23 @@ export interface EncounterLogSummary {
   agentIds: string[];
 }
 
+export interface DebugActionInfo {
+  id: string;
+  name: string;
+  sphere: string | null;
+  reach: string | null;
+  essenceCost: number;
+  steps: number;
+  scale: string;
+}
+
+export interface DebugFireResult {
+  success: boolean;
+  actionId?: string;
+  templateName?: string;
+  message: string;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -27,6 +44,12 @@ export interface DebugBridge {
   gotoAgent: (id: string) => boolean;
   /** @internal GameView registers its gotoAgent handler here */
   _registerGotoAgent: (fn: (id: string) => boolean) => void;
+  /** List action templates available to fire on agents. Pass an agent id/name to filter by that agent's context, or omit to list all actor-targeting templates. */
+  listActions: (agentId?: string) => DebugActionInfo[];
+  /** Fire an action template on a target agent immediately, bypassing UI animations. agentId and templateId both accept partial matches. */
+  fireAction: (agentId: string, templateId: string) => DebugFireResult;
+  /** @internal GameView registers action bridge callbacks here */
+  _registerActionBridge: (callbacks: { listActions: (agentId?: string) => DebugActionInfo[]; fireAction: (agentId: string, templateId: string) => DebugFireResult }) => void;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;
