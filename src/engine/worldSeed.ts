@@ -616,11 +616,11 @@ export function seedWorld(
   const wonderRng = mulberry32(seed + 23017); // separate PRNG stream
 
   /** Minimum sphere score on a hex to be eligible for a wonder location */
-  const WONDER_SPHERE_THRESHOLD = 3;
+  const WONDER_SPHERE_THRESHOLD = 2;
   /** Base chance for a hex meeting threshold to spawn a wonder (scaled by score) */
-  const WONDER_BASE_CHANCE = 0.06;
+  const WONDER_BASE_CHANCE = 0.12;
   /** Max fraction of empty habitable hexes that can become wonders */
-  const WONDER_MAX_FRACTION = 0.08;
+  const WONDER_MAX_FRACTION = 0.06;
 
   /** Maps dominant sphere → eligible wonder location subtypes */
   const SPHERE_WONDER_TABLE: Partial<Record<SphereNameType, LocationSubtype[]>> = {
@@ -832,7 +832,7 @@ export function seedWorld(
   const anomalyRng = mulberry32(seed + 41953);
 
   /** Fraction of remaining empty hexes that get an anomaly */
-  const ANOMALY_FRACTION = 0.05;
+  const ANOMALY_FRACTION = 0.03;
 
   /** Terrain → eligible anomaly subtypes (weighted) */
   const TERRAIN_ANOMALY_TABLE: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
@@ -876,8 +876,8 @@ export function seedWorld(
   for (const tile of shuffledAnomaly) {
     if (anomalyCount >= maxAnomalies) break;
 
-    // Don't place too close to an existing settlement
-    if (violatesSettlementSpacing(tile)) continue;
+    // Anomalies can spawn near settlements — they're hidden natural resources.
+    // Only skip if hex is already occupied (checked via usedHexes filter above).
 
     const weights = TERRAIN_ANOMALY_TABLE[tile.terrain];
     if (!weights || weights.length === 0) continue;
