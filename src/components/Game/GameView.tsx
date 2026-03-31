@@ -351,8 +351,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, [actors, gameState.graph, runtime.worldVersion, gameState.ascendantId, avatarNodeId, sphereColor, archetype.sphereAlignment.primary]);
 
   // ── Location render data adapter (graph → LocationNode[]) ──
-  // TB-086: Key off worldVersion — locationSubtype changes from settlement promotion
-  // must trigger re-render. Graph identity never changes (mutated in place).
+  // TB-086: Key off structuralCacheVersion (not worldVersion) — locationSubtype
+  // changes from settlement promotion call touchStructure(), so structuralCacheVersion
+  // is the correct dependency. worldVersion bumps every tick and would rebuild the
+  // entire Three.js scene on each tick (zoom reset + visual artifacts).
   const locationNodes = useMemo<LocationNode[]>(() => {
     return gameState.graph.getNodesByType('location')
       .filter(n => n.properties.hexCol != null && n.properties.hexRow != null)
@@ -366,7 +368,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         isAnomalyLocation: n.properties.isAnomalyLocation === true,
         discoveredByExploration: n.properties.discoveredByExploration === true,
       }));
-  }, [gameState.graph, runtime.worldVersion]);
+  }, [gameState.graph, runtime.structuralCacheVersion]);
 
   // ── Anomaly shimmer data (all anomalies including undiscovered) ──
   const anomalyNodes = useMemo(() => {
