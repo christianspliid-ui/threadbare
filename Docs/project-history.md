@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Location variety expansion: 29 new subtypes — sphere-resonant wonders, wilderness interest, economy anomalies, monster/danger. Full icon/sublocation/sphere wiring. (2026-03-31)
 - ✅ TB-086/087/088 Mutation observability, per-session SimulationRuntime, distance matrix cap raised 500→1200 (2026-03-31)
 - ✅ TB-085 CLI doom clock stale field refs + encounter liveness test timeout (2026-03-30)
 - ✅ TB-084 Graph Schema Gaps — `constructed_by` added to EdgeType/EDGE_SCHEMA, `starter_ashenmane_fang` fixed to `artifact_legendary` (2026-03-30)
