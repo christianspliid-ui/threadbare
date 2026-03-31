@@ -19,7 +19,14 @@ import { NARRATIVE_ARCHETYPES } from '../data/archetype-content';
 import { assignCooperationStrategy } from './disposition';
 import { DEFAULT_REPUTATION } from '../types/disposition';
 import type { FundamentState } from '../types/worldSoul';
-import { generateCultures, assignCulturesToActors } from './cultureGenerator';
+import { generateCultures, assignCulturesToActors, registerPregenCultures, assignCultureToLocation } from './cultureGenerator';
+import type { PregenCulture } from './cultureGenerator';
+import type { Province } from './worldgen/types';
+import {
+  PROVINCE_ROLE_CAPITAL,
+  PROVINCE_ROLE_HEARTLAND,
+  PROVINCE_ROLE_BORDERLAND,
+} from './worldgen/types';
 import {
   instantiateFormativeTraits,
   instantiateBehavioralTraits,
@@ -437,6 +444,10 @@ export function seedWorld(
   seed: number,
   injections?: ActiveInjection[],
   fundament?: FundamentState,
+  pregenCultures?: PregenCulture[],
+  provinceIds?: Int16Array,
+  provinces?: Province[],
+  provinceRoles?: Uint8Array,
 ): SeedResult {
   const rng = mulberry32(seed + 7919);
   const graph = new WorldGraph();
@@ -990,8 +1001,42 @@ export function seedWorld(
   generateRoadEdges(graph, tiles, roadCols, roadRows);
 
   // ── Cultures ──────────────────────────────────────────────
-  const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, fundament);
-  cultureIds.push(...generatedCultureIds);
+  // Build location → culture map from province data for territory-aware assignment
+  const locationCultureMap = new Map<string, { cultureId: string; role: number }>();
+
+  if (pregenCultures && provinceIds && provinces) {
+    // Territory-aware path: register pre-generated cultures as graph nodes
+    const registeredIds = registerPregenCultures(graph, pregenCultures);
+    cultureIds.push(...registeredIds);
+
+    // Assign cultures to locations based on their province membership
+    const gridCols = tiles.reduce((max, t) => Math.max(max, t.coord.col), 0) + 1;
+    for (const locId of locationIds) {
+      const node = graph.getNode(locId);
+      if (!node) continue;
+      const hexCol = node.properties.hexCol as number;
+      const hexRow = node.properties.hexRow as number;
+      const hexIdx = hexRow * gridCols + hexCol;
+      const provId = provinceIds[hexIdx];
+      if (provId < 0 || provId >= provinces.length) continue;
+
+      const province = provinces[provId];
+      if (!province.cultureId || !cultureIds.includes(province.cultureId)) continue;
+
+      // Assign current culture from province
+      assignCultureToLocation(graph, locId, province.cultureId, 'current');
+      // Historical layer: same culture for now (future: could differ for lost provinces)
+      assignCultureToLocation(graph, locId, province.cultureId, 'historical');
+
+      // Track for actor assignment — use province role from worldgen typed array
+      const role = provinceRoles ? provinceRoles[hexIdx] ?? PROVINCE_ROLE_BORDERLAND : PROVINCE_ROLE_BORDERLAND;
+      locationCultureMap.set(locId, { cultureId: province.cultureId, role });
+    }
+  } else {
+    // Legacy fallback: generate cultures internally with round-robin assignment
+    const generatedCultureIds = generateCultures(graph, cosmology, locationIds, rng, fundament);
+    cultureIds.push(...generatedCultureIds);
+  }
 
   // ── Factions ─────────────────────────────────────────────
   const facCount = randomInRange(rng, FACTION_COUNT.min, FACTION_COUNT.max);
@@ -1132,7 +1177,8 @@ export function seedWorld(
   }
 
   // ── Culture assignment to actors ──────────────────────────
-  assignCulturesToActors(graph, individualIds, factionIds, cultureIds, rng);
+  assignCulturesToActors(graph, individualIds, factionIds, cultureIds, rng,
+    locationCultureMap.size > 0 ? locationCultureMap : undefined);
 
   // ── Cultural trait instantiation + granting ──────────────────
   for (const cultureId of cultureIds) {

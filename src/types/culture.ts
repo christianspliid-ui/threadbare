@@ -36,3 +36,10 @@ export const CULTURE_STRENGTH_INDIVIDUAL = { min: 0.5, max: 0.9 };
 export const CULTURE_STRENGTH_FACTION = { min: 0.6, max: 0.95 };
 export const DUAL_CULTURE_PROBABILITY = 0.2;
 export const CULTURELESS_PROBABILITY = 0.1;
+
+// ─── Territory-Aware Seeding Constants ────────────────────────
+export const CULTURE_HOMELAND_STRENGTH = { min: 0.7, max: 0.9 };
+export const CULTURE_BORDER_STRENGTH = { min: 0.3, max: 0.5 };
+export const CULTURE_BORDER_DUAL_CHANCE = 0.4;
+export const CULTURE_DIASPORA_FRACTION = 0.1;
+export const CULTURE_WILDERNESS_CHANCE = 0.3;

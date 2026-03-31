@@ -33,6 +33,11 @@ import {
 } from './sphereAffinity';
 import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
+import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
+import { mulberry32 } from '../lib/prng';
+
+/** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
+const CULTURE_SEED_OFFSET = 87671;
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -91,12 +96,22 @@ export function initializeGameState(
   cols: number = DEFAULT_COLS,
   rows: number = DEFAULT_ROWS,
 ): { state: GameState; tiles: HexTile[]; riverPaths: RiverPath[]; lakeIds: Int16Array; regionData?: RegionData } {
-  // Generate terrain
-  const worldGenResult = generateWorld(cosmology, cols, rows, seed);
+  // 1. Generate culture identities BEFORE worldgen (needed for province seeding)
+  const cultureRng = mulberry32(seed + CULTURE_SEED_OFFSET);
+  const fundament = createDefaultFundament();
+  const pregenCultures = generateCultureIdentities(cosmology, cultureRng, fundament);
+  const livingCultures = pregenCultures.map(toCultureForWorldgen);
+
+  // 2. Generate terrain WITH culture data — provinces seeded per culture
+  const worldGenResult = generateWorld(cosmology, cols, rows, seed, livingCultures);
   const tiles = worldGenResult.tiles;
 
-  // Seed the world graph with actors, locations, artifacts
-  const { graph, individualIds } = seedWorld(cosmology, tiles, seed);
+  // 3. Seed the world graph with actors, locations, artifacts — territory-aware
+  const { graph, individualIds } = seedWorld(
+    cosmology, tiles, seed, undefined, fundament,
+    pregenCultures, worldGenResult.provinceIds, worldGenResult.provinces,
+    worldGenResult.provinceRoles,
+  );
 
   // Sync graph region names back to regionData.geographicRegions.
   // seedWorld() names regions with culture-aware names (via regionNaming.ts),
@@ -336,7 +351,7 @@ export function initializeGameState(
     actionsInProgress: [],
     unifiedActions: [],
     worldSoul: {
-      fundament: createDefaultFundament(),
+      fundament,
       resonance: createResonanceState(),
     },
     echoDefinitions: [],

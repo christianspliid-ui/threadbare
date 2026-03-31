@@ -1,6 +1,6 @@
 import type { CosmologyProfile, HexTile } from '../types';
 import { WorldGenPipeline } from './worldgen/WorldGenPipeline';
-import type { WorldGenContext, WorldGenParams } from './worldgen/types';
+import type { WorldGenContext, WorldGenParams, Province, CultureForWorldgen } from './worldgen/types';
 import type { RiverPath } from './worldGenData';
 import { detectRegionsBorderCost, type RegionFeatureType } from './regionDetection';
 import { assignPoliticalRegions } from './regionPolitical';
@@ -39,6 +39,13 @@ export interface WorldGenResult {
    * Index = col + row * cols.
    */
   provinceRoles: Uint8Array;
+  /**
+   * Province ID per hex (-1 = unassigned). Used by culture seeding to
+   * map locations → provinces → cultures. Index = col + row * cols.
+   */
+  provinceIds?: Int16Array;
+  /** Province metadata array. Index = province ID. */
+  provinces?: Province[];
 }
 
 // ── Simple region naming (no graph required) ─────────────────────────────────
@@ -91,6 +98,8 @@ export function generateWorld(
   cols: number,
   rows: number,
   seed: number,
+  livingCultures?: CultureForWorldgen[],
+  lostCultures?: CultureForWorldgen[],
 ): WorldGenResult {
   const params: WorldGenParams = {
     cols,
@@ -100,8 +109,8 @@ export function generateWorld(
     seaLevelThreshold: 0.38,
     landShape: 'continent',
     mountainDensity: 'moderate',
-    livingCultures: [],
-    lostCultures: [],
+    livingCultures: livingCultures ?? [],
+    lostCultures: lostCultures ?? [],
   };
 
   const pipeline = new WorldGenPipeline();
@@ -180,6 +189,8 @@ export function generateWorld(
     seed,
     regionData,
     provinceRoles: ctx.provinceRoles,
+    provinceIds: ctx.provinceIds,
+    provinces: ctx.provinces,
   };
 }
 

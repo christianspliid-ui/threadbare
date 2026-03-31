@@ -20,13 +20,20 @@ import {
   CULTURE_STRENGTH_FACTION,
   DUAL_CULTURE_PROBABILITY,
   CULTURELESS_PROBABILITY,
+  CULTURE_HOMELAND_STRENGTH,
+  CULTURE_BORDER_STRENGTH,
+  CULTURE_BORDER_DUAL_CHANCE,
+  CULTURE_DIASPORA_FRACTION,
 } from '../types/culture';
 import {
   getFoundationModifier,
   getCreationSphereModifier,
   getBiomeModifier,
   CULTURE_NAME_FRAGMENTS,
+  BIOME_MODIFIERS,
 } from '../data/culture-content';
+import type { CultureForWorldgen } from './worldgen/types';
+import { PROVINCE_ROLE_CAPITAL, PROVINCE_ROLE_HEARTLAND } from './worldgen/types';
 import type { WorldGraph } from './graph';
 import type { FundamentState } from '../types/worldSoul';
 import { generateCultureFlag } from './cultureFlag';
@@ -148,6 +155,8 @@ export function composeCultureIdentity(
     foundationBias: foundationId,
     veneratedSpheres: spheres,
     primaryBiome: biome,
+    preferredBiomes: (biomeMod?.preferredBiomes ?? [biome]) as TerrainType[],
+    toleratedBiomes: (biomeMod?.toleratedBiomes ?? []) as TerrainType[],
     socialStructure,
     accountability,
     behavioralKeywords: mergeUnique(foundationKeywords, sphereKeywords, biomeKeywords),
@@ -222,11 +231,117 @@ export function assignCultureToLocation(
   });
 }
 
-// ─── Main Culture Generator ─────────────────────────────────────────
+// ─── Pre-Generation (before worldgen) ──────────────────────────────
+
+/** Culture identity generated before worldgen — no graph node yet. */
+export interface PregenCulture {
+  id: string;
+  name: string;
+  identity: CultureIdentity;
+  flagSvg: string;
+}
+
+/** Extract the minimal projection needed by worldgen province seeding. */
+export function toCultureForWorldgen(c: PregenCulture): CultureForWorldgen {
+  return {
+    id: c.id,
+    preferredBiomes: c.identity.preferredBiomes,
+    toleratedBiomes: c.identity.toleratedBiomes,
+  };
+}
+
+/**
+ * Habitable terrain types suitable for culture origin biomes.
+ * Excludes ocean/water/extreme terrains that cultures wouldn't originate from.
+ */
+const HABITABLE_BIOME_TERRAINS: TerrainType[] = BIOME_MODIFIERS
+  .filter(m => !['ocean', 'deep_ocean', 'coastal_shallows', 'lake', 'reef',
+    'tropical_ocean', 'glacier', 'arctic', 'volcano'].includes(m.terrain))
+  .map(m => m.terrain);
+
+/**
+ * Generate culture identities BEFORE worldgen.
+ * Creates culture compositions from foundation × sphere × biome, but does NOT
+ * create graph nodes or assign locations — those happen after worldgen when
+ * province data is available.
+ */
+export function generateCultureIdentities(
+  cosmology: CosmologyProfile,
+  rng: () => number,
+  fundament?: FundamentState,
+): PregenCulture[] {
+  const defaultWeight = 1 / 12;
+  const sphereWeights = fundament?.sphereWeights ?? {
+    chaos: defaultWeight, order: defaultWeight, light: defaultWeight, darkness: defaultWeight,
+    force: defaultWeight, matter: defaultWeight, energy: defaultWeight, life: defaultWeight,
+    mind: defaultWeight, spirit: defaultWeight, time: defaultWeight, entropy: defaultWeight,
+  };
+  const cultureCount = CULTURE_COUNT.min + Math.floor(
+    rng() * (CULTURE_COUNT.max - CULTURE_COUNT.min + 1),
+  );
+
+  const cultures: PregenCulture[] = [];
+  const usedBiomes = new Set<string>();
+
+  // Shuffle habitable biomes for unique selection per culture
+  const shuffledBiomes = [...HABITABLE_BIOME_TERRAINS].sort(() => rng() - 0.5);
+
+  for (let i = 0; i < cultureCount; i++) {
+    const id = `culture_${i}`;
+    const foundationId = selectFoundation(rng, sphereWeights);
+    const spheres = selectSpheres(rng, cosmology);
+
+    // Pick a unique biome from the shuffled habitable list
+    let biome: TerrainType = 'grassland';
+    for (const candidate of shuffledBiomes) {
+      if (!usedBiomes.has(candidate)) {
+        biome = candidate;
+        usedBiomes.add(candidate);
+        break;
+      }
+    }
+
+    const identity = composeCultureIdentity(foundationId, spheres, biome);
+    const name = generateCultureName(identity, rng);
+
+    const flagSeed = Math.floor(rng() * 0xFFFFFFFF);
+    const flagSvg = generateCultureFlag(identity, flagSeed);
+
+    cultures.push({ id, name, identity, flagSvg });
+  }
+
+  return cultures;
+}
+
+/**
+ * Register pre-generated cultures as graph nodes.
+ * Called during seedWorld after worldgen provides province data.
+ */
+export function registerPregenCultures(
+  graph: WorldGraph,
+  cultures: PregenCulture[],
+): string[] {
+  const cultureIds: string[] = [];
+  for (const pc of cultures) {
+    graph.addNode({
+      id: pc.id,
+      type: 'actor',
+      name: pc.name,
+      properties: { actorType: 'culture', cultureIdentity: pc.identity, flagSvg: pc.flagSvg },
+    });
+    cultureIds.push(pc.id);
+  }
+  return cultureIds;
+}
+
+// ─── Main Culture Generator (legacy — used when no pregen available) ──
 
 /**
  * Generate all cultures for the world and add as graph nodes.
  * Also assigns each location a culture (historical + current layers).
+ *
+ * @deprecated Prefer generateCultureIdentities() + registerPregenCultures() for
+ * territory-aware seeding. This function is retained for backward compatibility.
  */
 export function generateCultures(
   graph: WorldGraph,
@@ -294,11 +409,18 @@ export function generateCultures(
 }
 
 /**
- * Assign cultures to all actors based on budget model:
- * - 70% of individuals get 1 culture
- * - 20% get 2 cultures (strengths sum ≤1.0)
- * - 10% get 0 cultures
- * - Factions always get 1 culture
+ * Assign cultures to all actors.
+ *
+ * When `locationCultureMap` is provided (territory-aware path):
+ *   - Actors inherit culture from their location's province
+ *   - Strength varies by province role (capital/heartland = strong, borderland = weaker)
+ *   - ~10% are diaspora (random different culture)
+ *   - ~10% are cultureless
+ *   - Borderland actors have ~40% chance of a secondary culture
+ *
+ * When `locationCultureMap` is not provided (legacy path):
+ *   - 70% get 1 random culture, 20% get 2, 10% get none
+ *   - Factions always get 1 random culture
  */
 export function assignCulturesToActors(
   graph: WorldGraph,
@@ -306,41 +428,125 @@ export function assignCulturesToActors(
   factionIds: string[],
   cultureIds: string[],
   rng: () => number,
+  locationCultureMap?: Map<string, { cultureId: string; role: number }>,
 ): void {
   if (cultureIds.length === 0) return;
 
   const pickCulture = () => cultureIds[Math.floor(rng() * cultureIds.length)];
+  const pickDifferentCulture = (exclude: string): string => {
+    if (cultureIds.length <= 1) return exclude;
+    let c = pickCulture();
+    let attempts = 0;
+    while (c === exclude && attempts < 5) { c = pickCulture(); attempts++; }
+    return c;
+  };
   const randInRange = (min: number, max: number) => min + rng() * (max - min);
 
-  for (const facId of factionIds) {
-    const strength = randInRange(CULTURE_STRENGTH_FACTION.min, CULTURE_STRENGTH_FACTION.max);
-    assignCultureToActor(graph, facId, pickCulture(), strength);
-  }
+  // Helper: find an actor's location ID via located_at edge
+  const getActorLocationId = (actorId: string): string | undefined => {
+    const edges = graph.getOutgoingEdges(actorId);
+    const locEdge = edges.find(e => e.type === 'located_at');
+    return locEdge?.target;
+  };
 
-  for (const indId of individualIds) {
-    const roll = rng();
-    if (roll < CULTURELESS_PROBABILITY) {
-      continue;
-    } else if (roll < CULTURELESS_PROBABILITY + DUAL_CULTURE_PROBABILITY) {
-      const c1 = pickCulture();
-      let c2 = pickCulture();
-      let attempts = 0;
-      while (c2 === c1 && cultureIds.length > 1 && attempts < 5) {
-        c2 = pickCulture();
-        attempts++;
+  // Helper: find a faction's controlled location via controls edge
+  const getFactionLocationId = (factionId: string): string | undefined => {
+    const edges = graph.getOutgoingEdges(factionId);
+    const controlEdge = edges.find(e => e.type === 'controls');
+    return controlEdge?.target;
+  };
+
+  if (locationCultureMap && locationCultureMap.size > 0) {
+    // ── Territory-aware path ──────────────────────────────────
+
+    // Factions: use controlled location's culture
+    for (const facId of factionIds) {
+      const locId = getFactionLocationId(facId);
+      const locCulture = locId ? locationCultureMap.get(locId) : undefined;
+      if (locCulture) {
+        const strength = randInRange(CULTURE_STRENGTH_FACTION.min, CULTURE_STRENGTH_FACTION.max);
+        assignCultureToActor(graph, facId, locCulture.cultureId, strength);
+      } else {
+        // Faction in wilderness — assign random culture at lower strength
+        const strength = randInRange(CULTURE_BORDER_STRENGTH.min, CULTURE_BORDER_STRENGTH.max);
+        assignCultureToActor(graph, facId, pickCulture(), strength);
       }
-      const s1 = randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max * 0.6);
-      const s2 = Math.min(
-        randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max * 0.6),
-        1.0 - s1,
-      );
-      assignCultureToActor(graph, indId, c1, s1);
-      if (c2 !== c1) {
-        assignCultureToActor(graph, indId, c2, s2);
+    }
+
+    // Individuals: inherit from location's province
+    for (const indId of individualIds) {
+      const roll = rng();
+
+      // 10% cultureless
+      if (roll < CULTURELESS_PROBABILITY) continue;
+
+      const locId = getActorLocationId(indId);
+      const locCulture = locId ? locationCultureMap.get(locId) : undefined;
+
+      // 10% diaspora: random different culture at moderate strength
+      if (roll < CULTURELESS_PROBABILITY + CULTURE_DIASPORA_FRACTION) {
+        if (locCulture) {
+          const diasporaCulture = pickDifferentCulture(locCulture.cultureId);
+          const strength = randInRange(CULTURE_BORDER_STRENGTH.min, CULTURE_BORDER_STRENGTH.max);
+          assignCultureToActor(graph, indId, diasporaCulture, strength);
+        } else {
+          // Wilderness diaspora: just pick any culture
+          const strength = randInRange(CULTURE_BORDER_STRENGTH.min, CULTURE_BORDER_STRENGTH.max);
+          assignCultureToActor(graph, indId, pickCulture(), strength);
+        }
+        continue;
       }
-    } else {
-      const strength = randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max);
-      assignCultureToActor(graph, indId, pickCulture(), strength);
+
+      if (!locCulture) {
+        // Wilderness location — no culture assignment (wilderness chance already handled)
+        continue;
+      }
+
+      // Strength based on province role
+      const isCore = locCulture.role === PROVINCE_ROLE_CAPITAL || locCulture.role === PROVINCE_ROLE_HEARTLAND;
+      const strength = isCore
+        ? randInRange(CULTURE_HOMELAND_STRENGTH.min, CULTURE_HOMELAND_STRENGTH.max)
+        : randInRange(CULTURE_BORDER_STRENGTH.min, CULTURE_BORDER_STRENGTH.max);
+
+      assignCultureToActor(graph, indId, locCulture.cultureId, strength);
+
+      // Borderland: 40% chance of a secondary culture
+      if (!isCore && rng() < CULTURE_BORDER_DUAL_CHANCE && cultureIds.length > 1) {
+        const secondCulture = pickDifferentCulture(locCulture.cultureId);
+        if (secondCulture !== locCulture.cultureId) {
+          const s2 = randInRange(CULTURE_BORDER_STRENGTH.min * 0.5, CULTURE_BORDER_STRENGTH.max * 0.5);
+          assignCultureToActor(graph, indId, secondCulture, Math.min(s2, 1.0 - strength));
+        }
+      }
+    }
+  } else {
+    // ── Legacy path (random assignment) ──────────────────────
+
+    for (const facId of factionIds) {
+      const strength = randInRange(CULTURE_STRENGTH_FACTION.min, CULTURE_STRENGTH_FACTION.max);
+      assignCultureToActor(graph, facId, pickCulture(), strength);
+    }
+
+    for (const indId of individualIds) {
+      const roll = rng();
+      if (roll < CULTURELESS_PROBABILITY) {
+        continue;
+      } else if (roll < CULTURELESS_PROBABILITY + DUAL_CULTURE_PROBABILITY) {
+        const c1 = pickCulture();
+        const c2 = pickDifferentCulture(c1);
+        const s1 = randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max * 0.6);
+        const s2 = Math.min(
+          randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max * 0.6),
+          1.0 - s1,
+        );
+        assignCultureToActor(graph, indId, c1, s1);
+        if (c2 !== c1) {
+          assignCultureToActor(graph, indId, c2, s2);
+        }
+      } else {
+        const strength = randInRange(CULTURE_STRENGTH_INDIVIDUAL.min, CULTURE_STRENGTH_INDIVIDUAL.max);
+        assignCultureToActor(graph, indId, pickCulture(), strength);
+      }
     }
   }
 }
