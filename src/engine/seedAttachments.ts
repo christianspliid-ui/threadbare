@@ -15,6 +15,11 @@ import {
   REWARD_CONDITIONS,
   REWARD_BESTOWED_POWERS,
 } from '../data/reward-attachment-catalog';
+import {
+  ANOMALY_SIGNATURE_ARTIFACTS,
+  ANOMALY_BESTOWED_POWERS,
+  ANOMALY_CONDITIONS,
+} from '../data/anomaly-reward-catalog';
 import type { TraitDefinitionProperties } from '../types/traits';
 
 export function seedAttachments(graph: WorldGraph): void {
@@ -34,6 +39,17 @@ export function seedAttachments(graph: WorldGraph): void {
     graph.addNode(node);
   }
   for (const node of REWARD_BESTOWED_POWERS) {
+    graph.addNode(node);
+  }
+
+  // ── Add anomaly reward catalog (unowned, used by anomaly discovery rewards) ──
+  for (const node of ANOMALY_SIGNATURE_ARTIFACTS) {
+    graph.addNode(node);
+  }
+  for (const node of ANOMALY_BESTOWED_POWERS) {
+    graph.addNode(node);
+  }
+  for (const node of ANOMALY_CONDITIONS) {
     graph.addNode(node);
   }
 
