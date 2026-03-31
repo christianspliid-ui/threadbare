@@ -11,6 +11,8 @@ export interface CultureIdentity {
   primaryBiome: TerrainType;   // kept for backward compatibility
   preferredBiomes: TerrainType[];   // 3 core biomes for province generation (worldgen)
   toleratedBiomes: TerrainType[];   // up to 5 additional biomes for heartland
+  /** Human-readable archetype label, e.g. "The Protector Mountain Folk" */
+  archetypeLabel: string;
   socialStructure: string;
   accountability: string;
   behavioralKeywords: string[];

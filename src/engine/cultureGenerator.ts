@@ -14,6 +14,7 @@ import { SPHERE_NAMES } from '../types/index';
 import type { CultureIdentity } from '../types/culture';
 import type { ReachDomain } from '../types/traits';
 import { REACH_DOMAINS } from '../types/traits';
+import { REACH_VALUE_PAIR, ARCHETYPE_NAMES } from '../types/agent';
 import {
   CULTURE_COUNT,
   CULTURE_STRENGTH_INDIVIDUAL,
@@ -122,6 +123,54 @@ function composeReachPreferences(
   return result;
 }
 
+/** Convert snake_case terrain to Title Case (e.g. 'boreal_forest' → 'Boreal Forest') */
+function biomeLabel(terrain: TerrainType): string {
+  return terrain.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+}
+
+/** Biome collective nouns for archetype labels */
+const BIOME_FOLK: Partial<Record<string, string>> = {
+  ocean: 'Seafarers', deep_ocean: 'Abyssal Folk', coastal_shallows: 'Shore Folk',
+  coast: 'Coast Folk', lake: 'Lake Folk', river: 'River Folk', reef: 'Reef Folk',
+  grassland: 'Plains Folk', farmland: 'Tillers', savanna: 'Savanna Folk',
+  steppe: 'Steppe Riders', temperate_forest: 'Forest Folk', dense_forest: 'Deepwood Folk',
+  boreal_forest: 'Taiga Folk', jungle: 'Jungle Folk', tropical_forest: 'Canopy Folk',
+  swamp: 'Swamp Folk', marsh: 'Marsh Folk', moor_bog: 'Moor Folk',
+  hills: 'Hill Folk', forested_hills: 'Hill Folk', mountains: 'Mountain Folk',
+  high_mountains: 'Highland Folk', mountain_pass: 'Pass Wardens', plateau: 'Plateau Folk',
+  badlands: 'Badlands Folk', desert: 'Desert Folk', rocky_desert: 'Stone Desert Folk',
+  sand_dunes: 'Dune Folk', oasis: 'Oasis Folk', tundra: 'Tundra Folk',
+  snow_fields: 'Snow Folk', arctic: 'Frost Folk', glacier: 'Glacier Folk',
+  volcano: 'Volcanic Folk', floodplain: 'Floodplain Folk', dead_forest: 'Ashwood Folk',
+  evergreen_forest: 'Evergreen Folk', light_forest: 'Glade Folk',
+  great_home_trees: 'Treehome Folk', broken_lands: 'Broken Lands Folk',
+  tropical_ocean: 'Warm Sea Folk',
+};
+
+/**
+ * Derive a readable archetype label from reach preferences and biome.
+ * E.g. "The Protector Mountain Folk" or "The Seeker Forest Folk".
+ * Uses the dominant reach → value pair → archetype name system.
+ */
+function composeArchetypeLabel(reachPrefs: Record<ReachDomain, number>, biome: TerrainType): string {
+  // Find the two strongest reaches
+  const sorted = (Object.entries(reachPrefs) as [ReachDomain, number][])
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+
+  const topReach = sorted[0]?.[0];
+  const topValue = sorted[0]?.[1] ?? 0;
+
+  if (!topReach) return `The ${BIOME_FOLK[biome] ?? biomeLabel(biome) + ' Folk'}`;
+
+  const valuePair = REACH_VALUE_PAIR[topReach];
+  const archetype = ARCHETYPE_NAMES[valuePair];
+  // Positive reach preference → positive archetype, negative → negative archetype
+  const title = topValue >= 0 ? archetype.positive : archetype.negative;
+
+  const folk = BIOME_FOLK[biome] ?? biomeLabel(biome) + ' Folk';
+  return `The ${title} ${folk}`;
+}
+
 /**
  * Compose a culture identity from foundation + creation sphere + biome modifiers.
  * Merges keyword pools, material vocabulary, metaphor palettes, and trait seed IDs.
@@ -151,12 +200,15 @@ export function composeCultureIdentity(
   const biomeMaterial = biomeMod?.materialCulture ?? [];
   const biomeMetaphors = biomeMod?.metaphorPalette ?? [];
 
+  const reachPreferences = composeReachPreferences(foundation, sphereMods, biomeMod);
+
   return {
     foundationBias: foundationId,
     veneratedSpheres: spheres,
     primaryBiome: biome,
     preferredBiomes: (biomeMod?.preferredBiomes ?? [biome]) as TerrainType[],
     toleratedBiomes: (biomeMod?.toleratedBiomes ?? []) as TerrainType[],
+    archetypeLabel: composeArchetypeLabel(reachPreferences, biome),
     socialStructure,
     accountability,
     behavioralKeywords: mergeUnique(foundationKeywords, sphereKeywords, biomeKeywords),
@@ -164,7 +216,7 @@ export function composeCultureIdentity(
     metaphorPalette: mergeUnique(foundationMetaphors, biomeMetaphors),
     formativeTraitSeedIds: mergeUnique(sphereFormative),
     behavioralTraitSeedIds: mergeUnique(sphereBehavioral),
-    reachPreferences: composeReachPreferences(foundation, sphereMods, biomeMod),
+    reachPreferences,
   };
 }
 
