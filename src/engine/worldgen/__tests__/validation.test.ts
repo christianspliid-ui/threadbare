@@ -196,6 +196,160 @@ describe('generateWorld() — hexGrid.ts entry point', () => {
   });
 });
 
+describe('Land connectivity — orphan detection & repair', () => {
+  it('validation result includes orphan fields', () => {
+    const ctx = runPipeline();
+    const result = runValidationPass(ctx, {});
+    expect(typeof result.orphanComponentsFixed).toBe('number');
+    expect(typeof result.orphanHexesFixed).toBe('number');
+  });
+
+  it('detects and bridges an artificial orphan island', () => {
+    const ctx = runPipeline();
+    const { cols, rows, terrain, isOcean } = ctx;
+
+    // Find a land hex with all-land neighbors, then surround it with ocean to create an orphan
+    let targetIdx = -1;
+    for (let row = 3; row < rows - 3; row++) {
+      for (let col = 3; col < cols - 3; col++) {
+        const idx = row * cols + col;
+        if (isOcean[idx]) continue;
+
+        const isOddCol = col % 2 === 1;
+        const dirs = isOddCol
+          ? [[1, 1], [1, 0], [0, -1], [-1, 0], [-1, 1], [0, 1]]
+          : [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [0, 1]];
+
+        // Check that ALL neighbors AND their neighbors are land (so we can make a ring of ocean)
+        let allNeighborsLand = true;
+        const ring1: number[] = [];
+        for (const [dc, dr] of dirs) {
+          const nc = col + dc;
+          const nr = row + dr;
+          if (nc < 0 || nc >= cols || nr < 0 || nr >= rows) { allNeighborsLand = false; break; }
+          const nIdx = nr * cols + nc;
+          if (isOcean[nIdx]) { allNeighborsLand = false; break; }
+          ring1.push(nIdx);
+        }
+        if (!allNeighborsLand || ring1.length < 6) continue;
+
+        targetIdx = idx;
+
+        // Surround this hex with ocean — creating an orphan island of 1 hex
+        for (const nIdx of ring1) {
+          terrain[nIdx] = 'ocean';
+          isOcean[nIdx] = 1;
+        }
+        break;
+      }
+      if (targetIdx >= 0) break;
+    }
+
+    // Skip test if we couldn't find a suitable hex (very unlikely on 20x30)
+    if (targetIdx < 0) return;
+
+    // Run validation — should detect and fix the orphan
+    const result = runValidationPass(ctx, {});
+    expect(result.orphanComponentsFixed).toBeGreaterThanOrEqual(1);
+    expect(result.orphanHexesFixed).toBeGreaterThanOrEqual(1);
+
+    // Verify the orphan hex is now reachable — at least one neighbor should be passable
+    const col = targetIdx % cols;
+    const row = Math.floor(targetIdx / cols);
+    const isOddCol = col % 2 === 1;
+    const dirs = isOddCol
+      ? [[1, 1], [1, 0], [0, -1], [-1, 0], [-1, 1], [0, 1]]
+      : [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [0, 1]];
+    let hasPassableNeighbor = false;
+    for (const [dc, dr] of dirs) {
+      const nc = col + dc;
+      const nr = row + dr;
+      if (nc >= 0 && nc < cols && nr >= 0 && nr < rows) {
+        const nIdx = nr * cols + nc;
+        if (terrain[nIdx] !== 'ocean' && terrain[nIdx] !== 'deep_ocean' && terrain[nIdx] !== 'lake') {
+          hasPassableNeighbor = true;
+          break;
+        }
+      }
+    }
+    expect(hasPassableNeighbor).toBe(true);
+  });
+
+  it('no-op when all land hexes are already connected', () => {
+    const ctx = runPipeline();
+    // First pass fixes any natural orphans
+    runValidationPass(ctx, {});
+    // Second pass should find nothing to fix
+    const result2 = runValidationPass(ctx, {});
+    expect(result2.orphanComponentsFixed).toBe(0);
+    expect(result2.orphanHexesFixed).toBe(0);
+  });
+
+  it('bridge terrain uses coast for ocean and marsh for lake', () => {
+    const ctx = runPipeline();
+    const { cols, rows, terrain, isOcean } = ctx;
+
+    // Create a 1-hex orphan surrounded by ocean
+    let targetIdx = -1;
+    for (let row = 3; row < rows - 3; row++) {
+      for (let col = 3; col < cols - 3; col++) {
+        const idx = row * cols + col;
+        if (isOcean[idx]) continue;
+
+        const isOddCol = col % 2 === 1;
+        const dirs = isOddCol
+          ? [[1, 1], [1, 0], [0, -1], [-1, 0], [-1, 1], [0, 1]]
+          : [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [0, 1]];
+
+        let allNeighborsLand = true;
+        const ring: number[] = [];
+        for (const [dc, dr] of dirs) {
+          const nc = col + dc;
+          const nr = row + dr;
+          if (nc < 0 || nc >= cols || nr < 0 || nr >= rows) { allNeighborsLand = false; break; }
+          const nIdx = nr * cols + nc;
+          if (isOcean[nIdx]) { allNeighborsLand = false; break; }
+          ring.push(nIdx);
+        }
+        if (!allNeighborsLand || ring.length < 6) continue;
+
+        targetIdx = idx;
+        for (const nIdx of ring) {
+          terrain[nIdx] = 'ocean';
+          isOcean[nIdx] = 1;
+        }
+        break;
+      }
+      if (targetIdx >= 0) break;
+    }
+
+    if (targetIdx < 0) return;
+
+    runValidationPass(ctx, {});
+
+    // At least one of the former-ocean neighbors should now be 'coast'
+    const col = targetIdx % cols;
+    const row = Math.floor(targetIdx / cols);
+    const isOddCol = col % 2 === 1;
+    const dirs = isOddCol
+      ? [[1, 1], [1, 0], [0, -1], [-1, 0], [-1, 1], [0, 1]]
+      : [[1, 0], [1, -1], [0, -1], [-1, -1], [-1, 0], [0, 1]];
+    let hasCoast = false;
+    for (const [dc, dr] of dirs) {
+      const nc = col + dc;
+      const nr = row + dr;
+      if (nc >= 0 && nc < cols && nr >= 0 && nr < rows) {
+        const nIdx = nr * cols + nc;
+        if (terrain[nIdx] === 'coast') {
+          hasCoast = true;
+          break;
+        }
+      }
+    }
+    expect(hasCoast).toBe(true);
+  });
+});
+
 describe('WorldGenPipeline — end-to-end integration', () => {
   it('full pipeline runs in under 10 seconds on 20x30 grid', () => {
     const start = Date.now();

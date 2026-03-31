@@ -8,7 +8,75 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-094**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-100**.
+
+---
+
+## 🎨 TB-095 · Social Expansion D: Tavern & Party System (2026-03-31)
+
+**Milestone: v1.2 Social Systems Expansion — Phase D (do first)**
+
+Taverns as social hub sublocations that seed automatically in settlements (hamlet: 1, city: 2-3). Party formation as a multi-step social encounter ("Seeking Companions") where agents assemble groups at taverns. Party group nodes with shared movement, group encounter resolution, and intra-party social dynamics (disputes, trust tests, romance, betrayal, sacrifice). Tavern-exclusive encounters: brawls, rumors, drinking contests, bardic performances, shady deals, recruiting drives. Party dissolution as a social encounter.
+
+**Creates:** Tavern sublocation type, `party` group nodes, `member_of` edges for parties, shared movement logic, 10-12 tavern encounter templates, party lifecycle encounters.
+**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion D
+**Depends on:** Nothing (foundational — enables all other social expansions)
+
+---
+
+## 🎨 TB-096 · Social Expansion A: Deep Social Scenes (2026-03-31)
+
+**Milestone: v1.2 Social Systems Expansion — Phase A (do second)**
+
+Replace thin 2-step social encounters with rich 3-5 step social scenes featuring dramatic arcs: opening gambit → reading the room → the pitch → the counter → resolution. Leverage system (0-1 score accumulating across steps from secrets, wealth, bonds, power). Personality-driven target responses based on axiological values. Relationship memory affecting difficulty. Sphere coloring of dialogue prose. ~30-40 new templates: tavern negotiations, political audiences, recruitment pitches, intimidation, romantic pursuit, mentorship, betrayal reveals, war councils, trade fairs, religious debates, spy debriefs, oaths, trials, peace negotiations, gossip, confessions, extortion, eulogies, ceremonies, festivals.
+
+**Creates:** Leverage mechanic, personality-driven counter-arguments, group scene resolution, ~30-40 encounter templates across all reaches.
+**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion A
+**Depends on:** TB-095 (Tavern & Party System — taverns as encounter locations)
+
+---
+
+## 🎨 TB-097 · Social Expansion B: Agent Initiatives (2026-03-31)
+
+**Milestone: v1.2 Social Systems Expansion — Phase B (do third)**
+
+New `phaseAgentInitiative` tick phase where agents with sufficient capability + ambition + resources proactively create things in the world. 13+ initiative types: build structure (mine, workshop, guild hall, temple, library, tavern), found settlement, establish trade post, sponsor faction, found organization, recruit party, commission quest, organize festival, establish spy network, consecrate holy site, fortify position, write treatise, train apprentice. Gated by Domain Capability tier, ambition alignment, wealth, and location suitability. Multi-tick duration (3-15 ticks). Sphere coloring of initiative prose. Built structures appear as sublocations on hex map and become action/encounter targets.
+
+**Creates:** `phaseAgentInitiative` orchestrator phase, initiative evaluation/scoring, sublocation creation via GraphOps, initiative encounter templates, HexMapV2 signifiers for built structures.
+**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion B
+**Depends on:** TB-096 (Deep Social Scenes — initiative-related negotiation encounters)
+
+---
+
+## 🎨 TB-098 · Social Expansion C: Faction Agency (2026-03-31)
+
+**Milestone: v1.2 Social Systems Expansion — Phase C (do fourth)**
+
+Factions become autonomous actors that proactively create quests, build infrastructure, form alliances, and organize events. 10 faction action types: commission quest, build guild hall, establish chapter, declare rivalry, propose alliance, sponsor agent, excommunicate, hold conclave, issue bounty, territorial claim. Faction decision-making personality derived from faction type + current leader's axiological values. Faction wealth/treasury system. Leader personality biases faction actions (cautious merchant guild → defensive; reckless → aggressive expansion).
+
+**Creates:** Expanded `phaseFactionAmbitions`, faction action evaluation, quest commissioning pipeline, guild hall/chapter sublocations, `rivals`/`allied_with`/`sponsors`/`claims` edge types, faction treasury.
+**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion C
+**Depends on:** TB-097 (Agent Initiatives — physical construction), TB-096 (Deep Social Scenes — conclaves, alliance negotiations)
+
+---
+
+## 🎨 TB-099 · Social Expansion E: Information Economy (2026-03-31)
+
+**Milestone: v1.2 Social Systems Expansion — Phase E (do fifth)**
+
+Information (rumors, secrets, favors) as game resources flowing through social encounters. Rumors heard at taverns spread via gossip, create temporary encounter awareness, can be true/false/partial, decay over 10-20 ticks. Secrets as leverage enabling extortion encounters and modifying social scene difficulty via `knows_secret_of` edges. Favors as `owes_favor` edges with magnitude — callable during social scenes to reduce difficulty, unpaid favors create tension. Information flow chains: rumor → party formation → expedition → discovery → deal → sponsorship → political power.
+
+**Creates:** `knows_rumor`, `knows_secret_of`, `owes_favor` edge types, rumor propagation mechanic, secret discovery/reveal system, favor tracking, leverage modifier integration into social scenes.
+**Design doc:** `Docs/plans/2026-03-31-social-systems-expansion-design.md` → Expansion E
+**Depends on:** TB-096 (Deep Social Scenes — leverage mechanic), TB-095 (Tavern & Party System — information exchange venues)
+
+---
+
+## 📋 TB-094 · Faction Encounter Prose Enrichment (2026-03-31)
+
+Replace functional placeholder prose in 10 faction encounter content files (~150 templates) with flavorful, faction-voiced narrative. Each faction should have distinct voice: Thieves Guild (streetwise, sardonic), Holy Order (solemn, righteous), Arcane Circle (scholarly, precise), etc. Cover all step narratives, success/failure outcomes, join/promotion ceremonies, and social encounters. Use `cw-prose-writing` skill for consistency.
+
+**Depends on:** Classical Faction Catalog (done), Encounter Templates (done)
 
 ---
 

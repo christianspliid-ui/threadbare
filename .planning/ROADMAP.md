@@ -126,6 +126,15 @@ Plans:
 
 ### Future Work
 
+**v1.2: Social Systems Expansion** — 5 interlocking expansions transforming social interaction from transactional exchanges into rich, world-shaping narrative scenes. Agents proactively create structures, organizations, and events. Factions act as autonomous entities. Taverns as social hubs with party formation. Information economy (rumors, secrets, favors). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`.
+
+Implementation sequence (each depends on the previous):
+1. **TB-095 · Tavern & Party System** — Tavern sublocations, party group nodes, shared movement, tavern-exclusive encounters
+2. **TB-096 · Deep Social Scenes** — 30-40 multi-step social encounter templates, leverage mechanic, personality-driven responses, sphere-colored prose
+3. **TB-097 · Agent Initiatives** — `phaseAgentInitiative`, 13+ initiative types (build, found, sponsor, recruit, consecrate...), sublocation creation
+4. **TB-098 · Faction Agency** — Factions as autonomous actors: quest commissioning, guild halls, alliances, conclaves, bounties, territorial claims
+5. **TB-099 · Information Economy** — Rumors, secrets, favors as game resources flowing through social encounters
+
 **M3: Dynamic Economy** — encounter→economy feedback, economic context→encounter scoring, wealth spending crossovers, trade route lifecycle, unrest, guild activation, Gold+Stone CRUD actions, resource consumption & scarcity.
 
 **Cross-cutting concerns:** Doom with teeth, rival activation, onboarding, culture seeding, NPC workforce, chain reactions.

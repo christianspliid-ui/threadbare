@@ -254,10 +254,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     runtime,
   });
 
-  // ── Composite hex click: select only (no navigation — use "Go to Hex Chronicle" for that) ──
+  // ── Composite hex click: move avatar if moveMode is active, otherwise select hex ──
+  // moveMode is activated by handleAvatarMoveClick; once a destination is picked (or Escape pressed)
+  // it resets to false. Normal clicks just select the hex — no navigation.
   const handleHexClickFull = useCallback((coord: import('../../types').HexCoord) => {
-    handleHexSelect(coord);
-  }, [handleHexSelect]);
+    if (moveMode) {
+      handleHexClickMove(coord); // moves avatar and clears moveMode
+    } else {
+      handleHexSelect(coord);    // select hex → detail panel + action cards
+    }
+  }, [moveMode, handleHexClickMove, handleHexSelect]);
 
   // ── Anomaly discovery event → reveal flash trigger ──
   // Watch recentEvents for 'anomaly_discovered' and trigger the hex map reveal animation.
@@ -1492,7 +1498,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                       coord={selectedHexCoord}
                       tile={tiles.find(t => t.coord.col === selectedHexCoord.col && t.coord.row === selectedHexCoord.row) ?? null}
                       onClose={handleHexDetailClose}
-                      onGoToChronicle={() => { /* hex chronicle not yet implemented */ }}
+                      onGoToChronicle={(coord) => { handleHexClick(coord); handleHexDetailClose(); }}
                       graph={gameState.graph}
                     />
                   )}

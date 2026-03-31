@@ -72,7 +72,12 @@
       "Bash(echo \"tick 20:*)",
       "Bash(echo \"tick 50:*)",
       "Bash(grep -rn \"parentLocationId\" /c/Users/chris/Dev/Projects/TheFantasyWorldSimulator/src/engine/*.ts)",
-      "Bash(echo \"tick 30:*)"
+      "Bash(echo \"tick 30:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:stitch.withgoogle.com)",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_evaluate",
+      "mcp__playwright__browser_run_code"
     ]
   }
 }

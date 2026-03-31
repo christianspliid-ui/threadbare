@@ -227,17 +227,20 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 Context for specific problem types lives in on-demand skills. **Always load `state-of-game-design` first** — it provides the foundational cosmology, action system, and architectural context that all other skills depend on.
 
+**For any prose, narrative, or content work** — always load `prose-resolver`. This covers the full prose pipeline: graph-walking resolvers, prose-layer-content tables, vignettes, encounter templates, faction encounter packages, enrichment placeholders, backstory system, spell flavor text, and the Threadbare writing aesthetic.
+
 | Domain | Skill | When to load |
 |--------|-------|-------------|
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
+| **Prose & content authoring** | **`prose-resolver`** | **Any prose, narrative, or content work.** New/existing resolvers, `prose-layer-content.ts` tables, encounter templates (all 10 faction packages + main), vignette prose, enrichment placeholders `{name}/{artifact}/{ally}`, backstory strata, spell `flavorText`/`narrativeTemplate`, biography categories, Threadbare tone. Also covers `narrative.ts`, `culturalProse.ts`, `vignetteProse.ts`, `proseEnrichment.ts`. |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
 | Hex map renderer | `hexmap-developer` | Writing any code in `src/components/HexMapV2/` or hex-related engine code. Architecture, coordinates, scene layers, zoom, coastline, stencil, signifiers, testing, debugging. Comprehensive developer onboarding guide. |
 | Hex map decisions | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns from Phases 1-8. Lighter than `hexmap-developer`. |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
-| Creative prose & content | `cw-*` (platform) | `cw-brainstorming` for ideas, `cw-prose-writing` for drafts, `cw-official-docs` for wiki, `cw-story-critique` for review |
+| Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* `prose-resolver` only for pure narrative fiction unrelated to the game engine. |
 | Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |

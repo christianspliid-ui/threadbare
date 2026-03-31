@@ -36,12 +36,12 @@ const SIZE_CONFIG = {
     badgePad: 'px-1 py-0.5',
   },
   focused: {
-    widthPx: 280,            // 280px wide × 392px tall (5:7)
+    widthPx: 320,            // 320px wide × 448px tall (5:7)
     glyphSize: '2rem',       // 32px
     nameSize: 'var(--text-base)',
-    descSize: 'var(--text-sm)',
+    descSize: '0.75rem',     // 12px — fits more text in the card
     descClamp: '',            // no clamp
-    costSize: 'var(--text-sm)',
+    costSize: '0.75rem',     // 12px
     padding: 'px-5 py-4',
     badgePos: 'top-3 right-3',
     badgePad: 'px-2 py-1',
@@ -310,7 +310,7 @@ export const ActionCard = React.memo(function ActionCard({
           <h3
             style={{
               fontFamily: 'var(--font-display)',
-              fontSize: '1.125rem',
+              fontSize: '1rem',
               fontWeight: 600,
               color: 'var(--text-primary)',
               lineHeight: 1.2,
@@ -319,7 +319,7 @@ export const ActionCard = React.memo(function ActionCard({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: '180px',
+              maxWidth: '220px',
             }}
           >
             {displayName}
@@ -348,7 +348,7 @@ export const ActionCard = React.memo(function ActionCard({
         <div
           aria-hidden="true"
           style={{
-            height: '112px',
+            height: '96px',
             background: `linear-gradient(145deg, ${sphereColor ?? '#333'}20 0%, #111114 100%)`,
             border: `1px solid ${sphereColor ?? '#333'}30`,
             borderRadius: '4px',
@@ -378,7 +378,7 @@ export const ActionCard = React.memo(function ActionCard({
           <div
             style={{
               fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
-              fontSize: '0.875rem',
+              fontSize: '0.75rem',
               fontWeight: 400,
               color: 'var(--text-tertiary)',
               letterSpacing: '0.08em',
@@ -397,10 +397,10 @@ export const ActionCard = React.memo(function ActionCard({
           <div
             style={{
               fontFamily: 'var(--font-body, "Alegreya Sans", sans-serif)',
-              fontSize: 'var(--text-sm, 0.875rem)',
+              fontSize: '0.75rem',
               fontWeight: 400,
               color: 'var(--text-secondary)',
-              lineHeight: 1.5,
+              lineHeight: 1.4,
               marginBottom: '6px',
               overflow: 'hidden',
               flexShrink: 1,

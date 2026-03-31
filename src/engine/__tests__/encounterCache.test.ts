@@ -10,6 +10,7 @@ import {
 } from '../encounterCache';
 import { getEncountersByLocationType, ENCOUNTER_TEMPLATES } from '../../data/encounter-content';
 import type { EncounterTemplate, EncounterStep } from '../../types/encounter';
+import { DIFFICULTY_TIER_MULTIPLIERS } from '../../data/agent-behavior-constants';
 
 // ─── Helpers ────────────────────────────────────────────────────
 
@@ -332,8 +333,8 @@ describe('EncounterCacheEntry field correctness', () => {
       const tmpl = templateMap.get(entry.templateId)!;
       expect(tmpl).toBeDefined();
       expect(entry.stepCount).toBe(tmpl.steps.length);
-      // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early' with 0.8 multiplier
-      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * 0.8)));
+      // C.1: Difficulty tier scaling — at tick 0 (default), tier is 'early'
+      expect(entry.stepDifficulties).toEqual(tmpl.steps.map(s => Math.round(s.difficulty * DIFFICULTY_TIER_MULTIPLIERS.early)));
       expect(entry.stepReaches).toEqual(tmpl.steps.map(s => s.reach));
     }
   });

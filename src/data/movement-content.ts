@@ -72,7 +72,7 @@ export const TERRAIN_TAXES: Record<TerrainType, number> = {
   tropical_ocean: Infinity,
   reef: Infinity,
   lake: Infinity,
-  river: Infinity,
+  river: 1,
 };
 
 /**

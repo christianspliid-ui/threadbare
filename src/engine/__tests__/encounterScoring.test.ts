@@ -17,6 +17,7 @@ import {
   MINIMUM_DESIRE,
   IDLE_SCORE_THRESHOLD,
   AMBITION_REACH_BOOST,
+  STEP_PROBABILITY_OFFSET,
   FAMILIARITY_DECAY_PER_ATTEMPT,
   FAMILIARITY_MAX_PENALTY,
   EXPLORATION_NOVELTY_BONUS,
@@ -173,10 +174,10 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns ~0.6 when capability matches difficulty/100', () => {
-    // capability=0.5, difficulty=50 → 0.5 - 0.5 + 0.6 = 0.6
+  it('returns STEP_PROBABILITY_OFFSET when capability matches difficulty/100', () => {
+    // capability=0.5, difficulty=50 → 0.5 - 0.5 + STEP_PROBABILITY_OFFSET
     const p = estimateStepProbability(0.5, 50);
-    expect(p).toBeCloseTo(0.6, 5);
+    expect(p).toBeCloseTo(STEP_PROBABILITY_OFFSET, 5);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
@@ -843,7 +844,7 @@ describe('scoring integration (B.3/D.1)', () => {
     const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph,10);
     const candidate = result.topCandidates[0];
     expect(candidate.familiarityPenalty).toBeGreaterThan(0);
-    expect(candidate.familiarityPenalty).toBeCloseTo(5 * FAMILIARITY_DECAY_PER_ATTEMPT, 5);
+    expect(candidate.familiarityPenalty).toBeCloseTo(Math.min(5 * FAMILIARITY_DECAY_PER_ATTEMPT, FAMILIARITY_MAX_PENALTY), 5);
   });
 
   it('exploration bonus increases scores for unvisited locations', () => {

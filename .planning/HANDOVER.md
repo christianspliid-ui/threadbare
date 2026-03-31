@@ -21,9 +21,4 @@
 
 ## Completed
 
-- ✅ **TB-078** — AscendantSheet QA Fixes. Verified complete 2026-03-30.
-- ✅ **TB-077 Layer 1 (all 4 sub-phases)** — Event nodes, graph queries, prose resolvers, debug visibility. 14 tests. Complete 2026-03-30.
-- ✅ **TB-073** — Conflict & Destruction. Shipped as Phase 12 (7 plans, 102 tests). Complete 2026-03-29.
-- ✅ **TB-074** — Encounter Tuning Sessions 1-4. All 4 sessions complete. Scoring overhaul, born-later spawn, difficulty escalation, encounter chains. Complete 2026-03-29.
-
-> Older entries archived to `HANDOVER_HISTORY.md` on 2026-03-30.
+_No completed entries — all archived to `HANDOVER_HISTORY.md` on 2026-03-31._
