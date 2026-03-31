@@ -2,8 +2,8 @@
  * labelCollision.ts — AABB collision detection for HTML label overlay.
  *
  * Implements screen-space axis-aligned bounding box (AABB) sweep to determine
- * which labels to show when they would overlap. Higher-priority labels (kingdom)
- * win over lower-priority labels (barony, geographic, river).
+ * which labels to show when they would overlap. Higher-priority labels (domain)
+ * win over lower-priority labels (province, geographic, river).
  *
  * NFP #1 Tunability: Font size estimates and priority order are named constants.
  * NFP #4 Fail-soft: Returns empty array on empty input, never throws.
@@ -13,7 +13,7 @@
 
 export interface ScreenLabel {
   id: string;
-  tier: 'kingdom' | 'barony' | 'geographic' | 'river';
+  tier: 'domain' | 'province' | 'geographic' | 'river';
   text: string;
   screenX: number;
   screenY: number;
@@ -36,8 +36,8 @@ export interface ScreenBBox {
  * Should match the actual rendered sizes in RegionLabelOverlay.tsx.
  */
 const TIER_FONT_SIZE: Record<ScreenLabel['tier'], number> = {
-  kingdom: 20,
-  barony: 14,
+  domain: 20,
+  province: 14,
   geographic: 12,
   river: 12,
 };
@@ -55,11 +55,11 @@ const BBOX_PADDING_PX = 8;
 
 /**
  * Collision priority: lower number = higher priority = placed first.
- * kingdom wins over barony wins over geographic wins over river.
+ * domain wins over province wins over geographic wins over river.
  */
 const TIER_PRIORITY: Record<ScreenLabel['tier'], number> = {
-  kingdom: 0,
-  barony: 1,
+  domain: 0,
+  province: 1,
   geographic: 2,
   river: 3,
 };
@@ -122,7 +122,7 @@ function intersects(a: ScreenBBox, b: ScreenBBox): boolean {
 export function removeOverlaps(labels: ScreenLabel[], prePlaced: ScreenBBox[] = []): ScreenLabel[] {
   if (labels.length === 0) return [];
 
-  // Sort by priority ascending (kingdom=0 placed first)
+  // Sort by priority ascending (domain=0 placed first)
   const sorted = [...labels].sort(
     (a, b) => TIER_PRIORITY[a.tier] - TIER_PRIORITY[b.tier],
   );

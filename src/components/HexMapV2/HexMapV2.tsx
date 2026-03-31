@@ -63,7 +63,7 @@ import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
 import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
 import type { FollowModeState } from './camera/FollowMode';
-import { screenToHex, pickAgentAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
+import { screenToHex, worldToScreen, pickAgentAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
@@ -357,8 +357,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const riverGroupRef      = useRef<THREE.Group | null>(null);
     const gridLinesRef       = useRef<THREE.Mesh | null>(null);
     const elevTicksRef       = useRef<THREE.Mesh | null>(null);
-    const borderKingdomRef   = useRef<THREE.Mesh | null>(null);
-    const borderBaronyRef    = useRef<THREE.Mesh | null>(null);
+    const borderDomainRef   = useRef<THREE.Mesh | null>(null);
+    const borderProvinceRef    = useRef<THREE.Mesh | null>(null);
     const geoBorderRef       = useRef<THREE.LineSegments | null>(null);
     const coastlineRef       = useRef<THREE.Group | null>(null);
 
@@ -539,24 +539,24 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
         geoBorderRef.current = geoBorderMesh;
 
-        // Build political border polylines — red quad-strip borders for kingdoms and baronies (Plan 04-02)
+        // Build political border polylines — red quad-strip borders for domains and provinces
         // Renders at RENDER_ORDER.BORDERS, above geographic borders.
         // Geographic-only differences produce no geometry (REGN-06).
-        let borderKingdomMesh: THREE.Mesh | null = null;
-        let borderBaronyMesh: THREE.Mesh | null = null;
+        let borderDomainMesh: THREE.Mesh | null = null;
+        let borderProvinceMesh: THREE.Mesh | null = null;
         let capitalMarkers: THREE.Group | null = null;
-        if (regionData && (regionData.baronies.length > 0 || regionData.hexBaronyId.size > 0)) {
+        if (regionData && (regionData.provinces.length > 0 || regionData.hexProvinceId.size > 0)) {
           const borders = createBorderMesh(regionData, tiles, cols);
-          borderKingdomMesh = borders.kingdomMesh;
-          borderBaronyMesh = borders.baronyMesh;
-          scene.add(borderKingdomMesh);
-          scene.add(borderBaronyMesh);
+          borderDomainMesh = borders.domainMesh;
+          borderProvinceMesh = borders.provinceMesh;
+          scene.add(borderDomainMesh);
+          scene.add(borderProvinceMesh);
 
           capitalMarkers = createCapitalMarkers(regionData);
           scene.add(capitalMarkers);
         }
-        borderKingdomRef.current = borderKingdomMesh;
-        borderBaronyRef.current  = borderBaronyMesh;
+        borderDomainRef.current = borderDomainMesh;
+        borderProvinceRef.current = borderProvinceMesh;
 
         // Build road network — solid major roads + dashed trails (Plan 07-02)
         // Renders at RENDER_ORDER.ROADS, initially hidden (zoom matrix controls visibility)
@@ -665,7 +665,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         // Generate HTML region labels from regionData (Plan 04-03)
         // Labels are generated client-side from regionData — worldgen produces the data,
         // RegionLabelOverlay handles the rendering.
-        if (regionData && (regionData.kingdoms.length > 0 || regionData.baronies.length > 0)) {
+        if (regionData && (regionData.domains.length > 0 || regionData.provinces.length > 0)) {
           const allLabels = [
             ...generateRegionLabels(regionData),
             ...generateRiverLabels(riverPathsRef.current, seed),
@@ -835,8 +835,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           coastlineRef.current = null;
           gridLinesRef.current = null;
           elevTicksRef.current = null;
-          borderKingdomRef.current = null;
-          borderBaronyRef.current = null;
+          borderDomainRef.current   = null;
+          borderProvinceRef.current = null;
           geoBorderRef.current = null;
           // Dispose remaining particle bursts on unmount
           for (const burst of activeBurstsRef.current) {
@@ -897,13 +897,13 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             }
           }
           // Dispose border meshes
-          if (borderKingdomMesh) {
-            borderKingdomMesh.geometry.dispose();
-            (borderKingdomMesh.material as THREE.Material).dispose();
+          if (borderDomainMesh) {
+            borderDomainMesh.geometry.dispose();
+            (borderDomainMesh.material as THREE.Material).dispose();
           }
-          if (borderBaronyMesh) {
-            borderBaronyMesh.geometry.dispose();
-            (borderBaronyMesh.material as THREE.Material).dispose();
+          if (borderProvinceMesh) {
+            borderProvinceMesh.geometry.dispose();
+            (borderProvinceMesh.material as THREE.Material).dispose();
           }
           // Dispose capital markers
           if (capitalMarkers) {
@@ -1010,8 +1010,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         gridLines: gridLinesRef,
         elevTicks: elevTicksRef,
         geoBorder: geoBorderRef,
-        borderKingdom: borderKingdomRef,
-        borderBarony: borderBaronyRef,
+        borderDomain: borderDomainRef,
+        borderProvince: borderProvinceRef,
         coastline: coastlineRef,
       },
       agentSpriteGroup: agentSpriteGroupRef,
@@ -1084,6 +1084,20 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
       // Agent sprites are small — try to pick them before falling back to hex.
       const spriteMap = agentSpriteGroupRef.current?.spriteMap ?? new Map();
+
+      // DEBUG: log click and sprite positions to diagnose agent click detection
+      if (import.meta.env.DEV) {
+        console.log('[AgentClick] click at', e.nativeEvent.offsetX.toFixed(1), e.nativeEvent.offsetY.toFixed(1),
+          '| spriteMap size:', spriteMap.size);
+        for (const [id, entry] of spriteMap) {
+          const sc = worldToScreen(entry.sprite.position, camera, canvas);
+          const dx = e.nativeEvent.offsetX - sc.x;
+          const dy = e.nativeEvent.offsetY - sc.y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          console.log(`  agent ${id}: world(${entry.sprite.position.x.toFixed(1)},${entry.sprite.position.y.toFixed(1)}) → screen(${sc.x.toFixed(1)},${sc.y.toFixed(1)}) dist=${dist.toFixed(1)} visible=${entry.sprite.visible}`);
+        }
+      }
+
       const agentId = pickAgentAtScreen(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas, spriteMap);
       if (agentId) {
         onAgentClick?.(agentId);

@@ -17,159 +17,140 @@ function makeTile(col: number, row: number, terrain: TerrainType = 'grassland'):
 
 /** Build a minimal RegionData for testing */
 function makeRegionData(
-  hexBaronyId: Map<string, number>,
-  hexKingdomId: Map<string, number>,
-  baronies: RegionData['baronies'] = [],
-  kingdoms: RegionData['kingdoms'] = [],
+  hexProvinceId: Map<string, number>,
+  hexDomainId: Map<string, number>,
+  provinces: RegionData['provinces'] = [],
+  domains: RegionData['domains'] = [],
 ): RegionData {
   return {
     geographicRegions: [],
-    baronies,
-    kingdoms,
+    provinces,
+    domains,
     labels: [],
     hexRegionId: new Map(),
-    hexBaronyId,
-    hexKingdomId,
+    hexProvinceId,
+    hexDomainId,
   };
 }
 
 // ─── createBorderMesh Tests ───────────────────────────────────────────────────
 
 describe('createBorderMesh', () => {
-  it('returns an object with kingdomMesh and baronyMesh as THREE.Mesh instances', () => {
+  it('returns an object with domainMesh and provinceMesh as THREE.Mesh instances', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
 
-    const hexBaronyId = new Map<string, number>([
+    const hexProvinceId = new Map<string, number>([
       ['0,0', 0],
       ['1,0', 1],
     ]);
-    const hexKingdomId = new Map<string, number>([
+    const hexDomainId = new Map<string, number>([
       ['0,0', 0],
       ['1,0', 0],
     ]);
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, 4);
 
-    expect(result.kingdomMesh).toBeInstanceOf(THREE.Mesh);
-    expect(result.baronyMesh).toBeInstanceOf(THREE.Mesh);
+    expect(result.domainMesh).toBeInstanceOf(THREE.Mesh);
+    expect(result.provinceMesh).toBeInstanceOf(THREE.Mesh);
   });
 
-  it('produces >0 vertices when two adjacent hexes belong to different baronies', () => {
-    // 3x3 grid: left half barony 0, right half barony 1
+  it('produces >0 vertices when two adjacent hexes belong to different provinces', () => {
     const cols = 3;
     const tiles: HexTile[] = [];
-    const hexBaronyId = new Map<string, number>();
-    const hexKingdomId = new Map<string, number>();
+    const hexProvinceId = new Map<string, number>();
+    const hexDomainId = new Map<string, number>();
 
     for (let r = 0; r < 3; r++) {
       for (let c = 0; c < cols; c++) {
         tiles.push(makeTile(c, r));
-        const baronyId = c < 2 ? 0 : 1;
-        hexBaronyId.set(`${c},${r}`, baronyId);
-        // same kingdom for all (barony border only, no kingdom border)
-        hexKingdomId.set(`${c},${r}`, 0);
+        const provinceId = c < 2 ? 0 : 1;
+        hexProvinceId.set(`${c},${r}`, provinceId);
+        hexDomainId.set(`${c},${r}`, 0); // same domain
       }
     }
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, cols);
 
-    const pos = result.baronyMesh.geometry.getAttribute('position');
+    const pos = result.provinceMesh.geometry.getAttribute('position');
     expect(pos).toBeDefined();
     expect(pos.count).toBeGreaterThan(0);
   });
 
-  it('produces >0 vertices when two adjacent hexes belong to different kingdoms', () => {
-    // 2 hexes, different kingdoms
+  it('produces >0 vertices when two adjacent hexes belong to different domains', () => {
     const cols = 2;
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
-    const hexBaronyId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
-    const hexKingdomId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
+    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
+    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, cols);
 
-    const pos = result.kingdomMesh.geometry.getAttribute('position');
+    const pos = result.domainMesh.geometry.getAttribute('position');
     expect(pos).toBeDefined();
     expect(pos.count).toBeGreaterThan(0);
   });
 
-  it('REGN-06: geographic-only differences produce zero INTERNAL border geometry (no barony/kingdom difference)', () => {
-    // All hexes in same barony AND same kingdom — different geographic region doesn't matter.
-    // Internal edges (between two assigned hexes in the same barony) produce no borders.
-    // Outer boundary edges (where the region meets map edge / unassigned territory) DO produce
-    // geometry — that's the ring around the region, not a geographic-only border.
+  it('REGN-06: geographic-only differences produce zero INTERNAL border geometry (no province/domain difference)', () => {
     const cols = 3;
     const tiles: HexTile[] = [];
-    const hexBaronyId = new Map<string, number>();
-    const hexKingdomId = new Map<string, number>();
+    const hexProvinceId = new Map<string, number>();
+    const hexDomainId = new Map<string, number>();
 
     for (let r = 0; r < 2; r++) {
       for (let c = 0; c < cols; c++) {
         tiles.push(makeTile(c, r));
-        hexBaronyId.set(`${c},${r}`, 0); // all same barony
-        hexKingdomId.set(`${c},${r}`, 0); // all same kingdom
+        hexProvinceId.set(`${c},${r}`, 0); // all same province
+        hexDomainId.set(`${c},${r}`, 0);   // all same domain
       }
     }
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, cols);
 
-    // No barony borders at all (barony borders are for different baronies within same kingdom)
-    const baronyPos = result.baronyMesh.geometry.getAttribute('position');
-    const baronyVertices = baronyPos ? baronyPos.count : 0;
-    expect(baronyVertices).toBe(0);
+    // No province borders (province borders are for different provinces within same domain)
+    const provincePos = result.provinceMesh.geometry.getAttribute('position');
+    const provinceVertices = provincePos ? provincePos.count : 0;
+    expect(provinceVertices).toBe(0);
 
-    // Kingdom border geometry WILL exist — these are the outer ring borders where the single
-    // kingdom meets the edge of the map / unassigned territory. This is correct: the ring
-    // closes around the region's perimeter, not between internal geographic differences.
-    const kingdomPos = result.kingdomMesh.geometry.getAttribute('position');
-    const kingdomVertices = kingdomPos ? kingdomPos.count : 0;
-    expect(kingdomVertices).toBeGreaterThan(0);
+    // Domain border geometry will exist — the outer ring where the domain meets map edge.
+    const domainPos = result.domainMesh.geometry.getAttribute('position');
+    const domainVertices = domainPos ? domainPos.count : 0;
+    expect(domainVertices).toBeGreaterThan(0);
   });
 
-  it('kingdom border geometry is separate from barony border geometry', () => {
-    // Setup: hex 0,0 and 1,0 in different kingdoms; hex 2,0 in same kingdom as 1,0 but different barony
+  it('domain border geometry is separate from province border geometry', () => {
     const cols = 3;
     const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0)];
-    const hexBaronyId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 2]]);
-    const hexKingdomId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 1]]);
+    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 2]]);
+    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 1], ['2,0', 1]]);
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, cols);
 
-    // Both meshes are distinct objects
-    expect(result.kingdomMesh).not.toBe(result.baronyMesh);
-    expect(result.kingdomMesh.geometry).not.toBe(result.baronyMesh.geometry);
+    expect(result.domainMesh).not.toBe(result.provinceMesh);
+    expect(result.domainMesh.geometry).not.toBe(result.provinceMesh.geometry);
   });
 
-  it('uses MeshBasicMaterial with color 0xC83030 on both meshes', () => {
+  it('uses MeshBasicMaterial on both meshes', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0)];
-    const hexBaronyId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
-    const hexKingdomId = new Map<string, number>([['0,0', 0], ['1,0', 0]]);
+    const hexProvinceId = new Map<string, number>([['0,0', 0], ['1,0', 1]]);
+    const hexDomainId = new Map<string, number>([['0,0', 0], ['1,0', 0]]);
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     const result = createBorderMesh(regionData, tiles, 2);
 
-    expect(result.baronyMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
-    expect(result.kingdomMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
-
-    const baronyColor = (result.baronyMesh.material as THREE.MeshBasicMaterial).color.getHex();
-    const kingdomColor = (result.kingdomMesh.material as THREE.MeshBasicMaterial).color.getHex();
-    expect(baronyColor).toBe(0xc83030);
-    expect(kingdomColor).toBe(0xc83030);
+    expect(result.provinceMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
+    expect(result.domainMesh.material).toBeInstanceOf(THREE.MeshBasicMaterial);
   });
 
-  it('hexes with no barony assignment are skipped (fail-soft)', () => {
-    // Some hexes have no barony — should not throw
+  it('hexes with no province assignment are skipped (fail-soft)', () => {
     const tiles = [makeTile(0, 0), makeTile(1, 0), makeTile(2, 0)];
-    const hexBaronyId = new Map<string, number>([['0,0', 0]]); // only first hex assigned
-    const hexKingdomId = new Map<string, number>([['0,0', 0]]);
+    const hexProvinceId = new Map<string, number>([['0,0', 0]]); // only first hex assigned
+    const hexDomainId = new Map<string, number>([['0,0', 0]]);
 
-    const regionData = makeRegionData(hexBaronyId, hexKingdomId);
-
-    // Should not throw — fail-soft
+    const regionData = makeRegionData(hexProvinceId, hexDomainId);
     expect(() => createBorderMesh(regionData, tiles, 3)).not.toThrow();
   });
 });
@@ -183,75 +164,57 @@ describe('createCapitalMarkers', () => {
     expect(result).toBeInstanceOf(THREE.Group);
   });
 
-  it('returns empty group when no baronies exist', () => {
+  it('returns empty group when no provinces exist', () => {
     const regionData = makeRegionData(new Map(), new Map(), [], []);
     const result = createCapitalMarkers(regionData);
     expect(result.children.length).toBe(0);
   });
 
   it('produces Points with position count matching number of capital hexes', () => {
-    const baronies: RegionData['baronies'] = [
+    const provinces: RegionData['provinces'] = [
       {
-        id: 0,
-        cultureId: 'human',
-        capitalHex: { col: 0, row: 0 },
-        geographicRegionIds: [],
-        hexes: [{ col: 0, row: 0 }],
-        centroid: { col: 0, row: 0 },
-        name: 'Barony A',
+        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
+        geographicRegionIds: [], hexes: [{ col: 0, row: 0 }],
+        centroid: { col: 0, row: 0 }, name: 'Province A',
       },
       {
-        id: 1,
-        cultureId: 'elven',
-        capitalHex: { col: 2, row: 0 },
-        geographicRegionIds: [],
-        hexes: [{ col: 2, row: 0 }],
-        centroid: { col: 2, row: 0 },
-        name: 'Barony B',
+        id: 1, cultureId: 'elven', capitalHex: { col: 2, row: 0 },
+        geographicRegionIds: [], hexes: [{ col: 2, row: 0 }],
+        centroid: { col: 2, row: 0 }, name: 'Province B',
       },
     ];
 
-    const kingdoms: RegionData['kingdoms'] = [
+    const domains: RegionData['domains'] = [
       {
-        id: 0,
-        cultureId: 'human',
-        capitalHex: { col: 0, row: 0 },
-        baronyIds: [0],
-        centroid: { col: 0, row: 0 },
-        name: 'Kingdom A',
+        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
+        provinceIds: [0], centroid: { col: 0, row: 0 }, name: 'Domain A',
       },
     ];
 
-    const regionData = makeRegionData(new Map(), new Map(), baronies, kingdoms);
+    const regionData = makeRegionData(new Map(), new Map(), provinces, domains);
     const result = createCapitalMarkers(regionData);
 
-    // Should produce at least one Points child
     const pointChildren = result.children.filter(c => c instanceof THREE.Points);
     expect(pointChildren.length).toBeGreaterThan(0);
 
-    // Total points should equal number of baronies
     let totalPoints = 0;
     for (const child of pointChildren) {
       const pos = (child as THREE.Points).geometry.getAttribute('position');
       if (pos) totalPoints += pos.count;
     }
-    expect(totalPoints).toBe(baronies.length);
+    expect(totalPoints).toBe(provinces.length);
   });
 
   it('uses PointsMaterial with sizeAttenuation: false', () => {
-    const baronies: RegionData['baronies'] = [
+    const provinces: RegionData['provinces'] = [
       {
-        id: 0,
-        cultureId: 'human',
-        capitalHex: { col: 0, row: 0 },
-        geographicRegionIds: [],
-        hexes: [{ col: 0, row: 0 }],
-        centroid: { col: 0, row: 0 },
-        name: 'Barony A',
+        id: 0, cultureId: 'human', capitalHex: { col: 0, row: 0 },
+        geographicRegionIds: [], hexes: [{ col: 0, row: 0 }],
+        centroid: { col: 0, row: 0 }, name: 'Province A',
       },
     ];
 
-    const regionData = makeRegionData(new Map(), new Map(), baronies, []);
+    const regionData = makeRegionData(new Map(), new Map(), provinces, []);
     const result = createCapitalMarkers(regionData);
 
     const pointsChild = result.children.find(c => c instanceof THREE.Points) as THREE.Points | undefined;

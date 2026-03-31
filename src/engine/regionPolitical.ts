@@ -1,46 +1,73 @@
 /**
- * regionPolitical.ts — Political region grouping (barony/kingdom assignment).
+ * regionPolitical.ts — Political region grouping (province/domain assignment).
  *
  * Reads geographic regions (from regionDetection.ts) and province data (from worldgen)
- * to assign each land hex to a barony (province-level) and kingdom (culture-group-level).
+ * to assign each land hex to a province (smallest administrative unit) and a domain
+ * (culture-group-level, groups all provinces of the same culture).
+ *
+ * Political hierarchy: Domain → Province → Hex → Location
  *
  * Algorithm:
- *   1. One province = one barony.
- *      For each province, collect geographic regions whose hexes fall in that province
- *      (by provinceIds lookup). The barony's hexes = union of its geographic regions' hexes.
- *   2. Kingdom grouping: baronies with same non-null cultureId form one kingdom.
- *      Wilderness baronies (cultureId=null) have no kingdom parent.
- *   3. Build hexBaronyId and hexKingdomId lookup maps from assignments.
- *   4. Generate placeholder names from seeded PRNG.
+ *   1. One worldgen province = one ProvinceRegion.
+ *      Province hexes collected from provinceIds flat array.
+ *   2. Domain grouping: provinces with same non-null cultureId form one domain.
+ *      Wilderness provinces (cultureId=null) have no domain parent.
+ *   3. Build hexProvinceId and hexDomainId lookup maps from assignments.
+ *   4. Generate culture-flavoured province names and domain names from seeded PRNG.
  *
  * NFP #1 Tunability: All magic numbers are named constants.
- * NFP #2 Inspectability: hexBaronyId and hexKingdomId maps give O(1) per-hex lookup.
+ * NFP #2 Inspectability: hexProvinceId and hexDomainId maps give O(1) per-hex lookup.
  * NFP #3 Determinism: Uses mulberry32 seeded PRNG for names.
- * NFP #4 Fail-soft: Provinces with no hexes produce empty-hex baronies (still valid).
+ * NFP #4 Fail-soft: Provinces with no hexes produce empty-hex ProvinceRegions (still valid).
  */
 
 import type { HexCoord } from '../types';
-import type { RegionCluster, BaronyRegion, KingdomRegion } from './regionTypes';
+import type { RegionCluster, ProvinceRegion, DomainRegion } from './regionTypes';
 import type { Province } from './worldgen/types';
 import { hexKey, hexKeyFromCoord } from '../lib/hexKey';
 
-// ─── Name generation constants (NFP #1: Tunability) ──────────────────────────
+// ─── Province name vocabulary (NFP #1: Tunability) ───────────────────────────
+//
+// Province proper names are culture-flavoured: a chaos culture's provinces feel
+// different from an order culture's. Each foundation bias has its own adjective
+// and noun pool. Wilderness provinces fall back to the generic pool.
 
-const BARONY_ADJECTIVES = [
-  'Stone', 'East', 'West', 'North', 'South', 'Grey', 'Black', 'Red', 'Green',
-  'Iron', 'High', 'Low', 'Deep', 'Far', 'Old', 'New', 'Wild', 'Great', 'Dark',
-  'Bright', 'Silver', 'Gold', 'Swift', 'Slow', 'Storm', 'Frost', 'Sun', 'Moon',
-];
+interface ProvinceVocab { adjectives: string[]; nouns: string[] }
 
-const BARONY_NOUNS = [
-  'mark', 'march', 'vale', 'ford', 'wick', 'hold', 'keep', 'gate', 'heath',
-  'moor', 'field', 'wood', 'ridge', 'crest', 'peak', 'bay', 'shore', 'haven',
-  'stead', 'bridge', 'cross', 'hall', 'fen', 'glen', 'mere', 'tor', 'burn',
-];
+const PROVINCE_VOCAB_BY_FOUNDATION: Record<string, ProvinceVocab> = {
+  chaos: {
+    adjectives: ['Storm', 'Wild', 'Raging', 'Broken', 'Untamed', 'Fevered', 'Shifting'],
+    nouns:      ['breach', 'run', 'scar', 'surge', 'fray', 'break', 'tumult'],
+  },
+  order: {
+    adjectives: ['Stone', 'Iron', 'High', 'Strong', 'True', 'Warden', 'Steadfast'],
+    nouns:      ['gate', 'keep', 'hold', 'watch', 'ward', 'mark', 'post'],
+  },
+  light: {
+    adjectives: ['Bright', 'Sun', 'Open', 'Clear', 'Dawn', 'Radiant', 'Fair'],
+    nouns:      ['haven', 'vale', 'shore', 'glade', 'reach', 'crossing', 'field'],
+  },
+  darkness: {
+    adjectives: ['Dark', 'Shadow', 'Veiled', 'Deep', 'Grey', 'Hollow', 'Ashen'],
+    nouns:      ['moor', 'fen', 'hollow', 'mere', 'shroud', 'haunt', 'den'],
+  },
+};
 
-const KINGDOM_NOUNS = [
+/** Fallback pool used for wilderness provinces or unknown foundations */
+const PROVINCE_VOCAB_DEFAULT: ProvinceVocab = {
+  adjectives: ['Stone', 'East', 'West', 'North', 'South', 'Grey', 'Black', 'Red', 'Green',
+               'Iron', 'High', 'Low', 'Deep', 'Far', 'Old', 'New', 'Wild', 'Great', 'Dark',
+               'Bright', 'Silver', 'Gold', 'Swift', 'Slow', 'Storm', 'Frost', 'Sun', 'Moon'],
+  nouns:      ['mark', 'march', 'vale', 'ford', 'wick', 'hold', 'keep', 'gate', 'heath',
+               'moor', 'field', 'wood', 'ridge', 'crest', 'peak', 'bay', 'shore', 'haven',
+               'stead', 'bridge', 'cross', 'hall', 'fen', 'glen', 'mere', 'tor', 'burn'],
+};
+
+// ─── Domain name vocabulary ───────────────────────────────────────────────────
+
+const DOMAIN_NOUNS = [
   'realm', 'dominion', 'throne', 'crown', 'lands', 'hold', 'empire', 'domain',
-  'sovereignty', 'principality', 'duchy', 'march',
+  'sovereignty', 'principality', 'duchy', 'march', 'kingdom',
 ];
 
 // ─── Seeded PRNG (mulberry32) ─────────────────────────────────────────────────
@@ -64,46 +91,49 @@ function pickRandom<T>(arr: T[], rng: () => number): T {
   return arr[Math.floor(rng() * arr.length)];
 }
 
-function generateBaronyName(id: number, seed: number): string {
+/**
+ * Generate a province proper name, flavoured by the controlling culture's foundation bias.
+ * Format: "{Adjective}{noun}" (no space — e.g. "Stormbreak", "Brightford").
+ */
+function generateProvinceName(id: number, seed: number, foundationBias?: string): string {
   const rng = mulberry32(seed + id * 1777);
-  return pickRandom(BARONY_ADJECTIVES, rng) + pickRandom(BARONY_NOUNS, rng);
+  const vocab = (foundationBias && PROVINCE_VOCAB_BY_FOUNDATION[foundationBias])
+    ?? PROVINCE_VOCAB_DEFAULT;
+  return pickRandom(vocab.adjectives, rng) + pickRandom(vocab.nouns, rng);
 }
 
 /**
- * Derive a short kingdom-label form from a full culture name.
- * Strips leading articles/phrases ("The ", "Children of the ", "Keepers of the ")
- * and truncates at " of the " for names assembled from the long pattern.
+ * Derive a short domain-label form from a full culture name.
+ * Strips leading articles/phrases and truncates at " of the ".
  * Examples:
  *   "The Wild Storm of the Deepwood"      → "Wild Storm"
  *   "Children of the Shadow-Kept Mires"   → "Shadow-Kept Mires"
  *   "The Blade Heights"                    → "Blade Heights"
  *   "Stone-Set Iron"                       → "Stone-Set Iron"
  */
-function toKingdomShortName(cultureName: string): string {
+function toDomainShortName(cultureName: string): string {
   let s = cultureName;
-  // Strip leading articles/phrases (order matters — longer first)
   for (const prefix of ['Children of the ', 'Keepers of the ', 'The ']) {
     if (s.startsWith(prefix)) { s = s.slice(prefix.length); break; }
   }
-  // Truncate at " of the " (pattern: "{foundation} {sphere} of the {biome}")
   const ofTheIdx = s.indexOf(' of the ');
   if (ofTheIdx > 0) s = s.slice(0, ofTheIdx);
   return s;
 }
 
-function generateKingdomName(
+function generateDomainName(
   cultureId: string,
   seed: number,
   idx: number,
   cultureName?: string,
 ): string {
   const rng = mulberry32(seed + idx * 3331 + cultureId.charCodeAt(0) * 17);
-  const noun = pickRandom(KINGDOM_NOUNS, rng);
+  const noun = pickRandom(DOMAIN_NOUNS, rng);
   if (cultureName) {
-    const short = toKingdomShortName(cultureName);
+    const short = toDomainShortName(cultureName);
     return `${noun} of ${short}`;
   }
-  // Fallback: old prefix behaviour (only reached when no cultureNameMap provided)
+  // Fallback when no cultureNameMap provided
   const prefix = cultureId.length > 4
     ? cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1, 4)
     : cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1);
@@ -113,15 +143,17 @@ function generateKingdomName(
 // ─── Main export ─────────────────────────────────────────────────────────────
 
 /**
- * Assign land hexes to baronies and kingdoms.
+ * Assign land hexes to provinces and domains.
  *
- * @param geographicRegions - Geographic region clusters from detectRegionsBorderCost
- * @param hexRegionId - "col,row" -> geographic region id map (from Plan 01)
- * @param provinces - Province array from WorldGenContext
- * @param provinceCapitalHexes - Capital hex for each province (indexed same as provinces)
- * @param provinceIds - Flat Int16Array: provinceIds[row * cols + col] = province id, -1 = unassigned
- * @param cols - Grid width (for provinceIds index calculation)
- * @param seed - World seed for deterministic name generation
+ * @param geographicRegions     - Geographic region clusters from detectRegionsBorderCost
+ * @param _hexRegionId          - "col,row" -> geographic region id map (unused; reserved)
+ * @param provinces             - Province array from WorldGenContext
+ * @param provinceCapitalHexes  - Capital hex per province (same index as provinces)
+ * @param provinceIds           - Flat Int16Array: provinceIds[row*cols+col] = id, -1=unassigned
+ * @param cols                  - Grid width (for provinceIds index calculation)
+ * @param seed                  - World seed for deterministic name generation
+ * @param cultureNameMap        - Optional cultureId → full culture name (for domain naming)
+ * @param cultureFoundationMap  - Optional cultureId → foundation bias (for province naming)
  */
 export function assignPoliticalRegions(
   geographicRegions: RegionCluster[],
@@ -132,15 +164,15 @@ export function assignPoliticalRegions(
   cols: number,
   seed: number,
   cultureNameMap?: Map<string, string>,
+  cultureFoundationMap?: Map<string, string>,
 ): {
-  baronies: BaronyRegion[];
-  kingdoms: KingdomRegion[];
-  hexBaronyId: Map<string, number>;
-  hexKingdomId: Map<string, number>;
+  provinces: ProvinceRegion[];
+  domains: DomainRegion[];
+  hexProvinceId: Map<string, number>;
+  hexDomainId: Map<string, number>;
 } {
   // ── Step 1: Build province hex sets from provinceIds array ──────────────────
 
-  // Map from province id -> set of hex keys owned by that province
   const provinceHexSets = new Map<number, Set<string>>();
   for (let i = 0; i < provinces.length; i++) {
     provinceHexSets.set(i, new Set());
@@ -155,118 +187,114 @@ export function assignPoliticalRegions(
     provinceHexSets.get(provinceId)?.add(hexKey(col, row));
   }
 
-  // ── Step 2: Create one barony per province ──────────────────────────────────
+  // ── Step 2: Create one ProvinceRegion per worldgen province ────────────────
 
-  const hexBaronyId = new Map<string, number>();
-  const baronies: BaronyRegion[] = [];
+  const hexProvinceId = new Map<string, number>();
+  const provinceRegions: ProvinceRegion[] = [];
 
   for (let pIdx = 0; pIdx < provinces.length; pIdx++) {
     const province = provinces[pIdx];
     const provinceHexSet = provinceHexSets.get(pIdx) ?? new Set<string>();
     const capitalHex = provinceCapitalHexes[pIdx] ?? province.capitalHex;
 
-    // Collect geographic regions whose hexes are majority in this province
     const geographicRegionIds: number[] = [];
-    const baronyHexes: HexCoord[] = [];
+    const provinceHexes: HexCoord[] = [];
 
-    // Assign all hexes in this province's hex set to the barony
-    for (const hexKey of provinceHexSet) {
-      const commaIdx = hexKey.indexOf(',');
-      const col = parseInt(hexKey.slice(0, commaIdx), 10);
-      const row = parseInt(hexKey.slice(commaIdx + 1), 10);
-      baronyHexes.push({ col, row });
-      hexBaronyId.set(hexKey, pIdx);
+    for (const hk of provinceHexSet) {
+      const commaIdx = hk.indexOf(',');
+      const col = parseInt(hk.slice(0, commaIdx), 10);
+      const row = parseInt(hk.slice(commaIdx + 1), 10);
+      provinceHexes.push({ col, row });
+      hexProvinceId.set(hk, pIdx);
     }
 
-    // Find geographic regions that are in this province
     for (const cluster of geographicRegions) {
       let inProvince = 0;
       for (const hex of cluster.hexes) {
         if (provinceHexSet.has(hexKeyFromCoord(hex))) inProvince++;
       }
-      // Majority of the cluster's hexes in this province
       if (inProvince > 0 && inProvince >= cluster.hexes.length / 2) {
         geographicRegionIds.push(cluster.id);
       }
     }
 
-    // Compute centroid — mean of hex coords snapped to nearest in-barony hex
     let centroid: { col: number; row: number };
-    if (baronyHexes.length === 0) {
+    if (provinceHexes.length === 0) {
       centroid = { col: capitalHex.col, row: capitalHex.row };
     } else {
-      const sumCol = baronyHexes.reduce((s, h) => s + h.col, 0);
-      const sumRow = baronyHexes.reduce((s, h) => s + h.row, 0);
-      const rawCol = sumCol / baronyHexes.length;
-      const rawRow = sumRow / baronyHexes.length;
-
-      let bestHex = baronyHexes[0];
+      const sumCol = provinceHexes.reduce((s, h) => s + h.col, 0);
+      const sumRow = provinceHexes.reduce((s, h) => s + h.row, 0);
+      const rawCol = sumCol / provinceHexes.length;
+      const rawRow = sumRow / provinceHexes.length;
+      let bestHex = provinceHexes[0];
       let bestDist = Infinity;
-      for (const hex of baronyHexes) {
+      for (const hex of provinceHexes) {
         const d = (hex.col - rawCol) ** 2 + (hex.row - rawRow) ** 2;
         if (d < bestDist) { bestDist = d; bestHex = hex; }
       }
       centroid = { col: bestHex.col, row: bestHex.row };
     }
 
-    baronies.push({
+    const foundationBias = province.cultureId
+      ? cultureFoundationMap?.get(province.cultureId)
+      : undefined;
+
+    provinceRegions.push({
       id: pIdx,
       cultureId: province.cultureId,
       capitalHex,
       geographicRegionIds,
-      hexes: baronyHexes,
+      hexes: provinceHexes,
       centroid,
-      name: generateBaronyName(pIdx, seed),
+      name: generateProvinceName(pIdx, seed, foundationBias),
     });
   }
 
-  // ── Step 3: Group baronies by cultureId into kingdoms ──────────────────────
+  // ── Step 3: Group provinces by cultureId into domains ─────────────────────
 
-  const hexKingdomId = new Map<string, number>();
-  const kingdoms: KingdomRegion[] = [];
+  const hexDomainId = new Map<string, number>();
+  const domainRegions: DomainRegion[] = [];
 
-  // Group: cultureId -> barony ids
   const cultureGroups = new Map<string, number[]>();
-  for (const barony of baronies) {
-    if (barony.cultureId === null) continue; // wilderness — no kingdom
-    if (!cultureGroups.has(barony.cultureId)) {
-      cultureGroups.set(barony.cultureId, []);
-    }
-    cultureGroups.get(barony.cultureId)!.push(barony.id);
+  for (const pr of provinceRegions) {
+    if (pr.cultureId === null) continue;
+    if (!cultureGroups.has(pr.cultureId)) cultureGroups.set(pr.cultureId, []);
+    cultureGroups.get(pr.cultureId)!.push(pr.id);
   }
 
-  let kingdomIdx = 0;
-  for (const [cultureId, baronyIds] of cultureGroups) {
-    // Compute kingdom capital: use barony with the lowest barony id (first province, roughly the "capital")
-    const sortedBaronyIds = [...baronyIds].sort((a, b) => a - b);
-    const capitalBarony = baronies.find(b => b.id === sortedBaronyIds[0])!;
-    const capitalHex = capitalBarony.capitalHex;
+  let domainIdx = 0;
+  for (const [cultureId, provIds] of cultureGroups) {
+    const sortedProvIds = [...provIds].sort((a, b) => a - b);
+    const capitalProvince = provinceRegions.find(p => p.id === sortedProvIds[0])!;
 
-    // Compute kingdom centroid: mean of barony centroids
-    const centroidCols = sortedBaronyIds.map(bid => baronies.find(b => b.id === bid)!.centroid.col);
-    const centroidRows = sortedBaronyIds.map(bid => baronies.find(b => b.id === bid)!.centroid.row);
+    const centroidCols = sortedProvIds.map(pid => provinceRegions.find(p => p.id === pid)!.centroid.col);
+    const centroidRows = sortedProvIds.map(pid => provinceRegions.find(p => p.id === pid)!.centroid.row);
     const meanCol = Math.round(centroidCols.reduce((s, c) => s + c, 0) / centroidCols.length);
     const meanRow = Math.round(centroidRows.reduce((s, r) => s + r, 0) / centroidRows.length);
 
-    const kingdomId = kingdomIdx++;
+    const domainId = domainIdx++;
 
-    // Build hexKingdomId for all hexes in all baronies of this kingdom
-    for (const baronyId of baronyIds) {
-      const barony = baronies.find(b => b.id === baronyId)!;
-      for (const hex of barony.hexes) {
-        hexKingdomId.set(hexKeyFromCoord(hex), kingdomId);
+    for (const provId of provIds) {
+      const pr = provinceRegions.find(p => p.id === provId)!;
+      for (const hex of pr.hexes) {
+        hexDomainId.set(hexKeyFromCoord(hex), domainId);
       }
     }
 
-    kingdoms.push({
-      id: kingdomId,
+    domainRegions.push({
+      id: domainId,
       cultureId,
-      capitalHex,
-      baronyIds: sortedBaronyIds,
+      capitalHex: capitalProvince.capitalHex,
+      provinceIds: sortedProvIds,
       centroid: { col: meanCol, row: meanRow },
-      name: generateKingdomName(cultureId, seed, kingdomId, cultureNameMap?.get(cultureId)),
+      name: generateDomainName(cultureId, seed, domainId, cultureNameMap?.get(cultureId)),
     });
   }
 
-  return { baronies, kingdoms, hexBaronyId, hexKingdomId };
+  return {
+    provinces: provinceRegions,
+    domains: domainRegions,
+    hexProvinceId,
+    hexDomainId,
+  };
 }

@@ -63,7 +63,7 @@ const LABEL_BASE: CSSProperties = {
 
 const palette = getActivePalette();
 
-const KINGDOM_STYLE: CSSProperties = {
+const DOMAIN_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
   fontSize: '20px',
@@ -75,7 +75,7 @@ const KINGDOM_STYLE: CSSProperties = {
   lineHeight: '1.1',
 };
 
-const BARONY_STYLE: CSSProperties = {
+const PROVINCE_STYLE: CSSProperties = {
   ...LABEL_BASE,
   fontFamily: 'var(--font-display)',
   fontSize: '14px',
@@ -108,8 +108,8 @@ const RIVER_STYLE: CSSProperties = {
 };
 
 const TIER_STYLES: Record<RegionLabel['tier'], CSSProperties> = {
-  kingdom: KINGDOM_STYLE,
-  barony: BARONY_STYLE,
+  domain: DOMAIN_STYLE,
+  province: PROVINCE_STYLE,
   geographic: GEOGRAPHIC_STYLE,
   river: RIVER_STYLE,
 };
@@ -124,8 +124,8 @@ const LABEL_CHAR_WIDTH = 0.6;
 
 /** Base font sizes per tier (px) — used as minimum; scaled up to fill province width */
 const TIER_BASE_FONT_SIZE: Record<RegionLabel['tier'], number> = {
-  kingdom: 20,
-  barony: 14,
+  domain: 20,
+  province: 14,
   geographic: 12,
   river: 12,
 };
@@ -186,15 +186,12 @@ function projectLabel(
  */
 function isTierVisible(tier: RegionLabel['tier'], zoomLevel: number): boolean {
   switch (tier) {
-    case 'kingdom':
-      // Visible at continental and lower regional
+    case 'domain':
       return zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
-    case 'barony':
-      // Visible at continental and lower regional (not full-world)
+    case 'province':
       return zoomLevel >= ZOOM_THRESHOLDS.FULL_WORLD_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
     case 'geographic':
     case 'river':
-      // Visible at lower regional only
       return zoomLevel >= ZOOM_THRESHOLDS.CONTINENTAL_MAX && zoomLevel < ZOOM_THRESHOLDS.REGION_LABEL_MAX;
   }
 }
@@ -207,11 +204,9 @@ function toTitleCase(text: string): string {
 
 /** Apply display text transform per tier */
 function displayText(label: RegionLabel): string {
-  // Kingdom: uppercase handled by CSS textTransform: 'uppercase'
-  // Barony: title case
-  // Geographic: title case (sentence-case visually via italic)
-  // River: title case with River suffix
-  if (label.tier === 'kingdom') return label.text;
+  // Domain: uppercase handled by CSS textTransform: 'uppercase'
+  // Province/Geographic/River: title case
+  if (label.tier === 'domain') return label.text;
   return toTitleCase(label.text);
 }
 

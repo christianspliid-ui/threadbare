@@ -101,6 +101,7 @@ export function generateWorld(
   livingCultures?: CultureForWorldgen[],
   lostCultures?: CultureForWorldgen[],
   cultureNameMap?: Map<string, string>,
+  cultureFoundationMap?: Map<string, string>,
 ): WorldGenResult {
   const params: WorldGenParams = {
     cols,
@@ -135,12 +136,12 @@ export function generateWorld(
       ctx.provinceCapitalHexes,
     );
 
-    // Assign political regions (baronies + kingdoms) from geographic regions + provinces.
-    // NFP #4 Fail-soft: if assignment fails, baronies/kingdoms stay empty (Plan 01 state).
-    let baronies: RegionData['baronies'] = [];
-    let kingdoms: RegionData['kingdoms'] = [];
-    let hexBaronyId = new Map<string, number>();
-    let hexKingdomId = new Map<string, number>();
+    // Assign political regions (provinces + domains) from geographic regions + provinces.
+    // NFP #4 Fail-soft: if assignment fails, provinces/domains stay empty.
+    let provinces: RegionData['provinces'] = [];
+    let domains: RegionData['domains'] = [];
+    let hexProvinceId = new Map<string, number>();
+    let hexDomainId = new Map<string, number>();
     try {
       const political = assignPoliticalRegions(
         regions,
@@ -151,13 +152,14 @@ export function generateWorld(
         cols,
         seed,
         cultureNameMap,
+        cultureFoundationMap,
       );
-      baronies = political.baronies;
-      kingdoms = political.kingdoms;
-      hexBaronyId = political.hexBaronyId;
-      hexKingdomId = political.hexKingdomId;
+      provinces = political.provinces;
+      domains = political.domains;
+      hexProvinceId = political.hexProvinceId;
+      hexDomainId = political.hexDomainId;
     } catch {
-      // NFP #4 Fail-soft: political assignment failure keeps empty baronies/kingdoms
+      // NFP #4 Fail-soft: political assignment failure keeps empty provinces/domains
     }
 
     // Name geographic regions — detectRegionsBorderCost returns clusters without names.
@@ -170,12 +172,12 @@ export function generateWorld(
 
     regionData = {
       geographicRegions: namedRegions,
-      baronies,
-      kingdoms,
+      provinces,
+      domains,
       labels: [],
       hexRegionId,
-      hexBaronyId,
-      hexKingdomId,
+      hexProvinceId,
+      hexDomainId,
     };
   } catch {
     // NFP #4 Fail-soft: region detection failure must not crash world generation

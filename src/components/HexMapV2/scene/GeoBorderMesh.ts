@@ -86,14 +86,14 @@ function getEdgePoints(hexCenter: Point2D, dir: number, size: number): { start: 
  * Edges that are already political borders (different kingdom or barony)
  * are excluded to avoid visual clutter.
  *
- * @param regionData - Region data from worldgen (with hexRegionId, hexBaronyId maps)
+ * @param regionData - Region data from worldgen (with hexRegionId, hexProvinceId maps)
  * @param tiles - All hex tiles in the world
  */
 export function createGeoBorderMesh(
   regionData: RegionData,
   tiles: HexTile[],
 ): THREE.LineSegments {
-  const { hexRegionId, hexBaronyId } = regionData;
+  const { hexRegionId, hexProvinceId } = regionData;
 
   const positions: number[] = [];
 
@@ -113,7 +113,7 @@ export function createGeoBorderMesh(
     const geoA = hexRegionId.get(hKey);
     if (geoA === undefined) continue;
 
-    const baronyA = hexBaronyId.get(hKey);
+    const provinceA = hexProvinceId.get(hKey);
 
     const hexCenter: Point2D = hexToWorld({ col, row }, size);
     const neighbors = hexNeighbors({ col, row });
@@ -135,8 +135,8 @@ export function createGeoBorderMesh(
       if (geoB === undefined || geoA === geoB) continue;
 
       // Skip edges that are already political borders (kingdom or barony differ)
-      const baronyB = neighborExists ? hexBaronyId.get(neighborKey) : undefined;
-      if (baronyA !== undefined && baronyB !== undefined && baronyA !== baronyB) continue;
+      const provinceB = neighborExists ? hexProvinceId.get(neighborKey) : undefined;
+      if (provinceA !== undefined && provinceB !== undefined && provinceA !== provinceB) continue;
 
       processedEdges.add(edgeKey);
 

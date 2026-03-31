@@ -30,11 +30,11 @@ import { HEX_CONSTANTS } from './HexFillMesh';
 
 // ─── Border rendering constants (NFP #1: Tunability) ─────────────────────────
 
-/** Half-width of kingdom borders in world units (visual width = 2 * KINGDOM_HALF_WIDTH) */
-const KINGDOM_HALF_WIDTH = 0.75;
+/** Half-width of domain borders in world units (visual width = 2 * DOMAIN_HALF_WIDTH) */
+const DOMAIN_HALF_WIDTH = 0.75;
 
-/** Half-width of barony borders in world units (visual width = 2 * BARONY_HALF_WIDTH) */
-const BARONY_HALF_WIDTH = 0.375;
+/** Half-width of province borders in world units (visual width = 2 * PROVINCE_HALF_WIDTH) */
+const PROVINCE_HALF_WIDTH = 0.375;
 
 /** How far to extend each edge endpoint along its direction to close corner gaps */
 const EDGE_EXTENSION = 0.35;
@@ -174,16 +174,16 @@ function buildGeometry(positions: number[]): THREE.BufferGeometry {
 // ─── Factory ─────────────────────────────────────────────────────────────────
 
 /**
- * Create kingdom and barony border meshes from region data.
+ * Create domain and province border meshes from region data.
  *
  * Returns two separate THREE.Mesh objects:
- *   - kingdomMesh: thick borders along kingdom boundaries
- *   - baronyMesh:  thin borders along barony boundaries (within same kingdom)
+ *   - domainMesh:   thick borders along domain boundaries
+ *   - provinceMesh: thin borders along province boundaries (within same domain)
  *
  * REGN-06: Only political boundaries produce geometry. Geographic region
- * differences without barony/kingdom differences produce nothing.
+ * differences without province/domain differences produce nothing.
  *
- * @param regionData - Region data from worldgen (with hexBaronyId + hexKingdomId maps)
+ * @param regionData - Region data from worldgen (with hexProvinceId + hexDomainId maps)
  * @param tiles - All hex tiles in the world
  * @param cols - Grid width
  */
@@ -191,11 +191,11 @@ export function createBorderMesh(
   regionData: RegionData,
   tiles: HexTile[],
   cols: number,
-): { kingdomMesh: THREE.Mesh; baronyMesh: THREE.Mesh } {
-  const { hexBaronyId, hexKingdomId } = regionData;
+): { domainMesh: THREE.Mesh; provinceMesh: THREE.Mesh } {
+  const { hexProvinceId, hexDomainId } = regionData;
 
-  const kingdomPositions: number[] = [];
-  const baronyPositions: number[] = [];
+  const domainPositions: number[] = [];
+  const provincePositions: number[] = [];
 
   // Build fast tile set for O(1) lookup (only need existence check)
   const tileSet = new Set<string>();
@@ -212,58 +212,53 @@ export function createBorderMesh(
     const { col, row } = tile.coord;
     const hKey = hexKeyFn(col, row);
 
-    const baronyA = hexBaronyId.get(hKey);
-    const kingdomA = hexKingdomId.get(hKey);
+    const provinceA = hexProvinceId.get(hKey);
+    const domainA = hexDomainId.get(hKey);
 
     // Skip hexes with no political assignment (NFP #4 Fail-soft)
-    if (baronyA === undefined) continue;
+    if (provinceA === undefined) continue;
 
     const hexCenter: Point2D = hexToWorld({ col, row }, size);
 
     const neighbors = hexNeighbors({ col, row });
 
-    // Check all 6 directions to form a complete ring around regions
     for (let dirIdx = 0; dirIdx < 6; dirIdx++) {
       const neighbor = neighbors[dirIdx];
       const neighborKey = hexKeyFn(neighbor.col, neighbor.row);
 
-      // Canonical edge key for dedup (lower key first)
       const edgeKey = hKey < neighborKey
         ? `${hKey}|${neighborKey}`
         : `${neighborKey}|${hKey}`;
       if (processedEdges.has(edgeKey)) continue;
 
       const neighborExists = tileSet.has(neighborKey);
-      const baronyB = neighborExists ? hexBaronyId.get(neighborKey) : undefined;
-      const kingdomB = neighborExists ? hexKingdomId.get(neighborKey) : undefined;
+      const provinceB = neighborExists ? hexProvinceId.get(neighborKey) : undefined;
+      const domainB = neighborExists ? hexDomainId.get(neighborKey) : undefined;
 
-      // Determine border type
-      let borderType: 'kingdom' | 'barony' | null = null;
+      let borderType: 'domain' | 'province' | null = null;
 
-      if (!neighborExists || baronyB === undefined) {
-        // Outer boundary: region meets map edge or unassigned territory.
-        // Use kingdom border if hex belongs to a kingdom, else barony border.
-        borderType = kingdomA !== undefined ? 'kingdom' : 'barony';
-      } else if (kingdomA !== undefined && kingdomB !== undefined && kingdomA !== kingdomB) {
-        // Kingdom boundary — thick border
-        borderType = 'kingdom';
-      } else if (baronyA !== baronyB) {
-        // Barony boundary within same kingdom — thin border
-        borderType = 'barony';
+      if (!neighborExists || provinceB === undefined) {
+        // Outer boundary — use domain border if hex belongs to a domain, else province border.
+        borderType = domainA !== undefined ? 'domain' : 'province';
+      } else if (domainA !== undefined && domainB !== undefined && domainA !== domainB) {
+        // Domain boundary — thick border
+        borderType = 'domain';
+      } else if (provinceA !== provinceB) {
+        // Province boundary within same domain — thin border
+        borderType = 'province';
       }
-      // REGN-06: same barony and same kingdom = no border (geographic only → nothing)
+      // Same province and same domain = no border
 
       if (borderType === null) continue;
 
       processedEdges.add(edgeKey);
 
-      // Get the shared edge in world space using correct vertex mapping
       const { start, end } = getEdgePoints(hexCenter, dirIdx, size);
 
-      if (borderType === 'kingdom') {
-        buildThickEdge(start.x, start.y, end.x, end.y, KINGDOM_HALF_WIDTH, BORDER_Z, kingdomPositions);
+      if (borderType === 'domain') {
+        buildThickEdge(start.x, start.y, end.x, end.y, DOMAIN_HALF_WIDTH, BORDER_Z, domainPositions);
       } else {
-        buildThickEdge(start.x, start.y, end.x, end.y, BARONY_HALF_WIDTH, BORDER_Z, baronyPositions);
+        buildThickEdge(start.x, start.y, end.x, end.y, PROVINCE_HALF_WIDTH, BORDER_Z, provincePositions);
       }
     }
   }
@@ -275,13 +270,13 @@ export function createBorderMesh(
     opacity: BORDER_OPACITY,
   });
 
-  const kingdomGeo = buildGeometry(kingdomPositions);
-  const kingdomMesh = new THREE.Mesh(kingdomGeo, mat.clone());
-  kingdomMesh.renderOrder = RENDER_ORDER.BORDERS;
+  const domainGeo = buildGeometry(domainPositions);
+  const domainMesh = new THREE.Mesh(domainGeo, mat.clone());
+  domainMesh.renderOrder = RENDER_ORDER.BORDERS;
 
-  const baronyGeo = buildGeometry(baronyPositions);
-  const baronyMesh = new THREE.Mesh(baronyGeo, mat.clone());
-  baronyMesh.renderOrder = RENDER_ORDER.BORDERS;
+  const provinceGeo = buildGeometry(provincePositions);
+  const provinceMesh = new THREE.Mesh(provinceGeo, mat.clone());
+  provinceMesh.renderOrder = RENDER_ORDER.BORDERS;
 
-  return { kingdomMesh, baronyMesh };
+  return { domainMesh, provinceMesh };
 }

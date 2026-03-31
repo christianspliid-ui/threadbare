@@ -84,14 +84,14 @@ describe('ZOOM_VISIBILITY_MATRIX — agents', () => {
 });
 
 describe('ZOOM_VISIBILITY_MATRIX — borders', () => {
-  it('borders_kingdom is true at full-world', () => {
-    expect(ZOOM_VISIBILITY_MATRIX.borders_kingdom['full-world']).toBe(true);
+  it('borders_domain is true at full-world', () => {
+    expect(ZOOM_VISIBILITY_MATRIX.borders_domain['full-world']).toBe(true);
   });
 
-  it('borders_kingdom is true at all tiers', () => {
+  it('borders_domain is true at all tiers', () => {
     const tiers: ZoomTier[] = ['hero-local', 'regional', 'continental', 'full-world'];
     for (const tier of tiers) {
-      expect(ZOOM_VISIBILITY_MATRIX.borders_kingdom[tier]).toBe(true);
+      expect(ZOOM_VISIBILITY_MATRIX.borders_domain[tier]).toBe(true);
     }
   });
 });

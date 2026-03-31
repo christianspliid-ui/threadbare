@@ -62,7 +62,7 @@ export function getZoomTier(k: number): ZoomTier {
 /** All layer keys used in the visibility matrix. Literal union prevents typo bugs. */
 export const LAYER_NAMES = [
   'hex_fill', 'coastline', 'grid_lines', 'elev_ticks',
-  'rivers', 'roads', 'geo_borders', 'borders_kingdom', 'borders_barony',
+  'rivers', 'roads', 'geo_borders', 'borders_domain', 'borders_province',
   'signifiers', 'locations', 'agents_portrait', 'agents_dot',
   'agents_retinue', 'events', 'labels', 'fog',
   'armies', 'battle_indicator', 'siege_ring',
@@ -132,15 +132,15 @@ export const ZOOM_VISIBILITY_MATRIX: Record<LayerName, Record<ZoomTier, boolean>
     'continental': true,
     'full-world': false,
   },
-  /** Kingdom borders — always visible (coarse political info) */
-  borders_kingdom: {
+  /** Domain borders — always visible (coarse political info) */
+  borders_domain: {
     'hero-local': true,
     'regional': true,
     'continental': true,
     'full-world': true,
   },
-  /** Barony borders — visible until full-world */
-  borders_barony: {
+  /** Province borders — visible until full-world */
+  borders_province: {
     'hero-local': true,
     'regional': true,
     'continental': true,

@@ -102,9 +102,10 @@ export function initializeGameState(
   const pregenCultures = generateCultureIdentities(cosmology, cultureRng, fundament, cols * rows);
   const livingCultures = pregenCultures.map(toCultureForWorldgen);
   const cultureNameMap = new Map(pregenCultures.map(c => [c.id, c.name]));
+  const cultureFoundationMap = new Map(pregenCultures.map(c => [c.id, c.identity.foundationBias]));
 
   // 2. Generate terrain WITH culture data — provinces seeded per culture
-  const worldGenResult = generateWorld(cosmology, cols, rows, seed, livingCultures, undefined, cultureNameMap);
+  const worldGenResult = generateWorld(cosmology, cols, rows, seed, livingCultures, undefined, cultureNameMap, cultureFoundationMap);
   const tiles = worldGenResult.tiles;
 
   // 3. Seed the world graph with actors, locations, artifacts — territory-aware

@@ -56,12 +56,10 @@ function buildProvinceIds(
 // ─── Tests ───────────────────────────────────────────────────────────────────
 
 describe('assignPoliticalRegions', () => {
-  it('creates one barony per province', () => {
-    // 2 provinces, each with distinct hexes
+  it('creates one province per worldgen province', () => {
     const cols = 4;
     const rows = 4;
 
-    // Province 0 owns cols 0-1, Province 1 owns cols 2-3
     const province0Hexes = [
       { col: 0, row: 0 }, { col: 0, row: 1 }, { col: 0, row: 2 }, { col: 0, row: 3 },
       { col: 1, row: 0 }, { col: 1, row: 1 }, { col: 1, row: 2 }, { col: 1, row: 3 },
@@ -97,16 +95,15 @@ describe('assignPoliticalRegions', () => {
       42,
     );
 
-    expect(result.baronies.length).toBe(2);
-    expect(result.baronies[0].capitalHex).toEqual({ col: 0, row: 0 });
-    expect(result.baronies[1].capitalHex).toEqual({ col: 2, row: 0 });
+    expect(result.provinces.length).toBe(2);
+    expect(result.provinces[0].capitalHex).toEqual({ col: 0, row: 0 });
+    expect(result.provinces[1].capitalHex).toEqual({ col: 2, row: 0 });
   });
 
-  it('groups baronies with same non-null cultureId into one kingdom', () => {
+  it('groups provinces with same non-null cultureId into one domain', () => {
     const cols = 6;
     const rows = 2;
 
-    // 3 provinces — 2 with same cultureId, 1 different
     const p0Hexes = [{ col: 0, row: 0 }, { col: 0, row: 1 }];
     const p1Hexes = [{ col: 2, row: 0 }, { col: 2, row: 1 }];
     const p2Hexes = [{ col: 4, row: 0 }, { col: 4, row: 1 }];
@@ -142,21 +139,18 @@ describe('assignPoliticalRegions', () => {
       42,
     );
 
-    // 3 baronies total
-    expect(result.baronies.length).toBe(3);
+    expect(result.provinces.length).toBe(3);
+    expect(result.domains.length).toBe(2);
 
-    // 2 kingdoms: 'human' and 'elven'
-    expect(result.kingdoms.length).toBe(2);
-
-    const humanKingdom = result.kingdoms.find(k => k.cultureId === 'human');
-    const elvenKingdom = result.kingdoms.find(k => k.cultureId === 'elven');
-    expect(humanKingdom).toBeDefined();
-    expect(humanKingdom?.baronyIds.length).toBe(2);
-    expect(elvenKingdom).toBeDefined();
-    expect(elvenKingdom?.baronyIds.length).toBe(1);
+    const humanDomain = result.domains.find(d => d.cultureId === 'human');
+    const elvenDomain = result.domains.find(d => d.cultureId === 'elven');
+    expect(humanDomain).toBeDefined();
+    expect(humanDomain?.provinceIds.length).toBe(2);
+    expect(elvenDomain).toBeDefined();
+    expect(elvenDomain?.provinceIds.length).toBe(1);
   });
 
-  it('wilderness provinces (cultureId=null) form independent baronies with no kingdom parent', () => {
+  it('wilderness provinces (cultureId=null) form independent provinces with no domain parent', () => {
     const cols = 4;
     const rows = 2;
 
@@ -170,7 +164,6 @@ describe('assignPoliticalRegions', () => {
     for (const h of p0Hexes) hexRegionId.set(`${h.col},${h.row}`, 0);
     for (const h of p1Hexes) hexRegionId.set(`${h.col},${h.row}`, 1);
 
-    // Both provinces are wilderness (cultureId=null)
     const prov0 = makeProvince(0, null, { col: 0, row: 0 });
     const prov1 = makeProvince(1, null, { col: 2, row: 0 });
 
@@ -190,15 +183,13 @@ describe('assignPoliticalRegions', () => {
       42,
     );
 
-    expect(result.baronies.length).toBe(2);
-    expect(result.baronies[0].cultureId).toBeNull();
-    expect(result.baronies[1].cultureId).toBeNull();
-
-    // Wilderness baronies produce no kingdoms
-    expect(result.kingdoms.length).toBe(0);
+    expect(result.provinces.length).toBe(2);
+    expect(result.provinces[0].cultureId).toBeNull();
+    expect(result.provinces[1].cultureId).toBeNull();
+    expect(result.domains.length).toBe(0);
   });
 
-  it('every land hex in hexBaronyId map is assigned to exactly one barony', () => {
+  it('every land hex in hexProvinceId map is assigned to exactly one province', () => {
     const cols = 4;
     const rows = 4;
 
@@ -237,24 +228,22 @@ describe('assignPoliticalRegions', () => {
       42,
     );
 
-    // All hexes in hexRegionId should also be in hexBaronyId
     for (const [key] of hexRegionId) {
-      expect(result.hexBaronyId.has(key),
-        `Expected hex ${key} to be assigned to a barony`).toBe(true);
+      expect(result.hexProvinceId.has(key),
+        `Expected hex ${key} to be assigned to a province`).toBe(true);
     }
 
-    // No hex should appear in two baronies
     const seen = new Set<string>();
-    for (const barony of result.baronies) {
-      for (const hex of barony.hexes) {
+    for (const province of result.provinces) {
+      for (const hex of province.hexes) {
         const key = `${hex.col},${hex.row}`;
-        expect(seen.has(key), `Hex ${key} in multiple baronies`).toBe(false);
+        expect(seen.has(key), `Hex ${key} in multiple provinces`).toBe(false);
         seen.add(key);
       }
     }
   });
 
-  it('returns baronies with non-empty names (seeded PRNG generation)', () => {
+  it('returns provinces with non-empty names (seeded PRNG generation)', () => {
     const cols = 4;
     const rows = 2;
 
@@ -276,6 +265,6 @@ describe('assignPoliticalRegions', () => {
       42,
     );
 
-    expect(result.baronies[0].name.length).toBeGreaterThan(0);
+    expect(result.provinces[0].name.length).toBeGreaterThan(0);
   });
 });

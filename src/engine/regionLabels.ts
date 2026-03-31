@@ -25,8 +25,8 @@ export const RIVER_LABEL_MIN_LENGTH = 5;
 
 /** Label priority (lower = higher priority in collision detection) */
 export const LABEL_PRIORITY: Record<RegionLabel['tier'], number> = {
-  kingdom: 0,
-  barony: 1,
+  domain: 0,
+  province: 1,
   geographic: 2,
   river: 3,
 };
@@ -84,10 +84,10 @@ function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
 // ─── Label generators ─────────────────────────────────────────────────────────
 
 /**
- * Generates region labels for kingdoms, baronies, and geographic regions.
+ * Generates region labels for domains, provinces, and geographic regions.
  *
- * - Kingdoms: one label at capitalHex world position.
- * - Baronies: one label at centroid world position.
+ * - Domains: one label at geographic centroid of all domain hexes.
+ * - Provinces: one label at centroid.
  * - Geographic regions >= REGION_MAP_LABEL_MIN_SIZE: one label at center.
  *
  * NFP #4 Fail-soft: Returns empty array if regionData is invalid.
@@ -95,51 +95,48 @@ function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
 export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
   const labels: RegionLabel[] = [];
 
-  // Kingdom labels — at geographic centroid of all kingdom hexes, width from same.
-  // Previously placed at capitalHex, which collocated the kingdom label with the
-  // barony containing the capital, causing visible overlap.
-  for (const k of regionData.kingdoms) {
+  // Domain labels — at geographic centroid of all domain hexes, width from same.
+  for (const d of regionData.domains) {
     try {
-      const kingdomHexes = regionData.baronies
-        .filter(b => k.baronyIds.includes(b.id))
-        .flatMap(b => b.hexes);
-      // Centroid: mean of all kingdom hex world positions
+      const domainHexes = regionData.provinces
+        .filter(p => d.provinceIds.includes(p.id))
+        .flatMap(p => p.hexes);
       let sumX = 0;
       let sumY = 0;
-      for (const h of kingdomHexes) {
+      for (const h of domainHexes) {
         const w = hexToWorld(h.col, h.row);
         sumX += w.x;
         sumY += w.y;
       }
-      const cx = kingdomHexes.length > 0 ? sumX / kingdomHexes.length : hexToWorld(k.capitalHex.col, k.capitalHex.row).x;
-      const cy = kingdomHexes.length > 0 ? sumY / kingdomHexes.length : hexToWorld(k.capitalHex.col, k.capitalHex.row).y;
+      const cx = domainHexes.length > 0 ? sumX / domainHexes.length : hexToWorld(d.capitalHex.col, d.capitalHex.row).x;
+      const cy = domainHexes.length > 0 ? sumY / domainHexes.length : hexToWorld(d.capitalHex.col, d.capitalHex.row).y;
       labels.push({
-        id: `kingdom-${k.id}`,
-        tier: 'kingdom',
-        text: k.name,
+        id: `domain-${d.id}`,
+        tier: 'domain',
+        text: d.name,
         worldX: cx,
         worldY: cy,
-        worldWidth: computeHexesWorldWidth(kingdomHexes),
+        worldWidth: computeHexesWorldWidth(domainHexes),
       });
     } catch {
-      // Fail-soft: skip malformed kingdom entry
+      // Fail-soft: skip malformed domain entry
     }
   }
 
-  // Barony labels — at centroid, width from barony hexes
-  for (const b of regionData.baronies) {
+  // Province labels — at centroid, width from province hexes
+  for (const p of regionData.provinces) {
     try {
-      const { x, y } = hexToWorld(b.centroid.col, b.centroid.row);
+      const { x, y } = hexToWorld(p.centroid.col, p.centroid.row);
       labels.push({
-        id: `barony-${b.id}`,
-        tier: 'barony',
-        text: b.name,
+        id: `province-${p.id}`,
+        tier: 'province',
+        text: p.name,
         worldX: x,
         worldY: y,
-        worldWidth: computeHexesWorldWidth(b.hexes),
+        worldWidth: computeHexesWorldWidth(p.hexes),
       });
     } catch {
-      // Fail-soft: skip malformed barony entry
+      // Fail-soft: skip malformed province entry
     }
   }
 
