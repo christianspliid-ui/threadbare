@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Low-Hanging Fruit Optimization
 status: executing
-stopped_at: Phase 21 context gathered
-last_updated: "2026-03-30T21:49:12.762Z"
-last_activity: "2026-03-30 — Plan 01 complete: Math.random() + Date.now() replaced with seeded RNG + tick-local IDs"
+stopped_at: Phase 21 Plan 02 complete
+last_updated: "2026-03-31T09:48:44Z"
+last_activity: "2026-03-31 — Plan 02 complete: CACHE_REBUILD_THRESHOLD documented as design placeholder, redundant import removed"
 progress:
   total_phases: 4
   completed_phases: 2
@@ -25,10 +25,10 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 
 ## Current Position
 
-Phase: 19 of 22 (Determinism)
-Plan: 1 of 2 in current phase
-Status: In progress — Plan 01 complete, Plan 02 pending
-Last activity: 2026-03-30 — Plan 01 complete: Math.random() + Date.now() replaced with seeded RNG + tick-local IDs
+Phase: 21 of 22 (Performance)
+Plan: 2 of 3 in current phase
+Status: In progress — Plans 01 and 02 complete, Plan 03 pending
+Last activity: 2026-03-31 — Plan 02 complete: CACHE_REBUILD_THRESHOLD documented as design placeholder, redundant import removed
 
 Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 
@@ -40,7 +40,7 @@ Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 - Last phase number in v1.0: 18 (mercenary pipeline)
 - v1.1 phases 19-22; phases 20/21/22 are independent and can parallelize after Phase 19
 - Math.random() acceptable only in UI flavor code (avatar names, particle colors); all engine phases must use seeded mulberry32
-- PERF-02 encounter cache threshold: LOW confidence — profile empirically before setting constant
+- PERF-02 encounter cache threshold: RESOLVED — constant is a design placeholder; EncounterCacheManager uses per-location incremental updates with no dirty-count gate
 - [19-01] rollD100 accepts rng param; resolveAction gains optional rng (third param) preserving deterministicRoll backward compat
 - [19-01] Per-encounter seeded roll: mulberry32(seed + tick*43 + hashString(actorId)) — no shared RNG state between encounters
 - [19-01] Per-module reset functions over single global counter to keep module boundaries clean
@@ -51,6 +51,8 @@ Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 - [Phase 20-wiring]: Both WIRE-01 and WIRE-02 chains were already fully wired — tests confirm correctness with no source changes
 - [Phase 20-wiring]: dilemma_resolved uses event.actorId ?? actor.id — prefers propagated actorId from source event, falls back to name-matched actor
 - [Phase 20-wiring]: NarrativeLog renders actor-attributed entries as button elements vs div — structural distinction for keyboard accessibility
+- [21-02]: CACHE_REBUILD_THRESHOLD is a design placeholder; EncounterCacheManager rebuilds per-location (no dirty-count gate); threshold is reserved for future incremental vs full rebuild decision point
+- [21-02]: Unused local import of CACHE_REBUILD_THRESHOLD in encounterCache.ts removed (re-export kept for consumers)
 
 ### Pending Todos
 
@@ -60,10 +62,10 @@ None.
 
 - DTRM-03 depends on DTRM-01 + DTRM-02 completing first (test un-skip after fixes)
 - PERF-03 circular import risk: unified-action-templates.ts imports encounter-content.ts; add validateTemplateRegistry() at game start after split
-- PERF-02 threshold is currently unknown — requires profiling run before documenting rationale
+- PERF-03 circular import risk: unified-action-templates.ts imports encounter-content.ts; add validateTemplateRegistry() at game start after split
 
 ## Session Continuity
 
-Last session: 2026-03-30T21:49:12.760Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-performance/21-CONTEXT.md
+Last session: 2026-03-31T09:48:44Z
+Stopped at: Completed 21-02-PLAN.md
+Resume file: .planning/phases/21-performance/21-03-PLAN.md
