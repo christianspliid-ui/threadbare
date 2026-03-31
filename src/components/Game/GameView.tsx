@@ -1233,7 +1233,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   rows={ROWS}
                   seed={gameState.seed}
                   hoveredHex={hoveredHex}
-                  selectedHex={selectedHex}
+                  selectedHex={selectedHexCoord ?? selectedHex}
                   riverPaths={riverPaths}
                   lakeIds={lakeIds}
                   regionData={regionData}
