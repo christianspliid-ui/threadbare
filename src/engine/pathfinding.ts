@@ -191,7 +191,13 @@ export function findShortestPath(
       if (newDist < neighborDist) {
         distance.set(neighborId, newDist);
         parent.set(neighborId, current);
-        roadEdgeUsed.set(`${current}→${neighborId}`, roadCost);
+        // Reverse hexPath: edge stores source→target, but travel direction
+        // is current→neighbor (target→source). hexPath must match key direction
+        // so reconstructPath produces correctly-oriented road segments.
+        roadEdgeUsed.set(`${current}→${neighborId}`, {
+          ...roadCost,
+          hexPath: [...roadCost.hexPath].reverse(),
+        });
         unvisited.add(neighborId);
       }
     }
