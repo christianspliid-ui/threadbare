@@ -252,11 +252,10 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     runtime,
   });
 
-  // ── Composite hex click: navigation + selection ──
+  // ── Composite hex click: select only (no navigation — use "Go to Hex Chronicle" for that) ──
   const handleHexClickFull = useCallback((coord: import('../../types').HexCoord) => {
-    handleHexClickMove(coord);
     handleHexSelect(coord);
-  }, [handleHexClickMove, handleHexSelect]);
+  }, [handleHexSelect]);
 
   // ── Anomaly discovery event → reveal flash trigger ──
   // Watch recentEvents for 'anomaly_discovered' and trigger the hex map reveal animation.
@@ -571,7 +570,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // ── Non-agent target context (hex-zoom and location views) ──
   const [nonAgentDrawerOpen, setNonAgentDrawerOpen] = useState(false);
 
-  // Build a TargetContext for the currently focused hex or location
+  // Build a TargetContext for the currently focused hex or location, or selected hex on world map
   const nonAgentTargetContext = useMemo(() => {
     if (viewLevel === 'hex-zoom' && focusedHex) {
       // Use gameState.tiles for live mutable state (divineInfluence, corruption)
@@ -587,13 +586,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     if (viewLevel === 'location' && focusedLocationId) {
       return buildLocationTargetContext(focusedLocationId, gameState.graph);
     }
+    // Selected hex on world map (click-to-select pattern)
+    if (selectedHexCoord) {
+      const liveTile = getTile(selectedHexCoord.col, selectedHexCoord.row);
+      return buildHexTargetContext({
+        col: selectedHexCoord.col,
+        row: selectedHexCoord.row,
+        terrain: liveTile?.terrain ?? 'plains',
+        divineInfluence: liveTile?.divineInfluence,
+        corruption: liveTile?.corruption,
+      });
+    }
     return null;
-  }, [viewLevel, focusedHex, focusedLocationId, getTile, gameState.graph]);
+  }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph]);
 
-  // Open non-agent drawer when entering a detail view; close on world return
+  // Open non-agent drawer when a target is selected (hex-zoom, location, or world-map hex selection)
   useEffect(() => {
-    setNonAgentDrawerOpen(viewLevel === 'hex-zoom' || viewLevel === 'location');
-  }, [viewLevel]);
+    setNonAgentDrawerOpen(viewLevel === 'hex-zoom' || viewLevel === 'location' || selectedHexCoord !== null);
+  }, [viewLevel, selectedHexCoord]);
 
   const nonAgentSlots = useTargetActions({
     target: nonAgentTargetContext,
@@ -1397,7 +1407,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
               targetLabel={nonAgentTargetContext?.displayLabel ?? ''}
               playingCardId={null}
               onSlotClick={handleNonAgentSlotClick}
-              onClose={() => setNonAgentDrawerOpen(false)}
+              onClose={() => { setNonAgentDrawerOpen(false); handleHexDetailClose(); }}
             />
           )}
         </div>
