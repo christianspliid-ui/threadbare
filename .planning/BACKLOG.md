@@ -8,7 +8,47 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-089**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-094**.
+
+---
+
+## 📋 TB-089 · Reputation-Gated Encounter Content (2026-03-31)
+
+Author encounter templates that require or are blocked by reputation traits. E.g., "Warlord's Tribute" requiring `trait.reputation.iron.positive` level 2, "Assassination Plot" requiring `trait.reputation.iron.negative` level 2, "Court Audience" blocked by `trait.reputation.shadow.negative`. Create 10-20 templates across reaches to make reputation meaningful in gameplay.
+
+**Depends on:** Reputation Trait System (✅)
+
+---
+
+## 📋 TB-090 · Reputation Polarity Tags on Existing Encounters (2026-03-31)
+
+Tag high-value existing encounter templates with explicit `reputationPolarity` for precision. Currently Layer 2 (encounter type heuristic) and Layer 3 (axiological profile) handle all encounters — explicit tags give content authors fine-grained control over which polarity an encounter feeds.
+
+**Depends on:** Reputation Trait System (✅)
+
+---
+
+## 💡 TB-091 · Social Bond Shift from Reputation Reactions (2026-03-31)
+
+Add `computeReputationBondShift()` to `socialEncounterGeneration.ts` — when agent A evaluates agent B for social encounters, B's reputation traits' `reactions` array modifies the bond modifier. A feared warlord gets different social encounters than a beloved healer. Plug into `computeBondModifier()`.
+
+**Depends on:** Reputation Trait System (✅)
+
+---
+
+## 💡 TB-092 · Faction Reputation Aggregation (2026-03-31)
+
+Faction nodes themselves should earn reputation traits based on aggregate member activity. Scan `member_of` edges, tally member reputations, assign faction-level traits. A faction whose members complete many Shadow encounters becomes Shadow-negative "Infamous". Affects faction-level encounters and recruitment.
+
+**Depends on:** Reputation Trait System (✅)
+
+---
+
+## 💡 TB-093 · Reputation Traits in CMS Registry (2026-03-31)
+
+Add reputation trait definitions to the CMS content browser registry so they can be browsed alongside other traits. Show reach, polarity, reactions, scoring modifiers, and encounter gates.
+
+**Depends on:** Reputation Trait System (✅)
 
 ---
 
