@@ -45,3 +45,12 @@ export const CULTURE_BORDER_STRENGTH = { min: 0.3, max: 0.5 };
 export const CULTURE_BORDER_DUAL_CHANCE = 0.4;
 export const CULTURE_DIASPORA_FRACTION = 0.1;
 export const CULTURE_WILDERNESS_CHANCE = 0.3;
+
+// ─── Culture Settlement Hierarchy ─────────────────────────────
+/** Target settlement composition per culture province. */
+export const CULTURE_SETTLEMENT_QUOTA = {
+  capital: 1,
+  city: 1,
+  town: 3,
+  hamlet: 9,
+} as const;

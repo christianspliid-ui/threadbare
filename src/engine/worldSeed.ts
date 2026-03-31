@@ -34,6 +34,7 @@ import {
   grantBehavioralTraits,
 } from './culturalTraits';
 import type { CultureIdentity } from '../types/culture';
+import { CULTURE_SETTLEMENT_QUOTA } from '../types/culture';
 import { detectRegions } from './regionDetection';
 import { hexDistance } from '../lib/hexMath';
 import { generateHistoricalCultures, assignHistoricalTerritories } from './historicalCulture';
@@ -1031,6 +1032,71 @@ export function seedWorld(
       // Track for actor assignment — use province role from worldgen typed array
       const role = provinceRoles ? provinceRoles[hexIdx] ?? PROVINCE_ROLE_BORDERLAND : PROVINCE_ROLE_BORDERLAND;
       locationCultureMap.set(locId, { cultureId: province.cultureId, role });
+    }
+    // ── Settlement promotion pass ──────────────────────────────
+    // Enforce culture settlement hierarchy: 1 capital, 1 city, 3 towns, rest hamlets.
+    // Only affects "promotable" settlement types — special locations keep their identity.
+    const PROMOTABLE_SUBTYPES = new Set([
+      'capital', 'city', 'town', 'hamlet', 'camp', 'farmland', 'fort',
+    ]);
+
+    // Group cultured locations by culture
+    const cultureLocations = new Map<string, string[]>();
+    for (const [locId, { cultureId }] of locationCultureMap) {
+      const arr = cultureLocations.get(cultureId) ?? [];
+      arr.push(locId);
+      cultureLocations.set(cultureId, arr);
+    }
+
+    for (const [cultureId, locIds] of cultureLocations) {
+      // Find the province for this culture to get the capital hex
+      const province = provinces.find(p => p.cultureId === cultureId && !p.isLost);
+      if (!province) continue;
+      const capHex = province.capitalHex;
+
+      // Gather promotable locations with distance to province capital
+      const promotable: Array<{ id: string; dist: number }> = [];
+      for (const locId of locIds) {
+        const node = graph.getNode(locId);
+        if (!node) continue;
+        const subtype = node.properties.locationSubtype as string;
+        if (!PROMOTABLE_SUBTYPES.has(subtype)) continue;
+        const col = node.properties.hexCol as number;
+        const row = node.properties.hexRow as number;
+        const dist = hexDistance({ col, row }, capHex);
+        promotable.push({ id: locId, dist });
+      }
+
+      // Sort by distance to province center (closest first)
+      promotable.sort((a, b) => a.dist - b.dist);
+
+      // Apply quota: capital(1), city(1), town(3), hamlet(rest)
+      let idx = 0;
+      const promote = (locId: string, subtype: LocationSubtype) => {
+        const node = graph.getNode(locId);
+        if (!node) return;
+        node.properties.locationType = subtype;
+        node.properties.locationSubtype = subtype;
+        node.properties.prosperity = INITIAL_PROSPERITY[subtype] ?? node.properties.prosperity;
+      };
+
+      for (let q = 0; q < CULTURE_SETTLEMENT_QUOTA.capital && idx < promotable.length; q++, idx++) {
+        promote(promotable[idx].id, 'capital');
+      }
+      for (let q = 0; q < CULTURE_SETTLEMENT_QUOTA.city && idx < promotable.length; q++, idx++) {
+        promote(promotable[idx].id, 'city');
+      }
+      for (let q = 0; q < CULTURE_SETTLEMENT_QUOTA.town && idx < promotable.length; q++, idx++) {
+        promote(promotable[idx].id, 'town');
+      }
+      for (; idx < promotable.length; idx++) {
+        // Cap at hamlet quota; excess keep current subtype
+        if (idx < CULTURE_SETTLEMENT_QUOTA.capital + CULTURE_SETTLEMENT_QUOTA.city +
+            CULTURE_SETTLEMENT_QUOTA.town + CULTURE_SETTLEMENT_QUOTA.hamlet) {
+          promote(promotable[idx].id, 'hamlet');
+        }
+        // Beyond the quota: leave as-is (natural wilderness settlements)
+      }
     }
   } else {
     // Legacy fallback: generate cultures internally with round-robin assignment
