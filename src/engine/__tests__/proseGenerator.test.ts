@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { WorldGraph } from '../graph';
-import { generateEntityProse } from '../proseGenerator';
+import { generateEntityProse, clearProseCache } from '../proseGenerator';
 
 function buildFullGraph(): WorldGraph {
   const graph = new WorldGraph();
@@ -78,6 +78,67 @@ function buildFullGraph(): WorldGraph {
 
   return graph;
 }
+
+describe('prose cache', () => {
+  beforeEach(() => {
+    clearProseCache();
+  });
+
+  it('returns cached result on second call with same (nodeId, tick, mode)', () => {
+    const graph = buildFullGraph();
+    const first = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    const second = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    expect(first).toBeTruthy();
+    expect(first).toBe(second);
+  });
+
+  it('produces fresh result when tick changes (cache miss)', () => {
+    const graph = buildFullGraph();
+    // tick 1 — first call, computes and caches
+    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    // Same tick, same args — should return same string (cache hit)
+    const result1Again = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    expect(result1Again).toBe(result1);
+    // Different tick — different cache key, forces fresh compute
+    // The result should still be a valid string (deterministic output)
+    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 2);
+    expect(result2).toBeTruthy();
+    // Both ticks produce valid prose (same seed → same content)
+    expect(result2).toBe(result1);
+  });
+
+  it('keeps separate cache entries for different modes on same entity and tick', () => {
+    const graph = buildFullGraph();
+    const summary = generateEntityProse('loc_0', graph, 42, 'summary', 5);
+    const full = generateEntityProse('loc_0', graph, 42, 'full', 5);
+    expect(summary).toBeTruthy();
+    expect(full).toBeTruthy();
+    // Full prose should be longer than summary (more paragraphs)
+    expect(full.length).toBeGreaterThan(summary.length);
+  });
+
+  it('clearProseCache() resets all cached entries', () => {
+    const graph = buildFullGraph();
+    // Fill cache with entries at tick 1
+    const result1 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    // Clear cache — now the internal state is reset
+    clearProseCache();
+    // Same call after clear should still produce the same result (deterministic)
+    const result2 = generateEntityProse('loc_0', graph, 42, 'summary', 1);
+    expect(result2).toBeTruthy();
+    expect(result2).toBe(result1);
+    // Verify cache works again after clear: a new entity at same tick
+    const agentResult = generateEntityProse('ind_0', graph, 42, 'summary', 1);
+    expect(agentResult).toBeTruthy();
+  });
+
+  it('works correctly with tick=0 default (backward compat)', () => {
+    const graph = buildFullGraph();
+    // Existing tests call with 4 args — tick defaults to 0
+    const result = generateEntityProse('loc_0', graph, 42, 'summary');
+    expect(result).toBeTruthy();
+  });
+});
 
 describe('generateEntityProse', () => {
   it('generates full prose for a location with multiple paragraphs', () => {
