@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Reach-polarity reputation trait system: 17 traits (8 reaches × 2 polarities + power renown), tally accumulation, 3-layer polarity, encounter gating + scoring, phase 6.64, 16 tests. (2026-03-31)
 - ✅ TB-031 Phase 1: Territory-aware culture seeding via province system — cultures generated before worldgen, locations/actors inherit from province, homeland/border/diaspora mechanics. (2026-03-31)
 - ✅ Location variety + anomaly discovery system: 29 location subtypes, shimmer visuals, 10 rare resources, 10 discovery encounters, 10 signature artifacts, 8 bestowed traits, 6 conditions. (2026-03-31)
 - ✅ TB-086/087/088 Mutation observability, per-session SimulationRuntime, distance matrix cap raised 500→1200 (2026-03-31)

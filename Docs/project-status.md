@@ -16,6 +16,7 @@
 
 ## Recent Completions (2026-03-31)
 
+- **Reach-polarity reputation trait system:** 17 parseable reputation traits (8 reaches × 2 polarities + power renown). Tallies accumulate from encounters, decay per tick, assign traits at thresholds (3/8/15). 3-layer polarity determination. Encounter gating (requiredTraits + blockedByTraits), scoring bonus, orchestrator phase 6.64. 16 tests.
 - **TB-031 Culture Seeding Phase 1:** Territory-aware culture placement. Cultures generated before worldgen, seeded into provinces, locations and actors inherit from province. Homeland/border strength, diaspora, dual-culture at borders. Fixed preferredBiomes bug.
 - **Location variety + anomaly discovery system:** 29 new location subtypes, anomaly shimmer visuals (3-state: shimmer/flash/halo), 10 rare resources, 10 discovery encounter templates, 10 signature artifacts, 8 bestowed traits, 6 conditions. Grounded in Notion Place Archetypes.
 - TB-086/087/088: Mutation observability (`SimulationRuntime` with version counters, `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, per-session cache ownership, distance matrix cap raised 500→1200). 9 contract tests.

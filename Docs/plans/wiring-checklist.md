@@ -43,6 +43,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 7.5 | `phaseTradeRouteDecay` | Route dissolution |
 | 8 | `phaseProsperity` | Settlement economic pulse |
 | 8.1 | `phaseEconomicTraits` | Traits from economic activity |
+| 8.15 | `phaseReputationTraits` | Reach-polarity reputation tally decay + trait assignment |
 | 8.2 | `phaseSettlementPromotion` | Hamlet/town/city tier changes |
 | 9 | `phaseHexState` | Corruption/influence decay, terrain mutations |
 | 9.1 | `phaseUnrest` | Social stability |
