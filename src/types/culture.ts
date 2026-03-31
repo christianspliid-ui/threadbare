@@ -33,7 +33,20 @@ export interface CultureEdgeProperties {
 
 // ─── Tunable Constants ──────────────────────────────────────────
 
+/** Flat fallback used when tileCount is unknown. */
 export const CULTURE_COUNT = { min: 2, max: 4 };
+
+/**
+ * Culture count per map size tier (tile area thresholds match worldSeed.ts mapSizeKey logic).
+ * Fixed counts while playtesting — revisit once kingdom rivalry is implemented.
+ * small ≤400 tiles (20×15): 2 | medium ≤1000 (32×24): 3 | large ≤2000 (48×36): 4 | epic >2000: 5
+ */
+export const CULTURE_COUNT_BY_TILE_COUNT: Array<{ maxTiles: number; count: number }> = [
+  { maxTiles: 400,      count: 2 },
+  { maxTiles: 1000,     count: 3 },
+  { maxTiles: 2000,     count: 4 },
+  { maxTiles: Infinity, count: 5 },
+];
 export const CULTURE_STRENGTH_INDIVIDUAL = { min: 0.5, max: 0.9 };
 export const CULTURE_STRENGTH_FACTION = { min: 0.6, max: 0.95 };
 export const DUAL_CULTURE_PROBABILITY = 0.2;

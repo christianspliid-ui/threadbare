@@ -100,6 +100,7 @@ export function generateWorld(
   seed: number,
   livingCultures?: CultureForWorldgen[],
   lostCultures?: CultureForWorldgen[],
+  cultureNameMap?: Map<string, string>,
 ): WorldGenResult {
   const params: WorldGenParams = {
     cols,
@@ -149,6 +150,7 @@ export function generateWorld(
         ctx.provinceIds,
         cols,
         seed,
+        cultureNameMap,
       );
       baronies = political.baronies;
       kingdoms = political.kingdoms;

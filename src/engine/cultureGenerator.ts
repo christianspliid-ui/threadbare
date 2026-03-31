@@ -17,6 +17,7 @@ import { REACH_DOMAINS } from '../types/traits';
 import { REACH_VALUE_PAIR, ARCHETYPE_NAMES } from '../types/agent';
 import {
   CULTURE_COUNT,
+  CULTURE_COUNT_BY_TILE_COUNT,
   CULTURE_STRENGTH_INDIVIDUAL,
   CULTURE_STRENGTH_FACTION,
   DUAL_CULTURE_PROBABILITY,
@@ -321,6 +322,7 @@ export function generateCultureIdentities(
   cosmology: CosmologyProfile,
   rng: () => number,
   fundament?: FundamentState,
+  tileCount?: number,
 ): PregenCulture[] {
   const defaultWeight = 1 / 12;
   const sphereWeights = fundament?.sphereWeights ?? {
@@ -328,9 +330,14 @@ export function generateCultureIdentities(
     force: defaultWeight, matter: defaultWeight, energy: defaultWeight, life: defaultWeight,
     mind: defaultWeight, spirit: defaultWeight, time: defaultWeight, entropy: defaultWeight,
   };
-  const cultureCount = CULTURE_COUNT.min + Math.floor(
-    rng() * (CULTURE_COUNT.max - CULTURE_COUNT.min + 1),
-  );
+  // Scale culture count by map size; fall back to flat CULTURE_COUNT range if tileCount unknown.
+  let cultureCount: number;
+  if (tileCount !== undefined) {
+    const tier = CULTURE_COUNT_BY_TILE_COUNT.find(t => tileCount <= t.maxTiles) ?? CULTURE_COUNT_BY_TILE_COUNT[CULTURE_COUNT_BY_TILE_COUNT.length - 1];
+    cultureCount = tier.count;
+  } else {
+    cultureCount = CULTURE_COUNT.min + Math.floor(rng() * (CULTURE_COUNT.max - CULTURE_COUNT.min + 1));
+  }
 
   const cultures: PregenCulture[] = [];
   const usedBiomes = new Set<string>();

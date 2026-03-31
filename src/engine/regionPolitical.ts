@@ -69,12 +69,45 @@ function generateBaronyName(id: number, seed: number): string {
   return pickRandom(BARONY_ADJECTIVES, rng) + pickRandom(BARONY_NOUNS, rng);
 }
 
-function generateKingdomName(cultureId: string, seed: number, idx: number): string {
+/**
+ * Derive a short kingdom-label form from a full culture name.
+ * Strips leading articles/phrases ("The ", "Children of the ", "Keepers of the ")
+ * and truncates at " of the " for names assembled from the long pattern.
+ * Examples:
+ *   "The Wild Storm of the Deepwood"      → "Wild Storm"
+ *   "Children of the Shadow-Kept Mires"   → "Shadow-Kept Mires"
+ *   "The Blade Heights"                    → "Blade Heights"
+ *   "Stone-Set Iron"                       → "Stone-Set Iron"
+ */
+function toKingdomShortName(cultureName: string): string {
+  let s = cultureName;
+  // Strip leading articles/phrases (order matters — longer first)
+  for (const prefix of ['Children of the ', 'Keepers of the ', 'The ']) {
+    if (s.startsWith(prefix)) { s = s.slice(prefix.length); break; }
+  }
+  // Truncate at " of the " (pattern: "{foundation} {sphere} of the {biome}")
+  const ofTheIdx = s.indexOf(' of the ');
+  if (ofTheIdx > 0) s = s.slice(0, ofTheIdx);
+  return s;
+}
+
+function generateKingdomName(
+  cultureId: string,
+  seed: number,
+  idx: number,
+  cultureName?: string,
+): string {
   const rng = mulberry32(seed + idx * 3331 + cultureId.charCodeAt(0) * 17);
+  const noun = pickRandom(KINGDOM_NOUNS, rng);
+  if (cultureName) {
+    const short = toKingdomShortName(cultureName);
+    return `${noun} of ${short}`;
+  }
+  // Fallback: old prefix behaviour (only reached when no cultureNameMap provided)
   const prefix = cultureId.length > 4
     ? cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1, 4)
     : cultureId.slice(0, 1).toUpperCase() + cultureId.slice(1);
-  return `${prefix} ${pickRandom(KINGDOM_NOUNS, rng)}`;
+  return `${prefix} ${noun}`;
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────
@@ -98,6 +131,7 @@ export function assignPoliticalRegions(
   provinceIds: Int16Array,
   cols: number,
   seed: number,
+  cultureNameMap?: Map<string, string>,
 ): {
   baronies: BaronyRegion[];
   kingdoms: KingdomRegion[];
@@ -230,7 +264,7 @@ export function assignPoliticalRegions(
       capitalHex,
       baronyIds: sortedBaronyIds,
       centroid: { col: meanCol, row: meanRow },
-      name: generateKingdomName(cultureId, seed, kingdomId),
+      name: generateKingdomName(cultureId, seed, kingdomId, cultureNameMap?.get(cultureId)),
     });
   }
 
