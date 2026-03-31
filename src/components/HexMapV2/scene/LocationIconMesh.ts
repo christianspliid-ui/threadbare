@@ -35,6 +35,7 @@ import {
   CLEARED_LAIR_FILL_COLOR,
 } from '../locations/locationIconTextures';
 import { getActivePalette } from '../palette/activePalette';
+import { ANOMALY_SPHERE_MAP, ANOMALY_LOCATION_TYPES } from './anomalyConstants';
 import {
   SLOT_RING_RADIUS,
   VERTEX_ANGLES_DEG,
@@ -75,6 +76,10 @@ export interface LocationNode {
   dominantSphere?: string;
   /** Lair escalation tier — drives sizeClass override (minor=small, major=medium, legendary=full) */
   lairTier?: string;
+  /** True if this location is a natural anomaly (hidden treasure). */
+  isAnomalyLocation?: boolean;
+  /** True if the anomaly has been discovered through exploration. */
+  discoveredByExploration?: boolean;
 }
 
 /**
@@ -163,6 +168,18 @@ export function createLocationIconMesh(locations: LocationNode[]): THREE.Group {
     textureCache.set('cleared_lair', buildLocationIconTexture(clearedLairDef, undefined, CLEARED_LAIR_FILL_COLOR));
   }
 
+  // Build sphere-tinted anomaly textures keyed as "anomaly:{locationType}:{sphere}"
+  for (const [anomalyType, sphere] of Object.entries(ANOMALY_SPHERE_MAP)) {
+    const fillColor = LAIR_SPHERE_FILL_COLORS[sphere];
+    if (!fillColor) continue;
+    const anomalyDef = LOCATION_ICON_REGISTRY[anomalyType as keyof typeof LOCATION_ICON_REGISTRY];
+    if (!anomalyDef) continue;
+    const key = `anomaly:${anomalyType}`;
+    if (!textureCache.has(key)) {
+      textureCache.set(key, buildLocationIconTexture(anomalyDef, undefined, fillColor));
+    }
+  }
+
   // Build capital ring texture lazily (shared across all capitals)
   let capitalRingTexture: THREE.CanvasTexture | null = null;
 
@@ -249,6 +266,9 @@ function addLocationSprite(
   offsetY: number,
   scaleFactor: number,
 ): void {
+  // Skip undiscovered anomalies — they render via shimmer layer, not as icons
+  if (loc.isAnomalyLocation && !loc.discoveredByExploration) return;
+
   const iconDef = LOCATION_ICON_REGISTRY[loc.locationType as keyof typeof LOCATION_ICON_REGISTRY];
   if (!iconDef) return;
 
@@ -257,6 +277,10 @@ function addLocationSprite(
   if (loc.locationType === 'lair') {
     const sphere = loc.dominantSphere ?? 'unknown';
     textureKey = `lair:${LAIR_SPHERE_FILL_COLORS[sphere] !== undefined ? sphere : 'unknown'}`;
+  }
+  // Anomaly-specific texture key: sphere-tinted fill for discovered anomalies
+  if (loc.isAnomalyLocation && loc.discoveredByExploration && ANOMALY_LOCATION_TYPES.has(loc.locationType)) {
+    textureKey = `anomaly:${loc.locationType}`;
   }
 
   const texture = textureCache.get(textureKey);

@@ -6,16 +6,17 @@
 
 **v1.1 Low-Hanging Fruit Optimization** — Phases 19-22 in progress (separate agent). Determinism, wiring, performance, code hygiene.
 
-**Cleanup Sprint** — Closing walking skeleton gaps before moving to culture seeding, NPCs, and chain reactions. Doc cleanup, trivial wiring, hex action effects, trait prerequisites.
+**Culture Seeding Phase 1** (TB-031) — Territory-aware culture placement via province system. Shipped 2026-03-31.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **Next:** Culture seeding (TB-031), Agent seeding (TB-032), Chain reactions (TB-017), NPCs (TB-069)
+- **Next:** Agent seeding (TB-032), Chain reactions (TB-017), NPCs (TB-069), Economy second pass (TB-071)
 
 ## Recent Completions (2026-03-31)
 
+- **TB-031 Culture Seeding Phase 1:** Territory-aware culture placement. Cultures generated before worldgen, seeded into provinces, locations and actors inherit from province. Homeland/border strength, diaspora, dual-culture at borders. Fixed preferredBiomes bug.
 - **Location variety expansion:** 29 new location subtypes — sphere-resonant wonders (10), wilderness interest (6), natural anomalies/economy (10), monster/danger (3). Full icon set, sublocations, sphere tables, name gen. Grounded in Notion Place Archetypes.
 - TB-086/087/088: Mutation observability (`SimulationRuntime` with version counters, `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, per-session cache ownership, distance matrix cap raised 500→1200). 9 contract tests.
 

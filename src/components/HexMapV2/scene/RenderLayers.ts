@@ -17,6 +17,8 @@ export const RENDER_ORDER = {
   GEO_BORDERS:    6,
   BORDERS:        7,
   SIGNIFIERS:     8,
+  ANOMALY_SHIMMER:8.2,   // Between signifiers and locations — undiscovered hint glow
+  ANOMALY_HALO:   8.5,   // Between shimmer and locations — discovered ground ring
   LOCATIONS:      9,
   AGENTS:            10,
   ARMIES:            10.5,  // Above agents (10), below events (11)
@@ -40,6 +42,8 @@ export const LAYER_Z = {
   GEO_BORDERS:     0.032,
   BORDERS:         0.035,
   SIGNIFIERS:      0.070,
+  ANOMALY_SHIMMER: 0.071,   // Just above signifiers — undiscovered hint glow
+  ANOMALY_HALO:    0.075,   // Between signifiers and locations — discovered ground ring
   LOCATIONS:       0.080,
   TRAILS:          0.085,
   AGENTS:            6.000,  // Above 3D model geometry (city towers extend ~5 units above base)

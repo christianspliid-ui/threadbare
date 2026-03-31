@@ -12,42 +12,6 @@
 
 ---
 
-## ✅ TB-083 · Duplicate React Key Errors — Event ID Collisions (2026-03-30)
-
-Fixed — all event ID generators now include tick in their format string. See commit `7de0e7e`.
-
----
-
-## ✅ TB-084 · Graph Schema Gaps — `constructed_by` Edge + `bonded_to` Target Mismatch (2026-03-30)
-
-Fixed — `constructed_by` added to EdgeType + EDGE_SCHEMA, `starter_ashenmane_fang` type corrected to `artifact_legendary`. See commit `cebcfa5`.
-
----
-
-## ✅ TB-085 · CLI Stale Field References + Test Timeout (2026-03-30)
-
-Fixed — CLI `printDoom()` now uses correct `currentTick`/`totalTicks` fields. Multi-seed encounter liveness test gets 20s timeout. See commit `dd4907b`.
-
----
-
-## ✅ TB-086 · Mutation Observability — `worldVersion` / `structuralCacheVersion` + Touch API (2026-03-31)
-
-Fixed — `SimulationRuntime` with `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, 9 contract tests. See commit `ae428c8`.
-
----
-
-## ✅ TB-087 · Per-Session SimulationRuntime — Move Caches Out of Module Scope (2026-03-31)
-
-Fixed — `SimulationRuntime` owned by `useSimulation`, caches rebuild lazily from `structuralCacheVersion`. Legacy fallback for tests. See commit `ae428c8`.
-
----
-
-## ✅ TB-088 · Distance Matrix — Remove Silent Truncation (2026-03-31)
-
-Fixed — `MAX_DISTANCE_MATRIX_SIZE` raised from 500 to 1200, dev-mode warning on cap. See commit `ae428c8`.
-
----
-
 ## 💡 TB-071 · Economy Second Pass — Dynamic System Connections (2026-03-27)
 
 Make the economy dynamic by connecting encounters, factions, locations, and actions into the prosperity/wealth/trade systems. Key opportunities: encounter outcomes generating prosperity shocks, economic context modifying encounter scoring, wealth spending crossover actions (Gold→Iron/Shadow/Heart/Stone), trade route lifecycle driven by agent behavior (bandits, patrols, guild competition), unrest from economic causes (inequality, monopoly), divine economic interventions, and resource consumption creating scarcity pressure.
@@ -88,11 +52,12 @@ Auto-trigger the Meet The First encounter on the player's first visit to a popul
 
 ---
 
-## 💡 TB-031 · Culture Seeding — Territory-Aware Placement
+## ✅ TB-031 · Culture Seeding — Territory-Aware Placement (Phase 1)
 
-Cultures should have geographic coherence: homeland clusters, border zones, diaspora. Currently culture assignment ignores location entirely. Needs full design pass.
+Cultures now get geographic homelands via the province flood-fill system. Pipeline reordered: cultures generated before worldgen, provinces seeded per culture, locations and actors inherit culture from their province. Homeland/border strength differentiation, diaspora mechanics, backward-compatible.
 
 **Preliminary design:** `Docs/plans/2026-03-25-culture-and-agent-seeding-preliminary-design.md`
+**Completed:** 2026-03-31
 
 ---
 
@@ -118,16 +83,6 @@ Player targets foundation axes (chaos↔order, light↔darkness) directly. Globa
 
 **Depends on:** Generalized Action Targeting (✅), Hex Terrain State
 **Needs design:** Yes
-
----
-
-## ✅ TB-081 · Hex Action Remaining Effects (2026-03-30)
-
-All 8 remaining hex action effects wired via dynamic GraphOp generators (2026-03-30).
-
-**Tier 1 (full effects):** `amplify_flow` (magicalSaturation boost), `shift_dominion` (sphere rebalancing), `spark_encounter` (divine_spark event node).
-
-**Tier 2 (lightweight via apply_influence, full behavior when TB-069 lands):** `stir_people`, `summon_congregation`, `bestow_vision`, `incite_exodus`, `plant_dream` — each applies divine influence with behaviorTags that the agent motivation system will read.
 
 ---
 

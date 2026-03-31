@@ -35,6 +35,8 @@ import type { ArmyRenderData } from './scene/ArmyLayer';
 import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
+import { createAnomalyShimmerLayer, tickAnomalyShimmers, triggerAnomalyRevealFlash } from './scene/AnomalyShimmerMesh';
+import type { AnomalyShimmerLayerGroup } from './scene/AnomalyShimmerMesh';
 import { tickAgentAnimations } from './agents/agentAnimationState';
 import type { AgentAnimState } from './agents/agentAnimationState';
 import { createMovementTrailMesh, updateTrails } from './scene/MovementTrailMesh';
@@ -149,6 +151,8 @@ export interface HexMapV2Props {
   regionData?: RegionData;
   /** Location nodes to render as icons and labels (Plan 06-01+) */
   locations?: LocationNode[];
+  /** Anomaly shimmer/halo data — all anomalies including undiscovered */
+  anomalies?: import('./scene/AnomalyShimmerMesh').AnomalyShimmerData[];
   /** Pre-computed road paths from world graph for rendering */
   roadPaths?: import('./scene/RoadMesh').RoadPath[];
   /** Agent render data for Three.js sprite rendering (Plan 06-04+) */
@@ -280,7 +284,7 @@ function createHoverOverlayMesh(size: number): THREE.Mesh {
  */
 const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
   function HexMapV2(
-    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
+    { tiles, cols, rows, seed = 42, selectedHex, onHexClick, onHexHover, riverPaths, lakeIds, regionData, locations, anomalies, roadPaths, agents, armies, battles, visibilityMap, fogEnabled = false, showOrganicShore = true, overlayOpen = false },
     ref,
   ) {
     const containerRef = useRef<HTMLDivElement>(null);
@@ -304,6 +308,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Army and battle layer refs
     const armyLayerRef = useRef<ArmyLayerGroup | null>(null);
     const battleIndicatorLayerRef = useRef<BattleIndicatorLayerGroup | null>(null);
+    const anomalyShimmerLayerRef = useRef<AnomalyShimmerLayerGroup | null>(null);
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
@@ -623,6 +628,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         scene.add(battleIndicatorGroup.group);
         battleIndicatorLayerRef.current = battleIndicatorGroup;
 
+        // Build anomaly shimmer/halo layer — undiscovered glow + discovered ring
+        if (anomalies && anomalies.length > 0) {
+          const anomalyLayer = createAnomalyShimmerLayer(anomalies);
+          scene.add(anomalyLayer.shimmerGroup);
+          scene.add(anomalyLayer.haloGroup);
+          anomalyLayer.shimmerGroup.visible = false; // Hidden until regional+ zoom
+          anomalyLayer.haloGroup.visible = false;
+          anomalyShimmerLayerRef.current = anomalyLayer;
+        }
+
         // Create movement trail group — Line segments that fade over TRAIL_FADE_DURATION
         const trailGroup = createMovementTrailMesh();
         scene.add(trailGroup);
@@ -737,6 +752,11 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           const battleLayer = battleIndicatorLayerRef.current;
           if (battleLayer && battleLayer.materials.length > 0) {
             tickBattleIndicators(battleLayer, clock.getElapsedTime());
+          }
+          // Pulse anomaly shimmer/halo effects
+          const anomalyLayer = anomalyShimmerLayerRef.current;
+          if (anomalyLayer) {
+            tickAnomalyShimmers(anomalyLayer, clock.getElapsedTime());
           }
           // Tick sphere-colored particle bursts (action activation feedback)
           if (activeBurstsRef.current.length > 0) {
@@ -903,6 +923,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             battleIndicatorLayerRef.current.dispose();
             battleIndicatorLayerRef.current = null;
           }
+          if (anomalyShimmerLayerRef.current) {
+            anomalyShimmerLayerRef.current.dispose();
+            anomalyShimmerLayerRef.current = null;
+          }
           // Dispose agent sprite groups
           agentSpriteGroup.dispose();
           agentSpriteGroupRef.current = null;
@@ -942,7 +966,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // animation state (prevPositions, animStates, trailGroup) and preventing movement
     // animations from ever triggering.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, roadPaths]);
+    }, [tiles, cols, rows, seed, riverPaths, regionData, locations, anomalies, roadPaths]);
 
     // ── Fog update — delegated to useFogCulling hook ──
     useFogCulling({
@@ -977,6 +1001,16 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       agentSpriteGroup: agentSpriteGroupRef,
       trailGroup: trailGroupRef,
     });
+
+    // ── Anomaly shimmer/halo zoom sync — same visibility tier as locations ──
+    useEffect(() => {
+      const anomalyLayer = anomalyShimmerLayerRef.current;
+      const locGroup = locationGroupRef.current;
+      if (!anomalyLayer) return;
+      const visible = locGroup?.visible ?? false;
+      anomalyLayer.shimmerGroup.visible = visible;
+      anomalyLayer.haloGroup.visible = visible;
+    }, [zoomTier]);
 
     // Toggle organic shore (coastline) mesh visibility
     useEffect(() => {

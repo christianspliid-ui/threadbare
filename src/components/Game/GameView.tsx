@@ -336,8 +336,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         hexRow: n.properties.hexRow as number,
         name: n.name,
         isCapital: n.properties.locationType === 'capital' || n.properties.locationSubtype === 'capital',
+        isAnomalyLocation: n.properties.isAnomalyLocation === true,
+        discoveredByExploration: n.properties.discoveredByExploration === true,
       }));
   }, [gameState.graph, runtime.worldVersion]);
+
+  // ── Anomaly shimmer data (all anomalies including undiscovered) ──
+  const anomalyNodes = useMemo(() => {
+    return locationNodes
+      .filter(n => n.isAnomalyLocation)
+      .map(n => ({
+        hexCol: n.hexCol,
+        hexRow: n.hexRow,
+        locationType: n.locationType,
+        discovered: n.discoveredByExploration ?? false,
+      }));
+  }, [locationNodes]);
 
   const roadPaths = useMemo(() => extractRoadPaths(gameState.graph), [gameState.graph, runtime.structuralCacheVersion]);
 
@@ -1172,6 +1186,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   lakeIds={lakeIds}
                   regionData={regionData}
                   locations={locationNodes}
+                  anomalies={anomalyNodes}
                   roadPaths={roadPaths}
                   agents={agentRenderData}
                   armies={armyRenderData}

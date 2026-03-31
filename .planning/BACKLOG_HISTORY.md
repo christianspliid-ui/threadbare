@@ -2,7 +2,45 @@
 
 > Archive of completed backlog items. Active items are in `BACKLOG.md`.
 >
-> Archived: 2026-03-30
+> Archived: 2026-03-31
+
+---
+
+## ✅ TB-031 · Culture Seeding — Territory-Aware Placement Phase 1 (2026-03-25, complete 2026-03-31)
+
+Cultures now get geographic homelands via the province flood-fill system. Pipeline reordered: cultures generated before worldgen, passed to province seeder, then locations and actors inherit culture from their province. Fixed preferredBiomes/toleratedBiomes bug in composeCultureIdentity. Added homeland/border strength differentiation, diaspora mechanics (~10%), borderland dual-culture chance (40%). All backward-compatible via optional params.
+
+**Files:** cultureGenerator.ts (split into generateCultureIdentities + registerPregenCultures), hexGrid.ts (preserve provinceIds/provinces), worldSeed.ts (territory-aware assignment), gameInit.ts (reordered pipeline), culture.ts (new constants).
+
+---
+
+## ✅ TB-088 · Distance Matrix — Remove Silent Truncation (2026-03-31, complete 2026-03-31)
+
+`MAX_DISTANCE_MATRIX_SIZE` raised from 500 to 1200, dev-mode warning on cap. See commit `ae428c8`.
+
+---
+
+## ✅ TB-087 · Per-Session SimulationRuntime — Move Caches Out of Module Scope (2026-03-31, complete 2026-03-31)
+
+`SimulationRuntime` owned by `useSimulation`, caches rebuild lazily from `structuralCacheVersion`. Legacy fallback for tests. See commit `ae428c8`.
+
+---
+
+## ✅ TB-086 · Mutation Observability — `worldVersion` / `structuralCacheVersion` + Touch API (2026-03-31, complete 2026-03-31)
+
+`SimulationRuntime` with `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, 9 contract tests. See commit `ae428c8`.
+
+---
+
+## ✅ TB-085 · CLI Stale Field References + Test Timeout (2026-03-30, complete 2026-03-30)
+
+CLI `printDoom()` now uses correct `currentTick`/`totalTicks` fields. Multi-seed encounter liveness test gets 20s timeout. See commit `dd4907b`.
+
+---
+
+## ✅ TB-084 · Graph Schema Gaps — `constructed_by` Edge + `bonded_to` Target Mismatch (2026-03-30, complete 2026-03-30)
+
+`constructed_by` added to EdgeType + EDGE_SCHEMA, `starter_ashenmane_fang` type corrected to `artifact_legendary`. See commit `cebcfa5`.
 
 ---
 
@@ -517,33 +555,4 @@ Deep research into what kinds of origin-story dilemmas resonate across mythology
 
 ---
 
-## ✅ TB-039 · Increase Max Zoom from 15 to 20 (completed 2026-03-26)
-
-Raise `MAX_ZOOM` from 15 → 20 (~600px/hex apparent) to allow deeper close-up inspection of hexes.
-
-**Scope:**
-
-- Bump `MAX_ZOOM` in `D3ZoomCamera.ts` (one constant)
-- Keep four zoom tiers — hero-local threshold stays at k=15, giving a wider hero-local band (k=15–20) rather than adding a fifth tier
-- Verify agent portrait textures don't pixelate unacceptably at k=20 (~33% larger than current max); add sprite scale soft-cap in `AgentSpriteMesh` if needed
-- Verify signifier/location art resolution holds at ~600px/hex
-- Visual check of label overlays (region/location) at k=15–20
-- No performance concern — fewer hexes on screen at higher zoom means lower GPU load
-
-**Key files:** `D3ZoomCamera.ts`, `ZoomVisibilityMatrix.ts` (no change expected), `AgentSpriteMesh.ts` (possible scale cap), `RegionLabelOverlay.tsx`, `LocationLabelOverlay.tsx`
-**Needs design:** No — constants change + visual verification
-
----
-
-## ✅ TB-040 · TB-035 Integration Sweep — Wire Engine to UI (completed 2026-03-26)
-
-TB-035 engine modules are implemented and tested but multiple subsystems are not connected to the player-facing game. This ticket wires everything up so the features are actually playable.
-
-**Disconnected systems (audit 2026-03-26):**
-
-1. **MeetingEncounterModal** — Imported in GameView, state managed, but JSX never rendered. Modal cannot appear.
-2. **JourneyVignetteModal** — Vignette queue populated by engine, auto-pause logic works, but modal never rendered. Vignettes fire invisibly.
-3. **Encounter notifications** — Generated every tick by `phaseEncounterVisibility`, stored in `gameState.encounterNotifications`, but no component reads the array. Player never sees them.
-4. **Prose enrichment** — `enrichProse()` fully implemented (placeholder resolution, conditionals, NarrativeContext gathering) but never imported outside tests. All encounter/vignette prose displayed without enrichment.
-5. **Trace emission** — `return_resolution` and `ripple_consequence` categories defined in type system but never emitted. DebugPanel can't show what nothing produces.
-6. **Attention mode toggle** — `toggleAttentionMode()` exists with essence cost calculation, but no UI control exposes it to the player.
+## ✅ TB-039 · Increase Max 
