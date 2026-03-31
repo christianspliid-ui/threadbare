@@ -1163,6 +1163,33 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
+  // Phase 2a.1: Thread-bind familiarity grant — when a bind_thread_* action resolves
+  // successfully, grant the matching worship familiarity so knowledge level updates
+  // immediately (mirrors the initial familiarity set in gameInit for existing threads).
+  {
+    const prevActions = state.unifiedActions ?? [];
+    const nextActions = s.unifiedActions ?? [];
+    let famMap = s.familiarityMap;
+    for (const action of nextActions) {
+      if (!action.resolved || action.outcome !== 'success') continue;
+      if (!action.templateId.startsWith('bind_thread_')) continue;
+      if (!action.targetId) continue;
+      // Only grant if this action was just resolved this tick (wasn't resolved before)
+      const wasResolved = prevActions.find(a => a.actionId === action.actionId)?.resolved ?? false;
+      if (wasResolved) continue;
+      // Determine tier from the resolved thread edge (add_edge may have set it)
+      const threadEdges = s.graph.getIncomingEdges(action.targetId, 'thread');
+      const threadEdge = threadEdges.find(e => e.source === s.ascendantId);
+      const tier = (threadEdge?.properties as Record<string, unknown> | undefined)?.tier as number ?? 1;
+      const gainKey = `worship_tier_${tier}` as keyof typeof FAMILIARITY_GAINS;
+      const gain = FAMILIARITY_GAINS[gainKey] ?? FAMILIARITY_GAINS.worship_tier_1;
+      famMap = addFamiliarity(famMap, action.targetId, gain);
+    }
+    if (famMap !== s.familiarityMap) {
+      s = { ...s, familiarityMap: famMap };
+    }
+  }
+
   // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking)
   {
     const effectStates = s.effectStates ?? new Map();
