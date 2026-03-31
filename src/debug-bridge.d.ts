@@ -23,6 +23,10 @@ export interface DebugBridge {
   toggleDebugPanel: () => void;
   /** @internal React registers its toggle callback here */
   _registerDebugPanelToggle: (fn: (open?: boolean) => void) => void;
+  /** Find an agent by id or partial name, zoom the camera to their hex, and select them. Returns true if found. */
+  gotoAgent: (id: string) => boolean;
+  /** @internal GameView registers its gotoAgent handler here */
+  _registerGotoAgent: (fn: (id: string) => boolean) => void;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;

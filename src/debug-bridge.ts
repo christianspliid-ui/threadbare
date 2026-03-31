@@ -8,6 +8,8 @@
 if (import.meta.env.DEV) {
   // React components register their debug-panel toggle here
   let _debugPanelToggle: ((open?: boolean) => void) | null = null;
+  // GameView registers this to zoom + select an agent by id/name
+  let _gotoAgent: ((id: string) => boolean) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -16,6 +18,10 @@ if (import.meta.env.DEV) {
     toggleDebugPanel: () => { _debugPanelToggle?.(); },
     /** @internal React registers its toggle callback here */
     _registerDebugPanelToggle: (fn: (open?: boolean) => void) => { _debugPanelToggle = fn; },
+    /** Find an agent by id or partial name, zoom the camera to their hex, and select them. Returns true if found. */
+    gotoAgent: (id: string) => _gotoAgent?.(id) ?? false,
+    /** @internal GameView registers its gotoAgent handler here */
+    _registerGotoAgent: (fn: (id: string) => boolean) => { _gotoAgent = fn; },
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

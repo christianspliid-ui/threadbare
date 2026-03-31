@@ -706,6 +706,54 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleLocationClick(locationId);
   }, [handleLocationClick]);
 
+  // ── Debug bridge: gotoAgent ───────────────────────────────────────────────
+  // graphRef always holds the latest graph so the registered callback never
+  // closes over a stale reference (graph mutates in-place but rerenders swap
+  // the object). See load-bearing decision: "world graph is mutated in place".
+  const _gotoAgentGraphRef = useRef(gameState.graph);
+  _gotoAgentGraphRef.current = gameState.graph;
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerGotoAgent((id: string) => {
+      const graph = _gotoAgentGraphRef.current;
+      const actors = graph.getNodesByType('actor');
+      const match = actors.find(n =>
+        n.id === id ||
+        n.id.startsWith(id) ||
+        ((n.properties.name as string | undefined) ?? '').toLowerCase().includes(id.toLowerCase())
+      );
+      if (!match) return false;
+
+      // Walk located_at → parentLocationId chain to find hexCol/hexRow
+      let hexCol: number | undefined;
+      let hexRow: number | undefined;
+      const locEdges = graph.getOutgoingEdges(match.id, 'located_at');
+      if (locEdges.length > 0) {
+        let locNode = graph.getNode(locEdges[0].target) ?? null;
+        for (let depth = 0; depth < 3 && locNode; depth++) {
+          const p = locNode.properties as Record<string, unknown>;
+          if (typeof p.hexCol === 'number') {
+            hexCol = p.hexCol;
+            hexRow = p.hexRow as number;
+            break;
+          }
+          const parentId = p.parentLocationId as string | undefined;
+          locNode = parentId ? (graph.getNode(parentId) ?? null) : null;
+        }
+      }
+
+      if (hexCol !== undefined && hexRow !== undefined && hexMapRef.current) {
+        const px = hexToPixel({ col: hexCol, row: hexRow }, HEX_CONSTANTS.HEX_SIZE);
+        hexMapRef.current.centerOn(px.x, -px.y, RETINUE_EYE_ZOOM_SCALE);
+      }
+
+      handleAgentSelect(match.id);
+      return true;
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ Runs once — live deps accessed via refs (graphRef) or stable callbacks (handleAgentSelect, hexMapRef)
+
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {

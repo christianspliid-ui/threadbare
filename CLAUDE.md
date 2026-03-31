@@ -75,6 +75,12 @@ await window.__DEBUG.getHealthReport()
 await window.__DEBUG.exportDiagnostics()
 await window.__DEBUG.getCrashLog()
 
+// Navigate to an agent — zoom camera to their hex and open their detail panel:
+window.__DEBUG.gotoAgent('agent-id')        // exact id
+window.__DEBUG.gotoAgent('abc123')          // partial id prefix
+window.__DEBUG.gotoAgent('Serafina')        // partial name match (case-insensitive)
+// Returns true if found, false if no match
+
 // Encounter log export (returns TSV strings):
 const summary = await window.__DEBUG.getEncounterLogAll()   // { trackedAgentCount, totalEvents, agentIds }
 const logs = await window.__DEBUG.exportEncounterLogAll()    // { allAgentsTsv, perAgent: [{ tsv, filename }] }
