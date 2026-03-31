@@ -102,6 +102,8 @@ interface HexChronicleProps {
   controlEffects?: readonly ControlEffect[];
   /** Callback to voluntarily release a control effect (TB-049). */
   onReleaseEffect?: (effectId: string) => void;
+  /** Hex revelation state (which narrative layers have been discovered). */
+  hexRevelation?: import('../../types/unifiedAction').HexRevelation;
 }
 
 export const HexChronicle = memo(function HexChronicle({
@@ -121,6 +123,7 @@ export const HexChronicle = memo(function HexChronicle({
   seed,
   controlEffects,
   onReleaseEffect,
+  hexRevelation,
 }: HexChronicleProps) {
   // ── Narration ─────────────────────────────────────────────────────
 
@@ -933,6 +936,45 @@ export const HexChronicle = memo(function HexChronicle({
               ))}
             </div>
           )}
+
+          {/* Discovered sublocations (revealed ruins layer) */}
+          {hexRevelation?.ruins && (() => {
+            const discoveredSubs = locations.flatMap(loc => {
+              const edges = graph.getOutgoingEdges(loc.id, 'contains');
+              return edges
+                .map(e => graph.getNode(e.target))
+                .filter((n): n is GraphNode => n != null && n.type === 'location' && n.properties.hidden !== true);
+            });
+            if (discoveredSubs.length === 0) return null;
+            return (
+              <div style={{ marginTop: '16px' }}>
+                <p className="chronicle-prose" style={{ ...proseStyle, fontStyle: 'italic', opacity: 0.8 }}>
+                  Discovered sites:
+                </p>
+                {discoveredSubs.map(sub => (
+                  <div
+                    key={sub.id}
+                    onClick={() => onLocationClick(sub.id)}
+                    style={{
+                      padding: '4px 8px',
+                      marginTop: '4px',
+                      cursor: 'pointer',
+                      opacity: 0.9,
+                      fontSize: '13px',
+                      color: '#D4A574',
+                    }}
+                  >
+                    🏛 {sub.name}
+                    {sub.properties.subtype && (
+                      <span style={{ opacity: 0.6, marginLeft: '8px' }}>
+                        ({String(sub.properties.subtype).replace(/_/g, ' ')})
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
         </div>
       )}
 

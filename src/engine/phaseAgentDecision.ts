@@ -394,6 +394,7 @@ export function phaseAgentDecision(
         graph,
         state.tick,
         state.worldSoul?.fundament,
+        state.tiles,
       );
 
       // Emit scoring trace
@@ -662,8 +663,9 @@ export function phaseAgentDecision(
           }
 
           if (nearestContentLocId) {
-            // Use same pathfinding pattern as queue_movement
+            // Try graph-based pathfinding first (uses roads), fall back to hex A* (raw terrain)
             const graphPath = findShortestPath(graph, agentId, locationId, nearestContentLocId);
+            let didMove = false;
             if (graphPath && graphPath.path.length > 0) {
               const firstSeg = graphPath.roadSegments?.find(
                 seg => (seg.fromId === locationId && seg.toId === graphPath.path[0]) ||
@@ -683,7 +685,25 @@ export function phaseAgentDecision(
               graph.updateNode(agentId, {
                 properties: { ...actor.properties, movementState: forcedMovState, consecutiveIdleTicks: 0 },
               });
+              didMove = true;
+            } else {
+              // Graph pathfinding failed (no adjacent edges) — fall back to hex-based A*
+              const hexPath = buildHexMovementPath(graph, locationId, nearestContentLocId, state.tiles);
+              if (hexPath) {
+                const forcedMovState = initMovementState(
+                  hexPath.destinationId,
+                  hexPath.locationIds,
+                  hexPath.firstEdgeCost,
+                  state.tick,
+                );
+                graph.updateNode(agentId, {
+                  properties: { ...actor.properties, movementState: forcedMovState, consecutiveIdleTicks: 0 },
+                });
+                didMove = true;
+              }
+            }
 
+            if (didMove) {
               const destNode = graph.getNode(nearestContentLocId);
               newEvents.push({
                 id: `decision_forced_travel_${agentId}_${state.tick}`,

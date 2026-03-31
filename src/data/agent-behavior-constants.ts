@@ -20,7 +20,7 @@
 /** Offset added to step probability formula. Higher = agents attempt more encounters.
  * Formula: P = capability + modifiers - difficulty/100 + STEP_PROBABILITY_OFFSET
  * @range 0.3–0.8 (0.5 = conservative, 0.6 = moderate, 0.7 = aggressive) */
-export const STEP_PROBABILITY_OFFSET = 0.6;
+export const STEP_PROBABILITY_OFFSET = 0.7;
 
 /** Floor for desire multiplier — prevents zero scores for neutral encounters.
  * @range 0.01–0.5 (lower = stronger axiological influence on decisions) */
@@ -36,7 +36,7 @@ export const IDLE_SCORE_THRESHOLD = 0.0001;
 
 /** Flat boost when an active ambition's reach matches the encounter's primary reach.
  * @range 0.0–0.5 (higher = ambitions more strongly steer encounter selection) */
-export const AMBITION_REACH_BOOST = 0.3;
+export const AMBITION_REACH_BOOST = 0.5;
 
 // ═══════════════════════════════════════════════════════════════════
 // AWARENESS — Per-reach distance-limited visibility (encounterAwareness.ts)
@@ -327,7 +327,7 @@ export const AGREEMENT_MIN_TRUST = -0.5;
 
 /** Score reduction per repetition of the same encounter template.
  * @range 0.05–0.25 */
-export const FAMILIARITY_DECAY_PER_ATTEMPT = 0.12;
+export const FAMILIARITY_DECAY_PER_ATTEMPT = 0.20;
 
 /** Maximum total familiarity discount (0.7 = repeated encounters score at 30% of base).
  * @range 0.5–0.9 */
@@ -339,7 +339,7 @@ export const FAMILIARITY_MAX_PENALTY = 0.7;
 
 /** Flat additive score bonus for encounters at unvisited locations.
  * @range 0.1–0.6 */
-export const EXPLORATION_NOVELTY_BONUS = 0.3;
+export const EXPLORATION_NOVELTY_BONUS = 0.4;
 
 /** Ticks after first visit before exploration bonus fully decays (gradual, not cliff).
  * @range 20–100 */
@@ -387,7 +387,7 @@ export const MAX_COMPLETIONS_PER_TEMPLATE = 5;
  * Agent capability is 0–1 scaled to 0–100 for comparison.
  * Example: at threshold 35, an agent with cap=0.55 (55) outgrows diff=20 encounters (55-20=35).
  * @range 25–50 (lower = more aggressive retirement) */
-export const OUTGROWTH_CAP_THRESHOLD = 35;
+export const OUTGROWTH_CAP_THRESHOLD = 55;
 
 /** Whether outgrowth filtering is active. Toggle for tuning.
  * @range boolean */
@@ -404,6 +404,24 @@ export const COOLDOWN_FULL_POOL_SIZE = 15;
 /** Minimum cooldown ticks regardless of pool size.
  * @range 1–4 */
 export const COOLDOWN_MINIMUM = 2;
+
+// ═══════════════════════════════════════════════════════════════════
+// WORLD POPULATION — Agent count by map size (worldSeed.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Agent count range per map size. Actual count is randomized within range via seeded PRNG.
+ * Tuning tip: more agents = more social encounters, more co-location, less idle time.
+ * Rule of thumb: 1 agent per 20–40 habitable hexes keeps encounter density healthy. */
+export const AGENT_COUNT_BY_MAP_SIZE: Record<string, { min: number; max: number }> = {
+  small:  { min: 6, max: 10 },   // 20×15 = 300 hexes → ~1 per 30-50 hexes
+  medium: { min: 10, max: 16 },  // 32×24 = 768 hexes → ~1 per 48-77 hexes
+  large:  { min: 16, max: 24 },  // 48×36 = 1728 hexes → ~1 per 72-108 hexes
+  epic:   { min: 24, max: 36 },  // 64×48 = 3072 hexes → ~1 per 85-128 hexes
+};
+
+/** Fallback agent count when map size is unknown.
+ * @range { min: 8–12, max: 12–20 } */
+export const AGENT_COUNT_FALLBACK = { min: 8, max: 12 };
 
 // ═══════════════════════════════════════════════════════════════════
 // BORN-LATER SPAWN — Prefer content-rich locations (agentLifecycle.ts)
@@ -432,7 +450,7 @@ export const MID_GAME_THRESHOLD = 120;
 /** Multipliers applied to step difficulties per game tier.
  * early = easier encounters, late = harder. */
 export const DIFFICULTY_TIER_MULTIPLIERS: Record<string, number> = {
-  early: 0.8,
+  early: 1.0,
   mid: 1.0,
   late: 1.3,
 };
@@ -533,3 +551,55 @@ export const BOND_EFFICIENCY: Record<number, number> = {
   3: 0.8,   // devoted
   4: 0.95,  // exalted
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// RUINS EXPLORATION — Gated scoring for ruin-seeking behavior
+// ═══════════════════════════════════════════════════════════════════
+
+/** Location subtypes that qualify as ruin-type for scoring bonuses. */
+export const RUIN_LOCATION_SUBTYPES: ReadonlySet<string> = new Set([
+  'ruins', 'ruined_tower', 'ruined_city', 'ruined_village',
+  'unexplored_poi', 'ancient_vault',
+]);
+
+/** Trait tag that activates ruins scoring bonus on agents.
+ * Granted by Adventurers Guild membership, archetypes, or divine action. */
+export const RUINS_SEEKER_TRAIT_TAG = 'ruin_seeker';
+
+/** Base scoring bonus for encounters at ruin-type locations (requires ruin_seeker trait).
+ * @range 0.10–0.50 */
+export const RUINS_TRAIT_BONUS = 0.25;
+
+/** Additional scoring bonus per ruin_seeker trait level.
+ * @range 0.05–0.20 */
+export const RUINS_TRAIT_BONUS_PER_LEVEL = 0.10;
+
+/** Weight for explorationAttraction hex field set by hex.mark_ground.
+ * Applies regardless of trait — direct divine override.
+ * @range 0.10–0.50 */
+export const EXPLORATION_ATTRACTION_WEIGHT = 0.35;
+
+/** Score boost for Find encounters when agent has divineHunch (from hex.whisper_intuition).
+ * Applies regardless of trait — direct divine override.
+ * @range 0.10–0.50 */
+export const DIVINE_HUNCH_FIND_BONUS = 0.40;
+
+/** Exploration attraction strength written to hex by hex.mark_ground.
+ * @range 0.2–1.0 */
+export const MARK_GROUND_ATTRACTION_STRENGTH = 0.50;
+
+/** Divine hunch strength written to thread edge by hex.whisper_intuition.
+ * @range 0.5–2.0 */
+export const WHISPER_INTUITION_HUNCH_STRENGTH = 1.0;
+
+/** Duration in ticks for divine hunch from hex.whisper_intuition.
+ * @range 5–30 */
+export const WHISPER_INTUITION_DURATION_TICKS = 15;
+
+/** Essence reward per elder magic hidden site discovery.
+ * @range 1.0–10.0 */
+export const ELDER_SITE_ESSENCE_REWARD = 5.0;
+
+/** Essence reward per non-elder hidden site discovery.
+ * @range 0.5–3.0 */
+export const HIDDEN_SITE_ESSENCE_REWARD = 2.0;

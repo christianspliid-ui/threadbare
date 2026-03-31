@@ -61,6 +61,8 @@ export interface TickEvent {
     | 'control_effect_established' | 'control_effect_lapsed'
   // Revelation events
     | 'domain_revealed'
+  // Ruins discovery events
+    | 'hidden_site_discovered' | 'elder_site_discovered'
   // Army/battle events (TB-073)
     | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'army_attrition'
   // Quintessence events

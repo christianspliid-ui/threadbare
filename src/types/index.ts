@@ -118,6 +118,8 @@ export interface HexTile {
   divineInfluence?: number;
   /** Corruption level (0.0–1.0). Decays per tick (slower). Default 0. */
   corruption?: number;
+  /** Exploration attraction (0.0–1.0). Set by hex.mark_ground. Decays per tick. Default 0. */
+  explorationAttraction?: number;
   /** Original terrain before any transformation (for recovery). */
   baseTerrain?: TerrainType;
   /** Tick when terrain was last transformed (cooldown guard). */

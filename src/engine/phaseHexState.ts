@@ -53,6 +53,7 @@ export function phaseHexState(
     // Step 1: Apply any pending mutations for this hex
     let divineInfluence = tile.divineInfluence ?? 0;
     let corruption = tile.corruption ?? 0;
+    let explorationAttraction = tile.explorationAttraction ?? 0;
 
     for (const mutation of pendingMutations) {
       if (mutation.col === col && mutation.row === row) {
@@ -60,6 +61,8 @@ export function phaseHexState(
           divineInfluence = clamp01(divineInfluence + mutation.delta);
         } else if (mutation.field === 'corruption') {
           corruption = clamp01(corruption + mutation.delta);
+        } else if (mutation.field === 'explorationAttraction') {
+          explorationAttraction = clamp01(explorationAttraction + mutation.delta);
         }
       }
     }
@@ -72,10 +75,15 @@ export function phaseHexState(
     const prevCorruption = corruption;
     corruption = clamp01(corruption - HEX_CORRUPTION_DECAY_RATE);
 
-    // If both are zero and were zero before, skip terrain check and trace
+    // Step 3b: Decay explorationAttraction (same rate as divine influence)
+    const prevExplorationAttraction = explorationAttraction;
+    explorationAttraction = clamp01(explorationAttraction - HEX_DIVINE_INFLUENCE_DECAY_RATE);
+
+    // If all are zero and were zero before, skip terrain check and trace
     if (
       prevDivineInfluence === 0 && divineInfluence === 0 &&
       prevCorruption === 0 && corruption === 0 &&
+      prevExplorationAttraction === 0 && explorationAttraction === 0 &&
       pendingMutations.every(m => m.col !== col || m.row !== row)
     ) {
       return tile;
@@ -148,6 +156,7 @@ export function phaseHexState(
       terrain,
       divineInfluence,
       corruption,
+      explorationAttraction,
       baseTerrain,
       terrainTransformedTick,
     };

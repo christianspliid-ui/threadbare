@@ -26,7 +26,7 @@ export type NotificationMode = 'permanent' | 'temporary';
 export type NotificationCategoryKey =
   | 'encounters' | 'movement' | 'actions' | 'social'
   | 'lifecycle' | 'economy' | 'doom' | 'journeys'
-  | 'ambitions' | 'divine';
+  | 'ambitions' | 'divine' | 'discovery';
 
 export interface NotificationCategoryPrefs {
   enabled: boolean;
@@ -47,12 +47,13 @@ export const NOTIFICATION_CATEGORY_LABELS: Record<NotificationCategoryKey, strin
   journeys:   'Journeys',
   ambitions:  'Ambitions',
   divine:     'Divine Interventions',
+  discovery:  'Discoveries',
 };
 
 /** All category keys in display order */
 export const NOTIFICATION_CATEGORY_ORDER: NotificationCategoryKey[] = [
   'encounters', 'movement', 'actions', 'social', 'lifecycle',
-  'economy', 'doom', 'journeys', 'ambitions', 'divine',
+  'economy', 'doom', 'journeys', 'ambitions', 'divine', 'discovery',
 ];
 
 /** Shipped defaults for a fresh game */
@@ -67,6 +68,7 @@ export const DEFAULT_NOTIFICATION_PREFS: NotificationPreferences = {
   journeys:   { enabled: true, mode: 'temporary' },
   ambitions:  { enabled: true, mode: 'temporary' },
   divine:     { enabled: true, mode: 'temporary' },
+  discovery:  { enabled: true, mode: 'permanent' },
 };
 
 /** localStorage key for cross-session notification preference persistence */

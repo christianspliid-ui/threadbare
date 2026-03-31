@@ -87,7 +87,14 @@ import {
   PERSONALITY_SCORE_EXPONENT,
   WANDERLUST_MAX_DISCOUNT,
   WANDERLUST_PAIR,
+  RUIN_LOCATION_SUBTYPES,
+  RUINS_SEEKER_TRAIT_TAG,
+  RUINS_TRAIT_BONUS,
+  RUINS_TRAIT_BONUS_PER_LEVEL,
+  EXPLORATION_ATTRACTION_WEIGHT,
+  DIVINE_HUNCH_FIND_BONUS,
 } from '../data/agent-behavior-constants';
+import type { HexTile } from '../types/index';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
 
@@ -267,6 +274,114 @@ export function computeExplorationBonus(
   return EXPLORATION_NOVELTY_BONUS * remaining;
 }
 
+// ─── Ruins Exploration Scoring ──────────────────────────────────
+
+/** Adventurers Guild rank → effective ruin_seeker level */
+const GUILD_RANK_RUIN_LEVEL: Record<string, number> = {
+  journeyman: 1,
+  sergeant: 2,
+  lieutenant: 3,
+  leader: 3,
+};
+
+/**
+ * Compute ruins location bonus. Only active when the agent has a `ruin_seeker`
+ * trait (from divine bestowment or archetype), a possession with
+ * `grantsTraitWhileHeld: 'ruin_seeker'` (treasure maps), OR is a member of
+ * the Adventurers Guild (rank determines effective level).
+ *
+ * Returns 0 for non-ruin locations or agents without any ruin-seeking source.
+ */
+export function computeRuinsBonus(
+  graph: WorldGraph,
+  locationId: string,
+  agentId: string,
+): number {
+  // Check location is a ruin type
+  const locationNode = graph.getNode(locationId);
+  if (!locationNode) return 0;
+  const subtype = locationNode.properties?.subtype ?? locationNode.properties?.locationType;
+  if (!subtype || !RUIN_LOCATION_SUBTYPES.has(subtype as string)) return 0;
+
+  // Check agent has ruin_seeker trait via has_trait edges
+  let traitLevel = 0;
+  const traitEdges = graph.getOutgoingEdges(agentId, 'has_trait');
+  for (const edge of traitEdges) {
+    const traitNode = graph.getNode(edge.target);
+    if (!traitNode) continue;
+    const tags = traitNode.properties?.tags as string[] | undefined;
+    if (tags && tags.includes(RUINS_SEEKER_TRAIT_TAG)) {
+      traitLevel = Math.max(traitLevel, (edge.properties?.level as number) ?? 1);
+    }
+  }
+
+  // Check possessions that grant ruin_seeker while held (treasure maps)
+  const possessionEdges = graph.getOutgoingEdges(agentId, 'possesses');
+  for (const edge of possessionEdges) {
+    const item = graph.getNode(edge.target);
+    if (!item) continue;
+    if (item.properties?.grantsTraitWhileHeld === RUINS_SEEKER_TRAIT_TAG) {
+      const itemLevel = (item.properties?.grantedTraitLevel as number) ?? 1;
+      traitLevel = Math.max(traitLevel, itemLevel);
+    }
+  }
+
+  // Check Adventurers Guild membership via member_of edges
+  const memberEdges = graph.getOutgoingEdges(agentId, 'member_of');
+  for (const edge of memberEdges) {
+    const factionDefId = edge.properties?.factionDefId as string | undefined;
+    if (factionDefId !== 'adventuring_guild') continue;
+    const rank = (edge.properties?.rank as string) ?? 'journeyman';
+    const guildLevel = GUILD_RANK_RUIN_LEVEL[rank] ?? 1;
+    traitLevel = Math.max(traitLevel, guildLevel);
+  }
+
+  if (traitLevel === 0) return 0;
+
+  return RUINS_TRAIT_BONUS + traitLevel * RUINS_TRAIT_BONUS_PER_LEVEL;
+}
+
+/**
+ * Compute exploration attraction bonus from hex.mark_ground divine action.
+ * Applies regardless of trait — direct divine override.
+ */
+export function computeExplorationAttractionBonus(
+  tiles: readonly HexTile[] | undefined,
+  col: number | undefined,
+  row: number | undefined,
+): number {
+  if (!tiles || col === undefined || row === undefined) return 0;
+  const tile = tiles.find(t => t.coord.col === col && t.coord.row === row);
+  if (!tile) return 0;
+  return (tile.explorationAttraction ?? 0) * EXPLORATION_ATTRACTION_WEIGHT;
+}
+
+/**
+ * Compute divine hunch bonus for Find-type encounters.
+ * Written by hex.whisper_intuition to the thread edge.
+ * Applies regardless of trait — direct divine override.
+ */
+export function computeDivineHunchBonus(
+  graph: WorldGraph,
+  agentId: string,
+  encounterReach: string | undefined,
+  tick: number,
+): number {
+  // Divine hunch boosts encounters at the Eye and Shadow reaches (Find-oriented)
+  if (encounterReach !== 'eye' && encounterReach !== 'shadow') return 0;
+
+  // Check thread edges for divineHunch property
+  const threadEdges = graph.getIncomingEdges(agentId, 'thread');
+  for (const edge of threadEdges) {
+    const hunch = edge.properties?.divineHunch as
+      | { strength?: number; expiresAtTick?: number } | undefined;
+    if (!hunch) continue;
+    if (hunch.expiresAtTick !== undefined && hunch.expiresAtTick <= tick) continue;
+    return (hunch.strength ?? 1) * DIVINE_HUNCH_FIND_BONUS;
+  }
+  return 0;
+}
+
 // ─── Result Types ───────────────────────────────────────────────
 
 export interface ScoredCandidate {
@@ -284,6 +399,9 @@ export interface ScoredCandidate {
   chainBonus: number;
   resonance: number;
   globalResonance: number;
+  ruinsBonus: number;
+  attractionBonus: number;
+  hunchBonus: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -451,6 +569,7 @@ export function scoreAndSelect(
   graph: WorldGraph,
   tick: number,
   fundament?: FundamentState,
+  tiles?: readonly HexTile[],
 ): DecisionResult {
   // Fail-soft: missing agent → null result
   const agentNode = graph.getNode(agentId);
@@ -577,9 +696,19 @@ export function scoreAndSelect(
     // 15. C.2: Chain bonus — next stage in an active encounter chain
     const chainBonus = computeChainBonus(entry.templateId, chainProgress);
 
-    // 16. Final score (B.1: multiply by familiarity factor, B.2: add exploration bonus, C.2: add chain bonus)
+    // 16. Ruins exploration bonus (gated behind ruin_seeker trait or treasure map possession)
+    const ruinsBonus = computeRuinsBonus(graph, entry.locationId, agentId);
+
+    // 17. Exploration attraction bonus (divine action: hex.mark_ground)
+    const attractionBonus = computeExplorationAttractionBonus(tiles, entryHex?.col, entryHex?.row);
+
+    // 18. Divine hunch bonus (divine action: hex.whisper_intuition)
+    const hunchBonus = computeDivineHunchBonus(graph, agentId, entry.reachPrimary, tick);
+
+    // 19. Final score
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
-    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus;
+    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus
+      + ruinsBonus + attractionBonus + hunchBonus;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];
@@ -606,6 +735,9 @@ export function scoreAndSelect(
       chainBonus,
       resonance,
       globalResonance,
+      ruinsBonus,
+      attractionBonus,
+      hunchBonus,
       finalScore,
       action,
     });

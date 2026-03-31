@@ -14,7 +14,7 @@ export interface HexMutation {
   /** Hex row coordinate */
   readonly row: number;
   /** Which mutable field to modify */
-  readonly field: 'divineInfluence' | 'corruption';
+  readonly field: 'divineInfluence' | 'corruption' | 'explorationAttraction';
   /** Amount to add to the current value (clamped to 0.0–1.0 after applying) */
   readonly delta: number;
   /** Template ID or system identifier for tracing */

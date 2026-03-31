@@ -18,6 +18,8 @@ import { hexKey } from '../lib/hexKey';
 import { emitTrace } from './traceBuffer';
 import type { WorldGraph } from './graph';
 import type { GraphNode } from '../types/graph';
+import type { TickEvent } from '../types/gameState';
+import type { NotificationDirective } from '../types/notification';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -242,4 +244,46 @@ export function resolveHiddenSiteReveals(
   }
 
   return results;
+}
+
+// ─── Discovery TickEvent Builders ────────────────────────────────────────────
+
+let discoveryEventCounter = 0;
+export function resetDiscoveryEventCounter(): void { discoveryEventCounter = 0; }
+
+/**
+ * Build a TickEvent for a hidden site discovery.
+ * Elder magic sites get an alert with popup; non-elder sites get a toast.
+ */
+export function buildDiscoveryTickEvent(
+  reveal: HiddenSiteRevealResult,
+  tick: number,
+): TickEvent {
+  const isElder = reveal.hasElderMagic;
+  const notification: NotificationDirective = isElder
+    ? {
+        channel: 'alert',
+        icon: 'discovery',
+        popup: {
+          title: 'Elder Magic Uncovered',
+          body: `The ancient site "${reveal.sublocationName}" has been revealed. Elder essence flows from forgotten depths.`,
+        },
+      }
+    : {
+        channel: 'toast',
+        icon: 'discovery',
+      };
+
+  return {
+    id: `evt_discovery_${++discoveryEventCounter}_${tick}`,
+    tick,
+    type: isElder ? 'elder_site_discovered' : 'hidden_site_discovered',
+    message: isElder
+      ? `Ancient elder magic stirs — ${reveal.sublocationName} has been uncovered`
+      : `A hidden site has been revealed — ${reveal.sublocationName}`,
+    significance: isElder ? 0.9 : 0.6,
+    sphere: isElder ? 'spirit' : undefined,
+    hexCoords: { col: reveal.hexCol, row: reveal.hexRow },
+    notification,
+  };
 }

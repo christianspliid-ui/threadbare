@@ -94,6 +94,12 @@ export interface PossessionNodeProperties {
   source?: string;
   sphereAffinity?: string;
   onUseTriggers?: OnUseTrigger[];
+  /** Trait tag granted while agent possesses this item (e.g. 'ruin_seeker' for treasure maps). */
+  grantsTraitWhileHeld?: string;
+  /** Effective trait level granted by this possession (default: 1). */
+  grantedTraitLevel?: number;
+  /** TickEvent type that triggers consumption of this item (e.g. 'hidden_site_discovered'). */
+  consumeOnEvent?: string;
 }
 
 // ─── Possession Edge Properties ─────────────────────────────────

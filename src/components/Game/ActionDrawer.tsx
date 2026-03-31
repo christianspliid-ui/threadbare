@@ -79,6 +79,10 @@ export interface ActionDrawerProps {
   onSlotClick: (slotId: string) => void;
   onClose: () => void;
   playingCardId?: string | null;
+  /** Hex revelation state — used to show lock badges on unrevealed layers. */
+  hexRevelation?: import('../../types/unifiedAction').HexRevelation;
+  /** Count of gated actions per unrevealed layer (pre-computed by caller). */
+  gatedActionCounts?: Partial<Record<import('../../types/unifiedAction').NarrativeLayer, number>>;
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────
@@ -92,7 +96,7 @@ export interface ActionDrawerProps {
  * Click backdrop or Escape → card returns to hand.
  */
 export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
-  ({ open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose, playingCardId }) => {
+  ({ open, slots, targetName: _targetName, targetLabel: _targetLabel, onSlotClick, onClose, playingCardId, hexRevelation, gatedActionCounts }) => {
     // IA-003: Progressive disclosure — locked actions collapsed by default
     const [showLocked, setShowLocked] = useState(false);
 
@@ -291,35 +295,40 @@ export const ActionDrawer: React.FC<ActionDrawerProps> = React.memo(
             >
               {LAYER_CONFIG.map(({ key, label, icon }) => {
                 const count = layerCounts[key];
-                if (count === 0) return null;
+                const gatedCount = gatedActionCounts?.[key] ?? 0;
+                const isRevealed = hexRevelation?.[key] ?? false;
+                const isLocked = !isRevealed && gatedCount > 0;
+                if (count === 0 && !isLocked) return null;
                 const isActive = selectedLayer === key;
                 return (
                   <button
                     key={key}
                     data-testid={`layer-tab-${key}`}
-                    onClick={() => setSelectedLayer(key)}
+                    onClick={() => !isLocked && setSelectedLayer(key)}
+                    title={isLocked ? `${gatedCount} action${gatedCount !== 1 ? 's' : ''} locked — reveal this layer first` : undefined}
                     style={{
                       padding: '4px 10px',
                       borderRadius: '6px',
                       border: 'none',
-                      cursor: 'pointer',
+                      cursor: isLocked ? 'not-allowed' : 'pointer',
                       fontSize: '12px',
                       fontFamily: 'var(--font-ui, sans-serif)',
                       fontWeight: isActive ? 600 : 400,
                       letterSpacing: '0.03em',
-                      color: isActive ? 'var(--text-gold, #d4af37)' : 'var(--text-secondary, #a09880)',
+                      color: isLocked ? 'var(--text-muted, #666)' : isActive ? 'var(--text-gold, #d4af37)' : 'var(--text-secondary, #a09880)',
                       background: isActive ? 'rgba(212, 175, 55, 0.15)' : 'transparent',
+                      opacity: isLocked ? 0.5 : 1,
                       transition: 'all 150ms ease',
                     }}
                   >
-                    <span style={{ marginRight: '4px' }}>{icon}</span>
+                    <span style={{ marginRight: '4px' }}>{isLocked ? '🔒' : icon}</span>
                     {label}
                     <span style={{
                       marginLeft: '4px',
                       fontSize: '10px',
                       opacity: 0.7,
                     }}>
-                      {count}
+                      {isLocked ? gatedCount : count}
                     </span>
                   </button>
                 );

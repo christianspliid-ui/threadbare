@@ -48,6 +48,13 @@ export const INCITE_EXODUS_STRENGTH = 0.5;
 export const PLANT_DREAM_STRENGTH = 0.5;
 export const SUMMON_CONGREGATION_STRENGTH = 0.4;
 
+// Ruins exploration constants (re-exported from central tuning file)
+import {
+  MARK_GROUND_ATTRACTION_STRENGTH,
+  WHISPER_INTUITION_HUNCH_STRENGTH,
+  WHISPER_INTUITION_DURATION_TICKS,
+} from '../data/agent-behavior-constants';
+
 // TB-047: People & Ruins one-shot deltas
 export const HEX_SCATTER_CORRUPTION_DELTA = 0.15;
 export const HEX_SMITE_CORRUPTION_DELTA = 0.1;
@@ -58,7 +65,7 @@ export const HEX_DESECRATE_CORRUPTION_DELTA = 0.35;
 // ─── Mutation Definitions ─────────────────────────────────────────────────────
 
 interface HexActionMutationDef {
-  readonly field: 'divineInfluence' | 'corruption';
+  readonly field: 'divineInfluence' | 'corruption' | 'explorationAttraction';
   readonly successDelta: number;
   readonly failureDelta: number;
 }
@@ -163,10 +170,14 @@ const HEX_ACTION_MUTATIONS: Readonly<Record<string, HexActionMutationDef>> = {
     successDelta: HEX_DESECRATE_CORRUPTION_DELTA,
     failureDelta: 0,
   },
-  // hex.mark_ground — no hex mutation (exploration hook, needs exploration system)
+  'hex.mark_ground': {
+    field: 'explorationAttraction',
+    successDelta: MARK_GROUND_ATTRACTION_STRENGTH,
+    failureDelta: 0,
+  },
   // hex.plant_dream — no hex mutation; dynamic GraphOp generator (TB-081)
   // hex.read_stones — no mutation (observation only)
-  // hex.whisper_intuition — no mutation (observation only)
+  // hex.whisper_intuition — no hex mutation; dynamic GraphOp generator
   // hex.restore_fragment — no hex mutation; GraphOp creates sublocation (see HEX_ACTION_GRAPH_OPS)
   // hex.rewrite_history — no hex mutation; GraphOp updates location (see HEX_ACTION_GRAPH_OPS)
 };
@@ -473,22 +484,87 @@ const HEX_ACTION_GRAPH_OP_GENERATORS: Readonly<Record<string, GraphOpGenerator>>
     }));
   },
 
-  'hex.plant_dream': (graph, col, row) => {
+  'hex.plant_dream': (graph, col, row, tick) => {
     // Personal-scale: affects first agent found on this hex
     const agentIds = getAgentIdsAtHex(graph, col, row);
     if (agentIds.length === 0) return [];
+    const targetAgent = agentIds[0];
+
+    const ops: GraphOp[] = [
+      // Existing: axiological drift toward novelty/courage
+      {
+        op: 'apply_influence' as const,
+        target: targetAgent,
+        influence: {
+          interventionType: 'plant_dream',
+          sphere: 'mind',
+          initialStrength: PLANT_DREAM_STRENGTH,
+          decayRate: 0.03,
+          minimumStrength: 0,
+          maxDuration: 25,
+          valueDrifts: { tradition_novelty: 0.10, courage_prudence: 0.06 },
+          behaviorTag: 'dreamer',
+        },
+      },
+      // New: grant temporary ruin_seeker trait (expires after 25 ticks)
+      {
+        op: 'add_node' as const,
+        node: {
+          id: `trait_ruin_seeker_dream_${targetAgent}_${tick}`,
+          type: 'trait',
+          name: 'Dream of Buried Places',
+          properties: {
+            subcategory: 'bestowed',
+            description: 'A divine dream of ancient stone and hidden chambers.',
+            importance: 0.4,
+            maxLevel: 1,
+            visibility: 'divine_only',
+            domainContributions: { eye: 0.02 },
+            tags: ['ruin_seeker', 'divine_dream'],
+            flavorText: 'In the dream, stairs descend into warm darkness. Something waits below.',
+          },
+        },
+      },
+      {
+        op: 'add_edge' as const,
+        edge: {
+          id: `has_trait_ruin_seeker_dream_${targetAgent}_${tick}`,
+          type: 'has_trait',
+          source: targetAgent,
+          target: `trait_ruin_seeker_dream_${targetAgent}_${tick}`,
+          properties: {
+            level: 1,
+            acquiredTick: tick ?? 0,
+            lastReinforcedTick: tick ?? 0,
+            source: 'divine_dream',
+            visibility: 'divine_only',
+            ticksRemaining: 25,
+          },
+        },
+      },
+    ];
+
+    return ops;
+  },
+
+  'hex.whisper_intuition': (graph, col, row, tick) => {
+    // Personal-scale: writes divineHunch to first agent's thread edge
+    const agentIds = getAgentIdsAtHex(graph, col, row);
+    if (agentIds.length === 0) return [];
+    const targetAgent = agentIds[0];
+
+    // Find thread edge from ascendant to this agent
+    const threadEdges = graph.getIncomingEdges(targetAgent, 'thread');
+    if (threadEdges.length === 0) return [];
+
     return [{
-      op: 'apply_influence' as const,
-      target: agentIds[0],
-      influence: {
-        interventionType: 'plant_dream',
-        sphere: 'mind',
-        initialStrength: PLANT_DREAM_STRENGTH,
-        decayRate: 0.03,
-        minimumStrength: 0,
-        maxDuration: 25,
-        valueDrifts: { tradition_novelty: 0.10, courage_prudence: 0.06 },
-        behaviorTag: 'dreamer',
+      op: 'update_edge' as const,
+      edgeId: threadEdges[0].id,
+      changes: {
+        divineHunch: {
+          strength: WHISPER_INTUITION_HUNCH_STRENGTH,
+          expiresAtTick: (tick ?? 0) + WHISPER_INTUITION_DURATION_TICKS,
+        },
       },
     }];
   },

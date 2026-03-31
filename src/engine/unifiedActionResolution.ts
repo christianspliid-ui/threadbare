@@ -15,6 +15,7 @@
  */
 
 import type { GameState, TickEvent } from '../types/gameState';
+import type { SphereName } from '../types/index';
 import type {
   UnifiedAction,
   UnifiedActionTemplate,
@@ -36,6 +37,9 @@ import {
   resolveContestationPair,
 } from './contestation';
 import { resolveHexActionFull, isHexTargetId, parseHexTargetId } from './hexActionBridge';
+import { buildDiscoveryTickEvent } from './revelationResolver';
+import { computeElderEssenceReward } from './elderEssenceReward';
+import { consumeTreasureMapsAtHex } from './treasureMapConsumption';
 import { appendEvent } from './encounterTimeline';
 import type { HexMutation } from '../types/hexMutation';
 import type { RevelationMutation } from './revelationResolver';
@@ -441,6 +445,36 @@ export function phaseUnifiedActionProgress(
             locationId: completing_action.targetId,
             tick: state.tick,
           }, { tick: state.tick, emitTrace: true });
+        }
+        // Emit discovery TickEvents and essence rewards for hidden site reveals
+        if (result.hiddenSiteReveals.length > 0) {
+          for (const reveal of result.hiddenSiteReveals) {
+            events.push(buildDiscoveryTickEvent(reveal, state.tick));
+            // Grant essence reward for discovery
+            const reward = computeElderEssenceReward(reveal, state.tick);
+            if (state.essencePool) {
+              for (const [sphere, delta] of Object.entries(reward.deltas)) {
+                const s = sphere as SphereName;
+                if (state.essencePool[s] !== undefined) {
+                  state.essencePool[s] += delta;
+                }
+              }
+              events.push({
+                id: `evt_essence_discovery_${reveal.sublocationId}_${state.tick}`,
+                tick: state.tick,
+                type: 'essence_gain',
+                message: `Gained ${reward.totalReward.toFixed(1)} essence from ${reveal.sublocationName}`,
+                significance: reveal.hasElderMagic ? 0.7 : 0.4,
+                sphere: reveal.hasElderMagic ? 'spirit' : undefined,
+                hexCoords: { col: reveal.hexCol, row: reveal.hexRow },
+              });
+            }
+          }
+          // Consume treasure maps held by agents at this hex
+          const mapEvents = consumeTreasureMapsAtHex(
+            state.graph, coords.col, coords.row, state.tick, 'hidden_site_discovered',
+          );
+          events.push(...mapEvents);
         }
       }
     }
