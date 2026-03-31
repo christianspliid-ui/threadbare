@@ -20,8 +20,8 @@
 ### Performance
 
 - [ ] **PERF-01**: Prose resolver output cached by agent state hash; cache hit skips re-computation (proseResolvers.ts)
-- [ ] **PERF-02**: Encounter cache rebuild threshold profiled and tuned with documented rationale (encounterCache.ts)
-- [ ] **PERF-03**: Large data files code-split via Vite manualChunks — encounter-content, action-templates, culture-content loaded on demand
+- [x] **PERF-02**: Encounter cache rebuild threshold profiled and tuned with documented rationale (encounterCache.ts)
+- [x] **PERF-03**: Large data files code-split via Vite manualChunks — encounter-content, action-templates, culture-content loaded on demand
 
 ### Code Hygiene
 
@@ -62,8 +62,8 @@
 | WIRE-02 | Phase 20 | Complete |
 | WIRE-03 | Phase 20 | Complete |
 | PERF-01 | Phase 21 | Pending |
-| PERF-02 | Phase 21 | Pending |
-| PERF-03 | Phase 21 | Pending |
+| PERF-02 | Phase 21 | Complete |
+| PERF-03 | Phase 21 | Complete |
 | HYGN-01 | Phase 22 | Pending |
 | HYGN-02 | Phase 22 | Pending |
 | HYGN-03 | Phase 22 | Pending |

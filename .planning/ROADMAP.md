@@ -92,7 +92,7 @@ Plans:
   1. Opening an agent detail panel a second time (same agent, no state change) is visibly faster — prose is served from cache, not recomputed
   2. The encounter-content, action-templates, and culture-content data files load as separate lazy chunks, not in the initial bundle
   3. The encounter cache rebuild threshold is documented in a named constant with a comment explaining the profiled rationale; a developer can change it in one place
-**Plans:** 1/3 plans executed
+**Plans:** 2/3 plans executed
 Plans:
 - [ ] 21-01-PLAN.md — Add prose cache to generateEntityProse with tick-based eviction
 - [ ] 21-02-PLAN.md — Profile and document encounter cache rebuild threshold rationale
@@ -119,7 +119,7 @@ Plans:
 | 1-18. Foundation | v1.0 | 81/81 | Complete | 2026-03-30 |
 | 19. Determinism | 2/2 | Complete    | 2026-03-30 | - |
 | 20. Wiring | 2/2 | Complete    | 2026-03-30 | - |
-| 21. Performance | 1/3 | In Progress|  | - |
+| 21. Performance | 2/3 | In Progress|  | - |
 | 22. Code Hygiene | v1.1 | 0/TBD | Not started | - |
 
 ---
