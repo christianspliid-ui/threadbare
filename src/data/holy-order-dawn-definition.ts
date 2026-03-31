@@ -11,7 +11,7 @@
  */
 
 import type { FactionDefinition } from '../types/faction';
-import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-definitions';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-constants';
 
 export const HOLY_ORDER_DAWN_DEFINITION: FactionDefinition = {
   id: 'holy_order_dawn',

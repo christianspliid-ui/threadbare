@@ -10,7 +10,7 @@
  */
 
 import type { FactionDefinition } from '../types/faction';
-import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-definitions';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-constants';
 
 export const BUILDERS_FELLOWSHIP_DEFINITION: FactionDefinition = {
   id: 'builders_fellowship',

@@ -21,55 +21,27 @@ import { HOLY_ORDER_DAWN_DEFINITION } from './holy-order-dawn-definition';
 import { BUILDERS_FELLOWSHIP_DEFINITION } from './builders-fellowship-definition';
 import { LOREKEEPERS_COVENANT_DEFINITION } from './lorekeepers-covenant-definition';
 
-// ─── Constants ───────────────────────────────────────────────────────────
-
-/** Base decay rate (overridable per faction definition) */
-export const FACTION_REPUTATION_DECAY_PER_TICK = 0.003;
-
-/** Reputation on joining (just above zero) */
-export const FACTION_JOIN_STARTING_REPUTATION = 0.05;
-
-/** Base reputation per completed quest step */
-export const FACTION_QUEST_REPUTATION_GAIN = 0.04;
-
-/** Bonus on full quest completion */
-export const FACTION_QUEST_REPUTATION_BONUS_SUCCESS = 0.08;
-
-/** Bonus reputation for passing promotion encounter */
-export const FACTION_PROMOTION_REPUTATION_BOOST = 0.05;
-
-/** Reputation at which membership becomes inert */
-export const FACTION_EXPULSION_THRESHOLD = 0.0;
-
-/** Minimum guild halls per faction instance */
-export const FACTION_GUILD_HALL_COUNT_MIN = 3;
-
-/** Maximum guild halls per faction instance */
-export const FACTION_GUILD_HALL_COUNT_MAX = 5;
-
-/** Reputation gain per completed quest step */
-export const FACTION_REPUTATION_GAIN_PER_STEP = 0.04;
-
-/** Extra reputation for completing all steps */
-export const FACTION_REPUTATION_COMPLETION_BONUS = 0.08;
-
-/** Minimum ticks between rank changes (prevents flicker at boundary) */
-export const FACTION_RANK_CHANGE_COOLDOWN_TICKS = 5;
-
-/** Roll margin for "promoted with complication" */
-export const PROMOTION_PARTIAL_SUCCESS_MARGIN = 0.10;
-
-/** Ticks before promotion encounter can reappear after failure */
-export const PROMOTION_ENCOUNTER_COOLDOWN = 30;
-
-/** Gold reward on promotion */
-export const PROMOTION_REWARD_GOLD = 50;
-
-/** AlertBar icon for faction events */
-export const FACTION_ALERT_GLYPH = '⚜';
-
-/** Amber/gold, Threadbare palette */
-export const FACTION_ALERT_COLOR = '#D4A574';
+// Import constants for local use (e.g. ADVENTURING_GUILD_DEFINITION below) and
+// re-export so existing callers of faction-definitions.ts keep working.
+export {
+  FACTION_REPUTATION_DECAY_PER_TICK,
+  FACTION_JOIN_STARTING_REPUTATION,
+  FACTION_QUEST_REPUTATION_GAIN,
+  FACTION_QUEST_REPUTATION_BONUS_SUCCESS,
+  FACTION_PROMOTION_REPUTATION_BOOST,
+  FACTION_EXPULSION_THRESHOLD,
+  FACTION_GUILD_HALL_COUNT_MIN,
+  FACTION_GUILD_HALL_COUNT_MAX,
+  FACTION_REPUTATION_GAIN_PER_STEP,
+  FACTION_REPUTATION_COMPLETION_BONUS,
+  FACTION_RANK_CHANGE_COOLDOWN_TICKS,
+  PROMOTION_PARTIAL_SUCCESS_MARGIN,
+  PROMOTION_ENCOUNTER_COOLDOWN,
+  PROMOTION_REWARD_GOLD,
+  FACTION_ALERT_GLYPH,
+  FACTION_ALERT_COLOR,
+} from './faction-constants';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-constants';
 
 // ─── Adventuring Guild Definition ────────────────────────────────────────
 

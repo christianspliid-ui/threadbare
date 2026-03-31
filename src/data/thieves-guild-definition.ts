@@ -10,7 +10,7 @@
  */
 
 import type { FactionDefinition } from '../types/faction';
-import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-definitions';
+import { FACTION_REPUTATION_DECAY_PER_TICK } from './faction-constants';
 
 export const THIEVES_GUILD_DEFINITION: FactionDefinition = {
   id: 'thieves_guild',
