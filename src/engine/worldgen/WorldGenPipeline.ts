@@ -20,6 +20,7 @@ import { runClimatePass } from './passes/pass04-climate';
 import { runHydrologyPass } from './passes/pass05-hydrology';
 import { runTempReassessPass } from './passes/pass06-tempReassess';
 import { runBiomePass } from './passes/pass07-biome';
+import { runCultureTerrainNudgePass } from './passes/pass07b-cultureTerrainNudge';
 import { runSmoothingPass } from './passes/pass08-smoothing';
 import { runValidationPass } from './passes/pass09-validation';
 import type { WorldGenContext, WorldGenParams } from './types';
@@ -37,6 +38,7 @@ export class WorldGenPipeline {
     this._runPass('hydrology', () => runHydrologyPass(ctx, params));
     this._runPass('tempReassess', () => runTempReassessPass(ctx));
     this._runPass('biome', () => runBiomePass(ctx));
+    this._runPass('cultureTerrainNudge', () => runCultureTerrainNudgePass(ctx));
     this._runPass('smoothing', () => runSmoothingPass(ctx));
     this._runPass('validation', () => runValidationPass(ctx, {}));
     return ctx;
