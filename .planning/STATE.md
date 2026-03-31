@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Low-Hanging Fruit Optimization
 status: executing
-stopped_at: Completed 21-03-PLAN.md
-last_updated: "2026-03-31T09:52:23.735Z"
+stopped_at: Completed 21-01-PLAN.md (prose cache)
+last_updated: "2026-03-31T09:58:56.742Z"
 last_activity: "2026-03-31 — Plan 02 complete: CACHE_REBUILD_THRESHOLD documented as design placeholder, redundant import removed"
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 10
 ---
 
@@ -55,6 +55,8 @@ Progress: [█░░░░░░░░░] 10% (v1.1 — 1/? plans complete)
 - [21-02]: Unused local import of CACHE_REBUILD_THRESHOLD in encounterCache.ts removed (re-export kept for consumers)
 - [Phase 21-performance]: manualChunks used instead of dynamic imports for data files — data needed at startup, parallel static chunks provide network efficiency without async complexity
 - [Phase 21-performance]: [21-03] data-encounter (377 kB) + data-action-templates (141 kB) + data-culture (64 kB) split from main bundle — main reduced from 3277 kB to 2695 kB (-582 kB, -17.8%)
+- [Phase 21-performance]: tick param optional with default 0 in generateEntityProse — no breaking change for existing callers
+- [Phase 21-performance]: [PERF-01] Module-level Map cache key is (nodeId, tick, mode) — seed excluded because it's constant per session
 
 ### Pending Todos
 
@@ -68,6 +70,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-31T09:52:23.733Z
-Stopped at: Completed 21-03-PLAN.md
+Last session: 2026-03-31T09:58:56.740Z
+Stopped at: Completed 21-01-PLAN.md (prose cache)
 Resume file: None
