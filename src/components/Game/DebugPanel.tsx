@@ -1549,7 +1549,7 @@ export const DebugPanel = React.memo(function DebugPanel({ currentTick, followAg
           <span style={{ fontSize: '12px', color: PANEL_STYLES.tickColor, marginLeft: '8px' }}>tick = {currentTick}</span>
           {onClose && (
             <button
-              onClick={onClose}
+              onClick={() => onClose?.()}
               aria-label="Close Debug Panel"
               title="Close (Esc)"
               style={{
