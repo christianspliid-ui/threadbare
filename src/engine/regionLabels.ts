@@ -123,9 +123,23 @@ export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
     }
   }
 
-  // Province labels — at centroid, width from province hexes
+  // Identify capital provinces — one per domain. Their province label is suppressed
+  // because the domain label already names the capital territory.
+  const capitalProvinceIds = new Set<number>();
+  for (const d of regionData.domains) {
+    const capitalProvince = regionData.provinces.find(
+      p => d.provinceIds.includes(p.id) &&
+           p.capitalHex.col === d.capitalHex.col &&
+           p.capitalHex.row === d.capitalHex.row
+    );
+    if (capitalProvince) capitalProvinceIds.add(capitalProvince.id);
+  }
+
+  // Province labels — at centroid, width from province hexes.
+  // Capital provinces (covered by the domain label) are skipped.
   for (const p of regionData.provinces) {
     try {
+      if (capitalProvinceIds.has(p.id)) continue;
       const { x, y } = hexToWorld(p.centroid.col, p.centroid.row);
       labels.push({
         id: `province-${p.id}`,

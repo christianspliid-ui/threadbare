@@ -135,6 +135,37 @@ describe('generateRegionLabels', () => {
     expect(geo?.text).toBe('Region 0');
   });
 
+  it('suppresses province label for the capital province of each domain', () => {
+    // Capital province — capitalHex matches domain's capitalHex
+    const capitalProvince: ProvinceRegion = {
+      id: 0,
+      cultureId: 'c1',
+      capitalHex: { col: 10, row: 5 },
+      geographicRegionIds: [],
+      hexes: [{ col: 10, row: 5 }],
+      centroid: { col: 10, row: 5 },
+      name: 'CapitalProvince',
+    };
+    const nonCapitalProvince = makeProvinceRegion(1);
+    const domain: DomainRegion = {
+      id: 0,
+      cultureId: 'c1',
+      capitalHex: { col: 10, row: 5 }, // matches capitalProvince.capitalHex
+      provinceIds: [0, 1],
+      centroid: { col: 10, row: 5 },
+      name: 'Domain 0',
+    };
+    const rd = makeRegionData({
+      provinces: [capitalProvince, nonCapitalProvince],
+      domains: [domain],
+    });
+    const labels = generateRegionLabels(rd);
+    const provinceLabels = labels.filter(l => l.tier === 'province');
+    // Capital province label suppressed; only the non-capital province gets one
+    expect(provinceLabels).toHaveLength(1);
+    expect(provinceLabels[0].id).toBe('province-1');
+  });
+
   it('labels have worldX and worldY as finite numbers', () => {
     const rd = makeRegionData({
       domains: [makeDomainRegion(0)],
