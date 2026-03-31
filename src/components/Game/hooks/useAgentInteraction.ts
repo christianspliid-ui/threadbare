@@ -21,6 +21,7 @@ import { getAvatarHexPosition } from '../../../engine/visibility';
 import { appendEvent } from '../../../engine/encounterTimeline';
 import { mulberry32 } from '../../../lib/prng';
 import type { ToastItem } from '../../../types/notification';
+import type { HexCoord } from '../../../types';
 import type { SimulationRuntime } from '../../../engine/simulationRuntime';
 import { touchWorld } from '../../../engine/simulationRuntime';
 import { getFamiliarity, getKnowledgeLevel } from '../../../engine/familiarity';
@@ -73,6 +74,7 @@ export function useAgentInteraction({
     nodeId: string;
     category: ThreadCategory;
   } | null>(null);
+  const [selectedHexCoord, setSelectedHexCoord] = useState<HexCoord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [strandViewAgent, setStrandViewAgent] = useState<string | null>(null);
   const [profileModalAgentId, setProfileModalAgentId] = useState<string | null>(null);
@@ -626,11 +628,22 @@ export function useAgentInteraction({
       handleAgentSelect(nodeId);
     }
     setSelectedThreadNode({ nodeId, category });
+    setSelectedHexCoord(null);
   }, [handleAgentSelect]);
 
   const handleThreadDetailClose = useCallback(() => {
     setSelectedThreadNode(null);
     setSelectedAgentId(null);
+  }, []);
+
+  const handleHexSelect = useCallback((coord: HexCoord) => {
+    setSelectedHexCoord(coord);
+    setSelectedThreadNode(null);
+    setSelectedAgentId(null);
+  }, []);
+
+  const handleHexDetailClose = useCallback(() => {
+    setSelectedHexCoord(null);
   }, []);
 
   // IX-002: Close all agent-related overlays (used by cross-hook coordination)
@@ -647,6 +660,9 @@ export function useAgentInteraction({
   return {
     selectedAgentId,
     selectedThreadNode,
+    selectedHexCoord,
+    handleHexSelect,
+    handleHexDetailClose,
     drawerOpen,
     strandViewAgent,
     pendingIntervention,

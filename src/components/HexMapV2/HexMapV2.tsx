@@ -63,9 +63,7 @@ import { createFollowMode, updateFollowTarget } from './camera/FollowMode';
 import { WebGLDiagnostics } from './diagnostics/WebGLDiagnostics';
 import type { WebGLDiagnosticsSnapshot } from './diagnostics/WebGLDiagnostics';
 import type { FollowModeState } from './camera/FollowMode';
-import { screenToHex, worldToScreen, hexToWorldCenter, pickAgentAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
-import { terrainDisplayName } from './palette/terrainPalette';
-import { HexTooltip } from './interaction/HexTooltip';
+import { screenToHex, pickAgentAtScreen, INTERACTION_CONSTANTS } from './interaction/HexRaycaster';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
 import type { ScreenBBox } from './overlay/labelCollision';
@@ -383,18 +381,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     const [zoomTier, setZoomTier] = useState<ZoomTier>(getZoomTier(CAMERA_CONSTANTS.DEFAULT_ZOOM));
     const [zoomK, setZoomK] = useState<number>(CAMERA_CONSTANTS.DEFAULT_ZOOM);
 
-    // Tooltip state (internal — not exposed to parent)
-    const [tooltip, setTooltip] = useState<{
-      coord: HexCoord;
-      terrainKey: string;
-      terrainName: string;
-      screenX: number;
-      screenY: number;
-      geoParams?: import('../../types').GeoParams;
-      hasRiver?: boolean;
-    } | null>(null);
-
-    // Canvas dimensions for tooltip clamping
+    // Canvas dimensions for label overlays
     const [canvasDimensions, setCanvasDimensions] = useState({ w: 800, h: 600 });
 
     // Build a fast tile lookup map: "col,row" -> HexTile
@@ -1087,28 +1074,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
       if (!canvas || !camera) return;
 
       const hex = screenToHex(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas);
-      if (hex) {
-        const worldPos = hexToWorldCenter(hex);
-        const screen   = worldToScreen(worldPos, camera, canvas);
-
-        const tile = tileLookup.current.get(hexKey(hex.col, hex.row));
-        const terrainKey  = tile?.terrain ?? 'unknown';
-        const terrainName = terrainDisplayName(terrainKey);
-
-        setTooltip({
-          coord: hex,
-          terrainKey,
-          terrainName,
-          screenX: screen.x,
-          screenY: screen.y,
-          geoParams: tile?.geoParams,
-          hasRiver: tile?.hasRiver,
-        });
-        onHexHover(hex);
-      } else {
-        setTooltip(null);
-        onHexHover(null);
-      }
+      onHexHover(hex ?? null);
     };
 
     const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1131,7 +1097,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     };
 
     const handleMouseLeave = () => {
-      setTooltip(null);
       onHexHover(null);
     };
 
@@ -1182,19 +1147,6 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           onClick={handleClick}
           onMouseLeave={handleMouseLeave}
         />
-        {tooltip && (
-          <HexTooltip
-            terrainName={tooltip.terrainName}
-            terrainKey={tooltip.terrainKey}
-            coord={tooltip.coord}
-            screenX={tooltip.screenX}
-            screenY={tooltip.screenY}
-            canvasWidth={canvasDimensions.w}
-            canvasHeight={canvasDimensions.h}
-            geoParams={tooltip.geoParams}
-            hasRiver={tooltip.hasRiver}
-          />
-        )}
         {!overlayOpen && regionLabels.length > 0 && (
           <RegionLabelOverlay
             labels={regionLabels}

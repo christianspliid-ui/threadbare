@@ -48,6 +48,7 @@ import { RetinuePanel } from './RetinuePanel';
 import { AgentInfoCard } from './AgentInfoCard';
 import { ThreadsPanel } from './ThreadsPanel';
 import { ThreadDetailView } from './ThreadDetailView';
+import { HexDetailView } from './HexDetailView';
 import { LocationProfileModal } from './LocationProfileModal';
 import { FactionSheet } from './FactionSheet';
 import { ArmySheet } from './ArmySheet';
@@ -235,6 +236,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     handleCloseProfile,
     closeAllAgentOverlays,
     handleThreadDetailClose,
+    selectedHexCoord,
+    handleHexSelect,
+    handleHexDetailClose,
   } = useAgentInteraction({
     gameState,
     setGameState,
@@ -247,6 +251,12 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     },
     runtime,
   });
+
+  // ── Composite hex click: navigation + selection ──
+  const handleHexClickFull = useCallback((coord: import('../../types').HexCoord) => {
+    handleHexClickMove(coord);
+    handleHexSelect(coord);
+  }, [handleHexClickMove, handleHexSelect]);
 
   // ── Anomaly discovery event → reveal flash trigger ──
   // Watch recentEvents for 'anomaly_discovered' and trigger the hex map reveal animation.
@@ -1002,15 +1012,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     }
   }, [activeVignette, running, setRunning]);
 
-  // Close ThreadDetailView on Escape key
+  // Close detail panel on Escape key
   useEffect(() => {
-    if (!selectedThreadNode) return;
+    if (!selectedThreadNode && !selectedHexCoord) return;
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') handleThreadDetailClose();
+      if (e.key === 'Escape') {
+        handleThreadDetailClose();
+        handleHexDetailClose();
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [selectedThreadNode, handleThreadDetailClose]);
+  }, [selectedThreadNode, selectedHexCoord, handleThreadDetailClose, handleHexDetailClose]);
 
   const handleJourneyChoice = useCallback((choiceId: string) => {
     if (!activeVignette) return;
@@ -1225,7 +1238,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   fogEnabled={!fogDisabled}
                   showOrganicShore={showOrganicShore}
                   overlayOpen={scryVisible || harvestResult !== null}
-                  onHexClick={handleHexClickMove}
+                  onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
                   onAgentClick={handleAgentSelect}
                 />
@@ -1413,31 +1426,42 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         ) : (
           <div className="flex flex-shrink-0" style={{ alignItems: 'stretch' }}>
             {/* Detail view — to the LEFT of sidebar, own scroll context */}
-            <AnimateMount show={selectedThreadNode !== null} animation="anim-fade">
-              {selectedThreadNode && (() => {
-                const detailNode = threadedNodes.find(n => n.id === selectedThreadNode.nodeId);
-                if (!detailNode) return null;
-                return (
-                  <div
-                    data-testid="thread-detail-scroll"
-                    style={{
-                      width: 'clamp(240px, 280px, 30vw)',
-                      borderLeft: '1px solid var(--border-gold)',
-                      background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <ThreadDetailView
-                      node={detailNode}
-                      agentInfoCard={selectedThreadNode.category === 'agent' ? agentInfoCard : null}
-                      onClose={handleThreadDetailClose}
-                      onViewProfile={handleOpenProfileModal}
-                      onZoomToLocation={handleZoomToLocation}
+            <AnimateMount show={selectedThreadNode !== null || selectedHexCoord !== null} animation="anim-fade">
+              {(selectedThreadNode !== null || selectedHexCoord !== null) && (
+                <div
+                  data-testid="thread-detail-scroll"
+                  style={{
+                    width: 'clamp(240px, 280px, 30vw)',
+                    borderLeft: '1px solid var(--border-gold)',
+                    background: 'linear-gradient(180deg, var(--bg-deep), var(--bg-abyss))',
+                    overflowY: 'auto',
+                  }}
+                >
+                  {selectedThreadNode && (() => {
+                    const detailNode = threadedNodes.find(n => n.id === selectedThreadNode.nodeId);
+                    if (!detailNode) return null;
+                    return (
+                      <ThreadDetailView
+                        node={detailNode}
+                        agentInfoCard={selectedThreadNode.category === 'agent' ? agentInfoCard : null}
+                        onClose={handleThreadDetailClose}
+                        onViewProfile={handleOpenProfileModal}
+                        onZoomToLocation={handleZoomToLocation}
+                        graph={gameState.graph}
+                      />
+                    );
+                  })()}
+                  {selectedHexCoord && !selectedThreadNode && (
+                    <HexDetailView
+                      coord={selectedHexCoord}
+                      tile={tiles.find(t => t.coord.col === selectedHexCoord.col && t.coord.row === selectedHexCoord.row) ?? null}
+                      onClose={handleHexDetailClose}
+                      onGoToChronicle={() => { /* hex chronicle not yet implemented */ }}
                       graph={gameState.graph}
                     />
-                  </div>
-                );
-              })()}
+                  )}
+                </div>
+              )}
             </AnimateMount>
 
             {/* Sidebar — always rendered */}
