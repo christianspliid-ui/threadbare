@@ -111,6 +111,12 @@ export function resolveUncontestedStep(
     return { outcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0 };
   }
 
+  // Ascendant (player) actions always succeed — their only gate is essence cost,
+  // which is already paid at dispatch time. Capability rolls apply to NPC agents only.
+  if (action.source === 'player') {
+    return { outcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0 };
+  }
+
   // Compute actor's domain capability for this step's reach
   const capability = computeCapability(state.graph, action.actorId, step.reach);
 
