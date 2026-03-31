@@ -162,6 +162,10 @@ export interface GameState {
   // Control effects — sustained divine effects with per-tick costs, ticked by phaseControlEffects
   controlEffects?: ControlEffect[];
 
+  // Generic effect system runtime state — cooldowns, stacks, decay values per attachment
+  // Keyed by attachment node ID. Ticked by phaseEffectTick.
+  effectStates?: Map<string, import('./effects').EffectRuntimeState>;
+
   // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
   // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.
   hexRevelation?: Record<string, HexRevelation>;

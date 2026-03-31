@@ -39,8 +39,10 @@
 import type { WorldGraph } from './graph';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types/index';
+import type { EffectModifierResult, EffectRuntimeState } from '../types/effects';
 import { SPHERE_OPPOSITIONS } from './cosmology';
 import { getDivineAttention } from './divineAttention';
+import { resolveEffectModifiers, buildPredicateContext, hasEffectsFormat } from './effectResolver';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -77,6 +79,10 @@ export interface ModifierBreakdown {
   terrainModifier: number;
   traitBonus: number;
   divineInterventionModifier: number;
+  /** Modifier from generic effect system (replaces equipment+trait when effects[] present) */
+  effectModifier: number;
+  /** Detailed breakdown from effect resolver (for tracing) */
+  effectResult?: EffectModifierResult;
   totalModifier: number;
 }
 
@@ -315,19 +321,41 @@ export function computeResolutionModifiers(
   locationId: string,
   stepReach: ReachDomain,
   encounterSphereAffinity: SphereName | undefined,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
 ): ModifierBreakdown {
   const sphereAlignmentBonus = computeSphereAlignmentBonus(graph, agentId, encounterSphereAffinity);
-  const equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
   const terrainModifier = computeTerrainModifier(graph, agentId, locationId);
-  const traitBonus = computeTraitBonus(graph, agentId, stepReach);
   const divineInterventionModifier = computeDivineInterventionModifier(graph, agentId);
+
+  // Check if agent has any attachments using the new effects[] format.
+  // If so, use the generic effect resolver for equipment+trait modifiers.
+  // If not, fall back to legacy reachBonus/resolutionBonus path.
+  let equipmentModifier = 0;
+  let traitBonus = 0;
+  let effectModifier = 0;
+  let effectResult: EffectModifierResult | undefined;
+
+  if (hasEffectsFormat(graph, agentId)) {
+    // New path: resolve all effects via the generic effect system
+    const ctx = buildPredicateContext(graph, agentId, stepReach);
+    effectResult = resolveEffectModifiers(graph, agentId, stepReach, ctx, effectStates);
+    effectModifier = effectResult.reachModifiers[stepReach] ?? 0;
+    // Legacy modifiers still contribute for attachments without effects[]
+    equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
+    traitBonus = computeTraitBonus(graph, agentId, stepReach);
+  } else {
+    // Legacy path: no effects[], use reachBonus/resolutionBonus
+    equipmentModifier = computeEquipmentModifier(graph, agentId, stepReach);
+    traitBonus = computeTraitBonus(graph, agentId, stepReach);
+  }
 
   const totalModifier =
     sphereAlignmentBonus +
     equipmentModifier +
     terrainModifier +
     traitBonus +
-    divineInterventionModifier;
+    divineInterventionModifier +
+    effectModifier;
 
   return {
     sphereAlignmentBonus,
@@ -335,6 +363,8 @@ export function computeResolutionModifiers(
     terrainModifier,
     traitBonus,
     divineInterventionModifier,
+    effectModifier,
+    effectResult,
     totalModifier,
   };
 }

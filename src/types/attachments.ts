@@ -6,7 +6,10 @@
  * Possessions, Conditions, Blessings/Curses, Bestowed Powers, Agreements, Retainers.
  *
  * Design doc: Docs/plans/2026-03-10-attachment-system-design.md
+ * Effect system: Docs/plans/2026-03-31-generic-effect-system-design.md
  */
+
+import type { AttachmentEffect, ActivatedAbility } from './effects';
 
 // ─── Possession Subcategories ───────────────────────────────────
 
@@ -100,6 +103,14 @@ export interface PossessionNodeProperties {
   grantedTraitLevel?: number;
   /** TickEvent type that triggers consumption of this item (e.g. 'hidden_site_discovered'). */
   consumeOnEvent?: string;
+  /**
+   * Generic effect system — composable effect primitives (types 1–29).
+   * When present, the effect resolver uses these instead of legacy reachBonus.
+   * @see Docs/plans/2026-03-31-generic-effect-system-design.md
+   */
+  effects?: AttachmentEffect[];
+  /** Activatable abilities (spells, artifact powers) with costs and cooldowns. */
+  activatedEffects?: ActivatedAbility[];
 }
 
 // ─── Possession Edge Properties ─────────────────────────────────
@@ -129,7 +140,7 @@ export interface AgreementProperties {
 
 export type AttachmentCategory =
   | 'possession' | 'condition' | 'blessing' | 'curse'
-  | 'bestowed_power' | 'agreement';
+  | 'bestowed_power' | 'agreement' | 'spell';
 
 /**
  * Template-level reward recipe — what encounter templates specify.

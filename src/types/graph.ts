@@ -83,7 +83,9 @@ export type EdgeType =
   | 'constructed_by'   // location → actor (who built/constructed this structure)
   // Military (TB-073)
   | 'commanded_by'     // army → commander agent (army leadership)
-  | 'participates_in'; // army/agent → battle node (battle participation)
+  | 'participates_in'  // army/agent → battle node (battle participation)
+  // Spell System
+  | 'knows_spell';     // actor → spell_template (learned spell)
 
 /** Result type for graph mutations */
 export interface GraphMutation {

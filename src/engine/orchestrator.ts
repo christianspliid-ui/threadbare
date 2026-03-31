@@ -40,6 +40,7 @@ import {
 } from '../data/narrative-content';
 import { phaseAgentLifecycle } from './agentLifecycle';
 import { emitTrace } from './traceBuffer';
+import { tickEffects } from './effectTick';
 import type { TraceEntry } from '../types/trace';
 import {
   resolveEncounter,
@@ -1161,6 +1162,31 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng) };
   phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.4: Effect Tick — per-agent effect bookkeeping (duration, cooldown, decay, stacking)
+  {
+    const effectStates = s.effectStates ?? new Map();
+    const agents = s.graph.getNodesByType('actor')
+      .filter(n => n.properties.actorType === 'individual');
+    let updatedEffectStates = new Map(effectStates);
+    for (const agent of agents) {
+      const result = tickEffects(s.graph, agent.id, s.tick, updatedEffectStates);
+      updatedEffectStates = result.updatedStates;
+      // Remove destroyed attachments from graph
+      for (const attachId of result.destroyedAttachments) {
+        const edges = s.graph.getIncomingEdges(attachId);
+        for (const edge of edges) {
+          try { s.graph.removeEdge(edge.id); } catch { /* already removed */ }
+        }
+        try { s.graph.removeNode(attachId); } catch { /* already removed */ }
+      }
+      // Emit traces
+      for (const trace of result.traces) {
+        emitTrace(trace as unknown as TraceEntry);
+      }
+    }
+    s = { ...s, effectStates: updatedEffectStates };
+  }
 
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
   s = { ...s, ...phaseEncounterProgressionV2(s) };
