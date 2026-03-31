@@ -178,6 +178,14 @@ export function filterByPrerequisites(
       if (!hasTrait) continue;
     }
 
+    // Blocked-by-traits gate — agent must NOT have any of these traits
+    if (template?.blockedByTraits && template.blockedByTraits.length > 0) {
+      const isBlocked = template.blockedByTraits.some(blockedId =>
+        agentTraitEdges.some(e => e.target === blockedId),
+      );
+      if (isBlocked) continue;
+    }
+
     result.push(entry);
   }
   return result;

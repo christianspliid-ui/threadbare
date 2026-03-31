@@ -21,7 +21,8 @@ export type TraceCategory =
   | 'return_resolution' | 'ripple_consequence' | 'control_effect'
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
-  | 'faction_ambition';
+  | 'faction_ambition'
+  | 'reputation_trait';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -39,6 +40,7 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'revelation', 'tick_health', 'tick_crash',
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
+  'reputation_trait',
 ];
 
 /** Base shape for all trace entries */
@@ -606,7 +608,20 @@ export type TraceEntry =
   | HiddenSiteRevealedTrace
   | RevelationTrace
   | InteractionDepthTrace
+  | ReputationTraitTrace
   | GraphOpExecutionTrace;
+
+/** Trace: reputation trait tally change, assignment, or removal */
+export interface ReputationTraitTrace extends TraceBase {
+  category: 'reputation_trait';
+  agentId: string;
+  reach: ReachDomain | 'power';
+  polarity: 'positive' | 'negative' | 'renown';
+  action: 'tally_increment' | 'trait_assigned' | 'trait_reinforced' | 'trait_removed' | 'trait_decayed';
+  tallyValue?: number;
+  traitLevel?: number;
+  cause?: string;
+}
 
 /** Trace: batch graph operation execution result */
 export interface GraphOpExecutionTrace extends TraceBase {

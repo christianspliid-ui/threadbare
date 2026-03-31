@@ -81,6 +81,7 @@ import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
+import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
@@ -303,6 +304,16 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
 
     // ── Faction reputation processing (TB-060) ──
     processFactionEncounterReputation(
+      state.graph,
+      progress.actorId,
+      progress.encounterId,
+      result.success,
+      progress.status === 'completed',
+      state.tick,
+    );
+
+    // ── Reputation trait tally accumulation ──
+    processReputationTally(
       state.graph,
       progress.actorId,
       progress.encounterId,
@@ -1254,6 +1265,11 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.632: Economic Traits (mastery/reputation/scar/condition traits from economic activity)
   s = { ...s, ...phaseEconomicTraits(s) };
   phaseEventCounts['economic_traits'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.64: Reputation Traits (reach-polarity reputation from encounter accumulation + power renown)
+  s = { ...s, ...phaseReputationTraits(s) };
+  phaseEventCounts['reputation_traits'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.635: Settlement Tier Promotion/Demotion (hamlet↔town↔city based on sustained prosperity)

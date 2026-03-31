@@ -51,6 +51,9 @@ import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
 import { computeBondModifier } from './socialEncounterGeneration';
 import { getScoringBoost } from './factionRankBonus';
+import { getTraitsForNode } from './traits';
+import type { TraitDefinitionProperties, ReputationEffects } from '../types/traits';
+import { REPUTATION_SCORING_WEIGHT } from '../data/agent-behavior-constants';
 import { getChainProgress, computeChainBonus } from './encounterChains';
 import { getNodeSphereAffinity, getDominantSphere, SPHERE_AXIOLOGICAL_MAP, applyAxiologicalShift } from './sphereAffinity';
 import { SPHERE_OPPOSITES } from './cosmology';
@@ -556,6 +559,41 @@ function resolveProfile(
   return profile;
 }
 
+// ─── Reputation Scoring Bonus ──────────────────────────────────
+
+/**
+ * Compute additive scoring bonus from agent's reputation traits.
+ * Reads reputation traits with reputationEffects.scoringModifiers and
+ * sums the modifier for the encounter's primary reach, scaled by trait level.
+ */
+export function computeReputationScoringBonus(
+  graph: WorldGraph,
+  agentId: string,
+  entry: EncounterCacheEntry,
+): number {
+  const traitEdges = getTraitsForNode(graph, agentId);
+  let bonus = 0;
+
+  for (const edge of traitEdges) {
+    const traitNode = graph.getNode(edge.target);
+    if (!traitNode) continue;
+
+    const props = traitNode.properties as unknown as TraitDefinitionProperties;
+    if (props.subcategory !== 'reputation') continue;
+
+    const effects = props.reputationEffects as ReputationEffects | undefined;
+    if (!effects?.scoringModifiers) continue;
+
+    const modifier = effects.scoringModifiers[entry.reachPrimary as ReachDomain] ?? 0;
+    if (modifier === 0) continue;
+
+    const level = (edge.properties as { level?: number }).level ?? 1;
+    bonus += modifier * level * REPUTATION_SCORING_WEIGHT;
+  }
+
+  return bonus;
+}
+
 // ─── Main: Score and Select ─────────────────────────────────────
 
 /**
@@ -705,8 +743,11 @@ export function scoreAndSelect(
     // 18. Divine hunch bonus (divine action: hex.whisper_intuition)
     const hunchBonus = computeDivineHunchBonus(graph, agentId, entry.reachPrimary, tick);
 
+    // 18b. Reputation trait scoring bonus
+    const reputationBonus = computeReputationScoringBonus(graph, agentId, entry);
+
     // 19. Final score
-    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + resonance + globalResonance;
+    const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
     const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + attractionBonus + hunchBonus;
 

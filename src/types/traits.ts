@@ -9,6 +9,49 @@ import type { CulturalStrengthRange } from '../data/culture-content';
 
 export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
 
+// ─── Reputation Trait Effects (parseable payload) ──────────────────
+
+/** Polarity of a reach-based reputation trait */
+export type ReputationPolarity = 'positive' | 'negative';
+
+/** Who reacts to the bearer's reputation */
+export type ReputationReactionTarget =
+  | 'merchant' | 'guard' | 'commoner' | 'scholar' | 'priest'
+  | 'faction_rival' | 'faction_ally' | 'monster' | 'criminal';
+
+/** What the reaction is */
+export type ReputationReactionEffect =
+  | 'defer' | 'flee' | 'approach' | 'hostility' | 'reverence'
+  | 'price_gouge' | 'discount' | 'recruit' | 'avoid' | 'challenge';
+
+/** A single NPC/entity reaction to a reputation bearer */
+export interface ReputationReaction {
+  /** Who reacts */
+  target: ReputationReactionTarget;
+  /** What they do */
+  effect: ReputationReactionEffect;
+  /** Strength of reaction (0.0–1.0), scaled by reputation level */
+  magnitude: number;
+}
+
+/**
+ * Parseable effects payload for reputation traits.
+ * Consumed by encounter pipeline, social system, disposition, and prose enrichment.
+ */
+export interface ReputationEffects {
+  /** How other entities react to the bearer */
+  reactions: ReputationReaction[];
+  /** Encounter IDs this reputation unlocks or blocks */
+  encounterGates: {
+    unlocks: string[];
+    blocks: string[];
+  };
+  /** Per-reach scoring modifiers applied additively in encounter scoring */
+  scoringModifiers: Partial<Record<ReachDomain, number>>;
+  /** Hex range per level: [level1, level2, level3] (0=same hex, 3=regional, 99=world) */
+  scopeByLevel: [number, number, number];
+}
+
 export type TraitVisibility = 'public' | 'discoverable' | 'divine_only';
 
 /** The Eight Reaches — action domains (Flesh reach removed in TB-075 Phase 1; absorbed into Quintessence) */
@@ -35,6 +78,8 @@ export interface TraitDefinitionProperties {
   tags: string[];
   flavorText: string;
   strengthThresholds?: Partial<Record<CulturalStrengthRange, string>>; // cultural trait strength expressions
+  /** Parseable reputation effects — only present on subcategory: 'reputation' traits with reach-polarity structure */
+  reputationEffects?: ReputationEffects;
 }
 
 /** Properties stored on a has_trait edge (edge.properties) */

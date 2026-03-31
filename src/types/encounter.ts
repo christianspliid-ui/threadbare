@@ -168,6 +168,17 @@ export interface EncounterTemplate {
    * Checked in filterByPrerequisites (Stage 3). Undefined = no trait gate.
    */
   requiredTraits?: Array<{ traitId: string; minLevel?: number }>;
+  /**
+   * Traits that BLOCK this encounter — agent must NOT have any of these.
+   * Checked in filterByPrerequisites (Stage 3). Undefined = no blocking.
+   */
+  blockedByTraits?: string[];
+  /**
+   * Reputation polarity for tally accumulation on completion.
+   * 'positive' = virtue pole, 'negative' = flaw pole for the encounter's reachPrimary.
+   * When absent, derived from encounterType heuristic or agent axiological profile.
+   */
+  reputationPolarity?: 'positive' | 'negative';
 }
 
 // ─── Encounter Progress (Runtime State) ─────────────────────────

@@ -596,6 +596,65 @@ export const WHISPER_INTUITION_HUNCH_STRENGTH = 1.0;
  * @range 5–30 */
 export const WHISPER_INTUITION_DURATION_TICKS = 15;
 
+// ═══════════════════════════════════════════════════════════════════
+// REPUTATION TRAITS — Reach-polarity reputation accumulation (phaseReputationTraits.ts)
+// ═══════════════════════════════════════════════════════════════════
+
+/** Encounter completions needed for Level 1 ("Whispered") reputation.
+ * @range 2–5 */
+export const REPUTATION_LEVEL_1_THRESHOLD = 3;
+
+/** Encounter completions needed for Level 2 ("Known") reputation.
+ * @range 5–12 */
+export const REPUTATION_LEVEL_2_THRESHOLD = 8;
+
+/** Encounter completions needed for Level 3 ("Legendary") reputation.
+ * @range 10–25 */
+export const REPUTATION_LEVEL_3_THRESHOLD = 15;
+
+/** Tally decay per tick. Active agents outpace this; idle agents lose reputation over time.
+ * @range 0.005–0.05 */
+export const REPUTATION_TALLY_DECAY_PER_TICK = 0.02;
+
+/** Minimum max tier across all reaches for "Noted" power renown (Level 1).
+ * @range 3–5 */
+export const REPUTATION_POWER_TIER_NOTED = 4;
+
+/** Minimum max tier for "Renowned" power renown (Level 2).
+ * @range 5–7 */
+export const REPUTATION_POWER_TIER_RENOWNED = 6;
+
+/** Minimum max tier for "Legendary" power renown (Level 3).
+ * @range 7–9 */
+export const REPUTATION_POWER_TIER_LEGENDARY = 8;
+
+/** Hex range for Level 1 reputation scope ("Whispered" — local only).
+ * @range 0–1 */
+export const REPUTATION_SCOPE_LOCAL = 0;
+
+/** Hex range for Level 2 reputation scope ("Known" — regional).
+ * @range 2–5 */
+export const REPUTATION_SCOPE_REGIONAL = 3;
+
+/** Hex range for Level 3 reputation scope ("Legendary" — world-wide).
+ * 99 = effectively unlimited.
+ * @range 50–99 */
+export const REPUTATION_SCOPE_WORLD = 99;
+
+/** Weight applied to reputation scoring bonus in encounter scoring.
+ * @range 0.05–0.3 */
+export const REPUTATION_SCORING_WEIGHT = 0.1;
+
+/** Encounter types that heuristically contribute positive reputation polarity. */
+export const REPUTATION_POSITIVE_ENCOUNTER_TYPES: ReadonlySet<string> = new Set([
+  'assist', 'build', 'create', 'lead',
+]);
+
+/** Encounter types that heuristically contribute negative reputation polarity. */
+export const REPUTATION_NEGATIVE_ENCOUNTER_TYPES: ReadonlySet<string> = new Set([
+  'steal', 'duel',
+]);
+
 /** Essence reward per elder magic hidden site discovery.
  * @range 1.0–10.0 */
 export const ELDER_SITE_ESSENCE_REWARD = 5.0;
