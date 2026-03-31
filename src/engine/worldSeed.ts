@@ -36,11 +36,14 @@ import { seedAttachments } from './seedAttachments';
 import { seedGuilds } from './guildSeeding';
 import { seedAllFactions } from './factionSeeding';
 import { FACTION_DEFINITIONS } from '../data/faction-definitions';
+import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-behavior-constants';
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { spawnArmy } from './armySpawning';
 import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { assignInitialAmbitions } from './ambitionAssignment';
+import { getTerrainSphereScores } from '../types/sphereAffinity';
+import type { SphereName as SphereNameType } from '../types/index';
 import { AMBITION_TEMPLATES } from '../data/ambition-templates';
 import type { AmbitionAgentSnapshot } from './ambitionSelection';
 
@@ -58,6 +61,7 @@ function mulberry32(seed: number): () => number {
 
 // ─── Constants ────────────────────────────────────────────────────
 
+/** @deprecated Use AGENT_COUNT_BY_MAP_SIZE from agent-behavior-constants.ts instead */
 export const INDIVIDUAL_COUNT = { min: 8, max: 12 };
 export const FACTION_COUNT = { min: 2, max: 3 };
 /** Location count is now proportional to habitable hexes — see LOCATION_DENSITY */
@@ -96,6 +100,39 @@ export const INITIAL_PROSPERITY: Partial<Record<LocationSubtype, number>> = {
   oasis: 15,
   ruins: 0,
   battleground: 0,
+  // Sphere-resonant — low material prosperity, high narrative value
+  healing_spring: 5,
+  master_forge: 20,
+  living_archive: 10,
+  fey_crossing: 0,
+  sacrifice_site: 0,
+  convergence: 0,
+  time_scar: 0,
+  standing_stones: 0,
+  shadow_hollow: 0,
+  ley_nexus: 5,
+  // Wilderness interest — minimal prosperity
+  cavern: 0,
+  grove: 0,
+  hot_spring: 5,
+  shipwreck: 10,
+  monument: 0,
+  ancient_road: 0,
+  // Natural anomalies — economic value (discoverable treasure)
+  gem_deposit: 35,
+  golden_grove: 25,
+  crystal_cavern: 30,
+  ancient_vault: 40,
+  sunken_treasury: 35,
+  herb_garden: 15,
+  fossil_bed: 10,
+  iron_seep: 25,
+  pearl_shoal: 30,
+  glowcap_hollow: 15,
+  // Monster/danger — no starting prosperity
+  nest: 0,
+  haunted_ground: 0,
+  corruption_zone: 0,
   unexplored_poi: 0,
 };
 
@@ -143,6 +180,39 @@ const LOCATION_PREFIXES: Partial<Record<LocationSubtype, string[]>> = {
   oasis:    ['Green', 'Cool', 'Hidden', 'Bright', 'Sweet'],
   castle:   ['Storm', 'Raven', 'Wolf', 'Dragon', 'Eagle'],
   farmland: ['Golden', 'Green', 'Rich', 'Harvest', 'Sunny'],
+  // Sphere-resonant
+  healing_spring:  ['Gentle', 'Blessed', 'Radiant', 'Whispering', 'Warm'],
+  master_forge:    ['Ancient', 'Singing', 'Blazing', 'Tireless', 'Eternal'],
+  living_archive:  ['Whispering', 'Breathing', 'Turning', 'Endless', 'Deep'],
+  fey_crossing:    ['Shimmering', 'Twilight', 'Dancing', 'Waning', 'Silver'],
+  sacrifice_site:  ['Blood', 'Dark', 'Hallowed', 'Ashen', 'Silent'],
+  convergence:     ['Great', 'Terrible', 'Roaring', 'Blazing', 'World'],
+  time_scar:       ['Fractured', 'Echoing', 'Bleeding', 'Frozen', 'Thinning'],
+  standing_stones: ['Ancient', 'Nameless', 'Grey', 'Towering', 'Weathered'],
+  shadow_hollow:   ['Dim', 'Sunken', 'Quiet', 'Hungry', 'Pale'],
+  ley_nexus:       ['Bright', 'Crackling', 'Surging', 'Pulsing', 'Singing'],
+  // Wilderness interest
+  cavern:          ['Deep', 'Dark', 'Echoing', 'Hidden', 'Dripping'],
+  grove:           ['Old', 'Quiet', 'Verdant', 'Mossy', 'Gnarled'],
+  hot_spring:      ['Steaming', 'Bubbling', 'Warm', 'Sulphur', 'Mist'],
+  shipwreck:       ['Storm-Broken', 'Lost', 'Barnacled', 'Sunken', 'Rotting'],
+  monument:        ['Forgotten', 'Weathered', 'Crumbling', 'Moss-Covered', 'Ancient'],
+  ancient_road:    ['Worn', 'Cracked', 'Overgrown', 'Wide', 'Paved'],
+  // Anomalies (economy/treasure)
+  gem_deposit:     ['Gleaming', 'Rich', 'Hidden', 'Bright', 'Precious'],
+  golden_grove:    ['Amber', 'Gilded', 'Dripping', 'Rich', 'Honeyed'],
+  crystal_cavern:  ['Resonant', 'Singing', 'Bright', 'Prismatic', 'Deep'],
+  ancient_vault:   ['Sealed', 'Forgotten', 'Buried', 'Lost', 'Warded'],
+  sunken_treasury: ['Drowned', 'Silted', 'Barnacled', 'Deep', 'Lost'],
+  herb_garden:     ['Wild', 'Fragrant', 'Lush', 'Hidden', 'Rare'],
+  fossil_bed:      ['Ancient', 'Petrified', 'Exposed', 'Weathered', 'Bone'],
+  iron_seep:       ['Red', 'Bleeding', 'Rich', 'Dark', 'Heavy'],
+  pearl_shoal:     ['Moonlit', 'Quiet', 'Shallow', 'Lustrous', 'Pale'],
+  glowcap_hollow:  ['Luminous', 'Eerie', 'Soft', 'Pulsing', 'Dim'],
+  // Monster/danger
+  nest:            ['Writhing', 'Teeming', 'Buzzing', 'Dark', 'Pulsing'],
+  haunted_ground:  ['Weeping', 'Cold', 'Restless', 'Grey', 'Hollow'],
+  corruption_zone: ['Blighted', 'Rotting', 'Seeping', 'Festering', 'Broken'],
 };
 
 /** Core name roots by terrain type */
@@ -184,6 +254,39 @@ const LOCATION_SUFFIXES: Partial<Record<LocationSubtype, string[]>> = {
   farmland: [' Fields', ' Farms', ' Pastures', ' Commons'],
   battleground: [' Field', ' Crossing', ' Stand', ' Pass'],
   unexplored_poi: [' Mystery', ' Unknown', ' Enigma', ' Wonder'],
+  // Sphere-resonant
+  healing_spring:  [' Spring', ' Waters', ' Pool', ' Font', ' Wellspring'],
+  master_forge:    [' Forge', ' Anvil', ' Crucible', ' Hearth'],
+  living_archive:  [' Archive', ' Library', ' Codex', ' Scriptorium'],
+  fey_crossing:    [' Crossing', ' Gate', ' Threshold', ' Glade'],
+  sacrifice_site:  [' Altar', ' Circle', ' Ground', ' Pit'],
+  convergence:     [' Convergence', ' Nexus', ' Crucible', ' Vortex'],
+  time_scar:       [' Scar', ' Rift', ' Wound', ' Fracture'],
+  standing_stones: [' Stones', ' Circle', ' Henge', ' Dolmen'],
+  shadow_hollow:   [' Hollow', ' Shade', ' Murk', ' Gloom'],
+  ley_nexus:       [' Nexus', ' Wellspring', ' Conduit', ' Beacon'],
+  // Wilderness interest
+  cavern:          [' Cavern', ' Grotto', ' Cave', ' Depths'],
+  grove:           [' Grove', ' Copse', ' Glade', ' Stand'],
+  hot_spring:      [' Springs', ' Pools', ' Vents', ' Baths'],
+  shipwreck:       [' Wreck', ' Hulk', ' Bones', ' Keel'],
+  monument:        [' Tomb', ' Barrow', ' Cairn', ' Monolith'],
+  ancient_road:    [' Road', ' Way', ' Path', ' Causeway'],
+  // Anomalies (economy/treasure)
+  gem_deposit:     [' Seam', ' Deposit', ' Vein', ' Pocket'],
+  golden_grove:    [' Grove', ' Arbor', ' Copse', ' Stand'],
+  crystal_cavern:  [' Cavern', ' Geode', ' Chamber', ' Gallery'],
+  ancient_vault:   [' Vault', ' Hoard', ' Cache', ' Strongroom'],
+  sunken_treasury: [' Treasury', ' Wreck', ' Cache', ' Hoard'],
+  herb_garden:     [' Garden', ' Meadow', ' Patch', ' Dell'],
+  fossil_bed:      [' Beds', ' Fields', ' Flats', ' Basin'],
+  iron_seep:       [' Seep', ' Vein', ' Lode', ' Flow'],
+  pearl_shoal:     [' Shoal', ' Beds', ' Shallows', ' Banks'],
+  glowcap_hollow:  [' Hollow', ' Dell', ' Grotto', ' Bower'],
+  // Monster/danger
+  nest:            [' Nest', ' Hive', ' Warren', ' Brood'],
+  haunted_ground:  [' Ground', ' Fields', ' Mound', ' Barrow'],
+  corruption_zone: [' Blight', ' Mire', ' Waste', ' Taint'],
 };
 
 const DEFAULT_ROOTS = ['Stone', 'Grey', 'Iron', 'Silver', 'Raven', 'Wolf', 'Thorn', 'Hawk'];
@@ -505,6 +608,322 @@ export function seedWorld(
     locIndex++;
   }
 
+  // ── Pass 2: Sphere-Resonant Wonder Locations ────────────────────
+  // Scan empty habitable hexes. If dominant sphere score >= threshold, roll for
+  // a sphere-themed wonder location. Higher scores = higher chance.
+  // These are the "magic seeping through the terrain" locations from Place Archetypes.
+
+  const wonderRng = mulberry32(seed + 23017); // separate PRNG stream
+
+  /** Minimum sphere score on a hex to be eligible for a wonder location */
+  const WONDER_SPHERE_THRESHOLD = 3;
+  /** Base chance for a hex meeting threshold to spawn a wonder (scaled by score) */
+  const WONDER_BASE_CHANCE = 0.06;
+  /** Max fraction of empty habitable hexes that can become wonders */
+  const WONDER_MAX_FRACTION = 0.08;
+
+  /** Maps dominant sphere → eligible wonder location subtypes */
+  const SPHERE_WONDER_TABLE: Partial<Record<SphereNameType, LocationSubtype[]>> = {
+    life:     ['healing_spring', 'grove'],
+    matter:   ['master_forge', 'crystal_cavern'],
+    energy:   ['ley_nexus'],
+    spirit:   ['fey_crossing', 'living_archive'],
+    mind:     ['living_archive', 'standing_stones'],
+    force:    ['convergence', 'master_forge'],
+    time:     ['time_scar', 'standing_stones'],
+    entropy:  ['sacrifice_site', 'shadow_hollow', 'corruption_zone'],
+    chaos:    ['fey_crossing', 'corruption_zone'],
+    order:    ['standing_stones', 'living_archive'],
+    light:    ['ley_nexus', 'healing_spring'],
+    darkness: ['shadow_hollow', 'sacrifice_site', 'haunted_ground'],
+  };
+
+  // Helper: check if placing a non-settlement location violates existing settlement spacing.
+  // Non-settlement locations have no spacing of their own, but must respect existing settlements'.
+  const violatesSettlementSpacing = (tile: HexTile): boolean => {
+    return placedSettlements.some(placed => {
+      const gap = SETTLEMENT_MIN_SPACING[placed.subtype] ?? 0;
+      if (gap === 0) return false;
+      const dist = hexDistance(tile.coord, { col: placed.col, row: placed.row });
+      return dist <= gap;
+    });
+  };
+
+  const emptyHabitableTiles = habitableTiles.filter(t => {
+    const hk = `${t.coord.col},${t.coord.row}`;
+    return !usedHexes.has(hk);
+  });
+
+  const maxWonders = Math.floor(emptyHabitableTiles.length * WONDER_MAX_FRACTION);
+  let wonderCount = 0;
+
+  // Shuffle empty tiles for fair distribution
+  const shuffledEmpty = [...emptyHabitableTiles];
+  for (let i = shuffledEmpty.length - 1; i > 0; i--) {
+    const j = Math.floor(wonderRng() * (i + 1));
+    [shuffledEmpty[i], shuffledEmpty[j]] = [shuffledEmpty[j], shuffledEmpty[i]];
+  }
+
+  for (const tile of shuffledEmpty) {
+    if (wonderCount >= maxWonders) break;
+
+    const sphereScores = getTerrainSphereScores(tile.terrain);
+    // Find the dominant sphere (highest score)
+    let dominantSphere: SphereNameType | null = null;
+    let maxScore = 0;
+    for (const [sphere, score] of Object.entries(sphereScores)) {
+      if ((score as number) > maxScore) {
+        maxScore = score as number;
+        dominantSphere = sphere as SphereNameType;
+      }
+    }
+
+    if (maxScore < WONDER_SPHERE_THRESHOLD || !dominantSphere) continue;
+
+    // Don't place too close to an existing settlement
+    if (violatesSettlementSpacing(tile)) continue;
+
+    // Chance scales with sphere strength
+    const chance = WONDER_BASE_CHANCE * (maxScore / WONDER_SPHERE_THRESHOLD);
+    if (wonderRng() > chance) continue;
+
+    // Pick a wonder subtype from the sphere's eligible list
+    const eligible = SPHERE_WONDER_TABLE[dominantSphere];
+    if (!eligible || eligible.length === 0) continue;
+    const subtype = eligible[Math.floor(wonderRng() * eligible.length)];
+
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    const id = `loc_${locIndex}`;
+    const name = generateLocationName(wonderRng, tile.terrain, subtype, usedLocationNames);
+    usedLocationNames.add(name);
+
+    const sphereInfluence: Record<string, number> = {};
+    for (const sp of SPHERE_NAMES) {
+      sphereInfluence[sp] = wonderRng() * 0.1;
+    }
+
+    usedHexes.add(hexKey);
+    graph.addNode({
+      id,
+      type: 'location',
+      name,
+      properties: {
+        locationType: subtype,
+        locationSubtype: subtype,
+        hexCol: tile.coord.col,
+        hexRow: tile.coord.row,
+        terrain: tile.terrain,
+        sphereBiases: {},
+        sphereInfluence,
+        prosperity: INITIAL_PROSPERITY[subtype] ?? 0,
+        isWonderLocation: true,
+      },
+    });
+    locationIds.push(id);
+    locIndex++;
+    wonderCount++;
+  }
+
+  // ── Pass 3: Wilderness Interest Points ──────────────────────────
+  // Scatter non-magical points of interest in empty hexes based on terrain.
+  // These make the wilderness feel alive — caves, groves, hot springs, etc.
+
+  const wildRng = mulberry32(seed + 31337);
+
+  /** Fraction of remaining empty hexes that get a wilderness interest point */
+  const WILDERNESS_INTEREST_FRACTION = 0.10;
+
+  /** Terrain → eligible wilderness subtypes (weighted) */
+  const TERRAIN_WILDERNESS_TABLE: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
+    mountains:       [['cavern', 4], ['hot_spring', 1], ['monument', 1]],
+    high_mountains:  [['cavern', 3], ['monument', 1]],
+    hills:           [['cavern', 2], ['monument', 2], ['ancient_road', 1]],
+    forested_hills:  [['cavern', 2], ['grove', 2]],
+    forest:          [['grove', 3], ['ancient_road', 1]],
+    temperate_forest:[['grove', 3], ['ancient_road', 1]],
+    dense_forest:    [['grove', 4]],
+    boreal_forest:   [['grove', 2], ['hot_spring', 1]],
+    jungle:          [['grove', 2], ['monument', 2]],
+    volcano:         [['hot_spring', 3], ['cavern', 2]],
+    coast:           [['shipwreck', 3], ['monument', 1]],
+    desert:          [['monument', 2], ['ancient_road', 2]],
+    rocky_desert:    [['cavern', 2], ['monument', 2]],
+    tundra:          [['hot_spring', 1], ['monument', 1]],
+    glacier:         [['cavern', 1]],
+    swamp:           [['monument', 1]],
+    broken_lands:    [['ancient_road', 2], ['monument', 1]],
+    grassland:       [['ancient_road', 2], ['monument', 1], ['grove', 1]],
+    plains:          [['ancient_road', 2], ['monument', 1]],
+    savanna:         [['monument', 1], ['ancient_road', 1]],
+    steppe:          [['monument', 1], ['ancient_road', 1]],
+    plateau:         [['monument', 1], ['cavern', 1], ['ancient_road', 1]],
+    badlands:        [['cavern', 2], ['monument', 1]],
+  };
+
+  // Refresh empty hex list (wonders may have claimed some)
+  const emptyAfterWonders = habitableTiles.filter(t => {
+    const hk = `${t.coord.col},${t.coord.row}`;
+    return !usedHexes.has(hk);
+  });
+  const shuffledWild = [...emptyAfterWonders];
+  for (let i = shuffledWild.length - 1; i > 0; i--) {
+    const j = Math.floor(wildRng() * (i + 1));
+    [shuffledWild[i], shuffledWild[j]] = [shuffledWild[j], shuffledWild[i]];
+  }
+
+  const maxWild = Math.floor(emptyAfterWonders.length * WILDERNESS_INTEREST_FRACTION);
+  let wildCount = 0;
+
+  for (const tile of shuffledWild) {
+    if (wildCount >= maxWild) break;
+
+    // Don't place too close to an existing settlement
+    if (violatesSettlementSpacing(tile)) continue;
+
+    // Look up terrain-specific table, fallback to null (skip this hex)
+    const weights = TERRAIN_WILDERNESS_TABLE[tile.terrain];
+    if (!weights || weights.length === 0) continue;
+
+    const totalWeight = weights.reduce((sum, [, w]) => sum + w, 0);
+    let roll = wildRng() * totalWeight;
+    let subtype: LocationSubtype = 'wilderness';
+    for (const [st, weight] of weights) {
+      roll -= weight;
+      if (roll <= 0) { subtype = st; break; }
+    }
+    if (subtype === 'wilderness') continue;
+
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    const id = `loc_${locIndex}`;
+    const name = generateLocationName(wildRng, tile.terrain, subtype, usedLocationNames);
+    usedLocationNames.add(name);
+
+    const sphereInfluence: Record<string, number> = {};
+    for (const sp of SPHERE_NAMES) {
+      sphereInfluence[sp] = wildRng() * 0.05;
+    }
+
+    usedHexes.add(hexKey);
+    graph.addNode({
+      id,
+      type: 'location',
+      name,
+      properties: {
+        locationType: subtype,
+        locationSubtype: subtype,
+        hexCol: tile.coord.col,
+        hexRow: tile.coord.row,
+        terrain: tile.terrain,
+        sphereBiases: {},
+        sphereInfluence,
+        prosperity: INITIAL_PROSPERITY[subtype] ?? 0,
+      },
+    });
+    locationIds.push(id);
+    locIndex++;
+    wildCount++;
+  }
+
+  // ── Pass 4: Natural Anomalies (Economy/Treasure) ────────────────
+  // Resource-bearing locations discoverable via Eye reach exploration.
+  // Seeded as hidden by default — agents must explore to find them.
+  // These are Endless Legend-style anomalies providing economic bonuses.
+
+  const anomalyRng = mulberry32(seed + 41953);
+
+  /** Fraction of remaining empty hexes that get an anomaly */
+  const ANOMALY_FRACTION = 0.05;
+
+  /** Terrain → eligible anomaly subtypes (weighted) */
+  const TERRAIN_ANOMALY_TABLE: Partial<Record<TerrainType, Array<[LocationSubtype, number]>>> = {
+    mountains:       [['gem_deposit', 3], ['iron_seep', 2], ['crystal_cavern', 2]],
+    high_mountains:  [['gem_deposit', 2], ['crystal_cavern', 3]],
+    hills:           [['gem_deposit', 2], ['iron_seep', 2], ['fossil_bed', 1]],
+    volcano:         [['iron_seep', 3], ['crystal_cavern', 2], ['gem_deposit', 1]],
+    forest:          [['golden_grove', 2], ['herb_garden', 3], ['glowcap_hollow', 1]],
+    temperate_forest:[['herb_garden', 3], ['golden_grove', 2]],
+    dense_forest:    [['glowcap_hollow', 3], ['herb_garden', 2], ['golden_grove', 1]],
+    jungle:          [['herb_garden', 3], ['glowcap_hollow', 2], ['golden_grove', 1]],
+    coast:           [['pearl_shoal', 3], ['sunken_treasury', 2]],
+    swamp:           [['glowcap_hollow', 3], ['herb_garden', 1]],
+    marsh:           [['glowcap_hollow', 2], ['herb_garden', 1]],
+    desert:          [['fossil_bed', 3], ['gem_deposit', 1]],
+    rocky_desert:    [['fossil_bed', 3], ['gem_deposit', 2]],
+    badlands:        [['fossil_bed', 3], ['iron_seep', 1]],
+    broken_lands:    [['ancient_vault', 3], ['fossil_bed', 2]],
+    grassland:       [['herb_garden', 2], ['fossil_bed', 1]],
+    plains:          [['herb_garden', 2], ['fossil_bed', 1]],
+    tundra:          [['fossil_bed', 1], ['crystal_cavern', 1]],
+    glacier:         [['crystal_cavern', 1]],
+    plateau:         [['gem_deposit', 1], ['iron_seep', 1], ['fossil_bed', 1]],
+    boreal_forest:   [['herb_garden', 2], ['golden_grove', 1]],
+  };
+
+  // Refresh empty hex list
+  const emptyAfterWild = habitableTiles.filter(t => {
+    const hk = `${t.coord.col},${t.coord.row}`;
+    return !usedHexes.has(hk);
+  });
+  const shuffledAnomaly = [...emptyAfterWild];
+  for (let i = shuffledAnomaly.length - 1; i > 0; i--) {
+    const j = Math.floor(anomalyRng() * (i + 1));
+    [shuffledAnomaly[i], shuffledAnomaly[j]] = [shuffledAnomaly[j], shuffledAnomaly[i]];
+  }
+
+  const maxAnomalies = Math.floor(emptyAfterWild.length * ANOMALY_FRACTION);
+  let anomalyCount = 0;
+
+  for (const tile of shuffledAnomaly) {
+    if (anomalyCount >= maxAnomalies) break;
+
+    // Don't place too close to an existing settlement
+    if (violatesSettlementSpacing(tile)) continue;
+
+    const weights = TERRAIN_ANOMALY_TABLE[tile.terrain];
+    if (!weights || weights.length === 0) continue;
+
+    const totalWeight = weights.reduce((sum, [, w]) => sum + w, 0);
+    let roll = anomalyRng() * totalWeight;
+    let subtype: LocationSubtype = 'wilderness';
+    for (const [st, weight] of weights) {
+      roll -= weight;
+      if (roll <= 0) { subtype = st; break; }
+    }
+    if (subtype === 'wilderness') continue;
+
+    const hexKey = `${tile.coord.col},${tile.coord.row}`;
+    const id = `loc_${locIndex}`;
+    const name = generateLocationName(anomalyRng, tile.terrain, subtype, usedLocationNames);
+    usedLocationNames.add(name);
+
+    const sphereInfluence: Record<string, number> = {};
+    for (const sp of SPHERE_NAMES) {
+      sphereInfluence[sp] = anomalyRng() * 0.05;
+    }
+
+    usedHexes.add(hexKey);
+    graph.addNode({
+      id,
+      type: 'location',
+      name,
+      properties: {
+        locationType: subtype,
+        locationSubtype: subtype,
+        hexCol: tile.coord.col,
+        hexRow: tile.coord.row,
+        terrain: tile.terrain,
+        sphereBiases: {},
+        sphereInfluence,
+        prosperity: INITIAL_PROSPERITY[subtype] ?? 0,
+        isAnomalyLocation: true,
+        discoveredByExploration: false, // requires Eye reach to find
+      },
+    });
+    locationIds.push(id);
+    locIndex++;
+    anomalyCount++;
+  }
+
   // Add bidirectional adjacency edges between locations that are hex-neighbors.
   // Two locations are adjacent if their hex distance is exactly 1.
   let adjEdgeIdx = 0;
@@ -633,7 +1052,14 @@ export function seedWorld(
   }
 
   // ── Individuals ──────────────────────────────────────────
-  const indCount = randomInRange(rng, INDIVIDUAL_COUNT.min, INDIVIDUAL_COUNT.max);
+  // Derive map size category from tile count to scale agent population
+  const tileCount = tiles.length;
+  const mapSizeKey = tileCount <= 400 ? 'small'
+    : tileCount <= 1000 ? 'medium'
+    : tileCount <= 2000 ? 'large'
+    : 'epic';
+  const agentRange = AGENT_COUNT_BY_MAP_SIZE[mapSizeKey] ?? AGENT_COUNT_FALLBACK;
+  const indCount = randomInRange(rng, agentRange.min, agentRange.max);
   const usedIndNames = new Set<number>();
 
   const culturalInjection = injections?.find(

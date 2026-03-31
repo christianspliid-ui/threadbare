@@ -2,7 +2,7 @@
  * locationIconRegistry.test.ts — Unit tests for the location icon registry.
  *
  * Tests:
- * - All 19 LocationType values are present in LOCATION_ICON_REGISTRY
+ * - All LocationType values are present in LOCATION_ICON_REGISTRY
  * - Each entry has a non-empty paths array, valid viewBox, and valid sizeClass
  * - LOCATION_SIZE_SCALE has correct values for all size classes
  */
@@ -34,11 +34,44 @@ const EXPECTED_LOCATION_TYPES: LocationType[] = [
   'unexplored_poi',
   'lair',
   'cleared_lair',
+  // Sphere-resonant wonder locations
+  'healing_spring',
+  'master_forge',
+  'living_archive',
+  'fey_crossing',
+  'sacrifice_site',
+  'convergence',
+  'time_scar',
+  'standing_stones',
+  'shadow_hollow',
+  'ley_nexus',
+  // Wilderness interest locations
+  'cavern',
+  'grove',
+  'hot_spring',
+  'shipwreck',
+  'ancient_road',
+  'monument',
+  // Natural anomalies (economy/treasure)
+  'gem_deposit',
+  'golden_grove',
+  'crystal_cavern',
+  'ancient_vault',
+  'sunken_treasury',
+  'herb_garden',
+  'fossil_bed',
+  'iron_seep',
+  'pearl_shoal',
+  'glowcap_hollow',
+  // Monster/danger locations
+  'nest',
+  'haunted_ground',
+  'corruption_zone',
 ];
 
 describe('LOCATION_ICON_REGISTRY', () => {
-  it('has entries for all 19 LocationType values', () => {
-    expect(Object.keys(LOCATION_ICON_REGISTRY)).toHaveLength(19);
+  it('has entries for all LocationType values', () => {
+    expect(Object.keys(LOCATION_ICON_REGISTRY)).toHaveLength(EXPECTED_LOCATION_TYPES.length);
     for (const type of EXPECTED_LOCATION_TYPES) {
       expect(LOCATION_ICON_REGISTRY).toHaveProperty(type);
     }

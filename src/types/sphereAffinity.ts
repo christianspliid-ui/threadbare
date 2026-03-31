@@ -179,6 +179,39 @@ export const LOCATION_SPHERE_TABLE: Record<string, Partial<Record<SphereName, nu
   oasis:           { energy: 1 },
   // Mystery
   unexplored_poi:  { spirit: 1 },
+  // ── Sphere-resonant wonder locations ──
+  healing_spring:  { life: 2, spirit: 1 },
+  master_forge:    { matter: 2, force: 1 },
+  living_archive:  { mind: 2, spirit: 1 },
+  fey_crossing:    { spirit: 2, chaos: 1 },
+  sacrifice_site:  { entropy: 2, darkness: 1 },
+  convergence:     { force: 2, energy: 1 },
+  time_scar:       { time: 2, entropy: 1 },
+  standing_stones: { order: 2, time: 1 },
+  shadow_hollow:   { darkness: 2, entropy: 1 },
+  ley_nexus:       { energy: 2, light: 1 },
+  // ── Wilderness interest locations ──
+  cavern:          { darkness: 1, matter: 1 },
+  grove:           { life: 1, spirit: 1 },
+  hot_spring:      { energy: 1, life: 1 },
+  shipwreck:       { time: 1, entropy: 1 },
+  ancient_road:    { order: 1, time: 1 },
+  monument:        { spirit: 1, time: 1 },
+  // ── Natural anomalies (economy/treasure) ──
+  gem_deposit:     { matter: 1, light: 1 },
+  golden_grove:    { life: 1, matter: 1 },
+  crystal_cavern:  { matter: 2, energy: 1 },
+  ancient_vault:   { time: 1, order: 1 },
+  sunken_treasury: { time: 1, entropy: 1 },
+  herb_garden:     { life: 2 },
+  fossil_bed:      { time: 1, matter: 1 },
+  iron_seep:       { matter: 1, force: 1 },
+  pearl_shoal:     { life: 1, light: 1 },
+  glowcap_hollow:  { life: 1, darkness: 1 },
+  // ── Monster/danger locations ──
+  nest:            { life: 1, matter: 1 },
+  haunted_ground:  { spirit: 1, darkness: 1 },
+  corruption_zone: { entropy: 2, chaos: 1 },
 };
 
 /**

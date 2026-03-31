@@ -92,6 +92,62 @@ export const SUBTYPE_SUBLOCATION_MAP: Record<string, SublocationTypeDef[]> = {
   farmland: [
     { id: 'sublocation-type.garden', name: 'Garden', motivations: [{ left: 'tradition', right: 'innovation', weight: 0.3 }, { left: 'devotion', right: 'independence', weight: 0.2 }] },
   ],
+  // ── Sphere-resonant wonder locations ──
+  healing_spring: [
+    { id: 'sublocation-type.pilgrims-pool', name: "Pilgrim's Pool", motivations: [{ left: 'devotion', right: 'independence', weight: 0.7 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
+    { id: 'sublocation-type.source-grotto', name: 'Source Grotto', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.6 }, { left: 'devotion', right: 'independence', weight: 0.5 }] },
+  ],
+  master_forge: [
+    { id: 'sublocation-type.resonance-anvil', name: 'Resonance Anvil', motivations: [{ left: 'duty', right: 'freedom', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.6 }] },
+    { id: 'sublocation-type.ore-sanctum', name: 'Ore Sanctum', motivations: [{ left: 'greed', right: 'generosity', weight: 0.5 }, { left: 'duty', right: 'freedom', weight: 0.6 }] },
+  ],
+  living_archive: [
+    { id: 'sublocation-type.whispering-stacks', name: 'Whispering Stacks', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.9 }, { left: 'tradition', right: 'innovation', weight: 0.5 }] },
+    { id: 'sublocation-type.restricted-wing', name: 'Restricted Wing', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.7 }, { left: 'authority', right: 'rebellion', weight: 0.6 }] },
+  ],
+  fey_crossing: [
+    { id: 'sublocation-type.mushroom-circle', name: 'Mushroom Circle', motivations: [{ left: 'cunning', right: 'honesty', weight: 0.7 }, { left: 'tradition', right: 'innovation', weight: 0.3 }] },
+    { id: 'sublocation-type.veil-threshold', name: 'Veil Threshold', motivations: [{ left: 'devotion', right: 'independence', weight: 0.6 }, { left: 'knowledge', right: 'ignorance', weight: 0.7 }] },
+  ],
+  sacrifice_site: [
+    { id: 'sublocation-type.bloodstone-altar', name: 'Bloodstone Altar', motivations: [{ left: 'cruelty', right: 'mercy', weight: 0.9 }, { left: 'devotion', right: 'independence', weight: 0.7 }] },
+    { id: 'sublocation-type.bone-circle', name: 'Bone Circle', motivations: [{ left: 'cruelty', right: 'mercy', weight: 0.7 }, { left: 'tradition', right: 'innovation', weight: 0.8 }] },
+  ],
+  convergence: [
+    { id: 'sublocation-type.power-nexus', name: 'Power Nexus', motivations: [{ left: 'authority', right: 'rebellion', weight: 0.8 }, { left: 'knowledge', right: 'ignorance', weight: 0.7 }] },
+    { id: 'sublocation-type.shattered-ground', name: 'Shattered Ground', motivations: [{ left: 'duty', right: 'freedom', weight: 0.5 }, { left: 'order', right: 'chaos', weight: 0.4 }] },
+  ],
+  standing_stones: [
+    { id: 'sublocation-type.stone-circle', name: 'Stone Circle', motivations: [{ left: 'tradition', right: 'innovation', weight: 0.9 }, { left: 'devotion', right: 'independence', weight: 0.5 }] },
+    { id: 'sublocation-type.burial-mound', name: 'Burial Mound', motivations: [{ left: 'devotion', right: 'independence', weight: 0.6 }, { left: 'tradition', right: 'innovation', weight: 0.7 }] },
+  ],
+  shadow_hollow: [
+    { id: 'sublocation-type.dim-pool', name: 'Dim Pool', motivations: [{ left: 'cruelty', right: 'mercy', weight: 0.5 }, { left: 'knowledge', right: 'ignorance', weight: 0.6 }] },
+  ],
+  ley_nexus: [
+    { id: 'sublocation-type.convergence-chamber', name: 'Convergence Chamber', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
+  ],
+  time_scar: [
+    { id: 'sublocation-type.echo-chamber', name: 'Echo Chamber', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.8 }, { left: 'tradition', right: 'innovation', weight: 0.7 }] },
+  ],
+  // ── Wilderness interest locations ──
+  cavern: [
+    { id: 'sublocation-type.deep-gallery', name: 'Deep Gallery', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.6 }, { left: 'cunning', right: 'honesty', weight: 0.4 }] },
+    { id: 'sublocation-type.underground-pool', name: 'Underground Pool', motivations: [{ left: 'devotion', right: 'independence', weight: 0.3 }, { left: 'tradition', right: 'innovation', weight: 0.3 }] },
+  ],
+  grove: [
+    { id: 'sublocation-type.garden', name: 'Garden', motivations: [{ left: 'devotion', right: 'independence', weight: 0.5 }, { left: 'tradition', right: 'innovation', weight: 0.4 }] },
+  ],
+  monument: [
+    { id: 'sublocation-type.crypt', name: 'Crypt', motivations: [{ left: 'devotion', right: 'independence', weight: 0.5 }, { left: 'tradition', right: 'innovation', weight: 0.8 }] },
+  ],
+  // ── Natural anomalies ──
+  crystal_cavern: [
+    { id: 'sublocation-type.resonance-core', name: 'Resonance Core', motivations: [{ left: 'knowledge', right: 'ignorance', weight: 0.7 }, { left: 'greed', right: 'generosity', weight: 0.5 }] },
+  ],
+  ancient_vault: [
+    { id: 'sublocation-type.dungeon', name: 'Dungeon', motivations: [{ left: 'greed', right: 'generosity', weight: 0.7 }, { left: 'cunning', right: 'honesty', weight: 0.6 }] },
+  ],
 };
 
 // ── Hidden Site Seeding Constants ────────────────────────────────────────────
@@ -109,6 +165,12 @@ export const HIDDEN_SITE_DEFAULT_PROBABILITY = 0.15;
  */
 export const HIGH_HIDDEN_SUBTYPES: ReadonlySet<string> = new Set([
   'ruins', 'ruined_tower', 'ruined_city', 'unexplored_poi',
+  // Sphere-resonant locations — mystical, hard to find
+  'fey_crossing', 'sacrifice_site', 'shadow_hollow', 'time_scar',
+  // Natural anomalies — require Eye reach exploration to discover
+  'gem_deposit', 'golden_grove', 'crystal_cavern', 'ancient_vault',
+  'sunken_treasury', 'herb_garden', 'fossil_bed', 'iron_seep',
+  'pearl_shoal', 'glowcap_hollow',
 ]);
 
 // ── Task 2: ensureSublocations ──────────────────────────────────────────────

@@ -68,6 +68,39 @@ export type LocationSubtype =
   | 'castle' | 'fort' | 'tower' | 'shrine' | 'temple'
   | 'mining' | 'ruins' | 'ruined_tower' | 'ruined_city' | 'ruined_village'
   | 'battleground' | 'oasis' | 'unexplored_poi'
+  // ── Sphere-resonant wonder locations (spawn where sphere score >= 3) ──
+  | 'healing_spring'   // Life + Spirit — land itself mends what's broken
+  | 'master_forge'     // Matter + Force — craft reaching the sacred
+  | 'living_archive'   // Mind + Spirit — repository that curates itself
+  | 'fey_crossing'     // Spirit + Chaos — where the veil between worlds is thin
+  | 'sacrifice_site'   // Entropy + Darkness — blood-soaked ground of power
+  | 'convergence'      // Force + all — power accumulates, draws conflict
+  | 'time_scar'        // Time + Entropy — wound in time, echoes bleed through
+  | 'standing_stones'  // Order + Time — ancient megaliths of unknown origin
+  | 'shadow_hollow'    // Darkness + Entropy — where magic went wrong
+  | 'ley_nexus'        // Energy + Light — raw magical convergence
+  // ── Wilderness interest locations (terrain-driven, no sphere threshold) ──
+  | 'cavern'           // Mountains/Hills — cave system
+  | 'grove'            // Forest — ancient or sacred grove
+  | 'hot_spring'       // Volcanic/Mountains — geothermal feature
+  | 'shipwreck'        // Coast — wrecked vessel
+  | 'ancient_road'     // Any — remnant infrastructure from historical cultures
+  | 'monument'         // Any — ancestral tomb, stone monolith, burial mound
+  // ── Natural anomalies — economy/treasure (discoverable via Eye reach) ──
+  | 'gem_deposit'      // Hills/Mountains — precious stones, high trade value
+  | 'golden_grove'     // Forest — trees bearing amber/gold sap, rare resource
+  | 'crystal_cavern'   // Mountains — resonant crystal formations, magical reagent
+  | 'ancient_vault'    // Ruins/Broken Lands — sealed pre-collapse treasury
+  | 'sunken_treasury'  // Coast/Swamp — submerged wealth from lost civilization
+  | 'herb_garden'      // Forest/Plains — wild medicinal plants, alchemical value
+  | 'fossil_bed'       // Desert/Badlands — ancient bones with residual magic
+  | 'iron_seep'        // Volcano/Mountains — surface metal deposit, strategic
+  | 'pearl_shoal'      // Coast — natural pearl beds, high luxury value
+  | 'glowcap_hollow'   // Swamp/Forest — bioluminescent fungi, alchemical reagent
+  // ── Monster/danger locations ──
+  | 'nest'             // Life + Matter — ecosystem-scale creature hive
+  | 'haunted_ground'   // Spirit + Darkness — restless spirits
+  | 'corruption_zone'  // Entropy + Chaos — spreading wrongness
   | 'wilderness'   // default — no overlay icon
   | 'lair'         // monster lair (m2.5)
   | 'cleared_lair'; // lair cleared by a faction (m2.5)
