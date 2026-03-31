@@ -19,7 +19,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import * as THREE from 'three';
 import type { RegionLabel } from '../../../engine/regionTypes';
-import { removeOverlaps, type ScreenLabel } from './labelCollision';
+import { removeOverlaps, estimateBBox, type ScreenLabel, type ScreenBBox } from './labelCollision';
 import { getActivePalette, buildLandHalo, buildRiverHalo } from '../palette/activePalette';
 
 // ─── Zoom tier thresholds (NFP #1: Tunability) ───────────────────────────────
@@ -223,6 +223,10 @@ interface RegionLabelOverlayProps {
   canvasWidth: number;
   canvasHeight: number;
   zoomLevel: number;
+  /** Mutable ref that receives the bboxes of all visible (placed) region labels after
+   *  each collision run. LocationLabelOverlay reads this to avoid overlapping with
+   *  region labels (cross-system collision detection). */
+  placedBBoxesRef?: React.MutableRefObject<ScreenBBox[]>;
 }
 
 // ─── Projected label state ────────────────────────────────────────────────────
@@ -253,6 +257,7 @@ export function RegionLabelOverlay({
   canvasWidth,
   canvasHeight,
   zoomLevel,
+  placedBBoxesRef,
 }: RegionLabelOverlayProps) {
   const [projected, setProjected] = useState<ProjectedLabel[]>([]);
   const lastCollisionTime = useRef<number>(0);
@@ -300,6 +305,12 @@ export function RegionLabelOverlay({
       if (shouldRecomputeCollision) {
         resolvedLabels = removeOverlaps(screenLabels);
         lastCollisionTime.current = now;
+        // Publish placed bboxes for cross-system collision (LocationLabelOverlay reads this)
+        if (placedBBoxesRef) {
+          placedBBoxesRef.current = resolvedLabels
+            .filter(sl => sl.visible)
+            .map(sl => estimateBBox(sl));
+        }
       }
 
       // Build projected state

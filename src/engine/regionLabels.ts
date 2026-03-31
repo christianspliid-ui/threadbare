@@ -95,20 +95,30 @@ function computeHexesWorldWidth(hexes: { col: number; row: number }[]): number {
 export function generateRegionLabels(regionData: RegionData): RegionLabel[] {
   const labels: RegionLabel[] = [];
 
-  // Kingdom labels — at capital hex position, width from aggregated barony hexes
+  // Kingdom labels — at geographic centroid of all kingdom hexes, width from same.
+  // Previously placed at capitalHex, which collocated the kingdom label with the
+  // barony containing the capital, causing visible overlap.
   for (const k of regionData.kingdoms) {
     try {
-      const { x, y } = hexToWorld(k.capitalHex.col, k.capitalHex.row);
-      // Aggregate hexes from all baronies in this kingdom
       const kingdomHexes = regionData.baronies
         .filter(b => k.baronyIds.includes(b.id))
         .flatMap(b => b.hexes);
+      // Centroid: mean of all kingdom hex world positions
+      let sumX = 0;
+      let sumY = 0;
+      for (const h of kingdomHexes) {
+        const w = hexToWorld(h.col, h.row);
+        sumX += w.x;
+        sumY += w.y;
+      }
+      const cx = kingdomHexes.length > 0 ? sumX / kingdomHexes.length : hexToWorld(k.capitalHex.col, k.capitalHex.row).x;
+      const cy = kingdomHexes.length > 0 ? sumY / kingdomHexes.length : hexToWorld(k.capitalHex.col, k.capitalHex.row).y;
       labels.push({
         id: `kingdom-${k.id}`,
         tier: 'kingdom',
         text: k.name,
-        worldX: x,
-        worldY: y,
+        worldX: cx,
+        worldY: cy,
         worldWidth: computeHexesWorldWidth(kingdomHexes),
       });
     } catch {

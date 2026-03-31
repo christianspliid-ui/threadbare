@@ -68,6 +68,7 @@ import { terrainDisplayName } from './palette/terrainPalette';
 import { HexTooltip } from './interaction/HexTooltip';
 import { RegionLabelOverlay } from './overlay/RegionLabelOverlay';
 import { LocationLabelOverlay, type LocationLabelData } from './overlay/LocationLabelOverlay';
+import type { ScreenBBox } from './overlay/labelCollision';
 import { LOCATION_IMPORTANCE_MAP, LOCATION_ICON_REGISTRY, CENTERED_SIZE_CLASSES } from './locations/locationIconRegistry';
 import { getFixedSlotOffset } from '../../lib/movementPath';
 import {
@@ -330,6 +331,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
     // Location offset lookup for trail endpoints — rebuilt when locations change
     const locationOffsetRef = useRef<Map<string, { dx: number; dy: number }>>(new Map());
     locationOffsetRef.current = buildLocationOffsetLookup(locations);
+    // Shared bbox ref: RegionLabelOverlay writes placed bboxes; LocationLabelOverlay reads to avoid overlaps
+    const regionPlacedBBoxesRef = useRef<ScreenBBox[]>([]);
 
     // Fog culling refs — populated in scene init, read in fog update effect
     const fillResultRef        = useRef<HexFillMeshResult | null>(null);
@@ -1190,6 +1193,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}
             zoomLevel={zoomLevel}
+            placedBBoxesRef={regionPlacedBBoxesRef}
           />
         )}
         {!overlayOpen && locationLabels.length > 0 && (
@@ -1199,6 +1203,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
             canvasWidth={canvasDimensions.w}
             canvasHeight={canvasDimensions.h}
             zoomLevel={zoomLevel}
+            prePlacedBBoxesRef={regionPlacedBBoxesRef}
           />
         )}
       </div>

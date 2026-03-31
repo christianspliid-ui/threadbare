@@ -32,7 +32,7 @@ import {
   MAX_RING_LOCATIONS,
 } from '../../../data/agent-visual-content';
 import { ZOOM_THRESHOLDS } from './RegionLabelOverlay';
-import { removeOverlaps, type ScreenLabel } from './labelCollision';
+import { removeOverlaps, type ScreenLabel, type ScreenBBox } from './labelCollision';
 import { getActivePalette, buildLandHalo } from '../palette/activePalette';
 
 // ── NFP #1: Tunable constants ─────────────────────────────────────────────────
@@ -94,6 +94,9 @@ interface LocationLabelOverlayProps {
   canvasWidth: number;
   canvasHeight: number;
   zoomLevel: number;
+  /** Read-only ref populated by RegionLabelOverlay with already-placed region label
+   *  bboxes. Location labels avoid these positions (cross-system collision). */
+  prePlacedBBoxesRef?: React.RefObject<ScreenBBox[]>;
 }
 
 // ── Label styles ──────────────────────────────────────────────────────────────
@@ -214,6 +217,7 @@ export function LocationLabelOverlay({
   canvasWidth,
   canvasHeight,
   zoomLevel,
+  prePlacedBBoxesRef,
 }: LocationLabelOverlayProps) {
   const [projected, setProjected] = useState<ProjectedLocationLabel[]>([]);
   const lastCollisionTime = useRef<number>(0);
@@ -290,7 +294,7 @@ export function LocationLabelOverlay({
       let resolvedLabels: ScreenLabel[] = screenLabels;
 
       if (shouldRecomputeCollision) {
-        resolvedLabels = removeOverlaps(screenLabels);
+        resolvedLabels = removeOverlaps(screenLabels, prePlacedBBoxesRef?.current ?? []);
         lastCollisionTime.current = now;
       }
 
