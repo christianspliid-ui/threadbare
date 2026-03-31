@@ -587,3 +587,98 @@ describe('Phase 17: spellName and technicalDescription population', () => {
     expect(slots[0].technicalDescription).toBe('Technical mechanical description.');
   });
 });
+
+// ─── Gate 3b: requiredNodeProperties ────────────────────────────────────────
+
+describe('getTargetActionSlots — node-property gate (filter 3b)', () => {
+  it('passes when target has all required properties matching', () => {
+    const templates = [
+      makeTemplate({
+        id: 'prop.match', name: 'PropMatch',
+        targetCategories: ['location'],
+        requiredNodeProperties: { locationSubtype: 'settlement' },
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: locationTarget({ properties: { locationSubtype: 'settlement' } }),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('filters out templates when a required property does not match', () => {
+    const templates = [
+      makeTemplate({
+        id: 'prop.mismatch', name: 'PropMismatch',
+        targetCategories: ['location'],
+        requiredNodeProperties: { locationSubtype: 'settlement' },
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: locationTarget({ properties: { locationSubtype: 'keep' } }),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('filters out templates when a required property is absent on the target', () => {
+    const templates = [
+      makeTemplate({
+        id: 'prop.absent', name: 'PropAbsent',
+        targetCategories: ['actor'],
+        requiredNodeProperties: { allegiance: 'hostile' },
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget({ properties: {} }),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(0);
+  });
+
+  it('passes when requiredNodeProperties is empty', () => {
+    const templates = [
+      makeTemplate({
+        id: 'prop.empty', name: 'PropEmpty',
+        targetCategories: ['actor'],
+        requiredNodeProperties: {},
+      }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('passes when requiredNodeProperties is omitted', () => {
+    const templates = [
+      makeTemplate({ id: 'prop.omit', name: 'PropOmit', targetCategories: ['actor'] }),
+    ];
+    const slots = getTargetActionSlots({
+      target: actorTarget(),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(slots).toHaveLength(1);
+  });
+
+  it('requires all properties to match (AND logic)', () => {
+    const templates = [
+      makeTemplate({
+        id: 'prop.multi', name: 'PropMulti',
+        targetCategories: ['actor'],
+        requiredNodeProperties: { allegiance: 'hostile', tier: 2 },
+      }),
+    ];
+    const passSlots = getTargetActionSlots({
+      target: actorTarget({ properties: { allegiance: 'hostile', tier: 2 } }),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    const failSlots = getTargetActionSlots({
+      target: actorTarget({ properties: { allegiance: 'hostile', tier: 1 } }),
+      templates, pool: BASE_POOL, primarySphere: 'mind', accessibleSpheres: ['mind'],
+    });
+    expect(passSlots).toHaveLength(1);
+    expect(failSlots).toHaveLength(0);
+  });
+});

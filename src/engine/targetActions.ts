@@ -5,13 +5,14 @@
  * any focused graph node and returns WheelSlot[] for the ActionDrawer.
  *
  * Filtering cascade (in order):
- *   1. Node-type gate  — template.targetCategories includes target.nodeType
- *   2. Subtype gate    — template.targetSubtypes includes target.subtype (if specified)
- *   3. Trait gate      — all template.requiredTargetTraits present in target.traitIds
- *   4. Sphere gate     — template.sphereAffinity is null OR in accessibleSpheres
- *   5. Essence gate    — player can afford template.essenceCost
- *   6. Range gate      — target in range from avatar (if positions available)
- *   7. Revelation gate — template.narrativeLayer revealed on target hex (if applicable)
+ *   1.  Node-type gate       — template.targetCategories includes target.nodeType
+ *   2.  Subtype gate         — template.targetSubtypes includes target.subtype (if specified)
+ *   3.  Trait gate           — all template.requiredTargetTraits present in target.traitIds
+ *   3b. Node-property gate   — all template.requiredNodeProperties match target.properties
+ *   4.  Sphere gate          — template.sphereAffinity is null OR in accessibleSpheres
+ *   5.  Essence gate         — player can afford template.essenceCost
+ *   6.  Range gate           — target in range from avatar (if positions available)
+ *   7.  Revelation gate      — template.narrativeLayer revealed on target hex (if applicable)
  */
 
 import type { TargetContext, TargetCategory } from '../types/targetContext';
@@ -64,6 +65,7 @@ interface FilterCounts {
   byNodeType: number;
   bySubtype: number;
   byTraits: number;
+  byNodeProperties: number;
   bySphere: number;
   byEssence: number;
   byRange: number;
@@ -86,6 +88,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     byNodeType: 0,
     bySubtype: 0,
     byTraits: 0,
+    byNodeProperties: 0,
     bySphere: 0,
     byEssence: 0,
     byRange: 0,
@@ -132,6 +135,18 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       if (!allPresent) {
         counts.byTraits++;
         continue;
+      }
+    }
+
+    // 3b. Node-property gate (AND logic — all required properties must match)
+    if (template.requiredNodeProperties) {
+      const entries = Object.entries(template.requiredNodeProperties);
+      if (entries.length > 0) {
+        const allMatch = entries.every(([key, val]) => target.properties[key] === val);
+        if (!allMatch) {
+          counts.byNodeProperties++;
+          continue;
+        }
       }
     }
 

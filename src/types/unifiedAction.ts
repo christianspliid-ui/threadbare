@@ -75,6 +75,15 @@ export interface UnifiedActionTemplate {
   readonly targetSubtypes?: readonly string[];
 
   /**
+   * Node property key/value pairs that must all be present on the target.
+   * Checked against TargetContext.properties (AND logic — all must match).
+   * Omit or empty → no property restriction.
+   *
+   * Example: { locationSubtype: 'settlement' } to target only settlements.
+   */
+  readonly requiredNodeProperties?: Readonly<Record<string, unknown>>;
+
+  /**
    * Trait IDs that must be present on the target node.
    * All listed traits must be present (AND logic).
    * Omit or empty → no trait restriction.
