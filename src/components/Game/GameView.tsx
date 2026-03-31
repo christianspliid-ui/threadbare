@@ -33,6 +33,8 @@ import type { ArmyState } from '../../types/army';
 import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
+import { TIER_NAMES } from '../../data/influence-content';
+import type { ThreadedNode } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
 import { getAvatarPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
@@ -1448,7 +1450,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   }}
                 >
                   {selectedThreadNode && (() => {
-                    const detailNode = threadedNodes.find(n => n.id === selectedThreadNode.nodeId);
+                    const detailNode: ThreadedNode | undefined =
+                      threadedNodes.find(n => n.id === selectedThreadNode.nodeId)
+                      ?? (() => {
+                        // Fallback for non-threaded nodes (e.g. unbound agents clicked on map)
+                        const graphNode = gameState.graph.getNode(selectedThreadNode.nodeId);
+                        if (!graphNode) return undefined;
+                        if (selectedThreadNode.category === 'agent') {
+                          const locEdges = gameState.graph.getOutgoingEdges(graphNode.id, 'located_at');
+                          const locNode = locEdges.length > 0 ? gameState.graph.getNode(locEdges[0].target) : null;
+                          const locationName = locNode?.name ?? '(unknown)';
+                          return {
+                            id: graphNode.id,
+                            name: graphNode.name,
+                            tier: 0 as import('../../types/influence').InfluenceTier,
+                            tierName: TIER_NAMES[0],
+                            category: 'agent' as const,
+                            threadEdgeId: '',
+                            attentionMode: 'auto_resolve' as const,
+                            courtPosition: null,
+                            locationName,
+                            activityLabel: 'Unknown',
+                          } satisfies ThreadedNode;
+                        }
+                        return undefined;
+                      })();
                     if (!detailNode) return null;
                     return (
                       <ThreadDetailView

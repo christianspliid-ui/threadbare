@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { HexCoord } from '../../../types';
 import { hexToPixel, HEX_SCALE_X, HEX_SCALE_Y } from '../../../lib/hexMath';
 import { HEX_CONSTANTS } from '../scene/HexFillMesh';
+import { AGENT_PORTRAIT_RADIUS } from '../../../data/agent-visual-content';
 import type { AgentSpriteEntry } from '../scene/AgentSpriteMesh';
 
 /**
@@ -12,7 +13,7 @@ export const INTERACTION_CONSTANTS = {
   SELECTED_RING_WIDTH: 2.5,     // Ring outline width in world units (2–3px range per UI-SPEC)
   HOVER_OVERLAY_OPACITY: 0.10,  // Subtle white overlay on hovered hex
   TOOLTIP_OFFSET_Y: 12,         // px: tooltip appears this many px above the screen position
-  AGENT_CLICK_RADIUS_PX: 18,    // px: hit radius for agent dot click detection
+  AGENT_CLICK_RADIUS_PX: 18,    // px: minimum hit radius for agent click detection (scales with zoom)
 } as const;
 
 /**
@@ -112,9 +113,12 @@ export function pickAgentAtScreen(
   camera: THREE.OrthographicCamera,
   canvas: HTMLCanvasElement,
   spriteMap: Map<string, AgentSpriteEntry>,
+  zoomK: number = 1,
 ): string | null {
   let closest: { agentId: string; distPx: number } | null = null;
-  const radius = INTERACTION_CONSTANTS.AGENT_CLICK_RADIUS_PX;
+  // Scale hit radius with zoom so clicking anywhere on the visual circle works.
+  // AGENT_PORTRAIT_RADIUS world units × zoomK ≈ visual pixel radius of the sprite.
+  const radius = Math.max(INTERACTION_CONSTANTS.AGENT_CLICK_RADIUS_PX, AGENT_PORTRAIT_RADIUS * zoomK);
 
   for (const [agentId, entry] of spriteMap) {
     if (!entry.sprite.visible) continue;

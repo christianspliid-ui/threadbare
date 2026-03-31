@@ -1098,7 +1098,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         }
       }
 
-      const agentId = pickAgentAtScreen(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas, spriteMap);
+      const agentId = pickAgentAtScreen(e.nativeEvent.offsetX, e.nativeEvent.offsetY, camera, canvas, spriteMap, zoomK);
       if (agentId) {
         onAgentClick?.(agentId);
         return;

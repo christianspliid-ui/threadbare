@@ -123,17 +123,20 @@ export function useAgentInteraction({
   const wheelSlots = useMemo(() => {
     if (!selectedAgentId || !drawerOpen) return null;
     const agent = retinueAgents.find(a => a.id === selectedAgentId);
-    if (!agent) return null;
+    // tier: use retinue tier if available, fall back to 0 for unthreaded agents
+    const tier = agent?.tier ?? 0;
 
-    const interventionSlots = getAgentWheelSlots({
-      tier: agent.tier,
-      pool: gameState.essencePool,
-      primarySphere: archetype.sphereAlignment.primary,
-    });
+    // Intervention slots only for threaded (retinue) agents
+    const interventionSlots = agent
+      ? getAgentWheelSlots({
+          tier: agent.tier,
+          pool: gameState.essencePool,
+          primarySphere: archetype.sphereAlignment.primary,
+        })
+      : [];
 
-    // Also run generalized action targeting so templates like bind_thread_agent
-    // surface alongside the legacy divine interventions.
-    const actorCtx = buildActorTargetContext(selectedAgentId, gameState.graph, agent.tier);
+    // Thread-creation templates work for any agent — surface "Bind Thread", "Observe", etc.
+    const actorCtx = buildActorTargetContext(selectedAgentId, gameState.graph, tier);
     const targetSlots = actorCtx
       ? getTargetActionSlots({
           target: actorCtx,
@@ -149,7 +152,8 @@ export function useAgentInteraction({
         })
       : [];
 
-    return [...interventionSlots, ...targetSlots];
+    const combined = [...interventionSlots, ...targetSlots];
+    return combined.length > 0 ? combined : null;
   }, [selectedAgentId, drawerOpen, gameState.essencePool, gameState.graph, gameState.ascendantId, gameState.hexRevelation, retinueAgents, archetype]);
 
   const strandData = useMemo(() => {
