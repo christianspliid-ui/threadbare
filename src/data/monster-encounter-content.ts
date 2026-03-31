@@ -97,10 +97,18 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The creature falls. {actor} drives it from the lair and ensures it will not return.',
           reputationDelta: 0.05,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The beast is stronger than the reports suggested. {actor} retreats, wounded and empty-handed.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -160,10 +168,18 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The named beast falls. Its name will be spoken in reverence now — attached to {actor}\'s own legend.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The beast escapes deeper into the lair. It will be stronger next time.',
           reputationDelta: -0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -206,10 +222,18 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} drives the creature off. The wilds are a little quieter for now.',
           reputationDelta: 0.04,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The creature withdraws on its own terms, leaving {actor} shaken and bloodied.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -252,10 +276,18 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The army cuts through the resistance and secures the lair. A costly victory.',
           reputationDelta: 0.06,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The defenders hold. The army is forced to withdraw with significant Quintessence loss.',
           reputationDelta: -0.04,
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -314,10 +346,18 @@ export const MONSTER_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The horde breaks and scatters into the wilderness. The settlement survives.',
           reputationDelta: 0.10,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.20, condition: 0.30, bestowed_power: 0.50 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The settlement falls. Survivors scatter into the night as the horde claims the ruins.',
           reputationDelta: -0.06,
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],

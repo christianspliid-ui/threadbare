@@ -174,7 +174,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#ancient', '#underground'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -182,7 +182,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#ancient', '#underground'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -313,7 +313,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#spirit', '#mystic'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -321,7 +321,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#spirit', '#mystic'],
+            tagFilters: ['#divine'],
           },
         },
       },
@@ -451,7 +451,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
         onFailure: {
@@ -459,7 +459,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
       },
@@ -790,7 +790,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#celestial', '#mystic'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -798,7 +798,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#celestial', '#mystic'],
+            tagFilters: ['#divine'],
           },
         },
       },
@@ -1001,7 +1001,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#nature', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
         onFailure: {
@@ -1009,7 +1009,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#nature', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
       },
@@ -1276,7 +1276,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#nature', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
         onFailure: {
@@ -1284,7 +1284,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#nature', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
       },
@@ -1419,7 +1419,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
-            tagFilters: ['#arcane', '#nature'],
+            tagFilters: ['#veil'],
           },
         },
         onFailure: {
@@ -1427,7 +1427,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
-            tagFilters: ['#arcane', '#nature'],
+            tagFilters: ['#veil'],
           },
         },
       },
@@ -1627,7 +1627,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
-            tagFilters: ['#arcane', '#mystic'],
+            tagFilters: ['#arcane'],
           },
         },
         onFailure: {
@@ -1635,7 +1635,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 1.0 },
-            tagFilters: ['#arcane', '#mystic'],
+            tagFilters: ['#arcane'],
           },
         },
       },
@@ -2692,7 +2692,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#ancient', '#underground'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -2700,7 +2700,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#ancient', '#underground'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -2830,7 +2830,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#arcane', '#shadow'],
+            tagFilters: ['#shadow'],
           },
         },
         onFailure: {
@@ -2838,7 +2838,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#arcane', '#shadow'],
+            tagFilters: ['#shadow'],
           },
         },
       },
@@ -3039,7 +3039,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
         onFailure: {
@@ -3047,7 +3047,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
       },
@@ -3247,7 +3247,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
-            tagFilters: ['#mystic', '#arcane'],
+            tagFilters: ['#arcane'],
           },
         },
         onFailure: {
@@ -3255,7 +3255,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.9, condition: 0.1 },
-            tagFilters: ['#mystic', '#arcane'],
+            tagFilters: ['#arcane'],
           },
         },
       },
@@ -4601,7 +4601,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#underground', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
         onFailure: {
@@ -4609,7 +4609,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#underground', '#survival'],
+            tagFilters: ['#survival'],
           },
         },
       },
@@ -4772,7 +4772,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
-            tagFilters: ['#beast', '#survival'],
+            tagFilters: ['#beast'],
           },
         },
         onFailure: {
@@ -4780,7 +4780,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.12,
           rewardPool: {
             categoryWeights: { condition: 0.6, possession: 0.4 },
-            tagFilters: ['#beast', '#survival'],
+            tagFilters: ['#beast'],
           },
         },
       },
@@ -4928,7 +4928,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
         onFailure: {
@@ -4936,7 +4936,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#shadow', '#stealth'],
+            tagFilters: ['#shadow'],
           },
         },
       },
@@ -5199,7 +5199,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
-            tagFilters: ['#craft', '#wealth'],
+            tagFilters: ['#craft'],
           },
         },
         onFailure: {
@@ -5207,7 +5207,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
-            tagFilters: ['#craft', '#wealth'],
+            tagFilters: ['#craft'],
           },
         },
       },
@@ -5316,7 +5316,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#combat', '#road'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
@@ -5324,7 +5324,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#combat', '#road'],
+            tagFilters: ['#combat'],
           },
         },
       },
@@ -5370,7 +5370,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, condition: 0.5 },
-            tagFilters: ['#spirit', '#social'],
+            tagFilters: ['#heart'],
           },
         },
         onFailure: {
@@ -5378,7 +5378,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.02,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, condition: 0.5 },
-            tagFilters: ['#spirit', '#social'],
+            tagFilters: ['#heart'],
           },
         },
       },
@@ -5424,7 +5424,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#healing', '#social'],
+            tagFilters: ['#healing'],
           },
         },
         onFailure: {
@@ -5432,7 +5432,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { condition: 0.4, bestowed_power: 0.4, possession: 0.2 },
-            tagFilters: ['#healing', '#social'],
+            tagFilters: ['#healing'],
           },
         },
       },
@@ -5637,7 +5637,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.4, bestowed_power: 0.4, condition: 0.2 },
-            tagFilters: ['#ancient', '#ruins'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -5645,7 +5645,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.4, bestowed_power: 0.4, condition: 0.2 },
-            tagFilters: ['#ancient', '#ruins'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -5745,7 +5745,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#ruins'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -5753,7 +5753,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#ruins'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -5799,7 +5799,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#ruins', '#wealth'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -5807,7 +5807,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#ruins', '#wealth'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -5918,7 +5918,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.5, condition: 0.5 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
@@ -5926,7 +5926,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.5, condition: 0.5 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
       },
@@ -5972,7 +5972,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, bestowed_power: 0.3 },
-            tagFilters: ['#wealth', '#mining'],
+            tagFilters: ['#stone'],
           },
         },
         onFailure: {
@@ -5980,7 +5980,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.7, bestowed_power: 0.3 },
-            tagFilters: ['#wealth', '#mining'],
+            tagFilters: ['#stone'],
           },
         },
       },
@@ -6026,7 +6026,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#knowledge', '#spirit'],
+            tagFilters: ['#knowledge'],
           },
         },
         onFailure: {
@@ -6034,7 +6034,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.03,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#knowledge', '#spirit'],
+            tagFilters: ['#knowledge'],
           },
         },
       },
@@ -6080,7 +6080,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.5, condition: 0.5 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
@@ -6088,7 +6088,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { possession: 0.5, condition: 0.5 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
       },
@@ -6134,7 +6134,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
-            tagFilters: ['#wealth', '#mining'],
+            tagFilters: ['#stone'],
           },
         },
         onFailure: {
@@ -6142,7 +6142,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, bestowed_power: 0.4 },
-            tagFilters: ['#wealth', '#mining'],
+            tagFilters: ['#stone'],
           },
         },
       },
@@ -6190,7 +6190,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#sacred'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -6198,7 +6198,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#sacred'],
+            tagFilters: ['#divine'],
           },
         },
       },
@@ -6244,7 +6244,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#knowledge', '#spirit'],
+            tagFilters: ['#knowledge'],
           },
         },
         onFailure: {
@@ -6252,7 +6252,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#knowledge', '#spirit'],
+            tagFilters: ['#knowledge'],
           },
         },
       },
@@ -6315,7 +6315,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.8, condition: 0.2 },
-            tagFilters: ['#spirit', '#mystic', '#sacred'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -6323,7 +6323,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.8, condition: 0.2 },
-            tagFilters: ['#spirit', '#mystic', '#sacred'],
+            tagFilters: ['#divine'],
           },
         },
       },
@@ -6371,7 +6371,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#ancient', '#combat', '#spirit'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -6379,7 +6379,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.10,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#ancient', '#combat', '#spirit'],
+            tagFilters: ['#ancient'],
           },
         },
       },
@@ -6488,7 +6488,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, possession: 0.3, condition: 0.2 },
-            tagFilters: ['#combat', '#fame', '#leadership'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
@@ -6496,7 +6496,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.5, possession: 0.3, condition: 0.2 },
-            tagFilters: ['#combat', '#fame', '#leadership'],
+            tagFilters: ['#combat'],
           },
         },
       },
@@ -6642,6 +6642,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'The exchange is done. Both parties walk away satisfied — a rare thing, and worth remembering.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#gold'],
+          },
         },
         onFailure: {
           narrative: 'Doubt creeps in at the last. The deal collapses, and {actor} leaves with what {they} came with.',
@@ -6686,6 +6690,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'A clear plan forms — what to buy, what to save, what to trade. {actor} is ready for the next exchange.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#gold'],
+          },
         },
         onFailure: {
           narrative: 'Too many needs, too few resources. {actor} sets the ledger aside, no clearer than before.',
@@ -6983,6 +6991,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Color returns to a drawn face. The weary one nods, once, and that is thanks enough.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: '{actor} has too little to share. The gesture is kind but hollow, and both of {them} know it.',
@@ -7230,7 +7242,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
-            tagFilters: ['#celestial'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -7238,7 +7250,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.01,
           rewardPool: {
             categoryWeights: { condition: 0.3, bestowed_power: 0.5, possession: 0.2 },
-            tagFilters: ['#celestial'],
+            tagFilters: ['#divine'],
           },
         },
       },
@@ -7280,6 +7292,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Something shifts — not a voice, not a vision, but a settling in the chest. {actor} rises with purpose renewed.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#divine'],
+          },
         },
         onFailure: {
           narrative: 'Only silence answers. {actor} rises no worse for the asking, but no better either.',
@@ -7330,6 +7346,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Sleep comes deep and dreamless. {actor} wakes stiff but renewed, ready for what comes next.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'The ground is hard, the noises too close. {actor} rises no more rested than when {they} lay down.',
@@ -7374,6 +7394,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Arms full, {actor} hauls {their} findings back. Not a feast — but enough. Always enough.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#survival'],
+          },
         },
         onFailure: {
           narrative: 'Too heavy, too far. {actor} drops half the haul on the way back, the {adj} effort wasted.',
@@ -7428,6 +7452,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} gathers more than expected. The {adj} physical work pays off.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#survival'],
+          },
         },
         onFailure: {
           narrative: 'The {adj} effort yields little. {actor} has not yet learned to work with this land.',
@@ -7473,6 +7501,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} finds the {adj} thread running through what has happened. Something important becomes clear.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'The {adj} reflection yields confusion, not clarity. Some things need more time.',
@@ -7518,6 +7550,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} finds the grain of {adj} truth in the grain of gossip. Something useful emerges.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'The {adj} gossip is pure noise. {actor} leaves knowing only what people want to be true.',
@@ -7563,6 +7599,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} tends the wounds well. The injured will recover. The {adj} gratitude is genuine.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#healing'],
+          },
         },
         onFailure: {
           narrative: '{actor}\'s treatment is {adj} adequate but not enough. Recovery will be {adj} longer than it should.',
@@ -7608,10 +7648,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} acts on the {adj} intelligence — covers the approach, prepares the position, removes the risk.',
           reputationDelta: 0.04,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The {adj} discovery is noted but not acted on in time. The opportunity passes.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -7658,7 +7706,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#trade', '#wealth'],
+            tagFilters: ['#trade'],
           },
         },
         onFailure: {
@@ -7666,7 +7714,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.04,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#trade', '#wealth'],
+            tagFilters: ['#trade'],
           },
         },
       },
@@ -7758,7 +7806,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#knowledge'],
+            tagFilters: ['#knowledge'],
           },
         },
         onFailure: {
@@ -7766,7 +7814,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.05,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#spirit', '#knowledge'],
+            tagFilters: ['#knowledge'],
           },
         },
       },
@@ -7904,7 +7952,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
-            tagFilters: ['#stealth', '#cunning'],
+            tagFilters: ['#stealth'],
           },
         },
         onFailure: {
@@ -7912,7 +7960,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
-            tagFilters: ['#stealth', '#cunning'],
+            tagFilters: ['#stealth'],
           },
         },
       },
@@ -7960,7 +8008,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.5, bestowed_power: 0.5 },
-            tagFilters: ['#craft', '#knowledge'],
+            tagFilters: ['#craft'],
           },
         },
         onFailure: {
@@ -7968,7 +8016,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.07,
           rewardPool: {
             categoryWeights: { possession: 0.5, bestowed_power: 0.5 },
-            tagFilters: ['#craft', '#knowledge'],
+            tagFilters: ['#craft'],
           },
         },
       },
@@ -8014,7 +8062,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#combat', '#spirit'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
@@ -8022,7 +8070,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.08,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.6, condition: 0.4 },
-            tagFilters: ['#combat', '#spirit'],
+            tagFilters: ['#combat'],
           },
         },
       },
@@ -8131,7 +8179,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#spirit', '#knowledge'],
+            tagFilters: ['#knowledge'],
           },
         },
         onFailure: {
@@ -8139,7 +8187,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: -0.06,
           rewardPool: {
             categoryWeights: { bestowed_power: 0.7, condition: 0.3 },
-            tagFilters: ['#spirit', '#knowledge'],
+            tagFilters: ['#knowledge'],
           },
         },
       },
@@ -8211,6 +8259,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The full ward-map settles into {actor}\'s memory like a diagram drawn in light. Every vulnerability, every strength, known.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#veil'],
+          },
         },
         onFailure: {
           narrative: 'Too many layers. {actor}\'s survey is {adj} incomplete — good enough for caution, not for certainty.',
@@ -8273,6 +8325,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The cantrip settles into the world with a soft click, like a key turning. {actor} feels the {adj} satisfaction of craft done right.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#veil'],
+          },
         },
         onFailure: {
           narrative: 'The release is clumsy. The cantrip sputters away harmlessly — no damage done, but no craft achieved.',
@@ -8335,6 +8391,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The wound closes, the fever breaks, the cough eases. {actor} wipes {their} hands and says nothing — the remedy speaks.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#healing'],
+          },
         },
         onFailure: {
           narrative: 'The remedy helps, but not enough. {actor} knows the limits of hedge magic and {adj} accepts them.',
@@ -8399,7 +8459,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { condition: 0.5, bestowed_power: 0.5 },
-            tagFilters: ['#mystic', '#ancient'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -8468,6 +8528,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'A tremor of certainty passes through {actor} — not a voice, not a vision, but a direction. The path ahead is {adj} clearer.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#divine'],
+          },
         },
         onFailure: {
           narrative: 'Silence. {actor} waits until the cold drives {them} away. Faith is sometimes its own {adj} reward.',
@@ -8530,6 +8594,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} carries the sky\'s message forward: a warning, a promise, or a {adj} question that demands answering.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#divine'],
+          },
         },
         onFailure: {
           narrative: 'The omen slips away like a dream at dawn. {actor} knows something was offered and {adj} lost.',
@@ -8592,10 +8660,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} raises a cairn that will outlast the season. Passers-by will know that someone cared enough to mark the {adj} spot.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#divine'],
+          },
         },
         onFailure: {
           narrative: 'The cairn is rough and {adj}. It will not survive the winter. But the attempt was made.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#divine'],
+          },
         },
       },
     ],
@@ -8654,10 +8730,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'Done. The road carries a blessing that travelers will feel without knowing — a {adj} lightness in their step, a lucky turn in the weather.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#divine'],
+          },
         },
         onFailure: {
           narrative: 'The blessing is thin and {adj}. It will fade before the next rain. But for one day, the road was safer.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#divine'],
+          },
         },
       },
     ],
@@ -8847,7 +8931,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
-            tagFilters: ['#ancient', '#ruins'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
@@ -8978,6 +9062,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The stranger lowers their blade and offers a {adj} nod. No words needed — steel speaks its own language.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The stranger wins the last exchange cleanly. {actor} bows, {adj} and bruised. There is always someone better.',
@@ -9045,6 +9133,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} knows the place like they built it. The {adj} risk is calculated, the reward assessed. Decision time.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#shadow'],
+          },
         },
         onFailure: {
           narrative: 'The risk is unclear. {actor} can\'t tell if the {adj} prize is worth the price. Uncertainty kills more thieves than guards.',
@@ -9107,6 +9199,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} melts into the crowd and becomes nobody. The {adj} drop is complete. Nobody knows.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#shadow'],
+          },
         },
         onFailure: {
           narrative: 'Someone noticed. Nothing actionable, but a {adj} seed of suspicion planted. Sloppy.',
@@ -9174,10 +9270,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The report is {adj} thorough and actionable: what to repair, what to replace, what to requisition. The garrison commander will know.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The report is {adj} incomplete. Key details are missing — which rack, which smithy, which budget line. Not useful enough.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -9298,6 +9402,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The map is done. Not beautiful, but {adj} reliable. Anyone following this chart will find their way in and — more importantly — out.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#ancient'],
+          },
         },
         onFailure: {
           narrative: 'Exhaustion wins. {actor} maps the {adj} upper levels but leaves the deepest passages as blank white space.',
@@ -9360,10 +9468,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The catalogue is {adj} complete. Future scholars will owe {actor} a debt they\'ll never know about.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#knowledge'],
+          },
         },
         onFailure: {
           narrative: 'The catalogue is {adj} partial. Good enough to avoid duplicating effort, not good enough to find anything specific.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#knowledge'],
+          },
         },
       },
     ],
@@ -9422,6 +9538,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The stack is tight, covered, and {adj} organized. Months of warmth, secured against weather and theft.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#survival'],
+          },
         },
         onFailure: {
           narrative: 'The stack collapses twice. {actor} piles it {adj} roughly and hopes rain holds off.',
@@ -9486,7 +9606,7 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#mining', '#wealth'],
+            tagFilters: ['#stone'],
           },
         },
         onFailure: {
@@ -9612,10 +9732,18 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'Clean passage. {actor} crosses without incident and leaves behind a {adj} reputation for keeping their word.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#gold'],
+          },
         },
         onFailure: {
           narrative: 'Something sours. The passage is grudging, the terms strained. {actor} crosses but leaves no {adj} goodwill behind.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#gold'],
+          },
         },
       },
     ],
@@ -9674,6 +9802,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} leaves the mess hall knowing more about this garrison than most of its {adj} officers. Knowledge is leverage.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'Too much noise, not enough signal. {actor} has {adj} gossip, not intelligence. There\'s a difference.',
@@ -9736,6 +9868,10 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'A meal, a bed, and the {adj} quiet satisfaction of being useful. Sometimes that\'s enough.',
           reputationDelta: 0.15,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#gold'],
+          },
         },
         onFailure: {
           narrative: 'The fisher finds a flaw {actor} missed. Payment is {adj} docked. Fair enough.',

@@ -76,6 +76,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} catches the fleeing outlaw and recovers the stolen goods. A {adj} start to a reputation.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The outlaw knows these paths better. {actor} loses them in the thicket.',
@@ -122,10 +126,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The scouts scatter, {adj} and bleeding. They will report this road is not worth the trouble.',
           reputationDelta: 0.04,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The scouts disengage on their own terms. They have seen enough — and {actor} is now marked.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -168,6 +180,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} sidesteps and puts the bully on the ground. The crossing is open.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The bully is stronger than expected. {actor} retreats across the ford instead.',
@@ -216,12 +232,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.7, condition: 0.3 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
           narrative: 'The outlaws fight back with {adj} desperation. {actor} withdraws before being surrounded.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -264,6 +284,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} handles the situation cleanly — the deserter is dealt with and the road is safer for it.',
           reputationDelta: 0.03,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The deserter bolts while {actor} hesitates. Another problem left for the next traveler.',
@@ -310,10 +334,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} puts both thieves to flight. The grateful merchant offers a reward and a name worth remembering.',
           reputationDelta: 0.05,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The thieves hold their ground long enough to escape with half the goods. The merchant is {adj} unhappy.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -358,12 +390,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: 0.04,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#wealth', '#wilderness'],
+            tagFilters: ['#shadow'],
           },
         },
         onFailure: {
           narrative: 'The smugglers spot {actor} and give chase. Nothing gained but a {adj} lesson about timing.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#shadow'],
+          },
         },
       },
     ],
@@ -410,6 +446,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'A stone strikes the pack leader squarely. The dogs scatter into the brush — hunger will have to wait.',
           reputationDelta: 0.02,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The pack circles once more before losing interest. {actor} passes through, bitten and wary.',
@@ -457,10 +497,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} holds ground and the boar thinks better of it, retreating into the trees with a final snort.',
           reputationDelta: 0.04,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The boar charges again. {actor} scrambles up a tree and waits for it to lose interest.',
           reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -503,6 +551,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'A swift strike pins the serpent. {actor} moves on, one {adj} danger crossed off the path.',
           reputationDelta: 0.02,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The serpent slithers into the rocks, and {actor} takes a long detour to avoid the nest.',
@@ -550,10 +602,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} hurls a brand at the alpha. It yelps and the pack melts into the darkness.',
           reputationDelta: 0.04,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The wolves persist until dawn. {actor} survives the night, but barely — no sleep, no rest.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -598,12 +658,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
           narrative: 'The spider retreats deeper into its lair. {actor} backs away — some ruins are best left alone.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -646,10 +710,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} finds solid ground and puts steel where it counts. The lurker thrashes once and sinks back into the murk.',
           reputationDelta: 0.05,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The swamp fights on the lurker\'s side. {actor} retreats to dry land, bruised and mud-caked.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -692,6 +764,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} covers the supplies and lights a smoky torch. The flock drifts to easier pickings.',
           reputationDelta: 0.02,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'One bird snatches a wrapped parcel. Minor loss, {adj} annoyance.',
@@ -745,12 +821,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.8, condition: 0.2 },
-            tagFilters: ['#ruins', '#wealth'],
+            tagFilters: ['#ancient'],
           },
         },
         onFailure: {
           narrative: 'The ruins are a maze. {actor} gets turned around and exits with nothing but dust on {their} boots.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#ancient'],
+          },
         },
       },
     ],
@@ -794,10 +874,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: '{actor} shatters the lead skeleton and the others collapse — the animating force too weak to sustain them alone.',
           reputationDelta: 0.05,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#ancient'],
+          },
         },
         onFailure: {
           narrative: 'The bones keep coming. {actor} retreats from the cursed ground, leaving the dead to their restless patrol.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#ancient'],
+          },
         },
       },
     ],
@@ -843,7 +931,7 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           reputationDelta: 0.03,
           rewardPool: {
             categoryWeights: { possession: 0.5, bestowed_power: 0.5 },
-            tagFilters: ['#spirit', '#mystic'],
+            tagFilters: ['#divine'],
           },
         },
         onFailure: {
@@ -891,6 +979,10 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: '{actor} stomps toward the log and the last goblins bolt. The area is clear — for now.',
           reputationDelta: 0.02,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The goblins are surprisingly persistent. {actor} gives up and walks a different path.',
@@ -939,10 +1031,18 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'A controlled burn clears the nest. {actor} contains the fire and the plague threat with it.',
           reputationDelta: 0.04,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#beast'],
+          },
         },
         onFailure: {
           narrative: 'The rats scatter into the walls. The nest survives, and the plague will spread further.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
         },
       },
     ],
@@ -987,12 +1087,16 @@ export const BORDERLAND_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           tierPromotionEligible: true,
           rewardPool: {
             categoryWeights: { possession: 0.6, condition: 0.4 },
-            tagFilters: ['#combat', '#wilderness'],
+            tagFilters: ['#combat'],
           },
         },
         onFailure: {
           narrative: 'The raiders are quick and desperate. They escape with half the supplies before {actor} can stop them.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],

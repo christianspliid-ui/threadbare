@@ -85,8 +85,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: FACTION_DIFFICULTY_BASE + FACTION_DIFFICULTY_STEP,
         duration: 3,
-        onSuccess: { narrative: 'You push through crumbling passages into the heart of the ruin.', tierPromotionEligible: true },
-        onFailure: { narrative: 'A collapse forces you to retreat. The ruin keeps its secrets.' },
+        onSuccess: {
+          narrative: 'You push through crumbling passages into the heart of the ruin.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'A collapse forces you to retreat. The ruin keeps its secrets.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#ancient'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -119,8 +132,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: FACTION_DIFFICULTY_BASE + FACTION_DIFFICULTY_STEP,
         duration: 2,
-        onSuccess: { narrative: 'Steel meets hide. The beast falls.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The beast proves too fierce. A tactical retreat is the wiser course.' },
+        onSuccess: {
+          narrative: 'Steel meets hide. The beast falls.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#beast'],
+          },
+        },
+        onFailure: {
+          narrative: 'The beast proves too fierce. A tactical retreat is the wiser course.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#beast'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -153,8 +179,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'eye',
         difficulty: FACTION_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'The cartographer accepts your work with approval.', tierPromotionEligible: true },
-        onFailure: { narrative: 'Your notes are incomplete. The cartographer is disappointed.' },
+        onSuccess: {
+          narrative: 'The cartographer accepts your work with approval.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#survival'],
+          },
+        },
+        onFailure: {
+          narrative: 'Your notes are incomplete. The cartographer is disappointed.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#survival'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -187,8 +226,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: FACTION_DIFFICULTY_BASE + FACTION_DIFFICULTY_STEP,
         duration: 3,
-        onSuccess: { narrative: 'The bandits scatter before your resolve. The merchants are grateful.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The bandits seize several crates. The merchants are displeased.' },
+        onSuccess: {
+          narrative: 'The bandits scatter before your resolve. The merchants are grateful.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#gold'],
+          },
+        },
+        onFailure: {
+          narrative: 'The bandits seize several crates. The merchants are displeased.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#gold'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -231,8 +283,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: FACTION_DIFFICULTY_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 2,
-        onSuccess: { narrative: 'The guardian falls. The artifact is recovered.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The guardian proves too strong. You retreat empty-handed.' },
+        onSuccess: {
+          narrative: 'The guardian falls. The artifact is recovered.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The guardian proves too strong. You retreat empty-handed.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#ancient'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -277,8 +342,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'eye',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 3,
-        onSuccess: { narrative: 'A discovery that will echo in guild records for years.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The deep yields nothing. The expedition is a costly failure.' },
+        onSuccess: {
+          narrative: 'A discovery that will echo in guild records for years.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'The deep yields nothing. The expedition is a costly failure.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#ancient'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -311,8 +389,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 4,
-        onSuccess: { narrative: 'The quarry is brought to justice. The guild\'s reputation soars.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The quarry slips away again. The bounty remains uncollected.' },
+        onSuccess: {
+          narrative: 'The quarry is brought to justice. The guild\'s reputation soars.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#shadow'],
+          },
+        },
+        onFailure: {
+          narrative: 'The quarry slips away again. The bounty remains uncollected.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#shadow'],
+          },
+        },
       },
     ],
     reachPrimary: 'shadow',
@@ -345,8 +436,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'gold',
         difficulty: FACTION_SENIOR_BASE + FACTION_DIFFICULTY_STEP,
         duration: 2,
-        onSuccess: { narrative: 'A complete and accurate survey. The cartographers will be pleased.', tierPromotionEligible: true },
-        onFailure: { narrative: 'Gaps remain in the survey. Enough for partial credit, no more.' },
+        onSuccess: {
+          narrative: 'A complete and accurate survey. The cartographers will be pleased.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'Gaps remain in the survey. Enough for partial credit, no more.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#knowledge'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -391,8 +495,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'stone',
         difficulty: FACTION_ELITE_BASE + FACTION_DIFFICULTY_STEP * 3,
         duration: 3,
-        onSuccess: { narrative: 'Against all odds, the dragon yields. A legend is born.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The dragon\'s fury is beyond mortal reckoning. You flee with your life.' },
+        onSuccess: {
+          narrative: 'Against all odds, the dragon yields. A legend is born.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.20, condition: 0.30, bestowed_power: 0.50 },
+            tagFilters: ['#beast'],
+          },
+        },
+        onFailure: {
+          narrative: 'The dragon\'s fury is beyond mortal reckoning. You flee with your life.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#beast'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -435,8 +552,21 @@ export const FACTION_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'shadow',
         difficulty: FACTION_ELITE_BASE + FACTION_DIFFICULTY_STEP * 2,
         duration: 5,
-        onSuccess: { narrative: 'The city yields treasures and knowledge beyond imagining.', tierPromotionEligible: true },
-        onFailure: { narrative: 'Ancient guardians drive you from the inner sanctum. So close, yet so far.' },
+        onSuccess: {
+          narrative: 'The city yields treasures and knowledge beyond imagining.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.20, condition: 0.30, bestowed_power: 0.50 },
+            tagFilters: ['#ancient'],
+          },
+        },
+        onFailure: {
+          narrative: 'Ancient guardians drive you from the inner sanctum. So close, yet so far.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#ancient'],
+          },
+        },
       },
     ],
     reachPrimary: 'eye',
@@ -568,8 +698,23 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'gold',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
         duration: 1,
-        onSuccess: { narrative: 'A clean victory — both fighters bow, mutual respect deepened.', reputationDelta: 0.04, tierPromotionEligible: true },
-        onFailure: { narrative: 'Exhaustion takes hold. The bout ends without a clear winner.', reputationDelta: -0.01 },
+        onSuccess: {
+          narrative: 'A clean victory — both fighters bow, mutual respect deepened.',
+          reputationDelta: 0.04,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
+        },
+        onFailure: {
+          narrative: 'Exhaustion takes hold. The bout ends without a clear winner.',
+          reputationDelta: -0.01,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
+        },
       },
     ],
   },
@@ -603,7 +748,14 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'eye',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'A nugget of genuine intelligence surfaces — a location, a weakness, a name.', reputationDelta: 0.04 },
+        onSuccess: {
+          narrative: 'A nugget of genuine intelligence surfaces — a location, a weakness, a name.',
+          reputationDelta: 0.04,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
+        },
         onFailure: { narrative: 'Nothing but tall tales tonight. Entertaining, but not useful.', reputationDelta: -0.01 },
       },
     ],
@@ -638,8 +790,23 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'heart',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP,
         duration: 1,
-        onSuccess: { narrative: 'A bond of mentor and student forms. The guild grows stronger.', reputationDelta: 0.05, tierPromotionEligible: true },
-        onFailure: { narrative: 'Frustration wins out. The session ends with both parties dissatisfied.', reputationDelta: -0.02 },
+        onSuccess: {
+          narrative: 'A bond of mentor and student forms. The guild grows stronger.',
+          reputationDelta: 0.05,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#knowledge'],
+          },
+        },
+        onFailure: {
+          narrative: 'Frustration wins out. The session ends with both parties dissatisfied.',
+          reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#knowledge'],
+          },
+        },
       },
     ],
   },
@@ -708,7 +875,14 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'gold',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'A fair exchange — both adventurers leave better informed than they arrived.', reputationDelta: 0.04 },
+        onSuccess: {
+          narrative: 'A fair exchange — both adventurers leave better informed than they arrived.',
+          reputationDelta: 0.04,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#knowledge'],
+          },
+        },
         onFailure: { narrative: 'One party feels shortchanged. The exchange ends awkwardly.', reputationDelta: -0.02 },
       },
     ],
@@ -743,8 +917,23 @@ export const FACTION_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'heart',
         difficulty: FACTION_SOCIAL_DIFFICULTY_BASE + FACTION_SOCIAL_DIFFICULTY_STEP * 2,
         duration: 2,
-        onSuccess: { narrative: 'Grudging respect replaces hostility. The rivalry becomes a spur to excellence.', reputationDelta: 0.06, tierPromotionEligible: true },
-        onFailure: { narrative: 'The rivalry festers. Both parties lose standing in the guild\'s eyes.', reputationDelta: -0.04 },
+        onSuccess: {
+          narrative: 'Grudging respect replaces hostility. The rivalry becomes a spur to excellence.',
+          reputationDelta: 0.06,
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#combat'],
+          },
+        },
+        onFailure: {
+          narrative: 'The rivalry festers. Both parties lose standing in the guild\'s eyes.',
+          reputationDelta: -0.04,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
+        },
       },
     ],
   },

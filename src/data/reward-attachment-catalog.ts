@@ -25,7 +25,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 1,
-      tags: ['#iron', '#weapon', '#melee'],
+      tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.03 Iron reach',
       reachBonus: { iron: 0.03 },
       lossCondition: 'breakable',
@@ -39,7 +39,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 1,
-      tags: ['#iron', '#weapon', '#ranged'],
+      tags: ['#iron', '#weapon', '#ranged', '#combat'],
       mechanicalSummary: '+0.04 Iron reach',
       reachBonus: { iron: 0.04 },
       lossCondition: 'breakable',
@@ -53,7 +53,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 1,
-      tags: ['#iron', '#weapon', '#melee'],
+      tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.04 Iron reach',
       reachBonus: { iron: 0.04 },
       lossCondition: 'breakable',
@@ -67,7 +67,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 1,
-      tags: ['#iron', '#weapon', '#melee', '#survival'],
+      tags: ['#iron', '#weapon', '#melee', '#survival', '#combat', '#wilderness'],
       mechanicalSummary: '+0.03 Iron reach',
       reachBonus: { iron: 0.03 },
       lossCondition: 'consumable',
@@ -83,7 +83,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 2,
-      tags: ['#iron', '#weapon', '#melee'],
+      tags: ['#iron', '#weapon', '#melee', '#combat'],
       mechanicalSummary: '+0.08 Iron reach',
       reachBonus: { iron: 0.08 },
       lossCondition: 'breakable',
@@ -97,7 +97,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 2,
-      tags: ['#iron', '#weapon', '#ranged', '#eye'],
+      tags: ['#iron', '#weapon', '#ranged', '#eye', '#combat'],
       mechanicalSummary: '+0.07 Iron reach, +0.03 Eye reach',
       reachBonus: { iron: 0.07, eye: 0.03 },
       lossCondition: 'stealable',
@@ -111,7 +111,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 2,
-      tags: ['#iron', '#weapon', '#melee', '#stone'],
+      tags: ['#iron', '#weapon', '#melee', '#stone', '#combat'],
       mechanicalSummary: '+0.06 Iron reach, +0.03 Stone reach',
       reachBonus: { iron: 0.06, stone: 0.03 },
       lossCondition: 'breakable',
@@ -127,7 +127,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 3,
-      tags: ['#iron', '#weapon', '#melee', '#cursed'],
+      tags: ['#iron', '#weapon', '#melee', '#cursed', '#combat'],
       mechanicalSummary: '+0.12 Iron reach, −0.05 Heart reach',
       reachBonus: { iron: 0.12, heart: -0.05 },
       lossCondition: 'cursed',
@@ -141,7 +141,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 3,
-      tags: ['#iron', '#weapon', '#ranged', '#star'],
+      tags: ['#iron', '#weapon', '#ranged', '#star', '#combat'],
       mechanicalSummary: '+0.10 Iron reach, +0.05 Star reach',
       reachBonus: { iron: 0.10, star: 0.05 },
       lossCondition: 'permanent',
@@ -157,7 +157,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'arms',
       tier: 4,
-      tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient'],
+      tags: ['#iron', '#weapon', '#melee', '#shadow', '#ancient', '#combat'],
       mechanicalSummary: '+0.18 Iron reach, +0.08 Shadow reach',
       reachBonus: { iron: 0.18, shadow: 0.08 },
       lossCondition: 'permanent',
@@ -173,7 +173,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'vestments',
       tier: 1,
-      tags: ['#iron', '#armor', '#cloth'],
+      tags: ['#iron', '#armor', '#cloth', '#combat'],
       mechanicalSummary: '+0.03 Iron reach',
       reachBonus: { iron: 0.03 },
       lossCondition: 'breakable',
@@ -187,7 +187,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'vestments',
       tier: 1,
-      tags: ['#gold', '#cloth', '#commercial'],
+      tags: ['#gold', '#cloth', '#commercial', '#trade'],
       mechanicalSummary: '+0.04 Gold reach',
       reachBonus: { gold: 0.04 },
       lossCondition: 'stealable',
@@ -217,7 +217,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'vestments',
       tier: 2,
-      tags: ['#iron', '#armor'],
+      tags: ['#iron', '#armor', '#combat'],
       mechanicalSummary: '+0.08 Iron reach',
       reachBonus: { iron: 0.08 },
       lossCondition: 'breakable',
@@ -231,7 +231,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'vestments',
       tier: 2,
-      tags: ['#shadow', '#cloth'],
+      tags: ['#shadow', '#cloth', '#stealth'],
       mechanicalSummary: '+0.07 Shadow reach',
       reachBonus: { shadow: 0.07 },
       lossCondition: 'stealable',
@@ -247,7 +247,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'vestments',
       tier: 3,
-      tags: ['#shadow', '#cloth', '#veil', '#cursed'],
+      tags: ['#shadow', '#cloth', '#veil', '#cursed', '#stealth'],
       mechanicalSummary: '+0.12 Shadow reach, −0.06 Heart reach',
       reachBonus: { shadow: 0.12, heart: -0.06 },
       lossCondition: 'cursed',
@@ -337,7 +337,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tomes_scrolls',
       tier: 2,
-      tags: ['#veil', '#scroll', '#knowledge'],
+      tags: ['#veil', '#scroll', '#knowledge', '#arcane'],
       mechanicalSummary: '+0.06 Veil reach, +0.03 Eye reach',
       reachBonus: { veil: 0.06, eye: 0.03 },
       lossCondition: 'breakable',
@@ -353,7 +353,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tomes_scrolls',
       tier: 3,
-      tags: ['#star', '#tome', '#knowledge', '#ancient'],
+      tags: ['#star', '#tome', '#knowledge', '#ancient', '#ruins'],
       mechanicalSummary: '+0.10 Star reach, +0.05 Eye reach',
       reachBonus: { star: 0.10, eye: 0.05 },
       lossCondition: 'permanent',
@@ -369,7 +369,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tomes_scrolls',
       tier: 4,
-      tags: ['#veil', '#tome', '#knowledge', '#ancient', '#cursed'],
+      tags: ['#veil', '#tome', '#knowledge', '#ancient', '#cursed', '#arcane', '#ruins'],
       mechanicalSummary: '+0.18 Veil reach, −0.08 Heart reach',
       reachBonus: { veil: 0.18, heart: -0.08 },
       lossCondition: 'cursed',
@@ -385,7 +385,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 1,
-      tags: ['#stone', '#tool'],
+      tags: ['#stone', '#tool', '#craft'],
       mechanicalSummary: '+0.03 Stone reach',
       reachBonus: { stone: 0.03 },
       lossCondition: 'breakable',
@@ -399,7 +399,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 1,
-      tags: ['#flesh', '#tool', '#survival'],
+      tags: ['#flesh', '#tool', '#survival', '#craft', '#wilderness', '#healing'],
       mechanicalSummary: '+0.04 Flesh reach',
       reachBonus: { flesh: 0.04 },
       lossCondition: 'consumable',
@@ -413,7 +413,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 1,
-      tags: ['#eye', '#tool'],
+      tags: ['#eye', '#tool', '#craft'],
       mechanicalSummary: '+0.04 Eye reach',
       reachBonus: { eye: 0.04 },
       lossCondition: 'breakable',
@@ -429,7 +429,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 2,
-      tags: ['#veil', '#tool', '#knowledge'],
+      tags: ['#veil', '#tool', '#knowledge', '#craft', '#arcane'],
       mechanicalSummary: '+0.07 Veil reach, +0.03 Eye reach',
       reachBonus: { veil: 0.07, eye: 0.03 },
       lossCondition: 'breakable',
@@ -443,7 +443,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 2,
-      tags: ['#stone', '#tool'],
+      tags: ['#stone', '#tool', '#craft', '#ruins'],
       mechanicalSummary: '+0.08 Stone reach',
       reachBonus: { stone: 0.08 },
       lossCondition: 'stealable',
@@ -459,7 +459,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'tools_instruments',
       tier: 3,
-      tags: ['#star', '#tool', '#ancient', '#knowledge'],
+      tags: ['#star', '#tool', '#ancient', '#knowledge', '#craft'],
       mechanicalSummary: '+0.10 Star reach, +0.05 Eye reach',
       reachBonus: { star: 0.10, eye: 0.05 },
       lossCondition: 'permanent',
@@ -519,7 +519,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'relics_talismans',
       tier: 2,
-      tags: ['#shadow', '#relic'],
+      tags: ['#shadow', '#relic', '#stealth'],
       mechanicalSummary: '+0.07 Shadow reach',
       reachBonus: { shadow: 0.07 },
       lossCondition: 'stealable',
@@ -535,7 +535,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'relics_talismans',
       tier: 3,
-      tags: ['#stone', '#relic', '#ancient'],
+      tags: ['#stone', '#relic', '#ancient', '#ruins'],
       mechanicalSummary: '+0.12 Stone reach, −0.04 Shadow reach',
       reachBonus: { stone: 0.12, shadow: -0.04 },
       lossCondition: 'permanent',
@@ -565,7 +565,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'relics_talismans',
       tier: 4,
-      tags: ['#veil', '#relic', '#ancient', '#divine'],
+      tags: ['#veil', '#relic', '#ancient', '#divine', '#arcane', '#ruins'],
       mechanicalSummary: '+0.15 Veil reach, +0.08 Star reach',
       reachBonus: { veil: 0.15, star: 0.08 },
       lossCondition: 'permanent',
@@ -581,7 +581,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 1,
-      tags: ['#beast', '#mount', '#travel'],
+      tags: ['#beast', '#mount', '#travel', '#wilderness'],
       mechanicalSummary: '+0.03 Gold reach',
       reachBonus: { gold: 0.03 },
       lossCondition: 'stealable',
@@ -595,7 +595,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 1,
-      tags: ['#beast', '#eye', '#survival'],
+      tags: ['#beast', '#eye', '#survival', '#wilderness'],
       mechanicalSummary: '+0.04 Eye reach',
       reachBonus: { eye: 0.04 },
       lossCondition: 'breakable',
@@ -609,7 +609,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 1,
-      tags: ['#beast', '#travel', '#survival'],
+      tags: ['#beast', '#travel', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Stone reach',
       reachBonus: { stone: 0.03 },
       lossCondition: 'stealable',
@@ -625,7 +625,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 2,
-      tags: ['#beast', '#iron', '#weapon'],
+      tags: ['#beast', '#iron', '#weapon', '#combat', '#wilderness'],
       mechanicalSummary: '+0.06 Iron reach, +0.03 Eye reach',
       reachBonus: { iron: 0.06, eye: 0.03 },
       lossCondition: 'breakable',
@@ -639,7 +639,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 2,
-      tags: ['#beast', '#mount', '#travel'],
+      tags: ['#beast', '#mount', '#travel', '#wilderness'],
       mechanicalSummary: '+0.05 Gold reach, +0.03 Iron reach',
       reachBonus: { gold: 0.05, iron: 0.03 },
       lossCondition: 'stealable',
@@ -655,7 +655,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'mounts_beasts',
       tier: 3,
-      tags: ['#beast', '#mount', '#iron'],
+      tags: ['#beast', '#mount', '#iron', '#combat', '#wilderness'],
       mechanicalSummary: '+0.10 Iron reach, +0.05 Gold reach',
       reachBonus: { iron: 0.10, gold: 0.05 },
       lossCondition: 'permanent',
@@ -671,7 +671,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 1,
-      tags: ['#food', '#provision', '#survival'],
+      tags: ['#food', '#provision', '#survival', '#wilderness', '#trade'],
       mechanicalSummary: '+0.03 Flesh reach',
       reachBonus: { flesh: 0.03 },
       lossCondition: 'consumable',
@@ -685,7 +685,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 1,
-      tags: ['#drink', '#provision', '#survival'],
+      tags: ['#drink', '#provision', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Flesh reach',
       reachBonus: { flesh: 0.03 },
       lossCondition: 'consumable',
@@ -699,7 +699,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 1,
-      tags: ['#tool', '#provision', '#survival'],
+      tags: ['#tool', '#provision', '#survival', '#wilderness'],
       mechanicalSummary: '+0.03 Stone reach',
       reachBonus: { stone: 0.03 },
       lossCondition: 'consumable',
@@ -713,7 +713,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 1,
-      tags: ['#drink', '#provision', '#heart'],
+      tags: ['#drink', '#provision', '#heart', '#trade'],
       mechanicalSummary: '+0.04 Heart reach',
       reachBonus: { heart: 0.04 },
       lossCondition: 'consumable',
@@ -729,7 +729,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 2,
-      tags: ['#potion', '#provision', '#flesh'],
+      tags: ['#potion', '#provision', '#flesh', '#healing', '#wilderness'],
       mechanicalSummary: '+0.07 Flesh reach',
       reachBonus: { flesh: 0.07 },
       lossCondition: 'consumable',
@@ -743,7 +743,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 2,
-      tags: ['#star', '#provision', '#divine'],
+      tags: ['#star', '#provision', '#divine', '#healing'],
       mechanicalSummary: '+0.06 Star reach, +0.03 Heart reach',
       reachBonus: { star: 0.06, heart: 0.03 },
       lossCondition: 'consumable',
@@ -759,7 +759,7 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     properties: {
       subcategory: 'provisions',
       tier: 3,
-      tags: ['#veil', '#potion', '#provision'],
+      tags: ['#veil', '#potion', '#provision', '#arcane'],
       mechanicalSummary: '+0.10 Veil reach, +0.05 Eye reach',
       reachBonus: { veil: 0.10, eye: 0.05 },
       lossCondition: 'consumable',
@@ -781,7 +781,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#iron'],
+      tags: ['#wound', '#physical', '#iron', '#combat'],
       description: 'A broken bone limits striking power and grip strength.',
       maxLevel: 1,
       visibility: 'public',
@@ -796,7 +796,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#flesh'],
+      tags: ['#wound', '#physical', '#flesh', '#combat'],
       description: 'Deep laceration impairs movement and endurance.',
       maxLevel: 1,
       visibility: 'public',
@@ -811,7 +811,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#iron'],
+      tags: ['#wound', '#physical', '#iron', '#combat'],
       description: 'Breathing hurts. Fighting hurts more.',
       maxLevel: 1,
       visibility: 'public',
@@ -826,7 +826,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#wound', '#physical', '#stone'],
+      tags: ['#wound', '#physical', '#stone', '#combat'],
       description: 'Swollen hands make delicate work impossible.',
       maxLevel: 1,
       visibility: 'public',
@@ -843,7 +843,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#iron', '#flesh'],
+      tags: ['#wound', '#physical', '#iron', '#flesh', '#combat'],
       description: 'Internal damage that risks infection and limits exertion.',
       maxLevel: 1,
       visibility: 'public',
@@ -858,7 +858,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#iron'],
+      tags: ['#wound', '#physical', '#iron', '#combat'],
       description: 'The arm that blocks can no longer bear weight.',
       maxLevel: 1,
       visibility: 'public',
@@ -873,7 +873,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#wound', '#physical', '#eye'],
+      tags: ['#wound', '#physical', '#eye', '#combat'],
       description: 'Lost depth perception impairs awareness and aim.',
       maxLevel: 1,
       visibility: 'public',
@@ -890,7 +890,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#wound', '#physical', '#iron', '#flesh'],
+      tags: ['#wound', '#physical', '#iron', '#flesh', '#combat'],
       description: 'Catastrophic injury to the back. Movement and combat severely impaired.',
       maxLevel: 1,
       visibility: 'public',
@@ -907,7 +907,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#star', '#divine'],
+      tags: ['#blessing', '#star', '#divine', '#healing'],
       description: 'A faint warmth lingers, granting minor divine favor.',
       maxLevel: 1,
       visibility: 'public',
@@ -922,7 +922,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#heart', '#flesh'],
+      tags: ['#blessing', '#heart', '#flesh', '#healing'],
       description: 'Hands carry a soothing warmth that eases pain.',
       maxLevel: 1,
       visibility: 'public',
@@ -937,7 +937,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#blessing', '#gold', '#divine'],
+      tags: ['#blessing', '#gold', '#divine', '#trade'],
       description: 'Luck bends slightly in your direction.',
       maxLevel: 1,
       visibility: 'public',
@@ -954,7 +954,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#star', '#divine', '#heart'],
+      tags: ['#blessing', '#star', '#divine', '#heart', '#healing'],
       description: 'A protective aura that dulls hostile intent nearby.',
       maxLevel: 1,
       visibility: 'public',
@@ -969,7 +969,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 2,
-      tags: ['#blessing', '#stone', '#flesh'],
+      tags: ['#blessing', '#stone', '#flesh', '#wilderness'],
       description: 'Vitality drawn from the land itself. Wounds close faster, muscles ache less.',
       maxLevel: 1,
       visibility: 'public',
@@ -986,7 +986,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 3,
-      tags: ['#blessing', '#star', '#divine', '#eye'],
+      tags: ['#blessing', '#star', '#divine', '#eye', '#ruins'],
       description: 'Marked by divine purpose. Perception and faith burn bright.',
       maxLevel: 1,
       visibility: 'public',
@@ -1084,7 +1084,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#disease', '#flesh'],
+      tags: ['#disease', '#flesh', '#wilderness'],
       description: 'A common illness from exposure and bad water.',
       maxLevel: 1,
       visibility: 'public',
@@ -1099,7 +1099,7 @@ export const REWARD_CONDITIONS: GraphNode[] = [
     properties: {
       subcategory: 'condition',
       tier: 1,
-      tags: ['#disease', '#flesh'],
+      tags: ['#disease', '#flesh', '#wilderness'],
       description: 'Contaminated food or water. Debilitating cramps and weakness.',
       maxLevel: 1,
       visibility: 'public',
@@ -1207,7 +1207,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 1,
-      tags: ['#bestowed', '#stone', '#survival'],
+      tags: ['#bestowed', '#stone', '#survival', '#craft', '#wilderness'],
       description: 'Hands radiate gentle warmth. Fire comes easily.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1222,7 +1222,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 1,
-      tags: ['#bestowed', '#heart', '#flesh'],
+      tags: ['#bestowed', '#heart', '#flesh', '#wilderness'],
       description: 'Animals understand your intent, if not your words.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1237,7 +1237,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 1,
-      tags: ['#bestowed', '#flesh', '#survival'],
+      tags: ['#bestowed', '#flesh', '#survival', '#wilderness'],
       description: 'Immunity to common poisons and spoiled food.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1252,7 +1252,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 1,
-      tags: ['#bestowed', '#eye', '#shadow'],
+      tags: ['#bestowed', '#eye', '#shadow', '#wilderness', '#stealth'],
       description: 'See clearly in near-total darkness.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1269,7 +1269,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 2,
-      tags: ['#bestowed', '#eye', '#veil', '#supernatural'],
+      tags: ['#bestowed', '#eye', '#veil', '#supernatural', '#arcane', '#ruins'],
       description: 'See beyond the veil of the material into the spirit world.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1284,7 +1284,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 2,
-      tags: ['#bestowed', '#flesh', '#iron'],
+      tags: ['#bestowed', '#flesh', '#iron', '#combat', '#healing'],
       description: 'Wounds close faster than nature allows. Scars form in hours.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1299,7 +1299,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 2,
-      tags: ['#bestowed', '#shadow', '#heart'],
+      tags: ['#bestowed', '#shadow', '#heart', '#ruins'],
       description: 'Hear the whispers of the recently dead. They offer counsel, sometimes unbidden.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1316,7 +1316,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 3,
-      tags: ['#bestowed', '#star', '#stone', '#divine'],
+      tags: ['#bestowed', '#star', '#stone', '#divine', '#wilderness'],
       description: 'Command the weather within a small radius. The sky answers, reluctantly.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1331,7 +1331,7 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
     properties: {
       subcategory: 'bestowed',
       tier: 3,
-      tags: ['#bestowed', '#veil', '#shadow', '#supernatural'],
+      tags: ['#bestowed', '#veil', '#shadow', '#supernatural', '#arcane', '#stealth'],
       description: 'Step briefly between worlds. Physical barriers become suggestions.',
       maxLevel: 1,
       visibility: 'discoverable',
@@ -1355,5 +1355,117 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
       domainContributions: { star: 0.12, flesh: 0.08 },
       flavorText: 'You burned once and did not die. The fire lives inside now, patient and eternal. It will outlast you.',
     } as TraitDefinitionProperties,
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════
+// RUIN_SEEKER_TRAIT — Trait definition for ruins exploration gating
+// ═══════════════════════════════════════════════════════════════════════
+
+export const RUIN_SEEKER_TRAIT: GraphNode = {
+  id: 'trait_ruin_seeker',
+  type: 'trait',
+  name: 'Ruin Seeker',
+  properties: {
+    subcategory: 'bestowed',
+    description: 'An instinct for ancient places — the pull of buried stone and forgotten purpose.',
+    importance: 0.6,
+    maxLevel: 3,
+    visibility: 'discoverable',
+    domainContributions: { eye: 0.03, shadow: 0.02 },
+    tags: ['ruin_seeker', 'explorer', '#eye', '#shadow'],
+    flavorText: 'They pause at crossroads, head tilted, as if listening for something beneath the earth.',
+  } as TraitDefinitionProperties,
+};
+
+// ═══════════════════════════════════════════════════════════════════════
+// TREASURE_MAPS — Consumable possessions that grant ruin_seeker while held
+// ═══════════════════════════════════════════════════════════════════════
+
+export const TREASURE_MAPS: GraphNode[] = [
+  {
+    id: 'reward_tomes_scrolls_faded_treasure_map',
+    type: 'artifact',
+    name: 'Faded Treasure Map',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 1,
+      tags: ['#eye', '#map', '#ruin_seeker', '#ancient'],
+      mechanicalSummary: '+0.03 Eye reach, grants ruin_seeker (consumed on discovery)',
+      reachBonus: { eye: 0.03 },
+      lossCondition: 'consumable',
+      grantsTraitWhileHeld: 'ruin_seeker',
+      grantedTraitLevel: 1,
+      consumeOnEvent: 'hidden_site_discovered',
+      flavorText: 'The parchment is brittle and the ink barely legible, but the landmarks are unmistakable.',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_smugglers_chart',
+    type: 'artifact',
+    name: "Smuggler's Chart",
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 1,
+      tags: ['#shadow', '#map', '#ruin_seeker', '#ancient'],
+      mechanicalSummary: '+0.03 Shadow reach, grants ruin_seeker (consumed on discovery)',
+      reachBonus: { shadow: 0.03 },
+      lossCondition: 'consumable',
+      grantsTraitWhileHeld: 'ruin_seeker',
+      grantedTraitLevel: 1,
+      consumeOnEvent: 'hidden_site_discovered',
+      flavorText: 'Stained with sea-salt and cheap wine. The cross marks a cache beneath old foundations.',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_cartographers_survey',
+    type: 'artifact',
+    name: "Cartographer's Survey",
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 2,
+      tags: ['#eye', '#map', '#ruin_seeker', '#ancient', '#professional'],
+      mechanicalSummary: '+0.05 Eye reach, grants ruin_seeker L2 (consumed on discovery)',
+      reachBonus: { eye: 0.05 },
+      lossCondition: 'consumable',
+      grantsTraitWhileHeld: 'ruin_seeker',
+      grantedTraitLevel: 2,
+      consumeOnEvent: 'hidden_site_discovered',
+      flavorText: 'Meticulous measurements and triangulations. Someone spent months on this.',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_tomb_raiders_journal',
+    type: 'artifact',
+    name: "Tomb Raider's Journal",
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 2,
+      tags: ['#eye', '#shadow', '#map', '#ruin_seeker', '#ancient'],
+      mechanicalSummary: '+0.04 Eye, +0.03 Shadow, grants ruin_seeker L2 (consumed on discovery)',
+      reachBonus: { eye: 0.04, shadow: 0.03 },
+      lossCondition: 'consumable',
+      grantsTraitWhileHeld: 'ruin_seeker',
+      grantedTraitLevel: 2,
+      consumeOnEvent: 'hidden_site_discovered',
+      flavorText: 'Detailed notes on trap mechanisms, burial customs, and which walls sound hollow when tapped.',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_tomes_scrolls_ancient_waystone_rubbing',
+    type: 'artifact',
+    name: 'Ancient Waystone Rubbing',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 3,
+      tags: ['#eye', '#map', '#ruin_seeker', '#ancient', '#elder'],
+      mechanicalSummary: '+0.06 Eye reach, grants ruin_seeker L3 (consumed on discovery)',
+      reachBonus: { eye: 0.06 },
+      lossCondition: 'consumable',
+      grantsTraitWhileHeld: 'ruin_seeker',
+      grantedTraitLevel: 3,
+      consumeOnEvent: 'hidden_site_discovered',
+      flavorText: 'Charcoal on vellum, taken from a stone older than the kingdom. The symbols shift when you look away.',
+    } as PossessionNodeProperties,
   },
 ];

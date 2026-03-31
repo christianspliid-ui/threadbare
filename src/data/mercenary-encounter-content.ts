@@ -103,8 +103,21 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: MC_DIFFICULTY_BASE + MC_DIFFICULTY_STEP,
         duration: 3,
-        onSuccess: { narrative: 'The caravan arrives intact. Gold well earned.', tierPromotionEligible: true },
-        onFailure: { narrative: 'Losses on the road. The merchant is unhappy.' },
+        onSuccess: {
+          narrative: 'The caravan arrives intact. Gold well earned.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#gold'],
+          },
+        },
+        onFailure: {
+          narrative: 'Losses on the road. The merchant is unhappy.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#gold'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -137,8 +150,21 @@ export const MERCENARY_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: MC_DIFFICULTY_BASE + MC_DIFFICULTY_STEP + 5,
         duration: 2,
-        onSuccess: { narrative: 'Bound and delivered. The bounty is yours.', tierPromotionEligible: true },
-        onFailure: { narrative: 'The target escapes. No coin for empty hands.' },
+        onSuccess: {
+          narrative: 'Bound and delivered. The bounty is yours.',
+          tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#combat'],
+          },
+        },
+        onFailure: {
+          narrative: 'The target escapes. No coin for empty hands.',
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#combat'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -315,8 +341,20 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'iron',
         difficulty: MC_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'You hold your own. Respect trickles in.' },
-        onFailure: { narrative: 'Flat on your back. The laughter stings more than the bruises.' },
+        onSuccess: {
+          narrative: 'You hold your own. Respect trickles in.',
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#combat'],
+          },
+        },
+        onFailure: {
+          narrative: 'Flat on your back. The laughter stings more than the bruises.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
+        },
       },
     ],
     reachPrimary: 'iron',
@@ -338,7 +376,13 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'heart',
         difficulty: MC_DIFFICULTY_BASE - 10,
         duration: 1,
-        onSuccess: { narrative: 'Your story earns a round of drinks and a few nods.' },
+        onSuccess: {
+          narrative: 'Your story earns a round of drinks and a few nods.',
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#heart'],
+          },
+        },
         onFailure: { narrative: 'The veterans have heard better. You drink in silence.' },
       },
     ],
@@ -361,8 +405,20 @@ export const MERCENARY_SOCIAL_TEMPLATES: EncounterTemplate[] = [
         reach: 'gold',
         difficulty: MC_DIFFICULTY_BASE,
         duration: 1,
-        onSuccess: { narrative: 'You secure better terms. The company profits.' },
-        onFailure: { narrative: 'The employer is shrewd. Standard rates it is.' },
+        onSuccess: {
+          narrative: 'You secure better terms. The company profits.',
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#gold'],
+          },
+        },
+        onFailure: {
+          narrative: 'The employer is shrewd. Standard rates it is.',
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#gold'],
+          },
+        },
       },
     ],
     reachPrimary: 'gold',

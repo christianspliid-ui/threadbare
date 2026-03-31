@@ -65,10 +65,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'The alliance is forged — a pact sworn beneath {adj} skies, binding both to common cause.',
           reputationDelta: 0.08,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'Negotiations collapse. The terms prove too {adj} for either side to stomach.',
           reputationDelta: -0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#heart'],
+          },
         },
       },
     ],
@@ -158,6 +166,10 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'The reputation is confirmed — {actor} now sees the subject clearly.',
           reputationDelta: 0.04,
+          rewardPool: {
+            categoryWeights: { possession: 1.0 },
+            tagFilters: ['#knowledge'],
+          },
         },
         onFailure: {
           narrative: 'Contradictions pile up. The {adj} truth remains elusive.',
@@ -204,10 +216,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Secrets are laid bare — {actor} departs with knowledge that could reshape alliances.',
           reputationDelta: 0.04,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#shadow'],
+          },
         },
         onFailure: {
           narrative: 'The intelligence proves {adj} and unreliable. Key details slip through the cracks.',
           reputationDelta: -0.02,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#shadow'],
+          },
         },
       },
     ],
@@ -250,10 +270,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'A deal is struck — goods and gold flow in a {adj} compact of mutual benefit.',
           reputationDelta: 0.06,
+          rewardPool: {
+            categoryWeights: { possession: 0.70, condition: 0.20, bestowed_power: 0.10 },
+            tagFilters: ['#gold'],
+          },
         },
         onFailure: {
           narrative: 'Last-minute doubts shatter the agreement. The deal dissolves into {adj} recriminations.',
           reputationDelta: -0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#gold'],
+          },
         },
       },
     ],
@@ -297,10 +325,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
           narrative: 'Conviction takes hold — the target is persuaded, their course altered.',
           reputationDelta: 0.06,
           tierPromotionEligible: true,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#heart'],
+          },
         },
         onFailure: {
           narrative: 'The argument collapses under its own {adj} weight. The target remains unmoved.',
           reputationDelta: -0.03,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#heart'],
+          },
         },
       },
     ],
@@ -389,10 +425,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'The deception succeeds — the target acts on false belief, none the wiser.',
           reputationDelta: 0.05,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#shadow'],
+          },
         },
         onFailure: {
           narrative: 'The facade crumbles. Trust shatters as the {adj} lie is exposed.',
           reputationDelta: -0.06,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#shadow'],
+          },
         },
       },
     ],
@@ -452,10 +496,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'Honor is restored. The {adj} victory echoes through the settlement.',
           reputationDelta: 0.10,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'The aftermath proves {adj} and bitter. The duel has cost more than it gained.',
           reputationDelta: -0.05,
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
@@ -514,10 +566,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'No trace remains. The sabotage is discovered only when {adj} damage is done.',
           reputationDelta: 0.08,
+          rewardPool: {
+            categoryWeights: { possession: 0.30, condition: 0.30, bestowed_power: 0.40 },
+            tagFilters: ['#shadow'],
+          },
         },
         onFailure: {
           narrative: 'Caught in the act — {actor}\'s identity is exposed, their {adj} scheme laid bare.',
           reputationDelta: -0.08,
+          rewardPool: {
+            categoryWeights: { condition: 0.70, possession: 0.30 },
+            tagFilters: ['#shadow'],
+          },
         },
       },
     ],
@@ -560,10 +620,18 @@ export const SOCIAL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
         onSuccess: {
           narrative: 'The robbery succeeds — {actor} vanishes with the spoils, a {adj} ghost in the crowd.',
           reputationDelta: 0.05,
+          rewardPool: {
+            categoryWeights: { possession: 0.50, condition: 0.30, bestowed_power: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
         onFailure: {
           narrative: 'Guards arrive. {actor}\'s {adj} greed has left them exposed.',
           reputationDelta: -0.06,
+          rewardPool: {
+            categoryWeights: { condition: 0.80, possession: 0.20 },
+            tagFilters: ['#combat'],
+          },
         },
       },
     ],
