@@ -16,6 +16,16 @@ import {
   MERCENARY_ENCOUNTER_META,
   getMercenaryEncounterById,
 } from './mercenary-encounter-content';
+import { THIEVES_GUILD_ENCOUNTER_META, getThievesGuildEncounterById } from './thieves-guild-encounter-content';
+import { MERCHANT_CONSORTIUM_ENCOUNTER_META, getMerchantConsortiumEncounterById } from './merchant-consortium-encounter-content';
+import { TEMPLE_OF_SPHERES_ENCOUNTER_META, getTempleOfSpheresEncounterById } from './temple-of-spheres-encounter-content';
+import { ARCANE_CIRCLE_ENCOUNTER_META, getArcaneCircleEncounterById } from './arcane-circle-encounter-content';
+import { RANGERS_BROTHERHOOD_ENCOUNTER_META, getRangersBrotherhoodEncounterById } from './rangers-brotherhood-encounter-content';
+import { CIVIC_GUARD_ENCOUNTER_META, getCivicGuardEncounterById } from './civic-guard-encounter-content';
+import { UNDERKING_COURT_ENCOUNTER_META, getUnderkingCourtEncounterById } from './underking-court-encounter-content';
+import { HOLY_ORDER_DAWN_ENCOUNTER_META, getHolyOrderDawnEncounterById } from './holy-order-dawn-encounter-content';
+import { BUILDERS_FELLOWSHIP_ENCOUNTER_META, getBuildersFellowshipEncounterById } from './builders-fellowship-encounter-content';
+import { LOREKEEPERS_COVENANT_ENCOUNTER_META, getLorekeeperCovenantEncounterById } from './lorekeepers-covenant-encounter-content';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -56,6 +66,17 @@ export const FACTION_ENCOUNTER_META: ReadonlyMap<string, FactionEncounterMeta> =
   ['ag.social.rivalry', { factionDefId: 'adventuring_guild', minRank: 'journeyman', reputationReward: 0.03, questType: 'standard' }],
   // Mercenary Company (TB-073)
   ...MERCENARY_ENCOUNTER_META,
+  // Classical factions
+  ...THIEVES_GUILD_ENCOUNTER_META,
+  ...MERCHANT_CONSORTIUM_ENCOUNTER_META,
+  ...TEMPLE_OF_SPHERES_ENCOUNTER_META,
+  ...ARCANE_CIRCLE_ENCOUNTER_META,
+  ...RANGERS_BROTHERHOOD_ENCOUNTER_META,
+  ...CIVIC_GUARD_ENCOUNTER_META,
+  ...UNDERKING_COURT_ENCOUNTER_META,
+  ...HOLY_ORDER_DAWN_ENCOUNTER_META,
+  ...BUILDERS_FELLOWSHIP_ENCOUNTER_META,
+  ...LOREKEEPERS_COVENANT_ENCOUNTER_META,
 ]);
 
 // ─── Templates ───────────────────────────────────────────────────────────
@@ -954,7 +975,17 @@ export function getFactionEncounterById(id: string): EncounterTemplate | undefin
   return FACTION_ENCOUNTER_TEMPLATES.find(t => t.id === id)
     ?? FACTION_LIFECYCLE_TEMPLATES.find(t => t.id === id)
     ?? FACTION_SOCIAL_TEMPLATES.find(t => t.id === id)
-    ?? getMercenaryEncounterById(id);
+    ?? getMercenaryEncounterById(id)
+    ?? getThievesGuildEncounterById(id)
+    ?? getMerchantConsortiumEncounterById(id)
+    ?? getTempleOfSpheresEncounterById(id)
+    ?? getArcaneCircleEncounterById(id)
+    ?? getRangersBrotherhoodEncounterById(id)
+    ?? getCivicGuardEncounterById(id)
+    ?? getUnderkingCourtEncounterById(id)
+    ?? getHolyOrderDawnEncounterById(id)
+    ?? getBuildersFellowshipEncounterById(id)
+    ?? getLorekeeperCovenantEncounterById(id);
 }
 
 /**

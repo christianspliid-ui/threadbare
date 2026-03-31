@@ -43,8 +43,11 @@ import {
   THREAT_COURAGE_THRESHOLD,
   THREAT_PRUDENCE_THRESHOLD,
 } from '../types/encounter';
+import type { ReachDomain } from '../types/traits';
 import { getChainProgress, isChainStageUnlocked } from './encounterChains';
 import { getAnyEncounterById } from '../data/encounter-content';
+import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
+import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 
 // ─── Constants (re-exported from central tuning file) ───────────
 export {
@@ -184,6 +187,26 @@ export function filterByPrerequisites(
         agentTraitEdges.some(e => e.target === blockedId),
       );
       if (isBlocked) continue;
+    }
+
+    // Faction join prerequisites gate — check domain capability minimums
+    if (template && entry.templateId.endsWith('.join')) {
+      const meta = FACTION_ENCOUNTER_META.get(entry.templateId);
+      if (meta) {
+        const def = FACTION_DEFINITIONS.get(meta.factionDefId);
+        if (def?.joinPrerequisites) {
+          let meetsAll = true;
+          for (const [reach, minCap] of Object.entries(def.joinPrerequisites)) {
+            try {
+              const cap = computeCapability(graph, agentId, reach as ReachDomain);
+              if (cap < minCap) { meetsAll = false; break; }
+            } catch {
+              meetsAll = false; break; // fail-soft: can't compute → doesn't meet
+            }
+          }
+          if (!meetsAll) continue;
+        }
+      }
     }
 
     result.push(entry);

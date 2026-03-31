@@ -263,12 +263,16 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
                   className="inline-block px-2 py-1 font-medium rounded"
                   style={{
                     fontSize: 'var(--text-xs)',
-                    backgroundColor: 'var(--bg-raised)',
-                    border: '1px solid var(--border-gold)',
-                    color: 'var(--text-secondary)',
+                    backgroundColor: card.factionThemeColor
+                      ? `${card.factionThemeColor}26`
+                      : 'var(--bg-raised)',
+                    border: `1px solid ${card.factionThemeColor
+                      ? `${card.factionThemeColor}66`
+                      : 'var(--border-gold)'}`,
+                    color: card.factionThemeColor || 'var(--text-secondary)',
                   }}
                 >
-                  {card.factionName}
+                  {card.factionIconGlyph ? `${card.factionIconGlyph} ` : ''}{card.factionName}
                 </span>
               </div>
             )}

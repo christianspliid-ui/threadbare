@@ -151,12 +151,16 @@ export const AgentDetailPanel = React.memo(function AgentDetailPanel({
             <span
               className="inline-block px-2.5 py-1 text-xs font-medium rounded"
               style={{
-                color: FACTION_TAG_COLOR,
-                backgroundColor: FACTION_TAG_BACKGROUND,
-                border: `1px solid ${FACTION_TAG_BORDER}`,
+                color: detail.factionThemeColor || FACTION_TAG_COLOR,
+                backgroundColor: detail.factionThemeColor
+                  ? `${detail.factionThemeColor}26`
+                  : FACTION_TAG_BACKGROUND,
+                border: `1px solid ${detail.factionThemeColor
+                  ? `${detail.factionThemeColor}66`
+                  : FACTION_TAG_BORDER}`,
               }}
             >
-              {detail.factionName}
+              {detail.factionIconGlyph ? `${detail.factionIconGlyph} ` : ''}{detail.factionName}
             </span>
           </div>
         )}

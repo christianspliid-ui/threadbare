@@ -172,6 +172,10 @@ export interface AgentInfoCardData {
   factionReputation?: number;
   /** Faction definition ID for lookups — set when factionName is set */
   factionDefId?: string;
+  /** Faction icon glyph for UI display */
+  factionIconGlyph?: string;
+  /** Faction theme color for UI styling */
+  factionThemeColor?: string;
   cultureName?: string;
   topValues?: { pair: ValuePair; word: string }[];
   domains?: { domain: ReachDomain; word: string }[];
@@ -503,6 +507,8 @@ export function getAgentInfoCard(
               const rep = memberProps.reputation ?? 0;
               const rank = computeRankFromReputation(rep, def);
               card.factionRank = rank.name;
+              card.factionIconGlyph = def.iconGlyph;
+              card.factionThemeColor = def.themeColor;
               // known+ gets reputation number
               if (knowledgeLevel !== 'recognised') {
                 card.factionReputation = rep;

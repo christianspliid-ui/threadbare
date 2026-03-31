@@ -18,6 +18,12 @@ import { FACTION_ENCOUNTER_META } from '../data/faction-encounter-content';
 import { getEncounterRewardMultiplier, emitFactionBonusTrace } from './factionRankBonus';
 import { emitTrace } from './traceBuffer';
 import type { GameState } from '../types/gameState';
+import { getTraitsForNode } from './traits';
+import { getReputationTraitId } from '../data/reputation-trait-content';
+import {
+  FACTION_ALIGNMENT_BONUS,
+  FACTION_ALIGNMENT_PENALTY,
+} from '../data/agent-behavior-constants';
 
 // ─── Reputation Gain ─────────────────────────────────────────────────────
 
@@ -216,12 +222,16 @@ export function processFactionEncounterReputation(
     emitFactionBonusTrace(tick, agentId, factionEdge.target, 'encounter_reward_multiplier', rewardMultiplier, encounterId);
   }
 
-  // Apply per-step reputation gain (multiplied by rank bonus)
+  // Apply reputation alignment multiplier — aligned traits boost, misaligned penalize
+  const alignmentMultiplier = computeAlignmentMultiplier(graph, agentId, meta.factionDefId);
+  const effectiveMultiplier = rewardMultiplier * alignmentMultiplier;
+
+  // Apply per-step reputation gain (multiplied by rank + alignment bonuses)
   applyFactionReputationGain(
     graph,
     agentId,
     factionEdge.target,
-    meta.reputationReward * rewardMultiplier,
+    meta.reputationReward * effectiveMultiplier,
     tick,
     'quest_step',
   );
@@ -232,9 +242,49 @@ export function processFactionEncounterReputation(
       graph,
       agentId,
       factionEdge.target,
-      FACTION_REPUTATION_COMPLETION_BONUS * rewardMultiplier,
+      FACTION_REPUTATION_COMPLETION_BONUS * effectiveMultiplier,
       tick,
       'quest_complete',
     );
   }
+}
+
+// ─── Reputation Alignment ───────────────────────────────────────────────
+
+/**
+ * Compute a reputation gain multiplier based on how the agent's reputation
+ * traits align with the faction's reputationAlignment preferences.
+ *
+ * Each aligned trait adds FACTION_ALIGNMENT_BONUS (e.g., +25%).
+ * Each misaligned trait (opposite polarity on a reach the faction cares about)
+ * applies FACTION_ALIGNMENT_PENALTY (e.g., -15%).
+ *
+ * Returns a multiplier (clamped to [0.5, 2.0]).
+ */
+function computeAlignmentMultiplier(
+  graph: WorldGraph,
+  agentId: string,
+  factionDefId: string,
+): number {
+  const definition = FACTION_DEFINITIONS.get(factionDefId);
+  if (!definition?.reputationAlignment) return 1.0;
+
+  const agentTraits = getTraitsForNode(graph, agentId);
+  const agentTraitIds = new Set(agentTraits.map(e => e.target));
+
+  let bonus = 0;
+  for (const [reach, desiredPolarity] of Object.entries(definition.reputationAlignment)) {
+    const alignedId = getReputationTraitId(reach as import('../types/traits').ReachDomain, desiredPolarity);
+    const oppositePolarity = desiredPolarity === 'positive' ? 'negative' : 'positive';
+    const misalignedId = getReputationTraitId(reach as import('../types/traits').ReachDomain, oppositePolarity);
+
+    if (agentTraitIds.has(alignedId)) {
+      bonus += FACTION_ALIGNMENT_BONUS;
+    }
+    if (agentTraitIds.has(misalignedId)) {
+      bonus += FACTION_ALIGNMENT_PENALTY;
+    }
+  }
+
+  return Math.max(0.5, Math.min(2.0, 1.0 + bonus));
 }

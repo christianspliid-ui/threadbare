@@ -1533,7 +1533,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
             case 'location':
               return <LocationProfileModal name={node.name} onClose={onClose} />;
             case 'faction':
-              return <FactionSheet name={node.name} onClose={onClose} />;
+              return <FactionSheet factionId={node.id} name={node.name} onClose={onClose} />;
             case 'army':
               return <ArmySheet name={node.name} onClose={onClose} />;
             case 'artifact':

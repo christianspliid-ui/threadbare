@@ -684,6 +684,16 @@ export const REPUTATION_NEGATIVE_ENCOUNTER_TYPES: ReadonlySet<string> = new Set(
   'steal', 'duel',
 ]);
 
+/** Faction reputation gain multiplier bonus per aligned reputation trait.
+ * Agent has a reputation trait the faction values → reputation gains boosted.
+ * @range 0.1–0.5 */
+export const FACTION_ALIGNMENT_BONUS = 0.25;
+
+/** Faction reputation gain multiplier penalty per misaligned reputation trait.
+ * Agent has opposite-polarity reputation trait on a reach the faction cares about.
+ * @range -0.3–-0.05 */
+export const FACTION_ALIGNMENT_PENALTY = -0.15;
+
 /** Essence reward per elder magic hidden site discovery.
  * @range 1.0–10.0 */
 export const ELDER_SITE_ESSENCE_REWARD = 5.0;
