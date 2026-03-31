@@ -1250,7 +1250,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   overlayOpen={scryVisible || harvestResult !== null}
                   onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
-                  onAgentClick={handleAgentSelect}
+                  onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                 />
 
                 <AvatarHUD
@@ -1351,7 +1351,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                       agentsByLocation={hexAgentsByLocation}
                       regionData={hexRegionData}
                       onLocationClick={handleLocationClickWithClose}
-                      onAgentClick={handleAgentSelect}
+                      onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
                       graph={gameState.graph}
                       seed={gameState.seed}
                       tick={gameState.tick}
