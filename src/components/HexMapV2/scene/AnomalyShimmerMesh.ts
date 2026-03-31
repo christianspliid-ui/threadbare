@@ -211,7 +211,7 @@ export function createAnomalyShimmerLayer(
       const spriteSize = HEX_CONSTANTS.HEX_SIZE * SHIMMER_SPRITE_SCALE;
       sprite.position.set(wx, wy, LAYER_Z.ANOMALY_SHIMMER);
       sprite.scale.set(spriteSize, spriteSize, 1);
-      sprite.userData = { hexKey, anomalyState: 'undiscovered' };
+      sprite.userData = { hexKey, anomalyState: 'undiscovered', locationType: anomaly.locationType };
       shimmerGroup.add(sprite);
       shimmerMaterials.push(material);
     } else {

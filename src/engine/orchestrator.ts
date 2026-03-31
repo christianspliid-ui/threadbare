@@ -425,8 +425,6 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           }
 
           // Emit discovery event
-          const hexCol = locProps.hexCol as number;
-          const hexRow = locProps.hexRow as number;
           const discovererName = state.graph.getNode(progress.actorId)?.name ?? 'An explorer';
           events.push({
             id: nextEventId(),
@@ -436,8 +434,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
             significance: 0.9,
             actorId: progress.actorId,
             notification: { channel: 'toast' as const },
-            hexCol,
-            hexRow,
+            hexCoords: { col: locProps.hexCol as number, row: locProps.hexRow as number },
           });
 
           emitTrace({

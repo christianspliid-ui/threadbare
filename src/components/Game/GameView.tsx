@@ -257,8 +257,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       if (processedAnomalyEventsRef.current.has(evt.id)) continue;
       processedAnomalyEventsRef.current.add(evt.id);
 
-      const hexCol = (evt as Record<string, unknown>).hexCol as number | undefined;
-      const hexRow = (evt as Record<string, unknown>).hexRow as number | undefined;
+      const hexCol = evt.hexCoords?.col;
+      const hexRow = evt.hexCoords?.row;
       if (hexCol == null || hexRow == null) continue;
 
       // Derive sphere color from the anomaly's location subtype
