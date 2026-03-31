@@ -12,8 +12,8 @@ import {
 
 describe('encounter-content', () => {
   describe('ENCOUNTER_TEMPLATES', () => {
-    it('should have exactly 134 encounter templates', () => {
-      expect(ENCOUNTER_TEMPLATES).toHaveLength(134);
+    it('should have exactly 154 encounter templates', () => {
+      expect(ENCOUNTER_TEMPLATES).toHaveLength(154);
     });
 
     it('every template should have a unique id', () => {

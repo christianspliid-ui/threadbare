@@ -15,6 +15,7 @@ import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
+import { getBorderlandEncounterById, BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -8145,6 +8146,9 @@ export const ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
     ],
   },
 
+  // ─── Borderland Encounters (easy/trivial combat for frontier agents) ───
+  ...BORDERLAND_ENCOUNTER_TEMPLATES,
+
 ];
 
 // ─── Cultural Encounter Overlays ───────────────────────────────────
@@ -8479,5 +8483,6 @@ export function getAnyEncounterById(id: string): EncounterTemplate | undefined {
     ?? getFactionEncounterById(id)
     ?? getMercenaryEncounterById(id)
     ?? getArmyEncounterById(id)
-    ?? getMonsterEncounterById(id);
+    ?? getMonsterEncounterById(id)
+    ?? getBorderlandEncounterById(id);
 }
