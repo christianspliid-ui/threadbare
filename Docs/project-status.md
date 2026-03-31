@@ -16,20 +16,12 @@
 
 ## Recent Completions (2026-03-31)
 
-- **Phase 21-03 Vite manualChunks bundle split:** Main bundle reduced from 3,277 kB to 2,695 kB (-582 kB, -17.8%). Three new parallel-loadable data chunks: encounter-content (377 kB), action-templates (141 kB), culture-content (64 kB).
-- **Reach-polarity reputation trait system:** 17 parseable reputation traits (8 reaches × 2 polarities + power renown). Tallies accumulate from encounters, decay per tick, assign traits at thresholds (3/8/15). 3-layer polarity determination. Encounter gating (requiredTraits + blockedByTraits), scoring bonus, orchestrator phase 6.64. 16 tests.
-- **TB-031 Culture Seeding Phase 1:** Territory-aware culture placement. Cultures generated before worldgen, seeded into provinces, locations and actors inherit from province. Homeland/border strength, diaspora, dual-culture at borders. Fixed preferredBiomes bug.
-- **Location variety + anomaly discovery system (fully wired):** 29 location subtypes, anomaly shimmer visuals, 10 rare resources, 10 discovery encounters, 10 artifacts, 8 bestowed traits, 6 conditions. Engine wiring: encounter completion seeds resources + flips discovery flag. Eye/Veil agent seeking bias. UI reveal flash on anomaly_discovered event.
-- TB-086/087/088: Mutation observability (`SimulationRuntime` with version counters, `touchWorld()`/`touchStructure()` API, version-keyed `useMemo` deps, per-session cache ownership, distance matrix cap raised 500→1200). 9 contract tests.
-
-## Recent Completions (2026-03-30)
-
-- Phase 20 (Wiring) complete — all 3 WIRE requirements done (camera animation, avatar pos gate, actorId attribution + NarrativeLog click-to-select)
-- TB-085 CLI stale doom clock fields + encounter liveness test timeout
-- TB-084 Graph Schema Gaps — `constructed_by` edge type + `bonded_to` target mismatch fixed
-- TB-081 Hex Action Remaining Effects — all 8 wired via dynamic GraphOp generators
-- v1.0 Foundation milestone shipped (Phases 1-18 + M2.5)
-- Phase 19 Plan 1 committed (PRNG replacement in 15 engine files)
+- **Generic Effect System:** 29 composable effect primitives, spell framework (cost/backlash/prerequisites), effect resolver with legacy fallback, effect tick engine (duration/cooldown/decay/stacking), aura proximity + reactive triggers, executors for teleport/spawn/dispel/terrain/compel/structures/rules/factions, scoped targeting (hex/radius/region/faction/biome/global). 5 spell templates, 3 god-tier artifacts, 10 terrain overlays. 52 tests, 18 CMS constants. Orchestrator phase 2a.4.
+- **Phase 21-03 Vite manualChunks bundle split:** Main bundle reduced from 3,277 kB to 2,695 kB (-582 kB, -17.8%). Three new parallel-loadable data chunks.
+- **Reach-polarity reputation trait system:** 17 traits, tally accumulation, 3-layer polarity, encounter gating + scoring, phase 6.64. 16 tests.
+- **TB-031 Culture Seeding Phase 1:** Territory-aware culture placement via province system. Homeland/border/diaspora mechanics.
+- **Location variety + anomaly discovery system:** 29 location subtypes, shimmer visuals, 10 rare resources, 10 discovery encounters, full engine wiring.
+- TB-086/087/088: Mutation observability, per-session SimulationRuntime, distance matrix cap 500→1200. 9 tests.
 
 ## Active Backlog Ideas
 
