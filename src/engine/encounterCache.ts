@@ -42,7 +42,6 @@ export {
 } from '../data/agent-behavior-constants';
 
 import {
-  CACHE_REBUILD_THRESHOLD,
   REPUTATION_REWARD_WEIGHT,
   LOOT_REWARD_WEIGHT,
   DOMAIN_EXERCISE_WEIGHT,

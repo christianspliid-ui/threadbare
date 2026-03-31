@@ -475,7 +475,20 @@ export const MAX_ACTIVE_CHAINS = 2;
 // ENCOUNTER CACHE — Pre-computed scoring data (encounterCache.ts)
 // ═══════════════════════════════════════════════════════════════════
 
-/** When dirty-entry count exceeds this, a full rebuild is cheaper than patching.
+/** Intended threshold for dirty-entry count above which a full cache rebuild
+ * would be cheaper than incremental patching. Currently a design placeholder —
+ * EncounterCacheManager rebuilds per-location incrementally (onLocationCreated,
+ * onLocationTypeChanged) and does not maintain a global dirty count. No consumer
+ * compares against this value in conditional logic.
+ *
+ * Reserved for future optimization: when the cache introduces a dirty-count
+ * strategy (batch invalidation vs. per-location rebuild), this threshold controls
+ * the crossover point. Exposed in the CMS tunable panel for experimentation once
+ * the incremental/full rebuild decision is wired.
+ *
+ * Profiling note (2026-03-31, seed 42, medium map): constant was verified unused
+ * via full codebase grep — no `> CACHE_REBUILD_THRESHOLD` or similar comparison
+ * exists. Timing a full rebuild at tick 60 is moot until the decision point exists.
  * @range 20–100 */
 export const CACHE_REBUILD_THRESHOLD = 50;
 
@@ -573,6 +586,22 @@ export const RUINS_TRAIT_BONUS = 0.25;
 /** Additional scoring bonus per ruin_seeker trait level.
  * @range 0.05–0.20 */
 export const RUINS_TRAIT_BONUS_PER_LEVEL = 0.10;
+
+// ── Anomaly Discovery Scoring ─────────────────────────────────────────
+// Eye/Veil-skilled agents are drawn toward anomaly locations.
+
+/** Base scoring bonus for anomaly-discovery encounters.
+ * Scales with agent's Eye + Veil capability. @range 0.10–0.50 */
+export const ANOMALY_DISCOVERY_BASE_BONUS = 0.20;
+
+/** Scaling factor per 0.1 Eye capability. @range 0.05–0.20 */
+export const ANOMALY_EYE_SCALING = 0.10;
+
+/** Scaling factor per 0.1 Veil capability. @range 0.05–0.20 */
+export const ANOMALY_VEIL_SCALING = 0.05;
+
+/** Minimum Eye capability to receive anomaly discovery bonus. @range 0.10–0.30 */
+export const ANOMALY_EYE_THRESHOLD = 0.15;
 
 /** Weight for explorationAttraction hex field set by hex.mark_ground.
  * Applies regardless of trait — direct divine override.
