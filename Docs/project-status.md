@@ -17,6 +17,9 @@
 
 ## Recent Completions (2026-03-31)
 
+- **Attachments tab in agent full profile:** Added dedicated Attachments tab to AgentProfileModal showing all four categories (possessions, conditions, powers, agreements). Fixes agreements being silently dropped (giftsAndBurdens was filtered to bestowed_power only) and attachments being invisible due to knowledge-gating in Prowess tab.
+
+
 - **Province/Domain rename + cultural vocabulary:** barony→Province, kingdom→Domain across entire codebase. Culture-specific province name vocabulary (chaos/order/light/darkness). Culture count scaled by map size (small=2, medium=3, large=4, epic=5). Fixed "Cult Hold"/"Cult Duchy" naming bug. 76 tests updated.
 - **Generic Effect System:** 29 composable effect primitives, spell framework (cost/backlash/prerequisites), effect resolver with legacy fallback, effect tick engine (duration/cooldown/decay/stacking), aura proximity + reactive triggers, executors for teleport/spawn/dispel/terrain/compel/structures/rules/factions, scoped targeting (hex/radius/region/faction/biome/global). 5 spell templates, 3 god-tier artifacts, 10 terrain overlays. 52 tests, 18 CMS constants. Orchestrator phase 2a.4.
 - **Phase 21-03 Vite manualChunks bundle split:** Main bundle reduced from 3,277 kB to 2,695 kB (-582 kB, -17.8%). Three new parallel-loadable data chunks.
