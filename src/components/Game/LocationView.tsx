@@ -34,6 +34,8 @@ interface LocationViewProps {
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
+  /** Current game tick — enables tick-based prose cache (PERF-01) */
+  tick?: number;
 }
 
 // ──── Sub-component: Sublocation Card ────
@@ -434,6 +436,8 @@ interface SublocationDetailViewProps {
   badgeText: string;
   graph?: WorldGraph;
   seed?: number;
+  /** Current game tick — enables tick-based prose cache (PERF-01) */
+  tick?: number;
 }
 
 const SublocationDetailView = memo(function SublocationDetailView({
@@ -451,6 +455,7 @@ const SublocationDetailView = memo(function SublocationDetailView({
   badgeText,
   graph,
   seed,
+  tick,
 }: SublocationDetailViewProps) {
   // Concept art for this sublocation type
   const detailSubProps = (sublocation.properties ?? {}) as Partial<SublocationProperties>;
@@ -458,9 +463,9 @@ const SublocationDetailView = memo(function SublocationDetailView({
 
   // Generate prose for sublocation
   const sublocationProse = useMemo(() => {
-    if (!graph || seed === undefined) return '';
-    return generateEntityProse(sublocation.id, graph, seed, 'full');
-  }, [sublocation.id, graph, seed]);
+    if (!graph || seed === undefined || tick === undefined) return '';
+    return generateEntityProse(sublocation.id, graph, seed, 'full', tick);
+  }, [sublocation.id, graph, seed, tick]);
 
   return (
     <div className="flex flex-col h-full overflow-y-auto">
@@ -764,6 +769,7 @@ export const LocationView = memo(function LocationView({
   getEncounterTemplate,
   graph,
   seed,
+  tick,
 }: LocationViewProps) {
   const terrainLabel = hexTerrain.charAt(0).toUpperCase() + hexTerrain.slice(1).replace(/_/g, ' ');
   // RC-041: Safe property access with type guard
@@ -783,11 +789,11 @@ export const LocationView = memo(function LocationView({
     setSelectedSublocationId(null);
   }, []);
 
-  // Generate prose for location (memoized)
+  // Generate prose for location (memoized — tick enables tick-based prose cache PERF-01)
   const locationProse = useMemo(() => {
     if (!graph || seed === undefined) return '';
-    return generateEntityProse(location.id, graph, seed, 'full');
-  }, [location.id, graph, seed]);
+    return generateEntityProse(location.id, graph, seed, 'full', tick);
+  }, [location.id, graph, seed, tick]);
 
   // ── TTS narration ──
   const proseRef = useRef<HTMLDivElement>(null);
@@ -890,6 +896,7 @@ export const LocationView = memo(function LocationView({
         badgeText={badgeText}
         graph={graph}
         seed={seed}
+        tick={tick}
       />
     );
   }

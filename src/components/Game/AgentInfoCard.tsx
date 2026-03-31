@@ -16,6 +16,8 @@ interface AgentInfoCardProps {
   // Prose generation (optional)
   graph?: WorldGraph;
   seed?: number;
+  /** Current game tick — enables tick-based prose cache (PERF-01) */
+  tick?: number;
 }
 
 // Domain display names
@@ -47,15 +49,16 @@ export const AgentInfoCard = React.memo(function AgentInfoCard({
   onZoomToLocation,
   graph,
   seed,
+  tick,
 }: AgentInfoCardProps) {
   const knowledgeLevelLabel = KNOWLEDGE_LEVEL_DISPLAY[card.knowledgeLevel] || card.knowledgeLevel;
 
-  // Generate prose for agent (memoized)
+  // Generate prose for agent (memoized — tick enables cross-instance prose cache PERF-01)
   // RC-004: Fixed card.agentId → card.id (agentId doesn't exist on AgentInfoCardData)
   const agentProse = useMemo(() => {
-    if (!graph || seed === undefined) return '';
-    return generateEntityProse(card.id, graph, seed, 'summary');
-  }, [card.id, graph, seed]);
+    if (!graph || seed === undefined || tick === undefined) return '';
+    return generateEntityProse(card.id, graph, seed, 'summary', tick);
+  }, [card.id, graph, seed, tick]);
 
   return (
     <div

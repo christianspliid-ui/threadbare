@@ -98,6 +98,8 @@ interface HexChronicleProps {
   onAgentClick: (agentId: string) => void;
   graph: WorldGraph;
   seed: number;
+  /** Current game tick — enables tick-based prose cache (PERF-01) */
+  tick?: number;
   /** Active control effects on this hex (TB-049). */
   controlEffects?: readonly ControlEffect[];
   /** Callback to voluntarily release a control effect (TB-049). */
@@ -121,6 +123,7 @@ export const HexChronicle = memo(function HexChronicle({
   onAgentClick,
   graph,
   seed,
+  tick,
   controlEffects,
   onReleaseEffect,
   hexRevelation,
@@ -295,11 +298,11 @@ export const HexChronicle = memo(function HexChronicle({
   const locationProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const loc of locations) {
-      const prose = generateEntityProse(loc.id, graph, seed, 'summary');
+      const prose = generateEntityProse(loc.id, graph, seed, 'summary', tick);
       if (prose) result[loc.id] = prose;
     }
     return result;
-  }, [locations, graph, seed]);
+  }, [locations, graph, seed, tick]);
 
   // ── Separate parent locations from sublocations ─────────────
   const { parentLocations, sublocationsByParent, orphanSublocations } = useMemo(() => {
@@ -341,11 +344,11 @@ export const HexChronicle = memo(function HexChronicle({
   const agentProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const agent of allAgents) {
-      const prose = generateEntityProse(agent.id, graph, seed, 'summary');
+      const prose = generateEntityProse(agent.id, graph, seed, 'summary', tick);
       if (prose) result[agent.id] = prose;
     }
     return result;
-  }, [allAgents, graph, seed]);
+  }, [allAgents, graph, seed, tick]);
 
   // ── RUINS: Historical culture resolvers ────────────────────────
 
