@@ -34,6 +34,10 @@ export const MC_HALL_COUNT_MAX = 4;
 export const MERCENARY_COMPANY_DEFINITION: FactionDefinition = {
   id: 'mercenary_company',
   nameTemplate: 'The Free Company',
+  description: 'Professional soldiers for hire — loyalty lasts as long as the contract, but their blades are sharp and their discipline unmatched.',
+  motto: 'Steel speaks louder than oaths.',
+  iconGlyph: '🗡',
+  themeColor: '#8B4513',
   factionType: 'military',
   reachWeights: {
     iron: 0.9,

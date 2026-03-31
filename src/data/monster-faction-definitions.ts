@@ -22,6 +22,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_force',
     nameTemplate: 'The {adj} Beast Pack',
+    description: 'Savage beasts driven by primal force, claiming territory through raw strength.',
+    iconGlyph: '🐺',
+    themeColor: '#8B0000',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { iron: 0.9, force: 0.7 },
@@ -57,6 +60,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_matter',
     nameTemplate: 'The {adj} Golem Cluster',
+    description: 'Animated constructs of stone and metal, grinding across the land.',
+    iconGlyph: '🗿',
+    themeColor: '#696969',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { stone: 0.9, iron: 0.5 },
@@ -92,6 +98,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_energy',
     nameTemplate: 'The {adj} Storm Flock',
+    description: 'Creatures of lightning and wind, riding the currents of raw energy.',
+    iconGlyph: '⚡',
+    themeColor: '#FFD700',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { force: 0.8, star: 0.6 },
@@ -127,6 +136,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_life',
     nameTemplate: 'The {adj} Behemoth Herd',
+    description: 'Massive living creatures that overwhelm through sheer biological mass.',
+    iconGlyph: '🦎',
+    themeColor: '#228B22',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { flesh: 0.9, eye: 0.4 },
@@ -162,6 +174,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_mind',
     nameTemplate: 'The {adj} Mind Swarm',
+    description: 'Psychic entities that overwhelm through collective will and mental domination.',
+    iconGlyph: '🧠',
+    themeColor: '#9932CC',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { veil: 0.9, eye: 0.7 },
@@ -197,6 +212,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_spirit',
     nameTemplate: 'The {adj} Wraith Host',
+    description: 'Spectral entities lingering between worlds, feeding on the living.',
+    iconGlyph: '👻',
+    themeColor: '#708090',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { veil: 0.8, shadow: 0.7 },
@@ -232,6 +250,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_time',
     nameTemplate: 'The {adj} Echo Stalkers',
+    description: 'Temporal anomalies that hunt across fractured timelines.',
+    iconGlyph: '⏳',
+    themeColor: '#B8860B',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { star: 0.8, veil: 0.5 },
@@ -267,6 +288,9 @@ export const MONSTER_FACTION_DEFINITIONS: FactionDefinition[] = [
   {
     id: 'monster_entropy',
     nameTemplate: 'The {adj} Plague Shamble',
+    description: 'Rotting masses spreading decay and dissolution wherever they shamble.',
+    iconGlyph: '☠',
+    themeColor: '#556B2F',
     factionType: 'monster',
     isMonsterFaction: true,
     reachWeights: { shadow: 0.8, flesh: 0.5 },

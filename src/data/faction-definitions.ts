@@ -10,6 +10,16 @@
 
 import type { FactionDefinition } from '../types/faction';
 import { MERCENARY_COMPANY_DEFINITION } from './mercenary-company-definition';
+import { THIEVES_GUILD_DEFINITION } from './thieves-guild-definition';
+import { MERCHANT_CONSORTIUM_DEFINITION } from './merchant-consortium-definition';
+import { TEMPLE_OF_SPHERES_DEFINITION } from './temple-of-spheres-definition';
+import { ARCANE_CIRCLE_DEFINITION } from './arcane-circle-definition';
+import { RANGERS_BROTHERHOOD_DEFINITION } from './rangers-brotherhood-definition';
+import { CIVIC_GUARD_DEFINITION } from './civic-guard-definition';
+import { UNDERKING_COURT_DEFINITION } from './underking-court-definition';
+import { HOLY_ORDER_DAWN_DEFINITION } from './holy-order-dawn-definition';
+import { BUILDERS_FELLOWSHIP_DEFINITION } from './builders-fellowship-definition';
+import { LOREKEEPERS_COVENANT_DEFINITION } from './lorekeepers-covenant-definition';
 
 // ─── Constants ───────────────────────────────────────────────────────────
 
@@ -66,6 +76,10 @@ export const FACTION_ALERT_COLOR = '#D4A574';
 export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
   id: 'adventuring_guild',
   nameTemplate: 'The Adventurers Guild',
+  description: 'A fellowship of explorers, monster hunters, and treasure seekers who take on dangerous contracts for coin and glory.',
+  motto: 'Fortune favors the bold.',
+  iconGlyph: '⚔',
+  themeColor: '#D4A574',
   factionType: 'guild',
   reachWeights: {
     iron: 0.6,
@@ -175,4 +189,14 @@ export const ADVENTURING_GUILD_DEFINITION: FactionDefinition = {
 export const FACTION_DEFINITIONS: ReadonlyMap<string, FactionDefinition> = new Map([
   [ADVENTURING_GUILD_DEFINITION.id, ADVENTURING_GUILD_DEFINITION],
   [MERCENARY_COMPANY_DEFINITION.id, MERCENARY_COMPANY_DEFINITION],
+  [THIEVES_GUILD_DEFINITION.id, THIEVES_GUILD_DEFINITION],
+  [MERCHANT_CONSORTIUM_DEFINITION.id, MERCHANT_CONSORTIUM_DEFINITION],
+  [TEMPLE_OF_SPHERES_DEFINITION.id, TEMPLE_OF_SPHERES_DEFINITION],
+  [ARCANE_CIRCLE_DEFINITION.id, ARCANE_CIRCLE_DEFINITION],
+  [RANGERS_BROTHERHOOD_DEFINITION.id, RANGERS_BROTHERHOOD_DEFINITION],
+  [CIVIC_GUARD_DEFINITION.id, CIVIC_GUARD_DEFINITION],
+  [UNDERKING_COURT_DEFINITION.id, UNDERKING_COURT_DEFINITION],
+  [HOLY_ORDER_DAWN_DEFINITION.id, HOLY_ORDER_DAWN_DEFINITION],
+  [BUILDERS_FELLOWSHIP_DEFINITION.id, BUILDERS_FELLOWSHIP_DEFINITION],
+  [LOREKEEPERS_COVENANT_DEFINITION.id, LOREKEEPERS_COVENANT_DEFINITION],
 ]);

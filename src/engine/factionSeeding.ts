@@ -394,5 +394,71 @@ export function seedAllFactions(
     offsetIndex++;
   }
 
+  // ── Seed inter-faction dispositions ─────────────────────────────────
+  // Create relates_to edges between factions based on definition.dispositions.
+  // Only creates edges where both factions were successfully seeded.
+  seedFactionDispositions(graph, definitions, results);
+
   return results;
+}
+
+// ─── Disposition Seeding ──────────────────────────────────────────────────
+
+/**
+ * Create relates_to edges between factions based on each definition's
+ * dispositions map. Bidirectional: if A lists B, the edge goes A→B.
+ * If B also lists A, a second edge B→A is created (may differ in magnitude).
+ *
+ * Deduplication: skips if an edge with basis 'faction_alignment' already
+ * exists between the pair.
+ */
+function seedFactionDispositions(
+  graph: WorldGraph,
+  definitions: ReadonlyMap<string, FactionDefinition>,
+  seedResults: ReadonlyArray<{ factionId: string }>,
+): void {
+  // Build defId → factionNodeId map (handles multi-instance by using first instance)
+  const defIdToNodeId = new Map<string, string>();
+  for (const result of seedResults) {
+    // factionId format: faction_def_{defId} or faction_def_{defId}_{suffix}
+    const match = result.factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
+    if (match && !defIdToNodeId.has(match[1])) {
+      defIdToNodeId.set(match[1], result.factionId);
+    }
+  }
+
+  // Track created edges to avoid duplicates
+  const createdEdges = new Set<string>();
+  let edgeCounter = 0;
+
+  for (const [defId, definition] of definitions) {
+    if (!definition.dispositions) continue;
+
+    const sourceNodeId = defIdToNodeId.get(defId);
+    if (!sourceNodeId) continue;
+
+    for (const [targetDefId, sentiment] of Object.entries(definition.dispositions)) {
+      const targetNodeId = defIdToNodeId.get(targetDefId);
+      if (!targetNodeId) continue;
+
+      const edgeKey = `${sourceNodeId}->${targetNodeId}`;
+      if (createdEdges.has(edgeKey)) continue;
+
+      graph.addEdge({
+        id: `edge_faction_disp_${edgeCounter}`,
+        source: sourceNodeId,
+        target: targetNodeId,
+        type: 'relates_to',
+        properties: {
+          sentiment,
+          trust: sentiment * 0.5,
+          strength: Math.abs(sentiment) * 0.3,
+          basis: 'faction_alignment',
+        },
+      });
+
+      createdEdges.add(edgeKey);
+      edgeCounter++;
+    }
+  }
 }

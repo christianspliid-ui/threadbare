@@ -11,7 +11,7 @@
  *       Determinism (no runtime randomness in definitions), Fail-soft (fallback constants).
  */
 
-import type { ReachDomain } from './traits';
+import type { ReachDomain, ReputationPolarity } from './traits';
 import type { LocationSubtype } from './index';
 
 // ─── Rank Bonuses ────────────────────────────────────────────────────────
@@ -91,6 +91,14 @@ export interface FactionDefinition {
   id: string;
   /** Name template: "The {adj} Adventurers Guild" */
   nameTemplate: string;
+  /** One-line faction identity for UI and prose */
+  description: string;
+  /** Faction motto / flavor text for UI display */
+  motto?: string;
+  /** Unicode glyph for alerts and compact UI */
+  iconGlyph: string;
+  /** Hex color for faction-themed UI elements (Threadbare palette) */
+  themeColor: string;
   /** Faction archetype */
   factionType: FactionType;
   /** Template pool weighting per reach domain (0.0–1.0) */
@@ -111,6 +119,12 @@ export interface FactionDefinition {
   socialTemplateIds: string[];
   /** What happens when reputation hits 0 */
   expulsionConsequences: ExpulsionConsequence[];
+  /** Minimum domain capability to attempt joining (gates join encounter availability) */
+  joinPrerequisites?: Partial<Record<ReachDomain, number>>;
+  /** Which reach reputation polarities this faction values — aligned traits boost standing, misaligned hurt it */
+  reputationAlignment?: Partial<Record<ReachDomain, ReputationPolarity>>;
+  /** Initial sentiment toward other factions (-1 hostile to +1 allied), keyed by faction def ID */
+  dispositions?: Record<string, number>;
   /** Ambition type weighting for faction-level ambition selection (TB-073) */
   ambitionWeights?: Partial<Record<FactionAmbitionType, number>>;
   /** Number of instances to seed (defaults to 1). Used for factions with multiple competing instances. */
