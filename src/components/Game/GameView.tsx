@@ -1595,18 +1595,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       {/* Stub profile modals for non-agent thread types */}
       <AnimateMount show={stubModalState !== null} animation="anim-fade-up">
         {stubModalState && (() => {
-          const node = threadedNodes.find(n => n.id === stubModalState.nodeId);
-          if (!node) return null;
+          // Look in retinue first; fall back to full graph so non-retinue nodes also work.
+          const retinueNode = threadedNodes.find(n => n.id === stubModalState.nodeId);
+          const graphNode = retinueNode ?? gameState.graph.getNode(stubModalState.nodeId);
+          if (!graphNode) return null;
+          const nodeId = stubModalState.nodeId;
+          const nodeName = graphNode.name;
           const onClose = () => setStubModalState(null);
           switch (stubModalState.category) {
             case 'location':
-              return <LocationProfileModal name={node.name} onClose={onClose} />;
+              return <LocationProfileModal name={nodeName} onClose={onClose} />;
             case 'faction':
-              return <FactionSheet factionId={node.id} name={node.name} onClose={onClose} />;
+              return <FactionSheet factionId={nodeId} name={nodeName} onClose={onClose} />;
             case 'army':
-              return <ArmySheet name={node.name} onClose={onClose} />;
+              return <ArmySheet name={nodeName} onClose={onClose} />;
             case 'artifact':
-              return <ArtifactSheet name={node.name} onClose={onClose} />;
+              return <ArtifactSheet name={nodeName} onClose={onClose} />;
             default:
               return null;
           }
