@@ -15,6 +15,7 @@ import { ProwessTab } from './tabs/ProwessTab';
 import { BondsTab } from './tabs/BondsTab';
 import { JourneyTab } from './tabs/JourneyTab';
 import { ChronicleTab } from './tabs/ChronicleTab';
+import { AttachmentsTab } from './tabs/AttachmentsTab';
 import { IconButton } from '../shared/IconButton';
 import { getSphereColor } from '../../data/sphereIcons';
 
@@ -200,6 +201,9 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
         )}
         {activeTab === 'prowess' && (
           <ProwessTab card={card} knowledge={knowledge} onAttachmentClick={handleAttachmentClick} />
+        )}
+        {activeTab === 'attachments' && (
+          <AttachmentsTab card={card} knowledge={knowledge} onAttachmentClick={handleAttachmentClick} />
         )}
         {activeTab === 'bonds' && (
           <BondsTab card={card} knowledge={knowledge} />
