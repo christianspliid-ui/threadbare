@@ -13,6 +13,7 @@ import type { LocationSubtype } from '../types/index';
 import { getSocialEncounterById } from './social-encounter-content';
 import { getFactionEncounterById } from './faction-encounter-content';
 import { getMercenaryEncounterById } from './mercenary-encounter-content';
+import { ANOMALY_ENCOUNTER_TEMPLATES } from './encounter-anomaly-content';
 import { getArmyEncounterById } from './army-encounter-content';
 import { getMonsterEncounterById } from './monster-encounter-content';
 import { getBorderlandEncounterById, BORDERLAND_ENCOUNTER_TEMPLATES } from './borderland-encounter-content';
@@ -10156,11 +10157,17 @@ export function resolveEncounterNarrative(
 
 // ─── Lookup Functions ───────────────────────────────────────────
 
+/** All templates including anomaly encounters — used by lookup functions. */
+const ALL_ENCOUNTER_TEMPLATES: EncounterTemplate[] = [
+  ...ENCOUNTER_TEMPLATES,
+  ...ANOMALY_ENCOUNTER_TEMPLATES,
+];
+
 /**
  * Return all encounters available at a given location type.
  */
 export function getEncountersByLocationType(locationType: string): EncounterTemplate[] {
-  return ENCOUNTER_TEMPLATES.filter(encounter =>
+  return ALL_ENCOUNTER_TEMPLATES.filter(encounter =>
     encounter.locationTypes.includes(locationType)
   );
 }
@@ -10174,7 +10181,7 @@ export function getEncountersBySublocationAndLocation(
   sublocationTypeId: string,
   locationType: string,
 ): EncounterTemplate[] {
-  return ENCOUNTER_TEMPLATES.filter(t => {
+  return ALL_ENCOUNTER_TEMPLATES.filter(t => {
     if (t.sublocationTypes && t.sublocationTypes.length > 0) {
       return t.sublocationTypes.includes(sublocationTypeId);
     }

@@ -112,6 +112,110 @@ export const RESOURCE_DEFINITIONS: Record<string, ResourceDefinition> = {
     renewalRate: 0.05, // technically renewable but on geological timescales
     description: 'Compressed plant matter — fuel and preservative.',
   },
+
+  // ── Rare Resources (anomaly-exclusive) ─────────────────────────────
+  // Only appear at discovered anomaly locations. Lower base quantity than common resources.
+
+  gemstones: {
+    id: 'gemstones',
+    name: 'Gemstones',
+    terrains: ['hills', 'mountains', 'high_mountains'],
+    baseQuantity: [10, 40],
+    sphereAffinities: ['matter', 'light'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Precious stones — high trade value, jewelry and enchantment reagent.',
+  },
+  arcane_crystal: {
+    id: 'arcane_crystal',
+    name: 'Arcane Crystal',
+    terrains: ['mountains', 'high_mountains', 'volcano'],
+    baseQuantity: [8, 25],
+    sphereAffinities: ['energy', 'matter'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Resonant crystal formations that amplify magical effects.',
+  },
+  golden_sap: {
+    id: 'golden_sap',
+    name: 'Golden Sap',
+    terrains: ['temperate_forest', 'dense_forest', 'jungle'],
+    baseQuantity: [15, 35],
+    sphereAffinities: ['life', 'matter'],
+    renewable: true,
+    renewalRate: 0.1,
+    description: 'Amber-like resin from rare trees — alchemical base and luxury trade good.',
+  },
+  medicinal_herb: {
+    id: 'medicinal_herb',
+    name: 'Medicinal Herbs',
+    terrains: ['temperate_forest', 'grassland', 'jungle', 'hills'],
+    baseQuantity: [20, 50],
+    sphereAffinities: ['life'],
+    renewable: true,
+    renewalRate: 0.4,
+    description: 'Wild healing plants — reduces recovery time, alchemical ingredient.',
+  },
+  ancient_relic: {
+    id: 'ancient_relic',
+    name: 'Ancient Relics',
+    terrains: ['broken_lands', 'badlands', 'ruins'],
+    baseQuantity: [5, 15],
+    sphereAffinities: ['time', 'order'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Preserved artifacts from a fallen civilization — knowledge and power.',
+  },
+  sunken_gold: {
+    id: 'sunken_gold',
+    name: 'Sunken Gold',
+    terrains: ['coast', 'coastal_shallows', 'swamp'],
+    baseQuantity: [10, 30],
+    sphereAffinities: ['time', 'entropy'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Coins and ingots from a drowned treasury — pure wealth.',
+  },
+  fossil_amber: {
+    id: 'fossil_amber',
+    name: 'Fossil Amber',
+    terrains: ['desert', 'rocky_desert', 'badlands'],
+    baseQuantity: [8, 20],
+    sphereAffinities: ['time', 'matter'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Ancient preserved remains with residual magical resonance.',
+  },
+  star_metal: {
+    id: 'star_metal',
+    name: 'Star Metal',
+    terrains: ['mountains', 'volcano', 'hills'],
+    baseQuantity: [5, 20],
+    sphereAffinities: ['force', 'spirit'],
+    renewable: false,
+    renewalRate: 0,
+    description: 'Meteoric iron fallen from the sky — extremely hard, slightly magical, feared in weapons.',
+  },
+  pearls: {
+    id: 'pearls',
+    name: 'Pearls',
+    terrains: ['coast', 'coastal_shallows', 'reef'],
+    baseQuantity: [10, 30],
+    sphereAffinities: ['spirit', 'light'],
+    renewable: true,
+    renewalRate: 0.15,
+    description: 'Natural pearls — luxury good, spirit-attuned, devotional offering.',
+  },
+  glowcap: {
+    id: 'glowcap',
+    name: 'Glowcap Spores',
+    terrains: ['swamp', 'dense_forest', 'marsh'],
+    baseQuantity: [12, 35],
+    sphereAffinities: ['mind', 'darkness'],
+    renewable: true,
+    renewalRate: 0.3,
+    description: 'Bioluminescent fungi — mind-expanding alchemical reagent.',
+  },
 };
 
 // ─── Terrain → Resource Mapping ───────────────────────────────────
@@ -365,6 +469,114 @@ export const RESOURCE_PROSE: Readonly<Record<string, { abundant: readonly string
       'Thin layers of peat at the edges of the wet ground. Hardly worth the labor of cutting.',
     ],
   },
+  // ── Rare resource prose ──
+  gemstones: {
+    abundant: [
+      'The rock face glitters with exposed crystal — rubies, sapphires, stones that catch the light and hold it.',
+      'A vein of precious stone runs deep through the hill. Enough to fund a dynasty, if one could guard it.',
+    ],
+    scarce: [
+      'A few dull stones in the rubble, barely worth cutting. The main seam lies deeper, or has already been claimed.',
+    ],
+  },
+  arcane_crystal: {
+    abundant: [
+      'The crystals hum in chorus, resonating with energies that make the teeth ache. Power, waiting to be shaped.',
+      'Formations of pure arcane crystal thrust from the walls like frozen lightning. Mages would kill for this.',
+    ],
+    scarce: [
+      'A few small shards, cloudy and cracked. Whatever power they held has mostly bled away.',
+    ],
+  },
+  golden_sap: {
+    abundant: [
+      'The trees weep gold. Thick resin pools in the bark hollows, amber and sweet-smelling, warm to the touch.',
+      'Every trunk in the grove bleeds this slow gold. The air is thick with its honeyed scent.',
+    ],
+    scarce: [
+      'A thin trickle of sap from a single old tree. The grove has given most of what it will give.',
+    ],
+  },
+  medicinal_herb: {
+    abundant: [
+      'The ground is carpeted with rare healing plants — feverfew, dreamroot, bloodmoss — growing wild and uncultivated.',
+      'An apothecary\'s paradise. Species that shouldn\'t grow together thrive side by side, as if tended by unseen hands.',
+    ],
+    scarce: [
+      'A few scraggly specimens cling to the shade. Barely enough for a single poultice.',
+    ],
+  },
+  ancient_relic: {
+    abundant: [
+      'The vault holds wonders — mechanisms, tablets, instruments from a civilization that understood more than we do.',
+      'Shelves of preserved artifacts, each one a window into a world that fell. The knowledge here could reshape empires.',
+    ],
+    scarce: [
+      'Most of the vault has already been looted or crumbled to dust. A few fragments remain, barely legible.',
+    ],
+  },
+  sunken_gold: {
+    abundant: [
+      'Coins spill from rotted chests, gold and silver dulled by water but no less valuable for it.',
+      'The treasury lies open to the currents. Ingots, coins, jewelry — the wealth of a drowned kingdom.',
+    ],
+    scarce: [
+      'A handful of corroded coins in the silt. Whatever fortune lay here has long since been scattered.',
+    ],
+  },
+  fossil_amber: {
+    abundant: [
+      'The rock splits to reveal amber tombs — creatures frozen in resin for ages beyond counting, magic still flickering in their bones.',
+      'Fossil beds of extraordinary richness. Each stone holds a preserved remnant of a world older than memory.',
+    ],
+    scarce: [
+      'A few cracked nodules of amber, the specimens within too degraded to be of much use.',
+    ],
+  },
+  star_metal: {
+    abundant: [
+      'The crater is veined with dark metal, dense and cold despite the sun. Star metal — fallen from above, harder than anything forged below.',
+      'Chunks of meteoric iron, black and heavy, scatter the impact site. Smiths speak of this metal in whispers.',
+    ],
+    scarce: [
+      'A few small fragments of dark metal in the soil, barely enough for a single blade. Most of the star\'s gift has already been claimed.',
+    ],
+  },
+  pearls: {
+    abundant: [
+      'The oyster beds are vast and generous. Pearls of uncommon size and luster lie waiting in the shallows.',
+      'Moon-white, perfectly round, and warm to the touch. The shoal produces pearls that temples and courts alike covet.',
+    ],
+    scarce: [
+      'A few undersized pearls, seed-like and dull. The beds have been harvested too often or too carelessly.',
+    ],
+  },
+  glowcap: {
+    abundant: [
+      'The hollow pulses with soft light. Glowcap fungi carpet every surface, their spores drifting like luminous snow.',
+      'An alchemist\'s dream — glowcap in profusion, their mind-opening properties concentrated in the dark air itself.',
+    ],
+    scarce: [
+      'A few dimly luminous caps cling to the damp stone. The colony is small and fragile.',
+    ],
+  },
+};
+
+// ─── Anomaly → Resource Mapping ──────────────────────────────────
+// Maps anomaly location subtype to its rare resource ID.
+// Used when discovery encounter succeeds to seed the resource.
+
+export const ANOMALY_RESOURCE_MAP: Readonly<Record<string, string>> = {
+  gem_deposit:     'gemstones',
+  crystal_cavern:  'arcane_crystal',
+  golden_grove:    'golden_sap',
+  herb_garden:     'medicinal_herb',
+  ancient_vault:   'ancient_relic',
+  sunken_treasury: 'sunken_gold',
+  fossil_bed:      'fossil_amber',
+  iron_seep:       'star_metal',
+  pearl_shoal:     'pearls',
+  glowcap_hollow:  'glowcap',
 };
 
 // ─── Cosmology Bonus ──────────────────────────────────────────────
