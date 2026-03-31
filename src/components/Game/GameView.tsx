@@ -14,6 +14,8 @@ import { useScry } from './hooks/useScry';
 import { useAgentInteraction } from './hooks/useAgentInteraction';
 import { useViewNavigation } from './hooks/useViewNavigation';
 import { hexToPixel } from '../../lib/hexMath';
+import { getSphereColor } from '../../data/sphereIcons';
+import { ANOMALY_SPHERE_MAP } from '../../components/HexMapV2/scene/anomalyConstants';
 export type { ViewLevel } from './hooks/useViewNavigation';
 
 import { GameErrorBoundary } from '../shared/GameErrorBoundary';
@@ -245,6 +247,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     },
     runtime,
   });
+
+  // ── Anomaly discovery event → reveal flash trigger ──
+  // Watch recentEvents for 'anomaly_discovered' and trigger the hex map reveal animation.
+  const processedAnomalyEventsRef = useRef(new Set<string>());
+  useEffect(() => {
+    for (const evt of gameState.recentEvents) {
+      if (evt.type !== 'anomaly_discovered') continue;
+      if (processedAnomalyEventsRef.current.has(evt.id)) continue;
+      processedAnomalyEventsRef.current.add(evt.id);
+
+      const hexCol = (evt as Record<string, unknown>).hexCol as number | undefined;
+      const hexRow = (evt as Record<string, unknown>).hexRow as number | undefined;
+      if (hexCol == null || hexRow == null) continue;
+
+      // Derive sphere color from the anomaly's location subtype
+      const locNode = gameState.graph.getNodesByType('location').find(n =>
+        n.properties.hexCol === hexCol && n.properties.hexRow === hexRow && n.properties.isAnomalyLocation,
+      );
+      const locSubtype = (locNode?.properties.locationSubtype ?? locNode?.properties.locationType) as string | undefined;
+      const sphere = locSubtype ? ANOMALY_SPHERE_MAP[locSubtype] : undefined;
+      const color = sphere ? getSphereColor(sphere) : '#d4a574';
+
+      hexMapRef.current?.triggerAnomalyReveal(hexCol, hexRow, color);
+    }
+  }, [gameState.recentEvents]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cache selected retinue agent lookup (used in ActionDrawer props)
   const selectedRetinueAgent = useMemo(

@@ -96,7 +96,12 @@ import {
   RUINS_TRAIT_BONUS_PER_LEVEL,
   EXPLORATION_ATTRACTION_WEIGHT,
   DIVINE_HUNCH_FIND_BONUS,
+  ANOMALY_DISCOVERY_BASE_BONUS,
+  ANOMALY_EYE_SCALING,
+  ANOMALY_VEIL_SCALING,
+  ANOMALY_EYE_THRESHOLD,
 } from '../data/agent-behavior-constants';
+import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
 import type { HexTile } from '../types/index';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
@@ -342,6 +347,53 @@ export function computeRuinsBonus(
   if (traitLevel === 0) return 0;
 
   return RUINS_TRAIT_BONUS + traitLevel * RUINS_TRAIT_BONUS_PER_LEVEL;
+}
+
+/**
+ * Compute anomaly discovery bonus — Eye/Veil-skilled agents are drawn to anomaly encounters.
+ * Only applies when the location is an undiscovered anomaly.
+ * Scales with agent's Eye and Veil capabilities.
+ *
+ * @returns Scoring bonus (0.0 if agent doesn't qualify or location isn't an anomaly)
+ */
+export function computeAnomalyDiscoveryBonus(
+  graph: WorldGraph,
+  locationId: string,
+  agentId: string,
+): number {
+  const locationNode = graph.getNode(locationId);
+  if (!locationNode) return 0;
+
+  // Check location is an undiscovered anomaly
+  const props = locationNode.properties as Record<string, unknown> | undefined;
+  if (!props) return 0;
+  if (props.isAnomalyLocation !== true) return 0;
+  if (props.discoveredByExploration === true) return 0; // already discovered
+
+  const subtype = (props.locationSubtype ?? props.locationType) as string | undefined;
+  if (!subtype || !ANOMALY_RESOURCE_MAP[subtype]) return 0;
+
+  // Check agent's Eye capability meets threshold
+  let eyeCap: number;
+  let veilCap: number;
+  try {
+    eyeCap = computeCapability(graph, agentId, 'eye');
+  } catch {
+    eyeCap = 0;
+  }
+  if (eyeCap < ANOMALY_EYE_THRESHOLD) return 0;
+
+  try {
+    veilCap = computeCapability(graph, agentId, 'veil');
+  } catch {
+    veilCap = 0;
+  }
+
+  // Scale bonus with Eye and Veil capability
+  const eyeBonus = eyeCap * ANOMALY_EYE_SCALING * 10; // per 0.1 capability
+  const veilBonus = veilCap * ANOMALY_VEIL_SCALING * 10;
+
+  return ANOMALY_DISCOVERY_BASE_BONUS + eyeBonus + veilBonus;
 }
 
 /**
@@ -737,6 +789,9 @@ export function scoreAndSelect(
     // 16. Ruins exploration bonus (gated behind ruin_seeker trait or treasure map possession)
     const ruinsBonus = computeRuinsBonus(graph, entry.locationId, agentId);
 
+    // 16b. Anomaly discovery bonus — Eye/Veil-skilled agents drawn to undiscovered anomalies
+    const anomalyBonus = computeAnomalyDiscoveryBonus(graph, entry.locationId, agentId);
+
     // 17. Exploration attraction bonus (divine action: hex.mark_ground)
     const attractionBonus = computeExplorationAttractionBonus(tiles, entryHex?.col, entryHex?.row);
 
@@ -749,7 +804,7 @@ export function scoreAndSelect(
     // 19. Final score
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
     const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus
-      + ruinsBonus + attractionBonus + hunchBonus;
+      + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus;
 
     // 17. Action classification
     let action: ScoredCandidate['action'];

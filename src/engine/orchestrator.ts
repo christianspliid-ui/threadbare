@@ -112,6 +112,8 @@ import type { DistanceMatrix } from './distanceMatrix';
 import { clearTimelines } from './encounterTimeline';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
+import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-content';
+import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
 import {
@@ -385,6 +387,72 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           encounterId: progress.encounterId,
           summary: `Reward pool empty for ${progress.encounterId} (${result.outcomeType})`,
         } as TraceEntry);
+      }
+    }
+
+    // ── Anomaly discovery: on completion, seed resource + flip discovered flag ──
+    if (progress.status === 'completed') {
+      const locEdges = state.graph.getOutgoingEdges(progress.actorId, 'located_at');
+      const locId = locEdges[0]?.target;
+      if (locId) {
+        const locNode = state.graph.getNode(locId);
+        const locProps = locNode?.properties as Record<string, unknown> | undefined;
+        const locSubtype = (locProps?.locationSubtype ?? locProps?.locationType) as string | undefined;
+
+        if (locProps?.isAnomalyLocation === true && locProps?.discoveredByExploration !== true && locSubtype) {
+          const resourceId = ANOMALY_RESOURCE_MAP[locSubtype];
+          const resourceDef = resourceId ? RESOURCE_DEFINITIONS[resourceId] : undefined;
+
+          // Flip discovered flag
+          state.graph.updateNode(locId, {
+            properties: { discoveredByExploration: true },
+          });
+
+          // Seed rare resource on the location
+          if (resourceDef) {
+            const resRng = mulberry32(state.seed + state.tick * 37 + hashString(locId));
+            const [minQ, maxQ] = resourceDef.baseQuantity;
+            const quantity = Math.round(minQ + resRng() * (maxQ - minQ));
+            const existing = (locProps.resources as Record<string, ResourceInstance> | undefined) ?? {};
+            existing[resourceDef.id] = {
+              quantity,
+              renewable: resourceDef.renewable,
+              renewalRate: resourceDef.renewalRate,
+            };
+            state.graph.updateNode(locId, {
+              properties: { resources: existing },
+            });
+          }
+
+          // Emit discovery event
+          const hexCol = locProps.hexCol as number;
+          const hexRow = locProps.hexRow as number;
+          const discovererName = state.graph.getNode(progress.actorId)?.name ?? 'An explorer';
+          events.push({
+            id: nextEventId(),
+            tick: state.tick,
+            type: 'anomaly_discovered',
+            message: `${discovererName} discovered ${locNode?.name ?? 'a hidden site'} — ${resourceDef?.name ?? 'rare resources'} revealed!`,
+            significance: 0.9,
+            actorId: progress.actorId,
+            notification: { channel: 'toast' as const },
+            hexCol,
+            hexRow,
+          });
+
+          emitTrace({
+            category: 'encounter',
+            tick: state.tick,
+            agentId: progress.actorId,
+            agentName: discovererName,
+            event: 'anomaly_discovered',
+            locationId: locId,
+            locationName: locNode?.name ?? '?',
+            resourceId: resourceDef?.id,
+            resourceQuantity: resourceDef ? Math.round(resourceDef.baseQuantity[0] + (resourceDef.baseQuantity[1] - resourceDef.baseQuantity[0]) / 2) : 0,
+            summary: `${discovererName} discovered anomaly "${locNode?.name ?? '?'}" — ${resourceDef?.name ?? 'unknown'} seeded`,
+          } as TraceEntry);
+        }
       }
     }
 

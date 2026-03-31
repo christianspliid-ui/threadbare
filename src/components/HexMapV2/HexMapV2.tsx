@@ -202,6 +202,12 @@ export interface HexMapV2Handle {
    * @param sphereColor - CSS color string (use getSphereColor from sphereIcons.ts)
    */
   spawnParticleBurst: (hexCol: number, hexRow: number, sphereColor: string) => void;
+  /**
+   * Trigger the anomaly reveal flash animation at a hex (shimmer → halo crossfade).
+   * Also fires a particle burst in the anomaly's sphere color.
+   * Call when an anomaly discovery encounter completes successfully.
+   */
+  triggerAnomalyReveal: (hexCol: number, hexRow: number, sphereColor: string) => void;
 }
 
 // ─── Selected hex ring geometry ──────────────────────────────────────────────
@@ -312,6 +318,8 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
     // Particle burst ref — active bursts ticked each frame, consumed by tickParticleBursts
     const activeBurstsRef = useRef<ActiveBurst[]>([]);
+    // Clock ref — exposed for imperative handle (anomaly reveal flash timing)
+    const clockRef = useRef<THREE.Clock | null>(null);
 
     // Agent animation state refs — stable across renders, mutated by render loop
     const agentSpriteGroupRef = useRef<AgentSpriteGroup | null>(null);
@@ -427,6 +435,22 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           performance.now(),
         );
         activeBurstsRef.current.push(burst);
+      },
+      triggerAnomalyReveal(hexCol: number, hexRow: number, sphereColor: string): void {
+        // Fire particle burst
+        const scene = sceneRef.current;
+        if (scene) {
+          const burst = spawnParticleBurst(
+            scene, hexCol, hexRow, HEX_CONSTANTS.HEX_SIZE, sphereColor, performance.now(),
+          );
+          activeBurstsRef.current.push(burst);
+        }
+        // Trigger shimmer → halo crossfade
+        const anomalyLayer = anomalyShimmerLayerRef.current;
+        if (anomalyLayer) {
+          const clock = clockRef.current;
+          triggerAnomalyRevealFlash(anomalyLayer, hexCol, hexRow, clock?.getElapsedTime() ?? 0);
+        }
       },
     }));
 
@@ -736,6 +760,7 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
 
         // Render loop
         const clock = new THREE.Clock();
+        clockRef.current = clock;
         function animate() {
           rafId = requestAnimationFrame(animate);
           diagnosticsRef.current.recordFrame();
