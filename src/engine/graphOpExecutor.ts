@@ -276,6 +276,21 @@ function executeAddEdge(
 
   const source = resolveRef(op.source, ctx);
   const target = resolveRef(op.target, ctx);
+
+  // Dedup guard: a given ascendant may only hold one thread edge to any target.
+  // If a thread already exists from source → target, fail rather than create a duplicate.
+  if (op.edgeType === 'thread') {
+    const existing = graph.getOutgoingEdges(source, 'thread');
+    const duplicate = existing.find(e => e.target === target);
+    if (duplicate) {
+      return {
+        op,
+        success: false,
+        error: `Thread edge already exists from ${source} to ${target} (edge ${duplicate.id})`,
+      };
+    }
+  }
+
   const id = `edge_${op.edgeType}_${++opCounter}`;
 
   graph.addEdge({

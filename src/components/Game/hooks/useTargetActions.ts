@@ -29,6 +29,13 @@ export function useTargetActions({
   return useMemo(() => {
     if (!target || !drawerOpen) return null;
 
+    // Check if the ascendant already holds a thread to this target.
+    const threadEdges = gameState.graph.getOutgoingEdges(gameState.ascendantId, 'thread');
+    const existingThread = threadEdges.find(e => e.target === target.nodeId);
+    const existingThreadTier = existingThread
+      ? ((existingThread.properties.tier as number) ?? 1)
+      : null;
+
     return getTargetActionSlots({
       target,
       templates: UNIFIED_ACTION_TEMPLATES,
@@ -40,6 +47,7 @@ export function useTargetActions({
         archetype.sphereAlignment.secondary,
       ],
       hexRevelation: gameState.hexRevelation,
+      existingThreadTier,
     });
-  }, [target, drawerOpen, gameState.essencePool, archetype, gameState.hexRevelation]);
+  }, [target, drawerOpen, gameState.essencePool, archetype, gameState.hexRevelation, gameState.graph, gameState.ascendantId]);
 }

@@ -56,6 +56,11 @@ export interface TargetActionParams {
   accessibleSpheres: readonly SphereName[];
   /** Per-hex layer revelation state. Key: hexKey(col,row). Omit to skip revelation gating. */
   hexRevelation?: Readonly<Record<string, HexRevelation>>;
+  /**
+   * Tier of any existing thread from the ascendant to this target (1 = normal, 2 = strong),
+   * or null if no thread exists. Used to suppress bind_thread_* actions when already threaded.
+   */
+  existingThreadTier?: number | null;
 }
 
 // ─── Filter result (for trace) ──────────────────────────────────────────────
@@ -81,7 +86,7 @@ interface FilterCounts {
  * Caps output at TARGET_ACTION_CONSTANTS.MAX_SLOTS.
  */
 export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
-  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation } = params;
+  const { target, templates, pool, primarySphere, avatarPos, accessibleSpheres, hexRevelation, existingThreadTier } = params;
 
   const counts: FilterCounts = {
     considered: 0,
@@ -125,6 +130,13 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
         counts.bySubtype++;
         continue;
       }
+    }
+
+    // 2b. Thread-dedup gate — hide bind_thread_* templates when a thread already exists.
+    // An ascendant may only hold one thread to any given target. Once threaded,
+    // bind_thread_* create actions are suppressed entirely (upgrade/downgrade is separate).
+    if (template.id.startsWith('bind_thread_') && existingThreadTier != null) {
+      continue;
     }
 
     // 3. Trait gate (AND logic — all required traits must be present)
