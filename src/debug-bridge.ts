@@ -18,6 +18,8 @@ if (import.meta.env.DEV) {
   let _actionBridge: ActionBridge | null = null;
   // GameView registers a provider for the live WorldGraph
   let _graphProvider: (() => import('./engine/graph').WorldGraph | null) | null = null;
+  // GameView registers a provider for the live GameState
+  let _gameStateProvider: (() => import('./types/gameState').GameState | null) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -36,6 +38,73 @@ if (import.meta.env.DEV) {
     _registerActionBridge: (cb) => { _actionBridge = cb as ActionBridge; },
     /** @internal GameView registers its graph provider here */
     _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => { _graphProvider = fn; },
+    /** @internal GameView registers a provider for the live GameState here */
+    _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => { _gameStateProvider = fn; },
+    /**
+     * Inspect the encounter notification pipeline for a threaded agent.
+     * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
+     * Returns thread edges, active encounterProgress entries, and pending encounterNotifications.
+     * Use this to diagnose why encounter modals are not appearing.
+     */
+    inspectEncounterPipeline: (agentFilter?: string) => {
+      const state = _gameStateProvider?.();
+      if (!state) return { error: 'Game state not available — is the game loaded?' };
+
+      const { graph, ascendantId, encounterProgress, encounterNotifications } = state;
+      const threadEdges = graph.getOutgoingEdges(ascendantId, 'thread');
+
+      const threads = threadEdges.map(e => {
+        const agent = graph.getNode(e.target);
+        const props = e.properties as Record<string, unknown>;
+        return {
+          agentId: e.target,
+          agentName: agent?.name ?? '(unknown)',
+          courtPosition: props['courtPosition'] ?? null,
+          attentionMode: props['attentionMode'] ?? null,
+          tier: props['tier'] ?? null,
+        };
+      }).filter(t =>
+        !agentFilter ||
+        t.agentId.includes(agentFilter) ||
+        t.agentName.toLowerCase().includes(agentFilter.toLowerCase()),
+      );
+
+      const threadedIds = new Set(threads.map(t => t.agentId));
+
+      const activeEncounters = (encounterProgress ?? [])
+        .filter(ep =>
+          !agentFilter ||
+          threadedIds.has(ep.actorId) ||
+          ep.actorId.includes(agentFilter) ||
+          (graph.getNode(ep.actorId)?.name ?? '').toLowerCase().includes(agentFilter.toLowerCase()),
+        )
+        .map(ep => ({
+          actorId: ep.actorId,
+          agentName: graph.getNode(ep.actorId)?.name ?? '(unknown)',
+          encounterId: ep.encounterId,
+          status: ep.status,
+          startedTick: ep.startedTick,
+          isThreaded: threadedIds.has(ep.actorId),
+        }));
+
+      const notifications = (encounterNotifications ?? [])
+        .filter(n =>
+          !agentFilter ||
+          n.agentId.includes(agentFilter) ||
+          n.agentName.toLowerCase().includes(agentFilter.toLowerCase()),
+        )
+        .map(n => ({
+          agentId: n.agentId,
+          agentName: n.agentName,
+          encounterId: n.encounterId,
+          courtPosition: n.courtPosition,
+          viewed: n.viewed,
+          resolved: n.resolved,
+          autoResolveTick: n.autoResolveTick,
+        }));
+
+      return { threads, activeEncounters, notifications, tick: state.tick };
+    },
     /** Returns rarity info for a node by id. Fail-soft: returns tier 1 defaults if node not found. */
     getRarityInfo: async (nodeId: string) => {
       const [rarityMod, constantsMod] = await Promise.all([

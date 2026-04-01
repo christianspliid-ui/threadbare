@@ -66,6 +66,14 @@ export interface DebugBridge {
   _registerActionBridge: (callbacks: { listActions: (agentId?: string) => DebugActionInfo[]; fireAction: (agentId: string, templateId: string) => DebugFireResult }) => void;
   /** @internal GameView registers a provider for the live WorldGraph here */
   _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => void;
+  /** @internal GameView registers a provider for the live GameState here */
+  _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => void;
+  /**
+   * Inspect the encounter notification pipeline.
+   * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
+   * Returns thread edges, active encounterProgress entries, and pending encounterNotifications.
+   */
+  inspectEncounterPipeline: (agentFilter?: string) => unknown;
   /** Returns rarity info for a node by id. Returns tier 1 defaults if node not found. */
   getRarityInfo: (nodeId: string) => Promise<DebugRarityInfo>;
   /** Forces a node to graduate to the specified rarity tier. Never demotes. */

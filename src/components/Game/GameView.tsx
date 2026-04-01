@@ -330,6 +330,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       if (actorType === 'individual') {
         const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
         if (tier !== 'spotlight') continue;
+        // Commanders are represented by their army's icon while on campaign.
+        const commandedByEdges = gameState.graph.getIncomingEdges(n.id, 'commanded_by');
+        if (commandedByEdges.length > 0) continue;
       }
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
@@ -879,6 +882,14 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   useEffect(() => {
     if (!import.meta.env.DEV || !window.__DEBUG) return;
     window.__DEBUG._registerGraphProvider(() => _gotoAgentGraphRef.current);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Debug bridge: inspectEncounterPipeline ────────────────────────────────
+  const _gameStateRef = useRef(gameState);
+  useEffect(() => { _gameStateRef.current = gameState; });
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerGameStateProvider(() => _gameStateRef.current);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const retinueActiveEncounters = useMemo(() => {
