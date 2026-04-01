@@ -739,9 +739,9 @@ export const HexChronicle = memo(function HexChronicle({
             {/* Render parent locations first, then their sublocations */}
             {parentLocations.map(parentLoc => {
               const agentsHere = agentsByLocation[parentLoc.id] ?? [];
-              const subs = sublocationsByParent[parentLoc.id] ?? [];
-              const subAgents = subs.flatMap(sub => (agentsByLocation[sub.id] ?? []).map(a => ({ ...a, subLocId: sub.id })));
-              if (agentsHere.length === 0 && subAgents.length === 0) return null;
+              // Only show agents directly at the city — sublocation inhabitants are
+              // discoverable by entering the sublocation in LocationView.
+              if (agentsHere.length === 0) return null;
               return (
                 <div key={parentLoc.id} style={{ marginBottom: '8px' }}>
                   {/* Location heading */}
@@ -777,48 +777,6 @@ export const HexChronicle = memo(function HexChronicle({
                         flavorText={flavor}
                         onClick={() => onAgentClick(agent.id)}
                       />
-                    );
-                  })}
-                  {/* Sublocation groups */}
-                  {subs.map(sub => {
-                    const subAgentsHere = agentsByLocation[sub.id] ?? [];
-                    if (subAgentsHere.length === 0) return null;
-                    return (
-                      <div key={sub.id} style={{ marginLeft: '8px' }}>
-                        <div style={{
-                          fontFamily: 'var(--font-body)',
-                          fontSize: 'var(--text-xs)',
-                          color: 'var(--text-tertiary)',
-                          letterSpacing: '0.06em',
-                          marginTop: '6px',
-                          marginBottom: '2px',
-                          paddingLeft: '2px',
-                        }}>
-                          {sub.name}
-                        </div>
-                        {subAgentsHere.map(agent => {
-                          const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-                          const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-                          const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-                          const npcRole = (agent.properties as any)?.npcRole as string | undefined;
-                          const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
-                          const flavor = agentProse[agent.id] ?? '';
-                          return (
-                            <SoulCard
-                              key={agent.id}
-                              name={agent.name}
-                              role={npcRole}
-                              rarityTier={rarityTier}
-                              locationName={sub.name}
-                              parentLocationName={parentLoc.name}
-                              sphereColor={sphereColor}
-                              archetypeName={archetypeName}
-                              flavorText={flavor}
-                              onClick={() => onAgentClick(agent.id)}
-                            />
-                          );
-                        })}
-                      </div>
                     );
                   })}
                 </div>
