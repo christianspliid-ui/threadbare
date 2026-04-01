@@ -4,7 +4,7 @@
 
 ## Current Focus
 
-**Unified Rarity Model** (TB-100) — All 5 phases shipped 2026-04-01. Rarity tiers on actors, locations, action templates, with organic graduation and RarityBadge UI.
+**Unified Rarity Model** (TB-100) — All 5 phases shipped 2026-04-01. Rarity tiers on actors, locations, action templates, with organic graduation and RarityBadge UI. Quality pass complete: graduation traces/notifications, importance accumulation, tier distribution rebalanced to 60/30/8/2.
 
 ## Milestone Status
 
