@@ -1,8 +1,15 @@
 import { memo } from 'react';
 
+/** Format an NPC role for display: 'guard_captain' → 'Guard Captain' */
+function formatRole(role: string): string {
+  return role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 interface SoulCardProps {
   name: string;
+  role?: string;            // npcRole (e.g., 'guard_captain')
   locationName: string;
+  parentLocationName?: string; // if in a sublocation, the parent location name
   sphereColor: string; // hex color from getSphereColor
   archetypeName?: string;
   flavorText: string;
@@ -11,7 +18,9 @@ interface SoulCardProps {
 
 export const SoulCard = memo(function SoulCard({
   name,
+  role,
   locationName,
+  parentLocationName,
   sphereColor,
   archetypeName,
   flavorText,
@@ -63,7 +72,7 @@ export const SoulCard = memo(function SoulCard({
             textUnderlineOffset: '3px',
           }}
         >
-          {name}
+          {name}{role ? ` the ${formatRole(role)}` : ''}
         </span>
         {archetypeName && (
           <span
@@ -101,7 +110,9 @@ export const SoulCard = memo(function SoulCard({
           marginTop: '3px',
         }}
       >
-        {locationName}
+        {parentLocationName
+          ? `In ${locationName} in ${parentLocationName}`
+          : `In ${locationName}`}
       </div>
     </div>
   );

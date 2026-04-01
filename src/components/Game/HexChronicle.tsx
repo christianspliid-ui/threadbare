@@ -341,6 +341,18 @@ export const HexChronicle = memo(function HexChronicle({
     return map;
   }, [locations]);
 
+  /** Map sublocation ID → parent location name (for "in X in Y" display). */
+  const parentLocationNameById = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const loc of locations) {
+      const parentId = (loc.properties as Record<string, unknown>)?.parentLocationId as string | undefined;
+      if (parentId && locationNameById[parentId]) {
+        map[loc.id] = locationNameById[parentId];
+      }
+    }
+    return map;
+  }, [locations, locationNameById]);
+
   const agentProse = useMemo(() => {
     const result: Record<string, string> = {};
     for (const agent of allAgents) {
@@ -699,7 +711,7 @@ export const HexChronicle = memo(function HexChronicle({
           </div>
         )}
 
-        {/* Individual souls present at this hex */}
+        {/* Individual souls present at this hex — grouped by location */}
         {allAgents.length > 0 && (
           <div style={{ marginTop: '12px' }}>
             <div style={{
@@ -712,22 +724,128 @@ export const HexChronicle = memo(function HexChronicle({
             }}>
               Souls Present
             </div>
-            {allAgents.map(agent => {
-              const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
-              const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
-              const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
-              const locName = locationNameById[agent.locationId] ?? 'wandering';
-              const flavor = agentProse[agent.id] ?? '';
+            {/* Render parent locations first, then their sublocations */}
+            {parentLocations.map(parentLoc => {
+              const agentsHere = agentsByLocation[parentLoc.id] ?? [];
+              const subs = sublocationsByParent[parentLoc.id] ?? [];
+              const subAgents = subs.flatMap(sub => (agentsByLocation[sub.id] ?? []).map(a => ({ ...a, subLocId: sub.id })));
+              if (agentsHere.length === 0 && subAgents.length === 0) return null;
               return (
-                <SoulCard
-                  key={agent.id}
-                  name={agent.name}
-                  locationName={locName}
-                  sphereColor={sphereColor}
-                  archetypeName={archetypeName}
-                  flavorText={flavor}
-                  onClick={() => onAgentClick(agent.id)}
-                />
+                <div key={parentLoc.id} style={{ marginBottom: '8px' }}>
+                  {/* Location heading */}
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginTop: '10px',
+                    marginBottom: '4px',
+                    paddingLeft: '2px',
+                  }}>
+                    {parentLoc.name}
+                  </div>
+                  {/* Agents directly at this parent location */}
+                  {agentsHere.map(agent => {
+                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const flavor = agentProse[agent.id] ?? '';
+                    return (
+                      <SoulCard
+                        key={agent.id}
+                        name={agent.name}
+                        role={npcRole}
+                        locationName={parentLoc.name}
+                        sphereColor={sphereColor}
+                        archetypeName={archetypeName}
+                        flavorText={flavor}
+                        onClick={() => onAgentClick(agent.id)}
+                      />
+                    );
+                  })}
+                  {/* Sublocation groups */}
+                  {subs.map(sub => {
+                    const subAgentsHere = agentsByLocation[sub.id] ?? [];
+                    if (subAgentsHere.length === 0) return null;
+                    return (
+                      <div key={sub.id} style={{ marginLeft: '8px' }}>
+                        <div style={{
+                          fontFamily: 'var(--font-body)',
+                          fontSize: 'var(--text-xs)',
+                          color: 'var(--text-tertiary)',
+                          letterSpacing: '0.06em',
+                          marginTop: '6px',
+                          marginBottom: '2px',
+                          paddingLeft: '2px',
+                        }}>
+                          {sub.name}
+                        </div>
+                        {subAgentsHere.map(agent => {
+                          const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                          const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                          const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                          const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                          const flavor = agentProse[agent.id] ?? '';
+                          return (
+                            <SoulCard
+                              key={agent.id}
+                              name={agent.name}
+                              role={npcRole}
+                              locationName={sub.name}
+                              parentLocationName={parentLoc.name}
+                              sphereColor={sphereColor}
+                              archetypeName={archetypeName}
+                              flavorText={flavor}
+                              onClick={() => onAgentClick(agent.id)}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+            {/* Orphan sublocations (parent not on this hex) */}
+            {orphanSublocations.map(orphan => {
+              const agentsHere = agentsByLocation[orphan.id] ?? [];
+              if (agentsHere.length === 0) return null;
+              return (
+                <div key={orphan.id} style={{ marginBottom: '8px' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--text-xs)',
+                    color: 'var(--text-muted)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                    marginTop: '10px',
+                    marginBottom: '4px',
+                    paddingLeft: '2px',
+                  }}>
+                    {orphan.name}
+                  </div>
+                  {agentsHere.map(agent => {
+                    const primarySphere = (agent.properties as any)?.primarySphere as SphereName | undefined;
+                    const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
+                    const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
+                    const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const flavor = agentProse[agent.id] ?? '';
+                    return (
+                      <SoulCard
+                        key={agent.id}
+                        name={agent.name}
+                        role={npcRole}
+                        locationName={orphan.name}
+                        sphereColor={sphereColor}
+                        archetypeName={archetypeName}
+                        flavorText={flavor}
+                        onClick={() => onAgentClick(agent.id)}
+                      />
+                    );
+                  })}
+                </div>
               );
             })}
           </div>
