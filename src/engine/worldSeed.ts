@@ -47,6 +47,7 @@ import { FACTION_DEFINITIONS } from '../data/faction-definitions';
 import { AGENT_COUNT_BY_MAP_SIZE, AGENT_COUNT_FALLBACK } from '../data/agent-behavior-constants';
 import { MC_COMPANY_NAMES } from '../data/mercenary-company-definition';
 import { spawnArmy } from './armySpawning';
+import { seedNpcsAtLocations } from './npcSeeding';
 import type { GameState } from '../types/gameState';
 import { ensureSublocations } from './sublocation';
 import { assignInitialAmbitions } from './ambitionAssignment';
@@ -1208,6 +1209,7 @@ export function seedWorld(
       name: INDIVIDUAL_NAMES[nameIdx],
       properties: {
         actorType: 'individual',
+        spotlightTier: 'spotlight' as const,
         axiologicalProfile: profile,
         domainCapabilities: generateDomainCapabilities(rng),
         locationId,
@@ -1245,6 +1247,9 @@ export function seedWorld(
   // ── Culture assignment to actors ──────────────────────────
   assignCulturesToActors(graph, individualIds, factionIds, cultureIds, rng,
     locationCultureMap.size > 0 ? locationCultureMap : undefined);
+
+  // ── NPC seeding at locations ──────────────────────────────
+  const npcResult = seedNpcsAtLocations(graph, locationIds, rng);
 
   // ── Cultural trait instantiation + granting ──────────────────
   for (const cultureId of cultureIds) {
