@@ -245,7 +245,7 @@ export const ActionCard = React.memo(function ActionCard({
           {slot.rarityTier != null && slot.rarityTier >= 2 && (
             <span data-testid="action-card-rarity-badge" className="absolute bottom-0 left-0 px-1 pb-0.5">
               <RarityBadge
-                tier={slot.rarityTier as RarityTier}
+                tier={slot.rarityTier}
                 opacity={0.9}
                 className="text-[0.5rem] font-bold uppercase tracking-wide"
               />
@@ -411,7 +411,7 @@ export const ActionCard = React.memo(function ActionCard({
             {slot.rarityTier != null && slot.rarityTier >= 2 && (
               <span data-testid="action-card-rarity-badge">
                 <RarityBadge
-                  tier={slot.rarityTier as RarityTier}
+                  tier={slot.rarityTier}
                   opacity={0.9}
                   className="text-xs font-semibold uppercase tracking-wide"
                 />
