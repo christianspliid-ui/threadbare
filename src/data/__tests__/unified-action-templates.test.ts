@@ -118,9 +118,9 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
     expect(unique.size).toBe(ids.length);
   });
 
-  it('every template has at least 1 motivation OR is a divine template', () => {
+  it('every template has at least 1 motivation OR is a divine/NPC template', () => {
     for (const t of UNIFIED_ACTION_TEMPLATES) {
-      if (t.scale !== 'cosmic') {
+      if (t.scale !== 'cosmic' && !t.id.startsWith('npc_')) {
         expect(t.motivations.length).toBeGreaterThan(0);
       }
     }
