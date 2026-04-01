@@ -15,6 +15,7 @@
 
 ## Recent Completions (2026-04-01)
 
+- **NPC sublocation placement + HexChronicle filter + rarity visuals in LocationView:** Ambient NPCs now seed into role-appropriate sublocations (NPC_ROLE_SUBLOCATION_MAP, 21 roles). Souls Present in HexChronicle shows only direct-city agents. LocationView AgentRow and Inhabitants list now show 3px rarity-tier left border.
 - **TB-100 Unified Rarity Model Phase E — Action template rarityTier:** Tagged all 200+ action templates with rarity tiers 1–4 (distribution ~60%/~30%/~8%/~2%, 2 Legendary max). Made rarityTier required on UnifiedActionTemplate. Threaded through WheelSlot and getTargetActionSlots. Wired RarityBadge into ActionCard (both hand and focused layouts), suppressed for tier 1. Tests: all templates valid, badge show/hide by tier.
 
 ## Recent Completions (2026-03-31)
