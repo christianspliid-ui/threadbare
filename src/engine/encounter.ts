@@ -266,16 +266,8 @@ export function advanceEncounter(
   };
 
   emitTrace(trace);
-
-  // Timeline: ENCOUNTER_END (only when encounter actually finishes)
-  if (progress.status === 'completed' || progress.status === 'abandoned') {
-    appendEvent(progress.actorId, {
-      phase: 'ENCOUNTER_END',
-      tick,
-      encounter: progress.encounterId,
-      status: progress.status,
-    });
-  }
+  // Note: ENCOUNTER_END timeline event is appended by the orchestrator after the
+  // reward pipeline runs, so the reward name can be included in the same event.
 }
 
 /**

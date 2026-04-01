@@ -1,4 +1,6 @@
 import type { TraceEntry } from './types/trace';
+import type { AgentAttachments } from './engine/agentAttachments';
+import type { RewardHistoryEntry } from './engine/rewardHistory';
 
 export interface EncounterLogExportResult {
   allAgentsTsv: string;
@@ -78,6 +80,13 @@ export interface DebugBridge {
   getRarityInfo: (nodeId: string) => Promise<DebugRarityInfo>;
   /** Forces a node to graduate to the specified rarity tier. Never demotes. */
   forceGraduate: (nodeId: string, tier: number) => Promise<DebugForceGraduateResult>;
+  /**
+   * Returns all attachments for an agent (possessions, conditions, powers, agreements).
+   * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
+   */
+  getAgentAttachments: (agentIdOrName: string) => Promise<AgentAttachments | null>;
+  /** Returns the last n reward events (draws and empty-pool misses). Default: all retained (up to 200). */
+  getRecentRewards: (n?: number) => Promise<readonly RewardHistoryEntry[]>;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;

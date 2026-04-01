@@ -166,6 +166,32 @@ if (import.meta.env.DEV) {
         newTier: clampedTier,
       };
     },
+    /**
+     * Returns all attachments (possessions, conditions, powers, agreements) for an agent.
+     * Accepts an agent id, id prefix, or partial name (case-insensitive). Returns null if not found.
+     */
+    getAgentAttachments: async (agentIdOrName: string) => {
+      const graph = _graphProvider?.();
+      if (!graph) return null;
+
+      const actors = graph.getNodesByType('actor');
+      const match =
+        actors.find(n => n.id === agentIdOrName) ??
+        actors.find(n => n.id.startsWith(agentIdOrName)) ??
+        actors.find(n =>
+          typeof n.name === 'string' && n.name.toLowerCase().includes(agentIdOrName.toLowerCase()),
+        );
+
+      if (!match) return null;
+
+      const { getAgentAttachments: getAttachments } = await import('./engine/agentAttachments');
+      return getAttachments(graph, match.id);
+    },
+
+    /** Returns the last n reward events (successful draws and empty-pool misses). Default: all retained. */
+    getRecentRewards: (n?: number) =>
+      import('./engine/rewardHistory').then((m) => m.getRecentRewards(n)),
+
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

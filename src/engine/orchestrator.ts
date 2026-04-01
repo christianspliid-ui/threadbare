@@ -111,7 +111,8 @@ import { validateTickOutput, appendCrashLog } from './tickHealthMonitor';
 import { phaseFactionReputationDecay, processFactionEncounterReputation } from './factionReputation';
 import { processFactionOutcome, resetFactionEventSeq } from './factionOutcome';
 import type { DistanceMatrix } from './distanceMatrix';
-import { clearTimelines } from './encounterTimeline';
+import { clearTimelines, appendEvent } from './encounterTimeline';
+import { recordReward, clearRewardHistory } from './rewardHistory';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ENCOUNTER_PRESSURE_PER_STEP, RIVAL_PRESSURE_MAGNITUDE } from '../types/sphereAffinity';
 import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-content';
@@ -144,6 +145,7 @@ export function resetDecisionCache(): void {
   legacyDistanceMatrix = null;
   legacyRuntime = null;
   clearTimelines();
+  clearRewardHistory();
 }
 
 /** Read-only access to the current encounter cache (for debug tooling). */
@@ -352,6 +354,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         : resolved;
 
       const pool = assembleRewardPool(state.graph, effectiveRecipe);
+      const agentNameForReward = state.graph.getNode(progress.actorId)?.name ?? '?';
 
       if (pool.length > 0) {
         const drawRoll = rng();
@@ -370,7 +373,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               category: 'encounter',
               tick: state.tick,
               agentId: progress.actorId,
-              agentName: state.graph.getNode(progress.actorId)?.name ?? '?',
+              agentName: agentNameForReward,
               event: isBadOutcome ? 'reward_bad_outcome' : 'reward_drawn',
               templateId,
               instanceId: instantiation.instanceId,
@@ -379,8 +382,23 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               attachmentCategory: instantiation.category,
               poolSize: pool.length,
               roll: drawRoll,
-              summary: `${state.graph.getNode(progress.actorId)?.name ?? '?'} ${isBadOutcome ? 'suffered' : 'earned'} ${templateNode?.name ?? '?'} (T${tier} ${instantiation.category})`,
+              summary: `${agentNameForReward} ${isBadOutcome ? 'suffered' : 'earned'} ${templateNode?.name ?? '?'} (T${tier} ${instantiation.category})`,
             } as TraceEntry);
+
+            recordReward({
+              tick: state.tick,
+              agentId: progress.actorId,
+              agentName: agentNameForReward,
+              encounterId: progress.encounterId,
+              templateId,
+              templateName: templateNode?.name ?? '?',
+              instanceId: instantiation.instanceId,
+              category: instantiation.category,
+              tier,
+              isBadOutcome,
+              poolSize: pool.length,
+              roll: drawRoll,
+            });
           }
         }
       } else {
@@ -388,12 +406,38 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           category: 'encounter',
           tick: state.tick,
           agentId: progress.actorId,
-          agentName: state.graph.getNode(progress.actorId)?.name ?? '?',
+          agentName: agentNameForReward,
           event: 'reward_pool_empty',
           encounterId: progress.encounterId,
           summary: `Reward pool empty for ${progress.encounterId} (${result.outcomeType})`,
         } as TraceEntry);
+
+        recordReward({
+          tick: state.tick,
+          agentId: progress.actorId,
+          agentName: agentNameForReward,
+          encounterId: progress.encounterId,
+          templateId: null,
+          templateName: null,
+          instanceId: null,
+          category: null,
+          tier: null,
+          isBadOutcome,
+          poolSize: 0,
+          roll: null,
+        });
       }
+    }
+
+    // ── Timeline: ENCOUNTER_END (here instead of advanceEncounter so reward name is available) ──
+    if (progress.status === 'completed' || progress.status === 'abandoned') {
+      appendEvent(progress.actorId, {
+        phase: 'ENCOUNTER_END',
+        tick: state.tick,
+        encounter: progress.encounterId,
+        status: progress.status,
+        ...(rewardName !== undefined && { reward: rewardName }),
+      });
     }
 
     // ── Anomaly discovery: on completion, seed resource + flip discovered flag ──

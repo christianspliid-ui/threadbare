@@ -30,6 +30,7 @@ import type { DistanceMatrix } from './distanceMatrix';
 import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
 import { clearTimelines } from './encounterTimeline';
+import { clearRewardHistory } from './rewardHistory';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -134,4 +135,5 @@ export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.encounterCacheBuiltAt = -1;
   runtime.distanceMatrixBuiltAt = -1;
   clearTimelines();
+  clearRewardHistory();
 }
