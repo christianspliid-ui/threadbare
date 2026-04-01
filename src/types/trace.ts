@@ -4,6 +4,7 @@ import type { ValuePair } from './agent';
 import type { ModifierResolutionTrace } from './modifiers';
 import type { LapseReason } from './controlEffect';
 import type { NarrativeLayer } from './unifiedAction';
+import type { RarityTier } from './rarity';
 
 /** Known trace categories for filtering in debug panel */
 export type TraceCategory =
@@ -22,7 +23,9 @@ export type TraceCategory =
   | 'revelation' | 'tick_health' | 'tick_crash'
   | 'agent_revelation' | 'interaction_depth'
   | 'faction_ambition'
-  | 'reputation_trait';
+  | 'reputation_trait'
+  | 'rarity_graduation'
+  | 'rarity_importance';
 
 export const TRACE_CATEGORIES: TraceCategory[] = [
   'action_selection', 'narrative_generation', 'context_harvest',
@@ -41,6 +44,8 @@ export const TRACE_CATEGORIES: TraceCategory[] = [
   'agent_revelation', 'interaction_depth',
   'faction_ambition',
   'reputation_trait',
+  'rarity_graduation',
+  'rarity_importance',
 ];
 
 /** Base shape for all trace entries */
@@ -569,6 +574,28 @@ export interface InteractionDepthTrace extends TraceBase {
   depthAfter: number;
 }
 
+/** Trace: a graph node graduated to a higher rarity tier */
+export interface RarityGraduationTrace extends TraceBase {
+  category: 'rarity_graduation';
+  nodeId: string;
+  nodeCategory: 'actor' | 'location' | 'sublocation' | 'attachment';
+  previousTier: RarityTier;
+  newTier: RarityTier;
+  trigger: 'player_action' | 'organic_threshold' | 'story_event';
+  cause: string;
+}
+
+/** Trace: importance accumulated on a graph node */
+export interface RarityImportanceTrace extends TraceBase {
+  category: 'rarity_importance';
+  nodeId: string;
+  nodeName: string;
+  source: 'player_action' | 'encounter_resolved' | 'chronicle_reference' | 'divine_proximity' | 'sphere_event';
+  delta: number;
+  newImportance: number;
+  currentTier: RarityTier;
+}
+
 /** Discriminated union of all trace types */
 export type TraceEntry =
   | ActionSelectionTrace
@@ -610,7 +637,9 @@ export type TraceEntry =
   | RevelationTrace
   | InteractionDepthTrace
   | ReputationTraitTrace
-  | GraphOpExecutionTrace;
+  | GraphOpExecutionTrace
+  | RarityGraduationTrace
+  | RarityImportanceTrace;
 
 /** Trace: reputation trait tally change, assignment, or removal */
 export interface ReputationTraitTrace extends TraceBase {

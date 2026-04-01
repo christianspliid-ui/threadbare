@@ -51,6 +51,7 @@ import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 import { resolveRevelationAction } from './revelationEmitter';
+import { accumulateImportance, getImportanceDelta } from './rarity';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -482,6 +483,23 @@ export function phaseUnifiedActionProgress(
           );
           events.push(...mapEvents);
         }
+      }
+    }
+
+    // PHASE-D (Fix 4): Player action importance accumulation.
+    // When the ascendant fires an action that resolves successfully against an individual actor
+    // target, accumulate importance on that target node.
+    // Fail-soft: missing targetId, hex targets, missing node, non-individual nodes → skip silently.
+    if (
+      updatedAction.resolved &&
+      updatedAction.outcome === 'success' &&
+      completing_action.actorId === state.ascendantId &&
+      completing_action.targetId &&
+      !isHexTargetId(completing_action.targetId)
+    ) {
+      const targetNodeForRarity = state.graph.getNode(completing_action.targetId);
+      if (targetNodeForRarity && targetNodeForRarity.properties?.actorType === 'individual') {
+        accumulateImportance(targetNodeForRarity, getImportanceDelta('player_action'));
       }
     }
 

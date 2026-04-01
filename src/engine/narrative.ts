@@ -312,6 +312,11 @@ const EVENT_TIER_MAP: Record<NarrativeEventType, NarrativeTier> = {
 
 /**
  * Classify an event's narrative tier based on its type and tags.
+ *
+ * PHASE-D-DEFERRED: Wire rarityTier from node properties here to bias narrative tier
+ * selection (Mundane→T1, Storied→T1-2, Mythic→T2, Legendary→T3). The node's rarityTier
+ * should elevate the floor of the chosen prose tier so high-rarity entities consistently
+ * get richer narrative treatment. See rarity-constants.ts for tier definitions.
  */
 export function classifyEvent(
   eventType: NarrativeEventType,

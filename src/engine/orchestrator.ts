@@ -117,7 +117,9 @@ import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-con
 import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
-import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta } from './rarity';
+import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta, getRarityTier } from './rarity';
+import { RARITY_NOTIFICATION_THRESHOLD } from '../data/rarity-constants';
+import { RARITY_TIER_NAMES } from '../types/rarity';
 import {
   touchWorld,
   touchStructure,
@@ -529,11 +531,40 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     if (result.success) {
       const actorNodeForRarity = state.graph.getNode(progress.actorId);
       if (actorNodeForRarity && actorNodeForRarity.properties?.actorType === 'individual') {
+        const prevTierActor = getRarityTier(actorNodeForRarity);
         accumulateImportance(actorNodeForRarity, getImportanceDelta('encounter_resolved'));
         const graduationTier = checkGraduationThreshold(actorNodeForRarity);
         if (graduationTier !== null) {
           graduateRarity(actorNodeForRarity, graduationTier);
-          // Note: graduation notifications are deferred to a future phase (Phase E)
+          // Emit graduation trace (Fix 1)
+          emitTrace({
+            category: 'rarity_graduation',
+            tick: state.tick,
+            nodeId: actorNodeForRarity.id,
+            nodeCategory: 'actor',
+            previousTier: prevTierActor,
+            newTier: graduationTier,
+            trigger: 'organic_threshold',
+            cause: `importance reached graduation threshold`,
+            summary: `${actorNodeForRarity.name ?? actorNodeForRarity.id} graduated from tier ${prevTierActor} to tier ${graduationTier}`,
+            agentId: actorNodeForRarity.id,
+          } as import('../types/trace').RarityGraduationTrace);
+          // Emit graduation notification for tiers at or above threshold (Fix 2)
+          if (graduationTier >= RARITY_NOTIFICATION_THRESHOLD) {
+            const nodeName = actorNodeForRarity.name ?? actorNodeForRarity.id;
+            const message = graduationTier >= 4
+              ? `${nodeName} has transcended mortal reckoning — a legend walks the realm.`
+              : `${nodeName} has achieved ${RARITY_TIER_NAMES[graduationTier]} status.`;
+            events.push({
+              id: nextEventId(),
+              tick: state.tick,
+              type: 'tier_promotion',
+              message,
+              significance: 0.9,
+              actorId: actorNodeForRarity.id,
+              notification: { channel: 'toast' as const },
+            });
+          }
         }
       }
 
@@ -541,10 +572,40 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       if (progress.targetAgentId) {
         const targetNode = state.graph.getNode(progress.targetAgentId);
         if (targetNode && targetNode.properties?.actorType === 'individual') {
+          const prevTierTarget = getRarityTier(targetNode);
           accumulateImportance(targetNode, getImportanceDelta('encounter_resolved'));
           const targetGradTier = checkGraduationThreshold(targetNode);
           if (targetGradTier !== null) {
             graduateRarity(targetNode, targetGradTier);
+            // Emit graduation trace (Fix 1)
+            emitTrace({
+              category: 'rarity_graduation',
+              tick: state.tick,
+              nodeId: targetNode.id,
+              nodeCategory: 'actor',
+              previousTier: prevTierTarget,
+              newTier: targetGradTier,
+              trigger: 'organic_threshold',
+              cause: `importance reached graduation threshold`,
+              summary: `${targetNode.name ?? targetNode.id} graduated from tier ${prevTierTarget} to tier ${targetGradTier}`,
+              agentId: targetNode.id,
+            } as import('../types/trace').RarityGraduationTrace);
+            // Emit graduation notification for tiers at or above threshold (Fix 2)
+            if (targetGradTier >= RARITY_NOTIFICATION_THRESHOLD) {
+              const targetName = targetNode.name ?? targetNode.id;
+              const message = targetGradTier >= 4
+                ? `${targetName} has transcended mortal reckoning — a legend walks the realm.`
+                : `${targetName} has achieved ${RARITY_TIER_NAMES[targetGradTier]} status.`;
+              events.push({
+                id: nextEventId(),
+                tick: state.tick,
+                type: 'tier_promotion',
+                message,
+                significance: 0.9,
+                actorId: targetNode.id,
+                notification: { channel: 'toast' as const },
+              });
+            }
           }
         }
       }
@@ -1396,6 +1457,13 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   s = { ...s, ...phaseDivineInfluenceDecay(s) };
   phaseEventCounts['divine_influence_decay'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
+
+  // PHASE-D-DEFERRED: Wire accumulateImportance(node, getImportanceDelta('divine_proximity'))
+  // for entities near active ascendant hex. Needs a per-tick spatial scan: find all actor/location
+  // nodes within N hexes of the ascendant's current hex position, then call accumulateImportance
+  // on each. Insert here, after divine influence decay and before trade route decay, so the
+  // importance accumulation benefits from the same tick's divine influence values.
+  // See rarity-constants.ts IMPORTANCE_DIVINE_PROXIMITY for the delta value.
 
   // Phase 6.62: Trade Route Decay (stale routes lose volume; dead routes removed)
   s = { ...s, ...phaseTradeRouteDecay(s) };
