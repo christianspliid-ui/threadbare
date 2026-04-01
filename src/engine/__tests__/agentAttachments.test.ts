@@ -76,8 +76,7 @@ describe('getAgentAttachments', () => {
     graph.addNode({
       id: 'trait.wound.1', type: 'trait', name: 'Bruised Ribs',
       properties: {
-        category: 'condition',
-        subcategory: 'wound',
+        subcategory: 'condition',
         tier: 1,
         mechanicalSummary: '-Iron (minor)',
         tags: ['wound'],
@@ -103,10 +102,10 @@ describe('getAgentAttachments', () => {
     graph.addNode({
       id: 'trait.bless.1', type: 'trait', name: 'Sun-Touched',
       properties: {
-        category: 'blessing',
+        subcategory: 'condition',
         tier: 1,
         mechanicalSummary: '+Star (minor)',
-        tags: ['blessing'],
+        tags: ['#blessing'],
         ticksRemaining: 6,
         totalTicks: 10,
       },
@@ -127,10 +126,10 @@ describe('getAgentAttachments', () => {
     graph.addNode({
       id: 'trait.power.1', type: 'trait', name: 'Turn Undead',
       properties: {
-        category: 'bestowed',
+        subcategory: 'bestowed',
         tier: 2,
         mechanicalSummary: '+Star, sense undead',
-        tags: ['divine', 'spirit'],
+        tags: ['#divine', '#spirit'],
         grantedBy: 'Solhaven',
       },
     });

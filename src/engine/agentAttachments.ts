@@ -106,17 +106,18 @@ export function getAgentAttachments(
     if (!node) continue;
 
     const traitProps = node.properties as Record<string, unknown>;
-    const category = traitProps.category as string | undefined;
+    const category = (traitProps.subcategory ?? traitProps.category) as string | undefined;
 
     if (category === 'condition' || category === 'blessing' || category === 'curse') {
       const tier = (traitProps.tier as AttachmentTier) ?? 1;
       const ticksRemaining = traitProps.ticksRemaining as number | null | undefined;
       const totalTicks = traitProps.totalTicks as number | undefined;
 
+      const nodeTags = (traitProps.tags as string[]) ?? [];
       let subcategory = 'wound';
-      if (category === 'blessing') subcategory = 'blessing';
-      else if (category === 'curse') subcategory = 'curse';
-      else if (traitProps.subcategory) subcategory = traitProps.subcategory as string;
+      if (nodeTags.includes('#blessing')) subcategory = 'blessing';
+      else if (nodeTags.includes('#curse')) subcategory = 'curse';
+      else if (nodeTags.includes('#disease')) subcategory = 'disease';
 
       conditions.push({
         id: node.id,
