@@ -4,6 +4,8 @@ import type { WorldGraph } from '../../engine/graph';
 import type { EncounterTemplate, EncounterProgress } from '../../types/encounter';
 import type { SublocationProperties, SublocationPersistence } from '../../types/sublocation';
 import { THREAT_RATING_COLORS } from '../../types/encounter';
+import type { RarityTier } from '../../types/rarity';
+import { RARITY_TIER_COLORS } from '../../types/rarity';
 import { getAgentColor } from '../../data/sphereIcons';
 import { getVisibleSubLocations, getActorsAtLocation } from '../../engine/viewLevel';
 import { ensureSublocations } from '../../engine/sublocation';
@@ -283,6 +285,8 @@ const AgentRow = memo(function AgentRow({
   onAgentClick,
   onEncounterClick,
 }: AgentRowProps) {
+  const rarityTier = ((agent.properties as Record<string, unknown>)?.rarityTier ?? 1) as RarityTier;
+  const rarityColor = RARITY_TIER_COLORS[rarityTier] ?? RARITY_TIER_COLORS[1];
   return (
     <button
       onClick={(e) => { e.stopPropagation(); onAgentClick(agent.id); }}
@@ -298,12 +302,13 @@ const AgentRow = memo(function AgentRow({
         e.currentTarget.style.backgroundColor = 'transparent';
       }}
     >
-      {/* Agent pip */}
+      {/* Agent pip — left border uses rarity tier color */}
       <div
         className="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 text-xs font-bold"
         style={{
           backgroundColor: getAgentColor(agent.name),
           color: 'white',
+          borderLeft: `3px solid ${rarityColor}`,
         }}
       >
         {agent.name.charAt(0)}
@@ -1247,18 +1252,23 @@ export const LocationView = memo(function LocationView({
                     <div className="mt-3">
                       <SectionHeading>Inhabitants</SectionHeading>
                       <div className="flex flex-col gap-1">
-                        {npcsAtLocation.map(npc => (
-                          <button
-                            key={npc.id}
-                            onClick={() => onAgentClick(npc.id)}
-                            className="flex items-center justify-between px-2 py-1 rounded hover:bg-zinc-800/50 text-left w-full"
-                          >
-                            <span className="text-sm text-zinc-300">{npc.name}</span>
-                            <span className="text-xs text-zinc-500">
-                              {((npc.properties as Record<string, unknown>).npcRole as string)?.replace(/_/g, ' ')}
-                            </span>
-                          </button>
-                        ))}
+                        {npcsAtLocation.map(npc => {
+                          const npcRarity = ((npc.properties as Record<string, unknown>)?.rarityTier ?? 1) as RarityTier;
+                          const npcRarityColor = RARITY_TIER_COLORS[npcRarity] ?? RARITY_TIER_COLORS[1];
+                          return (
+                            <button
+                              key={npc.id}
+                              onClick={() => onAgentClick(npc.id)}
+                              className="flex items-center justify-between px-2 py-1 rounded hover:bg-zinc-800/50 text-left w-full"
+                              style={{ borderLeft: `3px solid ${npcRarityColor}` }}
+                            >
+                              <span className="text-sm text-zinc-300">{npc.name}</span>
+                              <span className="text-xs text-zinc-500">
+                                {((npc.properties as Record<string, unknown>).npcRole as string)?.replace(/_/g, ' ')}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}

@@ -68,7 +68,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
   return (
     <div
       className="fixed left-4 z-50 flex flex-col gap-2 pointer-events-none"
-      style={{ top: 'calc(var(--topbar-height) + 8px)', maxWidth: '320px' }}
+      style={{ top: 'calc(var(--topbar-height) + 80px)', maxWidth: '320px' }}
       aria-live="polite"
       aria-label="Notifications"
     >
