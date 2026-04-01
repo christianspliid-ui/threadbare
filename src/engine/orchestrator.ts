@@ -98,6 +98,7 @@ import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
+import { phaseNpcGraduation } from './npcGraduation';
 import { buildDistanceMatrix } from './distanceMatrix';
 import {
   assembleRewardPool,
@@ -1278,6 +1279,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2.37: Colocation Revelations (first-sighting possession reveals, faction bond auto-reveals)
   emitColocationRevelations(s);
   phaseEventCounts['colocation_revelations'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 2.38: NPC Graduation ──
+  const npcGradEvents = phaseNpcGraduation(s);
+  if (npcGradEvents.length > 0) {
+    s = { ...s, tickEvents: [...s.tickEvents, ...npcGradEvents] };
+  }
+  phaseEventCounts['npc_graduation'] = npcGradEvents.length;
   prevEventCount = s.tickEvents.length;
 
   // Phase 2.4: Sublocation Dissolution

@@ -68,7 +68,9 @@ export interface TickEvent {
   // Army/battle events (TB-073)
     | 'army_mobilization' | 'army_disbanded' | 'battle_started' | 'battle_resolved' | 'siege_established' | 'army_attrition'
   // Quintessence events
-    | 'dissolution_event';
+    | 'dissolution_event'
+  // NPC graduation events
+    | 'npc_graduated';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
