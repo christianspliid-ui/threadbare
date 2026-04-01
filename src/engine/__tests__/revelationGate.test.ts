@@ -27,6 +27,7 @@ function makeTemplate(overrides: Partial<UnifiedActionTemplate> = {}): UnifiedAc
   return {
     id: 'test_template',
     name: 'Test Action',
+    rarityTier: 1,
     reach: 'martial',
     crudType: 'update',
     scale: 'local',

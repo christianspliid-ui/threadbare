@@ -41,8 +41,8 @@ export interface ActionStep {
 export interface UnifiedActionTemplate {
   // Identity
   readonly id: string;
-  /** Narrative significance tier. Drives visual treatment and TB-100 unlock system. Default: 1 (Mundane). */
-  readonly rarityTier?: RarityTier;
+  /** Narrative significance tier. Drives visual treatment and TB-100 unlock system. */
+  readonly rarityTier: RarityTier;
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';
