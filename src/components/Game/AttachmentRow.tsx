@@ -1,7 +1,9 @@
 import React from 'react';
-import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
 import type { AttachmentTier } from '../../types/attachments';
+import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
 import { ProgressBar } from '../shared/ProgressBar';
+import { RarityBadge } from '../shared/RarityBadge';
+import { RARITY_LEGENDARY_PULSE_ANIMATION } from '../../data/rarity-constants';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 
 export interface AttachmentRowProps {
@@ -47,7 +49,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
       onClick={onClick}
       onKeyDown={handleKeyDown}
       aria-label={`${name}, ${tierName} ${subcategory}`}
-      className={`transition-colors cursor-pointer${isLegendary ? ' pulse-gold' : ''}`}
+      className={`transition-colors cursor-pointer${isLegendary ? ` ${RARITY_LEGENDARY_PULSE_ANIMATION}` : ''}`}
       data-testid="attachment-row"
       style={{
         backgroundColor: 'var(--bg-raised)',
@@ -74,12 +76,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
         >
           {name}
         </span>
-        <span
-          className="text-xs flex-shrink-0"
-          style={{ color: `${tierColor}99` }}
-        >
-          {tierName}
-        </span>
+        <RarityBadge tier={tier} opacity={0.6} className="text-xs flex-shrink-0" />
       </div>
 
       {/* Mechanical summary */}

@@ -204,6 +204,8 @@ export interface AgentInfoCardData {
   activeEffects?: ActiveEffect[];
   /** Axiological profile — only populated at intimate+ knowledge (for archetype epithet) */
   axiologicalProfile?: AxiologicalProfile;
+  /** Rarity tier for this agent (1–4). Populated from node.properties.rarityTier. */
+  rarityTier?: number;
 }
 
 // ─── Familiarity-gated Full Profile (Tier 3) ──────────────────────
@@ -443,6 +445,7 @@ export function getAgentInfoCard(
   if (!agentNode) return null;
 
   const primarySphere = (agentNode.properties as Record<string, unknown>).primarySphere as string | undefined;
+  const rarityTier = (agentNode.properties as Record<string, unknown>).rarityTier as number | undefined;
   const cultureName = getAgentCultureName(graph, agentId);
   const traitNames = getAgentTraitNames(graph, agentId);
 
@@ -455,6 +458,7 @@ export function getAgentInfoCard(
     primarySphere,
     cultureName,
     knowledgeLevel,
+    rarityTier,
   };
 
   // Intent data — always visible in prototype

@@ -17,6 +17,8 @@ import { getSphereColor } from '../../data/sphereIcons';
 import { getHexTileUrl } from '../../data/hex-tile-assets';
 import { hexPolygonPoints } from '../../lib/hexMath';
 import { IconButton } from '../shared/IconButton';
+import { RarityBadge } from '../shared/RarityBadge';
+import { clampRarityTier } from '../../types/rarity';
 import { DANGER_ZONE_LABELS } from '../../types/monster';
 
 export interface HexSidebarProps {
@@ -324,29 +326,38 @@ export const HexSidebar = React.memo((props: HexSidebarProps) => {
                 paddingTop: '8px',
               }}
             >
-              {props.locations.map((loc) => (
-                <button
-                  key={loc.id}
-                  style={{
-                    background: 'transparent',
-                    border: 'none',
-                    color: 'var(--accent-gold)',
-                    cursor: 'pointer',
-                    fontSize: '10px',
-                    textAlign: 'left',
-                    padding: '2px 4px',
-                    transition: 'color 0.2s',
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--accent-gold-dim)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--accent-gold)';
-                  }}
-                >
-                  {loc.name}
-                </button>
-              ))}
+              {props.locations.map((loc) => {
+                const rawTier = Number((loc.properties?.rarityTier as number | undefined) ?? 1);
+                const locTier = clampRarityTier(rawTier || 1);
+                const showBadge = locTier >= 2;
+                return (
+                  <button
+                    key={loc.id}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--accent-gold)',
+                      cursor: 'pointer',
+                      fontSize: '10px',
+                      textAlign: 'left',
+                      padding: '2px 4px',
+                      transition: 'color 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = 'var(--accent-gold-dim)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = 'var(--accent-gold)';
+                    }}
+                  >
+                    <span>{loc.name}</span>
+                    {showBadge && <RarityBadge tier={locTier} opacity={0.75} />}
+                  </button>
+                );
+              })}
             </div>
           )}
 
