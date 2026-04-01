@@ -154,7 +154,9 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
     if (template.requiredNodeProperties) {
       const entries = Object.entries(template.requiredNodeProperties);
       if (entries.length > 0) {
-        const allMatch = entries.every(([key, val]) => target.properties[key] === val);
+        const allMatch = entries.every(([key, val]) =>
+          val === undefined ? target.properties[key] != null : target.properties[key] === val,
+        );
         if (!allMatch) {
           counts.byNodeProperties++;
           continue;

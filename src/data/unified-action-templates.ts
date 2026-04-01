@@ -20,6 +20,7 @@ import { ENCOUNTER_TEMPLATES } from './encounter-content';
 import { ENCOUNTER_TYPE_MOTIVATIONS, type EncounterTemplate, type EncounterStep } from '../types/encounter';
 import { DECAY_CONSTANTS } from '../engine/decayCurve';
 import { INTERVENTION_DEFINITIONS } from './dream-content';
+import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -2988,6 +2989,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...HEX_ACTION_TEMPLATES,
   ...REVELATION_ACTION_TEMPLATES,
   ...THREAD_CREATION_TEMPLATES,
+  ...NPC_ACTION_TEMPLATES,
 ];
 
 /**
