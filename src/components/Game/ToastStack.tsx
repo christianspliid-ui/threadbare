@@ -27,6 +27,9 @@ const NAV_TOOLTIPS: Record<NavigationTarget['kind'], string> = {
 /** Opacity for navigation glyph */
 const NAV_GLYPH_OPACITY = 0.6;
 
+/** Maximum number of toasts visible at once — oldest are hidden when exceeded */
+const MAX_VISIBLE_TOASTS = 6;
+
 interface ToastStackProps {
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
@@ -72,7 +75,7 @@ export function ToastStack({ toasts, onDismiss, onSelectAgent, onNavigate }: Toa
       aria-live="polite"
       aria-label="Notifications"
     >
-      {toasts.map(toast => {
+      {toasts.slice(-MAX_VISIBLE_TOASTS).map(toast => {
         const accentColor = toast.sphere ? getSphereColor(toast.sphere) : 'var(--accent-gold-dim)';
         const navTarget = toast.navigationTarget;
         const isNavigable = Boolean(navTarget && onNavigate) || Boolean(toast.onClick) || Boolean(toast.actorId && onSelectAgent);
