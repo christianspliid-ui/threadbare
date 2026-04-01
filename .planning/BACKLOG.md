@@ -8,7 +8,7 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-101**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-104**.
 
 ---
 
@@ -32,6 +32,42 @@ Right now the player's action pool is flat and fully available. This item adds a
 
 **Creates:** `rarity` field on action templates, unlock condition DSL (similar to prerequisite system), `unlockedActions` set in player state, unlock evaluation phase in the tick loop or on specific triggers, notification system for new unlocks, deck browser UI.
 **Depends on:** Generalized Action Targeting (✅), Intervention system (✅)
+
+---
+
+## 📋 TB-101 · Rarity-Driven Prose Tier Bias (2026-04-01)
+
+**Milestone: Rarity Model — Deferred from Phase D**
+
+Wire `rarityTier` from node properties into the prose tier selection logic so higher-rarity entities receive richer narrative treatment. Mundane → Tier 1, Storied → Tier 1-2, Mythic → Tier 2, Legendary → Tier 3.
+
+**Hook point:** `// PHASE-D-DEFERRED` comment at `src/engine/narrative.ts:316` in `classifyEvent()`.
+**Creates:** Rarity-aware prose tier selection in the narrative engine.
+**Depends on:** TB-100 (✅)
+
+---
+
+## 📋 TB-102 · Divine Proximity Importance Accumulation (2026-04-01)
+
+**Milestone: Rarity Model — Deferred from Phase D**
+
+Entities near the active ascendant's hex accumulate importance at `IMPORTANCE_DIVINE_PROXIMITY` (1 point) per tick, driving organic rarity graduation for entities the player interacts with spatially. Requires a per-tick spatial scan of entities within N hexes of the ascendant avatar.
+
+**Hook point:** `// PHASE-D-DEFERRED` comment at `src/engine/orchestrator.ts:1461` after Phase 6.6.
+**Creates:** New tick-phase scan, `accumulateImportance(node, getImportanceDelta('divine_proximity'))` calls for nearby entities.
+**Depends on:** TB-100 (✅)
+
+---
+
+## 📋 TB-103 · Hex Map Rarity Signifiers for Legendary/Mythic Locations (2026-04-01)
+
+**Milestone: Rarity Model — Deferred from Phase D**
+
+Legendary and Mythic locations should have distinct visual overlays on the hex map — a glow, border, or icon treatment that makes them stand out at the world scale. Uses `RARITY_LEGENDARY_PULSE_ANIMATION` from `rarity-constants.ts`.
+
+**Hook point:** `// PHASE-D-DEFERRED` comment at `src/components/HexMapV2/scene/LocationIconMesh.ts:69` on the `LocationNode` interface.
+**Creates:** Rarity-aware visual signifiers in HexMapV2 composition layer, reading `rarityTier` from location node properties.
+**Depends on:** TB-100 (✅)
 
 ---
 
