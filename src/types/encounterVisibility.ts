@@ -111,8 +111,8 @@ export const VISIBILITY_BY_POSITION: Record<CourtPosition, VisibilityConfig> = {
   retinue: {
     proseDepth: 'medium',
     maxChoices: 2,
-    autoInterrupt: false,
-    defaultAttentionMode: 'auto_resolve',
+    autoInterrupt: true,
+    defaultAttentionMode: 'pause',
   },
   watched: {
     proseDepth: 'peek',

@@ -297,14 +297,15 @@ export function phaseEncounterVisibility(
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
 
-    // Skip The First — they get journey beat vignettes, not encounter notifications
-    if (threadInfo.props.courtPosition === 'the_first') continue;
-
+    // The First gets both journey beat vignettes (doom-clock) AND encounter-step notifications
     const agentNode = graph.getNode(action.actorId);
     if (!agentNode) continue;
 
     const locationNode = action.locationId ? graph.getNode(action.locationId) : null;
     const locationName = locationNode?.name ?? 'unknown location';
+
+    const courtPosition = threadInfo.props.courtPosition;
+    const defaultMode = courtPosition ? (VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve') : 'auto_resolve';
 
     const notification = buildEncounterNotification(
       action.actorId,
@@ -312,8 +313,8 @@ export function phaseEncounterVisibility(
       action.id,
       action.templateName ?? 'an encounter',
       locationName,
-      threadInfo.props.courtPosition,
-      threadInfo.props.attentionMode ?? 'auto_resolve',
+      courtPosition,
+      threadInfo.props.attentionMode ?? defaultMode,
       tick,
     );
 
