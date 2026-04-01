@@ -14,6 +14,7 @@
  * | AMBITION_REACH_BOOST        | 0.2     | Flat boost when ambition reach matches     |
  * | ENCOUNTER_RESONANCE_MULTIPLIER | 0.1  | Per net-sphere score resonance bonus       |
  * | ENCOUNTER_RESONANCE_CAP     | 0.5     | Maximum resonance modifier per encounter   |
+ * | RARITY_ENCOUNTER_SCORE_MULTIPLIER | {1:1.0,2:1.3,3:1.7,4:2.5} | Rarity boost on encounter base score |
  *
  * ─── Tracing ────────────────────────────────────────────────────
  * Emits ScoringTrace (category: 'encounter_scoring') with top 5
@@ -103,6 +104,8 @@ import {
 } from '../data/agent-behavior-constants';
 import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
 import type { HexTile } from '../types/index';
+import { getRarityTier } from './rarity';
+import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
 
@@ -457,6 +460,7 @@ export interface ScoredCandidate {
   ruinsBonus: number;
   attractionBonus: number;
   hunchBonus: number;
+  rarityMultiplier: number;
   finalScore: number;
   action: 'start_local' | 'queue_movement' | 'attempt_remote';
 }
@@ -801,9 +805,14 @@ export function scoreAndSelect(
     // 18b. Reputation trait scoring bonus
     const reputationBonus = computeReputationScoringBonus(graph, agentId, entry);
 
-    // 19. Final score
+    // 19. Rarity multiplier — based on location node's rarityTier (fail-soft: missing node → tier 1 → multiplier 1.0)
+    const locationNode = graph.getNode(entry.locationId);
+    const locRarityTier = getRarityTier(locationNode ?? { id: '', type: 'location', name: '', properties: {} });
+    const rarityMultiplier = RARITY_ENCOUNTER_SCORE_MULTIPLIER[locRarityTier];
+
+    // 20. Final score — rarity multiplier applied to baseScore only (exploration/ruins/chain bonuses are fixed)
     const baseScore = valuePerTick * desireMultiplier + factionScoringBoost + reputationBonus + resonance + globalResonance;
-    const finalScore = baseScore * (1 - familiarityPenalty) + explorationBonus + chainBonus
+    const finalScore = baseScore * rarityMultiplier * (1 - familiarityPenalty) + explorationBonus + chainBonus
       + ruinsBonus + anomalyBonus + attractionBonus + hunchBonus;
 
     // 17. Action classification
@@ -834,6 +843,7 @@ export function scoreAndSelect(
       ruinsBonus,
       attractionBonus,
       hunchBonus,
+      rarityMultiplier,
       finalScore,
       action,
     });
@@ -882,6 +892,7 @@ function buildTrace(
       completionProb: c.completionProb,
       resonance: c.resonance,
       globalResonance: c.globalResonance,
+      rarityMultiplier: c.rarityMultiplier,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,

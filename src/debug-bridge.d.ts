@@ -34,6 +34,20 @@ export interface DebugFireResult {
   message: string;
 }
 
+export interface DebugRarityInfo {
+  tier: number;
+  tierName: string;
+  importance: number;
+  graduationThreshold: number | null;
+}
+
+export interface DebugForceGraduateResult {
+  success: boolean;
+  message: string;
+  previousTier?: number;
+  newTier?: number;
+}
+
 export interface DebugBridge {
   openDebugPanel: () => void;
   closeDebugPanel: () => void;
@@ -50,6 +64,12 @@ export interface DebugBridge {
   fireAction: (agentId: string, templateId: string) => DebugFireResult;
   /** @internal GameView registers action bridge callbacks here */
   _registerActionBridge: (callbacks: { listActions: (agentId?: string) => DebugActionInfo[]; fireAction: (agentId: string, templateId: string) => DebugFireResult }) => void;
+  /** @internal GameView registers a provider for the live WorldGraph here */
+  _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => void;
+  /** Returns rarity info for a node by id. Returns tier 1 defaults if node not found. */
+  getRarityInfo: (nodeId: string) => Promise<DebugRarityInfo>;
+  /** Forces a node to graduate to the specified rarity tier. Never demotes. */
+  forceGraduate: (nodeId: string, tier: number) => Promise<DebugForceGraduateResult>;
   getTraces: () => Promise<ReadonlyArray<TraceEntry>>;
   enableTracing: () => Promise<void>;
   disableTracing: () => Promise<void>;

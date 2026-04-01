@@ -117,6 +117,7 @@ import { ANOMALY_RESOURCE_MAP, RESOURCE_DEFINITIONS } from '../data/resource-con
 import type { ResourceInstance } from '../types/resource';
 import { createEncounterEventNode } from './encounterEventNode';
 import type { SimulationRuntime } from './simulationRuntime';
+import { accumulateImportance, checkGraduationThreshold, graduateRarity, getImportanceDelta } from './rarity';
 import {
   touchWorld,
   touchStructure,
@@ -521,6 +522,32 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         significance: 0.8,
         actorId: progress.actorId,
       });
+    }
+
+    // ── Rarity: Importance accumulation on encounter step resolution ──
+    // Only for individual actors. Fail-soft: missing node → skip.
+    if (result.success) {
+      const actorNodeForRarity = state.graph.getNode(progress.actorId);
+      if (actorNodeForRarity && actorNodeForRarity.properties?.actorType === 'individual') {
+        accumulateImportance(actorNodeForRarity, getImportanceDelta('encounter_resolved'));
+        const graduationTier = checkGraduationThreshold(actorNodeForRarity);
+        if (graduationTier !== null) {
+          graduateRarity(actorNodeForRarity, graduationTier);
+          // Note: graduation notifications are deferred to a future phase (Phase E)
+        }
+      }
+
+      // Accumulate on target actor if present
+      if (progress.targetAgentId) {
+        const targetNode = state.graph.getNode(progress.targetAgentId);
+        if (targetNode && targetNode.properties?.actorType === 'individual') {
+          accumulateImportance(targetNode, getImportanceDelta('encounter_resolved'));
+          const targetGradTier = checkGraduationThreshold(targetNode);
+          if (targetGradTier !== null) {
+            graduateRarity(targetNode, targetGradTier);
+          }
+        }
+      }
     }
 
     // Generate event based on outcome

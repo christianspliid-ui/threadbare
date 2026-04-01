@@ -415,6 +415,7 @@ export interface ScoringTrace extends TraceBase {
     globalResonance?: number;
     worldSoulDrift?: Record<string, number>;
     chainBonus?: number;
+    rarityMultiplier?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;
