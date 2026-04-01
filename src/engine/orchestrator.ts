@@ -348,7 +348,7 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       const isBadOutcome = badRoll < resolved.badOutcomeChance;
 
       const effectiveRecipe = isBadOutcome
-        ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS }
+        ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
         : resolved;
 
       const pool = assembleRewardPool(state.graph, effectiveRecipe);
