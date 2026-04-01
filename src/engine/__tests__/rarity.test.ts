@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { clampRarityTier } from '../../types/rarity';
 import {
   RARITY_DISTRIBUTION_ACTORS,
@@ -151,6 +151,16 @@ describe('seedRarityTier', () => {
     expect(seedRarityTier(uniform, 0.50)).toBe(3);
     expect(seedRarityTier(uniform, 0.75)).toBe(4);
   });
+
+  it('falls back to tier 4 and warns when distribution sums to less than 1.0', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    // Distribution that only sums to 0.5 — prngValue 0.8 exceeds the sum
+    const badDist: Record<RarityTier, number> = { 1: 0.3, 2: 0.1, 3: 0.05, 4: 0.05 };
+    const result = seedRarityTier(badDist, 0.8);
+    expect(result).toBe(4);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('misconfigured'));
+    warnSpy.mockRestore();
+  });
 });
 
 // ─── graduateRarity ──────────────────────────────────────────────
@@ -286,6 +296,12 @@ describe('checkGraduationThreshold', () => {
   it('returns null when importance is 0', () => {
     const node = makeNode({ rarityTier: 1 });
     expect(checkGraduationThreshold(node)).toBeNull();
+  });
+
+  it('returns the lowest eligible tier even when multiple thresholds are crossed', () => {
+    const node = makeNode({ rarityTier: 1, importance: 200 }); // crosses both 50 and 150
+    const result = checkGraduationThreshold(node);
+    expect(result).toBe(2); // lowest eligible tier, not 3
   });
 });
 

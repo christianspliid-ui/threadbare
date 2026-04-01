@@ -54,7 +54,13 @@ export function seedRarityTier(
       return tier as RarityTier;
     }
   }
-  // Fallback for floating point edge cases (prngValue very close to 1.0)
+  // Fallback — prngValue exceeded the cumulative weight sum. This is expected for
+  // floating point edge cases (prngValue very close to 1.0) but may also indicate
+  // a misconfigured distribution whose weights sum to less than 1.0.
+  console.warn(
+    `[rarity] seedRarityTier: prngValue ${prngValue} exceeded cumulative weight — ` +
+    `distribution may be misconfigured (sum < 1.0). Defaulting to tier 4.`
+  );
   return 4;
 }
 
@@ -101,6 +107,11 @@ export function accumulateImportance(
  * Check if a node's importance has crossed a graduation threshold.
  * Returns the tier to graduate to, or null if no graduation is needed.
  * Does not mutate — call graduateRarity separately if graduation should occur.
+ *
+ * Returns the *lowest* tier the node is eligible to graduate to, or null.
+ * If importance crosses multiple thresholds simultaneously, only the lowest
+ * new tier is returned — callers must re-invoke after each graduation to
+ * detect further eligible tiers.
  */
 export function checkGraduationThreshold(
   node: GraphNode,
