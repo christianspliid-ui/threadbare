@@ -65,6 +65,12 @@ const CAPITAL_RING_SIZE = 128;
 /**
  * Minimal node data needed to render a location icon.
  * Comes from the world graph — populated by game data, not hardcoded.
+ *
+ * PHASE-D-DEFERRED: Add `rarityTier?: number` here and read it from location node properties
+ * to apply Mythic/Legendary visual overlays. For tier 3 (Mythic), consider a subtle glow ring.
+ * For tier 4 (Legendary), apply the RARITY_LEGENDARY_PULSE_ANIMATION CSS class or a Three.js
+ * particle/shimmer overlay (similar to AnomalyShimmerMesh). See rarity-constants.ts for
+ * RARITY_LEGENDARY_PULSE_ANIMATION and RARITY_NOTIFICATION_THRESHOLD.
  */
 export interface LocationNode {
   locationType: string;

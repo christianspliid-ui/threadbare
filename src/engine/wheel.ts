@@ -8,6 +8,7 @@
 
 import type { SphereName } from '../types/index';
 import type { EssencePool, InfluenceTier } from '../types/influence';
+import type { RarityTier } from '../types/rarity';
 import type { InterventionType } from '../types/dream';
 import { INTERVENTION_DEFINITIONS } from '../types/dream';
 import { canAfford } from './influence';
@@ -61,6 +62,9 @@ export interface WheelSlot {
   /** Narrative layer this action belongs to (land, soul, people, ruins).
    * Used by ActionDrawer to group hex-targeting cards into layer tabs. */
   narrativeLayer?: 'land' | 'soul' | 'people' | 'ruins';
+  /** Narrative significance tier (1–4). Drives RarityBadge display in ActionCard.
+   * Badge only shown for tier >= 2 (Storied and above). */
+  rarityTier?: RarityTier;
 }
 
 // ─── Wheel Layout ─────────────────────────────────────────────────────────

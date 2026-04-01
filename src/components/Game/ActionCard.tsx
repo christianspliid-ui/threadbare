@@ -17,6 +17,8 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import type { WheelSlot } from '../../engine/wheel';
 import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
+import { RarityBadge } from '../shared/RarityBadge';
+import type { RarityTier } from '../../types/rarity';
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
@@ -239,6 +241,17 @@ export const ActionCard = React.memo(function ActionCard({
             {displayName}
           </div>
 
+          {/* Rarity badge — bottom-left corner, only for Storied (2) and above */}
+          {slot.rarityTier != null && slot.rarityTier >= 2 && (
+            <span data-testid="action-card-rarity-badge" className="absolute bottom-0 left-0 px-1 pb-0.5">
+              <RarityBadge
+                tier={slot.rarityTier as RarityTier}
+                opacity={0.9}
+                className="text-[0.5rem] font-bold uppercase tracking-wide"
+              />
+            </span>
+          )}
+
           {/* Spent overlay */}
           {playing && (
             <div
@@ -383,12 +396,27 @@ export const ActionCard = React.memo(function ActionCard({
               color: 'var(--text-tertiary)',
               letterSpacing: '0.08em',
               lineHeight: 1.2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
             }}
           >
-            {sphereColor && (
-              <span style={{ color: sphereColor, marginRight: '4px' }}>{glyph}</span>
+            <span>
+              {sphereColor && (
+                <span style={{ color: sphereColor, marginRight: '4px' }}>{glyph}</span>
+              )}
+              {[reach, crud].filter(Boolean).join(' \u00B7 ') || slot.type.toUpperCase()}
+            </span>
+            {/* Rarity badge — only for Storied (2) and above */}
+            {slot.rarityTier != null && slot.rarityTier >= 2 && (
+              <span data-testid="action-card-rarity-badge">
+                <RarityBadge
+                  tier={slot.rarityTier as RarityTier}
+                  opacity={0.9}
+                  className="text-xs font-semibold uppercase tracking-wide"
+                />
+              </span>
             )}
-            {[reach, crud].filter(Boolean).join(' \u00B7 ') || slot.type.toUpperCase()}
           </div>
         </div>
 

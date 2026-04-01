@@ -186,3 +186,74 @@ describe('ActionCard — focused layout (MTG frame)', () => {
     expect(borderLeftColor).toBeTruthy();
   });
 });
+
+// ─── TB-100: RarityBadge integration ─────────────────────────────
+
+describe('ActionCard — RarityBadge', () => {
+  it('does NOT show rarity badge for tier 1 (Mundane) in hand layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 1 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
+    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
+  });
+
+  it('does NOT show rarity badge when rarityTier is absent in hand layout', () => {
+    render(<ActionCard slot={baseSlot} onClick={vi.fn()} size="hand" />);
+    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
+  });
+
+  it('shows rarity badge for tier 2 (Storied) in hand layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('shows rarity badge for tier 3 (Mythic) in hand layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 3 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('shows rarity badge for tier 4 (Legendary) in hand layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="hand" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('does NOT show rarity badge for tier 1 (Mundane) in focused layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 1 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.queryByTestId('action-card-rarity-badge')).toBeNull();
+  });
+
+  it('shows rarity badge for tier 2 (Storied) in focused layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('shows rarity badge for tier 3 (Mythic) in focused layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 3 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('shows rarity badge for tier 4 (Legendary) in focused layout', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    expect(screen.getByTestId('action-card-rarity-badge')).toBeInTheDocument();
+  });
+
+  it('badge text content matches tier name for Storied', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 2 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    const badge = screen.getByTestId('action-card-rarity-badge');
+    expect(badge.textContent).toMatch(/storied/i);
+  });
+
+  it('badge text content matches tier name for Legendary', () => {
+    const slot: WheelSlot = { ...baseSlot, rarityTier: 4 };
+    render(<ActionCard slot={slot} onClick={vi.fn()} size="focused" />);
+    const badge = screen.getByTestId('action-card-rarity-badge');
+    expect(badge.textContent).toMatch(/legendary/i);
+  });
+});

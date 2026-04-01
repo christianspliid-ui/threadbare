@@ -996,3 +996,89 @@ describe('wanderlust travel cost modifier', () => {
     expect(result.topCandidates[0].travelCost).toBe(0);
   });
 });
+
+// ─── Rarity Multiplier ──────────────────────────────────────────
+
+describe('scoreAndSelect: rarity multiplier', () => {
+  it('Mundane location (tier 1) has rarityMultiplier of 1.0', () => {
+    const graph = buildTestGraph({ traitLevel: 5, traitDomain: 'iron' });
+    // loc_a has no rarityTier — defaults to tier 1 (Mundane)
+    const entry = makeEntry({ locationId: 'loc_a' });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    expect(result.topCandidates[0].rarityMultiplier).toBe(1.0);
+  });
+
+  it('Storied location (tier 2) has rarityMultiplier of 1.3 and scores higher than Mundane', () => {
+    const graph = buildTestGraph({ traitLevel: 5, traitDomain: 'iron' });
+    // Add a Storied location
+    graph.addNode({
+      id: 'loc_storied',
+      type: 'location',
+      name: 'Storied Location',
+      properties: { locationType: 'settlement', hexCol: 0, hexRow: 0, rarityTier: 2 },
+    });
+
+    const mundaneEntry = makeEntry({ templateId: 'mundane', locationId: 'loc_a' });
+    const storiedEntry = makeEntry({ templateId: 'storied', locationId: 'loc_storied' });
+
+    const result = scoreAndSelect([mundaneEntry, storiedEntry], 'agent_1', 'loc_a', graph, 1);
+    const mundaneCand = result.topCandidates.find(c => c.entry.templateId === 'mundane')!;
+    const storiedCand = result.topCandidates.find(c => c.entry.templateId === 'storied')!;
+
+    expect(storiedCand.rarityMultiplier).toBe(1.3);
+    expect(storiedCand.finalScore).toBeGreaterThan(mundaneCand.finalScore);
+  });
+
+  it('Mythic location (tier 3) scores higher than Mundane for the same encounter', () => {
+    const graph = buildTestGraph({ traitLevel: 5, traitDomain: 'iron' });
+    graph.addNode({
+      id: 'loc_mythic',
+      type: 'location',
+      name: 'Mythic Location',
+      properties: { locationType: 'settlement', hexCol: 0, hexRow: 0, rarityTier: 3 },
+    });
+
+    const mundaneEntry = makeEntry({ templateId: 'mundane', locationId: 'loc_a' });
+    const mythicEntry = makeEntry({ templateId: 'mythic', locationId: 'loc_mythic' });
+
+    const result = scoreAndSelect([mundaneEntry, mythicEntry], 'agent_1', 'loc_a', graph, 1);
+    const mundaneCand = result.topCandidates.find(c => c.entry.templateId === 'mundane')!;
+    const mythicCand = result.topCandidates.find(c => c.entry.templateId === 'mythic')!;
+
+    expect(mythicCand.rarityMultiplier).toBe(1.7);
+    expect(mythicCand.finalScore).toBeGreaterThan(mundaneCand.finalScore);
+  });
+
+  it('Legendary location (tier 4) has rarityMultiplier of 2.5 and scores higher than Mundane', () => {
+    const graph = buildTestGraph({ traitLevel: 5, traitDomain: 'iron' });
+    graph.addNode({
+      id: 'loc_legendary',
+      type: 'location',
+      name: 'Legendary Location',
+      properties: { locationType: 'settlement', hexCol: 0, hexRow: 0, rarityTier: 4 },
+    });
+
+    const mundaneEntry = makeEntry({ templateId: 'mundane', locationId: 'loc_a' });
+    const legendaryEntry = makeEntry({ templateId: 'legendary', locationId: 'loc_legendary' });
+
+    const result = scoreAndSelect([mundaneEntry, legendaryEntry], 'agent_1', 'loc_a', graph, 1);
+    const mundaneCand = result.topCandidates.find(c => c.entry.templateId === 'mundane')!;
+    const legendaryCand = result.topCandidates.find(c => c.entry.templateId === 'legendary')!;
+
+    expect(legendaryCand.rarityMultiplier).toBe(2.5);
+    expect(legendaryCand.finalScore).toBeGreaterThan(mundaneCand.finalScore);
+  });
+
+  it('fail-soft: missing location node defaults to multiplier 1.0', () => {
+    const graph = buildTestGraph({ traitLevel: 5, traitDomain: 'iron' });
+    // Use an entry pointing to a non-existent location
+    const entry = makeEntry({ locationId: 'loc_nonexistent', requiresPresence: false });
+
+    const result = scoreAndSelect([entry], 'agent_1', 'loc_a', graph, 1);
+    // Should not throw; should produce a candidate with rarityMultiplier 1.0
+    if (result.topCandidates.length > 0) {
+      expect(result.topCandidates[0].rarityMultiplier).toBe(1.0);
+    }
+  });
+});

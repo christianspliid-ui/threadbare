@@ -16,6 +16,8 @@ if (import.meta.env.DEV) {
     fireAction: (agentId: string, templateId: string) => import('./debug-bridge.d').DebugFireResult;
   }
   let _actionBridge: ActionBridge | null = null;
+  // GameView registers a provider for the live WorldGraph
+  let _graphProvider: (() => import('./engine/graph').WorldGraph | null) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -32,6 +34,69 @@ if (import.meta.env.DEV) {
     fireAction: (agentId: string, templateId: string) =>
       _actionBridge?.fireAction(agentId, templateId) ?? { success: false, message: 'Game not loaded' },
     _registerActionBridge: (cb) => { _actionBridge = cb as ActionBridge; },
+    /** @internal GameView registers its graph provider here */
+    _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => { _graphProvider = fn; },
+    /** Returns rarity info for a node by id. Fail-soft: returns tier 1 defaults if node not found. */
+    getRarityInfo: async (nodeId: string) => {
+      const [rarityMod, constantsMod] = await Promise.all([
+        import('./engine/rarity'),
+        import('./data/rarity-constants'),
+      ]);
+      const graph = _graphProvider?.();
+      const node = graph?.getNode(nodeId) ?? null;
+      if (!node) {
+        return {
+          tier: 1,
+          tierName: 'Mundane',
+          importance: 0,
+          graduationThreshold: constantsMod.RARITY_GRADUATION_THRESHOLDS[2],
+        };
+      }
+      const tier = rarityMod.getRarityTier(node);
+      const importance = typeof node.properties['importance'] === 'number'
+        ? (node.properties['importance'] as number)
+        : 0;
+      const nextTier = (tier < 4 ? tier + 1 : null) as 2 | 3 | 4 | null;
+      const graduationThreshold = nextTier !== null
+        ? (constantsMod.RARITY_GRADUATION_THRESHOLDS[nextTier] ?? null)
+        : null;
+      const { RARITY_TIER_NAMES } = await import('./types/rarity');
+      return {
+        tier,
+        tierName: RARITY_TIER_NAMES[tier],
+        importance,
+        graduationThreshold,
+      };
+    },
+    /** Forces a node to graduate to the specified rarity tier. Fail-soft: returns failure if node not found. */
+    forceGraduate: async (nodeId: string, tier: number) => {
+      const [rarityMod, rarityTypes] = await Promise.all([
+        import('./engine/rarity'),
+        import('./types/rarity'),
+      ]);
+      const graph = _graphProvider?.();
+      const node = graph?.getNode(nodeId) ?? null;
+      if (!node) {
+        return { success: false, message: `Node '${nodeId}' not found` };
+      }
+      const previousTier = rarityMod.getRarityTier(node);
+      const clampedTier = rarityTypes.clampRarityTier(tier);
+      const changed = rarityMod.graduateRarity(node, clampedTier);
+      if (!changed) {
+        return {
+          success: false,
+          message: `Node '${nodeId}' is already at tier ${previousTier} — no change (graduation never demotes)`,
+          previousTier,
+          newTier: previousTier,
+        };
+      }
+      return {
+        success: true,
+        message: `Node '${nodeId}' graduated from tier ${previousTier} to tier ${clampedTier}`,
+        previousTier,
+        newTier: clampedTier,
+      };
+    },
     getTraces: () => import('./engine/traceBuffer').then((m) => m.getTraces()),
     enableTracing: () => import('./engine/traceBuffer').then((m) => m.enableTracing()),
     disableTracing: () => import('./engine/traceBuffer').then((m) => m.disableTracing()),

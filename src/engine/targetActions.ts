@@ -262,6 +262,7 @@ export function getTargetActionSlots(params: TargetActionParams): WheelSlot[] {
       spellName: template.spellName,
       technicalDescription: template.description,
       narrativeLayer: template.narrativeLayer as WheelSlot['narrativeLayer'],
+      rarityTier: template.rarityTier,
     });
   }
 

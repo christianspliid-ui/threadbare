@@ -95,9 +95,8 @@ describe('HexSidebar', () => {
 
   it('renders location names as clickable links when expanded', () => {
     render(<HexSidebar {...defaultProps} />);
-    const locationButton = screen.getByText('The Forge');
+    const locationButton = screen.getByRole('button', { name: /The Forge/i });
     expect(locationButton).toBeTruthy();
-    expect(locationButton.tagName).toBe('BUTTON');
   });
 
   it('caps sphere bars at 4 max', () => {

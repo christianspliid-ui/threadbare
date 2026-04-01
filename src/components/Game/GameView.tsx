@@ -865,6 +865,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via _actionStateRef; setGameState is a stable dispatcher
 
+  // ── Debug bridge: getRarityInfo / forceGraduate ──────────────────────────
+  // Reuses _gotoAgentGraphRef which is already kept up-to-date with the live graph.
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerGraphProvider(() => _gotoAgentGraphRef.current);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const retinueActiveEncounters = useMemo(() => {
     const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { AgentInfoCardData, AgentFullProfileData } from '../../engine/agentDetail';
 import type { AgentKnowledge } from '../../types/agentKnowledge';
+import { clampRarityTier } from '../../types/rarity';
+import { RarityBadge } from '../shared/RarityBadge';
 import { deriveArchetypeEpithet } from '../../engine/archetypeEpithet';
 import { Tooltip } from '../shared/Tooltip';
 import { Modal } from '../shared/Modal';
@@ -134,12 +136,20 @@ export function AgentProfileModal({ card, profile, onClose, scrollToNewStrata, k
 
           {/* Header Text */}
           <div className="flex-1">
-            <h1
-              className="text-2xl font-bold mb-1"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
-            >
-              {card.name}
-            </h1>
+            <div className="flex items-baseline gap-2 mb-1">
+              <h1
+                className="text-2xl font-bold"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+              >
+                {card.name}
+              </h1>
+              {(() => {
+                const tier = clampRarityTier(Number(card.rarityTier) || 1);
+                return tier >= 2 ? (
+                  <RarityBadge tier={tier} opacity={0.85} className="text-sm flex-shrink-0" />
+                ) : null;
+              })()}
+            </div>
 
             {/* Archetype epithet — knowledge-gated, only when intimate+ (axiologicalProfile present) */}
             {card.axiologicalProfile && (() => {

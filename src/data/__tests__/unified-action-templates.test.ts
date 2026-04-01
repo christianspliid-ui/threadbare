@@ -247,6 +247,55 @@ describe('getUnifiedTemplateById', () => {
   });
 });
 
+// ─── TB-100: rarityTier validation ───────────────────────────────
+
+describe('rarityTier — every template has a valid tier', () => {
+  const VALID_TIERS = new Set([1, 2, 3, 4]);
+
+  it('every template has rarityTier defined', () => {
+    for (const t of UNIFIED_ACTION_TEMPLATES) {
+      expect(t.rarityTier, `${t.id} missing rarityTier`).toBeDefined();
+    }
+  });
+
+  it('every rarityTier is 1, 2, 3, or 4', () => {
+    for (const t of UNIFIED_ACTION_TEMPLATES) {
+      expect(VALID_TIERS.has(t.rarityTier), `${t.id} has invalid rarityTier: ${t.rarityTier}`).toBe(true);
+    }
+  });
+
+  it('at most 2 Legendary (tier 4) templates', () => {
+    const legendaryCount = UNIFIED_ACTION_TEMPLATES.filter(t => t.rarityTier === 4).length;
+    expect(legendaryCount).toBeLessThanOrEqual(2);
+  });
+
+  it('at least 50% of templates are tier 1 (Mundane)', () => {
+    const tier1Count = UNIFIED_ACTION_TEMPLATES.filter(t => t.rarityTier === 1).length;
+    const ratio = tier1Count / UNIFIED_ACTION_TEMPLATES.length;
+    expect(ratio).toBeGreaterThanOrEqual(0.5);
+  });
+
+  it('migrateActionTemplate passes through rarityTier from ActionTemplateData', () => {
+    const templateWithRarity = ACTION_TEMPLATES.find(t => t.rarityTier != null);
+    expect(templateWithRarity).toBeDefined();
+    const unified = migrateActionTemplate(templateWithRarity!);
+    expect(unified.rarityTier).toBe(templateWithRarity!.rarityTier);
+  });
+
+  it('migrateActionTemplate defaults to tier 1 when rarityTier absent', () => {
+    const templateWithout = { ...ACTION_TEMPLATES[0], id: 'test.no_rarity', rarityTier: undefined };
+    const unified = migrateActionTemplate(templateWithout);
+    expect(unified.rarityTier).toBe(1);
+  });
+
+  it('migrateEncounterTemplate always produces tier 1', () => {
+    for (const enc of ENCOUNTER_TEMPLATES) {
+      const unified = migrateEncounterTemplate(enc);
+      expect(unified.rarityTier).toBe(1);
+    }
+  });
+});
+
 // ─── Divine templates ────────────────────────────────────────────
 
 describe('divine templates', () => {

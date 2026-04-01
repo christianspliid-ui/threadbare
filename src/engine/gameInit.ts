@@ -35,9 +35,13 @@ import { createDefaultSphereAffinity } from '../types/sphereAffinity';
 import { seedMonsterLairs } from './lairSeeding';
 import { generateCultureIdentities, toCultureForWorldgen } from './cultureGenerator';
 import { mulberry32 } from '../lib/prng';
+import { seedAllRarityTiers } from './raritySeeding';
 
 /** PRNG offset for pre-worldgen culture identity generation. Unique prime — no collision with worldgen passes. */
 const CULTURE_SEED_OFFSET = 87671;
+
+/** PRNG offset for rarity tier seeding. Unique prime — no collision with other seeding passes. */
+const RARITY_SEED_OFFSET = 113513;
 
 // ─── Map Size Presets (NFP #1: Tunability) ───────────────────────
 
@@ -194,6 +198,12 @@ export function initializeGameState(
   // Placed after sphere affinity seeding so lairSeeding can read affinity if needed.
   // Placed before loc.start so lairs don't conflict with the starting shrine.
   seedMonsterLairs(graph, worldGenResult.provinceRoles, tiles, seed, cols);
+
+  // ── Seed rarity tiers on all actor/location nodes ──────────────────
+  {
+    const rarityRng = mulberry32(seed + RARITY_SEED_OFFSET);
+    seedAllRarityTiers(graph, rarityRng);
+  }
 
   // Ensure starting location exists — pick a habitable tile near center
   if (!graph.getNode('loc.start')) {
