@@ -165,6 +165,46 @@ describe('reward pipeline contract', () => {
     expect(drawn).toBeNull();
   });
 
+  it('bad outcome with thematic tagFilters still draws conditions when tagFilters cleared', () => {
+    // Regression: orchestrator was spreading tagFilters into bad-outcome recipe,
+    // making the pool empty when no conditions matched the thematic tag (e.g. '#ancient').
+    // Fix: tagFilters: undefined on bad-outcome branch.
+    const templateRecipe: RewardPoolRecipe = {
+      categoryWeights: { possession: 0.4, bestowed_power: 0.4, condition: 0.2 },
+      tagFilters: ['#ancient'], // thematic filter that no conditions carry
+    };
+    const resolved = resolveRewardRecipe(templateRecipe, 'failure');
+
+    // Simulate the old (broken) bad-outcome recipe — tagFilters retained
+    const brokenBadRecipe = {
+      ...resolved,
+      categoryWeights: { condition: 0.60, curse: 0.30, blessing: 0.10 },
+    };
+    const brokenPool = assembleRewardPool(graph, brokenBadRecipe);
+    expect(brokenPool.length).toBe(0); // no conditions tagged #ancient → empty
+
+    // Simulate the fixed bad-outcome recipe — tagFilters cleared
+    const fixedBadRecipe = {
+      ...resolved,
+      categoryWeights: { condition: 0.60, curse: 0.30, blessing: 0.10 },
+      tagFilters: undefined,
+    };
+    const fixedPool = assembleRewardPool(graph, fixedBadRecipe);
+    expect(fixedPool.length).toBeGreaterThan(0); // full condition catalog available
+
+    // Verify a condition can be drawn and instantiated
+    const templateId = drawFromPool(fixedPool, 0.5);
+    expect(templateId).not.toBeNull();
+    const result = instantiateReward(graph, templateId!, 'agent_test', 31);
+    expect(result).not.toBeNull();
+    expect(result!.category).toBe('condition');
+
+    // Verify it's attached to the agent with ticksRemaining
+    const edge = graph.getEdge(result!.edgeId);
+    expect(edge!.type).toBe('has_trait');
+    expect(edge!.properties.ticksRemaining).toBeGreaterThan(0);
+  });
+
   it('tag filters narrow the pool to matching templates', () => {
     const resolvedAll = resolveRewardRecipe(
       { categoryWeights: { possession: 1.0 } },
