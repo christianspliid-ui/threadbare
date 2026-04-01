@@ -63,7 +63,9 @@ export interface WheelSlot {
    * Used by ActionDrawer to group hex-targeting cards into layer tabs. */
   narrativeLayer?: 'land' | 'soul' | 'people' | 'ruins';
   /** Narrative significance tier (1–4). Drives RarityBadge display in ActionCard.
-   * Badge only shown for tier >= 2 (Storied and above). */
+   * Badge only shown for tier >= 2 (Storied and above).
+   * NOTE: Slots built via getAgentWheelSlots (legacy radial wheel) do not populate rarityTier.
+   * If that path is still active, add rarityTier pass-through matching targetActions.ts:263. */
   rarityTier?: RarityTier;
 }
 
@@ -178,6 +180,9 @@ const WHEEL_LAYOUT: SlotDefinition[] = [
  *
  * @param params - { tier, pool, primarySphere, avatarPos?, targetPos? }
  * @returns Array of 10 WheelSlot objects (9 actions + 1 center)
+ *
+ * NOTE: Slots built via getAgentWheelSlots (legacy radial wheel) do not populate rarityTier.
+ * If that path is still active, add rarityTier pass-through matching targetActions.ts:263.
  */
 export function getAgentWheelSlots(params: {
   tier: InfluenceTier;
