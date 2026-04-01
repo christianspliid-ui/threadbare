@@ -4,6 +4,7 @@ import type { HexTile } from '../../../types';
 import {
   getLocationsInHex,
   getAgentsAtLocation,
+  getFactionsAtLocation,
   getHexSphereInfluence,
   getLineOfSight,
   getLocationConnections,
@@ -28,6 +29,7 @@ export interface UseHexZoomDataParams {
 export interface UseHexZoomDataReturn {
   hexLocations: ReturnType<typeof getLocationsInHex>;
   hexAgentsByLocation: Record<string, ReturnType<typeof getAgentsAtLocation>>;
+  hexFactionsByLocation: Record<string, ReturnType<typeof getFactionsAtLocation>>;
   hexConnections: ReturnType<typeof getLocationConnections>;
   hexSphereInfluence: ReturnType<typeof getHexSphereInfluence> | null;
   hexLineOfSight: ReturnType<typeof getLineOfSight>;
@@ -65,6 +67,14 @@ export function useHexZoomData({
     const map: Record<string, ReturnType<typeof getAgentsAtLocation>> = {};
     for (const loc of hexLocations) {
       map[loc.id] = getAgentsAtLocation(graph, loc.id);
+    }
+    return map;
+  }, [graph, hexLocations, worldVersion]);
+
+  const hexFactionsByLocation = useMemo(() => {
+    const map: Record<string, ReturnType<typeof getFactionsAtLocation>> = {};
+    for (const loc of hexLocations) {
+      map[loc.id] = getFactionsAtLocation(graph, loc.id);
     }
     return map;
   }, [graph, hexLocations, worldVersion]);
@@ -122,6 +132,7 @@ export function useHexZoomData({
   return {
     hexLocations,
     hexAgentsByLocation,
+    hexFactionsByLocation,
     hexConnections,
     hexSphereInfluence,
     hexLineOfSight,

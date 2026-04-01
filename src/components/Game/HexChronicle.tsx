@@ -6,7 +6,7 @@ import type { HexRegionData } from '../../engine/hexRegion';
 import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
-import { LocationCard, SoulCard, AgentEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
+import { LocationCard, SoulCard, AgentEntry, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
 import { mulberry32 } from '../../lib/prng';
@@ -94,9 +94,11 @@ interface HexChronicleProps {
   factions: HexFactionSummary[];
   locations: GraphNode[];
   agentsByLocation: Record<string, GraphNode[]>;
+  factionsByLocation?: Record<string, GraphNode[]>;
   regionData: HexRegionData | null;
   onLocationClick: (locationId: string) => void;
   onAgentClick: (agentId: string) => void;
+  onFactionClick?: (factionId: string) => void;
   graph: WorldGraph;
   seed: number;
   /** Current game tick — enables tick-based prose cache (PERF-01) */
@@ -119,9 +121,11 @@ export const HexChronicle = memo(function HexChronicle({
   factions,
   locations,
   agentsByLocation,
+  factionsByLocation,
   regionData,
   onLocationClick,
   onAgentClick,
+  onFactionClick,
   graph,
   seed,
   tick,
@@ -332,6 +336,13 @@ export const HexChronicle = memo(function HexChronicle({
       agents.map(a => ({ ...a, locationId: locId }))
     );
   }, [agentsByLocation]);
+
+  const allFactions = useMemo(() => {
+    if (!factionsByLocation) return [];
+    return Object.entries(factionsByLocation).flatMap(([locId, factions]) =>
+      factions.map(f => ({ ...f, locationId: locId }))
+    );
+  }, [factionsByLocation]);
 
   /** Map locationId → location name for SoulCard display. */
   const locationNameById = useMemo(() => {
@@ -853,6 +864,35 @@ export const HexChronicle = memo(function HexChronicle({
                     );
                   })}
                 </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Factions Present at this hex */}
+        {allFactions.length > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <div style={{
+              fontFamily: 'var(--font-body)',
+              fontSize: 'var(--text-xs)',
+              color: 'var(--text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginBottom: '4px',
+            }}>
+              Factions Present
+            </div>
+            {allFactions.map(faction => {
+              const locName = locationNameById[faction.locationId] ?? faction.locationId;
+              const guildType = (faction.properties as any)?.guildType as string | undefined;
+              return (
+                <FactionEntry
+                  key={faction.id}
+                  name={faction.name}
+                  guildType={guildType}
+                  locationName={locName}
+                  onClick={() => onFactionClick ? onFactionClick(faction.id) : onAgentClick(faction.id)}
+                />
               );
             })}
           </div>

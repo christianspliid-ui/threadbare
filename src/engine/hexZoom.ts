@@ -34,16 +34,30 @@ export function getLocationsInHex(graph: WorldGraph, col: number, row: number): 
 }
 
 /**
- * All actor nodes with a 'located_at' edge to the given location.
+ * Individual actor nodes (actorType === 'individual') with a 'located_at' edge to the given location.
+ * Excludes factions, groups, and other non-individual actor types.
  */
 export function getAgentsAtLocation(graph: WorldGraph, locationId: string): GraphNode[] {
   const edges = graph.getIncomingEdges(locationId, 'located_at');
   const agents: GraphNode[] = [];
   for (const edge of edges) {
     const node = graph.getNode(edge.source);
-    if (node) agents.push(node);
+    if (node && node.properties.actorType === 'individual') agents.push(node);
   }
   return agents;
+}
+
+/**
+ * Faction actor nodes (actorType === 'faction') with a 'located_at' edge to the given location.
+ */
+export function getFactionsAtLocation(graph: WorldGraph, locationId: string): GraphNode[] {
+  const edges = graph.getIncomingEdges(locationId, 'located_at');
+  const factions: GraphNode[] = [];
+  for (const edge of edges) {
+    const node = graph.getNode(edge.source);
+    if (node && node.properties.actorType === 'faction') factions.push(node);
+  }
+  return factions;
 }
 
 /**
