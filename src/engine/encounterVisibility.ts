@@ -29,7 +29,7 @@ import {
 } from '../types/encounterVisibility';
 import { getThreadsFrom, getAgentLocation } from './graphQueries';
 import { emitTrace } from './traceBuffer';
-import { getUnifiedTemplateById } from '../data/unified-action-templates';
+import { getAnyEncounterById } from '../data/encounter-content';
 
 // ─── Notification Generation ───────────────────────────────────────
 
@@ -273,7 +273,7 @@ export function toggleAttentionMode(
 export function phaseEncounterVisibility(
   state: GameState,
 ): { notifications: EncounterNotification[]; events: TickEvent[] } {
-  const { graph, ascendantId, tick, unifiedActions } = state;
+  const { graph, ascendantId, tick } = state;
   const notifications: EncounterNotification[] = [];
   const events: TickEvent[] = [];
 
@@ -281,13 +281,13 @@ export function phaseEncounterVisibility(
   const threads = getThreadsFrom(graph, ascendantId);
   if (threads.length === 0) return { notifications, events };
 
-  // Build a set of threaded agent IDs for quick lookup
+  // Build a map of threaded agent IDs → thread info.
+  // Include all threaded agents regardless of courtPosition;
+  // agents without an explicit position default to 'retinue' behaviour.
   const threadedAgents = new Map<string, { threadEdgeId: string; props: ThreadEdgeProperties }>();
   for (const edge of threads) {
     const props = edge.properties as ThreadEdgeProperties;
-    if (props.courtPosition) {
-      threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
-    }
+    threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
   }
 
   // Build a set of already-pending notification keys to avoid duplicates
@@ -297,35 +297,35 @@ export function phaseEncounterVisibility(
       .map(n => `${n.agentId}:${n.encounterId}`),
   );
 
-  // Check active encounters for threaded agents
-  for (const action of unifiedActions) {
-    // UnifiedAction uses `resolved` boolean; skip completed actions
-    if (action.resolved) continue;
+  // Agent encounters live in encounterProgress (the old-style NPC encounter pipeline).
+  for (const ep of state.encounterProgress) {
+    if (ep.status !== 'active') continue;
 
-    const threadInfo = threadedAgents.get(action.actorId);
+    const threadInfo = threadedAgents.get(ep.actorId);
     if (!threadInfo) continue;
 
-    // Skip if we already have a pending notification for this agent + action
-    const notifKey = `${action.actorId}:${action.actionId}`;
+    // Skip if we already have a pending notification for this agent + encounter
+    const notifKey = `${ep.actorId}:${ep.encounterId}`;
     if (existingNotifKeys.has(notifKey)) continue;
 
     // The First gets both journey beat vignettes (doom-clock) AND encounter-step notifications
-    const agentNode = graph.getNode(action.actorId);
+    const agentNode = graph.getNode(ep.actorId);
     if (!agentNode) continue;
 
-    const template = getUnifiedTemplateById(action.templateId);
+    const template = getAnyEncounterById(ep.encounterId);
     const templateName = template?.name ?? 'an encounter';
 
-    const locationNode = getAgentLocation(graph, action.actorId);
+    const locationNode = getAgentLocation(graph, ep.actorId);
     const locationName = locationNode?.name ?? 'unknown location';
 
-    const courtPosition = threadInfo.props.courtPosition;
-    const defaultMode = courtPosition ? (VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve') : 'auto_resolve';
+    // Agents without an explicit courtPosition default to retinue behaviour
+    const courtPosition = threadInfo.props.courtPosition ?? 'retinue';
+    const defaultMode = VISIBILITY_BY_POSITION[courtPosition]?.defaultAttentionMode ?? 'auto_resolve';
 
     const notification = buildEncounterNotification(
-      action.actorId,
+      ep.actorId,
       agentNode.name,
-      action.actionId,
+      ep.encounterId,
       templateName,
       locationName,
       courtPosition,
@@ -337,12 +337,12 @@ export function phaseEncounterVisibility(
       notifications.push(notification);
 
       events.push({
-        id: `evt_enc_vis_${action.actorId}_${tick}`,
+        id: `evt_enc_vis_${ep.actorId}_${tick}`,
         tick,
         type: 'journey_beat',
         message: `${agentNode.name} enters an encounter`,
-        significance: threadInfo.props.courtPosition === 'retinue' ? 0.7 : 0.4,
-        actorId: action.actorId,
+        significance: courtPosition === 'retinue' ? 0.7 : 0.4,
+        actorId: ep.actorId,
       });
     }
   }
