@@ -242,20 +242,23 @@ Work is not "done" until it is deployed and documented. Do all of these automati
 
 Context for specific problem types lives in on-demand skills. **Always load `state-of-game-design` first** — it provides the foundational cosmology, action system, and architectural context that all other skills depend on.
 
-**For any prose, narrative, or content work** — always load `prose-resolver`. This covers the full prose pipeline: graph-walking resolvers, prose-layer-content tables, vignettes, encounter templates, faction encounter packages, enrichment placeholders, backstory system, spell flavor text, and the Threadbare writing aesthetic.
+**For any prose, narrative, or content work** — choose the right prose skill: `prose-pipeline` for resolver architecture, `prose-content-systems` for encounter templates and day-to-day content, `prose-vignettes-and-enrichment` for enrichment placeholders and vignettes.
 
 | Domain | Skill | When to load |
 |--------|-------|-------------|
 | **Foundational (load first)** | `state-of-game-design` | Always — before any other domain skill. Cosmology, reaches, spheres, action verbs, prerequisites, architectural decisions. |
 | Engine & code architecture | `engine-architecture` | Writing engine modules, tick loop work, tracing, resolution, PRNG |
 | Frontend & UI | `frontend-ui` | Building components, styling, accessibility, layout at 1920–3440px. Loads `Docs/design-system/` |
-| **Prose & content authoring** | **`prose-resolver`** | **Any prose, narrative, or content work.** New/existing resolvers, `prose-layer-content.ts` tables, encounter templates (all 10 faction packages + main), vignette prose, enrichment placeholders `{name}/{artifact}/{ally}`, backstory strata, spell `flavorText`/`narrativeTemplate`, biography categories, Threadbare tone. Also covers `narrative.ts`, `culturalProse.ts`, `vignetteProse.ts`, `proseEnrichment.ts`. |
+| Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
+| Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
+| Prose — dynamic systems | `prose-vignettes-and-enrichment` | Enrichment placeholders `{name}/{artifact}/{ally}`, vignette authoring, backstory strata, encounter history → prose. |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
-| Hex map renderer | `hexmap-developer` | Writing any code in `src/components/HexMapV2/` or hex-related engine code. Architecture, coordinates, scene layers, zoom, coastline, stencil, signifiers, testing, debugging. Comprehensive developer onboarding guide. |
-| Hex map decisions | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns from Phases 1-8. Lighter than `hexmap-developer`. |
+| Hex map — architecture | `hexmap-core` | Always before any HexMapV2 work. Coordinates, zoom, render layers, camera, Three.js color, performance, lessons learned. |
+| Hex map — features | `hexmap-layers` | Building/modifying/testing/debugging signifiers, agents, fog, labels, click handlers, trails. Load alongside `hexmap-core`. |
+| Hex map — quick reference | `hexmap-renderer` | Quick reference for settled renderer decisions and patterns. Lighter than `hexmap-core`. |
 | Art direction & visual style | `art-direction` | Hex tiles, prompt construction, STYLE.md, Threadbare aesthetic |
 | Blender → HexMap pipeline | `blender-to-hexmap` | Building 3D models in Blender MCP and importing GLB into HexMapV2. Palette, merge, bake rotation, export, Three.js wiring. |
-| Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* `prose-resolver` only for pure narrative fiction unrelated to the game engine. |
+| Creative fiction writing | `cw-*` (platform) | `cw-brainstorming` for story ideas, `cw-prose-writing` for narrative fiction drafts, `cw-official-docs` for lore wikis, `cw-story-critique` for review. Use *instead of* prose skills only for pure narrative fiction unrelated to the game engine. |
 | Post-implementation docs | `gamedocumenter` | Obsidian/changelog/backlog updates after completing work |
 | Image manipulation | `image-manipulation` | Geometric clipping, alpha masks, hex tile pipeline |
 | QA sweeps | `qa-orchestrator` | Systematic UI/UX/frontend QA |

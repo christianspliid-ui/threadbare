@@ -93,46 +93,7 @@ find src -name "*.test.*" | wc -l
 - **Always prefer `obsidian_append_content` over `obsidian_patch_content`** for new content.
 - For edits to existing content, try `obsidian_patch_content` with simple single-line targets first. If it fails, fall back to `obsidian_append_content` to add an updated section at the end.
 
-**System note template:**
-```markdown
----
-tags: [system, <category>]
-aliases: [<AliasOne>, <AliasTwo>]
----
-# System Name
-
-> One-line summary of what this system does.
-
-*(added YYYY-MM-DD — Phase X description)*
-
-## Overview
-
-2-3 paragraphs explaining the system. What does it do? Why does it exist? What's the key insight?
-
-## [Domain-Specific Sections]
-
-The meat of the note. Tables, mechanics, rules — whatever describes THIS system.
-
-## Implementation
-
-| File | Role |
-|------|------|
-| `src/types/foo.ts` | Types and constants |
-| `src/engine/foo.ts` | Core logic |
-| `src/components/Game/Foo.tsx` | UI component |
-
-## Connections
-
-- [[Related System]] — how it connects
-- [[Another System]] — how it connects
-```
-
-**Tag categories:** `system`, `ui`, `engine`, `player`, `spatial`, `content`, `narrative`, `adversarial`, `meta`
-
-**Naming conventions:**
-- Use title case with spaces: `Fog of War.md`, not `fog-of-war.md`
-- Put all system notes in the `Systems/` subfolder (path: `TheFantasyWorldSimulator/Systems/`)
-- Aliases should include the code-level name (e.g., `AvatarHUD`, `MandateTracker`)
+Read **`obsidian-system-note-template.md`** (in this skill directory) for the full frontmatter template, tag categories, and naming conventions. Use it as the starting scaffold for any new system note.
 
 ### Step 4: Update Obsidian Index.md
 
