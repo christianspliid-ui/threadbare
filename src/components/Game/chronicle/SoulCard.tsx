@@ -1,4 +1,6 @@
 import { memo } from 'react';
+import type { RarityTier } from '../../../types/rarity';
+import { RARITY_TIER_COLORS } from '../../../types/rarity';
 
 /** Format an NPC role for display: 'guard_captain' → 'Guard Captain' */
 function formatRole(role: string): string {
@@ -8,6 +10,7 @@ function formatRole(role: string): string {
 interface SoulCardProps {
   name: string;
   role?: string;            // npcRole (e.g., 'guard_captain')
+  rarityTier?: RarityTier;  // 1-4, drives border color
   locationName: string;
   parentLocationName?: string; // if in a sublocation, the parent location name
   sphereColor: string; // hex color from getSphereColor
@@ -19,6 +22,7 @@ interface SoulCardProps {
 export const SoulCard = memo(function SoulCard({
   name,
   role,
+  rarityTier = 1,
   locationName,
   parentLocationName,
   sphereColor,
@@ -33,6 +37,8 @@ export const SoulCard = memo(function SoulCard({
     }
   };
 
+  const borderColor = RARITY_TIER_COLORS[rarityTier] ?? RARITY_TIER_COLORS[1];
+
   return (
     <div
       onClick={onClick}
@@ -42,9 +48,8 @@ export const SoulCard = memo(function SoulCard({
       aria-label={`Soul: ${name}`}
       style={{
         background: 'var(--bg-raised)',
+        border: `1px solid ${borderColor}`,
         borderLeft: `3px solid ${sphereColor}`,
-        border: `1px solid var(--border-gold)`,
-        borderLeftColor: sphereColor,
         borderRadius: '6px',
         padding: '8px 12px',
         cursor: 'pointer',
@@ -52,11 +57,11 @@ export const SoulCard = memo(function SoulCard({
         margin: '8px 0',
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-gold)';
+        (e.currentTarget as HTMLDivElement).style.borderColor = borderColor;
         (e.currentTarget as HTMLDivElement).style.borderLeftColor = sphereColor;
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-gold)';
+        (e.currentTarget as HTMLDivElement).style.borderColor = borderColor;
         (e.currentTarget as HTMLDivElement).style.borderLeftColor = sphereColor;
       }}
     >

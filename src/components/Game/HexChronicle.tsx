@@ -24,6 +24,7 @@ import { pickConceptArt } from '../../data/concept-art-assets';
 import type { ControlEffect } from '../../types/controlEffect';
 import { SOUL_PROSE, SOUL_SECONDARY_PROSE, type HexSoulLevel } from '../../data/hexSoulProse';
 import { renderProseWithIPK } from '../ProseKeyword';
+import type { RarityTier } from '../../types/rarity';
 
 // ── Helpers ─────────────────────────────────────────────────────────
 
@@ -751,12 +752,14 @@ export const HexChronicle = memo(function HexChronicle({
                     const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
                     const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
                     const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
                     const flavor = agentProse[agent.id] ?? '';
                     return (
                       <SoulCard
                         key={agent.id}
                         name={agent.name}
                         role={npcRole}
+                        rarityTier={rarityTier}
                         locationName={parentLoc.name}
                         sphereColor={sphereColor}
                         archetypeName={archetypeName}
@@ -787,12 +790,14 @@ export const HexChronicle = memo(function HexChronicle({
                           const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
                           const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
                           const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                          const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
                           const flavor = agentProse[agent.id] ?? '';
                           return (
                             <SoulCard
                               key={agent.id}
                               name={agent.name}
                               role={npcRole}
+                              rarityTier={rarityTier}
                               locationName={sub.name}
                               parentLocationName={parentLoc.name}
                               sphereColor={sphereColor}
@@ -831,12 +836,14 @@ export const HexChronicle = memo(function HexChronicle({
                     const sphereColor = primarySphere ? getSphereColor(primarySphere) : '#7a6e60';
                     const archetypeName = (agent.properties as any)?.narrativeArchetype ?? undefined;
                     const npcRole = (agent.properties as any)?.npcRole as string | undefined;
+                    const rarityTier = ((agent.properties as any)?.rarityTier ?? 1) as RarityTier;
                     const flavor = agentProse[agent.id] ?? '';
                     return (
                       <SoulCard
                         key={agent.id}
                         name={agent.name}
                         role={npcRole}
+                        rarityTier={rarityTier}
                         locationName={orphan.name}
                         sphereColor={sphereColor}
                         archetypeName={archetypeName}
