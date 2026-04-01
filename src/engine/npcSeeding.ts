@@ -15,7 +15,9 @@ import {
   LOCATION_ROLE_ROSTERS,
   NPC_NAME_POOL,
   NPC_CONSTANTS,
+  NPC_ROLE_SUBLOCATION_MAP,
 } from '../types/npc';
+import type { SublocationProperties } from '../types/sublocation';
 
 // ─── Trace types ─────────────────────────────────────────────────────────────
 
@@ -123,6 +125,18 @@ export function seedNpcsAtLocations(
     // Faction for this location (optional)
     const factionId = factionLocationMap?.get(locationId) ?? null;
 
+    // Build sublocation type → instance ID map for this location (fast lookup).
+    // ensureSublocations() has already run before NPC seeding, so nodes exist.
+    const sublocationByType = new Map<string, string>();
+    for (const edge of graph.getOutgoingEdges(locationId, 'contains')) {
+      const child = graph.getNode(edge.target);
+      if (!child || child.type !== 'location') continue;
+      const childProps = child.properties as Partial<SublocationProperties>;
+      if (childProps.sublocationTypeId && childProps.parentLocationId === locationId) {
+        sublocationByType.set(childProps.sublocationTypeId, child.id);
+      }
+    }
+
     let count = 0;
     for (const entry of roster) {
       if (count >= cap) break;
@@ -145,11 +159,16 @@ export function seedNpcsAtLocations(
         },
       });
 
-      // ── located_at edge ───────────────────────────────────────────────────
+      // ── located_at edge — prefer role's home sublocation, fallback to location ──
+      const preferredSublocationTypeId = NPC_ROLE_SUBLOCATION_MAP[entry.role];
+      const placementId =
+        (preferredSublocationTypeId && sublocationByType.get(preferredSublocationTypeId))
+        ?? locationId;
+
       graph.addEdge({
-        id: `${id}_located_at_${locationId}`,
+        id: `${id}_located_at_${placementId}`,
         source: id,
-        target: locationId,
+        target: placementId,
         type: 'located_at',
         properties: {},
       });

@@ -221,6 +221,44 @@ export const NPC_NAME_POOL: ReadonlyArray<string> = [
 // NPC_CONSTANTS — all tunable numbers in one place (NFP #1)
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Role → Preferred Sublocation Type
+// ---------------------------------------------------------------------------
+
+/**
+ * Maps NPC roles to the sublocation-type ID they prefer at worldgen placement.
+ * Only roles with a clear home are listed — unlisted roles stay at the parent location.
+ * The seeder falls back to the parent location if the sublocation doesn't exist.
+ */
+export const NPC_ROLE_SUBLOCATION_MAP: Partial<Record<NpcRole, string>> = {
+  // Religious — temple quarter
+  healer:       'sublocation-type.temple-quarter',
+  priest:       'sublocation-type.temple-quarter',
+  acolyte:      'sublocation-type.temple-quarter',
+  pilgrim:      'sublocation-type.temple-quarter',
+  // Military — barracks
+  guard:        'sublocation-type.barracks',
+  guard_captain:'sublocation-type.barracks',
+  commander:    'sublocation-type.barracks',
+  quartermaster:'sublocation-type.barracks',
+  scout:        'sublocation-type.barracks',
+  // Commerce — market district
+  merchant:     'sublocation-type.market-district',
+  trader:       'sublocation-type.market-district',
+  innkeeper:    'sublocation-type.market-district',
+  smith:        'sublocation-type.market-district',
+  appraiser:    'sublocation-type.market-district',
+  // Scholars — library (towers/archives)
+  scholar:      'sublocation-type.library',
+  librarian:    'sublocation-type.library',
+  researcher:   'sublocation-type.library',
+  scribe:       'sublocation-type.library',
+  // Court — throne room (capitals/castles only)
+  noble:        'sublocation-type.throne-room',
+  steward:      'sublocation-type.throne-room',
+  herald:       'sublocation-type.throne-room',
+} as const;
+
 export const NPC_CONSTANTS = {
   // --- Spotlight promotion thresholds ---
 
