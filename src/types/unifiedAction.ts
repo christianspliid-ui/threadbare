@@ -6,6 +6,7 @@ import type { ValuePair } from './agent';
 import type { GraphOp } from './graphOp';
 import type { TargetCategory } from './targetContext';
 import type { ControlSpec } from './controlEffect';
+import type { RarityTier } from './rarity';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -40,6 +41,8 @@ export interface ActionStep {
 export interface UnifiedActionTemplate {
   // Identity
   readonly id: string;
+  /** Narrative significance tier. Drives visual treatment and TB-100 unlock system. Default: 1 (Mundane). */
+  readonly rarityTier?: RarityTier;
   readonly name: string;
   readonly reach: ReachDomain;
   readonly crudType: 'create' | 'read' | 'update' | 'delete';

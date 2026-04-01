@@ -10,6 +10,8 @@
  */
 
 import type { AttachmentEffect, ActivatedAbility } from './effects';
+import type { RarityTier } from './rarity';
+import { RARITY_TIER_NAMES, RARITY_TIER_COLORS } from './rarity';
 
 // ─── Possession Subcategories ───────────────────────────────────
 
@@ -29,21 +31,10 @@ export const POSSESSION_SUBCATEGORIES: PossessionSubcategory[] = [
 
 // ─── Tier System ────────────────────────────────────────────────
 
-export type AttachmentTier = 1 | 2 | 3 | 4;
-
-export const ATTACHMENT_TIER_NAMES: Record<AttachmentTier, string> = {
-  1: 'Mundane',
-  2: 'Storied',
-  3: 'Mythic',
-  4: 'Legendary',
-};
-
-export const ATTACHMENT_TIER_COLORS: Record<AttachmentTier, string> = {
-  1: '#b0b0b0',  // Pale silver
-  2: '#c87533',  // Copper/warm bronze
-  3: '#4b0082',  // Deep violet/indigo
-  4: '#d4a017',  // Gold/ember glow
-};
+/** @deprecated Use RarityTier from ./rarity instead */
+export type AttachmentTier = RarityTier;
+export const ATTACHMENT_TIER_NAMES = RARITY_TIER_NAMES;
+export const ATTACHMENT_TIER_COLORS = RARITY_TIER_COLORS;
 
 // ─── Loss Conditions ────────────────────────────────────────────
 
