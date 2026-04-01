@@ -242,6 +242,7 @@ function findVisibleAgents(
       const agentNode = graph.getNode(edge.source);
       if (!agentNode) continue;
       if (agentNode.type !== 'actor') continue;
+      if ((agentNode.properties.spotlightTier ?? 'spotlight') !== 'spotlight') continue; // Skip ambient/notable NPCs
       if (edge.source === sourceAgentId) continue; // Skip self
 
       results.push({

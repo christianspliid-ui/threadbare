@@ -14,11 +14,22 @@ import type { GraphNode, GraphEdge } from '../types/graph';
 
 // ─── Location ────────────────────────────────────────────────────
 
-/** Get all individual agents at a location (via incoming located_at edges) */
-export function getAgentsAtLocation(graph: WorldGraph, locationId: string): GraphNode[] {
+/** Get all individual agents at a location (via incoming located_at edges).
+ *  Pass `spotlightTier` to restrict results to a specific tier.
+ *  Missing `spotlightTier` on a node defaults to 'spotlight' for backward compat. */
+export function getAgentsAtLocation(
+  graph: WorldGraph,
+  locationId: string,
+  spotlightTier?: 'ambient' | 'notable' | 'spotlight',
+): GraphNode[] {
   return graph.getIncomingEdges(locationId, 'located_at')
     .map(e => graph.getNode(e.source))
-    .filter((n): n is GraphNode => n != null && n.properties.actorType === 'individual');
+    .filter((n): n is GraphNode => {
+      if (!n || n.properties.actorType !== 'individual') return false;
+      if (spotlightTier === undefined) return true;
+      const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
+      return tier === spotlightTier;
+    });
 }
 
 /** Get all actors at a location, including non-individuals (factions, groups, etc.) */

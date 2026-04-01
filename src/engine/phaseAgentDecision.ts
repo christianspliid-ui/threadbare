@@ -124,9 +124,13 @@ export function phaseAgentDecision(
     }
   }
 
-  // Get all individual actors, excluding the player's avatar
+  // Get all individual spotlight actors, excluding the player's avatar.
+  // Ambient/notable NPCs are excluded — they don't participate in autonomous decision-making.
+  // Legacy nodes without spotlightTier default to 'spotlight' for backward compatibility.
   const actors = graph.getNodesByType('actor').filter(
-    (n) => n.properties.actorType === 'individual' && !avatarNodeIds.has(n.id),
+    (n) => n.properties.actorType === 'individual'
+      && (n.properties.spotlightTier ?? 'spotlight') === 'spotlight'
+      && !avatarNodeIds.has(n.id),
   );
 
   for (const actor of actors) {

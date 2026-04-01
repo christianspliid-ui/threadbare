@@ -107,6 +107,10 @@ export function validateAgentIntegrity(
   }
 
   const isIndividual = actorType === 'individual';
+  // Skip full validation for ambient/notable NPCs — they have sparse property bags.
+  // Legacy nodes without spotlightTier default to 'spotlight' for backward compatibility.
+  const spotlightTier = (node.properties.spotlightTier as string) ?? 'spotlight';
+  if (isIndividual && spotlightTier !== 'spotlight') return result;
 
   // ── Check 2: Axiological Profile ──────────────────────────────
   const profile = props.axiologicalProfile as Record<string, number> | undefined;

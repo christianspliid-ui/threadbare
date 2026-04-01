@@ -50,9 +50,12 @@ export function resetMovementEventCounter(): void {
 export function phaseMovement(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
 
-  // Get all individual agents (includes avatar — avatar player-initiated movement must still tick)
+  // Get all individual spotlight agents (includes avatar — avatar player-initiated movement must still tick).
+  // Ambient/notable NPCs are excluded from the movement phase.
+  // Legacy nodes without spotlightTier default to 'spotlight' for backward compatibility.
   const agents = state.graph.getNodesByType('actor')
-    .filter(actor => actor.properties?.actorType === 'individual');
+    .filter(actor => actor.properties?.actorType === 'individual'
+      && (actor.properties.spotlightTier ?? 'spotlight') === 'spotlight');
 
   for (const actor of agents) {
    try {
