@@ -34,7 +34,7 @@ import type { BattleState } from '../../types/battle';
 import { extractRoadPaths } from '../../engine/roadNetwork';
 import { getRetinueAgents } from '../../engine/retinue';
 import { TIER_NAMES } from '../../data/influence-content';
-import type { ThreadedNode } from '../../engine/retinue';
+import type { ThreadedNode, ThreadedFaction } from '../../engine/retinue';
 import { getPortraitUrl } from '../../data/portrait-assets';
 import { getAvatarPortraitUrl } from '../../data/avatar-portrait-assets';
 import { HEX_CONSTANTS } from '../HexMapV2/scene/HexFillMesh';
@@ -322,7 +322,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const result: AgentRenderData[] = [];
     for (let i = 0; i < actors.length; i++) {
       const n = actors[i];
-      if (n.properties.actorType === 'ascendant') continue;
+      // Only render full spotlight agents and army groups on the hex map.
+      // Factions, cultures, gods, ascendants are not map-positioned entities.
+      // NPCs (ambient/notable spotlight tiers) only appear in location rosters.
+      const actorType = n.properties.actorType as string | undefined;
+      if (actorType !== 'individual' && actorType !== 'group') continue;
+      if (actorType === 'individual') {
+        const tier = (n.properties.spotlightTier as string) ?? 'spotlight';
+        if (tier !== 'spotlight') continue;
+      }
       let hexCol = n.properties.hexCol as number | undefined;
       let hexRow = n.properties.hexRow as number | undefined;
       if (hexCol == null || hexRow == null) {
@@ -608,9 +616,9 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     return null;
   }, [viewLevel, focusedHex, focusedLocationId, selectedHexCoord, getTile, gameState.graph]);
 
-  // Open non-agent drawer when a target is selected (hex-zoom, location, or world-map hex selection)
+  // Close non-agent drawer on navigation — it must be opened by explicit user action, never auto-opened.
   useEffect(() => {
-    setNonAgentDrawerOpen(viewLevel === 'hex-zoom' || viewLevel === 'location' || selectedHexCoord !== null);
+    setNonAgentDrawerOpen(false);
   }, [viewLevel, selectedHexCoord]);
 
   const nonAgentSlots = useTargetActions({
@@ -624,6 +632,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   const {
     hexLocations,
     hexAgentsByLocation,
+    hexFactionsByLocation,
     hexConnections,
     hexSphereInfluence,
     hexLineOfSight,
@@ -1523,9 +1532,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                       factions={hexFactions}
                       locations={hexLocations}
                       agentsByLocation={hexAgentsByLocation}
+                      factionsByLocation={hexFactionsByLocation}
                       regionData={hexRegionData}
                       onLocationClick={handleLocationClickWithClose}
                       onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
+                      onFactionClick={(factionId) => handleThreadNodeSelect(factionId, 'faction')}
                       graph={gameState.graph}
                       seed={gameState.seed}
                       tick={gameState.tick}
@@ -1644,6 +1655,22 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                             locationName,
                             activityLabel: 'Unknown',
                           } satisfies ThreadedNode;
+                        }
+                        if (selectedThreadNode.category === 'faction') {
+                          const memberEdges = gameState.graph.getIncomingEdges(graphNode.id, 'member_of');
+                          return {
+                            id: graphNode.id,
+                            name: graphNode.name,
+                            tier: 0 as import('../../types/influence').InfluenceTier,
+                            tierName: TIER_NAMES[0],
+                            category: 'faction' as const,
+                            threadEdgeId: '',
+                            attentionMode: 'auto_resolve' as const,
+                            courtPosition: null,
+                            dominantSphere: null,
+                            territoryCount: 0,
+                            memberCount: memberEdges.length,
+                          } satisfies ThreadedFaction;
                         }
                         return undefined;
                       })();
