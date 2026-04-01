@@ -27,8 +27,9 @@ import {
   ATTENTION_MODE_CHANGE_COST,
   VISIBILITY_BY_POSITION,
 } from '../types/encounterVisibility';
-import { getThreadsFrom } from './graphQueries';
+import { getThreadsFrom, getAgentLocation } from './graphQueries';
 import { emitTrace } from './traceBuffer';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 
 // ─── Notification Generation ───────────────────────────────────────
 
@@ -289,19 +290,33 @@ export function phaseEncounterVisibility(
     }
   }
 
+  // Build a set of already-pending notification keys to avoid duplicates
+  const existingNotifKeys = new Set(
+    (state.encounterNotifications ?? [])
+      .filter(n => !n.resolved)
+      .map(n => `${n.agentId}:${n.encounterId}`),
+  );
+
   // Check active encounters for threaded agents
   for (const action of unifiedActions) {
-    if (action.status !== 'in_progress') continue;
-    if (!action.actorId) continue;
+    // UnifiedAction uses `resolved` boolean; skip completed actions
+    if (action.resolved) continue;
 
     const threadInfo = threadedAgents.get(action.actorId);
     if (!threadInfo) continue;
+
+    // Skip if we already have a pending notification for this agent + action
+    const notifKey = `${action.actorId}:${action.actionId}`;
+    if (existingNotifKeys.has(notifKey)) continue;
 
     // The First gets both journey beat vignettes (doom-clock) AND encounter-step notifications
     const agentNode = graph.getNode(action.actorId);
     if (!agentNode) continue;
 
-    const locationNode = action.locationId ? graph.getNode(action.locationId) : null;
+    const template = getUnifiedTemplateById(action.templateId);
+    const templateName = template?.name ?? 'an encounter';
+
+    const locationNode = getAgentLocation(graph, action.actorId);
     const locationName = locationNode?.name ?? 'unknown location';
 
     const courtPosition = threadInfo.props.courtPosition;
@@ -310,8 +325,8 @@ export function phaseEncounterVisibility(
     const notification = buildEncounterNotification(
       action.actorId,
       agentNode.name,
-      action.id,
-      action.templateName ?? 'an encounter',
+      action.actionId,
+      templateName,
       locationName,
       courtPosition,
       threadInfo.props.attentionMode ?? defaultMode,
