@@ -3,7 +3,7 @@ import type { AttachmentTier } from '../../types/attachments';
 import { ATTACHMENT_TIER_COLORS, ATTACHMENT_TIER_NAMES } from '../../types/attachments';
 import { ProgressBar } from '../shared/ProgressBar';
 import { RarityBadge } from '../shared/RarityBadge';
-import { RARITY_LEGENDARY_PULSE_ANIMATION } from '../../data/rarity-constants';
+import { RARITY_LEGENDARY_PULSE_ANIMATION, MAX_RARITY_TIER } from '../../data/rarity-constants';
 import { getAttachmentGlyph } from './attachmentGlyphs';
 
 export interface AttachmentRowProps {
@@ -30,7 +30,7 @@ export const AttachmentRow = React.memo(function AttachmentRow({
   const tierColor = ATTACHMENT_TIER_COLORS[tier];
   const tierName = ATTACHMENT_TIER_NAMES[tier];
   const glyph = getAttachmentGlyph(subcategory);
-  const isLegendary = tier === 4;
+  const isLegendary = tier === MAX_RARITY_TIER;
 
   const hasProgressBar =
     ticksRemaining != null && totalTicks != null && totalTicks > 0;

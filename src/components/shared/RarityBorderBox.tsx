@@ -1,7 +1,7 @@
 import React from 'react';
 import type { RarityTier } from '../../types/rarity';
 import { RARITY_TIER_COLORS } from '../../types/rarity';
-import { RARITY_LEGENDARY_PULSE_ANIMATION } from '../../data/rarity-constants';
+import { RARITY_LEGENDARY_PULSE_ANIMATION, MAX_RARITY_TIER } from '../../data/rarity-constants';
 
 interface RarityBorderBoxProps {
   tier: RarityTier;
@@ -21,7 +21,7 @@ export const RarityBorderBox = React.memo(function RarityBorderBox({
   style,
 }: RarityBorderBoxProps) {
   const tierColor = RARITY_TIER_COLORS[tier];
-  const isLegendary = tier === 4;
+  const isLegendary = tier === MAX_RARITY_TIER;
 
   return (
     <div
