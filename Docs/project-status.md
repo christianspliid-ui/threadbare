@@ -1,12 +1,10 @@
 # Project Status
 
-> Updated 2026-03-31.
+> Updated 2026-04-01.
 
 ## Current Focus
 
-**v1.1 Low-Hanging Fruit Optimization** — Phases 19-22 in progress (separate agent). Determinism, wiring, performance, code hygiene.
-
-**Culture Seeding Phase 1** (TB-031) — Territory-aware culture placement via province system. Shipped 2026-03-31.
+**Unified Rarity Model** (TB-100) — All 5 phases shipped 2026-04-01. Rarity tiers on actors, locations, action templates, with organic graduation and RarityBadge UI.
 
 ## Milestone Status
 
@@ -14,6 +12,10 @@
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions (taverns/parties, deep social scenes, agent initiatives, faction agency, information economy). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
 - **Next after v1.2:** Economy second pass (TB-071), Agent seeding (TB-032), NPCs (TB-069)
+
+## Recent Completions (2026-04-01)
+
+- **TB-100 Unified Rarity Model Phase E — Action template rarityTier:** Tagged all 200+ action templates with rarity tiers 1–4 (distribution ~60%/~30%/~8%/~2%, 2 Legendary max). Made rarityTier required on UnifiedActionTemplate. Threaded through WheelSlot and getTargetActionSlots. Wired RarityBadge into ActionCard (both hand and focused layouts), suppressed for tier 1. Tests: all templates valid, badge show/hide by tier.
 
 ## Recent Completions (2026-03-31)
 

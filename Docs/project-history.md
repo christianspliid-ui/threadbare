@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ TB-100 Unified Rarity Model Phase E: Tagged all 200+ action templates with rarityTier 1–4, made field required, threaded WheelSlot → ActionCard, RarityBadge shown for tier ≥2. (2026-04-01)
 - ✅ Generic Effect System: 29 composable primitives, spell framework, effect resolver/tick/aura/executors/scope, 5 spells, 3 artifacts, 10 terrain overlays, 52 tests, 18 constants. (2026-03-31)
 - ✅ Reach-polarity reputation trait system: 17 traits (8 reaches × 2 polarities + power renown), tally accumulation, 3-layer polarity, encounter gating + scoring, phase 6.64, 16 tests. (2026-03-31)
 - ✅ TB-031 Phase 1: Territory-aware culture seeding via province system — cultures generated before worldgen, locations/actors inherit from province, homeland/border/diaspora mechanics. (2026-03-31)

@@ -8,7 +8,30 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-100**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-101**.
+
+---
+
+## ✅ TB-100 · Action Rarity & Unlock System — Deck-Building for the Player (2026-04-01)
+
+**Milestone: Player Progression — Phase 1**
+
+Right now the player's action pool is flat and fully available. This item adds a rarity and discovery layer so that acquiring powerful actions is itself part of the game — building your deck of divine interventions becomes a core progression loop.
+
+**Core concept:**
+- Actions (intervention templates) have a `rarity` tier: `common`, `uncommon`, `rare`, `legendary`. Common actions are available immediately; rarer tiers must be unlocked.
+- Unlocks are earned through play: reaching Essence milestones, completing specific encounters, reaching Domain Capability thresholds in a Reach, discovering faction secrets, or witnessing rare world events (cataclysms, ascensions, legendary victories).
+- The player's "deck" is their unlocked action pool, displayed in a dedicated screen or tab. Actions can be browsed by Reach/Sphere/rarity, and newly unlocked ones are surfaced with a notification.
+- Locked actions are visible but greyed-out with a hint of how to unlock them ("Witness a Warlord's defeat", "Reach Iron III", "Spend 500 Essence") — this creates meaningful goals.
+
+**Design questions to resolve:**
+- Are locks per-playthrough (roguelite run), per-world-seed, or permanent (meta-progression)? Start with per-playthrough for simplicity.
+- Does rarity affect power directly, or just scarcity of unlock opportunity? (Prefer: rarity = unlock difficulty + narrative weight, not raw stat inflation.)
+- Can unlocked actions be lost? (Corruption mechanic, divine rival theft, overuse?)
+- How does rarity surface in the action card UI — colour border, icon badge, prose flavour?
+
+**Creates:** `rarity` field on action templates, unlock condition DSL (similar to prerequisite system), `unlockedActions` set in player state, unlock evaluation phase in the tick loop or on specific triggers, notification system for new unlocks, deck browser UI.
+**Depends on:** Generalized Action Targeting (✅), Intervention system (✅)
 
 ---
 
@@ -157,15 +180,6 @@ Auto-trigger the Meet The First encounter on the player's first visit to a popul
 
 **Depends on:** TB-035 (Meet The First)
 **Needs design:** Yes — deferred from TB-035 design session (2026-03-26)
-
----
-
-## ✅ TB-031 · Culture Seeding — Territory-Aware Placement (Phase 1)
-
-Cultures now get geographic homelands via the province flood-fill system. Pipeline reordered: cultures generated before worldgen, provinces seeded per culture, locations and actors inherit culture from their province. Homeland/border strength differentiation, diaspora mechanics, backward-compatible.
-
-**Preliminary design:** `Docs/plans/2026-03-25-culture-and-agent-seeding-preliminary-design.md`
-**Completed:** 2026-03-31
 
 ---
 
