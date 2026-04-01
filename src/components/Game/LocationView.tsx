@@ -1153,81 +1153,118 @@ export const LocationView = memo(function LocationView({
       ) : (
         // ──── FLAT LAYOUT (NO SUBLOCATIONS) ────
         <div className="flex-1 flex gap-6 p-6 min-h-0">
-          {/* Left: Agents Present */}
+          {/* Left: Agents Present + Inhabitants */}
           <div className="flex-1 min-w-0">
-            <SectionHeading>Agents Present</SectionHeading>
+            {(() => {
+              // Split agents into spotlight agents (legacy + tier=spotlight) and NPCs (ambient/notable)
+              const spotlightAgents = agents.filter(a => {
+                const tier = (a.properties as Record<string, unknown>)?.spotlightTier;
+                return !tier || tier === 'spotlight';
+              });
+              const npcsAtLocation = agents.filter(a => {
+                const tier = (a.properties as Record<string, unknown>)?.spotlightTier;
+                return tier === 'ambient' || tier === 'notable';
+              });
 
-            {agents.length === 0 ? (
-              <p
-                className="italic"
-                style={{
-                  fontSize: 'var(--text-sm)',
-                  color: 'var(--text-muted)',
-                }}
-              >
-                This place lies quiet — for now.
-              </p>
-            ) : (
-              <div className="space-y-1">
-                {agents.map(agent => {
-                  // RC-041: Safe property access with type guard
-                  const props = (agent.properties ?? {}) as Record<string, unknown>;
-                  const actorType = typeof props.actorType === 'string' ? props.actorType : 'unknown';
+              return (
+                <>
+                  <SectionHeading>Agents Present</SectionHeading>
 
-                  return (
-                    <button
-                      key={agent.id}
-                      onClick={() => onAgentClick(agent.id)}
-                      aria-label={`View ${agent.name}`}
-                      className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group cursor-pointer focus:outline-none focus:ring-1 duration-150"
-                      style={{ '--tw-ring-color': 'var(--accent-gold)', transition: 'background-color 150ms ease' } as React.CSSProperties}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = 'transparent';
+                  {spotlightAgents.length === 0 ? (
+                    <p
+                      className="italic"
+                      style={{
+                        fontSize: 'var(--text-sm)',
+                        color: 'var(--text-muted)',
                       }}
                     >
-                      {/* Agent square */}
-                      <div
-                        className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: getAgentColor(agent.name) }}
-                      >
-                        <span
-                          className="font-bold"
-                          style={{
-                            fontSize: 'var(--text-sm)',
-                            color: 'white',
-                          }}
-                        >
-                          {agent.name.charAt(0)}
-                        </span>
-                      </div>
+                      This place lies quiet — for now.
+                    </p>
+                  ) : (
+                    <div className="space-y-1">
+                      {spotlightAgents.map(agent => {
+                        // RC-041: Safe property access with type guard
+                        const props = (agent.properties ?? {}) as Record<string, unknown>;
+                        const actorType = typeof props.actorType === 'string' ? props.actorType : 'unknown';
 
-                      <div className="min-w-0">
-                        <p
-                          className="truncate group-hover:opacity-80 transition-opacity"
-                          style={{
-                            fontSize: 'var(--text-base)',
-                            color: 'var(--text-primary)',
-                          }}
-                        >
-                          {agent.name}
-                        </p>
-                        <p
-                          style={{
-                            fontSize: 'var(--text-sm)',
-                            color: 'var(--text-tertiary)',
-                          }}
-                        >
-                          {actorType}
-                        </p>
+                        return (
+                          <button
+                            key={agent.id}
+                            onClick={() => onAgentClick(agent.id)}
+                            aria-label={`View ${agent.name}`}
+                            className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors group cursor-pointer focus:outline-none focus:ring-1 duration-150"
+                            style={{ '--tw-ring-color': 'var(--accent-gold)', transition: 'background-color 150ms ease' } as React.CSSProperties}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.backgroundColor = 'var(--bg-hover)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            }}
+                          >
+                            {/* Agent square */}
+                            <div
+                              className="w-9 h-9 rounded flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: getAgentColor(agent.name) }}
+                            >
+                              <span
+                                className="font-bold"
+                                style={{
+                                  fontSize: 'var(--text-sm)',
+                                  color: 'white',
+                                }}
+                              >
+                                {agent.name.charAt(0)}
+                              </span>
+                            </div>
+
+                            <div className="min-w-0">
+                              <p
+                                className="truncate group-hover:opacity-80 transition-opacity"
+                                style={{
+                                  fontSize: 'var(--text-base)',
+                                  color: 'var(--text-primary)',
+                                }}
+                              >
+                                {agent.name}
+                              </p>
+                              <p
+                                style={{
+                                  fontSize: 'var(--text-sm)',
+                                  color: 'var(--text-tertiary)',
+                                }}
+                              >
+                                {actorType}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Inhabitants (ambient/notable NPCs) */}
+                  {npcsAtLocation.length > 0 && (
+                    <div className="mt-3">
+                      <SectionHeading>Inhabitants</SectionHeading>
+                      <div className="flex flex-col gap-1">
+                        {npcsAtLocation.map(npc => (
+                          <button
+                            key={npc.id}
+                            onClick={() => onAgentClick(npc.id)}
+                            className="flex items-center justify-between px-2 py-1 rounded hover:bg-zinc-800/50 text-left w-full"
+                          >
+                            <span className="text-sm text-zinc-300">{npc.name}</span>
+                            <span className="text-xs text-zinc-500">
+                              {((npc.properties as Record<string, unknown>).npcRole as string)?.replace(/_/g, ' ')}
+                            </span>
+                          </button>
+                        ))}
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
           {/* Right: Encounters (active and available) */}
