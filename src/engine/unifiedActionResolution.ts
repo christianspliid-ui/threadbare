@@ -51,7 +51,8 @@ import { spawnControlEffect } from './controlEffectSpawn';
 import type { SpherePressureEvent } from '../types/sphereAffinity';
 import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/sphereAffinity';
 import { resolveRevelationAction } from './revelationEmitter';
-import { accumulateImportance, getImportanceDelta } from './rarity';
+import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
+import type { TraceEntry } from '../types/trace';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -499,7 +500,20 @@ export function phaseUnifiedActionProgress(
     ) {
       const targetNodeForRarity = state.graph.getNode(completing_action.targetId);
       if (targetNodeForRarity && targetNodeForRarity.properties?.actorType === 'individual') {
-        accumulateImportance(targetNodeForRarity, getImportanceDelta('player_action'));
+        const playerActionDelta = getImportanceDelta('player_action');
+        const playerActionNewImportance = accumulateImportance(targetNodeForRarity, playerActionDelta);
+        emitTrace({
+          category: 'rarity_importance',
+          tick: state.tick,
+          nodeId: targetNodeForRarity.id,
+          nodeName: targetNodeForRarity.name ?? targetNodeForRarity.id,
+          source: 'player_action',
+          delta: playerActionDelta,
+          newImportance: playerActionNewImportance,
+          currentTier: getRarityTier(targetNodeForRarity),
+          summary: `importance +${playerActionDelta} for ${targetNodeForRarity.name ?? targetNodeForRarity.id} (now ${playerActionNewImportance})`,
+          agentId: targetNodeForRarity.id,
+        } as import('../types/trace').RarityImportanceTrace);
       }
     }
 

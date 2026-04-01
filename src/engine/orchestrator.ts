@@ -31,7 +31,7 @@ import {
 } from '../types/disposition';
 import { buildNarrativeContext } from './contextBuilder';
 import { resetNarrativeEventCounter } from './narrative';
-import type { NarrativeEvent, NarrativeEventType } from '../types/narrative';
+import type { NarrativeEvent, NarrativeEventType, ChronicleEntry } from '../types/narrative';
 import {
   DILEMMA_STAKES_PROSE,
   DILEMMA_ADJ_POOL,
@@ -272,6 +272,7 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardNam
 export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
+  const graduationChronicles: ChronicleEntry[] = [];
   let updatedProgress = [...state.encounterProgress];
 
   const activeEncounters = updatedProgress.filter(p => p.status === 'active');
@@ -531,10 +532,25 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     if (result.success) {
       const actorNodeForRarity = state.graph.getNode(progress.actorId);
       if (actorNodeForRarity && actorNodeForRarity.properties?.actorType === 'individual') {
-        const prevTierActor = getRarityTier(actorNodeForRarity);
-        accumulateImportance(actorNodeForRarity, getImportanceDelta('encounter_resolved'));
-        const graduationTier = checkGraduationThreshold(actorNodeForRarity);
-        if (graduationTier !== null) {
+        const actorDelta = getImportanceDelta('encounter_resolved');
+        const actorNewImportance = accumulateImportance(actorNodeForRarity, actorDelta);
+        // Emit importance trace
+        emitTrace({
+          category: 'rarity_importance',
+          tick: state.tick,
+          nodeId: actorNodeForRarity.id,
+          nodeName: actorNodeForRarity.name ?? actorNodeForRarity.id,
+          source: 'encounter_resolved',
+          delta: actorDelta,
+          newImportance: actorNewImportance,
+          currentTier: getRarityTier(actorNodeForRarity),
+          summary: `importance +${actorDelta} for ${actorNodeForRarity.name ?? actorNodeForRarity.id} (now ${actorNewImportance})`,
+          agentId: actorNodeForRarity.id,
+        } as import('../types/trace').RarityImportanceTrace);
+        // Loop to handle rare multi-tier jumps
+        let graduationTier = checkGraduationThreshold(actorNodeForRarity);
+        while (graduationTier !== null) {
+          const prevTierForGrad = getRarityTier(actorNodeForRarity);
           graduateRarity(actorNodeForRarity, graduationTier);
           // Emit graduation trace (Fix 1)
           emitTrace({
@@ -542,14 +558,14 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
             tick: state.tick,
             nodeId: actorNodeForRarity.id,
             nodeCategory: 'actor',
-            previousTier: prevTierActor,
+            previousTier: prevTierForGrad,
             newTier: graduationTier,
             trigger: 'organic_threshold',
             cause: `importance reached graduation threshold`,
-            summary: `${actorNodeForRarity.name ?? actorNodeForRarity.id} graduated from tier ${prevTierActor} to tier ${graduationTier}`,
+            summary: `${actorNodeForRarity.name ?? actorNodeForRarity.id} graduated from tier ${prevTierForGrad} to tier ${graduationTier}`,
             agentId: actorNodeForRarity.id,
           } as import('../types/trace').RarityGraduationTrace);
-          // Emit graduation notification for tiers at or above threshold (Fix 2)
+          // Emit graduation notification and chronicle for tiers at or above threshold (Fix 2)
           if (graduationTier >= RARITY_NOTIFICATION_THRESHOLD) {
             const nodeName = actorNodeForRarity.name ?? actorNodeForRarity.id;
             const message = graduationTier >= 4
@@ -564,7 +580,21 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               actorId: actorNodeForRarity.id,
               notification: { channel: 'toast' as const },
             });
+            graduationChronicles.push({
+              id: `rarity-grad-${actorNodeForRarity.id}-${state.tick}`,
+              tier: 'chronicle',
+              title: message,
+              prose: message,
+              promptContext: {
+                actors: [actorNodeForRarity.id],
+                location: '',
+                sphere: 'spirit',
+                mood: 'legendary',
+              },
+              tick: state.tick,
+            });
           }
+          graduationTier = checkGraduationThreshold(actorNodeForRarity);
         }
       }
 
@@ -572,10 +602,25 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
       if (progress.targetAgentId) {
         const targetNode = state.graph.getNode(progress.targetAgentId);
         if (targetNode && targetNode.properties?.actorType === 'individual') {
-          const prevTierTarget = getRarityTier(targetNode);
-          accumulateImportance(targetNode, getImportanceDelta('encounter_resolved'));
-          const targetGradTier = checkGraduationThreshold(targetNode);
-          if (targetGradTier !== null) {
+          const targetDelta = getImportanceDelta('encounter_resolved');
+          const targetNewImportance = accumulateImportance(targetNode, targetDelta);
+          // Emit importance trace
+          emitTrace({
+            category: 'rarity_importance',
+            tick: state.tick,
+            nodeId: targetNode.id,
+            nodeName: targetNode.name ?? targetNode.id,
+            source: 'encounter_resolved',
+            delta: targetDelta,
+            newImportance: targetNewImportance,
+            currentTier: getRarityTier(targetNode),
+            summary: `importance +${targetDelta} for ${targetNode.name ?? targetNode.id} (now ${targetNewImportance})`,
+            agentId: targetNode.id,
+          } as import('../types/trace').RarityImportanceTrace);
+          // Loop to handle rare multi-tier jumps
+          let targetGradTier = checkGraduationThreshold(targetNode);
+          while (targetGradTier !== null) {
+            const prevTierForTargetGrad = getRarityTier(targetNode);
             graduateRarity(targetNode, targetGradTier);
             // Emit graduation trace (Fix 1)
             emitTrace({
@@ -583,14 +628,14 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               tick: state.tick,
               nodeId: targetNode.id,
               nodeCategory: 'actor',
-              previousTier: prevTierTarget,
+              previousTier: prevTierForTargetGrad,
               newTier: targetGradTier,
               trigger: 'organic_threshold',
               cause: `importance reached graduation threshold`,
-              summary: `${targetNode.name ?? targetNode.id} graduated from tier ${prevTierTarget} to tier ${targetGradTier}`,
+              summary: `${targetNode.name ?? targetNode.id} graduated from tier ${prevTierForTargetGrad} to tier ${targetGradTier}`,
               agentId: targetNode.id,
             } as import('../types/trace').RarityGraduationTrace);
-            // Emit graduation notification for tiers at or above threshold (Fix 2)
+            // Emit graduation notification and chronicle for tiers at or above threshold (Fix 2)
             if (targetGradTier >= RARITY_NOTIFICATION_THRESHOLD) {
               const targetName = targetNode.name ?? targetNode.id;
               const message = targetGradTier >= 4
@@ -605,7 +650,21 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
                 actorId: targetNode.id,
                 notification: { channel: 'toast' as const },
               });
+              graduationChronicles.push({
+                id: `rarity-grad-${targetNode.id}-${state.tick}`,
+                tier: 'chronicle',
+                title: message,
+                prose: message,
+                promptContext: {
+                  actors: [targetNode.id],
+                  location: '',
+                  sphere: 'spirit',
+                  mood: 'legendary',
+                },
+                tick: state.tick,
+              });
             }
+            targetGradTier = checkGraduationThreshold(targetNode);
           }
         }
       }
@@ -668,6 +727,9 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     encounterProgress: updatedProgress,
     ...(spherePressures.length > 0
       ? { pendingSpherePressures: [...(state.pendingSpherePressures ?? []), ...spherePressures] }
+      : {}),
+    ...(graduationChronicles.length > 0
+      ? { chronicleEntries: [...state.chronicleEntries, ...graduationChronicles] }
       : {}),
   };
 }

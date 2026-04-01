@@ -108,10 +108,12 @@ export function accumulateImportance(
  * Returns the tier to graduate to, or null if no graduation is needed.
  * Does not mutate — call graduateRarity separately if graduation should occur.
  *
- * Returns the *lowest* tier the node is eligible to graduate to, or null.
- * If importance crosses multiple thresholds simultaneously, only the lowest
- * new tier is returned — callers must re-invoke after each graduation to
- * detect further eligible tiers.
+ * Returns the *lowest* new tier the node is eligible to graduate to, or null.
+ * If importance crosses multiple thresholds simultaneously (a multi-tier jump),
+ * only the lowest eligible tier is returned per call. To handle multi-tier jumps,
+ * loop: call checkGraduationThreshold → graduateRarity → repeat until null.
+ * In practice, single-tick importance deltas are small enough that multi-tier
+ * jumps are extremely rare — most callers need not loop.
  */
 export function checkGraduationThreshold(
   node: GraphNode,
