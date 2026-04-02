@@ -128,6 +128,7 @@ import {
   ensureEncounterCache,
   ensureDistanceMatrix,
 } from './simulationRuntime';
+import { recordBalanceEvent } from './balanceTelemetry';
 
 // ─── Legacy Decision Cache (backward-compat shim for tests) ───────
 //
@@ -272,7 +273,7 @@ function summarizeOutcome(outcome: EncounterOutcome, success: boolean, rewardNam
  * Resolves the step, advances to the next (or completes/abandons), and emits events.
  * Initiation is handled separately by phaseAgentDecision.
  */
-export function phaseEncounterProgressionV2(state: GameState): Partial<GameState> {
+export function phaseEncounterProgressionV2(state: GameState, runtime?: SimulationRuntime): Partial<GameState> {
   const events: TickEvent[] = [];
   const spherePressures: SpherePressureEvent[] = [];
   const graduationChronicles: ChronicleEntry[] = [];
@@ -291,6 +292,43 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
     const resolvedStepIndex = progress.currentEncounterIndex;
     // Advance encounter (mutates progress in place)
     advanceEncounter(state, progress, result.success, state.tick);
+
+    // Balance telemetry: step_resolved (legacy encounter)
+    if (runtime) {
+      const encounter = getAnyEncounterById(progress.encounterId);
+      const step = encounter?.steps[resolvedStepIndex];
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'step_resolved',
+        agentId: progress.actorId,
+        sourceSystem: 'legacy_encounter',
+        encounterId: progress.encounterId,
+        stepIndex: resolvedStepIndex,
+        reach: step?.reach,
+        difficulty: step?.difficulty,
+        capability: result.outcomeType === 'success' || result.outcomeType === 'critical_success' ? undefined : undefined,
+        probability: undefined,
+        roll: undefined,
+        result: result.success ? 'success' : 'failure',
+        threatBand: (encounter?.threatRating ?? 'unknown') as import('../types/balanceEval').BalanceThreatBand,
+      });
+    }
+
+    // Balance telemetry: growth_applied (legacy encounter tier promotion)
+    if (runtime && result.growth?.tierCrossed) {
+      const encounter = getAnyEncounterById(progress.encounterId);
+      const step = encounter?.steps[resolvedStepIndex];
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'growth_applied',
+        agentId: progress.actorId,
+        sourceSystem: 'legacy_encounter',
+        encounterId: progress.encounterId,
+        growthReach: step?.reach,
+        growthDelta: result.growth.delta,
+        newTier: result.growth.newTier,
+      });
+    }
 
     // Sphere pressure: push pressure on the actor's location for each encounter step.
     // Fail-soft: skip if encounter has no sphere or actor has no location.
@@ -399,6 +437,22 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
               poolSize: pool.length,
               roll: drawRoll,
             });
+
+            // Balance telemetry: reward_granted
+            if (runtime) {
+              recordBalanceEvent(runtime, {
+                tick: state.tick,
+                kind: 'reward_granted',
+                agentId: progress.actorId,
+                sourceSystem: 'legacy_encounter',
+                encounterId: progress.encounterId,
+                rewardTemplateId: templateId,
+                rewardCategory: instantiation.category,
+                rewardTier: tier,
+                isBadOutcome,
+                rewardPoolSize: pool.length,
+              });
+            }
           }
         }
       } else {
@@ -426,6 +480,20 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
           poolSize: 0,
           roll: null,
         });
+
+        // Balance telemetry: reward_granted (empty pool — missed reward)
+        if (runtime) {
+          recordBalanceEvent(runtime, {
+            tick: state.tick,
+            kind: 'reward_granted',
+            agentId: progress.actorId,
+            sourceSystem: 'legacy_encounter',
+            encounterId: progress.encounterId,
+            rewardTemplateId: null,
+            isBadOutcome,
+            rewardPoolSize: 0,
+          });
+        }
       }
     }
 
@@ -438,6 +506,20 @@ export function phaseEncounterProgressionV2(state: GameState): Partial<GameState
         status: progress.status,
         ...(rewardName !== undefined && { reward: rewardName }),
       });
+
+      // Balance telemetry: encounter_resolved
+      if (runtime) {
+        const encounter = getAnyEncounterById(progress.encounterId);
+        recordBalanceEvent(runtime, {
+          tick: state.tick,
+          kind: 'encounter_resolved',
+          agentId: progress.actorId,
+          sourceSystem: 'legacy_encounter',
+          encounterId: progress.encounterId,
+          finalStatus: progress.status,
+          threatBand: (encounter?.threatRating ?? 'unknown') as import('../types/balanceEval').BalanceThreatBand,
+        });
+      }
     }
 
     // ── Anomaly discovery: on completion, seed resource + flip discovered flag ──
@@ -1354,7 +1436,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // ─── Unified Action Pipeline (replaces old phaseAgentActions + phaseEncounterProgression + phaseActionProgress) ───
   // Phase 2a: Progress + resolve existing unified actions (Phases 1-6 of unified pipeline)
   const uaRng = mulberry32(state.seed + state.tick * 31);
-  s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng) };
+  s = { ...s, ...phaseUnifiedActionProgress(s, UNIFIED_ACTION_TEMPLATES, uaRng, runtime) };
   phaseEventCounts['unified_action_progress'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
@@ -1411,7 +1493,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   }
 
   // Phase 2a.5: Encounter Progression — advance active encounters whose current step has elapsed
-  s = { ...s, ...phaseEncounterProgressionV2(s) };
+  s = { ...s, ...phaseEncounterProgressionV2(s, runtime) };
   phaseEventCounts['encounter_progression'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 

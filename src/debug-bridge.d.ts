@@ -1,6 +1,7 @@
 import type { TraceEntry } from './types/trace';
 import type { AgentAttachments } from './engine/agentAttachments';
 import type { RewardHistoryEntry } from './engine/rewardHistory';
+import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
 
 export interface EncounterLogExportResult {
   allAgentsTsv: string;
@@ -96,6 +97,16 @@ export interface DebugBridge {
   clearCrashLog: () => Promise<void>;
   getHealthReport: () => Promise<unknown>;
   exportDiagnostics: () => Promise<unknown>;
+  /** Returns a BalanceRunSummary for the current session. Pass endTick to override the current tick. */
+  getBalanceSummary: (endTick?: number) => Promise<BalanceRunSummary | null>;
+  /** Returns the current versioned balance targets. */
+  getBalanceTargets: () => Promise<BalanceTargets>;
+  /** Evaluates the current session telemetry against balance targets. Returns summary + evaluation result. */
+  getBalanceEvaluation: (endTick?: number) => Promise<{ summary: BalanceRunSummary; result: BalanceEvaluationResult } | null>;
+  /** Exports raw balance telemetry as a JSON-serializable snapshot. */
+  exportBalanceTelemetry: () => Promise<Record<string, unknown> | null>;
+  /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
+  _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
 }

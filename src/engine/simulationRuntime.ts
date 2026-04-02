@@ -31,6 +31,9 @@ import type { WorldGraph } from './graph';
 import type { HexTile } from '../types';
 import { clearTimelines } from './encounterTimeline';
 import { clearRewardHistory } from './rewardHistory';
+import type { BalanceTelemetry } from './balanceTelemetry';
+import { createBalanceTelemetry } from './balanceTelemetry';
+import { BALANCE_TARGETS_VERSION } from './balanceTargets';
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -47,6 +50,12 @@ export interface SimulationRuntime {
   encounterCacheBuiltAt: number;
   /** structuralCacheVersion at which the distance matrix was last built/rebuilt. */
   distanceMatrixBuiltAt: number;
+
+  // ── Balance Telemetry (phase 1 eval foundation) ──
+  /** Session-owned balance telemetry. Owned here to prevent module-global bleed. */
+  balanceTelemetry: BalanceTelemetry | null;
+  /** Bumps on every balance event recorded. Allows UI/tooling memoization. */
+  balanceTelemetryVersion: number;
 }
 
 // ─── Factory ──────────────────────────────────────────────────────
@@ -60,7 +69,31 @@ export function createSimulationRuntime(): SimulationRuntime {
     distanceMatrix: null,
     encounterCacheBuiltAt: -1,
     distanceMatrixBuiltAt: -1,
+    balanceTelemetry: createBalanceTelemetry({ targetVersion: BALANCE_TARGETS_VERSION }),
+    balanceTelemetryVersion: 0,
   };
+}
+
+/**
+ * Reset balance telemetry to a clean state, preserving tracked agent ids.
+ * Call on game reset or cycle transition where stale telemetry would mislead evaluations.
+ */
+export function resetBalanceTelemetry(runtime: SimulationRuntime): void {
+  const trackedIds = runtime.balanceTelemetry?.trackedAgentIds ?? [];
+  const meta = runtime.balanceTelemetry?.meta;
+  runtime.balanceTelemetry = createBalanceTelemetry({
+    seed: meta?.seed,
+    mapSize: meta?.mapSize,
+    targetVersion: meta?.targetVersion ?? BALANCE_TARGETS_VERSION,
+  });
+  // Re-register tracked agents
+  if (trackedIds.length > 0 && runtime.balanceTelemetry) {
+    runtime.balanceTelemetry.trackedAgentIds = trackedIds;
+    for (const id of trackedIds) {
+      runtime.balanceTelemetry.trackedAgentEvents.set(id, []);
+    }
+  }
+  runtime.balanceTelemetryVersion++;
 }
 
 // ─── Touch API ────────────────────────────────────────────────────
@@ -128,6 +161,7 @@ export function ensureDistanceMatrix(
 /**
  * Reset all runtime caches and timelines (e.g. for cycle transitions).
  * Does NOT reset version counters — those monotonically increase within a session.
+ * Does NOT reset balance telemetry — telemetry spans the full session by design.
  */
 export function resetRuntimeCaches(runtime: SimulationRuntime): void {
   runtime.encounterCache = null;

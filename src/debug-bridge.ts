@@ -20,6 +20,8 @@ if (import.meta.env.DEV) {
   let _graphProvider: (() => import('./engine/graph').WorldGraph | null) | null = null;
   // GameView registers a provider for the live GameState
   let _gameStateProvider: (() => import('./types/gameState').GameState | null) | null = null;
+  // GameView registers a provider for the live SimulationRuntime (for balance telemetry)
+  let _runtimeProvider: (() => import('./engine/simulationRuntime').SimulationRuntime | null) | null = null;
 
   window.__DEBUG = {
     // Debug panel control — called from browser console or Playwright
@@ -40,6 +42,8 @@ if (import.meta.env.DEV) {
     _registerGraphProvider: (fn: () => import('./engine/graph').WorldGraph | null) => { _graphProvider = fn; },
     /** @internal GameView registers a provider for the live GameState here */
     _registerGameStateProvider: (fn: () => import('./types/gameState').GameState | null) => { _gameStateProvider = fn; },
+    /** @internal GameView registers the SimulationRuntime provider for balance telemetry access */
+    _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => { _runtimeProvider = fn; },
     /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
@@ -201,6 +205,43 @@ if (import.meta.env.DEV) {
     clearCrashLog: () => import('./engine/tickHealthMonitor').then((m) => m.clearCrashLog()),
     getHealthReport: () => import('./engine/tickHealthMonitor').then((m) => m.getLatestReport()),
     exportDiagnostics: () => import('./engine/tickHealthMonitor').then((m) => m.exportDiagnostics()),
+
+    // Balance telemetry accessors
+    /** Returns a BalanceRunSummary for the current session. endTick defaults to the current game tick. */
+    getBalanceSummary: async (endTick?: number) => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime?.balanceTelemetry) return null;
+      const tick = endTick ?? (_gameStateProvider?.()?.tick ?? 0);
+      const { buildBalanceRunSummary } = await import('./engine/balanceSummary');
+      return buildBalanceRunSummary(runtime, tick);
+    },
+    /** Returns the current balance targets (versioned bands). */
+    getBalanceTargets: async () => {
+      const { getDefaultBalanceTargets } = await import('./engine/balanceTargets');
+      return getDefaultBalanceTargets();
+    },
+    /** Evaluates the current session telemetry against balance targets. */
+    getBalanceEvaluation: async (endTick?: number) => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime?.balanceTelemetry) return null;
+      const tick = endTick ?? (_gameStateProvider?.()?.tick ?? 0);
+      const [summaryMod, evalMod, targetsMod] = await Promise.all([
+        import('./engine/balanceSummary'),
+        import('./engine/balanceEvaluator'),
+        import('./engine/balanceTargets'),
+      ]);
+      const summary = summaryMod.buildBalanceRunSummary(runtime, tick);
+      if (!summary) return null;
+      const result = evalMod.evaluateBalanceSummary(summary, targetsMod.getDefaultBalanceTargets());
+      return { summary, result };
+    },
+    /** Exports raw balance telemetry as a JSON-serializable snapshot. */
+    exportBalanceTelemetry: async () => {
+      const runtime = _runtimeProvider?.();
+      if (!runtime) return null;
+      const { exportBalanceTelemetry: exportFn } = await import('./engine/balanceTelemetry');
+      return exportFn(runtime);
+    },
 
     // Encounter log exports — returns TSV strings for writing to disk
     getEncounterLogAll: () =>

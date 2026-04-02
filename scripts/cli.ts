@@ -40,6 +40,12 @@ import {
   getTraces,
   clearTraces,
 } from '../src/engine/traceBuffer';
+import { createSimulationRuntime } from '../src/engine/simulationRuntime';
+import type { SimulationRuntime } from '../src/engine/simulationRuntime';
+import { setTrackedAgents, getBalanceEvents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
+import { buildBalanceRunSummary, buildBalanceAgentJourneySummary } from '../src/engine/balanceSummary';
+import { evaluateBalanceSummary, evaluateAgentJourney, formatEvaluationReport } from '../src/engine/balanceEvaluator';
+import { getDefaultBalanceTargets } from '../src/engine/balanceTargets';
 
 import type { GameState, TickEvent } from '../src/types/gameState';
 import { SPHERE_NAMES } from '../src/types/index';
@@ -96,6 +102,7 @@ function significanceColor(sig: number): string {
 // ─── State ────────────────────────────────────────────────────────
 
 let state: GameState;
+let runtime: SimulationRuntime;
 let autoRunTimer: ReturnType<typeof setInterval> | null = null;
 let autoRunSpeed = 2; // ticks per second
 let ticksSinceLastSummary = 0;
@@ -104,7 +111,7 @@ let ticksSinceLastSummary = 0;
 
 function doTick(n: number = 1): void {
   for (let i = 0; i < n; i++) {
-    state = runTick(state);
+    state = runTick(state, [], runtime);
     if (state.phase === 'twilight' || state.phase === 'harvest') {
       console.log(`${YELLOW}⚠ Phase changed to '${state.phase}' at tick ${state.tick}. Stopping.${RESET}`);
       return;
@@ -312,6 +319,93 @@ function printTraces(n: number = 10): void {
   }
 }
 
+function printBalance(subCmd?: string, subArg?: string): void {
+  const tel = runtime.balanceTelemetry;
+  if (!tel) {
+    console.log(`${RED}Balance telemetry not initialized.${RESET}`);
+    return;
+  }
+
+  if (!subCmd || subCmd === 'summary') {
+    const summary = buildBalanceRunSummary(runtime, state.tick);
+    if (!summary) { console.log('No summary available.'); return; }
+    console.log(header('Balance Summary'));
+    console.log(`  Ticks: ${summary.totalTicks}  |  Target: ${summary.targetVersion}`);
+    console.log(`  Steps: ${summary.totals.stepsAttempted} attempted`);
+    console.log(`  Encounters: ${summary.totals.encountersAttempted} attempted, ${summary.totals.encountersCompleted} completed, ${summary.totals.encountersAbandoned} abandoned`);
+    console.log(`  Fail-forward share: ${(summary.failForwardShare * 100).toFixed(1)}%`);
+    console.log(`  Rewards: ${summary.totals.rewardsGranted} granted, ${summary.totals.rewardsMissed} missed`);
+    console.log(`  Growth beats: ${summary.totals.growthBeatsApplied}`);
+    console.log(`  Dissolutions: ${summary.totals.dissolutions}`);
+    console.log(`  First reward tick: ${summary.pacing.firstRewardTick ?? 'none'}`);
+    console.log(`  First setback tick: ${summary.pacing.firstSetbackTick ?? 'none'}`);
+    console.log(`  First growth beat tick: ${summary.pacing.firstGrowthBeatTick ?? 'none'}`);
+    if (Object.keys(summary.stepSuccessRates).length > 0) {
+      console.log(`  Step success rates by band:`);
+      for (const [band, stats] of Object.entries(summary.stepSuccessRates)) {
+        if (stats) {
+          console.log(`    ${band.padEnd(10)} ${(stats.rate * 100).toFixed(1)}%  (${stats.successes}/${stats.attempts})`);
+        }
+      }
+    }
+    return;
+  }
+
+  if (subCmd === 'eval') {
+    const summary = buildBalanceRunSummary(runtime, state.tick);
+    if (!summary) { console.log('No data to evaluate.'); return; }
+    const targets = getDefaultBalanceTargets();
+    const result = evaluateBalanceSummary(summary, targets);
+    console.log(formatEvaluationReport(result, summary));
+    return;
+  }
+
+  if (subCmd === 'targets') {
+    const targets = getDefaultBalanceTargets();
+    console.log(header(`Balance Targets — ${targets.version}`));
+    console.log(`  ${dim(targets.description)}`);
+    for (const b of targets.bands) {
+      const scope = b.scope ? ` [${b.scope}]` : '';
+      console.log(`  ${b.metricId}${scope}: [${b.min}, ${b.max}] warn=[${b.warnBelow ?? b.min}, ${b.warnAbove ?? b.max}]`);
+    }
+    return;
+  }
+
+  if (subCmd === 'recent') {
+    const n = parseInt(subArg ?? '20', 10);
+    const events = getBalanceEvents(runtime, { limit: isNaN(n) ? 20 : n });
+    console.log(header(`Balance Events (last ${events.length})`));
+    for (const e of events) {
+      console.log(`  ${dim(`#${e.seq} t${e.tick}`)} [${e.kind}] agent:${e.agentId.slice(-8)} src:${e.sourceSystem}${e.result ? ` res:${e.result}` : ''}${e.threatBand ? ` band:${e.threatBand}` : ''}`);
+    }
+    return;
+  }
+
+  if (subCmd === 'agent') {
+    const id = subArg;
+    if (!id) { console.log(`${RED}Usage: balance agent <id>${RESET}`); return; }
+    const actors = state.graph.getNodesByType('actor');
+    const match =
+      actors.find(n => n.id === id) ??
+      actors.find(n => n.id.startsWith(id)) ??
+      actors.find(n => typeof n.name === 'string' && n.name.toLowerCase().includes(id.toLowerCase()));
+    const agentId = match?.id ?? id;
+    const agentName = typeof match?.name === 'string' ? match.name : undefined;
+    const j = buildBalanceAgentJourneySummary(runtime, agentId, agentName);
+    if (!j) {
+      console.log(`${YELLOW}No tracked events for agent '${agentId}'. Is the agent tracked?${RESET}`);
+      console.log(`  Tracked agents: ${tel.trackedAgentIds.join(', ') || '(none)'}`);
+      return;
+    }
+    const lines = evaluateAgentJourney(j);
+    console.log(header('Agent Journey'));
+    for (const l of lines) console.log(l);
+    return;
+  }
+
+  console.log(`${RED}Usage: balance [summary|eval|targets|recent [N]|agent <id>]${RESET}`);
+}
+
 function startAutoRun(speed?: number): void {
   if (speed !== undefined && speed > 0) autoRunSpeed = speed;
   stopAutoRun();
@@ -321,7 +415,7 @@ function startAutoRun(speed?: number): void {
   console.log(`${GREEN}▶ Running at ${autoRunSpeed} ticks/sec${RESET} (Ctrl+C or type 'pause' to stop)`);
 
   autoRunTimer = setInterval(() => {
-    state = runTick(state);
+    state = runTick(state, [], runtime);
     ticksSinceLastSummary++;
 
     if (ticksSinceLastSummary % 10 === 0) {
@@ -362,6 +456,11 @@ function printHelp(): void {
   console.log(`  ${BOLD}encounters${RESET}       Active unified actions`);
   console.log(`  ${BOLD}factions${RESET}         List factions`);
   console.log(`  ${BOLD}traces${RESET} [N]       Show last N traces (default 10)`);
+  console.log(`  ${BOLD}balance${RESET}          Balance summary (alias: bal)`);
+  console.log(`  ${BOLD}balance eval${RESET}     Evaluate session vs. targets`);
+  console.log(`  ${BOLD}balance targets${RESET}  Show target bands`);
+  console.log(`  ${BOLD}balance recent${RESET} [N] Show last N balance events`);
+  console.log(`  ${BOLD}balance agent${RESET} <id> Show agent journey`);
   console.log(`  ${BOLD}seed${RESET}             Print current seed`);
   console.log(`  ${BOLD}eval${RESET} <expr>      Evaluate JS with 'state' in scope`);
   console.log(`  ${BOLD}help${RESET}             This help`);
@@ -456,6 +555,13 @@ function handleCommand(line: string): boolean {
       printTraces(isNaN(n) ? 10 : n);
       break;
     }
+    case 'balance':
+    case 'bal': {
+      // sub-commands: summary (default), eval, targets, recent [N], agent <id>
+      const subParts = arg ? arg.split(/\s+/) : [];
+      printBalance(subParts[0], subParts[1]);
+      break;
+    }
     case 'seed':
       console.log(`Seed: ${state.seed}`);
       break;
@@ -506,6 +612,7 @@ function main(): void {
   resetEventCounter();
   clearTraces();
   enableTracing();
+  runtime = createSimulationRuntime();
 
   const archetypes = generateArchetypes(4, args.seed);
   const archetype = archetypes[0];
@@ -525,6 +632,16 @@ function main(): void {
 
   const agents = state.graph.getNodesByType('actor').filter(n => n.properties.actorType === 'individual');
   const locations = state.graph.getNodesByType('location');
+
+  // Set up balance telemetry: track the default hero (lexicographically first agent)
+  const agentIds = agents.map(n => n.id);
+  const heroId = selectDefaultTrackedHero(agentIds);
+  if (heroId) {
+    setTrackedAgents(runtime, [heroId]);
+    const heroName = agents.find(n => n.id === heroId)?.name;
+    console.log(`${dim(`Balance tracking: ${heroName ?? heroId}`)}`);
+  }
+
   console.log(`${GREEN}✓${RESET} Ready. ${agents.length} agents, ${locations.length} locations, tick 0.`);
   console.log(`Type ${BOLD}help${RESET} for commands.\n`);
 

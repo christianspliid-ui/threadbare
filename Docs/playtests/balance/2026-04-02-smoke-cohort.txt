@@ -1,0 +1,54 @@
+# Cohort Balance Report — smoke
+Date: 2026-04-02
+Seeds: 42, 137, 256
+Ticks per run: 200
+Runs: 3
+
+# Balance Evaluation Report
+Evaluated: 2026-04-02T10:01:09.110Z
+Target version: 0.1.0-phase1
+Run: seed=n/a, ticks=66.66666666666667, map=n/a
+
+Overall: FAIL (5 pass, 11 warning, 13 fail)
+
+## Findings
+
+[FAIL   ] Step success rate [trivial]: 6.6% — Below minimum (6.6% < 82.0%)
+[FAIL   ] Step success rate [easy]: 5.9% — Below minimum (5.9% < 72.0%)
+[FAIL   ] Step success rate [moderate]: 9.3% — Below minimum (9.3% < 55.0%)
+[FAIL   ] Encounter completion rate [trivial]: 0.7% — Below minimum (0.7% < 75.0%)
+[FAIL   ] Encounter completion rate [easy]: 0.4% — Below minimum (0.4% < 65.0%)
+[FAIL   ] Encounter completion rate [moderate]: 1.2% — Below minimum (1.2% < 45.0%)
+[FAIL   ] Encounter completion rate [hard]: 12.9% — Below minimum (12.9% < 25.0%)
+[FAIL   ] Fail-forward share of encounters: 0.4% — Below minimum (0.4% < 55.0%)
+[FAIL   ] Quintessence recovery per 100 ticks: 0 — Below minimum (0 < 2.5%)
+[FAIL   ] Durable rewards per 100 encounters: 83.5% — Below minimum (83.5% < 2)
+[FAIL   ] Consumable rewards per 100 encounters: 0 — Below minimum (0 < 12)
+[FAIL   ] Time to first meaningful reward (ticks): 4 — Below minimum (4 < 15)
+[FAIL   ] Time to first growth beat (ticks): 13 — Below minimum (13 < 15)
+[WARNING] Step success rate [hard]: 35.1% — Below ideal zone (35.1% < 40.0%, min=35.0%)
+[WARNING] Step success rate [deadly]: 45.5% — Above ideal zone (45.5% > 45.0%, max=50.0%)
+[WARNING] Step success rate [epic]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [deadly]: 14.3% — Below ideal zone (14.3% < 15.0%, min=10.0%)
+[WARNING] Avg quintessence loss per encounter [trivial]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [easy]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [moderate]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [hard]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [deadly]: no data — No data available for this metric.
+[WARNING] Conditions per 100 encounters: no data — No data available for this metric.
+[WARNING] Time to first major setback (ticks): no data — No data available for this metric.
+[PASS   ] Critical failure share [trivial]: 0 — In target zone (0)
+[PASS   ] Critical failure share [easy]: 0 — In target zone (0)
+[PASS   ] Critical failure share [moderate]: 0 — In target zone (0)
+[PASS   ] Critical failure share [hard]: 0 — In target zone (0)
+[PASS   ] Critical failure share [deadly]: 0 — In target zone (0)
+
+## Run Totals
+  Actions attempted:    0
+  Steps attempted:      4530
+  Encounters attempted: 4190
+  Encounters completed: 54
+  Rewards granted:      160
+  Rewards missed:       0
+  Growth beats:         10
+  Dissolutions:         0

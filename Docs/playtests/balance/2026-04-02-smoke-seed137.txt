@@ -1,0 +1,48 @@
+# Balance Evaluation Report
+Evaluated: 2026-04-02T10:01:06.000Z
+Target version: 0.1.0-phase1
+Run: seed=n/a, ticks=0, map=n/a
+
+Overall: WARNING (0 pass, 29 warning, 0 fail)
+
+## Findings
+
+[WARNING] Step success rate [trivial]: no data — No data available for this metric.
+[WARNING] Step success rate [easy]: no data — No data available for this metric.
+[WARNING] Step success rate [moderate]: no data — No data available for this metric.
+[WARNING] Step success rate [hard]: no data — No data available for this metric.
+[WARNING] Step success rate [deadly]: no data — No data available for this metric.
+[WARNING] Step success rate [epic]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [trivial]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [easy]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [moderate]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [hard]: no data — No data available for this metric.
+[WARNING] Encounter completion rate [deadly]: no data — No data available for this metric.
+[WARNING] Fail-forward share of encounters: no data — No data available for this metric.
+[WARNING] Critical failure share [trivial]: no data — No data available for this metric.
+[WARNING] Critical failure share [easy]: no data — No data available for this metric.
+[WARNING] Critical failure share [moderate]: no data — No data available for this metric.
+[WARNING] Critical failure share [hard]: no data — No data available for this metric.
+[WARNING] Critical failure share [deadly]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [trivial]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [easy]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [moderate]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [hard]: no data — No data available for this metric.
+[WARNING] Avg quintessence loss per encounter [deadly]: no data — No data available for this metric.
+[WARNING] Quintessence recovery per 100 ticks: no data — No data available for this metric.
+[WARNING] Durable rewards per 100 encounters: no data — No data available for this metric.
+[WARNING] Consumable rewards per 100 encounters: no data — No data available for this metric.
+[WARNING] Conditions per 100 encounters: no data — No data available for this metric.
+[WARNING] Time to first meaningful reward (ticks): no data — No data available for this metric.
+[WARNING] Time to first major setback (ticks): no data — No data available for this metric.
+[WARNING] Time to first growth beat (ticks): no data — No data available for this metric.
+
+## Run Totals
+  Actions attempted:    0
+  Steps attempted:      0
+  Encounters attempted: 0
+  Encounters completed: 0
+  Rewards granted:      0
+  Rewards missed:       0
+  Growth beats:         0
+  Dissolutions:         0

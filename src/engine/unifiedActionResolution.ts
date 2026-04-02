@@ -53,6 +53,8 @@ import { ACTION_PRESSURE_SUCCESS, ACTION_PRESSURE_FAILURE } from '../types/spher
 import { resolveRevelationAction } from './revelationEmitter';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
+import type { SimulationRuntime } from './simulationRuntime';
+import { recordBalanceEvent } from './balanceTelemetry';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -159,6 +161,7 @@ export function executeStepResult(
   rng: () => number,
   tick: number,
   resolutionStats?: { capability: number; probability: number; roll: number },
+  runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   const events: TickEvent[] = [];
 
@@ -214,6 +217,21 @@ export function executeStepResult(
           actorId: action.actorId,
         });
       }
+
+      // Balance telemetry: growth_applied
+      if (runtime) {
+        recordBalanceEvent(runtime, {
+          tick,
+          kind: 'growth_applied',
+          agentId: action.actorId,
+          sourceSystem: 'unified_action',
+          templateId: action.templateId,
+          reach: step.reach,
+          growthReach: step.reach,
+          growthDelta: growthResult.delta,
+          newTier: growthResult.newTier,
+        });
+      }
     }
   }
 
@@ -250,6 +268,24 @@ export function executeStepResult(
       roll: resolutionStats.roll,
       result: outcome === 'success' ? 'PASS' : 'FAIL',
     });
+
+    // Balance telemetry: step_resolved
+    if (runtime) {
+      recordBalanceEvent(runtime, {
+        tick,
+        kind: 'step_resolved',
+        agentId: action.actorId,
+        sourceSystem: 'unified_action',
+        templateId: action.templateId,
+        stepIndex: action.currentStep,
+        reach: step.reach,
+        difficulty: step.difficulty,
+        capability: resolutionStats.capability,
+        probability: resolutionStats.probability,
+        roll: resolutionStats.roll,
+        result: outcome === 'success' ? 'success' : 'failure',
+      });
+    }
   }
 
   // Timeline: ACTION_END event when action fully resolves
@@ -261,6 +297,19 @@ export function executeStepResult(
       status: updatedAction.outcome ?? 'unknown',
       stepResults: updatedAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
     });
+
+    // Balance telemetry: action_resolved
+    if (runtime) {
+      recordBalanceEvent(runtime, {
+        tick,
+        kind: 'action_resolved',
+        agentId: action.actorId,
+        sourceSystem: 'unified_action',
+        templateId: action.templateId,
+        result: updatedAction.outcome === 'success' ? 'success' : 'failure',
+        finalStatus: updatedAction.outcome === 'success' ? 'completed' : 'abandoned',
+      });
+    }
   }
 
   // Generate tick event
@@ -312,6 +361,7 @@ export function phaseUnifiedActionProgress(
   state: GameState,
   templates: readonly UnifiedActionTemplate[],
   rng: () => number,
+  runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const events: TickEvent[] = [];
   const hexMutations: HexMutation[] = [];
@@ -348,6 +398,7 @@ export function phaseUnifiedActionProgress(
       : (atkTemplate.steps[attacker.currentStep]?.onFailure ?? []);
     const { updatedAction: updAtk, events: atkEvents } = executeStepResult(
       attacker, atkTemplate, contestResult.attackerOutcome, atkOps, state, rng, state.tick,
+      undefined, runtime,
     );
 
     // Apply defender outcome
@@ -356,6 +407,7 @@ export function phaseUnifiedActionProgress(
       : (defTemplate.steps[defender.currentStep]?.onFailure ?? []);
     const { updatedAction: updDef, events: defEvents } = executeStepResult(
       defender, defTemplate, contestResult.defenderOutcome, defOps, state, rng, state.tick,
+      undefined, runtime,
     );
 
     // Replace in actions array
@@ -423,7 +475,7 @@ export function phaseUnifiedActionProgress(
     // Execute and advance
     const { updatedAction, events: stepEvents } = executeStepResult(
       completing_action, template, outcome, opsToExecute, state, rng, state.tick,
-      { capability, probability, roll },
+      { capability, probability, roll }, runtime,
     );
 
     // If this action targets a hex, route through hexActionBridge to get mutations

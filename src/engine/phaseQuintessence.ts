@@ -16,6 +16,8 @@ import {
   ZERO_STATE_RULES,
 } from '../types/quintessence';
 import type { NodeType } from '../types/graph';
+import type { SimulationRuntime } from './simulationRuntime';
+import { recordBalanceEvent } from './balanceTelemetry';
 
 /**
  * Node types that can carry quintessence.
@@ -36,7 +38,7 @@ const QUINTESSENCE_NODE_TYPES: NodeType[] = ['actor', 'location'];
  * Fail-soft: missing quintessence defaults to 1.0; unknown node IDs are skipped.
  * Graph nodes are mutated via updateNode following the established pattern in this codebase.
  */
-export function phaseQuintessence(state: GameState): Partial<GameState> {
+export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime): Partial<GameState> {
   const events = state.pendingQuintessenceEvents ?? [];
   const newTickEvents: TickEvent[] = [...state.tickEvents];
   const graph = state.graph;
@@ -55,6 +57,20 @@ export function phaseQuintessence(state: GameState): Partial<GameState> {
     const current = (node.properties.quintessence ?? QUINTESSENCE_DEFAULT) as number;
     const updated = Math.max(0, Math.min(1, current + totalDelta));
     graph.updateNode(nodeId, { properties: { quintessence: updated } });
+
+    // Balance telemetry: quintessence_changed (from pending events — player/encounter driven)
+    if (runtime && totalDelta !== 0) {
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'quintessence_changed',
+        agentId: nodeId,
+        sourceSystem: 'quintessence',
+        quintessenceBefore: current,
+        quintessenceAfter: updated,
+        quintessenceDelta: updated - current,
+        quintessenceReason: 'pending_event',
+      });
+    }
   }
 
   // ── Step 3 & 4: Passive regen + dissolution check ────────────────────
@@ -91,6 +107,18 @@ export function phaseQuintessence(state: GameState): Partial<GameState> {
           });
           // Mark as dissolved — do not remove from graph (fail-soft: let downstream handle)
           graph.updateNode(node.id, { properties: { dissolved: true } });
+
+          // Balance telemetry: state_transition (dissolution)
+          if (runtime) {
+            recordBalanceEvent(runtime, {
+              tick: state.tick,
+              kind: 'state_transition',
+              agentId: node.id,
+              sourceSystem: 'quintessence',
+              transitionType: 'dissolved',
+              quintessenceAfter: finalQ,
+            });
+          }
         }
       }
     }
