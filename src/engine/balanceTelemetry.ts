@@ -49,6 +49,8 @@ export interface BalanceCounters {
   quintessenceTotalNegativeDelta: number;
   quintessenceTotalPositiveDelta: number;
   quintessenceEventCount: number;
+  /** Phase 2: per-band quintessence loss from encounter failures */
+  quintessenceLossByBand: Partial<Record<BalanceThreatBand, { totalLoss: number; encounterCount: number }>>;
 }
 
 // ─── Milestones ───────────────────────────────────────────────────
@@ -133,6 +135,7 @@ function createEmptyCounters(): BalanceCounters {
     quintessenceTotalNegativeDelta: 0,
     quintessenceTotalPositiveDelta: 0,
     quintessenceEventCount: 0,
+    quintessenceLossByBand: {},
   };
 }
 
@@ -219,6 +222,14 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
           counters.quintessenceTotalNegativeDelta += event.quintessenceDelta;
         } else {
           counters.quintessenceTotalPositiveDelta += event.quintessenceDelta;
+        }
+        // Phase 2: Track per-band quintessence loss for scoped evaluation
+        if (event.quintessenceReason === 'encounter_failure_by_band' && event.threatBand && event.quintessenceDelta < 0) {
+          const band = event.threatBand;
+          const bandStats = counters.quintessenceLossByBand[band] ?? { totalLoss: 0, encounterCount: 0 };
+          bandStats.totalLoss += Math.abs(event.quintessenceDelta);
+          bandStats.encounterCount++;
+          counters.quintessenceLossByBand[band] = bandStats;
         }
       }
       break;

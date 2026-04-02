@@ -8,6 +8,7 @@
  */
 
 import type { SimulationRuntime } from './simulationRuntime';
+import type { BalanceCounters } from './balanceTelemetry';
 import type {
   BalanceRunSummary,
   BalanceAgentJourneySummary,
@@ -111,6 +112,8 @@ export function buildBalanceRunSummary(
       dissolutions: c.totalDissolutions,
       // Phase 2: threshold transition counts from recent events
       ...computeQuintessenceThresholdSummary(t.recentEvents),
+      // Phase 2: per-band quintessence loss from encounter failures
+      lossPerEncounterByBand: computeQuintessenceLossByBand(c),
     },
 
     rewards: {
@@ -144,6 +147,22 @@ function computeCritFailShareByBand(
   for (const [band, stats] of byBand) {
     if (stats.attempts > 0) {
       result[band] = stats.crits / stats.attempts;
+    }
+  }
+  return result;
+}
+
+/**
+ * Phase 2: Compute per-band average quintessence loss per encounter failure.
+ * Returns null for bands with no data.
+ */
+function computeQuintessenceLossByBand(
+  counters: BalanceCounters,
+): Partial<Record<BalanceThreatBand, number>> {
+  const result: Partial<Record<BalanceThreatBand, number>> = {};
+  for (const [band, stats] of Object.entries(counters.quintessenceLossByBand)) {
+    if (stats && stats.encounterCount > 0) {
+      result[band as BalanceThreatBand] = stats.totalLoss / stats.encounterCount;
     }
   }
   return result;

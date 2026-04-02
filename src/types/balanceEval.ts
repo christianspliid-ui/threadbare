@@ -183,6 +183,8 @@ export interface BalanceRunSummary {
     dissolutions: number;
     /** Phase 2: count of threshold transition events by transition type */
     thresholdTransitions?: Record<string, number>;
+    /** Phase 2: per-band average quintessence loss per encounter failure */
+    lossPerEncounterByBand?: Partial<Record<BalanceThreatBand, number>>;
   };
 
   rewards: {

@@ -155,12 +155,10 @@ function extractMetric(
     }
     case 'quintessence_loss_per_encounter': {
       if (!scope) return null;
-      // Phase 2: Use totalNegativeDelta if available, scoped by encounter count.
-      // Per-band quintessence loss still requires Phase 5 content migration to be meaningful.
-      // For now, return aggregate loss per encounter as an approximation.
-      if (summary.totals.encountersAttempted < 5) return null;
-      const totalLoss = summary.quintessence.totalNegativeDelta ?? 0;
-      return totalLoss !== 0 ? Math.abs(totalLoss) / summary.totals.encountersAttempted : null;
+      // Phase 2: Per-band quintessence loss from encounter failures.
+      // Uses dedicated per-band counters populated by orchestrator encounter telemetry.
+      const bandLoss = summary.quintessence.lossPerEncounterByBand?.[scope as BalanceThreatBand];
+      return bandLoss !== undefined ? bandLoss : null;
     }
     case 'quintessence_recovery_per_100_ticks': {
       // Phase 2: Use totalPositiveDelta which now includes passive regen telemetry.

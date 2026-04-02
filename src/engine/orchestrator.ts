@@ -82,6 +82,7 @@ import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
 import { phaseQuintessence } from './phaseQuintessence';
+import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
@@ -312,6 +313,21 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
         roll: undefined,
         result: result.success ? 'success' : 'failure',
         threatBand: (encounter?.threatRating ?? 'unknown') as import('../types/balanceEval').BalanceThreatBand,
+      });
+    }
+
+    // Phase 2: Balance telemetry for encounter failure quintessence erosion (per-band).
+    // This lets the evaluator compute quintessence_loss_per_encounter scoped by threat band.
+    if (runtime && !result.success) {
+      const encounterForQ = getAnyEncounterById(progress.encounterId);
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'quintessence_changed',
+        agentId: progress.actorId,
+        sourceSystem: 'legacy_encounter',
+        quintessenceDelta: -QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
+        quintessenceReason: 'encounter_failure_by_band',
+        threatBand: (encounterForQ?.threatRating ?? 'unknown') as import('../types/balanceEval').BalanceThreatBand,
       });
     }
 
