@@ -110,6 +110,61 @@ Located in `src/data/spell-templates.ts`:
 
 ---
 
+## Encounter Runtime Contract (Phase 2)
+
+**North star doc:** `Docs/plans/2026-04-02-encounter-redesign-guidelines.md`
+**Resolution service:** `src/engine/resolutionService.ts`
+**Quintessence hooks:** `src/engine/quintessenceActions.ts`
+
+When authoring or revising encounter content, these are the runtime rules your content will resolve against.
+
+### Difficulty normalization
+
+All resolution uses normalized difficulty in `0..1`. Legacy encounter step difficulty (integer-like: 12, 25, 30) is divided by 100 at the caller boundary via `normalizeLegacyDifficulty()`. When authoring new unified action templates, use `0..1` directly.
+
+### Outcome ladder
+
+Every step resolves to one of: `critical_success | success | success_at_cost | failure | critical_failure`. Doubles under threshold = crit success; doubles over = crit failure. Crit frequency scales with actor competence — skilled actors rarely crit-fail, unskilled actors rarely crit-succeed.
+
+`success_at_cost` exists in the contract but is not yet fully wired (Phase 3). Author content with it in mind.
+
+### Step success bands (target)
+
+| Band | Intended step success | Author guidance |
+|------|----------------------|-----------------|
+| `trivial` | 85–95% | Bread-and-butter, confidence-building |
+| `easy` | 75–85% | Hero feels capable |
+| `moderate` | 60–75% | Meaningful risk |
+| `hard` | 40–60% | Tense, costly |
+| `deadly` | 25–45% | Serious danger |
+| `epic` | 10–25% before resources | Late-game / ascension |
+
+### Quintessence pressure per band
+
+Encounter failure erodes quintessence via `pendingQuintessenceEvents`. Current constant: `QUINTESSENCE_ENCOUNTER_FAILURE_EROSION = 0.03`. Target magnitudes from the guidelines (on a `0–1` scale):
+
+| Band | Typical spend | Failure hit | Success recovery |
+|------|--------------|-------------|-----------------|
+| `trivial` | 0.005–0.010 | 0–0.010 | 0–0.010 |
+| `easy` | 0.010–0.020 | 0.010–0.020 | 0.005–0.015 |
+| `moderate` | 0.020–0.040 | 0.020–0.050 | 0.010–0.030 |
+| `hard` | 0.040–0.080 | 0.050–0.100 | 0.020–0.050 |
+| `deadly` | 0.080–0.150 | 0.100–0.200 | 0.030–0.080 |
+| `epic` | 0.150–0.250 | 0.200–0.350 | 0.050–0.120 |
+
+These are Phase 5 tuning targets — current runtime uses one flat erosion constant. But author new content with these bands in mind.
+
+### Fail-forward defaults
+
+When authoring unified action templates:
+- Step 1: `continue_weakened` (not `fail_action`)
+- Step 2: `continue_weakened` unless fiction truly collapses
+- Final step: `fail_action` only when the action cannot proceed
+
+Current catalog ratio is 10 `continue_weakened` : 74 `fail_action` — Phase 5 will migrate, but new content should follow the target ratio now.
+
+---
+
 ## System 8: Encounter Content Packages
 
 **Main:** `src/data/encounter-content.ts` (115 templates, 408KB)
