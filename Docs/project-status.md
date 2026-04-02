@@ -1,30 +1,34 @@
 # Project Status
 
-> Updated 2026-04-02.
+> Updated 2026-04-03.
 
 ## Current Focus
 
-**Agent Success Redesign Phase 2** — Complete. Shared resolution service, quintessence current/max foundation, and telemetry enrichment shipped 2026-04-02. 169 new/updated Phase 2 tests, all green.
+**Agent Success Redesign Phase 3** — Complete. Unified action outcome expansion shipped 2026-04-03. Rich 5-tier outcomes, push/resist quintessence spend, differentiated consequences proving slice.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
-- **Agent Success Redesign:** Phase 1 (balance eval) ✅, Phase 2 (shared resolution + quintessence) ✅
-- **Next:** Phase 3 (unified action outcome expansion), or v1.2 Social Systems
+- **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅
+- **Next:** Phase 4 (agent decision and forecast rewrite), or v1.2 Social Systems
+
+## Recent Completions (2026-04-03)
+
+- **Agent Success Redesign Phase 3 — Unified Action Outcome Expansion:**
+  - Expanded `StepOutcome` to 5 tiers: `critical_success | success | success_at_cost | failure | critical_failure`
+  - Near-miss successes (margin ≤ 5) become `success_at_cost`; `critical_failure` always terminates action
+  - `computeFinalActionOutcome`: failed-but-continued steps produce `success_at_cost` at action level
+  - Created `outcomeConsequences.ts` proving slice with 3 action families (social, information, risky)
+  - Wired push (Q spend for +0.10 modifier on risky actions) and resist (Q spend for 60% outcome downgrade on social actions)
+  - New telemetry: `outcomeDistribution`, `actionOutcomeDistribution`, `quintessence_push/resist` events, `pushResist` in run summaries
+  - 29 new Phase 3 tests, 0 regressions
 
 ## Recent Completions (2026-04-02)
 
-- **Agent Success Redesign Phase 2 — Shared Resolution and Quintessence Foundation:**
-  - Created `resolutionService.ts` — single authoritative resolution service with doubles-based crit model (replaces flat roll ≥ 96 tail), canonical `0..1` difficulty normalization
-  - Ported unified actions, legacy encounters, and planner/forecast scoring onto shared resolver — removed `STEP_PROBABILITY_OFFSET` planner-only drift
-  - Added `quintessenceMax`, threshold states (`healthy`/`strained`/`weakened`/`critical`/`broken`), spend/resist hooks (`quintessenceActions.ts`)
-  - Wired encounter failure erosion as live non-player quintessence pressure seam
-  - Enriched telemetry: passive regen visibility, per-band quintessence loss, threshold transition counts in summaries
-  - 169 new/updated tests across 5 files
-- **Balance-Eval Phase 1 hardening:** wired phaseQuintessence (Phase 6.6396), runner race fix, telemetry tests, smoke baseline.
-- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Summary reducers, evaluator, versioned targets, debug bridge, CLI, headless runner. 79 tests.
+- **Agent Success Redesign Phase 2:** Shared resolution service, quintessence current/max, doubles-based crits, encounter failure erosion, enriched telemetry. 169 tests.
+- **Balance-Eval Phase 1:** Session-owned telemetry, summaries, evaluator, CLI runner. 79 tests.
 
 ## Recent Completions (2026-04-01)
 
