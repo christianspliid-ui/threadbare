@@ -56,6 +56,26 @@ Every engine module that produces per-tick state changes must be called from a p
 | 12.1 | `phaseMandate` | Player mandate progress |
 | 13 | `phaseDoomExpiry` | Doom conclusion |
 
+| 6.6396 | `phaseQuintessence` | Quintessence event processing, regen, dissolution |
+
+**Phase 2 resolution wiring (2026-04-02):**
+
+| Caller | Uses shared resolver? | Difficulty normalization |
+|--------|----------------------|------------------------|
+| `unifiedActionResolution.ts` | ✅ `resolveActionShared()` | Already `0..1` — pass through |
+| `encounter.ts` | ✅ `resolveActionShared()` | `normalizeLegacyDifficulty()` at boundary |
+| `encounterScoring.ts` | ✅ `computeResolutionThreshold()` | `normalizeLegacyDifficulty()` at boundary |
+| `contestation.ts` | ⚠️ Still uses `resolution.ts` directly | Legacy — port in future cleanup |
+
+**Phase 2 quintessence telemetry wiring (2026-04-02):**
+
+| Source | Event kind | Threat band? |
+|--------|-----------|-------------|
+| `phaseQuintessence` (pending events) | `quintessence_changed` / `reason: pending_event` | No |
+| `phaseQuintessence` (passive regen) | `quintessence_changed` / `reason: passive_regen` | No |
+| `phaseQuintessence` (threshold crossing) | `state_transition` / `threshold_X_to_Y` | No |
+| `orchestrator` (encounter failure) | `quintessence_changed` / `reason: encounter_failure_by_band` | ✅ Yes |
+
 **Verification:** `grep -c 'phase[A-Z]' src/engine/orchestrator.ts` — count should match this table.
 
 ### 2. GameView Modal & Overlay Rendering (`src/components/Game/GameView.tsx`)

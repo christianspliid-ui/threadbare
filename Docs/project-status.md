@@ -4,19 +4,27 @@
 
 ## Current Focus
 
-**Balance-Eval Phase 1** — Complete. Foundation shipped + hardened 2026-04-02. phaseQuintessence wired at Phase 6.6396, runner race fixed, 98 tests green. Smoke baseline valid (3 seeds × 200 ticks, FAIL 6p/9w/14f). Quintessence metrics 0 pending Phase 2 upstream wiring.
+**Agent Success Redesign Phase 2** — Complete. Shared resolution service, quintessence current/max foundation, and telemetry enrichment shipped 2026-04-02. 169 new/updated Phase 2 tests, all green.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
-- **v1.2 Social Systems Expansion:** Designed — 5 expansions (taverns/parties, deep social scenes, agent initiatives, faction agency, information economy). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
-- **Next:** Agent Success Redesign Phase 2 (step success rebalance per redesign guidelines), or v1.2 Social Systems
+- **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
+- **Agent Success Redesign:** Phase 1 (balance eval) ✅, Phase 2 (shared resolution + quintessence) ✅
+- **Next:** Phase 3 (unified action outcome expansion), or v1.2 Social Systems
 
 ## Recent Completions (2026-04-02)
 
-- **Balance-Eval Phase 1 hardening:** wired phaseQuintessence (Phase 6.6396), fixed concurrent runner race (per-profile cache names), added 5 telemetry tests (98 total), regenerated smoke baseline — all 3 seeds valid. Quintessence metrics 0 (no upstream producer in headless runs — Phase 2 gap).
-- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Instrumented `unifiedActionResolution`, `phaseEncounterProgressionV2`, `phaseQuintessence`. Summary reducers, evaluator, versioned targets (`0.1.0-phase1`), debug bridge, CLI, headless runner. Smoke baseline in `Docs/playtests/balance/`. 79 tests, all green.
+- **Agent Success Redesign Phase 2 — Shared Resolution and Quintessence Foundation:**
+  - Created `resolutionService.ts` — single authoritative resolution service with doubles-based crit model (replaces flat roll ≥ 96 tail), canonical `0..1` difficulty normalization
+  - Ported unified actions, legacy encounters, and planner/forecast scoring onto shared resolver — removed `STEP_PROBABILITY_OFFSET` planner-only drift
+  - Added `quintessenceMax`, threshold states (`healthy`/`strained`/`weakened`/`critical`/`broken`), spend/resist hooks (`quintessenceActions.ts`)
+  - Wired encounter failure erosion as live non-player quintessence pressure seam
+  - Enriched telemetry: passive regen visibility, per-band quintessence loss, threshold transition counts in summaries
+  - 169 new/updated tests across 5 files
+- **Balance-Eval Phase 1 hardening:** wired phaseQuintessence (Phase 6.6396), runner race fix, telemetry tests, smoke baseline.
+- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Summary reducers, evaluator, versioned targets, debug bridge, CLI, headless runner. 79 tests.
 
 ## Recent Completions (2026-04-01)
 

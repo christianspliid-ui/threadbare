@@ -39,13 +39,61 @@ Every random decision uses the seeded PRNG. Never use `Math.random()`.
 - Essential for replay: "I liked seed 7, let me tweak doom speed and replay"
 - The PRNG is the single source of randomness in the engine
 
-## Resolution: Sigmoid Pool → d100
+## Resolution: Shared Resolution Service (Phase 2)
 
-The unified resolution system:
-1. Gather domain capability scores for the relevant Reach
-2. Feed through sigmoid curve to produce a probability (0-1)
-3. Roll d100 against that probability
-4. No alternative dice systems, no special-case resolution
+The single authoritative resolution system lives in `src/engine/resolutionService.ts`. All callers (unified actions, legacy encounters, planner forecast) use the same math.
+
+**Pipeline:**
+1. Gather domain capability scores for the relevant Reach (sigmoid → 0-1)
+2. Build `ResolutionInput` with normalized difficulty (`0..1`), capability, sphereFactor, modifiers
+3. `computeResolutionThreshold(inputs)` → probability clamped to `[0.05, 0.95]`
+4. `resolveAction(inputs, rng)` → roll d100 → classify outcome
+
+**Canonical difficulty normalization:** All callers provide `difficulty` in `0..1`. Legacy encounters use `normalizeLegacyDifficulty()` at their boundary (divides integer difficulty by 100). Unified actions pass through directly.
+
+**Crit model (doubles-based, Phase 2):**
+- Doubles (11, 22, 33, ..., 99) determine crits
+- Doubles at or under threshold = `critical_success`
+- Doubles over threshold = `critical_failure`
+- Crit frequency scales with competence (replaces old flat `roll ≥ 96` tail)
+
+**Outcome ladder:** `critical_success | success | success_at_cost | failure | critical_failure`
+(`success_at_cost` exists in the contract for Phase 3 expansion)
+
+**Forecast/live parity:** `forecastAction(inputs)` and `resolveAction(inputs, rng)` use the same threshold and crit rules. No planner-only offsets.
+
+**Key files:**
+- `src/engine/resolutionService.ts` — shared resolver (authoritative)
+- `src/engine/resolution.ts` — legacy low-level implementation (still used by contestation)
+- `src/types/resolution.ts` — `ResolutionInput`, `OutcomeType`, `ResolutionResult`, `ResolutionRollBreakdown`, `ResolutionProbabilitySummary`
+
+## Quintessence: Current/Max Model (Phase 2)
+
+Actor-level quintessence is a reserve/capacity system:
+- `quintessence` — current reserve (0 to `quintessenceMax`)
+- `quintessenceMax` — durable capacity / power ceiling (defaults to 1.0)
+- Passive regen fills toward `quintessenceMax` per tick
+- 5 threshold states derived from ratio (`quintessence / quintessenceMax`):
+  - `healthy` (>50%), `strained` (25-50%), `weakened` (10-25%), `critical` (0-10%), `broken` (0)
+- Threshold transitions emit balance telemetry events
+
+**Quintessence pressure:** Encounter failure pushes erosion into `pendingQuintessenceEvents` (live non-player pressure seam). The `phaseQuintessence` tick phase processes all pending events.
+
+**Spend/resist hooks** (`src/engine/quintessenceActions.ts`):
+- `canSpendQuintessence(node, kind)` / `spendQuintessence(node, kind, source, tick)`
+- `getPushModifier(node)` — probability bonus from push spend
+- `canResistOutcome(node)` / `applyResistOutcome(node, source, tick)`
+- Phase 2 implements the contract; full content wiring is Phase 3+
+
+**Balance telemetry:**
+- `quintessence_changed` events with `reason: 'pending_event' | 'passive_regen' | 'encounter_failure_by_band'`
+- Per-band loss tracked in `BalanceCounters.quintessenceLossByBand`
+- Summary exposes `lossPerEncounterByBand`, `thresholdTransitions`, `totalNegativeDelta`, `totalPositiveDelta`
+
+**Key files:**
+- `src/types/quintessence.ts` — types, constants, threshold helpers
+- `src/engine/phaseQuintessence.ts` — tick phase (regen, event processing, dissolution)
+- `src/engine/quintessenceActions.ts` — spend/resist hooks, encounter failure erosion
 
 ## Fail-Soft Tick Loop
 

@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Agent Success Redesign Phase 2: Shared resolution service (`resolutionService.ts`), doubles-based crit model, canonical `0..1` difficulty normalization, quintessence current/max with threshold states and spend/resist hooks, encounter failure erosion as live quintessence pressure, per-band telemetry. Planner/live parity restored. 169 tests. (2026-04-02)
 - ✅ Balance-Eval Phase 1: Session-owned telemetry + versioned targets + evaluator + debug bridge + CLI + headless runner. Smoke baseline captured. 79 tests green. (2026-04-02)
 - ✅ NPC sublocation placement + HexChronicle filter + rarity visuals in LocationView: NPC_ROLE_SUBLOCATION_MAP (21 roles) routes ambient NPCs to role-appropriate sublocations at worldgen; Souls Present in HexChronicle shows only direct-city agents; LocationView AgentRow and Inhabitants list show 3px rarity-tier left border. (2026-04-01)
 - ✅ TB-100 Unified Rarity Model Phase E: Tagged all 200+ action templates with rarityTier 1–4, made field required, threaded WheelSlot → ActionCard, RarityBadge shown for tier ≥2. (2026-04-01)
