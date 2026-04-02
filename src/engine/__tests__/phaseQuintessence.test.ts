@@ -240,10 +240,12 @@ describe('phaseQuintessence', () => {
       });
       phaseQuintessence(state, runtime);
       const events = getBalanceEvents(runtime, { kind: 'quintessence_changed' });
-      expect(events).toHaveLength(1);
-      expect(events[0].quintessenceDelta).toBeCloseTo(-0.1);
-      expect(events[0].quintessenceReason).toBe('pending_event');
-      expect(events[0].agentId).toBe('actor.test');
+      // Phase 2: expect pending_event + possibly passive_regen events for all Q-bearing nodes
+      expect(events.length).toBeGreaterThanOrEqual(1);
+      const pendingEvents = events.filter(e => e.quintessenceReason === 'pending_event');
+      expect(pendingEvents).toHaveLength(1);
+      expect(pendingEvents[0].quintessenceDelta).toBeCloseTo(-0.1);
+      expect(pendingEvents[0].agentId).toBe('actor.test');
     });
 
     it('emits state_transition dissolved when entity reaches zero', () => {
@@ -292,10 +294,15 @@ describe('phaseQuintessence', () => {
       });
       phaseQuintessence(state, runtime);
       const events = getBalanceEvents(runtime, { kind: 'quintessence_changed' });
-      expect(events.length).toBe(2);
-      // Total negative delta should be visible
-      const totalDelta = events.reduce((sum, e) => sum + (e.quintessenceDelta ?? 0), 0);
+      // Phase 2: pending events + passive regen events for both actors
+      const pendingEvents = events.filter(e => e.quintessenceReason === 'pending_event');
+      expect(pendingEvents.length).toBe(2);
+      // Total negative delta from pending events should be visible
+      const totalDelta = pendingEvents.reduce((sum, e) => sum + (e.quintessenceDelta ?? 0), 0);
       expect(totalDelta).toBeCloseTo(-0.15);
+      // Passive regen events should also be present
+      const regenEvents = events.filter(e => e.quintessenceReason === 'passive_regen');
+      expect(regenEvents.length).toBeGreaterThanOrEqual(1);
     });
   });
 });

@@ -104,8 +104,13 @@ export function buildBalanceRunSummary(
 
     quintessence: {
       totalDeltaFromEvents: c.quintessenceTotalNegativeDelta + c.quintessenceTotalPositiveDelta,
+      totalNegativeDelta: c.quintessenceTotalNegativeDelta,
+      totalPositiveDelta: c.quintessenceTotalPositiveDelta,
+      eventCount: c.quintessenceEventCount,
       averageLossPerEncounter: avgQlossPerEncounter,
       dissolutions: c.totalDissolutions,
+      // Phase 2: threshold transition counts from recent events
+      ...computeQuintessenceThresholdSummary(t.recentEvents),
     },
 
     rewards: {
@@ -142,6 +147,22 @@ function computeCritFailShareByBand(
     }
   }
   return result;
+}
+
+/**
+ * Phase 2: Count threshold transitions from recent events.
+ * Returns a record of transition types to counts, e.g. { threshold_healthy_to_strained: 3 }.
+ */
+function computeQuintessenceThresholdSummary(
+  events: BalanceEvent[],
+): { thresholdTransitions: Record<string, number> } {
+  const transitions: Record<string, number> = {};
+  for (const e of events) {
+    if (e.kind !== 'state_transition') continue;
+    if (!e.transitionType?.startsWith('threshold_')) continue;
+    transitions[e.transitionType] = (transitions[e.transitionType] ?? 0) + 1;
+  }
+  return { thresholdTransitions: transitions };
 }
 
 // ─── Agent Journey Summary ────────────────────────────────────────

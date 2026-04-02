@@ -176,8 +176,13 @@ export interface BalanceRunSummary {
 
   quintessence: {
     totalDeltaFromEvents: number;
+    totalNegativeDelta?: number;
+    totalPositiveDelta?: number;
+    eventCount?: number;
     averageLossPerEncounter: number;
     dissolutions: number;
+    /** Phase 2: count of threshold transition events by transition type */
+    thresholdTransitions?: Record<string, number>;
   };
 
   rewards: {

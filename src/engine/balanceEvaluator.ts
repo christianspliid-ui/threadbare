@@ -155,16 +155,18 @@ function extractMetric(
     }
     case 'quintessence_loss_per_encounter': {
       if (!scope) return null;
-      // We don't have per-band quintessence loss in phase 1 — return null
-      // Phase 2 will add this breakdown. Returning null produces a warning, not a fail.
-      return null;
+      // Phase 2: Use totalNegativeDelta if available, scoped by encounter count.
+      // Per-band quintessence loss still requires Phase 5 content migration to be meaningful.
+      // For now, return aggregate loss per encounter as an approximation.
+      if (summary.totals.encountersAttempted < 5) return null;
+      const totalLoss = summary.quintessence.totalNegativeDelta ?? 0;
+      return totalLoss !== 0 ? Math.abs(totalLoss) / summary.totals.encountersAttempted : null;
     }
     case 'quintessence_recovery_per_100_ticks': {
-      // Approximate: positive quintessence delta / totalTicks * 100
+      // Phase 2: Use totalPositiveDelta which now includes passive regen telemetry.
       if (summary.totalTicks < 10) return null;
-      return (summary.quintessence.totalDeltaFromEvents > 0
-        ? summary.quintessence.totalDeltaFromEvents
-        : 0) / summary.totalTicks * 100;
+      const positiveTotal = summary.quintessence.totalPositiveDelta ?? summary.quintessence.totalDeltaFromEvents;
+      return (positiveTotal > 0 ? positiveTotal : 0) / summary.totalTicks * 100;
     }
     case 'durable_rewards_per_100_encounters': {
       if (summary.totals.encountersAttempted < 5) return null;

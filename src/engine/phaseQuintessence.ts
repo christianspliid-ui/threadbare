@@ -107,8 +107,24 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
 
       // Phase 2: Passive regen toward quintessenceMax (not fixed 1.0)
       if (q > QUINTESSENCE_THRESHOLDS.DISSOLUTION && q < max) {
+        const qBefore = q;
         q = Math.min(max, q + QUINTESSENCE_PASSIVE_REGEN);
         graph.updateNode(node.id, { properties: { quintessence: q } });
+
+        // Phase 2 fix: Emit telemetry for passive regen so recovery metrics are accurate.
+        // Without this, quintessence_recovery_per_100_ticks only counts event-driven gains.
+        if (runtime && q !== qBefore) {
+          recordBalanceEvent(runtime, {
+            tick: state.tick,
+            kind: 'quintessence_changed',
+            agentId: node.id,
+            sourceSystem: 'quintessence',
+            quintessenceBefore: qBefore,
+            quintessenceAfter: q,
+            quintessenceDelta: q - qBefore,
+            quintessenceReason: 'passive_regen',
+          });
+        }
       }
 
       // Dissolution check (after regen — regen does not rescue entities already at 0)
