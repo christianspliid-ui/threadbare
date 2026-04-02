@@ -4,7 +4,7 @@
 
 ## Current Focus
 
-**Balance-Eval Phase 1** — Observational telemetry foundation shipped 2026-04-02. Session-owned telemetry on SimulationRuntime, versioned targets, structured event capture, evaluator, debug bridge, CLI, headless runner. Smoke baseline captured: FAIL (5p/11w/13f) — expected; establishes "before" for the agent success redesign.
+**Balance-Eval Phase 1** — Complete. Foundation shipped + hardened 2026-04-02. phaseQuintessence wired at Phase 6.6396, runner race fixed, 98 tests green. Smoke baseline valid (3 seeds × 200 ticks, FAIL 6p/9w/14f). Quintessence metrics 0 pending Phase 2 upstream wiring.
 
 ## Milestone Status
 
@@ -15,7 +15,8 @@
 
 ## Recent Completions (2026-04-02)
 
-- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Instrumented `unifiedActionResolution`, `phaseEncounterProgressionV2`, `phaseQuintessence`. Summary reducers (`buildBalanceRunSummary`, cohort), evaluator (`evaluateBalanceSummary`), versioned targets (`0.1.0-phase1`). Debug bridge accessors (`getBalanceSummary`, `getBalanceEvaluation`, `exportBalanceTelemetry`, `_registerRuntimeProvider`). CLI `balance` commands. Headless runner (`npm run balance:smoke/cadence/journey`). Smoke baseline captured in `Docs/playtests/balance/`. 79 tests, all green.
+- **Balance-Eval Phase 1 hardening:** wired phaseQuintessence (Phase 6.6396), fixed concurrent runner race (per-profile cache names), added 5 telemetry tests (98 total), regenerated smoke baseline — all 3 seeds valid. Quintessence metrics 0 (no upstream producer in headless runs — Phase 2 gap).
+- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Instrumented `unifiedActionResolution`, `phaseEncounterProgressionV2`, `phaseQuintessence`. Summary reducers, evaluator, versioned targets (`0.1.0-phase1`), debug bridge, CLI, headless runner. Smoke baseline in `Docs/playtests/balance/`. 79 tests, all green.
 
 ## Recent Completions (2026-04-01)
 
