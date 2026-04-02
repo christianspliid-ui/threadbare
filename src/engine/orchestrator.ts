@@ -81,6 +81,7 @@ import { phaseUnrest } from './phaseUnrest';
 import { phaseMagicalSaturation } from './phaseMagicalSaturation';
 import { phaseSpherePressure } from './phaseSpherePressure';
 import { phaseSphereAggregation } from './phaseSphereAggregation';
+import { phaseQuintessence } from './phaseQuintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
@@ -1708,6 +1709,12 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 6.639: Sphere Pressure Resolution (consumes pendingSpherePressures accumulated by upstream phases)
   s = { ...s, ...phaseSpherePressure(s), pendingSpherePressures: [] };
   phaseEventCounts['sphere_pressure'] = s.tickEvents.length - prevEventCount;
+  prevEventCount = s.tickEvents.length;
+
+  // Phase 6.6396: Quintessence Tick (pending erosion/recovery events, passive regen, dissolution)
+  // phaseQuintessence returns pendingQuintessenceEvents: [] — no need to clear separately.
+  s = { ...s, ...phaseQuintessence(s, runtime) };
+  phaseEventCounts['quintessence'] = s.tickEvents.length - prevEventCount;
   prevEventCount = s.tickEvents.length;
 
   // Phase 6.6395: Sphere Aggregation (computes global World-Soul from entity sphere scores)

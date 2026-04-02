@@ -5,7 +5,7 @@ Ticks per run: 200
 Runs: 3
 
 # Balance Evaluation Report
-Evaluated: 2026-04-02T10:39:45.690Z
+Evaluated: 2026-04-02T10:58:49.712Z
 Target version: 0.1.0-phase1
 Run: seed=n/a, ticks=200, map=n/a
 

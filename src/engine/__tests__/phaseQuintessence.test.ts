@@ -12,6 +12,8 @@ import type { GameState } from '../../types/gameState';
 import { WorldGraph } from '../graph';
 import type { QuintessenceEvent } from '../../types/quintessence';
 import { QUINTESSENCE_PASSIVE_REGEN } from '../../types/quintessence';
+import { createSimulationRuntime } from '../simulationRuntime';
+import { getBalanceEvents } from '../balanceTelemetry';
 
 // ─── Test Helpers ─────────────────────────────────────────────────────
 
@@ -227,6 +229,71 @@ describe('phaseQuintessence', () => {
       });
       const result = phaseQuintessence(state);
       expect(result.pendingQuintessenceEvents).toEqual([]);
+    });
+  });
+
+  describe('balance telemetry', () => {
+    it('emits quintessence_changed event when runtime is provided and delta is non-zero', () => {
+      const runtime = createSimulationRuntime();
+      const state = buildTestState({
+        pendingQuintessenceEvents: [makeEvent({ delta: -0.1 })],
+      });
+      phaseQuintessence(state, runtime);
+      const events = getBalanceEvents(runtime, { kind: 'quintessence_changed' });
+      expect(events).toHaveLength(1);
+      expect(events[0].quintessenceDelta).toBeCloseTo(-0.1);
+      expect(events[0].quintessenceReason).toBe('pending_event');
+      expect(events[0].agentId).toBe('actor.test');
+    });
+
+    it('emits state_transition dissolved when entity reaches zero', () => {
+      const runtime = createSimulationRuntime();
+      const state = buildTestState({
+        pendingQuintessenceEvents: [makeEvent({ delta: -1.0 })],
+      });
+      phaseQuintessence(state, runtime);
+      const dissolved = getBalanceEvents(runtime, { kind: 'state_transition' });
+      expect(dissolved).toHaveLength(1);
+      expect(dissolved[0].transitionType).toBe('dissolved');
+    });
+
+    it('does not emit quintessence_changed when delta is zero', () => {
+      const runtime = createSimulationRuntime();
+      const state = buildTestState({
+        pendingQuintessenceEvents: [makeEvent({ delta: 0 })],
+      });
+      phaseQuintessence(state, runtime);
+      const events = getBalanceEvents(runtime, { kind: 'quintessence_changed' });
+      expect(events).toHaveLength(0);
+    });
+
+    it('emits no telemetry events when runtime is undefined', () => {
+      const state = buildTestState({
+        pendingQuintessenceEvents: [makeEvent({ delta: -0.1 })],
+      });
+      // Must not throw; telemetry is optional
+      expect(() => phaseQuintessence(state, undefined)).not.toThrow();
+    });
+
+    it('quintessence_changed appears in balance run summary after phaseQuintessence runs', () => {
+      const runtime = createSimulationRuntime();
+      // Simulate two pending events on two different nodes
+      const graph = new WorldGraph();
+      graph.addNode({ id: 'actor.a', type: 'actor', name: 'A', properties: { actorType: 'individual', quintessence: 0.8 } });
+      graph.addNode({ id: 'actor.b', type: 'actor', name: 'B', properties: { actorType: 'individual', quintessence: 0.6 } });
+      const state = buildTestState({
+        graph,
+        pendingQuintessenceEvents: [
+          { targetNodeId: 'actor.a', delta: -0.05, source: 'encounter_failure', tick: 5 },
+          { targetNodeId: 'actor.b', delta: -0.10, source: 'overchannel', tick: 5 },
+        ],
+      });
+      phaseQuintessence(state, runtime);
+      const events = getBalanceEvents(runtime, { kind: 'quintessence_changed' });
+      expect(events.length).toBe(2);
+      // Total negative delta should be visible
+      const totalDelta = events.reduce((sum, e) => sum + (e.quintessenceDelta ?? 0), 0);
+      expect(totalDelta).toBeCloseTo(-0.15);
     });
   });
 });
