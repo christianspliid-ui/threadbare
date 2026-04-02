@@ -354,7 +354,9 @@ describe('unifiedActionLifecycle', () => {
       action = advanceStep(action, 'success', template, fixedRng); // step 2 succeeds, final
 
       expect(action.resolved).toBe(true);
-      expect(action.outcome).toBe('failure'); // one failure taints the outcome
+      // Phase 3: a failure with continue_weakened means the action completed at cost,
+      // not total failure — the agent pushed through damaged
+      expect(action.outcome).toBe('success_at_cost');
       expect(action.stepOutcomes).toEqual(['failure', 'success', 'success']);
     });
 

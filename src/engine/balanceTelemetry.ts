@@ -51,6 +51,17 @@ export interface BalanceCounters {
   quintessenceEventCount: number;
   /** Phase 2: per-band quintessence loss from encounter failures */
   quintessenceLossByBand: Partial<Record<BalanceThreatBand, { totalLoss: number; encounterCount: number }>>;
+  /** Phase 3: outcome distribution for unified action steps */
+  outcomeDistribution: Record<string, number>;
+  /** Phase 3: outcome distribution for action-level results */
+  actionOutcomeDistribution: Record<string, number>;
+  /** Phase 3: push spend count and total Q spent */
+  pushCount: number;
+  pushTotalQuintessenceSpent: number;
+  /** Phase 3: resist attempt count, successes, and total Q spent */
+  resistCount: number;
+  resistSuccessCount: number;
+  resistTotalQuintessenceSpent: number;
 }
 
 // ─── Milestones ───────────────────────────────────────────────────
@@ -136,6 +147,13 @@ function createEmptyCounters(): BalanceCounters {
     quintessenceTotalPositiveDelta: 0,
     quintessenceEventCount: 0,
     quintessenceLossByBand: {},
+    outcomeDistribution: {},
+    actionOutcomeDistribution: {},
+    pushCount: 0,
+    pushTotalQuintessenceSpent: 0,
+    resistCount: 0,
+    resistSuccessCount: 0,
+    resistTotalQuintessenceSpent: 0,
   };
 }
 
@@ -186,21 +204,31 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
   switch (event.kind) {
     case 'step_resolved': {
       counters.totalStepsAttempted++;
-      const isSuccess = event.result === 'success' || event.result === 'critical_success';
+      const isSuccess = event.result === 'success' || event.result === 'critical_success' || event.result === 'success_at_cost';
       if (isSuccess) counters.totalStepsSucceeded++;
       const band = event.threatBand ?? 'unknown';
       const bandStats = counters.stepSuccessByBand[band] ?? { attempts: 0, successes: 0 };
       bandStats.attempts++;
       if (isSuccess) bandStats.successes++;
       counters.stepSuccessByBand[band] = bandStats;
-      break;
-    }
-    case 'action_resolved':
-      counters.totalActionsAttempted++;
-      if (event.finalStatus === 'completed' || event.result === 'success') {
-        counters.totalActionsCompleted++;
+      // Phase 3: track outcome distribution
+      if (event.result) {
+        counters.outcomeDistribution[event.result] = (counters.outcomeDistribution[event.result] ?? 0) + 1;
       }
       break;
+    }
+    case 'action_resolved': {
+      counters.totalActionsAttempted++;
+      const isActionComplete = event.finalStatus === 'completed' || event.result === 'success' || event.result === 'critical_success' || event.result === 'success_at_cost';
+      if (isActionComplete) {
+        counters.totalActionsCompleted++;
+      }
+      // Phase 3: track action-level outcome distribution
+      if (event.result) {
+        counters.actionOutcomeDistribution[event.result] = (counters.actionOutcomeDistribution[event.result] ?? 0) + 1;
+      }
+      break;
+    }
     case 'encounter_resolved': {
       counters.totalEncountersAttempted++;
       const band = event.threatBand ?? 'unknown';
@@ -255,6 +283,19 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
       break;
     case 'attachment_changed':
       // No counter yet; captured in event stream for future summary use
+      break;
+    case 'quintessence_push':
+      counters.pushCount++;
+      if (event.quintessenceDelta !== undefined) {
+        counters.pushTotalQuintessenceSpent += Math.abs(event.quintessenceDelta);
+      }
+      break;
+    case 'quintessence_resist':
+      counters.resistCount++;
+      if (event.resistSucceeded) counters.resistSuccessCount++;
+      if (event.quintessenceDelta !== undefined) {
+        counters.resistTotalQuintessenceSpent += Math.abs(event.quintessenceDelta);
+      }
       break;
   }
 }

@@ -16,7 +16,7 @@ import type {
   StepOutcome,
   ActionScale,
 } from '../types/unifiedAction';
-import { SCALE_PRIORITY } from '../types/unifiedAction';
+import { SCALE_PRIORITY, isStepSuccess, isStepFailure } from '../types/unifiedAction';
 
 // ─── Counter for deterministic IDs ──────────────────────────────
 
@@ -114,12 +114,16 @@ export function advanceStep(
   const currentStepDef = template.steps[action.currentStep];
   const newStepOutcomes = [...action.stepOutcomes, outcome];
 
-  // Failure with fail_action → entire action fails
-  if (outcome === 'failure' && currentStepDef.failBehavior === 'fail_action') {
+  // Hard failure with fail_action → entire action fails
+  // critical_failure always triggers fail_action regardless of template setting
+  if (isStepFailure(outcome) && (
+    currentStepDef.failBehavior === 'fail_action' || outcome === 'critical_failure'
+  )) {
+    const actionOutcome: UnifiedActionOutcome = outcome === 'critical_failure' ? 'critical_failure' : 'failure';
     return {
       ...action,
       resolved: true,
-      outcome: 'failure',
+      outcome: actionOutcome,
       stepOutcomes: newStepOutcomes,
     };
   }
@@ -127,9 +131,8 @@ export function advanceStep(
   // Check if this was the final step
   const nextStepIndex = action.currentStep + 1;
   if (nextStepIndex >= template.steps.length) {
-    // Final step — determine overall outcome
-    const hasAnyFailure = newStepOutcomes.includes('failure');
-    const finalOutcome: UnifiedActionOutcome = hasAnyFailure ? 'failure' : 'success';
+    // Final step — determine overall outcome from the step history
+    const finalOutcome = computeFinalActionOutcome(newStepOutcomes);
     return {
       ...action,
       resolved: true,
@@ -218,4 +221,39 @@ function computeStepDuration(
   const { min, max } = range;
   if (min === max) return Math.max(1, min);
   return Math.max(1, min + Math.floor(rng() * (max - min + 1)));
+}
+
+/**
+ * Phase 3: Determine the overall action outcome from the full step outcome history.
+ *
+ * Rules:
+ * - All steps critical_success → critical_success
+ * - Any step failure/critical_failure with continue_weakened → success_at_cost
+ * - Any success_at_cost step → success_at_cost (costs propagate)
+ * - Mix of successes only → success
+ * - Critical success on final step upgrades success → critical_success
+ *   (only if no failures/costs earlier)
+ */
+function computeFinalActionOutcome(stepOutcomes: readonly StepOutcome[]): UnifiedActionOutcome {
+  if (stepOutcomes.length === 0) return 'failure';
+
+  const hasAnyFailure = stepOutcomes.some(isStepFailure);
+  const hasAnyCost = stepOutcomes.includes('success_at_cost');
+  const allCritSuccess = stepOutcomes.every(o => o === 'critical_success');
+  const lastOutcome = stepOutcomes[stepOutcomes.length - 1];
+
+  // If any step was a failure that continued (continue_weakened), the action
+  // succeeded but at cost — the agent pushed through damaged
+  if (hasAnyFailure) return 'success_at_cost';
+
+  // Any step was success_at_cost → whole action is success_at_cost
+  if (hasAnyCost) return 'success_at_cost';
+
+  // All crits → critical_success
+  if (allCritSuccess) return 'critical_success';
+
+  // Final step crit with clean run → critical_success
+  if (lastOutcome === 'critical_success') return 'critical_success';
+
+  return 'success';
 }

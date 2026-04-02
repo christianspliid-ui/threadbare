@@ -173,9 +173,25 @@ export type UnifiedActionOutcome =
   | 'contested_won'
   | 'contested_lost'
   | 'critical_success'
-  | 'critical_failure';
+  | 'critical_failure'
+  | 'success_at_cost';
 
-export type StepOutcome = 'success' | 'failure';
+/** Phase 3: Check if a step outcome is any form of success (including at cost). */
+export function isStepSuccess(outcome: StepOutcome): boolean {
+  return outcome === 'critical_success' || outcome === 'success' || outcome === 'success_at_cost';
+}
+
+/** Phase 3: Check if a step outcome is any form of failure. */
+export function isStepFailure(outcome: StepOutcome): boolean {
+  return outcome === 'failure' || outcome === 'critical_failure';
+}
+
+/**
+ * Step-level outcome from the shared resolution service.
+ * Phase 3: expanded from binary success/failure to the full outcome ladder.
+ * `success_at_cost` means the step completed but with a penalty attached.
+ */
+export type StepOutcome = 'critical_success' | 'success' | 'success_at_cost' | 'failure' | 'critical_failure';
 
 export interface UnifiedAction {
   readonly actionId: string;

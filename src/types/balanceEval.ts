@@ -41,7 +41,9 @@ export type BalanceEventKind =
   | 'reward_granted'
   | 'attachment_changed'
   | 'growth_applied'
-  | 'state_transition';
+  | 'state_transition'
+  | 'quintessence_push'
+  | 'quintessence_resist';
 
 // ─── Balance Event ────────────────────────────────────────────────
 
@@ -106,6 +108,16 @@ export interface BalanceEvent {
 
   // ── State transition context ──
   transitionType?: string;
+
+  // ── Phase 3: Push/resist context ──
+  /** 'push' | 'resist' — which quintessence spend kind */
+  spendKind?: string;
+  /** Whether a resist attempt succeeded in downgrading the outcome */
+  resistSucceeded?: boolean;
+  /** The outcome before resist downgrade (if applicable) */
+  preResistOutcome?: string;
+  /** The outcome after resist downgrade (if applicable) */
+  postResistOutcome?: string;
 }
 
 // ─── Metric Band (Target) ─────────────────────────────────────────
@@ -198,6 +210,20 @@ export interface BalanceRunSummary {
     firstRewardTick: number | null;
     firstSetbackTick: number | null;
     firstGrowthBeatTick: number | null;
+  };
+
+  /** Phase 3: Step-level outcome distribution (key = OutcomeType, value = count) */
+  outcomeDistribution?: Record<string, number>;
+  /** Phase 3: Action-level outcome distribution */
+  actionOutcomeDistribution?: Record<string, number>;
+  /** Phase 3: Push/resist usage stats */
+  pushResist?: {
+    pushCount: number;
+    pushTotalQuintessenceSpent: number;
+    resistCount: number;
+    resistSuccessCount: number;
+    resistSuccessRate: number;
+    resistTotalQuintessenceSpent: number;
   };
 }
 

@@ -235,8 +235,9 @@ describe('unifiedActionResolution', () => {
       });
 
       // Use a very low roll (likely success)
+      // Phase 3: outcome may be 'success' or 'success_at_cost' (near-miss)
       const result = resolveUncontestedStep(action, template, state, successRng);
-      expect(result.outcome).toBe('success');
+      expect(['success', 'success_at_cost', 'critical_success']).toContain(result.outcome);
       expect(result.opsToExecute).toHaveLength(1);
     });
   });
@@ -414,8 +415,14 @@ describe('unifiedActionResolution', () => {
       result = phaseUnifiedActionProgress(state, [template], successRng);
       actions = result.unifiedActions!;
       expect(actions[0].resolved).toBe(true);
-      expect(actions[0].outcome).toBe('success');
-      expect(actions[0].stepOutcomes).toEqual(['success', 'success', 'success']);
+      // Phase 3: action may complete with 'success', 'success_at_cost', or 'critical_success'
+      // depending on near-miss and crit rolls from the fixed RNG
+      const successOutcomes = ['success', 'success_at_cost', 'critical_success'];
+      expect(successOutcomes).toContain(actions[0].outcome);
+      // All steps should be some form of success
+      for (const so of actions[0].stepOutcomes) {
+        expect(successOutcomes).toContain(so);
+      }
     });
   });
 

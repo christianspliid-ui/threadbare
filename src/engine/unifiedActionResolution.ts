@@ -28,9 +28,11 @@ import {
   advanceStep,
   sortByPriority,
 } from './unifiedActionLifecycle';
+import { isStepSuccess, isStepFailure } from '../types/unifiedAction';
 import { computeCapability } from './domainCapability';
 import { resolveAction as resolveActionLegacy } from './resolution';
 import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
+import type { OutcomeType } from '../types/resolution';
 import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
 import { emitTrace } from './traceBuffer';
@@ -56,7 +58,18 @@ import { resolveRevelationAction } from './revelationEmitter';
 import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarity';
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
+import type { BalanceEvent } from '../types/balanceEval';
 import { recordBalanceEvent } from './balanceTelemetry';
+import { computeOutcomeConsequence } from './outcomeConsequences';
+import {
+  canSpendQuintessence,
+  getPushModifier,
+  spendQuintessence,
+  canResistOutcome,
+  applyResistOutcome,
+  RESIST_DOWNGRADE_CHANCE,
+} from './quintessenceActions';
+import { isProvingSliceTemplate } from './outcomeConsequences';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -94,10 +107,41 @@ export function collectCompletions(
  */
 export interface StepResolutionResult {
   outcome: StepOutcome;
+  /** Phase 3: The raw outcome from the shared resolver, before any mapping. */
+  rawOutcome: OutcomeType;
   opsToExecute: readonly GraphOp[];
   capability: number;
   probability: number;
   roll: number;
+  /** Phase 3: Whether a push was attempted and the Q cost */
+  pushAttempted: boolean;
+  pushCost: number;
+  /** Phase 3: Whether a resist was attempted, succeeded, and the Q cost */
+  resistAttempted: boolean;
+  resistSucceeded: boolean;
+  resistCost: number;
+  /** Phase 3: The outcome before resist downgrade, if resist happened */
+  preResistOutcome?: StepOutcome;
+}
+
+/**
+ * Phase 3: Map the shared resolver's OutcomeType to a StepOutcome.
+ * Preserves the full outcome ladder instead of collapsing to binary.
+ *
+ * `success_at_cost` is generated when a roll succeeds but lands in the
+ * near-miss zone (margin <= NEAR_MISS_MARGIN). This represents scraping
+ * through with complications — the step proceeds but carries a cost.
+ */
+export function mapResolverOutcomeToStep(resolverOutcome: OutcomeType, nearMiss: boolean): StepOutcome {
+  switch (resolverOutcome) {
+    case 'critical_success': return 'critical_success';
+    case 'success':
+      // Near-miss success → success_at_cost (barely made it, complications follow)
+      return nearMiss ? 'success_at_cost' : 'success';
+    case 'success_at_cost': return 'success_at_cost';
+    case 'failure': return 'failure';
+    case 'critical_failure': return 'critical_failure';
+  }
 }
 
 export function resolveUncontestedStep(
@@ -107,20 +151,21 @@ export function resolveUncontestedStep(
   rng: () => number,
 ): StepResolutionResult {
   const step = template.steps[action.currentStep];
+  const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
+
   if (!step) {
-    // Defensive — should never happen if template is valid
-    return { outcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0 };
+    return { outcome: 'failure', rawOutcome: 'failure', opsToExecute: [], capability: 0, probability: 0, roll: 0, ...noPushResist };
   }
 
   // Divine actions (difficulty 0) always succeed
   if (step.difficulty === 0) {
-    return { outcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0 };
+    return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
   // Ascendant (player) actions always succeed — their only gate is essence cost,
   // which is already paid at dispatch time. Capability rolls apply to NPC agents only.
   if (action.source === 'player') {
-    return { outcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0 };
+    return { outcome: 'success', rawOutcome: 'success', opsToExecute: step.onSuccess, capability: 1, probability: 1, roll: 0, ...noPushResist };
   }
 
   // Compute actor's domain capability for this step's reach
@@ -130,6 +175,18 @@ export function resolveUncontestedStep(
   // (simplified — full implementation would check location sphere influence)
   const sphereFactor = 0;
 
+  // Phase 3: Push — risky actions attempt to spend quintessence for better odds.
+  // The actor node must be resolvable and the template must be push-eligible.
+  let pushModifier = 0;
+  let pushEvent: import('../types/quintessence').QuintessenceEvent | null = null;
+  if (isPushEligible(action.templateId) && step.difficulty >= 0.3) {
+    const actorNode = state.graph.getNode(action.actorId);
+    if (actorNode && canSpendQuintessence(actorNode, 'push')) {
+      pushModifier = getPushModifier(actorNode);
+      pushEvent = spendQuintessence(actorNode, 'push', `action_push_${action.templateId}`, state.tick);
+    }
+  }
+
   // Phase 2: Use shared resolution service.
   // Unified action difficulty is already normalized (0..1) — pass through directly.
   const resolutionInput: ResolutionInput = {
@@ -138,16 +195,61 @@ export function resolveUncontestedStep(
     capability,
     difficulty: step.difficulty,
     sphereFactor,
-    actionModifiers: 0,
+    actionModifiers: pushModifier,
   };
 
   const result = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
 
-  const success = isSuccessOutcome(result.outcome);
-  const outcome: StepOutcome = success ? 'success' : 'failure';
-  const ops = success ? step.onSuccess : step.onFailure;
+  // Phase 3: If push was attempted, queue the spend event
+  if (pushEvent && state.pendingQuintessenceEvents) {
+    state.pendingQuintessenceEvents.push(pushEvent);
+  }
 
-  return { outcome, opsToExecute: ops, capability, probability: result.probability, roll: result.roll };
+  // Phase 3: Preserve the full outcome ladder
+  const nearMiss = result.rollBreakdown?.nearMiss ?? false;
+  let outcome = mapResolverOutcomeToStep(result.outcome, nearMiss);
+
+  // Phase 3: Resist — social/influence actions attempt to downgrade negative outcomes.
+  // After a failure or critical_failure, the actor can spend Q for a chance to soften it.
+  let resistEvent: import('../types/quintessence').QuintessenceEvent | null = null;
+  if (isStepFailure(outcome) && isResistEligible(action.templateId)) {
+    const actorNode = state.graph.getNode(action.actorId);
+    if (actorNode && canResistOutcome(actorNode)) {
+      resistEvent = applyResistOutcome(actorNode, `action_resist_${action.templateId}`, state.tick);
+      if (resistEvent) {
+        // Deterministic resist check using seeded PRNG
+        const resistRoll = rng();
+        if (resistRoll < RESIST_DOWNGRADE_CHANCE) {
+          // Downgrade: critical_failure → failure, failure → success_at_cost
+          if (outcome === 'critical_failure') {
+            outcome = 'failure';
+          } else if (outcome === 'failure') {
+            outcome = 'success_at_cost';
+          }
+        }
+        if (state.pendingQuintessenceEvents) {
+          state.pendingQuintessenceEvents.push(resistEvent);
+        }
+      }
+    }
+  }
+
+  const ops = isStepSuccess(outcome) ? step.onSuccess : step.onFailure;
+
+  return {
+    outcome,
+    rawOutcome: result.outcome,
+    opsToExecute: ops,
+    capability,
+    probability: result.probability,
+    roll: result.roll,
+    pushAttempted: pushEvent !== null,
+    pushCost: pushEvent ? Math.abs(pushEvent.delta) : 0,
+    resistAttempted: resistEvent !== null,
+    resistSucceeded: resistEvent !== null && outcome !== mapResolverOutcomeToStep(result.outcome, nearMiss),
+    resistCost: resistEvent ? Math.abs(resistEvent.delta) : 0,
+    preResistOutcome: resistEvent ? mapResolverOutcomeToStep(result.outcome, nearMiss) : undefined,
+  };
 }
 
 /**
@@ -187,12 +289,22 @@ export function executeStepResult(
     }
   }
 
+  // Phase 3: Compute differentiated consequences for the proving slice
+  const consequence = computeOutcomeConsequence(
+    action.templateId, outcome, action.actorId, tick,
+  );
+
+  // Phase 3: Queue quintessence effect from outcome consequence
+  if (consequence.quintessenceEvent && state.pendingQuintessenceEvents) {
+    state.pendingQuintessenceEvents.push(consequence.quintessenceEvent);
+  }
+
   // Apply capability growth from step resolution
   const step = template.steps[action.currentStep];
   if (step) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
     const difficultyScaled = step.difficulty * 100;
-    const isSuccess = outcome === 'success';
+    const isSuccess = isStepSuccess(outcome);
     const growthResult = applyEncounterGrowth(
       state.graph,
       action.actorId,
@@ -262,6 +374,10 @@ export function executeStepResult(
 
   // Timeline: ACTION_STEP event
   if (step && resolutionStats) {
+    // Phase 3: map rich step outcome to timeline result label
+    const timelineResult = isStepSuccess(outcome) ? 'PASS' : 'FAIL';
+    const costSuffix = outcome === 'success_at_cost' ? '_COST' : '';
+    const critPrefix = outcome === 'critical_success' ? 'CRIT_' : outcome === 'critical_failure' ? 'CRIT_' : '';
     appendEvent(action.actorId, {
       phase: 'ACTION_STEP',
       tick,
@@ -272,10 +388,10 @@ export function executeStepResult(
       cap: resolutionStats.capability,
       prob: resolutionStats.probability,
       roll: resolutionStats.roll,
-      result: outcome === 'success' ? 'PASS' : 'FAIL',
+      result: `${critPrefix}${timelineResult}${costSuffix}`,
     });
 
-    // Balance telemetry: step_resolved
+    // Balance telemetry: step_resolved — Phase 3: preserves rich outcome type
     if (runtime) {
       recordBalanceEvent(runtime, {
         tick,
@@ -289,7 +405,7 @@ export function executeStepResult(
         capability: resolutionStats.capability,
         probability: resolutionStats.probability,
         roll: resolutionStats.roll,
-        result: outcome === 'success' ? 'success' : 'failure',
+        result: outcome as BalanceEvent['result'],
       });
     }
   }
@@ -304,16 +420,18 @@ export function executeStepResult(
       stepResults: updatedAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
     });
 
-    // Balance telemetry: action_resolved
+    // Balance telemetry: action_resolved — Phase 3: rich outcome type
     if (runtime) {
+      const actionResult = mapActionOutcomeToBalanceResult(updatedAction.outcome);
+      const actionFinalStatus = isActionSuccess(updatedAction.outcome) ? 'completed' : 'abandoned';
       recordBalanceEvent(runtime, {
         tick,
         kind: 'action_resolved',
         agentId: action.actorId,
         sourceSystem: 'unified_action',
         templateId: action.templateId,
-        result: updatedAction.outcome === 'success' ? 'success' : 'failure',
-        finalStatus: updatedAction.outcome === 'success' ? 'completed' : 'abandoned',
+        result: actionResult,
+        finalStatus: actionFinalStatus,
       });
     }
   }
@@ -323,29 +441,106 @@ export function executeStepResult(
   const actorName = actorNode?.name ?? 'An agent';
 
   if (updatedAction.resolved) {
+    // Phase 3: outcome-differentiated event messages
+    const outcomeMsg = describeActionOutcome(updatedAction.outcome);
+    const significance = isActionSuccess(updatedAction.outcome) ? 0.6 : 0.4;
     events.push({
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${updatedAction.outcome === 'success' ? 'completed' : 'failed'} ${template.name}.`,
-      significance: updatedAction.outcome === 'success' ? 0.6 : 0.4,
+      message: `${actorName} ${outcomeMsg} ${template.name}.`,
+      significance: updatedAction.outcome === 'critical_success' ? 0.8 : significance,
       actorId: action.actorId,
     });
   } else {
-    // Multi-step: report step progression
+    // Multi-step: report step progression with rich outcome
     const stepNum = action.currentStep + 1;
     const totalSteps = template.steps.length;
+    const stepVerb = describeStepOutcome(outcome);
     events.push({
       id: `ua_${action.actionId}_step${stepNum}`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${outcome === 'success' ? 'progresses' : 'stumbles'} in ${template.name} (step ${stepNum}/${totalSteps}).`,
-      significance: 0.5,
+      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps}).`,
+      significance: outcome === 'critical_success' ? 0.7 : 0.5,
       actorId: action.actorId,
     });
   }
 
   return { updatedAction, events };
+}
+
+// ─── Phase 3: Push/Resist Template Sets ────────────────────────
+
+/**
+ * Risky/coercive actions where agents will attempt to push (spend Q for better odds).
+ * Phase 3 proving slice: narrow seam, not all actions.
+ */
+const PUSH_ELIGIBLE_PREFIXES = [
+  'action.shadow.assassinate',
+  'action.iron.conquer',
+  'action.gold.commission-assassination',
+];
+
+/**
+ * Social/influence actions where agents will attempt to resist negative outcomes.
+ * Phase 3 proving slice: narrow seam, not all actions.
+ */
+const RESIST_ELIGIBLE_PREFIXES = [
+  'action.heart.',
+  'action.shadow.recruit',
+];
+
+function isPushEligible(templateId: string): boolean {
+  return PUSH_ELIGIBLE_PREFIXES.some(p => templateId.startsWith(p));
+}
+
+function isResistEligible(templateId: string): boolean {
+  return RESIST_ELIGIBLE_PREFIXES.some(p => templateId.startsWith(p));
+}
+
+// ─── Phase 3: Outcome Helpers ──────────────────────────────────
+
+/** Check if an action outcome is any form of success (including success_at_cost). */
+function isActionSuccess(outcome?: UnifiedActionOutcome): boolean {
+  return outcome === 'success' || outcome === 'critical_success' || outcome === 'success_at_cost' || outcome === 'contested_won';
+}
+
+/** Map UnifiedActionOutcome to BalanceEvent result field. */
+function mapActionOutcomeToBalanceResult(outcome?: UnifiedActionOutcome): BalanceEvent['result'] {
+  switch (outcome) {
+    case 'critical_success': return 'critical_success';
+    case 'success': return 'success';
+    case 'success_at_cost': return 'success_at_cost';
+    case 'critical_failure': return 'critical_failure';
+    case 'contested_won': return 'success';
+    case 'contested_lost': return 'failure';
+    default: return 'failure';
+  }
+}
+
+/** Human-readable verb for action-level outcomes. */
+function describeActionOutcome(outcome?: UnifiedActionOutcome): string {
+  switch (outcome) {
+    case 'critical_success': return 'masterfully completed';
+    case 'success': return 'completed';
+    case 'success_at_cost': return 'completed at great cost';
+    case 'contested_won': return 'won contested';
+    case 'contested_lost': return 'lost contested';
+    case 'critical_failure': return 'catastrophically failed';
+    default: return 'failed';
+  }
+}
+
+/** Human-readable verb for step-level outcomes. */
+function describeStepOutcome(outcome: StepOutcome): string {
+  switch (outcome) {
+    case 'critical_success': return 'excels';
+    case 'success': return 'progresses';
+    case 'success_at_cost': return 'pushes through at cost';
+    case 'failure': return 'stumbles';
+    case 'critical_failure': return 'falters badly';
+  }
 }
 
 // ─── Orchestrator Phase: Unified Action Progress ────────────────
@@ -424,14 +619,14 @@ export function phaseUnifiedActionProgress(
     });
 
     // Spawn ControlEffect for contested winners (TB-044)
-    if (updAtk.resolved && updAtk.outcome === 'success' && atkTemplate.durationMode === 'sustained') {
+    if (updAtk.resolved && isActionSuccess(updAtk.outcome) && atkTemplate.durationMode === 'sustained') {
       const spawnResult = spawnControlEffect(updAtk, atkTemplate, state.tick);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
         events.push(spawnResult.event);
       }
     }
-    if (updDef.resolved && updDef.outcome === 'success' && defTemplate.durationMode === 'sustained') {
+    if (updDef.resolved && isActionSuccess(updDef.outcome) && defTemplate.durationMode === 'sustained') {
       const spawnResult = spawnControlEffect(updDef, defTemplate, state.tick);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
@@ -444,7 +639,7 @@ export function phaseUnifiedActionProgress(
       spherePressures.push({
         targetEntityId: attacker.targetId,
         sphere: atkTemplate.sphereAffinity,
-        magnitude: updAtk.outcome === 'success' ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        magnitude: isActionSuccess(updAtk.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: attacker.actionId,
       });
@@ -453,7 +648,7 @@ export function phaseUnifiedActionProgress(
       spherePressures.push({
         targetEntityId: defender.targetId,
         sphere: defTemplate.sphereAffinity,
-        magnitude: updDef.outcome === 'success' ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
+        magnitude: isActionSuccess(updDef.outcome) ? ACTION_PRESSURE_SUCCESS : ACTION_PRESSURE_FAILURE,
         source: 'divine_action',
         sourceId: defender.actionId,
       });
@@ -474,9 +669,37 @@ export function phaseUnifiedActionProgress(
     if (!template) continue; // fail-soft: skip unknown template
 
     // Resolve step
-    const { outcome, opsToExecute, capability, probability, roll } = resolveUncontestedStep(
+    const stepResult = resolveUncontestedStep(
       completing_action, template, state, rng,
     );
+    const { outcome, opsToExecute, capability, probability, roll } = stepResult;
+
+    // Phase 3: Emit push/resist telemetry
+    if (runtime && stepResult.pushAttempted) {
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'quintessence_push',
+        agentId: completing_action.actorId,
+        sourceSystem: 'unified_action',
+        templateId: completing_action.templateId,
+        spendKind: 'push',
+        quintessenceDelta: -stepResult.pushCost,
+      });
+    }
+    if (runtime && stepResult.resistAttempted) {
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'quintessence_resist',
+        agentId: completing_action.actorId,
+        sourceSystem: 'unified_action',
+        templateId: completing_action.templateId,
+        spendKind: 'resist',
+        resistSucceeded: stepResult.resistSucceeded,
+        preResistOutcome: stepResult.preResistOutcome,
+        postResistOutcome: stepResult.outcome,
+        quintessenceDelta: -stepResult.resistCost,
+      });
+    }
 
     // Execute and advance
     const { updatedAction, events: stepEvents } = executeStepResult(
@@ -492,7 +715,7 @@ export function phaseUnifiedActionProgress(
     ) {
       const coords = parseHexTargetId(completing_action.targetId);
       if (coords) {
-        const finalOutcome = updatedAction.outcome === 'success' ? 'success' : 'failure';
+        const finalOutcome = isActionSuccess(updatedAction.outcome) ? 'success' : 'failure';
         const result = resolveHexActionFull(
           completing_action.templateId,
           coords.col,
@@ -551,7 +774,7 @@ export function phaseUnifiedActionProgress(
     // Fail-soft: missing targetId, hex targets, missing node, non-individual nodes → skip silently.
     if (
       updatedAction.resolved &&
-      updatedAction.outcome === 'success' &&
+      isActionSuccess(updatedAction.outcome) &&
       completing_action.actorId === state.ascendantId &&
       completing_action.targetId &&
       !isHexTargetId(completing_action.targetId)
@@ -576,7 +799,7 @@ export function phaseUnifiedActionProgress(
     }
 
     // Spawn ControlEffect for successful sustained actions (TB-044)
-    if (updatedAction.resolved && updatedAction.outcome === 'success') {
+    if (updatedAction.resolved && isActionSuccess(updatedAction.outcome)) {
       const spawnResult = spawnControlEffect(updatedAction, template, state.tick);
       if (spawnResult) {
         spawnedEffects.push(spawnResult.effect);
@@ -586,7 +809,7 @@ export function phaseUnifiedActionProgress(
 
     // Revelation actions: if template has revelationAction metadata, dispatch
     // to resolveRevelationAction on successful resolution. Fail-soft wrapped.
-    if (updatedAction.resolved && updatedAction.outcome === 'success' && template.revelationAction) {
+    if (updatedAction.resolved && isActionSuccess(updatedAction.outcome) && template.revelationAction) {
       try {
         resolveRevelationAction(template.revelationAction, state, completing_action.targetId);
       } catch (revelationErr) {
@@ -597,7 +820,7 @@ export function phaseUnifiedActionProgress(
     // Sphere pressure: push pressure on action's target entity on resolution.
     // Fail-soft: skip if template has no sphereAffinity or action has no targetId.
     if (updatedAction.resolved && template.sphereAffinity && completing_action.targetId) {
-      const magnitude = updatedAction.outcome === 'success'
+      const magnitude = isActionSuccess(updatedAction.outcome)
         ? ACTION_PRESSURE_SUCCESS
         : ACTION_PRESSURE_FAILURE;
       spherePressures.push({

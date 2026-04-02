@@ -128,6 +128,20 @@ export function buildBalanceRunSummary(
       firstSetbackTick: m.firstSetbackTick,
       firstGrowthBeatTick: m.firstGrowthBeatTick,
     },
+
+    // Phase 3: outcome distribution
+    outcomeDistribution: { ...c.outcomeDistribution },
+    actionOutcomeDistribution: { ...c.actionOutcomeDistribution },
+
+    // Phase 3: push/resist usage
+    pushResist: {
+      pushCount: c.pushCount,
+      pushTotalQuintessenceSpent: c.pushTotalQuintessenceSpent,
+      resistCount: c.resistCount,
+      resistSuccessCount: c.resistSuccessCount,
+      resistSuccessRate: c.resistCount > 0 ? c.resistSuccessCount / c.resistCount : 0,
+      resistTotalQuintessenceSpent: c.resistTotalQuintessenceSpent,
+    },
   };
 }
 
