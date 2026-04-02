@@ -47,6 +47,7 @@ import type { SphereName } from '../types/index';
 import type { SphereAffinity } from '../types/sphereAffinity';
 import type { FundamentState } from '../types/worldSoul';
 import { computeCapability, computeTier } from './domainCapability';
+import { computeResolutionThreshold, normalizeLegacyDifficulty } from './resolutionService';
 // Distance matrix removed — hex distance used for travel cost estimation
 import { getDivineInfluences, buildValueOverlay } from './interventionEffects';
 import { BASE_ENCOUNTER_GROWTH, difficultyScaling, PROMOTION_ELIGIBLE_MULTIPLIER } from './capabilityGrowth';
@@ -474,13 +475,16 @@ export interface DecisionResult {
 // ─── Step Probability ───────────────────────────────────────────
 
 /**
- * Sigmoid-like estimate of a single step's success probability.
+ * Estimate a single step's success probability using the shared resolution service.
  *
- * P = clamp(capability - difficulty/100 + 0.5, 0.05, 0.95)
+ * Phase 2: This now uses the same math as live resolution — no planner-only offsets.
+ * The old STEP_PROBABILITY_OFFSET (+0.7) is removed; forecast and live use the same
+ * threshold formula: P = capability + sphereFactor - normalizedDifficulty + modifiers.
+ *
+ * Legacy encounter difficulty (0–100) is normalized at this boundary.
  *
  * - capability is 0–1 (from computeCapability)
- * - difficulty is 0–100 (from step)
- * - The +0.5 offset means a 50% match gives ~50% probability
+ * - difficulty is 0–100 (from encounter step — normalized here)
  * - Clamped to [0.05, 0.95] — never guaranteed success or failure
  */
 export function estimateStepProbability(
@@ -488,11 +492,15 @@ export function estimateStepProbability(
   difficulty: number,
   modifierTotal?: number,
 ): number {
-  // Offset ensures agents with moderate capability (~0.2) have ~45% per step,
-  // making 3-step encounters viable (~0.09 chain). The old +0.5 made chain probabilities
-  // too low for agents to ever score above IDLE_SCORE_THRESHOLD.
-  const raw = capability + (modifierTotal ?? 0) - difficulty / 100 + STEP_PROBABILITY_OFFSET;
-  return Math.max(0.05, Math.min(0.95, raw));
+  // Phase 2: Use shared resolver math. Normalize legacy difficulty at boundary.
+  return computeResolutionThreshold({
+    actorId: '', // not needed for threshold computation
+    domain: 'iron', // not needed for threshold computation
+    capability,
+    difficulty: normalizeLegacyDifficulty(difficulty),
+    sphereFactor: 0,
+    actionModifiers: modifierTotal ?? 0,
+  });
 }
 
 // ─── Completion Probability ─────────────────────────────────────

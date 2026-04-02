@@ -29,7 +29,9 @@ import {
   sortByPriority,
 } from './unifiedActionLifecycle';
 import { computeCapability } from './domainCapability';
-import { resolveAction } from './resolution';
+import { resolveAction as resolveActionLegacy } from './resolution';
+import { resolveAction as resolveActionShared, isSuccessOutcome } from './resolutionService';
+import type { ResolutionInput } from '../types/resolution';
 import { executeGraphOps } from './graphOpExecutor';
 import { emitTrace } from './traceBuffer';
 import {
@@ -128,20 +130,24 @@ export function resolveUncontestedStep(
   // (simplified — full implementation would check location sphere influence)
   const sphereFactor = 0;
 
-  // Compute probability and resolve
-  const probability = Math.min(0.95, Math.max(0.05,
-    capability + sphereFactor - step.difficulty,
-  ));
+  // Phase 2: Use shared resolution service.
+  // Unified action difficulty is already normalized (0..1) — pass through directly.
+  const resolutionInput: ResolutionInput = {
+    actorId: action.actorId,
+    domain: step.reach,
+    capability,
+    difficulty: step.difficulty,
+    sphereFactor,
+    actionModifiers: 0,
+  };
 
-  // Use seeded RNG for the d100 roll (1-100 range)
-  const roll = Math.floor(rng() * 100) + 1;
-  const result = resolveAction(probability, roll);
+  const result = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
 
-  const isSuccess = result.outcome === 'success' || result.outcome === 'critical_success';
-  const outcome: StepOutcome = isSuccess ? 'success' : 'failure';
-  const ops = isSuccess ? step.onSuccess : step.onFailure;
+  const success = isSuccessOutcome(result.outcome);
+  const outcome: StepOutcome = success ? 'success' : 'failure';
+  const ops = success ? step.onSuccess : step.onFailure;
 
-  return { outcome, opsToExecute: ops, capability, probability, roll };
+  return { outcome, opsToExecute: ops, capability, probability: result.probability, roll: result.roll };
 }
 
 /**

@@ -252,9 +252,11 @@ describe('phaseQuintessence', () => {
         pendingQuintessenceEvents: [makeEvent({ delta: -1.0 })],
       });
       phaseQuintessence(state, runtime);
-      const dissolved = getBalanceEvents(runtime, { kind: 'state_transition' });
-      expect(dissolved).toHaveLength(1);
-      expect(dissolved[0].transitionType).toBe('dissolved');
+      const transitions = getBalanceEvents(runtime, { kind: 'state_transition' });
+      // Phase 2: expect threshold transition(s) + dissolution event
+      expect(transitions.length).toBeGreaterThanOrEqual(1);
+      const dissolved = transitions.find(e => e.transitionType === 'dissolved');
+      expect(dissolved).toBeDefined();
     });
 
     it('does not emit quintessence_changed when delta is zero', () => {

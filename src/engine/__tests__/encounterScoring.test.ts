@@ -174,15 +174,17 @@ function buildTestGraph(opts: {
 // ─── estimateStepProbability ────────────────────────────────────
 
 describe('estimateStepProbability', () => {
-  it('returns STEP_PROBABILITY_OFFSET when capability matches difficulty/100', () => {
-    // capability=0.5, difficulty=50 → 0.5 - 0.5 + STEP_PROBABILITY_OFFSET
+  it('returns floor when capability matches difficulty/100 (Phase 2: no planner offset)', () => {
+    // Phase 2: capability=0.5, difficulty=50 → 0.5 - 0.5 + 0 = 0.0 → clamped to 0.05
+    // (Old: had +STEP_PROBABILITY_OFFSET → 0.7. That planner-only offset is removed.)
     const p = estimateStepProbability(0.5, 50);
-    expect(p).toBeCloseTo(STEP_PROBABILITY_OFFSET, 5);
+    expect(p).toBe(0.05);
   });
 
   it('returns higher probability for high capability vs low difficulty', () => {
+    // Phase 2: 0.9 - 0.2 = 0.7
     const p = estimateStepProbability(0.9, 20);
-    expect(p).toBeGreaterThan(0.8);
+    expect(p).toBeCloseTo(0.7, 2);
   });
 
   it('returns lower probability for low capability vs high difficulty', () => {
@@ -199,6 +201,12 @@ describe('estimateStepProbability', () => {
     const low = estimateStepProbability(0.0, 100);
     expect(low).toBe(0.05);
   });
+
+  it('uses same math as shared resolver (Phase 2 parity)', () => {
+    // Verify planner and live use the same formula
+    const p = estimateStepProbability(0.7, 30); // 0.7 - 0.3 = 0.4
+    expect(p).toBeCloseTo(0.4, 2);
+  });
 });
 
 // ─── estimateCompletionProb ─────────────────────────────────────
@@ -213,11 +221,12 @@ describe('estimateCompletionProb', () => {
     });
 
     const prob = estimateCompletionProb(entry, 'agent_1', graph);
-    // Each step: computeCapability(no traits) → sigmoid(0) ≈ 0.018
-    // Step prob ≈ 0.018 - 0.5 + 0.6 = 0.118, clamped to 0.118
-    // Product of 2 steps: 0.118 * 0.118 ≈ 0.014
-    expect(prob).toBeGreaterThan(0.01);
-    expect(prob).toBeLessThan(0.05);
+    // Phase 2: Each step: computeCapability(no traits) → sigmoid(0) ≈ 0.018
+    // Step prob = 0.018 - 0.5 + 0 = -0.482 → clamped to 0.05 (floor)
+    // Product of 2 steps: 0.05 * 0.05 = 0.0025
+    // (Old: had +0.7 offset → higher prob. Offset removed in Phase 2.)
+    expect(prob).toBeGreaterThan(0);
+    expect(prob).toBeLessThan(0.01);
   });
 
   it('high-capability agent has higher completion probability', () => {

@@ -13,9 +13,11 @@ import {
   getAnyEncounterById,
 } from '../data/encounter-content';
 import { computeCapability } from './domainCapability';
-import { resolveAction } from './resolution';
-import type { OutcomeType } from '../types/resolution';
+import { resolveAction as resolveActionShared, normalizeLegacyDifficulty, isSuccessOutcome, isFailureOutcome } from './resolutionService';
+import type { ResolutionInput, OutcomeType } from '../types/resolution';
 import { computeResolutionModifiers } from './resolutionModifiers';
+import { createEncounterFailureErosion } from './quintessenceActions';
+import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { emitTrace } from './traceBuffer';
 import { applyEncounterGrowth } from './capabilityGrowth';
 import { handleTierPromotion } from './tierPromotion';
@@ -130,15 +132,31 @@ export function resolveEncounter(
     encounter.sphereAffinity,
   );
 
-  // Compute final probability: capability + modifiers - normalized difficulty, clamped
-  const probability = Math.max(0.05, Math.min(0.95,
-    capability + modifiers.totalModifier - step.difficulty / 100,
-  ));
+  // Phase 2: Use shared resolution service with difficulty normalization.
+  // Legacy encounter difficulty is integer-like (e.g. 12, 25, 30) — normalize to 0..1
+  // at this boundary before calling the shared resolver.
+  const normalizedDifficulty = normalizeLegacyDifficulty(step.difficulty);
 
-  // Roll and resolve
-  const resolution = resolveAction(probability, deterministicRoll);
-  const success =
-    resolution.outcome === 'success' || resolution.outcome === 'critical_success';
+  const resolutionInput: ResolutionInput = {
+    actorId: progress.actorId,
+    domain: step.reach,
+    capability,
+    difficulty: normalizedDifficulty,
+    sphereFactor: 0,
+    actionModifiers: modifiers.totalModifier,
+  };
+
+  // The orchestrator always provides deterministicRoll (pre-computed from seeded RNG).
+  // The rng fallback is for test callers that omit the roll — Math.random is acceptable
+  // since NFP #3 determinism is enforced at the orchestrator level, not here.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  const resolution = resolveActionShared(
+    resolutionInput,
+    Math.random,
+    deterministicRoll,
+    'encounter',
+  );
+  const success = isSuccessOutcome(resolution.outcome);
 
   // Select the appropriate outcome
   const outcome = success ? step.onSuccess : step.onFailure;
@@ -153,7 +171,7 @@ export function resolveEncounter(
     stepName: step.name,
     difficulty: step.difficulty,
     capability,
-    probability,
+    probability: resolution.probability,
     roll: resolution.roll,
     success,
     status: 'active',
@@ -171,10 +189,25 @@ export function resolveEncounter(
     reach: step.reach,
     diff: step.difficulty,
     cap: Math.round(capability * 100),
-    prob: probability,
+    prob: resolution.probability,
     roll: resolution.roll,
     result: success ? 'PASS' : 'FAIL',
   });
+
+  // Phase 2: Emit quintessence erosion on encounter failure.
+  // This is the live non-player quintessence pressure seam.
+  if (isFailureOutcome(resolution.outcome)) {
+    const erosionEvent = createEncounterFailureErosion(
+      progress.actorId,
+      QUINTESSENCE_ENCOUNTER_FAILURE_EROSION,
+      state.tick,
+    );
+    // Append to pending events — phaseQuintessence will process them
+    if (!state.pendingQuintessenceEvents) {
+      state.pendingQuintessenceEvents = [];
+    }
+    state.pendingQuintessenceEvents.push(erosionEvent);
+  }
 
   // Apply capability growth from encounter step resolution
   const tierPromotionEligible = (success && outcome.tierPromotionEligible) ?? false;

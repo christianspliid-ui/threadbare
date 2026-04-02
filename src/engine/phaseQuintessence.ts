@@ -12,9 +12,12 @@ import type { GameState, TickEvent } from '../types/gameState';
 import {
   QUINTESSENCE_PASSIVE_REGEN,
   QUINTESSENCE_DEFAULT,
+  QUINTESSENCE_MAX_DEFAULT,
   QUINTESSENCE_THRESHOLDS,
   ZERO_STATE_RULES,
+  getQuintessenceThresholdState,
 } from '../types/quintessence';
+import type { QuintessenceThresholdState } from '../types/resolution';
 import type { NodeType } from '../types/graph';
 import type { SimulationRuntime } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
@@ -55,8 +58,14 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
     if (!node) continue; // fail-soft: unknown node
 
     const current = (node.properties.quintessence ?? QUINTESSENCE_DEFAULT) as number;
-    const updated = Math.max(0, Math.min(1, current + totalDelta));
+    const max = (node.properties.quintessenceMax ?? QUINTESSENCE_MAX_DEFAULT) as number;
+    const updated = Math.max(0, Math.min(max, current + totalDelta));
+
+    // Phase 2: Capture threshold state before and after for transition detection
+    const stateBefore = getQuintessenceThresholdState(node);
     graph.updateNode(nodeId, { properties: { quintessence: updated } });
+    const nodeAfter = graph.getNode(nodeId);
+    const stateAfter = nodeAfter ? getQuintessenceThresholdState(nodeAfter) : stateBefore;
 
     // Balance telemetry: quintessence_changed (from pending events — player/encounter driven)
     if (runtime && totalDelta !== 0) {
@@ -71,6 +80,18 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
         quintessenceReason: 'pending_event',
       });
     }
+
+    // Phase 2: Emit threshold transition telemetry when state changes
+    if (runtime && stateAfter !== stateBefore) {
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'state_transition',
+        agentId: nodeId,
+        sourceSystem: 'quintessence',
+        transitionType: `threshold_${stateBefore}_to_${stateAfter}`,
+        quintessenceAfter: updated,
+      });
+    }
   }
 
   // ── Step 3 & 4: Passive regen + dissolution check ────────────────────
@@ -82,10 +103,11 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
       if (node.properties.quintessence == null) continue;
 
       let q = node.properties.quintessence as number;
+      const max = (node.properties.quintessenceMax ?? QUINTESSENCE_MAX_DEFAULT) as number;
 
-      // Passive regen — only when alive (q > 0) and below max (q < 1.0)
-      if (q > QUINTESSENCE_THRESHOLDS.DISSOLUTION && q < 1.0) {
-        q = Math.min(1.0, q + QUINTESSENCE_PASSIVE_REGEN);
+      // Phase 2: Passive regen toward quintessenceMax (not fixed 1.0)
+      if (q > QUINTESSENCE_THRESHOLDS.DISSOLUTION && q < max) {
+        q = Math.min(max, q + QUINTESSENCE_PASSIVE_REGEN);
         graph.updateNode(node.id, { properties: { quintessence: q } });
       }
 
