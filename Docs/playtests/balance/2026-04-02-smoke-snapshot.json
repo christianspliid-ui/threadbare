@@ -16,76 +16,76 @@
         "metricId": "step_success_rate",
         "scope": "trivial",
         "label": "Step success rate",
-        "actual": 0.0661111111111111,
+        "actual": 0.06407918728835635,
         "expected": {
           "min": 0.82,
           "max": 0.97,
           "warnBelow": 0.85,
           "warnAbove": 0.95
         },
-        "delta": -0.8338888888888888,
+        "delta": -0.8359208127116435,
         "severity": "fail",
-        "note": "Below minimum (6.6% < 82.0%)"
+        "note": "Below minimum (6.4% < 82.0%)"
       },
       {
         "metricId": "step_success_rate",
         "scope": "easy",
         "label": "Step success rate",
-        "actual": 0.058516801853997685,
+        "actual": 0.06522855675398048,
         "expected": {
           "min": 0.72,
           "max": 0.88,
           "warnBelow": 0.75,
           "warnAbove": 0.85
         },
-        "delta": -0.7414831981460024,
+        "delta": -0.7347714432460195,
         "severity": "fail",
-        "note": "Below minimum (5.9% < 72.0%)"
+        "note": "Below minimum (6.5% < 72.0%)"
       },
       {
         "metricId": "step_success_rate",
         "scope": "moderate",
         "label": "Step success rate",
-        "actual": 0.09285714285714286,
+        "actual": 0.09970501474926254,
         "expected": {
           "min": 0.55,
           "max": 0.78,
           "warnBelow": 0.6,
           "warnAbove": 0.75
         },
-        "delta": -0.5821428571428572,
+        "delta": -0.5752949852507375,
         "severity": "fail",
-        "note": "Below minimum (9.3% < 55.0%)"
+        "note": "Below minimum (10.0% < 55.0%)"
       },
       {
         "metricId": "step_success_rate",
         "scope": "hard",
         "label": "Step success rate",
-        "actual": 0.35106382978723405,
+        "actual": 0.3873015873015873,
         "expected": {
           "min": 0.35,
           "max": 0.65,
           "warnBelow": 0.4,
           "warnAbove": 0.6
         },
-        "delta": -0.14893617021276595,
+        "delta": -0.11269841269841269,
         "severity": "warning",
-        "note": "Below ideal zone (35.1% < 40.0%, min=35.0%)"
+        "note": "Below ideal zone (38.7% < 40.0%, min=35.0%)"
       },
       {
         "metricId": "step_success_rate",
         "scope": "deadly",
         "label": "Step success rate",
-        "actual": 0.45454545454545453,
+        "actual": 0.3790322580645161,
         "expected": {
           "min": 0.2,
           "max": 0.5,
           "warnBelow": 0.25,
           "warnAbove": 0.45
         },
-        "delta": 0.10454545454545455,
-        "severity": "warning",
-        "note": "Above ideal zone (45.5% > 45.0%, max=50.0%)"
+        "delta": 0.029032258064516148,
+        "severity": "pass",
+        "note": "In target zone (37.9%)"
       },
       {
         "metricId": "step_success_rate",
@@ -105,14 +105,14 @@
         "metricId": "completion_rate",
         "scope": "trivial",
         "label": "Encounter completion rate",
-        "actual": 0.0065011820330969266,
+        "actual": 0.006909894969596462,
         "expected": {
           "min": 0.75,
           "max": 0.98,
           "warnBelow": 0.8,
           "warnAbove": 0.95
         },
-        "delta": -0.8684988179669031,
+        "delta": -0.8680901050304035,
         "severity": "fail",
         "note": "Below minimum (0.7% < 75.0%)"
       },
@@ -120,74 +120,74 @@
         "metricId": "completion_rate",
         "scope": "easy",
         "label": "Encounter completion rate",
-        "actual": 0.003678724708767627,
+        "actual": 0.005192675594424706,
         "expected": {
           "min": 0.65,
           "max": 0.9,
           "warnBelow": 0.7,
           "warnAbove": 0.85
         },
-        "delta": -0.7713212752912323,
+        "delta": -0.7698073244055752,
         "severity": "fail",
-        "note": "Below minimum (0.4% < 65.0%)"
+        "note": "Below minimum (0.5% < 65.0%)"
       },
       {
         "metricId": "completion_rate",
         "scope": "moderate",
         "label": "Encounter completion rate",
-        "actual": 0.012441679626749611,
+        "actual": 0.01864951768488746,
         "expected": {
           "min": 0.45,
           "max": 0.76,
           "warnBelow": 0.5,
           "warnAbove": 0.7
         },
-        "delta": -0.5875583203732504,
+        "delta": -0.5813504823151125,
         "severity": "fail",
-        "note": "Below minimum (1.2% < 45.0%)"
+        "note": "Below minimum (1.9% < 45.0%)"
       },
       {
         "metricId": "completion_rate",
         "scope": "hard",
         "label": "Encounter completion rate",
-        "actual": 0.12857142857142856,
+        "actual": 0.1447562776957164,
         "expected": {
           "min": 0.25,
           "max": 0.62,
           "warnBelow": 0.3,
           "warnAbove": 0.55
         },
-        "delta": -0.2964285714285715,
+        "delta": -0.2802437223042836,
         "severity": "fail",
-        "note": "Below minimum (12.9% < 25.0%)"
+        "note": "Below minimum (14.5% < 25.0%)"
       },
       {
         "metricId": "completion_rate",
         "scope": "deadly",
         "label": "Encounter completion rate",
-        "actual": 0.14285714285714285,
+        "actual": 0.07228915662650602,
         "expected": {
           "min": 0.1,
           "max": 0.48,
           "warnBelow": 0.15,
           "warnAbove": 0.4
         },
-        "delta": -0.13214285714285717,
-        "severity": "warning",
-        "note": "Below ideal zone (14.3% < 15.0%, min=10.0%)"
+        "delta": -0.202710843373494,
+        "severity": "fail",
+        "note": "Below minimum (7.2% < 10.0%)"
       },
       {
         "metricId": "fail_forward_share",
         "label": "Fail-forward share of encounters",
-        "actual": 0.004295942720763723,
+        "actual": 0.019431229210347695,
         "expected": {
           "min": 0.55,
           "max": 1,
           "warnBelow": 0.6
         },
-        "delta": -0.7957040572792363,
+        "delta": -0.7805687707896524,
         "severity": "fail",
-        "note": "Below minimum (0.4% < 55.0%)"
+        "note": "Below minimum (1.9% < 55.0%)"
       },
       {
         "metricId": "crit_failure_share",
@@ -345,16 +345,16 @@
       {
         "metricId": "durable_rewards_per_100_encounters",
         "label": "Durable rewards per 100 encounters",
-        "actual": 0.8353221957040573,
+        "actual": 1.1572143452877397,
         "expected": {
           "min": 1.5,
           "max": 9,
           "warnBelow": 2,
           "warnAbove": 8
         },
-        "delta": -4.164677804295943,
+        "delta": -3.8427856547122605,
         "severity": "fail",
-        "note": "Below minimum (83.5% < 2)"
+        "note": "Below minimum (1 < 2)"
       },
       {
         "metricId": "consumable_rewards_per_100_encounters",
@@ -413,96 +413,96 @@
       {
         "metricId": "time_to_first_growth_beat",
         "label": "Time to first growth beat (ticks)",
-        "actual": 13,
+        "actual": 10,
         "expected": {
           "min": 15,
           "max": 800,
           "warnBelow": 20,
           "warnAbove": 600
         },
-        "delta": -297,
+        "delta": -300,
         "severity": "fail",
-        "note": "Below minimum (13 < 15)"
+        "note": "Below minimum (10 < 15)"
       }
     ],
     "counts": {
-      "pass": 5,
-      "warning": 11,
-      "fail": 13
+      "pass": 6,
+      "warning": 9,
+      "fail": 14
     },
-    "evaluatedAt": 1775124069110
+    "evaluatedAt": 1775126385690
   },
   "cohortSummary": {
     "startTick": 0,
     "endTick": 200,
-    "totalTicks": 66.66666666666667,
+    "totalTicks": 200,
     "targetVersion": "0.1.0-phase1",
     "totals": {
       "actionsAttempted": 0,
-      "stepsAttempted": 4530,
-      "encountersAttempted": 4190,
-      "encountersCompleted": 54,
-      "encountersAbandoned": 4136,
-      "rewardsGranted": 160,
+      "stepsAttempted": 10497,
+      "encountersAttempted": 9592,
+      "encountersCompleted": 177,
+      "encountersAbandoned": 9415,
+      "rewardsGranted": 447,
       "rewardsMissed": 0,
-      "growthBeatsApplied": 10,
+      "growthBeatsApplied": 34,
       "dissolutions": 0
     },
     "stepSuccessRates": {
       "moderate": {
-        "attempts": 700,
-        "successes": 65,
-        "rate": 0.09285714285714286
+        "attempts": 1695,
+        "successes": 169,
+        "rate": 0.09970501474926254
       },
       "easy": {
-        "attempts": 1726,
-        "successes": 101,
-        "rate": 0.058516801853997685
+        "attempts": 3894,
+        "successes": 254,
+        "rate": 0.06522855675398048
       },
       "trivial": {
-        "attempts": 1800,
-        "successes": 119,
-        "rate": 0.0661111111111111
+        "attempts": 3839,
+        "successes": 246,
+        "rate": 0.06407918728835635
       },
       "hard": {
-        "attempts": 282,
-        "successes": 99,
-        "rate": 0.35106382978723405
+        "attempts": 945,
+        "successes": 366,
+        "rate": 0.3873015873015873
       },
       "deadly": {
-        "attempts": 22,
-        "successes": 10,
-        "rate": 0.45454545454545453
+        "attempts": 124,
+        "successes": 47,
+        "rate": 0.3790322580645161
       }
     },
     "completionRates": {
       "moderate": {
-        "attempts": 643,
-        "successes": 8,
-        "rate": 0.012441679626749611
+        "attempts": 1555,
+        "successes": 29,
+        "rate": 0.01864951768488746
       },
       "easy": {
-        "attempts": 1631,
-        "successes": 6,
-        "rate": 0.003678724708767627
+        "attempts": 3659,
+        "successes": 19,
+        "rate": 0.005192675594424706
       },
       "trivial": {
-        "attempts": 1692,
-        "successes": 11,
-        "rate": 0.0065011820330969266
+        "attempts": 3618,
+        "successes": 25,
+        "rate": 0.006909894969596462
       },
       "hard": {
-        "attempts": 210,
-        "successes": 27,
-        "rate": 0.12857142857142856
+        "attempts": 677,
+        "successes": 98,
+        "rate": 0.1447562776957164
       },
       "deadly": {
-        "attempts": 14,
-        "successes": 2,
-        "rate": 0.14285714285714285
+        "attempts": 83,
+        "successes": 6,
+        "rate": 0.07228915662650602
       }
     },
-    "failForwardShare": 0.004295942720763723,
+    "failForwardShare": 0.019431229210347695,
     "critFailShareByBand": {
       "trivial": 0,
       "moderate": 0,
@@ -517,18 +517,18 @@
     },
     "rewards": {
       "byCategory": {
-        "condition": 116,
-        "bestowed": 9,
-        "possession": 35
+        "condition": 320,
+        "bestowed": 16,
+        "possession": 111
       },
-      "durable": 35,
+      "durable": 111,
       "consumable": 0,
-      "badOutcomes": 78
+      "badOutcomes": 208
     },
     "pacing": {
       "firstRewardTick": 4,
       "firstSetbackTick": null,
-      "firstGrowthBeatTick": 13
+      "firstGrowthBeatTick": 10
     }
   },
   "perRunResults": [
@@ -1055,121 +1055,188 @@
           "warning": 11,
           "fail": 13
         },
-        "evaluatedAt": 1775124069111
+        "evaluatedAt": 1775126385691
       }
     },
     {
       "seed": 137,
       "summary": {
         "startTick": 0,
-        "endTick": 0,
-        "totalTicks": 0,
+        "endTick": 200,
+        "totalTicks": 200,
         "targetVersion": "0.1.0-phase1",
         "totals": {
           "actionsAttempted": 0,
-          "stepsAttempted": 0,
-          "encountersAttempted": 0,
-          "encountersCompleted": 0,
-          "encountersAbandoned": 0,
-          "rewardsGranted": 0,
+          "stepsAttempted": 2604,
+          "encountersAttempted": 2342,
+          "encountersCompleted": 52,
+          "encountersAbandoned": 2290,
+          "rewardsGranted": 123,
           "rewardsMissed": 0,
-          "growthBeatsApplied": 0,
+          "growthBeatsApplied": 9,
           "dissolutions": 0
         },
-        "stepSuccessRates": {},
-        "completionRates": {},
-        "failForwardShare": 0,
-        "critFailShareByBand": {},
+        "stepSuccessRates": {
+          "trivial": {
+            "attempts": 809,
+            "successes": 51,
+            "rate": 0.0630407911001236
+          },
+          "easy": {
+            "attempts": 923,
+            "successes": 63,
+            "rate": 0.06825568797399784
+          },
+          "hard": {
+            "attempts": 344,
+            "successes": 137,
+            "rate": 0.39825581395348836
+          },
+          "moderate": {
+            "attempts": 454,
+            "successes": 37,
+            "rate": 0.08149779735682819
+          },
+          "deadly": {
+            "attempts": 74,
+            "successes": 26,
+            "rate": 0.35135135135135137
+          }
+        },
+        "completionRates": {
+          "trivial": {
+            "attempts": 764,
+            "completions": 6,
+            "rate": 0.007853403141361256
+          },
+          "easy": {
+            "attempts": 864,
+            "completions": 4,
+            "rate": 0.004629629629629629
+          },
+          "hard": {
+            "attempts": 241,
+            "completions": 34,
+            "rate": 0.14107883817427386
+          },
+          "moderate": {
+            "attempts": 423,
+            "completions": 6,
+            "rate": 0.014184397163120567
+          },
+          "deadly": {
+            "attempts": 50,
+            "completions": 2,
+            "rate": 0.04
+          }
+        },
+        "failForwardShare": 0.02220324508966695,
+        "critFailShareByBand": {
+          "easy": 0,
+          "moderate": 0,
+          "trivial": 0,
+          "hard": 0,
+          "deadly": 0
+        },
         "quintessence": {
           "totalDeltaFromEvents": 0,
           "averageLossPerEncounter": 0,
           "dissolutions": 0
         },
         "rewards": {
-          "byCategory": {},
-          "durable": 0,
+          "byCategory": {
+            "possession": 32,
+            "condition": 90,
+            "bestowed": 1
+          },
+          "durable": 32,
           "consumable": 0,
-          "badOutcomes": 0
+          "badOutcomes": 63
         },
         "pacing": {
-          "firstRewardTick": null,
+          "firstRewardTick": 4,
           "firstSetbackTick": null,
-          "firstGrowthBeatTick": null
+          "firstGrowthBeatTick": 2
         }
       },
       "result": {
-        "overall": "warning",
+        "overall": "fail",
         "targetVersion": "0.1.0-phase1",
         "findings": [
           {
             "metricId": "step_success_rate",
             "scope": "trivial",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.0630407911001236,
             "expected": {
               "min": 0.82,
               "max": 0.97,
               "warnBelow": 0.85,
               "warnAbove": 0.95
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.8369592088998763,
+            "severity": "fail",
+            "note": "Below minimum (6.3% < 82.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "easy",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.06825568797399784,
             "expected": {
               "min": 0.72,
               "max": 0.88,
               "warnBelow": 0.75,
               "warnAbove": 0.85
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.7317443120260022,
+            "severity": "fail",
+            "note": "Below minimum (6.8% < 72.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "moderate",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.08149779735682819,
             "expected": {
               "min": 0.55,
               "max": 0.78,
               "warnBelow": 0.6,
               "warnAbove": 0.75
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.5935022026431719,
+            "severity": "fail",
+            "note": "Below minimum (8.1% < 55.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "hard",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.39825581395348836,
             "expected": {
               "min": 0.35,
               "max": 0.65,
               "warnBelow": 0.4,
               "warnAbove": 0.6
             },
+            "delta": -0.10174418604651164,
             "severity": "warning",
-            "note": "No data available for this metric."
+            "note": "Below ideal zone (39.8% < 40.0%, min=35.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "deadly",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.35135135135135137,
             "expected": {
               "min": 0.2,
               "max": 0.5,
               "warnBelow": 0.25,
               "warnAbove": 0.45
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": 0.001351351351351393,
+            "severity": "pass",
+            "note": "In target zone (35.1%)"
           },
           {
             "metricId": "step_success_rate",
@@ -1189,148 +1256,159 @@
             "metricId": "completion_rate",
             "scope": "trivial",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.007853403141361256,
             "expected": {
               "min": 0.75,
               "max": 0.98,
               "warnBelow": 0.8,
               "warnAbove": 0.95
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.8671465968586387,
+            "severity": "fail",
+            "note": "Below minimum (0.8% < 75.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "easy",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.004629629629629629,
             "expected": {
               "min": 0.65,
               "max": 0.9,
               "warnBelow": 0.7,
               "warnAbove": 0.85
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.7703703703703703,
+            "severity": "fail",
+            "note": "Below minimum (0.5% < 65.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "moderate",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.014184397163120567,
             "expected": {
               "min": 0.45,
               "max": 0.76,
               "warnBelow": 0.5,
               "warnAbove": 0.7
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.5858156028368794,
+            "severity": "fail",
+            "note": "Below minimum (1.4% < 45.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "hard",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.14107883817427386,
             "expected": {
               "min": 0.25,
               "max": 0.62,
               "warnBelow": 0.3,
               "warnAbove": 0.55
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.2839211618257262,
+            "severity": "fail",
+            "note": "Below minimum (14.1% < 25.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "deadly",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.04,
             "expected": {
               "min": 0.1,
               "max": 0.48,
               "warnBelow": 0.15,
               "warnAbove": 0.4
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.23500000000000001,
+            "severity": "fail",
+            "note": "Below minimum (4.0% < 10.0%)"
           },
           {
             "metricId": "fail_forward_share",
             "label": "Fail-forward share of encounters",
-            "actual": null,
+            "actual": 0.02220324508966695,
             "expected": {
               "min": 0.55,
               "max": 1,
               "warnBelow": 0.6
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.7777967549103331,
+            "severity": "fail",
+            "note": "Below minimum (2.2% < 55.0%)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "trivial",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.05,
               "warnAbove": 0.04
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.02,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "easy",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.08,
               "warnAbove": 0.07
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.035,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "moderate",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.12,
               "warnAbove": 0.1
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.05,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "hard",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.18,
               "warnAbove": 0.15
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.075,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "deadly",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.25,
               "warnAbove": 0.22
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.11,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "quintessence_loss_per_encounter",
@@ -1404,41 +1482,44 @@
           {
             "metricId": "quintessence_recovery_per_100_ticks",
             "label": "Quintessence recovery per 100 ticks",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0.025,
               "max": 0.08,
               "warnBelow": 0.03,
               "warnAbove": 0.07
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.05,
+            "severity": "fail",
+            "note": "Below minimum (0 < 2.5%)"
           },
           {
             "metricId": "durable_rewards_per_100_encounters",
             "label": "Durable rewards per 100 encounters",
-            "actual": null,
+            "actual": 1.3663535439795047,
             "expected": {
               "min": 1.5,
               "max": 9,
               "warnBelow": 2,
               "warnAbove": 8
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -3.6336464560204953,
+            "severity": "fail",
+            "note": "Below minimum (1 < 2)"
           },
           {
             "metricId": "consumable_rewards_per_100_encounters",
             "label": "Consumable rewards per 100 encounters",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 12,
               "max": 55,
               "warnBelow": 15,
               "warnAbove": 50
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -32.5,
+            "severity": "fail",
+            "note": "Below minimum (0 < 12)"
           },
           {
             "metricId": "conditions_per_100_encounters",
@@ -1456,15 +1537,16 @@
           {
             "metricId": "time_to_first_reward",
             "label": "Time to first meaningful reward (ticks)",
-            "actual": null,
+            "actual": 4,
             "expected": {
               "min": 15,
               "max": 400,
               "warnBelow": 20,
               "warnAbove": 300
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -156,
+            "severity": "fail",
+            "note": "Below minimum (4 < 15)"
           },
           {
             "metricId": "time_to_first_setback",
@@ -1482,137 +1564,205 @@
           {
             "metricId": "time_to_first_growth_beat",
             "label": "Time to first growth beat (ticks)",
-            "actual": null,
+            "actual": 2,
             "expected": {
               "min": 15,
               "max": 800,
               "warnBelow": 20,
               "warnAbove": 600
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -308,
+            "severity": "fail",
+            "note": "Below minimum (2 < 15)"
           }
         ],
         "counts": {
-          "pass": 0,
-          "warning": 29,
-          "fail": 0
+          "pass": 6,
+          "warning": 9,
+          "fail": 14
         },
-        "evaluatedAt": 1775124069111
+        "evaluatedAt": 1775126385691
       }
     },
     {
       "seed": 256,
       "summary": {
         "startTick": 0,
-        "endTick": 0,
-        "totalTicks": 0,
+        "endTick": 200,
+        "totalTicks": 200,
         "targetVersion": "0.1.0-phase1",
         "totals": {
           "actionsAttempted": 0,
-          "stepsAttempted": 0,
-          "encountersAttempted": 0,
-          "encountersCompleted": 0,
-          "encountersAbandoned": 0,
-          "rewardsGranted": 0,
+          "stepsAttempted": 3363,
+          "encountersAttempted": 3060,
+          "encountersCompleted": 71,
+          "encountersAbandoned": 2989,
+          "rewardsGranted": 164,
           "rewardsMissed": 0,
-          "growthBeatsApplied": 0,
+          "growthBeatsApplied": 15,
           "dissolutions": 0
         },
-        "stepSuccessRates": {},
-        "completionRates": {},
-        "failForwardShare": 0,
-        "critFailShareByBand": {},
+        "stepSuccessRates": {
+          "hard": {
+            "attempts": 319,
+            "successes": 130,
+            "rate": 0.40752351097178685
+          },
+          "moderate": {
+            "attempts": 541,
+            "successes": 67,
+            "rate": 0.12384473197781885
+          },
+          "trivial": {
+            "attempts": 1230,
+            "successes": 76,
+            "rate": 0.061788617886178863
+          },
+          "easy": {
+            "attempts": 1245,
+            "successes": 90,
+            "rate": 0.07228915662650602
+          },
+          "deadly": {
+            "attempts": 28,
+            "successes": 11,
+            "rate": 0.39285714285714285
+          }
+        },
+        "completionRates": {
+          "hard": {
+            "attempts": 226,
+            "completions": 37,
+            "rate": 0.16371681415929204
+          },
+          "trivial": {
+            "attempts": 1162,
+            "completions": 8,
+            "rate": 0.0068846815834767644
+          },
+          "moderate": {
+            "attempts": 489,
+            "completions": 15,
+            "rate": 0.03067484662576687
+          },
+          "easy": {
+            "attempts": 1164,
+            "completions": 9,
+            "rate": 0.007731958762886598
+          },
+          "deadly": {
+            "attempts": 19,
+            "completions": 2,
+            "rate": 0.10526315789473684
+          }
+        },
+        "failForwardShare": 0.023202614379084968,
+        "critFailShareByBand": {
+          "easy": 0,
+          "trivial": 0,
+          "moderate": 0,
+          "hard": 0,
+          "deadly": 0
+        },
         "quintessence": {
           "totalDeltaFromEvents": 0,
           "averageLossPerEncounter": 0,
           "dissolutions": 0
         },
         "rewards": {
-          "byCategory": {},
-          "durable": 0,
+          "byCategory": {
+            "condition": 114,
+            "possession": 44,
+            "bestowed": 6
+          },
+          "durable": 44,
           "consumable": 0,
-          "badOutcomes": 0
+          "badOutcomes": 67
         },
         "pacing": {
-          "firstRewardTick": null,
+          "firstRewardTick": 4,
           "firstSetbackTick": null,
-          "firstGrowthBeatTick": null
+          "firstGrowthBeatTick": 14
         }
       },
       "result": {
-        "overall": "warning",
+        "overall": "fail",
         "targetVersion": "0.1.0-phase1",
         "findings": [
           {
             "metricId": "step_success_rate",
             "scope": "trivial",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.061788617886178863,
             "expected": {
               "min": 0.82,
               "max": 0.97,
               "warnBelow": 0.85,
               "warnAbove": 0.95
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.8382113821138211,
+            "severity": "fail",
+            "note": "Below minimum (6.2% < 82.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "easy",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.07228915662650602,
             "expected": {
               "min": 0.72,
               "max": 0.88,
               "warnBelow": 0.75,
               "warnAbove": 0.85
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.727710843373494,
+            "severity": "fail",
+            "note": "Below minimum (7.2% < 72.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "moderate",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.12384473197781885,
             "expected": {
               "min": 0.55,
               "max": 0.78,
               "warnBelow": 0.6,
               "warnAbove": 0.75
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.5511552680221812,
+            "severity": "fail",
+            "note": "Below minimum (12.4% < 55.0%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "hard",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.40752351097178685,
             "expected": {
               "min": 0.35,
               "max": 0.65,
               "warnBelow": 0.4,
               "warnAbove": 0.6
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.09247648902821315,
+            "severity": "pass",
+            "note": "In target zone (40.8%)"
           },
           {
             "metricId": "step_success_rate",
             "scope": "deadly",
             "label": "Step success rate",
-            "actual": null,
+            "actual": 0.39285714285714285,
             "expected": {
               "min": 0.2,
               "max": 0.5,
               "warnBelow": 0.25,
               "warnAbove": 0.45
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": 0.04285714285714287,
+            "severity": "pass",
+            "note": "In target zone (39.3%)"
           },
           {
             "metricId": "step_success_rate",
@@ -1632,148 +1782,159 @@
             "metricId": "completion_rate",
             "scope": "trivial",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.0068846815834767644,
             "expected": {
               "min": 0.75,
               "max": 0.98,
               "warnBelow": 0.8,
               "warnAbove": 0.95
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.8681153184165232,
+            "severity": "fail",
+            "note": "Below minimum (0.7% < 75.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "easy",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.007731958762886598,
             "expected": {
               "min": 0.65,
               "max": 0.9,
               "warnBelow": 0.7,
               "warnAbove": 0.85
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.7672680412371133,
+            "severity": "fail",
+            "note": "Below minimum (0.8% < 65.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "moderate",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.03067484662576687,
             "expected": {
               "min": 0.45,
               "max": 0.76,
               "warnBelow": 0.5,
               "warnAbove": 0.7
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.5693251533742331,
+            "severity": "fail",
+            "note": "Below minimum (3.1% < 45.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "hard",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.16371681415929204,
             "expected": {
               "min": 0.25,
               "max": 0.62,
               "warnBelow": 0.3,
               "warnAbove": 0.55
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.261283185840708,
+            "severity": "fail",
+            "note": "Below minimum (16.4% < 25.0%)"
           },
           {
             "metricId": "completion_rate",
             "scope": "deadly",
             "label": "Encounter completion rate",
-            "actual": null,
+            "actual": 0.10526315789473684,
             "expected": {
               "min": 0.1,
               "max": 0.48,
               "warnBelow": 0.15,
               "warnAbove": 0.4
             },
+            "delta": -0.16973684210526319,
             "severity": "warning",
-            "note": "No data available for this metric."
+            "note": "Below ideal zone (10.5% < 15.0%, min=10.0%)"
           },
           {
             "metricId": "fail_forward_share",
             "label": "Fail-forward share of encounters",
-            "actual": null,
+            "actual": 0.023202614379084968,
             "expected": {
               "min": 0.55,
               "max": 1,
               "warnBelow": 0.6
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.776797385620915,
+            "severity": "fail",
+            "note": "Below minimum (2.3% < 55.0%)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "trivial",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.05,
               "warnAbove": 0.04
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.02,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "easy",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.08,
               "warnAbove": 0.07
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.035,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "moderate",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.12,
               "warnAbove": 0.1
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.05,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "hard",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.18,
               "warnAbove": 0.15
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.075,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "crit_failure_share",
             "scope": "deadly",
             "label": "Critical failure share",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0,
               "max": 0.25,
               "warnAbove": 0.22
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.11,
+            "severity": "pass",
+            "note": "In target zone (0)"
           },
           {
             "metricId": "quintessence_loss_per_encounter",
@@ -1847,41 +2008,44 @@
           {
             "metricId": "quintessence_recovery_per_100_ticks",
             "label": "Quintessence recovery per 100 ticks",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 0.025,
               "max": 0.08,
               "warnBelow": 0.03,
               "warnAbove": 0.07
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -0.05,
+            "severity": "fail",
+            "note": "Below minimum (0 < 2.5%)"
           },
           {
             "metricId": "durable_rewards_per_100_encounters",
             "label": "Durable rewards per 100 encounters",
-            "actual": null,
+            "actual": 1.4379084967320261,
             "expected": {
               "min": 1.5,
               "max": 9,
               "warnBelow": 2,
               "warnAbove": 8
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -3.5620915032679736,
+            "severity": "fail",
+            "note": "Below minimum (1 < 2)"
           },
           {
             "metricId": "consumable_rewards_per_100_encounters",
             "label": "Consumable rewards per 100 encounters",
-            "actual": null,
+            "actual": 0,
             "expected": {
               "min": 12,
               "max": 55,
               "warnBelow": 15,
               "warnAbove": 50
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -32.5,
+            "severity": "fail",
+            "note": "Below minimum (0 < 12)"
           },
           {
             "metricId": "conditions_per_100_encounters",
@@ -1899,15 +2063,16 @@
           {
             "metricId": "time_to_first_reward",
             "label": "Time to first meaningful reward (ticks)",
-            "actual": null,
+            "actual": 4,
             "expected": {
               "min": 15,
               "max": 400,
               "warnBelow": 20,
               "warnAbove": 300
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -156,
+            "severity": "fail",
+            "note": "Below minimum (4 < 15)"
           },
           {
             "metricId": "time_to_first_setback",
@@ -1925,23 +2090,24 @@
           {
             "metricId": "time_to_first_growth_beat",
             "label": "Time to first growth beat (ticks)",
-            "actual": null,
+            "actual": 14,
             "expected": {
               "min": 15,
               "max": 800,
               "warnBelow": 20,
               "warnAbove": 600
             },
-            "severity": "warning",
-            "note": "No data available for this metric."
+            "delta": -296,
+            "severity": "fail",
+            "note": "Below minimum (14 < 15)"
           }
         ],
         "counts": {
-          "pass": 0,
-          "warning": 29,
-          "fail": 0
+          "pass": 7,
+          "warning": 9,
+          "fail": 13
         },
-        "evaluatedAt": 1775124069111
+        "evaluatedAt": 1775126385691
       }
     }
   ]

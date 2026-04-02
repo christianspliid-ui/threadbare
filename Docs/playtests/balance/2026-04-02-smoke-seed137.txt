@@ -1,48 +1,48 @@
 # Balance Evaluation Report
-Evaluated: 2026-04-02T10:01:06.000Z
+Evaluated: 2026-04-02T10:36:57.147Z
 Target version: 0.1.0-phase1
-Run: seed=n/a, ticks=0, map=n/a
+Run: seed=n/a, ticks=200, map=n/a
 
-Overall: WARNING (0 pass, 29 warning, 0 fail)
+Overall: FAIL (6 pass, 9 warning, 14 fail)
 
 ## Findings
 
-[WARNING] Step success rate [trivial]: no data — No data available for this metric.
-[WARNING] Step success rate [easy]: no data — No data available for this metric.
-[WARNING] Step success rate [moderate]: no data — No data available for this metric.
-[WARNING] Step success rate [hard]: no data — No data available for this metric.
-[WARNING] Step success rate [deadly]: no data — No data available for this metric.
+[FAIL   ] Step success rate [trivial]: 6.3% — Below minimum (6.3% < 82.0%)
+[FAIL   ] Step success rate [easy]: 6.8% — Below minimum (6.8% < 72.0%)
+[FAIL   ] Step success rate [moderate]: 8.1% — Below minimum (8.1% < 55.0%)
+[FAIL   ] Encounter completion rate [trivial]: 0.8% — Below minimum (0.8% < 75.0%)
+[FAIL   ] Encounter completion rate [easy]: 0.5% — Below minimum (0.5% < 65.0%)
+[FAIL   ] Encounter completion rate [moderate]: 1.4% — Below minimum (1.4% < 45.0%)
+[FAIL   ] Encounter completion rate [hard]: 14.1% — Below minimum (14.1% < 25.0%)
+[FAIL   ] Encounter completion rate [deadly]: 4.0% — Below minimum (4.0% < 10.0%)
+[FAIL   ] Fail-forward share of encounters: 2.2% — Below minimum (2.2% < 55.0%)
+[FAIL   ] Quintessence recovery per 100 ticks: 0 — Below minimum (0 < 2.5%)
+[FAIL   ] Durable rewards per 100 encounters: 1.366 — Below minimum (1 < 2)
+[FAIL   ] Consumable rewards per 100 encounters: 0 — Below minimum (0 < 12)
+[FAIL   ] Time to first meaningful reward (ticks): 4 — Below minimum (4 < 15)
+[FAIL   ] Time to first growth beat (ticks): 2 — Below minimum (2 < 15)
+[WARNING] Step success rate [hard]: 39.8% — Below ideal zone (39.8% < 40.0%, min=35.0%)
 [WARNING] Step success rate [epic]: no data — No data available for this metric.
-[WARNING] Encounter completion rate [trivial]: no data — No data available for this metric.
-[WARNING] Encounter completion rate [easy]: no data — No data available for this metric.
-[WARNING] Encounter completion rate [moderate]: no data — No data available for this metric.
-[WARNING] Encounter completion rate [hard]: no data — No data available for this metric.
-[WARNING] Encounter completion rate [deadly]: no data — No data available for this metric.
-[WARNING] Fail-forward share of encounters: no data — No data available for this metric.
-[WARNING] Critical failure share [trivial]: no data — No data available for this metric.
-[WARNING] Critical failure share [easy]: no data — No data available for this metric.
-[WARNING] Critical failure share [moderate]: no data — No data available for this metric.
-[WARNING] Critical failure share [hard]: no data — No data available for this metric.
-[WARNING] Critical failure share [deadly]: no data — No data available for this metric.
 [WARNING] Avg quintessence loss per encounter [trivial]: no data — No data available for this metric.
 [WARNING] Avg quintessence loss per encounter [easy]: no data — No data available for this metric.
 [WARNING] Avg quintessence loss per encounter [moderate]: no data — No data available for this metric.
 [WARNING] Avg quintessence loss per encounter [hard]: no data — No data available for this metric.
 [WARNING] Avg quintessence loss per encounter [deadly]: no data — No data available for this metric.
-[WARNING] Quintessence recovery per 100 ticks: no data — No data available for this metric.
-[WARNING] Durable rewards per 100 encounters: no data — No data available for this metric.
-[WARNING] Consumable rewards per 100 encounters: no data — No data available for this metric.
 [WARNING] Conditions per 100 encounters: no data — No data available for this metric.
-[WARNING] Time to first meaningful reward (ticks): no data — No data available for this metric.
 [WARNING] Time to first major setback (ticks): no data — No data available for this metric.
-[WARNING] Time to first growth beat (ticks): no data — No data available for this metric.
+[PASS   ] Step success rate [deadly]: 35.1% — In target zone (35.1%)
+[PASS   ] Critical failure share [trivial]: 0 — In target zone (0)
+[PASS   ] Critical failure share [easy]: 0 — In target zone (0)
+[PASS   ] Critical failure share [moderate]: 0 — In target zone (0)
+[PASS   ] Critical failure share [hard]: 0 — In target zone (0)
+[PASS   ] Critical failure share [deadly]: 0 — In target zone (0)
 
 ## Run Totals
   Actions attempted:    0
-  Steps attempted:      0
-  Encounters attempted: 0
-  Encounters completed: 0
-  Rewards granted:      0
+  Steps attempted:      2604
+  Encounters attempted: 2342
+  Encounters completed: 52
+  Rewards granted:      123
   Rewards missed:       0
-  Growth beats:         0
+  Growth beats:         9
   Dissolutions:         0

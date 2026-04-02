@@ -26,6 +26,7 @@ import { createBalancedCosmology } from '../src/engine/cosmology';
 import { generateArchetypes } from '../src/engine/ascendant';
 import { createSimulationRuntime } from '../src/engine/simulationRuntime';
 import { setTrackedAgents, selectDefaultTrackedHero } from '../src/engine/balanceTelemetry';
+import { resetReputationTraitInit } from '../src/engine/phaseReputationTraits';
 import { buildBalanceRunSummary, buildBalanceAgentJourneySummary, buildBalanceCohortSummary } from '../src/engine/balanceSummary';
 import { evaluateBalanceSummary, formatEvaluationReport } from '../src/engine/balanceEvaluator';
 import { getDefaultBalanceTargets, BALANCE_TARGETS_VERSION } from '../src/engine/balanceTargets';
@@ -119,6 +120,9 @@ function runOnce(seed: number, ticks: number, mapSize: MapSizePreset, trackAgent
   heroId?: string;
 } {
   resetEventCounter();
+  // Reset module-level flags that persist across runOnce calls in the same process.
+  // Without this, a second seed gets a fresh graph but skips trait node initialization.
+  resetReputationTraitInit();
   const runtime = createSimulationRuntime();
   const cosmology = createBalancedCosmology();
   const preset = MAP_SIZE_PRESETS[mapSize];
