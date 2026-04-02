@@ -1,17 +1,21 @@
 # Project Status
 
-> Updated 2026-04-01.
+> Updated 2026-04-02.
 
 ## Current Focus
 
-**Unified Rarity Model** (TB-100) — All 5 phases shipped 2026-04-01. Rarity tiers on actors, locations, action templates, with organic graduation and RarityBadge UI. Quality pass complete: graduation traces/notifications, importance accumulation, tier distribution rebalanced to 60/30/8/2.
+**Balance-Eval Phase 1** — Observational telemetry foundation shipped 2026-04-02. Session-owned telemetry on SimulationRuntime, versioned targets, structured event capture, evaluator, debug bridge, CLI, headless runner. Smoke baseline captured: FAIL (5p/11w/13f) — expected; establishes "before" for the agent success redesign.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions (taverns/parties, deep social scenes, agent initiatives, faction agency, information economy). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
-- **Next after v1.2:** Economy second pass (TB-071), Agent seeding (TB-032), NPCs (TB-069)
+- **Next:** Agent Success Redesign Phase 2 (step success rebalance per redesign guidelines), or v1.2 Social Systems
+
+## Recent Completions (2026-04-02)
+
+- **Balance-Eval Phase 1 — observational telemetry foundation:** Session-owned `BalanceTelemetry` on `SimulationRuntime`. Instrumented `unifiedActionResolution`, `phaseEncounterProgressionV2`, `phaseQuintessence`. Summary reducers (`buildBalanceRunSummary`, cohort), evaluator (`evaluateBalanceSummary`), versioned targets (`0.1.0-phase1`). Debug bridge accessors (`getBalanceSummary`, `getBalanceEvaluation`, `exportBalanceTelemetry`, `_registerRuntimeProvider`). CLI `balance` commands. Headless runner (`npm run balance:smoke/cadence/journey`). Smoke baseline captured in `Docs/playtests/balance/`. 79 tests, all green.
 
 ## Recent Completions (2026-04-01)
 
