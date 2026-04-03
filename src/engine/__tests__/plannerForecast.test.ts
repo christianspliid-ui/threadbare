@@ -145,6 +145,32 @@ describe('forecastStepExpectedUtility', () => {
     expect(UTILITY_CRITICAL_FAILURE).toBeLessThan(UTILITY_FAILURE);
     expect(UTILITY_FAILURE).toBeLessThan(0);
   });
+
+  it('exact success_at_cost: doubles in near-miss zone are excluded (threshold=44)', () => {
+    // capability=0.60, difficulty=15 → P≈0.45 → threshold=44.
+    // Roll 44 is a doubles roll. It sits at the top of the success-side near-miss
+    // zone [39,44] and is classified as critical_success by live runtime, not success_at_cost.
+    // So success_at_cost covers rolls {39,40,41,42,43} = 5 rolls, not 6.
+    const probs = forecastStepProbabilities(0.60, 15);
+    expect(probs.threshold).toBe(44); // verify precondition
+
+    const eu = forecastStepExpectedUtility(0.60, 15, 1.0);
+
+    // Hand-computed EU with exact pSuccessAtCost = 5/100:
+    // pCritSuccess = 4/100 (doubles 11,22,33,44 ≤ 44)
+    // pPlainSuccess = 0.44 - 0.04 - 0.05 = 0.35
+    // pSuccessAtCost = 5/100 = 0.05
+    // pCritFailure = 5/100 (doubles 55,66,77,88,99 > 44)
+    // pPlainFailure = 0.56 - 0.05 = 0.51
+    const expectedEU =
+      0.04 * UTILITY_CRITICAL_SUCCESS +
+      0.35 * UTILITY_SUCCESS +
+      0.05 * UTILITY_SUCCESS_AT_COST +
+      0.51 * UTILITY_FAILURE +
+      0.05 * UTILITY_CRITICAL_FAILURE;
+    // ≈ 0.313 — would be ≈ 0.309 if pSuccessAtCost were 6/100 (wrong)
+    expect(eu).toBeCloseTo(expectedEU, 3);
+  });
 });
 
 // ─── forecastEncounterExpectedUtility ────────────────────────────

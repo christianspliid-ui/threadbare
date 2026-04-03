@@ -152,12 +152,11 @@ export function forecastStepProbabilities(
  *    + P(failure - crit_failure) × UTILITY_FAILURE × reward
  *    + P(crit_failure) × UTILITY_CRITICAL_FAILURE × reward
  *
- * Note: success_at_cost probability is derived from the live runtime near-miss contract.
+ * Note: success_at_cost probability exactly matches the live runtime near-miss contract.
  * Live runtime: nearMiss = |roll - threshold| <= NEAR_MISS_MARGIN (5).
- * Success-side zone: [threshold-5, threshold] inclusive = NEAR_MISS_MARGIN+1 = 6 rolls.
- * Formula: min(NEAR_MISS_MARGIN+1, threshold) / 100.
- * Minor caveat: doubles in this zone become critical_success instead — affects ~11/95
- * thresholds by at most 0.01, acceptable for a planner approximation.
+ * Success-side zone: [threshold-5, threshold] = NEAR_MISS_MARGIN+1 = 6 candidate rolls.
+ * Doubles within that zone become critical_success (not success_at_cost) in live runtime,
+ * so they are subtracted. Formula: (min(6, threshold) - doublesInZone) / 100.
  *
  * @param capability - Agent's domain capability (0-1)
  * @param difficulty - Legacy difficulty (0-100)
@@ -183,13 +182,17 @@ export function forecastStepExpectedUtility(
   // - critFailureProbability = P(doubles AND roll > threshold)
   //
   // success_at_cost: non-crit rolls in [threshold-NEAR_MISS_MARGIN, threshold] (inclusive).
-  // Live runtime: nearMiss = |roll - threshold| <= NEAR_MISS_MARGIN (5).
-  // On the success side that's threshold-5 .. threshold = NEAR_MISS_MARGIN+1 (6) rolls.
-  // Caveat: doubles within this zone are reclassified to critical_success. That affects
-  // only ~11/95 specific thresholds and shifts pSuccessAtCost by at most 0.01 — tolerable
-  // for a planner approximation. The dominant correction here is NEAR_MISS_MARGIN+1, not
-  // the doubles exclusion.
-  const pSuccessAtCost = Math.min(NEAR_MISS_MARGIN + 1, probs.threshold) / 100;
+  // Live runtime: nearMiss = |roll - threshold| <= NEAR_MISS_MARGIN (5), success-side zone
+  // is [threshold-5, threshold] = NEAR_MISS_MARGIN+1 (6) candidate rolls.
+  // Doubles within the zone are classified as critical_success by live runtime, not
+  // success_at_cost. Subtract them for exact parity with the live outcome classifier.
+  const nearMissStart = Math.max(1, probs.threshold - NEAR_MISS_MARGIN);
+  let doublesInZone = 0;
+  for (let d = 1; d <= 9; d++) {
+    const doublesRoll = d * 10 + d; // 11, 22, ..., 99 (mirrors computeOutcomeProbabilities)
+    if (doublesRoll >= nearMissStart && doublesRoll <= probs.threshold) doublesInZone++;
+  }
+  const pSuccessAtCost = (Math.min(NEAR_MISS_MARGIN + 1, probs.threshold) - doublesInZone) / 100;
 
   const pCritSuccess = probs.critSuccessProbability;
   const pPlainSuccess = Math.max(0, probs.successProbability - pCritSuccess - pSuccessAtCost);
