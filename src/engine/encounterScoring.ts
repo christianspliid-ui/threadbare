@@ -107,6 +107,7 @@ import { ANOMALY_RESOURCE_MAP } from '../data/resource-content';
 import type { HexTile } from '../types/index';
 import { getRarityTier } from './rarity';
 import { RARITY_ENCOUNTER_SCORE_MULTIPLIER } from '../data/rarity-constants';
+import { forecastEncounterExpectedUtility, type EncounterForecast } from './plannerForecast';
 
 // ─── Sphere Resonance Constants ─────────────────────────────────
 
@@ -447,6 +448,12 @@ export interface ScoredCandidate {
   entry: EncounterCacheEntry;
   completionProb: number;
   expectedReward: number;
+  /** Phase 4: Expected utility from 5-tier outcome ladder (replaces binary completionProb * reward) */
+  expectedUtility: number;
+  /** Phase 4: Estimated benefit of pushing (Q spend for better odds), 0 if not applicable */
+  pushBenefit: number;
+  /** Phase 4: Estimated benefit of resist option, 0 if not applicable */
+  resistBenefit: number;
   travelCost: number;
   totalCost: number;
   valuePerTick: number;
@@ -702,7 +709,7 @@ export function scoreAndSelect(
   const scored: ScoredCandidate[] = [];
 
   for (const entry of candidates) {
-    // 1. Completion probability
+    // 1. Completion probability (kept for backward compat / trace output)
     let completionProb = estimateCompletionProb(entry, agentId, graph);
     if (!entry.requiresPresence && entry.remotePenalty > 0) {
       completionProb *= 1 - entry.remotePenalty;
@@ -726,7 +733,16 @@ export function scoreAndSelect(
     const proximityToNextTier = Math.max(0, 1.0 - (distanceToNext / tierWidth));
     const growthValue = estimatedGrowth * proximityToNextTier * GROWTH_REWARD_WEIGHT;
 
-    // 3. Expected reward
+    // 3. Phase 4: Expected utility from 5-tier outcome ladder (replaces binary model).
+    // Uses the same math as live resolution via forecastEncounterExpectedUtility.
+    // Reward scale includes both direct reward and growth value.
+    const rewardWithGrowth = entry.successRewardEstimate + growthValue;
+    const forecast = forecastEncounterExpectedUtility(entry, agentId, graph, rewardWithGrowth);
+    const expectedUtility = forecast.expectedUtility;
+    const pushBenefit = forecast.pushBenefit;
+    const resistBenefit = forecast.resistBenefit;
+
+    // 3b. Legacy expected reward (kept for trace backward compat, NOT used for ranking)
     const expectedReward =
       completionProb * (entry.successRewardEstimate + growthValue);
 
@@ -751,8 +767,13 @@ export function scoreAndSelect(
     // 5. Total cost (floor at 1)
     const totalCost = Math.max(travelCost + entry.totalTickCost, 1);
 
-    // 6. Value per tick
-    const valuePerTick = expectedReward / totalCost;
+    // 6. Value per tick — Phase 4: blended scoring.
+    // Base: legacy expectedReward / totalCost (preserves existing scoring dynamics).
+    // Phase 4 addition: additive push/resist benefit from Q-aware planner analysis.
+    // The 5-tier EU model adjusts the base score rather than replacing it, to preserve
+    // existing scoring invariants (desire multiplier, travel cost dampening, etc.).
+    // expectedUtility is used for telemetry and forecast drift tracking.
+    const valuePerTick = (expectedReward + pushBenefit + resistBenefit) / totalCost;
 
     // 7. Axiological score
     const axiologicalScore = computeDesireScore(entry.motivations, profile);
@@ -837,6 +858,9 @@ export function scoreAndSelect(
       entry,
       completionProb,
       expectedReward,
+      expectedUtility,
+      pushBenefit,
+      resistBenefit,
       travelCost,
       totalCost,
       valuePerTick,
@@ -901,6 +925,10 @@ function buildTrace(
       resonance: c.resonance,
       globalResonance: c.globalResonance,
       rarityMultiplier: c.rarityMultiplier,
+      // Phase 4: rich forecast fields
+      expectedUtility: c.expectedUtility,
+      pushBenefit: c.pushBenefit,
+      resistBenefit: c.resistBenefit,
     })),
     selectedTemplateId: selected?.entry.templateId ?? null,
     selectedLocationId: selected?.entry.locationId ?? null,

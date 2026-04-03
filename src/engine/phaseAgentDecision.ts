@@ -46,6 +46,8 @@ import { getAgentLocationId, getAvatarsOf } from './graphQueries';
 import { appendEvent } from './encounterTimeline';
 import { resolveLocationToHex } from './encounterAwareness';
 import { hexDistance } from '../lib/hexMath';
+import type { SimulationRuntime } from './simulationRuntime';
+import { recordBalanceEvent } from './balanceTelemetry';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -102,6 +104,7 @@ export function phaseAgentDecision(
   encounterCache: EncounterCacheManager,
   distanceMatrix: DistanceMatrix,
   rng: () => number,
+  runtime?: SimulationRuntime,
 ): Partial<GameState> {
   const graph = state.graph;
   const allEntries = encounterCache.getAllEntries();
@@ -406,6 +409,22 @@ export function phaseAgentDecision(
 
       if (decision.selected) {
         const sel = decision.selected;
+
+        // Phase 4: Record forecast at decision time for drift tracking
+        if (runtime) {
+          recordBalanceEvent(runtime, {
+            tick: state.tick,
+            kind: 'forecast_recorded',
+            agentId,
+            sourceSystem: 'planner',
+            templateId: sel.entry.templateId,
+            forecastedUtility: sel.expectedUtility,
+            forecastedCompletionProb: sel.completionProb,
+            forecastedPushBenefit: sel.pushBenefit,
+            forecastedResistBenefit: sel.resistBenefit,
+          });
+        }
+
         // Timeline: DECIDE event
         const selCandidate = decision.topCandidates.find(c => c.entry.templateId === sel.entry.templateId);
         const targetLocNode = graph.getNode(sel.entry.locationId);

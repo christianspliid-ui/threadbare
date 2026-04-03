@@ -421,6 +421,12 @@ export interface ScoringTrace extends TraceBase {
     worldSoulDrift?: Record<string, number>;
     chainBonus?: number;
     rarityMultiplier?: number;
+    /** Phase 4: Expected utility from 5-tier outcome ladder */
+    expectedUtility?: number;
+    /** Phase 4: Push benefit estimate (Q spend for better odds) */
+    pushBenefit?: number;
+    /** Phase 4: Resist benefit estimate (downgrade protection) */
+    resistBenefit?: number;
   }>;
   selectedTemplateId: string | null;
   selectedLocationId: string | null;

@@ -62,6 +62,12 @@ export interface BalanceCounters {
   resistCount: number;
   resistSuccessCount: number;
   resistTotalQuintessenceSpent: number;
+  /** Phase 4: forecast drift tracking */
+  forecastCount: number;
+  forecastedCompletionProbSum: number;
+  forecastedUtilitySum: number;
+  forecastPushRecommendedCount: number;
+  forecastResistValuableCount: number;
 }
 
 // ─── Milestones ───────────────────────────────────────────────────
@@ -154,6 +160,11 @@ function createEmptyCounters(): BalanceCounters {
     resistCount: 0,
     resistSuccessCount: 0,
     resistTotalQuintessenceSpent: 0,
+    forecastCount: 0,
+    forecastedCompletionProbSum: 0,
+    forecastedUtilitySum: 0,
+    forecastPushRecommendedCount: 0,
+    forecastResistValuableCount: 0,
   };
 }
 
@@ -295,6 +306,21 @@ function updateCounters(counters: BalanceCounters, event: BalanceEvent): void {
       if (event.resistSucceeded) counters.resistSuccessCount++;
       if (event.quintessenceDelta !== undefined) {
         counters.resistTotalQuintessenceSpent += Math.abs(event.quintessenceDelta);
+      }
+      break;
+    case 'forecast_recorded':
+      counters.forecastCount++;
+      if (event.forecastedCompletionProb !== undefined) {
+        counters.forecastedCompletionProbSum += event.forecastedCompletionProb;
+      }
+      if (event.forecastedUtility !== undefined) {
+        counters.forecastedUtilitySum += event.forecastedUtility;
+      }
+      if (event.forecastedPushBenefit !== undefined && event.forecastedPushBenefit > 0) {
+        counters.forecastPushRecommendedCount++;
+      }
+      if (event.forecastedResistBenefit !== undefined && event.forecastedResistBenefit > 0) {
+        counters.forecastResistValuableCount++;
       }
       break;
   }

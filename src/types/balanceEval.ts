@@ -43,7 +43,8 @@ export type BalanceEventKind =
   | 'growth_applied'
   | 'state_transition'
   | 'quintessence_push'
-  | 'quintessence_resist';
+  | 'quintessence_resist'
+  | 'forecast_recorded';
 
 // ─── Balance Event ────────────────────────────────────────────────
 
@@ -118,6 +119,16 @@ export interface BalanceEvent {
   preResistOutcome?: string;
   /** The outcome after resist downgrade (if applicable) */
   postResistOutcome?: string;
+
+  // ── Phase 4: Planner forecast context ──
+  /** Forecasted expected utility at decision time */
+  forecastedUtility?: number;
+  /** Forecasted completion probability at decision time */
+  forecastedCompletionProb?: number;
+  /** Forecasted push benefit at decision time */
+  forecastedPushBenefit?: number;
+  /** Forecasted resist benefit at decision time */
+  forecastedResistBenefit?: number;
 }
 
 // ─── Metric Band (Target) ─────────────────────────────────────────
@@ -224,6 +235,24 @@ export interface BalanceRunSummary {
     resistSuccessCount: number;
     resistSuccessRate: number;
     resistTotalQuintessenceSpent: number;
+  };
+
+  /** Phase 4: Forecast drift summary — planner predictions vs actual outcomes */
+  forecastDrift?: {
+    /** Number of forecast events recorded */
+    forecastCount: number;
+    /** Average forecasted completion probability */
+    avgForecastedCompletionProb: number;
+    /** Average actual completion rate (from encounter_resolved events) */
+    avgActualCompletionRate: number;
+    /** Mean absolute difference between forecasted and actual completion */
+    completionDriftMAE: number;
+    /** Average forecasted expected utility */
+    avgForecastedUtility: number;
+    /** Number of forecasts where push was recommended */
+    pushRecommendedCount: number;
+    /** Number of forecasts where resist was deemed valuable */
+    resistValuableCount: number;
   };
 }
 

@@ -142,6 +142,9 @@ export function buildBalanceRunSummary(
       resistSuccessRate: c.resistCount > 0 ? c.resistSuccessCount / c.resistCount : 0,
       resistTotalQuintessenceSpent: c.resistTotalQuintessenceSpent,
     },
+
+    // Phase 4: forecast drift
+    forecastDrift: computeForecastDriftSummary(c, t.recentEvents),
   };
 }
 
@@ -474,6 +477,47 @@ function aggregateBandRates(
     };
   }
   return result;
+}
+
+// ─── Phase 4: Forecast Drift Summary ─────────────────────────────
+
+/**
+ * Compute forecast drift metrics from counters and recent events.
+ * Compares planner predictions (forecast_recorded events) with actual outcomes.
+ */
+function computeForecastDriftSummary(
+  counters: BalanceCounters,
+  events: BalanceEvent[],
+): BalanceRunSummary['forecastDrift'] {
+  if (counters.forecastCount === 0) return undefined;
+
+  const avgForecastedCompletionProb = counters.forecastedCompletionProbSum / counters.forecastCount;
+  const avgForecastedUtility = counters.forecastedUtilitySum / counters.forecastCount;
+
+  // Compute actual completion rate from encounter_resolved events
+  let encounterAttempts = 0;
+  let encounterCompletions = 0;
+  for (const e of events) {
+    if (e.kind !== 'encounter_resolved') continue;
+    encounterAttempts++;
+    if (e.finalStatus === 'completed') encounterCompletions++;
+  }
+  const avgActualCompletionRate = encounterAttempts > 0
+    ? encounterCompletions / encounterAttempts
+    : 0;
+
+  // Mean absolute error: |forecasted - actual| for completion probability
+  const completionDriftMAE = Math.abs(avgForecastedCompletionProb - avgActualCompletionRate);
+
+  return {
+    forecastCount: counters.forecastCount,
+    avgForecastedCompletionProb,
+    avgActualCompletionRate,
+    completionDriftMAE,
+    avgForecastedUtility,
+    pushRecommendedCount: counters.forecastPushRecommendedCount,
+    resistValuableCount: counters.forecastResistValuableCount,
+  };
 }
 
 /** Average a partial band → number map across multiple runs. */

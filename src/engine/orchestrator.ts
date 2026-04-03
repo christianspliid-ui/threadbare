@@ -1535,7 +1535,7 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
   const decisionRng = mulberry32(state.seed + state.tick * 37);
-  s = { ...s, ...phaseAgentDecision(s, activeEncounterCache, activeDistanceMatrix, decisionRng) };
+  s = { ...s, ...phaseAgentDecision(s, activeEncounterCache, activeDistanceMatrix, decisionRng, runtime) };
   const decisionEvents = s.tickEvents.length - prevEventCount;
   phaseEventCounts['agent_decision'] = decisionEvents;
   agentsProcessed += decisionEvents;
