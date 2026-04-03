@@ -245,8 +245,8 @@ export interface BalanceRunSummary {
     avgForecastedCompletionProb: number;
     /** Average actual completion rate (from encounter_resolved events) */
     avgActualCompletionRate: number;
-    /** Mean absolute difference between forecasted and actual completion */
-    completionDriftMAE: number;
+    /** Absolute gap between avg forecasted completion probability and avg actual completion rate */
+    completionRateGap: number;
     /** Average forecasted expected utility */
     avgForecastedUtility: number;
     /** Number of forecasts where push was recommended */

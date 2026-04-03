@@ -41,6 +41,7 @@
 import {
   computeOutcomeProbabilities,
   normalizeLegacyDifficulty,
+  NEAR_MISS_MARGIN,
 } from './resolutionService';
 import type { ResolutionProbabilitySummary } from '../types/resolution';
 import { computeCapability } from './domainCapability';
@@ -151,9 +152,10 @@ export function forecastStepProbabilities(
  *    + P(failure - crit_failure) × UTILITY_FAILURE × reward
  *    + P(crit_failure) × UTILITY_CRITICAL_FAILURE × reward
  *
- * Note: success_at_cost probability is approximated from near-miss zone.
- * The near-miss margin (±5 on d100) means ~10% of rolls fall in that zone.
- * Of those, the ones that land on the success side become success_at_cost.
+ * Note: success_at_cost probability is derived exactly from the live runtime contract.
+ * The near-miss zone covers rolls within NEAR_MISS_MARGIN (5) of the threshold.
+ * On the success side: rolls [threshold-NEAR_MISS_MARGIN+1, threshold] → success_at_cost.
+ * Exact probability: min(NEAR_MISS_MARGIN, threshold) / 100 — matches live resolution.
  *
  * @param capability - Agent's domain capability (0-1)
  * @param difficulty - Legacy difficulty (0-100)
@@ -173,18 +175,18 @@ export function forecastStepExpectedUtility(
 
   // Decompose probabilities into the 5 tiers.
   // The shared resolver gives us:
-  // - successProbability = P(roll <= threshold) [includes crits]
+  // - successProbability = P(roll <= threshold) = threshold / 100 [includes crits]
   // - critSuccessProbability = P(doubles AND roll <= threshold)
   // - failureProbability = P(roll > threshold) [includes crits]
   // - critFailureProbability = P(doubles AND roll > threshold)
   //
-  // success_at_cost comes from near-miss successes (margin 0 to +5).
-  // Approximate: ~5% of the d100 range falls in the near-miss success zone.
-  const nearMissSuccessApprox = Math.min(0.05, probs.successProbability * 0.1);
+  // success_at_cost: rolls in [threshold-NEAR_MISS_MARGIN+1, threshold] — exact near-miss zone.
+  // probs.threshold is the d100 integer (1–95), matching the live runtime's
+  // nearMiss = Math.abs(roll - threshold) <= NEAR_MISS_MARGIN.
+  const pSuccessAtCost = Math.min(NEAR_MISS_MARGIN, probs.threshold) / 100;
 
   const pCritSuccess = probs.critSuccessProbability;
-  const pPlainSuccess = Math.max(0, probs.successProbability - pCritSuccess - nearMissSuccessApprox);
-  const pSuccessAtCost = nearMissSuccessApprox;
+  const pPlainSuccess = Math.max(0, probs.successProbability - pCritSuccess - pSuccessAtCost);
   const pCritFailure = probs.critFailureProbability;
   const pPlainFailure = Math.max(0, probs.failureProbability - pCritFailure);
 

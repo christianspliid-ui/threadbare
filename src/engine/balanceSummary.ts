@@ -506,14 +506,15 @@ function computeForecastDriftSummary(
     ? encounterCompletions / encounterAttempts
     : 0;
 
-  // Mean absolute error: |forecasted - actual| for completion probability
-  const completionDriftMAE = Math.abs(avgForecastedCompletionProb - avgActualCompletionRate);
+  // Gap between average forecasted completion probability and average actual completion rate.
+  // Note: this is a scalar gap between two aggregate means, not a true per-prediction MAE.
+  const completionRateGap = Math.abs(avgForecastedCompletionProb - avgActualCompletionRate);
 
   return {
     forecastCount: counters.forecastCount,
     avgForecastedCompletionProb,
     avgActualCompletionRate,
-    completionDriftMAE,
+    completionRateGap,
     avgForecastedUtility,
     pushRecommendedCount: counters.forecastPushRecommendedCount,
     resistValuableCount: counters.forecastResistValuableCount,

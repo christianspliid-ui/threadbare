@@ -742,7 +742,7 @@ export function scoreAndSelect(
     const pushBenefit = forecast.pushBenefit;
     const resistBenefit = forecast.resistBenefit;
 
-    // 3b. Legacy expected reward (kept for trace backward compat, NOT used for ranking)
+    // 3b. Binary expected reward — fallback when EU is negative (incapable agents, extreme difficulty).
     const expectedReward =
       completionProb * (entry.successRewardEstimate + growthValue);
 
@@ -767,13 +767,12 @@ export function scoreAndSelect(
     // 5. Total cost (floor at 1)
     const totalCost = Math.max(travelCost + entry.totalTickCost, 1);
 
-    // 6. Value per tick — Phase 4: blended scoring.
-    // Base: legacy expectedReward / totalCost (preserves existing scoring dynamics).
-    // Phase 4 addition: additive push/resist benefit from Q-aware planner analysis.
-    // The 5-tier EU model adjusts the base score rather than replacing it, to preserve
-    // existing scoring invariants (desire multiplier, travel cost dampening, etc.).
-    // expectedUtility is used for telemetry and forecast drift tracking.
-    const valuePerTick = (expectedReward + pushBenefit + resistBenefit) / totalCost;
+    // 6. Value per tick — Phase 4 (corrected): EU from 5-tier ladder drives ranking.
+    // When EU > 0 (capable agent vs manageable difficulty), it replaces the binary
+    // expectedReward. When EU ≤ 0 (incapable agent or extreme difficulty), falls back
+    // to the binary model to preserve travel-cost and desire-multiplier invariants.
+    const euRanking = expectedUtility > 0 ? expectedUtility : expectedReward;
+    const valuePerTick = (euRanking + pushBenefit + resistBenefit) / totalCost;
 
     // 7. Axiological score
     const axiologicalScore = computeDesireScore(entry.motivations, profile);
