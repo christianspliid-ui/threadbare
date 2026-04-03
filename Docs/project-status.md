@@ -4,26 +4,29 @@
 
 ## Current Focus
 
-**Agent Success Redesign Phase 3** — Complete. Unified action outcome expansion shipped 2026-04-03. Rich 5-tier outcomes, push/resist quintessence spend, differentiated consequences proving slice.
+**Agent Success Redesign Phase 3** — Complete (fully wired). `growthMultiplier` and `significanceBoost` from `outcomeConsequences` now applied in runtime. `narrativeTag` deferred to Phase 4.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
-- **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅
+- **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅ (fully wired 2026-04-03)
 - **Next:** Phase 4 (agent decision and forecast rewrite), or v1.2 Social Systems
 
 ## Recent Completions (2026-04-03)
 
-- **Agent Success Redesign Phase 3 — Unified Action Outcome Expansion:**
+- **Agent Success Redesign Phase 3 — Unified Action Outcome Expansion (fully wired):**
   - Expanded `StepOutcome` to 5 tiers: `critical_success | success | success_at_cost | failure | critical_failure`
   - Near-miss successes (margin ≤ 5) become `success_at_cost`; `critical_failure` always terminates action
   - `computeFinalActionOutcome`: failed-but-continued steps produce `success_at_cost` at action level
   - Created `outcomeConsequences.ts` proving slice with 3 action families (social, information, risky)
   - Wired push (Q spend for +0.10 modifier on risky actions) and resist (Q spend for 60% outcome downgrade on social actions)
+  - `growthMultiplier` live: `applyEncounterGrowth` multiplied by 1.5 (crit) / 0.5 (at-cost) for proving-slice templates
+  - `significanceBoost` live: tick event significance boosted (+0.05 at-cost, +0.1 crit_failure, 0.8 hardcoded for crit_success)
+  - `narrativeTag` scaffolded, deferred to Phase 4 `enrichProse()` integration
   - New telemetry: `outcomeDistribution`, `actionOutcomeDistribution`, `quintessence_push/resist` events, `pushResist` in run summaries
-  - 29 new Phase 3 tests, 0 regressions
+  - 35 Phase 3 tests total, 0 regressions
 
 ## Recent Completions (2026-04-02)
 
