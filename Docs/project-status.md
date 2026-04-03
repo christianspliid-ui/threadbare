@@ -4,27 +4,27 @@
 
 ## Current Focus
 
-**Agent Success Redesign Phase 4** — Complete. Planner now reasons with the same 5-tier outcome model as live resolution. Push/resist Q-aware scoring for proving-slice action families. Forecast drift telemetry wired.
+**Agent Success Redesign Phase 4 (corrected)** — Complete. Planner now reasons with the same 5-tier outcome model as live resolution. EU-aware encounter ranking (falls back to binary for incapable agents). success_at_cost exact derivation from shared contract. Push/resist Q-aware scoring. Forecast drift telemetry wired.
 
 ## Milestone Status
 
 - **v1.0 Foundation:** Shipped 2026-03-30 — Phases 1-18 + M2.5 (81 plans, 1533 commits)
 - **v1.1 Optimization:** In progress — Phases 19-22 (determinism, wiring, performance, hygiene)
 - **v1.2 Social Systems Expansion:** Designed — 5 expansions. Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`
-- **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ (2026-04-03)
+- **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 
 ## Recent Completions (2026-04-03)
 
-- **Agent Success Redesign Phase 4 — Planner Forecast Rewrite:**
+- **Agent Success Redesign Phase 4 — Planner Forecast Rewrite (corrected 2026-04-03):**
   - Created `plannerForecast.ts` — adapter over shared resolution service producing expected utility from 5-tier outcome ladder
-  - `forecastStepExpectedUtility`: weighted EU across critical_success, success, success_at_cost, failure, critical_failure
+  - `forecastStepExpectedUtility`: weighted EU with exact `success_at_cost` derivation — `min(NEAR_MISS_MARGIN, threshold) / 100`
   - `forecastEncounterExpectedUtility`: multi-step encounter utility with push/resist analysis
-  - Wired into `encounterScoring.ts`: push/resist benefit additive to encounter scoring; `expectedUtility` tracked on `ScoredCandidate`
+  - Wired into `encounterScoring.ts`: EU drives `valuePerTick` when positive; binary `expectedReward` fallback for incapable agents
   - Push-aware planner: risky/coercive templates (assassinate, conquer, commission-assassination) — Q-cost/benefit analysis, suppressed when Q low
   - Resist-aware planner: social/influence templates (heart.*, shadow.recruit) — expected downgrade value factored in
-  - Forecast drift telemetry: `forecast_recorded` balance events at decision time, counters in `BalanceCounters`, `forecastDrift` section in run summaries (MAE, push/resist recommendation counts)
-  - 29 new tests in `plannerForecast.test.ts`, 0 regressions across 179 Phase 4-related tests
+  - Forecast drift telemetry: `forecast_recorded` balance events, `forecastDrift.completionRateGap` (renamed from mislabeled MAE) in run summaries
+  - 29 new tests in `plannerForecast.test.ts`, 87/87 pass post-correction
 
 - **Agent Success Redesign Phase 3 — Unified Action Outcome Expansion (fully wired):**
   5-tier outcome ladder, push/resist Q spend seams, proving-slice consequences, 35 tests.
