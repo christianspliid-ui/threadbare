@@ -71,6 +71,19 @@ Surface enough agent momentum that places feel inhabited before the player opens
 
 ---
 
+## 📋 TB-109 · Encounter Packet Pass for Component-Driven Seeds (2026-04-03)
+
+**Milestone: Cross-cutting Content Architecture / Encounter Quality Pass**
+
+Turn the first TB-104 proof-pack rewards and shells into real production encounter packets that meet `Docs/encounter-building-checklist.md` and the reusable `fws-encounter-builder` standard. Current state: `Duelist's Luck Token`, `Hearthglass Ward`, `Letters of Introduction`, and `Patron's Backing` are live support objects, but they currently appear only in resolution tests and proof-pack content. They still need authored encounters with pressure knots, intervention fantasy, cast, place specificity, five-tier meaning, downstream fallout, and living-world follow-up hooks.
+
+**Creates:** 3-5 authored production encounters built around the new component primitives (`test_shaper`, `prevent_loss`, `content_grant`, `service`), support matrices for each packet, required NPC/faction/location/reputation wiring, and a reusable authoring pattern for future component-first encounter design.
+**Encounter targets:** Duel/courtyard pressure encounter for `Duelist's Luck Token`; brink/rescue or survival pressure encounter for `Hearthglass Ward`; audience/patronage/social proof encounter chain for `Letters of Introduction` into `Patron's Backing`.
+**Acceptance bar:** Each encounter packet must include a pressure knot, 2-3 meaningful beats, authored five-tier outcome meaning, cool-failure consequences, specific NPC/faction/location support, and explicit follow-on hooks into reputation, obligations, witnesses, or future asks. If a packet still exposes a primitive gap, log it honestly in the migration ledger instead of flattening it into a bland stat check.
+**Depends on:** TB-104 first foundation slice (✅), `Docs/encounter-building-checklist.md` (✅), encounter redesign guidelines (✅), encounter migration gap ledger (✅)
+
+---
+
 ## 📋 TB-101 · Rarity-Driven Prose Tier Bias (2026-04-01)
 
 **Milestone: Rarity Model — Deferred from Phase D**
