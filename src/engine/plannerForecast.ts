@@ -152,10 +152,12 @@ export function forecastStepProbabilities(
  *    + P(failure - crit_failure) × UTILITY_FAILURE × reward
  *    + P(crit_failure) × UTILITY_CRITICAL_FAILURE × reward
  *
- * Note: success_at_cost probability is derived exactly from the live runtime contract.
- * The near-miss zone covers rolls within NEAR_MISS_MARGIN (5) of the threshold.
- * On the success side: rolls [threshold-NEAR_MISS_MARGIN+1, threshold] → success_at_cost.
- * Exact probability: min(NEAR_MISS_MARGIN, threshold) / 100 — matches live resolution.
+ * Note: success_at_cost probability is derived from the live runtime near-miss contract.
+ * Live runtime: nearMiss = |roll - threshold| <= NEAR_MISS_MARGIN (5).
+ * Success-side zone: [threshold-5, threshold] inclusive = NEAR_MISS_MARGIN+1 = 6 rolls.
+ * Formula: min(NEAR_MISS_MARGIN+1, threshold) / 100.
+ * Minor caveat: doubles in this zone become critical_success instead — affects ~11/95
+ * thresholds by at most 0.01, acceptable for a planner approximation.
  *
  * @param capability - Agent's domain capability (0-1)
  * @param difficulty - Legacy difficulty (0-100)
@@ -180,10 +182,14 @@ export function forecastStepExpectedUtility(
   // - failureProbability = P(roll > threshold) [includes crits]
   // - critFailureProbability = P(doubles AND roll > threshold)
   //
-  // success_at_cost: rolls in [threshold-NEAR_MISS_MARGIN+1, threshold] — exact near-miss zone.
-  // probs.threshold is the d100 integer (1–95), matching the live runtime's
-  // nearMiss = Math.abs(roll - threshold) <= NEAR_MISS_MARGIN.
-  const pSuccessAtCost = Math.min(NEAR_MISS_MARGIN, probs.threshold) / 100;
+  // success_at_cost: non-crit rolls in [threshold-NEAR_MISS_MARGIN, threshold] (inclusive).
+  // Live runtime: nearMiss = |roll - threshold| <= NEAR_MISS_MARGIN (5).
+  // On the success side that's threshold-5 .. threshold = NEAR_MISS_MARGIN+1 (6) rolls.
+  // Caveat: doubles within this zone are reclassified to critical_success. That affects
+  // only ~11/95 specific thresholds and shifts pSuccessAtCost by at most 0.01 — tolerable
+  // for a planner approximation. The dominant correction here is NEAR_MISS_MARGIN+1, not
+  // the doubles exclusion.
+  const pSuccessAtCost = Math.min(NEAR_MISS_MARGIN + 1, probs.threshold) / 100;
 
   const pCritSuccess = probs.critSuccessProbability;
   const pPlainSuccess = Math.max(0, probs.successProbability - pCritSuccess - pSuccessAtCost);

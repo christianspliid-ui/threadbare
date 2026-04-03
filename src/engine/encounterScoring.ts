@@ -767,10 +767,13 @@ export function scoreAndSelect(
     // 5. Total cost (floor at 1)
     const totalCost = Math.max(travelCost + entry.totalTickCost, 1);
 
-    // 6. Value per tick — Phase 4 (corrected): EU from 5-tier ladder drives ranking.
-    // When EU > 0 (capable agent vs manageable difficulty), it replaces the binary
-    // expectedReward. When EU ≤ 0 (incapable agent or extreme difficulty), falls back
-    // to the binary model to preserve travel-cost and desire-multiplier invariants.
+    // 6. Value per tick — Phase 4 hybrid ranking model.
+    // 5-tier EU drives ranking when positive (capable agents, manageable difficulty).
+    // Binary expectedReward (completionProb × reward) is the fallback when EU ≤ 0,
+    // preserving travel-cost and desire-multiplier scoring invariants for incapable
+    // agents where EU goes negative. This is intentional: pure EU ranking inverts
+    // those invariants (negative ÷ larger cost = higher score), so EU acts as the
+    // primary signal where it's meaningful and steps aside where it isn't.
     const euRanking = expectedUtility > 0 ? expectedUtility : expectedReward;
     const valuePerTick = (euRanking + pushBenefit + resistBenefit) / totalCost;
 
