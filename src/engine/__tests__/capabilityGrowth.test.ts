@@ -176,4 +176,29 @@ describe('applyEncounterGrowth', () => {
     expect(result.newCapability).toBe(0);
     expect(result.tierCrossed).toBe(false);
   });
+
+  // Phase 3: growthMultiplier wiring
+  it('1.5x growthMultiplier produces 1.5× the default growth', () => {
+    const graph1 = makeGraphWithAgent('agent_mult_1');
+    const graph2 = makeGraphWithAgent('agent_mult_2');
+    const base = applyEncounterGrowth(graph1, 'agent_mult_1', 'iron', 60, true, false, 1.0);
+    const boosted = applyEncounterGrowth(graph2, 'agent_mult_2', 'iron', 60, true, false, 1.5);
+    expect(boosted.growthApplied).toBeCloseTo(base.growthApplied * 1.5, 5);
+  });
+
+  it('0.5x growthMultiplier produces half the default growth', () => {
+    const graph1 = makeGraphWithAgent('agent_half_1');
+    const graph2 = makeGraphWithAgent('agent_half_2');
+    const base = applyEncounterGrowth(graph1, 'agent_half_1', 'iron', 60, true, false, 1.0);
+    const reduced = applyEncounterGrowth(graph2, 'agent_half_2', 'iron', 60, true, false, 0.5);
+    expect(reduced.growthApplied).toBeCloseTo(base.growthApplied * 0.5, 5);
+  });
+
+  it('default growthMultiplier (omitted) behaves identically to 1.0', () => {
+    const graph1 = makeGraphWithAgent('agent_def_1');
+    const graph2 = makeGraphWithAgent('agent_def_2');
+    const implicit = applyEncounterGrowth(graph1, 'agent_def_1', 'iron', 60, true, false);
+    const explicit = applyEncounterGrowth(graph2, 'agent_def_2', 'iron', 60, true, false, 1.0);
+    expect(implicit.growthApplied).toBeCloseTo(explicit.growthApplied, 10);
+  });
 });

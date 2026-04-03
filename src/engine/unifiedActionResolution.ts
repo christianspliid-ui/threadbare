@@ -312,6 +312,7 @@ export function executeStepResult(
       difficultyScaled,
       isSuccess,
       false, // Unified actions don't have tierPromotionEligible yet
+      consequence.growthMultiplier, // Phase 3: outcome-differentiated growth (1.5 crit, 0.5 at-cost)
     );
 
     // Handle tier promotion if crossed
@@ -443,13 +444,17 @@ export function executeStepResult(
   if (updatedAction.resolved) {
     // Phase 3: outcome-differentiated event messages
     const outcomeMsg = describeActionOutcome(updatedAction.outcome);
-    const significance = isActionSuccess(updatedAction.outcome) ? 0.6 : 0.4;
+    const baseSignificance = isActionSuccess(updatedAction.outcome) ? 0.6 : 0.4;
+    // Phase 3: critical_success gets hardcoded 0.8; other tiers get base + consequence boost
+    const significance = updatedAction.outcome === 'critical_success'
+      ? 0.8
+      : baseSignificance + consequence.significanceBoost;
     events.push({
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
       message: `${actorName} ${outcomeMsg} ${template.name}.`,
-      significance: updatedAction.outcome === 'critical_success' ? 0.8 : significance,
+      significance,
       actorId: action.actorId,
     });
   } else {
@@ -457,12 +462,14 @@ export function executeStepResult(
     const stepNum = action.currentStep + 1;
     const totalSteps = template.steps.length;
     const stepVerb = describeStepOutcome(outcome);
+    // Phase 3: critical_success gets 0.7; other tiers get base 0.5 + consequence boost
+    const stepSignificance = outcome === 'critical_success' ? 0.7 : 0.5 + consequence.significanceBoost;
     events.push({
       id: `ua_${action.actionId}_step${stepNum}`,
       tick,
       type: 'agent_action_resolved',
       message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps}).`,
-      significance: outcome === 'critical_success' ? 0.7 : 0.5,
+      significance: stepSignificance,
       actorId: action.actorId,
     });
   }

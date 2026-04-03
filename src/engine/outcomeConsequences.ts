@@ -86,7 +86,10 @@ export interface OutcomeConsequence {
   growthMultiplier: number;
   /** Quintessence event to add to pending queue, or null for no Q effect. */
   quintessenceEvent: QuintessenceEvent | null;
-  /** Narrative tag for prose system (e.g., 'surge', 'strained', 'catastrophe'). */
+  /**
+   * Narrative tag for prose system (e.g., 'surge', 'strained', 'catastrophe').
+   * @deferred — No live prose consumer in Phase 3. Scaffolded for Phase 4+ enrichProse() integration.
+   */
   narrativeTag: string;
   /** Extra significance boost for tick events. Added to base significance. */
   significanceBoost: number;

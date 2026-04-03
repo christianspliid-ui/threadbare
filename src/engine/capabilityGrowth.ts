@@ -115,6 +115,9 @@ export function computeGrowthAmount(
  * neighborhood. The trait contributes to the step's reach domain via
  * domainContributions, feeding into computeCapability's raw score walk.
  *
+ * Phase 3: `growthMultiplier` scales the computed delta before applying.
+ * Pass 1.5 for critical_success, 0.5 for success_at_cost (from outcomeConsequences).
+ *
  * Fail-soft: if agent node is missing, returns a zero-growth result.
  */
 export function applyEncounterGrowth(
@@ -124,6 +127,7 @@ export function applyEncounterGrowth(
   stepDifficulty: number,
   success: boolean,
   tierPromotionEligible: boolean,
+  growthMultiplier: number = 1.0,
 ): GrowthResult {
   const zeroResult: GrowthResult = {
     domain,
@@ -148,13 +152,13 @@ export function applyEncounterGrowth(
   }
   const previousTier = computeTier(previousCapability);
 
-  // Compute growth
+  // Compute growth — Phase 3: multiply by outcome consequence modifier (default 1.0)
   const growthAmount = computeGrowthAmount(
     stepDifficulty,
     success,
     tierPromotionEligible,
     previousCapability,
-  );
+  ) * growthMultiplier;
 
   if (growthAmount <= 0) {
     return {

@@ -302,6 +302,65 @@ describe('unifiedActionResolution', () => {
       expect(events[0].message).toContain('progresses');
       expect(events[0].message).toContain('step 1/3');
     });
+
+    // Phase 3: significanceBoost wiring
+    it('proving-slice success_at_cost emits boosted significance (0.65)', () => {
+      // action.heart.inspect is a proving-slice template — success_at_cost gives significanceBoost 0.05
+      const template = make1StepTemplate({ id: 'action.heart.inspire', reach: 'heart' });
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.heart.inspire', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'success_at_cost', [], state, fixedRng, 10,
+      );
+
+      const resolved = events.find(e => e.type === 'agent_action_resolved');
+      expect(resolved).toBeDefined();
+      // base 0.6 (success) + significanceBoost 0.05 = 0.65
+      expect(resolved!.significance).toBeCloseTo(0.65, 5);
+    });
+
+    it('non-proving-slice success_at_cost gets baseline significance (0.60)', () => {
+      // action.iron.test is NOT a proving-slice template — no boost
+      const template = make1StepTemplate();
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'success_at_cost', [], state, fixedRng, 10,
+      );
+
+      const resolved = events.find(e => e.type === 'agent_action_resolved');
+      expect(resolved).toBeDefined();
+      // base 0.6 (success) + significanceBoost 0.0 = 0.60
+      expect(resolved!.significance).toBeCloseTo(0.60, 5);
+    });
+
+    it('proving-slice critical_failure boosts significance above failure baseline (0.50)', () => {
+      // critical_failure on a proving-slice template gives significanceBoost 0.1
+      // → 0.4 (failure base) + 0.1 = 0.5
+      const template = make1StepTemplate({ id: 'action.heart.inspire', reach: 'heart' });
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.heart.inspire', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'critical_failure', [], state, fixedRng, 10,
+      );
+
+      const resolved = events.find(e => e.type === 'agent_action_resolved');
+      expect(resolved).toBeDefined();
+      // base 0.4 (failure) + significanceBoost 0.1 = 0.5
+      expect(resolved!.significance).toBeCloseTo(0.50, 5);
+    });
   });
 
   describe('phaseUnifiedActionProgress', () => {
