@@ -102,6 +102,12 @@ export interface PossessionNodeProperties {
   effects?: AttachmentEffect[];
   /** Activatable abilities (spells, artifact powers) with costs and cooldowns. */
   activatedEffects?: ActivatedAbility[];
+  /**
+   * Reward shell mode.
+   * - persist (default): instantiate as a normal held attachment
+   * - service: resolve effects immediately at reward time without persisting an item
+   */
+  rewardMode?: 'persist' | 'service';
 }
 
 // ─── Possession Edge Properties ─────────────────────────────────

@@ -46,6 +46,8 @@ import type {
   EffectModifierResult,
   EffectModifierContribution,
   EffectRuntimeState,
+  ResolvedTestShaper,
+  ActivePreventLoss,
 } from '../types/effects';
 import {
   EFFECT_MODIFIER_CAP,
@@ -197,6 +199,9 @@ export function getEffectModifierValue(
     case 'reroll':
     case 'swap_reach':
     case 'outcome_shift':
+    case 'test_shaper':
+    case 'prevent_loss':
+    case 'content_grant':
     case 'alter_terrain':
     case 'create_barrier':
     case 'transfer':
@@ -249,6 +254,123 @@ function isEffectActive(
   return true;
 }
 
+const ATTACHMENT_EDGE_TYPES = ['possesses', 'bonded_to', 'has_trait'] as const;
+
+interface AttachmentEffectEntry {
+  attachmentId: string;
+  attachmentName: string;
+  effect: AttachmentEffect;
+  runtimeState?: EffectRuntimeState;
+  active: boolean;
+}
+
+function collectAttachmentEffects(
+  graph: WorldGraph,
+  agentId: string,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): AttachmentEffectEntry[] {
+  const entries: AttachmentEffectEntry[] = [];
+
+  for (const edgeType of ATTACHMENT_EDGE_TYPES) {
+    const edges = graph.getOutgoingEdges(agentId, edgeType);
+    for (const edge of edges) {
+      const node = graph.getNode(edge.target);
+      if (!node) continue;
+
+      const effects = node.properties.effects as AttachmentEffect[] | undefined;
+      if (!effects || !Array.isArray(effects)) continue;
+
+      const attachmentName = node.name ?? node.id;
+      const runtimeState = effectStates?.get(node.id);
+      const effectsToEvaluate = effects.slice(0, CONDITIONAL_EVALUATION_CAP * 2);
+
+      for (const effect of effectsToEvaluate) {
+        entries.push({
+          attachmentId: node.id,
+          attachmentName,
+          effect,
+          runtimeState,
+          active: isEffectActive(effect, runtimeState),
+        });
+      }
+    }
+  }
+
+  return entries;
+}
+
+function evaluateOptionalCondition(
+  condition: EffectPredicate | undefined,
+  ctx: PredicateContext,
+): boolean {
+  return condition ? evaluatePredicate(condition, ctx) : true;
+}
+
+export function collectTestShapers(
+  graph: WorldGraph,
+  agentId: string,
+  reach: ReachDomain,
+  ctx: PredicateContext,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): ResolvedTestShaper[] {
+  const shapers: ResolvedTestShaper[] = [];
+
+  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+    if (!entry.active || entry.effect.type !== 'test_shaper') continue;
+    if (entry.effect.reach && entry.effect.reach !== reach) continue;
+    if (!evaluateOptionalCondition(entry.effect.condition, ctx)) continue;
+
+    shapers.push({
+      attachmentId: entry.attachmentId,
+      attachmentName: entry.attachmentName,
+      trigger: entry.effect.trigger,
+      steps: entry.effect.steps,
+      maxMargin: entry.effect.maxMargin,
+    });
+  }
+
+  shapers.sort((a, b) => {
+    if (b.steps !== a.steps) return b.steps - a.steps;
+    return a.attachmentId.localeCompare(b.attachmentId);
+  });
+
+  return shapers;
+}
+
+export function collectPreventLossEffects(
+  graph: WorldGraph,
+  agentId: string,
+  channel: ActivePreventLoss['channel'],
+  ctx: PredicateContext,
+  effectStates?: ReadonlyMap<string, EffectRuntimeState>,
+): ActivePreventLoss[] {
+  const preventLoss: ActivePreventLoss[] = [];
+
+  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+    if (!entry.active || entry.effect.type !== 'prevent_loss') continue;
+    if (entry.effect.channel !== channel) continue;
+    if (!evaluateOptionalCondition(entry.effect.condition, ctx)) continue;
+
+    preventLoss.push({
+      attachmentId: entry.attachmentId,
+      attachmentName: entry.attachmentName,
+      channel: entry.effect.channel,
+      amount: entry.effect.amount,
+      tags: entry.effect.tags,
+      consumeOnPrevent: entry.effect.consumeOnPrevent ?? false,
+    });
+  }
+
+  preventLoss.sort((a, b) => {
+    const aAmount = a.amount ?? Number.POSITIVE_INFINITY;
+    const bAmount = b.amount ?? Number.POSITIVE_INFINITY;
+    if (bAmount !== aAmount) return bAmount - aAmount;
+    return a.attachmentId.localeCompare(b.attachmentId);
+  });
+
+  return preventLoss;
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // Main Resolver
 // ═══════════════════════════════════════════════════════════════════
@@ -275,63 +397,39 @@ export function resolveEffectModifiers(
 ): EffectModifierResult {
   const contributions: EffectModifierContribution[] = [];
   const grantedTraits: string[] = [];
+  const testShapers = collectTestShapers(graph, agentId, reach, ctx, effectStates);
+  const preventLoss = collectPreventLossEffects(graph, agentId, 'quintessence', ctx, effectStates);
   let total = 0;
-  let hasAnyEffects = false;
 
-  // Walk all attachment edges
-  const edgeTypes = ['possesses', 'bonded_to', 'has_trait'] as const;
+  for (const entry of collectAttachmentEffects(graph, agentId, effectStates)) {
+    const { attachmentId, attachmentName, effect, runtimeState, active } = entry;
 
-  for (const edgeType of edgeTypes) {
-    const edges = graph.getOutgoingEdges(agentId, edgeType);
-    for (const edge of edges) {
-      const node = graph.getNode(edge.target);
-      if (!node) continue;
-
-      const effects = node.properties.effects as AttachmentEffect[] | undefined;
-      if (!effects || !Array.isArray(effects)) continue;
-
-      hasAnyEffects = true;
-      const attachmentName = (node.properties.name as string) ?? node.id;
-      const runtimeState = effectStates?.get(node.id);
-
-      // Cap number of effects evaluated per attachment
-      const effectsToEvaluate = effects.slice(0, CONDITIONAL_EVALUATION_CAP * 2);
-
-      for (const effect of effectsToEvaluate) {
-        // Check if effect is active
-        const active = isEffectActive(effect, runtimeState);
-
-        // Collect trait grants
-        const trait = getGrantedTrait(effect);
-        if (trait && active) {
-          grantedTraits.push(trait);
-        }
-
-        // Get modifier value
-        const rawValue = active
-          ? getEffectModifierValue(effect, reach, ctx, runtimeState)
-          : 0;
-
-        if (rawValue === 0 && !trait) continue;
-
-        // Cap per-item contribution
-        const cappedValue = rawValue > 0
-          ? Math.min(rawValue, EFFECT_PER_ITEM_CAP)
-          : Math.max(rawValue, -EFFECT_PER_ITEM_CAP);
-
-        contributions.push({
-          attachmentId: node.id,
-          attachmentName,
-          effectType: effect.type,
-          reach,
-          value: cappedValue,
-          conditional: effect.type === 'conditional' ? effect.condition : undefined,
-          active,
-        });
-
-        total += cappedValue;
-      }
+    const trait = getGrantedTrait(effect);
+    if (trait && active) {
+      grantedTraits.push(trait);
     }
+
+    const rawValue = active
+      ? getEffectModifierValue(effect, reach, ctx, runtimeState)
+      : 0;
+
+    if (rawValue === 0 && !trait) continue;
+
+    const cappedValue = rawValue > 0
+      ? Math.min(rawValue, EFFECT_PER_ITEM_CAP)
+      : Math.max(rawValue, -EFFECT_PER_ITEM_CAP);
+
+    contributions.push({
+      attachmentId,
+      attachmentName,
+      effectType: effect.type,
+      reach,
+      value: cappedValue,
+      conditional: effect.type === 'conditional' ? effect.condition : undefined,
+      active,
+    });
+
+    total += cappedValue;
   }
 
   // Cap total modifier
@@ -348,6 +446,8 @@ export function resolveEffectModifiers(
     reachModifiers,
     contributions,
     grantedTraits,
+    testShapers,
+    preventLoss,
   };
 }
 

@@ -15,6 +15,8 @@ import type {
   AttachmentCategory,
 } from '../types/attachments';
 import type { OutcomeType } from '../types/resolution';
+import type { AttachmentEffect, ContentGrantEffect } from '../types/effects';
+import { mulberry32 } from '../lib/prng';
 
 export interface PoolEntry {
   nodeId: string;
@@ -154,6 +156,7 @@ export const REWARD_EDGE_SOURCE = 'encounter_reward';
 
 /** Default ticks for condition duration when not specified on template */
 export const REWARD_CONDITION_DEFAULT_TICKS = 15;
+export const REWARD_SERVICE_MAX_DEPTH = 3;
 
 /**
  * Map resolution outcome quality to tier curve and bad outcome chance.
@@ -194,8 +197,65 @@ export function resolveRewardRecipe(
 export interface InstantiateRewardResult {
   instanceId: string;
   edgeId: string;
-  /** 'possession' | 'condition' | 'bestowed' — determines edge type */
-  category: 'possession' | 'condition' | 'bestowed';
+  /** 'possession' | 'condition' | 'bestowed' | 'service' — determines edge type/runtime handling */
+  category: 'possession' | 'condition' | 'bestowed' | 'service';
+  /** Human-readable reward name for timeline/debug surfaces */
+  displayName: string;
+}
+
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = ((hash << 5) - hash + input.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+function selectGrantedTemplateId(
+  effect: ContentGrantEffect,
+  recipientAgentId: string,
+  tick: number,
+  sourceTemplateId: string,
+): string | null {
+  if (effect.templateIds.length === 0) return null;
+  if (effect.selection !== 'random') return effect.templateIds[0];
+
+  const rng = mulberry32(
+    tick * 131 + hashString(recipientAgentId) + hashString(sourceTemplateId),
+  );
+  const index = Math.floor(rng() * effect.templateIds.length);
+  return effect.templateIds[index] ?? effect.templateIds[0] ?? null;
+}
+
+function applyServiceReward(
+  graph: WorldGraph,
+  templateNodeId: string,
+  recipientAgentId: string,
+  tick: number,
+  effects: AttachmentEffect[],
+  depth: number,
+): InstantiateRewardResult | null {
+  let grantedResult: InstantiateRewardResult | null = null;
+
+  for (const effect of effects) {
+    if (effect.type !== 'content_grant') continue;
+
+    const grantedTemplateId = selectGrantedTemplateId(effect, recipientAgentId, tick, templateNodeId);
+    if (!grantedTemplateId || grantedTemplateId === templateNodeId) continue;
+
+    const granted = instantiateRewardInternal(graph, grantedTemplateId, recipientAgentId, tick, depth + 1);
+    if (!granted) continue;
+    grantedResult = granted;
+    break;
+  }
+
+  if (!grantedResult) return null;
+  return {
+    instanceId: grantedResult.instanceId,
+    edgeId: grantedResult.edgeId,
+    category: 'service',
+    displayName: grantedResult.displayName,
+  };
 }
 
 /**
@@ -213,11 +273,39 @@ export function instantiateReward(
   recipientAgentId: string,
   tick: number,
 ): InstantiateRewardResult | null {
+  return instantiateRewardInternal(graph, templateNodeId, recipientAgentId, tick, 0);
+}
+
+function instantiateRewardInternal(
+  graph: WorldGraph,
+  templateNodeId: string,
+  recipientAgentId: string,
+  tick: number,
+  depth: number,
+): InstantiateRewardResult | null {
+  if (depth > REWARD_SERVICE_MAX_DEPTH) return null;
+
   const template = graph.getNode(templateNodeId);
   if (!template) return null;
 
   const agent = graph.getNode(recipientAgentId);
   if (!agent) return null;
+
+  if (
+    (template.type === 'artifact' || template.type === 'artifact_legendary')
+    && template.properties.rewardMode === 'service'
+  ) {
+    const serviceEffects = template.properties.effects as AttachmentEffect[] | undefined;
+    if (!serviceEffects || serviceEffects.length === 0) return null;
+    return applyServiceReward(
+      graph,
+      templateNodeId,
+      recipientAgentId,
+      tick,
+      serviceEffects,
+      depth,
+    );
+  }
 
   const instanceId = `${REWARD_INSTANTIATE_PREFIX}_${recipientAgentId}_${tick}_${templateNodeId}`;
 
@@ -250,7 +338,7 @@ export function instantiateReward(
         tags: (template.properties.tags as string[]) ?? [],
       },
     });
-    return { instanceId, edgeId, category: 'possession' };
+    return { instanceId, edgeId, category: 'possession', displayName: template.name };
   }
 
   if (template.type === 'trait' && subcategory === 'bestowed') {
@@ -270,7 +358,7 @@ export function instantiateReward(
         modifiers: domainContributions ?? {},
       },
     });
-    return { instanceId, edgeId, category: 'bestowed' };
+    return { instanceId, edgeId, category: 'bestowed', displayName: template.name };
   }
 
   if (template.type === 'trait') {
@@ -292,7 +380,7 @@ export function instantiateReward(
         modifiers: domainContributions ?? {},
       },
     });
-    return { instanceId, edgeId, category: 'condition' };
+    return { instanceId, edgeId, category: 'condition', displayName: template.name };
   }
 
   // Unknown node type — skip

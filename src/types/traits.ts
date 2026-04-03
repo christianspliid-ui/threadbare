@@ -6,6 +6,7 @@
  */
 
 import type { CulturalStrengthRange } from '../data/culture-content';
+import type { AttachmentEffect } from './effects';
 
 export type TraitCategory = 'innate' | 'mastery' | 'reputation' | 'scar' | 'condition' | 'destiny' | 'cultural' | 'bestowed';
 
@@ -80,6 +81,8 @@ export interface TraitDefinitionProperties {
   strengthThresholds?: Partial<Record<CulturalStrengthRange, string>>; // cultural trait strength expressions
   /** Parseable reputation effects — only present on subcategory: 'reputation' traits with reach-polarity structure */
   reputationEffects?: ReputationEffects;
+  /** Generic effect system payload for bestowed/condition traits and future content families. */
+  effects?: AttachmentEffect[];
 }
 
 /** Properties stored on a has_trait edge (edge.properties) */

@@ -396,6 +396,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
 
     // ── Reward processing (runs on encounter completion/abandonment) ──
     let rewardName: string | undefined;
+    let rewardInstanceId: string | undefined;
     if ((progress.status === 'completed' || progress.status === 'abandoned') && result.outcome.rewardPool) {
       const rng = mulberry32(state.seed + state.tick * 41 + hashString(progress.actorId));
       const resolved = resolveRewardRecipe(result.outcome.rewardPool, result.outcomeType);
@@ -419,10 +420,11 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           const instantiation = instantiateReward(state.graph, templateId, progress.actorId, state.tick);
 
           if (instantiation) {
-            const instanceNode = state.graph.getNode(instantiation.instanceId);
-            rewardName = instanceNode?.name;
+            rewardInstanceId = instantiation.instanceId;
+            rewardName = instantiation.displayName;
             const templateNode = state.graph.getNode(templateId);
             const tier = (templateNode?.properties?.tier as number) ?? 1;
+            const traceRewardName = instantiation.displayName || templateNode?.name || '?';
 
             emitTrace({
               category: 'encounter',
@@ -437,7 +439,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
               attachmentCategory: instantiation.category,
               poolSize: pool.length,
               roll: drawRoll,
-              summary: `${agentNameForReward} ${isBadOutcome ? 'suffered' : 'earned'} ${templateNode?.name ?? '?'} (T${tier} ${instantiation.category})`,
+              summary: `${agentNameForReward} ${isBadOutcome ? 'suffered' : 'earned'} ${traceRewardName} (T${tier} ${instantiation.category})`,
             } as TraceEntry);
 
             recordReward({
@@ -613,7 +615,7 @@ export function phaseEncounterProgressionV2(state: GameState, runtime?: Simulati
           stepIndex: resolvedStepIndex,
           outcomeType: result.outcomeType,
           tick: state.tick,
-          rewardInstanceId: rewardName,
+          rewardInstanceId,
           tierPromotionOccurred: !!(result.growth?.tierCrossed && result.promotion?.traitGranted),
         });
       }

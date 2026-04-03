@@ -83,6 +83,8 @@ export interface ModifierBreakdown {
   effectModifier: number;
   /** Detailed breakdown from effect resolver (for tracing) */
   effectResult?: EffectModifierResult;
+  /** Tactical resolution shapers surfaced by the effect system for this step */
+  testShapers?: EffectModifierResult['testShapers'];
   totalModifier: number;
 }
 
@@ -365,6 +367,7 @@ export function computeResolutionModifiers(
     divineInterventionModifier,
     effectModifier,
     effectResult,
+    testShapers: effectResult?.testShapers ?? [],
     totalModifier,
   };
 }

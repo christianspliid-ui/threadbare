@@ -2,7 +2,7 @@
 
 > **Living document.** Every design plan must include a wiring section that maps new modules to entries on this checklist. Every implementation must verify all listed connections before marking work complete. Maintaining this checklist is part of the Definition of Done for both design and implementation phases.
 >
-> **Last updated:** 2026-03-26 (audit of TB-035 integration gaps)
+> **Last updated:** 2026-04-03 (component-library foundation slice runtime seams)
 
 ---
 
@@ -28,6 +28,7 @@ Every engine module that produces per-tick state changes must be called from a p
 | 1.5 | `phaseJourneyBeat` | Journey beat progression |
 | 2a | `phaseUnifiedActionProgress` | Action execution & resolution |
 | 2a.3 | `phaseEncounterProgressionV2` | Encounter step advancement |
+| 2a.4 | `tickEffects` (inline orchestrator block) | Generic effect runtime bookkeeping: duration, cooldown, decay, stacking, attachment removal |
 | 2a.6 | `phaseEncounterVisibility` | Encounter notifications |
 | 2b | `phaseAgentDecision` | Goal selection & movement initiation |
 | 3 | `phaseMovement` | Pathfinding & hex traversal |
@@ -76,6 +77,15 @@ Every engine module that produces per-tick state changes must be called from a p
 | `phaseQuintessence` (threshold crossing) | `state_transition` / `threshold_X_to_Y` | No |
 | `orchestrator` (encounter failure) | `quintessence_changed` / `reason: encounter_failure_by_band` | ✅ Yes |
 
+**Component-library foundation seams (2026-04-03):**
+
+| Primitive / shell | Runtime seam | Current callers |
+|------------------|-------------|-----------------|
+| `test_shaper` | `effectResolver.collectTestShapers()` → `ResolutionInput.testShapers` → `resolutionService.resolveAction()` | `encounter.ts`, `unifiedActionResolution.ts` |
+| `prevent_loss` (`quintessence`) | `effectResolver.collectPreventLossEffects()` → quintessence delta adjustment before clamp/regen | `phaseQuintessence.ts` |
+| `content_grant` | reward-time template grant selection and recursive instantiation | `rewardPool.ts` |
+| immediate `service` reward shell | `rewardMode: 'service'` resolves authored effects on acquisition instead of persisting a shell item | `rewardPool.ts`, `orchestrator.ts`, `unifiedActionResolution.ts` |
+
 **Verification:** `grep -c 'phase[A-Z]' src/engine/orchestrator.ts` — count should match this table.
 
 ### 2. GameView Modal & Overlay Rendering (`src/components/Game/GameView.tsx`)
@@ -118,10 +128,11 @@ Engine phases write to GameState fields. UI components must read them. An engine
 | GameState field | Producing phase | Current UI consumer | Status |
 |----------------|----------------|-------------------|--------|
 | `recentEvents` | Multiple phases | `NarrativeLog` | ✅ Connected |
-| `pendingVignettes` | `phaseJourneyBeat` | `JourneyVignetteModal` (state logic) | ⚠️ State managed but modal not rendered |
+| `pendingVignettes` | `phaseJourneyBeat` | `JourneyVignetteModal` | ✅ Connected |
 | `encounterNotifications` | `phaseEncounterVisibility` | `useEncounterNotifications` → `ToastStack` | ✅ Connected (TB-040) |
 | `pendingHexMutations` | `phaseHexState` | Cleared after use (internal) | ✅ Internal |
 | `prosperityShocks` | `phaseProsperity` | Cleared after use (internal) | ✅ Internal |
+| `effectStates` | Orchestrator Phase 2a.4 (`tickEffects`) | No dedicated player UI; currently engine/runtime only | ⚠️ Debug visibility should improve before shell-heavy effect features land |
 
 **Verification:** For each new GameState field in your feature, name the component that reads it and how the data reaches the player.
 

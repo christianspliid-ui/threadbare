@@ -5,6 +5,8 @@ import {
   resolveEffectModifiers,
   hasEffectsFormat,
   buildPredicateContext,
+  collectTestShapers,
+  collectPreventLossEffects,
 } from '../effectResolver';
 import { WorldGraph } from '../graph';
 import type { PredicateContext } from '../../types/effects';
@@ -341,6 +343,56 @@ describe('resolveEffectModifiers', () => {
     expect(result.grantedTraits).toContain('night_vision');
   });
 
+  it('collects resolved test shapers from attachments', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addArtifactWithEffects(graph, 'token', [
+      {
+        type: 'test_shaper',
+        reach: 'iron',
+        condition: 'in_combat',
+        trigger: 'near_miss',
+        maxMargin: 8,
+        steps: 1,
+      },
+    ]);
+    graph.addEdge({ id: eid(), type: 'possesses', source: 'a1', target: 'token', properties: {} });
+
+    const ctx = makeDefaultContext({ inCombat: true });
+    const result = resolveEffectModifiers(graph, 'a1', 'iron', ctx);
+    expect(result.testShapers).toHaveLength(1);
+    expect(result.testShapers[0]).toMatchObject({
+      attachmentId: 'token',
+      trigger: 'near_miss',
+      steps: 1,
+      maxMargin: 8,
+    });
+  });
+
+  it('collects active prevent-loss effects from attachments', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addArtifactWithEffects(graph, 'ward', [
+      {
+        type: 'prevent_loss',
+        channel: 'quintessence',
+        amount: 0.08,
+        consumeOnPrevent: true,
+      },
+    ]);
+    graph.addEdge({ id: eid(), type: 'possesses', source: 'a1', target: 'ward', properties: {} });
+
+    const ctx = makeDefaultContext();
+    const result = resolveEffectModifiers(graph, 'a1', 'iron', ctx);
+    expect(result.preventLoss).toHaveLength(1);
+    expect(result.preventLoss[0]).toMatchObject({
+      attachmentId: 'ward',
+      channel: 'quintessence',
+      amount: 0.08,
+      consumeOnPrevent: true,
+    });
+  });
+
   it('handles tradeoff effects', () => {
     const graph = makeGraph();
     addAgent(graph, 'a1');
@@ -430,5 +482,67 @@ describe('hasEffectsFormat', () => {
     const graph = makeGraph();
     addAgent(graph, 'a1');
     expect(hasEffectsFormat(graph, 'a1')).toBe(false);
+  });
+});
+
+describe('specialized effect collection helpers', () => {
+  it('returns only matching test shapers for the requested reach and context', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addArtifactWithEffects(graph, 'duelist_token', [
+      {
+        type: 'test_shaper',
+        reach: 'iron',
+        trigger: 'near_miss',
+        condition: 'in_combat',
+        maxMargin: 8,
+        steps: 1,
+      },
+      {
+        type: 'test_shaper',
+        reach: 'gold',
+        trigger: 'near_miss',
+        steps: 1,
+      },
+    ]);
+    graph.addEdge({ id: eid(), type: 'possesses', source: 'a1', target: 'duelist_token', properties: {} });
+
+    const shapers = collectTestShapers(
+      graph,
+      'a1',
+      'iron',
+      makeDefaultContext({ inCombat: true }),
+    );
+
+    expect(shapers).toHaveLength(1);
+    expect(shapers[0]?.attachmentId).toBe('duelist_token');
+  });
+
+  it('returns only prevent-loss effects for the requested channel', () => {
+    const graph = makeGraph();
+    addAgent(graph, 'a1');
+    addArtifactWithEffects(graph, 'ward', [
+      {
+        type: 'prevent_loss',
+        channel: 'quintessence',
+        amount: 0.08,
+      },
+      {
+        type: 'prevent_loss',
+        channel: 'condition',
+        tags: ['wound'],
+      },
+    ]);
+    graph.addEdge({ id: eid(), type: 'possesses', source: 'a1', target: 'ward', properties: {} });
+
+    const preventLoss = collectPreventLossEffects(
+      graph,
+      'a1',
+      'quintessence',
+      buildPredicateContext(graph, 'a1'),
+    );
+
+    expect(preventLoss).toHaveLength(1);
+    expect(preventLoss[0]?.channel).toBe('quintessence');
   });
 });

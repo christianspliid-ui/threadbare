@@ -21,6 +21,7 @@ import type {
   UnifiedActionTemplate,
   StepOutcome,
 } from '../types/unifiedAction';
+import type { ActionStepOutcomeMetadata } from '../types/unifiedAction';
 import type { GraphOp } from '../types/graphOp';
 import {
   progressUnifiedAction,
@@ -59,8 +60,11 @@ import { accumulateImportance, getImportanceDelta, getRarityTier } from './rarit
 import type { TraceEntry } from '../types/trace';
 import type { SimulationRuntime } from './simulationRuntime';
 import type { BalanceEvent } from '../types/balanceEval';
+import { DEFAULT_REPUTATION } from '../types/disposition';
 import { recordBalanceEvent } from './balanceTelemetry';
 import { computeOutcomeConsequence } from './outcomeConsequences';
+import { processFactionEncounterReputation } from './factionReputation';
+import { processReputationTally } from './phaseReputationTraits';
 import {
   canSpendQuintessence,
   getPushModifier,
@@ -70,6 +74,16 @@ import {
   RESIST_DOWNGRADE_CHANCE,
 } from './quintessenceActions';
 import { isProvingSliceTemplate } from './outcomeConsequences';
+import {
+  assembleRewardPool,
+  BAD_OUTCOME_CATEGORY_WEIGHTS,
+  drawFromPool,
+  instantiateReward,
+  resolveRewardRecipe,
+} from './rewardPool';
+import { recordReward } from './rewardHistory';
+import { mulberry32 } from '../lib/prng';
+import { buildPredicateContext, collectTestShapers } from './effectResolver';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -174,6 +188,14 @@ export function resolveUncontestedStep(
   // Sphere factor: small bonus if actor's location has sphere influence
   // (simplified — full implementation would check location sphere influence)
   const sphereFactor = 0;
+  const predicateContext = buildPredicateContext(state.graph, action.actorId, step.reach);
+  const testShapers = collectTestShapers(
+    state.graph,
+    action.actorId,
+    step.reach,
+    predicateContext,
+    state.effectStates,
+  );
 
   // Phase 3: Push — risky actions attempt to spend quintessence for better odds.
   // The actor node must be resolvable and the template must be push-eligible.
@@ -196,6 +218,7 @@ export function resolveUncontestedStep(
     difficulty: step.difficulty,
     sphereFactor,
     actionModifiers: pushModifier,
+    testShapers,
   };
 
   const result = resolveActionShared(resolutionInput, rng, undefined, 'unified_action');
@@ -252,6 +275,172 @@ export function resolveUncontestedStep(
   };
 }
 
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = ((hash << 5) - hash + input.charCodeAt(i)) | 0;
+  }
+  return hash;
+}
+
+function getStepOutcomeMetadata(
+  step: UnifiedActionTemplate['steps'][number] | undefined,
+  outcome: StepOutcome,
+): ActionStepOutcomeMetadata | undefined {
+  if (!step) return undefined;
+  return isStepSuccess(outcome) ? step.successMetadata : step.failureMetadata;
+}
+
+function applyOutcomeReputationDelta(
+  state: GameState,
+  actorId: string,
+  metadata: ActionStepOutcomeMetadata | undefined,
+): number {
+  const delta = metadata?.reputationDelta ?? 0;
+  if (delta === 0) return 0;
+
+  const actorNode = state.graph.getNode(actorId);
+  if (!actorNode) return 0;
+
+  const current = (actorNode.properties?.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
+  actorNode.properties.reputationScore = Math.max(0, Math.min(1, current + delta));
+  return delta;
+}
+
+function summarizeMetadataConsequences(
+  metadata: ActionStepOutcomeMetadata | undefined,
+  success: boolean,
+  rewardName?: string,
+): string {
+  const parts: string[] = [];
+  if (metadata?.reputationDelta && metadata.reputationDelta !== 0) {
+    parts.push(metadata.reputationDelta > 0 ? 'gained reputation' : 'lost reputation');
+  }
+  if (rewardName) {
+    parts.push(success ? `earned ${rewardName}` : `suffered ${rewardName}`);
+  } else if (metadata?.rewardPool) {
+    parts.push(success ? 'earned a reward' : 'lost equipment');
+  }
+  if (success && metadata?.tierPromotionEligible) {
+    parts.push('eligible for promotion');
+  }
+  return parts.length > 0 ? ` — ${parts.join(', ')}` : '';
+}
+
+function mapStepOutcomeToRewardOutcome(outcome: StepOutcome): OutcomeType {
+  switch (outcome) {
+    case 'critical_success':
+      return 'critical_success';
+    case 'critical_failure':
+      return 'critical_failure';
+    case 'failure':
+      return 'failure';
+    case 'success':
+    case 'success_at_cost':
+      return 'success';
+  }
+}
+
+function resolveUnifiedReward(
+  action: UnifiedAction,
+  outcome: StepOutcome,
+  metadata: ActionStepOutcomeMetadata | undefined,
+  state: GameState,
+  tick: number,
+  runtime?: SimulationRuntime,
+): string | undefined {
+  if (!metadata?.rewardPool) return undefined;
+
+  const rng = mulberry32(
+    state.seed + tick * 41 + hashString(action.actorId) + hashString(action.templateId),
+  );
+  const resolved = resolveRewardRecipe(
+    metadata.rewardPool,
+    mapStepOutcomeToRewardOutcome(outcome),
+  );
+
+  const badRoll = rng();
+  const isBadOutcome = badRoll < resolved.badOutcomeChance;
+  const effectiveRecipe = isBadOutcome
+    ? { ...resolved, categoryWeights: BAD_OUTCOME_CATEGORY_WEIGHTS, tagFilters: undefined }
+    : resolved;
+  const pool = assembleRewardPool(state.graph, effectiveRecipe);
+  const actorName = state.graph.getNode(action.actorId)?.name ?? '?';
+
+  if (pool.length === 0) {
+    recordReward({
+      tick,
+      agentId: action.actorId,
+      agentName: actorName,
+      encounterId: action.templateId,
+      templateId: null,
+      templateName: null,
+      instanceId: null,
+      category: null,
+      tier: null,
+      isBadOutcome,
+      poolSize: 0,
+      roll: null,
+    });
+
+    if (runtime) {
+      recordBalanceEvent(runtime, {
+        tick,
+        kind: 'reward_granted',
+        agentId: action.actorId,
+        sourceSystem: 'unified_action',
+        encounterId: action.templateId,
+        rewardTemplateId: null,
+        isBadOutcome,
+        rewardPoolSize: 0,
+      });
+    }
+    return undefined;
+  }
+
+  const drawRoll = rng();
+  const templateId = drawFromPool(pool, drawRoll);
+  if (!templateId) return undefined;
+
+  const instantiation = instantiateReward(state.graph, templateId, action.actorId, tick);
+  if (!instantiation) return undefined;
+
+  const templateNode = state.graph.getNode(templateId);
+  const tier = (templateNode?.properties?.tier as number) ?? 1;
+
+  recordReward({
+    tick,
+    agentId: action.actorId,
+    agentName: actorName,
+    encounterId: action.templateId,
+    templateId,
+    templateName: templateNode?.name ?? '?',
+    instanceId: instantiation.instanceId,
+    category: instantiation.category,
+    tier,
+    isBadOutcome,
+    poolSize: pool.length,
+    roll: drawRoll,
+  });
+
+  if (runtime) {
+    recordBalanceEvent(runtime, {
+      tick,
+      kind: 'reward_granted',
+      agentId: action.actorId,
+      sourceSystem: 'unified_action',
+      encounterId: action.templateId,
+      rewardTemplateId: templateId,
+      rewardCategory: instantiation.category,
+      rewardTier: tier,
+      isBadOutcome,
+      rewardPoolSize: pool.length,
+    });
+  }
+
+  return instantiation.displayName;
+}
+
 /**
  * Execute the resolution result for a completed step:
  * 1. Execute the step's GraphOps
@@ -301,17 +490,20 @@ export function executeStepResult(
 
   // Apply capability growth from step resolution
   const step = template.steps[action.currentStep];
+  const stepMetadata = getStepOutcomeMetadata(step, outcome);
+  applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
   if (step) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
     const difficultyScaled = step.difficulty * 100;
     const isSuccess = isStepSuccess(outcome);
+    const tierPromotionEligible = Boolean(isSuccess && stepMetadata?.tierPromotionEligible);
     const growthResult = applyEncounterGrowth(
       state.graph,
       action.actorId,
       step.reach,
       difficultyScaled,
       isSuccess,
-      false, // Unified actions don't have tierPromotionEligible yet
+      tierPromotionEligible,
       consequence.growthMultiplier, // Phase 3: outcome-differentiated growth (1.5 crit, 0.5 at-cost)
     );
 
@@ -356,6 +548,32 @@ export function executeStepResult(
 
   // Advance step or complete action
   const updatedAction = advanceStep(action, outcome, template, rng);
+  const rewardName = updatedAction.resolved
+    ? resolveUnifiedReward(action, outcome, stepMetadata, state, tick, runtime)
+    : undefined;
+
+  // Phase 5: migrated encounter templates should carry forward the real
+  // faction reputation and reputation-tally progression they already had in
+  // the legacy runtime. Non-encounter unified actions naturally no-op here.
+  if (isStepSuccess(outcome)) {
+    const encounterCompleted = updatedAction.resolved && isActionSuccess(updatedAction.outcome);
+    processFactionEncounterReputation(
+      state.graph,
+      action.actorId,
+      action.templateId,
+      true,
+      encounterCompleted,
+      tick,
+    );
+    processReputationTally(
+      state.graph,
+      action.actorId,
+      action.templateId,
+      true,
+      encounterCompleted,
+      tick,
+    );
+  }
 
   // Emit trace
   emitTrace({
@@ -449,11 +667,16 @@ export function executeStepResult(
     const significance = updatedAction.outcome === 'critical_success'
       ? 0.8
       : baseSignificance + consequence.significanceBoost;
+    const metadataSuffix = summarizeMetadataConsequences(
+      stepMetadata,
+      isActionSuccess(updatedAction.outcome),
+      rewardName,
+    );
     events.push({
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${outcomeMsg} ${template.name}.`,
+      message: `${actorName} ${outcomeMsg} ${template.name}${metadataSuffix}.`,
       significance,
       actorId: action.actorId,
     });
@@ -464,11 +687,12 @@ export function executeStepResult(
     const stepVerb = describeStepOutcome(outcome);
     // Phase 3: critical_success gets 0.7; other tiers get base 0.5 + consequence boost
     const stepSignificance = outcome === 'critical_success' ? 0.7 : 0.5 + consequence.significanceBoost;
+    const metadataSuffix = summarizeMetadataConsequences(stepMetadata, isStepSuccess(outcome), rewardName);
     events.push({
       id: `ua_${action.actionId}_step${stepNum}`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps}).`,
+      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}.`,
       significance: stepSignificance,
       actorId: action.actorId,
     });

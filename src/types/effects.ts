@@ -1,5 +1,5 @@
 /**
- * Generic Effect System — type definitions for 29 composable effect primitives.
+ * Generic Effect System — type definitions for 32 composable effect primitives.
  *
  * Effects are data, not code. Content creators compose JSON effect arrays
  * on attachment templates. The engine interprets them through a small number
@@ -100,6 +100,16 @@ export type ExpiryEvent =
   | 'faction_change'
   | 'dawn_cycle'
   | 'doom_threshold';
+
+export type TestShaperTrigger =
+  | 'near_miss'
+  | 'failure'
+  | 'success'
+  | 'any';
+
+export type PreventLossChannel =
+  | 'quintessence'
+  | 'condition';
 
 // ═══════════════════════════════════════════════════════════════════
 // Compel Overrides
@@ -376,6 +386,36 @@ export interface OutcomeShiftEffect {
   readonly steps: number;
 }
 
+/** Type 19e: Shape how a single resolution result can be rescued or upgraded */
+export interface TestShaperEffect {
+  readonly type: 'test_shaper';
+  readonly reach?: ReachDomain;
+  readonly condition?: EffectPredicate;
+  readonly trigger: TestShaperTrigger;
+  readonly maxMargin?: number;
+  readonly steps: number;
+  readonly scope?: EffectScope;
+}
+
+/** Type 19f: Prevent or soften a specific kind of loss */
+export interface PreventLossEffect {
+  readonly type: 'prevent_loss';
+  readonly channel: PreventLossChannel;
+  readonly amount?: number;
+  readonly tags?: string[];
+  readonly condition?: EffectPredicate;
+  readonly consumeOnPrevent?: boolean;
+  readonly scope?: EffectScope;
+}
+
+/** Type 19g: Immediately grant authored content from a template list */
+export interface ContentGrantEffect {
+  readonly type: 'content_grant';
+  readonly templateIds: readonly string[];
+  readonly selection?: 'first' | 'random';
+  readonly narrativeTemplate?: string;
+}
+
 /** Type 20a: Alter hex terrain properties */
 export interface AlterTerrainEffect {
   readonly type: 'alter_terrain';
@@ -529,6 +569,9 @@ export type AttachmentEffect =
   | RerollEffect
   | SwapReachEffect
   | OutcomeShiftEffect
+  | TestShaperEffect
+  | PreventLossEffect
+  | ContentGrantEffect
   | AlterTerrainEffect
   | CreateBarrierEffect
   | TransferEffect
@@ -694,6 +737,23 @@ export interface EffectModifierContribution {
   readonly active: boolean;
 }
 
+export interface ResolvedTestShaper {
+  readonly attachmentId: string;
+  readonly attachmentName: string;
+  readonly trigger: TestShaperTrigger;
+  readonly steps: number;
+  readonly maxMargin?: number;
+}
+
+export interface ActivePreventLoss {
+  readonly attachmentId: string;
+  readonly attachmentName: string;
+  readonly channel: PreventLossChannel;
+  readonly amount?: number;
+  readonly tags?: readonly string[];
+  readonly consumeOnPrevent: boolean;
+}
+
 /** Full result of resolving all effects on an agent */
 export interface EffectModifierResult {
   /** Per-reach modifier totals from effects */
@@ -702,6 +762,10 @@ export interface EffectModifierResult {
   readonly contributions: EffectModifierContribution[];
   /** Traits granted by effects */
   readonly grantedTraits: string[];
+  /** Tactical resolution shapers available for the current test */
+  readonly testShapers: ResolvedTestShaper[];
+  /** Active rescue/protection effects keyed to loss channels */
+  readonly preventLoss: ActivePreventLoss[];
 }
 
 // ═══════════════════════════════════════════════════════════════════

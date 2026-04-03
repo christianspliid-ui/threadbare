@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Design direction capture: adopted an omen/cool-failure/living-world execution direction in Notion and translated it into TB-105–108 on the active repo backlog (omen agendas, complication-first failure, doom identity, intent/activity visibility). (2026-04-03)
 - ✅ Agent Success Redesign Phase 4: Planner forecast rewrite — `plannerForecast.ts` adapter producing 5-tier expected utility, wired into encounter scoring with push/resist benefit, `forecast_recorded` balance events and drift summary. 29 new tests. Design: `Docs/plans/2026-04-03-phase4-planner-forecast-rewrite-plan.md`. (2026-04-03)
 - ✅ Agent Success Redesign Phase 3: Unified action outcome expansion — 5-tier step outcomes, near-miss → success_at_cost, push/resist quintessence spend seams, proving slice with 3 action families, outcome distribution telemetry. 29 tests. (2026-04-03)
 - ✅ Agent Success Redesign Phase 2: Shared resolution service (`resolutionService.ts`), doubles-based crit model, canonical `0..1` difficulty normalization, quintessence current/max with threshold states and spend/resist hooks, encounter failure erosion as live quintessence pressure, per-band telemetry. Planner/live parity restored. 169 tests. (2026-04-02)
@@ -245,6 +246,8 @@ Detailed per-phase implementation status for The Fantasy World Simulator. Refere
 - V1 Agent Dot Behavior Restoration: ✅ Complete (2026-03-24) — Restored V1 zoom tiers (dots at regional, portraits at hero-local only), bezier hop animations with ring slot offsets, 150ms settle tweens for same-hex ring rearrangement, eye icon Y-flip fix, located_at edge resolution for retinue/agentDetail.
 - Organic Trail Rendering: ✅ Complete (2026-03-25) — Trails use terrain-aware wobble + Catmull-Rom spline at 60% intensity (TRAIL_WOBBLE_SCALE), matching major roads' organic feel.
 - HexMapV2 Quick Wins — Consistency & Type Safety: ✅ Complete (2026-03-25) — Centralized LAYER_Z constants in RenderLayers.ts (monotonic with renderOrder), typed LayerName union for ZoomVisibilityMatrix keys, named WHEEL_DELTA_SCALE/FIT_PADDING in CAMERA_CONSTANTS, removed dead WATER_TYPES. 12 files changed, zero behavior changes.
+
+- TB-104 Procedural Content Component Library Foundation Slice 1: ✅ Complete (2026-04-03) — added `test_shaper`, `prevent_loss`, `content_grant`, immediate `service` reward resolution, proof-pack reward content, and targeted coverage across resolution, reward instantiation, quintessence, and unified-action wiring.
 
 - Kokoro TTS Narration Prototype: ✅ Complete (2026-03-23) — Client-side text-to-speech using kokoro-js (82M param Kokoro model, q8 quantized ~92 MB, Apache 2.0). Runs entirely in-browser via WASM, no API key or server. NarrationWorker (Web Worker for kokoro-js inference, off main thread), NarrationService (singleton wrapping worker + AudioContext playback), useNarration hook (useSyncExternalStore). Narrate button in HexChronicle hero section: Volume2 (idle) → Loader2 spinner (loading model) → Square (playing/stop). Auto-stops on hex selection change. Feature-flagged off by default (NARRATION_ENABLED = false in narrationConstants.ts). 5,798 tests pass.
 

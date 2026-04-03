@@ -1,4 +1,5 @@
 import type { ReachDomain } from './traits';
+import type { TestShaperTrigger } from './effects';
 
 // ─── Outcome Types ──────────────────────────────────────────────────
 
@@ -24,6 +25,15 @@ export interface ResolutionInput {
   sphereFactor: number;        // 0.0–0.2
   actionModifiers: number;     // capped at ±0.20
   influenceNudge?: number;     // ±0.05 to ±0.20 from player
+  testShapers?: ResolutionTestShaper[];
+}
+
+export interface ResolutionTestShaper {
+  sourceAttachmentId: string;
+  sourceAttachmentName: string;
+  trigger: TestShaperTrigger;
+  steps: number;
+  maxMargin?: number;
 }
 
 /**
@@ -68,8 +78,20 @@ export interface ResolutionResult {
   forecast: FateForecast;
   /** Phase 2: structured roll breakdown for inspectability */
   rollBreakdown?: ResolutionRollBreakdown;
+  /** Tactical test-shaper that altered the post-roll outcome, if any */
+  appliedShaper?: AppliedResolutionShaper;
   /** Phase 2: which system produced this result */
   sourceSystem?: 'unified_action' | 'encounter' | 'forecast' | 'contested';
+}
+
+export interface AppliedResolutionShaper {
+  sourceAttachmentId: string;
+  sourceAttachmentName: string;
+  trigger: TestShaperTrigger;
+  steps: number;
+  maxMargin?: number;
+  outcomeBefore: OutcomeType;
+  outcomeAfter: OutcomeType;
 }
 
 /** For contested actions: two independent rolls */

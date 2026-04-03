@@ -314,6 +314,27 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'Columns of numbers, trade routes inked in margins. Knowledge is currency.',
     } as PossessionNodeProperties,
   },
+  {
+    id: 'reward_tomes_scrolls_letters_of_introduction',
+    type: 'artifact',
+    name: 'Letters of Introduction',
+    properties: {
+      subcategory: 'tomes_scrolls',
+      tier: 1,
+      tags: ['#gold', '#scroll', '#service', '#social', '#patronage'],
+      mechanicalSummary: 'Service reward: immediately grants Patron\'s Backing.',
+      rewardMode: 'service',
+      effects: [
+        {
+          type: 'content_grant',
+          templateIds: ['reward_bestowed_patrons_backing'],
+          selection: 'first',
+        },
+      ],
+      lossCondition: 'consumable',
+      flavorText: 'Folded notes bearing three wax seals. Show them once, and doors begin opening for you.',
+    } as PossessionNodeProperties,
+  },
 
   // ─── Tomes & Scrolls (T2 ×2) ────────────────────────────────────────
   {
@@ -496,6 +517,29 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       flavorText: 'Carved from a knucklebone and hung on gut string. Old magic, close to the body.',
     } as PossessionNodeProperties,
   },
+  {
+    id: 'reward_relics_talismans_duelists_luck_token',
+    type: 'artifact',
+    name: "Duelist's Luck Token",
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 1,
+      tags: ['#iron', '#talisman', '#combat', '#precision'],
+      mechanicalSummary: 'Upgrade one close Iron failure by 1 step during combat.',
+      effects: [
+        {
+          type: 'test_shaper',
+          reach: 'iron',
+          condition: 'in_combat',
+          trigger: 'near_miss',
+          maxMargin: 8,
+          steps: 1,
+        },
+      ],
+      lossCondition: 'stealable',
+      flavorText: 'A nicked brass token passed between challengers. The bearer seems to recover from bad footing a heartbeat faster.',
+    } as PossessionNodeProperties,
+  },
 
   // ─── Relics & Talismans (T2 ×2) ─────────────────────────────────────
   {
@@ -524,6 +568,27 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
       reachBonus: { shadow: 0.07 },
       lossCondition: 'stealable',
       flavorText: 'The glass is black but not opaque. Something moves inside when no one watches.',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_relics_talismans_hearthglass_ward',
+    type: 'artifact',
+    name: 'Hearthglass Ward',
+    properties: {
+      subcategory: 'relics_talismans',
+      tier: 2,
+      tags: ['#star', '#relic', '#ward', '#quintessence', '#survival'],
+      mechanicalSummary: 'Prevent up to 0.08 quintessence loss once, then shatter.',
+      effects: [
+        {
+          type: 'prevent_loss',
+          channel: 'quintessence',
+          amount: 0.08,
+          consumeOnPrevent: true,
+        },
+      ],
+      lossCondition: 'consumable',
+      flavorText: 'A bubble of furnace glass with a coal-dark core. It flashes warm once when disaster almost takes hold.',
     } as PossessionNodeProperties,
   },
 
@@ -1258,6 +1323,31 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
       visibility: 'discoverable',
       domainContributions: { eye: 0.05 },
       flavorText: 'The dark is merely dim. Your pupils are wider than they should be.',
+    } as TraitDefinitionProperties,
+  },
+  {
+    id: 'reward_bestowed_patrons_backing',
+    type: 'trait',
+    name: "Patron's Backing",
+    properties: {
+      subcategory: 'bestowed',
+      tier: 1,
+      tags: ['#bestowed', '#gold', '#heart', '#social', '#patronage'],
+      description: 'A web of introductions turns close social failures into second chances.',
+      maxLevel: 1,
+      visibility: 'discoverable',
+      domainContributions: { gold: 0.04, heart: 0.02 },
+      effects: [
+        {
+          type: 'test_shaper',
+          reach: 'gold',
+          condition: 'in_social',
+          trigger: 'near_miss',
+          maxMargin: 8,
+          steps: 1,
+        },
+      ],
+      flavorText: 'Someone important has spoken well of you somewhere else. In this world, that often matters more than merit.',
     } as TraitDefinitionProperties,
   },
 

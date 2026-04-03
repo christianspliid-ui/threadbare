@@ -21,12 +21,73 @@ import type { QuintessenceThresholdState } from '../types/resolution';
 import type { NodeType } from '../types/graph';
 import type { SimulationRuntime } from './simulationRuntime';
 import { recordBalanceEvent } from './balanceTelemetry';
+import { buildPredicateContext, collectPreventLossEffects } from './effectResolver';
 
 /**
  * Node types that can carry quintessence.
  * Only actor and location nodes are initialized with quintessence in gameInit.ts.
  */
 const QUINTESSENCE_NODE_TYPES: NodeType[] = ['actor', 'location'];
+
+function consumePreventLossAttachment(state: GameState, attachmentId: string): void {
+  try {
+    state.graph.removeNode(attachmentId);
+  } catch {
+    // Fail-soft: if the attachment is already gone, continue.
+  }
+  state.effectStates?.delete(attachmentId);
+}
+
+function applyQuintessenceLossPrevention(
+  state: GameState,
+  nodeId: string,
+  totalDelta: number,
+  runtime?: SimulationRuntime,
+): number {
+  if (totalDelta >= 0) return totalDelta;
+
+  const node = state.graph.getNode(nodeId);
+  if (!node || node.type !== 'actor') return totalDelta;
+
+  const ctx = buildPredicateContext(state.graph, nodeId);
+  const preventLoss = collectPreventLossEffects(
+    state.graph,
+    nodeId,
+    'quintessence',
+    ctx,
+    state.effectStates,
+  );
+
+  if (preventLoss.length === 0) return totalDelta;
+
+  const chosen = preventLoss[0];
+  const preventedAmount = Math.min(Math.abs(totalDelta), chosen.amount ?? Math.abs(totalDelta));
+  if (preventedAmount <= 0) return totalDelta;
+
+  if (chosen.consumeOnPrevent) {
+    const attachmentNode = state.graph.getNode(chosen.attachmentId);
+    const attachmentCategory =
+      (attachmentNode?.properties.subcategory as string | undefined)
+      ?? attachmentNode?.type
+      ?? 'attachment';
+
+    consumePreventLossAttachment(state, chosen.attachmentId);
+
+    if (runtime) {
+      recordBalanceEvent(runtime, {
+        tick: state.tick,
+        kind: 'attachment_changed',
+        agentId: nodeId,
+        sourceSystem: 'attachment',
+        attachmentId: chosen.attachmentId,
+        attachmentCategory,
+        attachmentOperation: 'removed',
+      });
+    }
+  }
+
+  return totalDelta + preventedAmount;
+}
 
 /**
  * Consume all pending QuintessenceEvents, apply passive regen, and check for dissolution.
@@ -57,9 +118,10 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
     const node = graph.getNode(nodeId);
     if (!node) continue; // fail-soft: unknown node
 
+    const adjustedDelta = applyQuintessenceLossPrevention(state, nodeId, totalDelta, runtime);
     const current = (node.properties.quintessence ?? QUINTESSENCE_DEFAULT) as number;
     const max = (node.properties.quintessenceMax ?? QUINTESSENCE_MAX_DEFAULT) as number;
-    const updated = Math.max(0, Math.min(max, current + totalDelta));
+    const updated = Math.max(0, Math.min(max, current + adjustedDelta));
 
     // Phase 2: Capture threshold state before and after for transition detection
     const stateBefore = getQuintessenceThresholdState(node);
@@ -68,7 +130,7 @@ export function phaseQuintessence(state: GameState, runtime?: SimulationRuntime)
     const stateAfter = nodeAfter ? getQuintessenceThresholdState(nodeAfter) : stateBefore;
 
     // Balance telemetry: quintessence_changed (from pending events — player/encounter driven)
-    if (runtime && totalDelta !== 0) {
+    if (runtime && adjustedDelta !== 0) {
       recordBalanceEvent(runtime, {
         tick: state.tick,
         kind: 'quintessence_changed',

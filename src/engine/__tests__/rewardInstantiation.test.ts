@@ -85,6 +85,7 @@ describe('instantiateReward', () => {
 
       expect(result).not.toBeNull();
       expect(result!.category).toBe('possession');
+      expect(result!.displayName).toBe('Iron Sword');
 
       // Instance node exists
       const instance = graph.getNode(result!.instanceId);
@@ -115,6 +116,7 @@ describe('instantiateReward', () => {
 
       expect(result).not.toBeNull();
       expect(result!.category).toBe('condition');
+      expect(result!.displayName).toBe('Broken Ribs');
 
       const edge = graph.getEdge(result!.edgeId);
       expect(edge!.type).toBe('has_trait');
@@ -133,11 +135,72 @@ describe('instantiateReward', () => {
 
       expect(result).not.toBeNull();
       expect(result!.category).toBe('bestowed');
+      expect(result!.displayName).toBe('Spirit Sight');
 
       const edge = graph.getEdge(result!.edgeId);
       expect(edge!.type).toBe('has_trait');
       expect(edge!.properties.ticksRemaining).toBeNull();
       expect(edge!.properties.modifiers).toEqual({ eye: 0.10 });
+    });
+
+    it('resolves service rewards into granted content while preserving service category', () => {
+      graph.addNode({
+        id: 'template_patrons_backing',
+        type: 'trait',
+        name: "Patron's Backing",
+        properties: {
+          subcategory: 'bestowed',
+          tier: 1,
+          tags: ['#bestowed', '#gold'],
+          description: 'A network of favors.',
+          maxLevel: 1,
+          visibility: 'discoverable',
+          domainContributions: { gold: 0.04 },
+          effects: [
+            {
+              type: 'test_shaper',
+              reach: 'gold',
+              trigger: 'near_miss',
+              steps: 1,
+              maxMargin: 8,
+            },
+          ],
+        },
+      });
+
+      graph.addNode({
+        id: 'template_letters_of_introduction',
+        type: 'artifact',
+        name: 'Letters of Introduction',
+        properties: {
+          subcategory: 'tomes_scrolls',
+          tier: 1,
+          tags: ['#gold', '#service'],
+          rewardMode: 'service',
+          effects: [
+            {
+              type: 'content_grant',
+              templateIds: ['template_patrons_backing'],
+              selection: 'first',
+            },
+          ],
+        },
+      });
+
+      const result = instantiateReward(graph, 'template_letters_of_introduction', 'agent_1', 9);
+
+      expect(result).not.toBeNull();
+      expect(result!.category).toBe('service');
+      expect(result!.displayName).toBe("Patron's Backing");
+
+      const grantedNode = graph.getNode(result!.instanceId);
+      expect(grantedNode?.name).toBe("Patron's Backing");
+      expect(grantedNode?.type).toBe('trait');
+
+      const edge = graph.getEdge(result!.edgeId);
+      expect(edge?.type).toBe('has_trait');
+      expect(edge?.target).toBe(result!.instanceId);
+      expect(edge?.source).toBe('agent_1');
     });
   });
 

@@ -126,6 +126,15 @@ Plans:
 
 ### Future Work
 
+**Cross-cutting: Procedural Content Component Library** — Expand the generic effect system into a reusable content grammar for encounters, items, spells, conditions, talents, bonds, reputations, achievements, and artifacts. This is a foundation initiative rather than a standalone feature pillar: it feeds v1.2 Social Systems Expansion, M3 Dynamic Economy, and all future content authoring. Design docs: `Docs/plans/2026-04-03-procedural-content-component-library-audit.md` and `Docs/plans/2026-04-03-procedural-content-component-library-foundation-plan.md`.
+
+Implementation sequence:
+1. **Phase 1 · Core primitives** — `test_shaper`, `prevent_loss`, `content_grant` implemented in the first foundation slice; `resource_delta`, `action_trigger`, `choice_set` still pending
+2. **Phase 2 · Stateful shells** — `flip_table`, `clearance_gate`, duplicate-gain policy, result-band support
+3. **Phase 3 · Progress and service shells** — `task_progress`, richer service shells, support retainers
+4. **Phase 4 · Starter libraries** — combat items, rescue items, unstable talents/spells, bargains, tasks, bond assists, reputation favors, achievement tracks
+5. **Phase 5 · Governance** — stacking caps, shell authoring rules, trace/debug standards, balance ranges
+
 **v1.2: Social Systems Expansion** — 5 interlocking expansions transforming social interaction from transactional exchanges into rich, world-shaping narrative scenes. Agents proactively create structures, organizations, and events. Factions act as autonomous entities. Taverns as social hubs with party formation. Information economy (rumors, secrets, favors). Design doc: `Docs/plans/2026-03-31-social-systems-expansion-design.md`.
 
 Implementation sequence (each depends on the previous):
@@ -138,3 +147,5 @@ Implementation sequence (each depends on the previous):
 **M3: Dynamic Economy** — encounter→economy feedback, economic context→encounter scoring, wealth spending crossovers, trade route lifecycle, unrest, guild activation, Gold+Stone CRUD actions, resource consumption & scarcity.
 
 **Cross-cutting concerns:** Doom with teeth, rival activation, onboarding, culture seeding, NPC workforce, chain reactions.
+
+**Long-term: Codex** — In-game encyclopedia. Every named entity (conditions, attachments, factions, agents, artifacts, locations) has a full Codex entry: lore, mechanics, history, related entries. Entry points already stubbed throughout the UI ("Codex →" and "View Full Codex" buttons on all EntityCard detail views); they currently no-op.

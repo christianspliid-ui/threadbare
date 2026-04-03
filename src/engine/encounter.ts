@@ -130,6 +130,7 @@ export function resolveEncounter(
     locationId,
     step.reach,
     encounter.sphereAffinity,
+    state.effectStates,
   );
 
   // Phase 2: Use shared resolution service with difficulty normalization.
@@ -144,6 +145,7 @@ export function resolveEncounter(
     difficulty: normalizedDifficulty,
     sphereFactor: 0,
     actionModifiers: modifiers.totalModifier,
+    testShapers: modifiers.testShapers,
   };
 
   // The orchestrator always provides deterministicRoll (pre-computed from seeded RNG).

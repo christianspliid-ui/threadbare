@@ -601,6 +601,9 @@ export function executeEffect(
     case 'reroll':
     case 'swap_reach':
     case 'outcome_shift':
+    case 'test_shaper':
+    case 'prevent_loss':
+    case 'content_grant':
     case 'create_barrier':
     case 'haste':
     case 'slow':

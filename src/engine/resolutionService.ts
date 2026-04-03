@@ -49,6 +49,8 @@ import type {
   FateForecast,
   ForecastTier,
   ResolutionMode,
+  ResolutionTestShaper,
+  AppliedResolutionShaper,
 } from '../types/resolution';
 
 // ─── Constants (NFP #1: Tunability) ────────────────────────────────
@@ -169,6 +171,72 @@ function breakdownToOutcome(breakdown: ResolutionRollBreakdown): OutcomeType {
   return 'failure';
 }
 
+const OUTCOME_LADDER: OutcomeType[] = [
+  'critical_failure',
+  'failure',
+  'success_at_cost',
+  'success',
+  'critical_success',
+];
+
+function shiftOutcome(outcome: OutcomeType, steps: number): OutcomeType {
+  const index = OUTCOME_LADDER.indexOf(outcome);
+  if (index === -1) return outcome;
+  const shifted = Math.max(0, Math.min(OUTCOME_LADDER.length - 1, index + steps));
+  return OUTCOME_LADDER[shifted];
+}
+
+function matchesShaperTrigger(
+  shaper: ResolutionTestShaper,
+  outcome: OutcomeType,
+  breakdown: ResolutionRollBreakdown,
+): boolean {
+  switch (shaper.trigger) {
+    case 'near_miss':
+      return breakdown.nearMiss;
+    case 'failure':
+      return outcome === 'failure' || outcome === 'critical_failure';
+    case 'success':
+      return outcome === 'success' || outcome === 'success_at_cost' || outcome === 'critical_success';
+    case 'any':
+      return true;
+  }
+}
+
+function applyTestShapers(
+  outcome: OutcomeType,
+  breakdown: ResolutionRollBreakdown,
+  testShapers: readonly ResolutionTestShaper[] | undefined,
+): { outcome: OutcomeType; appliedShaper?: AppliedResolutionShaper } {
+  if (!testShapers || testShapers.length === 0) {
+    return { outcome };
+  }
+
+  for (const shaper of testShapers) {
+    if (!matchesShaperTrigger(shaper, outcome, breakdown)) continue;
+    if (shaper.maxMargin !== undefined && Math.abs(breakdown.margin) > shaper.maxMargin) continue;
+    if (shaper.steps === 0) continue;
+
+    const shiftedOutcome = shiftOutcome(outcome, shaper.steps);
+    if (shiftedOutcome === outcome) continue;
+
+    return {
+      outcome: shiftedOutcome,
+      appliedShaper: {
+        sourceAttachmentId: shaper.sourceAttachmentId,
+        sourceAttachmentName: shaper.sourceAttachmentName,
+        trigger: shaper.trigger,
+        steps: shaper.steps,
+        maxMargin: shaper.maxMargin,
+        outcomeBefore: outcome,
+        outcomeAfter: shiftedOutcome,
+      },
+    };
+  }
+
+  return { outcome };
+}
+
 // ─── Forecast (Pure Math) ──────────────────────────────────────────
 
 /**
@@ -253,7 +321,8 @@ export function resolveAction(
   const roll = deterministicRoll ?? (Math.floor(rng() * 100) + 1);
 
   const breakdown = classifyResolutionRoll(probability, roll);
-  const outcome = breakdownToOutcome(breakdown);
+  const baseOutcome = breakdownToOutcome(breakdown);
+  const shaped = applyTestShapers(baseOutcome, breakdown, inputs.testShapers);
 
   const forecast: FateForecast = {
     probability,
@@ -262,13 +331,14 @@ export function resolveAction(
   };
 
   return {
-    outcome,
+    outcome: shaped.outcome,
     roll,
     probability,
     margin: breakdown.margin,
     marginalFactor: breakdown.nearMiss ? 'close_call' : undefined,
     forecast,
     rollBreakdown: breakdown,
+    appliedShaper: shaped.appliedShaper,
     sourceSystem,
   };
 }

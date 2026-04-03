@@ -16,6 +16,13 @@
 
 ## Recent Completions (2026-04-03)
 
+- **TB-104 Procedural Content Component Library Foundation — Slice 1:**
+  - Added reusable effect primitives: `test_shaper`, `prevent_loss`, `content_grant`
+  - Wired `test_shaper` into encounter and unified-action resolution via the shared resolution service
+  - Wired quintessence rescue through `prevent_loss` in `phaseQuintessence`
+  - Added immediate `service` reward-shell resolution and proof content: Duelist's Luck Token, Hearthglass Ward, Letters of Introduction, Patron's Backing
+  - Focused verification green: 158 targeted tests + `npx tsc --noEmit` + `npm run build`
+
 - **Agent Success Redesign Phase 4 — Planner Forecast Rewrite (corrected 2026-04-03):**
   - Created `plannerForecast.ts` — adapter over shared resolution service producing expected utility from 5-tier outcome ladder
   - `forecastStepExpectedUtility`: weighted EU with exact `success_at_cost` derivation — `min(NEAR_MISS_MARGIN, threshold) / 100`
@@ -36,6 +43,7 @@
 
 ## Active Backlog Ideas
 
+- **TB-105–108 Thematic Pressure & Living World Pass** (new design cluster: omen agendas, cool failure, doom identity, intent/activity visibility)
 - **TB-095–099 Social Systems Expansion** (v1.2 — designed, ready to sequence into phases)
 - TB-071 Economy Second Pass (brainstormed, needs design)
 - TB-069 Location NPCs (idea)

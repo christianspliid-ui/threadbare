@@ -239,6 +239,53 @@ describe('forecast/live parity', () => {
   });
 });
 
+describe('test shapers', () => {
+  test('upgrade a near-miss failure by one outcome step', () => {
+    const input = makeInput({
+      capability: 0.5,
+      difficulty: 0.0,
+      testShapers: [
+        {
+          sourceAttachmentId: 'artifact.duelist_token',
+          sourceAttachmentName: "Duelist's Luck Token",
+          trigger: 'near_miss',
+          steps: 1,
+          maxMargin: 8,
+        },
+      ],
+    });
+
+    const result = resolveAction(input, () => 0, 53);
+    expect(result.outcome).toBe('success_at_cost');
+    expect(result.appliedShaper).toMatchObject({
+      sourceAttachmentId: 'artifact.duelist_token',
+      outcomeBefore: 'failure',
+      outcomeAfter: 'success_at_cost',
+      steps: 1,
+    });
+  });
+
+  test('do not apply a shaper when the miss exceeds its max margin', () => {
+    const input = makeInput({
+      capability: 0.5,
+      difficulty: 0.0,
+      testShapers: [
+        {
+          sourceAttachmentId: 'artifact.duelist_token',
+          sourceAttachmentName: "Duelist's Luck Token",
+          trigger: 'near_miss',
+          steps: 1,
+          maxMargin: 2,
+        },
+      ],
+    });
+
+    const result = resolveAction(input, () => 0, 53);
+    expect(result.outcome).toBe('failure');
+    expect(result.appliedShaper).toBeUndefined();
+  });
+});
+
 // ─── Difficulty Normalization ───────────────────────────────────────
 
 describe('normalizeLegacyDifficulty', () => {

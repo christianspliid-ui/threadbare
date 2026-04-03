@@ -8,30 +8,66 @@
 > Append `▶` when a phase is complete and ready for the next agent (e.g. `📐▶` = plan done, ready for Claude Code).
 > Full protocol: `Docs/cowork-ways-of-working.md` → "Unified Kanban"
 >
-> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-104**.
+> **IDs:** Every item gets a `TB-XXX` prefix. IDs are permanent — never reused, even after deletion. Next ID: **TB-109**.
 
 ---
 
-## ✅ TB-100 · Action Rarity & Unlock System — Deck-Building for the Player (2026-04-01)
+## 🏗️ TB-104 · Procedural Content Component Library Foundation (2026-04-03)
 
-**Milestone: Player Progression — Phase 1**
+**Milestone: Cross-cutting Content Architecture**
 
-Right now the player's action pool is flat and fully available. This item adds a rarity and discovery layer so that acquiring powerful actions is itself part of the game — building your deck of divine interventions becomes a core progression loop.
+Expand the generic effect system into a reusable procedural content grammar for encounters, items, spells, conditions, talents, bonds, reputations, achievements, and artifacts. Keep the work additive to the existing attachment/spell runtime: new primitives (`test_shaper`, `prevent_loss`, `resource_delta`, `action_trigger`, `choice_set`, `content_grant`), new lifecycle shells (`flip_table`, `clearance_gate`, duplicate-gain policy, `task_progress`, `service`, `support_retainer`), then starter content libraries and governance caps.
 
-**Core concept:**
-- Actions (intervention templates) have a `rarity` tier: `common`, `uncommon`, `rare`, `legendary`. Common actions are available immediately; rarer tiers must be unlocked.
-- Unlocks are earned through play: reaching Essence milestones, completing specific encounters, reaching Domain Capability thresholds in a Reach, discovering faction secrets, or witnessing rare world events (cataclysms, ascensions, legendary victories).
-- The player's "deck" is their unlocked action pool, displayed in a dedicated screen or tab. Actions can be browsed by Reach/Sphere/rarity, and newly unlocked ones are surfaced with a notification.
-- Locked actions are visible but greyed-out with a hint of how to unlock them ("Witness a Warlord's defeat", "Reach Iron III", "Spend 500 Essence") — this creates meaningful goals.
+**Plan doc:** `Docs/plans/2026-04-03-procedural-content-component-library-foundation-plan.md`  
+**Audit:** `Docs/plans/2026-04-03-procedural-content-component-library-audit.md`  
+**Creates:** Reusable content primitives and shells that future authoring can recombine instead of relying on one-off item/talent/condition logic.  
+**Depends on:** Generic Effect System (✅), Attachment System (✅), Encounter Reward Wiring (✅)
 
-**Design questions to resolve:**
-- Are locks per-playthrough (roguelite run), per-world-seed, or permanent (meta-progression)? Start with per-playthrough for simplicity.
-- Does rarity affect power directly, or just scarcity of unlock opportunity? (Prefer: rarity = unlock difficulty + narrative weight, not raw stat inflation.)
-- Can unlocked actions be lost? (Corruption mechanic, divine rival theft, overuse?)
-- How does rarity surface in the action card UI — colour border, icon badge, prose flavour?
+**Implementation status (2026-04-03):** First foundation slice shipped — `test_shaper`, `prevent_loss`, `content_grant`, immediate `service` reward resolution, and proof-pack content/examples. Remaining work: `resource_delta`, `action_trigger`, `choice_set`, stateful shells, governance caps, and broader authoring libraries.
 
-**Creates:** `rarity` field on action templates, unlock condition DSL (similar to prerequisite system), `unlockedActions` set in player state, unlock evaluation phase in the tick loop or on specific triggers, notification system for new unlocks, deck browser UI.
-**Depends on:** Generalized Action Targeting (✅), Intervention system (✅)
+---
+
+## 🎨 TB-105 · Omen Agenda System (2026-04-03)
+
+**Milestone: v1.2 Thematic Pressure & Living World Pass (do first)**
+
+Create a small-number, world-facing pressure system that turns diffuse background tension into legible beats. Agendas should sit above ordinary tick churn and make the world's current fear readable: seasonal omens, cultural omens, sphere-echo omens, and similar pressure tracks that bias events, color prose, and shape what the player expects next. This is the preferred replacement for adding more invisible upkeep rules when the real goal is atmosphere and pressure.
+
+**Creates:** Omen agenda data model, agenda selection/rotation rules, agenda tick-phase or event injection seam, omen beat TickEvents, chronicle/world-pulse surfacing, hooks into doom/culture/sphere systems, design language for when to use agenda pressure instead of raw upkeep.
+**Depends on:** Doom Clock system (✅), culture/sphere pressure surfaces (✅)
+
+---
+
+## 🎨 TB-106 · Cool Failure & Complication Outcome Pass (2026-04-03)
+
+**Milestone: v1.2 Thematic Pressure & Living World Pass (do second)**
+
+Audit encounter, intervention, and control outcomes so failure creates pressure instead of dead air. Replace flat negation with costly forward motion: witnesses, scars, rival attention, debt, collateral success, location fallout, broken trust, partial progress, or worsening convergence. This should operationalize the existing Complication Nodes direction as a system rule and content-authoring standard.
+
+**Creates:** Complication taxonomy, outcome authoring rules, resolver hooks for complication-first failure states, encounter/action/control audit checklist, prose hooks for failure consequences, guidance on when to use numeric punishment vs. changed options and story pressure.
+**Depends on:** Shared resolution/outcome ladder foundation (✅), encounter and unified action pipelines (✅)
+
+---
+
+## 🎨 TB-107 · Doom Archetype Identity Pass (2026-04-03)
+
+**Milestone: v1.2 Thematic Pressure & Living World Pass (do third)**
+
+Make each Doom Clock feel like a distinct scenario identity instead of a differently named timer. By tick 10-20, the player should feel what kind of world-ending pressure this run is generating through omen language, event composition, rival behavior, location change, social strain, and tonal bias. Two Doom archetypes should not produce mostly the same play with different labels.
+
+**Creates:** Doom identity matrix, per-archetype omen lexicon, biased event pool rules, rival behavior biases, world-state pressure hooks, archetype-specific narrative beats, criteria for "felt identity" during early and mid run.
+**Depends on:** TB-105 (Omen Agenda System)
+
+---
+
+## 🎨 TB-108 · Intent & Activity Visibility for the Living World (2026-04-03)
+
+**Milestone: v1.2 Thematic Pressure & Living World Pass (do fourth)**
+
+Surface enough agent momentum that places feel inhabited before the player opens a deep panel. Show what agents are doing, moving toward, conflicted about, or reacting to, and make locations feel busy with visible social and narrative current. This should revive the older intent-visibility direction from archived Notion work, but expand it beyond character sheets into location/world-pulse presentation.
+
+**Creates:** Agent intent/activity summary surfaces, location-level activity presence, world-pulse or chronicle cues for ongoing motion, reaction visibility when interventions bend behavior, knowledge-gated presentation rules, design seam between deep inspectability and anti-spreadsheet immersion.
+**Depends on:** Ambition/intention systems (✅), movement and encounter history foundations (✅)
 
 ---
 

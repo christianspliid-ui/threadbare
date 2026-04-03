@@ -119,6 +119,42 @@ describe('phaseQuintessence', () => {
       // 1.0 - 0.3 = 0.7
       expect(node?.properties.quintessence).toBeCloseTo(0.7);
     });
+
+    it('applies prevent-loss effects before quintessence erosion and consumes single-use wards', () => {
+      const state = buildTestState({
+        effectStates: new Map([['artifact.hearthglass_ward', { chargesRemaining: 1 }]]),
+        pendingQuintessenceEvents: [makeEvent({ delta: -0.1 })],
+      });
+      state.graph.addNode({
+        id: 'artifact.hearthglass_ward',
+        type: 'artifact',
+        name: 'Hearthglass Ward',
+        properties: {
+          effects: [
+            {
+              type: 'prevent_loss',
+              channel: 'quintessence',
+              amount: 0.08,
+              consumeOnPrevent: true,
+            },
+          ],
+        },
+      });
+      state.graph.addEdge({
+        id: 'edge.ward',
+        source: 'actor.test',
+        target: 'artifact.hearthglass_ward',
+        type: 'possesses',
+        properties: {},
+      });
+
+      phaseQuintessence(state);
+
+      const node = state.graph.getNode('actor.test');
+      expect(node?.properties.quintessence).toBeCloseTo(0.982, 5);
+      expect(state.graph.getNode('artifact.hearthglass_ward')).toBeUndefined();
+      expect(state.effectStates?.has('artifact.hearthglass_ward')).toBe(false);
+    });
   });
 
   describe('recovery', () => {

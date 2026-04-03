@@ -12,10 +12,12 @@ import {
 } from '../unifiedActionLifecycle';
 import type { UnifiedActionTemplate, UnifiedAction } from '../../types/unifiedAction';
 import type { GameState } from '../../types/gameState';
+import { DEFAULT_REPUTATION } from '../../types/disposition';
 import { WorldGraph } from '../graph';
 import { resetOpCounter } from '../graphOpExecutor';
 import { clearTraces } from '../traceBuffer';
 import { UNIFIED_ACTION_TEMPLATES } from '../../data/unified-action-templates';
+import { clearRewardHistory, getRecentRewards } from '../rewardHistory';
 
 // ─── Test Helpers ───────────────────────────────────────────────
 
@@ -132,6 +134,36 @@ function createMinimalGameState(): GameState {
   };
 }
 
+function addFactionMembership(
+  state: GameState,
+  agentId: string,
+  factionId = 'faction_def_adventuring_guild',
+): void {
+  state.graph.addNode({
+    id: factionId,
+    type: 'actor',
+    name: 'The Adventuring Guild',
+    properties: {
+      actorType: 'faction',
+      factionType: 'guild',
+      factionDefId: 'adventuring_guild',
+    },
+  });
+  state.graph.addEdge({
+    id: `member_${agentId}_${factionId}`,
+    source: agentId,
+    target: factionId,
+    type: 'member_of',
+    properties: {
+      role: 'journeyman',
+      rank: 0,
+      joinedTick: 0,
+      reputation: 0.05,
+      factionDefId: 'adventuring_guild',
+    },
+  });
+}
+
 // ─── Tests ──────────────────────────────────────────────────────
 
 describe('unifiedActionResolution', () => {
@@ -139,6 +171,7 @@ describe('unifiedActionResolution', () => {
     resetUnifiedActionCounter();
     resetOpCounter();
     clearTraces();
+    clearRewardHistory();
   });
 
   describe('progressAllActions', () => {
@@ -240,6 +273,57 @@ describe('unifiedActionResolution', () => {
       expect(['success', 'success_at_cost', 'critical_success']).toContain(result.outcome);
       expect(result.opsToExecute).toHaveLength(1);
     });
+
+    it('applies attached test shapers to close failures', () => {
+      const template = make1StepTemplate({
+        steps: [{
+          reach: 'iron',
+          duration: { min: 1, max: 1 },
+          difficulty: 0.1,
+          onSuccess: [{ op: 'update_node', nodeId: '$target', changes: { rescued: true } }],
+          onFailure: [],
+          failBehavior: 'fail_action',
+        }],
+      });
+      const state = createMinimalGameState();
+      const actorNode = state.graph.getNode('actor-1');
+      if (actorNode) {
+        actorNode.properties.domainCapabilities = { iron: 11 };
+      }
+      state.graph.addNode({
+        id: 'artifact.duelist_token',
+        type: 'artifact',
+        name: "Duelist's Luck Token",
+        properties: {
+          effects: [
+            {
+              type: 'test_shaper',
+              reach: 'iron',
+              condition: 'in_combat',
+              trigger: 'near_miss',
+              maxMargin: 8,
+              steps: 1,
+            },
+          ],
+        },
+      });
+      state.graph.addEdge({
+        id: 'edge.duelist_token',
+        type: 'possesses',
+        source: 'actor-1',
+        target: 'artifact.duelist_token',
+        properties: {},
+      });
+
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'action.iron.test', targetId: 'loc-1',
+        scale: 'personal', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const result = resolveUncontestedStep(action, template, state, () => 0.52);
+      expect(result.outcome).toBe('success_at_cost');
+      expect(result.opsToExecute).toHaveLength(1);
+    });
   });
 
   describe('executeStepResult', () => {
@@ -282,6 +366,221 @@ describe('unifiedActionResolution', () => {
       expect(updatedAction.resolved).toBe(true);
       expect(updatedAction.outcome).toBe('failure');
       expect(events[0].message).toContain('failed');
+    });
+
+    it('instantiates encounter rewards from success metadata on final resolution', () => {
+      const template = make1StepTemplate({
+        id: 'encounter.reward-test',
+        steps: [{
+          reach: 'gold',
+          duration: { min: 1, max: 1 },
+          difficulty: 0.2,
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          successMetadata: {
+            rewardPool: {
+              categoryWeights: { possession: 1.0 },
+              tagFilters: ['#reward-test'],
+            },
+          },
+        }],
+      });
+      const state = createMinimalGameState();
+      state.graph.addNode({
+        id: 'artifact_reward_test',
+        type: 'artifact',
+        name: 'Lucky Charm',
+        properties: {
+          tier: 1,
+          tags: ['#reward-test'],
+        },
+      });
+
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'encounter.reward-test', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { updatedAction, events } = executeStepResult(
+        action, template, 'success', [], state, fixedRng, 10,
+      );
+
+      expect(updatedAction.resolved).toBe(true);
+      expect(state.graph.getNode('reward_actor-1_10_artifact_reward_test')?.name).toBe('Lucky Charm');
+      expect(events[0].message).toContain('Lucky Charm');
+      expect(getRecentRewards()).toHaveLength(1);
+      expect(getRecentRewards()[0]?.templateId).toBe('artifact_reward_test');
+    });
+
+    it('surfaces granted content names for service-shell rewards', () => {
+      const template = make1StepTemplate({
+        id: 'encounter.service-reward-test',
+        steps: [{
+          reach: 'gold',
+          duration: { min: 1, max: 1 },
+          difficulty: 0.2,
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          successMetadata: {
+            rewardPool: {
+              categoryWeights: { possession: 1.0 },
+              tagFilters: ['#service-proof'],
+            },
+          },
+        }],
+      });
+      const state = createMinimalGameState();
+      state.graph.addNode({
+        id: 'reward_bestowed_patrons_backing_test',
+        type: 'trait',
+        name: "Patron's Backing",
+        properties: {
+          subcategory: 'bestowed',
+          tier: 1,
+          tags: ['#bestowed', '#gold'],
+          description: 'A network of favors.',
+          maxLevel: 1,
+          visibility: 'discoverable',
+          domainContributions: { gold: 0.04 },
+          effects: [
+            {
+              type: 'test_shaper',
+              reach: 'gold',
+              trigger: 'near_miss',
+              steps: 1,
+              maxMargin: 8,
+            },
+          ],
+        },
+      });
+      state.graph.addNode({
+        id: 'artifact_letters_of_introduction_test',
+        type: 'artifact',
+        name: 'Letters of Introduction',
+        properties: {
+          tier: 1,
+          subcategory: 'tomes_scrolls',
+          tags: ['#service-proof'],
+          rewardMode: 'service',
+          effects: [
+            {
+              type: 'content_grant',
+              templateIds: ['reward_bestowed_patrons_backing_test'],
+              selection: 'first',
+            },
+          ],
+        },
+      });
+
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'encounter.service-reward-test', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'success', [], state, fixedRng, 10,
+      );
+
+      expect(events[0].message).toContain("Patron's Backing");
+      expect(getRecentRewards()).toHaveLength(1);
+      expect(getRecentRewards()[0]?.category).toBe('service');
+    });
+
+    it('applies faction reputation gains for migrated faction encounter completions', () => {
+      const template = make1StepTemplate({
+        id: 'ag.quest.ruin_delve',
+        reach: 'eye',
+      });
+      const state = createMinimalGameState();
+      addFactionMembership(state, 'actor-1');
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'ag.quest.ruin_delve', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      executeStepResult(
+        action, template, 'success', [], state, fixedRng, 10,
+      );
+
+      const membership = state.graph.getOutgoingEdges('actor-1', 'member_of')[0];
+      expect(membership).toBeDefined();
+      expect((membership.properties.reputation as number) ?? 0).toBeGreaterThan(0.05);
+    });
+
+    it('increments reputation tallies for migrated encounter completions', () => {
+      const template = make1StepTemplate({
+        id: 'ag.quest.escort_caravan',
+        reach: 'iron',
+      });
+      const state = createMinimalGameState();
+      addFactionMembership(state, 'actor-1');
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'ag.quest.escort_caravan', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      executeStepResult(
+        action, template, 'success', [], state, fixedRng, 10,
+      );
+
+      const tallies = (state.graph.getNode('actor-1')?.properties?.reputationTallies ?? {}) as Record<string, number>;
+      expect(tallies['iron.positive']).toBe(2);
+    });
+
+    it('applies authored reputationDelta from migrated success metadata', () => {
+      const template = make1StepTemplate({
+        id: 'encounter.rep-success',
+        steps: [{
+          reach: 'heart',
+          duration: { min: 1, max: 1 },
+          difficulty: 0.2,
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          successMetadata: { reputationDelta: 0.08 },
+        }],
+      });
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'encounter.rep-success', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'success', [], state, fixedRng, 10,
+      );
+
+      expect(state.graph.getNode('actor-1')?.properties?.reputationScore).toBeCloseTo(DEFAULT_REPUTATION + 0.08, 5);
+      expect(events[0].message).toContain('gained reputation');
+    });
+
+    it('applies authored reputationDelta from migrated failure metadata', () => {
+      const template = make1StepTemplate({
+        id: 'encounter.rep-failure',
+        steps: [{
+          reach: 'shadow',
+          duration: { min: 1, max: 1 },
+          difficulty: 0.2,
+          onSuccess: [],
+          onFailure: [],
+          failBehavior: 'fail_action',
+          failureMetadata: { reputationDelta: -0.06 },
+        }],
+      });
+      const state = createMinimalGameState();
+      const action = createUnifiedAction({
+        actorId: 'actor-1', templateId: 'encounter.rep-failure', targetId: 'loc-1',
+        scale: 'local', source: 'agent', tick: 0, template, rng: fixedRng,
+      });
+
+      const { events } = executeStepResult(
+        action, template, 'failure', [], state, fixedRng, 10,
+      );
+
+      expect(state.graph.getNode('actor-1')?.properties?.reputationScore).toBeCloseTo(DEFAULT_REPUTATION - 0.06, 5);
+      expect(events[0].message).toContain('lost reputation');
     });
 
     it('generates step progression event for multi-step', () => {
