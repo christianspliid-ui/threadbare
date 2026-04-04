@@ -631,14 +631,10 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           void loadAgentPortraits(agentSpriteGroup, agents ?? []);
         }
 
-        // Preload coat of arms textures then build army layer.
-        // Textures are cached — subsequent calls are instant.
-        void preloadCoatOfArmsTextures(ARMY_TEXTURE_SIZE).then(() => {
-          if (!sceneRef.current) return; // Component unmounted during load
-          const armyLayerGroup = createArmyLayer(armies ?? []);
-          scene.add(armyLayerGroup.group);
-          armyLayerRef.current = armyLayerGroup;
-        });
+        // Army layer is built incrementally via useEffect on `armies` prop
+        // (see "Incremental army layer rebuild" effect below).
+        // Pre-warm the coat of arms texture cache so first army render is fast.
+        void preloadCoatOfArmsTextures(ARMY_TEXTURE_SIZE);
 
         // Build battle indicator layer — battle/siege overlays at combat hexes (Plan 12-07)
         // Renders at RENDER_ORDER.BATTLE_INDICATORS (10.8), above armies, below events.
@@ -1037,6 +1033,29 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
         coastlineRef.current.visible = showOrganicShore;
       }
     }, [showOrganicShore]);
+
+    // ── Incremental army layer rebuild when armies prop changes ──
+    useEffect(() => {
+      const scene = sceneRef.current;
+      if (!scene) return;
+
+      // Dispose old army layer
+      if (armyLayerRef.current) {
+        scene.remove(armyLayerRef.current.group);
+        armyLayerRef.current.dispose();
+        armyLayerRef.current = null;
+      }
+
+      if (!armies || armies.length === 0) return;
+
+      // Preload coat of arms textures (instant if already cached), then build layer
+      void preloadCoatOfArmsTextures(ARMY_TEXTURE_SIZE).then(() => {
+        if (!sceneRef.current) return;
+        const armyLayerGroup = createArmyLayer(armies);
+        sceneRef.current.add(armyLayerGroup.group);
+        armyLayerRef.current = armyLayerGroup;
+      });
+    }, [armies]);
 
     // Update selection ring + zoom target when selectedHex prop changes
     useEffect(() => {
