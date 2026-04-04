@@ -1,10 +1,10 @@
 # Project Status
 
-> Updated 2026-04-03.
+> Updated 2026-04-04.
 
 ## Current Focus
 
-**Agent Success Redesign Phase 4 (corrected)** — Complete. Planner now reasons with the same 5-tier outcome model as live resolution. EU-aware encounter ranking (falls back to binary for incapable agents). success_at_cost exact derivation from shared contract. Push/resist Q-aware scoring. Forecast drift telemetry wired.
+**Coat of Arms & Icon System** — Complete. Procedural SVG heraldry for all factions (shield + divisions + charges derived from faction type, sphere alignment, reach weights). SphereIcon (12) and ReachIcon (8) with canonical cosmology colors. Integrated into FactionSheet, FactionEntry chronicle, and ArmyLayer hex map. 82 tests.
 
 ## Milestone Status
 
@@ -14,7 +14,16 @@
 - **Agent Success Redesign:** Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4 ✅ corrected (2026-04-03)
 - **Next:** Phase 5 (encounter migration and early-game retune), or v1.2 Social Systems
 
-## Recent Completions (2026-04-03)
+## Recent Completions (2026-04-04)
+
+- **Coat of Arms & Icon System:**
+  - Procedural SVG generator: shield shape + 6 heraldic divisions (per faction type) + 8 charge symbols (per reach) + tinctures from cosmology palette
+  - SphereIcon: 12 unique geometric symbols for all foundation + creation spheres
+  - ReachIcon: 8 domain icons reusing heraldic charges in rounded-rect frames
+  - Integrated into FactionSheet (48px), FactionEntry chronicle (24px), ArmyLayer hex map sprites
+  - 82 new tests, design doc: `Docs/plans/2026-04-04-coat-of-arms-and-icon-system-design.md`
+
+## Previous Completions (2026-04-03)
 
 - **TB-104 Procedural Content Component Library Foundation — Slice 1:**
   - Added reusable effect primitives: `test_shaper`, `prevent_loss`, `content_grant`

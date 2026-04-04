@@ -7,6 +7,7 @@
 
 Detailed per-phase implementation status for The Fantasy World Simulator. Referenced from CLAUDE.md.
 
+- ✅ Coat of Arms & Icon System: Procedural SVG heraldry for factions (shield + divisions + charges from type/sphere/reach), SphereIcon (12), ReachIcon (8), integrated into FactionSheet, FactionEntry, ArmyLayer. 82 tests. Design: `Docs/plans/2026-04-04-coat-of-arms-and-icon-system-design.md`. (2026-04-04)
 - ✅ Design direction capture: adopted an omen/cool-failure/living-world execution direction in Notion and translated it into TB-105–108 on the active repo backlog (omen agendas, complication-first failure, doom identity, intent/activity visibility). (2026-04-03)
 - ✅ Agent Success Redesign Phase 4: Planner forecast rewrite — `plannerForecast.ts` adapter producing 5-tier expected utility, wired into encounter scoring with push/resist benefit, `forecast_recorded` balance events and drift summary. 29 new tests. Design: `Docs/plans/2026-04-03-phase4-planner-forecast-rewrite-plan.md`. (2026-04-03)
 - ✅ Agent Success Redesign Phase 3: Unified action outcome expansion — 5-tier step outcomes, near-miss → success_at_cost, push/resist quintessence spend seams, proving slice with 3 action families, outcome distribution telemetry. 29 tests. (2026-04-03)
