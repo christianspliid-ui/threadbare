@@ -399,6 +399,38 @@ export interface UnifiedActionTemplate {
   readonly clearanceGates?: readonly ClearanceGateConfig[];
   /** Branch-aware aftermath config. If present, overrides default aftermath assembly. */
   readonly aftermathConfig?: BranchAwareAftermathConfig;
+
+  /**
+   * Authored choice cards per step. When present, these replace the generic
+   * "Tip the scales" / "Let it play out" choices with scene-specific
+   * approach cards that have prose bodies, cost justification, and risk text.
+   *
+   * Keys are step indices. Each step maps to an array of authored choices.
+   * The choice `id` must match the `ActionStepBranch` variant key so the
+   * branch resolution picks up the player's choice correctly.
+   */
+  readonly authoredChoices?: Readonly<Record<number, readonly AuthoredChoiceCard[]>>;
+}
+
+/**
+ * An authored choice card with scene-specific prose, cost, target, and risk.
+ * Replaces the generic intervention choices when present on a template.
+ */
+export interface AuthoredChoiceCard {
+  /** Must match the ActionStepBranch variant key for branch resolution. */
+  readonly id: string;
+  /** Scene-specific label: "Forge the Truth" not "Help them". */
+  readonly label: string;
+  /** Full prose paragraph describing what the intervention feels like. */
+  readonly intent: string;
+  /** Which entity this choice targets: "Maren Ironhewn". */
+  readonly targetLabel?: string;
+  /** Essence cost for this choice. */
+  readonly essenceCost: number;
+  /** Narrative risk: "The guild may never trust her the same way again." */
+  readonly likelyBurden?: string;
+  /** Maps to interventionType for backend compatibility. */
+  readonly interventionType: 'supportive' | 'coercive' | 'withdrawn';
 }
 
 // Scale priority for tick resolution ordering (lower = resolves first)

@@ -422,6 +422,19 @@ export function phaseEncounterVisibility(
     );
 
     if (notification) {
+      // Override with authored choices if the template defines them for this step
+      const authoredForStep = resolvedTemplate?.authoredChoices?.[stepIndex];
+      if (authoredForStep && authoredForStep.length > 0) {
+        notification.choices = authoredForStep.map(card => ({
+          id: card.id,
+          text: card.label,
+          essenceCost: card.essenceCost,
+          probabilityBoost: 0,
+          interventionType: card.interventionType,
+          godVoice: card.likelyBurden,
+        }));
+      }
+
       notifications.push(notification);
       events.push({
         id: `evt_enc_vis_unified_${action.actorId}_${stepIndex}_${tick}`,

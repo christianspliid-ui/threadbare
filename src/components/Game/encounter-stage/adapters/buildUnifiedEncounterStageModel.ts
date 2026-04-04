@@ -206,8 +206,26 @@ function mapSupportRoleToCastRole(supportRole: string): EncounterCastRole {
 function buildChoices(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageChoiceModel[] {
-  const { notification, essence } = args;
+  const { template, activeAction, notification, essence } = args;
 
+  // Check for authored choices on the template for the current step
+  const authoredForStep = template.authoredChoices?.[activeAction.currentStep];
+
+  if (authoredForStep && authoredForStep.length > 0) {
+    // Use authored choice cards with full prose bodies
+    return authoredForStep.map((card) => ({
+      id: card.id,
+      label: card.label,
+      intent: card.intent,
+      targetLabel: card.targetLabel,
+      essenceCost: card.essenceCost,
+      affordable: essence + 1e-9 >= card.essenceCost,
+      costLabel: card.essenceCost > 0 ? `${card.essenceCost.toFixed(2)} essence` : undefined,
+      likelyBurden: card.likelyBurden,
+    }));
+  }
+
+  // Fall back to generic notification choices
   return notification.choices.map((choice) => ({
     id: choice.id,
     label: choice.text,

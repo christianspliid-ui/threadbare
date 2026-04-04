@@ -228,11 +228,53 @@ const step1TemperTheNarrative: ActionStep = {
 /**
  * Step 1: Branch point. Resolves based on the choice made at Step 0.
  */
+/**
+ * Step 1 — Withdrawn variant: Keep Your Hand Folded.
+ * The god does not intervene. The settlement resolves on its own.
+ * Heart reach at low difficulty (0.25) — the situation may resolve
+ * badly without divine pressure, but it resolves honestly.
+ */
+const step1KeepYourHandFolded: ActionStep = {
+  reach: 'heart',
+  duration: { min: 3, max: 4 },
+  difficulty: 0.25,
+  onSuccess: [],
+  onFailure: [
+    {
+      op: 'update_node',
+      nodeId: '$target',
+      changes: { reputationDelta: -0.10 },
+    },
+  ],
+  failBehavior: 'fail_action',
+  narrativeTemplate:
+    'The god did not move. Maren Ironhewn stood at her anvil for another hour, ' +
+    'and then she did what forge-masters have always done when the metal will not ' +
+    'take the shape they need: she set down her tools and walked to the gate under ' +
+    'her own power. What followed was neither the clean reckoning of divine honesty ' +
+    'nor the managed efficiency of divine pragmatism. It was the messy, halting, ' +
+    'human negotiation of a woman whose pride and whose guilt were fighting for ' +
+    'control of the same pair of hands. Torve listened. Maren stumbled over the ' +
+    'words she had not rehearsed. Dalla was brought from the coal shed by a militia ' +
+    'captain who did not understand what he was walking into. The Greycloaks did not ' +
+    'get the accounting they deserved, and Maren did not get the dignity she wanted, ' +
+    'and the settlement watched from the walls with the uneasy awareness that the ' +
+    'forge — the thing that made their weapons — had been compromised, and no one ' +
+    'was entirely sure how badly.',
+  successMetadata: {
+    reputationDelta: 0,
+  },
+  failureMetadata: {
+    reputationDelta: -0.10,
+  },
+};
+
 const step1Branch: ActionStepBranch = {
   branchOnStep: 0,
   variants: {
     forge_the_truth: step1ForgeTheTruth,
     temper_the_narrative: step1TemperTheNarrative,
+    keep_your_hand_folded: step1KeepYourHandFolded,
   },
   fallback: { ...step1ForgeTheTruth },
 };
@@ -455,6 +497,89 @@ const TEMPER_NARRATIVE_AFTERMATH = {
   ],
 } as const;
 
+const WITHDRAWN_AFTERMATH = {
+  overview:
+    'The settlement handled it the way settlements handle things when no one is steering: ' +
+    'unevenly, with raised voices and lowered expectations. Maren gave Torve a partial ' +
+    'accounting and Torve took what she could get. The Greycloaks left with a replacement ' +
+    'schedule that satisfied no one fully and offended no one enough to fight over. Dalla ' +
+    'was expelled by the guild elders in a closed session that leaked within the hour. ' +
+    'The forge relit, but the settlement\'s confidence in its own craft infrastructure ' +
+    'had taken a wound that no god had shaped and no god could easily mend.',
+  changes: [
+    {
+      id: 'withdrawn_maren_reputation',
+      kind: 'reputation' as const,
+      title: 'Maren Ironhewn',
+      detail: 'Handled the crisis alone. Reputation damaged but not destroyed.',
+      polarity: 'mixed' as const,
+    },
+    {
+      id: 'withdrawn_dalla_expelled',
+      kind: 'reputation' as const,
+      title: 'Dalla',
+      detail: 'Expelled by the guild in a closed session. Left without ceremony.',
+      polarity: 'loss' as const,
+    },
+    {
+      id: 'withdrawn_torve_neutral',
+      kind: 'reputation' as const,
+      title: 'Torve Ashgrip',
+      detail: 'Unsatisfied but unwilling to escalate. The Greycloaks will not return to this forge.',
+      polarity: 'loss' as const,
+    },
+    {
+      id: 'withdrawn_messy_resolution',
+      kind: 'future_hook' as const,
+      title: 'A Messy Resolution',
+      detail: 'The settlement remembers a crisis that was survived, not solved. No institutional reform, no clean story.',
+      polarity: 'mixed' as const,
+    },
+  ],
+  reactionPrompt:
+    'The forge is relit but the settlement is unsettled. You did not shape this outcome. Choose what stays with you.',
+  reactions: [
+    {
+      id: 'withdrawn_react_accept',
+      label: 'Accept the outcome.',
+      intent: 'The settlement resolved its own crisis. The result is imperfect but it is theirs. Walk away clean.',
+      effects: [
+        {
+          kind: 'recent_event' as const,
+          eventType: 'narrative' as const,
+          message: 'The god chose not to intervene at the forge. The settlement found its own imperfect resolution.',
+          significance: 0.5,
+        },
+      ],
+    },
+    {
+      id: 'withdrawn_react_watch',
+      label: 'Watch what grows from the wreckage.',
+      intent: 'Something will grow from this — resentment, reform, or quiet adaptation. Stay close enough to see which.',
+      effects: [
+        {
+          kind: 'reputation_tally' as const,
+          key: 'forge_crisis_observer',
+          delta: 1,
+        },
+        {
+          kind: 'recent_event' as const,
+          eventType: 'narrative' as const,
+          message: 'The god watches the forge\'s aftermath unfold without intervention — waiting to see what the settlement builds from its own wreckage.',
+          significance: 0.5,
+        },
+        {
+          kind: 'encounter_seed' as const,
+          encounterFamily: 'crafting.quest',
+          delayTicks: 20,
+          priority: 0.9,
+          seedLabel: 'Aftermath of the unmanaged forge crisis',
+        },
+      ],
+    },
+  ],
+} as const;
+
 // ─── Template ────────────────────────────────────────────────────
 
 export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = {
@@ -491,11 +616,71 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = {
 
   supportBundle: SUPPORT_BUNDLE,
 
+  authoredChoices: {
+    0: [
+      {
+        id: 'forge_the_truth',
+        label: 'Forge the truth',
+        intent:
+          'Steady the forge-master\'s resolve and tilt her toward public honesty. ' +
+          'Let the weight of what Dalla did settle into Maren\'s bearing until the ' +
+          'only path that feels survivable is the one that begins with opening the ' +
+          'gate and saying what happened. This is the heavier pull — not because ' +
+          'honesty is hard to find, but because the shame it carries will be public, ' +
+          'and public shame changes institutions. The guild will audit. The settlement ' +
+          'will remember. Maren will stand in the open with her failure visible, and ' +
+          'the god who steadied her hand will feel the cost of every eye that watches.',
+        targetLabel: 'Maren Ironhewn',
+        essenceCost: 2,
+        likelyBurden:
+          'The settlement will remember this as the season the forge went cold. ' +
+          'Maren\'s reputation takes the hit honestly — but honest hits leave cleaner scars.',
+        interventionType: 'supportive',
+      },
+      {
+        id: 'temper_the_narrative',
+        label: 'Temper the narrative',
+        intent:
+          'Whisper into the gaps between what Maren knows and what she is willing ' +
+          'to say aloud. Reshape how Torve Ashgrip perceives the scale of the problem — ' +
+          'not a lie, but a managed truth. A materials defect caught early, not a sustained ' +
+          'fraud. The god\'s touch is lighter here, subtler: a shimmer in perception, a ' +
+          'nudge toward the version of events that lets the forge survive without burning ' +
+          'the relationship that funds it. But managed truths have weight. They sit in the ' +
+          'hands of the person who manages them, and they do not dissolve with time.',
+        targetLabel: 'Torve Ashgrip',
+        essenceCost: 2,
+        likelyBurden:
+          'The concealed truth becomes a hidden debt. Torve may eventually learn ' +
+          'how many blades were actually compromised — and the deception will sting worse than the fraud.',
+        interventionType: 'coercive',
+      },
+      {
+        id: 'keep_your_hand_folded',
+        label: 'Keep your hand folded',
+        intent:
+          'Hold your essence. Let Maren stand at the anvil with the letter in her hand ' +
+          'and find her own way to the gate — or not. Let Torve\'s patience run to its ' +
+          'natural end. Let Dalla breathe in the coal shed until shame or defiance wins. ' +
+          'The settlement will resolve this the way settlements always resolve things when ' +
+          'no god leans on the scales: messily, slowly, with the outcome shaped by whoever ' +
+          'has the most nerve at the worst moment.',
+        targetLabel: 'the settlement',
+        essenceCost: 0,
+        likelyBurden:
+          'You keep your strength, but you may lose authorship of the outcome entirely. ' +
+          'The story that leaves the forge will not bear your shape.',
+        interventionType: 'withdrawn',
+      },
+    ],
+  },
+
   aftermathConfig: {
     branchOnStep: 0,
     variants: {
       forge_the_truth: FORGE_TRUTH_AFTERMATH,
       temper_the_narrative: TEMPER_NARRATIVE_AFTERMATH,
+      keep_your_hand_folded: WITHDRAWN_AFTERMATH,
     },
     fallback: { ...FORGE_TRUTH_AFTERMATH },
   },
