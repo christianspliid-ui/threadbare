@@ -159,7 +159,7 @@ export function EncounterStage({
   useEffect(() => {
     setSelectedChoiceId(null);
     setIsSubmittingChoice(false);
-  }, [currentStepId, open]);
+  }, [currentStepId, open, model]);
 
   const getParagraphNarrationText = useCallback((paragraph: EncounterStageModel['narrative']['paragraphs'][number]) => {
     return paragraph.segments.map(segment => segment.text).join('').replace(/\s+/g, ' ').trim();
@@ -237,12 +237,12 @@ export function EncounterStage({
   }, [isSubmittingChoice, model.choices]);
 
   const handleAdvance = useCallback(() => {
-    if (!selectedChoice || !selectedChoice.affordable || isSubmittingChoice) return;
-    // Stop any active narration before advancing
+    // Always stop narration when the button is clicked, even if the advance is blocked
     if (isSpeaking) {
       stop();
       setActiveNarrationId(null);
     }
+    if (!selectedChoice || !selectedChoice.affordable || isSubmittingChoice) return;
     setIsSubmittingChoice(true);
     onCommitChoice(selectedChoice.id);
   }, [isSubmittingChoice, isSpeaking, onCommitChoice, selectedChoice, stop]);
