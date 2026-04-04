@@ -38,6 +38,7 @@ import { INTERVENTION_DEFINITIONS } from './dream-content';
 import { NPC_ACTION_TEMPLATES } from './npc-action-templates';
 import { RIVAL_SHRINE_BETRAYAL_TEMPLATE } from './encounters/rival-shrine-betrayal';
 import { WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE } from './encounters/wandering-healer-shrine-access';
+import { FLAWED_STEEL_TEMPLATE } from './encounters/flawed-steel';
 
 // ─── Migration: ActionTemplateData → UnifiedActionTemplate ─────────
 
@@ -3168,6 +3169,7 @@ export const UNIFIED_ACTION_TEMPLATES: UnifiedActionTemplate[] = [
   ...NPC_ACTION_TEMPLATES,
   RIVAL_SHRINE_BETRAYAL_TEMPLATE,
   WANDERING_HEALER_SHRINE_ACCESS_TEMPLATE,
+  FLAWED_STEEL_TEMPLATE,
 ];
 
 /**

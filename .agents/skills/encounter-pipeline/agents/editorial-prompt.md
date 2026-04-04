@@ -157,6 +157,49 @@ Sections that can usually use `prose_rewrites` after a branch cut:
 - If you recommend a scale change, provide `section_replacements` for any section whose structure changes (Beat Structure, Branching Profile, Aftermath Kit Summary).
 - The orchestrator will apply the manifest mechanically. Anything not in the manifest will not be applied. The orchestrator will not infer edits.
 
+## Automatic REVISE Triggers
+
+The following conditions **MUST** result in a `REVISE BEFORE CONTINUING` verdict regardless of other quality. These are non-negotiable — do not issue PASS or PASS WITH REVISIONS if any of these are present:
+
+1. **No approach prose.** If any approach card is just a title + tag word with no prose paragraph describing the intervention feel, verdict is REVISE.
+2. **Generic god-verbs.** If choices use generic labels like "help them" / "let it play out" / "tip the scales" / "intervene" without scene-specific language, verdict is REVISE.
+3. **No thread integration.** If the scene prose doesn't name and introduce the specific elements (people, objects, tensions) that become player choices — if threads are only discovered by scrolling past the scene to a separate menu — verdict is REVISE.
+4. **Missing aftermath reaction choices.** For medium+ scale, if the aftermath has no player-facing consequence choices where the player decides which thread to carry forward, verdict is REVISE.
+5. **Reporter prose.** If the opening paragraph tells the player what happened ("A healer sits outside a gate") rather than placing them inside a moment with cadence, voice, and atmosphere, verdict is REVISE.
+6. **No concept art recommendation.** If the Presentation Kit section doesn't address whether the encounter opening wants concept art at all, verdict is REVISE.
+
+## Experience Differentiator Gate
+
+After completing your editorial assessment, independently verify every question below against the draft. Answer YES or NO. **Any NO is an automatic `REVISE BEFORE CONTINUING` verdict** — quote the specific failing element and provide an `[EDITORIAL REWRITE]` that would make it pass.
+
+This gate is non-negotiable. Do not issue PASS or PASS WITH REVISIONS if any differentiator fails.
+
+**Scene & Prose**
+1. Does the opening paragraph place the player inside a moment already in motion, rather than briefing them about a situation?
+2. Does the prose have its own voice — cadence, rhythm, sentence variety — rather than reading as informational reporting?
+3. Does the scene prose name and introduce the specific elements (people, objects, tensions) that later become player choices?
+4. Would a reader feel something from the prose alone, before seeing any mechanical choices?
+
+**Choices & Intervention**
+5. Does each approach card have its own prose paragraph describing what the intervention feels like from the god's perspective?
+6. Does each approach card narratively justify its cost — not just "Cost: N essence" but prose that explains why this thread is cheaper/harder to pull?
+7. Does each approach card include a narrative risk — what might cling, shift, or recoil from this intervention?
+8. Are the choice labels scene-specific rather than generic god-verbs? ("Steady the Courier" not "Help them"; "Force the Captain" not "Tip the scales")
+9. Do the choices feel like graduated options with different intervention philosophies, not a binary help/ignore toggle?
+
+**Aftermath & Consequence**
+10. Does the aftermath have its own prose — a reflective landing that wraps the experience before showing mechanics?
+11. Are consequence outcomes actor-centered with names and faces, not anonymous stat deltas? ("Ashara gained Ill Luck" not "Heart grew 0.05")
+12. For medium+ scale: does the aftermath offer reaction choices where the player decides which consequence thread to carry forward?
+13. Do aftermath reaction choices represent different philosophical stances about consequence, not just mechanical variants?
+
+**Presentation**
+14. Does the Presentation Kit specify whether the encounter opening wants concept art, and if so, describe the scene composition?
+
+Include your completed gate assessment (all 14 answers with YES/NO and evidence) in a dedicated **"Experience Differentiator Gate"** section of your review, before the Verdict.
+
+**Reference standard:** Compare the draft to the Gate Duty encounter: literary prose with narrative voice, thread discovery inside scene text, approach cards with full intervention paragraphs including risk text, and aftermath reaction choices that represent philosophical stances about consequence. This is the floor, not the ceiling.
+
 ## What You Must NOT Do
 
 - Do not audit systems feasibility — that's the next agent's job

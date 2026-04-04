@@ -10,6 +10,7 @@
  */
 
 import type { WorldGraph } from '../../../../engine/graph';
+import { autoLinkNarrative, collectSupportBundleEntities } from '../narrativeLinker';
 import { resolveStepDefinition } from '../../../../engine/unifiedActionLifecycle';
 import type {
   EncounterSupportActorSpec,
@@ -127,29 +128,32 @@ function buildScene(
 function buildNarrative(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageModel['narrative'] {
-  const { template, activeAction } = args;
+  const { template, activeAction, graph } = args;
   const currentStep = getCurrentStep(template, activeAction);
   const proseSource = currentStep.narrativeTemplate ?? template.narrativeTemplates.initiation;
 
-  const paragraphs: EncounterStageNarrativeParagraph[] = proseSource
-    .split('\n\n')
-    .filter(Boolean)
-    .map((text, index) => ({
-      id: `para-${index}`,
-      segments: [{ text: text.trim() }],
-    }));
+  // Collect linkable entities from support bundle
+  const bindings = activeAction.supportBindings ?? [];
+  const { linkEntries, references } = template.supportBundle
+    ? collectSupportBundleEntities(graph, template.supportBundle, bindings)
+    : { linkEntries: [], references: [] };
+
+  // Split prose into paragraphs and auto-link entity names
+  const rawParagraphs = proseSource.split('\n\n').filter(Boolean);
+  const paragraphs = rawParagraphs.map((text, index) =>
+    autoLinkNarrative(`para-${index}`, text.trim(), linkEntries),
+  );
 
   // Ensure at least one paragraph
   if (paragraphs.length === 0) {
-    paragraphs.push({
-      id: 'para-0',
-      segments: [{ text: template.narrativeTemplates.initiation }],
-    });
+    paragraphs.push(
+      autoLinkNarrative('para-0', template.narrativeTemplates.initiation, linkEntries),
+    );
   }
 
   return {
     paragraphs,
-    references: [],
+    references,
   };
 }
 

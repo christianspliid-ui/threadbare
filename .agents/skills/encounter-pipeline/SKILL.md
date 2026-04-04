@@ -1,11 +1,26 @@
 ---
 name: encounter-pipeline
 description: Automated encounter-authoring pipeline. Runs draft -> editorial review -> systems audit -> final merge for high-quality encounter packets. Use when authoring a new encounter, revising an encounter, or running the full pipeline. Triggers on "encounter pipeline", "draft encounter", "run encounter pipeline", "author encounter", or "/encounter-pipeline".
+model: opus
 ---
 
 # Encounter Pipeline
 
 Automated 4-pass encounter authoring pipeline that enforces scale discipline, branch-count restraint, editorial review, and systems audit before any encounter reaches implementation.
+
+## Quality Exemplar
+
+Every encounter produced by this pipeline must meet the quality standard demonstrated by "Gate Duty" (Clearance Gate). This is the floor, not the ceiling. A passing encounter has:
+
+- **Opening with concept art + literary scene prose.** The player sees a composed image and reads prose with its own voice — cadence, rhythm, atmosphere. Not a briefing. A moment already in motion.
+- **Threads discovered inside the prose.** The scene names the people, objects, and tensions that later become player choices. The player finds them by reading, not by scrolling to a menu.
+- **Graduated approach cards with prose bodies.** Each choice has a full paragraph describing what the intervention feels like from the god's perspective. Each explains its cost narratively ("barely a breath of essence" vs "five times the essence, and the thread fights you"). Each carries a narrative risk preview.
+- **Scene-specific choice labels.** "Steady the Courier" / "Force the Captain" / "Keep Your Hand Folded" — not "Help them" / "Let it play out."
+- **Multi-scene structure** with a narrative arc tracked in the Scene So Far panel.
+- **Aftermath with reflective prose** that wraps the experience before showing mechanics. Consequence outcomes are actor-centered with names and faces ("Ashara gained Ill Luck"), not anonymous stat deltas ("Heart grew 0.05").
+- **Aftermath reaction choices** where the player decides which consequence thread to carry forward. Each choice represents a different philosophical stance about consequence — "Follow the Rumor" / "Keep the Captain in Your Sights" / "Let the District Decide" — not mechanical variants.
+
+If a draft reads like a functional encounter template with the right structural bones but none of this experiential flesh, it has not passed. The editorial agent will reject it.
 
 ## Invocation
 
@@ -36,6 +51,7 @@ All output files go to `Docs/plans/encounters/<slug>-<pass>.md`.
 ### Pass 1: Draft
 
 **Agent type:** `general-purpose`
+**Model:** `opus` — prose quality is the primary output; smaller models produce structurally valid but experientially flat encounters
 **Persona:** Encounter author — fiction-first, high prose quality
 **Reads:** encounter-building-checklist.md, encounter-branching-templates.md, Notion inspiration library (Tonal Bible, Thematic Pillars, Anti-Patterns, relevant archetypes), Notion Dilemma Content Library if choice-heavy
 **Writes:** `Docs/plans/encounters/<slug>-draft.md`
@@ -52,6 +68,7 @@ The draft agent must produce every section from the encounter packet template in
 ### Pass 2: Editorial Review
 
 **Agent type:** `general-purpose`
+**Model:** `opus` — must catch prose weakness and enforce the Experience Differentiator Gate; a smaller model may rubber-stamp flat prose
 **Persona:** Editorial reviewer — reads for quality, temptation, and variety, NOT for systems correctness
 **Reads:** `<slug>-draft.md`, encounter-branching-templates.md (for editorial questions)
 **Writes:** `Docs/plans/encounters/<slug>-editorial.md`
@@ -101,6 +118,7 @@ If editorial verdict is `PASS WITH REVISIONS`:
 ### Pass 3: Systems Audit
 
 **Agent type:** `general-purpose`
+**Model:** `opus` — needs to assess runtime feasibility in the context of prose-rich, strongly-threaded encounter designs
 **Persona:** Systems auditor — runtime-focused, honest about gaps
 **Reads:** `<slug>-revised.md` (the editorially-approved version), `<slug>-editorial.md` (for context on what changed), relevant source files (encounter types, unified action types, game state)
 **Writes:** `Docs/plans/encounters/<slug>-systems.md`

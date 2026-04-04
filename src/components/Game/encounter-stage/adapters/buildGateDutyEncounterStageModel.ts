@@ -30,6 +30,7 @@ import type {
   EncounterStageNarrativeReference,
   EncounterStageSignalModel,
 } from '../types';
+import { buildLinkedParagraph } from '../narrativeLinker';
 
 interface BuildGateDutyEncounterStageModelArgs {
   template: EncounterTemplate;
@@ -709,39 +710,7 @@ function buildGateDutySceneFrame(args: {
   };
 }
 
-function buildLinkedParagraph(
-  id: string,
-  text: string,
-  tokens: Record<string, { text: string; referenceId?: string; emphasis?: 'default' | 'strong' | 'accent' }>,
-): EncounterStageNarrativeParagraph {
-  const segments: EncounterStageNarrativeParagraph['segments'] = [];
-  const tokenPattern = /{{([a-zA-Z0-9_]+)}}/g;
-  let cursor = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = tokenPattern.exec(text)) !== null) {
-    if (match.index > cursor) {
-      segments.push({ text: text.slice(cursor, match.index), emphasis: 'default' });
-    }
-    const token = tokens[match[1]];
-    if (token) {
-      segments.push({
-        text: token.text,
-        referenceId: token.referenceId,
-        emphasis: token.emphasis ?? 'default',
-      });
-    } else {
-      segments.push({ text: match[0], emphasis: 'default' });
-    }
-    cursor = match.index + match[0].length;
-  }
-
-  if (cursor < text.length) {
-    segments.push({ text: text.slice(cursor), emphasis: 'default' });
-  }
-
-  return { id, segments };
-}
+// buildLinkedParagraph is now imported from ../narrativeLinker
 
 function buildNarrativeModel(args: {
   locationLabel: string;
