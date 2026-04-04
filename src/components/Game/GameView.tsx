@@ -83,6 +83,9 @@ import { SettingsPanel } from './SettingsPanel';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
 import { MeetingEncounterModal } from './MeetingEncounterModal';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
+import { PremonitionModal } from './PremonitionModal';
+import type { WhisperNudge, CompulsionCandidate } from '../../types/premonition';
+import { applyWhisperChoice, applyCompulsionChoice, dismissPremonition } from '../../engine/premonitionActions';
 import { EncounterStage } from './encounter-stage/EncounterStage';
 import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
 import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
@@ -567,6 +570,47 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     suspendChoicePopups: interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick,
     preferences: notificationPrefs,
   });
+
+  // ── Divine Premonition modal state ──
+  // Pops the next premonition from the queue when available.
+  const activePremonition = useMemo(() => {
+    const queue = gameState.premonitionQueue ?? [];
+    return queue.length > 0 ? queue[0] : null;
+  }, [gameState.premonitionQueue]);
+
+  const handleWhisperChoice = useCallback((nudge: WhisperNudge) => {
+    if (!activePremonition) return;
+    const result = applyWhisperChoice(
+      gameState, activePremonition.agentId, activePremonition.agentName, nudge,
+    );
+    // Remove from queue
+    const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
+    setGameState(prev => ({ ...prev, premonitionQueue: remaining }));
+  }, [activePremonition, gameState]);
+
+  const handleCompulsionChoice = useCallback((candidate: CompulsionCandidate) => {
+    if (!activePremonition) return;
+    const result = applyCompulsionChoice(
+      gameState, activePremonition.agentId, activePremonition.agentName, candidate,
+    );
+    // Remove from queue
+    const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
+    setGameState(prev => ({ ...prev, premonitionQueue: remaining }));
+  }, [activePremonition, gameState]);
+
+  const handlePremonitionDismiss = useCallback(() => {
+    if (!activePremonition) return;
+    dismissPremonition(
+      activePremonition.id,
+      activePremonition.agentId,
+      activePremonition.agentName,
+      activePremonition.type,
+      gameState.tick,
+    );
+    // Remove from queue
+    const remaining = (gameState.premonitionQueue ?? []).filter(p => p.id !== activePremonition.id);
+    setGameState(prev => ({ ...prev, premonitionQueue: remaining }));
+  }, [activePremonition, gameState.tick]);
 
   // ── Tiered encounter modal (TB-055) ──
   const [tieredEncounterState, setTieredEncounterState] = useState<{
@@ -2409,6 +2453,18 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           }}
           onChoice={handleJourneyChoice}
           vignette={activeVignette.data}
+        />
+      )}
+
+      {/* Divine Premonition modal (Whisper / Compulsion) */}
+      {activePremonition && !interruptsSuppressed && (
+        <PremonitionModal
+          open={true}
+          premonition={activePremonition}
+          essencePool={gameState.essencePool}
+          onWhisperChoice={handleWhisperChoice}
+          onCompulsionChoice={handleCompulsionChoice}
+          onDismiss={handlePremonitionDismiss}
         />
       )}
 

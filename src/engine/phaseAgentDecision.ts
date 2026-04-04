@@ -53,6 +53,8 @@ import { recordBalanceEvent } from './balanceTelemetry';
 import { prepareEncounterSupportBundle } from './encounterSupportBundle';
 import { initializeClearanceGates } from './clearanceGate';
 import { createUnifiedAction } from './unifiedActionLifecycle';
+import { isCompulsionEligible, buildCompulsionEvent } from './premonitionCompulsion';
+import type { PremonitionEvent } from '../types/premonition';
 
 /**
  * Compute effective cooldown scaled by available template pool size.
@@ -123,6 +125,7 @@ export function phaseAgentDecision(
   const newEvents: TickEvent[] = [];
   const newEncounterProgress: EncounterProgress[] = [];
   const newUnifiedActions: UnifiedAction[] = [];
+  const newPremonitions: PremonitionEvent[] = [];
   let nextClearanceGateStates = state.clearanceGateStates
     ? new Map(state.clearanceGateStates)
     : undefined;
@@ -427,6 +430,43 @@ export function phaseAgentDecision(
       // Emit scoring trace
       emitTrace(decision.trace as TraceEntry);
 
+      // ── Compulsion Check ──────────────────────────────────────────
+      // Before committing, check if this agent is eligible for a Compulsion
+      // premonition. If so, emit the event to the queue. The agent's decision
+      // will be influenced by compulsionTargetTemplateId if the player acts.
+      if (decision.selected && decision.topCandidates.length > 1) {
+        try {
+          if (isCompulsionEligible(graph, state.ascendantId, agentId)) {
+            const compulsionEvent = buildCompulsionEvent(
+              state, agentId, actor.name, decision.topCandidates, rng,
+            );
+            if (compulsionEvent) {
+              newPremonitions.push(compulsionEvent);
+            }
+          }
+        } catch {
+          // Fail-soft: if compulsion module fails, proceed normally
+        }
+      }
+
+      // ── Compulsion Override ────────────────────────────────────────
+      // If the player previously chose a compulsion target, override the selection.
+      const compulsionTargetId = actor.properties?.compulsionTargetTemplateId as string | undefined;
+      const compulsionTick = (actor.properties?.compulsionTick as number | undefined) ?? 0;
+      if (decision.selected && compulsionTargetId && (state.tick - compulsionTick) <= 3) {
+        // Find the compulsion target in candidates
+        const compulsionCandidate = decision.topCandidates.find(
+          c => c.entry.templateId === compulsionTargetId,
+        );
+        if (compulsionCandidate) {
+          decision.selected = compulsionCandidate;
+        }
+        // Clear the compulsion target
+        graph.updateNode(agentId, {
+          properties: { ...actor.properties, compulsionTargetTemplateId: undefined, compulsionTick: undefined },
+        });
+      }
+
       if (decision.selected) {
         const sel = decision.selected;
 
@@ -517,9 +557,17 @@ export function phaseAgentDecision(
                 [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
               },
             };
-            // Reset idle counter on any non-idle decision
+            // Reset idle counter on any non-idle decision.
+            // Also reset whisperAvailable — non-generic encounters consume the Whisper.
+            // Generic encounters (questPriority <= 1.0) do NOT reset the flag.
+            const isGenericEncounter = (sel.entry.questPriority ?? 1.0) <= 1.0;
             graph.updateNode(agentId, {
-              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity, consecutiveIdleTicks: 0 },
+              properties: {
+                ...actor.properties,
+                familiarityRecord: updatedFamiliarity,
+                consecutiveIdleTicks: 0,
+                ...(isGenericEncounter ? {} : { whisperAvailable: false }),
+              },
             });
 
             const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
@@ -622,6 +670,13 @@ export function phaseAgentDecision(
           }
         }
       } else {
+        // Agent is idle — mark whisperAvailable for next Whisper phase
+        if (!(actor.properties?.whisperAvailable as boolean | undefined)) {
+          graph.updateNode(agentId, {
+            properties: { ...actor.properties, whisperAvailable: true },
+          });
+        }
+
         // Idle behavior — determine reason for idling
         let idleReason: IdleDecisionTrace['reason'];
         if (filterResult.candidates.length === 0) {
@@ -805,10 +860,16 @@ export function phaseAgentDecision(
     }
   }
 
+  // Merge premonitions into existing queue (discard stale entries)
+  const existingPremonitions = (state.premonitionQueue ?? []).filter(
+    p => p.eligibleUntilTick > state.tick,
+  );
+
   return {
     tickEvents: [...state.tickEvents, ...newEvents],
     encounterProgress: [...state.encounterProgress, ...newEncounterProgress],
     unifiedActions: [...state.unifiedActions, ...newUnifiedActions],
     clearanceGateStates: nextClearanceGateStates ?? state.clearanceGateStates,
+    premonitionQueue: [...existingPremonitions, ...newPremonitions],
   };
 }

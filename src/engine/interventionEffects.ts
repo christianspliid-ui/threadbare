@@ -81,7 +81,7 @@ export function getDivineInfluences(
  * Add a divine influence to an actor's influence list.
  * Mutates the actor node's properties.
  */
-function addDivineInfluence(
+export function addDivineInfluence(
   graph: WorldGraph,
   actorId: string,
   influence: DivineInfluenceEntry,

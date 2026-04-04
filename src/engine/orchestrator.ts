@@ -86,6 +86,7 @@ import { QUINTESSENCE_ENCOUNTER_FAILURE_EROSION } from '../types/quintessence';
 import { phaseEconomicTraits } from './phaseEconomicTraits';
 import { phaseReputationTraits, processReputationTally } from './phaseReputationTraits';
 import { phaseAgentDecision } from './phaseAgentDecision';
+import { phaseDivinePremonition } from './phaseDivinePremonition';
 import { phaseControlEffects, resetControlEffectsCounter } from './phaseControlEffects';
 // phaseDoom and phaseMandate are extracted to their own files with sphere pressure wiring.
 // Imported for internal runTick use; re-exported for backward compatibility (tests import from orchestrator).
@@ -1540,6 +1541,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
     const seedRng = mulberry32(state.seed + state.tick * 53);
     s = evaluateEncounterSeeds(s, s.tick, seedRng);
     phaseEventCounts['encounter_seeding'] = s.tickEvents.length - prevEventCount;
+    prevEventCount = s.tickEvents.length;
+  }
+
+  // Phase 2a.9: Divine Premonition (Whisper) — subconscious nudges for idle threaded agents
+  {
+    const whisperRng = mulberry32(state.seed + state.tick * 67);
+    s = { ...s, ...phaseDivinePremonition(s, whisperRng) };
+    phaseEventCounts['divine_premonition'] = s.tickEvents.length - prevEventCount;
     prevEventCount = s.tickEvents.length;
   }
 

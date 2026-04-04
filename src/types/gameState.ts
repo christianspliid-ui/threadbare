@@ -70,7 +70,9 @@ export interface TickEvent {
   // Quintessence events
     | 'dissolution_event'
   // NPC graduation events
-    | 'npc_graduated';
+    | 'npc_graduated'
+  // Divine premonition events
+    | 'divine_premonition';
   message: string;
   /** Optional sphere coloring for UI */
   sphere?: SphereName;
@@ -160,6 +162,9 @@ export interface GameState {
 
   // Encounter notifications — queued by encounter visibility phase, consumed by UI
   encounterNotifications?: import('./encounterVisibility').EncounterNotification[];
+
+  // Divine premonitions — queued by phaseDivinePremonition + phaseAgentDecision, consumed by UI
+  premonitionQueue?: import('./premonition').PremonitionEvent[];
 
   // Clearance gates — runtime state for checkpoint/scrutiny encounter shells
   clearanceGateStates?: Map<string, import('./contentShells').ClearanceGateRuntimeState>;
