@@ -29,7 +29,7 @@ import type { LocationNode } from './scene/LocationIconMesh';
 import { createAgentSpriteMesh, loadAgentPortraits, tickAvatarPulse } from './scene/AgentSpriteMesh';
 import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
-import { createArmyLayer } from './scene/ArmyLayer';
+import { createArmyLayer, preloadCoatOfArmsTextures, ARMY_TEXTURE_SIZE } from './scene/ArmyLayer';
 import type { ArmyLayerGroup } from './scene/ArmyLayer';
 import type { ArmyRenderData } from './scene/ArmyLayer';
 import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
@@ -631,11 +631,14 @@ const HexMapV2 = forwardRef<HexMapV2Handle, HexMapV2Props>(
           void loadAgentPortraits(agentSpriteGroup, agents ?? []);
         }
 
-        // Build army layer — faction-colored size indicators at army locations (Plan 12-07)
-        // Renders at RENDER_ORDER.ARMIES (10.5), above agents, below events.
-        const armyLayerGroup = createArmyLayer(armies ?? []);
-        scene.add(armyLayerGroup.group);
-        armyLayerRef.current = armyLayerGroup;
+        // Preload coat of arms textures then build army layer.
+        // Textures are cached — subsequent calls are instant.
+        void preloadCoatOfArmsTextures(ARMY_TEXTURE_SIZE).then(() => {
+          if (!sceneRef.current) return; // Component unmounted during load
+          const armyLayerGroup = createArmyLayer(armies ?? []);
+          scene.add(armyLayerGroup.group);
+          armyLayerRef.current = armyLayerGroup;
+        });
 
         // Build battle indicator layer — battle/siege overlays at combat hexes (Plan 12-07)
         // Renders at RENDER_ORDER.BATTLE_INDICATORS (10.8), above armies, below events.

@@ -129,58 +129,64 @@ function getArmyTexture(factionColor: string, size: 'warband' | 'regiment' | 'ho
 // ── Coat of Arms texture cache ───────────────────────────────────────────────
 
 /** Cached coat of arms textures by faction definition ID */
-const coaTextureCache = new Map<string, THREE.CanvasTexture | 'pending' | 'failed'>();
+const coaTextureCache = new Map<string, THREE.CanvasTexture | 'failed'>();
 
 /**
- * Attempt to get a coat of arms texture for a faction.
- * Uses async Image loading with caching. Returns null if not ready yet
- * (caller should fall back to the colored circle).
+ * Pre-load coat of arms textures for all known factions.
+ * Call this once before building the army layer so textures are
+ * ready synchronously when createArmyLayer runs.
  *
- * NFP #4 (fail-soft): Missing definitions or failed loads return null.
+ * Returns a promise that resolves when all textures are cached.
  */
-function getCoatOfArmsTexture(factionDefId: string, texSize: number): THREE.CanvasTexture | null {
-  const cached = coaTextureCache.get(factionDefId);
-  if (cached === 'failed') return null;
-  if (cached === 'pending') return null;
-  if (cached) return cached;
+export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> {
+  const promises: Promise<void>[] = [];
+  for (const [defId, def] of FACTION_DEFINITIONS) {
+    if (coaTextureCache.has(defId)) continue;
 
-  const def = FACTION_DEFINITIONS.get(factionDefId);
-  if (!def) {
-    coaTextureCache.set(factionDefId, 'failed');
-    return null;
+    const config = buildCoatOfArmsConfig(def);
+    const svgStr = generateCoatOfArmsSvg(config, texSize);
+
+    const p = new Promise<void>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const vbW = 120;
+        const vbH = 150;
+        const canvas = document.createElement('canvas');
+        canvas.width = texSize;
+        canvas.height = Math.round((texSize * vbH) / vbW);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          coaTextureCache.set(defId, 'failed');
+          resolve();
+          return;
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.needsUpdate = true;
+        coaTextureCache.set(defId, texture);
+        resolve();
+      };
+      img.onerror = () => {
+        coaTextureCache.set(defId, 'failed');
+        resolve();
+      };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+    });
+    promises.push(p);
   }
+  await Promise.all(promises);
+}
 
-  const config = buildCoatOfArmsConfig(def);
-  const svgStr = generateCoatOfArmsSvg(config, texSize);
-
-  // Mark as pending to avoid duplicate loading
-  coaTextureCache.set(factionDefId, 'pending');
-
-  // Async rasterization via Image + data URI
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement('canvas');
-    const vbW = 120; // SHIELD_VIEWBOX.width from CoatOfArms
-    const vbH = 150; // SHIELD_VIEWBOX.height from CoatOfArms
-    canvas.width = texSize;
-    canvas.height = Math.round((texSize * vbH) / vbW);
-    const ctx = canvas.getContext('2d');
-    if (!ctx) {
-      coaTextureCache.set(factionDefId, 'failed');
-      return;
-    }
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
-    coaTextureCache.set(factionDefId, texture);
-    // Note: the texture will be picked up on the next layer rebuild
-  };
-  img.onerror = () => {
-    coaTextureCache.set(factionDefId, 'failed');
-  };
-  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
-
-  return null; // Not ready yet on first call
+/**
+ * Get a cached coat of arms texture for a faction.
+ * Call preloadCoatOfArmsTextures() first to ensure textures are ready.
+ *
+ * NFP #4 (fail-soft): Missing or failed textures return null.
+ */
+function getCoatOfArmsTexture(factionDefId: string): THREE.CanvasTexture | null {
+  const cached = coaTextureCache.get(factionDefId);
+  if (!cached || cached === 'failed') return null;
+  return cached;
 }
 
 // ── Faction color helper ──────────────────────────────────────────────────────
@@ -289,8 +295,9 @@ export function createArmyLayer(armies: ArmyRenderData[]): ArmyLayerGroup {
     );
 
     // Try coat of arms texture first, fall back to colored circle
-    const coaTexture = army.factionDefId ? getCoatOfArmsTexture(army.factionDefId, ARMY_TEXTURE_SIZE) : null;
+    const coaTexture = army.factionDefId ? getCoatOfArmsTexture(army.factionDefId) : null;
     const texture = coaTexture ?? getArmyTexture(army.factionColor, army.size);
+    const isCoatOfArms = coaTexture != null;
     const mat = new THREE.SpriteMaterial({
       map: texture,
       transparent: true,
@@ -299,7 +306,10 @@ export function createArmyLayer(armies: ArmyRenderData[]): ArmyLayerGroup {
     materials.push(mat);
 
     const sprite = new THREE.Sprite(mat);
-    sprite.scale.set(radius * 2, radius * 2, 1);
+    // Shield aspect ratio is 120:150 (4:5) — taller than wide
+    const spriteW = isCoatOfArms ? radius * 2 : radius * 2;
+    const spriteH = isCoatOfArms ? radius * 2.5 : radius * 2;
+    sprite.scale.set(spriteW, spriteH, 1);
     sprite.position.set(wx, wy + ARMY_VERTICAL_OFFSET, LAYER_Z.ARMIES);
     sprite.renderOrder = RENDER_ORDER.ARMIES;
     group.add(sprite);
