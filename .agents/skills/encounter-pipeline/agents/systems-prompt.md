@@ -60,6 +60,9 @@ Check whether the encounter needs any of these that don't exist:
 - Remembered choice paths that later prose reads → `ActionStepBranch` with `resolveStepDefinition()` in `unifiedActionLifecycle.ts`
 - Step-specific authored choice variants depending on prior path memory → same mechanism, step variants keyed by `choiceId`
 - Branch-dependent aftermath with different overview/changes/reactions per path → `BranchAwareAftermathConfig` on `UnifiedActionTemplate`
+- Follow-on encounter seeding → `encounter_seed` effect kind in `EncounterAftermathReactionEffect`, seeds accumulate in `pendingEncounterSeeds` on GameState, evaluated by `evaluateEncounterSeeds()` in `encounterSeeding.ts` (orchestrator phase 2a.8)
+- Delayed-reveal hidden marks → `hidden_mark` effect kind, marks stored in `hiddenMarks` on GameState, queried via `getAgentHiddenMarks()`, `checkMarkReveals()`, etc. in `hiddenMarks.ts`
+- Structured intelligence attachments → `intelligence` effect kind, records stored in `intelligenceRecords` on GameState, queried via `getAgentIntelligence()`, `hasIntelligenceAbout()`, `getRegionIntelligence()` etc. in `intelligence.ts`
 
 For each missing primitive:
 - Name it clearly

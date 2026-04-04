@@ -467,7 +467,12 @@ The following branching capabilities are now **live runtime primitives** (as of 
 - **Step-specific authored choice variants depending on prior path memory** — same mechanism. Step 2 can be an entirely different `ActionStep` (different prose, reach, difficulty, outcomes) depending on the choice at step 1.
 - **Branch-aware aftermath** — `BranchAwareAftermathConfig` on `UnifiedActionTemplate`. Different overview, changes, and reaction choices per branch path. Resolved at aftermath assembly time.
 
-These are **no longer primitive gaps**. Encounter authors should use them directly for branching encounters instead of marking branching as blocked.
+The following consequence primitives are also now **live** (as of 2026-04-04):
+- **Follow-on encounter seeding** — `encounter_seed` effect kind on `EncounterAftermathReactionEffect`. Seeds accumulate in `pendingEncounterSeeds` on GameState, evaluated each tick by `evaluateEncounterSeeds()` in `encounterSeeding.ts`. Seeds with `templateId` spawn unified actions directly; seeds with `encounterFamily` emit narrative events (v1).
+- **Delayed-reveal hidden marks** — `hidden_mark` effect kind. Marks stored in `hiddenMarks` on GameState. Query with `getAgentHiddenMarks()`, `checkMarkReveals(state, agentId, encounterFamily)`, `hasHiddenMark()` in `hiddenMarks.ts`. Future investigation encounters use `checkMarkReveals` to surface marks.
+- **Structured intelligence attachments** — `intelligence` effect kind. Records stored in `intelligenceRecords` on GameState. Query with `getAgentIntelligence()`, `hasIntelligenceAbout()`, `getRegionIntelligence()` in `intelligence.ts`.
+
+These are **no longer primitive gaps**. Encounter authors should use them directly instead of marking branching, consequence seeding, hidden marks, or intelligence as blocked.
 
 Still treat these as primitive gaps if the runtime cannot yet support them cleanly:
 - branch-aware scene history / afterimages (the prose pipeline does not yet interpolate choice-history into afterimage text — author explicit variants instead)
