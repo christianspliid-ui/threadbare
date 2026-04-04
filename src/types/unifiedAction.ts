@@ -42,6 +42,37 @@ export interface ActionStepOutcomeMetadata {
   readonly reputationDelta?: number;
 }
 
+// ─── Hidden Marks ───────────────────────────────────────────────────────────
+
+/** Category of concealed consequence placed on an agent. */
+export type HiddenMarkCategory =
+  | 'betrayal'
+  | 'debt'
+  | 'secret_knowledge'
+  | 'concealed_action'
+  | 'forbidden_contact';
+
+/**
+ * A persistent hidden mark on an agent — a concealed consequence that can be
+ * queried by future encounters and revealed through investigation.
+ *
+ * Marks live on GameState.hiddenMarks (not on graph nodes) so they are
+ * queryable without graph traversal.
+ */
+export interface HiddenMark {
+  readonly markId: string;
+  readonly category: HiddenMarkCategory;
+  /** Severity 0-1; affects reveal likelihood in future encounters. */
+  readonly severity: number;
+  /** Human-readable description of what the mark represents. */
+  readonly label: string;
+  readonly sourceEncounterId: string;
+  readonly placedTick: number;
+  readonly targetAgentId: string;
+  /** Encounter families that can trigger reveal checks (prefix-matched). */
+  readonly revealFamilies?: readonly string[];
+}
+
 export type EncounterAftermathChangeKind =
   | 'growth'
   | 'trait'
@@ -95,6 +126,13 @@ export type EncounterAftermathReactionEffect =
     readonly delayTicks: number;
     readonly priority?: number;
     readonly seedLabel: string;
+  }
+  | {
+    readonly kind: 'hidden_mark';
+    readonly category: HiddenMarkCategory;
+    readonly severity: number;
+    readonly label: string;
+    readonly revealFamilies?: readonly string[];
   };
 
 export interface PendingEncounterSeed {

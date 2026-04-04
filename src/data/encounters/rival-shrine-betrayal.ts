@@ -284,6 +284,13 @@ const ACCEPT_AFTERMATH = {
           priority: 1.1,
           seedLabel: 'Brinewall economic diversification',
         },
+        {
+          kind: 'hidden_mark' as const,
+          category: 'betrayal' as const,
+          severity: 0.6,
+          label: 'Betrayed Brinewall\'s salt-curing technique to Tessaly for rival shrine intelligence',
+          revealFamilies: ['investigation', 'brinewall'],
+        },
       ],
     },
     {
@@ -308,6 +315,13 @@ const ACCEPT_AFTERMATH = {
           delayTicks: 15,
           priority: 1.2,
           seedLabel: 'The rival shrine confrontation',
+        },
+        {
+          kind: 'hidden_mark' as const,
+          category: 'betrayal' as const,
+          severity: 0.6,
+          label: 'Betrayed Brinewall\'s salt-curing technique to Tessaly for rival shrine intelligence',
+          revealFamilies: ['investigation', 'brinewall'],
         },
       ],
     },

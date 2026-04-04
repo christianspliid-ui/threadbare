@@ -1,7 +1,7 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import { MAX_RECENT_EVENTS } from '../types/gameState';
 import { DEFAULT_REPUTATION } from '../types/disposition';
-import type { EncounterAftermathReaction, PendingEncounterSeed, UnifiedAction } from '../types/unifiedAction';
+import type { EncounterAftermathReaction, HiddenMark, PendingEncounterSeed, UnifiedAction } from '../types/unifiedAction';
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
@@ -27,6 +27,7 @@ export function applyEncounterAftermathReaction(
     : undefined;
   let touchedClearanceGateStates = false;
   let nextSeeds: PendingEncounterSeed[] = [];
+  let nextHiddenMarks: HiddenMark[] = [];
 
   for (let i = 0; i < reaction.effects.length; i++) {
     const effect = reaction.effects[i];
@@ -107,6 +108,33 @@ export function applyEncounterAftermathReaction(
         nextRecentEvents = appendRecentEvent(nextRecentEvents, seedEvent);
         break;
       }
+
+      case 'hidden_mark': {
+        const targetAgentId = action?.actorId ?? '';
+        const mark: HiddenMark = {
+          markId: `mark_${action?.actionId ?? 'unknown'}_${reaction.id}_${i}`,
+          category: effect.category,
+          severity: effect.severity,
+          label: effect.label,
+          sourceEncounterId: action?.templateId ?? 'unknown',
+          placedTick: tick,
+          targetAgentId,
+          revealFamilies: effect.revealFamilies,
+        };
+        nextHiddenMarks = [...nextHiddenMarks, mark];
+        // Low-significance chronicle event — hidden from the player's perspective
+        const markEvent: TickEvent = {
+          id: `${mark.markId}_placed`,
+          tick,
+          type: 'narrative',
+          message: 'A consequence has taken root, unseen.',
+          significance: 0.3,
+          actorId: targetAgentId,
+        };
+        nextTickEvents = [...nextTickEvents, markEvent];
+        nextRecentEvents = appendRecentEvent(nextRecentEvents, markEvent);
+        break;
+      }
     }
   }
 
@@ -118,5 +146,8 @@ export function applyEncounterAftermathReaction(
     pendingEncounterSeeds: nextSeeds.length > 0
       ? [...(state.pendingEncounterSeeds ?? []), ...nextSeeds]
       : state.pendingEncounterSeeds,
+    hiddenMarks: nextHiddenMarks.length > 0
+      ? [...(state.hiddenMarks ?? []), ...nextHiddenMarks]
+      : state.hiddenMarks,
   };
 }

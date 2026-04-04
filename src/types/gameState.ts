@@ -13,7 +13,7 @@ import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
-import type { UnifiedAction, PendingEncounterSeed } from './unifiedAction';
+import type { UnifiedAction, PendingEncounterSeed, HiddenMark } from './unifiedAction';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
@@ -170,6 +170,9 @@ export interface GameState {
 
   // Pending encounter seeds — planted by aftermath reactions, consumed by evaluateEncounterSeeds phase
   pendingEncounterSeeds?: PendingEncounterSeed[];
+
+  // Hidden marks — concealed consequences on agents, queryable by future encounters
+  hiddenMarks?: HiddenMark[];
 
   // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
   // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.
