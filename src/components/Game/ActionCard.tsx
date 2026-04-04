@@ -17,8 +17,10 @@
 import React, { useMemo, useCallback, useState, useRef } from 'react';
 import type { WheelSlot } from '../../engine/wheel';
 import { getWheelSlotGlyph, getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from '../icons';
 import { RarityBadge } from '../shared/RarityBadge';
 import type { RarityTier } from '../../types/rarity';
+import type { SphereName } from '../../types/index';
 
 // ─── Sizing Constants ──────────────────────────────────────────────────────
 
@@ -202,7 +204,7 @@ export const ActionCard = React.memo(function ActionCard({
             </span>
           </div>
 
-          {/* Centered sphere glyph — subtle background element */}
+          {/* Centered sphere icon — subtle background element */}
           <div
             aria-hidden="true"
             style={{
@@ -210,12 +212,14 @@ export const ActionCard = React.memo(function ActionCard({
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',
-              fontSize: '2rem',
-              color: sphereColor ? `${sphereColor}66` : '#ffffff26',
+              opacity: 0.35,
               pointerEvents: 'none',
             }}
           >
-            {glyph}
+            {slot.sphere
+              ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
+              : <span style={{ fontSize: '2rem', color: '#ffffff26' }}>{glyph}</span>
+            }
           </div>
 
           {/* Name overlay — bottom */}
@@ -373,9 +377,12 @@ export const ActionCard = React.memo(function ActionCard({
         >
           <span
             className={playing ? 'glyph-pulse' : ''}
-            style={{ fontSize: '2rem', color: `${sphereColor ?? '#333'}60` }}
+            style={{ opacity: 0.45 }}
           >
-            {glyph}
+            {slot.sphere
+              ? <SphereIcon sphere={slot.sphere as SphereName} size={32} />
+              : <span style={{ fontSize: '2rem', color: `${sphereColor ?? '#333'}60` }}>{glyph}</span>
+            }
           </span>
         </div>
 
@@ -401,9 +408,9 @@ export const ActionCard = React.memo(function ActionCard({
               justifyContent: 'space-between',
             }}
           >
-            <span>
-              {sphereColor && (
-                <span style={{ color: sphereColor, marginRight: '4px' }}>{glyph}</span>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              {slot.sphere && (
+                <SphereIcon sphere={slot.sphere as SphereName} size={14} />
               )}
               {[reach, crud].filter(Boolean).join(' \u00B7 ') || slot.type.toUpperCase()}
             </span>
