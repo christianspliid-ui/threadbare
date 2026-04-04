@@ -152,8 +152,15 @@ export async function preloadCoatOfArmsTextures(texSize: number): Promise<void> 
   for (const [defId, def] of ALL_FACTION_DEFS) {
     if (coaTextureCache.has(defId)) continue;
 
-    const config = buildCoatOfArmsConfig(def);
-    const svgStr = generateCoatOfArmsSvg(config, texSize);
+    let svgStr: string;
+    try {
+      const config = buildCoatOfArmsConfig(def);
+      svgStr = generateCoatOfArmsSvg(config, texSize);
+    } catch {
+      // Fail-soft: skip factions whose coat of arms can't be generated
+      coaTextureCache.set(defId, 'failed');
+      continue;
+    }
 
     const p = new Promise<void>((resolve) => {
       const img = new Image();
