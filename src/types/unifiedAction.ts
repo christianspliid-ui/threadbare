@@ -86,7 +86,29 @@ export type EncounterAftermathReactionEffect =
     readonly eventType?: 'narrative' | 'ripple_consequence';
     readonly message: string;
     readonly significance?: number;
+  }
+  | {
+    readonly kind: 'encounter_seed';
+    readonly encounterFamily?: string;
+    readonly templateId?: string;
+    readonly targetAgentId?: string;
+    readonly delayTicks: number;
+    readonly priority?: number;
+    readonly seedLabel: string;
   };
+
+export interface PendingEncounterSeed {
+  readonly seedId: string;
+  readonly sourceEncounterId: string;
+  readonly sourceReactionId: string;
+  readonly encounterFamily?: string;
+  readonly templateId?: string;
+  readonly targetAgentId: string;
+  readonly eligibleAfterTick: number;
+  readonly priority: number;
+  readonly seedLabel: string;
+  readonly plantedTick: number;
+}
 
 export interface EncounterAftermathReaction {
   readonly id: string;

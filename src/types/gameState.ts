@@ -13,7 +13,7 @@ import type { RivalDefinition, RivalState } from './rival';
 import type { DoomClockState, DoomClockDefinition, DoomClockArchetype } from './doomClock';
 import type { NarrativeEvent, ChronicleEntry } from './narrative';
 import type { EncounterProgress } from './encounter';
-import type { UnifiedAction } from './unifiedAction';
+import type { UnifiedAction, PendingEncounterSeed } from './unifiedAction';
 import type { HexMutation } from './hexMutation';
 import type { NotificationDirective } from './notification';
 import type { PendingVignette } from './journeyEngine';
@@ -167,6 +167,9 @@ export interface GameState {
   // Generic effect system runtime state — cooldowns, stacks, decay values per attachment
   // Keyed by attachment node ID. Ticked by phaseEffectTick.
   effectStates?: Map<string, import('./effects').EffectRuntimeState>;
+
+  // Pending encounter seeds — planted by aftermath reactions, consumed by evaluateEncounterSeeds phase
+  pendingEncounterSeeds?: PendingEncounterSeed[];
 
   // Layer revelation — per-hex, per-layer visibility. Key: hexKey(col,row)
   // Land auto-reveals with fog of war. Soul/People/Ruins require Find actions.

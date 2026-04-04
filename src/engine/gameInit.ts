@@ -362,6 +362,7 @@ export function initializeGameState(
     encounterProgress: [],
     actionsInProgress: [],
     unifiedActions: [],
+    pendingEncounterSeeds: [],
     worldSoul: {
       fundament,
       resonance: createResonanceState(),

@@ -98,6 +98,7 @@ import { resetMeetingCounter } from './meetingEncounter';
 import { phaseJourneyBeat } from './journeyEngine';
 import { JOURNEY_BEAT_TEMPLATES } from '../data/journey-content';
 import { phaseEncounterVisibility } from './encounterVisibility';
+import { evaluateEncounterSeeds } from './encounterSeeding';
 import { EncounterCacheManager, buildDangerMap } from './encounterCache';
 import { decayAllTrust } from './trustMechanics';
 import { phaseNpcGraduation } from './npcGraduation';
@@ -1533,6 +1534,14 @@ export function runTick(state: GameState, scryTargets: import('../types').HexCoo
   };
   phaseEventCounts['encounter_visibility'] = encVisResult.notifications.length;
   prevEventCount = s.tickEvents.length;
+
+  // Phase 2a.8: Evaluate encounter seeds planted by aftermath reactions
+  {
+    const seedRng = mulberry32(state.seed + state.tick * 53);
+    s = evaluateEncounterSeeds(s, s.tick, seedRng);
+    phaseEventCounts['encounter_seeding'] = s.tickEvents.length - prevEventCount;
+    prevEventCount = s.tickEvents.length;
+  }
 
   // Phase 2b: Agent Decision — unified encounter-driven decision pipeline (replaces phaseIdleSelection)
   // @deprecated — phaseIdleSelection replaced by phaseAgentDecision
