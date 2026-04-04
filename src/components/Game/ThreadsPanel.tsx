@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { ThreadedNode, ThreadCategory } from '../../engine/retinue';
 import { groupThreadedNodes } from '../../engine/retinue';
-import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
+import type { EncounterTemplate } from '../../types/encounter';
+import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import { SectionHeading } from '../shared/SectionHeading';
 import { IconButton } from '../shared/IconButton';
 import { StepDots } from '../shared/StepDots';
@@ -26,8 +27,8 @@ interface ThreadsPanelProps {
   onNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   onCenterOnHex: (locationIdOrHexCoords: string) => void;
   onZoomToLocation?: (locationId: string) => void;
-  activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
 
@@ -38,8 +39,8 @@ interface CompactThreadRowProps {
   isSelected: boolean;
   onNodeSelect: (nodeId: string, category: ThreadCategory) => void;
   onCenterOnHex: (locationId: string) => void;
-  activeEncounters?: Map<string, { progress: EncounterProgress; template: EncounterTemplate }>;
-  onEncounterClick?: (agentId: string, progress: EncounterProgress, template: EncounterTemplate) => void;
+  activeEncounters?: Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>;
+  onEncounterClick?: (agentId: string, encounter: ActiveEncounterDisplay, template: EncounterTemplate) => void;
   onToggleAttentionMode?: (threadEdgeId: string) => void;
 }
 
@@ -176,14 +177,14 @@ function CompactThreadRow({
           }}
           onClick={(e) => {
             e.stopPropagation();
-            onEncounterClick(node.id, agentEncounter.progress, agentEncounter.template);
+            onEncounterClick(node.id, agentEncounter.encounter, agentEncounter.template);
           }}
         >
           <span>&#x2694;</span>
           <span className="truncate">{agentEncounter.template.name}</span>
           <StepDots
             total={agentEncounter.template.steps.length}
-            current={agentEncounter.progress.currentEncounterIndex}
+            current={agentEncounter.encounter.currentStepIndex}
           />
         </button>
       )}
