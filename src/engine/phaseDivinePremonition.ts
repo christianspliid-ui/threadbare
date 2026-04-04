@@ -22,7 +22,7 @@
  * @see Docs/plans/2026-04-04-divine-premonition-design.md
  */
 
-import type { GameState, TickEvent } from '../types/gameState';
+import type { GameState } from '../types/gameState';
 import type { PremonitionEvent, WhisperNudge, WhisperNudgeCategory } from '../types/premonition';
 import type { ReachDomain } from '../types/traits';
 import type { SphereName } from '../types';
@@ -225,7 +225,6 @@ export function phaseDivinePremonition(
   state: GameState,
   rng: () => number,
 ): Partial<GameState> {
-  const events: TickEvent[] = [];
   const newPremonitions: PremonitionEvent[] = [];
 
   const { graph, ascendantId } = state;
@@ -233,7 +232,7 @@ export function phaseDivinePremonition(
   // Filter to actor nodes only — factions, locations, etc. are threaded but not premonition targets
   const threadedAgents = threadedNodes.filter(n => n.type === 'actor');
 
-  if (threadedAgents.length === 0) return { tickEvents: events };
+  if (threadedAgents.length === 0) return {};
 
   for (const agent of threadedAgents) {
     try {
@@ -325,8 +324,11 @@ export function phaseDivinePremonition(
     p => p.eligibleUntilTick > state.tick,
   );
 
+  // Only return premonitionQueue — do NOT return tickEvents here.
+  // This phase doesn't emit tick events. Returning tickEvents: [] would
+  // overwrite the accumulated events from prior phases when the orchestrator
+  // spreads the result.
   return {
-    tickEvents: events,
     premonitionQueue: [...existingQueue, ...newPremonitions],
   };
 }
