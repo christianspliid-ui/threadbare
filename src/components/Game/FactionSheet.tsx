@@ -3,6 +3,7 @@ import { Modal } from '../shared/Modal';
 import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import type { FactionDefinition, FactionRankTier } from '../../types/faction';
 import { REACH_DOMAINS } from '../../types/traits';
+import { CoatOfArms } from '../icons';
 
 interface FactionSheetProps {
   factionId: string;
@@ -34,7 +35,7 @@ export const FactionSheet = React.memo(function FactionSheet({ factionId, name, 
   return (
     <Modal open={true} onClose={onClose} aria-label={`${name} profile`}>
       <Modal.Header onClose={onClose}>
-        <span style={{ color: definition.themeColor }}>{definition.iconGlyph}</span>{' '}
+        <CoatOfArms definition={definition} size={48} />{' '}
         {name}
       </Modal.Header>
       <Modal.Body>
