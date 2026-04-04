@@ -11,7 +11,8 @@
 
 import { useState, useRef, useCallback, useMemo, memo } from 'react';
 import { Modal } from '../shared/Modal';
-import type { EncounterProgress, EncounterTemplate, ThreatRating } from '../../types/encounter';
+import type { EncounterTemplate, ThreatRating } from '../../types/encounter';
+import type { ActiveEncounterDisplay } from './encounterNotificationRuntime';
 import type { EncounterNotification, EncounterInterventionChoice } from '../../types/encounterVisibility';
 import {
   RETINUE_VIGNETTE_TIMEOUT,
@@ -89,8 +90,8 @@ export interface TieredEncounterModalProps {
   onClose: () => void;
   /** The encounter notification that triggered this modal */
   notification: EncounterNotification;
-  /** Encounter progress from GameState */
-  progress: EncounterProgress;
+  /** Active encounter display state */
+  encounter: ActiveEncounterDisplay;
   /** The encounter template */
   template: EncounterTemplate;
   /** Agent name */
@@ -650,7 +651,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
   open,
   onClose,
   notification,
-  progress,
+  encounter,
   template,
   agentName,
   agentId,
@@ -668,7 +669,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
   const proseContainerRef = useRef<HTMLDivElement>(null);
 
   // Clamp to valid step range
-  const currentIndex = Math.min(progress.currentEncounterIndex, template.steps.length - 1);
+  const currentIndex = Math.min(encounter.currentStepIndex, template.steps.length - 1);
   const [viewIndex, setViewIndex] = useState(currentIndex);
 
   // Step statuses
@@ -722,7 +723,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
     const step = template.steps[viewIndex];
     if (!step) return null;
     // Check if this step was successful based on history
-    const historyEntry = progress.history.find(h => h.encounterId === progress.encounterId);
+    const historyEntry = encounter.history?.find(h => h.encounterId === encounter.encounterId);
     const succeeded = historyEntry?.success ?? true;
     const outcome = succeeded ? step.onSuccess : step.onFailure;
     if (!outcome?.narrative) return null;
@@ -730,7 +731,7 @@ export const TieredEncounterModal = memo(function TieredEncounterModal({
       outcome.narrative, agentName, step.id, template.threatRating,
     );
     return enrichProse(resolved, narrativeCtx);
-  }, [isViewingPast, template.steps, template.threatRating, viewIndex, progress, agentName, narrativeCtx]);
+  }, [isViewingPast, template.steps, template.threatRating, viewIndex, encounter, agentName, narrativeCtx]);
 
   // Choices available for this tier
   const choices = notification.choices;
