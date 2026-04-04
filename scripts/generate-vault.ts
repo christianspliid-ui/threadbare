@@ -225,6 +225,8 @@ interface GenerateVaultOptions {
   dryRun?: boolean;
   validate?: boolean;
   vaultRoot?: string;
+  /** Override where vault files are written (defaults to vaultRoot) */
+  outputRoot?: string;
 }
 
 export async function generateVault(options: GenerateVaultOptions = {}) {
@@ -232,9 +234,12 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
     dryRun = false,
     validate = true,
     vaultRoot = process.cwd(),
+    outputRoot,
   } = options;
 
-  // Load model
+  const writeRoot = outputRoot || vaultRoot;
+
+  // Load model from project root (source of truth)
   const modelPath = path.join(vaultRoot, 'src/data/world-model.json');
   const modelData: WorldModel = JSON.parse(
     fs.readFileSync(modelPath, 'utf-8')
@@ -278,7 +283,7 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
   for (const node of modelData.nodes) {
     const folder = getCategoryFolder(node.category, node.properties);
     const filename = `${node.id}.md`;
-    const notePath = path.join(vaultRoot, folder, filename);
+    const notePath = path.join(writeRoot, folder, filename);
     const content = generateNoteContent(
       node,
       modelData.edges,
@@ -296,6 +301,7 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
   // Summary
   console.log(`\n📋 Vault Generation Plan`);
   console.log(`Validating and generating ${noteCount} notes (Index.md is LLM-maintained)`);
+  console.log(`Output root: ${writeRoot}`);
   console.log(`Total files to write: ${generatedFiles.length}`);
 
   if (dryRun) {
@@ -307,7 +313,7 @@ export async function generateVault(options: GenerateVaultOptions = {}) {
   // Clear owned folders
   console.log('\nCleaning owned folders...');
   for (const folder of OWNED_FOLDERS) {
-    const folderPath = path.join(vaultRoot, folder);
+    const folderPath = path.join(writeRoot, folder);
     if (fs.existsSync(folderPath)) {
       fs.rmSync(folderPath, { recursive: true, force: true });
     }
@@ -333,11 +339,14 @@ if (
   const args = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const validate = !args.includes('--no-validate');
+  const outputIdx = args.indexOf('--output-root');
+  const outputRoot = outputIdx !== -1 ? args[outputIdx + 1] : undefined;
 
   generateVault({
     dryRun,
     validate,
     vaultRoot: process.cwd(),
+    outputRoot,
   }).catch((err) => {
     console.error('Error:', err);
     process.exit(1);
