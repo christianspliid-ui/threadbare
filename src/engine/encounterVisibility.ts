@@ -295,10 +295,13 @@ export function phaseEncounterVisibility(
     threadedAgents.set(edge.target, { threadEdgeId: edge.id, props });
   }
 
-  // Build a set of already-pending notification keys to avoid duplicates
+  // Build a set of already-pending notification keys to avoid duplicates.
+  // For aftermath notifications, include RESOLVED ones too — otherwise a dismissed
+  // aftermath modal regenerates every tick because the resolved key drops out of the
+  // set and the same aftermathSummary action re-qualifies.
   const existingNotifKeys = new Set(
     (state.encounterNotifications ?? [])
-      .filter(n => !n.resolved)
+      .filter(n => !n.resolved || n.kind === 'aftermath')
       .map(n => `${n.kind ?? 'encounter'}:${n.sourceSystem ?? 'legacy_encounter'}:${n.agentId}:${n.encounterId}:${n.actionId ?? 'legacy'}:${n.stepIndex ?? 0}`),
   );
 
