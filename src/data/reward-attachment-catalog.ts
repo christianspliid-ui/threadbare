@@ -105,6 +105,20 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     } as PossessionNodeProperties,
   },
   {
+    id: 'reward_tools_instruments_gate_seal_case',
+    type: 'artifact',
+    name: 'Gate Seal Case',
+    properties: {
+      subcategory: 'tools_instruments',
+      tier: 1,
+      tags: ['#checkpoint', '#order', '#eye', '#gold'],
+      mechanicalSummary: '+0.03 Eye reach, +0.02 Gold reach',
+      reachBonus: { eye: 0.03, gold: 0.02 },
+      lossCondition: 'stealable',
+      flavorText: 'Wax seals, chalk, and a customs stamp wrapped in oilcloth. Boring to everyone except the people who know how power hides in paperwork.',
+    } as PossessionNodeProperties,
+  },
+  {
     id: 'reward_arms_thornwood_staff',
     type: 'artifact',
     name: 'Thornwood Staff',
@@ -816,6 +830,46 @@ export const REWARD_POSSESSIONS: GraphNode[] = [
     } as PossessionNodeProperties,
   },
 
+  // ─── Intelligence (T2 ×2) ───────────────────────────────────────────
+  {
+    id: 'reward_intelligence_shrine_map',
+    type: 'artifact',
+    name: 'Vessen Shrine Map',
+    properties: {
+      subcategory: 'intelligence',
+      tier: 2,
+      tags: ['#shadow', '#intelligence', '#shrine_location', '#rival_god'],
+      mechanicalSummary: '+0.03 Shadow reach',
+      reachBonus: { shadow: 0.03 },
+      lossCondition: 'permanent',
+      flavorText:
+        'Six pages of careful hand — route notes, guardian schedules, a margin sketch ' +
+        'of the approach from the river side. Seventeen years of trade route intelligence ' +
+        'compressed into a map fragment that changes the regional balance of power.',
+      intelligenceType: 'shrine_location',
+      targetRegion: 'vessen_uplands',
+      detailLevel: 'full',
+    } as PossessionNodeProperties,
+  },
+  {
+    id: 'reward_intelligence_trade_route_dossier',
+    type: 'artifact',
+    name: 'Trade Route Dossier',
+    properties: {
+      subcategory: 'intelligence',
+      tier: 2,
+      tags: ['#shadow', '#intelligence', '#trade', '#economic'],
+      mechanicalSummary: '+0.03 Shadow reach, +0.02 Gold reach',
+      reachBonus: { shadow: 0.03, gold: 0.02 },
+      lossCondition: 'stealable',
+      flavorText:
+        'A broker\'s working file — commodity flows, caravan schedules, price spreads ' +
+        'between settlements. The margins are annotated in a cipher that takes patience to read.',
+      intelligenceType: 'trade_network',
+      detailLevel: 'partial',
+    } as PossessionNodeProperties,
+  },
+
   // ─── Provisions (T3 ×1) ─────────────────────────────────────────────
   {
     id: 'reward_provisions_veilwater_flask',
@@ -1123,6 +1177,21 @@ export const REWARD_CONDITIONS: GraphNode[] = [
       flavorText: 'A scar on the palm in the shape of a coin. Wealth slips through your fingers like water.',
     } as TraitDefinitionProperties,
   },
+  {
+    id: 'reward_condition_watch_scrutiny',
+    type: 'trait',
+    name: 'Watch Scrutiny',
+    properties: {
+      subcategory: 'condition',
+      tier: 1,
+      tags: ['#checkpoint', '#curse', '#eye', '#shadow'],
+      description: 'The checkpoint remembers your face. Inspections linger, questions multiply, and every small irregularity now feels one witness away from becoming a problem.',
+      maxLevel: 1,
+      visibility: 'public',
+      domainContributions: { shadow: -0.04, gold: -0.03, heart: -0.02 },
+      flavorText: 'A name in the wrong ledger, a guard who squints too long, a merchant who suddenly decides not to meet your eye.',
+    } as TraitDefinitionProperties,
+  },
 
   // ─── Curses (T3 ×1) ─────────────────────────────────────────────────
   {
@@ -1348,6 +1417,21 @@ export const REWARD_BESTOWED_POWERS: GraphNode[] = [
         },
       ],
       flavorText: 'Someone important has spoken well of you somewhere else. In this world, that often matters more than merit.',
+    } as TraitDefinitionProperties,
+  },
+  {
+    id: 'reward_bestowed_gatehouse_commendation',
+    type: 'trait',
+    name: 'Gatehouse Commendation',
+    properties: {
+      subcategory: 'bestowed',
+      tier: 1,
+      tags: ['#checkpoint', '#order', '#heart', '#eye'],
+      description: 'The watch remembers you as someone who kept a hard line without turning the city against itself.',
+      maxLevel: 1,
+      visibility: 'discoverable',
+      domainContributions: { heart: 0.03, eye: 0.03, iron: 0.02 },
+      flavorText: 'A quiet nod from a captain, a gate waved open half a beat sooner, a ledger mark that says you made the city easier to govern instead of harder.',
     } as TraitDefinitionProperties,
   },
 

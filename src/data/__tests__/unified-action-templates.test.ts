@@ -7,7 +7,8 @@ import {
 } from '../unified-action-templates';
 import { ACTION_TEMPLATES } from '../action-template-content';
 import { ENCOUNTER_TEMPLATES } from '../encounter-content';
-import type { UnifiedActionTemplate } from '../../types/unifiedAction';
+import type { UnifiedActionTemplate, ActionStep } from '../../types/unifiedAction';
+import { isActionStepBranch } from '../../types/unifiedAction';
 
 // ─── Migration helpers ────────────────────────────────────────────
 
@@ -127,8 +128,20 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
   });
 
   it('every step has difficulty in [0, 1]', () => {
-    for (const t of UNIFIED_ACTION_TEMPLATES) {
+    /** Collect all concrete ActionSteps, expanding branch variants. */
+    function concreteSteps(t: UnifiedActionTemplate): ActionStep[] {
+      const result: ActionStep[] = [];
       for (const step of t.steps) {
+        if (isActionStepBranch(step)) {
+          result.push(...Object.values(step.variants), step.fallback);
+        } else {
+          result.push(step);
+        }
+      }
+      return result;
+    }
+    for (const t of UNIFIED_ACTION_TEMPLATES) {
+      for (const step of concreteSteps(t)) {
         expect(step.difficulty).toBeGreaterThanOrEqual(0);
         expect(step.difficulty).toBeLessThanOrEqual(1);
       }
@@ -138,7 +151,13 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
   it('every step has duration.min <= duration.max', () => {
     for (const t of UNIFIED_ACTION_TEMPLATES) {
       for (const step of t.steps) {
-        expect(step.duration.min).toBeLessThanOrEqual(step.duration.max);
+        if (isActionStepBranch(step)) {
+          for (const variant of [...Object.values(step.variants), step.fallback]) {
+            expect(variant.duration.min).toBeLessThanOrEqual(variant.duration.max);
+          }
+        } else {
+          expect(step.duration.min).toBeLessThanOrEqual(step.duration.max);
+        }
       }
     }
   });
@@ -146,7 +165,13 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
   it('every step has duration.min >= 1', () => {
     for (const t of UNIFIED_ACTION_TEMPLATES) {
       for (const step of t.steps) {
-        expect(step.duration.min).toBeGreaterThanOrEqual(1);
+        if (isActionStepBranch(step)) {
+          for (const variant of [...Object.values(step.variants), step.fallback]) {
+            expect(variant.duration.min).toBeGreaterThanOrEqual(1);
+          }
+        } else {
+          expect(step.duration.min).toBeGreaterThanOrEqual(1);
+        }
       }
     }
   });
@@ -157,8 +182,9 @@ describe('UNIFIED_ACTION_TEMPLATES', () => {
   });
 
   it('all encounter templates are present', () => {
-    const encounterCount = UNIFIED_ACTION_TEMPLATES.filter(t => t.id.startsWith('encounter.')).length;
-    expect(encounterCount).toBe(ENCOUNTER_TEMPLATES.length);
+    const encounterIds = new Set(ENCOUNTER_TEMPLATES.map(t => t.id));
+    const presentCount = UNIFIED_ACTION_TEMPLATES.filter(t => encounterIds.has(t.id)).length;
+    expect(presentCount).toBe(ENCOUNTER_TEMPLATES.length);
   });
 
   it('all 8 divine templates are present', () => {
