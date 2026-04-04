@@ -2,6 +2,8 @@ import type { TraceEntry } from './types/trace';
 import type { AgentAttachments } from './engine/agentAttachments';
 import type { RewardHistoryEntry } from './engine/rewardHistory';
 import type { BalanceRunSummary, BalanceTargets, BalanceEvaluationResult } from './types/balanceEval';
+import type { DebugSpawnEncounterResult, DebugSpawnEncounterContextResult, DebugSpawnEncounterOptions, DebugSpawnEncounterContextOptions } from './engine/debugEncounterTools';
+import type { DebugWorldSpawnResult, DebugSpawnLocationOptions, DebugSpawnSublocationOptions, DebugSpawnNpcOptions, DebugMoveAgentOptions, DebugSpawnAttachmentOptions } from './engine/debugWorldSpawnTools';
 
 export interface EncounterLogExportResult {
   allAgentsTsv: string;
@@ -109,6 +111,23 @@ export interface DebugBridge {
   _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => void;
   /** @internal GameView registers encounter spawn / world-spawn callbacks here */
   _registerEncounterBridge: (callbacks: Record<string, (...args: unknown[]) => unknown>) => void;
+
+  // ── Spawn / world-spawn commands ────────────────────────────────────────
+  /** Spawn an encounter on an agent. Opens the encounter modal by default. */
+  spawnEncounter: (agentQuery: string, templateId: string, options?: DebugSpawnEncounterOptions & { open?: boolean }) => DebugSpawnEncounterResult & { notificationId?: string };
+  /** Prepare encounter context (support bundle, anchor location) without spawning. */
+  spawnEncounterContext: (templateId: string, options?: DebugSpawnEncounterContextOptions) => DebugSpawnEncounterContextResult;
+  /** Spawn an attachment (artifact, trait, etc.) on an agent. */
+  spawnAttachment: (agentQuery: string, templateQuery: string, options?: DebugSpawnAttachmentOptions) => DebugWorldSpawnResult;
+  /** Spawn a location at the specified hex coordinates. */
+  spawnLocation: (subtype: string, col: number, row: number, options?: DebugSpawnLocationOptions) => DebugWorldSpawnResult;
+  /** Spawn a sublocation under a location at the specified target. */
+  spawnSublocation: (typeId: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugSpawnSublocationOptions) => DebugWorldSpawnResult;
+  /** Spawn an NPC at the specified target location. */
+  spawnNpc: (role: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugSpawnNpcOptions) => DebugWorldSpawnResult;
+  /** Move an agent to a target location or hex. */
+  moveAgent: (agentQuery: string, target: { locationQuery?: string; col?: number; row?: number }, options?: DebugMoveAgentOptions) => DebugWorldSpawnResult;
+
   getEncounterLogAll: () => Promise<EncounterLogSummary>;
   exportEncounterLogAll: (agentNames?: Record<string, string>, seed?: string) => Promise<EncounterLogExportResult>;
 }

@@ -48,6 +48,36 @@ if (import.meta.env.DEV) {
     _registerRuntimeProvider: (fn: () => import('./engine/simulationRuntime').SimulationRuntime | null) => { _runtimeProvider = fn; },
     /** @internal GameView registers encounter spawn / world-spawn callbacks here */
     _registerEncounterBridge: (cb: Record<string, (...args: unknown[]) => unknown>) => { _encounterBridge = cb; },
+
+    // ── Spawn / world-spawn commands (delegated to encounter bridge) ──────
+    spawnEncounter: (agentQuery: string, templateId: string, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnEncounter as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateId, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnEncounterContext: (templateId: string, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnEncounterContext as ((...a: unknown[]) => unknown) | undefined)?.(templateId, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnAttachment: (agentQuery: string, templateQuery: string, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnAttachment as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, templateQuery, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnLocation: (subtype: string, col: number, row: number, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnLocation as ((...a: unknown[]) => unknown) | undefined)?.(subtype, col, row, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnSublocation: (typeId: string, target: Record<string, unknown>, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnSublocation as ((...a: unknown[]) => unknown) | undefined)?.(typeId, target, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    spawnNpc: (role: string, target: Record<string, unknown>, options?: Record<string, unknown>) =>
+      (_encounterBridge?.spawnNpc as ((...a: unknown[]) => unknown) | undefined)?.(role, target, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
+    moveAgent: (agentQuery: string, target: Record<string, unknown>, options?: Record<string, unknown>) =>
+      (_encounterBridge?.moveAgent as ((...a: unknown[]) => unknown) | undefined)?.(agentQuery, target, options)
+      ?? { success: false, message: 'Encounter bridge not registered' },
+
     /**
      * Inspect the encounter notification pipeline for a threaded agent.
      * Pass an agent name/id fragment to filter, or omit to see all threaded agents.
