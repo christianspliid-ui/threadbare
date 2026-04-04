@@ -2007,6 +2007,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
                   onHexClick={handleHexClickFull}
                   onHexHover={setHoveredHex}
                   onAgentClick={(agentId) => handleThreadNodeSelect(agentId, 'agent')}
+                  onArmyClick={(armyId) => handleThreadNodeSelect(armyId, 'army')}
                 />
 
                 <AvatarHUD

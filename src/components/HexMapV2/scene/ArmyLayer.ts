@@ -337,6 +337,7 @@ export function createArmyLayer(armies: SpriteArmyRenderData[]): ArmyLayerGroup 
     sprite.scale.set(spriteW, spriteH, 1);
     sprite.position.set(wx, wy + ARMY_VERTICAL_OFFSET, LAYER_Z.ARMIES);
     sprite.renderOrder = RENDER_ORDER.ARMIES;
+    sprite.userData = { armyId: army.armyId };
     group.add(sprite);
   }
 

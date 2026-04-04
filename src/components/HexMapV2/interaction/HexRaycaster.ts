@@ -133,3 +133,41 @@ export function pickAgentAtScreen(
 
   return closest?.agentId ?? null;
 }
+
+/**
+ * Distance-based army sprite picking: returns the armyId of the closest army
+ * sprite whose projected screen position is within ARMY_CLICK_RADIUS_PX of
+ * the click, or null if no army is close enough.
+ *
+ * Iterates over `armyGroup.children` (THREE.Sprite objects with `userData.armyId`
+ * set by createArmyLayer). Uses the same screen-projection approach as pickAgentAtScreen.
+ *
+ * NFP #4 (Fail-soft): returns null on any missing ref or malformed userData.
+ */
+const ARMY_CLICK_RADIUS_PX = 24;
+
+export function pickArmyAtScreen(
+  screenX: number,
+  screenY: number,
+  camera: THREE.OrthographicCamera,
+  canvas: HTMLCanvasElement,
+  armyGroup: THREE.Group | null,
+): string | null {
+  if (!armyGroup) return null;
+  let closest: { armyId: string; distPx: number } | null = null;
+
+  for (const child of armyGroup.children) {
+    if (!(child instanceof THREE.Sprite)) continue;
+    const armyId = child.userData?.armyId as string | undefined;
+    if (!armyId) continue;
+    const screen = worldToScreen(child.position, camera, canvas);
+    const dx = screenX - screen.x;
+    const dy = screenY - screen.y;
+    const distPx = Math.sqrt(dx * dx + dy * dy);
+    if (distPx <= ARMY_CLICK_RADIUS_PX && (!closest || distPx < closest.distPx)) {
+      closest = { armyId, distPx };
+    }
+  }
+
+  return closest?.armyId ?? null;
+}
