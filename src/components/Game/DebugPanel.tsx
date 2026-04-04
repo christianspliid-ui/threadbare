@@ -48,6 +48,7 @@ const TABS: { id: ViewMode; label: string }[] = [
   { id: 'webgl', label: 'WebGL' }, { id: 'factions', label: 'Factions' },
   { id: 'spheres', label: 'Sphere State' }, { id: 'revelation-log', label: 'Revelations' },
   { id: 'knowledge-gaps', label: 'Knowledge' }, { id: 'armies', label: 'Armies' },
+  { id: 'cli', label: 'CLI' },
 ];
 
 export const DebugPanel = React.memo(function DebugPanel({
@@ -180,6 +181,7 @@ export const DebugPanel = React.memo(function DebugPanel({
           onToggleOrganicShore={onToggleOrganicShore} encounterNotifications={encounterNotifications}
           pendingVignettes={pendingVignettes} seed={seed} sphereAggregate={sphereAggregate}
           agentKnowledge={agentKnowledge}
+          retinueAgents={retinueAgents}
         />
       </div>
 
