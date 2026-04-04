@@ -1,6 +1,7 @@
 import type { InterventionType, DeliveryMode, LocalEncounterMode } from '../../types/dream';
 import type { SphereName } from '../../types/index';
 import { getSphereColor } from '../../data/sphereIcons';
+import { SphereIcon } from '../icons';
 import { Button } from '../shared/Button';
 
 export interface InterventionConfirmProps {
@@ -85,17 +86,9 @@ export function InterventionConfirm(props: InterventionConfirmProps) {
             borderBottom: `2px solid ${sphereColor}40`,
           }}
         >
-          <span
-            style={{
-              fontSize: '3rem',
-              opacity: 0.35,
-              color: sphereColor,
-              fontFamily: 'var(--font-display)',
-            }}
-            aria-hidden="true"
-          >
-            {/* Sphere glyph as placeholder art — will be replaced by generated image */}
-            ✦
+          <span style={{ opacity: 0.35 }} aria-hidden="true">
+            {/* Sphere SVG icon as placeholder art — will be replaced by generated image */}
+            <SphereIcon sphere={sphere} size={48} />
           </span>
         </div>
 
