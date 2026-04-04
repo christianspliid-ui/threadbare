@@ -479,8 +479,15 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
           const factionId = memberEdges.length > 0 ? memberEdges[0].target : undefined;
           const factionIdx = factionId ? (factionIdxMap.get(factionId) ?? 0) : 0;
           const factionColor = FACTION_HERALDIC_COLORS[Math.max(0, factionIdx) % FACTION_HERALDIC_COLORS.length];
+          // Extract faction definition ID for coat of arms lookup
+          // factionId format: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
+          let factionDefId: string | null = null;
+          if (factionId) {
+            const defMatch = factionId.match(/^faction_def_(.+?)(?:_\d+)?$/);
+            if (defMatch) factionDefId = defMatch[1];
+          }
           armies.push({
-            armyId: node.id, hexCol, hexRow, factionColor,
+            armyId: node.id, hexCol, hexRow, factionColor, factionDefId,
             armySize: armyState.headcount ?? ARMY_SIZE_SMALL_MAX,
             isInBattle: battleState != null,
           });

@@ -66,6 +66,8 @@ export interface ArmyRenderData {
   armySize: number;
   /** If true, army is in an active battle — skip rendering (BattleIndicatorMesh shows instead). */
   isInBattle: boolean;
+  /** Faction definition ID for coat of arms texture lookup (e.g. 'monster_force', 'mercenary_company'). Null if unknown. */
+  factionDefId?: string | null;
 }
 
 // ── Scale helper ─────────────────────────────────────────────────────────────

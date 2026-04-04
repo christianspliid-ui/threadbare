@@ -28,6 +28,7 @@ import { generateCoatOfArmsSvg, buildCoatOfArmsConfig } from '../../icons';
 import { FACTION_DEFINITIONS } from '../../../data/faction-definitions';
 import { MONSTER_FACTION_DEFINITIONS } from '../../../data/monster-faction-definitions';
 import type { FactionDefinition } from '../../../types/faction';
+import type { ArmyRenderData as SpriteArmyRenderData } from './ArmySpriteMesh';
 
 /** Combined lookup of all faction definitions (regular + monster) by ID */
 const ALL_FACTION_DEFS: ReadonlyMap<string, FactionDefinition> = (() => {
@@ -293,18 +294,25 @@ export interface ArmyLayerGroup {
  * @param armies — army render data (use buildArmyRenderData to populate from graph)
  * @returns ArmyLayerGroup ready to be added to the scene
  */
-export function createArmyLayer(armies: ArmyRenderData[]): ArmyLayerGroup {
+export function createArmyLayer(armies: SpriteArmyRenderData[]): ArmyLayerGroup {
   const group = new THREE.Group();
   group.renderOrder = RENDER_ORDER.ARMIES;
 
   const materials: THREE.SpriteMaterial[] = [];
 
   for (const army of armies) {
-    const radius = army.size === 'warband'
+    // Derive size category from headcount
+    const sizeCategory: 'warband' | 'regiment' | 'host' =
+      army.armySize >= 5000 ? 'host'
+      : army.armySize >= 500 ? 'regiment'
+      : 'warband';
+    const radius = sizeCategory === 'warband'
       ? ARMY_DOT_RADIUS_WARBAND
-      : army.size === 'regiment'
+      : sizeCategory === 'regiment'
         ? ARMY_DOT_RADIUS_REGIMENT
         : ARMY_DOT_RADIUS_HOST;
+
+    if (army.isInBattle) continue; // Skip — BattleIndicatorMesh handles these
 
     const { x: wx, y: wy } = hexToWorld(
       { col: army.hexCol, row: army.hexRow },
@@ -313,7 +321,7 @@ export function createArmyLayer(armies: ArmyRenderData[]): ArmyLayerGroup {
 
     // Try coat of arms texture first, fall back to colored circle
     const coaTexture = army.factionDefId ? getCoatOfArmsTexture(army.factionDefId) : null;
-    const texture = coaTexture ?? getArmyTexture(army.factionColor, army.size);
+    const texture = coaTexture ?? getArmyTexture(army.factionColor, sizeCategory);
     const isCoatOfArms = coaTexture != null;
     const mat = new THREE.SpriteMaterial({
       map: texture,

@@ -31,7 +31,7 @@ import type { AgentSpriteGroup } from './scene/AgentSpriteMesh';
 import type { AgentRenderData } from './agents/agentSpriteTypes';
 import { createArmyLayer, preloadCoatOfArmsTextures, ARMY_TEXTURE_SIZE } from './scene/ArmyLayer';
 import type { ArmyLayerGroup } from './scene/ArmyLayer';
-import type { ArmyRenderData } from './scene/ArmyLayer';
+import type { ArmyRenderData } from './scene/ArmySpriteMesh';
 import { createBattleIndicatorLayer, tickBattleIndicators } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorLayerGroup } from './scene/BattleIndicatorLayer';
 import type { BattleIndicatorData } from './scene/BattleIndicatorLayer';
