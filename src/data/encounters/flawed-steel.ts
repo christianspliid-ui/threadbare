@@ -616,6 +616,9 @@ export const FLAWED_STEEL_TEMPLATE: UnifiedActionTemplate = {
 
   supportBundle: SUPPORT_BUNDLE,
 
+  illustrationUrl: '/concept-art/encounters/flawed-steel.jpg',
+  illustrationAlt: 'The interior of a cold forge at dawn — racks of finished blades, an anvil with a demand letter, and the forge-master standing with her back to a bolted coal shed door.',
+
   authoredChoices: {
     0: [
       {

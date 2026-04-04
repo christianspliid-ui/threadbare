@@ -380,8 +380,7 @@ export function EncounterStage({
                     style={{
                       display: 'block',
                       width: '100%',
-                      maxHeight: 280,
-                      objectFit: 'cover',
+                      height: 'auto',
                     }}
                   />
                 </div>

@@ -401,6 +401,18 @@ export interface UnifiedActionTemplate {
   readonly aftermathConfig?: BranchAwareAftermathConfig;
 
   /**
+   * Concept art image URL for the encounter opening scene.
+   * Shown above the scene prose at step 0. Relative to public/ root.
+   * Example: '/concept-art/encounters/flawed-steel.jpg'
+   */
+  readonly illustrationUrl?: string;
+
+  /**
+   * Alt text for the concept art image (accessibility).
+   */
+  readonly illustrationAlt?: string;
+
+  /**
    * Authored choice cards per step. When present, these replace the generic
    * "Tip the scales" / "Let it play out" choices with scene-specific
    * approach cards that have prose bodies, cost justification, and risk text.

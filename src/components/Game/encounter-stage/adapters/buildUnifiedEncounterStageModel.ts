@@ -338,8 +338,20 @@ function buildFalloutPreview(
 export function buildUnifiedEncounterStageModel(
   args: BuildUnifiedEncounterStageModelArgs,
 ): EncounterStageModel {
+  // Show illustration at step 0 only (opening scene), not during aftermath
+  const isAftermath = args.activeAction.resolved;
+  const isOpeningStep = args.activeAction.currentStep === 0;
+  const illustration = !isAftermath && isOpeningStep && args.template.illustrationUrl
+    ? {
+        src: args.template.illustrationUrl,
+        alt: args.template.illustrationAlt ?? `Scene from ${args.template.name}`,
+        caption: 'Some encounters arrive with a remembered image already clinging to them.',
+      }
+    : undefined;
+
   return {
     header: buildHeader(args),
+    illustration,
     scene: buildScene(args),
     narrative: buildNarrative(args),
     cast: buildCast(args),
