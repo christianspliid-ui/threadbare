@@ -17,6 +17,10 @@
 import type { GameState, TickEvent } from '../types/gameState';
 import type { SphereName } from '../types/index';
 import type {
+  AftermathVariant,
+  EncounterAftermathChange,
+  EncounterAftermathReaction,
+  EncounterAftermathSummary,
   UnifiedAction,
   UnifiedActionTemplate,
   StepOutcome,
@@ -28,6 +32,7 @@ import {
   isStepComplete,
   advanceStep,
   sortByPriority,
+  resolveStepDefinition,
 } from './unifiedActionLifecycle';
 import { isStepSuccess, isStepFailure } from '../types/unifiedAction';
 import { computeCapability } from './domainCapability';
@@ -84,6 +89,11 @@ import {
 import { recordReward } from './rewardHistory';
 import { mulberry32 } from '../lib/prng';
 import { buildPredicateContext, collectTestShapers } from './effectResolver';
+import { applyClearanceGateStepOutcome, summarizeClearanceGateUpdates } from './clearanceGate';
+import { getEffectiveUnifiedActionChoiceMemory } from './encounterChoiceMemory';
+import type { EncounterChoiceMemory } from '../types/encounter';
+import type { ClearanceGateRuntimeState, ClearanceGateState } from '../types/contentShells';
+import { getUnifiedTemplateById } from '../data/unified-action-templates';
 
 // ─── Phase 1: Progress ──────────────────────────────────────────
 
@@ -164,7 +174,7 @@ export function resolveUncontestedStep(
   state: GameState,
   rng: () => number,
 ): StepResolutionResult {
-  const step = template.steps[action.currentStep];
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const noPushResist = { pushAttempted: false, pushCost: 0, resistAttempted: false, resistSucceeded: false, resistCost: 0 };
 
   if (!step) {
@@ -200,6 +210,12 @@ export function resolveUncontestedStep(
   // Phase 3: Push — risky actions attempt to spend quintessence for better odds.
   // The actor node must be resolvable and the template must be push-eligible.
   let pushModifier = 0;
+  const rememberedChoice = getEffectiveUnifiedActionChoiceMemory(
+    action,
+    action.currentStep,
+    step.id,
+  );
+  const interventionBoost = rememberedChoice?.probabilityBoost ?? 0;
   let pushEvent: import('../types/quintessence').QuintessenceEvent | null = null;
   if (isPushEligible(action.templateId) && step.difficulty >= 0.3) {
     const actorNode = state.graph.getNode(action.actorId);
@@ -217,7 +233,7 @@ export function resolveUncontestedStep(
     capability,
     difficulty: step.difficulty,
     sphereFactor,
-    actionModifiers: pushModifier,
+    actionModifiers: pushModifier + interventionBoost,
     testShapers,
   };
 
@@ -283,6 +299,186 @@ function hashString(input: string): number {
   return hash;
 }
 
+function titleCaseWords(raw: string): string {
+  return raw
+    .split(/[\s._-]+/)
+    .filter(Boolean)
+    .map(part => part[0] ? part[0].toUpperCase() + part.slice(1) : part)
+    .join(' ');
+}
+
+interface EncounterResolutionSnapshot {
+  actorName: string;
+  reputationScore: number;
+  factionMemberships: ReadonlyMap<string, {
+    factionName: string;
+    reputation: number;
+    role?: string;
+  }>;
+  reputationTallies: Readonly<Record<string, number>>;
+  clearanceGates: ReadonlyMap<string, {
+    state: ClearanceGateState;
+    followOnTags: readonly string[];
+  }>;
+}
+
+function snapshotEncounterResolutionContext(
+  state: GameState,
+  action: UnifiedAction,
+): EncounterResolutionSnapshot {
+  const actorNode = state.graph.getNode(action.actorId);
+  const actorName = actorNode?.name ?? 'Unknown agent';
+  const reputationScore = (actorNode?.properties?.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
+
+  const factionMemberships = new Map<string, {
+    factionName: string;
+    reputation: number;
+    role?: string;
+  }>();
+  for (const edge of state.graph.getOutgoingEdges(action.actorId, 'member_of')) {
+    const factionNode = state.graph.getNode(edge.target);
+    factionMemberships.set(edge.target, {
+      factionName: factionNode?.name ?? edge.target,
+      reputation: (edge.properties?.reputation as number | undefined) ?? 0,
+      role: edge.properties?.role as string | undefined,
+    });
+  }
+
+  const reputationTallies = {
+    ...((actorNode?.properties?.reputationTallies as Record<string, number> | undefined) ?? {}),
+  };
+
+  const clearanceGates = new Map<string, {
+    state: ClearanceGateState;
+    followOnTags: readonly string[];
+  }>();
+  for (const runtimeId of action.clearanceGateIds ?? []) {
+    const gate = state.clearanceGateStates?.get(runtimeId);
+    if (!gate) continue;
+    clearanceGates.set(runtimeId, {
+      state: gate.state,
+      followOnTags: [...gate.followOnTags],
+    });
+  }
+
+  return {
+    actorName,
+    reputationScore,
+    factionMemberships,
+    reputationTallies,
+    clearanceGates,
+  };
+}
+
+function appendAftermathChanges(
+  action: UnifiedAction,
+  newChanges: readonly EncounterAftermathChange[],
+): UnifiedAction {
+  if (newChanges.length === 0) return action;
+  return {
+    ...action,
+    aftermathChanges: [...(action.aftermathChanges ?? []), ...newChanges],
+  };
+}
+
+/**
+ * Resolve branch-aware aftermath variant from template config and choice history.
+ * Returns undefined if the template has no aftermathConfig.
+ */
+function resolveAftermathVariant(
+  template: UnifiedActionTemplate,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+): AftermathVariant | undefined {
+  const config = template.aftermathConfig;
+  if (!config) return undefined;
+
+  const branchChoice = choiceHistory?.find(c => c.stepIndex === config.branchOnStep);
+  if (!branchChoice) return config.fallback;
+
+  return config.variants[branchChoice.choiceId] ?? config.fallback;
+}
+
+function buildEncounterAftermathOverview(
+  actorName: string,
+  templateName: string,
+  outcome: UnifiedAction['outcome'],
+  changes: readonly EncounterAftermathChange[],
+): string {
+  const rewardCount = changes.filter(change => change.kind === 'item').length;
+  const traitCount = changes.filter(change => change.kind === 'trait').length;
+  const growthCount = changes.filter(change => change.kind === 'growth').length;
+  const hookCount = changes.filter(change => change.kind === 'future_hook' || change.kind === 'shell_state').length;
+  const highlightParts: string[] = [];
+  if (traitCount > 0) highlightParts.push(`${traitCount} trait change${traitCount === 1 ? '' : 's'}`);
+  if (rewardCount > 0) highlightParts.push(`${rewardCount} reward${rewardCount === 1 ? '' : 's'}`);
+  if (growthCount > 0) highlightParts.push(`${growthCount} skill shift${growthCount === 1 ? '' : 's'}`);
+  if (hookCount > 0) highlightParts.push(`${hookCount} lasting consequence${hookCount === 1 ? '' : 's'}`);
+  const outcomeText = describeActionOutcome(outcome);
+  if (highlightParts.length === 0) {
+    return `${actorName} ${outcomeText} ${templateName}. The scene moved on quietly, but the world still bent a little around it.`;
+  }
+  return `${actorName} ${outcomeText} ${templateName}. Your nudge left ${highlightParts.join(', ')} behind in the world.`;
+}
+
+function buildEncounterAftermathReactions(
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+): readonly EncounterAftermathReaction[] | undefined {
+  if (template.id !== 'cg.quest.gate_duty') return undefined;
+
+  const gateRuntimeId = action.clearanceGateIds?.[0];
+  return [
+    {
+      id: 'follow_witness_story',
+      label: "Follow the witness's telling",
+      intent: 'Keep one thread of your attention on the mortal version of the night that will travel furthest, so the story leaves the gate carrying your pressure inside it.',
+      closeAfterSelection: true,
+      effects: [
+        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#witness_story_followed' },
+        { kind: 'reputation_tally', key: 'gate_duty.witness_story_followed', delta: 1 },
+        {
+          kind: 'recent_event',
+          eventType: 'ripple_consequence',
+          message: 'You keep a finger on the witness’s version of the night as it begins to spread through the district.',
+          significance: 0.58,
+        },
+      ],
+    },
+    {
+      id: 'mark_captain_for_later',
+      label: 'Keep your eye on the captain',
+      intent: 'Remember exactly how the captain held or lost the line, preserving the moment as leverage, omen, or future favor when the watch comes into your hands again.',
+      closeAfterSelection: true,
+      effects: [
+        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#captain_marked_for_later' },
+        { kind: 'reputation_tally', key: 'gate_duty.captain_marked', delta: 1 },
+        {
+          kind: 'recent_event',
+          eventType: 'narrative',
+          message: 'You do not follow the cargo or the crowd — you follow the captain, and how she wore authority under pressure.',
+          significance: 0.52,
+        },
+      ],
+    },
+    {
+      id: 'let_it_settle',
+      label: 'Let the district carry it',
+      intent: 'Take the lesson, but leave the aftermath in mortal hands. You do not tighten the thread further; you let the district decide what sort of memory it wants to keep.',
+      closeAfterSelection: true,
+      effects: [
+        { kind: 'clearance_gate_tag', runtimeId: gateRuntimeId, tag: '#district_left_to_carry_it' },
+        { kind: 'reputation_tally', key: 'gate_duty.left_to_settle', delta: 1 },
+        {
+          kind: 'recent_event',
+          eventType: 'ripple_consequence',
+          message: 'You leave the gate to the living and let the district carry the taste of the evening without further divine pressure.',
+          significance: 0.48,
+        },
+      ],
+    },
+  ];
+}
+
 function getStepOutcomeMetadata(
   step: UnifiedActionTemplate['steps'][number] | undefined,
   outcome: StepOutcome,
@@ -297,6 +493,14 @@ function applyOutcomeReputationDelta(
   metadata: ActionStepOutcomeMetadata | undefined,
 ): number {
   const delta = metadata?.reputationDelta ?? 0;
+  return applyReputationScoreDelta(state, actorId, delta);
+}
+
+function applyReputationScoreDelta(
+  state: GameState,
+  actorId: string,
+  delta: number,
+): number {
   if (delta === 0) return 0;
 
   const actorNode = state.graph.getNode(actorId);
@@ -305,6 +509,171 @@ function applyOutcomeReputationDelta(
   const current = (actorNode.properties?.reputationScore as number | undefined) ?? DEFAULT_REPUTATION;
   actorNode.properties.reputationScore = Math.max(0, Math.min(1, current + delta));
   return delta;
+}
+
+type GateDutyBranch = 'supportive' | 'coercive' | 'withdrawn';
+
+interface GateDutyBranchConsequence {
+  successTags?: readonly string[];
+  failureTags?: readonly string[];
+  successDelta?: number;
+  failureDelta?: number;
+  successNarrative?: string;
+  failureNarrative?: string;
+  successState?: ClearanceGateState;
+  failureState?: ClearanceGateState;
+}
+
+const GATE_DUTY_BRANCH_CONSEQUENCES: Record<number, Record<GateDutyBranch, GateDutyBranchConsequence>> = {
+  0: {
+    supportive: {
+      successTags: ['#courier_steadied'],
+      failureTags: ['#borrowed_calm_slipped'],
+      successDelta: 0.01,
+      failureDelta: -0.005,
+      successNarrative: 'The courier keeps moving as though held together by borrowed calm.',
+      failureNarrative: 'The borrowed calm slips, and the line notices how close the panic was to breaking loose.',
+    },
+    coercive: {
+      successTags: ['#captain_forced'],
+      failureTags: ['#captain_shoved_too_hard'],
+      successDelta: -0.005,
+      failureDelta: -0.015,
+      successNarrative: 'The captain acts quickly, but the line can taste the shove behind the order.',
+      failureNarrative: 'The captain moves under pressure that no longer feels entirely her own.',
+    },
+    withdrawn: {
+      successTags: ['#witness_primed'],
+      failureTags: ['#witness_claimed_scene'],
+      successDelta: 0,
+      failureDelta: -0.01,
+      successNarrative: 'The witness begins shaping the tale before the watch can settle on its own version.',
+      failureNarrative: 'You preserve your strength, but the story starts leaving the gate without your hand on it.',
+    },
+  },
+  1: {
+    supportive: {
+      successTags: ['#measured_seizure'],
+      failureTags: ['#discipline_turned_strange'],
+      successDelta: 0.02,
+      failureDelta: -0.01,
+      successNarrative: 'The seizure lands as discipline rather than appetite.',
+      failureNarrative: 'The restraint feels strange enough that the crowd mistrusts it anyway.',
+    },
+    coercive: {
+      successTags: ['#public_break'],
+      failureTags: ['#courier_shattered_publicly'],
+      successDelta: -0.02,
+      failureDelta: -0.03,
+      successNarrative: 'The watch gains a harsher legitimacy by stepping through the courier’s public breaking.',
+      failureNarrative: 'The courier’s collapse stains the checkpoint more deeply than the cargo ever could.',
+    },
+    withdrawn: {
+      successTags: ['#crowd_authored'],
+      failureTags: ['#checkpoint_story_escaped'],
+      successDelta: -0.01,
+      failureDelta: -0.02,
+      successNarrative: 'The crowd now owns part of the scene the watch wanted to contain.',
+      failureNarrative: 'The gatehouse loses the right to narrate itself before the seizure is even finished.',
+      successState: 'compromised',
+      failureState: 'compromised',
+    },
+  },
+  2: {
+    supportive: {
+      successTags: ['#watch_trusted', '#mercy_remembered'],
+      failureTags: ['#mercy_failed_to_land'],
+      successDelta: 0.03,
+      failureDelta: -0.01,
+      successNarrative: 'The line leaves remembering restraint.',
+      failureNarrative: 'Mercy arrives too late to keep the checkpoint from feeling wounded.',
+    },
+    coercive: {
+      successTags: ['#watch_feared', '#authority_consecrated'],
+      failureTags: ['#authority_overreached'],
+      successDelta: -0.03,
+      failureDelta: -0.04,
+      successNarrative: 'Order holds, but what remains of the evening tastes of dread.',
+      failureNarrative: 'Authority wins the posture of command and loses the district’s confidence in the same breath.',
+    },
+    withdrawn: {
+      successTags: ['#witness_story_spreads', '#official_story_thins'],
+      failureTags: ['#story_escaped_the_gate'],
+      successDelta: -0.01,
+      failureDelta: -0.02,
+      successNarrative: 'The official account survives, but the witness carries the sharper story beyond the gate.',
+      failureNarrative: 'You keep your distance, and the story slips beyond recall in mortal mouths.',
+    },
+  },
+};
+
+function applyGateDutyBranchConsequences(
+  state: GameState,
+  action: UnifiedAction,
+  template: UnifiedActionTemplate,
+  outcome: StepOutcome,
+): {
+  clearanceGateStates: Map<string, ClearanceGateRuntimeState>;
+  reputationDelta: number;
+  suffix: string;
+} {
+  const nextStates = new Map(state.clearanceGateStates ?? []);
+  if (template.id !== 'cg.quest.gate_duty') {
+    return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
+  }
+
+  const currentStep = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
+  if (!currentStep) {
+    return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
+  }
+
+  const rememberedChoice = getEffectiveUnifiedActionChoiceMemory(
+    action,
+    action.currentStep,
+    currentStep.id,
+  );
+  if (!rememberedChoice) {
+    return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
+  }
+
+  const branch = rememberedChoice.interventionType as GateDutyBranch;
+  const branchConfig = GATE_DUTY_BRANCH_CONSEQUENCES[action.currentStep]?.[branch];
+  if (!branchConfig) {
+    return { clearanceGateStates: nextStates, reputationDelta: 0, suffix: '' };
+  }
+
+  const success = isStepSuccess(outcome);
+  const delta = success ? (branchConfig.successDelta ?? 0) : (branchConfig.failureDelta ?? 0);
+  const appliedDelta = applyReputationScoreDelta(state, action.actorId, delta);
+  const tags = success ? (branchConfig.successTags ?? []) : (branchConfig.failureTags ?? []);
+  const nextState = success ? branchConfig.successState : branchConfig.failureState;
+
+  if ((tags.length > 0 || nextState) && action.clearanceGateIds?.length) {
+    for (const runtimeId of action.clearanceGateIds) {
+      const current = nextStates.get(runtimeId);
+      if (!current) continue;
+      nextStates.set(runtimeId, {
+        ...current,
+        state: nextState ?? current.state,
+        followOnTags: [...new Set([...current.followOnTags, ...tags])],
+      });
+    }
+  }
+
+  const narrative = success ? branchConfig.successNarrative : branchConfig.failureNarrative;
+  return {
+    clearanceGateStates: nextStates,
+    reputationDelta: appliedDelta,
+    suffix: narrative ? ` — ${narrative}` : '',
+  };
+}
+
+function resolveUnifiedTemplate(
+  templates: readonly UnifiedActionTemplate[],
+  templateId: string,
+): UnifiedActionTemplate | undefined {
+  return templates.find((template) => template.id === templateId)
+    ?? getUnifiedTemplateById(templateId);
 }
 
 function summarizeMetadataConsequences(
@@ -461,6 +830,16 @@ export function executeStepResult(
   runtime?: SimulationRuntime,
 ): { updatedAction: UnifiedAction; events: TickEvent[] } {
   const events: TickEvent[] = [];
+  const beforeSnapshot = snapshotEncounterResolutionContext(state, action);
+  const clearanceGateResult = applyClearanceGateStepOutcome(
+    state.clearanceGateStates,
+    action,
+    template,
+    outcome,
+    tick,
+  );
+  state.clearanceGateStates = clearanceGateResult.clearanceGateStates;
+  let clearanceSuffix = summarizeClearanceGateUpdates(clearanceGateResult.updates);
 
   // Execute GraphOps (fail-soft)
   if (ops.length > 0) {
@@ -489,9 +868,22 @@ export function executeStepResult(
   }
 
   // Apply capability growth from step resolution
-  const step = template.steps[action.currentStep];
+  const step = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const stepMetadata = getStepOutcomeMetadata(step, outcome);
-  applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
+  const metadataReputationDelta = applyOutcomeReputationDelta(state, action.actorId, stepMetadata);
+  const branchConsequence = applyGateDutyBranchConsequences(
+    state,
+    action,
+    template,
+    outcome,
+  );
+  state.clearanceGateStates = branchConsequence.clearanceGateStates;
+  clearanceSuffix += branchConsequence.suffix;
+  let promotionTraitGranted: string | undefined;
+  let growthApplied = 0;
+  let growthDomain: string | undefined;
+  let growthTierFrom: number | undefined;
+  let growthTierTo: number | undefined;
   if (step) {
     // Unified action difficulty is 0-1; scale to 0-100 for growth computation
     const difficultyScaled = step.difficulty * 100;
@@ -506,6 +898,10 @@ export function executeStepResult(
       tierPromotionEligible,
       consequence.growthMultiplier, // Phase 3: outcome-differentiated growth (1.5 crit, 0.5 at-cost)
     );
+    growthApplied = growthResult.growthApplied;
+    growthDomain = growthResult.domain;
+    growthTierFrom = growthResult.previousTier;
+    growthTierTo = growthResult.newTier;
 
     // Handle tier promotion if crossed
     if (growthResult.tierCrossed) {
@@ -519,6 +915,7 @@ export function executeStepResult(
       const actorNode = state.graph.getNode(action.actorId);
       const agentName = actorNode?.name ?? 'An agent';
       if (promotion.traitGranted) {
+        promotionTraitGranted = promotion.traitGranted;
         events.push({
           id: `ua_${action.actionId}_promotion`,
           tick,
@@ -539,7 +936,7 @@ export function executeStepResult(
           templateId: action.templateId,
           reach: step.reach,
           growthReach: step.reach,
-          growthDelta: growthResult.delta,
+          growthDelta: growthResult.growthApplied,
           newTier: growthResult.newTier,
         });
       }
@@ -547,8 +944,8 @@ export function executeStepResult(
   }
 
   // Advance step or complete action
-  const updatedAction = advanceStep(action, outcome, template, rng);
-  const rewardName = updatedAction.resolved
+  let finalAction = advanceStep(action, outcome, template, rng);
+  const rewardName = finalAction.resolved
     ? resolveUnifiedReward(action, outcome, stepMetadata, state, tick, runtime)
     : undefined;
 
@@ -556,7 +953,7 @@ export function executeStepResult(
   // faction reputation and reputation-tally progression they already had in
   // the legacy runtime. Non-encounter unified actions naturally no-op here.
   if (isStepSuccess(outcome)) {
-    const encounterCompleted = updatedAction.resolved && isActionSuccess(updatedAction.outcome);
+    const encounterCompleted = finalAction.resolved && isActionSuccess(finalAction.outcome);
     processFactionEncounterReputation(
       state.graph,
       action.actorId,
@@ -573,6 +970,58 @@ export function executeStepResult(
       encounterCompleted,
       tick,
     );
+  }
+
+  const aftermathChanges: EncounterAftermathChange[] = [];
+  const actorName = beforeSnapshot.actorName;
+  if (growthApplied > 0 && growthDomain) {
+    const tierShift = growthTierFrom != null && growthTierTo != null && growthTierTo > growthTierFrom
+      ? ` Tier ${growthTierFrom} -> ${growthTierTo}.`
+      : '';
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:growth:${growthDomain}`,
+      kind: 'growth',
+      title: `${titleCaseWords(growthDomain)} grew`,
+      detail: `${actorName} gained ${growthApplied.toFixed(2)} ${growthDomain} growth.${tierShift}`,
+      polarity: 'gain',
+      actorId: action.actorId,
+      actorName,
+    });
+  }
+  if (promotionTraitGranted) {
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:trait:${promotionTraitGranted}`,
+      kind: 'trait',
+      title: 'A new trait surfaced',
+      detail: `${actorName} gained the trait "${promotionTraitGranted}".`,
+      polarity: 'gain',
+      actorId: action.actorId,
+      actorName,
+    });
+  }
+
+  // Add explicit authored reputation shifts before we collapse to the final snapshot.
+  if (Math.abs(metadataReputationDelta) > 0.0001) {
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:reputation:authored`,
+      kind: 'reputation',
+      title: 'Your standing shifted',
+      detail: `${actorName}'s authored reputation moved by ${metadataReputationDelta > 0 ? '+' : ''}${metadataReputationDelta.toFixed(3)}.`,
+      polarity: metadataReputationDelta > 0 ? 'gain' : 'loss',
+      actorId: action.actorId,
+      actorName,
+    });
+  }
+  if (Math.abs(branchConsequence.reputationDelta) > 0.0001) {
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:reputation:branch`,
+      kind: 'reputation',
+      title: 'The checkpoint judged the intervention',
+      detail: `${actorName}'s standing bent by ${branchConsequence.reputationDelta > 0 ? '+' : ''}${branchConsequence.reputationDelta.toFixed(3)} as the branch consequences landed.`,
+      polarity: branchConsequence.reputationDelta > 0 ? 'gain' : 'loss',
+      actorId: action.actorId,
+      actorName,
+    });
   }
 
   // Emit trace
@@ -630,19 +1079,19 @@ export function executeStepResult(
   }
 
   // Timeline: ACTION_END event when action fully resolves
-  if (updatedAction.resolved) {
+  if (finalAction.resolved) {
     appendEvent(action.actorId, {
       phase: 'ACTION_END',
       tick,
       template: template.name,
-      status: updatedAction.outcome ?? 'unknown',
-      stepResults: updatedAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
+      status: finalAction.outcome ?? 'unknown',
+      stepResults: finalAction.stepOutcomes.map(o => o === 'success' ? 'P' : 'F').join(''),
     });
 
     // Balance telemetry: action_resolved — Phase 3: rich outcome type
     if (runtime) {
-      const actionResult = mapActionOutcomeToBalanceResult(updatedAction.outcome);
-      const actionFinalStatus = isActionSuccess(updatedAction.outcome) ? 'completed' : 'abandoned';
+      const actionResult = mapActionOutcomeToBalanceResult(finalAction.outcome);
+      const actionFinalStatus = isActionSuccess(finalAction.outcome) ? 'completed' : 'abandoned';
       recordBalanceEvent(runtime, {
         tick,
         kind: 'action_resolved',
@@ -657,26 +1106,152 @@ export function executeStepResult(
 
   // Generate tick event
   const actorNode = state.graph.getNode(action.actorId);
-  const actorName = actorNode?.name ?? 'An agent';
+  const currentActorName = actorNode?.name ?? actorName;
+  if (rewardName) {
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:item:${rewardName}`,
+      kind: 'item',
+      title: isStepSuccess(outcome) ? 'A reward changed hands' : 'The scene cost something tangible',
+      detail: isStepSuccess(outcome)
+        ? `${currentActorName} gained ${rewardName}.`
+        : `${currentActorName} came away marked by ${rewardName}.`,
+      polarity: isStepSuccess(outcome) ? 'gain' : 'loss',
+      actorId: action.actorId,
+      actorName: currentActorName,
+    });
+  }
 
-  if (updatedAction.resolved) {
+  const finalSnapshot = snapshotEncounterResolutionContext(state, action);
+  const reputationDelta = finalSnapshot.reputationScore - beforeSnapshot.reputationScore;
+  if (Math.abs(reputationDelta) > 0.0001 && Math.abs(reputationDelta - metadataReputationDelta - branchConsequence.reputationDelta) > 0.0001) {
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:reputation`,
+      kind: 'reputation',
+      title: 'Personal reputation shifted',
+      detail: `${currentActorName}'s standing changed by ${reputationDelta > 0 ? '+' : ''}${reputationDelta.toFixed(3)}.`,
+      polarity: reputationDelta > 0 ? 'gain' : 'loss',
+      actorId: action.actorId,
+      actorName: currentActorName,
+    });
+  }
+
+  for (const [factionId, afterMembership] of finalSnapshot.factionMemberships.entries()) {
+    const beforeMembership = beforeSnapshot.factionMemberships.get(factionId);
+    if (!beforeMembership) continue;
+    const delta = afterMembership.reputation - beforeMembership.reputation;
+    const rankChanged = afterMembership.role !== beforeMembership.role;
+    if (Math.abs(delta) <= 0.0001 && !rankChanged) continue;
+    const rankText = rankChanged
+      ? ` Rank: ${beforeMembership.role ?? 'member'} -> ${afterMembership.role ?? 'member'}.`
+      : '';
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:faction:${factionId}`,
+      kind: 'faction_reputation',
+      title: `${afterMembership.factionName} changed its measure`,
+      detail: `${currentActorName}'s standing with ${afterMembership.factionName} shifted by ${delta > 0 ? '+' : ''}${delta.toFixed(3)}.${rankText}`,
+      polarity: delta > 0 ? 'gain' : delta < 0 ? 'loss' : 'mixed',
+      actorId: action.actorId,
+      actorName: currentActorName,
+    });
+  }
+
+  const tallyKeys = new Set([
+    ...Object.keys(beforeSnapshot.reputationTallies),
+    ...Object.keys(finalSnapshot.reputationTallies),
+  ]);
+  for (const key of tallyKeys) {
+    const beforeValue = beforeSnapshot.reputationTallies[key] ?? 0;
+    const afterValue = finalSnapshot.reputationTallies[key] ?? 0;
+    const delta = afterValue - beforeValue;
+    if (Math.abs(delta) <= 0.0001) continue;
+    aftermathChanges.push({
+      id: `${action.actionId}:step:${action.currentStep}:tally:${key}`,
+      kind: 'reputation_tally',
+      title: 'Reputation memory deepened',
+      detail: `${currentActorName}'s ${key} tally shifted by ${delta > 0 ? '+' : ''}${delta.toFixed(2)}.`,
+      polarity: delta > 0 ? 'gain' : 'loss',
+      actorId: action.actorId,
+      actorName: currentActorName,
+    });
+  }
+
+  for (const [runtimeId, afterGate] of finalSnapshot.clearanceGates.entries()) {
+    const beforeGate = beforeSnapshot.clearanceGates.get(runtimeId);
+    if (!beforeGate) continue;
+    if (afterGate.state !== beforeGate.state) {
+      aftermathChanges.push({
+        id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:state`,
+        kind: 'shell_state',
+        title: 'The checkpoint changed state',
+        detail: `The gate shifted from ${titleCaseWords(beforeGate.state)} to ${titleCaseWords(afterGate.state)}.`,
+        polarity: 'info',
+      });
+    }
+    const newTags = afterGate.followOnTags.filter(tag => !beforeGate.followOnTags.includes(tag));
+    for (const tag of newTags) {
+      aftermathChanges.push({
+        id: `${action.actionId}:step:${action.currentStep}:gate:${runtimeId}:tag:${tag}`,
+        kind: 'future_hook',
+        title: 'A follow-on thread was seeded',
+        detail: `The gate leaves behind ${tag.replace(/^#/, '').replace(/_/g, ' ')}.`,
+        polarity: 'info',
+      });
+    }
+  }
+
+  finalAction = appendAftermathChanges(finalAction, aftermathChanges);
+  if (finalAction.resolved && finalAction.outcome) {
+    const changes = finalAction.aftermathChanges ?? [];
+
+    // Branch-aware aftermath: if the template has an aftermathConfig,
+    // resolve the variant from choice history and use its authored content.
+    const aftermathVariant = resolveAftermathVariant(template, finalAction.choiceHistory);
+
+    const reactions = aftermathVariant?.reactions
+      ?? buildEncounterAftermathReactions(finalAction, template);
+    const finalSummary: EncounterAftermathSummary = {
+      encounterId: action.templateId,
+      outcome: finalAction.outcome,
+      overview: aftermathVariant?.overview ?? buildEncounterAftermathOverview(
+        currentActorName,
+        template.name,
+        finalAction.outcome,
+        changes,
+      ),
+      changes: aftermathVariant
+        ? [...changes, ...aftermathVariant.changes]
+        : changes,
+      reactionPrompt: aftermathVariant?.reactionPrompt
+        ?? (reactions && reactions.length > 0
+          ? 'Choose which consequence thread you keep alive now that the encounter itself is over.'
+          : changes.length > 0
+            ? 'Take stock of what shifted. The encounter is over, but the consequences are now loose in the world.'
+          : undefined),
+      reactions,
+    };
+    finalAction = {
+      ...finalAction,
+      aftermathSummary: finalSummary,
+    };
+  }
+  if (finalAction.resolved) {
     // Phase 3: outcome-differentiated event messages
-    const outcomeMsg = describeActionOutcome(updatedAction.outcome);
-    const baseSignificance = isActionSuccess(updatedAction.outcome) ? 0.6 : 0.4;
+    const outcomeMsg = describeActionOutcome(finalAction.outcome);
+    const baseSignificance = isActionSuccess(finalAction.outcome) ? 0.6 : 0.4;
     // Phase 3: critical_success gets hardcoded 0.8; other tiers get base + consequence boost
-    const significance = updatedAction.outcome === 'critical_success'
+    const significance = finalAction.outcome === 'critical_success'
       ? 0.8
       : baseSignificance + consequence.significanceBoost;
     const metadataSuffix = summarizeMetadataConsequences(
       stepMetadata,
-      isActionSuccess(updatedAction.outcome),
+      isActionSuccess(finalAction.outcome),
       rewardName,
     );
     events.push({
       id: `ua_${action.actionId}_resolved`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${outcomeMsg} ${template.name}${metadataSuffix}.`,
+      message: `${currentActorName} ${outcomeMsg} ${template.name}${metadataSuffix}${clearanceSuffix}.`,
       significance,
       actorId: action.actorId,
     });
@@ -692,13 +1267,13 @@ export function executeStepResult(
       id: `ua_${action.actionId}_step${stepNum}`,
       tick,
       type: 'agent_action_resolved',
-      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}.`,
+      message: `${actorName} ${stepVerb} in ${template.name} (step ${stepNum}/${totalSteps})${metadataSuffix}${clearanceSuffix}.`,
       significance: stepSignificance,
       actorId: action.actorId,
     });
   }
 
-  return { updatedAction, events };
+  return { updatedAction: finalAction, events };
 }
 
 // ─── Phase 3: Push/Resist Template Sets ────────────────────────
@@ -816,8 +1391,8 @@ export function phaseUnifiedActionProgress(
     const defender = actions.find((a) => a.actionId === pair.defenderActionId);
     if (!attacker || !defender) continue;
 
-    const atkTemplate = templates.find((t) => t.id === attacker.templateId);
-    const defTemplate = templates.find((t) => t.id === defender.templateId);
+    const atkTemplate = resolveUnifiedTemplate(templates, attacker.templateId);
+    const defTemplate = resolveUnifiedTemplate(templates, defender.templateId);
     if (!atkTemplate || !defTemplate) continue;
 
     const contestResult = resolveContestationPair(
@@ -896,7 +1471,7 @@ export function phaseUnifiedActionProgress(
 
   // Phase 4-6: Resolve and execute uncontested actions
   for (const completing_action of sorted) {
-    const template = templates.find((t) => t.id === completing_action.templateId);
+    const template = resolveUnifiedTemplate(templates, completing_action.templateId);
     if (!template) continue; // fail-soft: skip unknown template
 
     // Resolve step

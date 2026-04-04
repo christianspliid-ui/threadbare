@@ -61,7 +61,8 @@ export type NpcRole =
   | 'trader'
   | 'guard_captain'
   | 'elder'
-  | 'smith';
+  | 'smith'
+  | 'broker';
 
 export const NPC_ROLES: ReadonlyArray<NpcRole> = [
   'innkeeper',
@@ -100,6 +101,7 @@ export const NPC_ROLES: ReadonlyArray<NpcRole> = [
   'guard_captain',
   'elder',
   'smith',
+  'broker',
 ];
 
 // ---------------------------------------------------------------------------
@@ -125,7 +127,10 @@ export const LOCATION_ROLE_ROSTERS: LocationRoleRosters = {
   town: [
     { role: 'innkeeper', chance: 1.0 },
     { role: 'merchant', chance: 1.0 },
+    { role: 'guard', chance: 1.0 },
     { role: 'guard_captain', chance: 1.0 },
+    { role: 'trader', chance: 0.8 },
+    { role: 'lookout', chance: 0.35 },
     { role: 'smith', chance: 0.9 },
     { role: 'healer', chance: 0.8 },
     { role: 'priest', chance: 0.7 },
@@ -133,7 +138,10 @@ export const LOCATION_ROLE_ROSTERS: LocationRoleRosters = {
   city: [
     { role: 'innkeeper', chance: 1.0 },
     { role: 'merchant', chance: 1.0 },
+    { role: 'guard', chance: 1.0 },
     { role: 'guard_captain', chance: 1.0 },
+    { role: 'trader', chance: 0.9 },
+    { role: 'lookout', chance: 0.45 },
     { role: 'smith', chance: 1.0 },
     { role: 'healer', chance: 1.0 },
     { role: 'priest', chance: 1.0 },
@@ -141,6 +149,22 @@ export const LOCATION_ROLE_ROSTERS: LocationRoleRosters = {
     { role: 'noble', chance: 0.7 },
     { role: 'entertainer', chance: 0.7 },
     { role: 'spy', chance: 0.6 },
+  ],
+  capital: [
+    { role: 'innkeeper', chance: 1.0 },
+    { role: 'merchant', chance: 1.0 },
+    { role: 'guard', chance: 1.0 },
+    { role: 'guard_captain', chance: 1.0 },
+    { role: 'trader', chance: 0.9 },
+    { role: 'lookout', chance: 0.45 },
+    { role: 'smith', chance: 1.0 },
+    { role: 'healer', chance: 1.0 },
+    { role: 'priest', chance: 1.0 },
+    { role: 'scholar', chance: 0.9 },
+    { role: 'noble', chance: 0.9 },
+    { role: 'entertainer', chance: 0.8 },
+    { role: 'spy', chance: 0.7 },
+    { role: 'herald', chance: 0.6 },
   ],
   temple: [
     { role: 'priest', chance: 1.0 },
@@ -236,9 +260,11 @@ export const NPC_ROLE_SUBLOCATION_MAP: Partial<Record<NpcRole, string>> = {
   priest:       'sublocation-type.temple-quarter',
   acolyte:      'sublocation-type.temple-quarter',
   pilgrim:      'sublocation-type.temple-quarter',
-  // Military — barracks
-  guard:        'sublocation-type.barracks',
-  guard_captain:'sublocation-type.barracks',
+  // Gate/watch duty — gatehouse
+  guard:        'sublocation-type.gatehouse',
+  guard_captain:'sublocation-type.gatehouse',
+  lookout:      'sublocation-type.gatehouse',
+  // Military command — barracks
   commander:    'sublocation-type.barracks',
   quartermaster:'sublocation-type.barracks',
   scout:        'sublocation-type.barracks',

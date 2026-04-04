@@ -7,6 +7,9 @@ import type { GraphOp } from './graphOp';
 import type { TargetCategory } from './targetContext';
 import type { ControlSpec } from './controlEffect';
 import type { RarityTier } from './rarity';
+import type { RewardPoolRecipe } from './attachments';
+import type { EncounterChoiceMemory, EncounterSupportBinding, EncounterSupportBundle } from './encounter';
+import type { ClearanceGateConfig } from './contentShells';
 
 export type ActionScale = 'cosmic' | 'regional' | 'local' | 'personal';
 export type ActionSource = 'agent' | 'player' | 'system';
@@ -28,6 +31,84 @@ export function createDefaultHexRevelation(): HexRevelation {
 }
 export type StepFailBehavior = 'fail_action' | 'continue_weakened';
 
+/**
+ * Compatibility payload carried forward from legacy encounter authoring.
+ * Phase 5 uses this to preserve reward cadence and promotion hooks while
+ * the runtime moves fully onto unified actions.
+ */
+export interface ActionStepOutcomeMetadata {
+  readonly rewardPool?: RewardPoolRecipe;
+  readonly tierPromotionEligible?: boolean;
+  readonly reputationDelta?: number;
+}
+
+export type EncounterAftermathChangeKind =
+  | 'growth'
+  | 'trait'
+  | 'item'
+  | 'reputation'
+  | 'faction_reputation'
+  | 'reputation_tally'
+  | 'shell_state'
+  | 'future_hook';
+
+export type EncounterAftermathChangePolarity = 'gain' | 'loss' | 'mixed' | 'info';
+
+export interface EncounterAftermathChange {
+  readonly id: string;
+  readonly kind: EncounterAftermathChangeKind;
+  readonly title: string;
+  readonly detail: string;
+  readonly polarity: EncounterAftermathChangePolarity;
+  readonly actorId?: string;
+  readonly actorName?: string;
+}
+
+export type EncounterAftermathReactionEffect =
+  | {
+    readonly kind: 'reputation_score';
+    readonly actorId?: string;
+    readonly delta: number;
+  }
+  | {
+    readonly kind: 'reputation_tally';
+    readonly actorId?: string;
+    readonly key: string;
+    readonly delta: number;
+  }
+  | {
+    readonly kind: 'clearance_gate_tag';
+    readonly runtimeId?: string;
+    readonly tag: string;
+  }
+  | {
+    readonly kind: 'recent_event';
+    readonly eventType?: 'narrative' | 'ripple_consequence';
+    readonly message: string;
+    readonly significance?: number;
+  };
+
+export interface EncounterAftermathReaction {
+  readonly id: string;
+  readonly label: string;
+  readonly intent?: string;
+  readonly effects: readonly EncounterAftermathReactionEffect[];
+  readonly closeAfterSelection?: boolean;
+}
+
+export interface EncounterAftermathSummary {
+  readonly encounterId: string;
+  readonly outcome: UnifiedActionOutcome;
+  readonly overview: string;
+  readonly changes: readonly EncounterAftermathChange[];
+  /**
+   * Reserved for future "react to what you learned" follow-up options.
+   * Gate Duty does not use them yet, but the ending model can.
+   */
+  readonly reactionPrompt?: string;
+  readonly reactions?: readonly EncounterAftermathReaction[];
+}
+
 export interface ActionStep {
   readonly reach: ReachDomain;
   readonly duration: { readonly min: number; readonly max: number };
@@ -36,6 +117,54 @@ export interface ActionStep {
   readonly onFailure: readonly GraphOp[];
   readonly failBehavior: StepFailBehavior;
   readonly narrativeTemplate?: string;
+  readonly successMetadata?: ActionStepOutcomeMetadata;
+  readonly failureMetadata?: ActionStepOutcomeMetadata;
+}
+
+// ─── Branching step support ────────────────────────────────────
+
+/**
+ * A branching step definition — the step to execute depends on
+ * which choice the player made at a prior step.
+ * Discriminated from ActionStep by the presence of `branchOnStep`.
+ */
+export interface ActionStepBranch {
+  /** Step index (0-based) whose choiceId determines the variant. */
+  readonly branchOnStep: number;
+  /** Map from choiceId → step definition. */
+  readonly variants: Readonly<Record<string, ActionStep>>;
+  /** Fallback step if the choice was not recorded (e.g., disregarded). */
+  readonly fallback: ActionStep;
+}
+
+/**
+ * A step in a template is either a concrete ActionStep or a branch point.
+ */
+export type ActionStepOrBranch = ActionStep | ActionStepBranch;
+
+/** Type guard: distinguish branching steps from concrete steps. */
+export function isActionStepBranch(step: ActionStepOrBranch): step is ActionStepBranch {
+  return 'branchOnStep' in step;
+}
+
+/**
+ * Branch-aware aftermath — different summaries per choice path.
+ * Resolved at aftermath assembly time by inspecting choice history.
+ */
+export interface BranchAwareAftermathConfig {
+  /** Step index (0-based) whose choiceId determines the aftermath variant. */
+  readonly branchOnStep: number;
+  /** Map from choiceId → aftermath definition. */
+  readonly variants: Readonly<Record<string, AftermathVariant>>;
+  /** Fallback aftermath if choice was not recorded. */
+  readonly fallback: AftermathVariant;
+}
+
+export interface AftermathVariant {
+  readonly overview: string;
+  readonly changes: readonly EncounterAftermathChange[];
+  readonly reactionPrompt?: string;
+  readonly reactions?: readonly EncounterAftermathReaction[];
 }
 
 export interface UnifiedActionTemplate {
@@ -51,7 +180,7 @@ export interface UnifiedActionTemplate {
   readonly scale: ActionScale;
 
   // Steps (1 = simple, 2+ = encounter-like)
-  readonly steps: readonly ActionStep[];
+  readonly steps: readonly ActionStepOrBranch[];
 
   // Costs
   readonly apCost: number; // typically 1
@@ -156,6 +285,13 @@ export interface UnifiedActionTemplate {
     readonly success: string;
     readonly failure: string;
   };
+
+  /** Encounter-network support that should be resolved at action start. */
+  readonly supportBundle?: EncounterSupportBundle;
+  /** Optional scrutiny/proof shell configs migrated from encounter packets. */
+  readonly clearanceGates?: readonly ClearanceGateConfig[];
+  /** Branch-aware aftermath config. If present, overrides default aftermath assembly. */
+  readonly aftermathConfig?: BranchAwareAftermathConfig;
 }
 
 // Scale priority for tick resolution ordering (lower = resolves first)
@@ -220,4 +356,16 @@ export interface UnifiedAction {
   readonly outcome?: UnifiedActionOutcome;
   readonly completedAtTick?: number; // tick when resolved became true (set by orchestrator cleanup)
   readonly stepOutcomes: readonly StepOutcome[]; // per-step results
+  /** Remembered player-facing encounter interventions keyed by step. */
+  readonly choiceHistory?: readonly EncounterChoiceMemory[];
+  /** Player has chosen to stop interfering; remaining beats resolve on mortal terms. */
+  readonly disregardRemaining?: boolean;
+  /** Reuse-first binding of encounter support cast/places resolved at action start. */
+  readonly supportBindings?: readonly EncounterSupportBinding[];
+  /** Persistent clearance/scrutiny shell instances bound at action start. */
+  readonly clearanceGateIds?: readonly string[];
+  /** Accumulated world-facing deltas across resolved steps, used to build the final aftermath summary. */
+  readonly aftermathChanges?: readonly EncounterAftermathChange[];
+  /** World-facing summary of what changed because this encounter resolved. */
+  readonly aftermathSummary?: EncounterAftermathSummary;
 }

@@ -13,10 +13,12 @@ import type {
   UnifiedAction,
   UnifiedActionOutcome,
   UnifiedActionTemplate,
+  ActionStep,
   StepOutcome,
   ActionScale,
 } from '../types/unifiedAction';
-import { SCALE_PRIORITY, isStepSuccess, isStepFailure } from '../types/unifiedAction';
+import type { EncounterSupportBinding, EncounterChoiceMemory } from '../types/encounter';
+import { SCALE_PRIORITY, isStepSuccess, isStepFailure, isActionStepBranch } from '../types/unifiedAction';
 
 // ─── Counter for deterministic IDs ──────────────────────────────
 
@@ -25,6 +27,30 @@ let actionCounter = 0;
 /** Reset counter for testing. */
 export function resetUnifiedActionCounter(): void {
   actionCounter = 0;
+}
+
+// ─── Step Resolution ───────────────────────────────────────────
+
+/**
+ * Resolve a step definition from a template, handling branch points.
+ * If the step at `stepIndex` is a branch, looks up the choice made at
+ * the branch's `branchOnStep` in the choice history and returns the
+ * matching variant (or fallback).
+ * If it's a plain ActionStep, returns it directly.
+ */
+export function resolveStepDefinition(
+  template: UnifiedActionTemplate,
+  stepIndex: number,
+  choiceHistory?: readonly EncounterChoiceMemory[],
+): ActionStep {
+  const step = template.steps[stepIndex];
+  if (!isActionStepBranch(step)) return step;
+
+  // Find the choice at the branch point step
+  const branchChoice = choiceHistory?.find(c => c.stepIndex === step.branchOnStep);
+  if (!branchChoice) return step.fallback;
+
+  return step.variants[branchChoice.choiceId] ?? step.fallback;
 }
 
 // ─── Creation ───────────────────────────────────────────────────
@@ -39,6 +65,8 @@ export interface CreateUnifiedActionParams {
   readonly template: UnifiedActionTemplate;
   readonly rng: () => number;
   readonly essencePaid?: number;
+  readonly supportBindings?: readonly EncounterSupportBinding[];
+  readonly clearanceGateIds?: readonly string[];
 }
 
 /**
@@ -46,8 +74,11 @@ export interface CreateUnifiedActionParams {
  * Computes initial stepDuration from the first step's duration range using rng.
  */
 export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedAction {
-  const { actorId, templateId, targetId, scale, source, tick, template, rng, essencePaid } = params;
-  const firstStep = template.steps[0];
+  const {
+    actorId, templateId, targetId, scale, source, tick, template, rng,
+    essencePaid, supportBindings, clearanceGateIds,
+  } = params;
+  const firstStep = resolveStepDefinition(template, 0);
   const stepDuration = computeStepDuration(firstStep.duration, rng);
 
   return {
@@ -64,6 +95,8 @@ export function createUnifiedAction(params: CreateUnifiedActionParams): UnifiedA
     essencePaid,
     resolved: false,
     stepOutcomes: [],
+    supportBindings,
+    clearanceGateIds,
   };
 }
 
@@ -111,7 +144,7 @@ export function advanceStep(
   template: UnifiedActionTemplate,
   rng: () => number,
 ): UnifiedAction {
-  const currentStepDef = template.steps[action.currentStep];
+  const currentStepDef = resolveStepDefinition(template, action.currentStep, action.choiceHistory);
   const newStepOutcomes = [...action.stepOutcomes, outcome];
 
   // Hard failure with fail_action → entire action fails
@@ -142,7 +175,7 @@ export function advanceStep(
   }
 
   // Advance to next step
-  const nextStep = template.steps[nextStepIndex];
+  const nextStep = resolveStepDefinition(template, nextStepIndex, action.choiceHistory);
   const nextDuration = computeStepDuration(nextStep.duration, rng);
 
   return {
@@ -212,15 +245,16 @@ export function sortByPriority(
 
 /**
  * Compute step duration from a range using the provided RNG.
- * Always returns at least 1 (minimum 1 tick rule).
+ * Zero-duration beats are allowed so an encounter step can resolve on the next tick
+ * without waiting extra in-world time.
  */
 function computeStepDuration(
   range: { readonly min: number; readonly max: number },
   rng: () => number,
 ): number {
   const { min, max } = range;
-  if (min === max) return Math.max(1, min);
-  return Math.max(1, min + Math.floor(rng() * (max - min + 1)));
+  if (min === max) return Math.max(0, min);
+  return Math.max(0, min + Math.floor(rng() * (max - min + 1)));
 }
 
 /**
