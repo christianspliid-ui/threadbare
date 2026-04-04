@@ -461,10 +461,12 @@ export function phaseAgentDecision(
         if (compulsionCandidate) {
           decision.selected = compulsionCandidate;
         }
-        // Clear the compulsion target
-        graph.updateNode(agentId, {
-          properties: { ...actor.properties, compulsionTargetTemplateId: undefined, compulsionTick: undefined },
-        });
+        // Clear the compulsion target — direct property write, not spread.
+        const freshForClear = graph.getNode(agentId);
+        if (freshForClear) {
+          freshForClear.properties.compulsionTargetTemplateId = undefined;
+          freshForClear.properties.compulsionTick = undefined;
+        }
       }
 
       if (decision.selected) {
@@ -557,18 +559,18 @@ export function phaseAgentDecision(
                 [sel.entry.templateId]: (existingFamiliarity.attemptCount[sel.entry.templateId] ?? 0) + 1,
               },
             };
-            // Reset idle counter on any non-idle decision.
-            // Also reset whisperAvailable — non-generic encounters consume the Whisper.
-            // Generic encounters (questPriority <= 1.0) do NOT reset the flag.
-            const isGenericEncounter = (sel.entry.questPriority ?? 1.0) <= 1.0;
+            // Reset idle counter on any non-idle decision
             graph.updateNode(agentId, {
-              properties: {
-                ...actor.properties,
-                familiarityRecord: updatedFamiliarity,
-                consecutiveIdleTicks: 0,
-                ...(isGenericEncounter ? {} : { whisperAvailable: false }),
-              },
+              properties: { ...actor.properties, familiarityRecord: updatedFamiliarity, consecutiveIdleTicks: 0 },
             });
+            // Reset whisperAvailable — non-generic encounters consume the Whisper.
+            // Generic encounters (questPriority <= 1.0) do NOT reset the flag.
+            // Direct property write to avoid stale-snapshot issues.
+            const isGenericEncounter = (sel.entry.questPriority ?? 1.0) <= 1.0;
+            if (!isGenericEncounter) {
+              const freshAfterCommit = graph.getNode(agentId);
+              if (freshAfterCommit) freshAfterCommit.properties.whisperAvailable = false;
+            }
 
             const prefix = sel.action === 'attempt_remote' ? 'remotely begins' : 'begins';
             newEvents.push({
@@ -670,11 +672,13 @@ export function phaseAgentDecision(
           }
         }
       } else {
-        // Agent is idle — mark whisperAvailable for next Whisper phase
-        if (!(actor.properties?.whisperAvailable as boolean | undefined)) {
-          graph.updateNode(agentId, {
-            properties: { ...actor.properties, whisperAvailable: true },
-          });
+        // Agent is idle — mark whisperAvailable for next Whisper phase.
+        // Direct property write — do NOT spread actor.properties (stale snapshot).
+        {
+          const freshNode = graph.getNode(agentId);
+          if (freshNode && !(freshNode.properties?.whisperAvailable as boolean | undefined)) {
+            freshNode.properties.whisperAvailable = true;
+          }
         }
 
         // Idle behavior — determine reason for idling
