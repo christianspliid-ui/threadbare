@@ -106,6 +106,8 @@ export function useAvatarData({
 
   // Debug panel state
   const [debugPanelOpen, setDebugPanelOpen] = useState(false);
+  const [debugPanelPreferredViewMode, setDebugPanelPreferredViewMode] = useState<string | undefined>(undefined);
+  const [debugPanelPreferredViewNonce, setDebugPanelPreferredViewNonce] = useState(0);
 
   const handleToggleDebug = useCallback((forceOpen?: boolean) => {
     setDebugPanelOpen(prev => {
@@ -125,10 +127,16 @@ export function useAvatarData({
     }
   }, [handleToggleDebug]);
 
-  // Backtick keyboard shortcut for debug panel
+  // Keyboard shortcuts: backtick toggles debug panel, F1 opens directly to CLI tab
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === '`') handleToggleDebug();
+      if (e.key === 'F1') {
+        e.preventDefault();
+        setDebugPanelPreferredViewMode('cli');
+        setDebugPanelPreferredViewNonce(n => n + 1);
+        handleToggleDebug(true);
+      }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
@@ -143,6 +151,8 @@ export function useAvatarData({
     avatarRoute,
     avatarTargetHex,
     debugPanelOpen,
+    debugPanelPreferredViewMode,
+    debugPanelPreferredViewNonce,
     handleToggleDebug,
   };
 }

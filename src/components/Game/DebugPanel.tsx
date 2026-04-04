@@ -39,6 +39,8 @@ export interface DebugPanelProps {
   seed?: number;
   sphereAggregate?: SphereAggregate;
   agentKnowledge?: Map<string, AgentKnowledge>;
+  preferredViewMode?: string;
+  preferredViewNonce?: number;
 }
 
 const TABS: { id: ViewMode; label: string }[] = [
@@ -56,7 +58,7 @@ export const DebugPanel = React.memo(function DebugPanel({
   onToggleBonds, onToggleDecisionVectors, cacheEntries, encounterProgress,
   onZoomToLocation, getWebGLDiagnostics, getZoomLevel, showOrganicShore = true,
   onToggleOrganicShore, encounterNotifications, pendingVignettes, seed,
-  sphereAggregate, agentKnowledge,
+  sphereAggregate, agentKnowledge, preferredViewMode, preferredViewNonce,
 }: DebugPanelProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('feed');
   const [enabledCategories, setEnabledCategories] = useState<Set<TraceCategory>>(new Set(TRACE_CATEGORIES));
@@ -68,6 +70,13 @@ export const DebugPanel = React.memo(function DebugPanel({
   const [showDecisionVectors, setShowDecisionVectors] = useState(false);
   const [overrideAgentId, setOverrideAgentId] = useState<string | null>(null);
   const effectiveAgentId = overrideAgentId ?? followAgentId;
+
+  // Switch to preferred view mode when requested (e.g., F1 → CLI tab)
+  useEffect(() => {
+    if (preferredViewMode && preferredViewNonce) {
+      setViewMode(preferredViewMode as ViewMode);
+    }
+  }, [preferredViewNonce, preferredViewMode]);
 
   // FE-17: Auto-switch to agent-follow only when followAgentId itself changes
   const prevFollowAgentId = useRef(followAgentId);
