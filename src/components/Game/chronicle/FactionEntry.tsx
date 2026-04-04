@@ -1,10 +1,14 @@
 import { memo } from 'react';
+import type { FactionDefinition } from '../../../types/faction';
+import { CoatOfArms } from '../../icons';
 
 interface FactionEntryProps {
   name: string;
   guildType?: string;  // e.g. 'artisans', 'miners', 'traders', 'merchants', 'bankers'
   locationName: string;
   onClick: () => void;
+  /** Optional faction definition — when provided, renders a CoatOfArms instead of the default hex glyph */
+  factionDef?: FactionDefinition;
 }
 
 const GUILD_TYPE_LABELS: Record<string, string> = {
@@ -20,6 +24,7 @@ export const FactionEntry = memo(function FactionEntry({
   guildType,
   locationName,
   onClick,
+  factionDef,
 }: FactionEntryProps) {
   const typeLabel = guildType ? (GUILD_TYPE_LABELS[guildType] ?? 'Guild') : 'Faction';
 
@@ -47,16 +52,20 @@ export const FactionEntry = memo(function FactionEntry({
       onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.backgroundColor = 'var(--bg-surface)'; }}
     >
       {/* Guild/faction icon marker */}
-      <span
-        style={{
-          fontSize: '0.7rem',
-          color: 'var(--accent-gold)',
-          flexShrink: 0,
-          opacity: 0.8,
-        }}
-      >
-        ⬡
-      </span>
+      {factionDef ? (
+        <CoatOfArms definition={factionDef} size={24} />
+      ) : (
+        <span
+          style={{
+            fontSize: '0.7rem',
+            color: 'var(--accent-gold)',
+            flexShrink: 0,
+            opacity: 0.8,
+          }}
+        >
+          ⬡
+        </span>
+      )}
       <div style={{ minWidth: 0, flex: 1 }}>
         <span
           style={{

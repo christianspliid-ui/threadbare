@@ -6,6 +6,7 @@ import type { HexRegionData } from '../../engine/hexRegion';
 import type { WorldGraph } from '../../engine/graph';
 import type { GraphNode } from '../../types/graph';
 import { getSphereColor } from '../../data/sphereIcons';
+import { FACTION_DEFINITIONS } from '../../data/faction-definitions';
 import { LocationCard, SoulCard, AgentEntry, FactionEntry, SubLocationEntry, EventBlock, ExplorationHook } from './chronicle';
 import { historicalCultureResolver, regionEtymologyResolver, geographicRegionResolver } from '../../engine/proseResolvers';
 import { generateEntityProse } from '../../engine/proseGenerator';
@@ -843,12 +844,16 @@ export const HexChronicle = memo(function HexChronicle({
             {allFactions.map(faction => {
               const locName = locationNameById[faction.locationId] ?? faction.locationId;
               const guildType = (faction.properties as any)?.guildType as string | undefined;
+              // Extract defId from factionId: "faction_def_{defId}" or "faction_def_{defId}_{suffix}"
+              const defMatch = faction.id.match(/^faction_def_(.+?)(?:_\d+)?$/);
+              const factionDef = defMatch ? FACTION_DEFINITIONS.get(defMatch[1]) : undefined;
               return (
                 <FactionEntry
                   key={faction.id}
                   name={faction.name}
                   guildType={guildType}
                   locationName={locName}
+                  factionDef={factionDef}
                   onClick={() => onFactionClick ? onFactionClick(faction.id) : onAgentClick(faction.id)}
                 />
               );
