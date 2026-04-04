@@ -3,19 +3,29 @@ import type { DoomClockState, DoomClockDefinition } from '../../types/doomClock'
 import { ProgressBar } from '../shared/ProgressBar';
 import { Tooltip } from '../shared/Tooltip';
 import { DOOM_ARCHETYPE_COLORS } from '../../data/uiColorPalette';
+import { SphereIcon } from '../icons';
+import type { SphereName } from '../../types/index';
 
 interface DoomBarProps {
   definition: DoomClockDefinition;
   state: DoomClockState;
 }
 
+/**
+ * Archetypes that map cleanly to a sphere symbol.
+ * Archetypes without a sphere equivalent fall back to Unicode glyphs.
+ */
+const DOOM_ARCHETYPE_SPHERE: Record<string, SphereName> = {
+  breach: 'order',       // ◈ → order (systematic breakdown of structure)
+  convergence: 'matter', // ⬡ → matter (crystalline lattice convergence)
+  changing: 'life',      // ∿ → life (organic, shifting)
+  ascension: 'force',    // ✦ → force (directional impact / ascent)
+};
+
+/** Fallback Unicode glyphs for archetypes without a sphere mapping */
 const DOOM_ARCHETYPE_GLYPHS: Record<string, string> = {
-  breach: '◈',
-  convergence: '⬡',
-  changing: '∿',
   sundering: '⚡',
   failing: '◇',
-  ascension: '✦',
   reckoning: '⚔',
 };
 
@@ -25,7 +35,8 @@ export function DoomBar({ definition, state }: DoomBarProps) {
   // currentStage is 1-5, so index into stages array with currentStage - 1
   const currentStageDef = definition.stages[state.currentStage - 1] ?? definition.stages[0];
   const stageName = currentStageDef?.name ?? 'Unknown';
-  const glyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
+  const archetypeSphere = DOOM_ARCHETYPE_SPHERE[definition.archetype];
+  const fallbackGlyph = DOOM_ARCHETYPE_GLYPHS[definition.archetype] ?? '◈';
 
   // Track doom progress and trigger pulse on increase
   const prevProgressRef = useRef(state.progress);
@@ -58,7 +69,10 @@ export function DoomBar({ definition, state }: DoomBarProps) {
       <div className="min-w-0" style={{ minWidth: '140px' }}>
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center gap-1.5">
-            <span style={{ fontSize: 'var(--text-sm)', color, fontWeight: 700 }}>{glyph}</span>
+            {archetypeSphere
+              ? <SphereIcon sphere={archetypeSphere} size={14} />
+              : <span style={{ fontSize: 'var(--text-sm)', color, fontWeight: 700 }}>{fallbackGlyph}</span>
+            }
             <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)' }}>
               {stageName}
             </span>

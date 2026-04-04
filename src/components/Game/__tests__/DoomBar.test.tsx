@@ -28,10 +28,11 @@ describe('DoomBar', () => {
     tickModifier: 1.0,
   };
 
-  it('renders archetype glyph', () => {
-    render(<DoomBar definition={mockDefinition} state={mockState} />);
-    // DoomBar now shows a glyph (◈ for breach) instead of the archetype text
-    expect(screen.getByText('◈')).toBeInTheDocument();
+  it('renders archetype icon (SVG sphere icon for breach)', () => {
+    const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
+    // breach maps to 'order' sphere — renders an SVG icon
+    const svg = container.querySelector('svg');
+    expect(svg).toBeTruthy();
   });
 
   it('renders current stage name (without Stage N: prefix)', () => {
@@ -50,10 +51,13 @@ describe('DoomBar', () => {
     expect(screen.getByText('UNMADE')).toBeInTheDocument();
   });
 
-  it('applies correct archetype color to glyph', () => {
-    render(<DoomBar definition={mockDefinition} state={mockState} />);
-    const glyphSpan = screen.getByText('◈');
-    expect(glyphSpan).toHaveStyle({ color: '#dc2626' });
+  it('renders SVG sphere icon for breach (not Unicode glyph)', () => {
+    // breach maps to 'order' sphere — the SVG stroke color uses the order sphere color (#fbbf24)
+    const { container } = render(<DoomBar definition={mockDefinition} state={mockState} />);
+    const svg = container.querySelector('svg');
+    expect(svg).toBeTruthy();
+    // No raw Unicode glyph should appear for breach
+    expect(container.textContent).not.toContain('◈');
   });
 
   it('renders correct stage name at different progress levels', () => {
