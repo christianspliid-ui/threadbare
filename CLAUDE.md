@@ -217,6 +217,16 @@ When modifying Obsidian vault notes:
 - **In the document:** Dated inline note near the change (date, what, why — one line).
 - **In the changelog:** Append to `Docs/changelog.md` (format: `| date | where | what changed | why |`).
 
+## Debugging Protocol: Verify the Noun Before the Verb
+
+When debugging "system X doesn't produce output for entity Y":
+
+1. **Verify entity identity first.** Inspect the actual `actorId`, `templateId`, `locationId`, or `actionId` in state before modifying the producing system. Use the CLI (`eval state.unifiedActions[...]`) or debug bridge to confirm the entity is what you think it is.
+2. **Check alias resolution.** If you used `@hero`, a partial name, or any fuzzy match, confirm what it resolved to. Debug spawn commands now print resolution notes — read them.
+3. **Only then trace the system.** Once you've confirmed the input data is correct, trace why the system didn't process it.
+
+This protocol exists because: a bug where `@hero` resolved to the wrong actor was misdiagnosed as a visibility system bug, resulting in two correct-but-non-causal fixes before the real cause (identity mismatch) was found. The wasted work was avoidable with a single `eval` command.
+
 ## Definition of Done
 
 Work is not "done" until it is deployed and documented. Do all of these automatically — do not ask, do not stop at "ready to push?", just do it.
