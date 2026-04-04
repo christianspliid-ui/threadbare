@@ -47,7 +47,7 @@ npm run cli                          # default seed 42, medium map
 npm run cli -- --seed 99 --map small # custom seed + map size
 ```
 
-Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
+Key commands at the `fws>` prompt: `tick [N]` (advance ticks), `run [N]` (auto-run at N ticks/sec), `pause`, `status` (game overview), `agents`, `agent <name>` (inspect one), `events [N]`, `doom`, `mandate`, `essence`, `encounters [agent]`, `spawn encounter <agent|@hero> <encounterId> [--courtPosition X]`, `spawn encounter-context <encounterId> [--agent <agent|@hero>] [--at <location|actor>] [--hex <col> <row>]`, `spawn attachment <agent|@hero> <templateId|name> [--tick N]`, `spawn location <subtype> --hex <col> <row> [--name "..."]`, `spawn sublocation <typeId> (--at <location|actor|@hero> | --hex <col> <row>)`, `spawn npc <role> (--at <location|actor|@hero> | --hex <col> <row>) [--name "..."] [--faction <factionDefId>]`, `move agent <agent|@hero> (--to <location|actor> | --hex <col> <row>)`, `factions`, `traces [N]`, `graph` (node counts), `eval <expr>` (JS with `state` in scope). Type `help` for the full list.
 
 **When to use the CLI:**
 - After modifying tick phases or orchestrator logic — run `tick 30` and check `status` + `events`
@@ -61,6 +61,10 @@ Dev-only API exposed on `window.__DEBUG` (tree-shaken in prod). Use from `previe
 
 ```javascript
 // Debug panel control (opens panel + enables tracing automatically):
+// Keyboard shortcuts in-game:
+// - `F1` opens the Debug Panel directly to the CLI tab
+// - backtick (`) toggles the Debug Panel normally
+// The in-game CLI also supports pasted multi-line batches (one command per line).
 window.__DEBUG.openDebugPanel()
 window.__DEBUG.closeDebugPanel()
 window.__DEBUG.toggleDebugPanel()
@@ -252,6 +256,7 @@ Context for specific problem types lives in on-demand skills. **Always load `sta
 | Prose — resolver architecture | `prose-pipeline` | Implementing new resolvers, modifying the prose pipeline, understanding graph-walking prose generation. Includes Threadbare aesthetic and authoring checklist. |
 | Prose — content authoring | `prose-content-systems` | Adding encounter templates, narrative event prose, faction content, spell flavor, content tables. High-volume daily work. |
 | Prose — dynamic systems | `prose-vignettes-and-enrichment` | Enrichment placeholders `{name}/{artifact}/{ally}`, vignette authoring, backstory strata, encounter history → prose. |
+| Encounter authoring pipeline | `encounter-pipeline` | Automated 4-pass encounter authoring: draft → editorial → systems audit → final merge. Run with `/encounter-pipeline <scale> <premise>`. |
 | Content systems & worldbuilding | `content-worldbuilding` | Content packages, graph data, constraint layers, world-model.json |
 | Hex map — architecture | `hexmap-core` | Always before any HexMapV2 work. Coordinates, zoom, render layers, camera, Three.js color, performance, lessons learned. |
 | Hex map — features | `hexmap-layers` | Building/modifying/testing/debugging signifiers, agents, fog, labels, click handlers, trails. Load alongside `hexmap-core`. |
