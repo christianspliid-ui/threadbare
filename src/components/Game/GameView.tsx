@@ -5,7 +5,7 @@ import { resumeTheme } from '../../audio/themeAudio';
 import type { ScryState } from '../../types/scry';
 import { createScryState } from '../../engine/scry';
 import { useSimulation } from './hooks/useSimulation';
-import type { EncounterProgress, EncounterTemplate } from '../../types/encounter';
+import type { EncounterTemplate } from '../../types/encounter';
 import { getEncountersForLocation, getAnyEncounterById } from '../../data/encounter-content';
 import { SUBTYPE_SUBLOCATION_MAP } from '../../engine/sublocation';
 import { useHexZoomData } from './hooks/useHexZoomData';
@@ -83,6 +83,16 @@ import { SettingsPanel } from './SettingsPanel';
 import { TieredEncounterModal, courtPositionToThreadTier } from './TieredEncounterModal';
 import { MeetingEncounterModal } from './MeetingEncounterModal';
 import { JourneyVignetteModal } from './JourneyVignetteModal';
+import { EncounterStage } from './encounter-stage/EncounterStage';
+import { buildGateDutyEncounterStageModel } from './encounter-stage/adapters/buildGateDutyEncounterStageModel';
+import { buildUnifiedEncounterStageModel } from './encounter-stage/adapters/buildUnifiedEncounterStageModel';
+import {
+  buildActiveEncounterDisplayFromLegacyProgress,
+  buildActiveEncounterDisplayFromUnifiedAction,
+  type ActiveEncounterDisplay,
+  selectEncounterRuntimeForDisplay,
+  selectEncounterRuntimeForNotification,
+} from './encounterNotificationRuntime';
 import type { MeetingEncounterState, MeetingEncounterResult } from '../../types/meetingEncounter';
 import type { JourneyVignetteData, PendingVignette } from '../../types/journeyEngine';
 import { applyBeatChoice } from '../../engine/journeyEngine';
@@ -103,6 +113,24 @@ import { createUnifiedAction } from '../../engine/unifiedActionLifecycle';
 import { mulberry32 } from '../../lib/prng';
 import { DIVINE_INFLUENCE_CONSTANTS } from '../../data/intervention-feedback-content';
 import { WorldSoulIndicator } from '../WorldSoulIndicator';
+import { prepareDebugEncounterContext, prepareDebugEncounterSpawn } from '../../engine/debugEncounterTools';
+import {
+  moveDebugAgent,
+  spawnDebugAttachment,
+  spawnDebugLocationAtHex,
+  spawnDebugNpc,
+  spawnDebugSublocation,
+} from '../../engine/debugWorldSpawnTools';
+import type { UnifiedAction } from '../../types/unifiedAction';
+import type { ClearanceGateRuntimeState } from '../../types/contentShells';
+import { touchStructure } from '../../engine/simulationRuntime';
+import { applyEncounterAftermathReaction } from '../../engine/encounterAftermath';
+import {
+  markEncounterProgressDisregarded,
+  markUnifiedActionDisregarded,
+  recordEncounterChoiceMemory,
+  recordUnifiedActionChoiceMemory,
+} from '../../engine/encounterChoiceMemory';
 
 interface GameViewProps {
   archetype: AscendantArchetype;
@@ -144,11 +172,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     sphereColor,
     locationOverlays,
     avatarPixelPos,
-    avatarRoute,
-    avatarTargetHex,
-    debugPanelOpen,
-    handleToggleDebug,
-  } = useAvatarData({
+      avatarRoute,
+      avatarTargetHex,
+      debugPanelOpen,
+      debugPanelPreferredViewMode,
+      debugPanelPreferredViewNonce,
+      handleToggleDebug,
+    } = useAvatarData({
     graph: gameState.graph,
     ascendantId: gameState.ascendantId,
     archetype,
@@ -506,6 +536,8 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     setMode: setNotifMode,
     resetToDefaults: resetNotifPrefs,
   } = useNotificationPreferences();
+  const [interruptSuppressedUntilTick, setInterruptSuppressedUntilTick] = useState<number | null>(null);
+  const interruptsSuppressed = interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick;
 
   // ── Notification navigation hook ──
   const handleNotificationNavigate = useNotificationNavigation({
@@ -532,38 +564,140 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     running,
     setRunning,
     visibilityMap: effectiveVisibilityMap,
+    suspendChoicePopups: interruptSuppressedUntilTick !== null && gameState.tick < interruptSuppressedUntilTick,
     preferences: notificationPrefs,
   });
 
   // ── Tiered encounter modal (TB-055) ──
   const [tieredEncounterState, setTieredEncounterState] = useState<{
     notification: EncounterNotification;
-    progress: EncounterProgress;
+    encounter: ActiveEncounterDisplay;
     template: EncounterTemplate;
     agentId: string;
     agentName: string;
     threadTier: ReturnType<typeof courtPositionToThreadTier>;
+    openedAsInterrupt?: boolean;
+    activeActionId?: string;
+    clearanceGateRuntimeId?: string;
+    activeActionSnapshot?: UnifiedAction;
+    clearanceGateStateSnapshot?: ClearanceGateRuntimeState;
   } | null>(null);
+
+  // ── Encounter stage routing: gate duty keeps its specialized adapter,
+  // other qualifying unified encounters use the general adapter ──
+  const isGateDutyEncounterStage = tieredEncounterState?.template.id === 'cg.quest.gate_duty'
+    && tieredEncounterState.threadTier !== 'watched';
+
+  // Check if the current encounter qualifies for the general unified encounter stage
+  const unifiedTemplateForStage = useMemo(() => {
+    if (!tieredEncounterState || isGateDutyEncounterStage) return null;
+    if (tieredEncounterState.threadTier === 'watched') return null;
+    const ut = getUnifiedTemplateById(tieredEncounterState.template.id);
+    if (!ut) return null;
+    // Qualify if the template has support bundle, branching steps, or aftermath config
+    const hasSupportBundle = !!ut.supportBundle && ut.supportBundle.length > 0;
+    const hasBranching = ut.steps.some(step => 'branchOnStep' in step);
+    const hasAftermath = !!ut.aftermathConfig;
+    return (hasSupportBundle || hasBranching || hasAftermath) ? ut : null;
+  }, [tieredEncounterState, isGateDutyEncounterStage]);
+
+  const shouldUseEncounterStage = isGateDutyEncounterStage || !!unifiedTemplateForStage;
+
+  const encounterStageActiveAction = useMemo(() => {
+    if (!shouldUseEncounterStage || !tieredEncounterState) return null;
+    if (tieredEncounterState.activeActionId) {
+      const byId = gameState.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId);
+      if (byId) return byId;
+    }
+    const byAgentAndTemplate = gameState.unifiedActions.find(action =>
+      !action.resolved
+      && action.actorId === tieredEncounterState.agentId
+      && action.templateId === tieredEncounterState.template.id,
+    );
+    return byAgentAndTemplate ?? tieredEncounterState.activeActionSnapshot ?? null;
+  }, [gameState.unifiedActions, shouldUseEncounterStage, tieredEncounterState]);
+
+  const gateDutyClearanceGateState = useMemo(() => {
+    const runtimeId = tieredEncounterState?.clearanceGateRuntimeId ?? encounterStageActiveAction?.clearanceGateIds?.[0];
+    if (!runtimeId) return tieredEncounterState?.clearanceGateStateSnapshot;
+    return gameState.clearanceGateStates?.get(runtimeId) ?? tieredEncounterState?.clearanceGateStateSnapshot;
+  }, [gameState.clearanceGateStates, encounterStageActiveAction, tieredEncounterState]);
+
+  const encounterStageModel = useMemo(() => {
+    if (!shouldUseEncounterStage || !tieredEncounterState) return null;
+
+    // Gate duty uses its specialized adapter
+    if (isGateDutyEncounterStage) {
+      return buildGateDutyEncounterStageModel({
+        template: tieredEncounterState.template,
+        encounter: tieredEncounterState.encounter,
+        notification: tieredEncounterState.notification,
+        agentName: tieredEncounterState.agentName,
+        threadTier: tieredEncounterState.threadTier,
+        graph: gameState.graph,
+        activeAction: encounterStageActiveAction ?? undefined,
+        clearanceGateState: gateDutyClearanceGateState,
+        essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      });
+    }
+
+    // General unified encounters use the new adapter
+    if (unifiedTemplateForStage && encounterStageActiveAction) {
+      return buildUnifiedEncounterStageModel({
+        template: unifiedTemplateForStage,
+        activeAction: encounterStageActiveAction,
+        notification: tieredEncounterState.notification,
+        agentName: tieredEncounterState.agentName,
+        threadTier: tieredEncounterState.threadTier,
+        graph: gameState.graph,
+        essence: SPHERE_NAMES.reduce((sum, s) => sum + gameState.essencePool[s], 0),
+      });
+    }
+
+    return null;
+  }, [
+    gameState.graph,
+    gameState.essencePool,
+    encounterStageActiveAction,
+    gateDutyClearanceGateState,
+    isGateDutyEncounterStage,
+    unifiedTemplateForStage,
+    shouldUseEncounterStage,
+    tieredEncounterState,
+  ]);
 
   // ── Encounter notification surfacing (TB-040 / TB-055) ──
   /** Open the tiered encounter modal from a notification (toast click or auto-interrupt) */
   const handleOpenEncounterFromNotification = useCallback((notif: EncounterNotification) => {
-    const progress = gameState.encounterProgress.find(
-      p => p.actorId === notif.agentId && p.encounterId === notif.encounterId && p.status === 'active',
-    );
-    if (!progress) return;
     const template = getAnyEncounterById(notif.encounterId);
     if (!template) return;
+    const { encounter, activeAction } = selectEncounterRuntimeForNotification(
+      notif,
+      gameState.encounterProgress,
+      gameState.unifiedActions,
+      gameState.tick,
+    );
+    if (!encounter) return;
+    if (notif.stepIndex !== undefined && notif.stepIndex !== encounter.currentStepIndex) return;
     const threadTier = courtPositionToThreadTier(notif.courtPosition);
+    const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
+    const clearanceGateStateSnapshot = clearanceGateRuntimeId
+      ? gameState.clearanceGateStates?.get(clearanceGateRuntimeId)
+      : undefined;
     setTieredEncounterState({
       notification: notif,
-      progress,
+      encounter,
       template,
       agentId: notif.agentId,
       agentName: notif.agentName,
       threadTier,
+      openedAsInterrupt: true,
+      activeActionId: activeAction?.actionId,
+      clearanceGateRuntimeId,
+      activeActionSnapshot: activeAction,
+      clearanceGateStateSnapshot,
     });
-  }, [gameState.encounterProgress]);
+  }, [gameState.clearanceGateStates, gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   const encounterToasts = useEncounterNotifications({
     encounterNotifications: gameState.encounterNotifications,
@@ -671,17 +805,31 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
     const sublocationTypeIds = (SUBTYPE_SUBLOCATION_MAP[subtype] ?? []).map(d => d.id);
     const available = subtype ? getEncountersForLocation(subtype, sublocationTypeIds) : [];
 
-    // Get active encounters whose actor is at this location
-    const active = gameState.encounterProgress.filter(p => {
-      if (p.status !== 'active') return false;
-      const actorEdges = gameState.graph.getAllEdgesForNode(p.actorId);
-      return actorEdges.some(
-        e => e.type === 'located_at' && e.target === focusedLocation.id
-      );
-    });
+    // Get active encounters whose actor is at this location.
+    // Unified actions are the primary display model; legacy progress only fills gaps.
+    const activeByActor = new Map<string, ActiveEncounterDisplay>();
+    const actorAtFocusedLocation = (actorId: string) => {
+      const actorEdges = gameState.graph.getAllEdgesForNode(actorId);
+      return actorEdges.some(e => e.type === 'located_at' && e.target === focusedLocation.id);
+    };
+
+    for (const progress of gameState.encounterProgress) {
+      if (progress.status !== 'active') continue;
+      if (!actorAtFocusedLocation(progress.actorId)) continue;
+      activeByActor.set(progress.actorId, buildActiveEncounterDisplayFromLegacyProgress(progress));
+    }
+
+    for (const action of gameState.unifiedActions) {
+      if (action.resolved) continue;
+      if (!getAnyEncounterById(action.templateId)) continue;
+      if (!actorAtFocusedLocation(action.actorId)) continue;
+      activeByActor.set(action.actorId, buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick));
+    }
+
+    const active = Array.from(activeByActor.values());
 
     return { available, active };
-  }, [focusedLocation, viewLevel, gameState.encounterProgress, gameState.graph]);
+  }, [focusedLocation, viewLevel, gameState.encounterProgress, gameState.graph, gameState.tick, gameState.unifiedActions]);
 
   // RC-002: Extracted to avoid inline arrow in render
   const getAgentName = useCallback(
@@ -877,6 +1025,129 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // ^ Runs once — live deps accessed via _actionStateRef; setGameState is a stable dispatcher
 
+  useEffect(() => {
+    if (!import.meta.env.DEV || !window.__DEBUG) return;
+    window.__DEBUG._registerEncounterBridge({
+      spawnEncounter: (agentId: string, templateId: string, options) => {
+        const prepared = prepareDebugEncounterSpawn(_gameStateRef.current, agentId, templateId, options);
+        if (!prepared.success || !prepared.template || !prepared.notification || !prepared.agent) {
+          return {
+            success: false,
+            message: prepared.message,
+          };
+        }
+
+        const shouldOpen = options?.open ?? true;
+        const notificationForState = {
+          ...prepared.notification,
+          viewed: shouldOpen,
+        };
+
+        setGameState(prev => ({
+          ...prev,
+          unifiedActions: prepared.unifiedAction
+            ? [...(prev.unifiedActions ?? []), prepared.unifiedAction]
+            : prev.unifiedActions,
+          encounterProgress: prepared.encounterProgress
+            ? [...prev.encounterProgress, prepared.encounterProgress]
+            : prev.encounterProgress,
+          clearanceGateStates: prepared.clearanceGateStates ?? prev.clearanceGateStates,
+          encounterNotifications: [...(prev.encounterNotifications ?? []), notificationForState],
+        }));
+
+        if (shouldOpen) {
+          const clearanceGateRuntimeId = prepared.unifiedAction?.clearanceGateIds?.[0];
+          const encounter = prepared.unifiedAction
+            ? buildActiveEncounterDisplayFromUnifiedAction(prepared.unifiedAction, _gameStateRef.current.tick)
+            : prepared.encounterProgress
+              ? buildActiveEncounterDisplayFromLegacyProgress(prepared.encounterProgress)
+              : null;
+          if (!encounter) {
+            return {
+              success: false,
+              message: 'Encounter prepared but no modal runtime could be built.',
+            };
+          }
+          setTieredEncounterState({
+            notification: notificationForState,
+            encounter,
+            template: prepared.template,
+            agentId: prepared.agent.id,
+            agentName: prepared.agent.name,
+            threadTier: courtPositionToThreadTier(notificationForState.courtPosition),
+            activeActionId: prepared.unifiedAction?.actionId,
+            clearanceGateRuntimeId,
+            activeActionSnapshot: prepared.unifiedAction,
+            clearanceGateStateSnapshot: clearanceGateRuntimeId
+              ? prepared.clearanceGateStates?.get(clearanceGateRuntimeId)
+              : undefined,
+          });
+        }
+
+        return {
+          success: true,
+          templateId: prepared.template.id,
+          templateName: prepared.template.name,
+          mode: prepared.mode,
+          actionId: prepared.unifiedAction?.actionId,
+          notificationId: notificationForState.id,
+          message: shouldOpen
+            ? `${prepared.message} and opened it`
+            : prepared.message,
+        };
+      },
+      spawnEncounterContext: (templateId, options) => {
+        const result = prepareDebugEncounterContext(_gameStateRef.current, templateId, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph, clearanceGateStates: prev.clearanceGateStates }));
+        }
+        return result;
+      },
+      spawnAttachment: (agentQuery, templateQuery, options) => {
+        const result = spawnDebugAttachment(_gameStateRef.current, agentQuery, templateQuery, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      spawnLocation: (subtype, col, row, options) => {
+        const result = spawnDebugLocationAtHex(_gameStateRef.current, subtype, col, row, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      spawnSublocation: (sublocationTypeId, anchor, options) => {
+        const result = spawnDebugSublocation(_gameStateRef.current, sublocationTypeId, anchor, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      spawnNpc: (role, anchor, options) => {
+        const result = spawnDebugNpc(_gameStateRef.current, role, anchor, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+      moveAgent: (agentQuery, anchor, options) => {
+        const result = moveDebugAgent(_gameStateRef.current, agentQuery, anchor, options);
+        if (result.success) {
+          touchStructure(runtime);
+          setGameState(prev => ({ ...prev, graph: prev.graph }));
+        }
+        return result;
+      },
+    });
+  }, [runtime, setGameState]); // eslint-disable-line react-hooks/exhaustive-deps
+  // ^ Runs effectively once; live game state is read through _gameStateRef and UI setters are stable.
+
   // ── Debug bridge: getRarityInfo / forceGraduate ──────────────────────────
   // Reuses _gotoAgentGraphRef which is already kept up-to-date with the live graph.
   useEffect(() => {
@@ -893,82 +1164,288 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const retinueActiveEncounters = useMemo(() => {
-    const map = new Map<string, { progress: EncounterProgress; template: EncounterTemplate }>();
+    const map = new Map<string, { encounter: ActiveEncounterDisplay; template: EncounterTemplate }>();
     for (const p of gameState.encounterProgress) {
       if (p.status !== 'active') continue;
       const tmpl = getAnyEncounterById(p.encounterId);
-      if (tmpl) map.set(p.actorId, { progress: p, template: tmpl });
+      if (tmpl) {
+        map.set(p.actorId, {
+          encounter: buildActiveEncounterDisplayFromLegacyProgress(p),
+          template: tmpl,
+        });
+      }
+    }
+    for (const action of gameState.unifiedActions) {
+      if (action.resolved) continue;
+      const tmpl = getAnyEncounterById(action.templateId);
+      if (!tmpl) continue;
+      map.set(action.actorId, {
+        encounter: buildActiveEncounterDisplayFromUnifiedAction(action, gameState.tick),
+        template: tmpl,
+      });
     }
     return map;
-  }, [gameState.encounterProgress]);
+  }, [gameState.encounterProgress, gameState.tick, gameState.unifiedActions]);
 
   /** Open the tiered encounter modal from RetinuePanel or EncounterLog click */
   const handleEncounterClick = useCallback((
     agentId: string,
-    progress: EncounterProgress,
+    encounter: ActiveEncounterDisplay,
     template: EncounterTemplate,
   ) => {
-    // Look up the notification for this encounter to get court position + choices
+    // Resolve live runtime first so the modal opens from unified state when available.
+    const { encounter: runtimeEncounter, activeAction } = selectEncounterRuntimeForDisplay(
+      encounter,
+      gameState.encounterProgress,
+      gameState.unifiedActions,
+      gameState.tick,
+    );
+    if (!runtimeEncounter) return;
     const notif = (gameState.encounterNotifications ?? []).find(
-      n => n.agentId === agentId && n.encounterId === progress.encounterId && !n.resolved,
+      n => n.agentId === agentId
+        && n.encounterId === encounter.encounterId
+        && (
+          n.kind === 'aftermath'
+            ? Boolean(runtimeEncounter.aftermathSummary)
+            : (n.stepIndex ?? runtimeEncounter.currentStepIndex) === runtimeEncounter.currentStepIndex
+        )
+        && !n.resolved,
     );
     // Build a synthetic notification if none exists (e.g., for non-threaded agents)
     const notification: EncounterNotification = notif ?? {
-      id: `synthetic-${agentId}-${progress.encounterId}`,
+      id: `synthetic-${agentId}-${encounter.encounterId}`,
       agentId,
       agentName: gameState.graph.getNode(agentId)?.name ?? 'Unknown',
       courtPosition: null,
-      encounterId: progress.encounterId,
+      encounterId: encounter.encounterId,
+      kind: runtimeEncounter.aftermathSummary ? 'aftermath' : 'step',
+      stepIndex: runtimeEncounter.aftermathSummary ? undefined : runtimeEncounter.currentStepIndex,
       encounterName: template.name,
-      prose: template.steps[progress.currentEncounterIndex]?.narrative ?? '',
+      prose: runtimeEncounter.aftermathSummary
+        ? runtimeEncounter.aftermathSummary.overview
+        : template.steps[runtimeEncounter.currentStepIndex]?.narrative ?? '',
       choices: [],
-      createdTick: progress.startedTick,
+      createdTick: runtimeEncounter.startedTick,
       autoResolveTick: null,
       viewed: true,
       resolved: false,
+      sourceSystem: runtimeEncounter.sourceSystem,
+      actionId: runtimeEncounter.actionId ?? activeAction?.actionId,
     };
     const threadTier = courtPositionToThreadTier(notification.courtPosition);
+    const clearanceGateRuntimeId = activeAction?.clearanceGateIds?.[0];
+    const clearanceGateStateSnapshot = clearanceGateRuntimeId
+      ? gameState.clearanceGateStates?.get(clearanceGateRuntimeId)
+      : undefined;
     setTieredEncounterState({
       notification,
-      progress,
+      encounter: runtimeEncounter,
       template,
       agentId,
       agentName: notification.agentName,
       threadTier,
+      openedAsInterrupt: false,
+      activeActionId: activeAction?.actionId,
+      clearanceGateRuntimeId,
+      activeActionSnapshot: activeAction,
+      clearanceGateStateSnapshot,
     });
-  }, [gameState.graph, gameState.encounterNotifications]);
+  }, [gameState.clearanceGateStates, gameState.encounterNotifications, gameState.encounterProgress, gameState.graph, gameState.tick, gameState.unifiedActions]);
 
-  const handleEncounterClose = useCallback(() => {
+  const resumeAfterEncounterCommit = useRef<boolean>(false);
+  const suppressedEncounterNotificationId = useRef<string | null>(null);
+
+  const closeEncounterModalAndResume = useCallback((openedAsInterrupt?: boolean) => {
+    resumeAfterEncounterCommit.current = false;
     setTieredEncounterState(null);
-    if (wasRunningBeforeEncounterPause.current) {
+    if (wasRunningBeforeEncounterPause.current || openedAsInterrupt) {
       wasRunningBeforeEncounterPause.current = false;
       setRunning(true);
     }
   }, [setRunning]);
 
+  const handleEncounterDisregard = useCallback(() => {
+    if (tieredEncounterState?.notification?.id) {
+      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+      setGameState(prev => {
+        const unifiedActions = (prev.unifiedActions ?? []).map(action => {
+          const matchesActiveAction =
+            (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
+            || (
+              !tieredEncounterState.activeActionId
+              && !action.resolved
+              && action.actorId === tieredEncounterState.agentId
+              && action.templateId === tieredEncounterState.notification.encounterId
+            );
+          if (!matchesActiveAction) return action;
+          const step = tieredEncounterState.template.steps[action.currentStep];
+          return markUnifiedActionDisregarded(
+            action,
+            action.currentStep,
+            step?.id ?? `step-${action.currentStep + 1}`,
+            prev.tick,
+          );
+        });
+
+        const encounterProgress = tieredEncounterState.encounter.sourceSystem === 'legacy_encounter'
+          ? prev.encounterProgress.map(entry => {
+              if (
+                entry.actorId !== tieredEncounterState.agentId
+                || entry.encounterId !== tieredEncounterState.notification.encounterId
+                || entry.currentEncounterIndex !== tieredEncounterState.encounter.currentStepIndex
+              ) {
+                return entry;
+              }
+              const step = tieredEncounterState.template.steps[tieredEncounterState.encounter.currentStepIndex];
+              return markEncounterProgressDisregarded(
+                entry,
+                tieredEncounterState.encounter.currentStepIndex,
+                step?.id ?? `step-${tieredEncounterState.encounter.currentStepIndex + 1}`,
+                prev.tick,
+              );
+            })
+          : prev.encounterProgress;
+
+        return {
+          ...prev,
+          unifiedActions,
+          encounterProgress,
+          encounterNotifications: (prev.encounterNotifications ?? []).map(notification =>
+            notification.id === tieredEncounterState.notification.id
+              ? { ...notification, resolved: true }
+              : notification,
+          ),
+        };
+      });
+    }
+    closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
+  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+
+  const handleEncounterAcknowledgeAftermath = useCallback(() => {
+    if (tieredEncounterState?.notification?.id) {
+      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+      setGameState(prev => ({
+        ...prev,
+        encounterNotifications: (prev.encounterNotifications ?? []).map(notification =>
+          notification.id === tieredEncounterState.notification.id
+            ? { ...notification, resolved: true }
+            : notification,
+        ),
+      }));
+    }
+    closeEncounterModalAndResume(tieredEncounterState?.openedAsInterrupt);
+  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+
+  const handleEncounterAftermathReaction = useCallback((reactionId: string) => {
+    const reactions = tieredEncounterState?.encounter.aftermathSummary?.reactions;
+    if (!tieredEncounterState || !reactions?.length) return;
+    const reaction = reactions.find(entry => entry.id === reactionId);
+    if (!reaction) return;
+
+    if (tieredEncounterState.notification?.id) {
+      suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+      setInterruptSuppressedUntilTick(gameState.tick + 1);
+    }
+
+    setGameState(prev => {
+      const activeAction =
+        (tieredEncounterState.activeActionId
+          ? prev.unifiedActions.find(action => action.actionId === tieredEncounterState.activeActionId)
+          : undefined)
+        ?? prev.unifiedActions.find(action =>
+          action.actorId === tieredEncounterState.agentId
+          && action.templateId === tieredEncounterState.notification.encounterId
+          && Boolean(action.aftermathSummary),
+        );
+
+      const nextState = applyEncounterAftermathReaction(prev, activeAction, reaction, prev.tick);
+      return {
+        ...nextState,
+        encounterNotifications: (nextState.encounterNotifications ?? []).map(notification =>
+          notification.id === tieredEncounterState.notification.id
+            ? { ...notification, resolved: true }
+            : notification,
+        ),
+      };
+    });
+
+    if (reaction.closeAfterSelection ?? true) {
+      closeEncounterModalAndResume(tieredEncounterState.openedAsInterrupt);
+    }
+  }, [closeEncounterModalAndResume, gameState.tick, setGameState, tieredEncounterState]);
+
   /** Intervention handler — player chose an intervention for the current encounter step */
   const handleEncounterIntervene = useCallback((choiceId: string, essenceSpent: number) => {
     if (!tieredEncounterState) return;
-    const { notification, agentId } = tieredEncounterState;
+    const {
+      notification,
+      agentId,
+      encounter,
+    } = tieredEncounterState;
     const choice = notification.choices.find(c => c.id === choiceId);
     if (!choice) return;
 
-    // Deduct essence from primary sphere
-    if (essenceSpent > 0) {
-      setGameState(prev => {
-        const newPool = { ...prev.essencePool };
-        newPool[archetype.sphereAlignment.primary] = Math.max(0, newPool[archetype.sphereAlignment.primary] - essenceSpent);
-        return { ...prev, essencePool: newPool };
-      });
-    }
+    setGameState(prev => {
+      const newPool = { ...prev.essencePool };
+      if (essenceSpent > 0) {
+        newPool[archetype.sphereAlignment.primary] = Math.max(
+          0,
+          newPool[archetype.sphereAlignment.primary] - essenceSpent,
+        );
+      }
 
-    // Mark notification as resolved
-    setGameState(prev => ({
-      ...prev,
-      encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
-        n.id === notification.id ? { ...n, resolved: true } : n,
-      ),
-    }));
+      return {
+        ...prev,
+        essencePool: newPool,
+        unifiedActions: (prev.unifiedActions ?? []).map(action => {
+          const matchesActiveAction =
+            (tieredEncounterState.activeActionId && action.actionId === tieredEncounterState.activeActionId)
+            || (
+              !tieredEncounterState.activeActionId
+              && !action.resolved
+              && action.actorId === agentId
+              && action.templateId === notification.encounterId
+            );
+          if (!matchesActiveAction) return action;
+          const step = tieredEncounterState.template.steps[action.currentStep];
+          if (!step) return action;
+          return recordUnifiedActionChoiceMemory(
+            action,
+            action.currentStep,
+            step.id,
+            choice,
+            prev.tick,
+            essenceSpent,
+          );
+        }),
+        encounterProgress: tieredEncounterState.encounter.sourceSystem === 'legacy_encounter'
+          ? prev.encounterProgress.map(entry => {
+              if (
+                entry.actorId !== agentId
+                || entry.encounterId !== notification.encounterId
+                || entry.currentEncounterIndex !== encounter.currentStepIndex
+              ) {
+                return entry;
+              }
+              const step = tieredEncounterState.template.steps[encounter.currentStepIndex];
+              if (!step) return entry;
+              return recordEncounterChoiceMemory(
+                entry,
+                encounter.currentStepIndex,
+                step.id,
+                choice,
+                prev.tick,
+                essenceSpent,
+              );
+            })
+          : prev.encounterProgress,
+        encounterNotifications: (prev.encounterNotifications ?? []).map(n =>
+          n.id === notification.id ? { ...n, resolved: true } : n,
+        ),
+      };
+    });
 
     // Emit trace
     console.debug('[TieredEncounterModal] Intervention:', {
@@ -980,6 +1457,16 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       probabilityBoost: choice.probabilityBoost,
     });
   }, [tieredEncounterState, setGameState, archetype.sphereAlignment.primary]);
+
+  const handleEncounterCommitAndContinue = useCallback((choiceId: string, essenceSpent: number) => {
+    if (!tieredEncounterState) return;
+    handleEncounterIntervene(choiceId, essenceSpent);
+    suppressedEncounterNotificationId.current = tieredEncounterState.notification.id;
+    resumeAfterEncounterCommit.current = true;
+    setInterruptSuppressedUntilTick(gameState.tick + 1);
+    setTieredEncounterState(null);
+    wasRunningBeforeEncounterPause.current = false;
+  }, [gameState.tick, handleEncounterIntervene, tieredEncounterState]);
 
   /** Boost handler — Watched tier essence boost */
   const handleEncounterBoost = useCallback((essenceSpent: number) => {
@@ -1012,14 +1499,24 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
   // Auto-interrupt for all encounter notifications (not just the_first)
   // Pause is handled by the general encounterModalOpen useEffect below
   useEffect(() => {
+    if (interruptsSuppressed) return;
     const notifications = gameState.encounterNotifications ?? [];
+    if (suppressedEncounterNotificationId.current) {
+      const suppressedStillPending = notifications.some(
+        notif => notif.id === suppressedEncounterNotificationId.current && !notif.resolved,
+      );
+      if (!suppressedStillPending) {
+        suppressedEncounterNotificationId.current = null;
+      }
+    }
     for (const notif of notifications) {
-      if (notif.viewed || notif.resolved) continue;
+      if (notif.resolved) continue;
+      if (suppressedEncounterNotificationId.current === notif.id) continue;
       // Auto-open — all encounters auto-interrupt regardless of court position
       handleOpenEncounterFromNotification(notif);
       break; // Only one auto-interrupt at a time
     }
-  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification]);
+  }, [gameState.encounterNotifications, handleOpenEncounterFromNotification, interruptsSuppressed]);
 
   // ── Meeting encounter (Meet The First) ──
   const [meetingState, setMeetingState] = useState<MeetingEncounterState | null>(null);
@@ -1038,6 +1535,19 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       setRunning(false);
     }
   }, [encounterModalOpen, running, setRunning]);
+
+  useEffect(() => {
+    if (encounterModalOpen || !resumeAfterEncounterCommit.current) return;
+    resumeAfterEncounterCommit.current = false;
+    setRunning(true);
+  }, [encounterModalOpen, setRunning]);
+
+  useEffect(() => {
+    if (interruptSuppressedUntilTick === null) return;
+    if (gameState.tick >= interruptSuppressedUntilTick) {
+      setInterruptSuppressedUntilTick(null);
+    }
+  }, [gameState.tick, interruptSuppressedUntilTick]);
 
   const handleStartMeeting = useCallback((locationId: string) => {
     if (!isMeetTheFirstAvailable(gameState.graph, gameState.ascendantId, gameState.tick)) return;
@@ -1211,10 +1721,11 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
   // Auto-pause simulation when a vignette is pending
   useEffect(() => {
+    if (interruptsSuppressed) return;
     if (activeVignette && running) {
       setRunning(false);
     }
-  }, [activeVignette, running, setRunning]);
+  }, [activeVignette, interruptsSuppressed, running, setRunning]);
 
   // Close detail panel on Escape key
   useEffect(() => {
@@ -1610,11 +2121,13 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
         {/* ── Right panel: Debug Panel OR sidebar (+ detail view) ── */}
         {debugPanelOpen ? (
-          <DebugPanel
-            currentTick={gameState.tick}
-            followAgentId={selectedAgentId ?? undefined}
-            onClose={handleToggleDebug}
-            graph={gameState.graph}
+            <DebugPanel
+              currentTick={gameState.tick}
+              followAgentId={selectedAgentId ?? undefined}
+              onClose={handleToggleDebug}
+              preferredViewMode={debugPanelPreferredViewMode}
+              preferredViewNonce={debugPanelPreferredViewNonce}
+              graph={gameState.graph}
             retinueAgents={retinueAgents}
             cacheEntries={getEncounterCacheManager()?.getAllEntries()}
             encounterProgress={gameState.encounterProgress}
@@ -1821,14 +2334,30 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
         })()}
       </AnimateMount>
 
-      {/* Tiered encounter modal (TB-055) */}
-      {tieredEncounterState && (
-        <TieredEncounterModal
-          open={true}
-          onClose={handleEncounterClose}
-          notification={tieredEncounterState.notification}
-          progress={tieredEncounterState.progress}
-          template={tieredEncounterState.template}
+      {/* Encounter Stage — Gate Duty uses specialized adapter, qualifying unified encounters use general adapter */}
+        {tieredEncounterState && shouldUseEncounterStage && encounterStageModel && (
+          <EncounterStage
+            open={true}
+            onDisregard={handleEncounterDisregard}
+            onAcknowledgeAftermath={handleEncounterAcknowledgeAftermath}
+            onAftermathReaction={handleEncounterAftermathReaction}
+            onCommitChoice={(choiceId) => {
+              const choice = tieredEncounterState.notification.choices.find(c => c.id === choiceId);
+              if (!choice) return;
+              handleEncounterCommitAndContinue(choiceId, choice.essenceCost ?? 0);
+            }}
+          model={encounterStageModel}
+        />
+      )}
+
+      {/* Tiered encounter modal (TB-055) — fallback for encounters that don't qualify for EncounterStage */}
+        {tieredEncounterState && (!shouldUseEncounterStage || !encounterStageModel) && (
+          <TieredEncounterModal
+            open={true}
+            onClose={handleEncounterDisregard}
+            notification={tieredEncounterState.notification}
+            encounter={tieredEncounterState.encounter}
+            template={tieredEncounterState.template}
           agentName={tieredEncounterState.agentName}
           agentId={tieredEncounterState.agentId}
           graph={gameState.graph}
@@ -1862,7 +2391,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
       )}
 
       {/* Journey vignette modal (auto-interrupt for The First) */}
-      {activeVignette && (
+      {activeVignette && !interruptsSuppressed && (
         <JourneyVignetteModal
           open={true}
           onClose={() => {
@@ -1913,7 +2442,7 @@ export function GameView({ archetype, avatarName, cosmology, seed, mapSize }: Ga
 
       {/* Event popup overlay */}
       <EventPopup
-        popup={currentPopup}
+        popup={interruptsSuppressed ? null : currentPopup}
         queueLength={notificationState.popupQueue.length}
         onDismiss={handleDismissPopup}
         onChoice={handlePopupChoice}
