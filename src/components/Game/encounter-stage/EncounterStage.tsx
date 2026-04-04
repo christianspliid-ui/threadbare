@@ -238,16 +238,25 @@ export function EncounterStage({
 
   const handleAdvance = useCallback(() => {
     if (!selectedChoice || !selectedChoice.affordable || isSubmittingChoice) return;
+    // Stop any active narration before advancing
+    if (isSpeaking) {
+      stop();
+      setActiveNarrationId(null);
+    }
     setIsSubmittingChoice(true);
     onCommitChoice(selectedChoice.id);
-  }, [isSubmittingChoice, onCommitChoice, selectedChoice]);
+  }, [isSubmittingChoice, isSpeaking, onCommitChoice, selectedChoice, stop]);
 
   const handleAftermathExit = useCallback(() => {
+    if (isSpeaking) {
+      stop();
+      setActiveNarrationId(null);
+    }
     onAcknowledgeAftermath?.();
     if (!onAcknowledgeAftermath) {
       onDisregard();
     }
-  }, [onAcknowledgeAftermath, onDisregard]);
+  }, [isSpeaking, onAcknowledgeAftermath, onDisregard, stop]);
 
   return (
     <Modal open={open} onClose={isAftermathMode ? handleAftermathExit : onDisregard} maxWidth={980}>
